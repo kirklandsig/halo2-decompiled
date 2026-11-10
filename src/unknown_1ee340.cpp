@@ -254,7 +254,7 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // MiniMax S (10-31): no new form, no lower score. Retail keeps the shape's edges and the ray direction
 // in xmm1-xmm7 and computes the three edge vectors in registers, storing only four floats; ours spills
 // every component of every difference to the stack and re-reads them, so the frame is 0x84 against 0x90.
-// score 192 (was 192): frame 0x84 versus 0x90: retail keeps origin.x/y in xmm6/xmm7 until the
+// Earlier at 192: frame 0x84 versus 0x90: retail keeps origin.x/y in xmm6/xmm7 until the
 // offset (ours re-reads all three from the shape), so it spills first.i/second.i into homes and puts
 // the found byte at +0x38 and the plane at +4; every later stack offset differs by that. Retail also
 // computes the direction from its start loads (ours from memory operands) and has a dead second
@@ -450,6 +450,11 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // written start-first in all three rows 192 (same code). All restored; still BLOCKED-BY 0x23a220.
 // J260: Direction dot/fraction/bounded comparison double storage singles 268/293/278; pairs 300/307/293; all 280; immutable all 280; frames 0x84/0x88 versus 0x90. No exact match; original SSE scalar widths restored.
 // NOT kept: no eligible native repair; opening executable source restored. Retained origin x/y, edge i spills and plane/ray/polygon homes remain.
+// Round 66 (m3 lane 15, fast; 0x23a220, 0x1eded0, 0x1ee350, 0x120850 matched throughout): 0x23a220 still takes the point before the points and its definition is
+// still in another lane's file, so the chain stays BLOCKED-BY 0x23a220. Re-measured on today's tree without the swap, all 31 combinations of: the second and third
+// vertices copied into named points through real_point3d_set (P), the ray end copied too with the direction from both copies (E), the clamp as if / else-if (I), a
+// literal 0.0f for field_c (Z), a dword count for the loop and the call (N). I and Z alone or together 192 (same code); N 195 (1020 bytes); E 196, EN 199; P 214,
+// PN 210 (1020), PE 212, PEN 220; I and Z change none of these. Nothing below 192.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

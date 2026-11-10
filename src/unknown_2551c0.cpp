@@ -748,6 +748,10 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // and tests the target against memory). Diagnostics, reverted at once (a volatile local read, never kept): one dead read before the guard, or
 // inside it just ahead of the call, 240 (975 bytes, aligned 61), two ahead of the call 245 (979, aligned 35): the rotation there is one step
 // from retail's, and no plain spelling of the guard supplies it.
+// Round 148 (m3 lane 8, fast with the file's other functions, 0x30bf0, 0x110ab0, 0x26bfa0 and 0x1e4a50; base aligned 65, masked
+// 16): the guard split with a unit-index local used at 0x110ab0 and at one later use, the unit's object lookup 225 (965 B,
+// aligned 47), the 0x10fa80 timing call 228 (968 B), the 0xe6900 request 229 (968 B); the unit-index local read at the top
+// (after actor_get) for the guard and the object lookup 234 (966 B); the side vector as an aggregate initializer 89 (same code).
 // M3 lane 16 r100 (fast; caveat: 0x110ab0 builds differently in the reduced image): lane 17's match-only 17 form rebuilt 17; on it
 // the side result typed long 128 (931 B), the reverse probe through the existing vector3f_scale (normalize3d.h) 17 (same code), the
 // second object lookup taking the named unit 227 (965 B; round 27's 227 re-measured), the side choice as an if/else 17 (same code),

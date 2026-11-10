@@ -505,9 +505,22 @@ struct s_text_line_measurement
 // score 77 (was 77): retail loads the width into xmm4 before the multiply
 // chain and accumulates the four terms in xmm3; ours reloads the width into
 // xmm3 after the multiplies and accumulates in xmm0 (register allocation only).
+// M3 lane 13 r75 (fast; masked aligned count in brackets, base [16]): the end sum named and computed before the can_break block 75 [21]
+// (the width load then moves to retail's XMM4 right after the scale, but the adds move up with it; match-only); the else arm's
+// width update before `count++` 77 [16]; advance computed before offset 78 [18]; break_width stored before break_index 76 [16]; both
+// of those 75 [22].
 // Tried (77, same code): the test written as sum < x1; width += advance + offset + kerning;
 // a copy of the width taken after the kerning call. Worse: advance or offset written
 // inline at both uses (111), the can_break block ahead of offset/advance (111).
+// m3 lane 7 r146 (fast): the one cause is retail's `movaps xmm3, xmm0` after the advance product. The update's
+// advance is a second register copy, so the width takes xmm4 and loads early and the compare reuses xmm0 for x1.
+// Matched 0x142640 and 0x17c040 give that copy from `x = scale * x` on an already-defined variable. Tried (77, same
+// code): the advance product written out in the update only, or in the compare only (CSE merges it); a two-step
+// `advance = raw; advance *= scale`; the kerning call result named before its product; the update summed as
+// w+a+o+k, k+o+a+w, (a+o)+(k+w) (77) or a+(o+k)+w (76); the compare as w+x+a+o+k (77) or x+(a+o+k)+w (83).
+// Definition orders (kerning/offset/advance) kao 78, oka 82, ako 82, oak and aok 133 (393 bytes); break_width
+// declared first 77; the can_break stores swapped 76; the restore swapped 77; unsigned break_index 77. Permuter
+// (600 s) best 71: those swaps plus an unsigned index, a byte flag and a flag set from the count test (not kept).
 // Round 99 (lane 16): the cause is a copy, not the width load: retail copies the advance (`movaps xmm3,
 // xmm0`) right after its multiply and accumulates the width in that copy, so the bound reuses XMM0 and
 // the width goes to XMM4 early; ours accumulates in place in XMM0. Same code (77) for the accumulation as

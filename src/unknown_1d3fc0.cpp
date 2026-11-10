@@ -340,6 +340,12 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // plain dead locals move nothing, not even the term order); the projection rows written k, j, i. Worse: a `transform4x3f &` name for the working
 // matrix 155; the dot, or the cross, taking `&local_1[0].forward` in place of the k row's field read (either dot argument order) 154 each (forward
 // preloads k again). Body unchanged at 110: the 2-form needs the mixed field read, which is kept only with a match.
+// Round 148 (m3 lane 8, fast with 0x1c4a80, matched each time): the projection rows as `+= forward->x * -local_10` 110; `up` as a
+// reference bound to the helper's result 110; the helper declared `inline` 110; the dot's local declared ahead of the axis
+// pointers 110; both axis pointers `vector3f *const` 110 (perhaps round 34's const forward pointer again); the dot as a
+// `real const` local 110 (all the same code). A compile-only harness of this file (/O2 /Ob1
+// /arch:SSE /Gr, no /GL) reproduces the 2-form's x87/SSE sequence exactly (2, the dot's i term only) and the current body at 23
+// such instructions; on it the helper's squared length through the existing length_sq3f gives the same code as through dot3f.
 // M3 lane 16 r100 (fast, 0x1c4a80 stays matched): the second up normalization folded into the cross argument,
 // `cross3f(function_1d3fc1(up), forward, ..)`, 110 (same code); the header normalize_inline for all four normalizations 155 (first
 // difference +0x44); the private normalizer's sum as `j*j + (i*i + k*k)` 152, through dot3f(arg_0, arg_0) 153 (the 2-form's

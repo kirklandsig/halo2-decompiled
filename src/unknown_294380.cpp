@@ -231,6 +231,10 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // their own block-local vector instead of the shared one 755/756/755 (3737-3738 B), all three 764 (3734 B): retail
 // reuses one vector. Re-measured (Round 64 lists it): the position, the offset or both declared at the walk body's top
 // 280 each (same code).
+// Round 226 (m3 lane 3, fast, control 280): the walk's position, offset and the post-walk vector renamed so the post-walk vector
+// sorts after both and the position after the offset (member_position/member_offset/steering, neighbour_point/neighbour_offset/
+// steering, position/away/steering), the post-walk vector alone (adjustment), position/offset as point/offset: 280 each, identical
+// code; names do not order these slots.
 // M3 lane 16 r102 (plain checks with 0x293b30, which stays matched; `--fast` builds this function differently, control 280 there;
 // aligned / registers-masked / registers-and-slots-masked counts on the 252 body: 62 / 59 / 14): the scalar reused for four strengths
 // split into one named local per use: the waypoint strength 338 (3717 B), the wander (0x295600) strength 253 (same shape), the path

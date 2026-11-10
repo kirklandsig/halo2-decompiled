@@ -1281,6 +1281,7 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax I (11-10): no new form, no lower score (94).
 // MiniMax R (11-09): no lower score (94): the order of the three statements in the block - the identity flag,
 // the total and the channel pointer - was measured again: the flag, the pointer and the total (93), the total,
 // the pointer and the flag (94), the pointer, the flag and the total (99), the pointer, the total and the flag
@@ -1718,6 +1719,13 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // capacity-fail arms 177, direct returns plus that else 189 (0x56380 73 each). Diagnostic, result started from a global
 // read 145 (still two epilogues). 300 random forms (orders x sizes x bit at top/pre-loop/at use x if/else-if or ternary
 // clamp x failure arm first or second): best 60, lowest aligned with the caller kept 18-19 (130-134).
+// Round 181 (m3 lane 4, fast with 0x56380), re-measured on the `include_mask ? 13 : 11` size: current order 147 (461
+// bytes), capacity/size/written/kept 134 (head matches retail through the active test; EAX's zero then serves the
+// clamp and `written = 0`, and kept takes EAX), with round 71's NONE-then-0 result 129 (445 bytes, 0x56380 13), with
+// written inside the capacity block 197, with kept inside it 127 (449 bytes). New on the 134 form: include_mask typed
+// char 134 (same code); the clamp compare written `player != clamped` 135; the clamp testing its copy (`clamped < 0`,
+// `clamped > 15`) 134 (same code); written typed short 135 (461 bytes); the compaction test without the word cast,
+// `kept != (dword)((1 << queue->count) - 1)`, 128 (457 bytes).
 // M3 lane 16 r100 (fast with 0x56380; both builds already return with ret 0xc): the result computed at the end of the capacity
 // block re-measured 155 (0x56380 137); include_mask typed char with the size as `include_mask ? 13 : 11` 147 (461 B); the size as
 // `include_mask != 0 ? 13 : 11` 147 (461 B); kept computed before a ternary size 171 (0x56380 12); the player bit typed word 139
@@ -1868,6 +1876,7 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax I (11-10): no new form, no lower score (85).
 // MiniMax R (11-09): no lower score (85): the second port-flag query marked `inline` was measured again and
 // confirms the recorded result - 0x55990 goes to 102 while the matched callers 0x54890 and 0x53a20 are lost
 // (83 and 84), and 0x53b90 and 0x53bb0 keep matching either way.
@@ -3722,6 +3731,12 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // (no cursor / cursor advanced last / cursor advanced first x member test joined or split x four entry orders of the
 // stride, `size -= 2` and consumed x `(members >> member) & 1` or the mask test x member declared at the loop top or
 // in the relay arm): best 139 (main's code), the cursor forms 162-165 (aligned 58 against 71).
+// M3 lane 10 r88 (fast with 0x564c0, matched each time; base 139, aligned 84, masked 47): the member test as `member < 0` 139
+// (other code: `test; jl` where retail has `cmp eax, -1`); on the packet-cursor form (re-measured 164, masked 36) the same test 165;
+// the cursor set from the count, `data + consumed`, after `size -= 2` and `consumed = 2` with the stride last 164 (masked 32), with
+// the stride before the cursor 162 (479 bytes). In every cursor form our EBP serves the member and the consumed update in turn and
+// the channel gets no register; retail's cursor starts with `add edi, 2` (an immediate, outside the constant 2 that `size -= 2` and
+// `consumed` share in ECX) and its zero-trip exit returns that ECX. No untried natural form left that adds a channel reference.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

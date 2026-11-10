@@ -556,6 +556,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
+// MiniMax C (11-10): the score is 115, unchanged; the three message predicates are packed in different homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and retail keeps `left` in a word at -0x3c where ours spills it as a dword at -0x50.
 // MiniMax S (11-07): no new form, no lower score; the three message predicates as bytes give 191, so the
 // body stays; the view, font, line-height, player, colour and rectangle homes and the left word still differ.
 // MiniMax R (11-05): no new form, no lower score; the timer flag as a bool puts retail's byte stores at

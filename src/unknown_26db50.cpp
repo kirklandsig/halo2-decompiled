@@ -459,6 +459,7 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 	vector->k = axis->k * along + k * cosine - (axis->j * i - axis->i * j) * sine;
 }
 
+// MiniMax I (11-10): no new form, no lower score (90).
 // MiniMax D (11-09): no new form, no lower score; retail keeps the ring value as a float in a
 // stack slot and reloads it as a double for the radius product where ours converts the counter
 // directly, and retail's two global loads use swapped registers.
@@ -801,6 +802,11 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // 238 (1103), with the named double 241 (1088); the distance without the (double) cast 90 (same code). Body unchanged.
 // (The named phase re-measures rounds 17 and 53's 143; the named j, k cross terms give 90 here where round 50 records 100 for "cross j, k before
 // i", so that round's form was a different one and was not rebuilt.)
+// Round 148 (m3 lane 8, fast with the file's other functions and 0x26c590, 0x26d100, 0x2104b0, 0x14a280, 0x26d3f0; base aligned 58,
+// masked 37): the rotation helper's dot through this file's record_dot3f 90; the origin as a `point3f const *` 90; the ring
+// counters declared countdown first 90; the first pathfinding lookup as an if/else assignment 217 (1086 B, the same code as
+// round 133's ternary); the trace point declared ahead of the trace distance 90; the second pathfinding lookup through its
+// own structure local 90 (all 90s the same code).
 // M3 lane 16 r100 (fast, 0x26dde0 stays matched). Lead: the existing cross-file rotate_direction (declared as bipeds.cpp does; list
 // 0x1ecf50 so --fast inlines it) for record_rotate_vector gives retail's rotation shape with no spill: cross j and k form early, cross
 // i sinks into the i row. Alone 100 (1081 B, frame 0xd4 for 0xd8); with the ring phase named in the outer loop (`real phase =
