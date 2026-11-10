@@ -2885,6 +2885,7 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 	return result;
 }
 
+// MiniMax R (11-10): no new form, no lower score; retail's frame is four bytes and keeps the weapon pointer in ebp with only the definition spilled, ours is eight bytes and spills both.
 // MiniMax C (11-01): no new form, no lower score.
 // score 389 (was 398): the active flag is published as `*active = result > 0.0f;`, which gives retail's two-exit
 // tail (eax 1/0 stored through al) byte for byte. Walked against retail statement by statement (w1D, 11-05):
@@ -3438,6 +3439,7 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return unit ? unit->player_index : NONE;
 }
 
+// MiniMax R (11-10): no new form, no lower score; the unit index without the volatile scores 657, with the volatile and the NONE at the declaration 637 and without the volatile and the NONE at the declaration 640, so the kept form stays the best.
 // MiniMax G (11-04): no new form, no lower score; the barrel pointer before the definition gives fast 638 (was 640), below the retention threshold.
 // MiniMax C (11-01): no new form, no lower score.
 // score 604 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.

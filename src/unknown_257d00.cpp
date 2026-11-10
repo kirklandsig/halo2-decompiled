@@ -2311,6 +2311,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// MiniMax R (11-10): no new form, no lower score.
 // score 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
 // (0x2594b5 `comiss xmm0, [1.0]; jbe 0x2597fa`, true for a NaN distance); `d <= 1.f` compiled to
 // `comiss 1.0, d; jae`, false for NaN. The body is now 2396 bytes like retail, but the positional
