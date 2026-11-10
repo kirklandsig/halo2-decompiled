@@ -144,7 +144,7 @@ public:
 // It gives the 667-byte 0x30dce0 match and requires the requested maintainer ruling.
 static inline handle_30dce0 *read_overlap_handle(long const &value)
 {
-	return (handle_30dce0 *)value;
+	return *(handle_30dce0 *const volatile *)&value;
 }
 
 // score 161 (was 200): the flag is now a plain byte written into a local, which
