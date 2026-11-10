@@ -311,6 +311,12 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 }
 #pragma inline_depth(255)
 
+// MiniMax E (11-09): score 2 (was 7): the samples pointer is copied into a dword and the scale is passed
+// straight to the callee, so the scale is loaded early and the sum's first operand is the samples pointer,
+// which matches retail's load order and its call setup (the curves address by lea ecx and the object index
+// loaded after the pushes); what is left is the two loads' destination registers, ours putting the samples
+// pointer in EDI (the data pointer's own register) and the entry's data offset in EDX, where retail puts
+// the samples pointer in EDX and the offset in the dying EDI.
 // MiniMax I (11-08): no new form, no lower score (7); the sum spelled with the samples pointer first gives the same bytes.
 // MiniMax R (11-06/07): the samples' memcpy form (2; H 11-04, C 11-06) again, not kept; a memcpy copy of the entry's data offset 3
 // (also a field's bits read through its address), every plain spelling of the sum 8, the offset through the
@@ -370,12 +376,12 @@ void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permut
 	if (count > 0 && g_4ed28c->valid && function_badc0(object_index, 3))
 	{
 		s_sound_promotion_state curves;
-		union { dword field_0; real field_4; } local_0;
-		dword const volatile *local_1 = (dword const volatile *)&scale;
-		local_0.field_0 = *local_1;
-		curves.data = entry->data_offset + data->samples;
+		dword samples_address;
+
+		memcpy(&samples_address, &data->samples, sizeof(samples_address));
+		curves.data = (byte const *)samples_address + entry->data_offset;
 		curves.count = count;
-		function_10e480(object_index, tag_index, (s_vibration_curve_set *)&curves, local_0.field_4);
+		function_10e480(object_index, tag_index, (s_vibration_curve_set *)&curves, scale);
 	}
 }
 
