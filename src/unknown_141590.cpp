@@ -1163,6 +1163,12 @@ void function_143250(
 // 0x23690 467); the workspace matrix ahead of the rotation terms 1766 (fast); that with the 648 single-use terms in
 // their next statement 1775 plain (10763 bytes, ret 4, frame 0x314; 0x22850 235, 0x23690 467); only the 37 rotation
 // snapshot copies propagated 1948 (fast, 10949 bytes: the band-start copies keep the snapshots out of the workspace).
+// Lane 5 r166 (fast, 0x22850/0x23690/0x143250 listed, control 1766/223/401/MATCH): the nine leading rotation copies
+// dropped and rotation[] read at each use (matrix a plain array) 2516 (10021 bytes; rotation then arrives in ESI, 0x23690 350);
+// parameters as (result, rotation, coefficients, order), definition, declaration and all seven calls updated, 1766 (callers
+// unchanged); the matrix as its own array beside the eight grouped terms 2089 (10438); `result[0] = coefficients[0];` first
+// 1766; the matrix pointer as `real *const` 1766; the matrix pointer defined right after the grouped terms (top of the
+// body) 1766. Both builds compute the seven sqrt(N.0) terms at run time (seven fsqrt each). All restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

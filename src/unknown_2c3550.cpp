@@ -601,6 +601,7 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// score 675 (was 675): the 675 differing lines are 541 real ones (the rest are the unmatched
 // MiniMax I (11-06): retail's prologue interleaves the compare with the pushes and keeps the
 // pathfinding read after the radius block; no new form, no lower score.
 // MiniMax A (11-04): pathfinding read after the radius block 674, final_complete below the height 697,
@@ -608,7 +609,6 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // identifier 703, long step counter 764, bool result 736 and 756 with that order, the type guard split
 // into three sibling tests as retail does (setup, search-or-copy, object-index pass) 770; the permuter
 // (113 tries, annealed) found no variant below 675; no keepable gain.
-// score 675 (was 675): the 675 differing lines are 541 real ones (the rest are the unmatched
 // callees and the relocated globals); the frame 0x1f88 and the length agree, but retail keeps the
 // success result in a stack byte where ours keeps a dword, loads the source radius before the 0.2f
 // constant, and the path pointer and the obstacle, search and step homes differ.
@@ -772,6 +772,13 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // needs path.cpp's declaration and caller local changed; state->source.unknown04 reaches avoidance_search as a raw
 // zero-extended byte (0x2c4741 xor ecx,ecx; mov cl,[eax+4]) where ours emits test/setne, so the field is a bool in retail
 // (path.h declares byte); the (byte) cast on flags is codegen-neutral (dropped = 675).
+// Lane 5 r166 (fast alone, control 675; CAVEAT on callee 0x2c0d60). Retail inlines obstacle_list_add (0x2c0d00) for the
+// state-point add: it loads the object index and radius before the count test and stores x then y with no spill. The existing
+// helper called there 712 (frame 0x1f8c: the helper volatile-reads radius and y to keep its own copy matched, so the inlined radius
+// spills); BLOCKED-BY 0x2c0d00 for that form (src/unknown_2c0d00.cpp was another lane's file this round). The source
+// record's byte at +4 (passed to both searches) declared bool in include/path.h 729 (2960 bytes); result as an unsigned byte 768 (2958); the radius clamp
+// written from the source value (`radius = source; if (radius < 0.2f) radius = 0.2f;`) 754; ignored, frame and node_index
+// as shorts together, without the delta change 701 (2976). All restored.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,
