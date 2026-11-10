@@ -1008,6 +1008,7 @@ PRIVATE inline long damage_object_root(long object_index)
 // retail calls it, and that body lives in src/unknown_0bad50.cpp, which this lane may not edit.
 // MiniMax C (11-09): no new form, no lower score (206); the frame is still 0x1a4 against retail's 0x1b4 and the
 // first 0xbadc0 use is still expanded here while retail calls it (BLOCKED-BY 0xbadc0).
+// MiniMax E (11-10): no new form, no lower score (206).
 // score 206 (was 206): left is 0xbadc0 and register allocation. The link-time inliner inlines 0xbadc0 at the first
 // use (the flags & 2 unit test) but calls it at the other two; retail calls all three. Retail keeps data in edi,
 // the definition in esi and &data->position in ebx (the distances are [ebx], [ebx+4], [ebx+8]) and spills the
@@ -2074,6 +2075,7 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 // in eax and 0xd9d60's flag in al, ours on the stack), so the head follows the tail.
 // MiniMax C (11-09): no new form, no lower score (100); the two call setups of 0xda110 and 0xd9d60 still follow
 // the conventions their own unmatched bodies decide, and the delay block's register rotation stays with them.
+// MiniMax E (11-10): no new form, no lower score (100); the callees' parameter order is not mine to change.
 // score 100 (was 110): the pending field is a real bitfield, 3 bits of permutation and 13 of ticks, which gives
 // retail's byte xor and `or` forms in the delay block. Left: the setup of the 0xda110 and 0xd9d60 calls (their
 // conventions, BLOCKED-BY 0xd9d60's walk, see 0xdae60; one instruction more at each call, so every later line is off)

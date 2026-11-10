@@ -634,6 +634,10 @@ struct s_device_machine_view
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
+// MiniMax E (11-10): no new form, no lower score (34); retail loads the group's flags as a word into AX with the
+// group pointer still in EAX and tests bits 1 and 2, ours loads a byte and masks it with 3 - every word form moves
+// the pointer into ESI (120) or folds the index into the load's address (117), and the nested and compared tests
+// give 170 and 120.
 // score 34 (was 34): group-word load/EAX sharing and velocity-zero join remain;
 // the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
@@ -1148,6 +1152,8 @@ bool function_108530(long device_index, long name)
 // and the permuter was stopped after half an hour without producing a try.
 // MiniMax D (11-05): no new form, no lower score (121); the permuter run was killed at its time limit
 // before it produced any result.
+// MiniMax E (11-10): no new form, no lower score (121); the initial velocity is stack-passed here and in XMM6 in
+// retail, and the parameter list is not mine to change, so the velocity's register home follows from it.
 // score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // MiniMax A (11-04, run 41): no new form, no lower score (121); the initial velocity is still stack-passed
 // where retail keeps it in xmm6, and the ramp-down time still takes a register through the clamps.

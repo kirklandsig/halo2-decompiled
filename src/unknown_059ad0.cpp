@@ -3560,6 +3560,8 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // which is false when state 9 or value44 sets the flag (host_state stays NULL there); 120 without
 // it. Held: build/held/mmg-1105-5e3f0-false-assume.patch.
 // MiniMax C (11-08): no new form, no lower score.
+// MiniMax E (11-10): no new form, no lower score (101); the timeout owner comes from a parameter of 0x769a0
+// whose declaration is in another file, so the spill cannot be settled here.
 // score 101 (was 101): Frame 0x3c agrees; held timeout owner spill and identifier/reply allocation remain.
 // Earlier: frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
 // Earlier: frame 0x3c agrees; retail loads session+0x10 and spills it, and splits the

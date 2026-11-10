@@ -3497,6 +3497,9 @@ bool g_55e6bc;
 // near-plane as a matrix-shaped local (150), the same with a row base and an advancing cursor (the body
 // grew to 1307 bytes) and the near-plane product with the global first (119) scored no better, so the
 // body stands as it was.
+// MiniMax E (11-10): no new form, no lower score (87 alone, 127 with this file's other addresses); the near
+// plane folded into one product with the global (114), the far plane declared first (122) and a row base with
+// constant indices (951) all score worse, and the row's three products are still summed in a rotated order.
 // score 87 (was 87): retail keeps the projection base in ECX and the row counter in EDI and splits
 // the output into a row base (ESI) and an advancing cursor (EDX); ours uses one cursor in ECX, the
 // counter in EDX, and multiplies the near plane in a register where retail folds the global into
@@ -6310,6 +6313,7 @@ void function_22850(void);
 // union of two halves or through a local read gives 158, 159 and 153, and retail writes that time
 // into the global as two dwords, which the double the global has in include/timed_effect.h cannot
 // express, while retail uploads the gamma ramp inline against the device's own ramp buffers.
+// MiniMax E (11-10): no new form, no lower score (153).
 // score 153 (was 202): retail keeps the current depth bound when it is not zero and stores the
 // default only when it is (the comparison is against the bound loaded before the stores), so the
 // two default stores are now conditional on the bound being zero; the unconditional stores were a
@@ -7175,6 +7179,8 @@ real scenario_ramp_evaluate_current(long index);
 // pointer and its 0x58 frame still stand.
 // MiniMax H (11-03): no new form, no lower score; retail saves edi in the prologue and keeps the scenario pointer in it across the loop's call with ebp as the counter, where ours saves edi inside the block and keeps the pointer in ecx, so every stack slot sits four bytes off; the scenario pointer in a local gives 148 and was dropped.
 // MiniMax E (11-01): no new form, no lower score; retail's first parameter is a float, not a bool.
+// MiniMax E (11-10): no new form, no lower score (139); the frame's four extra bytes sit above the grid and the
+// frame pointer's push inside the loop decides them.
 // score 139 (was 139): retail's frame is 0x58 bytes with the grid filling it to the top and the
 // frame pointer pushed inside the loop; ours is 0x5c with four unused bytes above the grid and the
 // frame pointer in the prologue, so every stack slot sits four bytes off.
@@ -7279,6 +7285,8 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // MiniMax S (11-09): the group loop is a while loop over a 16-bit index with the step at the end of the body,
 // which drops the strength-reduced second counter and the zero register: the frame is 0x1894 as in retail, the
 // count test is a test/jle and the loop head carries the imul of the 0x98 stride.
+// MiniMax E (11-10): no new form, no lower score (299); the sign-extended group index and the index slot's
+// place in the frame are what the loop's induction variable fixes.
 // score 299 (was 310): fast score; our group index is sign-extended (movsx esi, ax) where retail moves the
 // 32-bit index, the index slot sits at [esp+0x3c] against retail's [esp+0x58], an extra mov edi, edi stands in
 // the loop head, and the body is 3 bytes longer than retail's.
@@ -8912,6 +8920,8 @@ __declspec(noinline) void function_016a30(real scale, short y, short x);
 // own order and still reaches the palette through a different call sequence, so the difference is in the
 // call order rather than in a local form; the earlier trial with the offsets swapped scored 167, under
 // the keep bar.
+// MiniMax E (11-10): no new form, no lower score (171); the palette's address given straight to the callee was
+// tried again this round and scores 184, so the call sequence stays.
 // score 171 (was 171): the two offsets passed to 0x16a30 still sit in the other order, and the palette
 // is still reached through a different call sequence than retail's.
 // MiniMax D (11-05): no new form, no lower score - retail passes the two offsets to 0x16a30 in its own order and reaches the palette through a different call sequence, so the difference is in the call order rather than in a local form.
