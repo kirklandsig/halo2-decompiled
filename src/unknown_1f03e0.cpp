@@ -1233,6 +1233,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // of the general step test (no limited_step bool) 516 (aligned 278); that with the short-step arm first 517 (285); the
 // general arm clamping delta from the normalized copy (no copy back, delta used after) 574 (285); the direct arm the
 // same way 566 (3037 bytes, aligned 175); both 557 (297).
+// MiniMax S (11-10): no new form, no lower score (347): the entry block still extracts the damping bit into ECX where
+// retail uses EDX and is one `mov ecx, eax` short, and retail stores the gravity byte before its `lea ebp` where ours
+// stores it after. The recorded flag-order sweep (412-500) and the flag widths recorded above never beat this body.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

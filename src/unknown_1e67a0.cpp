@@ -574,6 +574,10 @@ bool g_46fcc4 = true;
 bool g_51e9bc;
 
 // score 49 (was 49; before r98 was 118; r101 unchanged): MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
+// MiniMax S (11-10): no new form, no lower score (49); the reduced image lays this function out differently from retail (fast 308,
+// 1018 bytes against 1077), so the fast diff is not a faithful picture of it and no change was steered from it; the full check agrees
+// with the queue (49, ours 1078 bytes against retail's 1077).
+// score 49 (was 49; before r98 was 118): MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
 // argument; the dot's term order and the jitter block's register allocation still differ.
 // Before 11-07 (118, was 132): the first 79 lines and the frame agree; projection order and x-operands, the velocity row schedule and the jitter spills (retail spills y and the z on/off value into the limits' slots, ours x and the z on/off into parameter homes) remain. Earlier: 1.0 sat in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
 // (tests al/ah) and tests the on/off bits 1, 2, 4 before the sign bits 8, 16, 32, spilling the z on/off factor and
@@ -968,6 +972,10 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // components gives 120, so the body stays; the rotation products, the side-dot order and the exit copies differ.
 // MiniMax R (11-05): no new form, no lower score; writing the two turn-block crosses out with retail's
 // differing third terms gives 140 at retail length (the rotation block is re-generated), so the body stays.
+// MiniMax S (11-10): no new form, no lower score (114); the reduced image lays this function out differently from retail as well (fast 409,
+// 1167 bytes against 1382), and the rotation products, the side-dot and the exit scheduling are unchanged; the full check agrees with the
+// queue (114, ours 1389 bytes against retail's 1382).
+// score 114 (was 114): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // Round 16: retail takes the animation state in EAX, the component index in EDX, the physics
 // pointer in ECX and the output pointer in EDI, then the object index, the definition, the value
 // and the flags on the stack; this file's declaration describes another order and the callers are

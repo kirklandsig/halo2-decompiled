@@ -83,6 +83,12 @@ long function_262a30(s_reference reference);
 // [274/164], the projection update through vector3f_add_scaled 528, the delta's scale through vector3f_scale 528, the reported
 // entry as an aggregate assignment in place of memcpy 528 (all same code but the second). Aligned counts of the kept change,
 // plain: exact 393 -> 413, masked 266 -> 278, masked+stack 205 -> 168; frame 0x8a0 -> 0x8a8, length 3072 -> 3097 (retail 3077).
+// MiniMax S (11-10): no new form, no lower score (700): retail keeps the two flags as separate byte locals at F+6/F+7,
+// the reference at F+8 and the selection in a four-byte slot at F+0xc (a dword -1 store with word compares), while our
+// state aggregate puts the flags at F+0xc/F+0xd and the selection in a word at F+0xe. Splitting the aggregate into
+// standalone locals gives retail's F+8 and F+0xc but leaves the flags at F+2/F+3 and the frame at 0x8a4 against retail's
+// 0x8a0 (841), the same split with a four-byte selection scores 836, and an aggregate whose flags come first is kept
+// in registers by the compiler (836), so the aggregate stays.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

@@ -365,6 +365,8 @@ real function_30bf0(vector3f *vector);
 
 // MiniMax G (11-04): the motion declaration hoisted beside the delta gives identical code (152);
 // no new form, no lower score.
+// MiniMax S (11-10): no new form, no lower score (84); the vector homes are still one slot off from retail's, the range's first load
+// and the two products still differ, and the range is still loaded into XMM2 for XMM0.
 // score 84 (was 84): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // (result +4 for retail's +0; amount shares with the count where retail shares it with the squared distance; range, scale, the cursor and the
@@ -1387,6 +1389,9 @@ PRIVATE __forceinline long round_tick_count(real ticks)
 
 long function_146650(void);
 
+// MiniMax S (11-10): retail's 0x267a80 takes (point, direction, position, distance, unknown); with that order this function
+// matches and 0x267a80 still matches (its body matches under both orders, only the callers differ), but the change needs
+// src/unknown_25fc30.cpp's declaration (line 73) and its two call sites (lines 1221, 1244), which is outside this lane - reported, not applied.
 // score 7 (was 7): the five 12-byte homes now agree; only the argument setup at the three 0x267a80 calls
 // differs: retail sets ECX (the NULL distance, `xor ecx, ecx`) before the local-address lea of EDI (and of EDX
 // in the projected call), ours sets ECX last. Earlier note, from before the homes agreed: retail stacks
@@ -1936,6 +1941,8 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
+// MiniMax S (11-10): no new form, no lower score (168); the players iterator's table pointer still loads into ECX where retail
+// uses EAX, and the entry loop's index compare and the iterator's setup still differ.
 // score 168 (was 168): retail's length (2880). Left, in order: the players iterator's table pointer loads into ECX where retail
 // uses EAX and stores it at once (one extra pad line after it); the search shape; the facing and relative dots keep the
 // direction in memory where retail holds j, k, i in xmm2, xmm1, xmm3 across both dots after the last normalize; the scoring

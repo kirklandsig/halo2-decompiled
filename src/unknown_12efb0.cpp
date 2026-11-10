@@ -490,6 +490,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // 0x131030) and takes EAX for -1, ours keeps the result in EAX and -1 in EDX; the -1 register only exists while a register is free, so the
 // result's home is the cause; `movsx ecx, cl` then follows the previous-index compare. Also the second accumulator's red product side, the
 // 0x88 pointer placement, the tag-arm weight store, the second four-channel call's weight position and the 0x6c store.
+// MiniMax S (11-10): no new form, no lower score (607): retail moves the 0x130f60 result into EDX and keeps NONE in EAX,
+// so the palette slot is compared as a byte (`cmp cl, al` at 0x12f15d) and the palette record stays in EBX; ours keeps
+// NONE in ECX, reads the slot as a word and is one instruction short from there on, so every later line is off by one.
+// The char-slot and re-read forms recorded above (683-756) and the statement orders in the three-scalar helper all score
+// worse than this body.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

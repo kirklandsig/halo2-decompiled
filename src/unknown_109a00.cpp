@@ -315,6 +315,11 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // MiniMax I (11-05, run 37): no new form, no lower score (56); the transform-base lea, the dot's product order and the failure stores' placement still differ.
 // MiniMax A (11-04, run 41): no new form, no lower score (112); the entry registers are still reversed (retail
 // object in eax, entry in ecx) and the physics pointer is still spilled early.
+// MiniMax S (11-10): no new form, no lower score (56); the definition still spills to ECX where retail spills it to EAX (which also swaps the count and default-body
+// registers), the transform pointer still moves before the 0x141590 call, and the failure stores still precede the pops where retail's follow them.
+// score 56 (was 112): frame 0x48 and the entry registers agree, 0xb7060 matches; what remains: the definition spilled at its load (retail EAX, ours ECX, then the
+// default body and index registers), the search's bodies/offset load order, transform kept in EBP where retail has `lea ecx` and left in EBP, the dot's first two
+// products (retail k then j, up first), one cross product side, and the failure stores (retail after the pops).
 // Earlier at 112: object/entry registers, early physics-pointer spill and center/projection scheduling.
 // Earlier at 112 (was 112): retail takes the object index in eax and the entry
 // index in ecx (ours the other way round, which is also 0xb7060's last

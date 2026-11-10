@@ -1980,6 +1980,8 @@ void function_204450(long definition_index, long squad_index)
 bool function_1e11b0(long actor_index, bool active);
 
 #pragma inline_depth(0)
+// MiniMax S (11-10): no new form, no lower score (64); the squad address still stays in EBX where retail keeps it in ESI and the
+// parameter in EBP, the loop is still rotated, and the returned flag is still narrowed to a byte.
 // score 64 (was 64): frame 0xc agrees; the squad address stays in EBX instead of
 // retail's spilled ESI pointer and EBP handle. The common loop head and
 // full-width return mask still differ.
@@ -2937,6 +2939,8 @@ short function_290cd0(short arg_0, long arg_1, long arg_2, short *arg_3, short *
 bool function_290e20(short arg_0, long arg_1, long arg_2);
 bool function_1fb8a0(long arg_0, short arg_1);
 
+// MiniMax S (11-10): no new form, no lower score (50); the only difference left is retail's EBP copy of the squad index where ours reloads its
+// home, plus retail's one-byte alignment nop before the loop head at 0x202dd0.
 // score 50 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
 // squad index for the first 0x1fb8a0 call (retail `mov eax, ebp`, ours reloads its home, 2 bytes longer),
 // which shifts the later jump targets and drops the actor loop's alignment nop.
