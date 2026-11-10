@@ -3724,19 +3724,19 @@ void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_
                         actor = function_b7b40(creation);
                         if (actor != NONE)
                         {
-                            byte *actor_datum = *(byte **)(g_4e0300->data + (actor & 0xffff) * 12 + 8);
-                            *(long *)(actor_datum + 0x3a0) = arg_1;
-                            *(long *)(actor_datum + 0x3a4) = head;
-                            *(long *)(actor_datum + 0x3a8) = *(long *)placement_entry;
+                            byte *actor_bytes = *(byte **)(g_4e0300->data + (actor & 0xffff) * 12 + 8);
+                            *(long *)(actor_bytes + 0x3a0) = arg_1;
+                            *(long *)(actor_bytes + 0x3a4) = head;
+                            *(long *)(actor_bytes + 0x3a8) = *(long *)placement_entry;
                             head = actor;
                             if (!squad[0x76])
                             {
-                                byte *object = g_4e3b44[*(long *)actor_datum & 0xffff].bytes;
+                                byte *object = g_4e3b44[*(long *)actor_bytes & 0xffff].bytes;
                                 if (*(short *)(object + 0xc0))
                                     squad[0x76] = object[0xc0];
                             }
                             else
-                                *(short *)(actor_datum + 0x138) = (signed char)squad[0x76];
+                                *(short *)(actor_bytes + 0x138) = (signed char)squad[0x76];
                             function_a7870(actor);
                             if (placement_entry->field2a != 6)
                             {
@@ -3749,8 +3749,8 @@ void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_
                     }
                     if (actor != NONE && (*(dword *)((byte *)row + 0x20) & 0x2000))
                     {
-                        byte *actor_datum = *(byte **)(g_4e0300->data + (actor & 0xffff) * 12 + 8);
-                        dword *flags = (dword *)(actor_datum + 0x134);
+                        byte *actor_bytes = *(byte **)(g_4e0300->data + (actor & 0xffff) * 12 + 8);
+                        dword *flags = (dword *)(actor_bytes + 0x134);
                         *flags |= 0x1000;
                     }
                 }
@@ -3778,8 +3778,8 @@ void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_
                             request.type1c.unknownb = false;
                             if (function_e6900(*(long *)(actor_view + 0x18), &request))
                             {
-                                byte *actor_datum = *(byte **)(g_4e0300->data + (actor & 0xffff) * 12 + 8);
-                                *(short *)(actor_datum + 0x138) = *(short *)(actor_view + 0x24);
+                                byte *actor_bytes = *(byte **)(g_4e0300->data + (actor & 0xffff) * 12 + 8);
+                                *(short *)(actor_bytes + 0x138) = *(short *)(actor_view + 0x24);
                             }
                         }
                         function_201b70(arg_1, spawn, spawned);
@@ -3794,9 +3794,9 @@ void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_
         do
         {
             byte *squad_row = (byte *)g_51e9d8->data + squad_offset;
-            byte *actor_datum = *(byte **)(g_4e0300->data + (cursor & 0xffff) * 12 + 8);
-            long next = *(long *)(actor_datum + 0x3a4);
-            *(long *)(actor_datum + 0x3a4) = *(long *)(squad_row + 0x70);
+            byte *actor_bytes = *(byte **)(g_4e0300->data + (cursor & 0xffff) * 12 + 8);
+            long next = *(long *)(actor_bytes + 0x3a4);
+            *(long *)(actor_bytes + 0x3a4) = *(long *)(squad_row + 0x70);
             *(long *)(squad_row + 0x70) = cursor;
             cursor = next;
         }
