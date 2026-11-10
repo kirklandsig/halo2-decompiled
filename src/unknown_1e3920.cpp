@@ -1303,6 +1303,15 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // B452: Actual tag/squad/placement input layouts, seven subsets then all with immutable
 // squad/placement bindings: eight at 253. NOT kept: sentinel and query homes unchanged;
 // original input observations, outputs and complete body restored at the native frame/extent.
+// Lane 12 r105 (fast with 0x1e4990/0x2036c0/0x203900/0x1e02f0/0x1e0160/0x1e04a0/0x1e06b0/0x1e4a50, all matched): a
+// register-masked diff leaves the frame homes (retail packs the squad pointer, the squad bit and the actor into one slot at
+// [esp+0x10], below the 0x2036c0 outputs at 0x16/0x17/0x1c; ours puts the outputs lowest at 0x12/0x13/0x14 and the squad at
+// 0x1c, so the squad bit takes the probability's slot) and the rotated substitution head. Re-measured on this base: the
+// squad-index test in the while condition with the ternary result 421 (1321 B; retail's whole entry and the query/call block, but
+// LTCG inlines 0x1e4990 at the in-loop call), with the original replace flag 420 (1319 B). New: the three query outputs renamed
+// with a `substitute_` prefix (sorting after `squad`) 253 (slots unchanged: names do not order these homes); the squad pointer set
+// by an if statement 341 (1264 B), with the guard testing the squad index first 368 (1253 B); the 0x1e4990 result kept as a
+// `long` 253 (same code).
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -2072,6 +2081,14 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // fstp 0x1e2e48), the (hi+1-lo)*random>>16 rounds, the 0.5 halving, store targets (unit+0x1f5 low byte, +0x23e) and
 // condition directions all agree. Raw offsets replaced by existing fields (s_ai_object flags134/unknown23c,
 // s_ai_globals unknown340): 251 (same code). Remaining difference is pool/actor/options residency only.
+// Lane 12 r105 (fast with 0x1e5240/0x1e5280/0x1e53e0/0x1e04a0/0x1e5380/0x2758b0): a register-masked aligned diff (87 lines)
+// leaves one non-register difference: retail's two-weapon loop keeps a 32-bit index (`mov ecx, [esp + edi*4 + 0x1c]`, `inc edi;
+// cmp edi, 2`, the counter homed at [esp+0x14]) where our short counter is strength-reduced into a cursor and a countdown; retail
+// also keeps the fild temporary at [esp+0x18] apart from the rounds pair at [esp+0x10]. The long counter re-measured 278 (1191 B,
+// frame 0x10: it gives retail's indexed loop, but the fild temporary then shares the rounds slot); with the rounds pair declared at
+// the top of the loop body 278, beside the weapon pair 278. New: the five seed reads through an inline getter 251; the direct
+// unit lookups through the existing OBJECT_DATUM_GET macro (own-IL global reads) 251, with the two slot queries through it too
+// 251 (same code each). Diagnostic (reverted at once): a function-static store in both 0x1e5280 and 0x1e53e0 274 (1247 B).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
