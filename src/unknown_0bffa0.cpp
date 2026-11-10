@@ -1196,6 +1196,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // the orthogonal test with the kind cast to short 599 (2778); the cone width and height read into named locals 576 (2800); the far
 // distance in a named local 580 (2796); the sphere point count in a short local 575 (2801). As before, any added local moves the
 // projection rows and the length; none below 290. Body unchanged.
+// Round 161 (m3 lane 6, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0, all matched): in the sphere arm the two flag clears
+// before the depth 352; the reference picked before the up negate 508 (2828 bytes); the matrix scale stored before its
+// position 306; the position and scale stored before the up negate 517 (2840 bytes); the tail flags as 84, 85, 8c 290
+// (same code); the first three re-measure listed forms. New on top: has_plane as `0.0f < offset` 290 (same code); the cone
+// corners read back from the bounds fields 290 (same code); the sphere depth stored right after the radius read 310.
+// Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
