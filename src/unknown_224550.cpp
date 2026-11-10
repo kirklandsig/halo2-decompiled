@@ -472,6 +472,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // M3 lane 11 r81 (fast): both UV encodings right after the flip 431 (1925 bytes); the flip before the extents 250 (1949);
 // the 0x2000 quarter-turn right after the angle read 483 (1939); the bitmap read from the context at each use 211 (same code);
 // pivot products written pivot-first 211 (same code).
+// Round 104 (m3 lane 9, fast): both aspect blends as one expression each 211; the pivot weight `1.0f - blend` named
+// once 211; `ax <= ay` with the arms swapped 211 (all the same code); `bx <= by` with the arms swapped 211 (aligned
+// 151 -> 159); the width product after the two flip calls 423 (1932 bytes). The compile-only harness does not
+// reproduce this body (normalized difference 394 against our own build), so the blend's XMM5 residence could not be
+// screened there.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

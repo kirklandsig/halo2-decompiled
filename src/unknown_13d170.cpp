@@ -521,6 +521,11 @@ struct s_physical_block_iterator
 // M3 lane 11 r81 (fast): the take test as `better || !have_best` 201 (same code); the walk's overlap conditions swapped 203 (+0xcc);
 // the policy as an if/else-if chain 240 (1178 bytes: cases in line but in source order, case 0 still threaded, aligned 118 -> 109);
 // case 0 as two `better = true` arms 201; default ages written inside the comparison 201. Retail's `sub eax, 0` chain is a switch.
+// Round 104 (m3 lane 9, fast): case 0 as `if (time < best time) better = true; else if (times equal) better =
+// pages < best pages;` 235 (1178 bytes, aligned 118 -> 95: case 0 sits in place after case 1 as in retail, only its
+// last test is a setl where retail branches to `mov al, 1`); that with the second age as `MAX(physical->time -
+// best.time, 0)` 209 (1193, aligned 112); case 0 as a ternary on the times being unequal 284 (1182), with the clamp
+// 279; as an if/else on the times being unequal 284, with the clamp 279.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
