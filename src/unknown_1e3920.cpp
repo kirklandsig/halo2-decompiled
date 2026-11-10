@@ -537,6 +537,9 @@ real normalize2d(point2f *vector);
 real function_267370(long object_index);
 
 
+// MiniMax C (11-09): no new form, no lower score (14); the axis global is still loaded after the copy instead of
+// between the j and k copies, and the plane x product and both cross products still differ in operand order
+// (include/vector_products.h, include/location_zones.h).
 // score 14 (was 20): round 96 kept the resolved-carrier local (selection and root kept apart) with no `up`
 // local, kept together (plain 14; either alone 22, neither 20): the carrier block is retail's; left are the plane x product (retail loads
 // point.x, plane.i as the memory operand) and cross-product operand ties. Earlier at 20:

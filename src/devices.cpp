@@ -1121,6 +1121,8 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax C (11-09): no new form, no lower score (121); the initial velocity is still passed on the stack where
+// retail keeps it in xmm6 and takes five stack floats, so the whole register assignment after the entry differs.
 // MiniMax A (11-06, run 52): no new form, no lower score (121) - retail keeps the initial velocity in
 // xmm6 and leaves the ramp-down time in memory, ours caches the ramp-down time and pushes the initial
 // velocity; both ramp-down clamps written as if-statements (retail's conditional-store form) score 122,
