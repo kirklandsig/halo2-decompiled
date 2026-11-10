@@ -144,6 +144,12 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // entry lookup as an if/else assignment 29; the lookup helper with two returns and no result local 73.
 // Round 80 (m3 lane 10, fast; ours ends `ret 8` like retail): a reference to the cluster element for the index read and the previous-index store
 // 11; `0.0f < sum` 11; a pointer to the palette source entry 11; the accumulation product weight-first 11; the entry test as nested ifs 11.
+// Round 101 (m3 lane 12, fast): the blend written entry term first 11 (same code); count as the last parameter (with the
+// 0x12efb0 call) 11 (same code); the accumulator as a byte array or a real array of the record's size 11/11 (same code); the
+// record copy ahead of the previous-index store 16; a walking cluster pointer declared before the result and stepped in the
+// for header 68, declared after the result 68, declared at the loop 15, with a walking output pointer as well 317 (1172
+// bytes). In all three pointer forms the result keeps 0x18 and the pointer takes 0x1c, so declaration order does not break
+// the tie between the two homes.
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

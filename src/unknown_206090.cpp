@@ -24,7 +24,11 @@ extern vector3f *g_4687bc;
 
 void function_ba1d0(long arg_0, vector3f *arg_1, vector3f *arg_2);
 real function_17c900(short arg_0, real arg_1);
-bool function_182800(s_vehicle_ray *arg_0, long arg_1, void *arg_2);
+class c_bounded_query_world
+{
+public:
+	bool function_182800(s_vehicle_ray *arg_0, long arg_1);
+};
 void __stdcall function_1821d0(long arg_0, real arg_1, s_query_batch_result *arg_2, long arg_3);
 void function_207ab0(long arg_0, s_vehicle_physics_state *arg_1, s_vehicle_contact_result const *arg_2);
 void havok_component_rigid_body_linear_velocity_change(long arg_0, s_havok_component *arg_1, vector3f const *arg_2);
@@ -141,7 +145,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 
 #pragma inline_depth(1)
 #include "vector_products.h"
-// score 1355 (was 1355): frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
+// score 1379 (was 1355): frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
 // 0x2078f0 twice with unknown38 0 then 1, 0x2079f0 on both its paths, 0x227990, 0x2294a0, 0x22a4b0), loop shapes (the found
@@ -441,6 +445,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Round 136 (fast): the magnitude helper's input copy and result in an inner block 1395 (6195 bytes, frame 0x5cc);
 // the copy const 1355; `sqrtf` 1415 (6259 bytes); the copy declared, then assigned 1355; the first normalizer with
 // one exit (zero in the if arm, the scaling in the else) 1355.
+// Round 101 (m3 lane 9): 0x182800 became a member of the bounded world (it matched 0xf6670); here the world now
+// loads straight into ESI as in retail (0x2063e6), one instruction fewer (6243 bytes still, masked aligned 986 ->
+// 977), and the positional score moves 1355 -> 1379.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
@@ -482,7 +489,7 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
         {
             s_havok_component *local_21 = havok_component_get(local_20);
             if (TEST_FIELD_BIT(local_21->flag5) && local_21->unknown9c &&
-                function_182800((s_vehicle_ray *)&local_19, NONE, (void *)local_21->unknown9c))
+                ((c_bounded_query_world *)local_21->unknown9c)->function_182800((s_vehicle_ray *)&local_19, NONE))
             {
                 real local_22 = (local_17 + local_18) * local_19.field_18 - local_17;
                 real local_23 = *(real *)(local_8 + 0x18);

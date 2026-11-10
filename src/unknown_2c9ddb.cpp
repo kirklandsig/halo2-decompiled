@@ -431,66 +431,11 @@ void c_class_2c9e69::select_last_variant()
 }
 
 /* shows the item's variant name */
-// score 13 (was 13): nonempty receiver is reloaded after the name call instead of retained in EBX;
-// branch name workspace before receiver, immutable receiver, receiver names 36/36/36; common completion 36;
-// completion with immutable receiver or receiver before name 36/36; ordinary pointer with scoped/common completion 36/36.
-// nonempty text receiver tested in stack home then reloaded; retail holds EBX;
-// widget names 23; named variant first 30; entry reference 23; indexed base 23;
-// text destination local 23; icon absence return 23; reversed dispatch with receiver copy 38;
-// reversed dispatch/copy renamed 38; base-widget receiver 36; base receiver renamed 36.
-// nonempty receiver stack test/reload differs from EBX lifetime;
-// text/bitmap/both child helpers 23/23/23; helpers plus named receiver 36;
-// helpers plus nonempty-first/text admission 30/38; parameter text home 49;
-// returned name buffer 21 fast/plain, rejected. Opening body restored.
-// nonempty receiver stays in its stack home instead of EBX.
-// This round: returned-buffer expression 29; retained named receiver 27; shared text admission 36; named arm first 30; icon tail admission 29; entry reference 29; typed child lookups 29; entry table base 29.
-// Without the receiver qualifier one reload of the text is hoisted into EDI ahead of both arms
-// (retail reloads it per arm, EDI and EBX): plain receiver 36; text used directly in both arms 36;
-// per-arm receiver locals 36; named arm first 38; icon declared first 36. 600 s permuter run, none below 23.
-// Both arms reload the spilled text first; when both reloads land in EDI the two identical
-// loads are merged ahead of the variant test (even two qualified reads), and retail keeps
-// them apart only because its name arm reloads into EBX. Copies in both arms 36; name-arm
-// copy declared before the test 36, or at function top 36; name-arm copy only (text read
-// directly in the empty arm) 13 at 159 bytes, the name arm then exact except EDI for EBX.
-// Round 39: an early return for an absent datum 23; `else { name; if (text) ... }` 23; the arms swapped
-// (`variant != NONE` first, the empty copy kept) 30; the two lookups assigned after their declarations 23;
-// the variant named in the name arm 23.
-// Round 62: named condition declaration 36 (154 bytes); named condition with direct empty text 36; both condition
-// declarations 36; nested named condition 36; named condition with the inherited qualifier 36; empty condition with
-// direct named text 36; explicit/implicit assignment-condition receivers 36/36. Every form merges the loads into EDI.
-// Opening body restored.
-// Round 41: plain text 36 (154 bytes, the reload hoisted into the datum block); typed lookups with the name call's
-// result as the buffer argument 21 (the result moves to ESI, the receiver still re-read); name-arm copy only 13 (159,
-// remeasured: EDI for EBX); that with plain text 36; `variant == NONE && text` / `variant != NONE && text` 36 (159, the
-// second variant test is not threaded away); name-arm copy with the buffer at function scope 13.
-// Round 30 (lane 18, fast): the datum read through widget_item 23; text as the base widget without the
-// qualifier, cast at the empty call 36 (154 bytes); name-arm copy only re-measured 13 (159 bytes: the empty
-// arm tests the stack home, the name arm takes EDI for EBX), with the copy named label/caption/variant_text/
-// a_text 13 each; the name-arm copy without the qualifier 36 (154 bytes). Restored.
-// Round 149: const entry 23; icon declared before text with split assignment 23; top-level const text 23;
-// base text with the inherited qualifier 23; name-arm base/const receiver with direct empty text 13/13 (159);
-// name buffer before that receiver 13; with returned-name local 17; plain renamed original receiver 36 (154). Restored by
-// the round; the coordinator kept the name-arm base receiver with direct empty text (13 at 159 bytes; any gain at 30 or
-// below is kept, whatever the length).
-// Round 61 (fast): the name arm through an inline helper taking the text 96 (120 bytes, stays out of line), through a forceinline
-// helper 36 (154 bytes), both arms through forceinline helpers 36; the variant named once with a nested `else { if (text) }` 43 (150 bytes);
-// the interface result named 36; a name pointer local 36; name-arm copy only re-measured 13 (159 bytes). Existing 0x253af2 adds a compare retail lacks here.
-// Round 89 (fast): plain text with an early return for the absent datum 36 (154 bytes); the parameter slot holding the text, with a copy of the old value for the lookups, 49 (154), with the
-// datum and first lookup through the parameter 49; plain text with the name buffer at function scope 36; plain text with the variant read once through the masked subscript 43 (150); a const
-// reference to a cast rvalue for the name arm 36, in both arms 36, the text itself a const reference with a plain name copy 36 (all hoisted into EDI). The name lookup before the text test
-// (not retail's order) moves the name arm to ECX 28 (155), the text test around the variant test 48 (146). Round 41's name-arm copy stays the best: the empty arm tests the stack home and the name arm takes EDI for EBX.
-// M3 lane 11 r76 (fast): the name-arm copy declared after the icon lookup and assigned in the arm 13; assigned in
-// its test 13; the icon declared before the text and assigned after it 13; the copy declared first in the function
-// 13, with the name buffer there too 13 (all the same code: symbol order does not move the name arm's EDI).
-// Round 80 (m3 lane 10, fast): `else if (text)` for the name arm with plain text 36 (154 bytes), with the volatile text read directly 31, with an
-// `else if (c_class_1a2c81 *name_text = text)` declaration 13 (same code); a plain copy only in the empty arm (the name arm reading the volatile text
-// directly) 23 at 157 bytes (the empty arm then exact, `mov edi; test edi`; the name arm compares the home and reloads into ECX after the name
-// call); both copies declared before the variant test 36 (155 bytes: the name copy still takes EDI, the empty copy ECX then moved to EDI).
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {
 	long datum = ((c_class_14750b *)item)->value70;
-	c_text_widget_45a5e0 *volatile text = (c_text_widget_45a5e0 *)item->find_child(6, 0, false);
+	c_text_widget_45a5e0 *text = (c_text_widget_45a5e0 *)item->find_child(6, 0, false);
 	c_class_1a2c81 *icon = item->find_child(8, 2, false);
 
 	if (datum != NONE)
@@ -503,21 +448,24 @@ void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 			{
 				text->function_253b1a(0x120001db);
 			}
+			if (icon)
+			{
+				icon->value6e = false;
+			}
 		}
 		else
 		{
-			c_class_1a2c81 *name_text = text;
-			if (name_text)
+			if (text)
 			{
 				word name[0x80];
 
 				function_215b50(entry->variant, name);
-				name_text->function_22f52e()->set_text(name);
+				text->function_22f52e()->set_text(name);
 			}
-		}
-		if (icon)
-		{
-			icon->value6e = false;
+			if (icon)
+			{
+				icon->value6e = false;
+			}
 		}
 	}
 }
