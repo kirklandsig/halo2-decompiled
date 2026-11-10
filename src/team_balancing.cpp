@@ -823,6 +823,12 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // P391: Limit-based acceptance (nonnegative maximum and excess within it), both test
 // priorities with bool/byte/short/long results: 53/69/82/78/53/69/82/78. NOT kept:
 // all lengthen to 197-217/190; original clamp, Boolean result and full body restored.
+// Round 139 (m3 lane 7, fast with 0x91e30): the fill loop written after `long imbalance = NONE;` 37 (the NONE store moves
+// ahead of the fill's test; the fill value is still loaded first); `register long next_party` 34 (same code); `long const`
+// player and extra count parameters 34 (same code); the excess as `long excess = imbalance; excess -= open_slots;` 34 (same
+// code); the fill counted down over the extra count, `parties[total - i]`, 72. Re-measured: the maximum as one ternary
+// assignment 34, the fill through a walking pointer to an end 63 (199 bytes), the clamp assigned back to the imbalance 45
+// (192 bytes). The player count stays EDX in each.
 // P400: Repeated live input-cell reference/pointer with inclusive/strict branch and
 // inclusive/complementary selection maxima: 34/35/34/34/34/35/34/34. NOT kept:
 // no exact count/fill/clamp allocation repair; native 0x48 frame and 190-byte extent

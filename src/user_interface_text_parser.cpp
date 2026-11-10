@@ -762,8 +762,8 @@ done:
 // the same address) 6 (173 bytes: no EBX hoist, two immediates and the mid-function `push edi` as retail; only the tag load's
 // slot and the selector register left); that with the tag declared before the variant 51 (171), with a named selector 6, with
 // the tag read in the translator call 38 (171); that with the getter written out and the tag read before its fallback 0
-// (byte match in the fast check; diagnostic). Not kept: the address spelling only keeps the two uses apart and the getter's
-// body is written out by hand; the diff is in build/r144/lead-22d456.patch. Without the address spelling: the caller's buffer
+// (byte match in the fast check). The round reverted it; the coordinator (11-10) applied it: an address spelling of a
+// global and a helper body written out are both kept with a byte match. Without the address spelling: the caller's buffer
 // held in a named local 54; a found flag in place of the default's jump 54; an empty else arm 54. Diagnostic: the size
 // preference off for this function 118 (224 bytes, the helpers then inline; the tail has retail's two immediates).
 // So retail's source reads the tag between the variant getter's call and its fallback, and its two uses of the buffer are
@@ -775,8 +775,10 @@ void __stdcall parse_gametype(long string_handle, word *buffer)
 
 	if (globals)
 	{
-		s_game_variant *variant = get_game_variant();
+		s_game_variant *variant = (s_game_variant *)network_session_interface_get_data_4db0();
 		long tag_index = *(long *)((byte *)globals + 0x14c);
+		if (!variant)
+			variant = &g_54e4a0;
 		long name_id;
 
 		switch (variant->field_xcb8724)
@@ -808,9 +810,7 @@ void __stdcall parse_gametype(long string_handle, word *buffer)
 		default:
 			goto done;
 		}
-		function_1a0180(tag_index, name_id, (word *)g_55c6e4);
-		parse_copy(buffer, g_55c6e4);
-		return;
+		function_1a0180(tag_index, name_id, (word *)&g_55c4e4[k_parse_buffer_length]);
 	}
 done:
 	parse_copy(buffer, g_55c6e4);
