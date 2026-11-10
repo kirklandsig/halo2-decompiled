@@ -861,6 +861,16 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // 562, 0x1f2250 418); the helper reading through two references 174 (1231, al 133/52). Body unchanged.
 // Round 226 (lane 3, fast, 0x1e5af0 matched in each): `up` renamed ground_up, new_up or normal, `limited` renamed rotated, `axis`
 // renamed rotation_axis: 163 each, identical code (names do not move up from XMM4-6 to retail's XMM5-7).
+// R229 (lane 3, fast, 0x1e5af0 matched unless noted): re-measure of lane 9 r89's state dot written
+// `old_up->i * up.i + old_up->j * up.j + old_up->k * up.k` on the current body 162 (that block is then retail's instruction
+// for instruction, loads k, j, i and (k + j) + i; only up's XMM4-6 against XMM5-7 is left there; one point, not kept); on
+// it the rotation dot written i + j + k 248 (1243 bytes: (k + j) + i as retail but limited.i folded from memory; aligned
+// 212 -> 194, register-masked 82 -> 71), the rotation test dot written i + j + k 162 (same code), both dots 248, and
+// (re-measure of round 232's angle before the limited copy, 190 then) `angle` declared before `limited` 172. On the
+// original body: the double fallback writing both outputs and returning 271 (1254 bytes, 0x1e5af0 20); the forward cross
+// computed straight into `forward_result` (no `forward` local) 315 (0x1e5af0 20). Diagnostic, removed: 1-16 unused locals
+// before `old_forward`'s initialisation change the code only at 3 and 11 (174) and never turn the forward cross's folded
+// [edi+0xf4..0xfc] operands into retail's separate loads.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result, byte const *state)
 {
