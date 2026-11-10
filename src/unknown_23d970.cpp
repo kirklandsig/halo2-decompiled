@@ -563,15 +563,15 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
-// MiniMax C (11-09): no new form, no lower score (45); the first cross product still takes its two temporaries in the other pair of registers (ours xmm1/xmm2, retail xmm2/xmm1) and retail keeps the k term in xmm4 with a movaps where this build reloads it from memory.
-// MiniMax C (11-06): no new form, no lower score.
-// MiniMax R (11-04): no new form, no lower score.
 // score 45 (was 45): the second product through the existing staged helper of src/unknown_1f03e0.cpp
 // (function_1f087b, every component computed before the stores, i first) gives retail's previous_up
 // loads (j, i, then k into xmm0 after the distance store) and folds forward's loads in the second
 // product. Left: the first product's right.i/right.j colours (ours xmm1/xmm2, retail xmm2/xmm1), the
 // second product's schedule (retail computes k, j, i) and the else branch's forward stores (through
 // edi here, ecx in retail).
+// MiniMax C (11-09): no new form, no lower score (45); the first cross product still takes its two temporaries in the other pair of registers (ours xmm1/xmm2, retail xmm2/xmm1) and retail keeps the k term in xmm4 with a movaps where this build reloads it from memory.
+// MiniMax C (11-06): no new form, no lower score.
+// MiniMax R (11-04): no new form, no lower score.
 // Before round 127: camera-basis register allocation differed. Retail loads previous_up.k into
 // xmm0 after storing the distance and holds right.i/j/k in xmm2/xmm1/xmm0 (ours loads it before
 // the store, into xmm1, and right lands in xmm2/xmm0/xmm1); retail computes the second cross
@@ -869,6 +869,14 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // (right.i/right.j in xmm1/xmm2, retail xmm2/xmm1), the second product's rows scheduled j, k, i where retail does k, j, i with
 // copies of right's registers (the extra byte), the else arm's forward.j/k stores through EDI (retail ECX), and address
 // fields shifted by the length. Every form for these above is listed with its score. Body unchanged.
+// Round 166 (m3 lane 6, `--fast 0x23de50 0x1f0870`; masked = register-masked aligned count, base 12): the else arm's facing
+// through vector3f_assign 159 (round 510's trig setter again), through vector3f_assign on a named facing pointer that the
+// up call also takes 159 (1270 bytes); the else-arm facing pointer with the first product read from the direction local 41
+// at 1261 bytes (first difference +0x200), but masked 35, aligned 51: the first product then reads the stack copy ahead
+// of the facing copy, so the lower count is positional only; on it a named up pointer for the second product and its
+// normalize 215, the distance in a named local stored after the facing copy 215; a const facing pointer for both products
+// (not the copy) 223 (1272 bytes), with the else-arm facing pointer 223; one up pointer ahead of the arms for the second
+// product, its normalize and the else arm's up call 255 (1264 bytes).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

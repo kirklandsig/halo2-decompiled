@@ -365,12 +365,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// score 117 (was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
 // MiniMax D (11-05): no new form, no lower score.
 // MiniMax S (11-06): no new form, no lower score: retail still loads the random-state pointer before the time multiply and keeps the old direction in registers, ours spills the old direction to the stack and frames 0x28 against retail's 0x20.
 // MiniMax G (11-06): no new form, no lower score: the frame is 0x28 against retail's 0x20 because retail loads
 // the random-state pointer before the seed read, so our locals sit eight bytes higher (esp+0x28 and esp+0x2c
 // against retail's esp+0x18 and esp+0x20).
-// score 117 (was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
 // Earlier (round 28 reached 104, not kept: its gain needs the rotation's cross product as scalar terms, which is
 // cross3f's body written inline and is kept only with a match; with cross3f the round's other changes give 163).
 // At 104: frame 0x1c versus 0x20 (retail spills cross j as well as k and keeps axis.i in memory, so its
@@ -634,6 +634,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // (The first four are one compiled body; the cross/dot-on-the-global form re-measures round 206's 164 at 893 bytes.) On the opening: the time
 // product with its factors swapped 117 (same code); the time globals through a pointer local used for both reads 117 (same code); the fraction
 // held as a double 122; the angle as `fraction * (oscillation * oscillation) * 0.15f` 197 (882 bytes), the square as a named local 197 (882).
+// Round 166 (m3 lane 6, fast with 0x118140; masked = register-masked aligned count, base 72; plain ret on both sides): `old`
+// copied before the trig values and the axis draw 121 (masked 96); the cross from the global itself with the dot and rows
+// from `old` 142 (889 bytes); row i with the axis term first, as rows j and k, 134 (881 bytes); axis and old in one
+// declaration 117 (same code); the projection's factors the other way round 117 (same code). Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
