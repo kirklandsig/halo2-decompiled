@@ -991,6 +991,8 @@ PRIVATE inline long damage_object_root(long object_index)
 // count test (248), and the squared distance at both tests (284) or with the mask in a local (275) is worse.
 // MiniMax E (11-06): no new form, no lower score; the first 0xbadc0 use is still expanded here while
 // retail calls it, and that body lives in src/unknown_0bad50.cpp, which this lane may not edit.
+// MiniMax C (11-09): no new form, no lower score (206); the frame is still 0x1a4 against retail's 0x1b4 and the
+// first 0xbadc0 use is still expanded here while retail calls it (BLOCKED-BY 0xbadc0).
 // score 206 (was 206): left is 0xbadc0 and register allocation. The link-time inliner inlines 0xbadc0 at the first
 // use (the flags & 2 unit test) but calls it at the other two; retail calls all three. Retail keeps data in edi,
 // the definition in esi and &data->position in ebx (the distances are [ebx], [ebx+4], [ebx+8]) and spills the
@@ -1782,6 +1784,8 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 // MiniMax G (11-06): no new form, no lower score; the instruction stream agrees with retail except for one
 // extra `push eax` before the call to 0xda110, whose index retail passes in EAX; that transport is the
 // callee's own convention. BLOCKED-BY 0xda110.
+// MiniMax C (11-09): no new form, no lower score (82); the call setups of 0xda110 and 0xd9d60 still follow the
+// conventions their own unmatched bodies decide (BLOCKED-BY 0xd9d60's walk).
 // score 82 (was 96): the body's instructions agree except the call setup of the two unmatched callees (0xda110 takes
 // its index in EAX, 0xd9d60 its flag in AL); both are back-edge targets of the link-time walk. BLOCKED-BY 0xd9d60.
 // Earlier at 96: what was left was register choice and the two unmatched callees' conventions. Retail keeps the
@@ -2047,6 +2051,8 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 // MiniMax D (11-09): no new form, no lower score; the first difference (+0x39) is only the two early exits, whose
 // branch targets land five bytes after retail's because the tail is five bytes longer (retail passes 0xda110's index
 // in eax and 0xd9d60's flag in al, ours on the stack), so the head follows the tail.
+// MiniMax C (11-09): no new form, no lower score (100); the two call setups of 0xda110 and 0xd9d60 still follow
+// the conventions their own unmatched bodies decide, and the delay block's register rotation stays with them.
 // score 100 (was 110): the pending field is a real bitfield, 3 bits of permutation and 13 of ticks, which gives
 // retail's byte xor and `or` forms in the delay block. Left: the setup of the 0xda110 and 0xd9d60 calls (their
 // conventions, BLOCKED-BY 0xd9d60's walk, see 0xdae60; one instruction more at each call, so every later line is off)
@@ -4900,6 +4906,8 @@ struct s_damage_object_creation
 // lookup reaches retail's store and its loop-alignment nop but reallocates the whole frame (170), the zero assigned
 // inside the block 170, an explicit `node_count > 0` guard 156, the zero declared after the states call but outside
 // the block 154 by a declaration move only.
+// MiniMax C (11-09): no new form, no lower score (156); the datum offset still spills at +0xc instead of +0x10 and
+// the definition and detached/node homes still differ, so the first 69 instructions agree and the rest do not.
 // score 156 (was 174): frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // mask in memory). Left: the mask's zero is stored ahead of the states call (retail: at the first node loop), the piece
 // loop's guard order and bottom test, the search's entry test, and the scratch registers of the last two lookups.

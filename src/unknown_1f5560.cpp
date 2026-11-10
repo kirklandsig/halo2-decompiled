@@ -1318,6 +1318,9 @@ real function_50650(real cosine);
 // Round 16: retail passes the object index in EAX and the actor index in ECX, ours passes the
 // actor index in ECX and keeps the object index elsewhere; retail computes the masked actor
 // offset before the pool load and holds the actor in EDI.
+// MiniMax C (11-09): no new form, no lower score (137); the actor address as a subscript, the object lookup
+// before it and the index-first expression all leave the code unchanged, so the actor/object register pair
+// (ours actor ESI / object EDI, retail actor EDI / object ESI) still differs.
 // score 137 (was 137): frame 0x1c agrees; actor/object homes, velocity preload and final minimum remain (caller-inclusive fast 137).
 // Earlier: frame 0x1c agrees; two excess bytes, actor/object roles (EDI/ESI), the hoisted velocity j load,
 // the first clamp's x87 order and the epilogue pops' place in the final minimum remain.
@@ -1651,6 +1654,8 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // MiniMax H (11-04): the left flag declared just before its comparison 287; not kept, the
 // original body is restored.
 // MiniMax R (10-31): origin read directly 255, plain origin copy 278, inlined direction normalization 272; permuter found no better variant; no lower score.
+// MiniMax C (11-09): no new form, no lower score (238); retail keeps the radius at +0x14 and the length in the
+// dead origin slot at +0x54 while this build keeps them at +0x20 and +0x14, so the later rows pair wrongly.
 // score 238 (was 238): Frame 0x3c, result/flag homes and exits agree (1182 bytes against 1173). Retail's zero, radius and
 // direction sit in other SSE registers (xmm1/xmm5/xmm2-3; it keeps the result in xmm0 up to the type exit),
 // shares the left type-0 arm's `+ target.y` and flag re-test with the type-1 arm (ours threads that arm),
