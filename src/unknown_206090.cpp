@@ -145,7 +145,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 
 #pragma inline_depth(1)
 #include "vector_products.h"
-// score 1379 (was 1355): frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
+// score 1379 (was 1379): earlier 1355; frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
 // 0x2078f0 twice with unknown38 0 then 1, 0x2079f0 on both its paths, 0x227990, 0x2294a0, 0x22a4b0), loop shapes (the found
@@ -456,6 +456,14 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // code); the first loop's arg_2 accumulation before arg_1's 1367 (not retail's order: retail adds arg_1 first); on it
 // the bit test as above 1364, the named magnitude result 1424, then the 0xb4 field read at each use 1440 (6211 B),
 // `1.0f + c * x` 1364, the products as `x * scale` 1364 (same code), `-a * b` 1388.
+// M3 lane 1 r88 (fast with 0x2056e0, which stays matched; aligned/register-masked difflib counts, control 891/585):
+// re-measured, the magnitude helper reading its input directly (no input copy) 1622 (6022 B, frame 0x590, 813/580: the
+// first magnitude then is retail's `movss [esp + 0x80], xmm; fld [esp + 0x80]; fmul [esp + 0x80]` at retail's offsets).
+// On it: the first loop's cross through the file's k/j/i helper 1634 (6006 B, 807/576); through cross3f_staged 1636 (6006 B,
+// 806/575); the k/j/i helper reading its second vector at each use instead of staging it 1618 (5990 B, 802/570); both 1691
+// (5958 B, 853/587). With the input copy kept: the k/j/i first-loop cross plus that unstaged helper 1429 (6211 B, 878/572).
+// The direct-input magnitude is closer by every aligned count; the 216 missing bytes are retail's store-then-reload rows
+// (results stored to their fields and read back) spread over the contact loop.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

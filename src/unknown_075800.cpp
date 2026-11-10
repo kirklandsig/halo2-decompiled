@@ -1075,7 +1075,6 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // Direct-case orders 3,4,0,2 / 4,3,0,2 / 2,4,0,3 / 3,2,4,0 score 196/196/191/195 fast;
 // keep 2,4,0,3 at plain 193, retail length. Lookup orders 7,5,6 / 6,7,5 give 196/195;
 // acknowledgment first in residual phase 196; unified observed order 218. All call inputs preserved.
-
 // Earlier at 153: register inputs, the delayed ESI save and the late case layout still differ.
 // Earlier (153, was 153): register inputs, the delayed ESI save and the late case layout still differ.
 // Direct orders 0,4,2,3 / 0,4,3,2 / 2,0,4,3 / 2,3,0,4 give 193/196/193/195 fast;
@@ -1348,6 +1347,15 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // test is threaded away before allocation and adds no weight to the type); a `message_type < 0` early return 212 (428 bytes, same convention); the link
 // read once into a function-scope local for the three lookups 239 (400 bytes, 0x7afd0 6: the link takes ESI at entry). Reading: the type must outrank the
 // address for EAX at allocation; two extra type tests do it (round 45) but leave their code behind, and every test that folds, folds before allocation.
+// M3 lane 1 r88 (one retail-order switch re-measured 217 plain / 218 fast at 420 bytes, 0x7afd0 3; the rest fast with
+// 0x7afd0, 0x93aa0, 0x92ef0, 0x92d10, 0x94420, 0x94270): on the one switch, cases 18 and 11 first 218; the address parameter
+// copied into a local at entry (body unchanged) 218; an explicit empty `case 1` 218; an unused trailing address parameter on
+// the case 5 and 7 handlers (0x94ae0, 0x94bb0, both stay matched: the link drops it) 218; the connection index declared
+// in each of the case 5, 6 and 7 blocks 218 (same code). Diagnostic (not a trial: it inlines a function retail calls and
+// breaks 0x93aa0): __forceinline on
+// 0x94270 251 (500 bytes) with retail's convention (type EAX, message ECX kept in EBX, address on the stack), as round 60's
+// forced 0x94420 106: inlining either session case, whose body uses the address after a call, is what makes the address a
+// stack argument kept in a callee-saved register; retail calls both, so something else in retail keeps the address live.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
