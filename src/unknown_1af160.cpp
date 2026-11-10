@@ -126,6 +126,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // The 0x262b40 result declared at the function's top 12; the equal-arm test inverted 29; the result flag declared first
 // 187; the 0x261280 outputs declared before the entry 12; 0x1af530's real output declared at the top 12; the two
 // 0x1f4a20 flags declared the other way round 12. Original body restored.
+// Round 143 (m3 lane 8, fast with 0x1e1f20, control 12): stack variables moved to function scope, to test whether the tied
+// home order follows the frame's variable set: the 0x1af530 real output, the distance vector, the rounding input real,
+// the two 0x1f4a20 flags, the 0x1e1f20 result: 12 each (identical code). The bool output's home follows its callee chain
+// (round 43's diagnostic), and 0x260670 on that chain is still 700 differences and 71 bytes long, so what LTCG knows of
+// it is not retail's: a lead, likely BLOCKED-BY 0x260670 until that body matches (round 148 enabled it, still unmatched).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {
