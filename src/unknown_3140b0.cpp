@@ -1,4 +1,4 @@
-// @flags /O2 /GL-
+// @flags /O2 /GL- /GX
 #include "constraint_helpers_314090.h"
 
 // Opaque registration records have a 0x28-byte stride in this type group.

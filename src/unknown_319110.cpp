@@ -1,4 +1,4 @@
-// @flags /O2 /GL-
+// @flags /O2 /Ob1 /GL- /GX
 #include "contact_manager_318c10.h"
 #include "owned_reference_318b90.h"
 #include <stddef.h>

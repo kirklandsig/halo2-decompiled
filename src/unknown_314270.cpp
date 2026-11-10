@@ -1,4 +1,4 @@
-// @flags /O2 /GL-
+// @flags /O2 /Ob1 /GL- /GX
 #include "constraint_helpers_314090.h"
 
 // Result-array elements initialize themselves before the description fields.
