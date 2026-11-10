@@ -579,6 +579,18 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // Round 100 (m3 lane 12, fast with 0xb7060, which matched in each): body_index short 178; the projection as vector3f_add_scaled(up, forward,
 // -dot, up) 101 (910 bytes); the dot as a statement sum k, j, i on this body 62; `up` as a reference 56 (same code); the inner search as a while
 // loop with its own counter 56 (same code); the outer loop's found test as a break at the top of its body 56 (same code). All restored.
+// Lane 12 r104 (fast with 0xb7060, which matched in each; the 48 confirmed plain): the transform local dropped (the composition
+// call takes `&entry->transform`) and the axes reached through `matrix3x3 *rotation = &entry->transform.rotation;` declared after
+// that call 48 (925 bytes; the call's `lea ecx, [ebx+0xb0]` and forward's `lea edi, [ebx+0xb4]` are retail's; P369's number),
+// NOT kept: the same pointer declared at the top of the validity block 55, so the gain comes from where it is declared. Left at
+// 48: the head (definition register and spill, default-body registers, search offset load order), left and up formed from forward
+// (EDI) where retail forms them from the entry, the dot's terms (ours i, j, k forward-first; retail k, j up-first, then i), one
+// cross product side, the failure stores before the pops. Tried: the rotation pointer from the old transform local, after the call
+// 65; from the entry with the transform local kept 55; on 48: dot3f(forward, up) 48 (same code); forward, left and up named from the
+// rotation pointer 49; `up` taken from the entry instead 38 (up's lea and left's EBP as retail; a mixed spelling), on that
+// dot3f(forward, up) 38 (same code). Every second axis taken from the entry flips the head (entry EBP, 0xb7060 11): left and up from
+// the entry 117 (928), the three axes named from the entry after the call 124 (927), the axes as entry fields at each use with up
+// named 115 (928).
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

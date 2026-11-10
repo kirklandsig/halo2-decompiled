@@ -619,6 +619,12 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // (first +0x2f); that with the deltas through scaled_difference3f at 1.0f 82, with deltas i, j, k and the existing in-place scale helper plus
 // vector3f_add for the correction 77, with both helpers and the 1.0f delta 80; the in-place scale helper and vector3f_add alone 57 (369 bytes).
 // All restored.
+// Lane 12 r104 (fast with the file's functions, control 32): the deltas through scaled_difference3f at 1.0f with the
+// correction through the existing vector3f_add_scaled 78 (352 bytes); the deltas i, j, k with that correction 99 (348);
+// the call given `tracked` with the one read through the parameter's address moved to the location test 32 (same code);
+// the tick count read after the prediction helper 32 (same code); the root named before the scale 46 on this body
+// (listed as 33 on an earlier one). Re-measured as listed: the delta as an aggregate initialiser 79; limit declared
+// at its assignment 32. The squared length through reciprocal_normalize.h's k, i, j statement-sum helper 32 (same code).
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
