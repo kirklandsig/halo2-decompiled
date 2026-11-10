@@ -1574,6 +1574,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH385: Entry-owned actual candidate/seat/winner ordinal declarations, seven subsets
 // and all with the best-score declaration: 32/32/32/32/32/32/32/32. NOT kept: no exact
 // storage shape; original initialization sites, loop scopes, helper and complete body restored.
+// T76: Departure parent/attached-seat field references, mutable/read-only
+// single and paired bindings, then paired field pointers: eight at 32.
+// NOT kept: no exact field-storage form; original observations and body restored.
+// Iterator scaling, leave-selector and request/slot publication homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2887,6 +2891,10 @@ struct s_scenario_scripting_view
 // N390: Whole packed-input value at entry/actor/scenario/decode, long 80/80/80/80;
 // dword 81/81/81/81. NOT kept: no exact single-use input residency;
 // original decode, signed search and body restored; actor/counter/selector and early data homes remain.
+// T76: Live point-count/table field references, mutable/read-only single and
+// paired bindings, then paired field pointers: eight at 80, 367/367 bytes.
+// NOT kept: no exact field-storage form; original complete search restored.
+// Actor/counter/set and guarded scripting-data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

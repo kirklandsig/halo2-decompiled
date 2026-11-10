@@ -832,6 +832,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // copy of actor_index declared before or after the result, used in cases 5 and 2 or in 5 only, 297 (aligned 51; the
 // load still comes first); the surface declared before start_out 290 (same code). Nothing kept: every form scores
 // above 219.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 219 (1280 bytes against retail's 1280); the early root and actor ingress and the paired projection's ownership are still the whole of the difference, and every earlier round's actor-query, corner-order and paired-edge forms tie at 219.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

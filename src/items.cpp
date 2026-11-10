@@ -1877,7 +1877,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // MiniMax C (11-06): no new form, no lower score - retail still emits the release impulse once per clear
 // branch and still clears the flag byte with a read-modify-write on both paths; the callee 0xba300's
 // convention lives in src/unknown_0b8bd0.cpp, which this lane may not edit.
-// score 140 (was 140): the return byte and the release-byte read-modify-write still sit in other homes,
+// Earlier note: the return byte and the release-byte read-modify-write still sit in other homes,
 // and the callee's parameter order is fixed in a file this lane may not edit.
 // N377: Existing release producer time/gain root pointers, both and native references,
 // then release-completion success at first/second/both sites and accumulated completion:
@@ -1893,6 +1893,11 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // release-byte RMW/tail and contact/event homes remain.
 // MiniMax E (11-08): no new form, no lower score: the return byte sits at esp+0xe here and at esp+0xf in retail, and retail clears the release flag with a read-modify-write that we split into a load and a store.
 // MiniMax E (11-09): no new form, no lower score: the return byte sits at esp+0xe here and at esp+0xf in retail, and retail clears the release flag with a read-modify-write that we split into a load and a store.
+// P402: Complete definition-flag input at original gate, dword/long/unsigned-int/int/word/short/byte/signed-
+// byte domains:
+// 140/141/140/141/142/142/195/195. NOT kept: one-use field inputs require equality; original direct flag
+// expression, two-use spin, release helper and full body restored. Return byte and release/contact/event homes
+// remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

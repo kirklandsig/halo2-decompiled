@@ -1317,6 +1317,8 @@ struct s_batch_cache_4b5d0
 
 struct s_133f70;
 
+// MiniMax S (11-09): no new form, no lower score (93 on the full image, 355 on the reduced one); the
+// distance staging in the 0x4bcc0 call, the nullable-entry and cache adds and the result homes remain.
 // MiniMax D (11-08): no new form, no lower score (93, measured on the full image); the call to 0x4bcc0 loads the
 // distance parameter into EAX above the force push where ours loads it into ECX below it, and the 0x4c190 call's
 // flag and tag arguments swap ECX and EDX the same way; the two calls' argument registers still differ.
@@ -1496,6 +1498,7 @@ struct s_133f70;
 // with a signed-char levels pointer at record + 0xbc, indexed by the mode 328 (aligned 60); with a named record
 // pointer first 328 (same code); the 0x4ed284 test nested with a named entry pointer 93 (same code, no dead lea);
 // both 328. Body unchanged.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged (1309 bytes, as retail's); the fast image scores 355 for this one because the reduced image's callees differ, so the plain check is the measure (93); the first distance setup, the cache and coefficient homes and the tail that 0x23690 owns remain.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)
