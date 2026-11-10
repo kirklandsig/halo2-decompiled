@@ -805,6 +805,7 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
+// MiniMax D (11-10): no new form, no lower score (257).
 // MiniMax E (11-06): score 257 (was 257): no new form lowered it. The result and point-valid byte
 // homes are still swapped (ours writes the flag byte at esp+0x12, retail at esp+0x13), the three
 // vector components reach the stack homes in the order eax/edx/ecx where retail uses eax/ecx/edx, and
@@ -1683,6 +1684,7 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax D (11-10): no new form, no lower score (442): retail calls 0x1fdd90 out of line with the slot offset spilled to [esp+0x30] and the actor index in ESI where ours expands the call inline and keeps the index in EDI; 0x1fdd90 is defined in another file.
 // b2J (11-06) statement walk against retail 0x298370..0x298b3e (align.py 548 fast, 442 full): every block, offset,
 // condition direction, callee, argument order (0x2980d0 looking/bounds flags, 0x2967b0 type pointers +0x420/+0x434/+0x688 and the movement temp, 0x10f630 first=ESI,
 // 0x11cc90 aiming/forward), constant (-1, 0.70710677, 0.34906584, 1.0, 2.5) and flag home agrees with the source; no behaviour difference
