@@ -100,6 +100,7 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
+// MiniMax I (11-09): no new form, no lower score; retail takes the owner and the level on the stack and returns with `ret 8`, ours keeps the owner in ECX and returns with `ret 4`, so the body cannot match while the caller keeps its matched form: BLOCKED-BY the caller 0x1d5bf0 (src/unknown_1d5bf0.cpp).
 // MiniMax R (11-09): no new form, no lower score (96); retail reads the object type once at the entry and dispatches it through a byte-indexed table, ours reads the type again in each branch, and the one-read forms move the caller's argument setup.
 // MiniMax A (11-06): no new form, no lower score; retail loads the object-header pool and its data at the
 // entry, keeps the level in EBX, the component in EBP and the rigid body in ESI (three pushes against our

@@ -536,6 +536,16 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // bool/byte/short/word/int/long/dword/signed-char: 395/395/395/395/395/395/395/395. NOT kept: no native
 // effect-address/gate-home equality. Original inherited local qualifier, random stream, geometry and
 // complete body restored.
+// M3 lane 4 r176 (fast with 0x247fd0, which stays matched; base 334 at 1652): retail's dead flag byte sits at +0x1b,
+// below the definition pointer's +0x1c, ours at +0x1f above it at +0x18. The flag as a bool member at the end of the
+// local record, no volatile, 351 (the member keeps its store but lands high in the frame); as the record's first member
+// 351; the volatile flag renamed to sort first or last among the locals 334/334 (same code); the flag declared after
+// the effect index 334 (same code). Re-measured: all four samples through one plain real 392; the flag as a plain bool
+// set and then tested 395 (store gone, first difference +0x2). All restored.
+// P401: Initial settings pointer reserved before collision/effect/allocation/admission,
+// each with distinct refreshed terminal owner/direct terminal tag: eight 334s at 1652 bytes.
+// NOT kept: no native gate/settings home or split effect-address recovery. Original
+// producer lifetimes, refreshed settings, random stream and complete body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -217,6 +217,17 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// score 117 (was 117): this round: the tag index masked as a 32-bit value inside the subscript
+// reproduces retail's `and edx, 0xffff` but moves the base global from EDI into ECX and raises the
+// score to 152, so the original is kept; the tag lookup still masks the index with a word load where
+// retail masks the 32-bit value, and the fallback EDX, the stage/pass homes and the unfused element
+// loads remain.
+// MiniMax I (11-09): no new form, no lower score (117); the fallback index masked in place (`local_tag & 0xffff`)
+// gives retail's `and edx, 0xffff` but moves the tag table from EDI into ECX (152). The round 59 chain rebuilt
+// (by-value tag accessor, head/stage/pass elements bound, grouped zeros, material index bound) measures 86 with
+// arg_0 on the stack; with the flags read early 75 (544 bytes, arg_0 back in EBX); the group test re-reading the
+// tag is forwarded by the compiler (no change); with no instance local 155; with the tag read at each use 88.
+// The chain is a score-picked form (one-use element bindings, moved stores) and is not kept without a byte match.
 // MiniMax D (11-09): no new form, no lower score (117); the tag declared unsigned long gives the same code as the unsigned-short cast, and the tag masked inside the subscript gives 152 with the base global in ecx.
 // MiniMax R (11-09): the masked tag held in a local or in a short local gives 152 because the base global moves from
 // edi into ecx, and the index masked inside the subscript or cast to an unsigned short gives 117 with the same code.

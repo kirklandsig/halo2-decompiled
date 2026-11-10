@@ -1450,6 +1450,17 @@ PRIVATE __forceinline long shape_cluster_next(s_record_pool *pool, long *next)
 // frame 0x1018 agrees; world mask and pool/cluster homes differ.
 // BSP/cluster/count/list/both field views 170/170/170/170/170 plain;
 // list reload 177; list/count cached and reloaded after each call 166 (hand reload, reverted in review); paired record views 170.
+// Round 160 (m3 lane 6, fast over every marker in this file plus 0x16a0a0, 0x16a280, 0x1dde10, 0x245aa0, 0x16a8e0 and
+// 0x19cb90: that image reads 23, the function alone reads 267 and with its two callers 187, so earlier single-address
+// scores need re-measuring): the world mask as a dword 41 (retail's `mov reg, eax; and reg, 1` and `test reg, reg`, but
+// the mask takes EDI and the BSP pointer EBX, the reverse of retail, with the pushes reordered), as a long 41, `flags & 1`
+// at both uses 41, the dword mask declared ahead of the counts' clear 211 (901 bytes), the dword mask with the BSP global
+// in a named local 41, a bool from `flags & 1` or `(bool)(flags & 1)` 23/23 (same code); the instance mark test with the
+// tick first 23, as a `!=` block 23. Diagnostic (single-address image, base 267): the dword mask with the cluster half
+// as a force-inline helper taking flags by value 228, the same as the dword mask alone there. Untried lead: the instance
+// marks' flag, tick and table (0x4e7c18, 0x4e7c1c, 0x4e7c20) are three separate globals, while the cluster and object
+// marks this function also uses are one storage block each; retail hoists only the instance tick out of its loop
+// (reloading it after the call). The table is defined in src/unknown_1321f0.cpp (a held file), so it was not tried.
 // @retail 0x16a440
 bool __stdcall function_16a440(dword flags, point3f const *position, real extent, real height,
     real radius, long ignore_object, long ignore_parent, s_shapes *shapes)

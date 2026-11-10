@@ -833,6 +833,15 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 
 real normalize2d(point2f *v);
 
+// MiniMax I (11-09): no new form, no lower score (135); the first difference is the trajectory result's
+// register home: retail copies the call's return into DL (`mov dl, al`), loads the force flag into AL and
+// stores DL to the reused target-parameter slot only afterwards, while ours stores AL to that slot at once
+// and takes AL for the force flag; a force copy before the call, inside the valid block and right after the
+// call, the separate declaration, a char result, the direct return in the request arm and the swapped
+// condition order all compile to the same code (the swapped order only sinks the store past the speed
+// compare). Still different: the home register (DL against AL), the store before the force test, the tail's
+// register order (`mov ecx,[esp+0x2c]`, `mov edx,[esp+0x30]` against `mov eax,[esp+0x2c]`,
+// `mov ecx,[esp+0x30]`) and the size (935 bytes against 923).
 // MiniMax R (11-09): the annealed permuter over 900 s ends at 134, its best being the two flag stores swapped, a gain of one that the review threshold drops, and the volatile globals pointer and the placed point store it also made give 135 on their own; the score stands at 135.
 // MiniMax R (11-08): no new form, no lower score (135); the threshold, the request point copy, the direct request return, the result's type and the retry spelling all score 135 or worse, and only the trajectory result compared against zero reaches 120, which is a redundant compare kept only with a byte match.
 // MiniMax R (11-06): no new form, no lower score (135).
@@ -1074,6 +1083,11 @@ real normalize2d(point2f *v);
 // exhausted short search, seven subsets 136/244/253/238/253/267/267; all typed-first 249.
 // NOT kept: all regress and disturb the native entry/type prefix; original entire body,
 // trajectory inputs, movement/request stores and independent result producers restored.
+// P402: Successful initial/retry scalar output selection by mutable/readonly axis-pair, speed or all
+// addresses, then function-entry axis receivers:
+// 189/189/161/161/185/185/189/189. NOT kept: all grow native frame 0x48 to 0x4c/0x50; local-address forms
+// require equality. Original output copies, both exits and complete body restored; native DL/retry/return
+// transport remains.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1309,10 +1323,14 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
+// MiniMax S (11-10): no new form, no lower score (137): the actor and object pointers still take the other way round (ours actor in esi / object in edi, retail actor in edi / object in esi), so the prologue is one byte shorter and every later row pairs with the wrong row.
 // MiniMax C (11-09): no new form, no lower score (137); the body differs only by the actor/object pointer pair (ours actor ESI / object EDI, retail actor EDI / object ESI), so the prologue is one byte shorter and every later row pairs with the wrong row.
 // Round 16: retail passes the object index in EAX and the actor index in ECX, ours passes the
 // actor index in ECX and keeps the object index elsewhere; retail computes the masked actor
 // offset before the pool load and holds the actor in EDI.
+// MiniMax C (11-09): no new form, no lower score (137); the actor address as a subscript, the object lookup
+// before it and the index-first expression all leave the code unchanged, so the actor/object register pair
+// (ours actor ESI / object EDI, retail actor EDI / object ESI) still differs.
 // score 137 (was 137): frame 0x1c agrees; actor/object homes, velocity preload and final minimum remain (caller-inclusive fast 137).
 // Earlier: frame 0x1c agrees; two excess bytes, actor/object roles (EDI/ESI), the hoisted velocity j load,
 // the first clamp's x87 order and the epilogue pops' place in the final minimum remain.
@@ -1637,6 +1655,7 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax S (11-10): no lower score (238): dropping the pointer-to-parameter origin copies gives 255 (worse) and is reverted; retail still materialises the side flag only at the comparison (store 1, ja, store 0) while this build stores 1 at the top and keeps the flag live from there.
 // MiniMax C (11-09): no new form, no lower score (238); retail materialises the side flag only at the comparison (store 1, ja, store 0) while this build stores 1 at the top and keeps the flag live from there.
 // MiniMax G (11-06): no new form, no lower score; retail keeps the normalizer length in the dead target
 // argument slot at [esp+0x54] and the radius at [esp+0x14], this build uses fresh local slots, and retail's
@@ -1646,6 +1665,8 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // MiniMax H (11-04): the left flag declared just before its comparison 287; not kept, the
 // original body is restored.
 // MiniMax R (10-31): origin read directly 255, plain origin copy 278, inlined direction normalization 272; permuter found no better variant; no lower score.
+// MiniMax C (11-09): no new form, no lower score (238); retail keeps the radius at +0x14 and the length in the
+// dead origin slot at +0x54 while this build keeps them at +0x20 and +0x14, so the later rows pair wrongly.
 // score 238 (was 238): Frame 0x3c, result/flag homes and exits agree (1182 bytes against 1173). Retail's zero, radius and
 // direction sit in other SSE registers (xmm1/xmm5/xmm2-3; it keeps the result in xmm0 up to the type exit),
 // shares the left type-0 arm's `+ target.y` and flag re-test with the type-1 arm (ours threads that arm),

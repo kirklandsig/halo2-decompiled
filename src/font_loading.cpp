@@ -737,6 +737,12 @@ static inline word font_character_pixel(long alpha, long color)
 // N389: Pixel alpha word/uint, color short/uint, result short/uint: 92/91/92/80/85/106/85/105.
 // NOT kept: word alpha with uint color/result 80 gains only five; other type forms tie or regress.
 // Original helper and decoder restored; alpha widening, literal assembly and run-two reuse remain.
+// MiniMax E (11-10): no new form, no lower score (85): retail's own case table confirms the committed switch
+// cases (the second case runs three with the plain colour and the third keeps the run of two with the opaque
+// colour), so the earlier reorder of those cases was wrong and is reverted; a cast-free helper with a long
+// result reproduces retail's thirty-two-bit parity at all three pixel sites but moves the run constant into
+// ebp and scores 212; a parity kept in a long local inside the word returning helper scores 176 and still
+// masks the parity in sixteen bits.
 // N391: Case orders 04651237/04615237/04165237/01465237/06415237/06451237/
 // 06145237/01645237: 115/116/113/113/117/116/115/114. NOT kept: all regress;
 // original cases/body restored. Alpha extension, literal assembly and run-two reuse remain.
@@ -747,6 +753,11 @@ static inline word font_character_pixel(long alpha, long color)
 // NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // MiniMax E (11-08): no new form, no lower score: retail widens the alpha parity with a 32-bit xor and masks it with 1, ours narrows it to sixteen bits and shifts the byte count instead.
 // MiniMax E (11-09): no new form, no lower score: retail widens the alpha's parity with a 32-bit xor and adds the constant 2 through ebx, ours narrows the parity to sixteen bits and folds the constant; five helper forms and the switch reorder all scored worse.
+// T76: Remaining/source/output formals own their cursors, seven subsets then
+// complete consumed-span for ownership: 103/180/87/182/101/180/182/181.
+// NOT kept: all regress; most also lose the native frame or incoming roles.
+// Original copies, word helper and decoder restored; parity/literal/two-run gaps remain.
+// MiniMax D (11-09): no new form, no lower score: the committed body is the best form of this round (85 in the fast and the full check); retail computes the alpha's parity in thirty-two bits (xor ecx,ecx; mov cl,al; add eax,eax; and ecx,1; or ecx,eax) where ours narrows it to sixteen bits (and cl,1; movzx cx,cl), and the long-returning helper, the byte local and the removed casts all scored worse (105, 209).
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

@@ -600,6 +600,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
+// MiniMax D (11-09): the colour written component by component gives 447/604/623 against 250, and the
+// interpolation unrolled on its own gives 250; the scope moves give 620/250/620 and the case-0 and
+// colour store orders 246/248/244/250/255. The best is 244, under the bar, so the body is unchanged.
 // score 250 (was 250): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // MiniMax D (11-05): four declaration orders for the u and v scalars and their step and width partners
@@ -951,6 +954,17 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // range transfers, eight nonoriginal pairs:
 // 598/598/733/750/745/769/735/729. NOT kept: no exact native frame/home recovery;
 // original complete body, observations, helper and call graph restored.
+// M3 lane 8 r144 (fast; control 250, frame 0xa8): retail's unused 4-byte home is at +0xa8, just below v + width (+0xac).
+// The V sum formed at the outer vertex's store 252; the U step negated at the advance (`u += -u_step`) 611 (2596 bytes, frame
+// 0xa8); both 610; both with the sum's operands swapped 610; a named V end declared after the width scaling 250 (same code); u
+// and v read after the two scales 271; one read of the source scale for both tests 608; the colour stored to the first vertex
+// first 248. Re-measures of the rejected grouping (a two-member texture scale vector; not kept, the same locals-grouping form
+// the coordinator threw out for r155): i negated in place with a named V end 239 (frame 0xac); a named U step from i and the V
+// end kept in j 224 (frame 0xac, confirmed in the plain check; the diff is build/r144/lead-42cf0.patch); both in place 250
+// (frame 0xa8). On the 224 form: the colour store order 222; case 4's offsets named in all three rows 459 (2580 bytes, frame
+// 0xa4); case 1/2's offsets named in both rows 490 (2588); both 443 (2596 bytes, frame 0xa4). Body restored.
+// P399: Actual current/next color-bound identities and complete next-color record, subsets 1-7, then output-color identity:
+// 250/250/482/250/250/250/490/447. NOT kept: no byte equality or native home repair; original complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

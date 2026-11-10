@@ -2396,6 +2396,9 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax S (11-09): no new form, no lower score (140); the round's `(simple != 0 ? 0 : 0x18) << 8`
+// spelling gave 138, but a gain under the keep threshold is dropped, so the body is restored;
+// caller flag residency and native fallback selection remain.
 // MiniMax E (11-09): no new form, no lower score (140); retail loads the byte at esp+0x6c after the branch on the byte at esp+0x68, ours hoists that load above the store into the global.
 // MiniMax E (11-06): score 140 (was 140): no new form lowered it. The inlined corner rotation still
 // expands with the opposite operand order and stores its results in different homes than retail, and
@@ -2542,6 +2545,18 @@ dword __cdecl function_131fc0(real alpha);
 // declaration order: with height declared first 144, with width renamed 146); that with the
 // unconditional defaults 162; source coordinates divided by width/height in each call 158 (1721).
 // 0x3a5c0's macro fix has no counterpart here (no file-local helper in the body).
+// Round 159 (lane 5, fast with 0x144f0/0x3a5c0/0x2a2f0/0x29b00; both builds end `ret 0x34`). Reading of the tail: retail
+// builds both default rectangles before either test (source at 0x18, destination at 0x28), tests the source first, and on each
+// default path writes the selected address into the parameter's own home as well as its register (`lea ecx; mov [home], ecx;
+// mov ebx, ecx`); it also reads preserve_alpha again after the 0x131fc0 call where ours keeps it in CL across the call, and
+// multiplies the stored reciprocal by the coordinate (reciprocal first). Unconditional defaults with the parameters assigned
+// 156 (1717 bytes, no home writes); the two bounds as one by-value pair or as two one-pointer wrappers 156/156 (same code:
+// small by-value aggregates are split into scalars); the first seven arguments, all thirteen, or the first four as one
+// by-value parameter block 178/176/170 (1725/1729/1729 bytes but frame 0x18: the defaults then overlap the block, aligned
+// rows 140-142 against 109); `inline` on the definitions of 0x131fc0 and 0x131f40 181 (1741 bytes; preserve_alpha then sits
+// in BL from before the call, and 0x3a5c0 goes 9 -> 226); unconditional defaults selected into two new pointer locals, each
+// after its copy or both copies first, 160/158 (1713). None kept.
+// MiniMax R (11-09): no new form, no lower score; the store to the shader global still comes after the second flag test where retail's comes before, and retail keeps that flag in al where ours keeps it in cl; the halves and the pixel-shader fields are still written in our own order.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2883,6 +2898,8 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// MiniMax S (11-09): no new form, no lower score (211); bounds/trig scheduling and the second
+// cosine home remain.
 // MiniMax E (11-09): no new form, no lower score (211); the first difference is the two early exits, whose targets are one byte apart - retail's reaches one byte further into the function than ours.
 // MiniMax E (11-06): score 211 (was 211): no new form lowered it. The inlined corner rotation still
 // multiplies the two vectors in the opposite order and folds the constant as a memory operand where
@@ -3037,6 +3054,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // ours keeps 240 in xmm1 for both vertical bounds (a copy), retail loads it into xmm7 after bounds[0]'s
 // store and adds the second 240 from memory, because its zero for the scale tests already holds xmm1
 // (the compare is hoisted into the bounds); that one instruction shifts the whole vertex tail (~100).
+// MiniMax R (11-10): no new form, no lower score; the vertical bounds still keep 240 in one register for both of them, where retail loads it into xmm7 after the horizontal bound's store and adds the second 240 from memory, because retail's zero for the scale tests already holds xmm1 with the first test hoisted into the bounds; moving that test between the horizontal and the vertical bounds (217), before both bounds (239), swapping the vertical pair (211) and swapping the halves (221, 225) all score worse, and the best lead, the second cosine in retail's home, is 210.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -3592,6 +3610,12 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // dword input with the shift at both stores 939; the shifted word from the selector itself, no input local 976 (4840
 // bytes); mode one's colours declared separately 9; mode zero's extra-texture test at its two uses 905 (4816 bytes);
 // the whole/fraction clamp as two statements, whole first 9 (same code), fraction first 11.
+// Round 83 (m3 lane 10, fast; plain over the file agrees): the exponent search as a plain `while` loop in place of the
+// hand-inverted `if` + do/while 9 (same code, kept); the two floor results divided by 65536 9 (same code); the blending
+// states and the zero depth bias through one forced-inline pass-state helper at all four sites 9 (same code); the offset
+// clamp through FILTER_PIN 1072; both selectors from one if/else on small 952. The reloads after the depth-bias call stay
+// constant first: in 0x2548f0's file, moving that function above 0x254490 (whose reload order is swapped the other way)
+// changed neither, so the order does not follow source order within the file.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
@@ -3706,8 +3730,8 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     g_484f68.PSAlphaInputs[3] = 0xdd202df1;
     g_484f68.PSAlphaOutputs[3] = 0xd00;
     long exponent = 0;
-    if (inverse_span > 1.0f)
-        do { ++exponent; } while (inverse_span > (real)(1 << exponent));
+    while (inverse_span > (real)(1 << exponent))
+        exponent++;
     if (mode == 0)
     {
         bool extra_texture = configuration == (byte const *)NONE;

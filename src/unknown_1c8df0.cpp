@@ -205,6 +205,14 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // quarter/endpoint/both/immutable-both: 20/20/20/20. NOT kept: all tie or regress;
 // per-row forms recover the original homes but miss the native positive x add.
 // Original complete body, signature and all probe tuples restored.
+// Round 100 (m3 lane 12, fast with 0x1e55d0 and callers 0x1b0400/0x1b2770/0x1be120/0x25f7b0/0x264b50; base 20, M/M/M, 4, 164): parameter orders
+// keeping arg_2, arg_3, arg_4, arg_0 in order and arg_1, arg_5, arg_6 in order, at the definition, every declaration and call. arg_1 after arg_0
+// with arg_5 or arg_5, arg_6 moved ahead of arg_0 (three orders) 20/20/20, callers unchanged; arg_1 ahead of arg_4 or of arg_3 (three) 22 each (the
+// mode-2 x row then loads first), callers unchanged; arg_1, arg_5, arg_6 right after arg_3 or after arg_2 22/22 with 0x25f7b0 12; arg_1, arg_5
+// first (three) 22, callers unchanged; arg_1, arg_5, arg_6 among the first four (five) 22 with 0x25f7b0 12. No order with arg_4 ahead of arg_8
+// folds the mode-1 x row; all restored.
+// P399: Complete origin/endpoint/side/positive/opposite/all component arrays, complete quarter/endpoint array construction:
+// 20/20/20/20/20/20/20/20. NOT kept: no byte equality or native home repair; original complete body restored.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

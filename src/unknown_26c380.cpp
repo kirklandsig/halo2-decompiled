@@ -428,6 +428,17 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // seven groups then truth before point publication: 410/386/243/563/437/385/574/354.
 // NOT kept: no exact byte, home or progress-tail recovery; original result owner,
 // every publication, point/query call and full traversal restored.
+// M3 lane 4 r176 (fast with 0x26c380, which stays matched; base 244 at 1593): retail loads the direction pointer ahead
+// of the up-vector global and has the success byte at +0xe below the first-edge byte at +0xf, ours the other way in
+// both. The up-vector global through a named pointer local at the cross 421 (1616 bytes, first difference +0x13);
+// the first-edge flag declared at function scope 244 (same code); success declared after the edge pointer 382 (first
+// difference +0x2c); the previous sector declared at function scope 244 (same code); the hit flag declared at function
+// scope ahead of success 244 (same code). All restored.
+// P401: On the exact-only shared-exit graph (control 34), both planar-product vector
+// inputs staged, reversed declarations/full point inputs/point-first, then immutable:
+// 38/38/32/32/38/38/32/32. Four full-input graphs with a local line record: 300 each.
+// NOT kept: no byte equality; the cross j product, line/sector homes, XMM roles and
+// tail stores remain. Original private helper, loop exits and complete body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

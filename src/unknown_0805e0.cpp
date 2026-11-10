@@ -312,6 +312,13 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // 43/43/43/43/43/43/43/43. No exact early-save, independent successor, mask or failure-exit recovery;
 // original nullable copy restored. NOT kept: no qualifying exact/native-shape gain; original complete
 // body restored.
+// M3 lane 4 r176 (fast with 0x1a303b/0x2b393c, both stay matched in every form; base 43 at 127): a guarded do-while
+// with a successor local, the found arm returning true and `result = false` after the loop 49 (127 bytes); an early
+// `return false` on an empty iterator, then an endless loop with a successor that returns true when found and false
+// when the successor is NONE 55 (133); a guarded do-while with the successor declared outside it, result and break,
+// and the step in the loop test 51 (127); a for loop stepping from a successor that is read into a short first 51
+// (127); the current loop with four `continue` filters (the identity pair and the exclusion pair joined by `||`) and
+// `return true` 52 (127). All restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -503,6 +510,11 @@ struct s_cached_player_view
 	byte unknown54[2];
 	byte field56;
 	byte unknown57;
+};
+struct s_cached_player_record
+{
+	s_cached_player_identity identity;
+	byte source_bytes[0x90];
 };
 
 // @retail 0x7f8b0
@@ -929,6 +941,25 @@ void function_1537f0(s_profile_record *record);
 // per-visit then outer raw storage: 110/110/116/108 twice. NOT kept: native identity homes
 // still fold or move into a larger frame; 295-300 bytes versus 258. Both original initializers,
 // per-visit fills, pointer walk and complete body restored.
+// MiniMax C (11-09): score 18 (was 45): the four link shorts are now written through a pointer to
+// the entry's run of links, so their common base frees the register that holds the -1 and lets it
+// be made afresh in EAX before the four stores as retail does, and the flags word and the word
+// after it are set with two plain stores, which gives retail's two direct dword stores; the code
+// is now 258 bytes, retail's length. Left: our tail stores sit 0x10 above retail's (our run of
+// links begins further into the entry), the entry's byte stores come out in another order and
+// with the two shifts in the other registers, and the walk's end compare carries the address of
+// our own array.
+// MiniMax C (11-09): score 45 (was 53): the identity and the source now sit in one per-visit
+// record, so the identity's address reaches 0x1537f0 and 0x7f8b0 and its three zero words and
+// the three loads that copy them into the entry survive as in retail; the walk is an index loop
+// over the entries, which keeps retail's compare of the entry pointer with the array end (our
+// own array stands elsewhere, so the immediate still differs) and drops the frame countdown, so
+// the frame is 0xa0 with the identity at +0x10 and the source at +0x1c as in retail. Left: the
+// NONE constant stays in EBP across the walk where retail re-materialises it in EAX, the
+// entry's byte stores come out in another order, and our code is 259 bytes against retail's 258.
+// MiniMax C (11-09): score 53 (was 53): the identity's three words still fold away, so the frame
+// is 0x98 against retail's 0xa0, and our walk ends on a countdown kept in a frame slot where
+// retail compares the entry pointer with the array end (signed). Untouched this round.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -939,15 +970,18 @@ void function_7f930(void)
 	g_4cf97c = NONE;
 	g_4cf984 = NONE;
 	g_4cf988 = NONE;
-	for (s_player_configuration_cache_entry *entry = g_4cf98c; entry < g_4cf98c + 350; entry++)
+	for (long index = 0; index < 350; index++)
 	{
-		s_cached_player_identity identity;
-		memset(&identity, 0, sizeof(identity));
-		s_cached_player_source source;
-		function_1537f0((s_profile_record *)&source);
-		function_7f8b0((s_cached_player_view *)&entry->player, &identity, &source, NULL);
-		entry->next = entry->next_other = entry->unknown58 = entry->previous_other = NONE;
-		memset(&entry->flags, 0, sizeof(entry->flags) + sizeof(entry->unknown64));
+		s_player_configuration_cache_entry *entry = &g_4cf98c[index];
+		s_cached_player_record record;
+		memset(&record.identity, 0, sizeof(record.identity));
+		function_1537f0((s_profile_record *)record.source_bytes);
+		function_7f8b0((s_cached_player_view *)&entry->player, &record.identity,
+			(const s_cached_player_source *)record.source_bytes, NULL);
+		short *links = &entry->unknown58;
+		links[0] = links[1] = links[2] = links[3] = NONE;
+		entry->flags = 0;
+		entry->field_64 = 0;
 	}
 }
 

@@ -879,6 +879,12 @@ bool function_e4050(long object_index);
 // Round 70 (m3 lane 13, fast): the aa == 1 arm first 61; the seat parent in a named local before 0xbadc0 44; the walk
 // re-reading each step's parent in the loop test 171 (405 bytes); the iterator with a brace initialiser 44; the parent
 // walk with a named step object 44. Diagnostic: 0xe4050 without its asm rounding leaves this at 44 (roles unchanged).
+// Round 65 (m3 lane 15, fast; control 44, plain 43): in retail the unit and the parent value read after the walk both
+// want EAX (0xe4050's and 0xbaf40's argument); retail gives it to the parent, so the unit sits in EBX and the iterator
+// index stays in the frame, where the unsigned walk gives it to the unit. On the unsigned NONE-root walk (171, 405
+// bytes): the 0xe4050 exit storing the unit local, a use after the call 200 (377); 0xe4050 passed the field 171; the
+// walk variable declared first and the unit object looked up through it 82 (433; the frame returns, the unit still
+// EAX); the unit declared at function scope 171. On the kept body: the unit declared at function scope 44 (same code).
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -1365,6 +1371,9 @@ static inline s_players_globals *players_globals_14f2e0()
 
 /* gives a player its unit (the unit kept for it, the unit waiting to be
    reused, or a new unit at a starting location) and resets its spawn state */
+// MiniMax S (11-09): no new form, no lower score (46); the NONE outputs are still materialised with
+// `mov eax, 0xffffffff` where retail uses `or eax, 0xffffffff`, and the zero/flag store schedule
+// still differs.
 // MiniMax I (11-08): no new form, no lower score (46): the two NONE outputs are materialised with
 // `mov eax, 0xffffffff` where retail uses `or eax, 0xffffffff`, and the tail's zero and flag stores are
 // scheduled with the byte clear first where retail zeroes the dword first. A full-build comparison puts
@@ -1488,6 +1497,10 @@ static inline s_players_globals *players_globals_14f2e0()
 // block gives AL and `mov`; a dword or word compare, or a second test on the same pointer, gives `or`; /G5 and /G7
 // change nothing. The real 0xb8540 body in place of its stub still gives `mov` (1029 bytes, 219); 0xb8540's call
 // replaced by 0xb8b70 puts the reloaded options pointer in EAX and gives `or eax, -1` (234), by 0xb7290 EDX and `mov` (244).
+// Round 65 (m3 lane 15, fast; control 46): the tail clears in five other source orders: the two words ahead of the
+// flags 46; the words first, then the 0x198 field and the flags 48; the two flags exchanged 46; the flags ahead of
+// the 0x198 field 46; flag 10 after the words 46. Our build emits the flags' `and` ahead of the zero register in
+// every order (retail: zero, the 0x198 store, then the `and`), so the order of the plain stores is not the cause.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -2404,6 +2417,7 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and
 // its first 0x151b80 stays a call, while ours has one request home and LTCG expands that call into the body;
@@ -2517,6 +2531,9 @@ static __forceinline long player_round_ticks(real value)
 // (2626 bytes: our LTCG keeps 0x1520f0 a call and still expands the first 0x151b80); with 0x1520f0's volatile dropped 812
 // (0x1520f0 then 13); only the 0x80 site's clear through it 770; the 0x80 site as a result chain 701; the six player flag
 // sets as byte stores at +2 719 (2746 bytes).
+// MiniMax C (11-09): score 701 (was 701): the frame is still 0x4c against retail's 0x74 (retail keeps
+// two separate request homes and calls 0x151b80 and 0xccd20 out of line, ours has one request home
+// and LTCG expands those calls). Untouched this round.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -2913,6 +2930,7 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax S (11-10): no new form, no lower score (193): retail keeps g_4e8c20 in esi and reloads it after the busy check and again before the final store, ours carries it in edi to the end of the function, so the pointer's role and the iterator's index array still swap registers.
 // MiniMax C (11-09): no new form, no lower score (103); the busy block is instruction for
 // instruction retail's, and the second loop's failure test already has retail's shape (the first
 // call's failure jumps straight to the flag store), so what is left all follows from the globals

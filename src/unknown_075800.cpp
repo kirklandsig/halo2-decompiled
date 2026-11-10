@@ -1327,6 +1327,15 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // 200/208/206/197/204/208/206/204 reduced, control 196, full 153. Original case interiors and late
 // classifier restored; early ESI/late expansion remain. NOT kept: no qualifying exact/native-shape
 // gain; original complete body restored.
+// Round 139 (m3 lane 7, all plain with 0x7afd0, 0x93aa0, 0x92ef0, 0x92d10, 0x94420, 0x94270; control: the one retail-order switch 217/420,
+// 0x7afd0 3): on that switch, the address parameter declared `long` (cast at each pointer use, the call in 0x7afd0 passing `(long)address`)
+// 217 (same code); declared as a `const s_type_99af70 &` (cases passing `&address`, the call passing `*address`) 217 (same code); the lookup
+// declared `inline` in this file as its definition is 217 (same code); the function defined ahead of 0x93aa0 instead of last in the file 217
+// (same code). The kept two switches defined ahead of 0x93aa0 153 (same code). The address keeps EAX in each one-switch form.
+// P400: Connection-first primary priorities CDQSP/CDQPS/CDSQP/CDSPQ/CDPQS/CDPSQ/CQDSP/CQDPS:
+// 207/205/207/205/207/204/202/200 reduced, control 196, full 153. NOT kept:
+// no exact delayed-save/late-handler repair; original classifiers, all case interiors
+// and call tuples restored. Every trial is 456 bytes against native 444.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

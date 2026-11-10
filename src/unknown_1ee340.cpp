@@ -103,6 +103,15 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 	result->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
 }
 
+// MiniMax I (11-09): no new form, no lower score; the x store split from the helper as its own array element, through a union view, through an int pun and with the components written through the union's array members score 110 to 140, the helper called with the array address scores 38, and the permuter (2400 s) found no candidate; this round the surface index as a member initializer scores 6, the value store before the surface pointer 33 and the surface index stored last 123, the helper called with the array address 25, a point3f pointer local 6, no vertex local 38 and the tag through the vertex 58; the entry loads the radius constant before the index where retail loads the index first, and the x store folds the vertex address into the store's operands where retail forms the address first.
+// score 6 (was 6): this round: no new form and no lower score; the entry still loads the index before
+// the radius constant where retail loads the constant first, and the loop still forms the vertex address
+// before its x store where retail folds the address into the store.
+// MiniMax S (11-09, second round): no new form, no lower score (6); the entry still loads the
+// index before the radius constant and the loop still forms the vertex address before its x
+// store; this round the x store as a long copy of the point's x beside the helper leaves a
+// second store and grows the frame, so the whole body shifts, and the helper called on the
+// array element still forms the address in a register (38).
 // MiniMax D (11-06): no new form, no lower score; the entry still loads the index before the radius constant and the loop still forms the vertex address before its x store; this round the x store as a long copy through the array element with the other components through the pointer (112), the x store through the array element with the point helper kept for x, y and z (119), the x store through the array element with y and z through the pointer (112) and the x store through the array element with y and z through the point3f view (112) are all worse, because only the single helper call keeps the y and z stores as float copies and it forces the x store through the materialised pointer; the x, y and z stores written out one by one through a point3f view of the vertex pointer are worse still (106), because the view needs a stack home.
 // MiniMax I (11-06): no new form, no lower score; the entry still loads the index before the radius constant and the loop still forms the vertex address before its x store; this round the x store through the array element with the other components through the pointer (112), all four components through the array (144) and the x store beside the point helper (119) are all worse, and the permuter (480 s) found no candidate.
 // MiniMax G (11-05): no new form, no lower score. The entry still loads the index before the radius
@@ -216,6 +225,17 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
+// score 192 (was 192): this round: no new form and no lower score; the frame is still 0x84 against
+// retail's 0x90 with the origin's x and y and the edge vectors in stack homes, and the point-in-polygon
+// query still needs the points before the point, which only the definition in another lane's file fixes.
+// MiniMax I (11-09): no new form, no lower score (192); the aligned view shows retail loading the ray's and the
+// vertices' six components into xmm2-xmm7 first and computing the three edge vectors in registers (frame 0x90),
+// while ours forms each difference and spills it to the stack (frame 0x84), because the helpers take their
+// operands by reference and the edge vectors need homes; the header's normalize_inline and cross3f_staged
+// spellings leave the same code, and the count read into a dword local before the query call gives 193 (1020
+// bytes). Still different: the ray and edge homes and the call setup, which is BLOCKED-BY 0x23a220 (retail's
+// callers pass the points before the point and its definition is in src/unknown_239b80.cpp, another lane's
+// file); the chain that reaches 2 only gains on top of that swap.
 // MiniMax C (11-09): no new form, no lower score (192); the point-in-polygon query's call setup still differs (BLOCKED-BY src/unknown_239b80.cpp).
 // MiniMax I (11-05): no new form, no lower score. The header normalize_inline for the normal gives 193
 // and the header cross3f_staged for the cross gives the same code; retail's normal length sums k, j, i

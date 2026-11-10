@@ -113,7 +113,7 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // retail reads at 0x294a1e for the 0x294050 argument list comes from the slot 0x84 after one push, not from
 // the stored one; in the scaled-centre block ours reloads the scalar into xmm0 where retail reuses the value it
 // already holds, so ours is one instruction longer there and every later slot offset stays off.
-// score 446 (was 523): entry and registers now retail's (first difference +0x72, masked aligned 25 lines; fast check 465 at 3712 bytes, full build 446). Left: retail's
+// score 446 (was 446; before r98 was 523): entry and registers now retail's (first difference +0x72, masked aligned 25 lines; fast check 465 at 3712 bytes, full build 446). Left: retail's
 // dead store of zero to the speed vector's i (0x294552, overwritten at 0x294feb) is missing, 9 bytes, so the walk head gets
 // a pad and every later line is two off; the walk's position and offset vector take each other's homes (position at 0x94,
 // retail shares 0x20 with the post-walk vector); the character and shortest-distance slots are swapped (0x6c/0x74);
@@ -189,6 +189,24 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // vector stored before its forward vector 442 (aligned 68: the tail stores then interleave exactly as retail); with that, the
 // nearest fallback's add through vector3f_add_scaled 442 (same code). Matched callees 0x293d30/0x294050/0x295600 take (direction, strength)
 // as separate pointers, so no real record for the speed/offset aggregate exists among them.
+// Lane 9 r98 (fast, control 465; the fast image carries the "builds differently" caveat, as before): the walk's two vectors named
+// member_position/member_offset 465 (homes unchanged: position 0x94, offset 0x20, retail the reverse); 0x294669 with every product
+// written scale-first 465 (same code); the speed zeros as one chain `i = j = k = 0.0f` 464 (store still gone, j/k order swapped); the walk
+// dot as dot3f(forward, offset) 465 (same code); the neighbour count as a long 712 (retail tests it with `test si, si`, so short is
+// right). Retail's slots also show the object pointer at 0x6c and the nearest distance at 0x74 (ours the reverse), the same reversal
+// as the walk's two vectors. Body restored.
+// Round 161 (m3 lane 6; fast control 465, plain 446): the speed vector's i set with `+=` the speed 465 fast, 446 plain (the
+// zero folds, the store stays gone); the three speed zeros before the forward scale 468 fast, 449 plain; the nearest distance
+// and point declared after the zeros 481 fast, 458 plain. Lead: the walk's self test as an if-block around the rest of the body instead of `continue` 462 fast, 455
+// plain (3712 bytes): retail's dead store of zero to the speed vector's i at 0x88 comes back, the walk head's pad goes and
+// the walk's jumps are retail's (masked aligned 25 -> 22), but the pool record's spill moves below the centroid sum (record
+// 0x78, sum 0x7c-0x84, retail sum 0x78-0x80, record 0x84), so the body is 4 bytes short and every later jump differs. On
+// that form: the record or the centroid sum renamed to sort last or first 462 (homes unchanged); one exit for the early
+// test (the body inside `if (parent == NONE && member)`) 462 fast, 455 plain (same code); plain, on the if-block form: the
+// request's speed vector stored before its forward vector 458 (aligned 84 -> 82, masked 22); the nearest point copied before
+// its distance 458; the neighbour count raised before the position sums 456 (the record's spill stays at 0x78 in all three).
+// Next: the if-block form plus whatever puts the record's spill (shared with the cohesion block's 3 - total) back above the
+// centroid sum.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

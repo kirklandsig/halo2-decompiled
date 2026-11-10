@@ -430,6 +430,7 @@ void *function_1e5240(long actor_index);
 real function_2683f0(long actor_index, long node_index, short type);
 void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *sample, s_2640c0 *motion);
 
+// MiniMax S (11-10): no lower score (412): a plain long for the maximum gives 428 (worse) and is reverted; retail still takes the actor index in EAX where ours loads it from the stack, and the frame is 0xa4 against retail's 0xa0.
 // MiniMax R (11-05): no new form, no lower score; retail takes the actor index in EAX and pushes ebx/ebp/esi
 // before the actor lookup, ours reads the argument from the stack and pushes after it.
 // MiniMax B (11-04): no new form, no lower score.
@@ -647,6 +648,11 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // from its stack home 12 times (retail keeps it in EBX, flags in stack bytes). `maximum` as a plain word 429 (1616 bytes);
 // sample/update declared at function scope 412; the 0x2641c0 result in its own bool 412; old_state short 413; the actor
 // pointer declared then assigned 412.
+// Round 143 (m3 lane 8, fast with 0x1e34e0): without 0x2641c0's noinline declaration this body inlines it as retail
+// does (497, 1688 bytes), but so does 0x264210 (68 -> 139 bytes, unmatched), while 0x25d020, 0x1be120, 0x1fba10,
+// 0x25c230 and 0x265680 stay matched: the lead narrows to keeping it out of 0x264210 alone. On that inlined form: update
+// as long 495, sample/update at function scope 497, maximum a plain word 497, sampled_one as long 496; the actor stays a
+// stack argument (0x1e34e0 26) in all of them. All restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
@@ -1124,6 +1130,12 @@ real function_296600(long actor_index, long prop_ref_index);
 // array with object-first/null-override unit 352 (plain 295, 1255 bytes); scalar object-first/null-override 352.
 // NOT kept: scope/array forms have no effect, orders regress or gain too little, and object-first uses a branch
 // absent in retail and regresses plain. Original declarations and ternary restored; array forms were exact-only.
+// Round 139 (m3 lane 7, plain with the file's other functions; --fast misbuilds this one): the two 0x1c8df0 calls through one
+// file-local sight helper (actor, sample, target cell, target, root, prop, current) that writes `!current` and the hit pointer among
+// its arguments: plain `inline` 434 (1133 bytes, it stays out of line), forced inline 208 (1273 bytes); `!current` written in both
+// calls with no named local, re-measured, 267 (1278 bytes); the three object lookups through the existing ai_object_get 163 (same
+// code); current as a byte 163 (same code); the time read ahead of the prop lookup 168 (1269 bytes). Retail computes the hit
+// pointer and the mode ahead of the pushes and then `sete` for `!current` between them, storing it for the second call.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

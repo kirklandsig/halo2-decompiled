@@ -75,12 +75,18 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
+// MiniMax I (11-09): no new form, no lower score; the fast check gives 90 (575 bytes against retail's 575)
+// and the listing confirms what the earlier rounds recorded: retail's outer loop carries a pretest
+// (`cmp ebp, edi; jle` at the loop's head, with the bottom test `cmp edi, ebp; jl` jumping back into the
+// body), our do-while has no pretest; retail holds the slot pointer in EDX (`lea edx, [ecx + esi*4 + 0xc]`)
+// and the predicate result in CL (`setne cl`), ours holds both in ECX and AL; and the whole tail after the
+// loop still differs because it needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // MiniMax I (11-09): no new form, no lower score; the plain and the fast check both give 90, retail's outer pretest (cmp ebp, edi; jle) is still missing from our do-while and the tail call still needs 0x2b5d0's own body, so the function stays blocked by that stub.
 // MiniMax I (11-06): no new form, no lower score; retail's outer loop still has a pretest (cmp ebp, edi; jle) that our do-while lacks, the player-scan base pointer is still EDX in retail against ECX in ours, and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // MiniMax H (11-05): no new form, no lower score; the tail still needs 0x2b5d0's own body (a stub in
 // src/stubs/lane_k.cpp, another file), and the count clamp and the slot test still differ.
 // MiniMax H (11-04): no new form, no lower score; the tail still needs 0x2b5d0's own body.
-// score 90 (was 109): one shared view count now feeds terminal indexing and the tail; the outer
+// score 90 (was 90; 109 before the shared view count): one shared view count now feeds terminal indexing and the tail; the outer
 // pretest, loop-entry source zero and terminal registers still differ. The tail call still needs 0x2b5d0's
 // own body (it takes the mode in EAX and the count on the stack), which is disabled here and stubbed in
 // src/stubs/lane_k.cpp, a file this lane may not edit: BLOCKED-BY 0x2b5d0.
@@ -282,6 +288,15 @@ void function_2232a0(void)
 // BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp). Giving that stub a real body here drops this function to 60 but
 // breaks 0x13b90, 0x1dc40 and 0x223240, so it stays stubbed. Retail's outer loop still has the pretest our
 // do-while lacks and the player-scan base pointer is still EDX in retail against ECX in ours.
+// Round 159 (m3 lane 6, fast; 0x223240 and 0x2232a0 match each time; aligned counts from an instruction diff, 67 for
+// this body): the source zeroed at the loop top with the found arm through a default-first inline getter (the
+// `index != NONE && g_4686c4 != NONE` test that 0x1a58b0's file writes in place for the same table) 122 (aligned 60:
+// retail's loop body with both zeros, no pretest); that as a for loop 185 (585 bytes, the view count spilled before
+// the loop); the for loop with the view count declared after it 83 (575 bytes, aligned 78: retail's pretest, but the
+// zero/count/record registers rotate; seven points with a one-caller helper, not kept); as a while loop 83 (same
+// code); the counter declared in the for 164, declared early and assigned in the for 164; the for loop with
+// `local_2 + 1` at both uses 120 (aligned 63); the do-while with the view count declared after it 135; the getter
+// without the loop-top zero 122 (aligned 66). Of the eight functions that block 0x2b5d0, 0x131030 now matches.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

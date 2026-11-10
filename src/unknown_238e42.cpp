@@ -888,6 +888,16 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// MiniMax C (11-09): no new form, no lower score (90): the whole difference is still the colouring of the two
+// values the callee 0xac050 takes: retail loads the selected identity pointer into EAX and the requested rank
+// into ECX, ours keeps the pointer in ECX and the rank in EAX and copies the pointer into EAX before the call;
+// that needs 0xac050's parameter order changed in src/online_teams.cpp, a file this lane may not edit.
+// MiniMax I (11-09): no new form, no lower score (90); the aligned listing shows that the listing marks the
+// call to 0xac050 and every jump after it only because our build inserts a two-byte `mov eax, ecx` where
+// retail loads the identity pointer into EAX and the requested rank into ECX; that extra pair of bytes
+// shifts every later instruction by two, so the jump displacements are reported as different although the
+// jump targets agree; the colouring itself is decided by the callee's parameter order, which lives in
+// src/online_teams.cpp: BLOCKED-BY 0xac050.
 // MiniMax I (11-09): no new form, no lower score; the whole difference is still the colouring of the two values the callee 0xac050 takes, which needs that callee's parameter order changed in src/online_teams.cpp, a file this lane may not edit.
 // MiniMax S (11-08): no new form, no lower score (90); the difference is still the colouring of the two values the callee 0xac050 takes: retail loads the selected identity pointer into EAX and the requested rank into ECX, ours keeps the pointer in ECX and the rank in EAX and copies the pointer into EAX before the call, which costs two bytes and shifts every later jump.
 // MiniMax A (11-06): no new form, no lower score; the whole difference is the colouring of the two values

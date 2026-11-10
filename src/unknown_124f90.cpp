@@ -1254,6 +1254,13 @@ long function_2197f0(real gain);
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
 // score 94 (was 94; 177 before lane 10 round 69): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
+// MiniMax C (11-09): no new form, no lower score (94).
+// MiniMax H (11-07): no new form, no lower score (94); the fade block still holds the running
+// difference in another register (ours xmm2, retail xmm3) and still divides by the fade-in time in
+// the other form (ours multiplies by its reciprocal).
+// MiniMax R (11-06): no new form, no lower score (94).
+// MiniMax D (11-06, run 49): no new form, no lower score (94); the first arm's sum still differs (retail loads the gain into a register and adds the interpolation into it), the register rotation (inverse, elapsed, 1.0, fade-out) still differs and the gain is still carried differently into the last arm.
+// score 94 (was 177): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
 // 1.0, fade-out), and the gain value carried into the last arm.
 // Round 160: the gain and ducking gains as s_decibels, the interpolation by value and the hold sum through the
@@ -1444,6 +1451,14 @@ long function_2197f0(real gain);
 // P392: Complete composite/simple overlap admission, positive/complementary bool/byte/short/long:
 // 94/94/94/94/94/94/94/94. NOT kept: no native elapsed/reciprocal/gain-load equality; one-use outcomes
 // require a match. Original comparisons, floating groups and whole body restored.
+// Round 139 (m3 lane 7, fast with 0x1251e0): the first arm's sum written interpolation first (`decibels_interpolate(...) + gain`, for
+// retail's gain load into a register) 156 (687 bytes, frame 0x10 from the by-value copy); that on the division form 150 (682), with a
+// fade_out local 153 (682). On the division form (no inverse local, ternary clamp, 678 bytes): a fade_out local declared inside the arm
+// for the product only 125; a fade_out local with the test `hold + fade_out` 128 (same code as `fade_out + hold`); with the time sum
+// product first 128 (same code). An inverse local with a fade_out local and the clamp as `1.0f > time * inverse ? time / fade_in :
+// 1.0f` 171 (644 bytes), as `t = time / fade_in; if (!(1.0f > time * inverse)) t = 1.0f;` 169 (644). Without the pragma pair around
+// the call to 0x221810 221 (717 bytes: that call then inlines). Left as before: the reciprocal is made after the product's first factor, and
+// elapsed keeps XMM2 where retail has XMM3.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3056,6 +3071,13 @@ static inline short sound_voice_find_available_channel(char type)
 // "Assume failure" (`result = false;` before the channel work, `result = true;` before the commit's goto, nothing in
 // the failure block): after the search 132 (430, stack byte), before the search 129, with the defaults first 134
 // (436), as a byte 137 (439), with the while scan 135/135 (441).
+// Round 139 (m3 lane 7, fast): the channel search, buffer choice and commit as an inline step returning a bool, the
+// caller keeping `bool result = true` and running the failure calls on a false step: with plain `inline` the step
+// stays out of line, 464/464/465/464/464 (98 bytes) for the five forms below; forced inline: defaults before the
+// channel test with `result = step` 128 (431 bytes), defaults inside the channel block 122 (430), defaults first with
+// `if (!step) { result = false; ... }` 126 (435), defaults first with `(byte)~status & DSBSTATUS_PLAYING` 124 (433),
+// defaults inside with that status test 121 (430). Frame eight and the entry index load before `sub esp, 8` appear in
+// the forced forms, but the head's registers and the failure block's place still differ; none kept.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {

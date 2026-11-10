@@ -1534,6 +1534,10 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // Full-array defaults before first/second/both collections 166/131/177; common
 // after queries/at declaration 193/188; slot defaults in first/second/both scans
 // 168/137/186. NOT kept: native post-scan tail shape not recovered; original restored.
+// Lane 9 r98 (fast, 0x251f8d listed, control 83): 0x199dc9 taking `long *` (cast at its 0x594a0 call, callers pass &locals) 83
+// (same code; 0x251f8d stays 20); both query maxima as if/else 83 (same code); on that, the three qsort calls written out 119 (435
+// bytes); plus index fills in both branches 174 (418); plus the index fill in branch two only 169 (420). Body restored; the reload of
+// player_count after 0x19a9b4 is still the blocker noted above.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2615,6 +2619,7 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// MiniMax S (11-10): no new form, no lower score (95): the count copy, the item pointer and the call result keep the next stack slot round from retail's, and the voice query still keeps the entry's address where retail reloads the player.
 // MiniMax R (11-09): no new form, no lower score (95 in the reduced build); the count copy, the item pointer and the call result keep the next stack slot round from retail's, and the voice query still keeps the entry's address where retail reloads the player.
 // MiniMax I (11-06): 77 (921 bytes), not kept: the last widget index (bitmap_b) hoisted to function scope with
 // the other three declared inside each of the two loops, the second loop on a counter of its own (j), and the
@@ -2783,6 +2788,11 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // pointer/reference and direct/captured mode contracts: eight forms 95 each.
 // NOT kept: no gain or equality; original helper, both uses and complete body restored.
 // Frame 0x788 agrees; scalar homes, voice-query reload and final screen receiver remain.
+// Round 159 (m3 lane 6, fast): the third loop counting with shown_count itself 211 (931 bytes); the slot helper's
+// mode as long 95 (same code), its slot as short 95 (same code); the second loop's team defaults declared after
+// the helper call 189 (928 bytes); the first loop's search through local_player_find 256 (933 bytes); the first
+// loop walking an item pointer (`item++` in the for) 97. The last loop calls only 0x22ee47 (matched), so its
+// spill choice (screen left in its home, bitmap_a in EBX) is not the 0x53b40 chain's doing.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

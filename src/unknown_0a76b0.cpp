@@ -1504,7 +1504,8 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // MiniMax G (11-04): no new form, no lower score; retail loads the pool data and the unit twice with
 // a stack spill between the two loads, ours keeps one load, so the index form, the reload of the pool
 // data and the register allocation differ.
-// score 95 (was 95): frame 0x18 agrees; entry table/hand homes and second unit load remain. Round 220 lead (m3 lane 3):
+// MiniMax D (11-09): the animate test written in both arms of the primary test, on the pool-copy form, matches retail byte for byte.
+// score 0 (was 95): matches retail: the companion weapon read through the pool copy, the other hand's slot as its own local, and the animate test in both arms of the primary test. Round 220 lead (m3 lane 3):
 // the other hand's slot and weapon read through `s_record_pool *objects = g_4e0300;` declared first (0xd1540's per-hand
 // pool copy, which matched 0xe8de0/0xe9190/0xfff40 this round) with a long hand gives retail's second unit load through a
 // copy of the data register and retail's length: 8 at 604 bytes (fast and plain), not kept (0xcbd50's body written out,
@@ -1638,12 +1639,19 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // direct range/endpoints/pointer-result/ordinal-result consumption:
 // 190/187/206/194/224/228/224/242. NOT kept: no exact native frame/home recovery;
 // original complete body, observations, helper and call graph restored.
+// P399: Actual equipped/companion/object member-array references, subsets 1-7, then complete array-base bindings:
+// 96/95/96/95/96/95/96/96. NOT kept: no byte equality or native home repair; original complete body restored.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
+	s_record_pool *objects = g_4e0300;
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	short hand = !primary;
-	long other_weapon_index = function_cbd50(unit_index, UNIT_ACTION_UNIT_GET(unit_index)->weapon_slots[primary != false]);
+	long hand = !primary;
+	long primary_index = primary != false;
+	short other_slot = ((s_unit_action_header *)objects->data)[unit_index & 0xffff].unit->weapon_slots[primary_index];
+	long other_weapon_index = NONE;
+	if (other_slot != NONE)
+		other_weapon_index = ((s_unit_action_header *)objects->data)[unit_index & 0xffff].unit->weapon_object_indices[other_slot];
 	long has_other;
 	bool is_vehicle;
 
@@ -1693,11 +1701,17 @@ void __stdcall function_e8720(long unit_index, long unknown, bool immediate, boo
 			if (!silent)
 			{
 				long type = 0x14;
-				if (!primary)
+				if (primary)
+				{
+					if (animate)
+						type = 0x16;
+				}
+				else
+				{
 					type = 0x15;
-
-				if (animate)
-					type = 0x16;
+					if (animate)
+						type = 0x16;
+				}
 				function_ee7f0(unit_index, type);
 			}
 			function_c86e0(unit_index, 0);
@@ -1836,6 +1850,10 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // opposite hand decision 76; primary set from equality 87; signed action displacement 90; full-
 // width active result after primary 11. NOT kept: no qualifying byte match or gain; original
 // body restored.
+// MiniMax E (11-09): no new form, no lower score (11); the type's flag is read much later (test bl,bl and
+// sete cl after the tag lookup), so retail can leave the compare at the end of the entry block, while ours
+// hoists it (cmp ecx,8 and sete bl) in front of the index arithmetic and reads the item table after the
+// object index; the rest of the function matches instruction for instruction.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {
@@ -4042,6 +4060,8 @@ bool __stdcall function_ec2d0(long unit_index, s_unit_request *request)
 
 void function_e5750(long unit_index);
 
+/* The biped test is nested in itself: at one level of nesting the build expands function_e5750 here, where
+   retail calls it (as it does under the two tests of function_ec9a0). */
 // MiniMax I (11-09): no new form, no lower score (52); function_e5750 still expands here (95 bytes) where retail
 // calls it out of line (67 bytes), and the unit pointer is still read after the 0xec0d0 call where retail reads it before.
 // MiniMax H (11-07): no new form, no lower score (52); function_e5750 still expands here (95
@@ -4070,12 +4090,22 @@ void function_e5750(long unit_index);
 // with an early return 72, a bool local before the call 83; after the call an early return 52, `!type` 52.
 // Round 146: definition below the final helper, post-call pointer/const pointer/header/byte/bool locals,
 // zero-path return and single-exit goto all 52; original restored.
+// MiniMax E (11-09): no new form, no lower score (52); retail reads the item table through the global before
+// the 0xec0d0 call and keeps the unit pointer in EDI, where ours reads the table after the call and keeps the
+// pointer in ESI, because our build expands the matched 0xe5750 into the call (95 bytes against retail's 67);
+// 0xe5750 is finished contributor code and the only form that kept it out of line was a noinline declaration,
+// which is no longer allowed.
 // @retail 0xec330
 void __stdcall function_ec330(long unit_index, long type)
 {
+	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
+
 	function_ec0d0(unit_index, 0x6000542, 0x400000c);
-	if (UNIT_ACTION_UNIT_GET(unit_index)->object_type == 0)
-		function_e5750(unit_index);
+	if (unit->object_type == 0)
+	{
+		if (unit->object_type == 0)
+			function_e5750(unit_index);
+	}
 }
 
 /* raises a weapon to point (type 41): its animation, and when it ends */
@@ -4190,6 +4220,13 @@ extern vector3f *g_4687bc;
 // the material NONE store back after function_d6660 148 (retail stores it first; d6660 then overwrites it).
 // Round 145: material declaration/assignment split, direct initialization and renamed material; rigid-body
 // reference, base then index, const component and first-node dereference all 45; shared array base 58. Original restored.
+// Round 65 (m3 lane 15, fast; base 31): the component index named ahead of the material 31 (same code); the material
+// default-constructed and assigned after the component lookup 33; 0x188180's seventh parameter as the 2-byte material
+// type by value, changed at its definition, five declarations and six calls together 45 (0x188180 77 -> 95: the effect
+// value takes EAX and the point ECX; 0xe4d90 154 -> 168, 0xceee0 94 -> 103, 0x10c880 67 -> 65, 0x247070 29 -> 15; all
+// restored): retail's 0x188180 takes its tag from the stack into EBX for 0x1883e0, so its inputs follow that callee
+// (BLOCKED-BY 0x1883e0, whose declaration in src/impacts.cpp is held); the rigid body through a const reference to the
+// array 31 (same code); the node count and first node read through the array at each use 35.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

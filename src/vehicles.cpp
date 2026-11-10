@@ -657,6 +657,14 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // speed/helper/both then immutable both: 225/129/126/127/225/309/225/309. NOT kept:
 // one-use results do not match; paired doubles grow to 1150/1144. Original helper and full
 // body restored; entry velocity registers, early unity and later SSE/x87 homes remain.
+// P400: Reciprocal arithmetic domains, initial/helper/both double receivers of real
+// division 289/507/513; double numerator with real receivers 284/507/530; both double
+// divisions/receivers 511; complete component division 126. NOT kept: no exact
+// precision or unity-allocation repair; original helper and complete body restored.
+// T78: Final retained-magnitude admission at its post-approach producer,
+// bool/byte/short/long positive then complementary: 156/156/161/160/156/156/161/160.
+// NOT kept: every one-use result regresses and grows to 1153..1157/1144. Original
+// complete body restored; entry velocity/unity and later SSE/x87 homes remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -959,6 +967,10 @@ __forceinline long vehicle_round(real value)
 // and the dot written out (diagnostic) 24/83/93/94, the dot alone 10; vehicle_cross at the side cross 8;
 // vehicle_cross first with cross3f_staged at the side 6; cross3f_staged first with vehicle_cross at the side 10;
 // cross3f_staged at both 10; the strength test as `mode == 4 || mode == 2` 10; a tick-length getter for the rate 12.
+// Round 84 (lane 10, fast), at 8: an up pointer at the first cross with cross3f_staged at the side cross 6 (current
+// body; one-use pointer, needs a match); axis set to forward before the mode test with the cross overwriting it 173;
+// the side scale named before the side cross 82; the three vectors declared at function scope 11; the velocity call
+// before the strength value 146; cross3f_staged at the side with the dot as dot3f(&linear_velocity, &forward) 8.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -1728,11 +1740,11 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
    sideways drift, speed, forward speed and two engine overlays, the
    graph's function animations and the three aiming overlays) to the
    callback with its value */
+// score 9 (was 9): the cross is now retail's; left: the two VEHICLE_GET lookups' SIB order (2), the three
+// reloads after the overlay-kind loop (3) and the forward-speed sum's first two products (4).
 // MiniMax R (11-06): no new form, no lower score (9); the flat sum keeps (i + j) + k here for every term order and
 // operand orientation and for the array-member spelling too, while a compile-only probe of the same expression
 // gives retail's (k + j) + i order when the three products have fresh component nodes.
-// score 9 (was 9): the cross is now retail's; left: the two VEHICLE_GET lookups' SIB order (2), the three
-// reloads after the overlay-kind loop (3) and the forward-speed sum's first two products (4).
 // Earlier at 13: Graph-loop scope fixes constructor/load scheduling; header SIB forms, join reload
 // order and cross/dot operand ranks remain.
 // Earlier at 40 (was 44): the overlay lookups now call 0x1cb9d0 directly (each gets its own result home: frame 0x9c as
@@ -1836,6 +1848,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // the i term retail's at +1 local, 13), eight term orders on it 13 each; one forward pointer for the cross and the
 // speed 17; a named header pointer for the first lookup (0xef4f0's form) 13, for both 13 (SIB unchanged). Matched
 // 0xeeb80 gets retail's data-first SIB from the same two lookup lines.
+// Round 84 (lane 10, fast), at 9: the graph/state guard as an early return 9 (same code); the forward speed computed
+// once before the guard 508 (2043 bytes: VC computes it eagerly, no sinking into the arm); both lookups indexed by
+// `(word)vehicle_index` 178 (2011 bytes); vehicle_speed_fraction plain `inline` 581 (1803 bytes, out of line under
+// /Ob1); the update test written `vehicle->unknown400 != state->graph_tag_index` 10.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2737,6 +2753,9 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // the gear test `!= NONE` with the computed arm first 18; the wrap helper called with `torque * dt` 70, with the
 // contacts store too 71; torque, throttle or i renamed to sort first or last 10 each (spill slots ignore names); a
 // tick-length getter for dt 10, for dt and the braking test 65.
+// Round 84 (lane 10, fast), at 10: every contact access written `state->contacts[i].x` (no contact pointer) 46; the
+// half angle written into both trig calls 65; braking preset false and set by the test 222; the spin as `dt * torque`
+// 10 (same code); dt read after the vehicle and definition lookups 192.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3868,11 +3887,13 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 /* the orientation the vehicle's physics aims for: its facing held level,
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
+
+// score 136 (was 136): projection/cross input ranks and angle/trig homes remain;
 // MiniMax E (11-08): no new form, no lower score (136); the dot's i term still multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy still moves one word and two floats where retail moves three words, and the trig block still spills the sine and cosine through the stack where retail keeps the angle on the x87 stack.
 // MiniMax E (11-07): no new form, no lower score (136); the projection and cross operand ranks and the
 // x87 angle and trig homes are unchanged from the earlier rounds' forms.
 // MiniMax R (11-06): no new form, no lower score (136); the entry and the frame agree, and the body differences of the note below are unchanged.
-// score 136 (was 136): Fallback up setter with staged cross, native up receiver and rotation setters kept;
+// Earlier (136, was 136): Fallback up setter with staged cross, native up receiver and rotation setters kept;
 // projection/cross operand ranks and trig homes remain.
 // Shared cross 204; external cross 326; native forward/up/both 263/269/298;
 // shared cross with forward/both 263/298. Wide angle 177 rejected without exact equality;
@@ -4034,6 +4055,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // then immutable complete inputs: 179/179/175/169/169/179/165/165.
 // NOT kept: all regress and lengthen; unmatched input copies require equality.
 // Original shared projection providers and entire body restored; projection/cross/trig homes remain.
+// T80: Canonical fallback comparison, degenerate/normalized bool/byte/short/long:
+// 159/159/159/159/159/159/159/159, all 831/806 bytes. Projection/cross input ranks and angle/trig
+// homes remain.
+// NOT kept: no byte equality or qualifying gain; original complete body restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4276,6 +4301,7 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
+// MiniMax S (11-10): no new form, no lower score (48): the marker count sum still lands in EAX here and in EDI in retail, the scratch zero store still follows the sum here and precedes it in retail, and the 0x146320 set-up pair still waits on that file.
 // MiniMax E (11-08): no new form, no lower score (48); the marker count sum still lands in EAX here and in EDI in retail, the scratch zero store still follows the sum here and precedes it in retail, the effect block's tag and colour still ride in the other order, and the 0x146320 set-up pair still waits on that file.
 // MiniMax E (11-07): no new form, no lower score; the marker count sum still lands in EAX here and in
 // EDI in retail, and the 0x146320 set-up pair still waits on that file.
@@ -4374,6 +4400,7 @@ extern byte g_5107ee;
    marker's downward pitch, the distance and the vehicle's speed; the
    effect's last marker sits between the marker and the hit, aimed along
    the reflected ray */
+// MiniMax S (11-10): no new form, no lower score (41): the cone call's EDI-before-ECX pair still waits on 0x146320's file, and the middle-point copy is still scheduled ahead of the reflection's loads.
 // MiniMax E (11-08): no new form, no lower score (41); the middle-point copy is still scheduled ahead of the reflection's loads where retail stores its z and y words after the first products, retail keeps the colour constant in ECX across those products while ours materialises it in EAX, and the cone call's EDI-before-ECX pair still waits on 0x146320's file.
 // MiniMax E (11-07): no new form, no lower score (41); the cone call's EDI-before-ECX pair still
 // waits on 0x146320's file, and the middle-point copy is still scheduled ahead of the reflection's loads.
@@ -4508,9 +4535,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
    definition's sound */
 // MiniMax R (11-09), at 176: the override search with a NULL found pointer and the Havok world read into a local give 151; the compression clamp spelled out as a store then if/else-if (the PIN macro's ternary expands to the opposite comparison) gives 141 at retail's 1361 bytes; left: the world loaded into EAX then moved to ESI, the fallback's zero held across 0x168f40 and the block layout.
 // MiniMax R (11-06): no new form, no lower score (176); the frame agrees and the permutation and flag-store order of the note below are unchanged.
-// score 176 (was 176): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
-// scalar/SSE operand homes, ray/world staging and fallback-result lifetime remain; first differing branch is
-// still +0x5a.
+// score 141 (was 176): Frame 0xec, the override search and ray translation agree.
+// World is loaded through EAX then ESI; fallback zero/select and the final byte flag writer differ.
+// The first differing branch is still +0x5a.
 // Earlier at 206 (was 206): Frame 0xec agrees; changed/permutation stores, found-index retest, ray scale/world/zero and fallback-result ownership remain.
 // Earlier at 206 (was 251): every frame slot now retail's; left: the override search's exit (retail tests the found
 // every frame slot now retail's; left: the override search's exit (retail tests the found
@@ -4714,6 +4741,10 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // P391: Per-record match/rejection results at the original search test in bool/byte/short/long:
 // 176/176/176/176/176/176/176/176. NOT kept: one-use decisions do not match; original
 // loop, found-index retest, field observations and complete body restored.
+// P400: Native frame/search/translation now agree. Fallback contact truth converted to real,
+// direct bool/byte/short/long 158/158/158/158; exhaustive test results 152/152/142/157.
+// NOT kept: no exact one-use result or gain; 1348-1354 bytes moves away from native 1361.
+// Original full body restored; world receiver, fallback zero/select and final flag writer remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -5090,6 +5121,14 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P396: Explicit normalization admission, bool/byte/short/long positive and complementary:
 // 749/749/749/749/749/749/749/749. NOT kept: no exact tested gate or native entry-definition/
 // SIMD recovery; original bypasses, switch, observations and complete body restored.
+// T76: Complete cases on the table/direct-active graph: numeric ascending/
+// descending, Boolean/scalar/vector/ratio first, then stable simple/bypass first:
+// eight at 749, 2974/2974 bytes. NOT kept: no entry-definition or SIMD recovery;
+// original complete dispatch and body restored.
+// T78: Case-owned preliminary square/chain results, mutable/immutable, averaged turning,
+// paired square+chain, all three and immutable all: 749/749/749/749/749/749/749/749.
+// NOT kept: no gain or native entry-definition/SIMD recovery. Original complete body
+// restored; frame 0x18 agrees, zero/result/unity residence remains.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5725,6 +5764,14 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // P396: Complete lateral-flip outcome producers, false-default/complete/nested/failure-first,
 // bool then long: 1064/1087/1101/1086/1098/1097/1101/1070. NOT kept: tested flags do not match; 1064/1070 grow
 // to 5104/5094 bytes and the one-point lead is below gate. Original whole body restored.
+// T76: Complete bank result: strafe/turn seeds, nested conditional, sum default,
+// nonnegative-strafe/turn first, same-sign admission and inner conditionals:
+// 1097/1088/1097/1088/1087/1087/1117/1097. NOT kept: ties/regressions;
+// every frame stays 0xf8 versus 0xd8. Original bank flow and full body restored.
+// T78: Final spin prior-state/difference/selected-change ownership, seven subsets,
+// then branch-owned differences: 1104/1076/1087/1104/1104/1076/1104/1087. NOT kept: the 1076
+// forms shorten to 5088/5094 while frame stays 0xf8/0xd8; other forms tie or regress.
+// Original complete feedback and body restored; handle/matrix/vector homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

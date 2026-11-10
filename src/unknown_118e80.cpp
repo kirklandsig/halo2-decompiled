@@ -1107,7 +1107,7 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // parameters as (physics, forward, up, output) give the first 0x1e5af0 call retail's EAX/ECX/EDX setup (94 -> 92).
 // MiniMax H (11-04): the squared length written as i*i + j*j + k*k 94; the component order
 // does not move.
-// score 94 (was 94): frame 0x1f0 agrees; basis MOV/LEA, squared-component loads and force-result
+// Earlier (94, was 94): frame 0x1f0 agrees; basis MOV/LEA, squared-component loads and force-result
 // publication differ; the force formal still requires a zero extension.
 // Earlier: retail pushes the whole found-flag dword to 0x1c4b00 and keeps its MOV/LEA
 // order at the first 0x1e5af0 call; both callees live in files this lane may not edit
@@ -1201,6 +1201,14 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // On the current body (fast): the existing length_sq3f for the squared length 94 (same code: VC orders the
 // products itself); one physics-output pointer local for its six casts 94 (same code); up/forward pointer locals for
 // the stores and both 0x1e5af0 calls 289 (1042 bytes); the definition-flags pointer declared beside the tag 273.
+// Round 159 (lane 5, fast with the file's 18 other functions, none moved): still BLOCKED-BY 0x1c4b00's `long force` parameter,
+// declared in unknown_0a76b0.cpp, unknown_1e67a0.cpp and unknown_0b7740.cpp, which other lanes hold this round (the bool form
+// was not re-measured). Retail keeps the 0x119bc0 result in a stack byte to free EAX for the copy's destination and loads two
+// of the copy's components before the first store, with the force push ahead of the last store. A vector3f member at 0x138 of
+// the output with length_sq3f 90, that passed straight to the flag setter 90, through a named real 90 (two points, not kept);
+// the velocity copy through the first object pointer (no second lookup) 307; the 0x119bc0 result as `!= false` 93. The two
+// stacked score lines above are merged into this one note.
+// MiniMax R (11-10): no new form, no lower score; the squared length still sums the three components in the order the compiler picks (i, j, k) where retail sums them from k down to i, and three component locals that follow retail's order score 90, under the bar; the 0x119bc0 result still travels in al where retail stores it to a stack byte and pushes the containing dword, which needs 0x1c4b00's last parameter declared as a bool in a file this lane may not edit.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

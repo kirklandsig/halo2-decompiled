@@ -1839,6 +1839,14 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// MiniMax C (11-09): score 87 (was 87): no new form and no lower score; retail still hoists the walk's pool into EBX
+// (reloading it from the stack after the bit scan takes EBX) where ours keeps it in memory and loads it into ECX at
+// each use, retail still keeps the selection on the stack where ours caches it in EDI and reloads it at the loop top,
+// retail still stores the best at the loop head where ours stores it in the improving branch, and retail still pops the
+// score to the stack and compares the two scores on the x87 stack (fld the best, fld the score, fcompi) where ours
+// pops the score to the stack and compares it with comiss on xmm0. The in-arm compare (the
+// compare inside the team-match branch) reaches 126 with retail's homes and x87 sequence, but the pool and selection
+// stay as they are. The permuter (300 s, 123 tries) left it at 87.
 // MiniMax I (11-09): no new form, no lower score; retail still hoists the walk's pool into EBX and keeps the selection on the stack where ours keeps the pool in memory and the selection in EDI, and the declaration-order reshapes that would move those homes are not applied.
 // MiniMax I (11-06): the walk's reload is what shifts the rest of the listing: the shared helper takes
 // the iterator by pointer, so the pool is re-read from its field into ecx at every step, where retail
@@ -2026,6 +2034,26 @@ void function_269250(long clump_index, long actor_index);
 // selection in EDI with a reload at the loop top, and the found block placed after the loop body); on it a `byte` activity
 // snapshot 126, the group declared in the while condition 126, a `dword` selection 126, the score declared at the top of the
 // walk body 126, the candidate index named before the score call 126 (all the same code).
+// Round 160 (m3 lane 5, fast; this body 89 fast, 87 plain; in-arm 126 plain, 480 bytes): on the in-arm form, the activity snapshot
+// declared first and best before selected 126; the actor's current clump in a named local for the post-loop tests 140; the
+// selection written through a `long *` 126 (same code); the activity read from the global at each step 126; the datum-index
+// selection on the walk variant that calls the out-of-line step 243 (375 bytes). In the in-arm form the scan's count takes EDI,
+// so the selection (EDI) is reloaded at every step; retail spills the walk's pool (EBX) around the scan instead.
+// Round 97 (m3 lane 9, fast; this body 89 fast, 87 plain; aligned in brackets, this body [58]): in-arm compare re-measured 126 (480
+// bytes) [60]: every instruction left is the selection cached in EDI across the walk (ours) against the walk's pool cached in EBX
+// with the selection read from its slot at each use, also after the post-loop calls (retail). On the in-arm form, all 126 [60] and
+// the same code: the score call and compare in an inline helper taking best and the selection by pointer; that helper with the team
+// test inside and both by reference; an unsigned selection; the activity flag read from the global in the walk call; `best < score`
+// with the selection stored first and best declared first. In-arm with the iterator's datum index re-measured 128 [108]. Body
+// unchanged.
+// Round 161 (m3 lane 6, fast; control 87 fast and plain; 0x268840, 0x269580, 0x269250, 0x2694d0, 0x268bb0 matched throughout):
+// the post-walk test turned round (`selected == NONE` creates first, then `else if (selected != current)`) 112 (480 bytes);
+// the score started at 0 instead of best 90 (480 bytes); the activity snapshot taken before the walk's init 87 (same code);
+// best and the selection declared before the walk 90; the compare as `best < score` 87 (same code); all five re-measure
+// listed forms. New: the team read once into a `short` used by the test and the creation call 100 (481 bytes); the actor
+// walk as a `for` with the actor declared in it 87; the creation arm ending in `continue` when nothing is created 87; the
+// selected arm ending in `continue` when the selection is the current clump 87; both continues 87 (the last four the same
+// code). Body unchanged.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

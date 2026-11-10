@@ -1225,6 +1225,14 @@ done:
 	return result;
 }
 
+// MiniMax E (11-10): no new form, no lower score (9): four more spellings of the actor address (a byte base
+// local with an offset local, the offset local alone, the typed subscript and the base after the offset) all
+// compile to the same code as the shared getter: ours keeps the scaled index in the pointer register and adds
+// the base, retail keeps the product in eax and forms the actor with a lea.
+// MiniMax E (11-09): no new form, no lower score (9): the masked slot in a local with the lookup written out
+// and the slot multiplied by the element size both compile to the same code as the shared getter, and the
+// mask written as a word truncation gives 38; the prologue still builds the actor offset in ESI and adds the
+// base where retail keeps it in EAX and forms the actor with a lea.
 // MiniMax C (11-08): forms tried, none lower: the byte offset in a local 9, the masked slot in a local 9, the getter written out 9, the base in a local 9; the permuter was killed at its time limit before it searched anything.
 // MiniMax D (11-06): no new form, no lower score (9); five more spellings of the shared lookup (a data
 // base and a masked slot local in either order, a byte offset local, the slot first, the current one)
@@ -1280,6 +1288,22 @@ done:
 // Further forms: direct decoder result 42; low-mode rejection 38, with direct result 45;
 // path-first reset 21, with direct result 45; nested independent guards 9; native mode
 // snapshot 9; uniform getter observations 58. Original reset path and call values restored.
+// MiniMax C (11-09): score 9 (was 9): retail's prologue is one byte longer than ours (its `lea esi,
+// [eax + edx]` against our `add esi, edx`), so our code is 113 bytes and retail's 114. Eight more
+// getter spellings all compile to our code and score 9: an unsigned offset local, the byte-pointer
+// product `(data + (index & 0xffff) * sizeof(view))`, an array-pointer subscript, the same product
+// with the base added last, an unsigned index local, the array-address form, a signed literal
+// product and a masked slot local. MSVC keeps the scaled index in the pointer register, so the
+// `imul` never lands in EAX as retail has it.
+// MiniMax C (11-09): score 9 (was 9): only the prologue differs: retail builds the actor offset
+// in EAX (`mov eax, ecx`, `and`, `imul 0x888`) and forms the actor with `lea esi, [eax + edx]`,
+// ours builds the offset in ESI and adds the base. A byte subscript, a typed subscript and an
+// offset local all compile to the same code (9), so the register choice is not steerable here.
+// MiniMax C (11-09): score 9 (was 9): the byte-pointer product spelled with a masked slot local
+// (`(s_actor_looking_view *)(g_4f55f0->data + actor_slot * sizeof(s_actor_looking_view))`)
+// compiles to the same code as the shared getter (9): MSVC keeps the scaled index in the pointer
+// register, so the `imul` never lands in EAX as retail has it. Original body restored.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 9 (114 bytes, as retail's); the only difference is the prologue, where retail builds the actor offset in EAX (`mov eax, ecx`, `and`, `imul 0x888`) and forms the actor with `lea esi, [eax + edx]`, while ours builds the offset in ESI and adds the base (`add esi, edx`), one byte short; the shared getter is used by sixteen matched functions of this file, so its spelling cannot change without losing them.
 // @retail 0x296580
 void function_296580(long actor_index)
 {

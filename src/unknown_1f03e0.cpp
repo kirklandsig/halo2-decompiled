@@ -390,7 +390,7 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
     out->k = a->i * b->j - a->j * b->i;
 }
 
-// score 43 (was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's. Left: case 3's
+// score 43 (was 43; before r98 was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's. Left: case 3's
 // arms are laid out none-first (retail selected-first, about 22 lines), the first cross's a.k * b.i and average.i load a first
 // (retail b.i first), both dots sum k, j, i (retail i, k, j) and the inlined 0x1201a0 tail loads j first (retail copies inv first).
 // Round 219 (lane 3; fast, plain for the kept form): case 3's arms swapped (`selected == NONE` first), the existing cross3f_staged
@@ -573,6 +573,15 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // That product follows only a tuple step in the loop or case 3 (`(real)(x * 1.f)`), which breaks the arms: 53 at 977 bytes with 0x1f087b arms [34], arm
 // compute/store orders 53-197. Tail written out, compound, staged, scaled, no inv local, in-tail steps 5 each; early return 27; normalize3d 273; 0x30bf0 262.
 // Up getter at every read 177; typed component and element fields 181; normal, height, stepping getters 178; identities around a and b 197-224.
+// Lane 9 r98 (fast, control 43): both dots written out k, j, i unparenthesized 73 (the dot code is unchanged, the selected arms stop
+// merging); a forceinline contact-entry getter (component, index) at all six entry reads 43 (same code), with case 3 selected-first 178
+// (the same 178 as without it: the getter shifts nothing); case 2 averaging arm and case 3 selected arm both first 215; case 3
+// selected-first with case 2's `selected != 0` arm first 199. Body restored.
+// Round 161 (m3 lane 5, fast with 0x1201a0 and 0x1f2e60; aligned in brackets, control 43 [20]): the extra byte is the inlined
+// 0x1201a0 tail's j product (ours `movss; mulss xmm0` 9 bytes, retail `movaps xmm1, xmm0; mulss [ebx + 4]` 8). Case 1's copy
+// through a named element pointer 225 (995 bytes) [42]; the stepping flag named in the loop 43 [21]; case 2's selected arms as
+// one cross3f_staged call with ternary operands 213 (954 bytes) [65]; the stepping flag as `& 2` 43 [20] (same code); case 3's
+// k row as `normal->k * scale` 43 [20] (same code).
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -813,6 +822,9 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // but every form that does (dot3f in both argument orders 262 [196], a named pointer at each use 265 [203], each with the
 // phases 264-268 [188-203]) colours the state EBX and the forward result EDI (retail EDI/EBX) and drops 0x1e5af0 to 20. On
 // dot3f: settings or old-forward alias removed, result stores swapped in either arm, all 16 subsets 260-267, caller still 20.
+// Lane 9 r98 (fast, 0x1e5af0 matched in each): the state dot with `up` first in each product 163 (same code); the rotation dot
+// with axis first in each product 164; the rotation test dot through dot3f(&cross, &axis) 163; the rotation rows written cosine
+// term first (`limited.k * cosine + axis.k * dot - ...`) 163; the final crosses' workspace renamed `side` 163. Body restored.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result, byte const *state)
 {
