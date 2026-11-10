@@ -2785,6 +2785,17 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // P385: Initial settling-admission outcome bool/byte/short/long, positive then complementary:
 // 63/63/63/63/63/63/63/63. NOT kept: no exact EBP/count/body or flag-store repair;
 // original captured count, every observation and complete body restored.
+// M3 lane 4 r176 (fast, with 0x1d5120; all on the byte test, the header main-rigid-body getter into a long, the count
+// re-read through a second lookup at the call and 0x1d5120's count declared before its result pointer, which re-measures
+// 92 at 265 bytes: call setup, body select and settled store are then retail's, and what is left is the Havok array base
+// in EBP folded into [ecx+ebp+0x18], the body count and the tick pointer also in EBP, 0x9fff in EDI and the split
+// `or` of +0x134): the component looked up once inside the getter call and again at the settle call, no component
+// local, 90 (264 bytes: base in ECX, still folded); the whole admission as one condition with no locals, the
+// settled arm in the if, the +0x134 flag in the else and one shared final clear 128 (295 bytes: the getter runs twice
+// and the final clear is still duplicated and hoisted); the word clear before 0x1c3770 with a byte-view clear of
+// +0x349 at both exits 103 (274 bytes: the word clear narrows by itself as retail's, the byte-view clears split into
+// load, and, store around the pops); the getter at the test and again at the call, no body local, 80 (261 bytes);
+// the first count test through its own lookup as well 126 (288 bytes, the input leaves EBX). All restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -4119,6 +4130,16 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // origin transfer alone/with target/with direction/with both 381/381/381/381;
 // all three transfers through memmove 504. NOT kept: no native home repair;
 // original value producers, complete body and existing helper preserved.
+// M3 lane 4 r176 (fast with 0xe1b60/0xe23e0, both stay matched; base 354 at 1940). Retail's frame: origin +0x40, the
+// first property +0x4c alone (the travel distance later shares that slot), matrix +0x50, limit +0x84, placed +0x88 with
+// the second property's address four bytes into it; ours has origin +0x44, the properties at +0x40/+0x60 and the matrix
+// +0x60. The two properties declared in their own block around the pivot select 360 (1945 bytes, slots unmoved).
+// Re-measured as diagnostic bases: two pivot ternaries 343 (1949), with the `reached` bool 331 (1959), the ternaries with
+// retail's no-parent arm (shift from the position, origin overwritten by *point, z lowered) 331 (1944: origin +0x40 and
+// the first property +0x4c as retail, matrix still +0x60); on that base placed through real_point3d_set 331, delta
+// through vector3d_from_points3d 331, both 331 (same code). On the kept body, the no-parent arm as a shift local with
+// origin overwritten 364 (1935), as a lowered copy of the point with the shift through vector3d_from_points3d 373
+// (1929), as a lowered copy with the differences in place 369 (1933). All restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4970,6 +4991,17 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // normalization result alone/with cosine/with sine/with both 153/158/158/159;
 // both float APIs with forced caller inline declaration 158. NOT kept: all regress;
 // original coefficient producers, rotation declaration and complete body restored.
+// M3 lane 4 r176 (fast with 0x1ecf50/0x30bf0; base 79 at 894). What is left is operand order only: retail copies the axis
+// register and multiplies by forward->i in the first rotation's cross j and k rows, and by forward->j in the staged cross's
+// k and i rows (`movaps reg, reg; mulss reg, [esi + n]`, 7 bytes shorter in all), where ours loads the field first. The
+// first rotation through a private copy of the helper with its cross through cross3f into a local 167 (901 bytes, every
+// product memory-first). Mixes of the field and the pointer, not kept (match-only): the field for the first rotation and
+// the staged cross 60 (887 bytes: the first rotation's cross rows are then retail's, but its dot adds k, j, i with j read
+// early where retail adds i, k, j with k read early, and the staged cross has the copied form on forward->k), that with the
+// reset on the field 60, with the normalize and the reset too 60; the staged cross alone 83 (887), with the reset 83, with
+// the normalize 83; the first cross alone 79 (same code); the normalize alone 79 (same code); the first rotation and the
+// first cross 84 (876), plus the staged cross 89 (874), plus the normalize instead 84 (876); the first rotation and the
+// normalize 63 (892). All restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

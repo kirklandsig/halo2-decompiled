@@ -320,6 +320,12 @@ void player_action_initialize(s_player_action *arg_0);
 // `type[counts]` or with a `(short)` cast 1 each with 0xcbec0 still matching; result declared before the unit 331
 // (0xcbec0 38); the direction test inverted with its arms swapped 419 (0xcbec0 18); a named counts pointer in
 // place of the unit 288 (0xcbec0 45). BLOCKED-BY 0xcbec0 stands.
+// M3 lane 8 r144 (fast with 0xcbec0, 0xcdff0, 0x13cb40, 0x11df30 and 0x14d040, which stay matched; control 134): round 27's
+// form rebuilt on today's file still scores 1 at 1515 bytes (the diff is build/r144/lead-186ab0.patch), only the inlined 0xcbec0
+// count read [edx + edi] against retail's [edi + edx]. On it, at the cycle call: the grenade type through a named short
+// local 1 (same code); the type argument narrowed to a char 289 (1524 bytes); the result stored through a short pointer 1
+// (same code); the direction as a default argument of the local declaration 1 (same code); the unit index chosen by a
+// conditional on the player index 305 (1528). Body restored. BLOCKED-BY 0xcbec0 stands.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {

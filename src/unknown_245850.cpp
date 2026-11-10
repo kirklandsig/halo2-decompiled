@@ -29,6 +29,11 @@ struct s_245850
 };
 
 #pragma inline_depth(0)
+// MiniMax S (11-09): no new form, no lower score (1); the plane index is still loaded with a
+// 16 bit move where retail sign extends it; this file's declaration of the plane lookup
+// changed to a long leaves the callee unresolved in the reduced image and rotates the point
+// registers (117), so the sign extension still has to come from the lookup's own declaration
+// in another file.
 // MiniMax C (11-09): no new form, no lower score (1): the only difference left is the plane index,
 // loaded with a 16 bit move where retail sign extends it; retail's index is 32 bits wide, so the
 // sign extension has to come from the callee's parameter declaration, which is in another file.

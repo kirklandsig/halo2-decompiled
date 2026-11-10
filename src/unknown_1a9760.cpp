@@ -206,6 +206,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // `local_2.n[]` 4; the flag through the record's lookup written again 142 (harness head; fast 237, 1006 bytes); a named half step per row 4;
 // the direction copy as a component loop 122 (harness head); squares accumulated in a component loop 44 (999 bytes,
 // fast); the flag ahead of the copy 4; rows through a per-row element pointer 4.
+// Lane 9 r99 (fast): the length declared at the top and assigned later 4; the reciprocal declared at the top 4; each
+// square sum term cast `(double)(real)(...)` 4; the half-step row without its parentheses 4; the component counter
+// declared at function scope 4 (all the same code).
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

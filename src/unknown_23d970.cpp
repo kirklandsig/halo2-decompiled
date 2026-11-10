@@ -862,6 +862,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // 49/226/223/226/222/220/70/70.
 // NOT kept: all regress; no exact input-copy match. Original shared providers and body restored;
 // right i/j carriers, forward.k reuse and ordinary-angle store bases remain.
+// Round 100 (m3 lane 12, `--fast 0x23de50 0x1f0870`, 45 as the full check): forward copied first and normalized in place for the distance 331; the
+// direction difference written out k, j, i 56 (1264 bytes); the velocity default copied before the offset in the camera arm 47; direction declared
+// first with previous_up assigned after its declaration 45 (same code); the second product reading the direction local 224 (1268 bytes). All restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

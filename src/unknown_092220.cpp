@@ -183,6 +183,7 @@ static __forceinline long function_925c2()
 
 // MiniMax E (11-09): no new form, no lower score; the user flags still load into eax where
 // retail loads them into the dying user pointer register ecx.
+// MiniMax R (11-09): no new form, no lower score; the user flags still load into eax where retail loads them into the dying user pointer register ecx, and the two tests in the other order (15), the flags compared as unsigned (14), the flags in an unsigned local (14) and the constants written unsigned (14) all leave the code as it was.
 // MiniMax R (11-09): no new form, no lower score; the register the user flags load into is the only
 // difference left, and every form of the test I tried leaves them in eax. This round: returning NONE
 // at the bad-flags test instead of jumping to the end scores 98, so the body stands.

@@ -707,6 +707,19 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // `bounds.top = top` store there changes nothing (109); the scripted test written out from the player fields at its
 // second use 375 (1892); the scripted flag set in two steps 454 (1891). What is left once the slots are masked:
 // the tutorial colour's arm order (retail a4 first) and two `mov eax, edi; push eax` argument loads (ours EDX).
+// M3 lane 8 r144 (fast with 0x24ce9d, 0x24c80b and 0x24cedf, matched each time; control 115). With the bool timer: left and
+// top as x and y of a two-short screen point, y written first and top a copy of it 516 (1899 bytes); only x written 109
+// (1889); x written first, then y, top a copy of y 109 (the same code as only x: the y store is removed, so converting the
+// origin to a whole integer point is a source that gives retail's word store); that with 0x24ce9d's text parameter last
+// (retail's setup order) 104, 0x24ce9d still matched (the diff is build/r144/lead-24cf66.patch; not kept: the point's y is
+// dead storage, a locals-grouping form without a match); the reorder alone 110; the reorder with the bool timer and plain
+// shorts 186 (1888). On the 109 form: the tutorial colour as `flag ? a4 : bit ? a8 : a4` 109 (same code); the total height
+// renamed to sort last or first 109/109 (same code: names do not order these homes); the total height declared before the
+// player 471 (1885); the two rectangles declared before origin 109 (same code). Left on the 104 form: retail's homes in
+// order are split flag, origin, scripted/tutorial/timer flags, line height, flash (shared with the row counter), total
+// height, bounds, colour, top, the point, player, view, count, row height (its own home), font; ours packs the scripted
+// flag at -2, shares the row height with the total height and gives the row counter its own home; and the tutorial
+// colour's block order.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
