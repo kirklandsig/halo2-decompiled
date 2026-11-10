@@ -2570,6 +2570,13 @@ struct s_render_transform_record
 	transform4x3f const *transform;
 };
 
+// MiniMax D (11-10): no new form, no lower score; retail calls the transform table's lookup out of
+// line (0x1d6b0) at the second site and inlines it at the first, and this build inlines it at both.
+// This round: making the helper a plain inline in src/unknown_023540.cpp, and adding inline to both
+// of this file's declarations of it, each leave the body at 400 bytes and score 51 and keep 0x1d6b0,
+// 0x152a0 and 0x24040 matching, so the link-time inliner inlines the helper at both sites whatever
+// the source says; reaching retail's shape would need the helper's body written out by hand or a
+// noinline twin, both barred, so the body stands.
 // MiniMax E (11-09): no new form, no lower score; retail calls the transform table's lookup
 // out of line (0x1d6b0) and we inline it, which also makes our body eleven bytes longer, and
 // that helper's inline-ness is set in src/unknown_023540.cpp.
@@ -3261,6 +3268,12 @@ bool function_128c0(s_128c0_settings const *settings)
     return result;
 }
 // MiniMax R (11-09): no new form, no lower score; retail keeps the row's destination pointer in edx over a row base in ebp, while ours counts the destination in esi over a base in ebx and adds one store and a nop that retail does not have.
+// MiniMax D (11-10): no new form, no lower score; retail ORs the 0xf0000000 flag into the locked
+// rectangle's pointer in memory and rereads it, this build holds the pointer in a register. This
+// round: setting the flag on the rectangle's own pBits member instead of through the pointer gives
+// 62 and 383 bytes, the same score as the baseline, and a separate pointer local with the flag set
+// on it gives retail's 399 bytes but scores 63; both reverted, and the rectangle's frame slots still
+// sit four bytes lower than retail's.
 // MiniMax R (11-09): no new form, no lower score; the flag is still set in a register where retail sets it
 // in the frame, and the locked rectangle's frame slots stay four bytes lower.
 // MiniMax A (11-06, run 52), not kept (62 -> 60, under the keep bar) - the destination column is now recomputed for each
