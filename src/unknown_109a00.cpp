@@ -576,6 +576,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // 329/460 (690 bytes, it stays out of line; 0xb7060 lost in the second); only the three normalize calls in the helper 93; force-inlined,
 // given the local pointer 62 (al 43/28), given `&entry->transform` with or without the local 238/238 (the head flips, 0xb7060 lost); the
 // matrix call given `&entry->transform` 56 (same code, re-measured). Body unchanged.
+// Round 100 (m3 lane 12, fast with 0xb7060, which matched in each): body_index short 178; the projection as vector3f_add_scaled(up, forward,
+// -dot, up) 101 (910 bytes); the dot as a statement sum k, j, i on this body 62; `up` as a reference 56 (same code); the inner search as a while
+// loop with its own counter 56 (same code); the outer loop's found test as a break at the top of its body 56 (same code). All restored.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

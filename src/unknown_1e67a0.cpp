@@ -836,6 +836,10 @@ bool g_51e9bc;
 // both 146 (1088); the jitter add as vector3f_add(&offset, &state->velocity, ...) 49 (same code); that with the sign 80, all three 142.
 // Left: the projection's k and j products swapped, the jitter values' registers and spill slots, the 0.2 products' order and the
 // interleaved velocity stores (retail stores velocity.i before it forms the y and z offsets).
+// Round 161 (m3 lane 5, fast, 0x24590 listed; aligned in brackets, control 49 [42]): the sign values as ternaries 64 (1081 bytes,
+// first +0x21) [52]; the on/off values as ternaries 179 (1058 bytes) [73]; each half-scale select folded into its offset product
+// (x/y/z assigned once) 171 (1067 bytes) [82]; the offset declared at the top of the jitter block 49 [42] (same code); the half
+// scales named before each `x = scale_x * x` 56 (1079 bytes) [44].
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

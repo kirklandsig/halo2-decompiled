@@ -1132,6 +1132,8 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 	return ((s_player_weapon_definition *)tags[weapon->definition_index & 0xffff].bytes)->flags;
 }
 
+long function_cbd50(long unit_index, short weapon_index);
+
 // MiniMax E (11-09): no new form, no lower score (254); taking the tag table straight from the global in every loop reaches retail's 1006 bytes but scores 275, and hoisting the copy to the declaration keeps the same 254 with the same code.
 // MiniMax H (11-06): the permuter's best form (246) needs a volatile cast, hand-written helper bodies and a
 // player expression that reads differently, so only its legal part was kept and it gives 284; the tag table
@@ -1155,7 +1157,12 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 // pointer is held in a register and its data is re-read at each use, as in retail; the score drops to 275 and
 // the length is retail's 1006 bytes; the player still lands in ebx instead of ebp, the pool in ebp instead of
 // edi, and g_4e3b44 is still hoisted into edi instead of being loaded into ecx inside the loop.
-// score 254 (was 275):
+// score 215 (was 254): held and pending now come from the existing slot-to-weapon function 0xcbd50 (the idiom matched
+// 0x1e83c0 uses), which gives retail's per-slot `or r, -1; cmp si, -1; je; movsx; mov` code and the pool's data reload
+// inside each lookup, and the tag table is read from its global at each flag test (no `tags` local). Still different:
+// our build keeps the tag table in EBX for the whole function and the pool in EBP, so the player spills to the stack
+// (frame 0x1c against 0x18); retail keeps the player in EBP and the pool in EDI and loads the tag table lazily into ECX.
+// Earlier, at 254 (was 275):
 // The logic matches retail block by block (reads, flag bits 3/4/22/23, stores, count >= 2 pass); only the
 // register allocation differs. Retail keeps g_4e0300 in edi for the whole function, keeps the player in ebp
 // and loads g_4e3b44 lazily into ecx inside the loop; this build keeps the pool in ebx, the player in eax and
@@ -1242,6 +1249,11 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 // P393: Attachment admission before the paired clear traversal, positive/complementary
 // bool/byte/short/long: 254/254/254/254/254/254/254/254. NOT kept: one-use outcomes remain unmatched;
 // pool/player carriers and lazy tag-table acquisition remain. Original whole body restored.
+// Round 160 (m3 lane 6, fast, confirmed plain): NONE-default weapon locals stored after both lookups 303 (992 bytes); a
+// NONE store then a guarded store with the pool global 286; 0xcbd50 for both with the `tags` local kept 215, with the
+// pool global as well 293, with both slots read from the entry unit 308 (1023 bytes); 0xcbd50 with the tag-table global
+// and the pool global 295. On the kept form: the existing bit-3 getter 0x101240 for the held test 215, the existing
+// bit-22/23 getter 0x101640 for the count test 213, both 213 (both inline; gain under 8, not kept).
 // P402: Attachment output walk, lower/upper range, direct hand count, while range and cursor stepped at use:
 // 263/300/252/254/263/300/263/300. NOT kept: best native-length form gains only two; original indexed
 // attachment clear and entire body restored. Pool/player and lazy tag-table homes remain.
@@ -1258,27 +1270,15 @@ void function_1509e0(long player_index, long weapon_index, bool *modes)
 	long held[2];
 	long pending[2];
 	long count = 0;
-	s_tag_instance *tags;
 	for (long hand = 0; hand < 2; hand++)
 	{
-		s_player_pickup_unit *current = (s_player_pickup_unit *)tail_object_get(pool, player->unit_index);
-		short slot = current->held_slots[hand];
-		if (slot == NONE)
-			held[hand] = NONE;
-		else
-			held[hand] = current->weapons[slot];
-		s_player_pickup_unit *next = (s_player_pickup_unit *)tail_object_get(pool, player->unit_index);
-		short next_slot = next->pending_slots[hand];
-		if (next_slot == NONE)
-			pending[hand] = NONE;
-		else
-			pending[hand] = next->weapons[next_slot];
+		held[hand] = function_cbd50(player->unit_index, ((s_player_pickup_unit *)tail_object_get(pool, player->unit_index))->held_slots[hand]);
+		pending[hand] = function_cbd50(player->unit_index, ((s_player_pickup_unit *)tail_object_get(pool, player->unit_index))->pending_slots[hand]);
 		if (held[hand] != NONE && (bool)((player_weapon_flags(g_4e3b44, held[hand]) >> 3) & 1))
 		{
 			modes[hand] = false;
 			modes[hand + 2] = false;
 		}
-		tags = g_4e3b44;
 	}
 	if (unit->parent_index != NONE)
 	{
@@ -1291,9 +1291,9 @@ void function_1509e0(long player_index, long weapon_index, bool *modes)
 	for (long slot = 0; slot < 4; slot++)
 	{
 		long held_weapon = unit->weapons[slot];
-		if (held_weapon != NONE && !(bool)((player_weapon_flags(tags, held_weapon) >> 4) & 1))
+		if (held_weapon != NONE && !(bool)((player_weapon_flags(g_4e3b44, held_weapon) >> 4) & 1))
 		{
-			dword flags = player_weapon_flags(tags, weapon_index);
+			dword flags = player_weapon_flags(g_4e3b44, weapon_index);
 			if (!((bool)((flags >> 22) & 1) || (bool)((flags >> 23) & 1)) || held_weapon != held[1] || held_weapon != pending[1])
 				count++;
 		}
@@ -1304,13 +1304,13 @@ void function_1509e0(long player_index, long weapon_index, bool *modes)
 		{
 			if (hand == 1)
 			{
-				if (held[1] != NONE && !(bool)((player_weapon_flags(tags, held[1]) >> 4) & 1))
+				if (held[1] != NONE && !(bool)((player_weapon_flags(g_4e3b44, held[1]) >> 4) & 1))
 					modes[1] = false;
 			}
-			else if (!(bool)((player_weapon_flags(tags, weapon_index) >> 4) & 1))
+			else if (!(bool)((player_weapon_flags(g_4e3b44, weapon_index) >> 4) & 1))
 			{
 				modes[hand] = false;
-				if (held[hand] != NONE && (bool)((player_weapon_flags(tags, held[hand]) >> 4) & 1))
+				if (held[hand] != NONE && (bool)((player_weapon_flags(g_4e3b44, held[hand]) >> 4) & 1))
 					modes[hand + 2] = false;
 			}
 		}
@@ -1542,6 +1542,13 @@ void function_150820(dword *bits, bool local_only)
 // and the weapon read through the global, no unit pointer 43; a unit_index local for the test, the lookup and the 0xcd7b0
 // argument with player->unit_index after the call 43; the weapon index as `slot != NONE ? unit->weapons[slot] : NONE` 43; the
 // hand declared after the unit lookup 70 (207 bytes).
+// Round 160 (m3 lane 6, fast over the file's markers with 0x14f820, 0xcd7b0, 0xa8f80 and 0xcd4e0): every difference is one
+// rotation of the scratch registers (retail EDX/ECX/EAX for the unit index, the primary byte and the hand where ours has
+// ECX/EAX/EDX) plus the ESI/EDI swap; 0x151b80 shows the same swap the other way round. The definition moved next to
+// 0x151b80 43 (0x151b80 17, so not a source-order effect); a unit_index local for the test and the lookup 43, at every
+// use 80 (203 bytes); the player as the address of the pool element 43; a 600 s permuter run (49 tries) none below 43;
+// the weapon from the existing 0xcbd50 with the slot read from a fresh unit lookup (the form that took 0x1509e0 from 254
+// to 215) 43.
 // T77: Live unit-index field mutable/read-only references and field pointer, entry/guarded
 // lifetimes 73/73/73/73/73; real held-slot/weapon array references and selected-weapon field
 // reference 43/43/70. NOT kept: no native saved-role equality; original body restored.

@@ -605,6 +605,7 @@ void function_3dd10(long object_index, bool force);
 // assigned after 132 (same code), the variant byte read before the blend value 123 (held in BL across fmod); the
 // found choice kept in a pointer with the inverse between the loop and an `if (selected)` blend 196 (frame 0x58);
 // the inverse computed right after the blend seed 198 (frame 0x58).
+// MiniMax R (11-10): no new form, no lower score; the choice scan still exits on inequality where retail exits on less-than (a scan bounded by less than is unrolled here at 637, and as a do-while 221), the choice count test still skips on zero where retail skips on zero or less, and the blend still sits at esp+0x38 where retail keeps it at esp+0x1c with the choices pointer in the other slot.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

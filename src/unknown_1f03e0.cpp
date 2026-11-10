@@ -587,6 +587,11 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // declared at case scope 43 (same code); the dots inside the compare 43 (same code); case 1 through a pointer local 225 (995). Retail's
 // only cross difference is a.k * b.i with b.i loaded first, and its average.i is b.i + a.i as written where ours loads a.i first: the
 // written operand order does not reach either.
+// Round 161 (m3 lane 5, fast with 0x1201a0 and 0x1f2e60; aligned in brackets, control 43 [20]): the extra byte is the inlined
+// 0x1201a0 tail's j product (ours `movss; mulss xmm0` 9 bytes, retail `movaps xmm1, xmm0; mulss [ebx + 4]` 8). Case 1's copy
+// through a named element pointer 225 (995 bytes) [42]; the stepping flag named in the loop 43 [21]; case 2's selected arms as
+// one cross3f_staged call with ternary operands 213 (954 bytes) [65]; the stepping flag as `& 2` 43 [20] (same code); case 3's
+// k row as `normal->k * scale` 43 [20] (same code).
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
