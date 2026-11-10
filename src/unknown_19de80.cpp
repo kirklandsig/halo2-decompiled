@@ -569,6 +569,13 @@ static inline bool teams_enabled_19e1c0()
 // on the volatile/plain result 395/693; plain result with every compare as `wcsncmp(...) == 0` 691; both team
 // admissions with the team test first 401 (1438 B). Retail cross-jumps whole case tails (the local-team case enters the
 // cause-team case's 0x1587f0 call with the team in EDI, the formatted cases share one vsnprintf/failure tail).
+// Round 84 (m3 lane 11, fast, control 390): every length clamp (four name/team cases and the token fallback) through
+// an inline (length, capacity) function returning `capacity <= length ? capacity : length` (one wcslen, retail's
+// cmp/cmovle shape): plain result 694 (1168 bytes, tails still merge), the volatile result 414 (1439 bytes); the
+// function's parameters swapped (capacity, length) with the plain result 694; as `length < capacity ? length :
+// capacity` plain 694, volatile 414. Retail's own tails: the result is a plain ESI variable (a dead `mov esi, eax`
+// after the engine call at 0x19e726), `remaining` in EBP and the token reloaded into a scratch register (or ESI in
+// the last compare, 0x19e6c1) for every compare.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
