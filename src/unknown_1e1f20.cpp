@@ -592,6 +592,9 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// score 236 (was 281): frame 0x1c versus 0x20 (earlier body), entry actor displacement and cleanup stack homes remain;
+// at 236 the prologue registers, the memory walk (retail's inlined joint_decline: offset in EDX, count in a stack
+// slot) and the iterator compare against the cached actor differ.
 // MiniMax S (11-09): two more forms for the memory-entry walk: the type test through the cached actor
 // with every other field read through a fresh actor_get gives 344, and the whole walk through the
 // cached actor gives 308, against the unchanged 236. Both put the entry pointer in EBX as retail has
@@ -608,7 +611,6 @@ void swarm_leader_detach(long actor_index);
 // MiniMax I (11-06): the actor view inlined at every use (310) and a local copy of the actor
 // index (same code) were tried; the memory loop as a countdown, with the slot read twice and with
 // the fields read through the indexed form gave 268, 286 and 363; no lower score.
-// score 281 (was 281): frame 0x1c versus 0x20, entry actor displacement and cleanup stack homes remain.
 // Earlier: Frame 0x20 agrees; early actor-pool allocation, cleanup and slot homes remain.
 // frame 0x1c versus 0x20, early actor/pool allocation,
 // cleanup countdown and slot homes remain.
@@ -794,6 +796,14 @@ void swarm_leader_detach(long actor_index);
 // DH379: Condition-owned stop/prop-next/actor-next results, seven subsets and immutable
 // bindings: 266/266/266/266/266/266/266/266 fast, against its unchanged reduced control. NOT kept:
 // no byte match or native frame/receiver recovery; original complete body restored.
+// Round 82 (m3 lane 10, fast control 236, aligned 106 [LCS, frame offsets kept]): the prop walk through the
+// existing 0x26be00/0x26be30 with the node pointer for the view index 285 (974 bytes) [142]; the same with the
+// view index re-read through prop_node_get after the callback 287 (948) [141]; that plus the iterator compare
+// against the cached actor 298 (942) [76: the prop walk, slot loop head and compare then line up with retail;
+// the frame is 0x1c without retail's memory-walk counter slot]; the cached-actor compare alone 308 (942) [104];
+// that walk and compare with the memory type test through the cached actor 292 (990) [124], with a short
+// memory index 294 (990) [124]; walk and compare with a short memory index 298 (942) [76]. Still BLOCKED-BY
+// 0x26ed40: the memory walk is joint_decline inlined (its short index keeps the actor offset and i*12 apart).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

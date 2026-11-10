@@ -672,11 +672,11 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
-// MiniMax D (11-08): score 230 (was 230): ours has an unaligned 0xac frame where retail realigns to eight
-// bytes with a 0xb4 frame, so the register homes and the block layout differ from the first byte; the
-// realignment is decided by the whole-program view of the callers.
 // score 230 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
 // bool result byte) while ours keeps EBP for the global base and a dword result.
+// MiniMax D (11-08): ours has an unaligned 0xac frame where retail realigns to eight
+// bytes with a 0xb4 frame, so the register homes and the block layout differ from the first byte; the
+// realignment is decided by the whole-program view of the callers.
 // MiniMax b (11-06): no new form, no lower score; the angle's x87 sequence is retail's byte for byte
 // and only the frame differs (our double home at 0x40 in a four-aligned 0xac frame, retail's at 0x48
 // in a self-aligned 0xb4 frame), and that alignment comes from the call chain of the two callers
@@ -821,6 +821,21 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // `while ((player_index = step(players, player_index)) != NONE)` 289 (841 bytes: the step is not duplicated);
 // the definition read at each use 227; the step returning one ternary 224 (same code). Retail keeps the
 // loop-bottom step's `index != NONE` test (its player index lives in memory); main and the 224 lead fold it.
+// Round 82 (m3 lane 10, fast, both callers in the image): the marker position through the existing
+// function_caf60 (inlined by the link) 260 (926 bytes); on the 224 lead (else-arm zero, `index != NONE ?
+// ... : 0` step, model index read at each use; re-measured 224) with function_caf60 259 (926 bytes); the
+// model test inverted (`== NONE` arm first) 224; the radius square moved after the range block 222 (not kept:
+// a statement order chosen by score on top of a six-point lead); without the lead, the 1600 default inside the
+// model arm with the range test overwriting it 242 (907 bytes). Observation: relative to each caller's own
+// entry, retail's direct callers 0xbf2c0 (table-called) and 0x268c90 both call with esp four bytes off an
+// eight-byte boundary, and so do the callers of the matched self-aligning register-convention functions
+// 0x26a860 (from 0x269580, after 0xbadc0's `ret 4`) and 0x69790 (from 0x69350), which self-align in our build.
+// On the 222 form: the model test inverted 213, without the step ternary 222, a named radius for the square and
+// the double 245 (908 bytes), the centre pointer before the marker call 222, the player pool global at each
+// use 226; the lead without the else-arm zero (initialised 0) with the moved square 217. Without the moved
+// square: the radius square written at its single use (no local) with the inverted model test and the lead
+// 222, without the step ternary 224, with the lead but not inverted 231, lead without ternary 233, alone 232,
+// with the model index at each use only 229. Every gain rests on the moved square or the arm inversion.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
