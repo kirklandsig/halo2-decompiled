@@ -1581,7 +1581,7 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax H (11-04): the logon-status test written as (status - 1 == 0) reaches retail's
 // `dec eax` and its exact 2862 bytes but scores 729; not kept, the original body is restored.
-// score 703 (was 709; 2910 bytes): Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
+// score 703 (was 703): 709 before that; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // w14D (fast, callers 0x641a0/0x8df50 and the file's matched functions stay MATCH): walked statement by
 // statement against retail: no logic difference found (fields, conditions, callees, arguments, loop and
 // poll shapes all agree). Retail inlines the existing getter 0x192e60 (pointer range check at 0x74be0,
@@ -1825,6 +1825,16 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // original full body restored; initial cursor/slot and request/completion homes remain.
 // Round 74 (m3 lane 10, fast, callers 0x641a0 and 0x8df50 checked): on the note's 702 form rebuilt (`received != 6` first, `failed = true` in each state arm, 2862 bytes, a gain of 7, not kept): bound limits through a
 // `long const *` local 702; `value` as `= 0; if (type)` 703; write poll `state == 0 || state == 1` 718 (2878); `long failed` 719 (2878); properties_used declared first 702; `now` read first 702.
+// Round 86 (m3 lane 1, fast): retail treats calls into 0x1934f0's tree as writing memory, ours as pure.
+// Diagnostic, reverted at once: an opaque library call at the top of 0x1934f0 gives retail's per-pass
+// reload of the variant count in the users loop (team then takes BL; the loop still ends on a pointer
+// compare) and retail's exact completion inner loop (record properties and count reloaded each pass,
+// `received` counted per pass), 810 at 2958 B. Lead: the hopper checks behind 0x1934f0 look opaque to
+// retail's link (a build-flag question for src/matchmaking_hopper.cpp, not a source form). Trials: the
+// identity picked as a member address (`type == 5 ? values->unknown10 : (byte *)&values->owner`) in both
+// loops 735 (2894 B; aligned 302 -> 289, masked 204 -> 194: the completion select is then retail's
+// branch-and-lea), completion loop only 720, request loop only 733; the opening test through the existing
+// 0x6c7e0 805 (stays a call); the property value written `!type ? 0 : value` 703 (same code).
 // @retail 0x74aa0
 void function_074aa0(void)
 {
