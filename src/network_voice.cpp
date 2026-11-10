@@ -1644,6 +1644,8 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // the player EBP and goes on the stack); has-player test first with `else if (active) result = NONE` 147 (threads to
 // the same code, block order differs); kept declared before the capacity test and assigned inside it 127 (same code as
 // the mask declared inside).
+// P399: Actual queue-count/recipient-count/aggregate-mask field identities, subsets 1-7, then entry-recipient word identity:
+// 133/134/133/133/133/133/133/133. NOT kept: no byte equality or native home repair; original complete body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

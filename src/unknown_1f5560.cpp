@@ -1074,6 +1074,11 @@ real normalize2d(point2f *v);
 // exhausted short search, seven subsets 136/244/253/238/253/267/267; all typed-first 249.
 // NOT kept: all regress and disturb the native entry/type prefix; original entire body,
 // trajectory inputs, movement/request stores and independent result producers restored.
+// P402: Successful initial/retry scalar output selection by mutable/readonly axis-pair, speed or all
+// addresses, then function-entry axis receivers:
+// 189/189/161/161/185/185/189/189. NOT kept: all grow native frame 0x48 to 0x4c/0x50; local-address forms
+// require equality. Original output copies, both exits and complete body restored; native DL/retry/return
+// transport remains.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

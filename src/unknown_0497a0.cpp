@@ -951,6 +951,8 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // range transfers, eight nonoriginal pairs:
 // 598/598/733/750/745/769/735/729. NOT kept: no exact native frame/home recovery;
 // original complete body, observations, helper and call graph restored.
+// P399: Actual current/next color-bound identities and complete next-color record, subsets 1-7, then output-color identity:
+// 250/250/482/250/250/250/490/447. NOT kept: no byte equality or native home repair; original complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

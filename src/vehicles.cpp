@@ -657,6 +657,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // speed/helper/both then immutable both: 225/129/126/127/225/309/225/309. NOT kept:
 // one-use results do not match; paired doubles grow to 1150/1144. Original helper and full
 // body restored; entry velocity registers, early unity and later SSE/x87 homes remain.
+// P400: Reciprocal arithmetic domains, initial/helper/both double receivers of real
+// division 289/507/513; double numerator with real receivers 284/507/530; both double
+// divisions/receivers 511; complete component division 126. NOT kept: no exact
+// precision or unity-allocation repair; original helper and complete body restored.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -4508,9 +4512,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
    definition's sound */
 // MiniMax R (11-09), at 176: the override search with a NULL found pointer and the Havok world read into a local give 151; the compression clamp spelled out as a store then if/else-if (the PIN macro's ternary expands to the opposite comparison) gives 141 at retail's 1361 bytes; left: the world loaded into EAX then moved to ESI, the fallback's zero held across 0x168f40 and the block layout.
 // MiniMax R (11-06): no new form, no lower score (176); the frame agrees and the permutation and flag-store order of the note below are unchanged.
-// score 176 (was 176): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
-// scalar/SSE operand homes, ray/world staging and fallback-result lifetime remain; first differing branch is
-// still +0x5a.
+// score 141 (was 176): Frame 0xec, the override search and ray translation agree.
+// World is loaded through EAX then ESI; fallback zero/select and the final byte flag writer differ.
+// The first differing branch is still +0x5a.
 // Earlier at 206 (was 206): Frame 0xec agrees; changed/permutation stores, found-index retest, ray scale/world/zero and fallback-result ownership remain.
 // Earlier at 206 (was 251): every frame slot now retail's; left: the override search's exit (retail tests the found
 // every frame slot now retail's; left: the override search's exit (retail tests the found
@@ -4714,6 +4718,10 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // P391: Per-record match/rejection results at the original search test in bool/byte/short/long:
 // 176/176/176/176/176/176/176/176. NOT kept: one-use decisions do not match; original
 // loop, found-index retest, field observations and complete body restored.
+// P400: Native frame/search/translation now agree. Fallback contact truth converted to real,
+// direct bool/byte/short/long 158/158/158/158; exhaustive test results 152/152/142/157.
+// NOT kept: no exact one-use result or gain; 1348-1354 bytes moves away from native 1361.
+// Original full body restored; world receiver, fallback zero/select and final flag writer remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
