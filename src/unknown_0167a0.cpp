@@ -1044,6 +1044,7 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
     }
 }
 
+// MiniMax D (11-09): no new form, no lower score (2); the tail shared by cases 12 and 13 still stores out[3] before out[2] where retail stores out[2] before out[3], and every spelling that asks for out[2] first makes the compiler order that pair descending in cases 10 and 14/18 as well (6); a `real *zero = out + 2` copy in cases 12 and 13 matches this function byte for byte, but it hides its write summary from LTCG and drops the matched 0x19ca0 to 130, so the direct stores stay.
 // MiniMax D (11-06, run 49): no new form, no lower score (2); cases 12 and 13 still share one tail that stores out[3] before out[2], retail stores out[2] before out[3].
 // MiniMax B (11-06, run 42): no new form and no lower score (2); retail stores out[2] before out[3] in the tail that
 // cases 12 and 13 share, ours stores out[3] first; reversing the chain in either case scores 6.
