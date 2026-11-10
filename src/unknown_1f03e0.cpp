@@ -1196,6 +1196,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // operands itself; retail puts up.k ahead of facing.i/j where ours puts it after); the flags declared in retail's
 // computation order (damping, direct, gravity, flying) 427; the input pointer declared after the flags 421 (3037
 // bytes). The call sequence (eight 0x30bf0 calls, 0xa75d0, both `ret 8`) and the block layout agree with retail.
+// MiniMax S (11-10): no new form, no lower score (347): the entry block still extracts the damping bit into ECX where
+// retail uses EDX and is one `mov ecx, eax` short, and retail stores the gravity byte before its `lea ebp` where ours
+// stores it after. The recorded flag-order sweep (412-500) and the flag widths recorded above never beat this body.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

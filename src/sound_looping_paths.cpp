@@ -156,6 +156,12 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
+// MiniMax S (11-10): no new form, no lower score (866): retail reads the query count as a dword at the loop head and
+// keeps the choice count and the two loop indices in ESI/EDI/EAX, while ours narrows the count to a word and holds the
+// outer index in EBP; taking the long count directly instead moves the frame offsets and scores 919. Retail's four
+// 64-entry arrays sit at F+0xdc (gains), F+0x1e0 (indices), F+0x2e0 (portals) and F+0x3e0 (clusters) with the choice
+// and target records at F+0x28 and F+0x7c; ours place them at F+0xe0/F+0x1e0/F+0x2e0/F+0x3e0, and reordering the
+// declarations does not move them.
 // MiniMax E (11-05): no new form, no lower score; the entry zero, the target, primary and query-array homes
 // and the choice carriers are as the earlier rounds left them.
 // score 866 (s1F walk 11-06): walked against retail block by block, no behaviour difference. Retail accesses the query and choice

@@ -450,6 +450,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // tag arm's range clamp read from the field at each use 610 (aligned 236 -> 230), the three-scalar helper in retail's
 // scheduled order (red, height, green, weight, blue, intensity, distance, remaining) 718 (two more instructions,
 // aligned 210), its red term ahead of weight and remaining 607 (aligned 224).
+// MiniMax S (11-10): no new form, no lower score (607): retail moves the 0x130f60 result into EDX and keeps NONE in EAX,
+// so the palette slot is compared as a byte (`cmp cl, al` at 0x12f15d) and the palette record stays in EBX; ours keeps
+// NONE in ECX, reads the slot as a word and is one instruction short from there on, so every later line is off by one.
+// The char-slot and re-read forms recorded above (683-756) and the statement orders in the three-scalar helper all score
+// worse than this body.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
