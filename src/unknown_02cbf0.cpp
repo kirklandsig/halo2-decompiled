@@ -282,6 +282,11 @@ static __forceinline long floor_to_long_inline(real value)
 // seven subsets then reversed initial field stores: 14/14/10/79/83/83/79/14.
 // NOT kept: no equality; the real declaration does not recover native OR/shift/pool
 // scheduling. Original record declaration, packed expressions and body restored.
+// MiniMax E (11-10): no new form, no lower score: the kind's shift still comes after the copy to
+// esi where retail shifts before it, and the two loads that feed the record's OR chain come in the
+// other order; six fresh forms (the kind as a dword, the kind's shift written inline, the pool
+// taken as a local, the pool call without its cast, the second argument read from the entry and
+// the kind and the pool together) all score 10 or worse.
 // MiniMax D (11-09): no new form, no lower score: MSVC canonicalises the order of the first word's
 // three OR terms, so re-writing them in retail's order ((category|flags)|unknown00) gives
 // byte-identical code and the score stays 10; the `long kind_word` spelling, with its extra
