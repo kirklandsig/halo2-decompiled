@@ -563,7 +563,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // MiniMax G (11-04): no new form, no lower score; retail keeps `left` in a word-sized local at -0x3c
 // beside `top` and homes the colour and text bounds at -0x34/-0x24, ours spills `left` as a dword at
 // -0x50 with the colour at -0x2c.
-// score 114 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
+// score 115 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
 // frame 0x264 agrees; predicate packing, left-word and color/rectangle/scalar homes differ; both text helpers match.
 // frame 0x264 agrees; predicate packing and color/rectangle/scalar homes still differ.
 // frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
@@ -697,6 +697,16 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // at -0x50 and shifts font (-0x4c against -0x50), line height (-0x18 against -0x14) and player (-0x3c against -0x40).
 // J260: Timed ratio/row power/status power double storage singles 486/322/222; pairs 486/483/316; all 492; immutable all 492; frames 0x270 versus 0x264. No exact match; real producer widths restored.
 // NOT kept: no eligible native repair; opening executable source restored. View, packed predicates, left word, color and rectangle homes remain.
+// Round 224 (m3 lane 3, fast; control 115; counts in brackets are aligned with the frame offsets masked: 19 for
+// this body, 16 with the bool timer): `left` as the x of the existing two-short widget point with y never written
+// and the bool timer 109 at retail's 1889 bytes [15] (a six-point gain through a type chosen for its size, not
+// kept). On the bool timer (191, 1888 bytes): an unused `short` declared beside `left` 191, one assigned from
+// `left` and never read 191 (both still a dword store); a named `short right` for the two right edges 492 (1887
+// bytes), for the first edge only 494 (1893). With the widget point the flags sit at -2/-0xd/-0xe against retail's
+// -0xd/-0xe/-0xf: only the scripted flag is above the bounds/origin slot where retail has it below. A repeated
+// `bounds.top = top` store there changes nothing (109); the scripted test written out from the player fields at its
+// second use 375 (1892); the scripted flag set in two steps 454 (1891). What is left once the slots are masked:
+// the tutorial colour's arm order (retail a4 first) and two `mov eax, edi; push eax` argument loads (ours EDX).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
