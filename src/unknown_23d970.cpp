@@ -563,6 +563,7 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
+// MiniMax E (11-10): no new form, no lower score (45); the first cross product loads its two operands into the other pair of registers than retail (here xmm1/xmm2, there xmm2/xmm1), which moves the result of every later product of the second cross, and in the else arm retail keeps the three forward components on one pointer where this build stores the last two from the command pointer.
 // MiniMax C (11-09): no new form, no lower score (45); the first cross product still takes its two temporaries in the other pair of registers (ours xmm1/xmm2, retail xmm2/xmm1) and retail keeps the k term in xmm4 with a movaps where this build reloads it from memory.
 // MiniMax C (11-06): no new form, no lower score.
 // MiniMax R (11-04): no new form, no lower score.
