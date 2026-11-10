@@ -667,6 +667,12 @@ real function_30bf0(vector3f *vector);
 // in-place ternary 84; facing_ pair declared first and secondary copied first 84. Diagnostics, reverted: 0x263d70 storing
 // both output pointers to scratch globals leaves the first form at 199, and so does this function defined ahead of
 // 0x263d70 and 0x263740: neither an escaping pointer nor definition order makes our link keep the thresholds in memory.
+// Round 67 (m3 lane 15, fast with 0x263740/0x25c9d0): both builds turn the seat loop into a cursor and a down-counter;
+// the down-counter (ours) or the squared distance (retail) takes the clip amount's dead home, and the clamped amount
+// itself stays in XMM0 after the call. The seat count renamed `seat_count` 84 (identical code); the squared distance
+// unnamed, `length_sq3f(&delta)` at its five uses 84 (identical code: it is a spill temp either way); the clipped point
+// through a copy of path_transitions.cpp's point_along_vector (diagnostic) 90; the 3/2 result as one ternary 84; `long
+// count` 193 (1318 bytes); the occupant's forward as a value copy 195 (1312 bytes).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2257,6 +2263,15 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 0x30bf0's magnitude through a one-line inline helper 168 (same code, 0x30bf0 still matches); 0x30bf0 reading its
 // parameter through its address 513 (0x30bf0 21, its convention changes). Retail's shape needs the normalize call to
 // be able to write `direction`; no form of 0x30bf0 that keeps its bytes makes our link think so.
+// Round 67 (m3 lane 15, fast with 0x25d810): retail inlines 0x1df560 here (its 0xbfe60/0x15e020 calls), as the file's
+// team_is_enemy copy already does; the copy as one single-exit block (diagnostic, header restored) 168 (identical code); the
+// two player-datum unit reads through game_engine_events.h's inline event_player_get 168 (identical); the vehicle lookup
+// written out in place of object_get 168 (identical: inline calls add no scratch step here); the second search's counter
+// as long 169 (that loop then takes retail's stepped-pointer shape, `cmp eax, 2`, registers aside); with the player
+// pointer also built from a long copy of the found index 375 (both searches retail's shape but for registers and where
+// `xor edi, edi` sits; the table pointer still ECX). The table pointer's ECX is the players loop's colouring (ECX/EDX
+// for retail's EAX/ECX throughout); `mov eax, [abs]` is one byte shorter, which moves the loop-top pad. The unknown23
+// test through the `prop` local instead of a fresh prop_get 655 (2845 bytes: retail reads it afresh).
 // @retail 0x266640
 void function_266640(long actor_index)
 {

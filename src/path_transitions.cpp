@@ -843,6 +843,14 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // loads it after the corner tests; the lower positional count comes from the entry being one line shorter, which only
 // re-aligns the later lines (masked 22 -> 37); plain 169 too, with 0x270d90 still 286 but 1390 bytes for 1389. Left as before: every form that loads the actor at entry loads it ahead of
 // `push ebx`, so link-time code generation hands pathfinding over in EDX; retail's load follows `mov ebx, eax`.
+// Round 67 (m3 lane 15, fast with 0x270d90/0x270400; aligned/masked = difflib counts with targets / registers masked,
+// base 219 aligned 54 masked 14): retail reloads actor_index from its stack slot in case 2 and uses the entry EAX only
+// in case 5 (compare and 0x270400's register argument); EBX is overwritten inside case 1/6 before any call, so the
+// pathfinding copy only frees EAX. The start_out alias dropped (const_cast at each use) 220 (masked 17); the radius in
+// a named local 214 at 1284 bytes (aligned 103, masked 33: positional only); the corners declared a, b, c, d but
+// assigned b, a, c, d 219 (identical: declaration order moves nothing, code order does); the surface fields read
+// through pathfinding->surfaces[surface_index] at each use 461 (1364 bytes); `1.f - margin` named for the test and
+// the assignment 218 (masked 15).
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

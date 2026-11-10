@@ -815,6 +815,14 @@ bool sound_driver_voice_create_buffer(
 // returns in place of the result local, play first 162 (626 bytes), 3D flag first 146 (619); the result assigned at the end of
 // each arm with no early assignment, 3D flag first 175 (608), play first 111 (628); the count published after the submix
 // block 167 (626). All but the last also lose the caller 0x191420 by one instruction. Body restored.
+// Round 67 (m3 lane 15, fast with 0x191420; aligned/masked = difflib counts with targets / registers masked, base 71
+// aligned 54 masked 14): retail's 3D bool dies at its test and play is reloaded into BL there (`mov bl, [esp + 0x13]`),
+// so BL goes to the one-use 3D bool for the short first range and to play for the rest. The count stored before the
+// descriptor clear 71 (one store moves); the result assigned at the block top 71; both 71; the 3D flag defined first 182
+// (599 bytes, aligned 122, masked 67); that with a long result 158 (618 bytes, aligned 63, masked 23: both bools take
+// retail's roles, the result is a sign-extended copy stored after the range test). After the matched 0x220a70's idiom:
+// both mix-bin records stored count first 74; the 3D block's direct-sound object in a local read before its zeroing 92;
+// the 3D pair array and its own mix-bin record inside the success arm, count first, with that local 117 (623 bytes).
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
