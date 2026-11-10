@@ -1208,6 +1208,15 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // the output with length_sq3f 90, that passed straight to the flag setter 90, through a named real 90 (two points, not kept);
 // the velocity copy through the first object pointer (no second lookup) 307; the 0x119bc0 result as `!= false` 93. The two
 // stacked score lines above are merged into this one note.
+// Round 62 (m3 lane 2; plain unless noted, the fast check carries a CAVEAT for callee 0x1197b0): the score is mostly a
+// one-line shift: the `long force` argument is one `movzx` where retail spills the bool to a stack byte and pushes the
+// dword (two instructions), so every row after the 0x1c4b00 call sits one row off. The velocity copy as three component
+// stores 103 (fast, 1046 bytes); the object pointer for the copy written in place (no one-use local) 92 (same code); a
+// vector3f member at 0x138 of the output through length_sq3f 90 (retail's k, j, i loads; two points, as round 159 found);
+// the force argument as `found ? 1 : 0` 90 (two extra rows that happen to realign the tail: a redundant conversion, not
+// kept); the member form with the in-place object pointer 90; the copy through memcpy 92; the squared-length test written
+// `0.0f < sum` 92. Still BLOCKED-BY 0x1c4b00's `long force` parameter (src/unknown_1c25a0.cpp and its declarations,
+// held by other lanes this round).
 // MiniMax R (11-10): no new form, no lower score; the squared length still sums the three components in the order the compiler picks (i, j, k) where retail sums them from k down to i, and three component locals that follow retail's order score 90, under the bar; the 0x119bc0 result still travels in al where retail stores it to a stack byte and pushes the containing dword, which needs 0x1c4b00's last parameter declared as a bool in a file this lane may not edit.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
