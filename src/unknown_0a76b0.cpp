@@ -1504,7 +1504,8 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // MiniMax G (11-04): no new form, no lower score; retail loads the pool data and the unit twice with
 // a stack spill between the two loads, ours keeps one load, so the index form, the reload of the pool
 // data and the register allocation differ.
-// score 95 (was 95): frame 0x18 agrees; entry table/hand homes and second unit load remain. Round 220 lead (m3 lane 3):
+// MiniMax D (11-09): the animate test written in both arms of the primary test, on the pool-copy form, matches retail byte for byte.
+// score 0 (was 95): matches retail: the companion weapon read through the pool copy, the other hand's slot as its own local, and the animate test in both arms of the primary test. Round 220 lead (m3 lane 3):
 // the other hand's slot and weapon read through `s_record_pool *objects = g_4e0300;` declared first (0xd1540's per-hand
 // pool copy, which matched 0xe8de0/0xe9190/0xfff40 this round) with a long hand gives retail's second unit load through a
 // copy of the data register and retail's length: 8 at 604 bytes (fast and plain), not kept (0xcbd50's body written out,
@@ -1638,12 +1639,19 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // direct range/endpoints/pointer-result/ordinal-result consumption:
 // 190/187/206/194/224/228/224/242. NOT kept: no exact native frame/home recovery;
 // original complete body, observations, helper and call graph restored.
+// P399: Actual equipped/companion/object member-array references, subsets 1-7, then complete array-base bindings:
+// 96/95/96/95/96/95/96/96. NOT kept: no byte equality or native home repair; original complete body restored.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
+	s_record_pool *objects = g_4e0300;
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	short hand = !primary;
-	long other_weapon_index = function_cbd50(unit_index, UNIT_ACTION_UNIT_GET(unit_index)->weapon_slots[primary != false]);
+	long hand = !primary;
+	long primary_index = primary != false;
+	short other_slot = ((s_unit_action_header *)objects->data)[unit_index & 0xffff].unit->weapon_slots[primary_index];
+	long other_weapon_index = NONE;
+	if (other_slot != NONE)
+		other_weapon_index = ((s_unit_action_header *)objects->data)[unit_index & 0xffff].unit->weapon_object_indices[other_slot];
 	long has_other;
 	bool is_vehicle;
 
@@ -1693,11 +1701,17 @@ void __stdcall function_e8720(long unit_index, long unknown, bool immediate, boo
 			if (!silent)
 			{
 				long type = 0x14;
-				if (!primary)
+				if (primary)
+				{
+					if (animate)
+						type = 0x16;
+				}
+				else
+				{
 					type = 0x15;
-
-				if (animate)
-					type = 0x16;
+					if (animate)
+						type = 0x16;
+				}
 				function_ee7f0(unit_index, type);
 			}
 			function_c86e0(unit_index, 0);
@@ -1836,6 +1850,10 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // opposite hand decision 76; primary set from equality 87; signed action displacement 90; full-
 // width active result after primary 11. NOT kept: no qualifying byte match or gain; original
 // body restored.
+// MiniMax E (11-09): no new form, no lower score (11); the type's flag is read much later (test bl,bl and
+// sete cl after the tag lookup), so retail can leave the compare at the end of the entry block, while ours
+// hoists it (cmp ecx,8 and sete bl) in front of the index arithmetic and reads the item table after the
+// object index; the rest of the function matches instruction for instruction.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {
@@ -4044,6 +4062,39 @@ void function_e5750(long unit_index);
 
 /* The biped test is nested in itself: at one level of nesting the build expands function_e5750 here, where
    retail calls it (as it does under the two tests of function_ec9a0). */
+// MiniMax I (11-09): no new form, no lower score (52); function_e5750 still expands here (95 bytes) where retail
+// calls it out of line (67 bytes), and the unit pointer is still read after the 0xec0d0 call where retail reads it before.
+// MiniMax H (11-07): no new form, no lower score (52); function_e5750 still expands here (95
+// bytes) where retail calls it out of line (67 bytes), and that callee is in this file and
+// matches, so the expansion cannot be turned off.
+// MiniMax D (11-06, run 49): no new form, no lower score (52); function_e5750 still expands here (95 bytes) where retail calls it out of line (67 bytes); that callee is in this file and matches, so it cannot be changed.
+// MiniMax H (11-04): no new form, no lower score (52); the inlined callee is still the whole
+// difference and the noinline spelling is not allowed.
+// MiniMax A (11-04): no new form, no lower score (52). What still differs: our build inlines
+// function_e5750 here (95 bytes) where retail calls it out of line (67 bytes). The callee is in
+// this file and matches, as do its other callers 0xec9a0 and 0xe5930; only this call site differs.
+// BLOCKED-BY 0xe5750's inlining: __declspec(noinline) on its declaration is banned.
+// MiniMax E (11-01): no new form, no lower score; a plain check confirms the full
+// build inlines 0xe5750 here too (the unit read before the call: 72, 110 bytes).
+// score 52 (was 72): unit lookup is at use; the final helper remains expanded (95/67). Round 220 (m3 lane 3, fast):
+// the type test as the mask bit `(1 << type) & 1` 62 (102 B, not folded, still inlined); the type through the existing
+// unit_weapon_view_get header getter 52; the lookup through a pool copy declared first 72; the unit view pointer read
+// before the call 72; diagnostic, the pointer before the call and a one-case switch 72 (still inlined).
+// Early guard, comparison local, byte/long/short type, const pointer and header lookup
+// all 72; direct post-call unit lookup 52.
+// Lane 16 r31: the unit pointer read before the 0xec0d0 call matches with __declspec(noinline) on
+// function_e5750's declaration (not allowed, docs/DECOMPILING.md); without it 0xe5750 inlines here: 72.
+// Round 10 (lane 14): BLOCKED-BY 0xe5750 (finished contributor code): a compile-only screen inlines it
+// under one `if` from /d2inlT70 up, unconditionally from 62 and under 0xec9a0's two tests from 90, and
+// every source form here stays under the build's threshold. Pointer before the call with `!type` 72,
+// with an early return 72, a bool local before the call 83; after the call an early return 52, `!type` 52.
+// Round 146: definition below the final helper, post-call pointer/const pointer/header/byte/bool locals,
+// zero-path return and single-exit goto all 52; original restored.
+// MiniMax E (11-09): no new form, no lower score (52); retail reads the item table through the global before
+// the 0xec0d0 call and keeps the unit pointer in EDI, where ours reads the table after the call and keeps the
+// pointer in ESI, because our build expands the matched 0xe5750 into the call (95 bytes against retail's 67);
+// 0xe5750 is finished contributor code and the only form that kept it out of line was a noinline declaration,
+// which is no longer allowed.
 // @retail 0xec330
 void __stdcall function_ec330(long unit_index, long type)
 {

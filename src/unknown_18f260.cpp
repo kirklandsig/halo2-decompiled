@@ -50,6 +50,14 @@ public:
 // `{0, 0}` 4; as a volatile two-dword struct 25 (the stores vanish, 64 instructions); a const start 4; a const
 // receiver pointer local 4; the key fields unqualified 4. BLOCKED-BY 0x80e13 (the shared reader in unknown_080e10.h): the
 // same low-half hoist above the last push is in 0x199740, 0x6a8a0 and 0x12d400.
+// Round 143 (m3 lane 8, fast; the reader changed in the header, all 11 reader users measured): the reader's local
+// non-volatile with `__int64 const *local_0_reference = &local_0;` 108 (204 bytes: the stores vanish; every user
+// worse); the reader plain `inline` 4 (all users unchanged); `volatile unsigned __int64` 4; `start` declared then
+// assigned 4 (a repeat of round 88's form); the page count tested without its local 4; the pump counter declared at the
+// helper's top 9 (push ebx for ebp). A compile-only screen reproduces this
+// head exactly: the decl/assign, two-long array, LARGE_INTEGER QuadPart and ULARGE halves readers, result first, const
+// helper parameters, a user_data local, a result local, an early size return and one combined size/page test all keep the hoist; only a non-volatile local named in an
+// asm block (diagnostic, not keepable) gives retail's store order, at a 0x1c frame. So the volatile chain is the cause.
 // @retail 0x18f260
 long c_resource_lock::method0(long handle)
 {
