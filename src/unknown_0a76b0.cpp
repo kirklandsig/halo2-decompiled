@@ -1254,6 +1254,12 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // copy per lookup 16; the later two through the copy 17; on the 16 form `result = true` before the active-bit store 16, before
 // function_a8c10 18, the notice block ending in `return result` 42 (958 bytes). Left: retail's success path falls into the
 // shared exit and the notice block carries its own copy; ours pops edi/esi inside the success path, which then carries it.
+// Round 75 (m3 lane 14, fast): re-measured: every goto as `return result` 264 (948 bytes, round 144's code: constants folded);
+// the notice block ending in `return false` 45 (958 bytes, round 21's code; the exit then follows the immediate path); round
+// 21's structured forms combined with `immediate || !active` 19. New: the notice in the then-arm with the rest in its else 19;
+// the animated throw before the immediate 115 (968 bytes); the two early rejections as one condition 19; the marker test as two
+// gotos 19; the active test nested under `!immediate` 19. Without the notice block (diagnostic) the exit follows the success
+// path as in retail (851 bytes); a compile-only model keeps it last for every other shape tried.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
