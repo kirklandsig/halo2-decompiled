@@ -424,6 +424,12 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // arm) 247 (1136 bytes, the rows still sum the first point's term first); the else arm's weights as
 // `local_4 = local_5 = 1.f` 206 (same code); the orthographic dot as dot3f(&local_10, &g_4b9dac) 206 (same code); one
 // counter for both offset loops 207 (1141 bytes).
+// Round 179 (m3 lane 4, fast with 0x30290, 0x142640 and 0x30bf0, all matched each time): the helper's scaled copy
+// assigned field by field 206 (same code: the copy still coalesces with the raw offsets, scaled in place); the second
+// offset through the existing vector3d_from_points3d 207 (1141 bytes); one shared scale local for both views 255 at
+// retail's 1136 bytes (frame still 0x20), with that offset helper too 255; the copy scaled in place through
+// vector3f_scale 206 (same code). Retail keeps raw and scaled apart (copies before the test, `scale * raw` into the
+// copies) and loads the first view's coefficients, holding right.i in xmm7 for the second view.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

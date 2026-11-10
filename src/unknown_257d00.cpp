@@ -2311,7 +2311,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
+// score 479 (was 610; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
 // (0x2594b5 `comiss xmm0, [1.0]; jbe 0x2597fa`, true for a NaN distance); `d <= 1.f` compiled to
 // `comiss 1.0, d; jae`, false for NaN. The body is now 2396 bytes like retail, but the positional
 // score rises because retail reloads the state there (`mov eax, [esp+0x38]; add eax, 8`, 0x2594a7)
@@ -2547,6 +2547,19 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // test and the countdown tail keep our layout; the case-1 point read, the plain returns in place
 // of the shared exit and the command script lookup before the actor all stay at 469 or worse,
 // so the body is unchanged.
+// Round 179 (m3 lane 4, fast with 0x110ab0, 0x258cf0, 0x25a130 and the file's matched functions, plain-confirmed):
+// kept: case 2's turn-command vector published through the existing vector3f_assign into `unknown424.vector` from a
+// `desired_facing` pointer (in place of the aggregate copy) 610 -> 479 (2404 bytes): the actor takes EBX and the
+// state EDI as in retail, the first point moves to +0x10 and case 1 reloads the state from its home as retail, so the
+// prologue, the dispatch and case 1 agree; first difference +0x51. Tried, not kept: the same three member stores
+// written out 466 (2400 bytes; that is vector3f_assign's body by hand), with two pointers 466; case 2's planar copy by
+// components 615, as two scalar stores 615. On the 466 form: case 4's facing read at each use (retail's form there)
+// 636 and case 18's two point references held in locals across the 0x25ab50 calls (retail's command reads then agree
+// one for one) 618, both 628: each gives the state EBX again; the tail's current-facing publication per component
+// 576, with both 551; the case 2 dot's terms i-first in four operand orders 464, j-first in three 466; the case 7/8
+// flag as `c ? true : byte` or an if/else 475; plain returns for the three goto exits 474. Left: retail's aggregate
+// copy at +0x424 (`lea ecx`), case 4's direct facing reads, case 18's held references, case 14's block after 21, case
+// 6's two flag stores and the post-switch test laid out after case 0.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2588,7 +2601,8 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 					if (normalize2d(&local_6) > 0.f &&
 						local_0->unknown290.j * local_6.y + local_6.x * local_0->unknown290.i < 0.984f)
 					{
-						*(vector3f *)((byte *)local_0 + 0x424) = *(vector3f *)((byte *)local_0 + 0x4d8);
+						vector3f const *desired_facing = (vector3f const *)((byte *)local_0 + 0x4d8);
+						vector3f_assign(&local_0->unknown424.vector, desired_facing->i, desired_facing->j, desired_facing->k);
 						*(short *)((byte *)local_0 + 0x41c) = 3;
 						*(short *)((byte *)local_0 + 0x420) = 4;
 						*((byte *)local_0 + 0x44d) = 1;
