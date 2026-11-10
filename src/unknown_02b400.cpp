@@ -380,7 +380,7 @@ void function_2f600(long count, long mode, s_grid_pair *out)
 }
 
 // @retail 0x2f640
-void function_2f640(long index, s_grid_pair *extent, s_grid_pair const *dimensions,
+void function_2f640(long index, s_grid_pair const *dimensions, s_grid_pair *extent,
 	long count, long mode, s_grid_pair *out)
 {
 	extent->x = extent->y = 1;

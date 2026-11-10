@@ -3097,6 +3097,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // (138 at 595 bytes, NONE then held in ESI through loop 1); a store to g_4e8c20 itself in 0xe4050 does not change
 // that. No asm-free spelling of the fld/fistp rounding is known under /arch:SSE (/QIfist is rejected with it, and an
 // asm-free /QIfist helper in its own file stays a call).
+// MiniMax R (11-10): no new form, no lower score (193 on the reduced image, 103 on the full one): the two
+// loops' datum and unit still take the opposite registers from retail, and the callee's inline rounding in
+// the other file decides the globals pointer.
 // Round 107 (m3 lane 9, fast with round 34's widened image, 103; first measurements in this reproducing image of
 // families listed only at the 193 image): busy and failed as `byte` 103 (same code), as `long` 104 (607 B); the
 // status published at the join as a `byte` local 163 (576 B; the prologue then keeps g_4e8c20 in ESI as retail, first
