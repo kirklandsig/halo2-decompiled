@@ -1019,6 +1019,9 @@ static __forceinline long real_to_long(real value);
 // `return false;` 509; the result declared before the slot view 382 (same code); the prediction scale written rate first
 // 382 (same code); the entry tests as `f13 || f14` and `else if (f2d)` false arms ahead of the body 382 (same code).
 // Aligned by sequence, 160 rows differ: the false exit placed last shifts everything up to retail's place for it.
+// Round 68 (m3 lane 15, fast): the admission as an else-if chain setting the result false per flag 527 (1885 B); the
+// result as `char` returned as `!= 0` 438 (1925 B); `bool local_2 = false;` with nested flag ifs 495; the else arm as
+// `return false;` 508; the result declared before the state pointer 382 (same code).
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
