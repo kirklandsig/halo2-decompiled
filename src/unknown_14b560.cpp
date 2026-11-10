@@ -1149,6 +1149,10 @@ bool function_14ed80(void)
 // test 54; element through the global, clamp and bound test through the local 53; local before the bound test used there
 // only 53; local in the clamp arm only 53; bound test direct with the outputs declared after the local 10 (first EDX as
 // retail, third ESI, globals EDI).
+// Round 75 (m3 lane 14, fast): 1-8 unused initialised locals at the top (diagnostic) 8 each, so the tie is not symbol
+// numbering; re-measured round 142's element through the global 53 and round 135's index zeroed first 45; the remap as one
+// nested ternary 8; a named array pointer for the element 8; the element as `representations + index` 8; the remap as two
+// separate ifs 8; the remap as a two-case switch 34 (166 bytes).
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
@@ -1818,6 +1822,12 @@ struct s_unit_player_assignment
 // not follow symbol numbering); the old unit index in a named local at its three uses 140 (476 bytes); the old-unit block
 // as a static inline helper 243 (329 bytes, kept out of line), as a __forceinline helper 17; the +0xd4 notification as
 // one forceinline helper for both blocks 17; per-block named unit pointers 17 (repeat); unit_index typed dword 17.
+// Round 75 (m3 lane 14, fast): 0xb58c0 through a function pointer (diagnostic) still reloads into ECX after it, so it is no
+// register-summary gap; round 94's read-back arguments re-measured 16 (449 bytes, same registers); the new block's target declared
+// before the unit stores 17; the engine test as `!= NULL` 17; the representation declared at function scope 17; the word clears
+// chained 19; the old unit index in a named local for the outer comparison and the NONE test 17; re-measured round 43's
+// control-set argument read back 17 and the stored unit index passed to 0x1682bf 16 (449 bytes, same registers); a named user
+// index in the old-unit arm 111 (468 bytes); a named user index in the new-unit arm (three uses) 131 (459 bytes).
 // @retail 0x14cad0
 void function_14cad0(long player_index, long unit_index)
 {
@@ -3339,6 +3349,9 @@ struct s_unit_flags_14d8b0
 // engine test through a named engine pointer 9; the late slot block reading the engine globals once into a named pointer
 // 9, that pointer declared before the flag clear 9; the late flag clear after the slot block 16. Diagnostic: the limit
 // through a plain cast instead of the asm rounding 256 (frame 0xc0), and the late mode pointer still takes EDX.
+// Round 75 (m3 lane 14, fast): re-measured round 70's named engine-globals pointer 9 and named engine pointer 9; the reset
+// countdown as `(x -= 1) == 0` 9; one loop-scope unit shared by the flag block and the countdown block 9; the datum index read
+// after the flag block 9; the trigger hit's stores through the global directly 9; the final timeout block through the global 9.
 // @retail 0x14d8b0
 void function_14d8b0(void)
 {
