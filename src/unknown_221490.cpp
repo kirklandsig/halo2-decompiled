@@ -806,6 +806,15 @@ bool sound_driver_voice_create_buffer(
 // play bit shifted (71, the same code), and the 3D local dropped so the test reads `flags & 1` (that one breaks
 // the caller 0x191420, so it was reverted). Still differs: retail computes the 3D descriptor flags arithmetically
 // and copies the impulse parameter address through EAX where ours copies it through EDX.
+// Round 85 (m3 lane 10, fast with 0x191420): the 3D flag first with the count stored as the block's first statement 181 (598 bytes); that with the
+// result assigned right after the voice reference 182 (599); the 3D flag as a `long` defined first 125 (618 bytes, but the flags arrive in EAX, play keeps
+// BL and the 3D flag a dword slot; 0x191420 1); `register` on the 3D flag, play first 71 (same code), 3D flag first 182 (599); play defined inside the
+// 3D block with the count stored first 150 (620, 0x191420 1). Reading unchanged: retail's order is the 3D flag (byte copy in BL), then play (in place,
+// spilled), and here the voice index and the zero outrank the 3D flag's copy in that order.
+// M3 lane 8 r144 (fast with 0x191420; control 71): the play bit defined inside the 3D block 158 (0x191420 then 1); explicit
+// returns in place of the result local, play first 162 (626 bytes), 3D flag first 146 (619); the result assigned at the end of
+// each arm with no early assignment, 3D flag first 175 (608), play first 111 (628); the count published after the submix
+// block 167 (626). All but the last also lose the caller 0x191420 by one instruction. Body restored.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

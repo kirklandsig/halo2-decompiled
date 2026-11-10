@@ -737,6 +737,12 @@ static inline word font_character_pixel(long alpha, long color)
 // N389: Pixel alpha word/uint, color short/uint, result short/uint: 92/91/92/80/85/106/85/105.
 // NOT kept: word alpha with uint color/result 80 gains only five; other type forms tie or regress.
 // Original helper and decoder restored; alpha widening, literal assembly and run-two reuse remain.
+// MiniMax E (11-10): no new form, no lower score (85): retail's own case table confirms the committed switch
+// cases (the second case runs three with the plain colour and the third keeps the run of two with the opaque
+// colour), so the earlier reorder of those cases was wrong and is reverted; a cast-free helper with a long
+// result reproduces retail's thirty-two-bit parity at all three pixel sites but moves the run constant into
+// ebp and scores 212; a parity kept in a long local inside the word returning helper scores 176 and still
+// masks the parity in sixteen bits.
 // N391: Case orders 04651237/04615237/04165237/01465237/06415237/06451237/
 // 06145237/01645237: 115/116/113/113/117/116/115/114. NOT kept: all regress;
 // original cases/body restored. Alpha extension, literal assembly and run-two reuse remain.

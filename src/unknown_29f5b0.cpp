@@ -977,6 +977,9 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // Round 142 (m3 lane 8, fast): the angles through one `real const *` to the yaw field 6; named component products stored
 // after 6; normal named, position after the components as a pointer to const 6; table + `(long)index` 6; a `T &` flag
 // with named component products and the position inline 6. Compile-only with /G5, /G6, /G7 or no /arch:SSE: same schedule.
+// Round 162 (m3 lane 5, fast): `static` on the definition 6; the definition moved below 0x2a0650 6; the position as a
+// `real const *` to the point's array 6; the callee's prototype declared inside the body 6; the effect index copied to a named
+// local before the vector 6. The whole difference follows from one choice: ours issues the table add ahead of `push esi`.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {

@@ -297,6 +297,11 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // the same case. On the 30 base (fast): state 9 handle local 296; state 13 handle local 213; state 7 handle local 249 (1724 bytes); state 7 header pointer 30; with a handle
 // local 249 (1724); `s_file_handle(file->file)` 249 (1724); a `void const *` cast of the header 30; the file through a reference 30; a named flags object 30; memset size
 // 0x800 30; slot store after the memset 30, just before the call 518 (1732); state 8 count named 30, as a ternary 30, as `!(!=)` 30. Probes (diagnostics, restored at once).
+// Lane 11 round 80 (fast with 0x214db0/0x214030/0x213fe0, all matched throughout): state 19 release first 36 (the slot
+// store still sinks to the handle store, where retail keeps it between the call and the clears), with the result code read
+// into a local ahead of the handle store 36; state 11 with the chunk as the difference and a named limit local `if (limit <=
+// chunk)` 30, a named completed local 30, total, completed and limit all named in retail's load order 30, a dword chunk 30
+// (the three loads stay rotated in each); state 16 with the state set before the result code 30 (same code).
 // @retail 0x2141f0
 bool function_2141f0(void)
 {

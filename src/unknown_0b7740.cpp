@@ -1329,6 +1329,19 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // through object_get 87 (same code, kept: drops a one-use local); the current object through object_get 87;
 // the no-model flag before the matrix 88; the parent index read at each use 87; the index declared before
 // the defaults 87.
+// Round 83 (m3 lane 10, fast, on 87): one function-scope parent index assigned in each branch 87 (same code); the no-model
+// matrix and mirrored flag under two separate index tests 97 (1383 bytes: data from EDI again); the no-model flag through
+// object_header_get 87 (same code); one parent header pointer read at both uses 95 (1385); the no-model defaults set in an
+// else arm 93 (1387). Lead from the last: with the defaults out of EAX/EDX at the index load, ours keeps g_4e0300 in ECX and
+// re-reads only its data field (`mov eax, [ecx + 0x44]`), as retail; retail's defaults sit before the test, so its index
+// takes ESI (copied to EAX for the mask) where ours takes ECX and reloads the pool. What gives the index ESI there is open.
+// Round 101 (m3 lane 9, fast, on the count > 0 guard diagnostic, re-measured 20 at 1399 with the current two-lookup
+// body): retail does ONE parent lookup there (the parent object in ECX serves the node matrix and the flag), with
+// the index in ESI copied to EAX and the pool still in ECX. One parent-object local from object_get(index) 44 at
+// 1390 (data reused from EDI); the same with the index field re-read in the lookup 44, with the field read at the
+// test and the lookup and no index local 44 (same code each); the two-lookup body with the field re-read in the
+// first lookup only 54 at 1406, in the second only 380 at 1402, in both with no index local 20 (same code as the
+// local). A re-read of the field does not give the `mov eax, esi` copy here.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

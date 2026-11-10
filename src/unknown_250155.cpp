@@ -2619,6 +2619,7 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// MiniMax S (11-10): no new form, no lower score (95): the count copy, the item pointer and the call result keep the next stack slot round from retail's, and the voice query still keeps the entry's address where retail reloads the player.
 // MiniMax R (11-09): no new form, no lower score (95 in the reduced build); the count copy, the item pointer and the call result keep the next stack slot round from retail's, and the voice query still keeps the entry's address where retail reloads the player.
 // MiniMax I (11-06): 77 (921 bytes), not kept: the last widget index (bitmap_b) hoisted to function scope with
 // the other three declared inside each of the two loops, the second loop on a counter of its own (j), and the

@@ -563,7 +563,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // MiniMax G (11-04): no new form, no lower score; retail keeps `left` in a word-sized local at -0x3c
 // beside `top` and homes the colour and text bounds at -0x34/-0x24, ours spills `left` as a dword at
 // -0x50 with the colour at -0x2c.
-// score 114 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
+// score 115 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
 // frame 0x264 agrees; predicate packing, left-word and color/rectangle/scalar homes differ; both text helpers match.
 // frame 0x264 agrees; predicate packing and color/rectangle/scalar homes still differ.
 // frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
@@ -697,6 +697,29 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // at -0x50 and shifts font (-0x4c against -0x50), line height (-0x18 against -0x14) and player (-0x3c against -0x40).
 // J260: Timed ratio/row power/status power double storage singles 486/322/222; pairs 486/483/316; all 492; immutable all 492; frames 0x270 versus 0x264. No exact match; real producer widths restored.
 // NOT kept: no eligible native repair; opening executable source restored. View, packed predicates, left word, color and rectangle homes remain.
+// Round 224 (m3 lane 3, fast; control 115; counts in brackets are aligned with the frame offsets masked: 19 for
+// this body, 16 with the bool timer): `left` as the x of the existing two-short widget point with y never written
+// and the bool timer 109 at retail's 1889 bytes [15] (a six-point gain through a type chosen for its size, not
+// kept). On the bool timer (191, 1888 bytes): an unused `short` declared beside `left` 191, one assigned from
+// `left` and never read 191 (both still a dword store); a named `short right` for the two right edges 492 (1887
+// bytes), for the first edge only 494 (1893). With the widget point the flags sit at -2/-0xd/-0xe against retail's
+// -0xd/-0xe/-0xf: only the scripted flag is above the bounds/origin slot where retail has it below. A repeated
+// `bounds.top = top` store there changes nothing (109); the scripted test written out from the player fields at its
+// second use 375 (1892); the scripted flag set in two steps 454 (1891). What is left once the slots are masked:
+// the tutorial colour's arm order (retail a4 first) and two `mov eax, edi; push eax` argument loads (ours EDX).
+// M3 lane 8 r144 (fast with 0x24ce9d, 0x24c80b and 0x24cedf, matched each time; control 115). With the bool timer: left and
+// top as x and y of a two-short screen point, y written first and top a copy of it 516 (1899 bytes); only x written 109
+// (1889); x written first, then y, top a copy of y 109 (the same code as only x: the y store is removed, so converting the
+// origin to a whole integer point is a source that gives retail's word store); that with 0x24ce9d's text parameter last
+// (retail's setup order) 104, 0x24ce9d still matched (the diff is build/r144/lead-24cf66.patch; not kept: the point's y is
+// dead storage, a locals-grouping form without a match); the reorder alone 110; the reorder with the bool timer and plain
+// shorts 186 (1888). On the 109 form: the tutorial colour as `flag ? a4 : bit ? a8 : a4` 109 (same code); the total height
+// renamed to sort last or first 109/109 (same code: names do not order these homes); the total height declared before the
+// player 471 (1885); the two rectangles declared before origin 109 (same code). Left on the 104 form: retail's homes in
+// order are split flag, origin, scripted/tutorial/timer flags, line height, flash (shared with the row counter), total
+// height, bounds, colour, top, the point, player, view, count, row height (its own home), font; ours packs the scripted
+// flag at -2, shares the row height with the total height and gives the row counter its own home; and the tutorial
+// colour's block order.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

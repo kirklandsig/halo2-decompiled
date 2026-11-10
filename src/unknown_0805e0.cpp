@@ -312,6 +312,13 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // 43/43/43/43/43/43/43/43. No exact early-save, independent successor, mask or failure-exit recovery;
 // original nullable copy restored. NOT kept: no qualifying exact/native-shape gain; original complete
 // body restored.
+// M3 lane 4 r176 (fast with 0x1a303b/0x2b393c, both stay matched in every form; base 43 at 127): a guarded do-while
+// with a successor local, the found arm returning true and `result = false` after the loop 49 (127 bytes); an early
+// `return false` on an empty iterator, then an endless loop with a successor that returns true when found and false
+// when the successor is NONE 55 (133); a guarded do-while with the successor declared outside it, result and break,
+// and the step in the loop test 51 (127); a for loop stepping from a successor that is read into a short first 51
+// (127); the current loop with four `continue` filters (the identity pair and the exclusion pair joined by `||`) and
+// `return true` 52 (127). All restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -1572,6 +1579,13 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // native payload then library suffix 446/435/503, both library subranges 446/435/503,
 // both metadata-first native/library payloads 374/374. NOT kept: all regress to 1222-1270
 // bytes versus 1171; original capacity, full-record copies, repairs and complete tail restored.
+// Round 101 (m3 lane 12, fast with 0x80490/0x80330; control 49): the plain admission (`long removed = NONE; if (g_4cf978 ==
+// 350) { removed = g_4cf980; ... }`), `removed > position ? position : removed` lower, an explicit `>` arm and a count path
+// that both store `downward = false`, plain copy loops 57 (the entry agrees to +0x1f; upper still takes EAX and the backward
+// index coalesces with it, where retail holds upper in ECX and starts both indices in EAX); on it a named count read once
+// and reloaded after the unlink calls 57 (same code); the flag declared before the bounds 57 (same code); the `<` arm
+// tested first 338; the forward copy as `g[i] = g[i + 1]` from lower 367 (1162 bytes); the forward copy as one memmove
+// behind `if (i <= upper)` 364.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
