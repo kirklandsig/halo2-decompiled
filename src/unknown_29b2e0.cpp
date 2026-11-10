@@ -51,6 +51,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
+// score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax S (11-06): no new form, no lower score; the single-exit normalizer with the XY vector read before
 // the second copy reaches 169, one point short of the eight-point bar, and the original body is restored.
 // The rotation's cross terms and rows written with the axis component first, which is retail's order, score
@@ -59,7 +60,6 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // MiniMax D (11-09): no new form, no lower score; the length the normalizer stores sits four
 // bytes higher in the frame than retail's (ours +0x10, retail +0xc), and the unity constant and
 // the scaled components then get different registers.
-// score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // Frame 0x2c agrees at 1711/1706 bytes; unity XMM5/XMM4, root +0x10/yaw +0xc and rotation product/register homes remain.
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1711 bytes against 1706); the sqrt temporaries sit at +0x10 with
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
@@ -423,6 +423,11 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // out parameter into a local 263 (1719 bytes); the normalizer's length store ahead of the K scaling 176 (same
 // code); the first length from the normalizer's return value 263 (1719); the XY pair built after the second
 // normalization 368 (1712); the first length from the return value with the planar test as `> 0.0f` 316 (1715).
+// M3 lane 10 r90 (fast with 0x29b990, MATCH throughout, and 0x11cc90): no gain. The score line moved to the top of this note (it sat
+// below the MiniMax lines). Lead re-measured: single-exit normalizer + XY vector before the second copy 169. On it: both turn tests as
+// `product >= 0.0f` 174 (masked 196); the second axis through the existing cross3f 234 (1706 bytes, frame changes, first difference +0x2).
+// On 169 the x87 transfer temporaries (roots, acos) still share +0x10 with local_11 where retail packs them at +0xc with the clamp input and
+// the yaw; the yaw clamp's zero copy still sits below its branch.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
