@@ -312,6 +312,13 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // 43/43/43/43/43/43/43/43. No exact early-save, independent successor, mask or failure-exit recovery;
 // original nullable copy restored. NOT kept: no qualifying exact/native-shape gain; original complete
 // body restored.
+// M3 lane 4 r176 (fast with 0x1a303b/0x2b393c, both stay matched in every form; base 43 at 127): a guarded do-while
+// with a successor local, the found arm returning true and `result = false` after the loop 49 (127 bytes); an early
+// `return false` on an empty iterator, then an endless loop with a successor that returns true when found and false
+// when the successor is NONE 55 (133); a guarded do-while with the successor declared outside it, result and break,
+// and the step in the loop test 51 (127); a for loop stepping from a successor that is read into a short first 51
+// (127); the current loop with four `continue` filters (the identity pair and the exclusion pair joined by `||`) and
+// `return true` 52 (127). All restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
