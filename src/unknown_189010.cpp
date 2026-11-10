@@ -815,6 +815,10 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // cleared before the perpendicular copy 2; the projection cleared by one chained assignment 15 (first +0xcf);
 // `0.0 - sqrt(...)` for the negated distance 2; the duplicate 0x1895f0 declaration above this function dropped 2;
 // the along test as two nested ifs 2. All restored.
+// Round 76 (m3 lane 13, fast with 0x188180, which gives the plain 2): the two exits as `break` from `do { } while (false)` 171
+// (frame and registers differ from +0x1); the 0x155760/0x218d30/0x30bf0 prototypes moved to the top of the file 2; the along
+// bound written `along < length_squared` 2; the normalize result cast to void 2; the projection dot as one expression
+// instead of the staged sum 6. Re-measure: `distance_squared < maximum_distance * maximum_distance` 2.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {
