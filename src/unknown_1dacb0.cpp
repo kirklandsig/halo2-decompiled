@@ -1296,6 +1296,7 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // 2235 (no zero register even then); 1dd9d0 and both requests inside the loop's found pass (outputs after the loop) 991 at
 // 2825 bytes with retail's `xor ebp, ebp; cmp eax, ebp` zero and `mov [i], ebp` stores; the outputs after the requests,
 // outside the loop, 1009 without it. Our build makes the EBP zero only for request code inside the search loop.
+// MiniMax I (11-10): no new form, no lower score; the iterate helper takes its fourth output in EBX in both builds and its first two on the stack, retail's three found locals sit at E-0x2c, E-0x28 and E-0x24 while ours puts the third one in the dead found_mode argument slot at E+0x18, and the result struct (E-0x20) and the iterator base (E-0x1c) already agree, so only that third local's home and retail's EBP zero carrier are left.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1561,6 +1562,7 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // for both requests 732; the found keys named for the second request 732; the first request from the iterator's stored keys 1019 (2875);
 // the requests guarded on the found flag 1019 (2841); the keys through a local table 732. Retail keeps `this` in EBX and the found mode in
 // EBP through the second request; ours gives EBX the +0x34 table pointer and EBP `this`, and no zero register forms.
+// MiniMax I (11-10): no new form, no lower score; this twin of 0x1db170 differs from ours in the same two places, the third found local's home (E-0x24 in retail, the dead found_mode argument slot at E+0x18 in ours) and the per-attempt candidate's home, with retail's EBP zero carrier still shifting the request block.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
