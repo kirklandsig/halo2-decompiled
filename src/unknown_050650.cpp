@@ -1295,6 +1295,7 @@ done:
 // (`(s_actor_looking_view *)(g_4f55f0->data + actor_slot * sizeof(s_actor_looking_view))`)
 // compiles to the same code as the shared getter (9): MSVC keeps the scaled index in the pointer
 // register, so the `imul` never lands in EAX as retail has it. Original body restored.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 9 (114 bytes, as retail's); the only difference is the prologue, where retail builds the actor offset in EAX (`mov eax, ecx`, `and`, `imul 0x888`) and forms the actor with `lea esi, [eax + edx]`, while ours builds the offset in ESI and adds the base (`add esi, edx`), one byte short; the shared getter is used by sixteen matched functions of this file, so its spelling cannot change without losing them.
 // @retail 0x296580
 void function_296580(long actor_index)
 {

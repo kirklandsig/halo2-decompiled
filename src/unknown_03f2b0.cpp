@@ -1487,6 +1487,7 @@ struct s_133f70;
 // Round 394: initial-level/fallback/builder/success/reuse/level-change result-home names
 // individually 175/175/175/175/175/175; both complete byte-result naming orders 175/175.
 // Original names and complete body restored; distance/cache staging and coefficient transport remain.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged (1309 bytes, as retail's); the fast image scores 355 for this one because the reduced image's callees differ, so the plain check is the measure (93); the first distance setup, the cache and coefficient homes and the tail that 0x23690 owns remain.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)
