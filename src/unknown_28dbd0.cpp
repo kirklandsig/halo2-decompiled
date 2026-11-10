@@ -406,6 +406,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // 228 (1209 bytes, masked 63); plus both 0.1 position updates through vector3f_add_scaled 223 (1214, masked 43); the position
 // updates alone 237 (1191); 223 plus the velocity through vector3f_scale 223 (same code); 223 with rotate_vector_170d70 223 (same
 // code). Every scalar-cross form keeps frame 0x114. Body unchanged.
+// Round 166 (m3 lane 6, fast with 0x28dab0/0x256bd0; masked = register-masked aligned count, base 66): our calls are
+// retail's nine in order, and the output point's lookup is the same single-copy inline code with no call on both sides;
+// the level heading through direction_from_angles with pitch 0
+// 277 (1223 bytes); the owner as a ternary 175 (masked 71), as if/else with the positive test first 175; success returning
+// at once instead of the goto 289 (1210 bytes); the handler view passed straight to the ai-data getter 173 (same code).
+// Body unchanged.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

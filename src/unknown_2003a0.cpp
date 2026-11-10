@@ -2214,6 +2214,13 @@ bool function_1e11b0(long actor_index, bool active);
 // `(... & 0x80) == 0x80` 76 (209 B); the flag store as `((byte *)squad)[2] = (byte)(((byte *)squad)[2] | 0x80)` 64. The
 // 13 form needs an inline_depth pair inside the body, which is never kept, and without the function-level pragma the
 // three callees inline, so only spellings under that pragma are open here.
+// Round 70 (m3 lane 15, fast; current body, function-level pragma kept): `long actor_index;` beside the iterator 64 (same
+// code); the tick comparison's operands swapped 64; the word flag store with the iterator at function scope 62 (same code as
+// the word store alone). Re-measured, same numbers as round 51/54: the word flag store (here after the game-time store) 62,
+// with the word flag test 62, with the short-view return 65 (206 B). No untried natural form is left under the function-level
+// `inline_depth(0)`: the unrotated loop and the parameter's EBP need the statement-level pair or /Ob1 file flags, both
+// compiler settings (not keepable); every other lever (lookups, flag widths, return spellings, loop forms, declaration
+// places, the parameter read through its address) is listed above.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -3148,6 +3155,12 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // !(flag && index != NONE && lock)` 50; the else-if written as `else { if (...) {...} }` 50; `short local_3 = 0;` 163
 // (594 B); the first 0x202e90 call given arg_0 without the short cast 50 (same code each); the first test's index
 // compare ahead of its flag bit 54 (an order probe). The first follow-up still reloads the index from its home.
+// Round 70 (m3 lane 15, fast): the lock test as `!(flag40 && group != NONE && (definition[0x24] & 1))` 50 and the lock bit
+// as `(definition[0x24] & 1) == 0` 50 (same code); permuter (anneal, 600 s, 35 tries): its best needs a volatile store,
+// swapped arguments at the matched 0x1fb8a0 and a steering cast. The second half's count loop has matched 0x290d90's shape
+// over a different group layout, and retail keeps it inline here (no post-loop count test). No untried natural form is left:
+// rounds 119 and 162 show any one later index use ends EBP's range before the first follow-up, so only first-half shape
+// moves it, and every first-half test spelling, order and nesting above compiles to this code or worse.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3689,6 +3702,11 @@ void function_2011f0(long arg_0);
 // Also kept: the three other actor-record reads through squad_transfer_object 222 (same code). Leave-one-out on the
 // 222 body: main's long seat with the cast and per-arm sets 268, main's `spawn = arg_2; if (spawn == NONE)` 265, main's
 // `cursor = head; ... cursor = next;` splice shape with the helper reads 271.
+// Round 70 (m3 lane 15, fast; aligned counts in brackets, this body [13]): the spawn index as one ternary 222 (same code);
+// `long placement_object = NONE;` at the loop top 272 (1336 B); `short spawn;` at function scope 222 (same code); the range
+// test as `if (spawn < 0 || spawn >= row->count) continue;` with the arm un-nested 222 (same code); 0x1e9700's default-first
+// `long difficulty = 1; if (state == 1) difficulty = ...;` switched as short 227 [17]. The positional 222 is mostly the row
+// reload: ours reloads the row at the in-range arm's exit join, retail at the loop top (on the back edge only).
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

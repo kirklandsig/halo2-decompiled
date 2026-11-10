@@ -1138,6 +1138,7 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 bool function_a98b0(long index, vector3f *position);
 bool function_a9940(long index, vector3f *up, vector3f *forward);
 
+// score 87 (was 87): earlier 97; retail is 2 bytes longer. Left: retail tests the node count for > 0 before
 // score 87 (was 87; 97 before): retail is 2 bytes longer. Left: retail tests the node count for > 0 before
 // the node loop from 1 (no loop-head pad), and in the no-model branch keeps the object table pointer
 // in ecx and re-reads only its data pointer (parent index in esi); ours now re-reads both there (round
@@ -1375,6 +1376,19 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // test and the lookup and no index local 44 (same code each); the two-lookup body with the field re-read in the
 // first lookup only 54 at 1406, in the second only 380 at 1402, in both with no index local 20 (same code as the
 // local). A re-read of the field does not give the `mov eax, esi` copy here.
+// M3 lane 1 r88 (fast with 0xbfe20/0xbfe80/0xbfed0/0xbff10/0xb8bd0/0xbdc40/0xbdb60, all matched): the count > 0 guard
+// diagnostic re-measured 20 at 1399 bytes (aligned 8, register-masked 4: only the no-model lookup differs). On the guard:
+// the parent index and node read through the object's typed view (`->parent_index`, `->parent_node`) 20 (same code); the
+// index `long const` 20 and `dword` 20 (same code); one parent-object local for the matrix with object_get again for the
+// flag 44 (1390 B, data reused from EDI; round 101's number, a re-measure); the model pointer by a ternary and the render
+// test as `model && model->render != NONE` 312 (1408 B). The no-model branch in every order of its two defaults and the
+// index read, matrix and flag in either order, with object_get at each use or one parent-object local (23 forms): matrix
+// first 20/22 (the parent default before the mirrored one 20, after it 22; the index read anywhere), flag first 25/27,
+// the local 43/44/45/46 (1390 B); the index never takes ESI. Retail's no-model block is 0xb8bd0's own instruction
+// sequence with its
+// `mov ecx, [g_4e0300]` gone (ECX still holds the pool from the current lookup) and the index copied into EAX, the
+// out-of-line function's parameter register: it reads as 0xb8bd0 inlined at this one site, which this file's /Ob1 and
+// the callee file's /Ob1 rule out here (round 90 and r122: `inline` on 0xb8bd0 inlines it at both sites).
 // Round 180 (m3 lane 4, fast; aligned = difflib count with addresses masked, 10 at 87): the render node count named
 // after the root block for the loop bound 146 (1391 bytes, frame slots shift); the bound written first in the loop
 // test 87 (aligned 12); one parent-object local from object_get for the no-model matrix and flag 97 (1383 bytes:
