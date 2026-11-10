@@ -833,6 +833,15 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 
 real normalize2d(point2f *v);
 
+// MiniMax I (11-09): no new form, no lower score (135); the first difference is the trajectory result's
+// register home: retail copies the call's return into DL (`mov dl, al`), loads the force flag into AL and
+// stores DL to the reused target-parameter slot only afterwards, while ours stores AL to that slot at once
+// and takes AL for the force flag; a force copy before the call, inside the valid block and right after the
+// call, the separate declaration, a char result, the direct return in the request arm and the swapped
+// condition order all compile to the same code (the swapped order only sinks the store past the speed
+// compare). Still different: the home register (DL against AL), the store before the force test, the tail's
+// register order (`mov ecx,[esp+0x2c]`, `mov edx,[esp+0x30]` against `mov eax,[esp+0x2c]`,
+// `mov ecx,[esp+0x30]`) and the size (935 bytes against 923).
 // MiniMax R (11-09): the annealed permuter over 900 s ends at 134, its best being the two flag stores swapped, a gain of one that the review threshold drops, and the volatile globals pointer and the placed point store it also made give 135 on their own; the score stands at 135.
 // MiniMax R (11-08): no new form, no lower score (135); the threshold, the request point copy, the direct request return, the result's type and the retry spelling all score 135 or worse, and only the trajectory result compared against zero reaches 120, which is a redundant compare kept only with a byte match.
 // MiniMax R (11-06): no new form, no lower score (135).
