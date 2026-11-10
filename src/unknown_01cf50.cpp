@@ -3455,6 +3455,11 @@ void __stdcall function_1e930(long opaque)
 }
 
 bool g_55e6bc;
+// MiniMax S (11-09): no new form, no lower score (87): retail keeps the near-plane product at the
+// source position with the depth-clip global folded into the multiply, ours sinks the product into
+// the inlined call and keeps the global in a register of its own; the six near-plane spellings
+// tried this round all score 87, and the matrix loop's row base, cursor and counter still sit in
+// different registers from retail's.
 // MiniMax A (11-06, run 52): no new form, no lower score (87) - retail sums the three products in
 // source order and pops esi after the matrix loop, ours sums them rotated and pops esi early.
 
@@ -6254,6 +6259,10 @@ void geometry_cache_update(void);
 void function_12c600(void);
 void function_1de50(void);
 void function_22850(void);
+// MiniMax S (11-09): no new form, no lower score (153): retail copies the timestamp into the global
+// as two dwords and ours goes through x87 because the global is a double in include/timed_effect.h,
+// and retail uploads the gamma ramp into the device's own ramp buffers where ours calls
+// D3DDevice_SetGammaRamp; copying the timestamp dword-wise through a byte copy scores 173.
 // MiniMax A (11-06, run 52): no new form, no lower score (153) - retail copies the timestamp into the
 // global as two dwords and uploads the gamma ramp into the device's own ramp buffer; three separate
 // channel stores in retail's red/green/blue order (and 255.0f) score the same 153, not kept, and a
@@ -7110,6 +7119,10 @@ void __stdcall function_214f0(real passes, real distortion, real strength, real 
     real scale, bool blend, bool preserve);
 bool function_022710();
 real scenario_ramp_evaluate_current(long index);
+// MiniMax S (11-09): no new form, no lower score (139): retail's frame is 0x58 bytes with the frame
+// pointer saved around the grid block and ours is 0x5c with the frame pointer saved in the prologue,
+// so every stack slot sits eight bytes off; the state local, the entry offset, the entry count and
+// the declaration order were tried this round and all leave the frame at 0x5c.
 // MiniMax A (11-06, run 52): no new form, no lower score (139) - retail's frame is 0x58 bytes with the
 // grid filling it and the frame pointer pushed inside the loop.
 
@@ -8825,6 +8838,11 @@ point3f g_4b72b4;
 __declspec(noinline) bool function_1d3f0(long index, void const *colors, D3DPalette **out);
 __declspec(noinline) void function_0169f0();
 __declspec(noinline) void function_016a30(real scale, short y, short x);
+// MiniMax S (11-09): no new form, no lower score (171): retail sign-extends the two offsets at the
+// call because its callee took ints, while ours folds the constants into the argument registers
+// because the callee here takes shorts, and retail passes the palette global itself as the
+// out-parameter where ours reaches the palette through a local; the type-punned call form scores
+// 169 and the palette-through-the-global form scores 184.
 // MiniMax A (11-06, run 52): no new form, no lower score (171) - retail passes the two offsets to
 // 0x16a30 in its own order and reaches the palette through a different call sequence.
 // MiniMax C (11-06): no new form, no lower score - retail still passes the two offsets to 0x16a30 in its
