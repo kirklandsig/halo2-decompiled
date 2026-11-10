@@ -9,6 +9,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
+#include "vector_products.h"
 #include "unknown_1dacb0.h"
 #include "unknown_1cafc0.h"
 
@@ -146,7 +147,9 @@ static inline long camera_seconds_to_ticks_round(real seconds)
 	return real_to_long((real)g_510c54->field_2_3 * seconds);
 }
 
-static inline void cross3f(vector3f const *a, vector3f const *b, vector3f *out)
+/* the cross product a x b, its components computed before the stores (the shared
+   cross3f of vector_products.h stores each as it goes) */
+static inline void camera_cross3f(vector3f const *a, vector3f const *b, vector3f *out)
 {
 	real k = a->i * b->j - a->j * b->i;
 	real j = a->k * b->i - a->i * b->k;
@@ -369,7 +372,7 @@ void function_16c2f0(short camera_point_index, short ticks, long object_index)
 				left = offset + 1;
 				vector3f const *up = &camera->up;
 				vector3f const *forward = &camera->forward;
-				cross3f(forward, up, left);
+				camera_cross3f(forward, up, left);
 				function_30bf0(left);
 			}
 				break;
@@ -718,12 +721,15 @@ bool function_13cb40(void);
 
 PRIVATE inline real game_ticks_to_seconds(long ticks)
 {
-	return (real)ticks * g_510c54->rate;
+	real seconds = (real)ticks * g_510c54->rate;
+
+	return seconds;
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
 // MiniMax C (11-05): no new form, no lower score; the plane's three normal copies are reloaded in the same order in both (i, k, j), but retail gives them XMM3/4/5 for i/j/k where ours gives XMM5/3/4; the squared length in field order scores 389, in k,i,j order 243, with the first two addends swapped 238, written from the direction alone 465, and with the multiply operands swapped it is byte-identical at 236.
-// score 385 (was 236): b5K 11-06 statement walk against retail found no wrong field, offset, condition, callee or loop; the one
+// score 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
+// b5K 11-06 statement walk against retail found no wrong field, offset, condition, callee or loop; the one
 // behaviour fix is the point-mode timer, which retail computes as (ticks * rate) / scale (cvtsi2ss, mulss [ebx+4], divss at
 // 0x16ca6e-0x16ca78) and the one-line ternary compiled as (rate / scale) * ticks, rounding differently; the `seconds` local makes
 // ours retail's order. That costs 149 only because the whole tail then shifts one line against retail's split default arm
@@ -962,6 +968,21 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // then d.k preloads again); the distance dot's operands swapped 236 (aligned 57, an order picked by score, not kept), through a forward pointer 236 (61);
 // the timer as if/else 244 (1700); the offset products before the negations 239 (62). Most of the count is the function-wide zero in XMM1
 // against retail's XMM0, which follows the length sum's d.j preload. Body unchanged.
+// Round 63 (m3 lane 2, fast; control 385): kept: the projected position through the shared vector3f_add_scaled
+// (include/vector_products.h; the file's own cross product renamed camera_cross3f for the header's cross3f) 384;
+// with the FOV fields read at each use and a named start, plane.n = camera->point.left with no direction pointer
+// and the length as dot3f(&plane.n, &camera->point.left) 353; with the tick conversion named inside the tick
+// helper (main's call-site seconds local goes) 337; `start` initialised at its declaration 331 (kept). Each part pays: hand-written position 349 (1700 B), FOV
+// locals as before 356 -> 386, the old plane block 356. Not kept: the line parameter through a new
+// (plane, point, direction) pointer helper 389 (1680 B); on 337, the timer as if/else 339 (1700 B), the length as
+// dot3f(&camera->point.left, &plane.n) 352, the pan lerp through 0x1a4c00's vector3f_interpolate moved to
+// vector_products.h 342 (the pan arm's flag update becomes retail's memory `or`, but the lerp products commute),
+// length_sq3f(&plane.n) 370, the distance dot's operands swapped 337 (same code). Left: retail's normal XMM3/4/5
+// (ours 5/3/4) and its shared zero in XMM0 (ours XMM1) from the plane arm through the timer and FOV tail.
+// On 331: the offset through vector3f_scale then negated 331 (aligned worse); plane.d dotted with
+// camera->point.left 356; the timer as `time_scale == 0.0f ? 0.0f : ...` 331; command->object_index from the
+// camera_object_index local 342; start declared before t 331. Main's call-site seconds local in place of the
+// helper's 373. The pan quaternion length still sums j, k, w, i where retail keeps the helper's w, k, j, i.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
@@ -1002,15 +1023,13 @@ void __stdcall function_16c840(long user_index, long unused, s_observer_command 
 						plane3f plane;
 						real length_squared;
 						real t;
-						vector3f const *direction;
 
 						command->object_matrix.forward = *g_4687a8;
 						command->object_matrix.up = *g_4687b0;
 						command->object_matrix.left = *g_4687ac;
-						direction = &camera->point.left;
-						plane.n = *direction;
+						plane.n = camera->point.left;
 						plane.d = dot3f((vector3f *)&command->object_matrix.position, &plane.n);
-						length_squared = (plane.n.k * direction->k + plane.n.j * direction->j) + plane.n.i * direction->i;
+						length_squared = dot3f(&plane.n, &camera->point.left);
 						if (length_squared != 0.0f)
 						{
 							t = 0.0f - plane_distance_to_point(&plane, (point3f *)&camera->point.offset) / length_squared;
@@ -1019,9 +1038,7 @@ void __stdcall function_16c840(long user_index, long unused, s_observer_command 
 						{
 							t = 0.0f;
 						}
-						command->object_matrix.position.x = direction->i * t + camera->point.offset.i;
-						command->object_matrix.position.y = direction->j * t + camera->point.offset.j;
-						command->object_matrix.position.z = direction->k * t + camera->point.offset.k;
+						vector3f_add_scaled(&camera->point.offset, &camera->point.left, t, (vector3f *)&command->object_matrix.position);
 						command->flags |= 0x40;
 					}
 					break;
@@ -1034,9 +1051,7 @@ void __stdcall function_16c840(long user_index, long unused, s_observer_command 
 					break;
 				}
 			}
-			real seconds = game_ticks_to_seconds(camera->ticks);
-
-			command->timer = time_scale != 0.0f ? seconds / time_scale : 0.0f;
+			command->timer = time_scale != 0.0f ? game_ticks_to_seconds(camera->ticks) / time_scale : 0.0f;
 			command->forward = camera->forward;
 			command->up = camera->up;
 			dword camera_object_index = camera->object_index;
@@ -1133,20 +1148,19 @@ void __stdcall function_16c840(long user_index, long unused, s_observer_command 
 	camera->active = false;
 	if (function_13cb40())
 	{
-		real target = camera->field_of_view_target;
-		if (target != 0.0f)
+		if (camera->field_of_view_target != 0.0f)
 		{
-			real duration = camera->field_of_view_duration;
-			if (camera->field_of_view_time >= duration)
+			if (camera->field_of_view_time >= camera->field_of_view_duration)
 			{
-				field_of_view = target;
+				field_of_view = camera->field_of_view_target;
 			}
 			else
 			{
-				real t = camera->field_of_view_time / duration;
+				real t = camera->field_of_view_time / camera->field_of_view_duration;
+				real start = camera->field_of_view_start;
 
 				t = PIN(t, 0.0f, 1.0f);
-				field_of_view = (target - camera->field_of_view_start) * t + camera->field_of_view_start;
+				field_of_view = (camera->field_of_view_target - start) * t + start;
 			}
 		}
 	}
