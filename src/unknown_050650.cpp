@@ -825,13 +825,13 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
+// score 257 (was 257): frame 0x8c agrees; the result/point-valid byte homes, the direction chain's layout predecessor
+// (retail: case 2's remembered-prop 0x1e3b00 tail, which case 1's copy cross-jumps into) and the weapon path's registers differ.
 // MiniMax D (11-10): no new form, no lower score (257).
-// MiniMax E (11-06): score 257 (was 257): no new form lowered it. The result and point-valid byte
+// MiniMax E (11-06), at 257 (was 257): no new form lowered it. The result and point-valid byte
 // homes are still swapped (ours writes the flag byte at esp+0x12, retail at esp+0x13), the three
 // vector components reach the stack homes in the order eax/edx/ecx where retail uses eax/ecx/edx, and
 // retail's class lookup block sits before our copy of the direction where ours follows it.
-// score 257 (was 257): frame 0x8c agrees; the result/point-valid byte homes, the direction chain's layout predecessor
-// (retail: case 2's remembered-prop 0x1e3b00 tail, which case 1's copy cross-jumps into) and the weapon path's registers differ.
 // Earlier at 276 (was 276): frame 0x8c agrees; result/point-valid byte roles, native point copies and shared case tails differ.
 // Earlier at 322 (was 322): Round 32: the jump-table base and every internal jump still differ (our body is 1424 bytes
 // against retail's 1444); retail keeps the shared direction/normalise/output chain between case 2 and case 1 and holds
@@ -1064,6 +1064,13 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // rounded through fst/fstp, point - origin / point - position are subss in x, y, z order as in retail. No
 // behaviour difference found. Only the point_valid/result stack homes (esp+0xa/0xb swapped) and the cross-jumped
 // cafc0 blocks differ. Declaring point_valid first 341, separate initialisers 343/341 (fast control 341): dropped.
+// Round 182 (m3 lane 4, plain; fast reads 341 at 1404 bytes; 0x297a50/0x297660/0x2980d0 stay matched): the two remembered
+// blocks do not cross-jump because ours passes `&point` to 0x1e3b00 through one register (`mov edi, ecx` in case 2,
+// `mov edi, eax` in case 1) where retail recomputes `lea edi` after the pushes, so case 1's copy can join case 2's
+// after its differing push; the output argument as `(point3f *)point.n` 257 (diagnostic: same code, the address
+// is one value). Also: the output test as two nested ifs 257; case 2's remembered branch after
+// `if (state->unknown00 == NONE) goto done;` 257; the switch on a `short type` local 257; case 5 as a positive
+// `if (attention_state > 0) { ... }` 257; case 2's marker declared with the function-scope locals 257 (all the same code).
 // m3 lane 1 r85 (plain; 0x297a50/0x297660/0x2980d0 tracked): the remembered 0x1e3b00 output as `(point3f *)point.n`
 // 257 (same code: ours still CSEs &point into EDI); cases 1 and 6's object point (cafc0/caf60/1caa40, one shape in
 // retail) as one shared inline helper 398 (1296 B, the helper stays out of line: the inline budget is tight here), with

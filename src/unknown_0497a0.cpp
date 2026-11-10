@@ -629,7 +629,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
     return pixel;
 }
 
-// score 250 (was 250): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// score 233 (was 250): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
@@ -1011,6 +1011,16 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // copy as plain `inline` 250 and with no inline keyword 250 (both same code: the compiler still inlines it). `u -= u_step`
 // with no negation 611 (2596 bytes); the tint as three statements 447 (2580 bytes); the object index read from the source
 // at each use 276. Re-measure (diagnostic): `u += -u_step` with the V sum at the outer store 610 (u_step stays a 4-byte home).
+// Round 68 (m3 lane 2; fast, kept form confirmed plain and in a full check; 0x42c50, 0x42b20, 0x43740 matched): case 4's normal
+// through the existing normalize3d 250 -> 233 (kept: its length is then summed i, j, k, retail's x87 order), case 0's normal through
+// it too 233 (identical code, kept: it removes the hand-written copy). Not kept: case 4's side through normalize3d as well (r155's 473
+// re-measured on this base) 351 at 2588 bytes, aligned 145, masked 45: the side's x87 is then retail's, but the body is 4 bytes short
+// because case 1/2 lacks retail's second x load (a colouring symptom), so everything after case 4 shifts; start the next round there.
+// The side alone through it 351; both lengths written i, j, k 362 (diagnostic); case 4's edge points through vector3f_add_scaled 363;
+// view and direction through vector3d_from_points3d 443 (2584 bytes). On 233: side scaled in place by vector3f_scale then +/- 416;
+// case 1/2's points through real_point3d_set 443 (2580); the cursor as `vertex = outer + 1` 656 (2556); the vertex positions through
+// real_point3d_set 233 (same code); case 1/2's normal copy before its points 241; case 1/2's z as `first.z = second.z = ...` 331
+// (2600); case 0's normal set through vector3f_assign in each arm 499 (2620); the side's scale through vector3f_scale 233 (same code).
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1118,12 +1128,7 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
                     normal.j = neighbor->position.x - point->position.x;
                 }
                 normal.k = 0.0f;
-                real length = (real)sqrt(normal.j * normal.j + normal.i * normal.i);
-                if (!(fabs(length) < 0.0001f))
-                {
-                    real inverse = 1.0f / length;
-                    normal.i *= inverse; normal.j *= inverse; normal.k *= inverse;
-                }
+                normalize3d(&normal);
             }
             break;
         case 1:
@@ -1179,12 +1184,7 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
                 if (input->normal)
                 {
                     cross3f(&direction, &side, &normal);
-                    length = (real)sqrt(normal.k * normal.k + normal.j * normal.j + normal.i * normal.i);
-                    if (!(fabs(length) < 0.0001f))
-                    {
-                        real inverse = 1.0f / length;
-                        normal.i *= inverse; normal.j *= inverse; normal.k *= inverse;
-                    }
+                    normalize3d(&normal);
                 }
             }
             break;

@@ -3737,6 +3737,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // (no cursor / cursor advanced last / cursor advanced first x member test joined or split x four entry orders of the
 // stride, `size -= 2` and consumed x `(members >> member) & 1` or the mask test x member declared at the loop top or
 // in the relay arm): best 139 (main's code), the cursor forms 162-165 (aligned 58 against 71).
+// Round 68 (m3 lane 2, fast; 0x564c0 matched; indexed form): the member bit cleared after the bit test's block 167 (477 bytes);
+// a `byte count = data[1]` local for the clamp test 139 (aligned 87); the packet pointer formed after the size test 139 (same
+// code); `(1 << member) & members` 139 (same code); the member, kind and empty-mask tests in one condition 139; re-measured on
+// the indexed form: the packet size set by an if 155. All callees are matched, so no callee convention is involved.
 // M3 lane 10 r88 (fast with 0x564c0, matched each time; base 139, aligned 84, masked 47): the member test as `member < 0` 139
 // (other code: `test; jl` where retail has `cmp eax, -1`); on the packet-cursor form (re-measured 164, masked 36) the same test 165;
 // the cursor set from the count, `data + consumed`, after `size -= 2` and `consumed = 2` with the stride last 164 (masked 32), with
