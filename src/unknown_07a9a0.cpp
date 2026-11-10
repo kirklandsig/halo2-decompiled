@@ -1058,7 +1058,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // histogram[16]` with a memset for each clear recovers retail's frame 0xb4 (machine_ids and the histogram share slots) but
 // scores 844 (2772 bytes). The histogram is never read, so it is not kept without a match. Tried: the add-loop minimum as a
 // three-way type 5/4/other (no effect).
-// score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
+// score 766 (was 766; round 103 unchanged): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
 // where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
 // expanded here while retail calls the matched 0x192e60 out of line.
 // Earlier: Frame 0xd4/0xb4, stacked session and protected opening lookup expansion remain.
@@ -1278,6 +1278,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 376); grouped labels and a long histogram without the guard 850; the early exit as `result = false; return result;` 766
 // (same code). Lead: retail's call site is out of line with no guard, so its inline choice comes from elsewhere.
 // MiniMax I (11-10): no new form, no lower score; retail's party histogram is 16 dwords at frame+0x44, cleared twice with `rep stosd` and indexed as `mov ebx,[esp + eax*4 + 0x40]` with the count-1 folded into the displacement, so our word cells and the 0xd4 frame stay (the dword cells reach retail's 0xb4 frame but score 844), and the session ingress and the inlined lookup remain the only differences.
+// Round 103 (m3 lane 16, fast with 0x73530 (8 throughout), 0x63220, 0x192e60, 0x1934f0 and 0x1931a0 matched): the admission
+// test with `!variant` first 766, with `!summary || !variant` first 766, with the capacity compares written capacity-last 766, with
+// `capacity < summary->player_count` 766 (all four the same code); the type-5 machine scan ending in `break` once a match clears
+// the result 893 (2764 bytes). The top 0x192e60 call's inline choice is the cause; it stays a flags lead (this file is /arch:SSE).
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

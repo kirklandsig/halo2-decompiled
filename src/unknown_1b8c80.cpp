@@ -1395,7 +1395,7 @@ void function_1f86a0(long actor_index);
 // after the root calls) where ours keeps the mask in BL and the entry in memory, and retail still
 // takes the object-header data in the prologue and reads the flags once above the slot-flag test;
 // the mask read once before the loop scores 136, so the mask is read per iteration as it was.
-// score 134 (was 134): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
+// score 134 (was 134; round 103 unchanged): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
 // object-header data in the prologue and reads the flags once above the slot-flag test.
@@ -1663,6 +1663,12 @@ void function_1f86a0(long actor_index);
 // the unit lookup nested in the actor lookup 245 (m 41), no unit local 240 (same code); a flags byte local above the slot
 // bool test in the found block 238 (862 bytes, m 27), with the slot bool named too 238, a bool `specified` there 247 (m 33);
 // with the mask local, that flags local 142, the header-table local 134. All restored.
+// Round 103 (m3 lane 16, fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70, all matched): `same` started false and set by an
+// `if (specified)` 241; the element as a pointer to const 134 and the selection as a const pointer 134 (both the same code).
+// Diagnostics (reverted): the two root calls through the matched pure reader 0x1b8c80 136 (aligned 86, register-masked 50,
+// against this body's 84/49), through 0x1b8d40 380 (973 bytes, it inlines). 0xbaf40's own memory summary stays untested:
+// its file is held this round. The slot data-block form (state through `slot->unknownc`) is round 39's 134 (same code).
+// Also: `joint_index` declared at the top of the function 134 and the entry declared in the while condition 134 (both the same code).
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

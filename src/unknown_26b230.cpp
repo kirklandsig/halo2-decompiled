@@ -1858,7 +1858,7 @@ void function_269250(long clump_index, long actor_index);
 // selection's copy in edi.
 // MiniMax E (11-07): no new form, no lower score; the walk's pool load stays in memory and the
 // selection stays in edi where retail hoists the pool into ebx and keeps the selection on the stack.
-// score 87 (was 87): retail hoists the walk's pool load into ebx and keeps the selection
+// score 87 (was 87; round 103 unchanged): retail hoists the walk's pool load into ebx and keeps the selection
 // MiniMax B (11-03): no new form, no lower score.
 // only on the stack (stored from esi, best stored in a tail shared with the initialisation);
 // ours keeps the pool in memory and the selection in edi.
@@ -2054,6 +2054,12 @@ void function_269250(long clump_index, long actor_index);
 // walk as a `for` with the actor declared in it 87; the creation arm ending in `continue` when nothing is created 87; the
 // selected arm ending in `continue` when the selection is the current clump 87; both continues 87 (the last four the same
 // code). Body unchanged.
+// Round 103 (m3 lane 16, fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched): the
+// in-arm compare re-measured 126 (480 bytes; register-masked aligned 23 against this body's 25); on it the score as `real const` 126 and
+// the team test as `actor->unknown024 == group->team` 126 (both the same code), the score test as `if (score <= best) continue;` 128;
+// on this body the score set in an else arm (`else score = best;`) 128 (484 bytes) and the swapped team test 87 (same code). Retail keeps
+// the walk's pool field cached in EBX across the score call, so it treats the walk as not escaping; ours re-reads it from the frame at
+// each use. The compile-only /Gr harness promotes both walk fields to registers (frame 0x2c), so it does not model this body.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
