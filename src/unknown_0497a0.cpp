@@ -954,13 +954,28 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // range transfers, eight nonoriginal pairs:
 // 598/598/733/750/745/769/735/729. NOT kept: no exact native frame/home recovery;
 // original complete body, observations, helper and call graph restored.
+// M3 lane 8 r144 (fast; control 250, frame 0xa8): retail's unused 4-byte home is at +0xa8, just below v + width (+0xac).
+// The V sum formed at the outer vertex's store 252; the U step negated at the advance (`u += -u_step`) 611 (2596 bytes, frame
+// 0xa8); both 610; both with the sum's operands swapped 610; a named V end declared after the width scaling 250 (same code); u
+// and v read after the two scales 271; one read of the source scale for both tests 608; the colour stored to the first vertex
+// first 248. Re-measures of the rejected grouping (a two-member texture scale vector; not kept, the same locals-grouping form
+// the coordinator threw out for r155): i negated in place with a named V end 239 (frame 0xac); a named U step from i and the V
+// end kept in j 224 (frame 0xac, confirmed in the plain check; the diff is build/r144/lead-42cf0.patch); both in place 250
+// (frame 0xa8). On the 224 form: the colour store order 222; case 4's offsets named in all three rows 459 (2580 bytes, frame
+// 0xa4); case 1/2's offsets named in both rows 490 (2588); both 443 (2596 bytes, frame 0xa4). Body restored.
 // P399: Actual current/next color-bound identities and complete next-color record, subsets 1-7, then output-color identity:
 // 250/250/482/250/250/250/490/447. NOT kept: no byte equality or native home repair; original complete body restored.
+// Round 85 (m3 lane 10, fast; kept form plain 250; 0x42c50, 0x42b20 and 0x43740 stay matched): the `(void)&unknown;` statement removed 250 (same code, kept: it did
+// nothing). On that: the pixel helper's scale declared between its green and red channels 250 (same code: declaration order does not move the asm locals' homes);
+// `index = point->next` before `previous = point` 561 (2596 bytes as retail, but register-masked aligned 30 -> 39); `u += u_step` before `vertex += 2` 251; v_width
+// read before v 251; the vertex cursor declared after source and definition 252. Frame map (after the pushes): retail has three 8-byte homes at the top, each with
+// its upper dword unused: the first.y spill +0xb4, v + width +0xac and the u step +0xa4, then the helper's channels; ours has two (the first.y spill +0xb0 and the
+// helper's blue channel +0xa8) and keeps v + width and the u step in 4-byte homes among the channels. Register-masked aligned differences left: 30, all small
+// schedules (case 0's half-width add and y spill, case 1/2's x load, case 4's position pointer formed after the neighbour lookup, the side length's `fst`,
+// the colour store order and one tail reload).
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
-    // Retail keeps all three callback arguments on the stack.
-    (void)&unknown;
     s_ribbon_vertex *vertex = vertices;
     s_ribbon_source *source = input->source;
     s_ribbon_definition *definition = input->definition;

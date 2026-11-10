@@ -430,6 +430,7 @@ void *function_1e5240(long actor_index);
 real function_2683f0(long actor_index, long node_index, short type);
 void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *sample, s_2640c0 *motion);
 
+// MiniMax S (11-10): no lower score (412): a plain long for the maximum gives 428 (worse) and is reverted; retail still takes the actor index in EAX where ours loads it from the stack, and the frame is 0xa4 against retail's 0xa0.
 // MiniMax R (11-05): no new form, no lower score; retail takes the actor index in EAX and pushes ebx/ebp/esi
 // before the actor lookup, ours reads the argument from the stack and pushes after it.
 // MiniMax B (11-04): no new form, no lower score.
@@ -1129,6 +1130,12 @@ real function_296600(long actor_index, long prop_ref_index);
 // array with object-first/null-override unit 352 (plain 295, 1255 bytes); scalar object-first/null-override 352.
 // NOT kept: scope/array forms have no effect, orders regress or gain too little, and object-first uses a branch
 // absent in retail and regresses plain. Original declarations and ternary restored; array forms were exact-only.
+// Round 139 (m3 lane 7, plain with the file's other functions; --fast misbuilds this one): the two 0x1c8df0 calls through one
+// file-local sight helper (actor, sample, target cell, target, root, prop, current) that writes `!current` and the hit pointer among
+// its arguments: plain `inline` 434 (1133 bytes, it stays out of line), forced inline 208 (1273 bytes); `!current` written in both
+// calls with no named local, re-measured, 267 (1278 bytes); the three object lookups through the existing ai_object_get 163 (same
+// code); current as a byte 163 (same code); the time read ahead of the prop lookup 168 (1269 bytes). Retail computes the hit
+// pointer and the mode ahead of the pushes and then `sete` for `!current` between them, storing it for the second call.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

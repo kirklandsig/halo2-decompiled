@@ -1178,6 +1178,9 @@ void function_2118c0(void)
 // scalarized, none better); 120 combinations of row expression, index type, index level, p1/out index and pointer
 // order, none below the current form. Also: `short i` 262 (670 bytes, components no longer unrolled); `long k` 133
 // (753 bytes); `long m` 75; `word m` 10; b declared at each pass's loop head 10.
+// Round 83 (m3 lane 10, fast): a 600 s permuter run (seed 8384, 54 tries, 822 s full baseline) none below 10; the output
+// vector as `p1 + m` 194 (804 bytes); the second pass's band loop as a `for` 10 (same code); p1 from the row local
+// (`noise[row + k]`) 163 (786 bytes); a `dword` band row stepped by 8 beside b 150 (every row reduced to a pointer).
 // @retail 0x211cc0
 void function_211cc0(void)
 {

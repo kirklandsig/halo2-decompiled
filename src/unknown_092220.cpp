@@ -181,8 +181,25 @@ static __forceinline long function_925c2()
     return local_0;
 }
 
+// MiniMax D (11-10): no new form, no lower score; the flags are still loaded into eax where retail
+// loads them into the dying user pointer register ecx, and the sibling 0x92220 in this file matches
+// with the same flags loaded into ecx, because there eax still holds the result and the allocator
+// then takes the next free register; here eax is free, so our allocator takes it, while retail's
+// allocator took ecx and reused the pointer's own register for the loaded value. This round: the
+// flags in a named local, the flags assigned inside the condition, the flags through a pointer to
+// the field, the flags through a pointer built with an explicit byte offset, the two tests split
+// into two ifs, the condition written negated, the modulo form and the kind read directly with no
+// local all leave the load in eax (14 each), the mask test first gives 15, the pointer assigned
+// before the kind test with the test negated gives 115, and reading the field in the two kinds
+// separately gives 149; every one was reverted, so the body stands.
+// MiniMax D (11-10): no new form, no lower score; retail loads the user flags into the pointer's own
+// register (mov ecx, [ecx+8]) and compares them there, this build loads them into eax, and the two
+// shorter encodings leave the function two bytes short, so every later field is reported as differing
+// as well; the tail of the function matches retail instruction for instruction. The two global loads
+// in the reduced image are the check's unresolved placeholders, not differences of the code.
 // MiniMax E (11-09): no new form, no lower score; the user flags still load into eax where
 // retail loads them into the dying user pointer register ecx.
+// MiniMax R (11-09): no new form, no lower score; the user flags still load into eax where retail loads them into the dying user pointer register ecx, and the two tests in the other order (15), the flags compared as unsigned (14), the flags in an unsigned local (14) and the constants written unsigned (14) all leave the code as it was.
 // MiniMax R (11-09): no new form, no lower score; the register the user flags load into is the only
 // difference left, and every form of the test I tried leaves them in eax. This round: returning NONE
 // at the bad-flags test instead of jumping to the end scores 98, so the body stands.

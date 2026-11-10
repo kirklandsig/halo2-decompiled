@@ -1647,10 +1647,19 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // MiniMax S (11-09): no new form, no lower score; the frame is still eight bytes larger than retail's
 // (0x114 against 0x10c) and the first locals sit at higher offsets, so every stack slot and the
 // register choices in the two loops still differ; no form tried recovers retail's frame.
+// M3 lane 8 r144 (fast; control 400, frame 0x114): retail returns with `ret 0x18` as ours, so the six stack arguments
+// agree. The output element taken with a post-increment of the emitted count 400 (same code); the previous point chosen by
+// an if/else in place of the conditional expression 400 (same code); edge declared at the top of the scan arm 481 (1769
+// bytes); the next step's pointer declared inside the type test 400 (same code); the previous point's test as `next != 0`
+// 401; the forward scan as a for with the end declared outside 636 (1911 bytes, frame 0x124); the emitted type from the
+// local 403 (1755); the trace target initialised whole 400 (same code). Body restored.
 // P401: Forward scan ordinal word/dword/unsigned-int64 with short reverse candidate:
 // 488/501/535; with signed-int64 reverse candidate 591/572/664; signed-int64 forward
 // with short/int64 reverse 535/664. NOT kept: wider/unsigned scan interference grows
 // the body and misses native frame/edge homes; original signed scans and full body restored.
+// Round 85 (m3 lane 10, all plain with 0x270930 and 0x2c2a70, which stay matched; positional/register-masked aligned, base 400/58): edge as a `word` 462/63
+// (1759 bytes); `++used` after the type/link stores 400/61; `unknown02` copied before the output index 400/59; `*complete` cleared before the count is
+// stored 464/70 (1753); the typed branch setting type and link before next 400/57. No form moves count out of BX or edge into EBX; frame 0x114 stays.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

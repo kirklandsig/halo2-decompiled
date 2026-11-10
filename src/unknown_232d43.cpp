@@ -1035,6 +1035,18 @@ struct s_string_buffer
 // seven-mode chain with the loads, then `if (== 2)` time else `%d` 94 (472 bytes); the six-mode chain written twice
 // (value1, value2) 104 (517); one named bool for the chain tested twice 50 (481, merged); a 1/3/4/7/8/9 switch holding the
 // loads 100; the 9 test through an inline multi-return predicate 50 (481).
+// Round 177 (m3 lane 4, plain): matched 0x257320's after-return block (0x257626) is a copy of its `else if (pointer)` test made
+// for a conditional branch that enters it from an earlier term, after the fall-through path (the previous condition's last term,
+// `|| !pointer`) was routed past the test; the copy even jumps past a reload in the arm's head. So a form is needed in which the
+// path that falls into the loads (mode 8) passes the 9 test's place already decided, while retail's loads reuse EAX (the mode is
+// dead there, so that is decided before allocation). New: that shape, `1/3/4/7 || (== 8 && != 9)` then `else if (== 9)` with
+// the same loads 50 (481 bytes: the `!= 9` term folds away); the chain arm with its own format call and an else holding
+// `if (== 9)` loads and the format call 71 (503); `if (!chain) { if (== 9) loads } else loads` 50 (481); the mode read once
+// into a local for every test, with the six-way chain 50 (481) or the five-way chain and an `else if (== 9)` arm 50 (481).
+// Re-measured: the five-mode chain and a separate `if (== 9)` 63 (501 bytes: the loads keep the mode in EAX and the 9 test
+// follows them, nothing routed past); three arms (chain, `== 9`, else) each with the score1 format call, the else passing the
+// value 95 (484) or 0 95 (484: merged, the format string in EDI, the values out of ESI/EDI). All leave 9 in line: identical
+// arms merge into the one that falls into the format call, which is the 9 arm in every order tried.
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

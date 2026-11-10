@@ -833,6 +833,15 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 
 real normalize2d(point2f *v);
 
+// MiniMax I (11-09): no new form, no lower score (135); the first difference is the trajectory result's
+// register home: retail copies the call's return into DL (`mov dl, al`), loads the force flag into AL and
+// stores DL to the reused target-parameter slot only afterwards, while ours stores AL to that slot at once
+// and takes AL for the force flag; a force copy before the call, inside the valid block and right after the
+// call, the separate declaration, a char result, the direct return in the request arm and the swapped
+// condition order all compile to the same code (the swapped order only sinks the store past the speed
+// compare). Still different: the home register (DL against AL), the store before the force test, the tail's
+// register order (`mov ecx,[esp+0x2c]`, `mov edx,[esp+0x30]` against `mov eax,[esp+0x2c]`,
+// `mov ecx,[esp+0x30]`) and the size (935 bytes against 923).
 // MiniMax R (11-09): the annealed permuter over 900 s ends at 134, its best being the two flag stores swapped, a gain of one that the review threshold drops, and the volatile globals pointer and the placed point store it also made give 135 on their own; the score stands at 135.
 // MiniMax R (11-08): no new form, no lower score (135); the threshold, the request point copy, the direct request return, the result's type and the retry spelling all score 135 or worse, and only the trajectory result compared against zero reaches 120, which is a redundant compare kept only with a byte match.
 // MiniMax R (11-06): no new form, no lower score (135).
@@ -1314,6 +1323,7 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
+// MiniMax S (11-10): no new form, no lower score (137): the actor and object pointers still take the other way round (ours actor in esi / object in edi, retail actor in edi / object in esi), so the prologue is one byte shorter and every later row pairs with the wrong row.
 // MiniMax C (11-09): no new form, no lower score (137); the body differs only by the actor/object pointer pair (ours actor ESI / object EDI, retail actor EDI / object ESI), so the prologue is one byte shorter and every later row pairs with the wrong row.
 // Round 16: retail passes the object index in EAX and the actor index in ECX, ours passes the
 // actor index in ECX and keeps the object index elsewhere; retail computes the masked actor
@@ -1645,6 +1655,7 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax S (11-10): no lower score (238): dropping the pointer-to-parameter origin copies gives 255 (worse) and is reverted; retail still materialises the side flag only at the comparison (store 1, ja, store 0) while this build stores 1 at the top and keeps the flag live from there.
 // MiniMax C (11-09): no new form, no lower score (238); retail materialises the side flag only at the comparison (store 1, ja, store 0) while this build stores 1 at the top and keeps the flag live from there.
 // MiniMax G (11-06): no new form, no lower score; retail keeps the normalizer length in the dead target
 // argument slot at [esp+0x54] and the radius at [esp+0x14], this build uses fresh local slots, and retail's

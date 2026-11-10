@@ -420,6 +420,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // restart test 1, at the loop-body top 1; `__assume(animation.target != NULL)` before the test 89 (659 bytes); an
 // else arm on the plain path holding `__assume(frame >= 0)` 1; the break as `restart != 0` 1; `__assume(!dispose)`
 // before the restart test 1.
+// Round 83 (m3 lane 10, fast): `(void)&restart;` after the declarations 1 (folds away); the outer test inverted with the
+// inactive arm first 1; dispose initialised false at its declaration with the pre-loop reset dropped (per-pass reset kept) 1;
+// both loop switches with an explicit `case 3` and an unreachable `default` 1 (same code each); the end-time store before
+// the next-time step 1; a 600 s permuter run (seed 8383, 65 tries, 812 s full baseline) none below 1.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
