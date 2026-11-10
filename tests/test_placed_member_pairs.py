@@ -220,9 +220,9 @@ def test_placed_member_pairs(solver_images, precision, overflow, mutate):
              0x30dc30: 'removed_pair', 0x2d91d0: 'grow', 0x2d8db0: 'copy', 0x30dc80: 'recorder_destroy'}
     compiled_helpers = {symbol(mapping, name): label for name, label in [
         ('pairs_30d870::pairs_30d870', 'construct'), ('pairs_30d870::~pairs_30d870', 'destroy'),
-        ('class_30dad0::function_30dad0', 'record_add'), ('class_30dad0::function_30dba0', 'record_remove'),
+        ('holder_30dc80::slot_1', 'record_add'), ('holder_30dc80::slot_2', 'record_remove'),
         ('class_30dc30::function_30dc30', 'removed_pair'), ('function_2d91d0', 'grow'), ('function_2d8db0', 'copy'),
-        ('holder_30dc80::~holder_30dc80', 'recorder_destroy')]}
+        ('holder_storage_30dc80::~holder_storage_30dc80', 'recorder_destroy')]}
     for seed in range(128):
         results = [Run(machine, entry, allocator, dispatch, collect, helper, seed, overflow, mutate, precision).run()
                    for machine, entry, allocator, dispatch, collect, helper in zip((retail, compiled), entries, allocators,

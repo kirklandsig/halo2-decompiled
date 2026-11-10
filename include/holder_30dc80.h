@@ -38,13 +38,20 @@ struct values_30dc80
 	}
 };
 
-class holder_30dc80 : public pair_handler_30dc80
+class __declspec(novtable) holder_storage_30dc80 : public pair_handler_30dc80
 {
 public:
 	void *body;
 	values_30dc80 values;
 	group_30dc80 *storage[4];
 
+	virtual ~holder_storage_30dc80();
+	holder_storage_30dc80() {}
+};
+
+class holder_30dc80 : public holder_storage_30dc80
+{
+public:
 	holder_30dc80(void *body_)
 	{
 		values.data = storage;
@@ -53,14 +60,9 @@ public:
 		body = body_;
 	}
 	// the pairs a dispatcher adds and removes (0x30dad0, 0x30dba0)
-	virtual void slot_1(void const *pair)
-	{
-		((class_30dad0 *)this)->function_30dad0((pair_30dc30 const *)pair);
-	}
-	virtual void slot_2(void const *pair)
-	{
-		((class_30dad0 *)this)->function_30dba0((pair_30dc30 const *)pair);
-	}
+	virtual void slot_1(void const *pair);
+	virtual void slot_2(void const *pair);
+
 };
 
 #endif
