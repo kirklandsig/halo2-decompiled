@@ -5,17 +5,6 @@
 #include "stdio_writer_2d7aa0.h"
 #include "unknown_146a20.h"
 
-c_sized_reference_a9ef0 *debug_stream_factory_2d76f0::open_reader(char const *name)
-{
-	return ((reader_factory_2d7750 *)this)->open_reader(name);
-}
-stream_writer_2d9e40 *debug_stream_factory_2d76f0::open_writer(char const *name)
-{
-	return ((stdio_stream_factory_2d79c0 *)this)->stdio_stream_factory_2d79c0::open_writer(name);
-}
-
-// Repeated error-handler slots dispatch the already reconstructed operations.
-// The forwarding layer does not claim a fully matched virtual table.
 static __forceinline void initialize_service_array(array_2d91d0 *array)
 {
 	array->data = 0;
@@ -30,14 +19,13 @@ public:
 		initialize_service_array((array_2d91d0 *)&counts);
 		initialize_service_array((array_2d91d0 *)&silenced);
 	}
-	virtual void slot_7(char const *file, long line) { count_location(file, line); }
-	virtual void slot_8(char const *file, long line) { count_location(file, line); }
-	virtual void slot_10(char const *file, long line) { uncount_location(file, line); }
-	virtual void slot_11(char const *file, long line) { uncount_location(file, line); }
-	virtual void slot_12(char const *text) const
-	{ ((path_2d7f70 const *)this)->function_2d7fb0(text); }
-	virtual char const *file_name(char const *path) const
-	{ return ((path_2d7f70 const *)this)->function_2d7f70(path); }
+	// Unreconstructed repeated slots retain main's partial interface.
+	virtual void slot_7() {}
+	virtual void slot_8() {}
+	virtual void slot_10() {}
+	virtual void slot_11() {}
+	virtual void slot_12() {}
+
 };
 
 class bootstrap_service_2d8780

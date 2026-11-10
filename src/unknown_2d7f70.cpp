@@ -22,7 +22,7 @@ public:
 #include "service_streams_2d8780.h"
 
 // @retail 0x2d7f70
-char const *path_2d7f70::function_2d7f70(char const *path) const
+char const *error_handler_2d8030::file_name(char const *path) const
 {
 	for (int i = 0; i < 2; i++)
 	{

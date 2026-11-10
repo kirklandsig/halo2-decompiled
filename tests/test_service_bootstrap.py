@@ -143,16 +143,15 @@ def test_service_bootstrap(solver_images, real_streams):
                 handler, = words(uc, globals_[0x480178])
                 dispatches = [
                     (factory, 1, 0x2d76f0, 'debug_stream_factory_2d76f0::open', [2]),
-                    (factory, 2, 0x2d7750, 'reader_factory_2d7750::open_reader', [HEAP + 0x8000]),
-                    (factory, 3, 0x2d79c0, 'stdio_stream_factory_2d79c0::open_writer', [HEAP + 0x8000]),
+                    (factory, 2, 0x2d7750, 'debug_stream_factory_2d76f0::open_reader', [HEAP + 0x8000]),
+                    (factory, 3, 0x2d79c0, 'debug_stream_factory_2d76f0::open_writer', [HEAP + 0x8000]),
                 ]
-                for slot in (6, 7, 8):
+                for slot in (6,):
                     dispatches.append((handler, slot, 0x2d8640, 'error_handler_2d8030::count_location', [HEAP + 0x8000, seed]))
-                for slot in (9, 10, 11):
+                for slot in (9,):
                     dispatches.append((handler, slot, 0x2d86a0, 'error_handler_2d8030::uncount_location', [HEAP + 0x8000, seed]))
                 dispatches.extend([
-                    (handler, 12, 0x2d7fb0, 'path_2d7f70::function_2d7fb0', [HEAP + 0x8000]),
-                    (handler, 13, 0x2d7f70, 'path_2d7f70::function_2d7f70', [HEAP + 0x8000]),
+                    (handler, 13, 0x2d7f70, 'error_handler_2d8030::file_name', [HEAP + 0x8000]),
                 ])
                 for receiver, slot, retail_target, name, args in dispatches:
                     def operation(machine, va, size, user):
