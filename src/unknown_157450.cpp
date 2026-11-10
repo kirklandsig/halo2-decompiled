@@ -4818,6 +4818,11 @@ bool function_158eb0()
 // temporary ahead of the index load. Chained `iterator.index = iterator.absolute_index = NONE` 5; next() given `&iterator.player`
 // 5; the iterator set through its record-pool view 5; `flag != false` 5; the raw rank named and halved in the test 5.
 // Original body restored.
+// Round 98 (m3 lane 16, fast): inline helpers whose parameters could supply the missing rotation step: a typed
+// wrapper around the iterator's next call 5; the iterator's three stores in an inline setter taking its address 5;
+// both 5; the rank call through a forwarding helper taking (mode, index) 5, (bool flag, index) 5, (mode, index,
+// value) 5, (index, flag) with the halving inside 5; the whole test in an inline predicate taking the index 5
+// (the same code in all eight). Original body restored.
 // @retail 0x158f50
 bool function_158f50()
 {
