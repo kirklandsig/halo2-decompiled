@@ -249,6 +249,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // table loads); combined with the pass through a reference 5, with the chain index read from the published entry 5;
 // the reference form with the pass through a reference 5, with `third + (next & 0x1ff)` 5. Diagnostic (not kept):
 // `second` read once through its address in the direct form, in the restore block or at the top, 5/5. Restored.
+// Round 64 (m3 lane 2, fast; control: the direct entry store with the word read back from the field 5, where the only
+// difference left is `second` loading right after the entry lea, retail after the two table loads): on the direct
+// form, the chain and pass bases named after the store and before `next` 5; `second` through a const reference bound
+// in the restore block 5; `(void)&second;` at the top 5 (diagnostic; the load still moves, so not an aliasing effect);
+// on the reference form, the tables field bound to a const reference for the 0xc/0x14/0x1c bases 5; tables and entry
+// both written through references, the later bases read through the tables reference 5. Original body restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
