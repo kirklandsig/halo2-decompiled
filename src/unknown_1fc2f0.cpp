@@ -609,6 +609,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // first 30 (same code); rate and tick scale named before the helpers 61 (the ticks leave XMM3 again); the predicted point
 // copied from +0x38 and scale-added in place 126 (395 bytes). Diagnostic, reverted at once: the limit's rate read through a
 // volatile field cast 32 (ticks still XMM4: the rate local's live range is not what holds XMM3; the conversion's place is).
+// Round 100 (m3 lane 12, fast with 0x1fc660): the squared length through the existing k, j, i statement-sum helper of reciprocal_normalize.h 78
+// (first +0x2f); that with the deltas through scaled_difference3f at 1.0f 82, with deltas i, j, k and the existing in-place scale helper plus
+// vector3f_add for the correction 77, with both helpers and the 1.0f delta 80; the in-place scale helper and vector3f_add alone 57 (369 bytes).
+// All restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

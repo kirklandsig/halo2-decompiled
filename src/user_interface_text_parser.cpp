@@ -757,6 +757,17 @@ done:
 // just before the translator, 45 (171 bytes, hoist stays); one copy with a `dword` name 54; the two-copy body with the tag
 // read just before the translator 45 (178); the two-copy body with `__assume(variant != 0)` 32 (same code). The hoist is
 // a byte-cost tie (10 bytes either way), so only a cost change outside the source decides it.
+// M3 lane 8 r144 (fast; 0x22d503 and 0x22d52e stay matched; control 32, natural one-copy form 54 at 173 bytes). On the one-copy
+// form: the translator's buffer written as the end of the previous buffer (`&g_55c4e4[k_parse_buffer_length]`, another symbol for
+// the same address) 6 (173 bytes: no EBX hoist, two immediates and the mid-function `push edi` as retail; only the tag load's
+// slot and the selector register left); that with the tag declared before the variant 51 (171), with a named selector 6, with
+// the tag read in the translator call 38 (171); that with the getter written out and the tag read before its fallback 0
+// (byte match in the fast check). The round reverted it; the coordinator (11-10) applied it: an address spelling of a
+// global and a helper body written out are both kept with a byte match. Without the address spelling: the caller's buffer
+// held in a named local 54; a found flag in place of the default's jump 54; an empty else arm 54. Diagnostic: the size
+// preference off for this function 118 (224 bytes, the helpers then inline; the tail has retail's two immediates).
+// So retail's source reads the tag between the variant getter's call and its fallback, and its two uses of the buffer are
+// not one address expression when the function is optimized.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
@@ -764,8 +775,10 @@ void __stdcall parse_gametype(long string_handle, word *buffer)
 
 	if (globals)
 	{
-		s_game_variant *variant = get_game_variant();
+		s_game_variant *variant = (s_game_variant *)network_session_interface_get_data_4db0();
 		long tag_index = *(long *)((byte *)globals + 0x14c);
+		if (!variant)
+			variant = &g_54e4a0;
 		long name_id;
 
 		switch (variant->field_xcb8724)
@@ -797,9 +810,7 @@ void __stdcall parse_gametype(long string_handle, word *buffer)
 		default:
 			goto done;
 		}
-		function_1a0180(tag_index, name_id, (word *)g_55c6e4);
-		parse_copy(buffer, g_55c6e4);
-		return;
+		function_1a0180(tag_index, name_id, (word *)&g_55c4e4[k_parse_buffer_length]);
 	}
 done:
 	parse_copy(buffer, g_55c6e4);

@@ -101,6 +101,19 @@ static inline void sound_track_start_impulse(long index, long handle)
 // load (`mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`, seven bytes) where retail materialises it
 // (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`, six bytes) and scales the entry index before the tag mask;
 // the impulse parameter address is still copied through EDX where retail copies it through EAX.
+// MiniMax I (11-09): no new form, no lower score (16); the whole difference is the one byte of the case-0
+// entry address: retail materialises it (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`, six bytes) where
+// our build folds the base into the member load (`mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`,
+// seven bytes), and that extra byte shifts every later jump and call, which is why the listing marks the
+// four calls and the four jumps although each of them agrees with retail's; a permuter run over this
+// function again produced no candidate (0 tries), and seven more shapes of that address (the offset in a
+// local before the tag lookup, the offset and the tag each in a local, the address as an integer sum over
+// a dword base, the same read through a dword pointer, the typed array index, the address through the
+// shared helper and the integer sum with the index term first) all compile to the same folded bytes at
+// 165 bytes; the block's address field as a long instead of a pointer changes nothing either (0x225df0
+// and 0x225b60 still match with it). The index scaling also still follows the tag mask where retail
+// scales the index first, and the impulse parameter address is still copied through EDX where retail
+// copies it through EAX.
 // MiniMax I (11-09): no new form, no lower score; a permuter run over this function produced no candidate at all (0 tries in 791 s) and the case-0 entry address is still folded into the member load where retail materialises it with an add and a separate load.
 // MiniMax D (11-06): no new form, no lower score; the case-0 entry address is still folded into the member load (`mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`, seven bytes) where retail materialises it (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`, six bytes) and scales the entry index before the tag mask; this round nine more shapes of that address (the entry offset in a local, the typed array index, the address as an integer plus the member, the index term first, a dword variant, a new inline helper and the address-of form) all compile to the same folded bytes at 165, and the impulse parameter address is still copied through EDX where retail copies it through EAX; the entry offset scaled into a local before the tag lookup and the same address built as an integer sum and read through a long pointer also compile to the same folded bytes at 165, so the materialised address is not reachable by choosing another source shape here.
 // MiniMax I (11-05): no new form, no lower score: retail materialises the case-0 entry address (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`) and scales the entry index before the tag mask, ours folds the base into the member load and copies the impulse parameter address through EDX where retail copies it through EAX.

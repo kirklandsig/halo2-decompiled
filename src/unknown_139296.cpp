@@ -1278,6 +1278,9 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // exact, both later loops zero EBX before their guards; fast JXX 6); JSX/JXS/JHX 3 (fast JSX 3); JSS 106 (fast 118, 375 bytes), JTT 105, JHH 106, JGG 51, JKK 72, JTX 106,
 // JGX 49 (two guarded later loops compare with the kept zero, so it stays in EBX through loop 1 and the offsets spill);
 // ISS/IXX/ISX/IXS 87, DSS/DXX/JDD 88, JII 88, JJJ 106, JEE 102.
+// Round 161 (m3 lane 5, fast): first loop as `while (count-- > 0)` 1 (same code); count in the for initialiser with the
+// colour buffer at loop scope 1 (same code); descriptive names for every local 1 (same code); those names with an
+// indexed first loop over the field 106 (379 bytes, as unnamed); the success byte declared after the definition pointer 1.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {
