@@ -337,12 +337,12 @@ rewrites have not helped, let `tools/permute.py` search for you:
 
 It mechanically rewrites the body of the function marked `// @retail 0x<va>`
 (operand swaps, statement and declaration order, integer types of locals,
-temporaries, `if`/`else` branches, `for`/`while`, `+=` forms, `++` forms,
-`a = b = 0` chains, a named `bool` for an `&&` condition, `||` and `&&`
-conditions against `else if` and nested `if`, `?:` against `if`/`else`,
-arguments of a call trading places or rotating, `volatile` reads, stores and
-pointers), rebuilds, and keeps the variant with the fewest differing
-instructions; 0 is a match. Rearranged arguments are tried most often: they
+temporaries, a repeated literal or constant held in one local, `if`/`else`
+branches, `for`/`while`, `+=` forms, `++` forms, `a = b = 0` chains, a named
+`bool` for an `&&` condition, `||` and `&&` conditions against `else if` and
+nested `if`, `?:` against `if`/`else`, arguments of a call trading places or
+rotating, `volatile` reads, stores and pointers), rebuilds, and keeps the
+variant with the fewest differing instructions; 0 is a match. Rearranged arguments are tried most often: they
 were the last change in about a quarter of the near functions that went on to
 match, as far as git shows. It works on a copy of `src/` in a scratch
 directory, so your tree is untouched; the search is deterministic for a given

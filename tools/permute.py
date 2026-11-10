@@ -935,15 +935,118 @@ def mut_volatile_pointer(body, rng):
     return '\n'.join(lines)
 
 
+# A repeated literal or constant, held in one named local. The scheduler places
+# the load of a shared constant (NONE, 0, 1.0f, ...) differently from the
+# repeated immediate stores, and that placement is often the last difference in
+# a near miss. Insert the declaration at the top of the body or immediately
+# before the first use in code (not in a comment, string, case label, array
+# bound or static initializer).
+LITERAL = re.compile(r'(?<![A-Za-z0-9_.])(?:NONE|true|false|0x[0-9A-Fa-f]+|'
+                     r'\d+(?:\.\d*)?(?:[eE][-+]?\d+)?[fF]?)(?![A-Za-z0-9_.])')
+
+
+def _code_only(text):
+    """text with comments and string/character literals blanked out, its length
+    and newlines kept, so a literal found in it is code at the same offset."""
+    out, i = list(text), 0
+    while i < len(text):
+        j = _skip_literal(text, i)
+        if j == i:
+            i += 1
+            continue
+        for k in range(i, j):
+            if out[k] != '\n':
+                out[k] = ' '
+        i = j
+    return ''.join(out)
+
+
+def _literal_type(literal):
+    if literal == 'NONE':
+        return 'long'
+    if literal in ('true', 'false'):
+        return 'bool'
+    if literal.startswith('0x'):
+        return 'dword'
+    if re.search(r'[.eEfF]', literal):
+        return 'real'
+    return 'long'
+
+
+def mut_shared_constant(body, rng):
+    """Turns a literal repeated in code into one local, declared before its
+    first use or at the top of the body, and replaces the other uses with that
+    local. This changes when the constant reaches a register, which is what
+    some near misses need; the literals in comments, strings, case labels,
+    array bounds and static initializers are left alone."""
+    code = _code_only(body)
+    found = {}
+    for m in LITERAL.finditer(code):
+        literal = m.group(0)
+        start, end = m.start(), m.end()
+        line_start = code.rfind('\n', 0, start) + 1
+        line_end = code.find('\n', end)
+        line_end = len(code) if line_end < 0 else line_end
+        line = body[line_start:line_end]
+        before = line[:start - line_start]
+        if re.match(r'[ \t]*(?:case\b|default\b|#|static\b|typedef\b|enum\b)', line):
+            continue
+        if '__asm' in line or 'sizeof' in before:
+            continue
+        if '[' in before and re.search(r'\b(?:char|byte|short|long|int|dword|word|real|float|double|bool|void|'
+                                       r'[sc]_\w+)\s+\w+\s*\[', line):
+            continue                    # an array bound, not a value
+        found.setdefault(literal, []).append((start, end, line_start, line))
+    choices = [(literal, uses) for literal, uses in found.items() if 2 <= len(uses) <= 16]
+    if not choices:
+        return None
+    literal, uses = rng.choice(choices)
+    name = _fresh_temp(body)
+    type_ = _literal_type(literal)
+    first_start, _, first_line_start, first_line = uses[0]
+    first_indent = first_line[:len(first_line) - len(first_line.lstrip())]
+    min_indent = min(len(line) - len(line.lstrip()) for _, _, _, line in uses)
+    depth = code[:first_line_start].count('{') - code[:first_line_start].count('}')
+
+    def stays_in_scope(start):
+        d = depth
+        for ch in code[first_line_start:start]:
+            if ch == '{':
+                d += 1
+            elif ch == '}':
+                d -= 1
+            if d < depth:
+                return False
+        return True
+
+    before_first = (len(first_indent) == min_indent
+                    and not re.match(r'[ \t]*(?:else|case|default)\b', first_line)
+                    and all(stays_in_scope(start) for start, _, _, _ in uses[1:]))
+    places = []
+    if before_first:
+        places.append((first_line_start, first_indent))
+    m = re.search(r'(?m)^(?P<ind>[ \t]*)\S', body)
+    if m and (not before_first or m.start() != first_line_start):
+        places.append((m.start(), m.group('ind')))
+    if not places:
+        places.append((first_line_start, first_indent))
+    at, indent = rng.choice(places)
+    edits = [(start, end, name) for start, end, _, _ in uses]
+    edits.append((at, at, f'{indent}{type_} {name} = {literal};\n'))
+    for start, end, replacement in sorted(edits, reverse=True):
+        body = body[:start] + replacement + body[end:]
+    return body
+
+
 MUTATIONS = [mut_swap_operands, mut_reorder, mut_retype, mut_introduce_temp, mut_inline_temp, mut_swap_if_else,
              mut_for_while, mut_compound, mut_increment, mut_split_decl, mut_chain_assign, mut_bool_flag,
              mut_or_split, mut_ternary, mut_swap_ternary, mut_swap_args,
-             mut_volatile_read, mut_volatile_pointer]
+             mut_volatile_read, mut_volatile_pointer, mut_shared_constant]
 
 
 # Tried more often: call arguments traded places in a fifth of the edits that made a near function match, and
 # statement order or operand order in a few more (see the comment above mut_swap_args). The rest weigh 1.
-WEIGHTS = {mut_swap_args: 6, mut_reorder: 2, mut_swap_operands: 2}
+WEIGHTS = {mut_swap_args: 6, mut_reorder: 2, mut_swap_operands: 2, mut_shared_constant: 3}
 
 
 # ------------------------------------------------- typed mutations (--anneal)

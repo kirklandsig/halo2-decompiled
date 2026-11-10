@@ -69,6 +69,30 @@ def test_reorder_independent_only():
     assert permute.mut_reorder('\n\tlong a = 1;\n\tlong b = a;\n', rng()) is None
 
 
+def test_shared_constant_becomes_one_local():
+    src = '\n\tx = NONE;\n\ty = NONE;\n\treturn x;\n'
+    out = permute.mut_shared_constant(src, rng())
+    assert out == '\n\tlong tmp0 = NONE;\n\tx = tmp0;\n\ty = tmp0;\n\treturn x;\n'
+
+
+def test_shared_constant_uses_its_literal_type():
+    out = permute.mut_shared_constant('\n\ta = 1.0f;\n\tb = 1.0f;\n', rng())
+    assert 'real tmp0 = 1.0f;' in out and out.count('1.0f') == 1
+
+
+def test_shared_constant_ignores_comments_and_strings():
+    src = '\n\t// NONE\n\tx = "NONE";\n\ty = NONE;\n\tz = NONE;\n'
+    out = permute.mut_shared_constant(src, rng())
+    assert out.count('NONE') == 3 and out.count('tmp0') == 3
+    assert '// NONE' in out and '"NONE"' in out
+
+
+def test_shared_constant_needs_two_uses_and_skips_array_bounds():
+    assert permute.mut_shared_constant('\n\tx = NONE;\n', rng()) is None
+    out = permute.mut_shared_constant('\n\tchar a[4];\n\tx = 4;\n\ty = 4;\n', rng())
+    assert 'char a[4];' in out and 'long tmp0 = 4;' in out
+
+
 def test_retype_changes_one_declaration():
     out = permute.mut_retype('\n\tlong a = 1;\n\treturn a;\n', rng())
     assert out != '\n\tlong a = 1;\n\treturn a;\n' and out.endswith('return a;\n')
@@ -255,7 +279,12 @@ def test_mutate_is_deterministic_and_valid_looking():
     assert first[0] == first[1] == first[2] and first[0] != b
     for seed in range(30):
         out = permute.mutate(b, random.Random(seed))
-        assert out is None or all(out.count(c) == b.count(c) for c in '{}()')
+        # A parenthesised expression replaced by a temporary drops its brackets
+        # (mut_introduce_temp): the code's brackets need only balance, and a
+        # brace in a comment or string is not a bracket.
+        if out is not None:
+            code = permute._code_only(out)
+            assert code.count('{') == code.count('}') and code.count('(') == code.count(')')
 
 
 @pytest.mark.sdk
