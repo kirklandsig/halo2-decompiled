@@ -74,6 +74,16 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
+// M3 lane 8 r150 (fast; aligned 406, register-masked 216 on this body): retail forms 1/range once and multiplies it by
+// the minimum twice with the minimum held in XMM2 (no reload, so not an aliasing effect). Tried: the third and fourth
+// offset points' scale as `0.0f - half_width` 592 (same code; re-measure of round 134's form); the point helper's products scale-first 592 (same code);
+// its sums product-first 592 (same code); both range products as `minimum / range` 697 (2822 bytes, real divisions);
+// the second product written `minimum * (1/range)` 592 (same code, still shared; re-measure of rounds 59/128/134); the
+// per-ray hit update (clamp, distance, hit flag, minimum) as a forceinline helper writing through pointers 605 (2817 bytes);
+// the arg_6 tail as `if (!arg_6) {...} else *arg_2 = local_3;` 586 (2839 bytes, aligned 439, masked 295: an arm swap
+// with the test negated, 6 under the bar, not kept); after it: the ray length read from the array at each use 689; the hit
+// distance from the ray-length local 682 (first difference +0x2); both 687 on the swapped tail; no `else` after the early
+// return 684 (2834 bytes, aligned 358, masked 183: the lowest aligned count here, a lead), with the swapped tail 675.
 // MiniMax S (11-06): The frame size agrees but the homes do not: the success byte sits at frame+0x13 where
 // retail keeps it at frame+0x17, the float at frame+0x10 against frame+0x18, the four-flag array at
 // frame+0x24 against frame+0x1c and the copied vector at frame+0x4c against frame+0x40, and the first

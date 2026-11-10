@@ -1674,6 +1674,19 @@ bool function_17afd0(long effect_index, long value);
 // same_view if/else 138, negated first 138, `? true : false` 138; the current body with the view at each use 110 (500
 // bytes; only the xor placement and neg/sbb/inc left), with the clear after the owner 121 (496 bytes), with a nested
 // set 138, with the early clear and the set on success 142.
+// M3 lane 8 r150 (fast; aligned count in brackets; "g base" = the view global at each use with the availability
+// false after the owner and set on success, 138 [59], NONE in EBX, owner EDI, same view BL): on the g base, dropping
+// `owner != NONE` from the same-view test (diagnostic) gives retail's homes, 96 [2], the missing compare the only
+// difference; removing the effect-index, view or attachment-availability tests instead does not (131/129/121), nor does
+// an owner store (127) or a constant store (149); an effect-index store before the availability 104 [1] (r135's
+// diagnostic). So retail ranks the effect index above the owner. Tried: an inline owner getter with a NONE default
+// (result local, early return, ternary, forceinline) 138/138/138/138 on the g base, 113 on this body; the effect record's
+// address taken ahead of the owner test 47 (same code), 138 on the g base; owner nested with an effect pointer and a NONE
+// default 138; a named effect-presence test used for the owner and the attachment 126, 157 on the g base (re-measures of round 315's
+// shared admission); the equality
+// written `owner == view` 47, 138; the camera table as `g_4ed284->entries[view].index` 47 (same code); the effect index read
+// from the record at every use (re-measure of lane 13 r27's form) 54 here, 132 on the g base, 117 with one-expression
+// availability.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

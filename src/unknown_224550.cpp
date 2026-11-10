@@ -472,6 +472,14 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // M3 lane 11 r81 (fast): both UV encodings right after the flip 431 (1925 bytes); the flip before the extents 250 (1949);
 // the 0x2000 quarter-turn right after the angle read 483 (1939); the bitmap read from the context at each use 211 (same code);
 // pivot products written pivot-first 211 (same code).
+// M3 lane 8 r150 (fast; aligned count 123, register-masked 59 on this body): retail's blend join is three entries, the
+// arm with the blend already in XMM5 jumping past both reloads, the count test's exit reloading the context and the blend,
+// the other exits the blend alone; ours keeps the blend in XMM2 inside the arm only. Tried: the sequence-frame block as a
+// forceinline helper writing the bounds, pivot and blend through pointers 220 (blend still XMM2 in the arm), returning
+// the blend by value 330, as a plain inline (left out of line) 644/637; the block after the join (extents to geometry) as a
+// forceinline helper taking the blend by value 211 (same code: the parameter is copy-propagated), with the flip passed in
+// 250, with the pivot by value 349; both helpers 220; a two-use `&frames[index % count]` getter 439 (first difference
+// moves to +0xb); the unit default bounds through a four-real setter 211 (same code).
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

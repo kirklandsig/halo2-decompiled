@@ -569,6 +569,14 @@ static inline bool teams_enabled_19e1c0()
 // on the volatile/plain result 395/693; plain result with every compare as `wcsncmp(...) == 0` 691; both team
 // admissions with the team test first 401 (1438 B). Retail cross-jumps whole case tails (the local-team case enters the
 // cause-team case's 0x1587f0 call with the team in EDI, the formatted cases share one vsnprintf/failure tail).
+// M3 lane 8 r150 (fast; aligned 301, register-masked 199 on this body; retail reads the token into EAX ahead of the
+// frame setup and from its slot at every later compare, and keeps remaining in EBP from entry): the four name/team
+// copies through a shared four-caller copy helper (length, clamp, wcsncpy) 691 on the plain result (1170 bytes: the
+// copies merge into one tail), 620 on the volatile result (1237 bytes), the same as forceinline; the switch-side-time
+// failure as `result = remaining` on the plain result 732 (1129 bytes, aligned 288; the listed volatile-result form,
+// re-measured on the plain result); the clamps as `remaining < result`
+// on the plain result 691 (same code as the plain result); the four clamps as `result > remaining ? remaining : result`
+// on the volatile result 415 (1446 bytes); the text buffer declared ahead of the volatile result 390 (same code).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
