@@ -326,6 +326,18 @@ struct s_pending_message_storage : s_pending_message_header
 // Round 142 (m3 lane 8, fast, on a copy of the helper in this file, header untouched; the copy reproduces 14): slot names
 // for the same-size ordering rule: pump count sorting before the capacity 14, sorting last 14; time-stamp local sorting
 // last 14, first 14; start sorting first 14. All five give identical stack offsets.
+// Round 177 (m3 lane 4, fast, on a copy of both helpers in this file, header untouched; the copy reproduces 14): the frames
+// read slot by slot: retail is pump count +0, capacity +4, first time stamp +8 with start's 8-byte home on top of it (only its
+// high half at +0xc is used), second time stamp +0x10; ours is first time stamp +0 with the pump count on top of it, capacity
+// +8, second time stamp +0xc, start's home +0x14 (high half at +0x18). So start has an 8-byte home in both and the question is
+// which of start and the pump count is packed onto the dead time stamp first. New: the time stamp local inside its own braces
+// ahead of the read 14; that local declared and then assigned 14; the loop as `for (long pumps = 0; ; )` with a break 14;
+// `elapsed = (now - start) < 0 ? 0 : (now - start)` on a named reading 14; `elapsed = elapsed < 0 ? 0 : elapsed` 14.
+// Re-measured: result declared before start 15; const start 14; a named second reading 14; unsigned time stamp 14; a
+// zero-initialised LARGE_INTEGER time stamp 123 (252 bytes, stores dropped). Diagnostics, code not retail's: `if (now >= start)
+// elapsed = now - start;` on a zeroed elapsed 138 (321 bytes) and it alone gives retail's 0x18 frame; `elapsed = now - start;
+// if (now - start < 0) elapsed = 0;` 108 (288 bytes, frame 0x14); `if (pumps++ < maximum_pumps)` 75 (282 bytes, frame 0x1c).
+// The frame follows how often start is read before the reads merge.
 // @retail 0x80e10
 bool function_80e10(s_pending_message_storage *request, void **output, long *size)
 {

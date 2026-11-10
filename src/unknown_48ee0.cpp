@@ -238,6 +238,22 @@ extern real g_4c9798[36];
 // points, not kept), with the mode byte after function_1cf50 178, with the clears in reverse order 172. The
 // 0x1ddd0 call now matches retail (width/height in ESI/EDI, 0x1ddd0 matched). Still BLOCKED-BY 0x48e70
 // (machine 1's file): retail spills the clamped size across its calls, which sets the frame slots.
+// Round 98 (m3 lane 16, fast, agrees with the plain 174; aligned count in brackets, control 174 [70]): the tag test as a plain
+// `switch` with one case or as `== 1` 336/336 [73]/[77] (the state arrives in EAX and moves to EDI, the tag takes ECX); the
+// flags through an inline accessor taking the group index, returning the flags or the group 174/174 (same code). With the
+// switch, all 24 orders of border, aspect, distance and offset ahead of it 334 to 336; the offset and switch first 341;
+// the selector in a short or long local 336/336; the offset as a ternary or an if/else 336/336; a switch with a default
+// 336; a `(long)` selector with `== 1` 336; the direction reference (and the origin's) declared at the top 333. Only an
+// order with one of the two state reads after the switch keeps the state in ECX: aspect after it 176 [63]; distance
+// after it 171 [61], and then the mode flags load into EAX as retail's do (not kept: three points, by a declaration
+// moved by score; the distance's load then sits after the branch where retail has it ahead). On that form: a long
+// height limit 240 [59]; the near plane's normal assigned straight into the plane with the dot on the plane 338 [95];
+// both 249 [30] (1463 bytes): the plane blocks, both limits and every register are then retail's, and the 30 left are
+// the distance's load and the size, which retail keeps in the frame's lowest slot and reloads around the two rounding
+// calls (BLOCKED-BY 0x48e70). The same two forms on this body 255 [32], on the plain switch 219 [41], with the aspect
+// after the switch 254 [32]; the first plane's dot on the local normal 202 [117]. Nothing kept: every count but 171
+// is higher. Next, once 0x48e70's definition is `inline`: start from the switch with the long limit and the direct normal.
+// MiniMax R (11-10): no new form, no lower score (174): the mode flag stays in EDX in all 16 expression forms and 5 position variants tried, where retail keeps it in EAX; the reduced image also forces the global address fields, which are most of the 174.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

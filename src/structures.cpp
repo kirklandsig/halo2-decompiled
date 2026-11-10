@@ -658,6 +658,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // tested on `definition == NULL` 228 (719 bytes); the strip indices indexed from the section at each fetch
 // (no pointer local) 221 (747 bytes).
 // MiniMax D (11-09): no new form, no lower score: the body is unchanged at 172 (726 bytes against retail's 726); the difference is the frame's shape (our slots sit one word lower than retail's and we do not push ebx first) and the 0x11e800 callee's registers, which are outside this file.
+// MiniMax R (11-10): no new form, no lower score (172): the result as a bool (182), the result declared first (212/197) and four orders of the prologue reads (172/172/223/172) all leave retail's push-ebx-first prologue and its BSP in EBX unreproduced.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
@@ -901,6 +902,10 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // 172); all four differences are its argument registers. BLOCKED-BY 0x11e800 (contributor).
 // Round 216 (m3 lane 3): baseline listing still differs only in 0x11e800's four argument registers; BLOCKED-BY 0x11e800.
 // Round 96 (m3 lane 9): baseline listing still differs only in 0x11e800's four argument registers; BLOCKED-BY 0x11e800 (contributor).
+// Round 162 (m3 lane 6): HELD (needs the owner's OK): 0x11e800 declared (p, a, b, c, u, v), as retail's argument setup at both
+// calls implies (ecx, edx, eax, esi set in that order for c, b, a, p), with its definition, this declaration and both calls changed
+// together: plain check MATCH here, 0x11e800 129 -> 126, 0x14ac60 172 -> 172. The definition is a contributor's, so the code is back
+// to main and the full diff is in build/r162/held-14a8e0.patch.
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)

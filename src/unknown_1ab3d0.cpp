@@ -191,6 +191,9 @@ static __forceinline long real_to_long(real value);
 // value before the slot pointer 95 (475 bytes; the direction's i then loads first, but the facing's i sits in xmm4), before
 // the helper 27; the direction's j and facing's i named after the helper 2. Diagnostics (wrong values): a later read of the
 // facing's i or j, or of the direction's i or j, only reorders the sum; the facing operand stays the loaded one.
+// Round 162 (m3 lane 5, fast): 4 to 25 unused initialised locals at the top (diagnostic) 2/4/4/6 with period 4, the i product's load
+// never flips; direction's components through a `real *` to its array 6; the test as `!(sum >= 0.0f)` 4; a projection local declared
+// at the function top 2; the direction pointer declared at the function top 2; a const facing pointer right after the actor lookup 2.
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {

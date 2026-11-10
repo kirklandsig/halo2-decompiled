@@ -1663,6 +1663,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // 488/501/535; with signed-int64 reverse candidate 591/572/664; signed-int64 forward
 // with short/int64 reverse 535/664. NOT kept: wider/unsigned scan interference grows
 // the body and misses native frame/edge homes; original signed scans and full body restored.
+// Round 85 (m3 lane 10, all plain with 0x270930 and 0x2c2a70, which stay matched; positional/register-masked aligned, base 400/58): edge as a `word` 462/63
+// (1759 bytes); `++used` after the type/link stores 400/61; `unknown02` copied before the output index 400/59; `*complete` cleared before the count is
+// stored 464/70 (1753); the typed branch setting type and link before next 400/57. No form moves count out of BX or edge into EBX; frame 0x114 stays.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

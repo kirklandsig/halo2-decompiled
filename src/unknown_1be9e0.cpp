@@ -201,6 +201,13 @@ static __forceinline long real_to_long(real value);
 // end); with the countdown expiry and node failure assigning g_46fbe4, count failure returning it, 134 (frame 0x10),
 // the outer else assigning too 148, the pause returning the default 134; countdown expiry returning and count failure
 // assigning g_46fbe4 129 (457 bytes, frame 0x10). A default with a second definition is spilled here.
+// Round 64 (m3 lane 2, fast): the count test alone in a __forceinline (joint, accepted) helper returning both values
+// 90 (461 bytes, the helper's two returns fold into a cmov); the expiry falling to the node-level g_46fbe4 with both
+// continuing paths jumping to one g_46fbe8 return after the missing-prop return 87 (457 bytes: the node-level return
+// merges into the count failure's block and g_46fbe8 sits after the countdown as its fall-through); the participant
+// counter declared in its `for` 24; the node test, view test and countdown expiry as one condition returning g_46fbe4,
+// the loop under a countdown re-test, 98 (457 bytes, the re-test is not threaded); explicit expiry and count-failure
+// returns with both continuing paths jumping to a final g_46fbe8 24 (same code).
 // @retail 0x1beb70
 short __stdcall function_1beb70(long actor_index, s_slot *slot, bool active)
 {
