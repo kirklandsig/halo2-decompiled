@@ -69,6 +69,7 @@ struct s_shader_cache;
 void function_1c590(s_shader_cache *state, long tag, long index);
 void __stdcall function_1c710(void *state);
 
+// MiniMax D (11-10): no new form, no lower score (188).
 // Round 2 of #1066: score 188 (was 188). Walked against retail: the sampler and render states, the
 // vertex-shader constants (0.0f/1.0f layout, bounds order), the pixel shader fields and their
 // order, 0x14bc0's arguments and the four vertices' coordinates (0.53125f, 64.53125f,
@@ -3932,6 +3933,7 @@ void __stdcall function_20bb0(long player, dword mask, long const *indices, long
 long __stdcall function_2e540(s_slot *slot, byte *data);
 extern long g_485898;
 
+// MiniMax D (11-10): no new form, no lower score (285): the 1.0 constant still takes XMM0 where retail holds it in XMM3, and naming it as a constant local compiles the same.
 // MiniMax A (11-04): the corner locals declared at function scope, before the position 285 (the same code); no lower score.
 // MiniMax D (11-01): the scale as a ternary 288 (worse), reverted; no lower score.
 // score 285 (was 285): retail's frame is 0x34 bytes and ours 0x38, because retail reuses the
@@ -4469,6 +4471,7 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
     }
 }
 
+// MiniMax D (11-10): no new form, no lower score (125): the two early skips branch to a near block here and to the end of the body in retail, and our body is five bytes longer than retail's 1027.
 // Round 2 of #1066: score 125 (was 152): LOGIC WALK against retail found no behaviour difference (slots 9/3,
 // the 2s values 0x1/0x10001/0x10000/0, x/y/z/w of the four corners, extent/screen offsets all agree). c and d are
 // computed in retail's block after the (1,1) tex write (0x48297), so they are declared after that call (213 with
@@ -4597,6 +4600,7 @@ extern dword g_4b82e8, g_4b82f4, g_4b82f8;
 dword g_4b8438, g_4b82e0, g_4b82fc, g_4b82ec;
 void function_48010(real const *color);
 
+// MiniMax D (11-10): no new form, no lower score (244).
 // MiniMax D (11-01): no new form tried, no lower score.
 // score 244 (was 244): retail copies the mode parameter into ebp in the prologue and keeps the
 // flag scratch in esi, while we keep the flag scratch in ebp and load the mode into esi later;
@@ -5542,6 +5546,7 @@ void function_141ce0(real first, real second, real third, transform4x3f *out);
 real g_5259b4;
 dword g_4b8430;
 
+// MiniMax D (11-10): no new form, no lower score (302).
 // score 302 (was 544), Round 1 of #1066: same size as retail (2406). What changed: the rotation is one
 // transform4x3f (forward/left/up filled by either branch, then position stored into it, so retail's
 // copy of the position after the branch appears), the angle is computed inside each branch (the sin/cos
@@ -6392,6 +6397,7 @@ bool function_48b00(point3f const *point, real radius, real *screen, real *exten
 real function_30bf0(vector3f *vector);
 void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 
+// MiniMax D (11-10): no new form, no lower score (576).
 // score 576 (was 695), Round 1 of #1066: 2436 bytes against retail 2507. Fixed: the 2nd quad and the
 // loop begin with D3DDevice_Begin (retail calls it; ::Begin inlined it), the 1st quad uses the member
 // D3DDevice::SetVertexData4f (inlined, as retail), the first ten stage states go through
@@ -8048,6 +8054,7 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
     g_4b62a2 = (g_4b62a2 + 1) & 0x1ff;
 }
 
+// MiniMax D (11-10): no new form, no lower score (342): retail keeps the stack parameter in EBX with the -1 sentinel in EBP where ours uses ESI and EBX, so the two homes still differ.
 // MiniMax A (11-04): the character pointer computed before the empty-slot test 374 (worse), reverted; no lower score.
 // MiniMax D (11-01): no new form tried, no lower score.
 // score 342 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
