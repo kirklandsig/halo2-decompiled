@@ -351,6 +351,29 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // 173 (same code); rows as `arg_2->i += arg_1->i + local_3.i` 173; scales axis, vector, cross 233 (1222 bytes); rows axis term
 // first 173 (as round 120); the forward copy after the outer cross 190; velocity products speed first 173 (same code); rows
 // `arg_2->i + local_3.i + arg_1->i` 173.
+// M3 lane 13 r72 (fast with 0x28dab0, matched throughout; brackets: aligned count with registers and stack offsets
+// masked, base 173 [41]). Retail's jitter arm copies z onto itself (`movss xmm0, [z]; movss [z], xmm0`), adds with
+// `fld [x]; fadd st(2)` and pops both draws afterwards. A zero-k offset vector added component by component gives the z
+// copy only 226 [39] (through vector3f_add the same code); that vector added through the existing
+// vector3f_add_scaled with scale 1.0 222 [38]; with the arm's two 0.1 position updates through vector3f_add_scaled as
+// well 234 [35]: the jitter arm is then retail's instruction for instruction (lead; the score rises, not kept). The
+// offset through vector3f_assign 241/245, draws named first 245/241, real_point3d_set on the position 173 (same code).
+// Retail's rotation read again: result = axis * P + v * cosine - (v x axis) * sine with v.k zero, sine taken first, the
+// cosine after the dot, X.j and X.k spilled and X.i formed in row i, results left in registers. On the 234 base, in
+// place on v: sine, dot, cosine, scalar X.j/X.k, X.i inline 226 [27] (frame 0x114); sine, cosine, projection 235 [30];
+// named dot 234 [31]; cosine, projection, sine 223 [25] (frame 0x118 as retail, first difference +0xa9, 1231 bytes);
+// cosine, dot, crosses, projection, sine 196 [29] (frame 0x118, 1213 bytes); dot3f operands swapped 235; vector term
+// first in the rows 235, with sine, dot, cosine 226 [27]; X.k before X.j 237/249; the crosses ahead of the cosine or
+// the dot 243/228/242/243/228 (three scalars or two), sine, cosine, dot, crosses 247, sine, dot, cosine, crosses 247;
+// cross3f(v, axis) as a vector 235 [33] (frame 0x11c), 243 [37]; rows into a separate result vector (five spellings)
+// 230 [33] (1211 bytes, frame 0x114), with cross3f 247 (frame 0x120), result vector copied back 303, scalar results
+// 261 (frame 0x120); velocity through vector3f_scale 239. Matched 0x177d10's statement shape (s, c, t, cross j/k/i,
+// rows v*c + axis*t - cross*s) in the helper 235 [30] (frame 0x114), with dot3f 235, written in the caller in place
+// 248 [27], into a result vector 230 [33], with dot3f 230; 0x117dd0's shape (sine and cosine, cross3f, projection,
+// its row orders) in the helper 240 [41] (frame 0x11c), in the caller in place 175 [33] (1218 bytes, frame 0x11c),
+// into a result vector 230 [30] (1212 bytes, frame 0x11c). On the body below alone: the in-place scalar helper 228
+// [35], cosine at each use 236, result vector 275, cross3f vector 213, scalar results 237.
+// NOT kept: nothing below 173; body below unchanged.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

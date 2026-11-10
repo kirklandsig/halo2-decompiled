@@ -334,6 +334,12 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // through vector3f_add_scaled 37/44, rows k, j, i 2/28, cross3f_staged 82/100; the existing normalize3d 80-136. Fast on the current body: rows through
 // vector3f_add_scaled(up, forward, -dot, up) 156 (929 B), with `0 - dot` 156, with dot3f(&up field, &forward field) 156; the normalizer's
 // scale all value-first 110, all scale-first 110 (same code).
+// M3 lane 14 r74 (fast): round 150's 2-form rebuilt (the normalizer's squared length through dot3f, the projection's k row read from the matrix
+// field) 2 at 922 bytes, 0x1c4a80 still matched; left: the dot's i product copies up.i (retail copies forward.i). On it, all still 2 with the same
+// two lines: 1, 2, 3, 4, 6 and 8 unused initialized long locals at the function top, at the top of the axis block, and just before the dot (17 builds:
+// plain dead locals move nothing, not even the term order); the projection rows written k, j, i. Worse: a `transform4x3f &` name for the working
+// matrix 155; the dot, or the cross, taking `&local_1[0].forward` in place of the k row's field read (either dot argument order) 154 each (forward
+// preloads k again). Body unchanged at 110: the 2-form needs the mixed field read, which is kept only with a match.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

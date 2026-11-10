@@ -257,6 +257,16 @@ long g_55e6c0;
 // as its own store, upper clamp a ternary in the else arm 33 (485); clamp through a named level-count copy 29; busy test
 // negated with the work arm first 29; width term first in the OR 29; one merged count zeroed, set and capped under
 // `count >= 0` 43.
+// Round 177 (m3 lane 4, fast, on the round-51 signed pitch/packed lead, 29 at 484 bytes): retail's top block is a
+// source-order allocation (kind EAX, height EAX after the kind store and kept for the packing, clamp value EDX, the
+// count's load and compare then scheduled above the kind store); ours gives the clamp value EAX before the height is
+// placed. New: the clamp as `(4 < (0 > count ? 0 : count)) ? 4 : (0 > count ? 0 : count)` 150 (495 bytes, setl form); a
+// two-stage clamp through a level-count local, `count > 0 ? count : 0` then `< 4 ?`, or `count < 0 ? 0 : count` then
+// `> 4 ?` 150/150; a level-count local read right after the kind store and clamped by if / else-if after the other
+// stores 166 (497: the count takes EBP, the data EBX); the clamp ternary into a local ahead of the kind store 140 (483:
+// the block splits at the clamp). Re-measured: the level-count local set by if / else-if at the store 166 (497).
+// Diagnostic: the packing without its height term 131 (479), the height still in EDX, so the clamp value holds EAX
+// whether or not the height outlives its store. A 600 s permuter run on the lead (57 tries) found none better.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

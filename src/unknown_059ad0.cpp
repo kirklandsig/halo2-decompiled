@@ -3675,6 +3675,13 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // `do { } while (false)` after the pointer 114; assume with owner/observer first 7 (433 bytes), with the pointer first 4 (registers rotated), owner
 // before a named observer 27, observer read in the call MATCH. Forceinline owner wrapper stays a call in this inline_depth(0) region. Body restored:
 // the flag is only worth keeping with the match.
+// R223 (lane 3): score 101. BLOCKED-BY 0x769a0 as round 65 found: its definition is in src/unknown_075870.cpp, still on
+// the avoid list this round, so the unread owner parameter could not be added.
+// R223, second pass (fast with 0x769a0, control 101; aligned count in brackets, control [30]): the announcement zeroed by an
+// `= { 0 }` initialiser 101 [32]; `was_host = session->function_058d20(); if (was_host)` 142 (414 bytes) [37]; the three flags
+// as one chained assignment 101 [32]; session->state read at each test with no state local 101 [30] (same code); the two
+// member tests swapped 103 [32]; `was_host = true` ahead of the send with the leave as `if (session->state == 7) leave = flag
+// != 0;` 135 (411 bytes) [42].
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
