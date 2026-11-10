@@ -2312,6 +2312,11 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // Round 222 (m3 lane 3, fast with 0x15b1e0 and 0x15ace0): a 32-form screen of index at function or loop scope x
 // `NONE != ...` or `... != NONE` x the old index in a named local or read at each use x an entry element pointer or
 // `entries[index]` at each use x the bounds test negated with the clear arm first or not: 8 in all 32.
+// Round 65 (m3 lane 2, fast; 0x15b1e0 and 0x15aad0 matched each time): the probe re-run (one dead read right after
+// the bounds test gives retail's lookup and tail; inside the old-index guard it does not). A file-local inline release-if-present helper taking (entries, index)
+// 8, with the old index in a local inside it 8, taking the equipment pointer 8, taking the old index as an argument 8,
+// taking `&entries[index]` 8; the release's index argument as the re-read `local.object->netgame_entry` 8; an entry
+// pointer for the test, the call and both tail stores 8 (re-measured). Diagnostic: the release's lookup through engine_object_get 9.
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {
