@@ -746,6 +746,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // P392: Complete pre-copy count-prune outcomes, admission then rejection in bool/byte/short/long:
 // 67/67/67/67/67/67/67/67. NOT kept: no candidate-first query or extent repair; one-use predicates require
 // equality. Original complete body restored.
+// P401: Selected-solution receivers shared separately by the less/equal/cost query pairs,
+// seven nonempty subsets then scoped demand: 87/115/132/114/132/130/130/131.
+// NOT kept: no candidate-first query graph; frame stays 0x2694 but extents grow.
+// Original selection, four spread queries, costs, party calls and whole body restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -1183,6 +1187,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // code); the fill counted down over the extra count, `parties[total - i]`, 72. Re-measured: the maximum as one ternary
 // assignment 34, the fill through a walking pointer to an end 63 (199 bytes), the clamp assigned back to the imbalance 45
 // (192 bytes). The player count stays EDX in each.
+// P400: Repeated live input-cell reference/pointer with inclusive/strict branch and
+// inclusive/complementary selection maxima: 34/35/34/34/34/35/34/34. NOT kept:
+// no exact count/fill/clamp allocation repair; native 0x48 frame and 190-byte extent
+// remain. Original complete body, direct input reads and scalar maximum restored.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

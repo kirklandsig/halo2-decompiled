@@ -373,6 +373,10 @@ struct c_aggregate : c_child
 // code); the cleanup's item count read once into a named local 74; the cleanup's empty-item test as an early `continue` 31
 // (same code); the total added under `if (produced != 0)` 136 (389 bytes); the count output named `result` like the
 // cleanup's output (one name in two scopes) 31. Frame 0x8024 in each; still BLOCKED by the build flag.
+// P400: Actual cleanup items array reference/pointer, with block reference and live
+// count-field reference subsets: 78/78/78/78/78/78/78/78. Native 0x8020 frame returns
+// by removing a cleanup spill, but callback output stays separate and low homes differ;
+// all shorten to 359/373. NOT kept: no gain or byte match; original full body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

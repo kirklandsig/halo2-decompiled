@@ -647,6 +647,11 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // from its stack home 12 times (retail keeps it in EBX, flags in stack bytes). `maximum` as a plain word 429 (1616 bytes);
 // sample/update declared at function scope 412; the 0x2641c0 result in its own bool 412; old_state short 413; the actor
 // pointer declared then assigned 412.
+// Round 143 (m3 lane 8, fast with 0x1e34e0): without 0x2641c0's noinline declaration this body inlines it as retail
+// does (497, 1688 bytes), but so does 0x264210 (68 -> 139 bytes, unmatched), while 0x25d020, 0x1be120, 0x1fba10,
+// 0x25c230 and 0x265680 stay matched: the lead narrows to keeping it out of 0x264210 alone. On that inlined form: update
+// as long 495, sample/update at function scope 497, maximum a plain word 497, sampled_one as long 496; the actor stays a
+// stack argument (0x1e34e0 26) in all of them. All restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

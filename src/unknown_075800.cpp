@@ -1332,6 +1332,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // 217 (same code); declared as a `const s_type_99af70 &` (cases passing `&address`, the call passing `*address`) 217 (same code); the lookup
 // declared `inline` in this file as its definition is 217 (same code); the function defined ahead of 0x93aa0 instead of last in the file 217
 // (same code). The kept two switches defined ahead of 0x93aa0 153 (same code). The address keeps EAX in each one-switch form.
+// P400: Connection-first primary priorities CDQSP/CDQPS/CDSQP/CDSPQ/CDPQS/CDPSQ/CQDSP/CQDPS:
+// 207/205/207/205/207/204/202/200 reduced, control 196, full 153. NOT kept:
+// no exact delayed-save/late-handler repair; original classifiers, all case interiors
+// and call tuples restored. Every trial is 456 bytes against native 444.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

@@ -1365,6 +1365,9 @@ static inline s_players_globals *players_globals_14f2e0()
 
 /* gives a player its unit (the unit kept for it, the unit waiting to be
    reused, or a new unit at a starting location) and resets its spawn state */
+// MiniMax S (11-09): no new form, no lower score (46); the NONE outputs are still materialised with
+// `mov eax, 0xffffffff` where retail uses `or eax, 0xffffffff`, and the zero/flag store schedule
+// still differs.
 // MiniMax I (11-08): no new form, no lower score (46): the two NONE outputs are materialised with
 // `mov eax, 0xffffffff` where retail uses `or eax, 0xffffffff`, and the tail's zero and flag stores are
 // scheduled with the byte clear first where retail zeroes the dword first. A full-build comparison puts
@@ -2517,6 +2520,9 @@ static __forceinline long player_round_ticks(real value)
 // (2626 bytes: our LTCG keeps 0x1520f0 a call and still expands the first 0x151b80); with 0x1520f0's volatile dropped 812
 // (0x1520f0 then 13); only the 0x80 site's clear through it 770; the 0x80 site as a result chain 701; the six player flag
 // sets as byte stores at +2 719 (2746 bytes).
+// MiniMax C (11-09): score 701 (was 701): the frame is still 0x4c against retail's 0x74 (retail keeps
+// two separate request homes and calls 0x151b80 and 0xccd20 out of line, ours has one request home
+// and LTCG expands those calls). Untouched this round.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {

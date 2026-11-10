@@ -818,6 +818,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // P394: Paired-edge clamp admission before reciprocal/fraction, wide-edge/midpoint truth
 // in bool/byte/short/long: 367/367/371/369/367/367/371/369. NOT kept: no byte equality; original
 // comparison, geometry, result and whole body restored. Early root/actor ingress remains.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 219 (1280 bytes against retail's 1280); the early root and actor ingress and the paired projection's ownership are still the whole of the difference, and every earlier round's actor-query, corner-order and paired-edge forms tie at 219.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
