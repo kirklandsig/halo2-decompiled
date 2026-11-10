@@ -857,7 +857,10 @@ extern vector3f *g_4687b0;
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
 // MiniMax lane A (11-04): no new form, no lower score.
-// score 288 (was 298): the throw velocity through vector3f_scale (this round); earlier, flag 17 cleared and restored through bit_vector_set (retail reads the flags word
+// score 152 (was 288): left are the origin and direction frame homes (swapped), the projectile index, grenade type
+// and throw-globals homes, the release point (retail its own local in center's slot), the velocity scale's first
+// product and the spread blend's schedule. Before this round 288, 298 before lane 15 round 61's throw velocity through
+// vector3f_scale; earlier, flag 17 cleared and restored through bit_vector_set (retail reads the flags word
 // twice and keeps the unit in esi from entry), the empty grenade slot as an early return (retail's late
 // `push edi`) and the 0x400 flag set through bit_vector_set (retail's load/add/or/store). Left: the frame
 // slots (direction, origin, center, projectile index and the definition sit elsewhere), retail's second
@@ -1008,6 +1011,31 @@ extern vector3f *g_4687b0;
 // point, direction at [esp+0x48]) and SSE schedule. Retail copies the direction once after the branches (both leave
 // eax at the source, dword loads at 0xe7b44-0xe7b50): a `vector3f const *source` chosen per branch and
 // `vector3f direction = *source` after them gives 323 (1652 bytes), the compiler copies per branch again (diagnostic).
+// m3 lane 11 r83 (fast, plain-confirmed; aligned/masked counts, 288's were 240/94): KEPT 152 (1705 B, frame 0xcc,
+// aligned 90, masked 24): a throw-block copy `vector3f forward = direction;` (retail's 0x38 copy is a promoted variable:
+// its integer-register spills before each first float use now agree instruction for instruction), the offset sum as
+// three vector3f_add_scaled phases on the point (the cast idiom of matched 0x117790) and both crosses through cross3f.
+// Steps: the copy alone 280 (frame 0xd8, aligned 248/86); the three offsets read once into named locals 296 (223/88);
+// both 260 (frame 0xd8, 178/63); those with the sum in three phases by hand 243 (frame 0xcc, 150/59; a helper's body
+// written out, not kept); the three vector3f_add_scaled phases without the copy 303 (frame 0xc0), with it 243;
+// offset-first products, the position declared at the sum, one function-scope origin 260/260/260 (same code); on 243
+// the normal through cross3f 238, the left 247, both 152. On 152: the parent velocity through vector3f_add 153 (masked
+// 20); the blend as vector3f_scale(&velocity, ratio) + vector3f_add_scaled(aim, 1 - ratio) 162 (aligned 77), as
+// vector3f_scale(&aim, 1 - ratio) + vector3f_add_scaled(velocity, ratio) 164 (82). Match-only, not kept (a `placed`
+// result, the parent velocity and the release point in bare blocks, one function-scope origin): on 152 131 (aligned
+// 61); with the first blend 140 (50/26); with the parent add too 128 (38/16); the blend as aim*(1-ratio), velocity*ratio,
+// vector3f_add 128 (43/13); velocity*ratio first 129 (54/6: left are the origin/direction homes, the velocity scale's
+// folded first product and the blend's ratio register); on that: direction or origin renamed 129/129 (the homes do not
+// follow names), direction declared at function scope before/after origin 128/128, at the not-attached block 129, the
+// override copies swapped 285, a source pointer per branch with one `vector3f direction = *aim` 222 (1699 B, every slot
+// shifts), the left cross on direction 208, the velocity scale by hand 123 (homes still swapped); with the scale by
+// hand (a helper body, match-only): the blend as aim*(1-ratio), velocity*ratio, vector3f_add 65 (1699 B, aligned 46,
+// masked 16), as vector3f_scale(&aim, 1 - ratio) + vector3f_add_scaled(velocity, ratio) 61 (1700 B, 43/17; best this
+// round: left are the origin/direction homes, the velocity scale's folded first product and the blend's registers), the
+// a76b0 forward at function scope 123, velocity declared after origin 123/65, without the parent add 123/65/61, the
+// speed read at each use 148, direction-first products 65, separate origins 246. On 288 earlier: the
+// release point as its own local with a `placed` result 313 (frame 0xd8), with the parent velocity in a block 313, with
+// the release point in a block 309 (frame 0xcc), with one origin 287, with the copy 279 (frame 0xd8); one origin 295.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1090,25 +1118,19 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 				{
 					s_unit_action_grenade_throw *throw_globals = *(s_unit_action_grenade_throw **)((byte *)g_4e034c + 0x134);
 					vector3f const *up = g_4687b0;
+					vector3f forward = direction;
 					vector3f left;
 					vector3f normal;
 					point3f position;
 
-					left.i = up->j * direction.k - up->k * direction.j;
-					left.j = up->k * direction.i - up->i * direction.k;
-					left.k = up->i * direction.j - up->j * direction.i;
+					cross3f(up, &forward, &left);
 					if (function_30bf0(&left) == 0.0f)
 						left = *up;
-					normal.i = left.k * direction.j - left.j * direction.k;
-					normal.j = direction.k * left.i - left.k * direction.i;
-					normal.k = left.j * direction.i - direction.j * left.i;
+					cross3f(&forward, &left, &normal);
 					function_30bf0(&normal);
-					position.x = normal.i * throw_globals->up_offset +
-						(left.i * throw_globals->left_offset + (direction.i * throw_globals->forward_offset + origin.x));
-					position.y = normal.j * throw_globals->up_offset +
-						(left.j * throw_globals->left_offset + (direction.j * throw_globals->forward_offset + origin.y));
-					position.z = normal.k * throw_globals->up_offset +
-						(left.k * throw_globals->left_offset + (direction.k * throw_globals->forward_offset + origin.z));
+					vector3f_add_scaled((vector3f const *)&origin, &forward, throw_globals->forward_offset, (vector3f *)&position);
+					vector3f_add_scaled((vector3f const *)&position, &left, throw_globals->left_offset, (vector3f *)&position);
+					vector3f_add_scaled((vector3f const *)&position, &normal, throw_globals->up_offset, (vector3f *)&position);
 					function_b75a0(projectile_index, &position, NULL, NULL, NULL, false);
 					spread = false;
 				}
@@ -2402,7 +2424,7 @@ __forceinline char unit_action_round(real value)
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
 // MiniMax R (11-06): no new form, no lower score (235); the frame agrees and the pool, index, type, name and completion-byte homes of the note below are unchanged.
-// score 234 (was 235): Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
+// score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
 // single exit and the layout switch: not kept at review (match-only forms); without the gotos 305.
 // Numeric hand 297; Boolean active bit 251; both 302; first result 235; all 302;
@@ -2513,6 +2535,15 @@ __forceinline char unit_action_round(real value)
 // the total ticks are (frame_count * 0.033333335f) rounded to float, then * the field (retail 0xe9d61-0xe9d6d: cvtsi2ss,
 // mulss k, cvtsi2ss field, mulss); the single expression compiled as (field * frames) * k (235 -> 234). Left (no
 // behaviour difference): register homes, the result byte at [esp+0x12] vs duplicated returns, the divide from memory.
+// m3 lane 11 r83 (fast): re-measured round 187's form (first_person_name = NONE first, the short-slot hand getter,
+// TEST_FIELD_BIT on the 0x1b test, the fallback switch, four `goto done`) 107 (1188 B, aligned 68, masked 12) and lane 14
+// r68's nested lunge-target read on it 105 (masked 10); on 105, re-measured: first_person_name after the weapon getter
+// 317, is_biped renamed to sort after result 105; new: result renamed to sort before is_biped 105 (the bytes do not follow
+// names), the existing unit_action_pool_hand_weapon_get(g_4e0300, unit_index, 0) 320 (1193), `current` declared at
+// function scope 105, the weapon getter before the actions lookup 360 (1144); on this body the pool hand getter 306
+// (1202); permuter 600 s, 12 tries, best 105. Left on 105: retail's NONE register is first_person_name's EBX and also
+// serves the hand getter's `cmp ax, bx` and the weapon default store (ours EBP, immediates), type EBX vs EBP,
+// pool/offset EDI/EBX vs EBP/EDI, the result/is_biped bytes, current in EAX vs ESI and the divide from memory.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -4205,7 +4236,7 @@ extern vector3f *g_4687bc;
 // offset at +0x5c, where our block is longer, and the 0x188180 call setup after it is blocked by
 // that callee's parameter order in another file.
 // MiniMax R (11-06): no new form, no lower score (45); the g_54e898 copy is a dword load here and a word load in retail, which also moves the exit block two bytes; retail's 0x1eb020 writes a dword into the material slot and it is read back as a dword, ours takes a short * and reads it back sign-extended, and that width is set in another file.
-// score 31 (was 45): the material local as the global material type (c_type_47f957, constructed from g_54e898
+// score 31 (was 31): 45 before round 220's material local as the global material type (c_type_47f957, constructed from g_54e898
 // as 0x277b80 does) gives retail's word copy, so every branch target now agrees; left are the copy's schedule (retail
 // loads into CX early and stores it just before the 0x0b67a0 call, ours stores at once from DX), the rigid body's
 // data/offset registers in its address add, and the 0x188180 call setup (BLOCKED-BY 0x188180: retail pushes the
@@ -4236,6 +4267,11 @@ extern vector3f *g_4687bc;
 // restored): retail's 0x188180 takes its tag from the stack into EBX for 0x1883e0, so its inputs follow that callee
 // (BLOCKED-BY 0x1883e0, whose declaration in src/impacts.cpp is held); the rigid body through a const reference to the
 // array 31 (same code); the node count and first node read through the array at each use 35.
+// m3 lane 11 r83 (fast): the impulse through vector3f_scale 31 (same code); the material built before the effect-tag
+// test 36 (aligned 17); the definition re-lookup before the havok test 116; the strength as a `long` 49; the strength
+// read before the 0x1eb020 call 98 (1107 B). Re-measured: `&component->rigid_bodies.data[index]` 31, the material
+// copy-initialised from a temporary 31, default-constructed then `m_index = g_54e898` 31, node_count and nodes[0]
+// through `rigid_bodies.data[index]` at each use (0x1d1a20's spelling) 35.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

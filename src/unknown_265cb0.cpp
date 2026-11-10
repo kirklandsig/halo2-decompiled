@@ -365,6 +365,8 @@ real function_30bf0(vector3f *vector);
 
 // MiniMax G (11-04): the motion declaration hoisted beside the delta gives identical code (152);
 // no new form, no lower score.
+// MiniMax S (11-10): no new form, no lower score (84); the vector homes are still one slot off from retail's, the range's first load
+// and the two products still differ, and the range is still loaded into XMM2 for XMM0.
 // score 84 (was 84): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // (result +4 for retail's +0; amount shares with the count where retail shares it with the squared distance; range, scale, the cursor and the
@@ -674,6 +676,19 @@ real function_30bf0(vector3f *vector);
 // [57/39]; the actor's +7 flag read once into a bool used by both tests 85 [20/18]. Re-measured on this body: a long seat
 // count 193 [64/41]. In the first seat-loop cross product ours loads the forward component in the up.i * forward.k and
 // up.j * forward.i products where retail loads the world-up component.
+// Round 78 (m3 lane 14, fast, masked aligned in brackets, base 84 [19]): the actor looked up after the settings 310
+// at retail's 1308 bytes [34]; the vehicle index read ahead of the first 0x263740 call 146 [24] (origin then in EBX);
+// both 315 (1308) [37]; the endpoint test with explicit `!= NULL` and `== 0` 84 (same code); the outer range test
+// inverted with the out-of-range arm first 152 (1312) [37]; re-measure of the listed long seat count on this base 193
+// (1318) [51]. A volatile float local read ahead of the range load (one --fast diagnostic in src, reverted at once)
+// leaves the range in XMM2, so its register is not a rotation step; the compile-only /Gr screen gives another
+// allocation here.
+// Round 67 (m3 lane 15, fast with 0x263740/0x25c9d0): both builds turn the seat loop into a cursor and a down-counter;
+// the down-counter (ours) or the squared distance (retail) takes the clip amount's dead home, and the clamped amount
+// itself stays in XMM0 after the call. The seat count renamed `seat_count` 84 (identical code); the squared distance
+// unnamed, `length_sq3f(&delta)` at its five uses 84 (identical code: it is a spill temp either way); the clipped point
+// through a copy of path_transitions.cpp's point_along_vector (diagnostic) 90; the 3/2 result as one ternary 84; `long
+// count` 193 (1318 bytes); the occupant's forward as a value copy 195 (1312 bytes).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1374,6 +1389,9 @@ PRIVATE __forceinline long round_tick_count(real ticks)
 
 long function_146650(void);
 
+// MiniMax S (11-10): retail's 0x267a80 takes (point, direction, position, distance, unknown); with that order this function
+// matches and 0x267a80 still matches (its body matches under both orders, only the callers differ), but the change needs
+// src/unknown_25fc30.cpp's declaration (line 73) and its two call sites (lines 1221, 1244), which is outside this lane - reported, not applied.
 // score 7 (was 7): the five 12-byte homes now agree; only the argument setup at the three 0x267a80 calls
 // differs: retail sets ECX (the NULL distance, `xor ecx, ecx`) before the local-address lea of EDI (and of EDX
 // in the projected call), ours sets ECX last. Earlier note, from before the homes agreed: retail stacks
@@ -1923,6 +1941,8 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
+// MiniMax S (11-10): no new form, no lower score (168); the players iterator's table pointer still loads into ECX where retail
+// uses EAX, and the entry loop's index compare and the iterator's setup still differ.
 // score 168 (was 168): retail's length (2880). Left, in order: the players iterator's table pointer loads into ECX where retail
 // uses EAX and stores it at once (one extra pad line after it); the search shape; the facing and relative dots keep the
 // direction in memory where retail holds j, k, i in xmm2, xmm1, xmm3 across both dots after the last normalize; the scoring
@@ -2275,6 +2295,26 @@ real function_2683f0(long actor_index, long node_index, short type)
 // on that, 0x1c8150 with an early return 367 (0x1c8150 and five callers then differ; reverted at once), the vehicle index
 // read once into a local 204 [79/40] (ours keeps it in ESI where retail reloads it; the loop-head pad realigns, not a
 // real gain), the vehicle object fetched again after the type test 378 (same code); on 163 the vehicle index local 425.
+// Round 78 (m3 lane 14, fast unless marked; masked aligned in brackets, base 168 [59]): the other actor's object as a
+// named pointer used for both reads (`other_object = object_get(node->object_index)`) 163 [59], plain 163 (aligned 80
+// -> 75: that block's EAX/ECX/EDX homes become retail's; a gain of 5, not kept); the same lookup written out at both
+// uses with no index local 168; the existing 0x1df560 called in place of team_is_enemy 679 (2797 bytes, stays a
+// call); the player pointer as a ternary 372. On 163: score declared at the loop top 374 (2884 bytes); a long player
+// slot 385 (2899, a re-measure of the listed long player slot); a short first-search counter 171; the vehicle read
+// through object_get() at both uses 622 (2902); the player pointer declared at the loop top 368; the index named again
+// beside the object pointer 168; re-measure of round 33's long second counter 164. Diagnostics, each in src for one
+// --fast check and reverted at once: one or two volatile reads through the address of the player table global, or of
+// an actor field, ahead of the players iterator move the first difference to +0x13, so they do not isolate the table
+// pointer's register in this function.
+// Round 67 (m3 lane 15, fast with 0x25d810): retail inlines 0x1df560 here (its 0xbfe60/0x15e020 calls), as the file's
+// team_is_enemy copy already does; the copy as one single-exit block (diagnostic, header restored) 168 (identical code); the
+// two player-datum unit reads through game_engine_events.h's inline event_player_get 168 (identical); the vehicle lookup
+// written out in place of object_get 168 (identical: inline calls add no scratch step here); the second search's counter
+// as long 169 (that loop then takes retail's stepped-pointer shape, `cmp eax, 2`, registers aside); with the player
+// pointer also built from a long copy of the found index 375 (both searches retail's shape but for registers and where
+// `xor edi, edi` sits; the table pointer still ECX). The table pointer's ECX is the players loop's colouring (ECX/EDX
+// for retail's EAX/ECX throughout); `mov eax, [abs]` is one byte shorter, which moves the loop-top pad. The unknown23
+// test through the `prop` local instead of a fresh prop_get 655 (2845 bytes: retail reads it afresh).
 // @retail 0x266640
 void function_266640(long actor_index)
 {

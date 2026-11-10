@@ -504,6 +504,9 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
+// score 303 (was 303): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
+// integer and the sine) at the frame bottom where ours puts it above the result byte, so the axis/result
+// homes sit 4 lower; the two rotations keep the candidate in registers in retail (ours spills it between them).
 // Walk b4H (11-06, fast 303): statement-by-statement against retail 0x296e60-0x2973ec found no behaviour difference. Checked: pitch axis
 // (-j, i, 0) and the 1e-4 magnitude test (0x296ec2) with the g_4687ac fallback (0x296f0c); hoisted yaw/pitch ranges (0x296f32-0x296f66); yaw drawn first, pitch
 // second, kept unrounded on the x87 stack into fsin (0x297006); sine/cosine rounded (fstp dword 0x297047/0x29704d); pitch rotation about the axis, then yaw
@@ -515,7 +518,7 @@ struct s_collision_result_buffer_1697c0
 // temporary (the length, the integer and the sine) at the frame bottom where ours puts it above the
 // result byte, so the axis and result homes sit four lower, and ours is twelve bytes longer than
 // retail (1435 against 1423).
-// score 303 (was 322): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
+// score 303 (was 303; 322 before that): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
 // integer and the sine) at the frame bottom where ours puts it above the result byte, so the axis/result
 // homes sit 4 lower; the two rotations keep the candidate in registers in retail (ours spills it between them).
 // Round 85 (m3 lane 12): `real versine = 1.f - cosine;` named in the rotate-in-place helper 293 (NOT kept (review):
@@ -729,6 +732,16 @@ struct s_collision_result_buffer_1697c0
 // not kept), on it cosine before sine 308 (0x297d30 41), a named versine 298, both 308, the normalizer's products as
 // `j *= scale`, all compound, `scale * j`, all `x * scale` 298 each (same code: j still becomes a scale copy times memory
 // where retail loads j and multiplies); the hit fraction read at each use 307 (1460 B, the same frame-bottom layout).
+// Round 178 (m3 lane 4, fast with 0x297660 and 0x297d30; aligned = difflib count with addresses masked, 175 here):
+// the collision fraction read from the result at each of its two uses (no fraction local) 307 (aligned 137, first
+// difference +0x31: retail's early homes and frame-bottom temps, but both rotations spill and the body grows to 1460
+// bytes; the lead to pair with a rotation fix); the clear path's output normalized in place after the copy 313
+// (aligned 292); the best-direction tail the same way 338 (1403 bytes, 0x297660 4); both 356 (0x297660 40); the
+// no-collision case as an early `continue` 303 (same code).
+// m3 lane 12 r106 (fast, 0x297660 matched and 0x297d30 23 throughout): `result = true` before the output store in the
+// best-direction tail 303, in both success paths 303, before the candidate's normalize 303 (all the same code); the
+// result byte renamed `success` 303 (same home); `return true` in the tail with the collision flag read once through
+// its address 359 at 1442 B.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1318,6 +1331,8 @@ done:
 // compiles to the same code as the shared getter (9): MSVC keeps the scaled index in the pointer
 // register, so the `imul` never lands in EAX as retail has it. Original body restored.
 // MiniMax D (11-09): no new form, no lower score: the body is unchanged at 9 (114 bytes, as retail's); the only difference is the prologue, where retail builds the actor offset in EAX (`mov eax, ecx`, `and`, `imul 0x888`) and forms the actor with `lea esi, [eax + edx]`, while ours builds the offset in ESI and adds the base (`add esi, edx`), one byte short; the shared getter is used by sixteen matched functions of this file, so its spelling cannot change without losing them.
+// MiniMax R (11-10): no new form, no lower score (9); the body is unchanged, and the shared lookup keeps
+// compiling to the same code.
 // @retail 0x296580
 void function_296580(long actor_index)
 {

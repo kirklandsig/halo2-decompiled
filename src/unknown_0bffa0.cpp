@@ -1218,6 +1218,10 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // bytes, retail's length, aligned 195), the plane distance as dot(normal, plane point) 313, the sphere depth from the radius local
 // 529. No other natural form that this note does not already list is left (projection rows, sums, normalize helpers, vertex and
 // face tables, store orders, symbol-count probes). Body unchanged.
+// Round 164 (m3 lane 6, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0): light_projection_point_ab reading the point's
+// components in the other five orders (it is used only here): k, j, i 531 (2815 bytes); j, i, k 479; i, k, j 293; k, i, j 481;
+// j, k, i 532 (the declaration orders listed at 551-571 were on the old y-first base). The read order moves every
+// projection's sum tree, but i, j, k stays best. Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

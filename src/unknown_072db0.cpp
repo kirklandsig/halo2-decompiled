@@ -1252,6 +1252,9 @@ long function_1931a0(long count, s_surface_description *variant);
 // variant lookup replaced by the existing 0x192e60 call 8 (0x7e210 766 -> 857, 2772 bytes: the loop call stays out of
 // line, the top one inlines); its result flag declared first 8 (766), declared last and set after the clear 8 (766).
 // Here: the ratings buffer declared at the top 8; an early return when 0x7e210 fails 8. All restored.
+// Round 226 (m3 lane 3, fast, still BLOCKED-BY 0x7e210): 0x7e210's player loop written as 0x63220's body with its calls
+// (0x192e60, 0x631f0, a two-evaluation max of 0x1931a0) gives this function its match (the top 0x192e60 call stays out of line
+// and the session arrives in EAX) but raises 0x7e210 766 -> 1032; with its capacity helper forceinline 8 here, 998 there.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {
@@ -1835,6 +1838,23 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // loops 735 (2894 B; aligned 302 -> 289, masked 204 -> 194: the completion select is then retail's
 // branch-and-lea), completion loop only 720, request loop only 733; the opening test through the existing
 // 0x6c7e0 805 (stays a call); the property value written `!type ? 0 : value` 703 (same code).
+// M3 lane 10 r86 (fast with 0x641a0, 0x8df50, 0x749b0, 0x75790, 0x192e60 and every matched caller of 0x1934f0, all MATCH; control 703,
+// aligned 500, masked 330): in the users loop retail re-reads the variant count (`cmp word [count], 0`) after each call of 0x1934f0
+// and counts the loop down in EBX; ours hoists the count into EBX. `inline` on 0x1934f0's definition 703 (same code: its noinline
+// declaration wins); the missing-variant arm first 703 (masked 335); a player pointer for the three state accesses 703 (same code);
+// the team test first 703 (masked 334); a named group pointer in the request-building loop (also the identity base) 737 (2894 bytes,
+// masked 314), with the player pointer 737. The slot helper's cmovne still needs /arch:SSE.
+// M3 lane 16 r102 (plain checks of the whole file plus 0x641a0, 0x8df50 and the getter files' functions): function_75870() at every
+// clock read 817 (2750 B, called), with function_75890(start) for the two elapsed tests 816 (called; round 103's form, re-measured
+// plain); the existing function_6c7e0() for
+// the opening test 805 (called). The users loop through the existing getters 0x647a0/0x647d0 with a per-file `__forceinline`
+// redeclaration 828 (2928 B, both still called). Lead, not kept: with `inline` on 0x647d0's definition (src/unknown_054fe0.cpp) and the
+// slot index + properties read through it, the users loop becomes retail's instruction for instruction (cursor at the record start,
+// `lea edx, [ecx + 1]; mov eax, edx` for the xuid), 720 at retail's 2862 bytes, aligned 316 against 330, nothing lost (0x18fd94 stays
+// matched); `inline` on 0x647a0 as well gives the same code but loses 0x199c47/0x199c94 (they inline it where retail calls it); both
+// getters called with only 0x647d0 inline 749; the 720 form with online_logon_connected() 759 (2878 B, aligned 309).
+// In the 720 form the identity-change clear loop gains a jmp + pad (its head lands at another offset mod 16: retail's cmovne is one
+// byte shorter than our je/mov), so the positional count runs off from there; the loop-head pads follow byte offsets, not the source.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

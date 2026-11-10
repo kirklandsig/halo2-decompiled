@@ -464,6 +464,19 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // (5958 B, 853/587). With the input copy kept: the k/j/i first-loop cross plus that unstaged helper 1429 (6211 B, 878/572).
 // The direct-input magnitude is closer by every aligned count; the 216 missing bytes are retail's store-then-reload rows
 // (results stored to their fields and read back) spread over the contact loop.
+// Round 228 (m3 lane 3, fast; aligned counts exact/stack-masked/register-masked in brackets, base 1379 [1384/1485/988]).
+// Re-measured on today's base: the direct `return a && b && c && d;` 1390 [1370/1457/977]; the final loop's count in
+// its head (`i < (list == NONE ? 0 : count)`, the list read in the body) 1397 (6216 B) [1389/1588/916]. New: both
+// 1389 (6238 B) [1371/1566/918]; on that, the found arm first 1401 [1374/1566/955], the magnitude read without its
+// input copy 1632 (5991 B) [1434/1333/860], the list entries re-derived from the pool at each use (round 84's
+// form, re-measured) 1426 (6287 B) [1372/1454/921], the steering sign as `if (field_74.i >= 0.0f) value = -value;` 1378 (6238 B) [1388/1560/914];
+// with that, the two steering magnitudes as `x >= 0.0f ? x : -x` 1427 (6273 B) [1379/1479/904], those and the two
+// threshold magnitudes in the same form 1376 (6238 B) [1381/1553/892] (three points, not kept), the threshold
+// pair alone on the sign form 1427 (6273 B) [1392/1492/905], alone on main 1403 (6211 B) [1390/1549/963]. On the
+// 1376 form: the first loop's cross through the file's k/j/i helper 1445 (6193 B) [1372/1536/876], the found arm
+// first 1393 [1388/1556/929], the list entries re-derived 1379 (6255 B) [1370/1543/895]. Retail's final loop is not
+// rotated (the latch jumps back to a head that re-reads the list handle) and its duplicate search sits after the
+// loop, entered by `jg` when the found list is not empty. All restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

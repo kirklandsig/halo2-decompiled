@@ -397,6 +397,31 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // destructor call plus operator delete 925, with the long counter 930; long counter alone 933 (listed); a byte local
 // renamed on the unrolled body 1174 (same code). Next: retail frees the list with no destructor call, so the contact
 // array type wants a plain free path (all three users, 0x1cf9f0 and 0x1d2070 matched); the asm conversion is no blocker.
+// M3 lane 3 r225 (fast = plain 902; aligned [exact, stack-masked, register-masked] base [688, 620, 370]): the type mask through the
+// existing object-header element (`1 << header->type`) 902 (same code; retail loads the byte with movzx); the mask as a long 902
+// (same code); the position copy without its one-use pointer 965 (4284 bytes) [784, 908, 379]; the position read through a pointer
+// with no copy 965 (4216, frame 0x1e4) [642, 591, 369]; that plus the scale helper as three statements 1246 (3971, frame 0x1c8)
+// [570, 471, 323]; the three statements alone re-measured 1184 (4023, frame 0x1d4) [557, 471, 338]. Retail walks the element
+// array through a computed pointer kept at [esp+0x64] (shl/add) where ours uses indexed addressing, and saves EBX at entry.
+// Lane 5 r166 (fast alone, control 902): the repeated `field_4 != NONE` dropped from the attached-component test 960 (4251
+// bytes); the second read of field_1 into local_15 dropped 984; a named contacts pointer for the final free 917 (4283); local_3
+// declared before local_2 902; the attached component chosen by a ternary 901 (one point, not kept); the object lookup as
+// `local_13 = NULL; if (...) local_13 = ...` 902; the entry flag as `fabs(arg_1) >= 0.0001f` 1009 (4299); the two field tests
+// nested 902; a short loop index 989 (4272); response_fraction declared at the top 902; the contact array pointer read
+// once before the loop and used in its test 1004 (4287). All restored. The unroll lead
+// (no destructor call) needs the contact array type in include/unknown_1cec30.h, whose other users 0x1cf9f0 and 0x1d2070
+// sit in src/unknown_1cec30.cpp (another lane's file this round).
+// m3 lane 14 r77 (fast; difflib counts with registers and offsets masked, control 232): retail never tests the attached
+// component pointer after its lookup and places the swap-remove block after the body: the validity tests (object index,
+// object, component index) as one `if` around the lookup, the slot clamp compared in a nested `if` around the body, the
+// body ending in `continue;` and the removal after both, 964 (4267 B, masked 228; close to round 148's removal-after-body
+// part, whose own score the note does not single out); on it the clamped slot named again 964, the component pointer
+// declared ahead of the tests 964 (both the same code), the record flags read from the field at each bit 972 (4248 B,
+// masked 226), the rigid-body position copied field by field (retail's movss copy) 1004 (4283 B, masked 218). Diagnostics (not keepable): a long scale counter with the
+// contact-array frees written out 1177 (4030 B, masked 207: listed as 1174), both with the nested tests 1199 (4022 B,
+// masked 201). So the nested validity tests and the unrolled scale loops are independent structural fixes.
+// MiniMax D (11-10): no new form, no lower score: the removal path as an else arm after the body 902 (4267 bytes),
+// the entry flag word in a named local 917, the motion point copied member by member 943 (4283 bytes); all reverted.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

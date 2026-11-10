@@ -52,6 +52,14 @@ struct c_aggregate : c_child
 };
 
 
+// score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
+// reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
+// loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its
+// for-init, which gives retail's starts[i]/starts[i + 1] load order; left: only the frame, 0x8024 against
+// 0x8020 (`produced` keeps its own slot where retail packs the loop-2 cursor and loop-3 count into it, and the
+// two temporary slots are swapped). This body built without /GL is byte-exact (BLOCKED by the build flag). Compiled without /GL (screen only) the body
+// gets retail's 0x8020 frame and every slot, 20 left (EBX/EBP and the boundary loads); every /GL form
+// screened keeps 0x8024.
 // MiniMax S (11-10): no new form, no lower score (31); the frame is still 0x8024 against retail's
 // 0x8020: retail packs the loop-2 cursor and the loop-3 count into the address-taken produced slot
 // (frame +0x00) while ours keeps a slot of its own for the produced count, and the two temporary slots
@@ -69,14 +77,6 @@ struct c_aggregate : c_child
 // MiniMax G (11-06): no new form, no lower score: the frame is still 0x8024 against retail's 0x8020, with
 // the two low loop homes exchanged and the produced count keeping a slot of its own; the body is byte-exact
 // only in a /GL- build of this file, which costs 0x97f60, 0x97fe0 and 0x980d0 their matches (52, 80 and 56).
-// score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
-// reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
-// loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its
-// for-init, which gives retail's starts[i]/starts[i + 1] load order; left: only the frame, 0x8024 against
-// 0x8020 (`produced` keeps its own slot where retail packs the loop-2 cursor and loop-3 count into it, and the
-// two temporary slots are swapped). This body built without /GL is byte-exact (BLOCKED by the build flag). Compiled without /GL (screen only) the body
-// gets retail's 0x8020 frame and every slot, 20 left (EBX/EBP and the boundary loads); every /GL form
-// screened keeps 0x8024.
 // Earlier (74): the dispatch loop walks the child cursor and the starts[] boundaries as retail does
 // (index in ebp, child cursor and inner count spilled), so the two children are visited in retail order.
 // Tried: ordinal/child-cursor dispatch 115; explicit inner length on ordinal/range forms 102/99;
@@ -388,6 +388,14 @@ struct c_aggregate : c_child
 // end of the file 31; the three aggregate functions moved below the handle-table functions 31 (frame 0x8024 in each, same
 // code). Diagnostic, removed at once: `#pragma optimize("a", on)` around the body 31 (frame 0x8024: even the no-aliasing
 // setting keeps the escaped output apart under LTCG). Still BLOCKED by the build flag.
+// Round 228 (m3 lane 3, fast with the six file-mates, all still matched; only the frame differs, 0x8024 against
+// 0x8020): produced's statements in an extra brace block inside the collection test 31; the collection loop as a
+// `while` 31; the cleanup's outer loop as a `while` 31; the query result as `result = get_info(...) ? result : NONE`
+// 31; the collection call through the children's real class (`children[i]` as c_handle_table_450cd0, v5 = 0x98cf0,
+// with its own parameter types) 31 (same code each). Re-measured: the nested child/error tests 31, `blocks + total`
+// 31, the early `continue` guard 42. Still BLOCKED by the build flag.
+// Round 147 (m3 lane 8, fast): one function-scope index for the collection and dispatch loops 31 (same code, as
+// rounds 42 and 66 found); no unlisted form left. Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

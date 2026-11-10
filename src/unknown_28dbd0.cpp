@@ -73,6 +73,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
+// MiniMax E (11-10): no new form, no lower score (173); both sides run the same operations, but the frame is 0x11c here and 0x118 there, and the products are held in different registers, so the same work is scheduled differently and lands at other frame offsets.
+// MiniMax S (11-06): the permuter's 42 rewrites all score 173 or worse on the reduced image; no new form, no lower score.
+// MiniMax D (11-09), not kept by the coordinator: the struct's trailing bytes cut to 0xc0 gives a 0x118 frame and 161, but local_0 is the 0xc4-byte creation data function_b7930 fills (s_damage_object_creation in damage.cpp ends with unknownc0), so a shorter local lets b7930 write past it.
 // score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
 // where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
 // first, stored after the dot) and colours the cross terms differently.
@@ -394,6 +397,15 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // 253 (1233), 0x2551f0's (vector, axis, sine, cosine) shape 251 (1232). This note already covers the rotation's trig order,
 // dot and cross spellings, helper shapes of the matched rotating functions, the heading, jitter and velocity arms, scales and
 // creation data size; no untried natural form is left. Helper restored.
+// Round 164 (m3 lane 6, fast with 0x28dab0, 0x256bd0 and the callees, plus 0x1ecf50/0x170d70 for the helpers' files; masked =
+// aligned count with registers and stack offsets masked, 66 for this body): our ninth scalar dword is function_28dbd2's cross
+// vector (an address-taken 12-byte home, two components touched); retail keeps cross j and k in separate homes (+0x28, +0x20),
+// forms cross i in row i and has every XMM register busy (it multiplies v.k by a memory 0.0). The real cross-file
+// rotate_direction re-measured 236 (1190 bytes, frame 0x114), with named sine/cosine 241, the real rotate_vector_170d70 236 (the
+// same code as the same-file copies listed). On rotate_direction: the jitter arm as a zero-k offset vector through vector3f_add
+// 228 (1209 bytes, masked 63); plus both 0.1 position updates through vector3f_add_scaled 223 (1214, masked 43); the position
+// updates alone 237 (1191); 223 plus the velocity through vector3f_scale 223 (same code); 223 with rotate_vector_170d70 223 (same
+// code). Every scalar-cross form keeps frame 0x114. Body unchanged.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

@@ -365,6 +365,8 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// MiniMax I (11-10): no new form, no lower score (117); the draw before the time product (193) and the oscillation
+// before the draw (197) move the seed update up but split the float chain, so both are worse.
 // MiniMax D (11-05): no new form, no lower score.
 // MiniMax S (11-06): no new form, no lower score: retail still loads the random-state pointer before the time multiply and keeps the old direction in registers, ours spills the old direction to the stack and frames 0x28 against retail's 0x20.
 // MiniMax G (11-06): no new form, no lower score: the frame is 0x28 against retail's 0x20 because retail loads
@@ -642,6 +644,18 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // 41 measured that shape here (176/181); 0x177d10's exact statements on the global 143 (880, aligned 75); matched 0x23d260's
 // staged shape (axis k local, staged projection, cross i/j/k, staged rows stored as they finish) on the global 188 (846 bytes).
 // No other natural rotation or opening form outside this note's list is left. Not kept.
+// Round 148 (m3 lane 8, fast with the file's other functions, 0x118140, 0x30bf0 and 0x117c80; base 117, aligned 68, masked 45),
+// each the same code (117, 880 bytes): `old` as a const copy; dot3f(&old, &axis); the axis as a const copy; `cross` declared
+// ahead of the axis and `old`; the three rows and the 0x117c80 call through a named direction pointer to the global.
+// The frame's extra eight bytes are `old` kept in memory (its address goes to cross3f and dot3f); retail holds the global's
+// j and k in XMM5/XMM4 and reads i late, and none of these forms changes that.
+// M3 lane 16 r100 (fast, 0x118140 stays matched; the build already returns with a plain ret and takes wind in EBX), re-measured on
+// the current body: the `old` copy dropped with cross3f, dot3f and the rows on the global 173 (862 B; round 37 had 152 at 854),
+// the projection first 175 (858 B, frame 0x1c; round 39 had 148 at 852), that with dot3f(&g_55ecd4, &axis) or vector-first rows
+// 175 (same code); the cross-file rotate_direction on the global (plain check) 183 (852 B; round 28 had 150): cross i then sinks
+// into the i row and cross j, k form early as in retail, but the global's j/k reload in the i row. Round 69's tail (`cos((real)(time
+// * 0.001))`, `(real)sin((real)(time * 0.005))`) re-measured 171 (892 B; retail's fxch pair and fst stores), with rotate_direction
+// 171 (864 B), with rotate_vector_170d70 170 (864 B); with rotate_direction on an `old` copy stored back 161 (889 B). Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

@@ -961,6 +961,7 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // MiniMax S (11-10): no new form, no lower score (153 in the wider set, 196 in the two-source reduced
 // one); the case bodies call the same functions as retail (0x93f60, 0x93fa0, 0x940b0 and the rest are
 // in this file), but the reduced build does not pair their call targets, so most of the rows are that
@@ -975,6 +976,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // pushes esi), so the callee conventions decide this one.
 // MiniMax C (11-08): no new form, no lower score.
 // score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
+// Round 147 (m3 lane 8): no unlisted form. Retail's convention needs the address live across a call, but retail calls
+// 0x94420 and 0x94270 out of line and has no such use. Its connection handlers take no address (retail passes them the
+// index in EAX and the message in EDX), so an unread address parameter on them has no retail evidence and was not tried.
 // Earlier: retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
 // MiniMax lane E (11-01): no new form, no lower score; retail's parameter order is (message_type,
 // message, address) with the receiver in EDX, which this file's declaration cannot change.
@@ -1356,6 +1360,11 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // 0x94270 251 (500 bytes) with retail's convention (type EAX, message ECX kept in EBX, address on the stack), as round 60's
 // forced 0x94420 106: inlining either session case, whose body uses the address after a call, is what makes the address a
 // stack argument kept in a callee-saved register; retail calls both, so something else in retail keeps the address live.
+// Round 228 (m3 lane 3, all plain with 0x7afd0, 0x93aa0, 0x92ef0, 0x92d10, 0x94420, 0x94270; control 153 at 464
+// bytes): every first-switch case ending in `break` 153; each connection case returning early when the lookup fails
+// 153; the late switch's cases returning, with `default: return;` 153; the connection index declared inside the first
+// switch's body 153 (same code each); the three connection cases moved into the late switch ahead of 18 and 11 225
+// (470 bytes, 0x7afd0 3: the convention moves). All restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
