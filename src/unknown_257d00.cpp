@@ -2575,7 +2575,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // so the body is unchanged.
 // Round 179 (m3 lane 4, fast with 0x110ab0, 0x258cf0, 0x25a130 and the file's matched functions, plain-confirmed):
 // kept: case 2's turn-command vector published through the existing vector3f_assign into `unknown424.vector` from a
-// `desired_facing` pointer (in place of the aggregate copy) 610 -> 479 (2404 bytes): the actor takes EBX and the
+// `turn_facing` pointer (in place of the aggregate copy) 610 -> 479 (2404 bytes): the actor takes EBX and the
 // state EDI as in retail, the first point moves to +0x10 and case 1 reloads the state from its home as retail, so the
 // prologue, the dispatch and case 1 agree; first difference +0x51. Tried, not kept: the same three member stores
 // written out 466 (2400 bytes; that is vector3f_assign's body by hand), with two pointers 466; case 2's planar copy by
@@ -2627,8 +2627,8 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 					if (normalize2d(&local_6) > 0.f &&
 						local_0->unknown290.j * local_6.y + local_6.x * local_0->unknown290.i < 0.984f)
 					{
-						vector3f const *desired_facing = (vector3f const *)((byte *)local_0 + 0x4d8);
-						vector3f_assign(&local_0->unknown424.vector, desired_facing->i, desired_facing->j, desired_facing->k);
+						vector3f const *turn_facing = (vector3f const *)((byte *)local_0 + 0x4d8);
+						vector3f_assign(&local_0->unknown424.vector, turn_facing->i, turn_facing->j, turn_facing->k);
 						*(short *)((byte *)local_0 + 0x41c) = 3;
 						*(short *)((byte *)local_0 + 0x420) = 4;
 						*((byte *)local_0 + 0x44d) = 1;
