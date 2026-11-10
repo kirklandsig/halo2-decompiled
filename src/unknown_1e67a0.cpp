@@ -830,6 +830,12 @@ bool g_51e9bc;
 // 73/72/72/80/77/77/76; all signs in exhaustive arms 64. NOT kept: no gain;
 // native-length forms disturb unity allocation from +0x21, before the original projection gap.
 // Original full body restored; projection j/k ownership and jitter spill homes remain.
+// Lane 1 r83 (fast, 0x24590/0x1cd6c0 listed; al = aligned lines left / the same with registers masked, control 49, al 42/16): the
+// projection dot written out grouped (k + j) + i 136 (1090 bytes, al 67/24); sign_z started at -1.0f and set to 1.0f on its bit (retail's
+// `je; movaps xmm0, xmm3` over the register that holds -1.0) 80 at retail's 1077 bytes (re-measured, was 80; al 61/21: 1.0 then takes XMM4);
+// both 146 (1088); the jitter add as vector3f_add(&offset, &state->velocity, ...) 49 (same code); that with the sign 80, all three 142.
+// Left: the projection's k and j products swapped, the jitter values' registers and spill slots, the 0.2 products' order and the
+// interleaved velocity stores (retail stores velocity.i before it forms the y and z offsets).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -1225,6 +1231,23 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // input capture and publication 140/134/140/134; turned-output record staging or full
 // coordinate initializer, mutable/read-only 140/189/140/189. NOT kept: eager copy-boundary
 // diagnostics miss equality; original full body and shared rotation call restored.
+// Lane 1 r83 (fast, 0x24590/0x1cd6c0/0x1ecf50 listed; al = aligned lines left / the same with registers masked, control 114, al 61/37).
+// LEAD, both exit tails then retail's (ESI/EDX/EAX loaded before the stores, flags in EBX, last 32 lines equal): the goal copied into the
+// rotated local (`rotated = *facing_goal; state->flags |= 32;`) with no early return and one `state->forward = rotated;` at the end:
+// 114 (1389 bytes), al 47/31. Not kept (the count ties). On that form: the moved-away flag preset false and set in its test 77 (1387, al
+// 45/29, a flag form), plus the side dots as (up, new) * (up, old) 75 (al 35/27); the side dots alone 106 (al 37/29), their arguments swapped
+// 111; the side test in a named bool 123 (1382), named before moved_away 205, after it with moved_away computed last 205; `moved_away ||`
+// first 104 (1382, no flag byte); the moved-away test inline 160 (1367); its dot as (rotated, goal) or `dot < alignment` 114; alignment as
+// (forward, goal) 116; the new cross first 124 (1382); cross3f_staged for both or the old cross 112, for the new one or cross3f for both
+// 114; `turning && c` 116; moved_away as if/else or a ternary 114; a `snap` bool or'ed from both tests 123; rotated declared beside the
+// sample 114. Both exits through the existing by-value vector3f_assign on the old body 171 (1383, the components go through XMM).
+// Unused-local probes 1-8 on the lead (diagnostic): 123/133/133/122/164/167/144/112, 1-6 at 1382 bytes with every rotation product
+// load-first; period 8. On the lead, the existing float trig calls: sinf and cosf for the rotation 84 (1384, al 52/40: the rotation is
+// unchanged and the turn block's products move, a phase change; each alone 196/196, fabsf for the guard 201, all three 132), with the flag
+// form 106, with the swapped side dots 115, with both 87; the time step read through a new inline getter (diagnostic, plain or forced,
+// either operand order) 127 (1382, al 103/66: every rotation product load-first), with the flag form 170, with the side dots too 168.
+// Left on the lead: the four rotation products and the new cross's goal.j products (retail copies the register and
+// multiplies from memory), the old cross's two forward.i products (retail loads forward.i), the side-dot order and the flag byte.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

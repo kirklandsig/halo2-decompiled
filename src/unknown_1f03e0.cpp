@@ -577,6 +577,16 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // merging); a forceinline contact-entry getter (component, index) at all six entry reads 43 (same code), with case 3 selected-first 178
 // (the same 178 as without it: the getter shifts nothing); case 2 averaging arm and case 3 selected arm both first 215; case 3
 // selected-first with case 2's `selected != 0` arm first 199. Body restored.
+// Lane 1 r83 (fast, 0x1201a0/0x1f2e60 matched in each; al = aligned lines left / the same with registers masked, control 43, al 20/15):
+// re-measured on today's body: case 3 selected-first 178 (991 bytes, al 52/32), with no none-arm copy 192 (988, al 53/33), case 2 with
+// the averaging arm first 222 (992, al 92/82; was 187 on the 122 body), `b` declared before `a` 229 (992, al 74/36; was 228), both dots
+// as dot3f(vector, desired) 43 (same code), contact_cross staged through three locals 47. New: the averaging arm first with case 3
+// selected-first 215 (1003); contact_cross with every product commuted 43 (same code), reading through two references 43; a pointer local
+// to the up vector scoped to case 3 on this none-first body 240 (1010, al 60/30; r135 had it on the selected-first body), with the average
+// through vector3f_add 217; the average through the existing vector3f_add(b, a) or (a, b) on this body 67/67 (974, al 24/20); `average`
+// declared at case scope 43 (same code); the dots inside the compare 43 (same code); case 1 through a pointer local 225 (995). Retail's
+// only cross difference is a.k * b.i with b.i loaded first, and its average.i is b.i + a.i as written where ours loads a.i first: the
+// written operand order does not reach either.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -820,6 +830,15 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // Lane 9 r98 (fast, 0x1e5af0 matched in each): the state dot with `up` first in each product 163 (same code); the rotation dot
 // with axis first in each product 164; the rotation test dot through dot3f(&cross, &axis) 163; the rotation rows written cosine
 // term first (`limited.k * cosine + axis.k * dot - ...`) 163; the final crosses' workspace renamed `side` 163. Body restored.
+// Lane 1 r83 (fast, 0x1e5af0 matched in each; al = aligned lines left / the same with registers masked, control 163, al 134/55): sinf and
+// cosf for the rotation, either or both 176 (1233 bytes, al 131/49); the three dots parenthesized (k + j) + i, state/rotation/final-test
+// subsets 1-7 176/236/236/176/176/236/236 (al 131-133/48-50; the state dot's loads still start at j; the three single ones re-measure
+// the 11-06 forms at 176/235/235, the pairs and the triple are new). Retail's forward cross and its
+// fallback cross both multiply in the helper's written order (first argument's component first: memory times up's register in the first,
+// up's register times memory in the second); ours has the second argument's component first in both. contact_cross with its parameters
+// as (out, a, b), (b, a, out), (out, b, a), (a, out, b), (b, out, a) 163 each (identical code, diagnostic through a macro); every
+// product commuted in the helper 163 (identical code, 0x1f2a80 43); the helper staged through three locals 163 (0x1f2a80 47, 0x1f0870
+// 562, 0x1f2250 418); the helper reading through two references 174 (1231, al 133/52). Body unchanged.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result, byte const *state)
 {
