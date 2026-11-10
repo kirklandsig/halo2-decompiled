@@ -52,6 +52,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 
 /* the next recent player after the iterator's: a valid, online, known player
    with a name; iterator starts at the first entry and ends at NONE */
+// MiniMax S (11-10): no new form, no lower score (43); the successor still rides in EDX where retail
+// keeps it in EBX (and retail reads the index straight into ESI where ours copies it), the mask is still
+// the immediate 3 where retail hoists it into AL before the loop, and the pushes keep our order.
+// The permuter (48 tries) found nothing better than the baseline; giving the successor its own local
+// moves it to ECX instead and measures 51, so the original body stands.
 // MiniMax D (run 46): early returns with a successor local and the index stepped at the loop end 49,
 // the successor read through the table 53; no lower score.
 // MiniMax C (11-08): forms tried, none lower: early returns 52, early returns with the successor in

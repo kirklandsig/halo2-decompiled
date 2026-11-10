@@ -554,6 +554,13 @@ struct s_1af5c6
 // (diagnostic) 82 (589 bytes: inlined here, but matched 0x1b2770 then inlines it too, 656); the ignore index named before
 // the tail 20 (same code); the mask as a ternary on the flag 40; the miss and distance tests as 0x1c8df0's short category
 // with one exit 109 (603 bytes); the first element read straight into local_4 and the second lookup in its own pointer 20.
+// Round 64 (m3 lane 2, plain): the hit fraction read into a local after the test, with the distance and its vector in a
+// nested block, 19 (the product loads the distance first as retail; not kept: a one-use field copy); on it: the actor local
+// renamed to sort last 19 (same code: names do not move the distance's slot); the mask's 0x20 bit cleared with `&= ~0x20`
+// 19 (same code); the object index overwritten by the +0x14 field and passed to 0xbaf40, as matched 0x1b0400 does, 28; a
+// copy of the ignore index made before the cluster test, where the inlined call's argument copy sits, 19 (same code, the
+// copy propagates); the whole tail in one nested block 19 (same code). Left as before: the second header mask in EAX
+// (retail ECX), the ignore index loaded after the first subtraction (retail first), the distance at +0x10 (retail +0x14).
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {

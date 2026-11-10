@@ -562,6 +562,13 @@ static inline bool teams_enabled_19e1c0()
 // engine vtable slot 0xc8 (token, token_length, event, destination, remaining) with its token-copy fallback all agree
 // with retail; no behaviour difference found. Only the `long volatile result` is unexplained by behaviour: it is
 // there for the frame/ESI shape (390 against 691 plain) and would be undone in review unless the function matches.
+// Round 63 (m3 lane 2, fast; control 390): plain result with the name/team clamps folded into the wcsncpy count
+// (an embedded assignment, measured only) 691; plain result with `event != NULL` 691 (same code); the volatile
+// result with the text buffer declared first and the switch-side-time failure as `result = remaining` 431
+// (1398 B); re-measured listed forms: the fallback clamp as `remaining <= token_length ? remaining : token_length`
+// on the volatile/plain result 395/693; plain result with every compare as `wcsncmp(...) == 0` 691; both team
+// admissions with the team test first 401 (1438 B). Retail cross-jumps whole case tails (the local-team case enters the
+// cause-team case's 0x1587f0 call with the team in EDI, the formatted cases share one vsnprintf/failure tail).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
