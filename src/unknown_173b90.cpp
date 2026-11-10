@@ -472,6 +472,12 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// score 42 (was 42): both in-place rotations go through the shared rotate helper (it copies the
+// input when the output is the input), which gives retail's j and k rows. Left: row i sums the up
+// product before the forward one (retail forward first, loading forward.i into a register); the
+// offset's zero store comes before the list test (retail after); the two 1.0 stores are swapped; and
+// after each property call ours reloads the particle before the emitter definition (retail the
+// other way round).
 // MiniMax C (11-09): no new form, no lower score (42); row i still sums the up product before the forward one and
 // the emitter loop still reloads its two saved registers in the other order; the shared rotation in
 // include/matrix_transform.h keeps that sum order.
@@ -480,12 +486,6 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // after each property call ours still reloads the particle before the emitter definition. The two in-place
 // rotations go through the shared forceinline helper in include/matrix_transform.h, whose product order
 // this file cannot change.
-// score 42 (was 42): both in-place rotations go through the shared rotate helper (it copies the
-// input when the output is the input), which gives retail's j and k rows. Left: row i sums the up
-// product before the forward one (retail forward first, loading forward.i into a register); the
-// offset's zero store comes before the list test (retail after); the two 1.0 stores are swapped; and
-// after each property call ours reloads the particle before the emitter definition (retail the
-// other way round).
 // Tried: combined entry decisions 53; entry decisions with shared cache 53; scale/alpha/both result
 // locals 119/56/119; saved successor 217; particle cache with scale result 119; combined
 // entry/property/cache 116; forward/left/up/all axis receivers 118/55/55/118; forward/left/up/first-pair
@@ -756,6 +756,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // the motion through the shared helper 117 (1140), both through it with the motion rotated first 115 (1136), both through
 // it with the emitter mask read from the definition at both uses 237 (1130 bytes, the homes turn over); on this body both
 // rotations through vector3f_rotate_into_axes with scale first 82 (1130 bytes).
+// M3 lane 14 r80 (fast, base 42): the next particle index read right before the callback 203 (1106 bytes); the emitter
+// definition formed as the first statement inside the list block, before the 1.0 defaults, 57; both scale products written
+// multiplier first 42 (same code); the multiplier test through the existing flag getter 0x173b90 273 (1110 bytes); the next
+// particle index read between the two particle copies and the particle-cache invalidation 273 (1113 bytes).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

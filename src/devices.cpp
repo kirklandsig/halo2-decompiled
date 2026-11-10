@@ -634,15 +634,15 @@ struct s_device_machine_view
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
-// MiniMax E (11-10): no new form, no lower score (34); retail loads the group's flags as a word into AX with the
-// group pointer still in EAX and tests bits 1 and 2, ours loads a byte and masks it with 3 - every word form moves
-// the pointer into ESI (120) or folds the index into the load's address (117), and the nested and compared tests
-// give 170 and 120.
 // score 34 (was 34): group-word load/EAX sharing and velocity-zero join remain;
 // the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
 // retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
 // retail's shifted by one. Plain masks plus the zero store leave only the group pointer's register.
+// MiniMax E (11-10): no new form, no lower score (34); retail loads the group's flags as a word into AX with the
+// group pointer still in EAX and tests bits 1 and 2, ours loads a byte and masks it with 3 - every word form moves
+// the pointer into ESI (120) or folds the index into the load's address (117), and the nested and compared tests
+// give 170 and 120.
 // MiniMax A (11-06, run 52), not kept: 2 (from 34) with MiniMax D's form below, the group flags read
 // through the device-group macro into a word before the machine test and masked into a byte after
 // it, plus `function_value = 0.0f;` first in case 0x1200055f's velocity block (a dead store there,
@@ -933,6 +933,13 @@ struct s_device_machine_view
 // direct-read code). Re-measures: an inline both-bits helper, also used by 0x1071e0, 120 / with the zero store 122; a
 // named typed table base 122. Every spelling of the group test gives one of two codes (the byte load with a mask, 34, or the
 // word load with the pointer in a pushed ESI); only an extra pointer reference at allocation moves the pointer to EAX.
+// M3 lane 14 r80 (fast): register-blind only three rows differ: the lane S mask (`movzx eax, byte [eax+2]; and eax, 3` for
+// `mov ax, [eax+2]`) and the missing 0x1200055f zero store, so a match needs both the store and a word load sharing the pointer's
+// EAX. New: no initialiser, `function_value = 0.0f;` at the top of each case that can leave it unset (and none inside 0xf00055e's
+// velocity test) 146 (660 bytes, masked 11); case 0xf00055e's zero written as the false value of a ternary 84 (655 bytes: the
+// zero store vanishes, so retail's own zero there is an explicit redundant store, as main writes it). No untried natural form is
+// left for the two rows: every word-load spelling listed above keeps the pushed ESI, and the zero store is a dead store under the
+// 10-30 ruling.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1163,7 +1170,7 @@ bool function_108530(long device_index, long name)
 // before it produced any result.
 // MiniMax E (11-10): no new form, no lower score (121); the initial velocity is stack-passed here and in XMM6 in
 // retail, and the parameter list is not mine to change, so the velocity's register home follows from it.
-// score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
+// Earlier (121, was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // MiniMax A (11-04, run 41): no new form, no lower score (121); the initial velocity is still stack-passed
 // where retail keeps it in xmm6, and the ramp-down time still takes a register through the clamps.
 // Earlier: retail keeps the initial velocity in xmm6 for the whole function and leaves
@@ -1361,6 +1368,14 @@ bool function_108530(long device_index, long name)
 // callers 26/28), ramp-up 133 (26/28), duration + ramp-up 133 (19/34), duration + ramp-up + ramp-down 133 (19/34), duration +
 // ramp-down 144 (523; 26/28), ramp-up + ramp-down 141 (508; 19/34). Each puts an unmodified time parameter in a register
 // from entry; none gives the initial velocity XMM6.
+// M3 lane 14 r80 (fast, callers 31/13; masked = aligned count with registers masked, 22 at 121): the cruise velocity through the
+// motion field, no velocity local (listed, 134), re-measured masked 16 against 22: its tail blocks are retail's and register-blind
+// only the ramp-down clamps' register copies (`movaps xmm2, xmm0` before each store), the inner block's initial-velocity load from
+// [esp+0x18] and the return size differ. Retail keeps the ramp-down time in memory at every use (each clamp a conditional store,
+// every read a load), as an address-taken variable would be. Diagnostic, reverted at once: a volatile ramp-down parameter 165
+// (546 bytes, `push ecx` frame, the initial velocity still on the stack). I found no untried natural form: the pointer, reference,
+// helper, pin, if-clamp, fresh-local and order forms listed above all keep the ramp-down time in a register. New: the
+// deceleration distance reduced in place (`motion->deceleration_distance -= ...`) 121 (same code), on the field form 134 (same code).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
