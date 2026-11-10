@@ -2930,6 +2930,13 @@ void function_20fda0(long arg_0);
 // idiom) 19; the team read inside the call's argument 20; the node as `&data[(arg_1 & 0xffff) * 0x54]` 19; a node offset local
 // 19; every local declared at the top, assigned in place 19. Diagnostic: 1-8 unused locals ahead of the lookup 19 each (retail's
 // EAX/EDX/ECX is ours rotated by one; no numbering tie).
+// Round 159 (lane 5, fast): the cause is not outside the body either. The queue global defined beside the pool global in this
+// file (retail has them four bytes apart) 19 (same code in all 61 functions of the four files); diagnostics, restored: each
+// later callee (0x20fe20, 0x20fda0, 0x20d570) swapped for another function 30/31/39 and a pool-global store added to 0x20fe20
+// 19, the queue-then-pool load order unchanged in all four, so no callee's side-effect summary sets it. A pool pointer local
+// read at the top of the block, just before the 0x20f040 call, or at function entry 44/44/46 (145/145/141 bytes; the pool is
+// held in EBX across the call, though the 0x20d570 argument order becomes retail's); the flag read into a bool ahead of the
+// owner 24; the owner as an element of the queue array indexed by the call 20.
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {

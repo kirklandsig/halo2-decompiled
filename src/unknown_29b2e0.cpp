@@ -408,6 +408,8 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // shared producers on the in-place graph, seven subsets then shared publication:
 // 234/247/257/265/282/254/262/265. NOT kept: no exact unity/root/yaw/rotation homes;
 // original numeric contract, alias-safe scalar results and full body restored.
+// P399: Actual previous-yaw/previous-pitch/policy field references, subsets 1-7, then immutable actor/object bindings:
+// 299/280/262/303/305/272/272/272. NOT kept: no byte equality or native home repair; original complete body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

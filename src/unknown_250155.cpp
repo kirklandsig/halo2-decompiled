@@ -1534,6 +1534,10 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // Full-array defaults before first/second/both collections 166/131/177; common
 // after queries/at declaration 193/188; slot defaults in first/second/both scans
 // 168/137/186. NOT kept: native post-scan tail shape not recovered; original restored.
+// Lane 9 r98 (fast, 0x251f8d listed, control 83): 0x199dc9 taking `long *` (cast at its 0x594a0 call, callers pass &locals) 83
+// (same code; 0x251f8d stays 20); both query maxima as if/else 83 (same code); on that, the three qsort calls written out 119 (435
+// bytes); plus index fills in both branches 174 (418); plus the index fill in branch two only 169 (420). Body restored; the reload of
+// player_count after 0x19a9b4 is still the blocker noted above.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
