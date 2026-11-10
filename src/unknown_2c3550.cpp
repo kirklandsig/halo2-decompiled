@@ -772,6 +772,13 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // needs path.cpp's declaration and caller local changed; state->source.unknown04 reaches avoidance_search as a raw
 // zero-extended byte (0x2c4741 xor ecx,ecx; mov cl,[eax+4]) where ours emits test/setne, so the field is a bool in retail
 // (path.h declares byte); the (byte) cast on flags is codegen-neutral (dropped = 675).
+// score 675 (was 675): retail's result is a stack byte, NONE sits in EBX and the step loop computes start and start_node
+// before the input pointer; register homes and the transform loops' short indices differ.
+// M3 lane 3 r225 (fast agrees with plain at 675; aligned [exact, stack-masked, register-masked] base [602, 524, 471]): bool result
+// 754 [610, 531, 458]; with first_output declared at entry (retail zeroes [esp+0x68] there and stores the word count into it at
+// each step's end) 773; bool result with start and start_node computed before the input pointer 724 [608, 513, 437]; all three 745;
+// start and start_node before the input alone 675 (same score). The out parameter's short type stays BLOCKED by its declaration and
+// caller in a file another lane holds this round.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,
