@@ -100,6 +100,14 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
+// score 96 (was 96): no local frame; retail reads the type once before the kind test (one type read shared by
+// both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
+// component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must
+// preserve that incoming convention; every prior one-read type form flips the component/index pair (the caller
+// 0x1d5bf0 then differs). Type read after the rigid body 94 at 256 bytes (caller 13), first
+// 117, after headers/body/index 94 (caller 13), body then type 136, kind 7 as a ternary 104;
+// case 0 through the object_index local 91 at 256 bytes (caller 146), with the one-read type
+// 132-133; parameters reordered (rigid index first, component last) 96 / 94 (caller 13).
 // MiniMax I (11-09): no new form, no lower score; retail takes the owner and the level on the stack and returns with `ret 8`, ours keeps the owner in ECX and returns with `ret 4`, so the body cannot match while the caller keeps its matched form: BLOCKED-BY the caller 0x1d5bf0 (src/unknown_1d5bf0.cpp).
 // MiniMax R (11-09): no new form, no lower score (96); retail reads the object type once at the entry and dispatches it through a byte-indexed table, ours reads the type again in each branch, and the one-read forms move the caller's argument setup.
 // MiniMax A (11-06): no new form, no lower score; retail loads the object-header pool and its data at the
@@ -121,14 +129,6 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // unchanged, the object index read again for case 0 91 with the caller at 146, and the flags read through the
 // owner chain without a pointer local 117 with the caller at 122.
 // MiniMax E (11-05): no new form, no lower score: the 24 form needs the object index and the absolute index, each used once (recorded not kept); the header array local with the type hoisted and case 0 through the object index 96 with the caller 0x1d5bf0 at 13.
-// score 96 (was 96): no local frame; retail reads the type once before the kind test (one type read shared by
-// both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
-// component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must
-// preserve that incoming convention; every prior one-read type form flips the component/index pair (the caller
-// 0x1d5bf0 then differs). Type read after the rigid body 94 at 256 bytes (caller 13), first
-// 117, after headers/body/index 94 (caller 13), body then type 136, kind 7 as a ternary 104;
-// case 0 through the object_index local 91 at 256 bytes (caller 146), with the one-read type
-// 132-133; parameters reordered (rigid index first, component last) 96 / 94 (caller 13).
 // Earlier 96 (was 89): retail pushes ebp and holds the base pointer there, ours keeps the record in esi and ecx;
 // the whole register allocation differs.
 // Round 183: shared header getter at both dispatches 96; shared byte/long type after body 94/96; early byte 106; direct-component long 105; header/typed object lookup 136/136; shared multi-use handle 105. Single-type forms lose 1d5bf0; all restored.
@@ -347,6 +347,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // kind-7 route as `return type == 1 ? 0xc : 1;` 136 at 216 B [213]; with the rigid body declared first 132 [213]; with
 // the type read before the rigid body 117 at 236 B [213]; the current body with a `headers` local for its two type
 // reads 117 at 272 B [160].
+// Round 71 (m3 lane 15, fast; caller 0x1d5bf0 matched throughout): round 60's 24 form re-measured 24 at 256 bytes
+// (register-masked aligned 8); on it the main switch's four cases in all 23 other source orders: best 42 (11,0,1,7 and
+// 1,11,0,7), the rest 45-67, all 256 bytes. Retail lays the case bodies out 11, 1, 0, 7, the order already used.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
