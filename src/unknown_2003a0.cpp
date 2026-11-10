@@ -3733,7 +3733,7 @@ void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_
                             {
                                 byte *object = g_4e3b44[*(long *)actor_datum & 0xffff].bytes;
                                 if (*(short *)(object + 0xc0))
-                                    *(short *)(squad + 0x76) = *(short *)(object + 0xc0);
+                                    squad[0x76] = object[0xc0];
                             }
                             else
                                 *(short *)(actor_datum + 0x138) = (signed char)squad[0x76];
