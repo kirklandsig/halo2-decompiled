@@ -25,6 +25,7 @@ unknown_0cd660.cpp, unknown_0d0690.cpp, unknown_0d0e00.cpp). */
 #include "object_queries.h"
 #include "slot_handler.h"
 #include "unknown_11cc90.h"
+#include "vector_products.h"
 #include <math.h>
 #include <stddef.h>
 #include <string.h>
@@ -3623,86 +3624,65 @@ long __stdcall function_c7160(long unit_index, short seat_index, long vehicle_in
 
 /* throws away all the unit's grenades: outside mode 4 each one becomes a
    grenade object that is dropped (0xce470) */
-// score 49 (was 148): the 0xce470 drop is written out at the call site (retail has it inline). Round 3 of #1049: a
-// hand-stepped byte offset for the grenade pointer (grenade_offset += 0x2c) beside the stepped count pointer, with the
-// count tested through the unit by type index, keeps the type index apart from the count pointer: the compiler no longer
-// merges them, the frame is retail's 0xd8 and the size 423. Left: retail tests the loop on the offset (cmp ecx, 0x58)
-// where ours tests the type (cmp edx, 2), and its entry keeps the count base in EAX with the offset in ECX (ours puts the
-// base in ECX/EAX the other way round and the type in EDX). No behaviour difference found in a statement walk.
-// Tried: inline drop 364 (kept the call); pointer body step 364; indexed counts 364; entry placement 364;
-// with the inline drop: pointer or indexed counts, separate base plus stepped pointer, test by pointer and
-// decrement by index, all 148 (the compiler merges the index into the pointer); forced split count base 148;
-// forced body step 148. Round 3: test on the offset (offset < 0x58) in any spelling 146-148 (the type folds into the
-// count pointer again, 390-400 bytes); type or offset declared before the loop 146; short type with the offset test 54
-// (movsx where retail loads a dword); count < counts + 2 test 114; type and count tests together 107; unit lookup
-// or counts base declared in other orders 49-52.
-// Permuter (25 min on #1049, about 390 variants): 46 only with a volatile grenade offset and 0xce6b0's first two
-// arguments swapped; not kept.
 // @retail 0xceb30
 void __stdcall function_ceb30(long unit_index)
 {
 	s_unit *unit = UNIT_GET(unit_index);
-	char *count = unit->grenade_counts;
-	long grenade_offset = 0;
 
-	for (long type = 0; type < 2; type++, count++, grenade_offset += 0x2c)
+	for (long type = 0; type < 2; type++)
 	{
 		byte *globals = (byte *)g_4e034c;
+		byte *grenade = *(void **)(globals + 0x100) ? *(byte **)(globals + 0x104) + type * 0x2c : NULL;
 
-		if (*(void **)(globals + 0x100))
+		if (grenade && unit->grenade_counts[type] > 0)
 		{
-			byte *grenade = *(byte **)(globals + 0x104) + grenade_offset;
-
-			if (grenade && unit->grenade_counts[type] > 0)
+			do
 			{
-				do
+				if (g_4e6948->mode != 4)
 				{
-					if (g_4e6948->mode != 4)
+					byte data[0xc4];
+
+					function_b7930(data, *(long *)(grenade + 0x20), unit_index, 0);
+					long grenade_index = function_b7b40(data);
+					if (grenade_index != NONE)
 					{
-						byte data[0xc4];
+						function_10ca80(grenade_index, unit_index);
+						function_10cd50(grenade_index);
+						long drop_mode = 0;
+						byte *grenade_definition = UNIT_DEFINITION_GET(UNIT_GET(grenade_index));
 
-						function_b7930(data, *(long *)(grenade + 0x20), unit_index, 0);
-						long grenade_index = function_b7b40(data);
-						if (grenade_index != NONE)
+						if (TEST_FIELD_BIT((UNIT_GET(unit_index)->flags_134 >> 16) & 1))
 						{
-							function_10ca80(grenade_index, unit_index);
-							function_10cd50(grenade_index);
-							long drop_mode = 0;
-							byte *grenade_definition = UNIT_DEFINITION_GET(UNIT_GET(grenade_index));
+							drop_mode = 1;
+						}
+						if (*(long *)(grenade_definition + 0x38) == NONE)
+						{
+							drop_mode = 1;
+						}
+						function_10cdf0(grenade_index);
+						function_10ca80(grenade_index, NONE);
+						if (drop_mode == 1)
+						{
+							function_b8540(grenade_index);
+						}
+						else
+						{
+							long name = 0;
 
-							if (TEST_FIELD_BIT((UNIT_GET(unit_index)->flags_134 >> 16) & 1))
+							switch (drop_mode)
 							{
-								drop_mode = 1;
+							case 2:
+								name = 0xa0005ad;
+								break;
+							case 3:
+								name = 0x9000536;
+								break;
 							}
-							if (*(long *)(grenade_definition + 0x38) == NONE)
-							{
-								drop_mode = 1;
-							}
-							function_10cdf0(grenade_index);
-							function_10ca80(grenade_index, NONE);
-							if (drop_mode == 1)
-							{
-								function_b8540(grenade_index);
-							}
-							else
-							{
-								long name = 0;
-
-								switch (drop_mode)
-								{
-								case 2:
-									name = 0xa0005ad;
-									break;
-								case 3:
-									name = 0x9000536;
-									break;
-								}
-								function_ce6b0(unit_index, name, grenade_index, 1.0f);
-							}
+							function_ce6b0(unit_index, name, grenade_index, 1.0f);
 						}
 					}
-				} while (--*count > 0);
-			}
+				}
+			} while (--unit->grenade_counts[type] > 0);
 		}
 	}
 }
@@ -5161,7 +5141,7 @@ void __stdcall function_c8290(vector3f *aim, point3f *point, long unit_index, ve
 /* the unit's wandering direction: its actor's (else the default vector)
    turned about the world's up by the angle +0x2d8, which drifts by a
    random turn rate (+0x2dc) kept away from its limits */
-// score 99 (was 120): only register numbering differs. Retail keeps the clamps in xmm4/xmm5 and the pi/4 and
+// score 91 (was 99; earlier 99, was 120): only register numbering differs. Retail keeps the clamps in xmm4/xmm5 and the pi/4 and
 // 4.244 constants share xmm3; ours puts them in xmm3/xmm6 and 4/5, then needs one more register in the rotation.
 // Reading direction->k directly in the three terms (instead of a cached z) gave 120 -> 99.
 // Tried (all 99): operand order of the angle and rate products, swapped high/low declaration order, low copied
@@ -5177,6 +5157,13 @@ void __stdcall function_c8290(vector3f *aim, point3f *point, long unit_index, ve
 // swapped, high = low and low = high behave the same. (2) Retail reads the direction's i and j from memory at
 // each use and forms (d x a) as three early registers; named locals for those terms or for x/y/z moved the
 // direction pointer from ESI to EDI (181) or gave 800 bytes (174).
+// Round 102 (m3 lane 9): retail forms the dot product and all three cross terms of the unchanged direction
+// before any store, so the rotation now goes through the shared cross3f(direction, axis) and dot3f(axis,
+// direction): 99 -> 91 plain at retail's 810 bytes, kept. On that: the dot product line before the cross product
+// 93; cross3f_staged 91 (same code); each clamp product followed by its own test 92; both random turns through the
+// existing function_259d0 101; the axis read from its global at each use 91 (same code). Left: the 1.0 constant
+// and the clamps take xmm5 and xmm2/xmm6 where retail has xmm2 and xmm4/xmm5, and retail interleaves the cross
+// terms with the dot product.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
@@ -5257,13 +5244,14 @@ void function_d0080(long unit_index, vector3f *direction)
 	real sine = (real)sin(unit->unknown2d8);
 	real cosine = (real)cos(unit->unknown2d8);
 	vector3f const *axis = g_4687b0;
-	real along = (axis->i * direction->i + axis->j * direction->j + axis->k * direction->k) * (1.0f - cosine);
-	real x = direction->i;
-	real y = direction->j;
+	vector3f cross;
 
-	direction->i = axis->i * along + x * cosine - (y * axis->k - direction->k * axis->j) * sine;
-	direction->j = axis->j * along + y * cosine - (direction->k * axis->i - axis->k * x) * sine;
-	direction->k = direction->k * cosine + axis->k * along - (axis->j * x - axis->i * y) * sine;
+	cross3f(direction, axis, &cross);
+	real along = dot3f(axis, direction) * (1.0f - cosine);
+
+	direction->i = axis->i * along + direction->i * cosine - cross.i * sine;
+	direction->j = axis->j * along + direction->j * cosine - cross.j * sine;
+	direction->k = direction->k * cosine + axis->k * along - cross.k * sine;
 }
 
 /* the best seat for the unit to enter among the object's and its riders'
