@@ -1644,6 +1644,13 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // the player EBP and goes on the stack); has-player test first with `else if (active) result = NONE` 147 (threads to
 // the same code, block order differs); kept declared before the capacity test and assigned inside it 127 (same code as
 // the mask declared inside).
+// Round 61 (m3 lane 2, fast with 0x56380 and 0x53b00; baseline 134, already `ret 0xc`): the two failures only assigning NONE and
+// the rest under a following `if (result == 0)` 134 (same code: the test is threaded away and the result is still a constant,
+// so EAX's zero is shared and the capacity exit gets its own epilogue), as `!result` 134, as `result != NONE` 134; that form
+// with the retained mask first (mask, written, capacity, size) 137 and written first 137 (445 B each, the cursor then arrives
+// in EAX and the player on the stack, 0x56380 13); the clamp ahead of one `!has || clamped != player` assignment 162; the
+// length built in place from the counter (assign, scale, add 2) 134 (same code). Retail's call in 0x56380 sets EAX (player)
+// then EDX (cursor), which fits the declared order. Original body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -3607,6 +3614,12 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Round 71 (m3 lane 13, fast with 0x564c0): on the packet-cursor form (164, member in EBP) the packet-kind test ahead of
 // the member call 145, the plain arm as `else if (packet[0] < 2) {...} else return NONE;` 164, both 145; without the
 // cursor the plain-arm form 139 (same code) and both 150. The member keeps EBP in every form.
+// Round 61 (m3 lane 2, fast with 0x564c0; baseline 139): retail loads the channel into EBP at entry, ahead of the count test,
+// keeps the member in memory ([esp+0x1c], stored right after its call) and puts the route in the channel argument's dead home;
+// ours gives EBP to the member, so the route takes the fourth frame slot. On the separate-cursor form (164, 478 B, re-measured):
+// a short member 159 (480 B), the route at function scope 164, the cursor advanced in the for's increment 166, the cursor
+// declared ahead of the consumed count 139 (488 B, the cursor folds back into data + consumed: main's code), a named member bit
+// for the test and the clear 179 (467 B), the stride chosen after the cursor 164. The member keeps EBP in every one.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

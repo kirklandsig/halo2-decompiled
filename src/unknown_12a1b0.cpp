@@ -1533,6 +1533,11 @@ struct s_looping_detail_request
 // `for (; skip > 0; --skip)` 110 (same code); the query before the draw 112; the audible offset through a temporary copied
 // after the 0x21bfb0 call 134; `result = true` first in each arm 151; a short count 110 (same code); best combination 110.
 // The query stays inlined in every form.
+// Round 61 (m3 lane 2, fast with 0x21b0e0; baseline 110): `do { } while (false)` around the player block 251 (589 B), around
+// the whole else arm 251 (589 B); the skip loop as `while (--skip >= 0)` 112; the player declared ahead of the draw and
+// assigned after it 110 (same code); the count test as an empty `<= 0` arm with the block in its else 110 (same code); the
+// skip loop as a guarded do-while with a pre-decrement test 114 (510 B). The query stays inlined in all six. The audible
+// field is a 4-bit value and retail's else arm starts at the count read, so no test on it is hidden there.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
