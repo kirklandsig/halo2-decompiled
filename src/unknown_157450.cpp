@@ -5368,6 +5368,7 @@ void function_36580(void);
 void function_36880(s_short_rectangle const *rectangle, color4f const *color);
 void function_161420(long player_index, real alpha);
 
+// MiniMax C (11-10): no new form, no lower score (2); the player copy (mov edx, ebx) still precedes the x87 argument store (fstp dword ptr [esp]) before the 0x161420 call where retail stores the power first, and a double power expression with a cast to real measures 2; the callee's declaration in src/unknown_1600f0.cpp fixes the argument order.
 // MiniMax D (11-06): no new form, no lower score (2); the only difference is still the order of the
 // player copy (mov edx, ebx) and the x87 argument store (fstp dword ptr [esp]) in front of the
 // 0x161420 call. This round a braced named power local (real and float), the power computed before
