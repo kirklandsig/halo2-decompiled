@@ -1520,6 +1520,9 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // the sampling, transform and object callees; not exact, but it shows the same swap): only the first call's render model
 // replaced by a constant (diagnostic, wrong value) puts the fstp after `push edi`, so the render model load's timing
 // sets it; a volatile render model (diagnostic), the time given to the first call, a label between the samples move nothing.
+// Round 75 (m3 lane 14, fast): the animation id through a file-local inline getter in both blocks 2; the time through an
+// inline seconds getter 2; both 2; `adjusted` copy-initialised at its declaration 2; the node index declared before the
+// time 2.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

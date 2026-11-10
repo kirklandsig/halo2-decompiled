@@ -253,6 +253,7 @@ extern real g_4c9798[36];
 // calls (BLOCKED-BY 0x48e70). The same two forms on this body 255 [32], on the plain switch 219 [41], with the aspect
 // after the switch 254 [32]; the first plane's dot on the local normal 202 [117]. Nothing kept: every count but 171
 // is higher. Next, once 0x48e70's definition is `inline`: start from the switch with the long limit and the direct normal.
+// MiniMax R (11-10): no new form, no lower score (174): the mode flag stays in EDX in all 16 expression forms and 5 position variants tried, where retail keeps it in EAX; the reduced image also forces the global address fields, which are most of the 174.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

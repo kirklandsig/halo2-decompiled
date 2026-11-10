@@ -3361,6 +3361,12 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // 485 -> 428); the cycle bit read from the field (other bits from `flags`) 490, with the shared `previous` 533; dz/dy/dx
 // from the stored view position 513 (2004 bytes, aligned 421), with the shared `previous` 513; projection scaling
 // `x = g_48568c[0] * x` 486, also in the position transform 486, with the stored-position delta 513.
+// Lane 12 r102 (fast; the fast control agrees at 486): the speed limit (magnitude test, normalize_inline and
+// vector3f_scale) in a forceinline helper 486 (identical code: the velocity reads from memory do not come from a helper
+// boundary); `old` renamed to sort after `previous` 486 (identical); the size store as an if/else reading the field in
+// each arm 495 (2044 bytes; that block then compiles as retail's, integer copy in the else arm); with retail's visible
+// phase-block order too (phase stored before the fade, strength read at its use, copied in the else arm) 502 (2019
+// bytes: the loop pointers then start at state+0x88 and view+0xec); that order alone 494 (2024 bytes).
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3651,8 +3657,8 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
     return (real)sqrt(z * z + y * y + x * x) * g_4b9dcc;
 }
 
-// MiniMax C (11-09): no new form, no lower score (177).
 // score 177 (was 177): frame 0x18 versus 0x1c; initial alpha/kind and final fade scratch homes remain.
+// MiniMax C (11-09): no new form, no lower score (177).
 // r136 lane 7 (fast): final fade through existing function_c6b90 (property 0x11000088, outputs zeroed) with kind not
 // volatile 207 (789 bytes, frame 0x1c), with the volatile kind 237 (807 bytes; aligned 73 -> 59, the fade inside
 // `kind == 0` is still read once where retail re-reads the field per use), with alpha before kind 205, kind not
@@ -3781,6 +3787,15 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // false;` after the clamp 198 (743 bytes), with two ifs 198; `result = false` in the lower arm and the test only in
 // the interior arm 178; the final fade read through `header->object` without reassigning `object` 177. Retail threads
 // the alpha test into each clamp arm and keeps the final getter's two zero stores (frame 0x1c).
+// Lane 12 r102: kind not volatile, the final fade through the existing function_c6b90(index, 0x11000088, &fade,
+// &active) after `real fade = 0.0f; bool active = false;`, `if (alpha <= 0.0f) result = false;` and the first fade
+// read at each use through an object local: fast 139 at 773 bytes with retail's skeleton (frame 0x1c, kind spilled at
+// entry, table in EBP, both zero stores), plain 238 (751 bytes: no zero stores, kind in EBP). A fast check listing
+// 0xff5f0 as well (its source joins the image) also gives 238: the zero stores survive only while the getter's
+// default-arm callee 0xff5f0 is outside the image. Retail links 0xff5f0 too and keeps them, so the lead is our
+// unmatched 0xc6b90 (inlined here) and 0xff5f0 bodies: BLOCKED-BY 0xc6b90, 0xff5f0. Same graph with a pointer
+// local to the field fast 155; with kind volatile plain 190; with kind as signed char plain 209 (object index in EBP);
+// main body with the first fade read per use through the object local plain 185 (773 bytes).
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {

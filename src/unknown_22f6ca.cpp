@@ -150,6 +150,11 @@ void function_22fba9(c_class_1473c9 *screen)
 // Round 73 (lane 14, fast): the text loop as `if (!text) continue;` then the animation test 23; that with the model loop
 // as `if (!model) continue;` 23; the block-18 inner counter declared with i at the top 23; the model call through a base
 // pointer declared in the loop 23; the text call assigned inside its test 23 (all the same code).
+// Round 64 (m3 lane 2, fast): the text test as `animating && text` 26; the block-18 inner counter declared in its
+// `for` 23; the model loop's start as `if (model && animating)` with the store under its own `if (model)` (0x22facd's
+// shape) 23; the model pointer declared before its loop 23; a `*const` screen parameter 23 (all same code but the
+// first); permuter (600 s, 55 tries) best 21 instructions, its baseline. The model loop's copy is the normal shape
+// (matched 0x22facd copies the screen into ECX too); only retail's last loop reads [esi+0x34] directly.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
