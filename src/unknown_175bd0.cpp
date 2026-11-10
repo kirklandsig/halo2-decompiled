@@ -2541,6 +2541,8 @@ event_done:
 // MiniMax C (11-09): score 63 (was 63): the object index stays cached across 0xbadc0, where retail
 // reloads it, and the head's load is folded into the datum address where retail forms the pointer
 // first; 0xbadc0 and 0xbaf80 live in another file, so the reload cannot be forced here.
+// MiniMax R (11-10): no new form, no lower score (63): the object index stays cached across the call where
+// retail reloads it, and the callees in the other file decide that caching.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {
@@ -3425,6 +3427,8 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // type object/colour A registers and the per-call mode read from the spilled definition remain. Also: the effect
 // looked up after the definition call (declared first) 121 (346 bytes); the node flag's tests swapped, sign bit first,
 // 92 (aligned 51, against 48 at 93).
+// MiniMax R (11-10): no new form, no lower score (93): the system pointer and the next index still take the
+// opposite registers from retail, and the frame is 0x4c against retail's 0x54.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
