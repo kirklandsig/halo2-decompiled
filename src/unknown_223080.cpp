@@ -138,7 +138,10 @@ void function_2f800(s_2f800_view *arg_3, s_2f800_source const *arg_0, s_2f800_si
 void function_2c490(long arg_0);
 void function_3f450(long arg_0);
 
-// score 2 (was 71): the 0x2f640 call sets ecx before edx, retail edx first:
+// score 2 (was 2): HELD (needs the owner's OK): 0x2f640's parameters declared (index, dimensions, extent, ...) at
+// its definition, this declaration and this call match this function in the plain check, 0x2f640 and 0x2f600
+// still matched (m3 lane 12 r103, build/r103/held-223080.patch); put back, the definition is machine 1's.
+// Earlier (was 71): the 0x2f640 call sets ecx before edx, retail edx first:
 // BLOCKED-BY 0x2f640, whose parameters retail declares (index, dimensions,
 // extent, ...): that order at its definition and this call matches this
 // function with 0x2f640 still matched, but its file is machine 1's. At 71
@@ -155,6 +158,8 @@ void function_3f450(long arg_0);
 // Round 70 (m3 lane 1, fast): the dimensions argument cast to its const pointer 2; a `const &` local for it 2; the grid
 // locals as one struct and as one array 52/52 (447 B); an inline wrapper taking retail's order 2; the dimensions copied
 // to a const local 126 (466 B). Still BLOCKED-BY 0x2f640.
+// m3 lane 12 r103 (fast): the grid locals in the if block 2; each declared at its first use 2; declared local_3,
+// local_2, local_1 2; local_1, local_3, local_2 2; the two grid calls ahead of the menu copy block 130 (449 B).
 // @retail 0x223080
 void function_223080(long arg_0, long arg_1, long arg_2, s_223080 *arg_3,
 	long arg_4, long arg_5, s_223081 const *arg_6)

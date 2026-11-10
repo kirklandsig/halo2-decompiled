@@ -620,6 +620,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // 231/220/218/220/218/218/218/218. NOT kept: nonexact precision forms shrink to 804-818/880 bytes;
 // original float coefficients, full captures, shared products, draws and whole body restored.
 // MiniMax E (11-09): no new form, no lower score: our frame is eight bytes larger (sub esp, 0x28 against retail's 0x20) and the global load sits before the push edi.
+// Round 141 (m3 lane 7, fast, 0x118140 matched; our build already returns with a plain ret and takes wind in EBX): `old` as a const
+// reference to the global 173 (862 B, frame 0x28); the angle as `oscillation * oscillation * fraction * 0.15f` 117 (same code); the
+// projection before the cross product 158 (883 B, frame 0x24); the oscillation squared in place 197 (882 B); the axis draw before
+// sine/cosine 117 (same code); the length test as `>= 0.0001f` 170 (882 B); cosine computed before sine, own statements 118; the
+// definition read only at the strength product 208; the time product's operands swapped 117, the frame-count compare's operands
+// swapped 117 (same code).
 // M3 lane 14 r74 (fast, base 117, aligned 72; 0x118140 stays matched in each; retail and ours both end in a plain ret): the rotation as a file-local
 // inline of unknown_26db50.cpp's form (dot3f(axis, vector) scaled by 1 - cosine, the vector's i, j, k copied, rows `axis * along + old * cosine -
 // (cross) * sine`) on the global 156 (880 bytes, aligned 84), the same forceinline 156, with dot3f(vector, axis) 156, with the i row old-first 156 (all

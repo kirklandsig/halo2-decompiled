@@ -183,6 +183,8 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// MiniMax I (11-10): copying q into qr field by field (q->i, q->j, q->k) instead of one vector copy gives 636 (was 646)
+// at 2880 bytes; the d slot still takes EBX where retail keeps q, and the coefficient schedule still differs.
 // MiniMax h (11-05): the argument order is right (d in the third stack slot, q in the fourth, position in the fifth); retail copies the q slot into EBX and reads d from its own slot at each use, ours copies the d slot, and assigning the fallback pointer with a ternary instead of an if gives 642 with the same code, so no new form is kept.
 // MiniMax A (11-04): no new form, no lower score; retail branches on the fast flag before the rate multiply and loads the
 // constant there, ours multiplies first (642, same code).
@@ -413,6 +415,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 74 (m3 lane 10, fast, caller 0x1eb6f0 MATCH in each): second step count as a ternary 640 (2881 bytes, a gain of 2, not kept); both as ternaries 681 (2880). A one-file harness screen of 127 plain spellings (ternary and if both ways, nested tests,
 // compare forms, commutative operands, constant declarations swapped) found none lower; commutative operand swaps change nothing, the sums and products are canonicalised.
 // Same round, fast: `s->distance` as if/else 671 (2884); duration with its 7/1 as if/else 680 (2891); limit test as nested ifs 642 (2878); `rem = rem < 0.f ? 0.f : rem` 642 (2878); `s->limited = false; if (limit != 0.f) s->limited = len2 > limit;` 687 (2883).
+// MiniMax I (11-10): the fallback through a named pointer local (the parameter left unwritten) 666, the same fallback spelled at each component 649, the position copy written field by field 648 and the w*rate multiply moved after the qr reads 638; both builds lay the arguments out the same (out E+0x04, dt E+0x08, d E+0x0c, q E+0x10, pos E+0x14) and both reuse the pos slot for the fail byte, so the whole head difference is that the prologue copies d into EBX where retail copies q, and the fallback can only be retail's cmove once EBX holds q.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
@@ -575,7 +578,10 @@ long function_1eb8a0(
 		if (counter == 0)
 			q = g_4687a4;
 		w = w * globals->rate;
-		vector3f qr = *q;
+		vector3f qr;
+		qr.i = q->i;
+		qr.j = q->j;
+		qr.k = q->k;
 		real third3 = e3 * 0.33333334f;
 		real lo = (w - third3) * 3.f * 0.5f;
 		real hi = (e3 - third3) * 3.f * 0.5f;

@@ -260,6 +260,7 @@ class c_bounded_query_world
 {
 public:
 	void cast_ray(s_bounded_ray const *ray, c_query_callback *callback);
+	bool function_182800(struct s_vehicle_ray *ray_data, long excluded_component);
 	byte unknown00[0x60];
 	__m128 lower;
 	__m128 upper;
@@ -277,11 +278,12 @@ __forceinline real function_182801(real arg_0, real const *arg_1, real const *ar
     return *arg_1 > arg_0 ? *arg_1 : (arg_0 > *arg_2 ? *arg_2 : arg_0);
 }
 
+/* casts a ray through the bounded world and reports the nearest hit. A member: retail's callers load the
+   world straight into ESI and test it there (0xf6670, 0x206090), which a free function's argument does not give */
 // @retail 0x182800
-bool function_182800(s_vehicle_ray *ray_data, long excluded_component, void *world_data)
+bool c_bounded_query_world::function_182800(s_vehicle_ray *ray_data, long excluded_component)
 {
 	s_query_result *result = (s_query_result *)ray_data;
-	c_bounded_query_world *world = (c_bounded_query_world *)world_data;
 	point3f end;
 	end.x = result->origin.x + result->direction.i;
 	end.y = result->origin.y + result->direction.j;
@@ -302,12 +304,12 @@ bool function_182800(s_vehicle_ray *ray_data, long excluded_component, void *wor
 	collector.found = false;
 	for (long i = 0; i < 3; i++)
 	{
-		ray.from.m128_f32[i] = function_182801(origin.n[i], &world->lower.m128_f32[i], &world->upper.m128_f32[i]);
-		ray.to.m128_f32[i] = function_182801(end.n[i], &world->lower.m128_f32[i], &world->upper.m128_f32[i]);
+		ray.from.m128_f32[i] = function_182801(origin.n[i], &lower.m128_f32[i], &upper.m128_f32[i]);
+		ray.to.m128_f32[i] = function_182801(end.n[i], &lower.m128_f32[i], &upper.m128_f32[i]);
 	}
 	_control87(0x9001f, 0x8001f);
 	_mm_setcsr(_mm_getcsr() | 0x1f80);
-	world->cast_ray(&ray, &collector);
+	cast_ray(&ray, &collector);
 	_mm_setcsr(_mm_getcsr() & ~0x3f);
 	_clearfp();
 	_control87(0x9001f, 0xfffff);

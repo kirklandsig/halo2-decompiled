@@ -1825,13 +1825,13 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
-// MiniMax G (11-06): no new form, no lower score; the first difference is at +0x2, where retail stores the
-// outer datum index at +0x14 and this build stores it at +0x1c, and the frame is 0x11c against retail's 0x128.
-// MiniMax E (11-05): no new form, no lower score.
-// score 304 (was 305): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
+// score 305 (was 418): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
 // state is passed on (this file's view of the detail request stops at 0x90); retail also keeps the
 // playback pointer in EDI where ours keeps it in a slot, and reads each pitch-range loop's count
 // once into a stack slot. The definition, index and ring homes still differ.
+// MiniMax G (11-06): no new form, no lower score; the first difference is at +0x2, where retail stores the
+// outer datum index at +0x14 and this build stores it at +0x1c, and the frame is 0x11c against retail's 0x128.
+// MiniMax E (11-05): no new form, no lower score.
 // At 307: extending the detail request to retail's 0xa0 bytes (the callee 0x125f70
 // reads it as a 0xa0-byte play state) makes the frame 0x12c, four over retail's 0x128, and the
 // score does not move; the homes differ by 4, 8, 28 and 36 bytes, so ours is not a shift of
@@ -2048,6 +2048,18 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // (flag tests, the x87 delay sum with no float store before the __ftol2 at 0x21b7b1) and the datum advance.
 // What differs is only layout: 16 scalar slots plus the 0xa0 request in retail against 17 here, because `active`
 // (retail EDI) and the sounds[i] address are spilled; fast check with callers/callees 304 at 1923 bytes.
+// Lane 12 r102 (plain; all with 0x1269f0, 0x125920 and 0x126660 still MATCH): the rise from 305 to 418 between
+// batches r717 and r728 comes from the b5O walk's parenthesised pitch sum (fast said 304): in the full build the gain
+// approach (approach_126660) then loads the gain and adds the step (`movss xmm1, [ecx+0x10]; addss xmm1, xmm0`) where
+// retail adds the gain to the step as a memory operand (`addss xmm0, [ecx+0x10]`), and every later instruction shifts.
+// Kept: the sum without those parentheses, 418 -> 305 (the same C++ expression, `a * b + c + d` already groups as
+// `((a * b) + c) + d`; the parentheses only steered the optimizer, and that grouping was kept on a fast 304). The cost:
+// this build then adds the lower bound before the playing pitch, where retail adds the playing pitch first. Retail's
+// order comes only with forms that flip the approach: the parentheses 418, the sum split as `pitch = range * gain +
+// playing->pitch; pitch += lower;` 418. The playing pitch written first 305 (lower bound still first); a named lower
+// (0x21b940's spelling) 418 (lower bound first, approach flipped too). The helper written `*value = PIN_126660(...) +
+// *value;` 418 (identical code; its three matched users unchanged). Lead: a form with retail's pitch order that leaves
+// the approach's memory-operand add alone.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2089,7 +2101,7 @@ void function_21b0e0(bool update)
 					long definition_index = playing->definition_index;
 					s_looping_playback_definition *playback = (s_looping_playback_definition *)g_4e3b44[definition_index & 0xffff].bytes;
 					s_looping_pitch_modifier *modifier = &((s_looping_sound_tables *)g_51ebd4)->pitch_modifiers[playback->playback_index];
-					real pitch = (((real)modifier->pitch_bounds.upper - (real)modifier->pitch_bounds.lower) * track->gain + playing->pitch) + (real)modifier->pitch_bounds.lower;
+					real pitch = ((real)modifier->pitch_bounds.upper - (real)modifier->pitch_bounds.lower) * track->gain + playing->pitch + (real)modifier->pitch_bounds.lower;
 					c_class_219e90 *controller = controller_get(sound->controller_index);
 					if (controller->definition_index == NONE)
 						random_next(&controller->field_8_4);
@@ -2613,15 +2625,15 @@ real function_192d70(real minimum, real maximum, real distance);
 point3f *function_142700(transform4x3f const *matrix, point3f const *point, point3f *out);
 real function_30bf0(vector3f *vector);
 void function_192ce0(point3f const *direction, real *gains, bool linear);
-// MiniMax E (11-05): no new form, no lower score; the alternate mask spelled `(flags & 1) == 1`
-// scores 749 and is reverted. Retail's parameter order is ours (arg1 definition index, arg6 state,
-// arg7 flags, eight stack args); only the entry's mask carrier differs - ours hoists the raw flags
-// byte into BL before the pushes, retail masks it with 1 after them and keeps it in a stack slot.
 // score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
 // padding and track/state ownership remain. Round 439: entry tag/handle/record/all-record
 // declarations and entry Boolean declarations 716/716/716/716/716 reduced; alternate before
 // initial result 694 reduced, 597 plain (kept); independent request state 811 reduced;
 // complete geometry output scope 716 reduced (unchanged reduced control 716, full 615).
+// MiniMax E (11-05): no new form, no lower score; the alternate mask spelled `(flags & 1) == 1`
+// scores 749 and is reverted. Retail's parameter order is ours (arg1 definition index, arg6 state,
+// arg7 flags, eight stack args); only the entry's mask carrier differs - ours hoists the raw flags
+// byte into BL before the pushes, retail masks it with 1 after them and keeps it in a stack slot.
 // At 615: the entry and the homes through the creation call still differ, the gains
 // clear uses retail's store form (retail stores [ebp+0xc4..] from eax), the energy loop keeps its
 // padding jump in retail, the track loop holds the state in EBX and the track in EBP, and the
@@ -2814,6 +2826,12 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // track, track_definition)` 673 (not inlined, `call 0x21a050`; retail has none), the old-end fade as function_126df0(1,
 // NONE, old_end, duration) 739 (a call; retail inlines its fade-out half), looping_track_get(index, i) 704, the source flag
 // bits through s_type_99c531's own flag1..flag3 instead of the s_looping_source_flags view 597 (same).
+// Lane 12 r102 (plain): `distance` renamed `source_distance` 597 and declared before `maximum` 597 (identical code:
+// retail keeps maximum/minimum in the dead `source` slot 0x60 and the distance in the `sound_flags` slot 0x54, ours the
+// other way round; neither the name nor the declaration order moves them); alternate inside the definition guard 615 (as
+// lane 4 r167: retail's code to +0x1c, then the creation compare comes after the two stores and `source` rides in ESI
+// where retail loads it into EDX and copies it to ESI), with the source copy as memcpy 615 (identical); alternate inside
+// the availability block alone 596 (2518 bytes, first difference +0x1c).
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

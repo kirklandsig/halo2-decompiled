@@ -282,6 +282,11 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // EAX with the seat-index load between. A seat pointer at the loop top for the 0xc8200 arguments 69 (fast 73 at 380 bytes; the
 // pointer takes EBP, frame 0x310), for every use 84; a reference for every use 84; the pointer for both unoccupied-arm calls 82; the
 // 0xc8200 test nested under the 0x1b8d80 test 3 (fast 3); a short seat index local for both unoccupied-arm calls 70.
+// Round 224 (m3 lane 3, fast): a seat pointer declared at the loop top and used only for the 0xc8200 object
+// argument (the seat index still through seats[i]) 3 (same code); a `long *` to the seat's object index used only
+// there 3 (same code); the loop-top seat pointer for every object-index read and the definition 25; the 0xc8200
+// result as `result = c8200(...) ? true : result` under the 0x1b8d80 test 3; the loop test as `count > i` 5; the
+// occupant looked up again for the team read instead of a local 67 (387 bytes).
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {

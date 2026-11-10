@@ -1326,7 +1326,8 @@ struct s_133f70;
 // MiniMax A (11-05): no new form, no lower score; the call to 0x4bcc0 already carries its six stack
 // arguments in retail's order and with retail's values, so what is left is the frame size and the entry/result homes.
 // MiniMax h (11-04): no lower score; the 0x4bcc0 call takes the distance from the third stack slot where retail takes it from the second, and that slot layout follows the unmatched callers in src/unknown_133790.cpp.
-// score 93 (was 175): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain (the 93 is the
+// score 93 (was 175): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
+// frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain (the 93 is the
 // round 82 baseline of this body; the scores listed below were measured on earlier bodies).
 // Round 22 (lane G, machine 3; no code change kept): retail's byte home and its split record base
 // (add eax, ecx; lea ebx, [eax + 0xbc]/[eax + 0x44]) are reachable in the source but our compiler folds the
@@ -1499,6 +1500,15 @@ struct s_133f70;
 // pointer first 328 (same code); the 0x4ed284 test nested with a named entry pointer 93 (same code, no dead lea);
 // both 328. Body unchanged.
 // MiniMax D (11-09): no new form, no lower score: the body is unchanged (1309 bytes, as retail's); the fast image scores 355 for this one because the reduced image's callees differ, so the plain check is the measure (93); the first distance setup, the cache and coefficient homes and the tail that 0x23690 owns remain.
+// Round 224 (m3 lane 3, plain; baseline 93, aligned count 48 in brackets): the tail from the 0x23690 call now
+// agrees; every difference sits before the 0x4c190 call (the 0x4bcc0 argument load, entries in ECX, retail's dead
+// entry lea, the header's global loaded first and its object in EAX, `success` stored before the 0x3d4f0 call, a
+// byte previous level, record + offset in two steps, the reuse test's registers and the 0x4c190 argument order)
+// plus one object load near the end. Signed-char previous through a levels pointer at record + 0xbc 328 [49] (one
+// folded lea); the same through an inline getter written as 0x4c450's 328 [49] (same code: the getter folds too,
+// though retail's out-of-line 0x4c640 folds and this site does not); that with an inline getter for the cache
+// pointer as well 332 [46]; both with `success` declared at the loop top 330 [45]; those with an inline
+// active-entry getter (the dead lea) 312 [43]. All raise the positional count, so none is kept.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)
