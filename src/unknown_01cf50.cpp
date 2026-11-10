@@ -7238,6 +7238,12 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // score 310 (was 310): this round: no new form and no lower score; the loop still strength-reduces
 // group * 0x98 into a second counter at [esp+0x40], so the frame is 0x1898 against retail's 0x1894 and
 // the zero for both counters lives in EBP where retail keeps a single counter and an imul.
+// MiniMax S (11-09): the group loop is a while loop over a 16-bit index with the step at the end of the body,
+// which drops the strength-reduced second counter and the zero register: the frame is 0x1894 as in retail, the
+// count test is a test/jle and the loop head carries the imul of the 0x98 stride.
+// score 299 (was 310): fast score; our group index is sign-extended (movsx esi, ax) where retail moves the
+// 32-bit index, the index slot sits at [esp+0x3c] against retail's [esp+0x58], an extra mov edi, edi stands in
+// the loop head, and the body is 3 bytes longer than retail's.
 // MiniMax D (11-08): no new form, no lower score (310, measured on the full image); our loop still strength-reduces
 // group * 0x98 into a second counter at [esp+0x40], so the frame is 0x1898 against retail's 0x1894 and the zero for
 // both counters lives in EBP; a short group removes the slot and keeps the imul but scores 390 here.
@@ -7277,7 +7283,7 @@ void __stdcall function_4f010(void *payload)
     s_42850_payload *state = (s_42850_payload *)payload;
     if (state->b == NONE) return;
     byte *definition = g_4e3b44[state->b & 0xffff].bytes;
-    if (*(long *)(definition + 8) <= 0) return;
+    if (*(long *)(definition + 8) < 1) return;
     real fade = 1.0f;
     vector3f direction;
     direction.i = g_4b9da0.x - state->position.x;
@@ -7295,7 +7301,8 @@ void __stdcall function_4f010(void *payload)
     g_46713c = true;
     g_4670bc = true;
     function_16b10((s_render_reset_state *)g_485b48);
-    for (long group = 0; group < *(long *)(definition + 8); ++group)
+    word group = 0;
+    while (group < *(long *)(definition + 8))
     {
         byte *entry = *(byte **)(definition + 0xc) + group * 0x98;
         if (*(long *)(entry + 0xc) > 0)
@@ -7313,7 +7320,8 @@ void __stdcall function_4f010(void *payload)
             real strength = 0.0f, horizontal = 1.0f, vertical = 0.0f;
             real output[2] = {1.0f, 1.0f};
             real start = 1.0f, multiplier = 1.0f, inverse = 1.0f, offset = 0.0f;
-            byte *positions = *(long *)(entry + 0x60) == count ? *(byte **)(entry + 0x64) : NULL;
+            byte *positions = NULL;
+            if (*(long *)(entry + 0x60) == count) positions = *(byte **)(entry + 0x64);
             if (*(dword *)(entry + 0x5c) & 1)
             {
                 real first = function_13bb90((s_tag_data *)(entry + 0x18), 0.0f, time);
@@ -7369,6 +7377,7 @@ void __stdcall function_4f010(void *payload)
             }
             function_4f7e0(*(long *)(entry + 8), points, *(long *)(entry + 0xc), 0,
                 horizontal, vertical, false, false, filtered);
+            ++group;
         }
     }
     if (!g_46713c)

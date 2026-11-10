@@ -2396,6 +2396,9 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax S (11-09): no new form, no lower score (140); the round's `(simple != 0 ? 0 : 0x18) << 8`
+// spelling gave 138, but a gain under the keep threshold is dropped, so the body is restored;
+// caller flag residency and native fallback selection remain.
 // MiniMax E (11-09): no new form, no lower score (140); retail loads the byte at esp+0x6c after the branch on the byte at esp+0x68, ours hoists that load above the store into the global.
 // MiniMax E (11-06): score 140 (was 140): no new form lowered it. The inlined corner rotation still
 // expands with the opposite operand order and stores its results in different homes than retail, and
@@ -2894,6 +2897,8 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// MiniMax S (11-09): no new form, no lower score (211); bounds/trig scheduling and the second
+// cosine home remain.
 // MiniMax E (11-09): no new form, no lower score (211); the first difference is the two early exits, whose targets are one byte apart - retail's reaches one byte further into the function than ours.
 // MiniMax E (11-06): score 211 (was 211): no new form lowered it. The inlined corner rotation still
 // multiplies the two vectors in the opposite order and folds the constant as a memory operand where

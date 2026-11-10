@@ -459,6 +459,9 @@ void function_3dd10(long object_index, bool force);
 // MiniMax E (11-09): no new form, no lower score; the first scan still leaves on `!=` where
 // retail's signed `<` loop unrolls by four, and every counter, bound and accumulator spelling
 // keeps the unroll out of our build.
+// MiniMax S (11-09): no new form, no lower score (84); the first scan's `!=` exits (retail's signed `<`
+// loop unrolls by four), blend's stack slot, the inverse subtraction's home and the 1.0/0.0 load order
+// still differ.
 // MiniMax E (11-05): no new form, no lower score; the second fabs inlined into the fmod call
 // gives 86 and a separate blend seed variable compiles the same as the reused one (84); both reverted.
 // MiniMax H (11-04): the permuter was stopped before it reported any variant (no output in 240 s

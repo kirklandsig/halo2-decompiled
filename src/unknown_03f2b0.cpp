@@ -1317,6 +1317,8 @@ struct s_batch_cache_4b5d0
 
 struct s_133f70;
 
+// MiniMax S (11-09): no new form, no lower score (93 on the full image, 355 on the reduced one); the
+// distance staging in the 0x4bcc0 call, the nullable-entry and cache adds and the result homes remain.
 // MiniMax D (11-08): no new form, no lower score (93, measured on the full image); the call to 0x4bcc0 loads the
 // distance parameter into EAX above the force push where ours loads it into ECX below it, and the 0x4c190 call's
 // flag and tag arguments swap ECX and EDX the same way; the two calls' argument registers still differ.
