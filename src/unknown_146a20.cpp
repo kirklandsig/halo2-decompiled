@@ -376,6 +376,11 @@ bool g_47f05b;
 // through `block` 36 (146 B, `mov edx, eax; add edx, 0x30`); placement and pool through `block`, buffer through
 // g_479888 43 (139 B). 0x453760 is
 // stored in retail only here and in the abstract allocator's deleting destructor 0x1470f0.
+// M3 lane 2 r67 (fast with 0x146b80/0x146e30/0x22c3e0): the fixed base's three member stores in reverse order 34 (same
+// code here; matched 0x146b80 goes to 2), so not kept. Every constructor change reaches 0x146b80 too, which drops the
+// abstract vtable store in retail, so the cause has to be one this call site alone has (retail's construction here keeps
+// the store and reloads g_479888 in the arm, 0x146b80's does neither); the call-site forms above cover the placement,
+// buffer and result spellings.
 // @retail 0x146a20
 void function_146a20(void)
 {

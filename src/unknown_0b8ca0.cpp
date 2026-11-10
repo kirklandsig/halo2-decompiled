@@ -1700,6 +1700,16 @@ done:
 // offset read inline 26 (scenario moves to ECX, index to SI); the type and definition locals renamed to sort the
 // other way 17 (same code); the definition bound as a const reference to its table entry 17 (same code); a named
 // datum with the palette added at the call 17; palette and size declared ahead of the definition 17.
+// Round 67 (m3 lane 2, fast): a datum local (size * index) with the palette added at the call, re-measured 17 (short
+// palette offset) and 27 (long palette offset, 236 bytes). The 27 form is retail's code but for two registers: scenario
+// EDX, placements EBP, index DI, the product before the pushes and the palette add at its push all agree; only the type
+// takes ESI (retail ECX), so the definition takes ECX and the size is read first (retail loads the definition into EAX,
+// reads +0xc, copies it to ESI). With the type push replaced by 0 (diagnostic) the type takes ECX. On the 27 form, forms
+// listed above for other bases re-measured: a long index at its read 31; no type local (name field at both uses) 27 (same
+// code); the first table read in place 27 (same code); the definition through an inline getter 27 (same code); the type
+// read ahead of the NONE test 30; palette and block both through helpers, palette first, 33 (scenario ESI, index BX). New:
+// the size and datums through a block helper of 0xd5260's shape with the palette offset read in the caller, from the
+// definition local or the table, 27/27 (same code).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {

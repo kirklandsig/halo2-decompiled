@@ -592,6 +592,13 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // through a named element pointer 225 (995 bytes) [42]; the stepping flag named in the loop 43 [21]; case 2's selected arms as
 // one cross3f_staged call with ternary operands 213 (954 bytes) [65]; the stepping flag as `& 2` 43 [20] (same code); case 3's
 // k row as `normal->k * scale` 43 [20] (same code).
+// M3 lane 2 r67 (fast with 0x1201a0/0x1f2e60; aligned/masked in brackets, control 43 [32/26]): retail keeps the entry's
+// g_4687b0 register for cases 1 and 3 and reloads it in case 2's arms. r135's lead (case 3 selected-first with an up
+// pointer read once for case 3) re-measured 21 [27/21]; forms listed above re-measured on it: `0.0f - normal->k` 21, the
+// k row as `normal->k * scale` 21,
+// both dots as dot3f(vector, desired) 21, the first cross through the existing cross3f 21 (all same code), the average
+// through the existing vector3f_add(b, a) 47 (974 bytes) [27/25]. Left on the lead: the first cross's a.k * b.i and
+// average.i operand order, both dots' term order and the tail's j product.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)

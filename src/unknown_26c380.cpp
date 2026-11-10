@@ -455,6 +455,15 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // redundant `success = false;` dropped from the two false-result tails 73 (1609 bytes); `success = result->blocked =
 // true;` in the location tail 121 (1595); the magnitude test as `1e-5 < magnitude` 34 (same code); the planar normal
 // as `{ normal.i, normal.j }` 431.
+// M3 lane 2 r67 (fast with 0x26c4e0/0x26ccb0, both matched throughout): the goto form re-measured 34 (aligned 42, masked
+// 4); permuter 604 s on it (75 tries) none below 34. Our 4-byte line offset and previous sector sit below the 8-byte line
+// normal (size groups); retail's slots fit a 4-byte previous sector, then a 12-byte line, then the normal, so the line
+// as the code base's plane2f {n, d} gives retail's slots (on the goto form 304 at 1612 bytes, aligned 38, masked 10: the
+// XMM homes stay n.j, n.i, offset where retail has offset, n.j, n.i, and the point1 dot loads the point where retail
+// multiplies the normal's i in place); re-measured on this body 306 (1600 bytes). Lane 1 r83's renames re-measured with
+// the offset renamed `line_offset` (sorting after the normal) 244 and 34 on the goto form (same code: names do not break
+// the XMM tie); tail C stored blocked, edge, distance re-measured on this body 347 (1488 bytes, it merges into tail A).
+// No unlisted natural form found for the XMM homes, the cross's row j or the magnitude order.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

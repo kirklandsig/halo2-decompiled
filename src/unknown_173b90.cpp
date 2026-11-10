@@ -743,6 +743,13 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // observations, bool subsets 1/2/4/3/5/6/7 then all long: 155/217/136/234/143/236/227/173.
 // NOT kept: unmatched one-use decisions grow the extent; original complete body and all
 // shared alias-safe rotations restored. Offset/default/reload and row-i schedules remain.
+// M3 lane 2 r67 (fast): indexed definitions (`&emitters[index]`, index++ at the latch) with scale first re-measured 113
+// (1136 bytes; the zero store then follows the guard as retail's strength-reduced offset); forms listed above for other
+// bases, re-measured on it: both rotations through the existing vector3f_rotate_into_axes 102 (1136 bytes; rows j and k
+// then differ too), the position through it and
+// the motion through the shared helper 117 (1140), both through it with the motion rotated first 115 (1136), both through
+// it with the emitter mask read from the definition at both uses 237 (1130 bytes, the homes turn over); on this body both
+// rotations through vector3f_rotate_into_axes with scale first 82 (1130 bytes).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
