@@ -3608,6 +3608,12 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // dword input with the shift at both stores 939; the shifted word from the selector itself, no input local 976 (4840
 // bytes); mode one's colours declared separately 9; mode zero's extra-texture test at its two uses 905 (4816 bytes);
 // the whole/fraction clamp as two statements, whole first 9 (same code), fraction first 11.
+// Round 83 (m3 lane 10, fast; plain over the file agrees): the exponent search as a plain `while` loop in place of the
+// hand-inverted `if` + do/while 9 (same code, kept); the two floor results divided by 65536 9 (same code); the blending
+// states and the zero depth bias through one forced-inline pass-state helper at all four sites 9 (same code); the offset
+// clamp through FILTER_PIN 1072; both selectors from one if/else on small 952. The reloads after the depth-bias call stay
+// constant first: in 0x2548f0's file, moving that function above 0x254490 (whose reload order is swapped the other way)
+// changed neither, so the order does not follow source order within the file.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
@@ -3722,8 +3728,8 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     g_484f68.PSAlphaInputs[3] = 0xdd202df1;
     g_484f68.PSAlphaOutputs[3] = 0xd00;
     long exponent = 0;
-    if (inverse_span > 1.0f)
-        do { ++exponent; } while (inverse_span > (real)(1 << exponent));
+    while (inverse_span > (real)(1 << exponent))
+        exponent++;
     if (mode == 0)
     {
         bool extra_texture = configuration == (byte const *)NONE;

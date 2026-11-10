@@ -967,6 +967,10 @@ __forceinline long vehicle_round(real value)
 // and the dot written out (diagnostic) 24/83/93/94, the dot alone 10; vehicle_cross at the side cross 8;
 // vehicle_cross first with cross3f_staged at the side 6; cross3f_staged first with vehicle_cross at the side 10;
 // cross3f_staged at both 10; the strength test as `mode == 4 || mode == 2` 10; a tick-length getter for the rate 12.
+// Round 84 (lane 10, fast), at 8: an up pointer at the first cross with cross3f_staged at the side cross 6 (current
+// body; one-use pointer, needs a match); axis set to forward before the mode test with the cross overwriting it 173;
+// the side scale named before the side cross 82; the three vectors declared at function scope 11; the velocity call
+// before the strength value 146; cross3f_staged at the side with the dot as dot3f(&linear_velocity, &forward) 8.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -1736,11 +1740,11 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
    sideways drift, speed, forward speed and two engine overlays, the
    graph's function animations and the three aiming overlays) to the
    callback with its value */
+// score 9 (was 9): the cross is now retail's; left: the two VEHICLE_GET lookups' SIB order (2), the three
+// reloads after the overlay-kind loop (3) and the forward-speed sum's first two products (4).
 // MiniMax R (11-06): no new form, no lower score (9); the flat sum keeps (i + j) + k here for every term order and
 // operand orientation and for the array-member spelling too, while a compile-only probe of the same expression
 // gives retail's (k + j) + i order when the three products have fresh component nodes.
-// score 9 (was 9): the cross is now retail's; left: the two VEHICLE_GET lookups' SIB order (2), the three
-// reloads after the overlay-kind loop (3) and the forward-speed sum's first two products (4).
 // Earlier at 13: Graph-loop scope fixes constructor/load scheduling; header SIB forms, join reload
 // order and cross/dot operand ranks remain.
 // Earlier at 40 (was 44): the overlay lookups now call 0x1cb9d0 directly (each gets its own result home: frame 0x9c as
@@ -1844,6 +1848,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // the i term retail's at +1 local, 13), eight term orders on it 13 each; one forward pointer for the cross and the
 // speed 17; a named header pointer for the first lookup (0xef4f0's form) 13, for both 13 (SIB unchanged). Matched
 // 0xeeb80 gets retail's data-first SIB from the same two lookup lines.
+// Round 84 (lane 10, fast), at 9: the graph/state guard as an early return 9 (same code); the forward speed computed
+// once before the guard 508 (2043 bytes: VC computes it eagerly, no sinking into the arm); both lookups indexed by
+// `(word)vehicle_index` 178 (2011 bytes); vehicle_speed_fraction plain `inline` 581 (1803 bytes, out of line under
+// /Ob1); the update test written `vehicle->unknown400 != state->graph_tag_index` 10.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2745,6 +2753,9 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // the gear test `!= NONE` with the computed arm first 18; the wrap helper called with `torque * dt` 70, with the
 // contacts store too 71; torque, throttle or i renamed to sort first or last 10 each (spill slots ignore names); a
 // tick-length getter for dt 10, for dt and the braking test 65.
+// Round 84 (lane 10, fast), at 10: every contact access written `state->contacts[i].x` (no contact pointer) 46; the
+// half angle written into both trig calls 65; braking preset false and set by the test 222; the spin as `dt * torque`
+// 10 (same code); dt read after the vehicle and definition lookups 192.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
