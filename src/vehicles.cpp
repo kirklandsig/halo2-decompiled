@@ -657,6 +657,14 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // speed/helper/both then immutable both: 225/129/126/127/225/309/225/309. NOT kept:
 // one-use results do not match; paired doubles grow to 1150/1144. Original helper and full
 // body restored; entry velocity registers, early unity and later SSE/x87 homes remain.
+// P400: Reciprocal arithmetic domains, initial/helper/both double receivers of real
+// division 289/507/513; double numerator with real receivers 284/507/530; both double
+// divisions/receivers 511; complete component division 126. NOT kept: no exact
+// precision or unity-allocation repair; original helper and complete body restored.
+// T78: Final retained-magnitude admission at its post-approach producer,
+// bool/byte/short/long positive then complementary: 156/156/161/160/156/156/161/160.
+// NOT kept: every one-use result regresses and grows to 1153..1157/1144. Original
+// complete body restored; entry velocity/unity and later SSE/x87 homes remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -4508,9 +4516,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
    definition's sound */
 // MiniMax R (11-09), at 176: the override search with a NULL found pointer and the Havok world read into a local give 151; the compression clamp spelled out as a store then if/else-if (the PIN macro's ternary expands to the opposite comparison) gives 141 at retail's 1361 bytes; left: the world loaded into EAX then moved to ESI, the fallback's zero held across 0x168f40 and the block layout.
 // MiniMax R (11-06): no new form, no lower score (176); the frame agrees and the permutation and flag-store order of the note below are unchanged.
-// score 176 (was 176): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
-// scalar/SSE operand homes, ray/world staging and fallback-result lifetime remain; first differing branch is
-// still +0x5a.
+// score 141 (was 176): Frame 0xec, the override search and ray translation agree.
+// World is loaded through EAX then ESI; fallback zero/select and the final byte flag writer differ.
+// The first differing branch is still +0x5a.
 // Earlier at 206 (was 206): Frame 0xec agrees; changed/permutation stores, found-index retest, ray scale/world/zero and fallback-result ownership remain.
 // Earlier at 206 (was 251): every frame slot now retail's; left: the override search's exit (retail tests the found
 // every frame slot now retail's; left: the override search's exit (retail tests the found
@@ -4714,6 +4722,10 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // P391: Per-record match/rejection results at the original search test in bool/byte/short/long:
 // 176/176/176/176/176/176/176/176. NOT kept: one-use decisions do not match; original
 // loop, found-index retest, field observations and complete body restored.
+// P400: Native frame/search/translation now agree. Fallback contact truth converted to real,
+// direct bool/byte/short/long 158/158/158/158; exhaustive test results 152/152/142/157.
+// NOT kept: no exact one-use result or gain; 1348-1354 bytes moves away from native 1361.
+// Original full body restored; world receiver, fallback zero/select and final flag writer remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -5090,6 +5102,14 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P396: Explicit normalization admission, bool/byte/short/long positive and complementary:
 // 749/749/749/749/749/749/749/749. NOT kept: no exact tested gate or native entry-definition/
 // SIMD recovery; original bypasses, switch, observations and complete body restored.
+// T76: Complete cases on the table/direct-active graph: numeric ascending/
+// descending, Boolean/scalar/vector/ratio first, then stable simple/bypass first:
+// eight at 749, 2974/2974 bytes. NOT kept: no entry-definition or SIMD recovery;
+// original complete dispatch and body restored.
+// T78: Case-owned preliminary square/chain results, mutable/immutable, averaged turning,
+// paired square+chain, all three and immutable all: 749/749/749/749/749/749/749/749.
+// NOT kept: no gain or native entry-definition/SIMD recovery. Original complete body
+// restored; frame 0x18 agrees, zero/result/unity residence remains.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5725,6 +5745,14 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // P396: Complete lateral-flip outcome producers, false-default/complete/nested/failure-first,
 // bool then long: 1064/1087/1101/1086/1098/1097/1101/1070. NOT kept: tested flags do not match; 1064/1070 grow
 // to 5104/5094 bytes and the one-point lead is below gate. Original whole body restored.
+// T76: Complete bank result: strafe/turn seeds, nested conditional, sum default,
+// nonnegative-strafe/turn first, same-sign admission and inner conditionals:
+// 1097/1088/1097/1088/1087/1087/1117/1097. NOT kept: ties/regressions;
+// every frame stays 0xf8 versus 0xd8. Original bank flow and full body restored.
+// T78: Final spin prior-state/difference/selected-change ownership, seven subsets,
+// then branch-owned differences: 1104/1076/1087/1104/1104/1076/1104/1087. NOT kept: the 1076
+// forms shorten to 5088/5094 while frame stays 0xf8/0xd8; other forms tie or regress.
+// Original complete feedback and body restored; handle/matrix/vector homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

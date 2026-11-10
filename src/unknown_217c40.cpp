@@ -61,8 +61,7 @@ PRIVATE __forceinline real function_217c41(real arg_0)
    self-aligning functions showed this). Retail holds no reference to its
    address, and its caller 0x12b450 is LTCG code. With the marker 0x12b450 and
    0x12b690 match; without it they don't. The body itself doesn't match yet. */
-// MiniMax B (11-04): no new form, no lower score.
-// score 25 (was 474): the x87 order of the first offset (retail keeps `angle - table` on the stack past both magnitudes), then the two hoisted
+// score 25 (was 25; earlier 474): the x87 order of the first offset (retail keeps `angle - table` on the stack past both magnitudes), then the two hoisted
 // constant loads (retail loads the coordinate scale first; ours 1.0, which
 // the D3D library defines; retail's copy of the scale lies in the Bink object's data at 0x43ba70). Earlier: frame 0x38 versus 0x40; angle homes and snap-work lifetimes differed.
 // Earlier 501 from 541.
@@ -184,6 +183,13 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // retail's body reaches the scale first. Division by a named maximum 20 (one reciprocal from 1.0, 1.0 still first); the scale
 // as `/ 32767.0f` 2; named maximum then `1.0f / maximum` 2; `coordinate * scale * (1.0f / maximum)` 20 (the constant is
 // reassociated to the end, 1.0 still first); scaled stick locals ahead of the angles 562 (1988 bytes).
+// MiniMax B (11-04): no new form, no lower score.
+// Round 143 (m3 lane 8, fast, all on the fabs-at-each-use 2 form): `coordinate * scale / maximum` 20 (one reciprocal
+// from 1.0, still loaded first); scaled stick locals between the trig and the reciprocal 536 (2020 bytes; scale loads
+// first, products early); a named scale local at the top of the stick block 2 (folded, no flip); a two-use inline stick
+// helper taking the scale as an argument 537 (1996 bytes, 1.0 first); named float coordinates with
+// `x * scale * (1.0f / maximum)` 581 (2036 bytes). Diagnostic (reverted): the scale used in a separate function earlier
+// in this file 2, so the order is set inside this function after inlining and the reciprocal rewrite, not by the module.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

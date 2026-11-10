@@ -94,7 +94,7 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 }
 // MiniMax R (11-09): no new form, no lower score; the entry's second unit fetch is still merged into the
 // first, because the lookup callee that decides it lives in another file.
-// MiniMax D (11-08): score 107 (was 107): retail re-fetches the unit pointer and both pool globals after
+// MiniMax D (11-08), at 107: retail re-fetches the unit pointer and both pool globals after
 // the two 0xbadc0 calls; our link knows that callee writes no memory and keeps the entry fetch, so the
 // register plan and the length differ from the first byte.
 // MiniMax B (11-06): no new form, no lower score; retail loads the object table after the prologue pushes
@@ -255,6 +255,12 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // then ordinary slot/sound with forced player expansion: 107/107/107/162/162/162/162/162.
 // NOT kept: ties or shorter nonnative expansion; original producers and body restored.
 // Frameless entry, post-query unit fetch and late prior-state carrier remain.
+// Round 159 (m3 lane 6, fast; 0x103b10 matched each time): the reset entry's two stores written in full 109 (360 bytes);
+// the unit fetched once, after the player queries 106 (376 bytes, retail's length, one point); that with the long user
+// index, late zoom flag, `== NONE` ternary and early-return sound helper 125 (355 bytes: retail's code except its entry
+// fetch and the registers that follow from it); those forms on two fetches 128 (348 bytes); the player index named once
+// for its two uses 142 (341 bytes). Diagnostic, restored: 0xbadc0's header lookup through a forceinline out-parameter
+// helper keeps 0xbadc0 and 0xbae20 matched but the fetches stay merged (128). Still BLOCKED-BY 0xbadc0.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

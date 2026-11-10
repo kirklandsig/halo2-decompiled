@@ -1366,6 +1366,7 @@ bool function_2dba0(long tag, bool alternate, long c, long d, long e, point3f co
 extern bool g_4ba019;
 long function_baf80(long object_index);
 
+// MiniMax C (11-09): no new form, no lower score (12).
 // MiniMax R (11-06): no lower score (12); the dword-masked parent index 22, an inline parent mask 22, an inlined parent model 22 and an inlined first-chain definition 12 score no better; the parent mask written inline in the subscript gives 22 as well, so retail's order (mask, scale, then reload g_4e0300) is not reachable from the source.
 // MiniMax D (11-05): no new form, no lower score (12); retail masks the parent index before it loads g_4e0300 and keeps the definition pointer in EAX, ours loads the global first and goes through EDX; a dword truncation, a dword or long masked index, the mask inline in the subscript, a headers local, the model read without the definition local and a dword model all score 12 or worse.
 // score 12 (was 12): the parent lookup differs. Retail masks the parent index (`and eax, 0xffff`,
@@ -1712,6 +1713,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
 }
 
+// MiniMax C (11-09): no new form, no lower score (193).
 // score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
 // MiniMax R (11-06): no new form, no lower score (193).
 // MiniMax D (11-06, run 49): no new form, no lower score (193); retail still keeps the result in its own stack slot (0.0f at the entry, filled by the atan2 tail, one shared `movss xmm0, [result]` at the end, frame 0x18) where ours keeps the zero in xmm0, returns early on each path and reuses the scale slot for the x87 result (frame 0x14).
@@ -2697,6 +2699,7 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
+// MiniMax C (11-09): no new form, no lower score (113).
 // score 113 (was 113): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop top; below).
 // r136 lane 7: the list read once into `s_masked_list *list` 132 plain (fast 136 at 538 bytes, LCS-aligned 68 -> 61);
 // entry/definition/object declared at the loop body's top 147 fast; total declared before view 159 fast; index
@@ -3597,6 +3600,7 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
     return (real)sqrt(z * z + y * y + x * x) * g_4b9dcc;
 }
 
+// MiniMax C (11-09): no new form, no lower score (177).
 // score 177 (was 177): frame 0x18 versus 0x1c; initial alpha/kind and final fade scratch homes remain.
 // r136 lane 7 (fast): final fade through existing function_c6b90 (property 0x11000088, outputs zeroed) with kind not
 // volatile 207 (789 bytes, frame 0x1c), with the volatile kind 237 (807 bytes; aligned 73 -> 59, the fade inside
@@ -3878,6 +3882,7 @@ real g_525980[3];
 struct s_1321f0;
 bool function_1321f0(long index, s_1321f0 const *data);
 
+// MiniMax C (11-09): no new form, no lower score (4).
 // MiniMax R (11-06): no lower score (4); the definitions local declared before the table and assigned after the early return gives the same 4, so the two spill homes are not decided by the declaration order; a 600s permuter run (50 tries) found nothing lower, and the same source matches retail in a 47-source reduced image, so the four differing spill homes come from the build context.
 // score 4 (was 4): table/definitions spill homes remain exchanged; native frame and length agree.
 // native frame and extent agree; table/definitions stack homes remain exchanged.
