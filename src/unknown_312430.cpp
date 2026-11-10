@@ -31,6 +31,8 @@ void class_312430::function_312430(description_312430 *description) const
 // with four access forms 26 each; CRT pair capture then field stores 17.
 // Array receiver pointers/references: destination/source/both before header
 // update 20/17/20 each; both after the update 17/17. Original arrays and body restored.
+// Review cleanup score 37: removed unsupported volatile/one-use tuning;
+// the prior scored trials above remain available for future matching work.
 // @retail 0x3124c0
 void class_312430::function_3124c0(description_312430 const *description)
 {

@@ -214,6 +214,8 @@ static void __cdecl function_30d0c0(pointers_30c650 *out, owner_30d480 const *ow
 // release function defined separately, input/output object references, unsigned
 // complete flags and distinct gathered types 72; cleanup resets 122;
 // signed release multiplication and a full-flags snapshot 72.
+// Review cleanup score 72: removed unsupported volatile/one-use tuning;
+// the prior scored trials above remain available for future matching work.
 // @retail 0x30d480
 void __cdecl function_30d480(owner_30d480 const *owner, pointers_30c650 *out)
 {

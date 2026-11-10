@@ -103,6 +103,8 @@ public:
 // second receiver use 15, two multiple-use receivers 63, restore-only receiver 15;
 // scaled float local 133; inline factor or combined outer scope 68;
 // 1/3 forms require one-use field pointers and remain rejected
+// Review cleanup score 19: removed unsupported volatile/one-use tuning;
+// the prior scored trials above remain available for future matching work.
 // @retail 0x30df80
 void owner_30c8e0::function_30df80(member_30c8e0 *member)
 {

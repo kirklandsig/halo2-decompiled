@@ -222,6 +222,8 @@ public:
 // with stored-id-first 8; id accessor 5, reversed equality 11; shared member
 // id test with pointer/ref 8/8, reversed operands 8/8; insertion guard 2;
 // parameter rename 2. Callback forms discarded without an exact match.
+// Review cleanup score 71: removed unsupported volatile/one-use tuning;
+// the prior scored trials above remain available for future matching work.
 // @retail 0x316dd0
 void merger_316dd0::function_316dd0(handle_pair_316dd0 const *pair)
 {
