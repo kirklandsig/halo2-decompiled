@@ -546,6 +546,14 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // each with distinct refreshed terminal owner/direct terminal tag: eight 334s at 1652 bytes.
 // NOT kept: no native gate/settings home or split effect-address recovery. Original
 // producer lifetimes, refreshed settings, random stream and complete body restored.
+// M3 lane 9 r101 (fast with 0x247fd0, which stays matched; base 334 at 1652, aligned 246, masked 106): the gate with
+// no volatile and no assignment in the test keeps its dead store when the flag starts false and is set under the
+// index test (`bool flag = false; if (index != NONE) flag = ...; if (flag) return;`): 351 at 1652 (aligned 249,
+// masked 118; the store stays at +0x1f in AL with the folded address, so it is a score rise and not kept), with the
+// bit read as the word bit-field 351 (same code), with the flag declared before the index 351 (same code); the same
+// gate as a file-local inline helper returning its `result`, byte read / bit-field read 351/351; the flag as
+// `index != NONE && bit` 406; the flag set in both arms of the index test 411. Retail's `add eax, edx` then
+// `mov dl, [eax + 2]` and the +0x1b home (under the definition pointer at +0x1c) are still open.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

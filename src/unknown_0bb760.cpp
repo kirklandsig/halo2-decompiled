@@ -446,6 +446,18 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// MiniMax D (11-10): no new form, no lower score; both builds run the same instructions, only four
+// places differ, and this round's reading of the two listings pins them down. The first is the clamp
+// entry: retail zeroes the float register and only then loads the 1.0 constant, ours loads the
+// constant and only then zeroes. The second is the second fmod result: retail keeps it in the x87
+// stack across the variant byte load and the compare and stores it afterwards, ours stores it at
+// once, and retail stores it in the slot the loop counter's float home used while the chosen
+// choice's pointer goes to the other slot, so ours reads the blend from the wrong slot. The third is
+// the first scan's exit: retail leaves on a signed `jl`, ours leaves on `!=`, and every spelling of
+// the signed bound makes the link-time build unroll the scan by four, which is much worse. The fourth
+// is the not-found exit: retail reloads the 1.0 constant into the float register there and ours joins
+// the clamp entry's load, so the tail is eight bytes short and every later branch target shifts. No
+// source form of these four was found this round, so the body stands.
 // MiniMax E (11-09): no new form, no lower score; the first scan still leaves on `!=` where
 // retail's signed `<` loop unrolls by four, and every counter, bound and accumulator spelling
 // keeps the unroll out of our build.

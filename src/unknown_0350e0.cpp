@@ -1827,6 +1827,20 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // Round 64 (lane 15, fast): result split into `(real)atan2(y, x)` then `* scale * (1/pi)` 193; y and x initialised
 // to 0.0f 193; `atan2 * (scale * (1/pi))` 190 (one product where retail has two fmuls); a ternary return 296 (908
 // bytes); `scale * atan2 * (1/pi)` 193.
+// Round 73 (m3 lane 13; fast, the kept-candidate also plain): the result's own slot is XMM pressure, not a spelling:
+// retail's case 3 holds the k offset in xmm7 across both cross products, so with the zero in xmm0 all eight registers
+// are busy and the result gets a stack home (entry store, `fstp` into it, one load at the exit). Case 3's three
+// offset statements ahead of the perpendicular helper 177 at 812 bytes (plain 177: retail's length, frame 0x18,
+// entry store and exit; aligned 100, register-masked 56), NOT kept: the callee then clobbers xmm7 as retail's does
+// and the caller 0x2e9e0 goes 492 -> 573 (2232 bytes), a rise; diff in build/r73/lead-0x2f2d0-reference-first.patch.
+// Next: re-measure 0x2e9e0's rejected forms on that callee. On it: only i, j or k ahead of the helper 182 each
+// (800 bytes; k alone has the lowest masked count, 44), two of them 182; case 1's reference copy ahead of the helper
+// too 177 (same code). With k ahead: y's terms written ijk/ikj/jik/jki/kij/kji 211/194/190/182/190/188 (768 to 800
+// bytes: the first mention of the fields sets the term order). On the old body: x computed before y in cases 1 and 3
+// 185 (800 bytes; frame 0x18 by pressure in case 1, where retail has none; 0x2e9e0 573); the result assigned without
+// the cast 193 (same code); the helper's second cross written k, j, i 197 (788), both crosses k, j, i 288 (696);
+// case 1's reference copy ahead of the helper 193. Diagnostics, reverted: one to twelve dead initialised locals
+// ahead of the result 193 each; a volatile result 187 (aligned 123, masked 48).
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2843,6 +2857,16 @@ s_cached_input_list g_5234e8[4];
 // forms 118-120; every once-read list combination 129-133. A one-file LTCG copy of this file with its callees' files
 // gives the same allocation (109 there); retail's EBX index/EDI object/EBP cursor appeared only when 0x3e9c0 was
 // built with another convention, so the remaining permutation follows callee register usage.
+// Round 73 (m3 lane 13, fast with the round 64 callee chain, control 113): retail's global holders are entry ESI
+// (shared with i), object EDI, index EBX (copied to EDI for 0x31590), cursor EBP, and after the loop `output` once
+// in ESI for both calls; ours gives object ESI first, so index takes EDI, the cursor EBX and the list or total EBP.
+// The list read once with `!(depth >= 0.0f)`, the sibling's sum order and `&g_5234e8[view]` at both calls 130
+// (frame 0xa0, list in EBP); that with output[count] at each store 130 (same code); that with the total read from
+// the global ahead of the list local 112 (552 bytes: `list + 0xc` hoisted to a slot, total in EBP; a mixed read,
+// -1, not kept); a typed 0x110-byte entry (`&((T *)data)[index & 0xffff]`, named fields) with the list 130,
+// without it 113 (same code each). Diagnostics, reverted: one extra use of object 121 (556 bytes; object is then
+// loaded before the definition as in retail, registers unchanged), four extra uses 177 (object still ESI), extra
+// early uses of `output` 166 (it takes EBX and becomes the cursor). Reference counts do not move object off ESI.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3061,6 +3085,21 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // R221 also: the clamp compare written `state->count < limit` 319.
 // Round 64 (lane 15, fast): an index declared in each loop 317; `last` declared before `first` 318; `requested` and
 // the clamp before `first`/`last` 416 (1305 bytes); swap helper `__forceinline` 317, clamp helper 317, both 317.
+// Round 73 (m3 lane 13, fast; aligned | register-masked counts, base 81 | 59): `first` competes with loop 3's index for
+// EBP and wins by one reference; when it loses, the state takes EBP in loops 1-2, `first` EDX, the index EBP in loop 3,
+// as in retail. Diagnostics, reverted (they change what the code does): an extra unconditional use of the index in loop 3
+// gives retail's registers and both stack homes with only its own two instructions extra (57 | 46); loop 2, 3 or 4
+// started from 0 instead of `first` flips the registers too (loop 2: homes as retail; loops 3 and 4: homes still
+// exchanged; loop 4 form 274); loop 1's increment removed flips; a call passing 0, loop 2's swap target as entries[0],
+// or an extra index use in loop 2 does not. Forms tried, none flips: loop 1's flags read through the state at each use
+// 370; loop 3 without the entry local 318, both 369; loop 2's `&state->entries[first++]` 317 (same code); one index
+// declared at function scope and used by the output loop too 370; loop 3's swap from `&state->entries[i]` 368, from
+// `&state->entries[i--]` 367, with `--last` as its own statement 317; loop 3 tested `i <= last` 367; its guard as
+// `requested < state->count` 370; early `continue` 317; `--i` ahead of the swap 355 (flips, but the index then lives in
+// memory, 424 instructions); a while form 317; the index set ahead of the first sort call, the call passing either
+// variable 317 each (same code); the zero store through the state 317; the entry local declared inside the test 367;
+// the created test through the state 375. Next: a natural form that adds one use of loop 3's index or drops one
+// `i = first` without changing the instructions.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3320,6 +3359,12 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // with normalize/scale on it the frame is retail's 0x38 [292/164] but 1945 bytes: retail also re-reads the velocity after
 // each normalize and scale store, as if each inline helper reached it through its own parameter. The 12 bytes left on 0x44
 // are the three velocity spills; retail keeps view in EBX and state in EDX from the first instruction (ours the reverse).
+// Lane 12 r102 (fast; the fast control agrees at 486): the speed limit (magnitude test, normalize_inline and
+// vector3f_scale) in a forceinline helper 486 (identical code: the velocity reads from memory do not come from a helper
+// boundary); `old` renamed to sort after `previous` 486 (identical); the size store as an if/else reading the field in
+// each arm 495 (2044 bytes; that block then compiles as retail's, integer copy in the else arm); with retail's visible
+// phase-block order too (phase stored before the fade, strength read at its use, copied in the else arm) 502 (2019
+// bytes: the loop pointers then start at state+0x88 and view+0xec); that order alone 494 (2024 bytes).
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3614,6 +3659,7 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // keeps its two dead output stores (`active = false`, then `fade = 0.0f`, a float slot at +0xc); the full build drops them
 // (BLOCKED-BY 0xc6b90), so every offset from 0x1c up is 4 short. Earlier first line: frame 0x18 versus 0x1c; initial
 // alpha/kind and final fade scratch homes remain.
+// frame 0x18 versus 0x1c; initial alpha/kind and final fade scratch homes remain.
 // MiniMax C (11-09): no new form, no lower score (177).
 // r136 lane 7 (fast): final fade through existing function_c6b90 (property 0x11000088, outputs zeroed) with kind not
 // volatile 207 (789 bytes, frame 0x1c), with the volatile kind 237 (807 bytes; aligned 73 -> 59, the fade inside
@@ -3760,6 +3806,15 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // 773 bytes with kind still volatile), and kind no longer volatile (230 on 172 before the result form). Without the view
 // 175. The getter route on 62, `active` cleared first: fast MATCH, plain 70 (build/r164/0x3d7f0-getter-fastmatch.patch in
 // the m3-lane5 worktree); the weapon getter's tail as `*active = *value > 0.0f` still 70.
+// Lane 12 r102: kind not volatile, the final fade through the existing function_c6b90(index, 0x11000088, &fade,
+// &active) after `real fade = 0.0f; bool active = false;`, `if (alpha <= 0.0f) result = false;` and the first fade
+// read at each use through an object local: fast 139 at 773 bytes with retail's skeleton (frame 0x1c, kind spilled at
+// entry, table in EBP, both zero stores), plain 238 (751 bytes: no zero stores, kind in EBP). A fast check listing
+// 0xff5f0 as well (its source joins the image) also gives 238: the zero stores survive only while the getter's
+// default-arm callee 0xff5f0 is outside the image. Retail links 0xff5f0 too and keeps them, so the lead is our
+// unmatched 0xc6b90 (inlined here) and 0xff5f0 bodies: BLOCKED-BY 0xc6b90, 0xff5f0. Same graph with a pointer
+// local to the field fast 155; with kind volatile plain 190; with kind as signed char plain 209 (object index in EBP);
+// main body with the first fade read per use through the object local plain 185 (773 bytes).
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {

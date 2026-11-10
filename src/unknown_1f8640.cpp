@@ -378,7 +378,7 @@ struct s_1f8a70_actor
 // than retail's (ours at esp+0x10 where retail has esp+0x12), retail switches on the word at
 // esp+0x14 with a jump table where ours tests the mode with branches, and ours is twenty bytes
 // shorter than retail (1632 against 1652).
-// score 182 (was 188): Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
+// score 182 (was 182; earlier 188): Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
 // Earlier at 228: Frame 0x84 versus 0x80; pool/data entry order and unit-output/route/result homes differ.
 // MiniMax S (10-31): no new form, no lower score. Deferring the result's initializer reproduces retail's
 // 0x80 frame and prologue exactly (the first difference moves from +0x0 to +0x33), but the aligned body
@@ -622,7 +622,6 @@ struct s_1f8a70_actor
 // route dispatch, expired unit/result home and failure-result storage still differ. Original body restored.
 // P325: On the two-result graph, inner-result declarations after unit/reset/destination,
 // at entry and at route selection all tie 188; unit-output declarations at active phase/entry
-// scored 206/206; outer failure result assigned before cleanup 188. All restored;
 // gave 206/206; outer failure result assigned before cleanup 188. All restored;
 // unit/result packing and the native memory-result cleanup remain.
 // N367: Early active/arrival/mode success joins on the two-result word-selector graph, seven subsets
@@ -697,6 +696,9 @@ struct s_1f8a70_actor
 // side first 182 (aligned 39); case 6's inner test with the `route_mode = 1` arm last 326 (1616 bytes, aligned 30),
 // both 326 (aligned 38). Left: the route dispatch follows case 7 (retail: after case 5, with cases 6 and 7 behind it,
 // then the zero test and the failure block), and the final result goes through BL where retail returns its frame byte.
+// Round 143 (m3 lane 7, fast): the mode cases in source order 672345 382, 234675 372, 234576 334,
+// 567234 388, the default label first 182 (block layout follows source order); `result = route_found;`
+// once after the final if/else 326, first with the test on it 317, the failing arm first 369.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

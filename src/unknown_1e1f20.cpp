@@ -809,6 +809,15 @@ void swarm_leader_detach(long actor_index);
 // that walk and compare with the memory type test through the cached actor 292 (990) [124], with a short
 // memory index 294 (990) [124]; walk and compare with a short memory index 298 (942) [76]. Still BLOCKED-BY
 // 0x26ed40: the memory walk is joint_decline inlined (its short index keeps the actor offset and i*12 apart).
+// Round 62 (m3 lane 2, fast; 0x26ed40 matched each time it was called): the counts record read through g_5047f4 at each
+// use 236 (same code); the stop argument as `slot_index >= 4 ? NULL : slot` 236 (same code); the joint entry address
+// written at each store 314 (1006 bytes); the memory walk as retail's source presumably was (short index, type tested
+// through the cached actor, a call to the existing 0x26ed40) 364 (894 bytes: the actor offset then goes to EAX and is
+// spilled as in retail, the index takes EBX); that with the prop walk through the existing 0x26be00/0x26be30 and
+// prop_node_get for the view index 361 (884 bytes); the actor-iterator test by index (`iterator.actor_index !=
+// actor_index`) 289; the slot loop with a slot pointer as the matched 0x1e23c0 writes it 236 (same code). Retail's tail
+// also keeps NONE in EDI for the definition walk and stores the definition bit into the dead index slot. Still
+// BLOCKED-BY 0x26ed40 (inlined in retail; its file's /Ob1 keeps it out of line here: a build-flag decision).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

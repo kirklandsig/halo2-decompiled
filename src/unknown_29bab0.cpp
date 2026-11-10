@@ -61,9 +61,6 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 	return arg_0->k * arg_1->k + arg_0->j * arg_1->j + arg_1->i * arg_0->i;
 }
 
-// MiniMax H (11-05): no new form, no lower score; retail saves EBX around the middle for the +0x290
-// pointer and re-reads its arguments from their stack homes per region, where ours holds the input in
-// EBX from the prologue, and the 748 form is a held lead under the keep bar.
 // score 715 (was 750): s1E walk against retail (3482 bytes, retail 3499; frame 0x88 agrees). Behaviour fixes: 0x29b2e0's
 // third argument is the +0x290 pointer in EBX (0x29c2a4-0x29c2bb; was &local_5), and 0x1f9760's arg_4 (last_out) is the
 // stack byte tested at 0x29c7e5 (was arg_5). Forms kept: direct input (no reference local), shared normalize3d for the
@@ -71,6 +68,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // (0x29c068 fsubr dword), the signed-root helper reading the scale from the definition at the product (0x29c595).
 // Tried: complement local for 1 - field_64 (771, no change), vector2f struct copies for local_15 / local_17 (717 / 723),
 // double root (775). Left: early input/heading and normalizer memory-product homes, stack slot order, per-region re-reads.
+// MiniMax H (11-05): no new form, no lower score; retail saves EBX around the middle for the +0x290
+// pointer and re-reads its arguments from their stack homes per region, where ours holds the input in
+// EBX from the prologue, and the 748 form is a held lead under the keep bar.
 // Earlier 750 (was 750): Frame 0x88 agrees; early input/heading homes and normalizer storage remain. Alias-free normalizer loop 822; early-return clamp 829; output scale loop 824; output clamp loop 812; smoothing loop 825 (fast).
 // Earlier 750 (was 750): Frame 0x88 agrees; early input/heading and normalization homes remain. Alias-free
 // planar response snapshot 853; shared default vector 807; native input copy 804; shared radial predicate
@@ -362,6 +362,11 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // region from local_4 to the end of the if-chain in its own block (diagnostic) 715, the same code. Lead: matched 0x4d640 and
 // 0x9eac0 save EBX around plain sequential statements, so the region's form is not what keeps our push at entry; ours uses
 // EBX only inside that region too (same live range and jumps), and the head/tail esp shifts cost about 70 instructions.
+// Lane 12 r102 (plain; the fast image 648 carries the builds-differently caveat): both planar inputs as aggregate copies
+// (`*(vector2f const *)arg_2`, `*(vector2f const *)local_4`) 723 (3466 bytes; both copies then take retail's integer
+// moves, the shifts cost more), local_17's alone 723, local_15's alone 717; with normalize_inline for local_9 824;
+// local_9 renamed `direction` 715 (identical). EBX: our tail after the arg_7 test uses no EBX either, so retail's late
+// push/early pop has no visible source cause yet.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
