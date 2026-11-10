@@ -2623,6 +2623,15 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // parenthesizations in every order (144, none); the outer locals ahead of the helper in every order (72, XMM0 joins); the
 // existing vector3d_from_points3d with the parenthesized sums of the matched 0x210970/0x210a30, outer locals before or after
 // (168, XMM1-3 always x, y, z); (fast) vector3d_from_points3d + length_sq3f 345 (the delta vector moves the layout).
+// Round 84 (m3 lane 11; fast): the helper's differences in x, y, z order (staged z, y, x sum) 27; the one-expression sum
+// through a square helper 11 (retail's colours, x scheduled first); no helper, x, y, z locals with a three-scalar
+// length helper (staged k, j, i) 45; no helper, x, y, z locals with an accumulated z, y, x sum 45; the same with a
+// one-expression sum 45; the same with the selector read after the locals 45. The 45 forms give retail's y-first
+// schedule and y in XMM3 but z XMM2, x XMM0, sum XMM1 (retail z XMM1, x XMM2, sum XMM0), and the selector load
+// follows the z subtract. A compile-only harness agrees with the real build for the helper form (definition order
+// sets both colours and schedule there; extra uses in the cases move neither) but not for the no-helper forms, so
+// screen those with --fast: about 1100 harness forms (outer-local placement, every definition/sum order and shape,
+// scalar and square helpers) gave nothing.
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,

@@ -62,6 +62,13 @@ PRIVATE byte *update_object_0a6430(long index)
 // (550 bytes); a dword count 16 (same code); the 0x200 block's state byte read into a local ahead of the lookups 35 (550
 // bytes; the pool still loads first); the 0x100 call's states pointer formed from the address parameter 16; a dword model
 // index 16.
+// Round 67 (m3 lane 2, fast): the extra byte is the 0x200 head's `mov ecx, [abs]` pool load (6 bytes; retail loads the
+// pool into EAX, 5 bytes, then the data into ECX and the object into EDX). Re-measured: the 0x200 count as one ternary
+// over a model pointer with a NULL default 59 (556 bytes, round 75's ternary); the 0x100 test folded into one `if` with
+// the mask test 16 (near round 71's folded object). New: the entries pointer named before the 0xe0 read 16; the word
+// test joined to the count compare with `first` read ahead 34
+// (548 bytes: the tail's `xor eax, eax` goes, the head stays); a block-scoped object pool local for the 0x200 lookup
+// 16, for the 0x100 lookup 16.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {

@@ -1002,6 +1002,8 @@ struct s_bitmap_texture_view
 	dword level_addresses[3];
 };
 
+// MiniMax E (11-10): no new form, no lower score (3); a permuter run over the function (34 tries in 304s, full
+// image and reduced image) found nothing below the baseline.
 // score 3 (was 3): the last three instructions are the whole difference - retail loads the masked
 // level address into the bitmap base register that dies with that load and stores it from there,
 // ours loads it into edx and masks it there; the reduction branch, the format bits and the three

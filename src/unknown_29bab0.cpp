@@ -367,6 +367,15 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // moves, the shifts cost more), local_17's alone 723, local_15's alone 717; with normalize_inline for local_9 824;
 // local_9 renamed `direction` 715 (identical). EBX: our tail after the arg_7 test uses no EBX either, so retail's late
 // push/early pop has no visible source cause yet.
+// m3 lane 7 r146 (plain unless marked fast; fast builds this function differently, control 648): retail saves EBX only from
+// the `lea ebx, [ebp + 0x290]` join to the closing *arg_7 test; ours uses EBX in exactly the same lines but saves it at entry, and
+// several frame slots (local_6, local_8, local_9) also sit 4 or 0xc bytes apart. The middle region inside `do { } while (false)` 715
+// (same code); the +0x290 pointer read at each use (no local_4) 875 (3569 bytes); point local_8 declared with the opening locals
+// 648 fast (same code); local_7 declared before local_6 651 fast; local_9 declared before local_8 648 fast (same code).
+// Diagnostics: the disabled caller 0x1f38c0 (and 0x1f6090) enabled 715 (same code, so the missing caller is not the cause); the
+// 0x26c conditional call removed 848 (EBX still saved at entry). A retail scan finds 24 matched functions with a mid-function EBX
+// save and no path around it (0x1cbad0, 0x17c040, 0x40e90: EBX used only for a call's register argument, a byte test, or ahead
+// of tail calls); none of their shapes is a natural rewrite here.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
