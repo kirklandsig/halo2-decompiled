@@ -413,6 +413,13 @@ struct s_24e9c7_bounds
 // ours (-0x14 back y, -0x18 untouched) below kind/bitmap. Side, up or back declared at function top (before or after result) 125 each
 // (same code); first corner's base copy after the half width 138 (740 bytes, as round 217); all four corner base copies there 128 (aligned 121 -> 116,
 // the across terms still sink: points has not escaped); first corner's base copy right after the across terms 124.
+// Round 147 (m3 lane 7, fast with 0x24e59f and 0x22a664, both matched each time; "masked" = aligned count with registers
+// and frame offsets masked, 93 for this body): all four corner base copies right after the across terms 131 (masked 95);
+// the first two there 125 (93); the first one there re-measured 124 (96); on that, up before the half width 141 (738 B,
+// masked 90); the across products as a side point scaled in place by the half width 145 (746 B, masked 86); both 157
+// (756 B, masked 92); on the first-copy form, the other three base copies right after the half width 127 (masked 114)
+// and the half width computed before the height 131 (masked 94). The in-place side gives retail's shared
+// across-j/side-y home but the across products still sink.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

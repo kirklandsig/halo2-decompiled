@@ -1242,7 +1242,7 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
-// score 561 (was 562): frame 0x1990 versus retail 0x1984, native flag-result byte stores (the six dead [esp+0x13]
+// score 561 (was 561): earlier 562; frame 0x1990 versus retail 0x1984, native flag-result byte stores (the six dead [esp+0x13]
 // stores), sum-loop unrolling, the flags348 write/read forms and scalar/SSE homes remain.
 // Statement walk (b5L, 2026-11-06, retail 0xefde0-0xf0699, block by block against disasm and align.py): every field
 // offset, condition direction, callee/argument order, switch case, constant (0.3 at 0x45e610, 6.0, 1.0, 0.0) and
@@ -1398,6 +1398,15 @@ long function_10f5f0(long object_index);
 // names in their own block 562 (0x1990: the names then share the velocity and the buffer stays apart; a home's
 // size seems fixed by its first member, and the velocity is placed first); the velocity/names blocks with the
 // 0x28 buffer 562 (0x19ac); the state-branch velocity declared just before its 0xba1d0 call 562 (0x1990).
+// Round 147 (m3 lane 7, fast): `bool fast = fabs(speed) >= definition+0x214` 565 (gives retail's fxch/fcompi/jb with fast
+// in BL; masked aligned 189 -> 186); lit with a field read per arm, `alternate ? (flags348 >> 1) & 1 : flags348 & 1`, 568;
+// that with bit 5 read again after 0xba7f0 583 (2244 B, masked aligned 164); both with `>=` 573 (162); `>=` with the fresh
+// read and the original lit 572 (163), with alternate through the word bit view too 570 (163); the fresh read through
+// the word bit view 576 (retail tests it with shr/test and writes bits 1/0 with memory or/and), with alternate through
+// it too 577; flags348 declared as one word (flags349 its high byte) 575 at 2276 B and matched 0xf0fd0 drops to 56.
+// Retail's lit reads the word once (alternate and the true arm) and the byte again in the false arm, with `& 1` after
+// the join; its `fast != lit` is setne/test. 0x10f5f0 marked `inline` was not measured: four matched callers in other
+// files (0xe9830, 0xc49b0, 0x265680, 0x155810) call it out of line.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2888,7 +2897,7 @@ real g_47ff30 = 2.5f;
 // instructions against the 711 of the body, and its variants swap call arguments, so the file was restored; the column
 // alignment puts the first differences at the frame (0x100 against 0xfc), the top slot
 // (esp+0x108 against esp+0x104) and the first float home (esp+0x20 against esp+0x34).
-// score 682 (was 699): Complete projected-speed running sums recover retail length 3244;
+// score 682 (was 682): earlier 699; Complete projected-speed running sums recover retail length 3244;
 // frame 0x100 versus retail 0xfc; scalar/vector/transform homes and force scheduling remain.
 // Earlier at 699 (was 713): complete angular error in the torque output, then the existing in-place scale;
 // 3229/3244 bytes, frame 0x100 versus retail 0xfc.
@@ -3054,6 +3063,18 @@ real g_47ff30 = 2.5f;
 // existing-result running sums 682 plain, kept; parts plus sums 702; bare and phased sums 682/682.
 // Only the minimal complete running sums remain: native up-speed has successive additions and stores;
 // original operands, sum trees, observations and calls fixed. Exact length 3244, original frame 0x100.
+// Round 147 (m3 lane 7, fast): retail reads the mass field once for the three directional masses and once
+// each for the force and torque scales, and gives mass no home (ours spills it: frame 0x100). The field read at
+// each use (re-measure of P369) 676 at 3248 bytes, frame 0xfc, first +0x66 (gain 6, not kept); on it: bounds
+// interleaved with the reciprocal (re-measure of round 322) 682 (3249 B, masked aligned 450 -> 444);
+// vector3f_scale of force and torque by the field (re-measure of P369's scale calls) 689 (3228 B; the end then
+// loads the field once per vector, as retail), with the torque scale argument as `state->unknown6c *
+// angular_scale` 689 (same code); a named pointer for definition+0x22c (approach rates, then the turn limit)
+// 732; a block-local mass for the three directional masses, the field at the end, 711; maximum_speed declared
+// at its assignment 676 and the two velocities declared just before 0xba1d0 676 (same code). Left: retail keeps
+// state in EBX and the rates pointer in EDX (ours the reverse), its force home sits at esp+0x14 below up (ours:
+// up at 0x14, the acceleration scale at 0x20, force above), and its products with boost load the field first;
+// on the field-per-use form, both boost products written boost first (re-measure of round 45) 676 (same code).
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4363,6 +4384,10 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // Round 91: long primary count 169; primary-count address reference 48; direct definition macro at
 // the tag store 138; const definition 48; const primary count 48; const total 48; facing copied in
 // j/k/i order 67; four-byte-aligned short primary count 127 (prologue changed). Original body restored.
+// Round 147 (m3 lane 7, fast, with 0xf62f0 and 0xf6010): the colours as one chained assignment 48; the scales chained
+// 50; length declared at its assignment 48; length and the ray vector declared where computed 48; the ray products
+// written `length * direction.i` 48 (all same code but the scales). No untried natural form is left here that
+// does not depend on the cone call's register order (BLOCKED-BY 0x146320; its file is held).
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
@@ -4440,7 +4465,7 @@ extern byte g_5107ee;
 // waits on 0x146320's file, and the middle-point copy is still scheduled ahead of the reflection's loads.
 // MiniMax R (11-06): no new form, no lower score (41); a named seed pointer for the cone call compiles
 // the same, and what is left is the cone call's EDI-before-ECX pair and the middle-point, dot and memset order.
-// score 41 (was 160): left: the cone call sets up EDI before ECX (retail ECX first; the same in
+// score 41 (was 41): earlier 160; left: the cone call sets up EDI before ECX (retail ECX first; the same in
 // 0xf6060, BLOCKED-BY 0x146320, whose file is held) and the middle-point copy is scheduled ahead of
 // the reflection's loads (retail stores its z and y words after the first products).
 // Frame 0x8cc agrees; count/marker carriers, strength residence and reflection schedule remain.
@@ -4479,6 +4504,10 @@ extern byte g_5107ee;
 // B392: Plain midpoint/copy/reflection loops: 43/41/43/41/41/41/41/41; native midpoint aggregate with CRT
 // publication/projection-part follow-ups: 41/41/149/149. Original body restored; cone setup and
 // reflection schedule remain.
+// Round 147 (m3 lane 7, fast, with 0xf6060 and 0xf6010): the colours as one chained assignment 43; the scales
+// chained 45; dot declared before middle 41 (same code); the dot written `2.0f * (...)` 41 (same code); the colours
+// stored right after the memset 80 (891 bytes). Retail loads the colour constant into ECX before the zero stores and
+// the middle copy's loads after the dot's; the cone pair stays BLOCKED-BY 0x146320.
 // @retail 0xf62f0
 void __stdcall function_f62f0(long vehicle_index)
 {

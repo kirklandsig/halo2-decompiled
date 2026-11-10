@@ -3397,6 +3397,12 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // listed forms; new on the current body: the node flag as `node_index != NONE && node_index < 0` 94 (339 bytes); the
 // particle system derived again from g_510c74 and its index for the 0x1751d0 type query 118, for the loop's 0x248c60
 // call 112, for the particle-location cursor 119 (each turns the effect index into a register argument; 0x176f60 25).
+// Round 147 (m3 lane 7, fast with 0x176f60, 0x178bc0, 0x178c80, 0x17ae50): mode read per call with colour B read
+// first 108; per call with both colours read inside the type-query block (B first) 108; per call with the colours read
+// before the particle-location cursor 108 (each: definition in EBX until the loop, effect index in EAX and system
+// index in ECX, 0x176f60 25); cached mode with colour B first and the cursor after the colours 93; cached mode with
+// the cursor read last 93 (same code). Retail's 0x175a80 call takes the system in ESI and colour B in EDI, which
+// sets the system/next ESI/EDI swap; 0x175a80 is in src/unknown_173b90.cpp, an Avoid file this round.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
