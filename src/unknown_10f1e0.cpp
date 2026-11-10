@@ -3487,7 +3487,13 @@ bool __stdcall function_111650(long arg_0, long *arg_1)
     return active;
 }
 
-short *function_e70b0(short *value, long unit_index);
+/* a unit action state, returned by value through the caller's temporary */
+struct s_unit_action_state
+{
+	short value;
+	s_unit_action_state(short state) : value(state) {}
+};
+s_unit_action_state function_e70b0(long unit_index);
 bool function_e4050(long object_index);
 const long g_4408f8[8] = { NONE, 0, 1, 2, 2, NONE, NONE, 3 };
 const long g_440918[8] = { NONE, NONE, 0x600008c, 0xc000043, 0xc000043, 0xd000042, 0xc000043, 0xc000043 };
@@ -3514,7 +3520,7 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // MiniMax A (11-07, run 54): no new form, no lower score (44); the frame is still 0x3c against retail's
 // 0x38 (the action short keeps a 4-aligned slot and the two bytes under the flags go unused), which
 // waits on 0xe70b0's return type.
-// score 44 (was 44): BLOCKED-BY 0xe70b0 (its return type) for the frame 0x3c versus 0x38. Measured from
+// score 12 (was 44): earlier BLOCKED-BY 0xe70b0 (its return type) for the frame 0x3c versus 0x38, lifted in lane 16 r97. Measured from
 // the frame top every slot agrees except the action short (ours 4-aligned below the 4-byte slots,
 // retail 2-aligned with the two flag bytes under it) and the control/definition pair; VC7.1 gives a
 // lone 2-byte local, word, char[2], one-short struct or inlined short parameter a 4-aligned slot, so
@@ -3646,6 +3652,13 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // again). The state looked up before control and definition 55; definition declared before control 52; control declared
 // after state 52; the action short declared before the two flags 44; the force flag declared before the result 44;
 // the `type < 3` test after the state test 84; the set passed directly with no selected-set local 120.
+// M3 lane 16 r97: kept 44 -> 12 (plain): 0xe70b0 now returns its two-byte action state by value (a record with a
+// converting constructor), so the action is the call's temporary, the frame is retail's 0x38 and the BLOCKED-BY is
+// gone. Left: the set and mode homes exchanged (ours set +0x1c, mode +0x20), and the two flag bytes cleared after the
+// animation lookup where retail clears them (+0x11, then +0x10) ahead of its test. Plain trials on it: the two flags
+// declared ahead of the animation lookup, result first 204 or force first 205 (682 bytes each: any edit to these
+// declarations rebuilds the function at 682 bytes); the flags between the animation's NONE and its lookup 203; set
+// and mode declared mode first with the flags early 205.
 // MiniMax C (11-09): score 44 (was 44): the reduced image's 0xe70b0 writes its two-byte result
 // through the pointer it is handed in EAX, so the word at +0x14 is that result's home and the
 // action short we still declare keeps a two-byte home at +0x10 that nothing reads; retail has no
@@ -3656,7 +3669,6 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // MiniMax C (11-09): score 44 (was 44): the frame is 0x3c against retail's 0x38: retail packs
 // the action short beside the two flag bytes (the two-byte value 0xe70b0 returns) and clears the
 // two flags before the lookup's branch; the short's own home needs 0xe70b0's file, which is not
-// in this round's list.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)
@@ -3673,7 +3685,6 @@ bool function_10ff40(long unit_index, long type, short side, short value,
     if (lookup != NONE) animation = g_46fc30[lookup];
     bool result = false;
     bool force_overlay = false;
-    short action;
     c_animation_channel *overlay;
     if (set != NONE)
     {
@@ -3685,7 +3696,7 @@ bool function_10ff40(long unit_index, long type, short side, short value,
                 force_overlay = true;
             else
             {
-                if (*function_e70b0(&action, unit_index) != 0 ||
+                if (function_e70b0(unit_index).value != 0 ||
                     (*((byte *)g_4e0300->data + (unit_index & 0xffff) * 12 + 3) == 0 && function_e4050(unit_index)))
                     force_overlay = true;
             }
