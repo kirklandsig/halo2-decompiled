@@ -12,6 +12,9 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
+// score 180 (was 180): this round: no new form and no lower score; retail still forms d3.x, local_6.x,
+// d1.x, d1.y, d3.y and local_6.y before the products while ours forms d1.y first and the two d3
+// components last, and the two numerator terms swapped give the same code.
 // MiniMax S (11-09): still differs in the order of the components: retail forms d3.x, local_6.x, d1.x, d1.y, d3.y
 // and local_6.y before the products, ours forms d1.y first and the two d3 components last; the two numerator terms
 // swapped give the same code.
