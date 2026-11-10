@@ -94,11 +94,22 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 	g_5047f8[arg_0].field_18 = arg_0;
 }
 
+// score 393 (was 408; 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
+// frame 0x60 against retail's 0x64.
 // MiniMax S (11-06): The first arg_7 plus arg_8 sum lands in xmm3 where retail keeps it in xmm0, so the
 // two byte streams part company at the third instruction and the rest of the function is compared out of
 // step; retail also keeps the normalized XY in xmm1 and xmm3 where ours uses xmm2 and xmm4. Splitting the
 // sum into two statements or two scalar locals did not move the register choice.
-// score 408 (was 395; the rise is two retail-evidenced fixes, see b3C below): entry schedule and normalized XY/magnitude homes differ, frame 0x68 against retail's 0x64.
+// M3 lane 10 r86 (fast with 0x299460, 0x298c30, 0x29a190, 0x29cbb0; kept form confirmed plain, 0x29a190 MATCH): retail takes the loop
+// distance's differences on x87 unrounded (`fld [centre.x]; fsub [point.x]`, both rows, no store between subtract and square); ours
+// subtracted x in SSE from a register copy of the centre and rounded it. `(double)` on the centre in the root's differences 393 (kept,
+// 1711 bytes, aligned 556 -> 373, masked 169 -> 145; the centre x stays in memory as retail). On it: the sine argument as `-(double)a : (double)a`
+// 432 (1683); the near arm's y rows written cosine-first or x-first 393 (same code); the cast on the point side instead 393 (same code);
+// `(real)` on both near-arm rows 393 (same code); the near arm's sine before its cosine 393 (aligned 374); the root's y term first 393
+// (same code). On the old body: the emission helper in retail's
+// store order (angle, side, facing, direction) 416 (1718) and 0x29a190 falls to 362; with the `(double)` root 420 (1698); the sine form
+// alone 416 (1714); all three 440 (1678). Left: retail stores the near arm's cosine and sine as floats and takes the y row in SSE, the
+// 16-bit candidate count in BP (byte here; a short count breaks 0x29a190), and one more frame slot.
 // b3C (11-06), statement walk against retail 0x298d90..0x299451, fast with callers/callees (0x29a190, 0x298c30 stay MATCH):
 // FIXED (behaviour): both 0x298c30 calls pass the endpoint distance local_9 (`mov edx, [esp+0x20]; push edx` at 0x29933d/0x2993ec reads the slot of
 // `fst [esp+0x1c]` at 0x298f28; the ratio local_13 is stored at 0x29906d (`fst [esp+0x18]`) and is dead after the arccosine), ours passed the clamped ratio: 395 -> 414.
@@ -359,7 +370,7 @@ void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f cons
 	for (short local_7 = 0; local_7 < 2; local_7++)
 	{
 		point2f *local_8 = &local_3[local_7];
-		real local_9 = (real)sqrt((local_1.x - local_8->x) * (local_1.x - local_8->x) + (local_1.y - local_8->y) * (local_1.y - local_8->y));
+		real local_9 = (real)sqrt(((double)local_1.x - local_8->x) * ((double)local_1.x - local_8->x) + ((double)local_1.y - local_8->y) * ((double)local_1.y - local_8->y));
 		bool local_10 = local_7 == 1;
 		if (local_9 < arg_2->field_24)
 		{
@@ -745,6 +756,15 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // times (644, 3372 bytes, 0x29a190 MATCH; not kept: unshared ternary, `fadd qword`). Also tried: the existing function_2994a1 for the obstacle offset
 // (retail's SSE offset chain from stored local_55: 662 with double locals, 3354 bytes, but 0x29a190 broke; 778 with the cast form, 3344 bytes);
 // float constants in the dot clamp 701 (3324 bytes); `1.0 < local_48` same code.
+// M3 lane 10 r86 (fast with 0x298d90, 0x298c30, 0x29a190, 0x29cbb0; control 733 at 3291 bytes, aligned 486, masked 261): retail never
+// keeps the radius in a register (reloads it from its stack home in every block, even across the 0x2108a0/0x210770 calls); ours
+// hoists it into XMM5 at entry. `inline` on the definition of 0x2108a0, of 0x210770, or both 897 each (3275 bytes, masked 278; in
+// their /Ob1 file the keyword now inlines them here, so the old 759 lead is spent). The sweep arms in retail compute each scale right
+// before its pair of products (forward x, y; reverse x, y; centre x, y): that statement order 791 (3307, masked 218), with the
+// products written scale-first 791 (same code), scale-first alone 733 (same code); the obstacle rotation's x row followed at once
+// by its offset, then the y row and offset, 742 (3287, masked 253); the offsets written radius-first 733 (same code); on the sweep
+// order, the body under `if (sector != NONE) { ... return result; } return true;` 818 (3322, masked 205), the rotation order 801
+// (3303, masked 210). All restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

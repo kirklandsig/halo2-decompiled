@@ -74,11 +74,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
+// score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // MiniMax S (11-06): The frame size agrees but the homes do not: the success byte sits at frame+0x13 where
 // retail keeps it at frame+0x17, the float at frame+0x10 against frame+0x18, the four-flag array at
 // frame+0x24 against frame+0x1c and the copied vector at frame+0x4c against frame+0x40, and the first
 // comparison branches the other way round.
-// score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // W14L: full statement walk against retail (0x2922b0-0x292df3; args 0x120..0x134 after the pushes): fields +0x14/+0x30/+0x48,
 // tests, callees (0x1e5450, 0x30bf0 x3, 0x1697c0 with its six stack args), both cross/fallback chains, the four points,
 // ray loop, per-ray clamps and signs, both rotations and the arg_6 tails agree; no behaviour difference found. Constants
@@ -399,6 +399,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // M400: Complete original input/basis/origin/distance/ray/root/rotation-cross/projection defaults
 // 603/677/637/665/671/592/592/598. NOT kept: none improves; original
 // producers and all in-place snapshots restored; result/input/minimum/hit homes remain.
+// M3 lane 10 r86 (fast, control 592, aligned 484, masked 216): retail forms 1/range once and multiplies it by the minimum twice
+// (second product in place on the inverse, the output store sunk below it) and negates the half-width separately for points 3 and 4.
+// Both fractions as `minimum / range` 697 (2822 bytes, one divide shared); only the clamp input or only the output as a divide
+// 679/679 (2845); fourth width as `0.0f - width` 592 (same code); widths as `width * -1.0f` 680 (2844); a second point helper
+// negating the width at each product 678 (2844), with one named negated width 600 (2821); the half-width read once into a named
+// local 688 (2828); the point helper's width as `real const &` 676 (2829); the point helper as plain inline 592 (same code).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
