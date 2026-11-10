@@ -190,6 +190,14 @@ bool voice_xhv_get_runtime_parameters(XHV_RUNTIME_PARAMS *parameters, c_voice_xh
 // `result = true` with the engine bound after the guard 42. Retail keeps push ebp at the entry and puts the lea after
 // the je only when the guard edge reloads the stored result; every natural form forwards AL on that edge or copies
 // a `mov al, 1` exit into the success path.
+// Round 98 (m3 lane 16, fast; the je's target is a third difference the count masks: ours skips the reload of the
+// result on the guard edge). On the natural nested body (42, 284 bytes; the result is spilled to retail's slot by
+// itself): an empty `if (!result) { }` before the return 42; an empty else arm on all four tests 42; the result as
+// the one member of a local aggregate 42; the creation joined to the guard with `&&` 42; a dead `&result` in an
+// `if (false)` block 42 (all the same code); the ports loop in an inline helper that sets the result through a
+// bool pointer 166 while it stays a call (195 bytes), 42 force-inlined. Every inlined or dead address is resolved,
+// so the result is a plain value again, the true store folds into a `mov al, 1` exit and the epilogue is copied
+// three times; retail's one epilogue needs the result's load to be opaque on every edge.
 // @retail 0x55810
 bool voice_xhv_create(c_voice_xhv *xhv)
 {
@@ -1689,6 +1697,13 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // the player EBP and goes on the stack); has-player test first with `else if (active) result = NONE` 147 (threads to
 // the same code, block order differs); kept declared before the capacity test and assigned inside it 127 (same code as
 // the mask declared inside).
+// Round 61 (m3 lane 2, fast with 0x56380 and 0x53b00; baseline 134, already `ret 0xc`): the two failures only assigning NONE and
+// the rest under a following `if (result == 0)` 134 (same code: the test is threaded away and the result is still a constant,
+// so EAX's zero is shared and the capacity exit gets its own epilogue), as `!result` 134, as `result != NONE` 134; that form
+// with the retained mask first (mask, written, capacity, size) 137 and written first 137 (445 B each, the cursor then arrives
+// in EAX and the player on the stack, 0x56380 13); the clamp ahead of one `!has || clamped != player` assignment 162; the
+// length built in place from the counter (assign, scale, add 2) 134 (same code). Retail's call in 0x56380 sets EAX (player)
+// then EDX (cursor), which fits the declared order. Original body restored.
 // P399: Actual queue-count/recipient-count/aggregate-mask field identities, subsets 1-7, then entry-recipient word identity:
 // 133/134/133/133/133/133/133/133. NOT kept: no byte equality or native home repair; original complete body restored.
 // @retail 0x55c40
@@ -3675,6 +3690,12 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Round 71 (m3 lane 13, fast with 0x564c0): on the packet-cursor form (164, member in EBP) the packet-kind test ahead of
 // the member call 145, the plain arm as `else if (packet[0] < 2) {...} else return NONE;` 164, both 145; without the
 // cursor the plain-arm form 139 (same code) and both 150. The member keeps EBP in every form.
+// Round 61 (m3 lane 2, fast with 0x564c0; baseline 139): retail loads the channel into EBP at entry, ahead of the count test,
+// keeps the member in memory ([esp+0x1c], stored right after its call) and puts the route in the channel argument's dead home;
+// ours gives EBP to the member, so the route takes the fourth frame slot. On the separate-cursor form (164, 478 B, re-measured):
+// a short member 159 (480 B), the route at function scope 164, the cursor advanced in the for's increment 166, the cursor
+// declared ahead of the consumed count 139 (488 B, the cursor folds back into data + consumed: main's code), a named member bit
+// for the test and the clear 179 (467 B), the stride chosen after the cursor 164. The member keeps EBP in every one.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

@@ -579,7 +579,13 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes);
 void function_a8a30(long unit_index, long definition_index);
 real normalize2d(point2f *v);
 real function_11cc90(vector2f const *a, vector2f const *b);
-short *function_e70b0(short *state, long unit_index);
+/* a unit action state, returned by value through the caller's temporary */
+struct s_unit_action_state
+{
+	short value;
+	s_unit_action_state(short state) : value(state) {}
+};
+s_unit_action_state function_e70b0(long unit_index);
 bool function_10ff40(long unit_index, long type, short side, short value, bool *flag, short *side_out, short *value_out);
 void function_ba350(long object_index, real seconds);
 bool function_101240(long weapon_index);
@@ -6353,9 +6359,7 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 				angle = function_11cc90((vector2f const *)&toward, (vector2f const *)&facing);
 				if (!((*(dword *)(definition + 0xbc) >> 9) & 1) && unit->type == 0 && unit->parent_index == NONE)
 				{
-					short state;
-
-					if (*function_e70b0(&state, unit_index) == NONE)
+					if (function_e70b0(unit_index).value == NONE)
 					{
 						facing = toward;
 						turn = true;

@@ -576,6 +576,20 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // linked test 18 (266 bytes: the stores merge after the test and the arm reloads the block into ESI). Retail's loop looks like two loads of the block
 // field with the second turned into `mov esi, edx` after allocation, as our tail does with `mov ecx, edx`: the loop and the tail trade which pair
 // is CSE'd. The release address named before the linked test (not in the arm) 27.
+// Round 177 (m3 lane 4, fast): LEAD, what splits the loop's block into EDX and a copy. A block read used once in the arm merges
+// with the test's read (one load, straight into ESI); a block value used twice in the arm stays apart from the test's read, and
+// the arm's load then becomes `mov esi, edx`. Diagnostic (wrong code, reverted): the loop read at each use with a second arm use
+// (`+ cache_block->block->cache_block_index` on the address) and a block local in the tail gives retail's loop and tail line for
+// line with EDI/EBP as retail, 41 at 272 bytes, differing only by the added field's own load and add. So retail's arm uses the
+// block twice and its tail once (a block local, or one read). A second use in the test's own block instead (`&& flags != 0xff`,
+// diagnostic) 55 (269 bytes): no copy, so it has to be in the arm. New, each with the loop read at each use and the tail block
+// local: the entry test through the pool getter 81; the last store through the pool getter 109 (286 bytes); the linked test
+// repeated inside the loop's arm 51 and an arm block local beside the direct read 51 (both second uses fold away before they
+// count); the group passed as the address of the block's first field 51; the tail's offset through the block's own field 51.
+// Re-measured: loop read at each use with a tail block local 51 (EDI/EBP swap), with a group local in the tail's arm 27, that
+// tail alone 27, a group local in the loop's arm with the tail block local 51. The matched sibling 0x12e210 reads the block
+// twice through two lookups (two loads, no copy); the three fixup functions have no caller outside this file.
+// Wanted: a second use of the block in the loop's arm that leaves no code of its own.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {
