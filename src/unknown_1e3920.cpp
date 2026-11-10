@@ -1312,6 +1312,13 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // with a `substitute_` prefix (sorting after `squad`) 253 (slots unchanged: names do not order these homes); the squad pointer set
 // by an if statement 341 (1264 B), with the guard testing the squad index first 368 (1253 B); the 0x1e4990 result kept as a
 // `long` 253 (same code).
+// Lane 12 r107 (fast; masked aligned count in brackets, 222 at 253): re-measured lane 9's flag loop (`bool replace = true;
+// while (replace && next != NONE)`, ternary result) 296 [201] (1258 B; masked: only the creation arm's place and slots). Retail
+// places the creation arm behind the first predecessor chain of the bit test (after mode 2's jmp), the place VC gives a block that
+// jump threading created. On the flag loop: the bit test held in a bool tested twice (`if (swarm)` / `if (!swarm)`) 302 [204]
+// (the bool stays in memory, no threading); the else arm as `else if (!(*flags & 1))` 296 (same code, folded); the perception
+// result as one conditional 321 [236] (1273 B). On the original loop: probability declared before the two bools 253 (same code);
+// the three query outputs declared in the enclosing block and set in the loop 253 (same code).
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -2089,6 +2096,13 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // the top of the loop body 278, beside the weapon pair 278. New: the five seed reads through an inline getter 251; the direct
 // unit lookups through the existing OBJECT_DATUM_GET macro (own-IL global reads) 251, with the two slot queries through it too
 // 251 (same code each). Diagnostic (reverted at once): a function-static store in both 0x1e5280 and 0x1e53e0 274 (1247 B).
+// Lane 12 r107 (fast): retail's second-block query code is 0xcbd50's body inlined (`or reg, -1; cmp slot, -1; je; movsx;
+// mov [unit + slot*4 + 0x218]`). Both second-block queries through the existing 0xcbd50 with the slot read from a fresh lookup
+// 280 (retail's `or -1` shape, but the unit stays CSE'd across 0x1e53e0 and the actor index moves to EDI); that with a `long`
+// counter 333 (1186 B); with the slot read from the block's unit 280; with no unit local in the second block (grenade type and
+// the +0x23e store through fresh lookups) 279 (1227 B); the first block's two 0xcbd50 slot arguments read from `unit` 361
+// (1171 B). Diagnostic: the first block's unit through slot_handler.h's object_get view 251 (same code: the pool data load is
+// CSE'd across views). Re-measured: the `long` counter 278 (1191 B, frame 0x10).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

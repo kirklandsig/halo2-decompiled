@@ -620,6 +620,13 @@ extern point2f *g_468778;
 // (1558 bytes); the slot pointer declared first 375 (same code); the prop lookup before the clock 380; a velocity
 // pointer for the magnitude call and the eight prediction reads 397 (1576 bytes); the request direction stored
 // through its pointer 375 (same code). Aligned by sequence, 263 rows differ.
+// Lane 12 r107 (fast; masked aligned count with registers and esp offsets masked in brackets, 124 at 375): lane 1 r71's lead
+// rebuilt (actor first, constant exits, a velocity pointer for every field_1c read, the direction pointer declared inside the
+// 0x110ab0 test, the second distance's zero in its arm, the planar pair copied whole) 422 [90] (1532 B, frame 0x44: ours arg_0
+// ESI, actor EDI spilled around 0xe6900's EDI argument, slot EBP; retail arg_0 EDI, actor EBP, slot ESI). On it: a separate
+// local for the second prediction time 422 (same code); the first prediction in i, j, k order 418 [91] (1535 B); without the
+// velocity pointer 420 [111] (1525 B); `return !f14 && !f13 && !f2d;` in the arm 411 [99] (1549 B); that with the distance zero
+// at its declaration 403 [102] (1549 B), and with the planar pair as `{i, j}` 407 [106] (1555 B).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -1019,6 +1026,13 @@ static __forceinline long real_to_long(real value);
 // `return false;` 509; the result declared before the slot view 382 (same code); the prediction scale written rate first
 // 382 (same code); the entry tests as `f13 || f14` and `else if (f2d)` false arms ahead of the body 382 (same code).
 // Aligned by sequence, 160 rows differ: the false exit placed last shifts everything up to retail's place for it.
+// Lane 12 r107 (fast; masked aligned count in brackets, 105 at 382): retail reads `local_8->field_4.x` and the actor
+// position's x through the two addresses it later passes to 0xfa1a0 (`lea ecx, [esi+0x238]; lea ebx, [edi+4]` ahead of the
+// direction vector), y and z off the bases. Named actor/target position pointers for the direction vector and both 0xfa1a0
+// calls 453 [104] (1906 B; every component then reads through them); the facing pointer formed after the first dot (that dot
+// through the view's field) 494 [164] (1918 B), formed after the direction vector 509 [168] (1940 B); lane 6's computed
+// entry flag with an object pointer for the velocity reads 533 [129] (1945 B); the 0.95 facing test through the existing
+// dot_product2d 382 [103] (same score; retail's j-then-i product order is not restored).
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
