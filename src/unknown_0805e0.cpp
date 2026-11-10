@@ -52,6 +52,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 
 /* the next recent player after the iterator's: a valid, online, known player
    with a name; iterator starts at the first entry and ends at NONE */
+// score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
+// retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
+// successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
+// ours shares one register for index and successor.
 // MiniMax S (11-10): no new form, no lower score (43); the successor still rides in EDX where retail
 // keeps it in EBX (and retail reads the index straight into ESI where ours copies it), the mask is still
 // the immediate 3 where retail hoists it into AL before the loop, and the pushes keep our order.
@@ -62,10 +66,6 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // MiniMax C (11-08): forms tried, none lower: early returns 52, early returns with the successor in
 // a local 49, the successor in a local with the result flag 51, the loop turned into a do/while 51
 // (base 43).
-// score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
-// retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
-// successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
-// ours shares one register for index and successor.
 // native successor 51; persistent entry while/for 57; complete admission 43; identity predicate 53;
 // native player assignment 43; native successor with identity 57; admission result 59.
 // Native identity OR/logical OR 83/78; each with native name 83/78; native name alone 43;
@@ -324,6 +324,13 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // and the step in the loop test 51 (127); a for loop stepping from a successor that is read into a short first 51
 // (127); the current loop with four `continue` filters (the identity pair and the exclusion pair joined by `||`) and
 // `return true` 52 (127). All restored.
+// Round 70 (m3 lane 15, fast with 0x1a303b/0x2b393c, both kept their matches): match-only lead 39 (129 B, masked aligned 9
+// against this body's 19): a priming lookup, then under `if (index != NONE)` `do { next = entry->next; *iterator = next;
+// if (tests) { copy; result = true; break; } if (next != NONE) entry = &g_4cf98c[next]; } while (next != NONE);` gives
+// retail's early ESI save and in-place `imul esi, esi`; left: the mask is not hoisted into AL, next takes EDX (retail EBX)
+// and the back-edge lookup is not cross-jumped into the head. Not kept: the inner test repeats the loop's. On it: early
+// returns 52 (133 B), a short next 63 (136 B, both callers 2), the flag tests as an outer if 39, the index reused for next
+// 39, a per-pass result 39, `else if (next != NONE)` with a `!result` loop condition 39 (no hoist in any).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

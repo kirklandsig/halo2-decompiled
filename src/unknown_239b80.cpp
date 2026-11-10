@@ -562,6 +562,12 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // EBP, the hull count in ESI and reloads indices from its argument home, and rotates the loop test to the bottom;
 // retail tests at the top (three back edges) and reloads the hull count from +0x10 at each join. An inline
 // duplicate-removal helper taking the count by pointer: not inlined 331 (663), forceinline 271 (same code).
+// Round 70 (m3 lane 15, fast with 0x239d50): the departure as `equal ? false : true` 171 (786 B); the if/else departure (the
+// 168 form) with the flag declared first at function scope 252, with the left-start exit nested 168 (re-measure: the 168
+// form's code), with `short next` declared first in the pass 170, with previous_angle declared beside the current index 206; `bool
+// left_start` with the plain update and the nested exit 248. Lead: retail stores the departure byte directly (0 between the
+// coordinate tests, 1 on a difference) and its y test is `fxch; fcompi; jb` where the exit test's is `fcompi; jbe`, so the
+// two comparisons are not one expression in retail; no form here gives the fxch.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -990,6 +996,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // (893); `count ? &points[count - 1] : points` for the previous point 293 (903), with the if/else fraction 288;
 // `points + count` then a separate `previous--` statement 129 (same code). Guard with the if/else fraction and
 // the four-flag aggregate 99 (890).
+// Round 70 (m3 lane 15, fast): both dedupe tests nested under `if (result != 1)` 129, the alias copy size as
+// `sizeof(point2f) * count` 129, the crossing bit as `SET_FLAG(mask, result, true)` 129 (same code); `points = (point2f
+// const *)memcpy(copy, ...)` 372 (975 B); re-measured: the deltas through polygon_difference_23a220 129 (round 366's shared
+// 2-D difference). No untried natural form targets the cause: the one lever is the count's ECX at the alias join, which only
+// the repeated `if (count > 0)` guard gives (match-only, best 92 with the if/else fraction).
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
