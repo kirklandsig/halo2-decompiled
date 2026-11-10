@@ -1569,6 +1569,7 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
+// score 637 (was 640): earlier 552; frame 0xb964 agrees; sum/zero homes, axis re-read and early idiv remain.
 // b2C (11-06) retail walk, statement by statement against 0x16a8e0: every condition, field, constant, callee and argument order agrees (entry `radius > 0`, signed clamp to 8 and
 // signed `% point_count`, side/perpendicular/along/separation sums in retail's order, inside and 0.01/0.0001 tests, normal path when the length is <= 0.01, ray hits at +0x14, `0 - radius` opposite ray,
 // face sum below edge sum). Two fidelity fixes, both with retail evidence: the point reconstructions call the existing 0x120790 (retail inlines it: the two word table loads at 0x16aab5/0x16aabc and
@@ -1824,6 +1825,13 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // rows as `0.5f * (negative + positive)` 640 (same code); radius_squared declared before the query call 624 (607 + 17:
 // the product moves ahead of the call where retail forms it after the count test, the zero moves to EBX; not kept);
 // the magnitude through length_sq3f 640 and the midpoint through real_point3d_set 640 (both same code). All restored.
+// R229 (m3 lane 3, fast with 0x16a440/0x120790/0x2469b0): re-measure of the listed face classification from the normal
+// selection (553 then) on the current body: the separate face flag dropped and the final test made on `use_normal` (the
+// flag only ever mirrored it) 637 (2915 bytes; now a tie, kept as a clean-up, plain 637); one `ray` vector declared for
+// both ray arms (close to the listed shared-ray subsets) 629 (2896 bytes, but aligned 717 -> 778: positional only, and a
+// declaration merge picked by score: not kept); one hit record for all three ray calls (close to the listed one query
+// result) 652 (2920); the two root sums written i, j, k 637 each (same code); `available` through the existing
+// distance3d(&positive, &middle) 637 (2915), the three rays through the existing vector3f_scale 637 (2914), both 637.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
@@ -1921,7 +1929,6 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 					separation = nearest_squared_local;
 				if (radius_squared > separation)
 				{
-					bool face = true;
 					vector3f direction;
 					point3f positive;
 					point3f negative;
@@ -1951,7 +1958,6 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 						ray.i = direction.i * radius;
 						ray.j = direction.j * radius;
 						ray.k = direction.k * radius;
-						face = false;
 						if (function_2469b0((s_shapes *)&shapes, point, &ray, &hit))
 							positive = hit.position;
 						else
@@ -1998,7 +2004,7 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 					half.j = middle.y - positive.y;
 					half.k = middle.z - positive.z;
 					real available = (real)sqrt(half.i * half.i + half.k * half.k + half.j * half.j);
-					if (face)
+					if (use_normal)
 					{
 						face_sum.x += middle.x;
 						face_sum.y += middle.y;

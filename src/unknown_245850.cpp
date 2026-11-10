@@ -29,6 +29,9 @@ struct s_245850
 };
 
 #pragma inline_depth(0)
+// MiniMax R (11-10): no new form, no lower score (1); the plane index is still loaded with a 16 bit
+// move where retail sign extends it, and the width of the lookup's index parameter is declared in
+// another file, so the one remaining difference cannot be closed from here.
 // MiniMax S (11-09): no new form, no lower score (1); the plane index is still loaded with a
 // 16 bit move where retail sign extends it; this file's declaration of the plane lookup
 // changed to a long leaves the callee unresolved in the reduced image and rotates the point

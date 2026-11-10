@@ -306,7 +306,7 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 	}
 }
 
-// score 14 (was 56; before that 112): frame 0x48, the entry registers, the definition spill, the search and the axis bases agree (round 101); earlier at 56,
+// score 14 (was 14; 56 before round 101, 112 before that): frame 0x48, the entry registers, the definition spill, the search and the axis bases agree (round 101); earlier at 56,
 // frame 0x48 and the entry registers agree, 0xb7060 matches; what remains: the definition spilled at its load (retail EAX, ours ECX, then the
 // default body and index registers), the search's bodies/offset load order, transform kept in EBP where retail has `lea ecx` and left in EBP, the dot's first two
 // products (retail k then j, up first), one cross product side, and the failure stores (retail after the pops).
@@ -610,6 +610,25 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // the dot named 22; on 14: dot3f(forward, up) 14 (same code); with `forward` alone: the dot as statements k, j, i 63, one exit
 // through `body_index = NONE` and an else arm 14 (same code), forward and up declared together before the normalizes 28. A 600 s
 // permuter run (62 tries, from the `forward`-only form) found nothing below 14.
+// Round 103 (m3 lane 16; fast with 0xb7060, which matched in each; a compile-only /O2 /arch:SSE /Gr harness reproduces the
+// SSE residue and the failure tail exactly). The tail: retail's not-valid exit and the success path share the epilogue after
+// the last normalize, so the join after the valid test survives and the failure block merges with its own epilogue copy
+// (pops scheduled before the stores); ours threads the join away. Tried: guard gotos with the failure block before the
+// success code 14 (same code), after it 171 (head flips); `entry->active = true;` moved after the valid block 67 (retail's
+// tail, but the store then sits in the join, aligned 9); harness only, all keeping our tail: an early return on !valid, a
+// return inside the valid block, `else return;`, an empty else arm, three else arms, a success flag, the failure stores
+// swapped or chained, a `valid` local read before the active store, `inverse` declared outside the valid block or at the
+// top, the valid block as a forced-inline helper (with or without an early return). The SSE part: dot3f(up,
+// &entry->transform.forward) 10 (the cross's i row right); the dot, the scale's input and the cross's first operand through
+// `&entry->transform.up/forward` with the subtraction and normalizes through `up` 8 (left: the dot's i product, forward
+// first in retail; a mix of pointer and field spellings, so it needs a match); that with the active store after the valid
+// block 67 (aligned 3, register-masked 1: only the store's place and the i product left). Harness only: the subtraction
+// through the field instead 34 SSE lines; all 192 term orders, groupings and product orders of the dot as a local helper
+// leave the i product (2); a projection helper (vector, axis) 8-12; cross3f 31; the dot named 8; direct `up->i -= forward->i
+// * dot` 23; identity-local chains (diagnostic) at the pointers or the entry index: period 8, no state below the base; the
+// active store written at the head or the tail of both arms of the valid test 17 SSE lines (the tail moves but not to retail's).
+// Fast as well: the empty else arm 14 and the early return on !valid 14 (both the same code); the field-spelled dot, scale and cross
+// with the subtraction through the field too 143 (940 bytes, the head flips, 0xb7060 11).
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

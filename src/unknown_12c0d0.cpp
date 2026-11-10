@@ -1004,6 +1004,11 @@ struct s_bitmap_texture_view
 
 // MiniMax E (11-10): no new form, no lower score (3); a permuter run over the function (34 tries in 304s, full
 // image and reduced image) found nothing below the baseline.
+// MiniMax D (11-10): no new form, no lower score (3); the masked level address is still loaded into EDX where
+// retail reuses the dead base register: the address in a named local, the store and the mask split, the mask
+// written first and as a long constant and as a complement, the element's type as long, unsigned long and int,
+// and the value unsigned all leave the same three instructions; a permuter run over the function ended without
+// reporting any variant; the reduction branch, the format bits and the three header stores agree with retail.
 // score 3 (was 3): the last three instructions are the whole difference - retail loads the masked
 // level address into the bitmap base register that dies with that load and stores it from there,
 // ours loads it into edx and masks it there; the reduction branch, the format bits and the three

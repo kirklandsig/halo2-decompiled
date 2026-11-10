@@ -1724,6 +1724,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // MiniMax R (11-10): no new form, no lower score (193): the three cross terms' order and the place of the case 1 reference copy still differ, and the forms tried before (each index ahead of the helper, the term orders and the copy ahead of the helper) all measured at or above the body above.
 // MiniMax C (11-09): no new form, no lower score (193).
 // score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
+// MiniMax C (11-09): no new form, no lower score (193).
 // MiniMax R (11-06): no new form, no lower score (193).
 // MiniMax D (11-06, run 49): no new form, no lower score (193); retail still keeps the result in its own stack slot (0.0f at the entry, filled by the atan2 tail, one shared `movss xmm0, [result]` at the end, frame 0x18) where ours keeps the zero in xmm0, returns early on each path and reuses the scale slot for the x87 result (frame 0x14).
 // MiniMax R (11-01): no new form, no lower score: the five-way switch still evaluates the cross products in our order and allocates the XMM registers differently.
@@ -1850,6 +1851,17 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // the cast 193 (same code); the helper's second cross written k, j, i 197 (788), both crosses k, j, i 288 (696);
 // case 1's reference copy ahead of the helper 193. Diagnostics, reverted: one to twelve dead initialised locals
 // ahead of the result 193 each; a volatile result 187 (aligned 123, masked 48).
+// R229 (m3 lane 3, fast, 0x2e9e0 listed): modes 1 and 3 through one shared forced-inline projection helper taking the
+// reference by pointer (perpendicular, then both dots; case 1 copies g_4b9dac first, case 3 computes the offset first,
+// which then precedes the perpendicular naturally) 182 at 812 bytes: retail's entry (`sub esp, 0x18`, zero stored to
+// [esp+8]), result slot and tail, the cases' XMM schedules still differ; but 0x2e9e0 492 -> 573 (2232 bytes), as with
+// round 73's reordered case 3. The same with plain `inline` 182, with a shared mode 2/4 helper too 182 (same code). The
+// helper taking the reference by value 184 (800 bytes, frame 0x20: case 3's offset is stored and copied through
+// integer registers, which retail does not do; 0x2e9e0 stays 492), case 1 passing g_4b9dac by value 184: not kept, the
+// parameter type would be picked by score. Round 524's shared 1/3 family measured 410; this helper is forced inline,
+// keeps case 1's copy of g_4b9dac and computes the perpendicular itself. The plain-inline, shared 2/4 and by-value-global
+// variants compiled to the same code as their siblings. Lead: the pointer helper is the natural form; it needs 0x2e9e0 reworked
+// against a callee that clobbers XMM7 (its frame slots all move).
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3135,6 +3147,12 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // variable 317 each (same code); the zero store through the state 317; the entry local declared inside the test 367;
 // the created test through the state 375. Next: a natural form that adds one use of loop 3's index or drops one
 // `i = first` without changing the instructions.
+// MiniMax E (11-09): no new form, no lower score (317); retail's empty-entry exit jumps three bytes further into the function than ours (retail +0x4cf, ours +0x4cc).
+// R229 (m3 lane 3, fast): decay `*initial += entry->elapsed;` 317 and `*initial = *initial + entry->elapsed;` 317 (same code: the
+// first unrolled decay copy keeps its own load of `initial` either way); growth `entry->initial = entry->elapsed + entry->initial;`
+// 317 (same code); loop 1 as a while loop 317 (same code); loop 3 walking its own entry pointer (`++i, ++entry` with `--entry`
+// beside `--i`) 385. Left as before: `first` takes EBP over loop 3's index (homes exchanged), and the unrolled decay loop's base
+// sits one entry low (ours entry-0xc, retail the entry's `initial`).
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

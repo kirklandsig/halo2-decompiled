@@ -868,6 +868,16 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // 562, 0x1f2250 418); the helper reading through two references 174 (1231, al 133/52). Body unchanged.
 // Round 226 (lane 3, fast, 0x1e5af0 matched in each): `up` renamed ground_up, new_up or normal, `limited` renamed rotated, `axis`
 // renamed rotation_axis: 163 each, identical code (names do not move up from XMM4-6 to retail's XMM5-7).
+// R229 (lane 3, fast, 0x1e5af0 matched unless noted): re-measure of lane 9 r89's state dot written
+// `old_up->i * up.i + old_up->j * up.j + old_up->k * up.k` on the current body 162 (that block is then retail's instruction
+// for instruction, loads k, j, i and (k + j) + i; only up's XMM4-6 against XMM5-7 is left there; one point, not kept); on
+// it the rotation dot written i + j + k 248 (1243 bytes: (k + j) + i as retail but limited.i folded from memory; aligned
+// 212 -> 194, register-masked 82 -> 71), the rotation test dot written i + j + k 162 (same code), both dots 248, and
+// (re-measure of round 232's angle before the limited copy, 190 then) `angle` declared before `limited` 172. On the
+// original body: the double fallback writing both outputs and returning 271 (1254 bytes, 0x1e5af0 20); the forward cross
+// computed straight into `forward_result` (no `forward` local) 315 (0x1e5af0 20). Diagnostic, removed: 1-16 unused locals
+// before `old_forward`'s initialisation change the code only at 3 and 11 (174) and never turn the forward cross's folded
+// [edi+0xf4..0xfc] operands into retail's separate loads.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result, byte const *state)
 {
@@ -1233,6 +1243,18 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // of the general step test (no limited_step bool) 516 (aligned 278); that with the short-step arm first 517 (285); the
 // general arm clamping delta from the normalized copy (no copy back, delta used after) 574 (285); the direct arm the
 // same way 566 (3037 bytes, aligned 175); both 557 (297).
+// Round 183 (m3 lane 4, fast; aligned = difflib count with addresses masked, 152 here, register-masked 98): retail
+// tail-shares the first arm's out.k store with the general arm's (its first arm jumps to 0x1f0f58, the 5 bytes of the
+// length gap); ours stores the gravity flag after that store, and the general arm's k sum commutes into xmm2 (`addss
+// xmm2, [eax+8]`, retail `movss xmm0, [eax+8]; addss xmm0, xmm2`), so the tails differ. Retail's general limited shares
+// desired's slot (0x20) and delta takes 0x2c; ours the reverse (and the direct pair is swapped too). Tried: `gravity =
+// false` at the top of the first arm 346 (aligned 152; the flag store lands before the out.k store as retail, a
+// statement order only, not kept); with the general output through vector3f_add 468 (3047 bytes, aligned 154; the
+// history sum then takes retail's `addss xmm0, [edi+0x64]`, the k sum still commutes); delta written from desired with
+// no scaled vector 391 (aligned 211, homes unchanged); vector3f_add(&difference, out + 0x64, &change) 346 (same code);
+// desired reused as the bounded copy (diagnostic) 514 (general delta takes 0x2c but every other slot moves);
+// vector3f_scale into delta, then `delta.i -= current->i` per row 351 (3053); on the first-arm form, the general
+// arm's k row as `limited.k + current->k` 346 (same code: the sum still commutes into xmm2).
 // MiniMax S (11-10): no new form, no lower score (347): the entry block still extracts the damping bit into ECX where
 // retail uses EDX and is one `mov ecx, eax` short, and retail stores the gravity byte before its `lea ebp` where ours
 // stores it after. The recorded flag-order sweep (412-500) and the flag widths recorded above never beat this body.

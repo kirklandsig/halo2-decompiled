@@ -975,7 +975,7 @@ short __stdcall function_1c8df0(short source_cell, short target_cell, point3f co
 short function_25c9d0(long actor_index, long prop_ref_index, bool player, short sight,
 	void *point, byte *sample, long reported);
 short function_25cb60(long actor_index, long object_index, short type, void *sample,
-	void *point, long location, long sight);
+	void *point, long location, short sight);
 short function_25cca0(long prop_ref_index);
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range);
 void function_26bfa0(long object_index, long *location_index, s_location_view *location);
@@ -1141,8 +1141,9 @@ real function_296600(long actor_index, long prop_ref_index);
 // calls with no named local, re-measured, 267 (1278 bytes); the three object lookups through the existing ai_object_get 163 (same
 // code); current as a byte 163 (same code); the time read ahead of the prop lookup 168 (1269 bytes). Retail computes the hit
 // pointer and the mode ahead of the pushes and then `sete` for `!current` between them, storing it for the second call.
-// Lane 12 r107 (plain; masked aligned count with registers and esp offsets masked in brackets, 30 at 163): HELD (needs the
-// owner's OK): 0x25cb60's last parameter as `short` (contributor code: its definition line and its cast to 0x263ed0, plus the
+// score 90 (was 163; PR #1006, landed in batch r746;
+// the same change as lane 12 r107's held patch): 0x25cb60's last two parameters as (long location, short sight), the 0x263ed0 call's `(short)` cast dropped.
+// Lane 12 r107 (plain; masked aligned count with registers and esp offsets masked in brackets, 30 at 163): 0x25cb60's last parameter as `short` (contributor code: its definition line and its cast to 0x263ed0, plus the
 // declaration here; the held patch is listed in the round 107 report) 90 [27] (1268 B; 0x25cb60 stays 12, the movsx goes). What is
 // left on that base: the game time read ahead of the object index and the object pool load (ours loads the pool global first),
 // and `!current` (retail's `sete` sits between the first call's pushes, stored for the second call). On the held base: `!current`

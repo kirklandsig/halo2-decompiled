@@ -1502,7 +1502,7 @@ bool function_685f0(void *block, long *size, byte *destination, long capacity)
 }
 
 // @retail 0x68670
-bool function_68670(byte *source, long size, void *block)
+bool function_68670(void *block, byte *source, long size)
 {
  s_bitstream stream;
  stream.data = source;

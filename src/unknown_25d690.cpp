@@ -1175,7 +1175,7 @@ void function_2640c0(long object_index, s_object_motion_view *result);
 // score 12 (was 83): retail copies object_index into edi just before the first function_badc0 call where ours
 // copies it after the squad lookup, and retail lays out the return-3 exit before the shared return-0 exit.
 // @retail 0x25cb60
-short function_25cb60(long arg_0, long arg_1, short arg_2, void *arg_3, void *arg_4, long arg_5, long arg_6)
+short function_25cb60(long arg_0, long arg_1, short arg_2, void *arg_3, void *arg_4, long arg_5, short arg_6)
 {
 	short result;
 	s_actor_view *local_0 = actor_get(arg_0);
@@ -1204,7 +1204,7 @@ short function_25cb60(long arg_0, long arg_1, short arg_2, void *arg_3, void *ar
 		{
 			byte *local_4 = g_4e3b44[local_3->tag_index & 0xffff].bytes;
 			short local_5 = g_4e6948->state == 1 && g_4f55ea ? 2 : *(short *)(local_4 + 0xc2);
-			result = function_263ed0(arg_0, (s_perception_origin_view const *)arg_3, (point3f const *)arg_4, (s_location const *)arg_5, local_5, (short)arg_6);
+			result = function_263ed0(arg_0, (s_perception_origin_view const *)arg_3, (point3f const *)arg_4, (s_location const *)arg_5, local_5, arg_6);
 		}
 		else
 		{
