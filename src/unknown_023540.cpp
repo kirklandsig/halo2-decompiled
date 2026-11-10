@@ -364,7 +364,17 @@ extern real g_4b8940[9], g_4b8964[9], g_4b8988[9];
 void function_022750(real const *a, long size, real const *b, real *out, real t);
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result);
 
-// score 252 (was 237): b5J walk against retail (2026-11-06). Behaviour: the period test is `> 0` with the
+/* whether the structure's lighting sample set exists and belongs to the
+   current bsp */
+static inline bool structure_has_matching_samples(void)
+{
+    byte const *structure = (byte const *)g_4e0344;
+    return structure && *(long const *)(structure + 0x80) > 0 && g_4e0348 &&
+        *(long const *)(*(byte const **)(structure + 0x84) + 0x1c) != NONE &&
+        *(long const *)(*(byte const **)(structure + 0x84) + 4) == *(long const *)((byte *)g_4e0348 + 8);
+}
+
+// score 223 (was 252; earlier 252, was 237): b5J walk against retail (2026-11-06). Behaviour: the period test is `> 0` with the
 // false path last (0x22adc comiss, 0x22ae0 jbe 0x22c1d), so a NaN period clears g_5093f4 (was: ran the update);
 // rotation[5] and [7] use j*(k*complement) with k*complement shared with [2]/[6] (0x22a0e, 0x22a36), was (j*k)*complement.
 // Structure (retail shape): reset loop indexed with a signed bound, stores in retail order (0x22860-0x22888);
@@ -397,6 +407,9 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 // selective mixed ji/ki/jk 248/248/231; sine-j with mixed ji/ki/jk 229/250/245.
 // (sine-j and mixed-ji written out at their matrix uses gave 229; not kept: two of six parallel locals inlined.)
 // Direct axis/angle/both on this product context 274/252/274 fast (callee caveat).
+// Round 102 (m3 lane 9): retail reads the sample set pointer (+0x84) twice, once inside the admission test chain and
+// again after it, the shape of an inlined test; the admission through the shared structure_has_matching_samples (also
+// used by 0x23690) 252 -> 223 plain, kept. Left: frame 0x64 against 0x68 and 18 bytes short (969/987).
 // @retail 0x22850
 void function_22850(void)
 {
@@ -410,9 +423,8 @@ void function_22850(void)
         memset(entry->data_count, 0, sizeof(entry->data_count));
     }
     g_5093e8 = 0;
-    if (!g_4e0344 || *(long const *)((byte *)g_4e0344 + 0x80) <= 0 || !g_4e0348) return;
+    if (!structure_has_matching_samples()) return;
     byte *source = *(byte **)((byte *)g_4e0344 + 0x84);
-    if (*(long *)(source + 0x1c) == NONE || *(long *)(source + 4) != *(long *)((byte *)g_4e0348 + 8)) return;
     long count = *(long *)(source + 0x38);
     if (count <= 0) return;
     for (long i = 0, remaining = count; remaining > 0; ++i)
@@ -2568,6 +2580,16 @@ dword __cdecl function_131fc0(real alpha);
 // in BL from before the call, and 0x3a5c0 goes 9 -> 226); unconditional defaults selected into two new pointer locals, each
 // after its copy or both copies first, 160/158 (1713). None kept.
 // MiniMax R (11-09): no new form, no lower score; the store to the shader global still comes after the second flag test where retail's comes before, and retail keeps that flag in al where ours keeps it in cl; the halves and the pixel-shader fields are still written in our own order.
+// Round 102 (m3 lane 9, fast, base 140): the long arm equals retail; what differs is the preserve_alpha load our
+// build hoists above the `simple` branch (CL, kept across 0x131fc0) where retail loads it after the branch and again
+// (BL) after the short arm's call, and the tail. `(void)&preserve_alpha` 140 (no effect); the y offset named once
+// 140; the half extents named once 140; const pointers to source/destination read back before Begin 140 (no home
+// writes); source tested before destination 140 (source then in EBX, destination in ESI, as retail); reciprocal-first
+// UV products 140; the short arm's clamped strength named 140; source first with the named offset 140; on that both
+// defaults built unconditionally and then selected 154 at 1717 bytes, which is retail's tail but for its two writes
+// of the chosen default into the parameter's home (`lea ecx; mov [home], ecx; mov ebx, ecx`, 6 bytes each); each
+// default array declared at its own null test 140. The short arm's `mov bl, [esp+0x70]` comes right after the cdecl
+// `push edx` for 0x131fc0, so it is preserve_alpha (the thirteenth argument, ret 0x34), not a fourteenth argument.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2790,6 +2812,19 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // body restored; frame 0x20c/0x200 and separate-sample boundaries remain.
 // Direct cache-hit completion and found-byte break, each with long/bool success and original/positive
 // eligibility results, 554/549/554/549 each. Original exhaustive scan and body restored.
+// Round 102 (m3 lane 9, fast unless marked): the allocation through render_memory.h's render_memory_allocate with the
+// sign-tested handle pointer 478 (1660 bytes, both 0x235a0 copies still inlined); the per-bucket sample count as long
+// (retail's movzx, spill and signed jle) 400; the level clamp as `>=` (retail's cmovge) 401; the coefficient pointer
+// started from layout->data before the level arithmetic (retail loads +0x20 first) 395; that with the limit named
+// 399; data-first + long count + `>=` 394 (plain 394, seven points). Diagnostic only, not kept: inline_depth(0)
+// around the second 0x235a0 call 399 at 1486 bytes, and with the allocator helper 295 at 1547/1543: retail's shape is
+// the allocator inlined and the second 0x235a0 copy called; no source form found that keeps that call out of line.
+// Retail stores the sample flag false (0x23716) before the admission chain and true after it, as 0x22850's test is
+// shaped: the admission through the shared structure_has_matching_samples written with a result variable (false,
+// set true by the test) 371 plain, but the direct `return` form gives 401, so that gain is a flag form (match-only);
+// the direct form is kept (same 401, 0x22850 gains). On it: the inlined allocator as well 478 (1660 bytes, the second
+// 0x235a0 copy still inlined); the data handle stored after the output pointer 401; the sample count declared before
+// the bucket loop 401; the sample block under `if (available_samples)` instead of `continue` 401.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -2802,10 +2837,7 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, long order, lo
         if (found || g_5093e8 >= 24) goto done;
         g_4b89b0[g_5093e8].key = object_index;
         *(short *)&g_4b89b0[g_5093e8].unknown4 = order;
-        byte const *structure = (byte *)g_4e0344;
-        bool use_samples = structure && *(long const *)(structure + 0x80) > 0 && g_4e0348 &&
-            *(long const *)(*(byte const **)(structure + 0x84) + 0x1c) != NONE &&
-            *(long const *)(*(byte const **)(structure + 0x84) + 4) == *(long const *)((byte *)g_4e0348 + 8);
+        bool use_samples = structure_has_matching_samples();
         real red[16], green[16], blue[16];
         if (!use_samples)
         {
@@ -3076,6 +3108,10 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // first zero comparison right after bounds[1]'s store, so its zero holds xmm1, 240 is loaded into xmm7 and subtracted in place and the second 240 is a memory
 // operand (ours copies it, one instruction more); in the first corner set retail schedules coordinate 7 ahead of 1, 6 and 2 where ours runs 1, 2, 6, 7.
 // MiniMax R (11-10): no new form, no lower score; the vertical bounds still keep 240 in one register for both of them, where retail loads it into xmm7 after the horizontal bound's store and adds the second 240 from memory, because retail's zero for the scale tests already holds xmm1 with the first test hoisted into the bounds; moving that test between the horizontal and the vertical bounds (217), before both bounds (239), swapping the vertical pair (211) and swapping the halves (221, 225) all score worse, and the best lead, the second cosine in retail's home, is 210.
+// Round 102 (m3 lane 9, fast, base 211): bounds declared before the half extents 211; the bounds as one initializer
+// 211; the two zero tests in the other order 223; bounds declared with the entry locals 211; the half extents before
+// the scale normalization 246 (2024 bytes); the maximum as `scale = first; if (second >= first) scale = second;` 221;
+// both corner buffers as one two-row array 211. A 1800 s permuter run was cut off by its 2400 s cap before reporting.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
