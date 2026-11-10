@@ -12,7 +12,8 @@ struct s_visibility_bound_record
     byte padding[3];
 };
 
-// score 443 (was 443): earlier 443 was 476 (plain, 1760 B); the releases through the existing release_visibility_list (moved from
+// score 443 (was 443): earlier 476; plain, 1760 B: the releases through the existing release_visibility_list (moved from
+// earlier 443 was 476 (plain, 1760 B); the releases through the existing release_visibility_list (moved from
 // score 443 (was 443; 476 before; plain, 1760 B): the releases through the existing release_visibility_list (moved from
 // unknown_044720.cpp to unknown_044e90.h; retail's `test; js`), counts and capacities as chained assignments, and the tag
 // table in a local read at entry (retail's ESI). Left: the entry in EDI (retail EBX via `lea`), the flags read ahead of
@@ -25,6 +26,7 @@ struct s_visibility_bound_record
 // 429 -> 1131 (retail calls it there).
 // Earlier (476, was 406; fast, 1700 B, aligned ratio 0.675 -> 0.727): the plane transform is a call to function_1428b0, retail's inlined
 // MiniMax I (11-10): entry flags read in each branch and the tag table read once at the top, 475 each; a per-file inline threshold changes nothing, and retail keeps the scaled tag index in EAX (`movsx eax,[ebp+8]; shl eax,5; lea ebx,[eax+0x4ba138]`) where our build computes it in EBX with `add ebx,imm`, so the remaining head difference is the inline of function_1428b0, which lives in another file.
+// Earlier 476 (was 406; fast, 1700 B, aligned ratio 0.675 -> 0.727): the plane transform is a call to function_1428b0, retail's inlined
 // Earlier score line: 476 (was 406; fast, 1700 B, aligned ratio 0.675 -> 0.727): the plane transform is a call to function_1428b0, retail's inlined
 // body, which also stores 0 into the distance for a zero scale (behaviour fix, b2L walk 11-06). Entry/table and stack homes remain.
 // Earlier: frame/list strides and entry/table/plane homes differed.
@@ -358,6 +360,16 @@ struct s_visibility_bound_record
 // the chains in retail's store order (counts fourth = third = first = second, capacities fourth = third) 443 (retail's
 // count and capacity stores exactly; 245/245, 134/134), not kept (no gain); on the kept form a state local for the views
 // read and the active test 463, a structure local for the else arm's three reads 443, both 468.
+// M3 lane 1 r88 (fast with 0x44720, 0x458d0, 0x45a80, all matched; aligned = difflib count, base 208): the entry,
+// tag-table, flags, workspace and geometry declarations in five orders 443 each (same code). Retail stores `parts` to its
+// byte and reloads it, then picks the query data in two arms, each reading the geometry's +0x2c field (the not-parts arm
+// first). Re-measured on this base (round 166's conditional/negative-first forms and the if/else arms form): an if/else with
+// the read in both arms 446 (1744 B, aligned 212: the parts test is threaded into the arms, no reload); the same with
+// `!parts` first 482 (1780 B, aligned 194); a ternary 469 (1764 B, aligned 194); the ternary with the arms the other way
+// 482 (1780 B, aligned 195). New combinations: the list starts in retail's order (second, first, third, fourth) with the
+// counts and capacities chained in retail's store order 443 (aligned 203, same score); the retail-order chains with the
+// if/else query data 446 (1744 B, aligned 207); the retail-order starts with the ternary query data 469 (1764 B, aligned
+// 194); starts, chains and ternary together 469 (aligned 190).
 // Round 228 (m3 lane 3, fast with 0x44720, 0x458d0, 0x45a80, 0x45560, all still matched; aligned counts
 // exact/stack-masked/register-masked in brackets, base 443 [336/298/148]): the tag table local declared after the
 // flags 443; `parts` declared const 443; the doubled part count written `count * 2` 443; the plane copy declared,

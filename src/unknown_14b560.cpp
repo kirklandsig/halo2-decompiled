@@ -3138,6 +3138,16 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // reduced image); loop 2's set-up without re-storing iterator.data 117 (608); loop 1's NONE test on the field with the
 // unit read after it 103 (same code); `busy` declared at the loop-body top 103 (same code; round 117 measured it only
 // in the reduced image).
+// Round 107 (m3 lane 9, fast with round 34's widened image, 103; first measurements in this reproducing image of
+// families listed only at the 193 image): busy and failed as `byte` 103 (same code), as `long` 104 (607 B); the
+// status published at the join as a `byte` local 163 (576 B; the prologue then keeps g_4e8c20 in ESI as retail, first
+// difference +0x3e, and the final store reloads the global as retail, but the status block stores once and loop 1
+// still swaps datum/unit ESI/EDI), as a `short` local 191 (592 B); busy declared at the loop-body top 103 (same
+// code). Re-measured: each loop with its own iterator, loop 2's declared in its block, 155 (597 B; the listed
+// second-loop iterator form; loop 1's iterator then lives in registers and no datum index is formed). Retail's loop 1
+// keeps the iterator's data and index in EBX/EBP and stores only datum and datum index into the iterator loop 2 uses;
+// ours also stores `iterator.data` before loop 1. BLOCKED-BY 0xe4050 stands; the status-block lead shows the globals
+// web also depends on how the status codes are stored.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

@@ -488,6 +488,8 @@ bool sound_driver_voice_create_buffer(
 	return result;
 }
 
+/* claims the next voice: a submix buffer reading input_mixbin, plus a 3D buffer when bit 0
+   of flags is set (playing at once when bit 1 is); the voice index, or NONE when none is left */
 // MiniMax S (11-10): no new form, no lower score (71); the 3D bool still sits in a stack byte and the
 // play bool in BL where retail keeps the 3D bool in BL and the play bool in the stack byte, and the
 // EAX and ECX roles for the voice offset are still swapped. The count stored as the block's first
@@ -647,24 +649,6 @@ bool sound_driver_voice_create_buffer(
 // the declaration order); the 3D block as a force-inline helper taking play, 3D flag first 182 (diagnostic);
 // `short voice_index = globals->voice_count++;` with the 3D flag first 191 (589), with play first 104;
 // one voice-index variable defaulting to NONE and returned, 3D flag first 194 (589).
-// Round 286: native success-scope first/spatial/both pair-array initializers 71/71/71;
-// with per-phase mixbin values 74. Spatial-first counterparts for the three array families
-// 182/182/182. Original arrays, descriptors, predicates and all SDK calls restored.
-// Round 226: actual result acquired before capacity admission, short/word/long/dword with
-// play/spatial predicate first: 160/180, 164/176, 171/171, 171/171. All disturb the matched
-// caller; original result lifetime, modes, storage and complete body restored at 71.
-// Round 20 (lane 18, fast with 0x191420): no voice index local (the count field read at each use, the
-// result assigned after the test) with the 3D flag first 194 (589 bytes: the count takes EBP, both bools
-// spill); play declared first but the 3D flag assigned first 182 (599: the assignment order decides, not
-// the declaration order); the 3D block as a force-inline helper taking play, 3D flag first 182 (diagnostic);
-// `short voice_index = globals->voice_count++;` with the 3D flag first 191 (589), with play first 104;
-// one voice-index variable defaulting to NONE and returned, 3D flag first 194 (589).
-// Round 286: native success-scope first/spatial/both pair-array initializers 71/71/71;
-// with per-phase mixbin values 74. Spatial-first counterparts for the three array families
-// 182/182/182. Original arrays, descriptors, predicates and all SDK calls restored.
-// Round 226: actual result acquired before capacity admission, short/word/long/dword with
-// play/spatial predicate first: 160/180, 164/176, 171/171, 171/171. All disturb the matched
-// caller; original result lifetime, modes, storage and complete body restored at 71.
 // Round 189 (m3 lane 3, fast with 0x191420): both bools declared uninitialised play first and assigned 3D
 // first 182 (599 bytes: the definition order decides, not the declaration order); declared 3D first and
 // assigned play first 71 (same code); the voice index read again inside the block after the bools, 3D
@@ -849,9 +833,10 @@ short sound_driver_voice_new(
 
 	if (voice_index < 0x40)
 	{
-		s_sound_driver_voice &voice = globals->voices[voice_index];
-		bool play = (flags & 2) != 0;
+		globals->voice_count = voice_index + 1;
 		bool three_d = flags & 1;
+		bool play = (flags & 2) != 0;
+		s_sound_driver_voice &voice = globals->voices[voice_index];
 		DSMIXBINVOLUMEPAIR pairs[6];
 		DSMIXBINS mixbins;
 
@@ -859,11 +844,11 @@ short sound_driver_voice_new(
 			DSBUFFERDESC description;
 			memset(&description, 0, sizeof(description));
 
-			globals->voice_count = voice_index + 1;
 			description.dwSize = sizeof(description);
 			description.dwFlags = DSBCAPS_FXIN2;
 			description.dwInputMixBin = input_mixbin;
-			if (SUCCEEDED(IDirectSound_CreateSoundBuffer(globals->direct_sound, &description, &voice.submix, NULL)))
+			LPDIRECTSOUND direct_sound = globals->direct_sound;
+			if (SUCCEEDED(IDirectSound_CreateSoundBuffer(direct_sound, &description, &voice.submix, NULL)))
 			{
 				IDirectSoundBuffer_SetVolume(voice.submix, 0);
 				pairs[0].dwMixBin = 0;
@@ -894,7 +879,8 @@ short sound_driver_voice_new(
 			buffer_description.dwSize = sizeof(buffer_description);
 			buffer_description.dwFlags = (play ? DSBCAPS_FXIN2 : DSBCAPS_FXIN) | DSBCAPS_CTRL3D;
 			buffer_description.dwInputMixBin = input_mixbin;
-			if (SUCCEEDED(IDirectSound_CreateSoundBuffer(SOUND_DRIVER_GLOBALS->direct_sound, &buffer_description, &voice.buffer, NULL)))
+			LPDIRECTSOUND direct_sound = SOUND_DRIVER_GLOBALS->direct_sound;
+			if (SUCCEEDED(IDirectSound_CreateSoundBuffer(direct_sound, &buffer_description, &voice.buffer, NULL)))
 			{
 				buffer_pairs[0].dwMixBin = 6;
 				buffer_pairs[0].lVolume = 0;

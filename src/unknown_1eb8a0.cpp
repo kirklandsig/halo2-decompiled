@@ -193,6 +193,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // MiniMax h (11-05): the argument order is right (d in the third stack slot, q in the fourth, position in the fifth); retail copies the q slot into EBX and reads d from its own slot at each use, ours copies the d slot, and assigning the fallback pointer with a ternary instead of an if gives 642 with the same code, so no new form is kept.
 // MiniMax A (11-04): no new form, no lower score; retail branches on the fast flag before the rate multiply and loads the
 // constant there, ours multiplies first (642, same code).
+// score 636 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
 // score 646 (was 642; the settling-ratio fix took 642 to 646): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
 // Earlier at 642: retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
 // Earlier (642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
@@ -437,6 +438,14 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // + 6 > new_counter` 642; the listed second-count ternary on this base 644, with void and the read-back 640 (2880 bytes).
 // Lead: the void/read-back tail is retail's but for duration + 6 in ECX (retail EDX); the gain is under the keep threshold.
 // MiniMax I (11-10): the fallback through a named pointer local (the parameter left unwritten) 666, the same fallback spelled at each component 649, the position copy written field by field 648 and the w*rate multiply moved after the qr reads 638; both builds lay the arguments out the same (out E+0x04, dt E+0x08, d E+0x0c, q E+0x10, pos E+0x14) and both reuse the pos slot for the fail byte, so the whole head difference is that the prologue copies d into EBX where retail copies q, and the fallback can only be retail's cmove once EBX holds q.
+// M3 lane 8 r150 (fast, caller 0x1eb6f0 checked; base 636 here, aligned 685, register-masked 278): retail keeps the limit in
+// no frame slot (ours stores it at +0x10) and copies `s->start = *pos` through EBX and EDI before reloading q. Tried: the
+// impulse through the existing vector3f_scale 675 (2896 bytes, aligned 588, masked 233; re-measure of round 166's lead, the
+// positional count rises); `vector3f qr = *q` as one aggregate copy 646 (aligned 760); the output position written
+// through `out->position` with no pointer local 705 (caller 0x1eb6f0 lost, 103); `s->limit` read at every use with no
+// limit local 667 (2882 bytes, aligned 670), with the vector3f_scale impulse 694 (aligned 588) (both re-measures of round
+// 166's list); the inactive and duration tests as one `!s->active && dt > 0.001f` 636 (same code); the 0.866 test with
+// its sides swapped 636 (same code); the counter read from the state at each use (no counter local) 636 (same code).
 // Round 181 (m3 lane 4, fast, caller 0x1eb6f0 MATCH in each): the impulse through the existing vector3f_scale 675
 // (2896 bytes); with the 12/8 factor selected before t at the first site 679 (retail's al/test/movss/jne/movss head,
 // caller kept); at all three sites 666 (2883; step, the 0.001 constant and zero still in other xmm registers, d still
