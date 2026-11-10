@@ -635,6 +635,10 @@ struct s_device_machine_view
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
 // score 34 (was 34): group-word load/EAX sharing and velocity-zero join remain;
+// the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
+// and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
+// retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
+// retail's shifted by one. Plain masks plus the zero store leave only the group pointer's register.
 // MiniMax A (11-06, run 52), not kept: 2 (from 34) with MiniMax D's form below, the group flags read
 // through the device-group macro into a word before the machine test and masked into a byte after
 // it, plus `function_value = 0.0f;` first in case 0x1200055f's velocity block (a dead store there,
@@ -645,7 +649,6 @@ struct s_device_machine_view
 // ESI (122), and two separate reads of the flags do not merge either (122). Lead: case 0xf00055e
 // also starts its velocity block with `function_value = 0.0f;`, so retail's result may not be
 // zero-initialised at entry; dropping the initialiser needs a store on every other path.
-
 // MiniMax D (11-05), not kept: 2 fast (from 34) with the group flags read into a word before the machine test, masked
 // into a byte (`byte group_flag_bits = (byte)(group_flags & 3)`), and `function_value = 0.0f;` added at the top of case
 // 0x1200055f's velocity block, where function_value is still its 0.0f initial value (a dead store kept only for the
@@ -907,6 +910,11 @@ struct s_device_machine_view
 // T80: Partial position-zero closed/displaced admission in bool/byte/short/long:
 // 34/34/34/34/34/34/34/34. Group-word load/EAX sharing and power-velocity zero join remain.
 // NOT kept: no byte equality or qualifying gain; original complete body restored.
+// Round 81 (m3 lane 10, fast with all of this file): the two 0x1200055f arms as ternaries with a 0.0f false value on
+// the lane S form 104 (each false arm gets its own `movaps xmm0, xmm1; jmp` block, no shared zero); the lane S bits read
+// through the macro with no group pointer 124 (655 bytes); a zero-initialised local for the velocity fraction, copied
+// to the result at the end of the 0x1200055f block, 117 (the local takes a stack slot); the group pointer formed after
+// the machine test with the lane S bits 124 (655 bytes); a `long` machine-flags local 34 (same code).
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1126,6 +1134,8 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax C (11-09): no new form, no lower score (121); the initial velocity is still passed on the stack where
+// retail keeps it in xmm6 and takes five stack floats, so the whole register assignment after the entry differs.
 // MiniMax A (11-06, run 52): no new form, no lower score (121) - retail keeps the initial velocity in
 // xmm6 and leaves the ramp-down time in memory, ours caches the ramp-down time and pushes the initial
 // velocity; both ramp-down clamps written as if-statements (retail's conditional-store form) score 122,

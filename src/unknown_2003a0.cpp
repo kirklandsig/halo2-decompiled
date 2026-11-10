@@ -2167,6 +2167,11 @@ bool function_1e11b0(long actor_index, bool active);
 // T80: Signed-word current/stale stamp admission in bool/byte/short/long: 64/64/64/64/64/64/64/64.
 // Native EBP handle, receiver spill, common loop head and full-width return remain.
 // NOT kept: no byte equality or qualifying gain; original complete body restored.
+// P401: Complete loop admission/exhaustion carried by bool/byte/short/long in the
+// ordinary for predicate: eight 81s at 214 bytes. Full-width value argument alone/with
+// word flag publication and full mask 64/65, both lose the two matched callers.
+// NOT kept: no native EBP handle/receiver spill or common loop head; original
+// scalar parameter, every interface, direct condition and complete body restored.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {

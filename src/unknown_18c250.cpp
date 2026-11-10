@@ -312,6 +312,12 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 #pragma inline_depth(255)
 
 // score 7 (was 7): sample-base/offset registers and final object setup remain;
+// MiniMax E (11-09): score 2 (was 7): the samples pointer is copied into a dword and the scale is passed
+// straight to the callee, so the scale is loaded early and the sum's first operand is the samples pointer,
+// which matches retail's load order and its call setup (the curves address by lea ecx and the object index
+// loaded after the pushes); what is left is the two loads' destination registers, ours putting the samples
+// pointer in EDI (the data pointer's own register) and the entry's data offset in EDX, where retail puts
+// the samples pointer in EDX and the offset in the dying EDI.
 // MiniMax I (11-08): no new form, no lower score (7); the sum spelled with the samples pointer first gives the same bytes.
 // MiniMax R (11-06/07): the samples' memcpy form (2; H 11-04, C 11-06) again, not kept; a memcpy copy of the entry's data offset 3
 // (also a field's bits read through its address), every plain spelling of the sum 8, the offset through the
@@ -348,6 +354,7 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // folds back to the pointer form at 7, and the index form, a pointer local and an unsigned index leave the offset
 // in the add's destination, at 7 or 8.
 // Earlier (7, was 7): sample-base and offset registers plus object call setup remain; readonly data
+// score 2 (was 7): sample-base and offset registers plus object call setup remain; readonly data
 // input 7; readonly entry input 7; native count identity 7; output count lifetime 52; existing
 // scale storage lifetime 7; input pointer home names 7; existing scale home names 7; inline matched
 // output callee 7; final object address read 7; split construction around count 9; split
@@ -363,6 +370,12 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // T80: Count-presence/missing results at the original comparison, bool/byte/short/long:
 // 7/7/7/7/7/7/7/7. Sample-base/offset register reuse and final object setup remain.
 // NOT kept: no byte equality or qualifying gain; original complete body restored.
+// MiniMax R (11-09): no new form, no lower score (7): the curve set's address is built from the
+// entry's data offset plus the samples' address with the operands in the other order here (ours adds
+// the samples to the offset, retail the offset to the samples), the curve pointer is computed in eax
+// here and in ecx in retail, and the scale is loaded before the pointer's push in retail and after it
+// here; the memcpy form that reads the field's bits through its address is the only one that reaches
+// 2 and it is kept out of this lane's changes.
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {
@@ -374,12 +387,12 @@ void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permut
 	if (count > 0 && g_4ed28c->valid && function_badc0(object_index, 3))
 	{
 		s_sound_promotion_state curves;
-		union { dword field_0; real field_4; } local_0;
-		dword const volatile *local_1 = (dword const volatile *)&scale;
-		local_0.field_0 = *local_1;
-		curves.data = entry->data_offset + data->samples;
+		dword samples_address;
+
+		memcpy(&samples_address, &data->samples, sizeof(samples_address));
+		curves.data = (byte const *)samples_address + entry->data_offset;
 		curves.count = count;
-		function_10e480(object_index, tag_index, (s_vibration_curve_set *)&curves, local_0.field_4);
+		function_10e480(object_index, tag_index, (s_vibration_curve_set *)&curves, scale);
 	}
 }
 

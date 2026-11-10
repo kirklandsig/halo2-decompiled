@@ -935,6 +935,13 @@ real g_55e618;
 // 59 each, k,i,j 66; an inline reset of the impact 59, inside the first argument 63 (masked 11); comma stores with named sums and the getter 44 (masked 11, stores
 // first), without named sums 236 (1554). By-value class for the last parameter: direct read with the setter 44 (masked 11, stores first, EDX), a getter returning it
 // 212 (1549). LEAD for 0x247950: that class with a converting constructor takes it 356 -> 337 at retail's 1652 bytes (its file was held; not kept).
+// Round 159 (m3 lane 6, fast; all match-only, body restored; 0x2ba3e0 and 0x2b8da0 match throughout; aligned counts from an
+// instruction diff): round 75's form rebuilt with the position setter 44 (1537 bytes, aligned 18); with named sums and plain
+// position stores after the impact index 44 (aligned 16: left are v.i loaded first, the last argument's load above the stores
+// and the x sum first); on that: the last argument built by the value type's converting constructor from the record's word 44
+// (aligned 16, same code); velocity.i named once ahead of the normal locals 170 (1542 bytes, aligned 33); the velocity pointer
+// and keep declared ahead of the normal locals 41 (aligned 31). Retail hoists the record's word above the particle stores,
+// which ours cannot while the record escapes: BLOCKED-BY 0x1697c0 (unmatched) and 0x169510 (contributor).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

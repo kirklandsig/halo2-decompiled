@@ -58,11 +58,11 @@ long g_4798b4;
 bool g_47f05a;
 bool g_47f05b;
 
+// score 34 (was 34): frameless entry agrees; intermediate vtable store and successful-arm backing reload remain.
 // MiniMax C (11-09): no new form, no lower score (34); the abstract allocator's base vtable store is still elided (BLOCKED-BY include/unknown_146a20.h).
 // MiniMax D (11-06): no new form, no lower score (34); retail's base vtable store (0x453760) and its
 // derived vtable (0x4576a4) come from the shared constructors in include/unknown_146a20.h, which this lane may
 // not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
-// score 34 (was 34): frameless entry agrees; intermediate vtable store and successful-arm backing reload remain.
 // Earlier at 34: MiniMax D (11-05): no new form, no lower score (34); the abstract allocator's base vtable store comes from the shared constructor in include/unknown_146a20.h, which I may not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
 // frameless prefix agrees; intermediate vtable store and successful-arm backing reload remain.
 // Earlier: MiniMax D (11-05): no new form, no lower score (34); the abstract allocator's base vtable store comes from the shared constructor in include/unknown_146a20.h, which I may not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
@@ -364,6 +364,11 @@ bool g_47f05b;
 // prefix/full zero ranges then sentinel, body/member-list fixed-base initialization: eight 56s.
 // NOT kept: extent 129/146 and four shared-user regressions per form, losing both exact
 // constructor peers. Complete header and body restored; intermediate vtable/arm reload remain.
+// Round 81 (m3 lane 10, fast with this file, 0x22c3e0 and 0x1c2690): placement through g_479888 with the
+// buffer and the pool through `block` 41; placement and buffer through g_479888 with the pool through `block`
+// 34 (149 bytes: the 1s become immediates and `block` takes a pushed EDI); `block` read after the three
+// stores with `block ? new ... : NULL` 34 (same code); `g_479890 = g_479880 = true` 36; the stores ordered
+// g_479880, g_479890, g_479884 38. The base vtable store stays dropped in all.
 // @retail 0x146a20
 void function_146a20(void)
 {

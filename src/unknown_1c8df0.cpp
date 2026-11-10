@@ -205,6 +205,8 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // quarter/endpoint/both/immutable-both: 20/20/20/20. NOT kept: all tie or regress;
 // per-row forms recover the original homes but miss the native positive x add.
 // Original complete body, signature and all probe tuples restored.
+// P399: Complete origin/endpoint/side/positive/opposite/all component arrays, complete quarter/endpoint array construction:
+// 20/20/20/20/20/20/20/20. NOT kept: no byte equality or native home repair; original complete body restored.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

@@ -1746,6 +1746,11 @@ struct s_camera_clip_reference_16ebf0
 // native/CRT point publication 88 each; staged cross with both pipelines and both publications 91 each.
 // Exact 953-byte lengths but no gain; original interpolation, helper graph, includes and complete body
 // restored. Native frame/pointer homes agree; first cross carriers and clipping-result production remain.
+// MiniMax E (11-09): no new form, no lower score (87); the two interpolated values are computed into the other
+// registers (retail multiplies the value it loaded from [esp+0x18] into xmm0 and the one from [esp+0x20] into
+// xmm1, ours the other way round, with the same results stored to [esp+0x58] and [esp+0x5c]), and retail loads
+// [esp+0x20] before it stores the new value to [esp+0x24] where ours stores it first; the rest of the function
+// matches instruction for instruction.
 // @retail 0x16ebf0
 void function_16ebf0(long user_index)
 {

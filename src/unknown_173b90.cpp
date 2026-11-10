@@ -472,6 +472,9 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax C (11-09): no new form, no lower score (42); row i still sums the up product before the forward one and
+// the emitter loop still reloads its two saved registers in the other order; the shared rotation in
+// include/matrix_transform.h keeps that sum order.
 // MiniMax I (11-08): no new form, no lower score (42): row i still sums the up product before the forward
 // one, the offset's zero store still comes before the list test, the two 1.0 stores are still swapped, and
 // after each property call ours still reloads the particle before the emitter definition. The two in-place
@@ -1403,6 +1406,8 @@ long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
 // score 47 (was 47): availability clear/production and later view observation remain;
+// frame 0x14, NONE/owner and Boolean stack homes agree;
+// availability clear/result and the post-attachment view refresh remain.
 // MiniMax I (11-08): no new form, no lower score (47).
 // MiniMax C (11-06): no new form, no lower score; the availability flag is still computed with neg/sbb/inc where retail clears BL before the view test and sets it with a branch, and retail still re-reads the view global after the 0x17afd0 call.
 // MiniMax S (11-09): the availability set by a branch that turns it true scores 135, the same branch with its
@@ -1664,6 +1669,11 @@ bool function_17afd0(long effect_index, long value);
 // T80: Partial cluster-sentinel present/absent admission in bool/byte/short/long:
 // 47/47/47/47/47/47/47/47. Availability clear/production and later view observation remain.
 // NOT kept: no byte equality or qualifying gain; original complete body restored.
+// Round 81 (m3 lane 10, fast with this file and its callees): `bool available = false;` moved to just before
+// the view read 125 (490 bytes); the view read before the owner lookup 47 (same code); the attachment test as
+// `effect_index != NONE && available && ...` 46 (the attached block threads differently from retail; a one-point
+// change, not kept); `view_pass == same_view` 48; the availability left uninitialised and set in both arms of the
+// view test (`else available = false;`) 125 (492 bytes).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

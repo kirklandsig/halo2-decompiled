@@ -1013,6 +1013,10 @@ struct s_tail_transfer_traits
 // P393: Selected-traits availability at the unit join, positive/complementary
 // bool/byte/short/long: 153/153/153/153/153/153/153/153. NOT kept: unmatched one-use outcomes; native
 // traits/unit/NONE homes and no-seat pool reloads remain. Original complete body restored.
+// P402: Shared NONE production, full forward/reverse chains, three paired chains, initialized complete
+// declaration, separate assignments and complete declaration with chain:
+// 153/153/153/153/153/153/153/153. NOT kept: no eligible native default/home recovery; original defaults and
+// complete body restored. Traits/unit/NONE and no-seat pool reloads remain.
 // T78: Per-pass first/exclusion truths, conditional/default/primary-seeded excluded handles,
 // slot admission/rejection predicates and conditional first-pass admission: 150/150/188/185/185/153/153/202.
 // NOT kept: no eligible match; best three points is below the gain gate. Original complete
@@ -1238,6 +1242,9 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 // P393: Attachment admission before the paired clear traversal, positive/complementary
 // bool/byte/short/long: 254/254/254/254/254/254/254/254. NOT kept: one-use outcomes remain unmatched;
 // pool/player carriers and lazy tag-table acquisition remain. Original whole body restored.
+// P402: Attachment output walk, lower/upper range, direct hand count, while range and cursor stepped at use:
+// 263/300/252/254/263/300/263/300. NOT kept: best native-length form gains only two; original indexed
+// attachment clear and entire body restored. Pool/player and lazy tag-table homes remain.
 // T77: Live unit-index field references mutable/read-only and pointer before pool acquisition
 // 303/303/303; first-loop-only references 254/254; real weapon/paired-slot array references
 // 254/254; paired selected-slot field references 280. NOT kept: no native pool/player/tag
