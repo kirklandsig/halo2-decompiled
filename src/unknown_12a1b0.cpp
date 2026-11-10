@@ -1659,6 +1659,7 @@ short function_128a60(long sound_index, short count, short const *voice_indices)
 inline dword looping_sound_get_permutations(s_looping_playback_definition *playback, s_type_5ef569 *sound, looping_sound_definition *definition, long track_index, short arg_58ecd0, bool clear);
 inline void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_definition *definition, s_looping_playback_definition *playback, long track_index, short arg_58ecd0, dword permutations, short permutation);
 
+// MiniMax C (11-10): no new form, no lower score (35); a permuter run over the body (35 tries) stayed at 35, `int previous` for retail's movsx measures 101 (618 bytes) and the set path's store written through a pointer local 35 (0x21cbe0 still matched); all restored.
 // score 35 (was 35): the get path is retail's since 0x21cb90's shared-state test is two bit tests; left:
 // the set path reads the track index inside its arm (`add eax, 7`) where retail reads it before the
 // flag test (`lea [x + x*4 + 0x23]`), retail extends the previous permutation (`movsx eax, ax`), retail
