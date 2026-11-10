@@ -981,6 +981,7 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 void function_26bfa0(long object_index, long *location_index, s_location_view *location);
 real function_296600(long actor_index, long prop_ref_index);
 
+// MiniMax I (11-10): no new form, no lower score (163).
 // MiniMax B (11-04): no new form, no lower score.
 // score 163 (was 257): retail's length, frame 0x20, actor EBX. Left: the object and table registers (ours EAX/ECX, retail ECX/EAX, time read after the table pointer), the
 // suppression/current byte homes swapped, root and not_current in each other's slots with `!current` evaluated at the named local where retail evaluates it among the first

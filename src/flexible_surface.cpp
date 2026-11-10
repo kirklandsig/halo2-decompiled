@@ -365,6 +365,8 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// MiniMax I (11-10): no new form, no lower score (117); the draw before the time product (193) and the oscillation
+// before the draw (197) move the seed update up but split the float chain, so both are worse.
 // MiniMax D (11-05): no new form, no lower score.
 // MiniMax S (11-06): no new form, no lower score: retail still loads the random-state pointer before the time multiply and keeps the old direction in registers, ours spills the old direction to the stack and frames 0x28 against retail's 0x20.
 // MiniMax G (11-06): no new form, no lower score: the frame is 0x28 against retail's 0x20 because retail loads

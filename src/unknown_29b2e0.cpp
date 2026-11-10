@@ -52,6 +52,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 }
 
 // score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
+// MiniMax I (11-10): no new form, no lower score (176).
 // MiniMax S (11-06): no new form, no lower score; the single-exit normalizer with the XY vector read before
 // the second copy reaches 169, one point short of the eight-point bar, and the original body is restored.
 // The rotation's cross terms and rows written with the axis component first, which is retail's order, score
