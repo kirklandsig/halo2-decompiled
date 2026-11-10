@@ -3601,6 +3601,8 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // the special flag to live in memory, which is the form review rejects; a named index at the top
 // measures 603 and the same name used at the tail 635, the special flag as a bool 649.
 // MiniMax R (11-06): no new form, no lower score (605 in the reduced build); the frame is 0x7c here and 0x78 in retail, and the definition pointer is held in EBP here and in memory in retail.
+// MiniMax S (11-10): no new form, no lower score (561); the frame 0x78 agrees and the flight-call homes, the state bytes and the
+// vector scheduling are unchanged.
 // score 561 (was 561): round 101 (m3 lane 12) notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // Earlier: 604 (was 654): the logic now follows retail (see below); frame is 0x78 like retail. Still differs: the
 // `special` flag (retail stores 0 before the 0x6000084 test and 1 under the 0x7000039 test; the plain compare gives

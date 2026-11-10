@@ -30,6 +30,8 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
         ++output;
     }
 }
+// MiniMax S (11-10): no new form, no lower score (206); our frame is still 0x20 against retail's 0x14 and the two view
+// coefficients are still folded into the products.
 // score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products.
