@@ -1604,6 +1604,15 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // (2839 bytes, al 113). Retail has three epilogues (the early exit for a NONE
 // weapon_class, with two pops; the loop end and no-result exit; a copy for the empty second inheritance loop); ours
 // merges them into one.
+// m3 lane 13 r79 (fast, 0x1dc790/0x1dc8c0 matched throughout): re-measured, the entry pointer declared first in the
+// block 828 (round 47's form) and the siblings' form with `found` declared first 755 (r227's form), used as the base
+// below. New: the siblings' form with the result scoped in the block and `return c_type_709360();` after it 999 (2838
+// bytes); on the 755 form the entry pointer initialised at its declaration 755, the three outputs declared bare at
+// function scope ahead of `result` and set to NONE in the block 755 (same code: no home moves), the outputs declared
+// after the iterator's stores 769, the candidate declared after the lookup 995 (2841). On the 755 form only stack homes differ before the
+// requests: ours gives found_mode's dead slot (E+0x18) to iterator_mode and the +0x34 table temp found_weapon_class's
+// slot, retail gives found_mode's slot to the per-pass candidate and the table temp and keeps the outputs and result
+// contiguous below the iterator. Declaration order, scope and names do not move that choice.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
