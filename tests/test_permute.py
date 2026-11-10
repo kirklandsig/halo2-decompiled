@@ -355,6 +355,25 @@ def test_fast_rejects_a_reduced_baseline_that_disagrees():
     permute._fast_baseline_check(0x1234, 2, 2)  # agrees: no exit
 
 
+def test_prepare_scratch_makes_copied_objects_current(monkeypatch, tmp_path):
+    """A copied object whose working-tree header is newer must not look stale
+    in the scratch tree, or every scratch build recompiles the whole program."""
+    root = tmp_path / 'repo'
+    for d in ('src', 'include', 'config', 'build/obj'):
+        (root / d).mkdir(parents=True, exist_ok=True)
+    obj = root / 'build' / 'obj' / 'a.obj'
+    obj.write_bytes(b'')
+    os.utime(obj, (1000, 1000))
+    header = root / 'include' / 'a.h'
+    header.write_text('')
+    os.utime(header, (2000, 2000))  # newer than the object
+    monkeypatch.setattr(permute, 'ROOT', str(root))
+    scratch = tmp_path / 'scratch'
+    scratch.mkdir()
+    permute.prepare_scratch(str(scratch))
+    assert (scratch / 'build' / 'obj' / 'a.obj').stat().st_mtime > (scratch / 'include' / 'a.h').stat().st_mtime
+
+
 # ------------------------------------------------------------ --fast
 
 def marker(va, path, stub=False):

@@ -2453,6 +2453,16 @@ def prepare_scratch(scratch):
         s = os.path.join(ROOT, d)
         if os.path.isdir(s):
             shutil.copytree(s, os.path.join(scratch, d), copy_function=shutil.copy2)
+    # The working tree's headers can be newer than its objects (a fresh checkout
+    # or a header edit since the last build). The copies are exact, so the
+    # objects are still valid; stamp them newer than everything copied, or every
+    # scratch build recompiles every source. Only the function's edited source
+    # (and anything genuinely changed in this scratch) should be stale.
+    obj_dir = os.path.join(scratch, 'build', 'obj')
+    for dirpath, _, names in os.walk(obj_dir):
+        for name in names:
+            if name.endswith('.obj'):
+                os.utime(os.path.join(dirpath, name), None)
 
 
 def new_scratch():
