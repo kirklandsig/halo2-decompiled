@@ -518,6 +518,9 @@ struct s_physical_block_iterator
 // ours adds from memory); T with the sum's operands swapped 213 (same code); T+S 213; M+T 218 (1218 bytes); M+S+T 218;
 // M+T+N 218; M+S+T+N 218. The policy result preset true with `if (better)` 201 (same code); `if (!have_best) better =
 // true; else switch` 201 (same code); case 0 as an if / else-if pair that sets true 201 (same code).
+// M3 lane 11 r81 (fast): the take test as `better || !have_best` 201 (same code); the walk's overlap conditions swapped 203 (+0xcc);
+// the policy as an if/else-if chain 240 (1178 bytes: cases in line but in source order, case 0 still threaded, aligned 118 -> 109);
+// case 0 as two `better = true` arms 201; default ages written inside the comparison 201. Retail's `sub eax, 0` chain is a switch.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

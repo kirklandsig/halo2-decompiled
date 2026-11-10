@@ -544,6 +544,9 @@ void __stdcall function_1160c0(real dt)
 // order 171; the rest offset declared bare at the loop top 171; length and axis bare at the loop top 171; length,
 // axis and offset bare ahead of previous in the outer block 171; offset, previous/predicted, axis, length in the
 // outer block 171 (all five the same code).
+// M3 lane 11 r81 (fast): delta, axis or vertical as three statements instead of an aggregate initializer 171 each, delta and axis
+// together 171, the node as `record->nodes + i` 171 (all same code); diagnostic: target rows written without vector3f_add_scaled
+// (previous no longer address-taken) 177 with the homes unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
