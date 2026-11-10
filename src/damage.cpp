@@ -986,6 +986,7 @@ PRIVATE inline long damage_object_root(long object_index)
 
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
+// MiniMax S (11-10): no lower score (206): the record-pool iterator with the iterator's address escaping gives 225, the index-based scan with it 228, and the squared-distance helper called at both tests with the mask in a named local 225; the first 0xbadc0 use is still expanded here, and the frame stays 0x1a4 against retail's 0x1b4.
 // MiniMax D (11-09): no new form, no lower score; retail's player scan keeps the ordinal in [esp + 0x34] and tests
 // the pool's used-bit word at [g_4e8c24 + 0x48 + (index >> 5) * 4] itself, and its frame is 0x1b4 against our
 // 0x1a4, so its definition and objects array sit where ours do not.
@@ -1228,6 +1229,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // rotate); with that copy through the pointers 355; declared at the top and assigned in the node branch 38 (same code).
 // Diagnostics, reverted: no direction reads in the cone dot, another source for the NONE copy, or no node updates in
 // the near block all leave the else arm's i/k rows as they are, so no single later read sets them.
+// T79: Original near-surface comparison owned by near/far bool/byte/short/long
+// admission results: eight 44s at 1535 bytes. NOT kept: no exact result form; original
+// complete body restored. Near-normal stores/k addition and far i/k operands remain.
 // Round 81 (m3 lane 10, fast with 0xd6c80 and the matched callees): each row as `surface_normal.i = 0.0f -
 // surface_normal.i; node_direction->i += surface_normal.i;` 286 (the zero register flips); the negated names as
 // unary minus 38 (same code); the else arm reading `data->direction.i` 46; `node_direction` declared first in the
@@ -2057,6 +2061,7 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 /* damages a region: raises its damage level by the damage over the span to
    its next permutation's threshold, and when the level fills, destroys the
    permutations at that threshold */
+// MiniMax S (11-10): no new form, no lower score (100): the two early exits still branch to targets five bytes after retail's, because the tail is five bytes longer (the 0xda110 index in eax and the 0xd9d60 flag in al are theirs to give), and the delay block's register rotation goes with them.
 // MiniMax D (11-09): no new form, no lower score; the first difference (+0x39) is only the two early exits, whose
 // branch targets land five bytes after retail's because the tail is five bytes longer (retail passes 0xda110's index
 // in eax and 0xd9d60's flag in al, ours on the stack), so the head follows the tail.
@@ -5004,6 +5009,9 @@ struct s_damage_object_creation
 // Round 157 (m3 lane 5): the mask's zero declared, or assigned, just before the first node loop 170/170 (aligned 107
 // against 25: object_index loses ESI to the datum offset); the piece loop as `!= 0` 156 (aligned 24, retail's bottom
 // jne), with a dword mask 156; the tag test in the loop condition, retail's guard order, 188 (776 bytes).
+// T79: Mutable/immutable next-detached bitmap at node-record production, state-byte store,
+// first metadata byte and final metadata word: eight 156s. NOT kept: no exact recurrence form;
+// original complete body restored; late bitmap zero and piece/search entry remain.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

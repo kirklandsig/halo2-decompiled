@@ -139,6 +139,10 @@ void function_254200(void)
 // caveat, one global reference unresolved, so the 80 it reports is not this function's score): the only difference
 // left is the order of the two loads after the second buffer reservation, where retail loads the 16777215
 // constant before it reloads the spilled y+h and we reload first.
+// MiniMax S (11-09): no new form, no lower score (4); in the two records after the
+// reservations retail loads the 16777215 constant before it reloads the spilled coordinate
+// and we reload first; the constant through a named local and the member form of the 4f
+// call keep the same code, so only that order is left.
 // MiniMax E (11-09): no new form, no lower score (4).
 // MiniMax I (11-06): no new form, no lower score; the 16777215 constant through a named local keeps 4.
 // MiniMax C (11-05): no new form, no lower score; the only difference left is the order of the two loads after the buffer reservation in the second and third vertex records, where retail loads the 16777215 constant before it reloads the spilled y+h and we reload first; the permuter tried 173 forms in 1803 s and none beat 4.

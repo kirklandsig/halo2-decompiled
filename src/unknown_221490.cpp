@@ -811,6 +811,10 @@ bool sound_driver_voice_create_buffer(
 // BL and the 3D flag a dword slot; 0x191420 1); `register` on the 3D flag, play first 71 (same code), 3D flag first 182 (599); play defined inside the
 // 3D block with the count stored first 150 (620, 0x191420 1). Reading unchanged: retail's order is the 3D flag (byte copy in BL), then play (in place,
 // spilled), and here the voice index and the zero outrank the 3D flag's copy in that order.
+// M3 lane 8 r144 (fast with 0x191420; control 71): the play bit defined inside the 3D block 158 (0x191420 then 1); explicit
+// returns in place of the result local, play first 162 (626 bytes), 3D flag first 146 (619); the result assigned at the end of
+// each arm with no early assignment, 3D flag first 175 (608), play first 111 (628); the count published after the submix
+// block 167 (626). All but the last also lose the caller 0x191420 by one instruction. Body restored.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

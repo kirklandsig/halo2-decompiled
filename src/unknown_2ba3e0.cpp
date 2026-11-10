@@ -678,6 +678,10 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 
 real g_55e618;
 
+// MiniMax S (11-09): no new form, no lower score (102); retail's sweep and collision homes
+// sit twelve bytes higher in the frame than ours (F+0x44 against F+0x38), the local handed to
+// the projection call sits at F+0xb0 against our F+0xa4 and retail's body is twelve bytes
+// shorter than ours; the dot's association and the declaration orders keep the score at 102.
 // MiniMax G (11-06): the dot grouped explicitly 191, the same sum written with += 103, the tangent built by an
 // aggregate initialiser 102 and the dot's three terms reordered 102; retail's association is
 // (v.i*n.i + n.k*v.k) + (n.j*v.j) and the source spelling does not change it; the permuter tried no variant
