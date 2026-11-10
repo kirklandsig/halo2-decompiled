@@ -2342,6 +2342,11 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
+// MiniMax R (11-10): no lower score; retail multiplies the velocity's j and k in place with the raw values live in
+// registers across the branch, ours keeps the scale in the destination and reloads the components; forms: the components
+// as scalars assigned in both arms 90, the j and k read before the branch and scaled in place 154, the same read before the
+// length 128, the scale in a named local 128, the i scaled in the vector with the j and k as scalars 90, the length reused
+// 137, the components in a separate vector 136, the shared scaler with the components read before the branch 91.
 // MiniMax C (11-01): no lower score; the hoisted speed products and the velocity scaled with the mixed order give the same code.
 // score 91 (was 91): aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
 // Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the

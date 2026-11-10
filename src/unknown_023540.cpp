@@ -2590,6 +2590,14 @@ dword __cdecl function_131fc0(real alpha);
 // of the chosen default into the parameter's home (`lea ecx; mov [home], ecx; mov ebx, ecx`, 6 bytes each); each
 // default array declared at its own null test 140. The short arm's `mov bl, [esp+0x70]` comes right after the cdecl
 // `push edx` for 0x131fc0, so it is preserve_alpha (the thirteenth argument, ret 0x34), not a fourteenth argument.
+// Round 104 (m3 lane 9, fast): retail's write of each chosen default into the parameter's home occurs at only three
+// sites in the image (these two and one in unmatched 0x14b120), so no matched function shows its source form. The
+// compile-only harness (no LTCG) gives retail's flag loads, so our CL hoist of preserve_alpha follows from LTCG's
+// summary of 0x131fc0 (retail has that summary too: inverse stays in CL across 0x131f40/0x131fc0 in the long arm).
+// Both defaults built unconditionally, source first 156 (1717 bytes, aligned 117 -> 95); with the two zero coordinates
+// as one chained store 155 (aligned 89); that with the height's reciprocal first and reciprocal-first products 161;
+// the four draws in a new inline helper 709 (LTCG keeps it out of line, 1437 bytes); `!(simple || preserve_alpha)`
+// 140; the chained zero store on the conditional source default 140.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2825,6 +2833,16 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // the direct form is kept (same 401, 0x22850 gains). On it: the inlined allocator as well 478 (1660 bytes, the second
 // 0x235a0 copy still inlined); the data handle stored after the output pointer 401; the sample count declared before
 // the bucket loop 401; the sample block under `if (available_samples)` instead of `continue` 401.
+// Round 104 (m3 lane 9, fast): retail keeps the second 0x235a0 copy out of line because of its call-site frequency,
+// not an inline budget: the first copy repeated 6 or 24 times and five more sample blocks all stay inlined (401; 51
+// calls), while one more test on the second site (`available_samples > 1 && layout->order > 0`, diagnostic only)
+// calls it (384 at 1499 bytes, 17 calls as retail). Forms that leave it inlined: the second test as `== 2` 401; the
+// allocation through render_memory.h with the sign-tested output pointer and the handle stored after it 478 (1660
+// bytes, aligned 421 -> 223); that with the bucket body under `if (available_samples)` 478, as a while loop 478,
+// with a long sample count 462 (aligned 220); the early exits as nested positive tests with one return 478; both
+// determinants through one new inline helper 401 (same code), with the allocator too 478; the second test as
+// `available_samples >= 2` 401 (same code). Lead: the test retail has on the second sample's path that the optimizer
+// later removes.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3112,6 +3130,18 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // 211; the two zero tests in the other order 223; bounds declared with the entry locals 211; the half extents before
 // the scale normalization 246 (2024 bytes); the maximum as `scale = first; if (second >= first) scale = second;` 221;
 // both corner buffers as one two-row array 211. A 1800 s permuter run was cut off by its 2400 s cap before reporting.
+// Round 104 (m3 lane 9): LEAD, match-only (a statement order): the compile-only harness reproduces the bounds block,
+// and of all 560 orders of its eight statements only the bounds written corner by corner, 0, 2, 1, 3, give retail's
+// block (0.5 loaded first, the first zero compare right after bounds[1]'s store, 240 in xmm7 and once as a memory
+// operand): 211 -> 94 fast at 2022 bytes, first difference +0x17 -> +0x524 (build/r104/lead-29b00.patch in the
+// m3-lane9 worktree); with the second trig pair in its own named locals the second cosine also takes retail's +0x7c
+// home, 94 (aligned 73). Left there: only the two corner sets' x87/SSE schedule. On that base: the helper's two
+// statements swapped 214; products written cosine/sine first 94; the second sum y-first 94; ordinary inline 94; the
+// first trig pair as two statements 94; four helper parameter orders 94; named rotated u/v 320 (1914 bytes); the four
+// corner calls of both sets in all 24 orders, main's order best (94), then 96. A 600 s permuter run found nothing:
+// its full build took 972 s and its reduced image scores 529 against the full image's 211. The compile-only harness
+// reproduces the corner region of that base exactly; the helper's spellings (four u sums, three v sums, scale/bias/half
+// operand sides, statement order: 192 forms, 6 distinct codes) give nothing closer to retail than main's spelling.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

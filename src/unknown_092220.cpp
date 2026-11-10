@@ -181,6 +181,7 @@ static __forceinline long function_925c2()
     return local_0;
 }
 
+// MiniMax I (11-10): no new form, no lower score (14); the user flags are still loaded into eax where retail loads them into the dying user pointer register ecx, and every spelling of the two tests leaves the load in eax.
 // MiniMax D (11-10): no new form, no lower score; the flags are still loaded into eax where retail
 // loads them into the dying user pointer register ecx, and the sibling 0x92220 in this file matches
 // with the same flags loaded into ecx, because there eax still holds the result and the allocator

@@ -62,6 +62,7 @@ const dword g_455978[81] = {
 // 0x29b2e0), not a vector2f. With the existing normalize_inline on that copy (`k = 0.0f; if (normalize_inline(&v)
 // == 0.0f) continue;`, scaled by arg_6) 308 (2078 B), with 0x29b2e0's helper copied in 306; neither kept (higher than
 // 298, no behaviour change). All other differences are register/stack homes and the 0x11bed0/0x279740 inlining.
+// MiniMax R (11-10): no new form, no lower score; the first difference is at +0x21, where retail reloads the bound's component into xmm3 and adds the offset to it and ours copies the offset into xmm3 and adds the component to it.
 // MiniMax C (11-05): no new form, no lower score; ours is 2123 bytes against retail's 2083.
 // MiniMax A (11-04): no new form, no lower score; the optional-state homes sit four bytes low (retail +0x30/+0x40, ours
 // +0x2c/+0x3c) and retail hoists the bounds' zero component above the centre loads.

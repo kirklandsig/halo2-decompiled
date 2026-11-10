@@ -73,6 +73,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
+// MiniMax E (11-10): no new form, no lower score (173); both sides run the same operations, but the frame is 0x11c here and 0x118 there, and the products are held in different registers, so the same work is scheduled differently and lands at other frame offsets.
+// MiniMax S (11-06): the permuter's 42 rewrites all score 173 or worse on the reduced image; no new form, no lower score.
+// MiniMax D (11-09), not kept by the coordinator: the struct's trailing bytes cut to 0xc0 gives a 0x118 frame and 161, but local_0 is the 0xc4-byte creation data function_b7930 fills (s_damage_object_creation in damage.cpp ends with unknownc0), so a shorter local lets b7930 write past it.
 // score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
 // where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
 // first, stored after the dot) and colours the cross terms differently.
@@ -351,6 +354,18 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // 173 (same code); rows as `arg_2->i += arg_1->i + local_3.i` 173; scales axis, vector, cross 233 (1222 bytes); rows axis term
 // first 173 (as round 120); the forward copy after the outer cross 190; velocity products speed first 173 (same code); rows
 // `arg_2->i + local_3.i + arg_1->i` 173.
+// Round 84 (m3 lane 1, fast with 0x28dab0 and 0x259d0 listed, 173 as the full check; aligned and masked aligned counts in brackets, base [131, 72]).
+// Reading of retail's rotation (r206 already lists X.j/X.k spilled and X.i formed in row i): that is the order in-place row writes give, because row
+// i's store kills the vector's i, which only X.j and X.k read. Retail keeps the vector's i and j in registers throughout and gives the zero k a register
+// only for the outer cross and the dot; ours gives the zero a register throughout and re-reads the vector's j from its home. Re-measured listed shapes:
+// sine, named dot, cosine, scalar X.j/X.k, X.i in row i 237 (1221) (r206), sine, dot, cosine with `projection *= 1 - cosine` 237 (1220), sine, cosine,
+// projection 237 (1220) (r73's 237s), in-place rows with dot3f 228 (1194, frame 0x114) [124, 63] (r68), three scalar cross terms with a named dot 236
+// (1190) (lane 1 r64), cross3f(vector, axis) 213 (1209, frame 0x11c) [129, 91] (r68) and 226 (frame 0x120) (r206). New: the cosine called at each use
+// 238 (1221) [144, 84]; in-place rows with scalar X.j/X.k and a named dot before the cosine 236 (1187, 0x114) [140, 82]; three scalar cross terms with
+// sine, cosine, projection 232 (1189) [139, 78]; the vector's components read into three locals first, scalar X.j/X.k or all three, either trig order,
+// 227 each (1211, frame 0x11c) [144, 87]; a local copy of the vector with scalar cross terms 251/250/251/250 (1224, frame 0x114) [155-159, 96], with
+// cross3f 256 (1228, frame 0x11c) and 249 (1221, frame 0x11c). No form has retail's 0x118 frame: scalar cross terms keep X.j in a register (one spill,
+// 0x114) and a cross vector takes a 12-byte home (0x11c or more). Helper restored.
 // M3 lane 13 r72 (fast with 0x28dab0, matched throughout; brackets: aligned count with registers and stack offsets
 // masked, base 173 [41]). Retail's jitter arm copies z onto itself (`movss xmm0, [z]; movss [z], xmm0`), adds with
 // `fld [x]; fadd st(2)` and pops both draws afterwards. A zero-k offset vector added component by component gives the z
@@ -374,6 +389,14 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // into a result vector 230 [30] (1212 bytes, frame 0x11c). On the body below alone: the in-place scalar helper 228
 // [35], cosine at each use 236, result vector 275, cross3f vector 213, scalar results 237.
 // NOT kept: nothing below 173; body below unchanged.
+// Round 87 (m3 lane 1, fast with 0x28dab0, matched throughout; aligned/masked base 131/72): matched 0x23d260's in-place rotation shape
+// in the helper (sine, cosine, axis k local, staged projection, cross i/j/k, staged rows stored as they finish) 236 (1190 bytes,
+// aligned 136, masked 83); matched 0x1055b0's shape (cosine, sine, `(1 - cosine) * dot3f(direction, axis)`, scalar cross, rows)
+// 231 (1192 bytes, the code of the listed 231 forms). Round 72's jitter-arm base rebuilt from its description (both 0.1 updates
+// and a zero-k jitter offset through vector3f_add_scaled) gives 252 here (1243 bytes, masked 94), not 234; on it 0x23d260's shape
+// 253 (1233), 0x2551f0's (vector, axis, sine, cosine) shape 251 (1232). This note already covers the rotation's trig order,
+// dot and cross spellings, helper shapes of the matched rotating functions, the heading, jitter and velocity arms, scales and
+// creation data size; no untried natural form is left. Helper restored.
 // Round 164 (m3 lane 6, fast with 0x28dab0, 0x256bd0 and the callees, plus 0x1ecf50/0x170d70 for the helpers' files; masked =
 // aligned count with registers and stack offsets masked, 66 for this body): our ninth scalar dword is function_28dbd2's cross
 // vector (an address-taken 12-byte home, two components touched); retail keeps cross j and k in separate homes (+0x28, +0x20),

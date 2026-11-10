@@ -624,6 +624,17 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // operands swapped 57 (same code); the delta scaled straight into the output, then `+= state->velocity` per component
 // 101 (384 bytes); the scale's divisor through the rate local 82 (372 bytes). Retail's deltas end in XMM4/XMM2/XMM3
 // (i/j/k) where ours end in XMM4/XMM3/XMM2: the j and k homes are swapped.
+// M3 lane 10 r88 (fast with 0x1fc660, 0x1fc350, 0x1fc2f0; base 32, aligned 29, masked 13): the squared length written out
+// `j*j + k*k + i*i` on these deltas 32 (same code); `i*i + (j*j + k*k)` 78 (first +0x2f: the grouping moves the chain order); deltas
+// defined j, k, i with `i*i + j*j + k*k` 52 (+0x20), k, j, i 72; deltas i, j, k (re-measured 79) with `j*j + k*k + i*i`, `(k*k + j*j) + i*i`
+// or `i*i + (k*k + j*j)` 79 each (same code). Retail squares j first, then k, adds, then i, with the chains j, i, k and the
+// stores i, j, k.
+// Lane 12 r104 (fast with the file's functions, control 32): the deltas through scaled_difference3f at 1.0f with the
+// correction through the existing vector3f_add_scaled 78 (352 bytes); the deltas i, j, k with that correction 99 (348);
+// the call given `tracked` with the one read through the parameter's address moved to the location test 32 (same code);
+// the tick count read after the prediction helper 32 (same code); the root named before the scale 46 on this body
+// (listed as 33 on an earlier one). Re-measured as listed: the delta as an aggregate initialiser 79; limit declared
+// at its assignment 32. The squared length through reciprocal_normalize.h's k, i, j statement-sum helper 32 (same code).
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

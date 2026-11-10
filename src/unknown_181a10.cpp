@@ -436,6 +436,10 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // sequence inline); i and j as short 149 (672); the collector without align(16) 19 (it moves 4 bytes); the b
 // point stored by three field stores in place of real_point3d_set 36; the contacts read through
 // collector.entries.data at each use (no contacts local) 8; (re-measured) a contact count local 865.
+// Round 181 (m3 lane 4, fast): the existing havok_component_get and havok_component_rigid_body_get getters with the
+// real component type and its body array 8; i and j as int 8; the collector, dispatch and contact loop as a forceinline
+// pair helper returning the closer flag 152 (685 bytes, every home moves); the outer loop as while 8; the contact buffer
+// declared before the collector 8. Diagnostic: j, first, i renamed to sort in retail's slot order 8 (names do not order them).
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
@@ -565,12 +569,12 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
+// score 239 (was 239): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// the plane); classifier clamp form, origin and hit copies, transformed-plane and output homes remain.
 // MiniMax I (11-06): the node-type guard as a named local, as a field reference, against a
 // constant held in a local, with an unsigned field and as an if/else all keep the folded memory
 // compare; no lower score.
 // MiniMax lane A (11-04): no new form, no lower score.
-// score 239 (was 239): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
-// the plane); classifier clamp form, origin and hit copies, transformed-plane and output homes remain.
 // normal component loop 319; material-output scope 319; direct validity 351;
 // key-clamp result arms 319; optional entity result 319.
 // j92: frame 0x48 versus 0x44 and node/plane/output homes remain; delayed reads and native rotation copy regress; coordinate names and positive root guard tie.
@@ -828,6 +832,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // (179/114: retail's `shr 0x1d; dec; je`, but the surface index still sinks into the instance arm where retail
 // computes it before the branch; a switch for an if, not kept); the structure global read at both uses in place of
 // the `bsp` local 239 (same code). All restored.
+// M3 lane 10 r88 (fast with 0x1829b0, 0x1821d0, 0x182800, 0x183670; base 239, aligned 177, masked 112): the kind-24 block reading
+// `second->shape->data` at each use instead of the `data` local 237 (1245 bytes; two points, not kept; retail holds the shape in EBX
+// there and decodes with `shr ecx, 0x10; shr eax, 0x1d; ... dec eax; je`, ours with `and eax, 0xe0000000; cmp`); the distance written
+// radius-first 239; the 1..16 classifier as `value > 16 ? 16 : (value < 1 ? 1 : value)` 239 (same code); the classifier with no value
+// local, `(long)shape->data` at each use, re-measured 239 (same code).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

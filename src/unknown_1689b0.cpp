@@ -1577,7 +1577,8 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // Still differs: retail re-reads the axis after the first point's stores (ours keeps it in a register), starts the `%` before the first reconstruction, and the sum homes (face +0x50, nearest +0x5c, edge +0x60).
 // Tried with the helper: pair struct for first/second 662, `next` index named first (+ long counts) 676.
 // MiniMax C (11-05): no new form, no lower score; retail's prism loop walks &prism->plane.j (plane.i at [esi-4], the point count at [esi+0x14]) where ours walks &prism->point_count (plane.i at [esi-0x18]), and our accumulator homes sit sixteen bytes above retail's.
-// score 640 (was 640): frame 0xb964 agrees; sum/zero homes, axis re-read and early idiv remain.
+// score 637 (was 640): earlier 552; frame 0xb964 agrees; sum/zero homes, axis re-read and early idiv remain.
+// frame 0xb964 agrees; sum/zero homes, axis re-read and early idiv remain.
 // frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
 // Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
 // product (540 -> 539 on the reduced image, one point, below the retention margin). Retail multiplies
@@ -1789,6 +1790,20 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // AC558: Complete post-query prism-presence/rejection results in bool/byte/short/long:
 // eight at 553, 2898 bytes (control 552). NOT kept: unmatched one-consumer outcomes;
 // original signed count guard, all live count reads, sums and full body restored.
+// m3 lane 3 r227 (fast; plain for the kept form): kept the two sums as separate point3f locals in place of the anonymous
+// two-member grouping 640 -> 637 (2915 bytes, plain-confirmed). Retail computes `(edge_index + 1) % point_count` at the top of the
+// edge loop (EAX = edge_index + 1, shared with the increment and spilled at +0xd0) and holds the remainder in EDX through the
+// first reconstruction; that pressure is what makes it re-read the axis and side for the second point. Measured on the grouped
+// base: separate sums with no outer guard (product in the test) 640 (2918); the named next index with separate sums 625 (2922,
+// frame changes at +0x1, aligned 735 -> 587), with no guard too 626; the second point's address first with separate sums and no
+// guard 617 (2908); no guard alone 644; the named next index alone 676 (2947). The next index and the point address are one-use
+// values moved ahead of a call: match-only. On the kept form: the two-use points pointer 630 (2909: lines -1, length -6, frame
+// +0x1; re-measure of the listed 622 form); the point count read once for the cap and the modulo 637 (same code).
+// Then on the kept form (fast): no outer guard with radius_squared still named before the loop 639 (2918); the near-plane test
+// written `fabs(distance) >= 0.01f || !inside` 640, the length test `fabs(magnitude) >= 0.0001f` 640; separation as
+// `inside ? 0.0f : nearest` after the closest copy 642; `face = false` after both edge rays 661 (2939). The second point's
+// address first with no guard gives retail's entry exactly (frame 0xb964, ESI zero, `cmp word ptr [esp + 0x16c], si`): the zero
+// register follows the edge loop's pressure from the early remainder.
 // Round 163 (m3 lane 6, fast; aligned/masked = difflib counts with addresses, or also registers and stack offsets,
 // masked; control 735/337): the call list already agrees (0x120790 inlined in both). Retail starts the `%` and the
 // next index (`inc eax`, stored for the back edge) at the loop top and re-reads axis and side for the second point.
@@ -1817,14 +1832,11 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	bool result = false;
 	if (radius > 0.0f)
 	{
-		struct
-		{
-			point3f face_sum;
-			point3f edge_sum;
-		} accumulators;
+		point3f face_sum;
+		point3f edge_sum;
 		real nearest_squared_local;
-		accumulators.edge_sum = *g_468788;
-		accumulators.face_sum = *g_468788;
+		edge_sum = *g_468788;
+		face_sum = *g_468788;
 		long edge_count = 0;
 		long face_count = 0;
 		real edge_radius = radius;
@@ -1988,17 +2000,17 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 					real available = (real)sqrt(half.i * half.i + half.k * half.k + half.j * half.j);
 					if (face)
 					{
-						accumulators.face_sum.x += middle.x;
-						accumulators.face_sum.y += middle.y;
-						accumulators.face_sum.z += middle.z;
+						face_sum.x += middle.x;
+						face_sum.y += middle.y;
+						face_sum.z += middle.z;
 						if (face_radius > available) face_radius = available;
 						++face_count;
 					}
 					else
 					{
-						accumulators.edge_sum.x += middle.x;
-						accumulators.edge_sum.y += middle.y;
-						accumulators.edge_sum.z += middle.z;
+						edge_sum.x += middle.x;
+						edge_sum.y += middle.y;
+						edge_sum.z += middle.z;
 						if (edge_radius > available) edge_radius = available;
 						++edge_count;
 					}
@@ -2008,18 +2020,18 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 		if (face_count > 0)
 		{
 			real inverse = 1.0f / face_count;
-			out->x = accumulators.face_sum.x * inverse;
-			out->y = accumulators.face_sum.y * inverse;
-			out->z = accumulators.face_sum.z * inverse;
+			out->x = face_sum.x * inverse;
+			out->y = face_sum.y * inverse;
+			out->z = face_sum.z * inverse;
 			*out_radius = face_radius;
 			result = true;
 		}
 		else if (edge_count > 0)
 		{
 			real inverse = 1.0f / edge_count;
-			out->x = accumulators.edge_sum.x * inverse;
-			out->y = accumulators.edge_sum.y * inverse;
-			out->z = accumulators.edge_sum.z * inverse;
+			out->x = edge_sum.x * inverse;
+			out->y = edge_sum.y * inverse;
+			out->z = edge_sum.z * inverse;
 			*out_radius = edge_radius;
 			result = true;
 		}
