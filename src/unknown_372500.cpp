@@ -9,7 +9,7 @@
 // @retail 0x372500
 void rotation_372500::function_372500(__m128 const *quaternion)
 {
-	__m128 *output = column;
+	volatile __m128 *output = column;
 	float const *q = quaternion->m128_f32;
 	float x2 = q[0] + q[0];
 	float y2 = q[1] + q[1];

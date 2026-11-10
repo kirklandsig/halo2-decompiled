@@ -7,7 +7,7 @@ void lane_a_limited_hinge::build(lane_a_solver_input const *input, lane_a_solver
 	function_31e770((s_ops_input_31e770 const *)input, (s_ops_cursors_31e740 *)output, (long)results, 8);
 	joint_body_312e00 const *a = (joint_body_312e00 const *)body_a;
 	// Retail reads the body pointer again after rotating its local vectors.
-	void * const &second_body = body_b;
+	void * const volatile &second_body = body_b;
 	__m128 world_a[4], world_b[3];
 	rotate_joint_vectors(world_a, &pivot_a, a->transform(), 4);
 	world_a[0] = _mm_add_ps(world_a[0], a->transform()->translation);

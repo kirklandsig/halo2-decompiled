@@ -30,7 +30,7 @@ static __forceinline void install_mass_scales(contact_modifier_view_315340 *cont
 }
 
 // Score 15 (was 38): scalar home-slot copies and store scheduling still differ.
-// Review cleanup score 51: unmatched /goto tuning removed.
+// Review cleanup score 51: unmatched volatile/goto tuning removed.
 // @retail 0x315340
 void __cdecl function_315340(void *manager, hkEntity *first, hkEntity *second, float scale_first, float scale_second)
 {
@@ -55,7 +55,7 @@ void __cdecl function_315340(void *manager, hkEntity *first, hkEntity *second, f
 static __forceinline void store_modifier_sign(float *out, float value)
 {
 	// The selected sign is spilled to its parameter slot, then copied as a word.
-	*(unsigned long *)out = *(unsigned long const *)&value;
+	*(unsigned long *)out = *(unsigned long const volatile *)&value;
 }
 
 // @retail 0x3153c0
