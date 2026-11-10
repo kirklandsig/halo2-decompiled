@@ -6,6 +6,9 @@ It works on a copy of src/, include/ and config/ (and the build caches
 build/obj and build/gen) in a scratch build root under build/permute/, so
 the repository is never modified unless --write or --write-only-match is
 given, and then only with a strictly better variant of the one function.
+The scratch builds compile stale sources in parallel (HALO2_BUILD_JOBS, or
+the CPU count, at most 16) and keep their last image when nothing it was
+linked from changed.
 --write writes the best variant whenever it scores better than the original;
 it may behave differently from the original. --write-only-match writes it only
 when a full build finds that it matches retail exactly and every decompiled
@@ -82,6 +85,8 @@ from xbe import FUNCTIONS_CSV, ROOT, Xbe, retail_xbe_path
 
 WORST = 10 ** 6
 DEFAULT_TRIES = 200
+BUILD_JOBS = max(1, int(os.environ.get('HALO2_BUILD_JOBS') or min(16, os.cpu_count() or 1)))
+# ^ sources the scratch builds compile at once, as tools/check.py does
 INT_TYPES = ['long', 'int', 'short', 'unsigned long', 'dword']
 CHAR_TYPES = ['char', 'byte']
 NOT_NAMES = {'long', 'int', 'short', 'unsigned', 'char', 'byte', 'dword', 'word', 'const', 'void', 'static', 'sizeof',
@@ -2372,8 +2377,9 @@ class Scorer:
     def build(self):
         """Builds the scratch root: (map path, image path)."""
         if self.image is None:
-            return build.build(self.root, self.xdk), os.path.join(self.root, 'build', build.EXE_NAME)
-        return build.build(self.root, self.xdk, image=self.image), self.image
+            return (build.build(self.root, self.xdk, jobs=BUILD_JOBS, reuse=True),
+                    os.path.join(self.root, 'build', build.EXE_NAME))
+        return build.build(self.root, self.xdk, image=self.image, jobs=BUILD_JOBS, reuse=True), self.image
 
     def score_text(self, text):
         """Writes text as the source file and returns (score, first-difference text)."""
@@ -2437,7 +2443,8 @@ class FastScorer(Scorer):
         self.include = include
 
     def build(self):
-        return build.build(self.root, self.xdk, units=self.units, image=self.image, include=self.include), self.image
+        return build.build(self.root, self.xdk, units=self.units, image=self.image, include=self.include,
+                           jobs=BUILD_JOBS, reuse=True), self.image
 
 
 def prepare_scratch(scratch):

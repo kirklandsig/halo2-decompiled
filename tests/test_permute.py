@@ -1,3 +1,4 @@
+import os
 import random
 import re
 
@@ -323,6 +324,27 @@ def test_missing_symbol_is_a_failed_variant_not_a_crash(monkeypatch, tmp_path):
 
     assert scorer.score_text('variant') == (permute.WORST, 'not in the image')
     assert (tmp_path / 'f.cpp').read_text() == 'variant'
+
+
+def test_scorer_builds_in_parallel_and_reuses(monkeypatch, tmp_path):
+    """A scratch build compiles stale sources in parallel and keeps its last
+    image when nothing it was linked from changed, as the plain check does."""
+    calls = []
+
+    def fake_build(*args, **kwargs):
+        calls.append(kwargs)
+        return 'map'
+
+    monkeypatch.setattr(permute.build, 'build', fake_build)
+    scorer = permute.Scorer.__new__(permute.Scorer)
+    scorer.root, scorer.xdk, scorer.image = str(tmp_path), None, None
+    assert scorer.build() == ('map', os.path.join(str(tmp_path), 'build', permute.build.EXE_NAME))
+    assert calls[-1]['jobs'] == permute.BUILD_JOBS and calls[-1]['reuse'] is True
+    fast = permute.FastScorer.__new__(permute.FastScorer)
+    fast.root, fast.xdk, fast.image, fast.units, fast.include = str(tmp_path), None, 'image', {'src/a.cpp'}, ()
+    assert fast.build() == ('map', 'image')
+    assert calls[-1]['jobs'] == permute.BUILD_JOBS and calls[-1]['reuse'] is True
+    assert calls[-1]['units'] == {'src/a.cpp'} and calls[-1]['include'] == ()
 
 
 # ------------------------------------------------------------ --fast
