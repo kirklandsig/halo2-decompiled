@@ -846,6 +846,17 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // reliable_stream_get_message now inlines 89; a second read of oldest ahead of the loop (diagnostic) 86, still
 // reloaded; `while (++next < bound)` with the direct window 89, with the pointer 63, with a newest local 89;
 // newest declared ahead of the window pointer 63; a newest local with the direct window 89; a guarded do-while 89.
+// Round 183 (m3 lane 4, fast; aligned/register-masked difflib counts 33/13 at 60): the bound read in the loop test
+// with the window pointer for the index re-measures 60 (same code as the body below); the newest local with
+// &m_message_window at the index re-measures 89 (retail's loop body; the count folds oldest into its `sub` and the
+// loop hoists a second read into ESI, so `time` takes EBP). New: the window pointer declared before the
+// get_next_send call for the count, the bound and the index 80 (aligned 40, register-masked 11; the count's newest
+// and oldest are then both kept, EBX/EBP), with the bound from m_message_window.newest 88 (235 bytes), with the bound
+// in the loop test 80; the `&&` written as nested ifs with the window between them 80 (same code as the top window),
+// with &m_message_window at the index 91; the top window for the count with &m_message_window at the index 91; the
+// found path after the loop (`break`, then `if (next < newest)`) with the window index 72 (229 bytes),
+// &m_message_window index 86, bound in the test 97 (204 bytes). Retail shares only oldest between the count and
+// the loop and reads newest three times (count, bound, index test); no spelling here separates them that way.
 // m3 lane 7 r146 (fast; masked = registers and stack offsets masked, control 60 masked 23): the bound read as
 // m_message_window.newest in the condition with window kept for the index (the 63 above) has masked 16 at 226 bytes:
 // retail's per-step newest re-read, the oldest reused from the count in EBX and retail's frame. Only ours
