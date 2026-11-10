@@ -130,7 +130,7 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
-// score 378 (was 393): the left vector is built from the named left_i (`{left_i, local_8.i, 0.0f}`): 393 -> 378 plain at retail's 2825
+// score 378 (was 378): 393 before m3 lane 13 r75. The left vector is built from the named left_i (`{left_i, local_8.i, 0.0f}`): 393 -> 378 plain at retail's 2825
 // bytes, but mostly positional: the compiler now propagates left_i into the side test and shares its product with the 0.9 block (a new
 // temp, frame 0x5b8 against retail's 0x5b4; masked aligned 53 -> 107, with stack offsets masked 44 -> 49), while retail reads the left
 // vector's home there. The avoidance vector, local_7 and the left vector now sit in retail's order, 4 bytes high. Undo it when working on
@@ -138,6 +138,14 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // `inline` 393, the side-test sum written local_25 first 393 (all the same code); on the 378 form, the local_16 dot through dot_product2d
 // 380, local_12 scaled through vector3f_scale 419 (2804 bytes), the velocity dot through dot3f 378, left_i as `0.0f - j` 378, the side
 // test through dot_product2d 378.
+// M3 lane 13 r77 (fast, on the 378 form; masked+stack aligned count in brackets, base [49]): the left vector as `{-local_8.j,
+// local_8.i}` (k left to the initializer) 388 (k stored as an integer zero, slots unchanged); the path offset of the 0x1f99d0
+// call named as matched sibling 0x29a190 writes it (`long path_offset = *(char *)(local_0 + 0x53a) * 0x1c;`) 378 [44] (lead:
+// that call's whole setup becomes retail's, but positional scoring hides it); on that, left_i and the left vector's i set by
+// one chained assignment 378 [44], the steering block's left row through local_13.i/local_13.j 378 [44] (both propagate to
+// the same code), local_16 as one bool expression (`flag && !(dot / length > 0.5)`) 421 (2833 bytes); re-measured on this
+// base: the 0.9 block's `left_i * local_9.i` 378 (canonicalised). Retail pops EBX/ESI/EDI/EBP before the last flag setter
+// and reloads the actor offset from its home at both tail setters; ours reloads it into EBX at the end of the main arm.
 // MiniMax I (11-05, run 37): no new form, no lower score (277); the 0.9 steering block is still one instruction short and the left and avoidance vectors still swap their slots.
 // Walk b5A (11-06, statement by statement against retail 0x29cbb0, every block, field offset, constant value, call argument and branch
 // direction): no behaviour difference found. The body now calls the helpers it had written out: length_sq3f for local_10 (277, same code),

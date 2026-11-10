@@ -1344,7 +1344,7 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 
 // MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
 // and its query in edx while ours swaps them, and the parameter order is not ours to change.
-// score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
+// score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (m3 lane 13 r77 too).
 // w14B (11-06): walked against retail statement by statement: no logic difference (field offsets, constants,
 // condition directions, call arguments and the result path all agree). Early return (`if (parameters) {...
 // return true;} return false;`) 566: frame 0x28 and the stack-argument load agree, block still in EDX and query in
@@ -1552,6 +1552,17 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 536; lightmap pin before base 559; both copies 557; four together 570; five 586 (2209 B); five + in-place
 // rotation 586/476; block/type/query in all six orders: 573 on the result form, 586 on the five-piece form
 // (whose four callee-saved homes are retail's exactly reversed).
+// m3 lane 13 r77 (fast with 0xd4080 378 and 0x3db00 matched): retail's homes are block -> EBX (then the flags word, `test bl,
+// 1`), query -> EDI, count -> EDX, mask -> EAX; ours query -> EBX, block stays in EDX (then the flags), count -> EAX, mask -> EDI.
+// The only caller 0xd4080 sets EAX (block), then EDX (query), ECX (type). The /Gd compile-only pass already loads block into
+// EAX and count into EDX, so it cannot screen this. Diagnostics (reverted): deleting the 0x117c80 call or any one of the four
+// 0x13b390 curve calls leaves block in EDX (594/675/649/649/645), so no single call's pressure decides it. Forms: `bool result
+// = false;` before the test with `result = true;` first in the block 573; the mask computed before the count read 569 (query
+// then takes EDI, block still EDX), with that result form 584, with early `return true`/`return false` 570; the input normal
+// copied before the scan 532 (block arrives in EAX -> EBX and the flags take EBX as retail, but count/mask stay EAX/EDI and the
+// query reads move ahead of the scan; aligned 333 -> 326), with the mask at the top too 566, with early `return true`/`return
+// false` instead 567 (frame 0x28 and block EAX -> EBX as retail, masked+stack aligned 319, the lowest seen; count and mask stay
+// EAX/EDI). (The result placement and the early normal copy are round 39's forms, measured here on the current base.)
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

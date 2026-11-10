@@ -1146,7 +1146,7 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 }
 
 /* damages one object of the radius (and its children and siblings): the geometry to it, then the damage */
-// score 38 (was 91): 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
+// score 38 (was 38): 91 before m3 lane 1 r74. 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
 // (`movss xmm0, [ebx + 8]; addss xmm0, [edi + 8]`, retail the other way).
 // MiniMax E (11-09): no new form, no lower score (38); the permuter tried 20 forms and found nothing below 38, and putting the normal's store before the direction's update in each near-block row gives 288.
 // MiniMax R (11-06): forms tried, none lower (38 grouped negations, 40 with the node stores first, 41 one negation per row, 286-288 negated in place, 304 inlined, 38 with the near block's and the else arm's sums the operands the other way round); the near block still folds the normal into the k row where retail folds the destination, and the else arm still folds the destination in its i and k rows.
@@ -1244,6 +1244,10 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // unary minus 38 (same code); the else arm reading `data->direction.i` 46; `node_direction` declared first in the
 // node branch 369 (1547 bytes); the near block's stores in retail's emitted order (normal i, node i, node j,
 // normal j, normal k, node k) 288.
+// m3 lane 13 r77 (fast with 0xd6c80): the near test through the existing vector3d_from_points3d + length_sq3f 38 (same code);
+// without the cached origin pointer 40, without the direction pointer 46, without the node_direction pointer 51 (each pointer
+// local still helps); the three differences computed z, y, x 42. damage.cpp reaches no vector add or negate helper
+// (vector_products.h's vector3f_add clashes with this file's helpers). 0xd74b0 lies in a finished range: left alone.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -4940,7 +4944,7 @@ struct s_damage_object_creation
 // the block 154 by a declaration move only.
 // MiniMax C (11-09): no new form, no lower score (156); the datum offset still spills at +0xc instead of +0x10 and
 // the definition and detached/node homes still differ, so the first 69 instructions agree and the rest do not.
-// score 156 (was 174): frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
+// score 156 (was 156): 174 before m3 lane 1 r69. Frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // mask in memory). Left: the mask's zero is stored ahead of the states call (retail: at the first node loop), the piece
 // loop's guard order and bottom test, the search's entry test, and the scratch registers of the last two lookups.
 // Earlier 174 (was 188): frame 0x13e0 and 808-byte length agree; first +0xb acquires the handle/offset
@@ -5020,6 +5024,13 @@ struct s_damage_object_creation
 // T79: Mutable/immutable next-detached bitmap at node-record production, state-byte store,
 // first metadata byte and final metadata word: eight 156s. NOT kept: no exact recurrence form;
 // original complete body restored; late bitmap zero and piece/search entry remain.
+// m3 lane 13 r77 (fast; masked aligned count in brackets, base [22]): both Havok component lookups through the existing
+// havok_component_get (include/unknown_1cec30.h) 156 (same code); the piece object pointer with the piece loop as `!= 0` 157 [13]
+// (the two forms together: the last lookups and the bottom jne become retail's); on that, retail's guard order
+// (`detached_nodes > 0 && tag != NONE`) 188 (776 bytes, the mask enregistered), with a separate remaining mask for the piece
+// loop 156 [11] (left: the zero's placement, the first loop's head pad, the node-count reload and the search's entry test), plus
+// `long detached_nodes = 0;` declared in the block before the first loop 171 [86] (the head flips: the datum offset takes ESI);
+// that declaration on the 157 form alone 163 [76]. (The 188 form is round 157's guard result again, here with the piece pointer.)
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

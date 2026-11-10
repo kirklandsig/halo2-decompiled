@@ -234,7 +234,7 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // MiniMax D (run 46): the early-return body 77, the bool result 69, the bool result with the header
 // pointer in a named local 77 (the header lookups still merge into one ECX entry and EBP becomes a
 // scratch register); no lower score.
-// score 49 (was 49): unchanged this round: the head's register roles still differ - retail saves
+// score 49 (was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
 // EBX and keeps a false result in BL from before the creation call, pushes EBP only around the header
 // test and leaves the table global in EDX, reloading its data and recomputing the index for the
 // object; ours keeps the validity result in EBP and shares one header address between the flag test
@@ -659,6 +659,20 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // the top for the flag test 72, for the object read 72, one for each 93 (188/188/194 bytes: the copies are read ahead
 // of the creation call and held across it); the value call on the local index 67; the result assigned in every arm
 // (no initializer) 71.
+// m3 lane 13 r77 (fast, 0xa5a00/0xa5b10/0xa5b40/0xa5b80 matched throughout), on the early bool result set after the attach (77,
+// re-measured): the second call's last argument read once through its address (`long const *last = &f;`) 77 (folded: EBP still
+// caches f); the creation result stored and tested in one condition (`(entity->object_index = object_index = v29(...)) != NONE`)
+// 77 (same code); the bool assigned in every arm with no initializer 84 (157 bytes); the header test kept in a `deleted` bool,
+// `if (deleted) entity->object_index = NONE;` then `if (!deleted) {...}` 72. Lead (fast, reduced-image caveat, not kept: both
+// parts only steer): on that bool form a repeated `entity->object_index = object_index;` first in the unflagged arm 42 (176
+// bytes: without any volatile it gives retail's whole head, BL false before the call, f re-read from its slot, EBP saved only
+// around the header test, the table global kept in EDX and the data reloaded; left the scaled index shared and the extra store),
+// plus the test indexed through `(word)object_index` 14 (the index recomputed for the object read; left `movzx ecx, ax` for
+// retail's `mov ecx, eax; and ecx, 0xffff` and the extra `mov [edi + 8], eax`). On the 42 form: the object read through
+// `entity->object_index` 42 (forwarded), the test's index as `(dword)object_index` 42 (still shared); the word cast without
+// the store 72, the dword cast without it 77. So retail needs one value-preserving kill between the test and the object read
+// that leaves no instruction, and a second index computation that is not CSE'd with the first. Matched v22 siblings of other
+// entity definitions (0x9ba90, 0xa4880, 0x9aeb0) clear a slot to NONE and then store the new value.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
