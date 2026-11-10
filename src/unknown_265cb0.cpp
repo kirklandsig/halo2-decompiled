@@ -667,6 +667,13 @@ real function_30bf0(vector3f *vector);
 // in-place ternary 84; facing_ pair declared first and secondary copied first 84. Diagnostics, reverted: 0x263d70 storing
 // both output pointers to scratch globals leaves the first form at 199, and so does this function defined ahead of
 // 0x263d70 and 0x263740: neither an escaping pointer nor definition order makes our link keep the thresholds in memory.
+// Round 86 (m3 lane 1, fast with 0x263740/0x25c9d0; aligned/masked in brackets, base 84 [19/17]): the squared
+// distance declared uninitialised at the settings-block top 84 (same code: declaration position moves no slot); the
+// occupant's forward as a vector copy 195 (1312 B [77/47]); the plane distance through dot3f 138 at 1308 B [34/24];
+// the actor's three basis vectors through one `vector3f const *basis` pointer (plane normal and the 0x263740 call) 243
+// [57/39]; the actor's +7 flag read once into a bool used by both tests 85 [20/18]. Re-measured on this body: a long seat
+// count 193 [64/41]. In the first seat-loop cross product ours loads the forward component in the up.i * forward.k and
+// up.j * forward.i products where retail loads the world-up component.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2257,6 +2264,17 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 0x30bf0's magnitude through a one-line inline helper 168 (same code, 0x30bf0 still matches); 0x30bf0 reading its
 // parameter through its address 513 (0x30bf0 21, its convention changes). Retail's shape needs the normalize call to
 // be able to write `direction`; no form of 0x30bf0 that keeps its bytes makes our link think so.
+// Round 86 (m3 lane 1, fast with 0x25d810; aligned/masked in brackets, base 168 [80/38]): the first scratch-rotation
+// difference is the other actor's lookup (retail reuses EAX for the object pointer, ours takes ECX, and the actor lookup
+// after it is one step on). LEAD: the object read into a pointer local and its actor index read at each use
+// (`s_slot_object_view *object = object_get(node->object_index); ... object->actor_index == NONE ? NULL :
+// actor_get(object->actor_index)`) 163 [75/38], that lookup then exactly retail's (a gain of 5, under the bar). On it:
+// lane 14 r65's search recipe (ai_player_get/ai_player_index_get, `inline` on 0x1c8180, a __forceinline object_get_forward
+// declaration) 378 [74/36], all helper users matched: the search lines are retail's, the registers on both sides of them
+// one rotation step on, as at the iterator, so retail makes one scratch allocation more than ours before the iterator;
+// on that, 0x1c8150 with an early return 367 (0x1c8150 and five callers then differ; reverted at once), the vehicle index
+// read once into a local 204 [79/40] (ours keeps it in ESI where retail reloads it; the loop-head pad realigns, not a
+// real gain), the vehicle object fetched again after the type test 378 (same code); on 163 the vehicle index local 425.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

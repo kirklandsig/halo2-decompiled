@@ -554,6 +554,13 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // gate as a file-local inline helper returning its `result`, byte read / bit-field read 351/351; the flag as
 // `index != NONE && bit` 406; the flag set in both arms of the index test 411. Retail's `add eax, edx` then
 // `mov dl, [eax + 2]` and the +0x1b home (under the definition pointer at +0x1c) are still open.
+// m3 lane 1 r85 (fast; 0x247fd0 stays matched): an inline effect getter at both effect lookups 334 (same code, the flag
+// address still folds); the definition pointer named `definition` or `system_definition` 334/334 (same code); the flag
+// through an inline reader of the effect pointer returning bool 417 at 1665 B (the flag takes retail's +0x1b and the
+// definition pointer retail's +0x1c, by the extra read-back of the volatile; still folded); the effect pointer from
+// integer arithmetic 334 (same code); the reader returning the byte, `!= 0` in the caller, 334 (same code); the child
+// reciprocal as 0x247fd0's if/else alone 334 (aligned 188 -> 179). Retail's
+// sibling 0x247fd0 folds `[eax + edx]`; this one never folds base+index, so the cause is in the function, not the spelling.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -424,6 +424,15 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // arm) 247 (1136 bytes, the rows still sum the first point's term first); the else arm's weights as
 // `local_4 = local_5 = 1.f` 206 (same code); the orthographic dot as dot3f(&local_10, &g_4b9dac) 206 (same code); one
 // counter for both offset loops 207 (1141 bytes).
+// Round 86 (m3 lane 1, fast; aligned/masked counts in brackets, base 206 [167/103]): the blend products written
+// weight first 206 (same code); a shared `real scale` local with the depth limits written in the condition 256
+// (1136 B [170/81]: the second offset spilled whole, both scale tests early). LEAD: the existing transform_vector of
+// src/unknown_030290.cpp called in place on each offset (`transform_vector(&g_4b9e14, &local_0, &local_0)`), with
+// the depth limits written in the condition: 292 at 1089 B [78/46], retail's 0x14 frame. Left there: the first view
+// scales in place (retail copies the raw offsets first and loads the coefficients), the second view's products, the
+// sqrt argument and the blend scale/length in each other's slot ([esp] and [esp+4]) at all three tails. On that form:
+// the second offset loop first 292 (same code); offsets through vector3d_from_points3d 297 [164/55]; blend terms
+// swapped 292 (same code); through an `s_camera const *camera = &g_4b9e14` local 298 at 1083 B [155/55].
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

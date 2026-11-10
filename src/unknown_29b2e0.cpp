@@ -423,6 +423,11 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // out parameter into a local 263 (1719 bytes); the normalizer's length store ahead of the K scaling 176 (same
 // code); the first length from the normalizer's return value 263 (1719); the XY pair built after the second
 // normalization 368 (1712); the first length from the return value with the planar test as `> 0.0f` 316 (1715).
+// Round 86 (m3 lane 1, fast with 0x29b990, which stays matched; aligned/masked in brackets, base 176 [133/69]): the
+// second axis through the existing cross3f (vector_products.h) on the single-exit normalizer 234 (1706 B [133/75]);
+// the rotation helper's three cross terms through cross3f into a vector 213 (1707 B [131/55], frame 0x24 against
+// 0x2c, the root then at retail's +0xc), with the single-exit normalizer 209 [127/55], plus the rows stored directly
+// 209 (same code), plus the XY vector before the second copy 209 [126/54]. Single-exit normalizer re-measured 171.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

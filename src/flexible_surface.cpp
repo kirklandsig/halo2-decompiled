@@ -634,6 +634,14 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // (The first four are one compiled body; the cross/dot-on-the-global form re-measures round 206's 164 at 893 bytes.) On the opening: the time
 // product with its factors swapped 117 (same code); the time globals through a pointer local used for both reads 117 (same code); the fraction
 // held as a double 122; the angle as `fraction * (oscillation * oscillation) * 0.15f` 197 (882 bytes), the square as a named local 197 (882).
+// Round 87 (m3 lane 1, fast with 0x118140, base 117, aligned/masked 68/56; ours and retail both end in a plain ret, the round
+// prompt's ret 4 is not what this build gives): 0x2551f0's (vector, axis, sine, cosine) rotate helper applied in place on the
+// global (same-file copy, diagnostic) 169 (864 bytes), with the sine and cosine computed in the call as 0x2551f0 does 148 (880,
+// masked 49: the helper re-reads the global's j from memory at each use where retail keeps j and k in XMM5/XMM4). Matched 0x177d10
+// draws its axis the same way (g_4417f0 by random_index 0x402) and writes the same rotation out (s, c, t, cross j/k/i, rows); round
+// 41 measured that shape here (176/181); 0x177d10's exact statements on the global 143 (880, aligned 75); matched 0x23d260's
+// staged shape (axis k local, staged projection, cross i/j/k, staged rows stored as they finish) on the global 188 (846 bytes).
+// No other natural rotation or opening form outside this note's list is left. Not kept.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

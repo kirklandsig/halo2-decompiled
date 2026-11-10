@@ -1097,6 +1097,26 @@ extern long *g_51e9cc;
 // made inline; the crouch pair is the blocker. More probes on the 2-form: no clamp (diagnostic) still field first;
 // `crouch_change * 1.0f` 2; crouch_change declared last in the block 2, or at function scope before the biped 2; a
 // helper shaped like 0xb77d0 (NULL angular argument and its `||` test, one-expression sums) 4 (the sum comes out i, j, k).
+// Round 87 (m3 lane 1, fast; the 2-form, case 5's 0x35c store in both arms plus case 4's 0x354 store ahead of 0x364, re-measured 2:
+// only the crouch-add pair left). Retail evidence for both parts: retail reads entry+0xc after the 0x35c/0x360 stores but before
+// the 0x364 store, and reads the surface flag before the 0x35c store; a load cannot move across a store that may alias it (stores
+// to the biped may reorder among themselves), so retail's source reads them in that order. On the 2-form: the velocity block as a
+// call to 0xb77d0 with that function's parameter-address read removed 502 (still a call, so the read does not keep it out of line;
+// 0xb77d0 itself 56); 0xb77d0 defined `inline` 4 (re-measure of round 46 on this base: inlined, the speed sum comes out i, j, k
+// and the crouch add keeps the field first; 0x2056e0 434); object_get in place of every BIPED_GET 2 (same code). Compile-only map
+// of the crouch add (it reproduces the pair): retail's order comes only when the dd8e0 block holds a float operation followed by a
+// call and no nested test (`velocity.k -= height_change` then any call, or either test removed: change first; both tests, with
+// int, float or speed conditions: field first; the block removed, empty, ba1d0 alone or calls without the float operation: field
+// first); the first block, e30c0 and the code after the crouch store do not move it. An inline copy of 0xb77d0's body (inline or
+// forceinline, with or without the parameter-address read, the sum written out in all six orders, length_sq3f or dot3f) keeps the
+// field first and sums i, j, k where retail's inlined copy sums i, k, j: retail's inlined velocity block is not what our compiler
+// makes of that body. Diagnostics on the call form: with the havok test removed 500, with both tests removed 478: 0xb77d0 stays
+// out of line wherever the call stands, so our link never inlines it by itself (retail inlines it here and not at 0x2056e0's
+// top-level call; `inline` inlines it at both): 0xb77d0's file is /Ob1 again (its @flags line). Diagnostic, not keepable (a flags
+// change): that /Ob1 dropped with the call form 5, inlined by the link itself as retail, but the sum is still i, j, k, the crouch add
+// field first and one `mov eax, esi` differs (0x2056e0 inlines it too, 544). Permuter on the 2-form (600 s, fast, anneal): 14 tries, none below 2.
+// The inner test's first call, 0xb9b90, is an unmatched body (contributor code), a possible factor in that block's allocation.
+// No untried natural spelling of the add is left.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {

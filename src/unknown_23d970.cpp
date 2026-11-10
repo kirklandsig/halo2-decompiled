@@ -865,6 +865,24 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // Round 100 (m3 lane 12, `--fast 0x23de50 0x1f0870`, 45 as the full check): forward copied first and normalized in place for the distance 331; the
 // direction difference written out k, j, i 56 (1264 bytes); the velocity default copied before the offset in the camera arm 47; direction declared
 // first with previous_up assigned after its declaration 45 (same code); the second product reading the direction local 224 (1268 bytes). All restored.
+// Round 84 (m3 lane 1, `--fast 0x23de50 0x1f0870`, 45 as the full check; aligned count in brackets, base [20], else pointer 43 [18]):
+// the second product's rows as the three by-value arguments of the existing vector3f_assign 223 (1265 bytes) [58], with the else
+// pointer 80 (1264) [55] (the rows interleave as retail's do, each right register destroyed at its last use, but forward is read
+// through edi and the first product recolours), the same with retail's operand sides 80; the first product through that setter
+// with the else pointer 49 (1264) [23], both products 79 [55]; the setter rows read through a forward pointer local 221 (1272),
+// with the else pointer 221 (the code of r137's const forward pointer form); a pointer-parameter cross built on that setter for the
+// second product 217 (1270) [27], with the else pointer 217 [25], with retail's operand sides 217/217, for both products 221/221
+// (1272) (cross3f_staged's code each time), for the first product only 49/47 (1264). Re-measured r205's in-place prior-up copy
+// (one local for both products) 63 (1261) [28] and with the else pointer 216 (1261) [30]; new on it: the in-place first product
+// staged with the else pointer 57 (1264) [28], through the setter cross 56 (1262) [28] (r205's staged 56), with the else pointer
+// 57, with retail's operand sides and the else pointer 57. All restored.
+// Round 87 (m3 lane 1, `--fast 0x23de50 0x1f0870`, 45 as the full check, aligned/masked 20/8): an inline identity function wrapped
+// 1, 2 or 3 times round the target index before the products 45/45/45 (diagnostic, same code: the inline-expansion count does not
+// move the product colours here); the target read through the existing object_get 45 (same code); previous_up copied after the
+// distance store with cross3f_staged (retail's k, j, i schedule) for the second product 245 (1270 bytes, masked 25); both products
+// through cross3f_staged 221 (1272, re-measure of round 84). No untried natural form of the
+// two products is left; both differences sit in them (right.i/right.j colours, retail's k-first second product) and in the else
+// arm's forward stores.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
