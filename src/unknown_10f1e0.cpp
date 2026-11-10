@@ -1769,7 +1769,7 @@ bool __stdcall function_110ab0(long unit_index)
 // (value set then overridden) is now the ternary, 453 (1793 B, was 450 at 1789 B); the raw +0x14/+0xb0
 // flag tests use the named `channels[0].unknown14` / `channel_9c.unknown14`, same code. Tried:
 // `bool result = true;` with the default arm dropped 483 (1785 B).
-// score 453 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
+// score 453 (was 453): this round found no gain - retail keeps the result byte in the first argument's dead
 // slot (round 85's `bool result = true;` with no default arm is the spelling that lands it there) and holds
 // index*12 in EDX so the unit is re-derived for the query; ours keeps the unit in a register.
 // Earlier: this round found no gain - retail keeps the pool pointer live in ECX and the data in
@@ -1928,6 +1928,18 @@ bool __stdcall function_110ab0(long unit_index)
 // depleted 490 (1817 B); the state name read into a local at entry for the first switch 530 (1865 B); the
 // overlay identifier read into a local at entry for the second switch 464 at 1793 B, but the unit index then
 // arrives in EDI (0x10ff40 218, 0x111650 686); name and overlay at entry plus the `&&` depletion 594 (1905 B).
+// Round 163 (m3 lane 6, fast with 0x10ff40/0x111650, controls 12/621): retail keeps depleted at +0x12 and
+// interruptible's home at +0x13 (reloaded into BL around the seat lookups, which use BX), the true result in the
+// unit index's slot, `requested` never in a register, state in EDI and g_4e0300 in ECX for the second lookup's
+// reload of ->data; ours holds `requested` in EDI and state in ESI. `requested` read through a const pointer to it
+// 453 (same code); `controlling` read first with `bool result = true;` and no default arm 483 (1785 B, unit index
+// in EDI, callers 217/655), that with `requested` through the pointer 483; depleted, interruptible and the overlay
+// flag as char 448 (1801 B), interruptible alone as char 448 (the whole gain; a type picked by score, five points),
+// the overlay flag alone as char 453; the overlay identifier read into a local before its flag 461 (1789 B);
+// interruptible assigned directly (`= (... & 0x10) != 0`) 445 plain (1793 B, callers unchanged; state moves to EDI as
+// retail, but the flag becomes `mov bl, [edi + 0x14]; shr; and` where retail has `test; je; mov bl, 1`, aligned 343 ->
+// 351: not kept); the overlay flag initialized directly 453; the second depletion test as nested ifs 453; the 0x600008c
+// and 0x400000c ternaries as if/else 453 each; the interruptible test ahead of the two lookups 453. All restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2364,6 +2376,19 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // b2B (11-06) walk against retail, all 849 instructions: no behaviour difference (fields, conditions, callees and
 // arguments agree). Still differing: frame 0xcc versus 0xd4; retail inlines the first 0x11df30 and calls channel_play
 // out of line; the x*0.5f+0.5f operand order. Score 776, unchanged.
+// Round 163 (m3 lane 6, fast; aligned/masked = difflib counts with addresses, or also registers and stack offsets,
+// masked: control 587/288): in the overlay loop ours inlines channel_play and channel_start (a direct set call)
+// where retail calls channel_play; retail's dead entry store of the model's graph and the loop's dead `id` store
+// share one slot (+0x20), ours stores `id` at +0x44. The overlay loop moved into a forceinline helper 776 (590/288,
+// same calls); the ratio as `x * 0.5f` then `ratio += 0.5f` 847 (3414 B, 580/281: retail's mulss/addss on one 0.5
+// register and its merged clamp store, rest shifted); `active` declared at function scope 776 (same code); the
+// direction vectors declared at function scope 776 (same code); the id copied inside the index test with that
+// ratio 856 (3385 B, 581/280; the loop still inlines both levels in the reduced build). The seat weight as an if/else
+// 770 (3414 B; six points); the two relative-angle subtractions j first 773 (a statement order, not kept); the 0x114
+// animation read from the control at both uses 843 (3425 B); the relative centred test j first 775; the final flags
+// as an if/else 788 (3388 B, masked 250, tail layout unchanged); the default overlay's play call under its own if
+// 776 (same code); the side vector through the existing cross3f 863 (3441 B); the default angles copied j first 776;
+// the 0x20 flag set before the projection 776. All restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
