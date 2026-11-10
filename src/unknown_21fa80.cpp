@@ -323,6 +323,11 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // re-measured 562 plain at 1884 bytes [masked 225 against 235], with the voice read at its use 563 plain (1921 bytes). In every form the
 // stream stays in EBP and gain_bits in EBX (retail: EBX and EBP). Retail also inlines exp, sqrt and log10 as x87 code (f2xm1/fscale,
 // fsqrt, fldlg2/fyl2x) where this /Op file calls the CRT, and copies the four levels and the send fields through integer registers.
+// M3 lane 8 r151 (fast = plain here, 544; masked aligned 170): the XDK stream entry points that matched 0x221490 calls,
+// in place of the inline methods: the stream mix-bins call 544, the pitch call 544, both volume calls 544,
+// the voice-properties call 544 (same code each); `bool direct=input->field_30&1;` 544 (same code). Retail also zero-extends the
+// channel byte as `xor reg, reg; mov reg8, [ebp+1]` where ours has movzx (three sites); with the subtractions and rounding
+// stores, that is another /Op-or-flags lead for the user.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)
