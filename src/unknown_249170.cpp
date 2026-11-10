@@ -195,6 +195,10 @@ PRIVATE __forceinline point2f const *particle_spawn_extents(s_particle_system_da
 // `lifetime < 0.01f ? 0.01f : lifetime` 4 (case 1 unchanged); the shape in a named local before the switch 24 (2352
 // bytes); the lifetime local declared then assigned 2 (same code); case 1's cosine named after the velocity.j store with
 // the position products still from the fields 24 (2352 bytes).
+// Round 145 (m3 lane 7, fast): redundant parentheses in case 1 (the position.y, position.z and both products, the
+// sine and cosine conversions, the two zero literals, the 2-pi factor, the radius call) 2 each; velocity.j stored before
+// the velocity.i zero 2; both zero stores after velocity.k 2; position.z stored before position.y 11. A compile-only
+// build of the file does not reproduce the case scheduling (other cases differ there too).
 // @retail 0x249170
 void function_249170(real const *values, s_particle_spawn_state *particle, s_particle_spawn_definition const *definition, s_particle_system_datum const *system)
 {

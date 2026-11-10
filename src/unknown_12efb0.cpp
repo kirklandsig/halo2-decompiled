@@ -142,6 +142,8 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // clamps): no logic, field, condition or callee difference; the 607 is scheduling and register homes only.
 // MiniMax E (11-05): no new form, no lower score; the palette and accumulator carriers are as the earlier
 // rounds left them, and retail's `mulss scalar, t` product form has no legal spelling here.
+// Earlier at 616: Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
+// Earlier 616 (was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
 // Earlier at 616 (was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
 // Earlier: Frame 0x4820 and metadata cursor agree; native palette width and accumulator carriers differ.
 // Frame, clear prefix and metadata cursor agree; palette/cluster carriers and accumulator scheduling remain.
@@ -450,6 +452,22 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // tag arm's range clamp read from the field at each use 610 (aligned 236 -> 230), the three-scalar helper in retail's
 // scheduled order (red, height, green, weight, blue, intensity, distance, remaining) 718 (two more instructions,
 // aligned 210), its red term ahead of weight and remaining 607 (aligned 224).
+// Round 181 (m3 lane 4, fast): retail tests the +0x6f byte as a char (`cmp cl, al` against EAX's NONE), widens it once
+// (`movsx ecx, cl`) before the previous-index test, and re-reads the byte for the source-index store. The slot as char 700
+// (3828 bytes: the byte compare, but widened at each use); as long 706; char with a long index for the lookup and the
+// store 751 (the index takes a stack home); the byte read at each use (no slot local) 666 (3827: retail's `mov cl`, the
+// record in EBX as retail); only the store re-reading the byte 703; the byte at each use with a long index for the range
+// test and the lookup 666 (retail's early movsx); on that, NULL assigned in the lookup arm instead of at the declaration
+// 666 (same code: still threaded). Left in that block: NONE in EDX and the lookup result in EAX (retail EAX/EDX), the zero
+// in XMM5 (retail XMM7) and retail's unthreaded NULL test; the accumulator schedule after it is unchanged.
+// M3 lane 9 r105 (fast; "masked" = aligned count with registers and stack offsets ignored, control 607 masked 220): a
+// grid of the palette slot (short / char) x the three-scalar helper's statement order (w m r g b i d h as now /
+// r g b i d h w m / r g w b i d h m / r h g w i d m b) x the merge helper's weight and remaining updates after
+// the colour block (no / yes): 16 forms 607-732; the merge helper's late weight lowers the masked count in every
+// pairing (220 -> 191 alone, 705), best r g w b i d h m with it 732 (3847 bytes, masked 153); on that the
+// four-channel helper's weight terms first 714 (masked 173); r g b w i d h m with the late merge weight 732
+// (masked 155); r g w b i d m h 698 (masked 260); the merge helper reading the source weight at each use 732 (same
+// code). Retail keeps 0.0 in xmm7 for the whole loop body (43 uses, no other value), which none of these give.
 // M3 lane 10 r86 (fast with 0x131030, 0x1317a0, 0x130f60, all still MATCH; counts are score, bytes, aligned/masked aligned; control
 // 607, 3832, 487/220). Body unchanged; the closest form is build/r86/lead-12efb0.patch (693, 3820 bytes, 128/28). Match-only lead (it writes the three output
 // helpers and the clamp out by hand). Joint steps, none under 607:
@@ -472,6 +490,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // 0x131030) and takes EAX for -1, ours keeps the result in EAX and -1 in EDX; the -1 register only exists while a register is free, so the
 // result's home is the cause; `movsx ecx, cl` then follows the previous-index compare. Also the second accumulator's red product side, the
 // 0x88 pointer placement, the tag-arm weight store, the second four-channel call's weight position and the 0x6c store.
+// MiniMax S (11-10): no new form, no lower score (607): retail moves the 0x130f60 result into EDX and keeps NONE in EAX,
+// so the palette slot is compared as a byte (`cmp cl, al` at 0x12f15d) and the palette record stays in EBX; ours keeps
+// NONE in ECX, reads the slot as a word and is one instruction short from there on, so every later line is off by one.
+// The char-slot and re-read forms recorded above (683-756) and the statement orders in the three-scalar helper all score
+// worse than this body.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

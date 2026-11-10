@@ -507,6 +507,12 @@ static inline word font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax I (11-10, run 56): no new form; a long-returning helper (105) and a byte alpha parameter (209)
+// keep the parity masked in sixteen bits, so the word helper stays the best.
+// MiniMax I (11-10): no new form, no lower score (85): the alpha parity is still masked in sixteen bits
+// (and cl, 1; movzx cx, cl) where retail widens it (xor ecx, ecx; mov cl, al; and ecx, 1); a count
+// increment shared by both sub-branches scores 203 and puts the run in ebp, an unsigned modulo parity 212
+// and a thirty-two-bit parity local 170, which swaps the output and colour registers.
 // MiniMax G (11-06): no new form, no lower score: routing the helper's result through a long local and
 // casting it back to word gives 226, and the parity stays masked in 16 bits (and cl, 1; movzx cx, cl)
 // where retail widens it to 32 bits (xor ecx, ecx; mov cl, al; and ecx, 1).

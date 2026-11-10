@@ -84,7 +84,7 @@ void function_291740(short arg_0, long arg_1)
 #pragma function(_ReadWriteBarrier)
 
 bool __stdcall function_2912c0(s_ai_trigger_condition *condition, long squad_group_index, bool *result);
-bool function_290f60(s_ai_trigger_condition *condition, bool *result, long squad_index);
+bool function_290f60(s_ai_trigger_condition *condition, long squad_index, bool *result);
 
 struct s_291800
 {
@@ -304,55 +304,47 @@ short ai_trigger_find_by_name(char const *name)
 	return result;
 }
 
-// score 24 (was 24): retail makes the zero in EAX before the flag test but stores it
-// (count, then result from al) only after the early return, and so loads the global into
-// ECX; ours stores the count in the entry block and loads the global into EAX. Tried:
-// count and result zeroed (or declared) after the early return, count first 30 (the zero
-// is then made there and the global goes to EAX), result first 97; also with i zeroed at
-// its declaration 30; result initialized at its declaration 102 or 111; count declared
-// first with i zeroed at its declaration 33; result = (bool)count 24; the two early tests
-// as nested ifs 24; the latch test in a named bool 26; result declared at its assignment 26.
 // @retail 0x290e20
 bool function_290e20(short trigger_index, long squad_index, long squad_group_index)
 {
+	bool triggered = false;
 	s_ai_trigger *trigger = &((s_scenario_ai_triggers_view *)g_4e0350)->triggers[trigger_index];
-	short count = 0;
-	short needed;
-	short i;
-	bool result;
 
 	if ((trigger->flags & 1) && bit_vector_test((dword const *)g_5044cc, trigger_index))
-		return true;
-
-	result = false;
-	if (trigger->combine_mode == 0)
-		needed = 1;
-	else
-		needed = (short)trigger->condition_count;
-
-	for (i = 0; i < trigger->condition_count; i++)
+		triggered = true;
+	if (!triggered)
 	{
-		s_ai_trigger_condition *condition = &trigger->conditions[i];
+		short count = 0;
+		short needed;
+		short i;
+		bool result = false;
 
-		if ((squad_group_index != NONE && function_2912c0(condition, squad_group_index, &result)) ||
-			(squad_index != NONE && function_290f60(condition, &result, squad_index)) ||
-			(squad_index == NONE && squad_group_index == NONE && function_290f60(condition, &result, NONE)))
+		if (trigger->combine_mode == 0)
+			needed = 1;
+		else
+			needed = (short)trigger->condition_count;
+
+		for (i = 0; i < trigger->condition_count; i++)
 		{
-			count++;
-			if (count >= needed)
-				break;
+			s_ai_trigger_condition *condition = &trigger->conditions[i];
+
+			if ((squad_group_index != NONE && function_2912c0(condition, squad_group_index, &result)) ||
+				(squad_index != NONE && function_290f60(condition, squad_index, &result)) ||
+				(squad_index == NONE && squad_group_index == NONE && function_290f60(condition, NONE, &result)))
+			{
+				count++;
+				if (count >= needed)
+					break;
+			}
+		}
+
+		if (count >= needed)
+		{
+			triggered = true;
+			if (trigger->flags & 1)
+				bit_vector_set((dword *)g_5044cc, trigger_index, true);
 		}
 	}
-
-	bool triggered;
-	if (count >= needed)
-	{
-		triggered = true;
-		if (trigger->flags & 1)
-			bit_vector_set((dword *)g_5044cc, trigger_index, true);
-	}
-	else
-		triggered = false;
 	return triggered;
 }
 
@@ -811,7 +803,7 @@ bool function_226190(void);
 long function_1469f0(real arg_0);
 
 // @retail 0x290f60
-bool function_290f60(s_ai_trigger_condition *arg_0, bool *arg_1, long arg_2)
+bool function_290f60(s_ai_trigger_condition *arg_0, long arg_2, bool *arg_1)
 {
 	s_290f60 *local_0 = (s_290f60 *)arg_0;
 	bool local_1 = false;
@@ -982,7 +974,7 @@ bool __stdcall function_2912c0(s_ai_trigger_condition *arg_0, long arg_1, bool *
 	bool *const *local_10 = &arg_2;
 	s_290f60 *local_1 = (s_290f60 *)*local_8;
 	if (local_1->field_2 != NONE)
-		return function_290f60(*local_8, *local_10, NONE);
+		return function_290f60(*local_8, NONE, *local_10);
 	long local_2 = local_1->field_4 != NONE ? local_1->field_4 : *local_9;
 	s_2912c0 *local_3 = (s_2912c0 *)squad_group_get(local_2);
 	switch (local_1->field_0)

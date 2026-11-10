@@ -30,6 +30,8 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
         ++output;
     }
 }
+// MiniMax S (11-10): no new form, no lower score (206); our frame is still 0x20 against retail's 0x14 and the two view
+// coefficients are still folded into the products.
 // score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products.
@@ -428,6 +430,27 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // gain. The blend weights as unary negations `-local_2.k` / `-local_3.k` 206 and the width differences doubled constant-first 206 (both same
 // code). No other untried natural form found: the remaining levers (lazy depth limits, the second offset kept in the frame, the blend
 // scale's home) are all listed above.
+// Round 86 (m3 lane 1, fast; aligned/masked counts in brackets, base 206 [167/103]): the blend products written
+// weight first 206 (same code); a shared `real scale` local with the depth limits written in the condition 256
+// (1136 B [170/81]: the second offset spilled whole, both scale tests early). LEAD: the existing transform_vector of
+// src/unknown_030290.cpp called in place on each offset (`transform_vector(&g_4b9e14, &local_0, &local_0)`), with
+// the depth limits written in the condition: 292 at 1089 B [78/46], retail's 0x14 frame. Left there: the first view
+// scales in place (retail copies the raw offsets first and loads the coefficients), the second view's products, the
+// sqrt argument and the blend scale/length in each other's slot ([esp] and [esp+4]) at all three tails. On that form:
+// the second offset loop first 292 (same code); offsets through vector3d_from_points3d 297 [164/55]; blend terms
+// swapped 292 (same code); through an `s_camera const *camera = &g_4b9e14` local 298 at 1083 B [155/55].
+// Round 179 (m3 lane 4, fast with 0x30290, 0x142640 and 0x30bf0, all matched each time): the helper's scaled copy
+// assigned field by field 206 (same code: the copy still coalesces with the raw offsets, scaled in place); the second
+// offset through the existing vector3d_from_points3d 207 (1141 bytes); one shared scale local for both views 255 at
+// retail's 1136 bytes (frame still 0x20), with that offset helper too 255; the copy scaled in place through
+// vector3f_scale 206 (same code). Retail keeps raw and scaled apart (copies before the test, `scale * raw` into the
+// copies) and loads the first view's coefficients, holding right.i in xmm7 for the second view.
+// Round 78 (m3 lane 14, fast): the orthographic length and clamped value renamed so their names sort the other way
+// (two spellings) 206 each (same code: names do not move these two slots, retail has the length at [esp], ours the
+// clamped value); the copied word field stored before the two halved fields 206; the halves as `0.5f * (a + b)` 206;
+// the blend divisor declared at the function's top 206 (all the same code). Retail loads the scale once into XMM6
+// and tests it for both views where ours reloads it; the natural forms aimed at that are listed above (a caller scale
+// local 253, the helper reading the global 318, rows indexed into the output 226), so none was left to try.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

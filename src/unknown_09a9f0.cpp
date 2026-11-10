@@ -232,6 +232,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // retail keeps the result in bl and looks the header up twice.
 
 // score 49 (was 49): unchanged this round: the head's register roles still differ - retail saves
+// MiniMax D (run 46): the early-return body 77, the bool result 69, the bool result with the header
+// pointer in a named local 77 (the header lookups still merge into one ECX entry and EBP becomes a
+// scratch register); no lower score.
+// score 49 (was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
 // EBX and keeps a false result in BL from before the creation call, pushes EBP only around the header
 // test and leaves the table global in EDX, reloading its data and recomputing the index for the
 // object; ours keeps the validity result in EBP and shares one header address between the flag test
@@ -668,6 +672,20 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // set true in the unflagged arm (NONE stored in the flagged arm) and the store and attach under `if (result)` 72 (the
 // flagged path threads to the exit as retail, but the result is spilled to a stack byte and the header address stays
 // shared), with 0xbb780 72, with the arms swapped 72, that with a long result 77 (188 bytes).
+// m3 lane 13 r77 (fast, 0xa5a00/0xa5b10/0xa5b40/0xa5b80 matched throughout), on the early bool result set after the attach (77,
+// re-measured): the second call's last argument read once through its address (`long const *last = &f;`) 77 (folded: EBP still
+// caches f); the creation result stored and tested in one condition (`(entity->object_index = object_index = v29(...)) != NONE`)
+// 77 (same code); the bool assigned in every arm with no initializer 84 (157 bytes); the header test kept in a `deleted` bool,
+// `if (deleted) entity->object_index = NONE;` then `if (!deleted) {...}` 72. Lead (fast, reduced-image caveat, not kept: both
+// parts only steer): on that bool form a repeated `entity->object_index = object_index;` first in the unflagged arm 42 (176
+// bytes: without any volatile it gives retail's whole head, BL false before the call, f re-read from its slot, EBP saved only
+// around the header test, the table global kept in EDX and the data reloaded; left the scaled index shared and the extra store),
+// plus the test indexed through `(word)object_index` 14 (the index recomputed for the object read; left `movzx ecx, ax` for
+// retail's `mov ecx, eax; and ecx, 0xffff` and the extra `mov [edi + 8], eax`). On the 42 form: the object read through
+// `entity->object_index` 42 (forwarded), the test's index as `(dword)object_index` 42 (still shared); the word cast without
+// the store 72, the dword cast without it 77. So retail needs one value-preserving kill between the test and the object read
+// that leaves no instruction, and a second index computation that is not CSE'd with the first. Matched v22 siblings of other
+// entity definitions (0x9ba90, 0xa4880, 0x9aeb0) clear a slot to NONE and then store the new value.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1026,6 +1044,10 @@ bool c_projectile_type::v8(long a, long b)
 // the field through an indexed long view 12; the field read directly at the NONE test and the mask 12 (re-measured);
 // the group index read into a local at entry 50; flags declared before the lookup with the call's mask from `b` 12;
 // the object through the existing inline object_get 12.
+// Round 165 (m3 lane 5, fast, 0xa5e70 kept): both value checks through one shared inline (value, source, bit) update
+// helper returning the bit or 0, with `result |=` at each, 56 (190 bytes) with the word read and 58 (192) with the mask (the
+// zero arm is not threaded); the 0xa5e70 call through an inline (object index, flags, update) forwarding helper with the mask
+// 12, passing the masked flags 12, with the word read 5. The tie is not moved by the call's argument webs.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
