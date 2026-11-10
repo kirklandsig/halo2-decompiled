@@ -4,6 +4,7 @@
 
 #include "unknown_11c920.h"
 #include "globals.h"
+#include "impacts.h"
 #include "camera_storage.h"
 #include "reset_storage.h"
 #include "sound_sources.h"
@@ -258,8 +259,8 @@ byte *function_c4210(long index, long element_index);
 long function_c4250(long index);
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
 	long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *collision);
-void function_1883e0(long tag_index, bool ignore_distance, point3f const *point, short element_index,
-	long entry_element_index, long index, long variant, long *first_value04, long *second_value04,
+void function_1883e0(long tag_index, bool ignore_distance, point3f const *point, c_type_47f957 element_index,
+	c_type_47f957 entry_element_index, long index, long variant, long *first_value04, long *second_value04,
 	long *first_value, long *second_value, long *first_value0c, long *second_value0c);
 dword vector3d_compress(vector3f const *vector);
 long function_1895f0(s_sound_position const *position, real scale, long tag_index);
@@ -403,8 +404,8 @@ void __stdcall function_508d0(void *payload_data)
 					bases[1].origin[2] = collision.point.z;
 					if (arc->effect_tag_index != NONE && function_30bf0(&ray) > 0.0001f)
 					{
-						function_1883e0(arc->effect_tag_index, false, &collision.point, g_47d8e0,
-							collision.material, 15, 0, &first_values[0], &second_values[0],
+						function_1883e0(arc->effect_tag_index, false, &collision.point, c_type_47f957(g_47d8e0),
+							c_type_47f957(collision.material), 15, 0, &first_values[0], &second_values[0],
 							&first_values[1], &second_values[1], &first_values[2], &second_values[2]);
 						for (long n = 0; n < 3; n++)
 						{

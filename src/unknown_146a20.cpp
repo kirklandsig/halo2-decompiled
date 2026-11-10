@@ -376,6 +376,13 @@ bool g_47f05b;
 // through `block` 36 (146 B, `mov edx, eax; add edx, 0x30`); placement and pool through `block`, buffer through
 // g_479888 43 (139 B). 0x453760 is
 // stored in retail only here and in the abstract allocator's deleting destructor 0x1470f0.
+// M3 lane 14 r79 (fast with all 57 functions of the header's ten files): a virtual destructor declared in the fixed base
+// 34 (the store still dropped, no other function changes). Diagnostic (header, removed at once): `if (buffer) m_count = 0;
+// else m_count = 1;` in the fixed base constructor keeps the fixed base's own vtable store beside its field stores (61 at
+// 162 bytes, 0x146b80 27): a branch present when dead stores are removed, between one vtable store and the next, keeps
+// the earlier store even after the branch becomes a `sete`. So retail's kept 0x453760 store points at a branch or block
+// boundary that this construction alone had there and that later vanished; in the shared constructors it would also
+// reach 0x146b80, 0x146e30 and 0x22c3e0, which drop the store. No other untried form on this function's side is known.
 // M3 lane 2 r67 (fast with 0x146b80/0x146e30/0x22c3e0): the fixed base's three member stores in reverse order 34 (same
 // code here; matched 0x146b80 goes to 2), so not kept. Every constructor change reaches 0x146b80 too, which drops the
 // abstract vtable store in retail, so the cause has to be one this call site alone has (retail's construction here keeps

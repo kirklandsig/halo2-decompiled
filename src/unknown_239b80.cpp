@@ -520,6 +520,12 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // three exits as `return hull_count;` with no label 186 (768 B); points2d_differ as `>= eps || >= eps` 173 (788 B), as
 // `!(< eps) || !(< eps)` 170 (masked 85); memmove plus the heading declared ahead of the lowest scan 204 (masked 63). Our
 // pass counter sits in the dead indices home and the departure flag in the frame, retail the other way round.
+// Round 70 (m3 lane 15, fast with 0x239d50): the departure as `equal ? false : true` 171 (786 B); the if/else departure (the
+// 168 form) with the flag declared first at function scope 252, with the left-start exit nested 168 (re-measure: the 168
+// form's code), with `short next` declared first in the pass 170, with previous_angle declared beside the current index 206; `bool
+// left_start` with the plain update and the nested exit 248. Lead: retail stores the departure byte directly (0 between the
+// coordinate tests, 1 on a difference) and its y test is `fxch; fcompi; jb` where the exit test's is `fcompi; jbe`, so the
+// two comparisons are not one expression in retail; no form here gives the fxch.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -969,6 +975,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // `*clipped = true` store moved to the end of the crossing block 277 (856 B); the loop end's previous point as
 // `&points[i]` 129 (same code); re-measure on this body: the loop test `i != count` 130 (listed at 249 on the if/else
 // fraction).
+// Round 70 (m3 lane 15, fast): both dedupe tests nested under `if (result != 1)` 129, the alias copy size as
+// `sizeof(point2f) * count` 129, the crossing bit as `SET_FLAG(mask, result, true)` 129 (same code); `points = (point2f
+// const *)memcpy(copy, ...)` 372 (975 B); re-measured: the deltas through polygon_difference_23a220 129 (round 366's shared
+// 2-D difference). No untried natural form targets the cause: the one lever is the count's ECX at the alias join, which only
+// the repeated `if (count > 0)` guard gives (match-only, best 92 with the if/else fraction).
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

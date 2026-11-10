@@ -75,6 +75,8 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // written-out velocity block stays a call: 374 (1076 bytes), and the full build moves its caller 0x118700 from 92 to 148, not kept. Retail's `test ebx, ebx` (0x1e5796) is that
 // inlined parameter's null test and is always false for &velocity, so no behaviour changes. The fast build also
 // inlines the capsule destructor where retail calls 0xdc370 (0x1e59e1/0x1e59f4); full build not affected by this note.
+// MiniMax R (11-10): no new form, no lower score (319); the move and input pointers still trade EBX and EDI,
+// which the case-3 callee's stub convention settles, and the countdown byte is still converted out of line.
 // MiniMax R (11-10): no new form, no lower score.
 // MiniMax I (11-05): no new form, no lower score. Retail takes its first argument in eax and keeps the
 // output in ebx and the physics pointer in edi, ours takes all three on the stack; retail's case-3
