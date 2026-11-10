@@ -358,7 +358,9 @@ For near misses, the fast search is usually the better choice:
 
 - `--fast` scores each variant on a reduced image (the function, its callees
   and what it needs), which takes seconds instead of a full build. Every
-  improvement is confirmed by a full build.
+  improvement is confirmed by a full build. If the reduced image scores the
+  original differently from the full image, the search stops at once and says
+  to run it without `--fast`, because it would optimise the wrong score.
 - `--anneal` lets the search accept some worse variants and restart, so it
   can get past a local minimum.
 - `--write-only-match` writes a variant back only when a full build finds an

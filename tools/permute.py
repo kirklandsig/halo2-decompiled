@@ -2601,7 +2601,7 @@ class FastSearch:
     none is scored twice. progress (0 to 1) is how far the run has gone."""
 
     def __init__(self, prefix, body, suffix, confirm, baseline, log=print, strategy=None, mutations=None,
-                 context=None):
+                 context=None, fast_baseline=None):
         self.prefix, self.original, self.suffix = prefix, body, suffix
         self.confirm, self.log = confirm, log
         self.strategy = strategy or Greedy()
@@ -2609,10 +2609,10 @@ class FastSearch:
         self.progress = lambda: 0.0
         self.lock = threading.Lock()  # guards the state below
         self.confirming = threading.Lock()  # one full build at a time
-        self.walk, self.walk_score = body, None  # the position and its reduced-image score
-        self.fast_baseline = None
+        self.walk, self.walk_score = body, fast_baseline  # the position and its reduced-image score
+        self.fast_baseline = fast_baseline
         self.best, self.best_score = body, baseline  # the best and its full-build score
-        self.best_fast = None  # the best's reduced-image score
+        self.best_fast = fast_baseline  # the best's reduced-image score
         self.baseline = baseline
         self.seen = {body}
         self.tries = 0
@@ -2628,7 +2628,8 @@ class FastSearch:
         return self.prefix + body + self.suffix
 
     def start(self, score, note):
-        """Records the original's reduced-image score (each worker scores it once)."""
+        """Records the original's reduced-image score (the caller may already
+        have scored it, so each worker does not)."""
         with self.lock:
             if self.fast_baseline is None:
                 self.fast_baseline = self.walk_score = self.best_fast = score
@@ -2703,13 +2704,23 @@ class FastSearch:
 
 def _work(search, scorer, rng, tries, deadline):
     """One worker of a --fast search."""
-    search.start(*scorer.score_text(search.text(search.original)))
+    if search.fast_baseline is None:
+        search.start(*scorer.score_text(search.text(search.original)))
     while deadline is None or time.time() < deadline:
         candidate, n = search.propose(rng, tries)
         if candidate is None:
             break
         score, note = scorer.score_text(search.text(candidate))
         search.offer(candidate, score, note, n, rng)
+
+
+def _fast_baseline_check(va, fast_baseline, baseline):
+    """--fast may only search when its reduced image scores the original the
+    same as the full image; otherwise it would optimise the wrong score."""
+    if fast_baseline != baseline:
+        raise SystemExit(
+            f'the reduced image scores the original {fast_baseline} differing instructions, the full image '
+            f'{baseline}: --fast cannot search this function. Run without --fast: python tools/permute.py {va:#x}')
 
 
 def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, jobs=1, depth=None, anneal=False):
@@ -2751,11 +2762,14 @@ def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, j
             for scorer in scorers:
                 scorer.include = include
                 scorer.units |= pinning
+        fast_baseline, fast_note = scorers[0].score_text(original)
+        _fast_baseline_check(va, fast_baseline, baseline)
+        log(f'baseline: {fast_baseline} differing instructions on the reduced image ({fast_note})')
         log(f'reduced image: {len(scorers[0].units)} sources: ' + ', '.join(sorted(scorers[0].units)))
         walk = dict(strategy=Anneal(), mutations=MUTATIONS + TYPED_MUTATIONS,
                     context=function_context(original, start, full.root)) if anneal else {}
         search = FastSearch(original[:start], original[start:end], original[end:], full.score_text, baseline, log,
-                            **walk)
+                            fast_baseline=fast_baseline, **walk)
         t0 = time.time()
         deadline = None if time_limit is None else t0 + time_limit
         if time_limit is not None:

@@ -347,6 +347,14 @@ def test_scorer_builds_in_parallel_and_reuses(monkeypatch, tmp_path):
     assert calls[-1]['units'] == {'src/a.cpp'} and calls[-1]['include'] == ()
 
 
+def test_fast_rejects_a_reduced_baseline_that_disagrees():
+    """A reduced image that scores the original differently would make --fast
+    search the wrong score; the tool stops and names the plain search."""
+    with pytest.raises(SystemExit, match='without --fast'):
+        permute._fast_baseline_check(0x1234, 5, 2)
+    permute._fast_baseline_check(0x1234, 2, 2)  # agrees: no exit
+
+
 # ------------------------------------------------------------ --fast
 
 def marker(va, path, stub=False):
