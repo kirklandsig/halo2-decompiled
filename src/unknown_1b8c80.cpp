@@ -686,6 +686,12 @@ extern "C" void _ReadWriteBarrier(void);
 // Round 60 (m3 lane 2, fast): `s_slot_4c *const state` 6; the slot parameter `s_slot *const` 6, without the barrier
 // 44; the flags test as `(state->flags & 4) != 0` 6; the point copied through a const reference in the arm 6 (all 6s
 // the same code). `register` on the slot parameter does not build (the generated cast rejects it).
+// Round 145 (m3 lane 7, fast; a compile-only build of the file reproduces this function exactly): the state as
+// `slot ? (s_slot_4c *)slot : NULL` 6; the point through a const reference at the top 6; the flags test as
+// `(bool)((state->flags >> 2) & 1)` 6; the body in an inline helper called with (state, actor) and the barrier
+// before the call 44 (208 bytes); with (actor, state) parameters and the barrier at the helper's top 6. Compile-only
+// diagnostics: a second definition of the state (in an else) loads the slot at entry; a read in the join block
+// loads it after the compare; helper forms without the barrier compare in ECX like the body without it.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

@@ -508,6 +508,15 @@ struct s_text_line_measurement
 // Tried (77, same code): the test written as sum < x1; width += advance + offset + kerning;
 // a copy of the width taken after the kerning call. Worse: advance or offset written
 // inline at both uses (111), the can_break block ahead of offset/advance (111).
+// m3 lane 7 r146 (fast): the one cause is retail's `movaps xmm3, xmm0` after the advance product. The update's
+// advance is a second register copy, so the width takes xmm4 and loads early and the compare reuses xmm0 for x1.
+// Matched 0x142640 and 0x17c040 give that copy from `x = scale * x` on an already-defined variable. Tried (77, same
+// code): the advance product written out in the update only, or in the compare only (CSE merges it); a two-step
+// `advance = raw; advance *= scale`; the kerning call result named before its product; the update summed as
+// w+a+o+k, k+o+a+w, (a+o)+(k+w) (77) or a+(o+k)+w (76); the compare as w+x+a+o+k (77) or x+(a+o+k)+w (83).
+// Definition orders (kerning/offset/advance) kao 78, oka 82, ako 82, oak and aok 133 (393 bytes); break_width
+// declared first 77; the can_break stores swapped 76; the restore swapped 77; unsigned break_index 77. Permuter
+// (600 s) best 71: those swaps plus an unsigned index, a byte flag and a flag set from the count test (not kept).
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

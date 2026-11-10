@@ -482,6 +482,12 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // Round 60 (m3 lane 2, fast): the system block storing the validity before the system 12; the three cache
 // pointers cleared by one chained assignment 12; first as `long const` 10; definition as a const pointer 10; the
 // attraction test as `0.0f < attraction_radius` 10 (the 10s the same code).
+// Round 145 (m3 lane 7, fast): one redundant pair of parentheses each: the attraction quotient, the change's first
+// squared product and the maximum test's square 59 each (1517 bytes), the minimum test's square 42 (1521); the
+// masks, the particle index, the center pointer, the chained zeroing and the tests 10 (same code). Renames
+// reversing the name order of definition, first and next (one, two or all three) 10; renames of particle, nearest,
+// properties, cache and requested 10; requested declared beside the cache 10; change at function scope 10. The
+// back-edge reloads never move.
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {

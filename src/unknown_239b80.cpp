@@ -27,12 +27,13 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 	point2f const *first, point2f const *second, long count, short capacity, point2f *output)
 {
 	real fraction = 0.0f;
-	real dx = first->x - second->x;
+	real dx = (first->x - second->x);
 	real dy = first->y - second->y;
 	real denominator = plane->n.i * dx + plane->n.j * dy;
 	if ((denominator < -0.0001f || denominator > 0.0001f) && count < capacity)
 	{
-		fraction = (plane->n.j * first->y + plane->n.i * first->x - plane->d) / denominator;
+		real dot = (first->y * plane->n.j) + (first->x * plane->n.i);
+		fraction = (dot - plane->d) / denominator;
 		output->x = first->x - dx * fraction;
 		output->y = first->y - dy * fraction;
 		return true;
@@ -40,92 +41,7 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 	return false;
 }
 
-// score 5 (was 5): loop setup stores [esp+0x10]/[esp+0x18] in another order (retail stores
-// previous*4, loads the output, then current*8 and current*4; ours current*8 first), and the
-// first intersection's x product loads the plane before the point. A compile-only build of this
-// file reproduces both; the product operand orders follow the whole function (a no-op product in
-// the classification loop rotates them), not the helper's spelling. Round 45: a plane-distance
-// helper for the classification and the numerator 11 (x-first body 11); for the numerator only
-// 7, with dy computed first 25; dot product numerator with dy first 25; a named current-side
-// local 7; 576 compile-only combinations (distance spellings, dx/dy and output store orders,
-// result placement, epsilon compare, returned count) never fixed the x product without flipping
-// the denominators or the second numerator, and none moved the setup stores.
-// Round 72 (full build): helper
-// parameters (first, second, plane) 7 and (first, plane, second) 7, both making the second
-// intersection's x product plane-first too; (plane, second, first) 5; a separate input pointer
-// for the points or their copy 9 (x term first in the first intersection), declared first 9.
-// The fraction defaulted first,
-// x-first displacements and the scale inside the output expressions gave retail's XMM homes
-// and length (101 -> 5). Then: current declared before previous 5; named current/previous
-// point pointers 28; dot_product2d numerator 5; fraction shared with the classification
-// distance 5; previous updated at the loop end 5; staged/reversed denominators and helper
-// parameter orders screened compile-only without change. Earlier: frame 0x618 agrees; cursor/result initialization, delta XMM
-// homes and extra fraction copies remain. X-first deltas 109; full denominator 103;
-// scales before stores 101; first input record 207; Boolean helper result 101;
-// aggregate intersection 152; capacity-first gate 108; native input count 153;
-// intersection role names 101; output-first helper 101; count-result helper 101;
-// x-first deltas with full denominator 107.
-// Shared difference/projection/both 109/101/109; actual output cursor 256;
-// difference/projection with output cursor 256/256; natural previous update 101; cursor with previous update 256.
-// Second/both input records 163/247; complete/staged projection numerator 101/103;
-// parallel output offsets 101; second record with offsets 163; numerator with offsets
-// 101; nested eligibility/capacity scopes 101. Original helper and body restored.
-// Immutable displacements 101; both projection products 101; plane value 269; word output/classification/clipping ordinals 231/220/202; common output result 138; current before previous 101.
-// Round 54: numerator `y + (x - d)` 14; split sum then `(sum - d) / denominator` 7 (both
-// products point-first but x first; explicit parentheses always order x first); both indices
-// declared in the for 5; while loop with the updates at the end 5; `y - d + x` 14.
-// Round 8: previous/current/result names 5 each; previous declared early or before the exits 5;
-// point-first numerator and plain inline 5; normal-i/first-x locals 110/180; named x/y products
-// 9/7; y product with point/plane parameter orders 7; both named products 9; defaulted y product 7.
-// Original helper and body restored.
-// Round 119 (lane 5): `count` used without the `original_count` copy 178 (699); negative counter declared first 7;
-// sides declared before the copy buffer 5; result declared after the early exits 168 (680); short counters 118.
-// Round 121 (lane 8, fast): the loop temporaries are created by a backward scan of the loop body, so retail's setup
-// order needs no `points[current]` in the copy or the second intersection and no `sides[current]` in the second
-// test. A `side` local alone 7; `side` with a current-point pointer at the loop top for the copy and both
-// intersections 8 (setup and slots retail's, all numerator products flipped); with that pointer only in the else arm
-// 6, (plane, second, first) or (second, plane, first) parameters 6; pointers for both points at the loop top 16-30;
-// previous-point pointers in one arm 6, in both arms 4 (first intersection x-first); that with the numerator through a
-// named `dot` local, `-=` or a dot helper in a local 2 (the first intersection's x product still loads the plane
-// first); the same dot without the previous-point pointers 6, with the two parameter orders above 4. On the 2 form:
-// parameter orders, `long size` for the copy, term and operand spellings, a named current point in the first arm, side
-// at outer or function scope, denominator spellings 2; normal pointer 4-6, plane or d local 6, plane-distance helper
-// 6-8, scaled locals 6, `dx *=` 6, y output first 64; `+=` numerators give the first intersection exactly but flip
-// the second 4. Unused locals (diagnostic) rotate the second intersection's products only.
-// Round 83: defaulted classification distance 5; side-array pointer induction 208 (712 bytes);
-// side/previous/current pointers with a named projection 16, direct `points + current` 16,
-// without the defaulted distance 16, with an early defaulted projection 16; output base declared
-// after the previous index 9; staged point-first numerator 9. Original helper and loop restored;
-// the three setup stores and first intersection's x product remain.
-// Round 124 (m3 lane 7, fast): the copy as `output[result] = ...; result++;` 5; the arms swapped (`!= 0` arm
-// first) 93; the helper's points as references 5; plane, points and output all references 5; a point pointer in
-// the classification loop 9. Original body restored.
-// Round 70 (lane 10; a one-file LTCG harness that reproduces the real build's hunks, 64 loop-top pointer placements
-// with 0-15 probe locals): retail's setup store order appears only with a side local plus a current-point pointer
-// used by the second intersection and the copy (6: the first intersection then sums x first; with 4 probe locals 4);
-// probe locals rotate only the second intersection's products. Tried (--fast): current- and previous-point pointers
-// for both intersections and the copy 28; a current-point pointer for the first intersection only 5; a side local
-// only 7; a current-point pointer for the second intersection only 7. Numerator spellings and probes in the helper
-// or the first arm never change the first intersection's term order.
-// Round 94 (one-file LTCG harness): the helper indexing the point array (`points, a, b` parameters) 9; with the
-// element addresses at each use 5 (same code); deltas as a vector2f local 7; helper parameter renames 5 (no change);
-// `distance < -epsilon` 5 (same code). Removing the classification's x or y product or the denominator's x term
-// reorders the first intersection's numerator, so its x product is a numbering tie with the whole function.
-// Round 97 (m3 lane 12, one-file LTCG harness, base 5 exact): numerator, denominator and classification spellings
-// (operand sides, term orders) 5 each, 6 each on the side + current-point form (all compile the same); previous-point
-// pointer at the loop top 20 (with side + current-point 20); current-point pointer at the loop top 30, with side 32;
-// the else-arm current-point pointer without side 28; classification point pointer 9 (with side + current-point 8);
-// one index variable for both loops 196 (199 instructions).
-// Round 72 (m3 lane 14, fast): current- and previous-point pointers at the loop top for both intersections and the
-// copy 28; that with a side local 16 (output loaded before the constants, current*4/current*8 homes swapped, first
-// intersection x product unchanged); side and previous-side locals 119 (701 bytes), with both pointers 119; previous
-// declared in the `for` header 5 (same code). A compile-only screen (1232 loop forms x 0-7 probe locals; not
-// faithful here, it passes the parameters in ECX/EDX) puts the two pointers at d=3 against retail with 2-4 probes,
-// but the real build does not follow it. Probe locals anywhere rotate only the second intersection's products.
-// Round 60 (m3 lane 2, fast): `!sides[current]`/`!sides[previous]` tests 5 (same code); the helper's capacity as long
-// 5 (same code); the no-negative exit copying and returning the count parameter 178 (699 bytes); the classification
-// loop bounded by the count parameter 7; positive/negative declared before the count copy 5 (same code); result
-// declared at the top beside the buffers 177 (680 bytes).
+/* clips the polygon against the line, keeping the points on the side the normal points to; returns the new count */
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
@@ -167,19 +83,27 @@ short function_23a430(short count, point2f const *points, plane2f const *plane,
 	long previous = original_count - 1;
 	for (long current = 0; current < original_count; previous = current++)
 	{
-		if (sides[current] == 0)
+		long side = sides[current];
+		if (side == 0)
 		{
-			if (sides[previous] == 1 && polygon_clip_intersection_23a430(plane,
-				&points[current], &points[previous], result, capacity, &output[result]))
-				result++;
+			if (sides[previous] == 1)
+			{
+				point2f const *previous_point = &points[previous];
+				if (polygon_clip_intersection_23a430(plane, &points[current], previous_point, result, capacity, &output[result]))
+					result++;
+			}
 		}
 		else
 		{
-			if (sides[current] == 1 && sides[previous] == 0 && polygon_clip_intersection_23a430(plane,
-				&points[previous], &points[current], result, capacity, &output[result]))
-				result++;
+			point2f const *current_point = &points[current];
+			if (side == 1 && sides[previous] == 0)
+			{
+				point2f const *previous_point = &points[previous];
+				if (polygon_clip_intersection_23a430(plane, previous_point, current_point, result, capacity, &output[result]))
+					result++;
+			}
 			if (result < capacity)
-				output[result++] = points[current];
+				output[result++] = *current_point;
 		}
 	}
 	return (short)result;
