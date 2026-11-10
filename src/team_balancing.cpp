@@ -845,6 +845,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // until `sub ecx, eax`. Every natural fill/maximum/clamp form is listed above at 34 or worse; only value-changing fill values
 // move the load, and the caller 0x7e210 (src/unknown_07a9a0.cpp) is outside this round's files. New (fast): next_party scoped to a
 // block holding both loops 34; next_party and the index in that block 34 (same code). No other untried natural form is left.
+// Round 149 (m3 lane 8, fast with 0x91e30/0x7e210): the copy loop forms `party + 1` once per pass (`lea edi, [edx + 1]`)
+// in retail as here, so a running largest index filled with `largest + 1` is not retail's. Combinations, all 34 with the
+// player count still in EDX: the extra-first sum with next_party declared first, with the fill as `while (i < total)
+// parties[i++] = next_party;`, with the subtraction in place (`imbalance -= open_slots;`); next_party declared first with
+// the subtraction in place; the `while` fill with the subtraction in place.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

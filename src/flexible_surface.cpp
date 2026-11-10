@@ -642,6 +642,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // 41 measured that shape here (176/181); 0x177d10's exact statements on the global 143 (880, aligned 75); matched 0x23d260's
 // staged shape (axis k local, staged projection, cross i/j/k, staged rows stored as they finish) on the global 188 (846 bytes).
 // No other natural rotation or opening form outside this note's list is left. Not kept.
+// Round 148 (m3 lane 8, fast with the file's other functions, 0x118140, 0x30bf0 and 0x117c80; base 117, aligned 68, masked 45),
+// each the same code (117, 880 bytes): `old` as a const copy; dot3f(&old, &axis); the axis as a const copy; `cross` declared
+// ahead of the axis and `old`; the three rows and the 0x117c80 call through a named direction pointer to the global.
+// The frame's extra eight bytes are `old` kept in memory (its address goes to cross3f and dot3f); retail holds the global's
+// j and k in XMM5/XMM4 and reads i late, and none of these forms changes that.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

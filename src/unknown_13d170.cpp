@@ -193,7 +193,7 @@ struct s_physical_block_iterator
 // our body is 15 bytes longer (1228 against 1213), the first divergent branch being the jump to retail's 0x13d679.
 // MiniMax G (11-05): swapping the offset and previous declarations is the same code (347); retail keeps the offset in EBX and the current in EDI, ours the other way round, and the four-byte frame difference and the segment-arm layout stay unmatched; no new form, no lower score.
 // MiniMax S (11-01): the result/limit declaration swap reaches retail's frame but scores worse; no lower score.
-// score 201 (was 347): frame 0x1054 and entry/ring roles agree; weighted-age mask registers, detached policy cases and final linking differ.
+// score 201 (was 201): earlier 201 (was 347): frame 0x1054 and entry/ring roles agree; weighted-age mask registers, detached policy cases and final linking differ.
 // Round 32: retail lays the segment arms out in source order (none, block, gap, then the scan), but
 // ours moves the else arm past the scan; retail also uses the page offset (EBX) as its zero from
 // the limit clamp on, so EBX is pushed first. Candidate stores offset before time 370; busy as
@@ -528,6 +528,14 @@ struct s_physical_block_iterator
 // best.time) better = time < best.time; else better = pages < best.pages;` 284 (same code); negated (`!(time > best.time ||
 // (time == best.time && pages >= best.pages))`) 222 (1220); the ternary with the second age's mask restored 279; the mask
 // alone 209 (re-measure); `have_best = true` before the record copy 201 (same code).
+// Round 149 (m3 lane 8, fast; aligned = register-masked difflib count, base 86): ours folds the second age's
+// `MAX(0, ...)` away (unsigned, `0 > x` never holds) where retail computes both clamps (`cmp; sbb; and`), and our case 0
+// is threaded into the take test, which moves cases 0/1 past the loop; retail keeps default, 1, 0 in place and case 0
+// materialises `xor al, al ... mov al, 1` into the join. Case 0 as `better = candidate->time < best.time; if
+// (candidate->time == best.time) better = candidate->pages < best.pages;` 235 (1178 bytes, aligned 65: cases in place
+// as retail, but setb/setl), with the second age as `MAX(physical->time - best.time, 0)` 227 (1183 bytes, aligned 61);
+// with that clamp: case 0 as a ternary on the time test 209 (1228), as an if / else-if pair setting true 209 (1228), the
+// take test as `better || !have_best` 209 (1228), all aligned 84.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

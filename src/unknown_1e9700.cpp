@@ -228,6 +228,12 @@ struct s_object_damage_view
 };
 
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
+// Round 147 (m3 lane 8, fast; [aligned ours/retail, masked ours/retail], control 353 [128/132, 31/35]): the related unit's
+// player index read at each use (retail reads +0x13c again for the store) 357 (1552 B) [119/124, 29/34]; with the killer's
+// team byte passed to 0x1df560 at the call 370 (1564 B) [131/132, 32/33]; the dedupe searches as `for (j...) if (==) break;`
+// 357 (same code); diagnostic, the dedupe through a two-site inline search returning from its loop (retail's threaded exits,
+// no `j == i` test) 361 (1532 B) [115/126, 25/36], with `player_index == players[i]` (retail's `cmp ecx, [mem]`) 361
+// [113/124, 23/34]; that plus the assist record's player index read at each use 371 (frame moves) [154/161, 35/42].
 // MiniMax H (11-04): the selected damage record read through a local record pointer 454; not
 // kept, the original body is restored.
 // MiniMax S (11-06): the record walk is anchored at the field with the most source-level reads, ties going to the lowest offset: reading the timestamp twice moves the selection walk onto retail's 0x2f0 base (373) and reading the assist player index at each use moves that walk onto retail's 0x2fc base (390), both loops together 390; every such form drops a frame word (0x4c against 0x50) and the base spill, so the original body stays.

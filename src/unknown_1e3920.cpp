@@ -1303,6 +1303,15 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // B452: Actual tag/squad/placement input layouts, seven subsets then all with immutable
 // squad/placement bindings: eight at 253. NOT kept: sentinel and query homes unchanged;
 // original input observations, outputs and complete body restored at the native frame/extent.
+// m3 lane 8 r146 (fast; aligned/register-masked aligned rows from a difflib walk, base 249/222): `else return NONE;` after the unit
+// arm's success block 268 (283/221); the actor setup tail as one inline helper called from both creation arms 888 (742 bytes, not
+// inlined) and forceinline 1066 (1830 bytes, two copies, no merge: retail's displaced unit arm is not a merged duplicate tail); early
+// `return NONE` after each failed creation call 359 (1279 bytes). Loop guards (which ones keep 0x1e4990 out of line with retail's
+// unrotated loop): nested `if (substitute) if (squad) while (squad_index != NONE && next != NONE)` 420 (1319, inlined); ternary break
+// test 421; `while (next != NONE && squad_index != NONE)` 408 (1323); if/else break tests 421; no squad-index test (diagnostic) 384;
+// the squad-index test both in the guard and in the while (a repeated test, diagnostic) 337 (1256, 0x1e4990 out of line, aligned 221,
+// masked 204), with the ternary break 296 (1258, aligned 218, masked 201: retail's entry and loop; what is left is the unit arm placed
+// after the perception arm and two byte-store orders in the query setup). Lead: the redundant guard is what keeps the call cold.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1888,14 +1897,14 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// score 251 (was 251): Frame 0x14 and the actor index in EBX agree; the actor, options and object-pool registers
+// rotate (ours actor EDI, options ESI, pool never held; retail actor ESI, options EBP, pool global in EDI) and scalar homes remain.
 // MiniMax H (11-06): retail keeps the actor in ESI and the object pool global in EDI across the callees and
 // re-reads the pool's data at every lookup, ours keeps the actor in EDI and re-reads the pool global itself;
 // the difference rides on the callee being opaque to LTCG, and that callee (0x1e53e0) is in another file.
 // MiniMax H (11-06): the pool pointer as a local, declared before or after the actor, gives retail's shape of
 // a held pool pointer, but the pool lands in ESI, the actor stays on the stack and the frame grows to 0x18, 283;
 // the score stays 251.
-// score 251 (was 251): Frame 0x14 and the actor index in EBX agree; the actor, options and object-pool registers
-// rotate (ours actor EDI, options ESI, pool never held; retail actor ESI, options EBP, pool global in EDI) and scalar homes remain.
 // Earlier: Frame 0x14 and actor ESI agree; the probability and delay clamps now match
 // retail's code; the actor index stays in EDI instead of EBX and the object pool is reloaded instead
 // Frame 0x14 and actor ESI agree; input EBX/object-pool EDI allocation and scalar/ammunition homes remain.
@@ -2072,6 +2081,13 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // fstp 0x1e2e48), the (hi+1-lo)*random>>16 rounds, the 0.5 halving, store targets (unit+0x1f5 low byte, +0x23e) and
 // condition directions all agree. Raw offsets replaced by existing fields (s_ai_object flags134/unknown23c,
 // s_ai_globals unknown340): 251 (same code). Remaining difference is pool/actor/options residency only.
+// m3 lane 8 r146 (fast; aligned/masked base 183/74): diagnostic, a store through a local reference in matched 0x1e53e0 (one-element
+// array, bytes unchanged; 0x1e04a0, 0x1e5380 MATCH, 0x2758b0 21) 265 at 1247 bytes, aligned 167, masked 48 (the pool global held in
+// EDI, the unit re-read after the call). On it: both slot queries result-first (`long result = NONE; if (slot != NONE) ...`) 300
+// (1240, aligned 158, masked 58; the current-slot query gets retail's rows, the secondary one still reuses the cached unit); the
+// existing unit_get_current_weapon and unit_weapon_view_get for the two queries 300 (same code); a `long` loop index (do and for) 294
+// (1219, frame 0x10, aligned 141, masked 63); a compiler barrier between the queries (diagnostic) 326 (1249, masked 54). Retail
+// re-derives the unit between the two queries with no call between them, so a store in the caller's own IL kills it there too.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

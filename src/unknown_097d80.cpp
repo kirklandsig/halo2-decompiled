@@ -394,6 +394,8 @@ struct c_aggregate : c_child
 // 31; the collection call through the children's real class (`children[i]` as c_handle_table_450cd0, v5 = 0x98cf0,
 // with its own parameter types) 31 (same code each). Re-measured: the nested child/error tests 31, `blocks + total`
 // 31, the early `continue` guard 42. Still BLOCKED by the build flag.
+// Round 147 (m3 lane 8, fast): one function-scope index for the collection and dispatch loops 31 (same code, as
+// rounds 42 and 66 found); no unlisted form left. Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

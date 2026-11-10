@@ -1275,6 +1275,15 @@ bool function_2715a0(byte *buffer)
 // probe loop's break path where retail jumps straight to the cost test. The estimated distance as an if/else on the
 // destination test 570 (2128 B); the destination distance stored straight from the 0x210970 call without the
 // `remaining` copy 487. All restored.
+// Round 149 (m3 lane 8, fast with 0x2713f0/0x271fd0; aligned = register-masked difflib count, base 228): the insertion
+// 0x271fd0 stays a call only because of its site's weight: dropping both the `next == NONE` re-test and the `quantized >=
+// 32767` reject (diagnostics, value-wrong) inlines it with retail's call list, either alone, the limit reject, or two earlier
+// rejects do not, nor do positive `if` wraps of the tail or `for` spellings of the outer/probe loops. Retail also threads the
+// probe loop's two breaks straight to the found arm and reads that arm through the loop's node pointer ([ecx + 0x3c],
+// [ecx + 0x40]). Tried: the found arm through the probe's `candidate` (declared before the loop) 549 (2012 bytes, aligned
+// 191: that arm as retail, 0x271fd0 still a call; with 0x271fd0 forced inline aligned 168 but 0x2713f0 108), on it a found
+// flag set at both breaks 546 (2008), `!(d > 0.09f)` 557 (2004); the quantized reject as two tests 486 (same code); the
+// found arm first (`if (next != NONE)`) 590 (2148). Re-measured: `inline` on 0x271fd0 488 (frame 0xc58, still a call).
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

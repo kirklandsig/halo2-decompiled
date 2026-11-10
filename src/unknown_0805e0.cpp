@@ -706,7 +706,10 @@ void function_1537f0(s_profile_record *record);
 // MiniMax E (11-05): no new form, no lower score; splitting the source record's 8-byte field into two
 // dwords to make it 4-aligned leaves the record at +0x18 and the frame at 0x98, and an index loop gives 78.
 // MiniMax C (11-08): no new form, no lower score.
-// score 53 (was 53): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
+// score 18 (was 18): the loop's entry pointer is based at the entry's link run (EDX = entry + 0x5c) where
+// retail bases it at the view's field 0x4c (entry + 0x4c), so every entry store's displacement differs, and the
+// view's byte stores and the link stores come out in another order (ours makes the 0x52 byte and the NONE first).
+// Earlier (score 53, was 53): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
 // +0x10 and reads them back for the copy, with the source record right after at +0x1c); ours spills a
 // 350 countdown to +0x14 where retail compares the entry cursor with the array end (signed `jl`);
 // packed source-byte carriers and initialization homes differ.
@@ -950,7 +953,7 @@ void function_1537f0(s_profile_record *record);
 // per-visit then outer raw storage: 110/110/116/108 twice. NOT kept: native identity homes
 // still fold or move into a larger frame; 295-300 bytes versus 258. Both original initializers,
 // per-visit fills, pointer walk and complete body restored.
-// MiniMax C (11-09): score 18 (was 45): the four link shorts are now written through a pointer to
+// MiniMax C (11-09), 45 -> 18: the four link shorts are now written through a pointer to
 // the entry's run of links, so their common base frees the register that holds the -1 and lets it
 // be made afresh in EAX before the four stores as retail does, and the flags word and the word
 // after it are set with two plain stores, which gives retail's two direct dword stores; the code
@@ -958,7 +961,7 @@ void function_1537f0(s_profile_record *record);
 // links begins further into the entry), the entry's byte stores come out in another order and
 // with the two shifts in the other registers, and the walk's end compare carries the address of
 // our own array.
-// MiniMax C (11-09): score 45 (was 53): the identity and the source now sit in one per-visit
+// MiniMax C (11-09), 53 -> 45: the identity and the source now sit in one per-visit
 // record, so the identity's address reaches 0x1537f0 and 0x7f8b0 and its three zero words and
 // the three loads that copy them into the entry survive as in retail; the walk is an index loop
 // over the entries, which keeps retail's compare of the entry pointer with the array end (our
@@ -966,9 +969,18 @@ void function_1537f0(s_profile_record *record);
 // the frame is 0xa0 with the identity at +0x10 and the source at +0x1c as in retail. Left: the
 // NONE constant stays in EBP across the walk where retail re-materialises it in EAX, the
 // entry's byte stores come out in another order, and our code is 259 bytes against retail's 258.
-// MiniMax C (11-09): score 53 (was 53): the identity's three words still fold away, so the frame
+// MiniMax C (11-09), 53 -> 53: the identity's three words still fold away, so the frame
 // is 0x98 against retail's 0xa0, and our walk ends on a countdown kept in a frame slot where
 // retail compares the entry pointer with the array end (signed). Untouched this round.
+// Round 149 (m3 lane 8, fast): the base follows the link pointer: it lands on one of the four link slots, which one
+// depending on the store order (index order 0,1,2,3 and 3,2,1,0 give +0x5c, 2,0,3,1 and 1,3,0,2 +0x5e, 0,2,1,3 +0x5a),
+// all 18; with every entry field written through `entry` (one address) the base is retail's +0x4c but NONE is again
+// kept in EBP from the global stores (the 49 form, re-measured 49). Tried: the link stores through the pointer in the
+// field chain's order (next, next_other, unknown58, previous_other: retail's store order) 18; four separate link
+// statements 18; the link pointer declared before the record 18; a view pointer local passed to 0x7f8b0 18; the flags
+// and the word after them by one memset 31 (260 bytes); the flags stores before the links 27; a pointer walk with the
+// link pointer 80 (275 bytes); every field through `g_4cf98c[index]` with the link pointer taken from it 44 (base
+// +0x4c, NONE in EBP); a dword pointer to the flags with the field chain 49.
 // @retail 0x7f930
 void function_7f930(void)
 {
