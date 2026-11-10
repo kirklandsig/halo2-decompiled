@@ -1653,6 +1653,10 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // bytes); the next step's pointer declared inside the type test 400 (same code); the previous point's test as `next != 0`
 // 401; the forward scan as a for with the end declared outside 636 (1911 bytes, frame 0x124); the emitted type from the
 // local 403 (1755); the trace target initialised whole 400 (same code). Body restored.
+// P401: Forward scan ordinal word/dword/unsigned-int64 with short reverse candidate:
+// 488/501/535; with signed-int64 reverse candidate 591/572/664; signed-int64 forward
+// with short/int64 reverse 535/664. NOT kept: wider/unsigned scan interference grows
+// the body and misses native frame/edge homes; original signed scans and full body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

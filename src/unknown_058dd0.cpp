@@ -745,6 +745,15 @@ void c_session_client::function_06dbc0()
 	function_06dc60(this, 3);
 }
 
+// score 43 (was 43): this stays in edx where retail copies it to ebx at entry, so
+// the mode and member index take esi; separate case 7 and 8 labels (retail's direct
+// table) with an inline compare-and-update helper 47, an inline id-compare helper 48,
+// a member-index local 47, an id copy 47, the mode in a local 47; a state local 43;
+// cases grouped by outcome 43; a do/while (false) join 43; an early return on an equal
+// id 43; a goto single exit 43; copies of this before, after or at the call 43 (all
+// compile-only). With 0x58d90 inlined by the link (its file at /Ob1, a diagnostic) the
+// table is retail's but this stays in edx (47); only /Os or /G7, which compare the mode
+// in memory, give retail's push ebx.
 // MiniMax I (11-06): no new form, no lower score (43). Retail copies this to EBX at entry and
 // gives EDX to the mode and then to the member index, EBP to the id and EAX to the session; ours
 // keeps this in EDX, so the mode and the member index share ESI and the id takes EBX, and every
@@ -780,15 +789,6 @@ void c_session_client::function_06dbc0()
 // EDX.
 // MiniMax S (11-01): no new form, no lower score; the switch still lowers to a byte-index table and this stays in EDX where retail copies it to EBX at entry, so the mode and the member index take ESI instead of EDX and the id takes EBX instead of EBP.
 // MiniMax B (11-04b): no new form, no lower score; retail's inlined busy-state switch still needs 0x58d90's own file, which this lane may not edit.
-// score 43 (was 43): this stays in edx where retail copies it to ebx at entry, so
-// the mode and member index take esi; separate case 7 and 8 labels (retail's direct
-// table) with an inline compare-and-update helper 47, an inline id-compare helper 48,
-// a member-index local 47, an id copy 47, the mode in a local 47; a state local 43;
-// cases grouped by outcome 43; a do/while (false) join 43; an early return on an equal
-// id 43; a goto single exit 43; copies of this before, after or at the call 43 (all
-// compile-only). With 0x58d90 inlined by the link (its file at /Ob1, a diagnostic) the
-// table is retail's but this stays in edx (47); only /Os or /G7, which compare the mode
-// in memory, give retail's push ebx.
 // Round 81: the 0x6d380 call written twice (a diagnostic) gives retail's head exactly (this in
 // ebx, id in ebp, mode and index in edx): retail allocates as if this and id were live across a
 // call; with only this live across one, id still takes edx. Separate case 7 and 8 bodies 47; a
@@ -872,6 +872,15 @@ void c_session_client::function_06dbc0()
 // M401: Actual admitted identity/recipient pointer results, nested/combined/conditional/guarded:
 // 44/44/44/50 and 43/43/43/50. NOT kept: no exact match; pointer-result flags and aliases restored.
 // Original cases, comparison and update call restored; this/mode/id homes and compressed case table remain.
+// Round 82 (m3 lane 10; a compile-only harness reproduces this listing exactly: every case-set,
+// condition, early-return or inline-helper spelling gives one of two codes, grouped 7/8 or the split 7/8
+// direct table): the id compare through the existing memcmp wrapper function_xf5684f (LTCG-inlined) with
+// split case 7/8 bodies 47 plain (identical code); /Ob0 dropped from 0x58d90's file with the switch as
+// `if (function_058d90(s)) return;` 47 plain (inlined, this still in edx) and ten matched 0x58d90 callers
+// lost; the whole body in a forced-inline helper taking the client and the id 43 (same code); split 7/8
+// with explicit cases 0, 1, 9 and a default 47; split 7/8 with an empty equal-id arm and the call in the
+// else 47. Compile-only: the memcmp replaced by an external call puts this in esi (retail allocates this
+// and id as if live across something that clobbers eax/ecx/edx, but the repe cmpsd here does not).
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {
