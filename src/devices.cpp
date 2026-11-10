@@ -1745,7 +1745,7 @@ bool function_0b6760(s_index_pair const *pair);
 // in EBX), the result as a stack byte at [esp+0xf] (ours DL), and one dead store retail makes before the power 0x11eed0
 // call (rate into the speed's slot, 0x106aa3). Tried: the rate read once into a local `time_step` for the delay product
 // and the call 334 (frame 0x24).
-// score 248 (was 285): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
+// score 248 (was 248): 285 before lane 14 round 62. Frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // where retail has ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads.
 // Earlier (285, was 285): our frame is 0x1c and retail's 0x20, and the index, header, state and result
 // homes still differ; the group path reloads the definition pointer from three base registers.
@@ -1955,6 +1955,13 @@ bool function_0b6760(s_index_pair const *pair);
 // 1495 bytes, 231: the stack byte is most of the length gap; it crosses no call on any path.
 // J259: Activity from manual/group power and position tests, separate/paired/all with logical/bitwise joins: 396/417/404/329/359/380/470/424.
 // NOT kept: no eligible native repair; opening executable source restored. Native index/header and result residency remain; group-result forms grow the frame to 0x24.
+// m3 lane 11 r83 (fast; aligned/masked against this body's 113/46): `result = true;` before the power manual arm's
+// 0x107520 call 386 (the result goes to a stack byte as in retail, but device_index loses its callee-saved register;
+// aligned 138); the same in the position manual arm too 386; the rate read into a local just before the power-group
+// 0x11eed0 call 254 (1478 B, aligned 105/40: retail's dead store `mov [esp+0x38], ecx` of the rate into the speed's slot
+// and g_510c54 kept in EDX through the arm; a one-use local, so a lead for a match only); that with the 0xb3 byte
+// `<= 0` 254 (104/39; `<= 0` alone re-measured 248); `increasing` computed before the acceleration products 248
+// (136/55); the delay product through a file-local game_ticks_to_seconds (the idiom of src/unknown_16bd10.cpp) 248.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {
