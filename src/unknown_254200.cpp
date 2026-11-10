@@ -442,6 +442,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // byte without the (long) step, the alpha packed by hand instead of D3DCOLOR_ARGB, AB/AC/BC/ABC 2 each; the scale
 // parameter renamed (two names) 2/2; the depth constants through D3DZ_MAX_D24S8 2; the alpha product as
 // `255.f * ...` 2; the bitmap pointers declared const 2. The two reloads stay swapped.
+// Round 83 (m3 lane 10, fast): bitmap, alpha and size locals named first_bitmap/second_bitmap/alpha/half_size 2;
+// an early return on the clear flag in place of the outer test 2; the depth as a file-scope named real constant 2;
+// the first quad's inline-depth pragma pair dropped 422 (2356 bytes); the bitmap locals typed as the stage-texture
+// argument (casts moved to the 0x12360 tests) 2. Diagnostic: this function moved above 0x254490 in the file, both
+// unchanged (2 and 4), so the reload order is not the source order of the file. The two reloads stay swapped.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
