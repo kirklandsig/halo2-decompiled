@@ -3764,7 +3764,7 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 				{
 					s_damage_object_datum *datum = &((s_damage_object_datum *)g_4e0300->data)[objects[i] & 0xffff];
 
-					if (!((1 << datum->type) & 3) || function_1df560(datum->object->team, data->owner.team))
+					if (!((1 << datum->type) & 3) || function_1df560(data->owner.team, datum->object->team))
 					{
 						*(byte *)&data->unknown84 = (*(byte *)&data->unknown84 & 0x3f) | 0x80;
 						kill = true;

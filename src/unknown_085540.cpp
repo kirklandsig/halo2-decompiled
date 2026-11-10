@@ -993,7 +993,7 @@ bool function_869a0(c_simulation_view *view, void *block)
 }
 
 
-bool function_68670(byte *source, long size, void *block);
+bool function_68670(void *block, byte *source, long size);
 
 // score 2 (was 2): MiniMax C (11-10): no lower score this round. The two remaining instructions are the
 // order of the argument address computations for 0x68670: this body sets up the block address before the
@@ -1319,7 +1319,7 @@ void __stdcall function_865d0(c_simulation_view *view)
    {
     union { __int64 alignment; byte bytes[0x4048]; } block;
     memset(&block, 0, sizeof(block));
-    if (!function_68670(payload, header.size, &block))
+    if (!function_68670(&block, payload, header.size))
     {
      view->fail(5);
      return;
