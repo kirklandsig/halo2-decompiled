@@ -3500,6 +3500,9 @@ void __stdcall function_1e930(long opaque)
 }
 
 bool g_55e6bc;
+// MiniMax D (11-10): no new form, no lower score; the body is unchanged at 87 measured on its own (587 bytes),
+// but in a reduced image that holds other addresses as well it is 127 at 571 bytes, so the score of this function
+// depends on what else is checked beside it.
 // MiniMax S (11-09): no new form, no lower score (87): retail keeps the near-plane product at the
 // source position with the depth-clip global folded into the multiply, ours sinks the product into
 // the inlined call and keeps the global in a register of its own; the six near-plane spellings
@@ -6334,6 +6337,9 @@ void geometry_cache_update(void);
 void function_12c600(void);
 void function_1de50(void);
 void function_22850(void);
+// MiniMax D (11-10): no new form, no lower score (153); the timestamp's two halves cannot be written to the
+// shared global from this file, since the global is declared as a double in a header this lane may not edit and
+// a cast of its own address is not allowed.
 // MiniMax S (11-09): no new form, no lower score (153): retail copies the timestamp into the global
 // as two dwords and ours goes through x87 because the global is a double in include/timed_effect.h,
 // and retail uploads the gamma ramp into the device's own ramp buffers where ours calls
@@ -7201,6 +7207,10 @@ void __stdcall function_214f0(real passes, real distortion, real strength, real 
     real scale, bool blend, bool preserve);
 bool function_022710();
 real scenario_ramp_evaluate_current(long index);
+// MiniMax D (11-10): no new form, no lower score (139); the frame is still 0x5c with a frame pointer pushed in
+// the prologue against retail's 0x58, where retail keeps ebp for the grid loop's counter and pushes it only around
+// that block, so every stack slot sits eight bytes off; the ramp function and the strength pair are called the
+// same way in both builds.
 // MiniMax S (11-09): no new form, no lower score (139): retail's frame is 0x58 bytes with the frame
 // pointer saved around the grid block and ours is 0x5c with the frame pointer saved in the prologue,
 // so every stack slot sits eight bytes off; the state local, the entry offset, the entry count and
@@ -7323,6 +7333,13 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
     return value;
 }
 
+// MiniMax D (11-10): NOT kept: 298, one below S's 299 already in main (under the 8-point bar): a for loop over
+// an unsigned short counter; the group counter is 16 bits wide and the early exit compares the
+// group count with one; the loop keeps a single counter and recomputes the stride with imul, the frame is
+// 0x1894 as in retail's and the function is 2000 bytes as in retail's. What still differs: retail's early exit
+// loads the count and tests it while this build compares the count in memory with one, so this build's exit is
+// one instruction shorter; retail's loop bottom compares a 32-bit counter where this build widens the 16-bit
+// one, and that counter wraps for counts above 65535 where retail's does not.
 // score 310 (was 310): this round: no new form and no lower score; the loop still strength-reduces
 // group * 0x98 into a second counter at [esp+0x40], so the frame is 0x1898 against retail's 0x1894 and
 // the zero for both counters lives in EBP where retail keeps a single counter and an imul.
@@ -8950,6 +8967,9 @@ point3f g_4b72b4;
 __declspec(noinline) bool function_1d3f0(long index, void const *colors, D3DPalette **out);
 __declspec(noinline) void function_0169f0();
 __declspec(noinline) void function_016a30(real scale, short y, short x);
+// MiniMax D (11-10): no new form, no lower score (171); the two offsets still reach 0x16a30 in the other order
+// than retail's, and their width is the callee's own declaration's, which is in another file this lane may not
+// edit.
 // MiniMax S (11-09): no new form, no lower score (171): retail sign-extends the two offsets at the
 // call because its callee took ints, while ours folds the constants into the argument registers
 // because the callee here takes shorts, and retail passes the palette global itself as the
