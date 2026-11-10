@@ -1302,6 +1302,17 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // at the top of the loop body 965 (2825 B, the candidate reset leaves the lookup's argument pushes). Retail's three
 // epilogues (early NONE, the no-result/loop end pair through ECX, the empty second inheritance loop through EDX) stay one.
 // MiniMax I (11-10): no new form, no lower score; the iterate helper takes its fourth output in EBX in both builds and its first two on the stack, retail's three found locals sit at E-0x2c, E-0x28 and E-0x24 while ours puts the third one in the dead found_mode argument slot at E+0x18, and the result struct (E-0x20) and the iterator base (E-0x1c) already agree, so only that third local's home and retail's EBP zero carrier are left.
+// M3 lane 12 r108 (fast): `while (true)` with the found break tested on the candidate (not result) 998 (2839 B, the iterate
+// block duplicated at the bottom; the listed while/for-break code, a re-measure); a top-tested `while (result.index == NONE)` 828, the iterate call in that condition 828,
+// `while (!found && (entry = iterate()) != NULL)` with `found = true` 828, a do-while guarded `if (entry)` body with `while (entry
+// && result.index == NONE)` 828 (all four the same code). Retail's single iterate call, `jne exit; jmp top` and the NULL exit's
+// `mov ecx, [result]` come from carrying the result dword in ECX across the output stores to the 0x1dd9d0 push and the no-result
+// return copy (matched 0x1dc790 carries it in EBP); ours reloads it after the stores. Diagnostics: the outputs renamed to sort last
+// (same code); one or two of the three output stores dropped, no zero; all three dropped, a zero in EBX from the fifth kind on.
+// Also: `found = result.index != NONE;` with `while (!found)` 828 (same code); the second request through the real 0x1ddd00 with
+// a `__forceinline` redeclaration 2157 (1667 B; it inlines into 0x1ce180 too, which then differs). Retail loads the second
+// request's mode once into EBP (`mov ebp, [esp + 0x10]`) and reads class/type from memory at each kind; ours reads all three
+// from memory, as matched 0x1dc8c0 does for its address-taken keys.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

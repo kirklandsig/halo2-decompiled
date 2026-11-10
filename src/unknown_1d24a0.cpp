@@ -397,6 +397,12 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // destructor call plus operator delete 925, with the long counter 930; long counter alone 933 (listed); a byte local
 // renamed on the unrolled body 1174 (same code). Next: retail frees the list with no destructor call, so the contact
 // array type wants a plain free path (all three users, 0x1cf9f0 and 0x1d2070 matched); the asm conversion is no blocker.
+// M3 lane 12 r108 (fast): `local_0 = fabs(arg_1) >= 0.0001f` 1009 (4299 B; round 81's `>=` form, a re-measure); the attached object as a NULL default with `if
+// (field_4 != NONE)` around the lookup 902 (masked aligned 538 against 535); the final free through a `contacts` local for the
+// test, size and delete 917 (4283 B); the three rigid-body reads through the existing havok_component_rigid_body_get 917 (4283
+// B), the owner's alone 902 (same code), the body position's alone 902 (same code), the simulating test's alone 917 (4283 B). Retail frees the list with the destructor body and operator delete inline (0x1d33f9),
+// so the unroll blocker is the destructor itself; its other users (0x1cf9f0, 0x1d2070) sit in src/unknown_1cec30.cpp, held by
+// another lane this round. Restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

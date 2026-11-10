@@ -1590,6 +1590,19 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // passed into the wait helper 7 (all the same code), the stored checksum read through `handle` 7 (same code), a named
 // `s_file_write_flags flags(0)` at the top of the size-mismatch block 141 (917 bytes). Restored: the 7 needs the goto and
 // the set-in-test validity.
+// M3 lane 12 r108 (fast; all on round 53's 7 form, whose goto past the close and set-in-test `else if` validity are match-only,
+// so none of this is keepable short of a match): an inline write helper taking the handle by value 114 (917 B, as round 149's
+// DDHD); with a matching resize helper, `(s_file_handle file, dword size, bool *success, bool volatile *done)`, 6 at 930 B (as
+// round 149's DHHD): the checksum compare is then EAX, and each of the last three spots is one register step off: the resize's
+// handle (ours EAX, retail ECX), the write's header lea (ECX/EDX) and the close copy (EDX/ECX). On that 6: a query helper 6; a
+// close helper 118 (917 B, the copy coalesces); value-returning write (bool or count) and resize (bool) helpers 6 each; helpers
+// taking the handle pointer: resize 114, write 122, both 7; one resize-and-write helper returning success (early return or
+// single exit, handle by value or pointer) 429 (770 B, `inline` not expanded), 134/111 as `__forceinline`; a write helper that
+// owns the empty header 6 (`__forceinline`; plain `inline` is not expanded, 349 at 850 B); a blocking open helper 494 (696 B); a
+// handle-valid predicate, by value or pointer, at the close test and at the open test 6; a forwarding helper for the remove-later
+// call 6. Permuter (anneal, 600 s, 71 tries, 921 s full-image baseline) on the 6 form: best 6. Probes (dead volatile loads of
+// `index`, diagnostic, reverted at once): one placed before the resize call is scheduled after the handle load; one between the
+// write's wait and the byte test removes the close copy. Restored to the 33 body.
 // @retail 0x213970
 void function_213970(void)
 {
