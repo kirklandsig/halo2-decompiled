@@ -145,7 +145,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 
 #pragma inline_depth(1)
 #include "vector_products.h"
-// score 1379 (was 1355): frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
+// score 1379 (was 1379): earlier 1355; frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
 // 0x2078f0 twice with unknown38 0 then 1, 0x2079f0 on both its paths, 0x227990, 0x2294a0, 0x22a4b0), loop shapes (the found
@@ -448,6 +448,35 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Round 101 (m3 lane 9): 0x182800 became a member of the bounded world (it matched 0xf6670); here the world now
 // loads straight into ESI as in retail (0x2063e6), one instruction fewer (6243 bytes still, masked aligned 986 ->
 // 977), and the positional score moves 1355 -> 1379.
+// m3 lane 1 r85 (fast = full here): the magnitude helper's result in a named real 1424 (6195 B, frame still 0x5cc,
+// register-blind aligned 870 -> 743), as a double local cast on return 1448 (6275 B); re-measured: that with the sum
+// i, j, k 1424, the snapshot initialised member by member 1622 (6022 B), snapshot and named result const 1424.
+// Away from the helper: the contact flag bit as `(dword & 2) != 0` 1376 (colouring only); the query-record NONE loop
+// stepping by the record size 1427 (6259 B); `++local_32`, the counters one per line, `0.0001f < x` 1379 each (same
+// code); the first loop's arg_2 accumulation before arg_1's 1367 (not retail's order: retail adds arg_1 first); on it
+// the bit test as above 1364, the named magnitude result 1424, then the 0xb4 field read at each use 1440 (6211 B),
+// `1.0f + c * x` 1364, the products as `x * scale` 1364 (same code), `-a * b` 1388.
+// M3 lane 1 r88 (fast with 0x2056e0, which stays matched; aligned/register-masked difflib counts, control 891/585):
+// re-measured, the magnitude helper reading its input directly (no input copy) 1622 (6022 B, frame 0x590, 813/580: the
+// first magnitude then is retail's `movss [esp + 0x80], xmm; fld [esp + 0x80]; fmul [esp + 0x80]` at retail's offsets).
+// On it: the first loop's cross through the file's k/j/i helper 1634 (6006 B, 807/576); through cross3f_staged 1636 (6006 B,
+// 806/575); the k/j/i helper reading its second vector at each use instead of staging it 1618 (5990 B, 802/570); both 1691
+// (5958 B, 853/587). With the input copy kept: the k/j/i first-loop cross plus that unstaged helper 1429 (6211 B, 878/572).
+// The direct-input magnitude is closer by every aligned count; the 216 missing bytes are retail's store-then-reload rows
+// (results stored to their fields and read back) spread over the contact loop.
+// Round 228 (m3 lane 3, fast; aligned counts exact/stack-masked/register-masked in brackets, base 1379 [1384/1485/988]).
+// Re-measured on today's base: the direct `return a && b && c && d;` 1390 [1370/1457/977]; the final loop's count in
+// its head (`i < (list == NONE ? 0 : count)`, the list read in the body) 1397 (6216 B) [1389/1588/916]. New: both
+// 1389 (6238 B) [1371/1566/918]; on that, the found arm first 1401 [1374/1566/955], the magnitude read without its
+// input copy 1632 (5991 B) [1434/1333/860], the list entries re-derived from the pool at each use (round 84's
+// form, re-measured) 1426 (6287 B) [1372/1454/921], the steering sign as `if (field_74.i >= 0.0f) value = -value;` 1378 (6238 B) [1388/1560/914];
+// with that, the two steering magnitudes as `x >= 0.0f ? x : -x` 1427 (6273 B) [1379/1479/904], those and the two
+// threshold magnitudes in the same form 1376 (6238 B) [1381/1553/892] (three points, not kept), the threshold
+// pair alone on the sign form 1427 (6273 B) [1392/1492/905], alone on main 1403 (6211 B) [1390/1549/963]. On the
+// 1376 form: the first loop's cross through the file's k/j/i helper 1445 (6193 B) [1372/1536/876], the found arm
+// first 1393 [1388/1556/929], the list entries re-derived 1379 (6255 B) [1370/1543/895]. Retail's final loop is not
+// rotated (the latch jumps back to a head that re-reads the list handle) and its duplicate search sits after the
+// loop, entered by `jg` when the found list is not empty. All restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

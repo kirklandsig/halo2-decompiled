@@ -130,7 +130,9 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
-// score 378 (was 378): 393 before m3 lane 13 r75. The left vector is built from the named left_i (`{left_i, local_8.i, 0.0f}`): 393 -> 378 plain at retail's 2825
+// score 393 (was 393): the steering block's loads and product order differ (it now loads i, j first); the left vector and the avoidance
+// vector swap their 12-byte slots; the 0x5d0 flag store now matches; the early 0x44 load and the local_16 dot's x87 order differ.
+// 393 before m3 lane 13 r75. The left vector is built from the named left_i (`{left_i, local_8.i, 0.0f}`): 393 -> 378 plain at retail's 2825
 // bytes, but mostly positional: the compiler now propagates left_i into the side test and shares its product with the 0.9 block (a new
 // temp, frame 0x5b8 against retail's 0x5b4; masked aligned 53 -> 107, with stack offsets masked 44 -> 49), while retail reads the left
 // vector's home there. The avoidance vector, local_7 and the left vector now sit in retail's order, 4 bytes high. Undo it when working on
@@ -233,6 +235,15 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // unchanged); the local_16 test's 2-D dot through the existing dot_product2d 279 (lead: retail's x87 order exactly, j product
 // first, aligned 81 -> 77; the count rises because the early 0x44 load still shifts that stretch), on it the 0x44 setting read
 // before the local_16 test (diagnostic, a one-use local) 264 (aligned 73).
+// Round 178 (m3 lane 4, fast; aligned = difflib count with addresses masked, 53 here): the 10 bytes of length are the
+// slot swap (retail's left vector at 0x84 takes 32-bit displacements, ours at 0x78 8-bit), and the 393 is that shift;
+// the aligned differences are the slots, the second normalize's j product, the early 0x44 load and local_16 dot, the
+// two steering blocks' operand loads, and the tail (retail reloads the actor offset from its slot and pops before
+// the last flag store; ours holds it in EBX through the tail). Tried: the left vector built before the local_11 copy
+// 390 (aligned 51); local_9 through normalize_inline with k cleared 393 (same code); the 0x1f9760 success arm as
+// if/else with the rest in the else (no goto) 393 (same code); the local_16 dot through the existing dot_product2d
+// 395 (aligned 51); with the left vector first 392 (aligned 49); dot_product2d plus the 0x44 setting read before the
+// local_16 test (a one-use local, diagnostic) 380 (aligned 49); the left vector first without the goto 390.
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

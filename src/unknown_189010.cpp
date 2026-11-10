@@ -149,6 +149,7 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax E (11-10): no new form, no lower score (110); the first difference is at +0x15, where retail reloads the state flags after the call that our link still expands, so the flags are still forwarded across it.
 // MiniMax E (11-09): no new form, no lower score (110); the priority and the flag word are
 // still formed after the location copy, and the first 0x221810 call is still expanded by our link.
 // MiniMax I (11-08): no new form, no lower score (110).

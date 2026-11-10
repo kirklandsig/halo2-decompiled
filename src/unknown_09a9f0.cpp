@@ -231,6 +231,7 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // reaches retail's shape but scores 77, and reading the header through the entity changes nothing;
 // retail keeps the result in bl and looks the header up twice.
 
+// score 49 (was 49): unchanged this round: the head's register roles still differ - retail saves
 // MiniMax D (run 46): the early-return body 77, the bool result 69, the bool result with the header
 // pointer in a named local 77 (the header lookups still merge into one ECX entry and EBP becomes a
 // scratch register); no lower score.
@@ -239,6 +240,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // test and leaves the table global in EDX, reloading its data and recomputing the index for the
 // object; ours keeps the validity result in EBP and shares one header address between the flag test
 // and the object lookup, so the index arithmetic stays common.
+// MiniMax D (run 46): the early-return body 77, the bool result 69, the bool result with the header
+// pointer in a named local 77 (the header lookups still merge into one ECX entry and EBP becomes a
+// scratch register); no lower score.
 // Retail holds a bool result in BL from before the creation call, saves EBP
 // only around the header test (pushed and popped there) and keeps the table global in EDX, reloading
 // its data and recomputing the index for the object; ours keeps a long result in EBP and shares one
@@ -659,6 +663,15 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // the top for the flag test 72, for the object read 72, one for each 93 (188/188/194 bytes: the copies are read ahead
 // of the creation call and held across it); the value call on the local index 67; the result assigned in every arm
 // (no initializer) 71.
+// m3 lane 10 r87 (fast, 0xa5b10/0xa5b40/0xa5b80/0xbb780/0x108e10 matched throughout; re-measures marked): `bool result`
+// with the existing 0xbb780 for the store and attach, on the local 77, on the entity's field 77 (both re-measures of
+// lane 5 r159), with the header test on the field too 77; the entity store moved into the valid arm with NONE stored in a joint else 66; `bool result` with the
+// store and attach written out 77 (re-measure). Diagnostic only: a second `entity->object_index = object_index;` right after the
+// header test 42 (retail's head with the temporary EBP and the data reload; ours keeps the index product where retail
+// recomputes it). Lead: a memory write between the test and the object read in retail's source. Also new: `bool result`
+// set true in the unflagged arm (NONE stored in the flagged arm) and the store and attach under `if (result)` 72 (the
+// flagged path threads to the exit as retail, but the result is spilled to a stack byte and the header address stays
+// shared), with 0xbb780 72, with the arms swapped 72, that with a long result 77 (188 bytes).
 // m3 lane 13 r77 (fast, 0xa5a00/0xa5b10/0xa5b40/0xa5b80 matched throughout), on the early bool result set after the attach (77,
 // re-measured): the second call's last argument read once through its address (`long const *last = &f;`) 77 (folded: EBP still
 // caches f); the creation result stored and tested in one condition (`(entity->object_index = object_index = v29(...)) != NONE`)
@@ -1031,6 +1044,10 @@ bool c_projectile_type::v8(long a, long b)
 // the field through an indexed long view 12; the field read directly at the NONE test and the mask 12 (re-measured);
 // the group index read into a local at entry 50; flags declared before the lookup with the call's mask from `b` 12;
 // the object through the existing inline object_get 12.
+// Round 165 (m3 lane 5, fast, 0xa5e70 kept): both value checks through one shared inline (value, source, bit) update
+// helper returning the bit or 0, with `result |=` at each, 56 (190 bytes) with the word read and 58 (192) with the mask (the
+// zero arm is not threaded); the 0xa5e70 call through an inline (object index, flags, update) forwarding helper with the mask
+// 12, passing the masked flags 12, with the word read 5. The tie is not moved by the call's argument webs.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

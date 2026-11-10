@@ -115,6 +115,7 @@ struct s_24e9c7_bounds
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// score 125 (was 125): the frame size, the bounds stores and the marker copy agree; what is
 // MiniMax C (11-09): no new form, no lower score (125): the full build's diff shows the group of
 // the result, kind and bitmap homes eight bytes above retail's, with retail's spill at -8 and its
 // unused slot at -0xc above them, and the 1.0 constant in xmm4 where retail uses xmm5; the bounds
@@ -126,7 +127,6 @@ struct s_24e9c7_bounds
 // MiniMax B (11-06): no new form, no lower score (125); the source permuter (240 s) found 123, but it adds a bool set by one test and tested by the next and swaps two arguments of function_22a664, so the original body is restored.
 // MiniMax b (11-04): no new form, no lower score; the result/kind/bitmap homes stay eight bytes above retail's, the 1.0 constant stays in xmm4 where retail uses xmm5, and the geometric SSE schedule stays ours.
 // MiniMax D (run 46): no new form, no lower score.
-// score 125 (was 125): the frame size, the bounds stores and the marker copy agree; what is
 // left is the result, kind and bitmap homes eight bytes above retail's, the 1.0 constant in
 // xmm4 where retail uses xmm5, and the geometric SSE schedule — no source form found this round.
 // Earlier (125, was 125): reassociating the corner sums and splitting them into two steps both
@@ -413,6 +413,32 @@ struct s_24e9c7_bounds
 // ours (-0x14 back y, -0x18 untouched) below kind/bitmap. Side, up or back declared at function top (before or after result) 125 each
 // (same code); first corner's base copy after the half width 138 (740 bytes, as round 217); all four corner base copies there 128 (aligned 121 -> 116,
 // the across terms still sink: points has not escaped); first corner's base copy right after the across terms 124.
+// Round 147 (m3 lane 7, fast with 0x24e59f and 0x22a664, both matched each time; "masked" = aligned count with registers
+// and frame offsets masked, 93 for this body): all four corner base copies right after the across terms 131 (masked 95);
+// the first two there 125 (93); the first one there re-measured 124 (96); on that, up before the half width 141 (738 B,
+// masked 90); the across products as a side point scaled in place by the half width 145 (746 B, masked 86); both 157
+// (756 B, masked 92); on the first-copy form, the other three base copies right after the half width 127 (masked 114)
+// and the half width computed before the height 131 (masked 94). The in-place side gives retail's shared
+// across-j/side-y home but the across products still sink.
+// Round 65 (m3 lane 2, fast; 0x24e59f matched each time; register-masked aligned in brackets, control [94]): re-measured lane 17
+// r36's in-place side point 144 (746 bytes) [107], with `*=` 144, with `0.0f -` 139 (742) [105], round 33's bounds initializer
+// 125, the constant-first size 125. New: size and both across products before the bitmap pointer 125 (same code); the
+// shader-index test first 129 [102]; the bounds by chained assignments 131 [107]; height and half_width `long const` 125 (same
+// code); `result = height` 125 (same code).
+// Lane 5 r166 (fast, 0x24e59f matched each time, control 125): the default bounds as two chained assignments 131; the
+// sequence index read from the kind at each use 125 (same code); the bitmap index read from the kind at each use 182 (739 bytes);
+// `if (first_bitmap == NONE) return result;` with the drawing block un-nested 149 (first difference +0xe); the two outer
+// guards as early returns 130. Body restored.
+// m3 lane 14 r77 (fast, 0x24e59f matched each time; masked = difflib count with registers and offsets masked, control 60):
+// re-measured listed forms: an initialised across point, `{ size * (0.0f - forward_j), size * forward_i }`, with side
+// from it 139 (742 B, masked 64; lane 13 r35's), side initialised with the across products and scaled in place 139 (same
+// code; lane 17 r36's). On that initialised across point: forward_i named for the across product and up.x 141 (741 B);
+// unary minus in the initialiser 144 (746 B); the scale read right after size 140 (masked 63); up initialised as
+// `{ -(result * forward_i), -(forward_j * result) }` 139, back as `{ -side.x, -side.y }` 139, both 139 (all the same code).
+// There the across products stay ahead of the height conversions but in XMM registers through that block (retail
+// spills across j to -8), so result keeps -8 and side y spills at -0x14 below the scalars. Retail's -8 slot has five
+// references (across j stored and reloaded, side y stored, reloaded for back and for the corners), which puts it above
+// result by weight.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

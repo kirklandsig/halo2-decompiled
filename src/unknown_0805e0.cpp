@@ -52,6 +52,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 
 /* the next recent player after the iterator's: a valid, online, known player
    with a name; iterator starts at the first entry and ends at NONE */
+// score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
+// retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
+// successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
+// ours shares one register for index and successor.
 // MiniMax S (11-10): no new form, no lower score (43); the successor still rides in EDX where retail
 // keeps it in EBX (and retail reads the index straight into ESI where ours copies it), the mask is still
 // the immediate 3 where retail hoists it into AL before the loop, and the pushes keep our order.
@@ -62,10 +66,6 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // MiniMax C (11-08): forms tried, none lower: early returns 52, early returns with the successor in
 // a local 49, the successor in a local with the result flag 51, the loop turned into a do/while 51
 // (base 43).
-// score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
-// retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
-// successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
-// ours shares one register for index and successor.
 // native successor 51; persistent entry while/for 57; complete admission 43; identity predicate 53;
 // native player assignment 43; native successor with identity 57; admission result 59.
 // Native identity OR/logical OR 83/78; each with native name 83/78; native name alone 43;
@@ -324,6 +324,17 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // and the step in the loop test 51 (127); a for loop stepping from a successor that is read into a short first 51
 // (127); the current loop with four `continue` filters (the identity pair and the exclusion pair joined by `||`) and
 // `return true` 52 (127). All restored.
+// Round 70 (m3 lane 15, fast with 0x1a303b/0x2b393c, both kept their matches): match-only lead 39 (129 B, masked aligned 9
+// against this body's 19): a priming lookup, then under `if (index != NONE)` `do { next = entry->next; *iterator = next;
+// if (tests) { copy; result = true; break; } if (next != NONE) entry = &g_4cf98c[next]; } while (next != NONE);` gives
+// retail's early ESI save and in-place `imul esi, esi`; left: the mask is not hoisted into AL, next takes EDX (retail EBX)
+// and the back-edge lookup is not cross-jumped into the head. Not kept: the inner test repeats the loop's. On it: early
+// returns 52 (133 B), a short next 63 (136 B, both callers 2), the flag tests as an outer if 39, the index reused for next
+// 39, a per-pass result 39, `else if (next != NONE)` with a `!result` loop condition 39 (no hoist in any).
+// Round 163 (m3 lane 6, fast with 0x1a303b/0x2b393c, both stay matched; aligned/masked control 30/33): the
+// guest test spelled on the xuid_flags dword, through a byte cast of it, as two one-bit byte tests, the name
+// test through the record's `name[0]`, and the dword guest test with `name[0]`: 43 each (same code; the mask
+// stays an immediate). All restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -702,7 +713,10 @@ void function_1537f0(s_profile_record *record);
 // MiniMax E (11-05): no new form, no lower score; splitting the source record's 8-byte field into two
 // dwords to make it 4-aligned leaves the record at +0x18 and the frame at 0x98, and an index loop gives 78.
 // MiniMax C (11-08): no new form, no lower score.
-// score 53 (was 53): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
+// score 18 (was 18): the loop's entry pointer is based at the entry's link run (EDX = entry + 0x5c) where
+// retail bases it at the view's field 0x4c (entry + 0x4c), so every entry store's displacement differs, and the
+// view's byte stores and the link stores come out in another order (ours makes the 0x52 byte and the NONE first).
+// Earlier (score 53, was 53): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
 // +0x10 and reads them back for the copy, with the source record right after at +0x1c); ours spills a
 // 350 countdown to +0x14 where retail compares the entry cursor with the array end (signed `jl`);
 // packed source-byte carriers and initialization homes differ.
@@ -946,7 +960,7 @@ void function_1537f0(s_profile_record *record);
 // per-visit then outer raw storage: 110/110/116/108 twice. NOT kept: native identity homes
 // still fold or move into a larger frame; 295-300 bytes versus 258. Both original initializers,
 // per-visit fills, pointer walk and complete body restored.
-// MiniMax C (11-09): score 18 (was 45): the four link shorts are now written through a pointer to
+// MiniMax C (11-09), 45 -> 18: the four link shorts are now written through a pointer to
 // the entry's run of links, so their common base frees the register that holds the -1 and lets it
 // be made afresh in EAX before the four stores as retail does, and the flags word and the word
 // after it are set with two plain stores, which gives retail's two direct dword stores; the code
@@ -954,7 +968,7 @@ void function_1537f0(s_profile_record *record);
 // links begins further into the entry), the entry's byte stores come out in another order and
 // with the two shifts in the other registers, and the walk's end compare carries the address of
 // our own array.
-// MiniMax C (11-09): score 45 (was 53): the identity and the source now sit in one per-visit
+// MiniMax C (11-09), 53 -> 45: the identity and the source now sit in one per-visit
 // record, so the identity's address reaches 0x1537f0 and 0x7f8b0 and its three zero words and
 // the three loads that copy them into the entry survive as in retail; the walk is an index loop
 // over the entries, which keeps retail's compare of the entry pointer with the array end (our
@@ -962,9 +976,18 @@ void function_1537f0(s_profile_record *record);
 // the frame is 0xa0 with the identity at +0x10 and the source at +0x1c as in retail. Left: the
 // NONE constant stays in EBP across the walk where retail re-materialises it in EAX, the
 // entry's byte stores come out in another order, and our code is 259 bytes against retail's 258.
-// MiniMax C (11-09): score 53 (was 53): the identity's three words still fold away, so the frame
+// MiniMax C (11-09), 53 -> 53: the identity's three words still fold away, so the frame
 // is 0x98 against retail's 0xa0, and our walk ends on a countdown kept in a frame slot where
 // retail compares the entry pointer with the array end (signed). Untouched this round.
+// Round 149 (m3 lane 8, fast): the base follows the link pointer: it lands on one of the four link slots, which one
+// depending on the store order (index order 0,1,2,3 and 3,2,1,0 give +0x5c, 2,0,3,1 and 1,3,0,2 +0x5e, 0,2,1,3 +0x5a),
+// all 18; with every entry field written through `entry` (one address) the base is retail's +0x4c but NONE is again
+// kept in EBP from the global stores (the 49 form, re-measured 49). Tried: the link stores through the pointer in the
+// field chain's order (next, next_other, unknown58, previous_other: retail's store order) 18; four separate link
+// statements 18; the link pointer declared before the record 18; a view pointer local passed to 0x7f8b0 18; the flags
+// and the word after them by one memset 31 (260 bytes); the flags stores before the links 27; a pointer walk with the
+// link pointer 80 (275 bytes); every field through `g_4cf98c[index]` with the link pointer taken from it 44 (base
+// +0x4c, NONE in EBP); a dword pointer to the flags with the field chain 49.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1591,6 +1614,18 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // and reloaded after the unlink calls 57 (same code); the flag declared before the bounds 57 (same code); the `<` arm
 // tested first 338; the forward copy as `g[i] = g[i + 1]` from lower 367 (1162 bytes); the forward copy as one memmove
 // behind `if (i <= upper)` 364.
+// M3 lane 9 r105 (fast; 0x80330/0x80490 kept): re-measured, the plain admission (`long removed = NONE; if (g_4cf978 == 350)`)
+// without the two extra flag stores, as a grid of lower spelling (`position < removed ? position : removed` /
+// `removed > position ? position : removed`) x upper spelling (`removed > position ? removed : position` /
+// `position < removed ? removed : position`) x `<` arm order (decrements first / flag first) x count path order
+// (lower first / upper first): 16 forms 368-373, all 1162 bytes, so retail's two extra `xor bl, bl` stores are what
+// the nine bytes are. On round 141's 5 form (match-only, rebuilt at 5): the guard as `if (lower < upper)` 355; the
+// cursor from a named `long i = lower + 1;` 54 (1174 bytes, re-measured); the flag set last in the `<` arm 8; the flag declared
+// before the bounds with the plain `function_7fd10(removed)` 7 (left: the entry load into ESI before EDX, and the
+// cursor's start from lower in ESI where retail forms `&g[i]` from the index in EAX before the upper reload). With
+// a per-pass `entry = &g_4cf98c[i]; entry[-1] = *entry;` in place of the cursor (53 re-measured: retail's address
+// derivation, but upper back in EAX): the bounds assigned upper first 57, upper declared before lower 53 (same code),
+// the count path upper first 52, the flag declared first 53 (same code), all three upper-first changes 56.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

@@ -1051,6 +1051,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
+// score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
+// where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
+// expanded here while retail calls the matched 0x192e60 out of line.
 // MiniMax E (11-05): no new form, no lower score; the session's EAX home belongs to the caller's
 // declaration, which this lane may not change.
 // w14C (11-06): walked against retail block by block; no behaviour difference. The histogram cells are dwords in retail
@@ -1058,7 +1061,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // histogram[16]` with a memset for each clear recovers retail's frame 0xb4 (machine_ids and the histogram share slots) but
 // scores 844 (2772 bytes). The histogram is never read, so it is not kept without a match. Tried: the add-loop minimum as a
 // three-way type 5/4/other (no effect).
-// score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
+// score 766 (was 766; round 103 unchanged): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
 // where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
 // expanded here while retail calls the matched 0x192e60 out of line.
 // Earlier: Frame 0xd4/0xb4, stacked session and protected opening lookup expansion remain.
@@ -1277,7 +1280,45 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // the shared tail where retail has its own `result = false` epilogue); that with a long histogram 928 (2700 bytes, masked
 // 376); grouped labels and a long histogram without the guard 850; the early exit as `result = false; return result;` 766
 // (same code). Lead: retail's call site is out of line with no guard, so its inline choice comes from elsewhere.
+// Round 103 (m3 lane 9, fast): the player value through a call to 0x63220 1097 (2524 bytes: 0x63220 stays a call, the top
+// 0x192e60 lookup still inlines, and the session then arrives in EAX with `ret 4`, so 0x73530 matches); with an `inline`
+// declaration of 0x63220 in this file 1097; a file-local inline helper of 0x63220's shape 1097 (it stays a call too, and still
+// does with the body cut after the player loop);
+// a `__forceinline` declaration before 0x63220's definition (diagnostic) 1032 (2588: 0x63220 inlines but its own
+// 0x192e60/0x631f0/0x1931a0 calls stay out of line, and 0x6e910 then inlines it, 0 -> 155); the loop's availability test through
+// the matched 0x193f50 857 (2804, it stays a call); both early exits as `result = false; return result;` 766 (same code).
 // MiniMax I (11-10): no new form, no lower score; retail's party histogram is 16 dwords at frame+0x44, cleared twice with `rep stosd` and indexed as `mov ebx,[esp + eax*4 + 0x40]` with the count-1 folded into the displacement, so our word cells and the 0xd4 frame stay (the dword cells reach retail's 0xb4 frame but score 844), and the session ingress and the inlined lookup remain the only differences.
+// Round 103 (m3 lane 16, fast with 0x73530 (8 throughout), 0x63220, 0x192e60, 0x1934f0 and 0x1931a0 matched): the admission
+// test with `!variant` first 766, with `!summary || !variant` first 766, with the capacity compares written capacity-last 766, with
+// `capacity < summary->player_count` 766 (all four the same code); the type-5 machine scan ending in `break` once a match clears
+// the result 893 (2764 bytes). The top 0x192e60 call's inline choice is the cause; it stays a flags lead (this file is /arch:SSE).
+// Round 66 (m3 lane 2, fast; 0x6fa60, 0x63220 and 0x192e60 stay matched, 0x71730 426 throughout): retail makes seven calls here
+// (0x192e60 at the top, 0x1931a0, 0x193250, 0x1932c0, 0x1934f0, 0x91e30, 0x91f00) and inlines everything else, the
+// matched ratings accessors, the capacity switch and 0x63220 included. In retail the matched 0x66050 also keeps 0x192e60 out
+// of line at an entry-block site (after another call), and 0x705f0 at a guarded one; the matched 0x6fa60 drops its call to
+// this function in both builds (result and output unused); retail's 0x73530 pushes the output before setting EAX to the
+// session (no reorder evidence); retail keeps the type-5 machine flag as this body does. On 766: the player value through
+// the existing 0x63220 and every other helper through its matched accessor (0x193300, 0x193440, 0x1933d0, 0x1933a0,
+// 0x1934d0, 0x193400, 0x1934b0, 0x193470) 1127 (2492 bytes); the same with this file's capacity helper kept 1127; that
+// with the capacity labels grouped 1101 (2524 bytes); the accessors without 0x63220 and the capacity helper kept 904 (2744);
+// that with grouped labels 851 (2808 bytes). Re-measures: the 0x63220 call alone 1097 (2524 bytes, 0x73530 matches); the
+// accessors alone 904. Diagnostic, not kept: `#pragma inline_depth(255)` with the 0x63220 call 1097 (no change), so inline
+// depth does not keep 0x63220 out of line. Blockers left: the link's inline choices, and 0x63220 staying a call here.
+// Round 226 (m3 lane 3, fast, control 766, 0x73530 8): the player loop written as 0x63220's body with its calls (0x192e60 for
+// the variant, 0x631f0 for the group's highest rating, a two-evaluation max of 0x1931a0) 1032 at 2588 B: 0x73530 matches (the
+// top 0x192e60 call stays out of line), but none of the four loop calls inline (retail inlines 0x192e60, 0x631f0 and the first
+// 0x1931a0 there); with a forceinline redeclaration of 0x631f0 here 1032 (no effect); with the capacity helper forceinline 998
+// (2656 B, the top call inlines again, 0x73530 8); with forceinline redeclarations of 0x192e60 and 0x1931a0 as well 998.
+// Round 69 (m3 lane 15, fast): the capacity helper with grouped case labels and external `inline` linkage together 876
+// (2852 B, 0x73530 8: the switch inlines as a table, the top call still inlines). Our link inlines only the first direct
+// 0x192e60 site here, and retail's one inlined copy is inside the inlined 0x63220, which fits one inlined copy of a callee
+// per caller; 0x63220 never inlines in this link, so that cannot be tested from this function. No natural no-code test
+// fits the top call: retail calls 0x192e60(-1) on the invalid-state path with no compare. Retail's out-of-line 0x63220
+// itself calls 0x192e60, and so do matched 0x741f0, 0x73ca0, 0x596d0 and 0x19a0c5, all from files built without /arch:SSE
+// (or /O1, /Ob1), so retail inlines 0x192e60 only inside the copy of 0x63220 it inlines here. This function's retail
+// code has no float instruction, so its build's /arch cannot be read from it. Lead for the flags owner (not tried): this
+// file is /arch:SSE like 0x192e60's, 0x63220's file is not; a non-SSE build of this body may keep the top call out of line
+// as 0x741f0's does and let 0x63220 inline.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

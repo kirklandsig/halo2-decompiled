@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "unknown_1fb7e0.h"
 #include "unknown_25d020.h"
+#include "unknown_26b230.h"
 #include <string.h>
 
 // @flags /O2 /arch:SSE /Gr
@@ -658,6 +659,13 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // Case 2's distance through the existing vector2d_from_points2d and dot_product2d (from `&state->position`) gives retail's
 // block instruction for instruction (y first, the dead `add eax, 4`), 425 at 1624 bytes (masked aligned 218); with the
 // 0x25d740 lookups 417 (masked 219). Not kept: positional rise.
+// Round 66 (m3 lane 15, fast with 0x1e34e0 26, 0x263210 231, 0x264330/0x264210/0x2641c0 matched throughout): retail's inlined 0x2641c0 copies its 0x38 bytes with
+// `rep movsd`, which takes ESI and EDI inside the loop, and 0x2640c0 takes its output in EDI, so retail keeps the node index and the next index in stack slots
+// (0x14/0x18, reloaded before each use), the three flags in stack bytes (0x11/0x12/0x13), the prior state as a word at 0x2c, the actor pointer at 0x20 and the actor's
+// pool offset at 0x28 (shared with the inlined body), with only the actor index in EBX and the node in EBP. Retail's maximum is a 32-bit slot set from a zero-extended
+// word and compared as 16 bits. The maximum without its qualifier: long 428 (1616 bytes), dword 428, short 429, long with the compare reversed 428; long or dword with
+// a short prior state 433 / 433 (1620 bytes). The qualifier stays (412). Still BLOCKED-BY 0x2641c0 (its noinline declaration is in src/unknown_265cb0.cpp, another
+// lane's file this round).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
@@ -824,32 +832,36 @@ struct s_tracking_candidate
 	short priority;
 };
 
-PRIVATE inline void tracking_state_initialize(s_type_5cfb45 *state)
-{
-	state->unknown40 = NONE;
-	state->unknown00 = NONE;
-	state->unknown3c = NONE;
-	state->unknown66 = false;
-	state->unknown62 = false;
-	state->unknown5e = false;
-	state->unknown64 = false;
-	state->unknown61 = false;
-	state->unknown5f = false;
-	state->unknown60 = true;
-	state->unknown63 = false;
-	state->unknown69 = false;
-	state->unknown65 = false;
-	state->unknown67 = false;
-	state->unknown48 = *g_468788;
-	state->unknown54 = NONE;
-	state->unknown44 = NONE;
-	state->unknown58 = false;
-}
+void prop_state_initialize(s_type_5cfb45 *state);
 
+/* the walk over an actor's props: 0x26be00 starts it, 0x26be30 returns the
+   next prop (NULL at the end) */
+struct s_node_view;
+void function_26be00(long actor_index, s_iterator *iterator);
+s_node_view *function_26be30(s_iterator *iterator);
+
+// score 2 (was 231): after the qsort, retail reloads current then active_count where ours reloads
+// active_count then current; declaring current first gives retail's reloads but swaps the two zero
+// stores at entry (both follow the order the two are first set). Round 147 (m3 lane 8, plain; fast
+// builds this function differently): the tail fill as an index loop (retail's bare `rep stosd` with a
+// `movzx ecx, cx` count and no byte tail; every memset spelling gives the stosd/stosb pair, matched
+// 0x1348e0's NONE fill loop gives the bare form) 235 (1120 B); the admission tests as `active_count < 8
+// && current < count` (retail's bottom test `cmp ax, 8; jl` back to a head testing `cmp cx, di`) 233;
+// the prop walk through a local iterator copied in after the slot loop 305 (frame 0x21c), started at the
+// top 54; the fill loop on active_count itself 30; the release loop through 0x25c820 2; then the
+// 0x26be00/0x26be30 walk (as 0x1e23c0) 2 and 0x25c3e0 for the private state reset 2 (same code). On
+// that body: memset restored 90 (1137 B); `current < count && active_count < 8` 240; current declared
+// first 2 (stores swap); active_count named tracked_count 2 (same code); the admission loop as
+// `for (; ...; current++)` 314 (1011 B); current declared first with `current = active_count = 0;` 5;
+// the release loop on its own counter 2 (same code); the slot store and increment split 2 (same code);
+// `count > current` 4. Next: current declared at its first use above the admission loop. Matched functions
+// usually reload after a branch in reverse order of their entry stores, which is retail's order here; ours
+// reloads in store order, as 0x1c50c0 and 0x2b9b10 do, where no form has moved it yet.
 // @retail 0x263210
 void __stdcall function_263210(long actor_index)
 {
-	long next_index = actor_prop_view_get(actor_index)->first_prop_index;
+	s_iterator iterator;
+	function_26be00(actor_index, &iterator);
 	short count = 0;
 	short active_count = 0;
 	short current = 0;
@@ -891,11 +903,9 @@ void __stdcall function_263210(long actor_index)
 		tracked++;
 	}
 	while (--slots_remaining);
-	while (next_index != NONE)
+	s_prop_datum *reference;
+	while ((reference = (s_prop_datum *)function_26be30(&iterator)) != NULL)
 	{
-		long index = next_index;
-		s_prop_datum *reference = prop_ref_get(index);
-		next_index = reference->next_index;
 		if (reference->state >= 1)
 		{
 			long absolute_index = reference->object_index & 0xffff;
@@ -906,7 +916,7 @@ void __stdcall function_263210(long actor_index)
 				reference->unknown1a = priority;
 				if (g_470f10[reference->type].unknown8 == 2 && count < 50)
 				{
-					candidates[count].index = index;
+					candidates[count].index = iterator.index;
 					candidates[count].priority = priority;
 					count++;
 				}
@@ -917,7 +927,7 @@ void __stdcall function_263210(long actor_index)
 	if (count > 8)
 		qsort(candidates, count, sizeof(s_tracking_candidate), function_2631f0);
 	s_record_pool *tracking_pool = g_502414;
-	while (current < count && active_count < 8)
+	while (active_count < 8 && current < count)
 	{
 		long index = candidates[current].index;
 		s_prop_datum *reference = prop_ref_get(index);
@@ -933,7 +943,7 @@ void __stdcall function_263210(long actor_index)
 			if (reference->tracking_index != NONE)
 			{
 				s_type_e5ff81 *tracking = (s_type_e5ff81 *)(tracking_pool->data + (reference->tracking_index & 0xffff) * sizeof(s_type_e5ff81));
-				tracking_state_initialize(&tracking->state);
+				prop_state_initialize(&tracking->state);
 				prop_view_initialize(&tracking->view);
 				function_2640c0(reference->object_index, (s_object_motion_view *)&motion);
 				byte *local_bbc190 = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
@@ -953,19 +963,13 @@ void __stdcall function_263210(long actor_index)
 			actor->tracked_prop_indices[active_count++] = index;
 		current++;
 	}
-	if (active_count < 8)
-		memset(&actor->tracked_prop_indices[active_count], 0xff, (word)(8 - active_count) * sizeof(long));
+	for (; active_count < 8; active_count++)
+		actor->tracked_prop_indices[active_count] = NONE;
 	for (; current < count; current++)
 	{
 		long index = candidates[current].index;
-		s_prop_datum *reference = prop_ref_get(index);
-		if (reference->tracking_index != NONE)
-		{
-			if (reference->tracking_index != NONE)
-				function_25c780(actor_index, index);
-			reference->state = 0;
-			reference->unknown10 = 0.0f;
-		}
+		if (prop_ref_get(index)->tracking_index != NONE)
+			function_25c820(index, actor_index);
 	}
 }
 
@@ -976,12 +980,13 @@ short __stdcall function_1c8df0(short source_cell, short target_cell, point3f co
 short function_25c9d0(long actor_index, long prop_ref_index, bool player, short sight,
 	void *point, byte *sample, long reported);
 short function_25cb60(long actor_index, long object_index, short type, void *sample,
-	void *point, long location, long sight);
+	void *point, long location, short sight);
 short function_25cca0(long prop_ref_index);
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range);
 void function_26bfa0(long object_index, long *location_index, s_location_view *location);
 real function_296600(long actor_index, long prop_ref_index);
 
+// MiniMax I (11-10): no new form, no lower score (163).
 // MiniMax B (11-04): no new form, no lower score.
 // score 163 (was 257): retail's length, frame 0x20, actor EBX. Left: the object and table registers (ours EAX/ECX, retail ECX/EAX, time read after the table pointer), the
 // suppression/current byte homes swapped, root and not_current in each other's slots with `!current` evaluated at the named local where retail evaluates it among the first
@@ -1141,6 +1146,15 @@ real function_296600(long actor_index, long prop_ref_index);
 // calls with no named local, re-measured, 267 (1278 bytes); the three object lookups through the existing ai_object_get 163 (same
 // code); current as a byte 163 (same code); the time read ahead of the prop lookup 168 (1269 bytes). Retail computes the hit
 // pointer and the mode ahead of the pushes and then `sete` for `!current` between them, storing it for the second call.
+// score 90 (was 163; PR #1006, landed in batch r746;
+// the same change as lane 12 r107's held patch): 0x25cb60's last two parameters as (long location, short sight), the 0x263ed0 call's `(short)` cast dropped.
+// Lane 12 r107 (plain; masked aligned count with registers and esp offsets masked in brackets, 30 at 163): 0x25cb60's last parameter as `short` (contributor code: its definition line and its cast to 0x263ed0, plus the
+// declaration here; the held patch is listed in the round 107 report) 90 [27] (1268 B; 0x25cb60 stays 12, the movsx goes). What is
+// left on that base: the game time read ahead of the object index and the object pool load (ours loads the pool global first),
+// and `!current` (retail's `sete` sits between the first call's pushes, stored for the second call). On the held base: `!current`
+// written in both calls 263 [24] (1275 B; the hit pointer spills, current takes CL where retail's root is stored at once and
+// current takes AL); the time read after the object 93 [32]; before the prop 92 [34]; current before suppressed 373 [82]
+// (1274 B); not_current declared before root 258 [25] (1269 B).
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

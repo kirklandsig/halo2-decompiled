@@ -126,6 +126,7 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 	return success;
 }
 
+// score 244 (was 410): the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
 // MiniMax C (11-05): no new form, no lower score; retail's cross product multiplies the direction's component first (direction.k*up.j where ours does up.j*direction.k) and adds the magnitude's squares in the other order, both from the shared cross3f and magnitude helpers; retail also keeps the first-edge flag at [esp+0xf] and the success flag at [esp+0xe] where ours keeps them the other way round, and hoisting or reordering those two declarations does not move them.
 // MiniMax S (11-06): 106, not kept: the two sector-loop exits jump to a finish label before the closing stores
 // (retail's common tail) instead of breaking out of the edge loop; the held 34 form's gotos again (a goto main's
@@ -134,7 +135,7 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // MiniMax D (11-09): no new form, no lower score; the count test branches the other way
 // (retail jumps to the far block when the count is positive) and the body is twelve bytes
 // shorter than retail's 1605.
-// score 244 (was 410): the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
+// score 244 (was 244): the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
 // Earlier: frame 0x60 versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // Earlier: frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // pathfinding pointer in EBP and the -1 edge seed in EDX where ours keeps them in EBX
@@ -455,6 +456,34 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // redundant `success = false;` dropped from the two false-result tails 73 (1609 bytes); `success = result->blocked =
 // true;` in the location tail 121 (1595); the magnitude test as `1e-5 < magnitude` 34 (same code); the planar normal
 // as `{ normal.i, normal.j }` 431.
+// M3 lane 14 r79 (fast with 0x26c380/0x26c4e0/0x26ccb0/0x26d370, all kept unless noted): the held goto form rebuilt on this
+// body (`success = false; goto finish;` at the two two-level exits) 34 at 1605 bytes. On it: `line_distance` taken from the
+// full normal through `(vector2f const *)&normal` before the planar copy 361 (the cross order moves again); the line built
+// by one inline helper (cross, magnitude test, planar normal and offset through out-parameters, valid flag returned) 551
+// (1473 bytes, 0x26c4e0 17, 0x26ccb0 lost). Re-measured: the named magnitude result 361; the existing out-of-line
+// magnitude3d (0x24590) in place of the private copy 244 on this body and 34 on the goto form (same code; 0x15f3a0 stays
+// matched in the fast check). Diagnostic (removed): an extra `if (line_distance == ...)` use after the break test 358 (the
+// frame changes, the offset stays in XMM3), so the XMM1-3 roles are not a plain use count. Retail's tail C is tail A
+// without its sector store and still not cross-jumped into it.
+// On this body: `if (count > 200) next_sector_index = NONE; else ++count; break;` 244 (same code). The rest of this body's
+// gap is the shared exit block (`success = false` then the final tail) that retail jumps to from both two-level exits;
+// only the listed goto form (34, match-only) or the listed redundant `success = false;` (229, ruling) give it.
+// M3 lane 2 r67 (fast with 0x26c4e0/0x26ccb0, both matched throughout): the goto form re-measured 34 (aligned 42, masked
+// 4); permuter 604 s on it (75 tries) none below 34. Our 4-byte line offset and previous sector sit below the 8-byte line
+// normal (size groups); retail's slots fit a 4-byte previous sector, then a 12-byte line, then the normal, so the line
+// as the code base's plane2f {n, d} gives retail's slots (on the goto form 304 at 1612 bytes, aligned 38, masked 10: the
+// XMM homes stay n.j, n.i, offset where retail has offset, n.j, n.i, and the point1 dot loads the point where retail
+// multiplies the normal's i in place); re-measured on this body 306 (1600 bytes). Lane 1 r83's renames re-measured with
+// the offset renamed `line_offset` (sorting after the normal) 244 and 34 on the goto form (same code: names do not break
+// the XMM tie); tail C stored blocked, edge, distance re-measured on this body 347 (1488 bytes, it merges into tail A).
+// No unlisted natural form found for the XMM homes, the cross's row j or the magnitude order.
+// m3 lane 10 r87 (fast with every other function of the file; masked = register/stack-masked aligned count): the held form
+// re-measured 34 (masked 4) and with plane2f 304 (masked 10: slots and magnitude order then retail's, the rotation stays
+// XMM1-3 = normal j, normal i, offset where retail has offset, normal j, normal i, and the in-place `mulss xmm3, [edx]`
+// becomes a load). New: plane2f on this body 306 (1600 bytes); tail C stored blocked, edge, distance with `success =
+// false;` ahead of the point call 244 (same count, no merge), the same in tail A too 347 (1488 bytes, tails merge); the
+// line offset taken from the full normal before the planar copy 382, on the held form 361; the held form with plane2f
+// and that tail C 304 (masked 8).
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

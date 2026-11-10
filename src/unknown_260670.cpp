@@ -37,7 +37,20 @@ bool function_2600a0(long actor_index, s_type_967e20 *context, s_type_b36ac5 *po
 long function_1e4a50(long index);
 long function_262a30(s_reference reference);
 
-// score 528 (was 611): 700 before r75. M3 lane 13 r77: 611 -> 528 plain (3097 bytes) by two changes together: the five state values as
+// score 700 (was 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// a bool output in a register across a later call, as retail (0x1b0540 matched with plain output locals).
+// Round 178 (m3 lane 4, plain checks; aligned = difflib count with addresses masked, 293 here): the call sequence is
+// retail's except two callees: retail calls 0x2600a0 in the sorted loop and 0x13e2d0 for the owner, ours inlines both
+// (the first evaluator pass is inline in both). The aggregate of five locals keeps retail's frame; as plain locals
+// the result/bool/word stores take retail's forms but the frame grows to 0x8a4 (840), with the sort scratch word
+// scoped to its block 0x8a0 again (832, aligned 272). Tried: plain locals with the 4c store before 0x270590, the
+// first evaluator pass as a 0x2600a0 call and the owner store as if/else 847; those three without plain locals 719;
+// plain locals and the evaluator call 832; scoped scratch with the four 841 (aligned 251); plus the history reset as
+// an inline helper used twice, the segment test through the existing 0x11e000 and a float fabs 862 (frame 0x8ac,
+// the helper outlined at one site); the helper __forceinline 849; without 0x11e000 856 (aligned 248); then the tail
+// nested under `selected != NONE`, a position pointer and the pathfinding select as an if 854 (aligned 255); the
+// sorted loop's body nested under the continue test 854. 0x2600a0 and 0x13e2d0 stay inlined in every form.
+// 700 before r75. M3 lane 13 r77: 611 -> 528 plain (3097 bytes) by two changes together: the five state values as
 // plain locals (the grouping aggregate removed), and 0x260060's second parameter as `short` (retail's call pushes count's raw dword with no
 // movsx, and 0x260060 hands it to the pre-evaluator procs, whose typedef takes `short`; every 16-bit count load here then becomes
 // retail's 32-bit load). Before r77: the owner is read through the existing 0x262a30 (its file is /Ob1, so the hash lookup 0x13e2d0 stays a call
@@ -56,7 +69,6 @@ long function_262a30(s_reference reference);
 // evaluator call 766 [230]; normalize3d for the unknown40 loop 610 [268] (retail's x87 length order exactly; only the scale products
 // differ). Earlier: score 700 (was 697): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done`
 // as returns 700 (697 with them). Enabling it lets callers keep
-// a bool output in a register across a later call, as retail (0x1b0540 matched with plain output locals).
 // Round 77 (m3 lane 13, fast unless noted; masked aligned count, then masked+stack, in brackets; base 528 [278/168], frame 0x8a8 against
 // 0x8a0, 3097 bytes): the short parameter alone 707 [226/172] (3083), plain locals alone 742 (the r75 form). Retail packs the two
 // bools into one dword (0x6/0x7) and the sort scratch word into the actor offset's dead slot (0x14); ours gives each its own dword.
@@ -71,6 +83,12 @@ long function_262a30(s_reference reference);
 // [274/164], the projection update through vector3f_add_scaled 528, the delta's scale through vector3f_scale 528, the reported
 // entry as an aggregate assignment in place of memcpy 528 (all same code but the second). Aligned counts of the kept change,
 // plain: exact 393 -> 413, masked 266 -> 278, masked+stack 205 -> 168; frame 0x8a0 -> 0x8a8, length 3072 -> 3097 (retail 3077).
+// MiniMax S (11-10): no new form, no lower score (700): retail keeps the two flags as separate byte locals at F+6/F+7,
+// the reference at F+8 and the selection in a four-byte slot at F+0xc (a dword -1 store with word compares), while our
+// state aggregate puts the flags at F+0xc/F+0xd and the selection in a word at F+0xe. Splitting the aggregate into
+// standalone locals gives retail's F+8 and F+0xc but leaves the flags at F+2/F+3 and the frame at 0x8a4 against retail's
+// 0x8a0 (841), the same split with a four-byte selection scores 836, and an aggregate whose flags come first is kept
+// in registers by the compiler (836), so the aggregate stays.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)
