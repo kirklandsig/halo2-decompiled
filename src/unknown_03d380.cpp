@@ -484,6 +484,17 @@ void function_125a90(long value);
 // int/unsigned-int/long/dword storage: 36/36/95/95/94/94/94/94. NOT kept: no gain; original
 // Boolean removal result, policy captures, comparison widths and complete body restored.
 // MiniMax D (11-06): no new form, no lower score.
+// Round 73 (m3 lane 13, fast, control 36; aligned 22, register-masked 14): the `||` written in the `if` lays the kind
+// arm out first whatever is in the arms, and a class-type test held as a bool value lays the special arm first as retail
+// does, but 0x221810 is then inlined. `if (type == 0x26) remove = !a; else remove = false;` with the kind arm as
+// `if (x == 1) remove = false;` under the `||` 51 (re-measured; both arm bodies retail's, chains in the other order);
+// that with the class-type test named as a bool 144 (143 instructions, 0x221810 inlined); with the type read through the
+// existing sound_definition_get as well 144 (same code); with a shared next-datum inline helper for the loop as
+// well 152 (still inlined, so the caller's other expansions do not keep it out); a named short class-index value under the
+// `||` 51 (same code); an inline class-type predicate taking a short 144 (inlined); the sound-class-record pointer named before its
+// test 51 (same code). Diagnostics, reverted: the kind arm reading a table instead of calling 98, and a call added to
+// the special arm 98: the kind arm stays first in both, so the order does not follow which arm holds a call.
+// Still BLOCKED-BY 0x221810 (retail never inlines it; its file is another lane's this round).
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

@@ -1818,6 +1818,20 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // Round 64 (lane 15, fast): result split into `(real)atan2(y, x)` then `* scale * (1/pi)` 193; y and x initialised
 // to 0.0f 193; `atan2 * (scale * (1/pi))` 190 (one product where retail has two fmuls); a ternary return 296 (908
 // bytes); `scale * atan2 * (1/pi)` 193.
+// Round 73 (m3 lane 13; fast, the kept-candidate also plain): the result's own slot is XMM pressure, not a spelling:
+// retail's case 3 holds the k offset in xmm7 across both cross products, so with the zero in xmm0 all eight registers
+// are busy and the result gets a stack home (entry store, `fstp` into it, one load at the exit). Case 3's three
+// offset statements ahead of the perpendicular helper 177 at 812 bytes (plain 177: retail's length, frame 0x18,
+// entry store and exit; aligned 100, register-masked 56), NOT kept: the callee then clobbers xmm7 as retail's does
+// and the caller 0x2e9e0 goes 492 -> 573 (2232 bytes), a rise; diff in build/r73/lead-0x2f2d0-reference-first.patch.
+// Next: re-measure 0x2e9e0's rejected forms on that callee. On it: only i, j or k ahead of the helper 182 each
+// (800 bytes; k alone has the lowest masked count, 44), two of them 182; case 1's reference copy ahead of the helper
+// too 177 (same code). With k ahead: y's terms written ijk/ikj/jik/jki/kij/kji 211/194/190/182/190/188 (768 to 800
+// bytes: the first mention of the fields sets the term order). On the old body: x computed before y in cases 1 and 3
+// 185 (800 bytes; frame 0x18 by pressure in case 1, where retail has none; 0x2e9e0 573); the result assigned without
+// the cast 193 (same code); the helper's second cross written k, j, i 197 (788), both crosses k, j, i 288 (696);
+// case 1's reference copy ahead of the helper 193. Diagnostics, reverted: one to twelve dead initialised locals
+// ahead of the result 193 each; a volatile result 187 (aligned 123, masked 48).
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2812,6 +2826,16 @@ s_cached_input_list g_5234e8[4];
 // forms 118-120; every once-read list combination 129-133. A one-file LTCG copy of this file with its callees' files
 // gives the same allocation (109 there); retail's EBX index/EDI object/EBP cursor appeared only when 0x3e9c0 was
 // built with another convention, so the remaining permutation follows callee register usage.
+// Round 73 (m3 lane 13, fast with the round 64 callee chain, control 113): retail's global holders are entry ESI
+// (shared with i), object EDI, index EBX (copied to EDI for 0x31590), cursor EBP, and after the loop `output` once
+// in ESI for both calls; ours gives object ESI first, so index takes EDI, the cursor EBX and the list or total EBP.
+// The list read once with `!(depth >= 0.0f)`, the sibling's sum order and `&g_5234e8[view]` at both calls 130
+// (frame 0xa0, list in EBP); that with output[count] at each store 130 (same code); that with the total read from
+// the global ahead of the list local 112 (552 bytes: `list + 0xc` hoisted to a slot, total in EBP; a mixed read,
+// -1, not kept); a typed 0x110-byte entry (`&((T *)data)[index & 0xffff]`, named fields) with the list 130,
+// without it 113 (same code each). Diagnostics, reverted: one extra use of object 121 (556 bytes; object is then
+// loaded before the definition as in retail, registers unchanged), four extra uses 177 (object still ESI), extra
+// early uses of `output` 166 (it takes EBX and becomes the cursor). Reference counts do not move object off ESI.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3030,6 +3054,21 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // R221 also: the clamp compare written `state->count < limit` 319.
 // Round 64 (lane 15, fast): an index declared in each loop 317; `last` declared before `first` 318; `requested` and
 // the clamp before `first`/`last` 416 (1305 bytes); swap helper `__forceinline` 317, clamp helper 317, both 317.
+// Round 73 (m3 lane 13, fast; aligned | register-masked counts, base 81 | 59): `first` competes with loop 3's index for
+// EBP and wins by one reference; when it loses, the state takes EBP in loops 1-2, `first` EDX, the index EBP in loop 3,
+// as in retail. Diagnostics, reverted (they change what the code does): an extra unconditional use of the index in loop 3
+// gives retail's registers and both stack homes with only its own two instructions extra (57 | 46); loop 2, 3 or 4
+// started from 0 instead of `first` flips the registers too (loop 2: homes as retail; loops 3 and 4: homes still
+// exchanged; loop 4 form 274); loop 1's increment removed flips; a call passing 0, loop 2's swap target as entries[0],
+// or an extra index use in loop 2 does not. Forms tried, none flips: loop 1's flags read through the state at each use
+// 370; loop 3 without the entry local 318, both 369; loop 2's `&state->entries[first++]` 317 (same code); one index
+// declared at function scope and used by the output loop too 370; loop 3's swap from `&state->entries[i]` 368, from
+// `&state->entries[i--]` 367, with `--last` as its own statement 317; loop 3 tested `i <= last` 367; its guard as
+// `requested < state->count` 370; early `continue` 317; `--i` ahead of the swap 355 (flips, but the index then lives in
+// memory, 424 instructions); a while form 317; the index set ahead of the first sort call, the call passing either
+// variable 317 each (same code); the zero store through the state 317; the entry local declared inside the test 367;
+// the created test through the state 375. Next: a natural form that adds one use of loop 3's index or drops one
+// `i = first` without changing the instructions.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
