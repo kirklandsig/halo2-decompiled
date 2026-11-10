@@ -2031,6 +2031,13 @@ void function_269250(long clump_index, long actor_index);
 // selection written through a `long *` 126 (same code); the activity read from the global at each step 126; the datum-index
 // selection on the walk variant that calls the out-of-line step 243 (375 bytes). In the in-arm form the scan's count takes EDI,
 // so the selection (EDI) is reloaded at every step; retail spills the walk's pool (EBX) around the scan instead.
+// Round 97 (m3 lane 9, fast; this body 89 fast, 87 plain; aligned in brackets, this body [58]): in-arm compare re-measured 126 (480
+// bytes) [60]: every instruction left is the selection cached in EDI across the walk (ours) against the walk's pool cached in EBX
+// with the selection read from its slot at each use, also after the post-loop calls (retail). On the in-arm form, all 126 [60] and
+// the same code: the score call and compare in an inline helper taking best and the selection by pointer; that helper with the team
+// test inside and both by reference; an unsigned selection; the activity flag read from the global in the walk call; `best < score`
+// with the selection stored first and best declared first. In-arm with the iterator's datum index re-measured 128 [108]. Body
+// unchanged.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

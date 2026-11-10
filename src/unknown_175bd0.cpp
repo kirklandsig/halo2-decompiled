@@ -2079,6 +2079,13 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // for the call and colour B in EDI as retail; colour A takes EBX, so the tint spills, and the location index loses its slot home),
 // with colour B read first 138, with the tint declared above the colours 137; a forceinline colour helper shared with 0x177040 178
 // (0x177040 93; same code as written out); the system through one plain read of its address 178 (folds away).
+// Round 97 (m3 lane 9, fast with 0x177040/0x176f60/0x178eb0/0x179020): retail's allocation before the loop gives colour B EDI and the
+// tint BL (their registers at the 0x175a80 call), the type object ESI, and leaves the system and colour A in memory; ours ranks the
+// system (EDI) and colour A (EBX) first. A begin-spawn inline helper shared with 0x177040, taking the spawn record (it stores the
+// particle-location index, runs the type queries and the colour call): parameters (system, effect, spawn) with early colour locals and
+// `multiplied()` as the argument 179 (572 bytes, aligned 88), with a named multiplied 234 (488 bytes: the helper stays out of line;
+// 0x178eb0 13, 0x179020 11); colours read at the call 135 / 235 (out of line); parameters (effect, system, spawn) 179; (spawn,
+// system, effect) 179. Body unchanged.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -2493,6 +2500,15 @@ event_done:
 // `if (effect && ...)` second test 130, aligned 52 (the head reload then matches; the index is cached for
 // 0xbaf80 instead); root index at function scope 197; tail reading the field 197; a named head index reused
 // by the tail 197.
+// Round 97 (m3 lane 9, fast with 0x1794a0/0x1792b0, both matched throughout; aligned counts in brackets, this body [72]): 0xbadc0
+// and 0xbaf80 are matched and write nothing, so retail's reloads are not their summaries; retail also reads the tag index through
+// the unadded lookup address and the object index through the formed pointer. Grid of the effect read through a fresh datum
+// lookup in place at the else-if test (a), 0xbaf80's argument (b), 0x1794a0's pushed index (c), with or without the root index
+// as 0x1794a0's first argument (d), abcd: 0001 197 [48]; 0010 219; 0011 210; 0100 72 [95]; 0101 206; 0110 269; 0111 216; 1000 87;
+// 1001 202; 1010 265; 1011 212; 1100 87; 1101 202; 1110 264; 1111 190 (593 bytes) [33]. Second grid, the tag read through the
+// lookup (t), the first test and 0xbadc0's argument through it (f), then a, b, d: t alone 84 [84]; t+d 205; t+b 181; t+b+d 170;
+// t+a 177; t+a+d 166; t+a+b 177; t+a+b+d 166; f alone 203 (581 bytes); f+d 212; f+b 203; f+b+d 205; f+a 204; f+a+d 263; f+a+b 199;
+// f+a+b+d 206; with t too the f rows repeat (203/212/203/205/204/263/199/206). None below 63; body unchanged.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {
@@ -3341,6 +3357,12 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // the effect index returns to the stack but the system index moves to ECX). A forceinline colour helper shared with 0x178c80 (colours,
 // type query, tint, `multiplied()` as the argument) 93 (same code); in it colour B first 92 (0x178c80 178); both queries in the argument
 // list 120 (325 bytes, 0x176f60 25); both queries named 105 (346 bytes).
+// Round 97 (m3 lane 9, fast with 0x176f60/0x178c80): spawn record + mode read per call + colours early re-measured 109 (0x176f60 25;
+// aligned 65: ours passes the effect index in a register, forms the effect pointer in EAX, keeps the definition in EBX and gives the
+// tint and node flag frame slots of their own, where retail keeps them in the effect index's stack home). A begin-spawn inline
+// helper shared with 0x178c80, taking the spawn record (cursor store, type queries, colour call), six forms (parameter orders
+// system/effect/spawn, effect/system/spawn, spawn/system/effect; colours early or at the call; multiplied named or as the argument):
+// 185 each at 258 bytes (the helper stays out of line here; 0x176f60 25). Body unchanged.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
