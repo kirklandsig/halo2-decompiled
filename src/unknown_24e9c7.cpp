@@ -403,6 +403,10 @@ struct s_24e9c7_bounds
 // N396: Signed eight-byte selected ordinal/pixel-height/half-width storage, seven subsets
 // then full bitmap-handle graph: 220/125/220/148/235/148/235/238. NOT kept: no native narrow-domain
 // equality or gain; original body restored, early across spill and eight-byte-high scalar homes remain.
+// M3 lane 11 r81 (fast): frame map: retail's 8-byte pair (-8 used for across j then side y, -0xc untouched) sits above result,
+// ours (-0x14 back y, -0x18 untouched) below kind/bitmap. Side, up or back declared at function top (before or after result) 125 each
+// (same code); first corner's base copy after the half width 138 (740 bytes, as round 217); all four corner base copies there 128 (aligned 121 -> 116,
+// the across terms still sink: points has not escaped); first corner's base copy right after the across terms 124.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

@@ -890,6 +890,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // M398: Original delta/transformed-point/intersection zero defaults, masks
 // 1/2/3/4/5/6/7, then all at entry: 115/212/212/115/115/212/212/415.
 // NOT kept: no coefficient/zero-home gain; original outputs, helpers and body restored.
+// M3 lane 11 r81 (fast): dead initialised long probes at the top k = 8..20 135 135 135 138 262 262 135 127 115 119 135 130 243 (period 16),
+// after the normal copy k = 1..8 119 135 130 242 246 135 127 135; the first difference stays +0xbb (the e4.i load is not a numbering tie).
+// Store through `*(outside0 ? p1 : p0)` 368 (1867 bytes); `p1 = p0 + 1` 256 (1867); both segment loops as plain for loops 129;
+// intersection rows point-first 115 (same code); total counted per projected point 116.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

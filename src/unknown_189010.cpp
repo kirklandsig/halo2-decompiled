@@ -333,6 +333,9 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // then the same four with inline metadata: 110/110/134/110/110/110/134/110.
 // NOT kept: native EAX state/stack tag setup is not recovered; all interface, provider and caller changes restored.
 // Frame 0xa8 agrees; early header work, first class-query expansion and playback homes remain.
+// M3 lane 11 r81 (plain, with the eight matched callers): flag base as `5 + (source ? 0x20 : 0)` 110, as `source ? 0x25 : 5` 110,
+// as `long` 110, end time as `game_time + 10 + ticks` 110 (all same code); the end test reading the audible byte from the request
+// 135 at retail's 470 bytes, but the request stays live and all eight matched callers are lost.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

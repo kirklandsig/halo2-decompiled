@@ -462,6 +462,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // P393: Seed-color admission at the original tint boundary, positive/complementary
 // bool/byte/short/long: 211/211/211/211/211/211/211/211. NOT kept: unmatched one-use outcomes; tint/secondary-UV
 // homes and continuous blend residence remain. Original body and all alias-safe UV captures restored.
+// M3 lane 11 r81 (fast): both UV encodings right after the flip 431 (1925 bytes); the flip before the extents 250 (1949);
+// the 0x2000 quarter-turn right after the angle read 483 (1939); the bitmap read from the context at each use 211 (same code);
+// pivot products written pivot-first 211 (same code).
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
