@@ -1839,6 +1839,9 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// score 87 (was 87): retail hoists the walk's pool load into ebx and keeps the selection
+// only on the stack (stored from esi, best stored in a tail shared with the initialisation);
+// ours keeps the pool in memory and the selection in edi.
 // MiniMax C (11-09): score 87 (was 87): no new form and no lower score; retail still hoists the walk's pool into EBX
 // (reloading it from the stack after the bit scan takes EBX) where ours keeps it in memory and loads it into ECX at
 // each use, retail still keeps the selection on the stack where ours caches it in EDI and reloads it at the loop top,
@@ -1858,10 +1861,7 @@ void function_269250(long clump_index, long actor_index);
 // selection's copy in edi.
 // MiniMax E (11-07): no new form, no lower score; the walk's pool load stays in memory and the
 // selection stays in edi where retail hoists the pool into ebx and keeps the selection on the stack.
-// score 87 (was 87): retail hoists the walk's pool load into ebx and keeps the selection
 // MiniMax B (11-03): no new form, no lower score.
-// only on the stack (stored from esi, best stored in a tail shared with the initialisation);
-// ours keeps the pool in memory and the selection in edi.
 // Earlier: retained frame pointer 187; depth zero 304; selected-result reuse 134; team snapshot 133;
 // size preference 338; double candidate/both scores 157/158; activity while 160; role-based scalar
 // names 134; inline depth two 134; the clump datum walk with a cached activity flag 126 (retail's frame);
@@ -2060,6 +2060,12 @@ void function_269250(long clump_index, long actor_index);
 // walk as a `for` with the actor declared in it 87; the creation arm ending in `continue` when nothing is created 87; the
 // selected arm ending in `continue` when the selection is the current clump 87; both continues 87 (the last four the same
 // code). Body unchanged.
+// Round 69 (m3 lane 15, fast): in-arm compare with the selection stored first re-measured 126 (480 B; retail's code skips the
+// score call on a team mismatch, so that is retail's form). On it, a one-caller forceinline walk variant assigning the clump
+// only in the found arm (not-found leaves it NULL) with the clump-index copy at the join 126 (same code); with the clump index
+// set in each arm instead 128 (480 B: pool in EDI and the selection memory-only as retail, but the not-found path threads,
+// the walk top loses `xor eax, eax`, and the homes rotate). The join copy is what stops the threading; it also ties the
+// selection to the walk's index, which then outweighs the pool.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

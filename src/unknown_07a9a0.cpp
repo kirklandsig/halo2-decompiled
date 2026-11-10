@@ -1051,6 +1051,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
+// score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
+// where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
+// expanded here while retail calls the matched 0x192e60 out of line.
 // MiniMax E (11-05): no new form, no lower score; the session's EAX home belongs to the caller's
 // declaration, which this lane may not change.
 // w14C (11-06): walked against retail block by block; no behaviour difference. The histogram cells are dwords in retail
@@ -1058,9 +1061,6 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // histogram[16]` with a memset for each clear recovers retail's frame 0xb4 (machine_ids and the histogram share slots) but
 // scores 844 (2772 bytes). The histogram is never read, so it is not kept without a match. Tried: the add-loop minimum as a
 // three-way type 5/4/other (no effect).
-// score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
-// where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
-// expanded here while retail calls the matched 0x192e60 out of line.
 // Earlier: Frame 0xd4/0xb4, stacked session and protected opening lookup expansion remain.
 // Earlier: retail's frame is 0xb4 and it takes the session in EAX and the output pointer
 // on the stack, while ours has a 0xd4 frame and takes both on the stack; retail also calls the matched
@@ -1278,6 +1278,16 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 376); grouped labels and a long histogram without the guard 850; the early exit as `result = false; return result;` 766
 // (same code). Lead: retail's call site is out of line with no guard, so its inline choice comes from elsewhere.
 // MiniMax I (11-10): no new form, no lower score; retail's party histogram is 16 dwords at frame+0x44, cleared twice with `rep stosd` and indexed as `mov ebx,[esp + eax*4 + 0x40]` with the count-1 folded into the displacement, so our word cells and the 0xd4 frame stay (the dword cells reach retail's 0xb4 frame but score 844), and the session ingress and the inlined lookup remain the only differences.
+// Round 69 (m3 lane 15, fast): the capacity helper with grouped case labels and external `inline` linkage together 876
+// (2852 B, 0x73530 8: the switch inlines as a table, the top call still inlines). Our link inlines only the first direct
+// 0x192e60 site here, and retail's one inlined copy is inside the inlined 0x63220, which fits one inlined copy of a callee
+// per caller; 0x63220 never inlines in this link, so that cannot be tested from this function. No natural no-code test
+// fits the top call: retail calls 0x192e60(-1) on the invalid-state path with no compare. Retail's out-of-line 0x63220
+// itself calls 0x192e60, and so do matched 0x741f0, 0x73ca0, 0x596d0 and 0x19a0c5, all from files built without /arch:SSE
+// (or /O1, /Ob1), so retail inlines 0x192e60 only inside the copy of 0x63220 it inlines here. This function's retail
+// code has no float instruction, so its build's /arch cannot be read from it. Lead for the flags owner (not tried): this
+// file is /arch:SSE like 0x192e60's, 0x63220's file is not; a non-SSE build of this body may keep the top call out of line
+// as 0x741f0's does and let 0x63220 inline.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

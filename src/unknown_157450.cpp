@@ -747,6 +747,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // dword mask (same code each); the added teams as `playing & ~old_playing` 77/32 (same code); a `word *const` mask
 // pointer 77; the early return when nothing changed with both field stores straight through `globals` 77; re-measured
 // with the early `continue`: the mask stored through `globals` but read through the pointer 77 (lane 14 r55's form).
+// Round 69 (m3 lane 15, fast): the globals through the getter at each use with no local (0x1584c0's idiom) on this dword-mask,
+// volatile-present body 32 (identical code); the real record-pool step function in place of the header iterator copy is ruled
+// out (its file is /Ob1, so the link would keep a call where retail has the loop inline).
 // @retail 0x158140
 void function_158140(void)
 {
@@ -5705,6 +5708,13 @@ void __stdcall function_d6bc0(long object_index);
 // becomes a register variable in EDI from the reset block on, the timer in EBX). Re-measured listed forms: the field
 // test 172 (858 B); 0xd6bc0 given the local 175; the countdown's index in its own local 172; the timer through `*timer`
 // with the field test 177 (854 B).
+// Round 69 (m3 lane 15, fast): the 7 recipe rebuilt is 7 again, its field-test variant 172 (858 B); a 600 s permuter run on
+// the 7 form (11 tries on a loaded machine) found nothing below 7. On the 7 form: the schedule test on the field with the
+// expiry block testing the loop-top index without a re-read 201 (873 B, diagnostic); the schedule decision in a forceinline
+// bool helper taking (entries, i, placement, object) and testing the field itself 172 (858 B: the inliner folds the helper's
+// parameter into `entries`, which again takes EDI); that helper taking a const entry pointer 172; the field test with the
+// arms the other way round 172; the field test with 0x15aad0's `*const *entries_reference = &entries` read once at the
+// 0x15aad0 call 172 (same code). Left as before: only the index test on the local keeps `entries` out of a register.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
