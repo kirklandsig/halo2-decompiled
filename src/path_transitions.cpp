@@ -157,7 +157,7 @@ short function_26f930(long object_index, s_object_marker *markers, short capacit
 }
 
 // @retail 0x26fbf0
-short function_26fbf0(long object_index, s_object_marker *markers, short capacity, long flags)
+short function_26fbf0(long object_index, s_object_marker *markers, short capacity, word flags)
 {
     short count = 0;
     if (flags & 0x20)
@@ -237,6 +237,8 @@ bool function_270130(s_object_marker const *marker, point3f const *position, rea
 // `xor edx, edx; mov dx`), still BLOCKED-BY 0x26fbf0. Diagnostics, restored: 0x26fbf0's flags `word` 4 again
 // (0x26fbf0 and 0x1be410 still match; left: the alignment's i and k products computed in the other order);
 // on that, the k product written first 4 (same code). The other caller, 0x2c0d60, passes `(word)` flags too.
+// score 4 (was 20; APPLIED 11-10 by the m3 coordinator from lane 10 r89's held patch, full check 0 lost): 0x26fbf0's
+// flags declared `word` at its definition and in src/unknown_2c0d00.cpp; 0x26fbf0 and 0x1be410 still match.
 // @retail 0x26fc80
 bool function_26fc80(long actor_index, long object_index, real distance, void *path, point3f *point)
 {

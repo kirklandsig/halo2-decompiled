@@ -566,11 +566,14 @@ bool function_172750(long mode, point3f const *point, real radius);
 // the second tag lookup first 172. Re-measured: the 4th/5th parameters as the material class (0x188180's
 // call adapted) still match here (fast), 0x188180 56; still BLOCKED-BY the declarations in
 // src/impacts.cpp and src/projectiles.cpp.
+// MATCH (APPLIED 11-10 by the m3 coordinator, fix v2-1102, full check 0 lost): the 4th/5th parameters as the material
+// class at the definition and the declarations/calls in src/impacts.cpp, src/projectiles.cpp and src/unknown_050690.cpp;
+// 0x1882d0 still matched, 0x188180 77 -> 56, 0x2285d0 176 -> 164, 0xfd740 49 -> 8.
 // @retail 0x1883e0
-void function_1883e0(long tag_index, bool ignore_distance, point3f const *point, short element_index, long entry_element_index, long index, long variant,
+void function_1883e0(long tag_index, bool ignore_distance, point3f const *point, c_type_47f957 element_index, c_type_47f957 entry_element_index, long index, long variant,
 	long *first_value04, long *second_value04, long *first_value, long *second_value, long *first_value0c, long *second_value0c)
 {
-	s_globals_element *element = globals_element_get((s_globals_element_block_view *)g_4e034c, (short)entry_element_index);
+	s_globals_element *element = globals_element_get((s_globals_element_block_view *)g_4e034c, entry_element_index.m_index);
 	long first_index = index == 13 ? 14 : index;
 	long first04 = NONE;
 	long second04 = NONE;
@@ -586,16 +589,16 @@ void function_1883e0(long tag_index, bool ignore_distance, point3f const *point,
 
 		if (tag_index != NONE)
 		{
-			first_entry = function_188130(tag_index, first_index, 0, (short)entry_element_index);
-			second_entry = function_188130(tag_index, index, 1, (short)entry_element_index);
+			first_entry = function_188130(tag_index, first_index, 0, entry_element_index.m_index);
+			second_entry = function_188130(tag_index, index, 1, entry_element_index.m_index);
 		}
 		if (!first_entry)
 		{
-			first_entry = function_1882d0(0, c_type_47f957(element_index), first_index, c_type_47f957((short)entry_element_index));
+			first_entry = function_1882d0(0, element_index, first_index, entry_element_index);
 		}
 		if (!second_entry)
 		{
-			second_entry = function_1882d0(1, c_type_47f957(element_index), index, c_type_47f957((short)entry_element_index));
+			second_entry = function_1882d0(1, element_index, index, entry_element_index);
 		}
 
 		if (first_entry)
@@ -777,7 +780,7 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 	first_values[0] = NONE;
 	first_values[1] = NONE;
 	first_values[2] = NONE;
-	function_1883e0(tag_index, false, point, g_47d8e0, entry_element_index, index, variant,
+	function_1883e0(tag_index, false, point, c_type_47f957(g_47d8e0), c_type_47f957((short)entry_element_index), index, variant,
 		&first_values[0], &second_values[0], &first_values[1], &second_values[1], &first_values[2], &second_values[2]);
 
 	for (dword i = 0; i < sizeof(second_values) / sizeof(second_values[0]); i++)
