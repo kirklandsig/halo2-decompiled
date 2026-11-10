@@ -282,7 +282,7 @@ struct s_input_9c610
     byte field_34;
 };
 
-// score 2 (was 13): with 0xe4a20's parameters in its handle-first order, the call passes the biped (local_1)
+// score 2 (was 2): with 0xe4a20's parameters in its handle-first order, the call passes the biped (local_1)
 // as the handle, as retail does (`mov ecx, ebx`, with input->field_2e pushed as the contact). The source had
 // passed field_2e as the handle and the biped as the contact. Flag 7 of +0x20 is the plain
 // `input->field_20 & 0x80`, retail's `mov al / test al, al / jns`, now that the call setup is retail's.
@@ -301,6 +301,14 @@ struct s_input_9c610
 // tail read 23; both byte reads 46; word notification read 46; word tail read 23; both word
 // reads 46; signed-byte tail read 23; byte notification/signed tail 46.
 // Round 11 (lane 17): unchanged; 0xe4a20 (contributor code, src/bipeds.cpp) is still todo at 104.
+// Round 99 (lane 16): HELD (needs the owner's OK), build/r99/held-9c610.patch in the m3-lane16 worktree:
+// with 0xe4a20's parameters as (handle, contact, point, knocked) this function matches byte for byte in the
+// plain check, 0xe4a20 stays matched and 0xcaa60 stays at 224. The point is then evaluated between the two
+// pushes, so its EAX is taken when the contact is loaded and the movsx goes to ECX. (handle, contact, knocked,
+// point) matches too; (point, handle, contact, knocked) 4 and loses 0xe4a20. The definition is in src/bipeds.cpp
+// and the other call in src/unit_object_type.cpp, so the tree keeps the old order. In this body alone (all 2,
+// same code): a short contact local, a long contact local, a point local; a word contact field 2 (movzx);
+// the contact read back from the filled record 8 (430 bytes).
 // @retail 0x9c610
 bool c_damage_aftermath_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {

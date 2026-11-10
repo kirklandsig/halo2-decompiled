@@ -508,6 +508,16 @@ struct s_text_line_measurement
 // Tried (77, same code): the test written as sum < x1; width += advance + offset + kerning;
 // a copy of the width taken after the kerning call. Worse: advance or offset written
 // inline at both uses (111), the can_break block ahead of offset/advance (111).
+// Round 99 (lane 16): the cause is a copy, not the width load: retail copies the advance (`movaps xmm3,
+// xmm0`) right after its multiply and accumulates the width in that copy, so the bound reuses XMM0 and
+// the width goes to XMM4 early; ours accumulates in place in XMM0. Same code (77) for the accumulation as
+// width + advance + offset + kerning, the test as width + x + ... or x + width + ..., both of those;
+// the advance written out at both uses 111 (aligned 36 against 16); written out only in the
+// accumulation 77, only in the test 77; the new width named before the test (`real next_width = advance +
+// offset + kerning + width;`, used once in the else arm) 74 (width loaded early into XMM4 as retail, but
+// the copy runs the other way and the adds move ahead of the test; one-use local, not kept); the same
+// started from the advance and completed before the test 74; a copy of the advance at its definition,
+// accumulated in the else arm (as `+` or `+=`) 77 (copy propagated away).
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {
