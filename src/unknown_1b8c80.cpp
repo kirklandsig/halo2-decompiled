@@ -1663,6 +1663,14 @@ void function_1f86a0(long actor_index);
 // the unit lookup nested in the actor lookup 245 (m 41), no unit local 240 (same code); a flags byte local above the slot
 // bool test in the found block 238 (862 bytes, m 27), with the slot bool named too 238, a bool `specified` there 247 (m 33);
 // with the mask local, that flags local 142, the header-table local 134. All restored.
+// Round 103 (m3 lane 9, fast): no unit pointer (the field test on object_get directly) 134 (same code); the mask before the element
+// lookup 240 (862 bytes); the positive ternary `unknown86 ? (flags & 0x40) && same : !specified || same` with the accept call
+// inside and the decline in the else 134 (aligned 97), with `continue` after a failed accept 134; `joint_index` declared before
+// the iterator 134 (same code). Retail's loop never touches EDI (the actor stays there) and gives root 1 EBX, reloading the entry
+// from F+4 after the root calls; ours gives root 1 EDI and reloads the actor. The 0xbaf40 summary lead needs a body change in
+// src/unknown_0bad50.cpp, on this round's avoid list. Also: the state and selection pointers declared before the actor 137; the
+// decline written `unknown86 ? !same || !(flags & 0x40) : !same && specified` 231 (862 bytes); the actor fetched again after
+// the loop (diagnostic, frees EDI in the loop) 261 (878 bytes).
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

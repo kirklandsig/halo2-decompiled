@@ -1267,7 +1267,7 @@ long function_2197f0(real gain);
 // the other form (ours multiplies by its reciprocal).
 // MiniMax R (11-06): no new form, no lower score (94).
 // MiniMax D (11-06, run 49): no new form, no lower score (94); the first arm's sum still differs (retail loads the gain into a register and adds the interpolation into it), the register rotation (inverse, elapsed, 1.0, fade-out) still differs and the gain is still carried differently into the last arm.
-// score 94 (was 177): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
+// Earlier at 94 (was 177): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
 // 1.0, fade-out), and the gain value carried into the last arm.
 // Round 160: the gain and ducking gains as s_decibels, the interpolation by value and the hold sum through the
@@ -1466,6 +1466,12 @@ long function_2197f0(real gain);
 // 1.0f` 171 (644 bytes), as `t = time / fade_in; if (!(1.0f > time * inverse)) t = 1.0f;` 169 (644). Without the pragma pair around
 // the call to 0x221810 221 (717 bytes: that call then inlines). Left as before: the reciprocal is made after the product's first factor, and
 // elapsed keeps XMM2 where retail has XMM3.
+// Round 103 (m3 lane 9, fast): `elapsed` written out at each use 199 (715 bytes); `gain +=` in arms 3 and 4 94 (same code); the
+// ducking pointer declared before `elapsed` 94 (same code); the division form with a `fade_out` local read right after the ducking
+// pointer 144 (678: the load moves above the hold test and still takes the last XMM register); the hold arm as `gain +=
+// ducking->gain` 105 (678: drops retail's by-value copy through a stack temporary). Our five extra bytes are all at the
+// arm-3/arm-4 join: ours keeps the arm-3 sum in XMM0 and loads the gain on the bypass edge (jmp, movss, register add), retail
+// re-reads the gain from its home in arm 4's add.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3085,6 +3091,12 @@ static inline short sound_voice_find_available_channel(char type)
 // `if (!step) { result = false; ... }` 126 (435), defaults first with `(byte)~status & DSBSTATUS_PLAYING` 124 (433),
 // defaults inside with that status test 121 (430). Frame eight and the entry index load before `sub esp, 8` appear in
 // the forced forms, but the head's registers and the failure block's place still differ; none kept.
+// Round 103 (m3 lane 9, fast): the search returning `(short)i` from its loop, bool result, driver default before the channel test
+// 141 (438 bytes); with `~status & DSBSTATUS_PLAYING` and both defaults before the test 144 (440), as a failure-first if/else 144
+// (440); the while scan, bool result, complemented status, defaults first, failure-first 148 (442), with the plain status 138 (435);
+// the for/break search with that failure-first form 141 (437). N314's 64 form rebuilt for reading: its tail and failure block are
+// retail's byte for byte; left are the entry registers, the scan's post-loop bound test (retail's found path goes straight to the
+// `(short)i != NONE` test, as the for/break search does), the shared `or ebp, -1` and the complemented status.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
