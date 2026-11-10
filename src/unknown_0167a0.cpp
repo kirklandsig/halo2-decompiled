@@ -1082,6 +1082,7 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // target all compile to the same descending pair and score 6, because they also flip the store
 // order in cases 10 and 14/18; putting the zeros ahead of the width and height stores in case 13
 // rebuilds the whole switch (97). Original body restored.
+// MiniMax R (11-10): no new form, no lower score (2): the shared tail's zero pair is out[3] before out[2] in every spelling tried (the chain in either direction, two separate statements, a repeated target: 6 each); a reference to the array in the tail also scores 6, and the pointer form that matches 0x1b2c0 byte for byte costs 0x19ca0 its match (130), so it stays rejected.
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {
