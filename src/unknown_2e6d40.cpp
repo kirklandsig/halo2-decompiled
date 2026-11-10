@@ -30,6 +30,18 @@ struct bounded_body_2e6d40 : body_2ea940
 
 static __declspec(align(16)) const unsigned long g_4124a0[4] = {0x80000000, 0x80000000, 0x80000000, 0x80000000};
 
+// The entry mark materializes its space predicate before the timer helper.
+struct timer_space_2e6d40
+{
+ bool value;
+ timer_space_2e6d40(bool available) : value(available) {}
+};
+static __forceinline void bv_timer_entry_2e6d40(char const *label)
+{
+ if (timer_space_2e6d40(g_480154 < g_480158).value)
+  timer_append_2ebc80(label);
+}
+
 // @retail 0x2e6d40
 void lane_b_bv_agent::cleanup()
 {
@@ -42,6 +54,16 @@ void lane_b_bv_agent::cleanup()
 	delete this;
 }
 
+// score 2 (was 2): the parent and placement stores are reversed;
+// table first 20, placement input 2, wrapper capture 44, early result
+// declarations 2; const child forms give the same scores. Shared parent
+// first 0 loses a match.
+// child parent/placement stores are reversed; copy initialization 2;
+// child assignment 9; direct handler 23; direct dispatcher 54; split declarations 2;
+// const type results 2; first/second declarations before child 2/2.
+// constructor-only wrapper 2; placement/wrapper and wrapper/placement 2/2;
+// child/other/both query-shape locals 2/2/2; wrapper with both 2;
+// placement and wrapper with both 2.
 // @retail 0x2e6d70
 lane_b_bv_agent::lane_b_bv_agent(body_2ea940 const *a, body_2ea940 const *b, lane_a_dispatch *const *input, void *manager) : lane_a_agent_base(manager)
 {
@@ -63,7 +85,7 @@ lane_b_bv_agent *__cdecl function_2e6e30(body_2ea940 const *a, body_2ea940 const
 // @retail 0x2e6e90
 void lane_b_bv_agent::process_collision(body_2ea940 const *a, void const *b, void const *input, void *collector)
 {
-	timer_add_2ebc80("LthkBvAgent", g_480154 < g_480158);
+	bv_timer_entry_2e6d40("LthkBvAgent");
 	lane_b_bv_shape const *shape = (lane_b_bv_shape const *)a->shape;
 	bounded_body_2e6d40 child(a, a->placement, (wrapper_2f9950 const *)shape);
 	lane_b_flag_body_pair_collector overlap;
@@ -94,7 +116,7 @@ void lane_b_bv_agent::process_collision(body_2ea940 const *a, void const *b, voi
 // @retail 0x2e7030
 void lane_b_bv_agent::linear_cast(body_2ea940 const *a, void const *b, void const *input, void *collector, void *start_collector)
 {
-	timer_add_2ebc80("LthkBvAgent", g_480154 < g_480158);
+	bv_timer_entry_2e6d40("LthkBvAgent");
 	lane_b_bv_shape const *shape = (lane_b_bv_shape const *)a->shape;
 	bounded_body_2e6d40 child(a, a->placement, (wrapper_2f9950 const *)shape);
 	lane_b_closest_point_collector closest;
@@ -125,7 +147,7 @@ void lane_b_bv_agent::linear_cast(body_2ea940 const *a, void const *b, void cons
 // @retail 0x2e71f0
 void __cdecl function_2e71f0(body_2ea940 const *a, body_2ea940 const *b, lane_a_dispatch *const *input, void *collector, void *start_collector)
 {
-	timer_add_2ebc80("LthkBvAgent", g_480154 < g_480158);
+	bv_timer_entry_2e6d40("LthkBvAgent");
 	lane_b_bv_shape const *shape = (lane_b_bv_shape const *)a->shape;
 	bounded_body_2e6d40 child(a, a->placement, (wrapper_2f9950 const *)shape);
 	long first = ((typed_2ed170 *)child.shape)->type();
@@ -146,7 +168,7 @@ void __cdecl function_2e71f0(body_2ea940 const *a, body_2ea940 const *b, lane_a_
 // @retail 0x2e7370
 void lane_b_bv_agent::get_closest_points(body_2ea940 const *a, void const *b, void const *input, void *collector)
 {
-	timer_add_2ebc80("LthkBvAgent", g_480154 < g_480158);
+	bv_timer_entry_2e6d40("LthkBvAgent");
 	{
 		lane_b_bv_shape const *shape = (lane_b_bv_shape const *)a->shape;
 		bounded_body_2e6d40 child(a, a->placement, (wrapper_2f9950 const *)shape);
@@ -179,7 +201,7 @@ void lane_b_bv_agent::get_closest_points(body_2ea940 const *a, void const *b, vo
 // @retail 0x2e7510
 void __cdecl function_2e7510(body_2ea940 const *a, body_2ea940 const *b, lane_a_dispatch *const *input, void *collector)
 {
-	timer_add_2ebc80("LthkBvAgent", g_480154 < g_480158);
+	bv_timer_entry_2e6d40("LthkBvAgent");
 	{
 		lane_b_bv_shape const *shape = (lane_b_bv_shape const *)a->shape;
 		bounded_body_2e6d40 child(a, a->placement, (wrapper_2f9950 const *)shape);
@@ -208,6 +230,16 @@ void lane_b_bv_agent::get_penetrations(body_2ea940 const *a, void const *b, void
 	timer_add_2ebc80("Et");
 }
 
+// score 2 (was 2): the parent and placement stores are reversed;
+// placement input 2, wrapper capture 47, early result declarations 2,
+// value initialization 2; const child forms give the same scores.
+// Shared parent first 0 loses a match.
+// child parent/placement stores are reversed; child assignment 9;
+// early dispatcher 52; query handler 2; const results 2; split declarations 2;
+// first/second declarations before child 2/2; later dispatcher 2.
+// constructor-only wrapper 2; placement/wrapper and wrapper/placement 2/2;
+// child/other/both query-shape locals 2/2/2; wrapper with both 2;
+// placement and wrapper with both 2.
 // @retail 0x2e7710
 void __cdecl function_2e7710(body_2ea940 const *a, body_2ea940 const *b, lane_a_dispatch *const *input, void *collector)
 {
