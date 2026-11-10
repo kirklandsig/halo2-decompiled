@@ -1266,7 +1266,9 @@ bool function_68670(void *block, byte *source, long size);
 // reads, and the advance taking the remainder first (`long next = start + count; next %= size; used -= count; start = next;`). Retail's own order there is idiv, used update, start store. The remainder in the local's initializer 2; returned from the helper and stored by it 2;
 // `buffer->start = consume(view, count)` with a returning helper 2. Same helpers, start stored before used 121 (554), with no named next 121; used first with no next 133 (559). The one read helper calling a view advance helper 2, without next 121 (554); advance on `this` or on the ring pointer, without next 24 (553), with next 133 (558);
 // next and used-first in one read helper with no advance 133 (558), start first 24; used first without next 29; a whole read member 24; forced-inline read or both helpers 121; the advance through a re-derived ring inside one helper 26 (559); direct read calls plus the advance helper 24 (556).
-// Round 73 (m3 lane 13): HELD (needs the owner's OK for 0x68670, a contributor's function). Re-measured on this tree:
+// MATCH (applied 11-10 by the m3 coordinator from lane 15 r65's held patch; full check: lost []): 0x68670 takes
+// (block, source, size) and main's ring-buffer helpers already have the read split.
+// Round 73 (m3 lane 13), held then (0x68670 is a contributor's function). Re-measured on this tree:
 // round 217's two-helper read (a position-read helper and an advance helper taking the remainder first) 24 -> 2 (fast),
 // and with 0x68670 declared (block, source, size) at its definition, declaration and this call 0x865d0 and 0x68670
 // both MATCH in the plain check of both files, nothing else in them changed. Code put back; the full diff is
@@ -1275,7 +1277,7 @@ bool function_68670(void *block, byte *source, long size);
 // helpers without it 122, with the used update first 133; one helper with the used update first 27; two helpers with
 // `long next = (start + count) % size;` as one initialiser MATCH (the patch uses this, the smallest form that
 // matches); one helper with that initialiser 133. Both the helper pair and the named remainder are needed.
-// Round 65 (m3 lane 15): HELD (needs the owner's OK), build/r65/held-865d0.patch: MATCH, fast and plain (0x68670 still
+// Round 65 (m3 lane 15), held then, build/r65/held-865d0.patch: MATCH, fast and plain (0x68670 still
 // matches and no other function of the two files changes) with round 217's read split (a position-read helper, then an
 // advance helper that names the remainder ahead of the used update) and 0x68670's parameters declared block, source,
 // size at its definition in src/unknown_067e10.cpp (a contributor body), its declaration and its one call here: retail
