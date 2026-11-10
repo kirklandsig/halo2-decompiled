@@ -855,6 +855,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // declared at function scope 63, a while loop 63, a const window 63, window declared in the loop 89 (all masked 16).
 // `return 4` in the loop on the current body 108 (194 bytes), on the sibling form 129 (187 bytes). Matched 0x94df0
 // reuses oldest through its loop start (oldest + 1), which this loop does not have.
+// M3 lane 13 r75 (fast): reliable_stream_get_message is `inline` now: with the cached bound, the member bound or a bound local 89 each
+// (221 bytes; the same code as the member-window forms: retail's loop body, but `next` sits in ECX, which frees EBP for the `time`
+// pointer across get_next_send, and the count's oldest is reloaded; retail keeps `next` in ESI and the bound in EBP); on the member
+// form the flags read from the field at each test 89, `type = 4` before the stores 104 (209 bytes), the cursor declared before the loop 89.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

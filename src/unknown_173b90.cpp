@@ -1411,6 +1411,9 @@ bool function_17afd0(long effect_index, long value);
 // score 47 (was 47): availability clear/production and later view observation remain;
 // frame 0x14, NONE/owner and Boolean stack homes agree;
 // availability clear/result and the post-attachment view refresh remain.
+// M3 lane 13 r75 (fast; masked aligned count in brackets, base [5]): round 81's `effect_index != NONE && available && ...` re-measured 46
+// [7]; with the availability false after the view read and set by a branch 131 [56] (504 bytes); with the view global re-read for the
+// camera test 109 [7] (500 bytes); the effect index read after the second definition call 54 [18]; that with the reordered attachment 53 [19].
 // MiniMax I (11-08): no new form, no lower score (47).
 // MiniMax C (11-06): no new form, no lower score; the availability flag is still computed with neg/sbb/inc where retail clears BL before the view test and sets it with a branch, and retail still re-reads the view global after the 0x17afd0 call.
 // MiniMax S (11-09): the availability set by a branch that turns it true scores 135, the same branch with its
