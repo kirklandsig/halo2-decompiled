@@ -2407,6 +2407,7 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and
 // its first 0x151b80 stays a call, while ours has one request home and LTCG expands that call into the body;
@@ -2919,6 +2920,7 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax S (11-10): no new form, no lower score (193): retail keeps g_4e8c20 in esi and reloads it after the busy check and again before the final store, ours carries it in edi to the end of the function, so the pointer's role and the iterator's index array still swap registers.
 // MiniMax C (11-09): no new form, no lower score (103); the busy block is instruction for
 // instruction retail's, and the second loop's failure test already has retail's shape (the first
 // call's failure jumps straight to the flag store), so what is left all follows from the globals
