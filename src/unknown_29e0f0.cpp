@@ -78,10 +78,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
+// score 391 (was 391; 390 before): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// MiniMax C (11-05): no new form, no lower score; retail's three selected-index homes are at [esp+0x44], [esp+0x28] and [esp+0x24] where ours are at [esp+0x40], [esp+0xc] and [esp+0x20]; retail holds the node pointer in ebx and the group table in ebp where we hold them the other way round, and loading the group table before the node pointer scores 397.
 // MiniMax E (11-10): no new form, no lower score (391); the frame size agrees (0x64), but retail holds the node pointer in ebx and the group table in ebp where this build holds them the other way round, and the three selected-index homes sit at other frame offsets.
-// MiniMax C (11-05): no new form, no lower score; retail's three selected-index homes are at [esp+0x44], [esp+0x28] and [esp+0x24] where ours are at [esp+0x40], [esp+0xc] and [esp+0x20]; retail holds the node pointer in ebx and the group table in ebp where we hold them the other way round, and loading the group table before the node pointer scores 397.
 // score 391 (was 390): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
-// MiniMax C (11-05): no new form, no lower score; retail's three selected-index homes are at [esp+0x44], [esp+0x28] and [esp+0x24] where ours are at [esp+0x40], [esp+0xc] and [esp+0x20]; retail holds the node pointer in ebx and the group table in ebp where we hold them the other way round, and loading the group table before the node pointer scores 397.
 // score 391 (was 391): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // frame 0x64 agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // Earlier 391 (was 390): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
@@ -385,6 +385,12 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // whatever the written order (three per-site orders tried, same code), so the per-site x87 association stays 390-level.
 // Width only, no behaviour: retail compares the nearest point as a word (0x29e60c, 0x29e680, 0x29e687): short local_2 392;
 // local_29 as short/word/long 447/447/436 (1563/1579 bytes), unsigned char 391; indices stay below 32 (one-word visited bitmap).
+// Round 183 (m3 lane 4, fast; aligned/register-masked difflib counts 281/135 at 391): no new form. The listing
+// agrees with the walk above: the differences are register and slot assignment from the first group read on (retail
+// sign-extends the group into EBX with `movsx`, compares it 32-bit and recomputes the bit mask for the set; ours
+// keeps it in BP and reuses the mask), and the output loop, which retail indexes (`&arg_4->field_30[count]`,
+// movsx/imul each pass and again for the marker) where ours walks a pointer. Each of these is listed above (long
+// group index, bit_vector_test/set, indexed destination 412, round 64's recipe), so nothing was re-run.
 // m3 lane 7 r146 (fast; aligned/masked = difflib counts with addresses, then registers and stack offsets, masked; control 391
 // [420/178]): round 64's scratch recipe re-applied on this body (its squared-distance change is already here) 155 [22/11] at 1596
 // bytes, 0x29e730 still matching. On it: the step `long` 155 and local_29 set before local_30 155 (same code); the output record
