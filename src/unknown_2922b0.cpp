@@ -75,6 +75,7 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 }
 
 // score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
+// MiniMax E (11-10): no new form, no lower score (592); the frame size agrees but the homes do not: the success byte, the float, the four-flag array and the copied vector sit at other frame offsets here, and this build has thirteen instructions fewer than retail, so the exit blocks fall differently.
 // MiniMax S (11-06): The frame size agrees but the homes do not: the success byte sits at frame+0x13 where
 // retail keeps it at frame+0x17, the float at frame+0x10 against frame+0x18, the four-flag array at
 // frame+0x24 against frame+0x1c and the copied vector at frame+0x4c against frame+0x40, and the first
@@ -407,6 +408,19 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // and minimum locals renamed to sort the other way 592 (same code: names do not order these homes). Retail's low frame is
 // success byte +0xb, ray index +0xc, minimum +0x10, hit bytes +0x14, cross result +0x18; ours success +0x7, minimum +0x8,
 // ray index +0xc, cross result +0x10, hit bytes +0x1c.
+// M3 lane 9 r105 (fast; "masked" = aligned count with registers and stack offsets ignored, control 592 masked 216): a
+// grid of the inactive exit last (`if (field_48 > 0) { ... return local_0; } return true;`) x the range read first
+// inside the body x a named inverse range for both products: 8 forms 592-684 (the inverse range alone 604, re-measured); exit last with the range first 656
+// (2830 bytes, masked 204), the inverse range adds 11-12 masked everywhere. On the 656 form: the FLT_MAX minimum
+// declared inside the body 669 (masked 209); the hit flags declared inside the body 687 (216); the origin copy taken
+// first in the body 691 (289). The ray loop as `do { ... } while (++local_17 < 4);` without the countdown 751 (2772
+// bytes, masked 250), on the 656 form 731 (239).
+// M3 lane 10 r86 (fast, control 592, aligned 484, masked 216): retail forms 1/range once and multiplies it by the minimum twice
+// (second product in place on the inverse, the output store sunk below it) and negates the half-width separately for points 3 and 4.
+// Both fractions as `minimum / range` 697 (2822 bytes, one divide shared); only the clamp input or only the output as a divide
+// 679/679 (2845); fourth width as `0.0f - width` 592 (same code); widths as `width * -1.0f` 680 (2844); a second point helper
+// negating the width at each product 678 (2844), with one named negated width 600 (2821); the half-width read once into a named
+// local 688 (2828); the point helper's width as `real const &` 676 (2829); the point helper as plain inline 592 (same code).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

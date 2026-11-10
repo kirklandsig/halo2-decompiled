@@ -117,6 +117,15 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // under a later `if (result)` 10 (threaded early); the location arm as a forceinline helper 90 (0x2161d0 33); the location
 // and path local as a named file-scope record 10, with the read as its inline member 10; result set before the task stores
 // re-measured 20; permuter 600 s (35 tries) none better.
+// Round 84 (m3 lane 11, fast): 0x216800's `long count = table->count;` local for the bound 17; the cache through the
+// header's storage-cache type (builtin file count, data, sizeof bound) 10; the task's four stores through an inline
+// finishing helper 10; the cache through the existing saved_game_storage_get_cache() with an entry pointer 10 (all
+// same code but the first); the bounds as `index >= 0 && index < files->count` 87 (294 bytes); re-measured, the cache
+// entry's data through a pointer local 10. A retail scan of matched
+// functions with `rep movs; pop edi; <store>; pop esi` against `pop edi; pop esi; <store>` (0x614a0 against 0x616e0,
+// 0x216800 against 0x1a6bf0): the store sits between the pops when its only later constraint is the frame release
+// (`add esp`), and after both pops when it feeds a longer chain; here the stores go through EBP, which `pop ebp`
+// follows, so the open question is what in retail lets the done store issue before `pop esi`.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {

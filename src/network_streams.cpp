@@ -857,6 +857,19 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // found path after the loop (`break`, then `if (next < newest)`) with the window index 72 (229 bytes),
 // &m_message_window index 86, bound in the test 97 (204 bytes). Retail shares only oldest between the count and
 // the loop and reads newest three times (count, bound, index test); no spelling here separates them that way.
+// m3 lane 7 r146 (fast; masked = registers and stack offsets masked, control 60 masked 23): the bound read as
+// m_message_window.newest in the condition with window kept for the index (the 63 above) has masked 16 at 226 bytes:
+// retail's per-step newest re-read, the oldest reused from the count in EBX and retail's frame. Only ours
+// strength-reduces next - oldest - 1 into its own induction variable (next in ECX, retail ESI with the offset
+// recomputed each pass). The siblings' &m_message_window form drops the reduction but hoists oldest apart from the
+// count (89 at 221 bytes, masked 16; time cached in EBP and type packed into its dead home). On the 63 form: next
+// declared at function scope 63, a while loop 63, a const window 63, window declared in the loop 89 (all masked 16).
+// `return 4` in the loop on the current body 108 (194 bytes), on the sibling form 129 (187 bytes). Matched 0x94df0
+// reuses oldest through its loop start (oldest + 1), which this loop does not have.
+// M3 lane 13 r75 (fast): reliable_stream_get_message is `inline` now: with the cached bound, the member bound or a bound local 89 each
+// (221 bytes; the same code as the member-window forms: retail's loop body, but `next` sits in ECX, which frees EBP for the `time`
+// pointer across get_next_send, and the count's oldest is reloaded; retail keeps `next` in ESI and the bound in EBP); on the member
+// form the flags read from the field at each test 89, `type = 4` before the stores 104 (209 bytes), the cursor declared before the loop 89.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

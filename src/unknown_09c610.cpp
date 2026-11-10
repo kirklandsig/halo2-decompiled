@@ -138,6 +138,12 @@ struct s_9cca0
 // block-scoped record: best 10 (location 1, location 2, first vector, second vector, marker, tag), then 12, 12, 13, 14,
 // 15; that form without the named input pointer 10 (same code); one whole-record memset 75 (173 bytes); the first
 // vector by component with its k after the second copy 57 (movss, 209 bytes); the memsets swapped 17.
+// m3 lane 10 r87 (fast with 0x9c910/0x9f880/0x9ffa0): the input's two vectors through one array pointer (`vectors[1]`,
+// `vectors[0]`) 34 at function scope, 32 block-scoped, 33 block-scoped with the marker before the tag (the input pointer
+// takes a register of its own and the copies lose retail's `lea`); block-scoped with the location pair as one 8-byte
+// memcpy 12 (same code as the two longs), with the marker before the tag 10 (same code as the 10 form). Retail's 0x184440
+// passes `arg_2 + 0x1c` straight to 0x175180 as ours does (same call set), so the escape differs only by summary.
+// Block-scoped with the ten-byte zeroing moved after the vector copies 52 (201 bytes), after the marker 52.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {
@@ -237,7 +243,7 @@ struct s_damage_report;
 point3f *function_b9dd0(long arg_0, point3f *arg_1);
 void function_d6a70(long arg_0);
 void function_d9640(s_damage_report const *arg_0, long arg_1);
-void __stdcall function_e4a20(long arg_1, point3f const *arg_0, long arg_2, bool arg_3);
+void __stdcall function_e4a20(long arg_1, long arg_2, point3f const *arg_0, bool arg_3);
 
 struct s_9c610
 {
@@ -282,7 +288,7 @@ struct s_input_9c610
     byte field_34;
 };
 
-// score 2 (was 13): with 0xe4a20's parameters in its handle-first order, the call passes the biped (local_1)
+// score 2 (was 2): with 0xe4a20's parameters in its handle-first order, the call passes the biped (local_1)
 // as the handle, as retail does (`mov ecx, ebx`, with input->field_2e pushed as the contact). The source had
 // passed field_2e as the handle and the biped as the contact. Flag 7 of +0x20 is the plain
 // `input->field_20 & 0x80`, retail's `mov al / test al, al / jns`, now that the call setup is retail's.
@@ -301,6 +307,14 @@ struct s_input_9c610
 // tail read 23; both byte reads 46; word notification read 46; word tail read 23; both word
 // reads 46; signed-byte tail read 23; byte notification/signed tail 46.
 // Round 11 (lane 17): unchanged; 0xe4a20 (contributor code, src/bipeds.cpp) is still todo at 104.
+// MATCH (lane 16 round 99; the call line in 0xcaa60 changed with its owner's OK on #1109): with 0xe4a20's
+// parameters as (handle, contact, point, knocked) this function matches byte for byte, 0xe4a20 stays matched
+// and 0xcaa60 stays at 224. The point is then evaluated between the two
+// pushes, so its EAX is taken when the contact is loaded and the movsx goes to ECX. (handle, contact, knocked,
+// point) matches too; (point, handle, contact, knocked) 4 and loses 0xe4a20.
+// Before the order changed, in this body alone (all 2,
+// same code): a short contact local, a long contact local, a point local; a word contact field 2 (movzx);
+// the contact read back from the filled record 8 (430 bytes).
 // @retail 0x9c610
 bool c_damage_aftermath_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {
@@ -354,7 +368,7 @@ bool c_damage_aftermath_event_definition::v11(long arg_0, long const *arg_1, lon
                 function_d6a70(local_1);
             function_d9640((s_damage_report const *)&local_10, local_1);
             if (g_4e0300->data[(local_1 & 0xffff) * 12 + 3] == 0 && (input->field_20 & 0x80))
-                function_e4a20(local_1, (point3f const *)&input->field_c, input->field_2e, false);
+                function_e4a20(local_1, input->field_2e, (point3f const *)&input->field_c, false);
         }
         local_0 = true;
     }

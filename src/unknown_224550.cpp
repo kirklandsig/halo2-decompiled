@@ -472,9 +472,22 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // M3 lane 11 r81 (fast): both UV encodings right after the flip 431 (1925 bytes); the flip before the extents 250 (1949);
 // the 0x2000 quarter-turn right after the angle read 483 (1939); the bitmap read from the context at each use 211 (same code);
 // pivot products written pivot-first 211 (same code).
+// m3 lane 3 r227 (fast; re-measures of round 431's loop forms on the current base): the colour modulation as a plain three-pass
+// loop 220, the seed modulation as one 214, both 213, the four clamps written out 211 (same code); the tint/second-UV homes stay
+// swapped in every form, so loop nesting does not set their order (and per round 91 neither do added reads, names or declaration
+// order). Diagnostics (wrong values, reverted): the direct-bounds arm without `uv_b = uv_a` 365, homes unchanged; an early
+// uv_b store above the tint is dropped as dead (211, same code). New combinations (fast): the tint in its own block ending at
+// the pack (re-measured 236, 1906 bytes, the tint then shares the second set's home, frame 0x50) with the colour modulation
+// loop 245, with the seed modulation loop 242, with both 240; the seed loop with the clamps written out 214; both modulation
+// loops with the clamps written out 214. The home order rule is still unknown.
 // Round 181 (m3 lane 4, fast): the aspect defaults declared with the pivot at the top of the bitmap arm 405 (1964 bytes);
 // the next-aspect products written blend first, `blend*(by*inv_bx)` 211 (same code); the inverse next terms blend first 211
 // (same code); the second UV set flipped before the first 271; the pivot first in the centre products 211 (same code).
+// Round 104 (m3 lane 9, fast): both aspect blends as one expression each 211; the pivot weight `1.0f - blend` named
+// once 211; `ax <= ay` with the arms swapped 211 (all the same code); `bx <= by` with the arms swapped 211 (aligned
+// 151 -> 159); the width product after the two flip calls 423 (1932 bytes). The compile-only harness does not
+// reproduce this body (normalized difference 394 against our own build), so the blend's XMM5 residence could not be
+// screened there.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
