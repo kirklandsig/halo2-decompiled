@@ -597,13 +597,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
     return pixel;
 }
 
+// score 250 (was 250): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
 // MiniMax D (11-09): the colour written component by component gives 447/604/623 against 250, and the
 // interpolation unrolled on its own gives 250; the scope moves give 620/250/620 and the case-0 and
 // colour store orders 246/248/244/250/255. The best is 244, under the bar, so the body is unchanged.
-// score 250 (was 250): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // MiniMax D (11-05): four declaration orders for the u and v scalars and their step and width partners
 // give 274/287/285 against 265; the frame stays 0xa8 against retail's 0xac, so no lower score.
@@ -973,6 +973,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // helper's blue channel +0xa8) and keeps v + width and the u step in 4-byte homes among the channels. Register-masked aligned differences left: 30, all small
 // schedules (case 0's half-width add and y spill, case 1/2's x load, case 4's position pointer formed after the neighbour lookup, the side length's `fst`,
 // the colour store order and one tail reload).
+// Round 66 (m3 lane 2, fast; 0x42c50, 0x42b20 and 0x43740 stay matched): retail's top homes are 8-byte spill slots (as our
+// first.y spill), so its u step and v + width are register temporaries there, not named locals with 4-byte homes as ours.
+// Retail inlines the matched pack_color4f (0x131e50) at link time where ours inlines the same-file ribbon_pixel copy; the
+// copy as plain `inline` 250 and with no inline keyword 250 (both same code: the compiler still inlines it). `u -= u_step`
+// with no negation 611 (2596 bytes); the tint as three statements 447 (2580 bytes); the object index read from the source
+// at each use 276. Re-measure (diagnostic): `u += -u_step` with the V sum at the outer store 610 (u_step stays a 4-byte home).
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

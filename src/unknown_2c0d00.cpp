@@ -1263,10 +1263,10 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
     s_path_location const *location, s_avoidance_trace *trace);
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
+// score 400 (was 418): the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // MiniMax lane E (11-01): reading the step through a pointer instead of copying it, as retail does,
 // scores 490 (490 as well when the pointer is assigned in a second statement); no form tried
 // lowered the 444.
-// score 400 (was 418): the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // Earlier 444: frame 0x11c versus 0x10c, 1740 bytes against 1746. Ours copies the whole step
 // (`rep movsd`) where retail reads it through a pointer and keeps only its type and link in stack slots;
 // retail places the count <= 1 arm at the end, keeps 0 in EBX for the whole function, compares the
@@ -1660,6 +1660,13 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // Round 85 (m3 lane 10, all plain with 0x270930 and 0x2c2a70, which stay matched; positional/register-masked aligned, base 400/58): edge as a `word` 462/63
 // (1759 bytes); `++used` after the type/link stores 400/61; `unknown02` copied before the output index 400/59; `*complete` cleared before the count is
 // stored 464/70 (1753); the typed branch setting type and link before next 400/57. No form moves count out of BX or edge into EBX; frame 0x114 stays.
+// Round 66 (m3 lane 2, fast; 0x270930 and 0x2c2a70 stay matched): retail's EBX is the zero only up to the loop, then edge
+// (`mov ebx, 0xffff`); ours gives EBX to the NONE constant and EDI to the step pointer, retail EDI to index. Named step
+// pointers for the fallback's points[next - 1] and points[next] reads 426 (1761 bytes); the step's fields read through
+// points[index] at each use 473 (1758 bytes); the scan's trace declared before the candidate loop, the two trace results
+// before the attempt loop, the delta block's start/end beside delta: 400 each (same code, frame 0x114 unchanged).
+// Diagnostic, not kept: the distance test as a call to 0x210a30 with src/unknown_20fe20.cpp's /Ob1 dropped 657 (1554 bytes):
+// the call still stays out of line (and 0x270930 moves to 5), so that file's /Ob1 is not what keeps it out.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

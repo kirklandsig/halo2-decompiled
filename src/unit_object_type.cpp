@@ -3702,20 +3702,6 @@ void __stdcall function_d09c0(long unit_index, long slot_index, long definition_
 
 /* damages the unit with a damage definition from its center against its
    velocity +0x168 (in mode 4, through its player's controller) */
-// score 26 (was 110): the mode 4 half now matches retail byte for byte (the rest differs only in the order the second
-// half interleaves its pushes and the origin/position copies with the direction negation). Round 2 of #1049: the
-// player index is retail's inlined unit_get_player_index (0x14de90 = badc0(unit, 3), NONE when null), so the test and
-// the controller lookup call it twice (not a hand-written null test); that removed the `ebx = NONE` register retail
-// never has. Retail also zeroes direction.j/.k before filling them (two dword stores from the shared zero register):
-// memset(&direction.j, 0, 2 * sizeof(real)) gives exactly those stores (memset of the whole vector zeroes .i too, 74;
-// a plain `= {0}` initializer or long-view zeroing is dropped as dead, 80). Declaring `owner` before `direction` puts
-// the owner's zero short after the other stores like retail's (50 -> 27). The owner's padding short is written as 0.
-// Behaviour fix (earlier round): retail sets the material to NONE before 0xd6660, which then overwrites it with its
-// default. Tried: second-half statement order, all 24 orders of flags/origin/position/direction (best 26 kept: the
-// direction before position; origin first 27; others 29-33); `origin = position = ...` chain 44; s_damage_owner as a
-// three-member aggregate drops the zero short (55); memset(&owner) form (117); the position source through a local
-// point3f pointer (26-27).
-// Permuter (25 min on #1049, about 440 variants): 25 only with 0xd7b80's unit and NONE arguments swapped; not kept.
 // @retail 0xd03e0
 void function_d03e0(long unit_index, long definition_index)
 {
@@ -3743,19 +3729,21 @@ void function_d03e0(long unit_index, long definition_index)
 				function_153d10(controller, definition_index, &owner, &direction, 0, 1.0f, 1.0f, 0);
 			}
 		}
-		return;
 	}
-	s_type_1e6529 damage;
+	else
+	{
+		s_type_1e6529 damage;
 
-	damage.material_index = NONE;
-	function_d6660(&damage, definition_index);
-	damage.flags |= 8;
-	damage.origin = unit->unknown030;
-	damage.direction.i = 0.0f - unit->unknown168.i;
-	damage.direction.j = 0.0f - unit->unknown168.j;
-	damage.direction.k = 0.0f - unit->unknown168.k;
-	damage.position = unit->unknown030;
-	function_d7b80(&damage, unit_index, NONE, NONE, NONE, 0);
+		damage.material_index = NONE;
+		function_d6660(&damage, definition_index);
+		damage.flags |= 8;
+		damage.direction.i = 0.0f - unit->unknown168.i;
+		damage.direction.j = 0.0f - unit->unknown168.j;
+		damage.direction.k = 0.0f - unit->unknown168.k;
+		damage.origin = unit->unknown030;
+		damage.position = unit->unknown030;
+		function_d7b80(&damage, unit_index, NONE, NONE, NONE, 0);
+	}
 }
 
 /* what a unit's melee hit: an object, or a surface */
@@ -5067,7 +5055,7 @@ void __stdcall function_c8290(vector3f *aim, point3f *point, long unit_index, ve
 /* the unit's wandering direction: its actor's (else the default vector)
    turned about the world's up by the angle +0x2d8, which drifts by a
    random turn rate (+0x2dc) kept away from its limits */
-// score 91 (was 99; earlier 99, was 120): only register numbering differs. Retail keeps the clamps in xmm4/xmm5 and the pi/4 and
+// score 91 (was 91): earlier 99, was 120; only register numbering differs. Retail keeps the clamps in xmm4/xmm5 and the pi/4 and
 // 4.244 constants share xmm3; ours puts them in xmm3/xmm6 and 4/5, then needs one more register in the rotation.
 // Reading direction->k directly in the three terms (instead of a cached z) gave 120 -> 99.
 // Tried (all 99): operand order of the angle and rate products, swapped high/low declaration order, low copied
@@ -5090,6 +5078,17 @@ void __stdcall function_c8290(vector3f *aim, point3f *point, long unit_index, ve
 // existing function_259d0 101; the axis read from its global at each use 91 (same code). Left: the 1.0 constant
 // and the clamps take xmm5 and xmm2/xmm6 where retail has xmm2 and xmm4/xmm5, and retail interleaves the cross
 // terms with the dot product.
+// Round 66 (m3 lane 2): HELD lead, not kept. The rotation as a call to the existing rotate_direction (forced inline in
+// src/unknown_1eb8a0.cpp, matched in 0x1ecf50 and already called from other files through a declaration) gives 58 plain
+// (810 bytes; 0xc49b0, 0x1e3370, 0x1ecf50 stay matched): its dot first, then the three cross terms, is retail's order, and
+// 1.0 then takes xmm2 as retail's does. But the full check then loses 0x41640 (its table/definitions spill homes swap, the
+// whole-image link tie its own note describes), so the body stays as main; diff in build/r66/lead-d0080.patch (m3-lane2).
+// Left on 58: high/low take xmm3/xmm6 and the a/b constants xmm4/xmm5 where retail has xmm4/xmm5 and one shared xmm3 (retail
+// forms the second sum before the first product, so pi/4 dies and its scale reuses xmm3), and three cross products take
+// their operands the other way round. On 58 (fast): the sums as locals declared first (re-measure) 170 (masked 19, 1.0 in
+// xmm2 but high/low in xmm3/xmm4); the sums with below declared first 170; sums in the a/b block only 168; in the c/d block
+// only 61; each product right before its test (re-measure) 74; `high = low = 1.0f` 58 (same code); one declaration for
+// both 58 (same code); the same helper copied privately here 58 (same code).
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
