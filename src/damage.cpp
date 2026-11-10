@@ -2648,6 +2648,8 @@ struct s_unit_event
 /* destroys a permutation of a region: hides it, starts its effects and
    area damage, and applies its side effects to the object (depletes the
    body, drops weapons, ejects riders, destroys attached children) */
+// score 472 (was 472): frame 0x38 agrees; permutation remains on the stack instead of EAX,
+// with register homes/call setup and 1884/1868-byte length still differing.
 // MiniMax D (11-10): no new form, no lower score (472): the second lookup still reloads the table pointer where retail derives the array base from the pointer it kept in ECX into EDX.
 // MiniMax R (11-06): no new form, no lower score (472); the frame agrees, and the entry takes the argument first here and the global first in retail.
 // b5N walk (11-06, against retail block by block, fast 472 unchanged): no behaviour difference found. Every field, offset, test
@@ -2661,8 +2663,6 @@ struct s_unit_event
 // `mov eax, esi`), `or word [x+0x352], si` (retail keeps the 1 in esi, ours narrows to `or byte [x+0x352], 1`), the drop value
 // (retail `not eax; and eax, 1` as a long, it is function_100390/1003e0's barrel_index; as a long here 531), and the db110 result
 // test (retail one shared call, `test al, al`; ours `neg al; sbb; inc`). Nothing was added or kept.
-// score 472 (was 472): frame 0x38 agrees; permutation remains on the stack instead of EAX,
-// with register homes/call setup and 1884/1868-byte length still differing.
 // Earlier 533 from 624: the body is statement for statement retail's (same size, same block order). What is left is
 // the calling convention and the register allocation that follows from it: retail takes only the permutation index
 // in eax and leaves `info` on the stack (`ret 0x14`, frame 0x38); ours passes the index in ecx and `info` in edx
@@ -2724,6 +2724,13 @@ struct s_unit_event
 // subsets 1/2/4/3/5/6/7, then all with info-record identity:
 // 472/472/472/472/472/472/472/472 (fast control 472).
 // NOT kept: no exact identity-form match; original complete body restored.
+// Lane 3 r230 (plain 472 at 1884 bytes; ours `ret 0x18`, all six on the stack under the explicit __stdcall, retail
+// `ret 0x14` with the permutation in EAX): the whole function moved to the end of this file, plain 472 with `ret 0x18`
+// unchanged (0xd9d60 69, 0xdae60 82), so its order inside this file does not choose the cycle entry; still BLOCKED-BY
+// 0xb8540. The destroy block written in each arm (`if (flags & 1) { if (!db110(..)) destroy } else if (flags & 0x10000)
+// { if (state != 1 || !db110(..)) destroy }`) gives retail's one shared 0xdb110 call (`push 0; push 0; jmp` into
+// `push; call; test al, al; jne`) and keeps the constant 1 in a register as retail does, but 545 (1848 bytes); that
+// without `__stdcall` 588 (`ret 0x10`); with long drop values 533; with the second arm as one condition 545.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)

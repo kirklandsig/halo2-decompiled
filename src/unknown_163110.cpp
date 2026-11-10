@@ -616,6 +616,7 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
+// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // MiniMax S (11-09): the plane-0 product with the two operands of the i term written the other way
 // round changes no code at all (115), so the coefficient's register is not chosen by the operand
 // order of that product.
@@ -625,7 +626,6 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // MiniMax I (11-06): no new form, no lower score; the view vector copied into a local for the first plane's dot product gives 463 and 452 against 115.
 // MiniMax A (11-05): no new form, no lower score; the plane-0 term still loads `vector_e4.i` after the
 // forward copy and keeps the zero in xmm3 where retail has it in xmm4.
-// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // Round 16: retail loads the three `view->vector_e4` coefficients into xmm0, xmm3 and xmm4
 // before it copies the point and then reloads the point's components from that copy, ours reloads
 // the copied normal's x into xmm4; retail keeps the near distance in xmm5 and the zero in xmm4,
@@ -901,6 +901,12 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // after the normal copy k = 1..8 119 135 130 242 246 135 127 135; the first difference stays +0xbb (the e4.i load is not a numbering tie).
 // Store through `*(outside0 ? p1 : p0)` 368 (1867 bytes); `p1 = p0 + 1` 256 (1867); both segment loops as plain for loops 129;
 // intersection rows point-first 115 (same code); total counted per projected point 116.
+// Lane 3 r230 (fast, 0x1648d0 matched each time): the clip denominator written normal-first in all three terms 115
+// (same code); repeats of lane 16 r97's forms: the clip loop alone as a plain `for` 129, the projection loop alone 135
+// (listed at 129), the classification stored as the bare comparison (no `? 1 : 0`) 320 (1835 bytes); the outside flags
+// as `bool` with `? true : false` 320 (1835); in the projection tail `culled = false` after the cursor step 115,
+// `total += 2` after the per-point loop 214, the per-point counter as `short` 129. The head is still the late camera-i
+// load and the XMM3/XMM4 swap after it.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

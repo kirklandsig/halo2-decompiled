@@ -156,15 +156,15 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
-// MiniMax E (11-05): no new form, no lower score; the entry zero, the target, primary and query-array homes
-// and the choice carriers are as the earlier rounds left them.
-// score 866 (s1F walk 11-06): walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// score 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
 // counts as dwords (0x18aeef, 0x18af10, 0x18af84, 0x18af81); the `short` copies here narrow them (no observable difference:
 // counts <= 64). As `long` it scores 942, so it is not kept without a match. Frame 0x4e0 agrees; on the long form the choice count
 // and first-loop index stay in memory (retail: ESI/EDI), 3297 bytes (retail 3327). s1F also tried, on that base: grouping
 // {count, items[]} structs for targets+existing 933 (3327 B, frame 0x4e4), existing only 938, plus choices 1024-1025 (3413 B);
 // the three 1.0f defaults as separate statements (retail's store order) 942. Retail evidence for grouped lists: counts at
 // 0x34/0x88/0xec directly below arrays at 0x38/0x8c/0xf0, and the query gains share the existing list's slot at 0xec.
+// MiniMax E (11-05): no new form, no lower score; the entry zero, the target, primary and query-array homes
+// and the choice carriers are as the earlier rounds left them.
 // Earlier 919 (was 919): count/array homes and choice registers differ in the 0x4e0 frame;
 // count/array homes and choice registers differ in the 0x4e0 frame;
 // Frame 0x4e0 agrees; entry zero, target/primary/query-array homes and choice registers remain.
@@ -384,6 +384,13 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // M402: Native dword query/choice counts and duplicate-failure-first search,
 // direct count/repeated flags/repeated tag subsets 0..7: 966/966/966/966/966/966/965/965.
 // NOT kept: earlier entry mismatch and 3301/3327 extent; original counters/search/body restored.
+// Lane 3 r230 (fast, base 866): the four query arrays renamed with a common prefix, and renamed so their names sort in
+// retail's address order (gains, indices, portals, clusters), 866 both, byte-identical: names do not order these slots.
+// The choices as a {short count, items[2]} list 1072 (3448 bytes); `inside` tested right after the query call 933 (the
+// matched caller 0x18bb80 then differs on the reduced image); the second pool scan as a `for` like the first 933 (3375
+// bytes). Re-measured listed groupings: targets as a {count, items[3]} list 940 (frame 0x4e4); the existing sounds as a
+// {count, items[64]} list 856 (3329 bytes; round 153's 875 form, a new type that only moves homes, so not kept), with
+// long query and choice counts on it 935 (3297 bytes).
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
