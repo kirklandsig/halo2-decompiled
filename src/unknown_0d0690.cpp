@@ -2123,7 +2123,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 }
 
 // MiniMax C (11-06): no new form, no lower score.
-// score 542 (was 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
+// score 542 (was 542): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
 // w14B (11-06): walked against retail statement by statement, both arms and every dynamic/base weight path:
 // no logic difference (offsets, constants, condition directions, call arguments, result values and the
 // final colour_a/colour_b/normal stores all agree). Remaining difference is stack homes only.
@@ -2371,6 +2371,14 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // N395: Actual dynamic-failure bool/byte/short/long outcomes 589/589/609/610;
 // actual base-failure outcomes 542/542/550/548. NOT kept: no native status/mesh
 // home recovery or equality; original positive validity and complete body restored.
+// Round 63 (m3 lane 2, fast; control 542): retail calls both 0x24590 lengths and both 0x13da30 lookups; ours still
+// expands the last call of each (25 calls against 27). `result` renamed `status` 542 (same slots: names do not
+// order these homes); u/v and base_u/base_v declared u first 543 (same slots); the second arm's part pointer before
+// its UV call 542; both lengths taken before the base scaling 635 (3092 B; both 0x24590 calls then stay out of
+// line, but retail scales the base normal between them, as main does); the larger length chosen before the
+// 0x30bf0 call 606 (3144 B); the final rescale as three statements 542; the larger length as
+// `base_length < dynamic_length ? dynamic_length : base_length` 542. (u-first and lengths-first re-measure listed
+// forms.) BLOCKED-BY 0x24590 (src/unknown_023540.cpp, avoid list) and 0x13da30 expansion.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
