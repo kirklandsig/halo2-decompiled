@@ -1225,6 +1225,14 @@ done:
 	return result;
 }
 
+// MiniMax E (11-10): no new form, no lower score (9): four more spellings of the actor address (a byte base
+// local with an offset local, the offset local alone, the typed subscript and the base after the offset) all
+// compile to the same code as the shared getter: ours keeps the scaled index in the pointer register and adds
+// the base, retail keeps the product in eax and forms the actor with a lea.
+// MiniMax E (11-09): no new form, no lower score (9): the masked slot in a local with the lookup written out
+// and the slot multiplied by the element size both compile to the same code as the shared getter, and the
+// mask written as a word truncation gives 38; the prologue still builds the actor offset in ESI and adds the
+// base where retail keeps it in EAX and forms the actor with a lea.
 // MiniMax C (11-08): forms tried, none lower: the byte offset in a local 9, the masked slot in a local 9, the getter written out 9, the base in a local 9; the permuter was killed at its time limit before it searched anything.
 // MiniMax D (11-06): no new form, no lower score (9); five more spellings of the shared lookup (a data
 // base and a masked slot local in either order, a byte offset local, the slot first, the current one)

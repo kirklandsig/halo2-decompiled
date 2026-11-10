@@ -363,8 +363,6 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
-// MiniMax G (11-04): the motion declaration hoisted beside the delta gives identical code (152);
-// no new form, no lower score.
 // score 84 (was 104): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // (result +4 for retail's +0; amount shares with the count where retail shares it with the squared distance; range, scale, the cursor and the
 // two facing values one slot off), x-operand forms in the two seat-loop cross products, the range loaded into XMM2 for XMM0. Round 65 (m3
@@ -373,6 +371,8 @@ real function_30bf0(vector3f *vector);
 // out at both places 342 (1347); a per-iteration seat element pointer 90 at 1308; long index 173; range read after delta 87; delta through
 // vector3d_from_points3d 142 at 1308; amount or plane declared wider 84 each; forward cast at each use 147; side/up and a/b declaration
 // orders, ternary maxima, `continue` on no occupant 84 each; a world-up pointer local before the loop 149, in the body 90; non-const forward 84.
+// MiniMax G (11-04): the motion declaration hoisted beside the delta gives identical code (152);
+// no new form, no lower score.
 // Earlier first line: score 104 (was 152): retail's registers throughout (the SIMD groups are now right), 1310 bytes against 1308. Left: stack homes
 // (result +4 for retail's +0; amount shares with the count where retail shares it with the squared distance; range, scale, the
 // cursor and the two facing values one slot off), the not-facing arm sits inline where retail places it after the first return, and
@@ -641,6 +641,16 @@ real function_30bf0(vector3f *vector);
 // XMM2). Forms: the endpoint test as nested ifs 84 (same code); the squared distance through dot3f 84 (same
 // code); scale declared with the range at the settings-block top 212 (1312 B). A compile-only /FAs screen does
 // not give our LTCG frame here (fastcall entry), so it cannot rank these homes.
+// Round 82 (m3 lane 1, fast with 0x263740/0x25c9d0 = plain 84): the thresholds written straight into secondary/primary with
+// no facing copies and no second facing test 199 (1331 B: ours then carries both in XMM1/XMM2 round the seat loop and skips
+// retail's reload after it; retail compares and stores them in memory); the defaults assigned first and the facing block
+// overwriting them from its copies, no else and no second test 197 at retail's 1308 bytes (the two default lines sit
+// inline ahead of the test, retail has them out of line after the first exit); the copies at the end of the facing block
+// with the else kept 142 (1313 B); one scalar for the clip amount and then the squared distance 81 (amount and squared
+// distance share a home as in retail, result moves to +0x10; the name does not fit both values, not kept); the clamp as an
+// in-place ternary 84; facing_ pair declared first and secondary copied first 84. Diagnostics, reverted: 0x263d70 storing
+// both output pointers to scratch globals leaves the first form at 199, and so does this function defined ahead of
+// 0x263d70 and 0x263740: neither an escaping pointer nor definition order makes our link keep the thresholds in memory.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1451,6 +1461,10 @@ long function_146650(void);
 // P395: Activity default after offset/after query/before direction/before state 11/52/16/46;
 // corrected-home offset memset/chained zero/query-only output 71/11/275; activity default at state test 29.
 // NOT kept: no exact setup repair; original complete body restored.
+// Round 82 (m3 lane 1, fast = plain 7): the NULL arguments as typed zero casts 7; a file-level const null pointer for the
+// distance 7; 0x267a80's parameters all top-level const 7; 0x267a80 writing through `unknown` with no offset alias local 7
+// (0x267a80 still matches); the actor position as the typed field at the two calls and the three ahead sums 7. Same code
+// each time: only the held parameter reorder (lane 7 r138) moves the ECX setup.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {
@@ -2200,6 +2214,17 @@ real function_2683f0(long actor_index, long node_index, short type)
 // the iterator's table pointer in ECX, a 1-byte longer load, so the loop-top pad is `jmp` + `lea ecx, [ecx]`
 // for retail's `lea ebx, [ebx]`); the same with a __forceinline ai_player_get declaration here in place of
 // the ai.cpp `inline` 643 (2839 B, the call stays). All restored.
+// Round 82 (m3 lane 1, fast with 0x25d810 = plain 168): 0x26be00's lookup written as an indexed element of the table
+// 168 (same code, 0x26be00 and its users unchanged); the scoring test as a `consider` flag set in the visible arm
+// (`established || !(far && slow)`) and from `established` otherwise, with one score test under it 239 (2886 B); a short
+// threshold 168 (same code); threshold declared before score 174; the unit index assigned inside the player test and
+// the slot stored without its cast 168 (same code). Diagnostics on the direction residence, reverted: an inline copy
+// of the normalize body defined in this file 168 (same code); `direction`'s address stored to a scratch global with
+// the relative normalize called through a global function pointer 545 (2923 B): the three direction loads then sit
+// ahead of the test and both dots multiply by registers, close to retail (retail sinks the i load into both arms);
+// 0x30bf0's magnitude through a one-line inline helper 168 (same code, 0x30bf0 still matches); 0x30bf0 reading its
+// parameter through its address 513 (0x30bf0 21, its convention changes). Retail's shape needs the normalize call to
+// be able to write `direction`; no form of 0x30bf0 that keeps its bytes makes our link think so.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

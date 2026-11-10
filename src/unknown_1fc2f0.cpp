@@ -615,6 +615,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // the delta as a plain component loop 80 (round 203); the correction through vector3f_add_scaled 97 (348 bytes); the
 // velocity as vector3d_from_points3d then an in-place scale by the ticks (local_scale3d), deltas j, i, k or i, j, k
 // 73/73 (369 bytes; listed with vector3f_scale).
+// Round 100 (m3 lane 12, fast with 0x1fc660): the squared length through the existing k, j, i statement-sum helper of reciprocal_normalize.h 78
+// (first +0x2f); that with the deltas through scaled_difference3f at 1.0f 82, with deltas i, j, k and the existing in-place scale helper plus
+// vector3f_add for the correction 77, with both helpers and the 1.0f delta 80; the in-place scale helper and vector3f_add alone 57 (369 bytes).
+// All restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

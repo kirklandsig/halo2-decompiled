@@ -830,6 +830,10 @@ bool g_51e9bc;
 // 73/72/72/80/77/77/76; all signs in exhaustive arms 64. NOT kept: no gain;
 // native-length forms disturb unity allocation from +0x21, before the original projection gap.
 // Original full body restored; projection j/k ownership and jitter spill homes remain.
+// Round 161 (m3 lane 5, fast, 0x24590 listed; aligned in brackets, control 49 [42]): the sign values as ternaries 64 (1081 bytes,
+// first +0x21) [52]; the on/off values as ternaries 179 (1058 bytes) [73]; each half-scale select folded into its offset product
+// (x/y/z assigned once) 171 (1067 bytes) [82]; the offset declared at the top of the jitter block 49 [42] (same code); the half
+// scales named before each `x = scale_x * x` 56 (1079 bytes) [44].
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
