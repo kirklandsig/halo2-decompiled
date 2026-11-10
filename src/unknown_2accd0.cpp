@@ -610,6 +610,17 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
+// MiniMax C (11-09): NOT kept: 28 (was 34), I's form again (a one-use local is kept only with a match): the entry total
+// folded into its float conversion (no total local) and the signature case naming the file handle once, which puts the entry sum in EDX with the task pointer in EAX and the
+// signature case's header size in EDX with the handle in EAX, as retail has them. Left: the dispatch still hoists
+// body_size into ESI where retail reuses the switch register ECX, so the signature sum stays a one-byte-shorter add
+// where retail has `lea esi, [ecx + edx]`, every later branch shifts by that byte, and the body's size and position
+// stay in ESI and EDI where retail has them in EDI and ESI. Also tried and reverted: the position declared before
+// the handle (28, unchanged), the signature sum's operands in the other order (28, unchanged), the position computed
+// before the buffer arms (152), a separate capacity variable for the scratch getter (158). Also tried and reverted here:
+// a local for the header size (28, unchanged), the position written as two statements (28, unchanged), the sum with a
+// zero addend (28, unchanged), and the position computed at the top of the function (228: the entry sum then shares the
+// position's addend and the body size load does reach ECX, but the entry no longer matches).
 // MiniMax I (11-09): NOT kept: 28 (was 34) with the entry total inline for the float conversion plus a one-use
 // HANDLE local for SetFilePointer only (the sum then lands in EDX, task pointer in EAX, as retail has it); a one-use
 // local is kept only with a match, and the same local used by ReadFile too scores 203. The dispatch still hoists

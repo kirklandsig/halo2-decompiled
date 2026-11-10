@@ -1839,6 +1839,14 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// MiniMax C (11-09): score 87 (was 87): no new form and no lower score; retail still hoists the walk's pool into EBX
+// (reloading it from the stack after the bit scan takes EBX) where ours keeps it in memory and loads it into ECX at
+// each use, retail still keeps the selection on the stack where ours caches it in EDI and reloads it at the loop top,
+// retail still stores the best at the loop head where ours stores it in the improving branch, and retail still pops the
+// score to the stack and compares the two scores on the x87 stack (fld the best, fld the score, fcompi) where ours
+// pops the score to the stack and compares it with comiss on xmm0. The in-arm compare (the
+// compare inside the team-match branch) reaches 126 with retail's homes and x87 sequence, but the pool and selection
+// stay as they are. The permuter (300 s, 123 tries) left it at 87.
 // MiniMax I (11-09): no new form, no lower score; retail still hoists the walk's pool into EBX and keeps the selection on the stack where ours keeps the pool in memory and the selection in EDI, and the declaration-order reshapes that would move those homes are not applied.
 // MiniMax I (11-06): the walk's reload is what shifts the rest of the listing: the shared helper takes
 // the iterator by pointer, so the pool is re-read from its field into ecx at every step, where retail
