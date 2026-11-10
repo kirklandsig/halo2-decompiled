@@ -923,7 +923,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // products and its two vector homes sit in other registers and stack slots than retail's, and the crosses' product
 // sides and the low-normal arm's homes remain as noted below.
 
-// score 347 (was 358): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
+// score 347 (was 347): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
 // bytes (retail 3047). Statement-by-statement walk against retail (b2K, 2026-11-06, fast): every
 // arm, compare direction, field offset (flags 0x14, settings 0x8, speed 0x20, normal 0x8c, damping 0x98, facing 0x9c, flag 0xa8,
 // up 0x100, basis 0x118, velocity 0x124, gravity 0x130, input 0x138, accelerations 0x144/0x148), constant (0.001, 0.234, 5.0, 1.0,
@@ -1177,6 +1177,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // operands itself; retail puts up.k ahead of facing.i/j where ours puts it after); the flags declared in retail's
 // computation order (damping, direct, gravity, flying) 427; the input pointer declared after the flags 421 (3037
 // bytes). The call sequence (eight 0x30bf0 calls, 0xa75d0, both `ret 8`) and the block layout agree with retail.
+// Round 178 (m3 lane 4, fast; aligned = difflib count with addresses masked, 152 here): left are product operand
+// orders (retail loads the state field first in the crosses and the flying arm's 0x1f087b products), the input
+// length's x87 load order (retail k, j, i), the low arm's two projections' schedule, the damping flag's register
+// (retail EDX, computed first) and the delta/limited homes in both arms. Tried: `gravity = false` written in each arm
+// of the general step test (no limited_step bool) 516 (aligned 278); that with the short-step arm first 517 (285); the
+// general arm clamping delta from the normalized copy (no copy back, delta used after) 574 (285); the direct arm the
+// same way 566 (3037 bytes, aligned 175); both 557 (297).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

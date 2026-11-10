@@ -76,8 +76,19 @@ struct s_260670_state
 	real best_score;
 };
 
-// score 700 (was 697): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// score 700 (was 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // a bool output in a register across a later call, as retail (0x1b0540 matched with plain output locals).
+// Round 178 (m3 lane 4, plain checks; aligned = difflib count with addresses masked, 293 here): the call sequence is
+// retail's except two callees: retail calls 0x2600a0 in the sorted loop and 0x13e2d0 for the owner, ours inlines both
+// (the first evaluator pass is inline in both). The aggregate of five locals keeps retail's frame; as plain locals
+// the result/bool/word stores take retail's forms but the frame grows to 0x8a4 (840), with the sort scratch word
+// scoped to its block 0x8a0 again (832, aligned 272). Tried: plain locals with the 4c store before 0x270590, the
+// first evaluator pass as a 0x2600a0 call and the owner store as if/else 847; those three without plain locals 719;
+// plain locals and the evaluator call 832; scoped scratch with the four 841 (aligned 251); plus the history reset as
+// an inline helper used twice, the segment test through the existing 0x11e000 and a float fabs 862 (frame 0x8ac,
+// the helper outlined at one site); the helper __forceinline 849; without 0x11e000 856 (aligned 248); then the tail
+// nested under `selected != NONE`, a position pointer and the pathfinding select as an if 854 (aligned 255); the
+// sorted loop's body nested under the continue test 854. 0x2600a0 and 0x13e2d0 stay inlined in every form.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

@@ -837,6 +837,15 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // &m_message_window for the count, the bound (local, window->newest or
 // m_message_window.newest in the condition) and the index: 60, 63, 80, 88-91;
 // a const window (60); reliable_stream_get_message (a call, 165).
+// Round 178 (m3 lane 4, fast): the 63 form (window pointer for the index, the bound read in the condition) is
+// retail's code but for one thing: ours keeps `next - oldest - 1` as a second counter in esi (next in ecx), retail
+// recomputes it each pass with next in esi. With &m_message_window at the index there is no second counter, but the
+// hoisted oldest is reloaded, next sits in ecx and `time` takes ebp (type then reuses its home, no `push ecx`).
+// Tried: the sibling 0x94df0's loop (bound in the condition, &m_message_window) 89; the stores after the loop
+// through a found pointer 91; `return 4` in the loop 129 (187 bytes); an oldest local for the count 91;
+// reliable_stream_get_message now inlines 89; a second read of oldest ahead of the loop (diagnostic) 86, still
+// reloaded; `while (++next < bound)` with the direct window 89, with the pointer 63, with a newest local 89;
+// newest declared ahead of the window pointer 63; a newest local with the direct window 89; a guarded do-while 89.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
