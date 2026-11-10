@@ -433,6 +433,8 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // with the count in a local 11, the test as count != 0 6, a
 // while loop 6, a seats local 25, a pointer loop 139, the index inside the
 // loop 135, the test as i < count 11.
+// MiniMax R (11-10): no new form, no lower score (8); the body is unchanged, and the seat scan's inclusive
+// bound still needs the decremented count and the separate zero that retail does not.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
@@ -1663,6 +1665,8 @@ void function_1f86a0(long actor_index);
 // the unit lookup nested in the actor lookup 245 (m 41), no unit local 240 (same code); a flags byte local above the slot
 // bool test in the found block 238 (862 bytes, m 27), with the slot bool named too 238, a bool `specified` there 247 (m 33);
 // with the mask local, that flags local 142, the header-table local 134. All restored.
+// MiniMax R (11-10): no new form, no lower score (134): the frame is 0x10 against retail's 0x14, and retail
+// spills the mask byte and keeps the loop entry in EBX.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

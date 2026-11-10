@@ -2524,6 +2524,8 @@ event_done:
 // MiniMax C (11-09): score 63 (was 63): the object index stays cached across 0xbadc0, where retail
 // reloads it, and the head's load is folded into the datum address where retail forms the pointer
 // first; 0xbadc0 and 0xbaf80 live in another file, so the reload cannot be forced here.
+// MiniMax R (11-10): no new form, no lower score (63): the object index stays cached across the call where
+// retail reloads it, and the callees in the other file decide that caching.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {
@@ -3397,6 +3399,8 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // listed forms; new on the current body: the node flag as `node_index != NONE && node_index < 0` 94 (339 bytes); the
 // particle system derived again from g_510c74 and its index for the 0x1751d0 type query 118, for the loop's 0x248c60
 // call 112, for the particle-location cursor 119 (each turns the effect index into a register argument; 0x176f60 25).
+// MiniMax R (11-10): no new form, no lower score (93): the system pointer and the next index still take the
+// opposite registers from retail, and the frame is 0x4c against retail's 0x54.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
