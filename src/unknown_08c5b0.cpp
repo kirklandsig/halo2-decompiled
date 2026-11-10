@@ -169,6 +169,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // compare folds); a seeded selector with a plain read 24; `available && kind == 1` 15 (fast 16); the volatile read with the index
 // read after the selector 23; a plain read with a caller-side `kind != 1` test around the selector 4 (fast 4; the unfolded load
 // without the volatile read, same pair; a repeated test, not kept).
+// Round 161 (m3 lane 5, fast, plain reads): the default path as a call of the reset handler 76 (135 bytes, no merge); a word
+// kind through the selector 32 (95 bytes); the selector on the field with the index after 30 (a repeat, re-measured); a
+// switch with `case 1` falling into `default` 19 (95 bytes, `movsx; dec`); that switch with the index read after it 28 (95
+// bytes: retail's ECX request and EAX kind, but the switch keeps `movsx; dec` for the 16-bit compare).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

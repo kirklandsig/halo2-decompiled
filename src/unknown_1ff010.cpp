@@ -670,6 +670,12 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // the rotation, so our `comiss` is scheduled before the `divss` where retail materialises the zero after the scale products
 // and multiplies the rotation's cosine from the constant pool; the rotation is an inlined helper from src/unknown_1eb8a0.cpp,
 // so its body cannot be steered from this file, and a local copy of that body is a form this round does not use.
+// Lane 11 round 80 (fast with 0x1ecf50 and 0x2b400, both matched throughout): retail rematerialises the zero three times
+// (xorps after the scale products for the three tests, the pooled constant for the rotation's first cosine product, a second
+// xorps for the other two). Double zero literals in the magnitude, facing and side tests 199 (891 bytes); a double zero, a
+// `(real)0` or `sine - sine` for the rotation's cosine 77 each (same code); a double zero in the turned pair's length test
+// 138 (855), in the magnitude test alone 170 (874); `magnitude != 0.0f` 128 (850, as round 46); double zeros in the three
+// tests plus the cosine 199, plus the turned length test 215 (896). All restored.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {

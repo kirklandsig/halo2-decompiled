@@ -510,6 +510,17 @@ struct s_physical_block_iterator
 // conditional/complete arms: 284/284/201/201; with one complete selection outcome:
 // 227/227/222/222. NOT kept: no native case-placement or age-mask carrier repair;
 // complete outcomes move extent away from retail. Original whole body restored.
+// M3 lane 16 r97 (fast, 0x13d320 matched each time; body restored). Grid on the 201 body; M = second age as
+// `MAX(time - best.time, 0)`, S = the comparison written `candidate * best_age < best * age`, T = `long total =
+// candidate->pages + segment_pages` used by the store, the page test and both policies, N = one `dword now` for both
+// ages: S 201 (same code); N 201 (same code); M 209 (1228 bytes); M+S 209; M+N 209; T 213 at retail's length 1213 (the
+// default arm then multiplies from EDI as retail, but retail loads the segment pages into EAX ahead of the add and
+// ours adds from memory); T with the sum's operands swapped 213 (same code); T+S 213; M+T 218 (1218 bytes); M+S+T 218;
+// M+T+N 218; M+S+T+N 218. The policy result preset true with `if (better)` 201 (same code); `if (!have_best) better =
+// true; else switch` 201 (same code); case 0 as an if / else-if pair that sets true 201 (same code).
+// M3 lane 11 r81 (fast): the take test as `better || !have_best` 201 (same code); the walk's overlap conditions swapped 203 (+0xcc);
+// the policy as an if/else-if chain 240 (1178 bytes: cases in line but in source order, case 0 still threaded, aligned 118 -> 109);
+// case 0 as two `better = true` arms 201; default ages written inside the comparison 201. Retail's `sub eax, 0` chain is a switch.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
