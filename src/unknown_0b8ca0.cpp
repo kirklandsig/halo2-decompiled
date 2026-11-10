@@ -272,6 +272,11 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // 46 (209 bytes), both diagnostics; uses that leave no code do not (harness: an empty inline taking it 4, a dead field read 4,
 // a self-compare 4, cleared after the call 4). A `* const` component local 4; a `long const` index local in the arm 4; a
 // reference to the component 4.
+// Round 100 (m3 lane 9, fast): the activation function 0x1d1c60 as a member of the component type (definition
+// and all four calls, diagnostic) 4, its callers unchanged; a component pointer started NULL, set under the three
+// tests and tested afterwards 43 (202 bytes); the outer test inverted with the `disable` store first 4; the three
+// tests in a named bool with `disable` tested first 80 (228 bytes, callers 0xb73b0 and 0x1ed340 lose 2 each); a
+// typed components local and a component index local inside the arm 4.
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
@@ -660,6 +665,7 @@ struct s_object_link_iterator
     s_object_link_owner const *owner;
     long index;
 };
+void function_caf60(long unit_index, point3f *position);
 short function_b8a80(long object_index, s_object_link_iterator *iterator);
 short function_b8b20(s_object_link_iterator *iterator);
 real function_c8880(long unit_index, short field_240);
@@ -672,7 +678,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
-// score 230 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
+// score 165 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
 // bool result byte) while ours keeps EBP for the global base and a dword result.
 // MiniMax D (11-08): ours has an unaligned 0xac frame where retail realigns to eight
 // bytes with a 0xb4 frame, so the register homes and the block layout differ from the first byte; the
@@ -836,18 +842,33 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // square: the radius square written at its single use (no local) with the inverted model test and the lead
 // 222, without the step ternary 224, with the lead but not inverted 231, lead without ternary 233, alone 232,
 // with the model index at each use only 229. Every gain rests on the moved square or the arm inversion.
+// Round 100 (m3 lane 9, fast with both callers in the image, confirmed by the full check): 230 -> 165 at 895 bytes,
+// retail's `and esp, -8`, 0xb4 frame and 248 instructions. Cause of the missing self-alignment: the named double local
+// (and its const reference). With a caller in the image a named double never self-aligns here, whatever holds it
+// (diagnostics, 230 each: a double member of a local aggregate, a double array, the double at function scope; an
+// unused `__int64` 308 at 956 bytes); with no named double the frame self-aligns: the radius cast in the atan2
+// argument 246 (0xac frame). Kept on that: the magnitude call written inside the atan2 argument (retail's qword
+// spill of the radius across the call) 246; plus the existing function_caf60 for the marker position 283 (934
+// bytes); plus a bool result 246 (905 bytes); plus the ancestry walk through OBJECT_GET 191 (921 bytes); plus the
+// atan2 sum left in double (no `(real)` cast: the dot product and the compare go to x87) 165. Not kept, on 165:
+// the range's zero as the model-NONE else arm 167 (aligned 118 against 122); a named `real angle` for the sum 191
+// (921 bytes), with `cos((double)angle)` 167; the compare reversed with the dot product cast to double 158 (a cast
+// on a comparison side, and the frame is 0xac again); the angle through an inline helper taking the radius as a
+// double parameter 276 (927 bytes, self-aligned). Still differs: retail evaluates the atan2 sum (a float add) ahead
+// of the dot product and applies fcos after it; it keeps the player index in memory, re-tests it against NONE at
+// the latch and keeps the masked index from the loop top for the step; it loads the cluster bit table ahead of
+// the first query, and has no NONE re-test after the cluster loop.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
-    long result = false;
+    bool result = false;
     {
         long root = NONE;
         long index = object_index;
-        s_object_header_view *headers = (s_object_header_view *)g_4e0300->data;
         while (index != NONE)
         {
             root = index;
-            index = *(long *)((byte *)headers[index & 0xffff].object + 0x14);
+            index = *(long *)((byte *)OBJECT_GET(index) + 0x14);
         }
         s_object_header_view *header = OBJECT_HEADER_GET(root);
         dword flags = *(dword *)((byte *)header->object + 4);
@@ -888,9 +909,8 @@ bool function_bba80(long object_index)
             long unit_index = *(long *)(player + 0x2c);
             if (unit_index != NONE)
             {
-                s_object_marker marker;
-                function_b8d30(unit_index, 0x04000095, &marker, 1, false);
-                point3f position = marker.matrix.position;
+                point3f position;
+                function_caf60(unit_index, &position);
                 point3f *centre = (point3f *)(object + 0x30);
                 vector3f offset;
                 offset.i = centre->x - position.x;
@@ -912,11 +932,8 @@ bool function_bba80(long object_index)
                     offset.j = centre->y - position.y;
                     offset.k = centre->z - position.z;
                     vector3f *forward = (vector3f *)((byte *)OBJECT_GET(*(long *)(player + 0x2c)) + 0x15c);
-                    double radius_value = *(real *)(object + 0x3c);
-                    double const &radius = radius_value;
-                    real magnitude = function_30bf0(&offset);
                     if (offset.k * forward->k + offset.j * forward->j + offset.i * forward->i >
-                        cos((real)atan2(radius, (double)magnitude) + 0.7853981852531433f))
+                        cos(atan2((double)*(real *)(object + 0x3c), (double)function_30bf0(&offset)) + 0.7853981852531433f))
                     {
                         result = true;
                         goto done;
@@ -2032,6 +2049,16 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // != 0` 282 (1237 bytes), and on 282 the inner bit-8 test by shift 284, the outer bit-7 test by shift 286, the
 // type test as `!((1 << type) & 0x80)` 291, all four retail forms 298 (1254 bytes), the 0xc0 bit-6 test by
 // shift 282. Best 282 is three under, not kept.
+// Round 100 (m3 lane 9, fast; exact-aligned / register- and slot-masked instruction counts, main 190 / 131): the
+// shared vector-rotate helper reading the vector at each use (retail re-reads the first vector per row) 338 (1182
+// bytes, 282 / 212; sibling 0xb8ee0 lost); the first vector through the existing direct-read rotate helper 340
+// (1277 bytes, 252 / 146); `index` not volatile 320 (1205 bytes, 179 / 117); plus the round 156 root tail and the
+// byte activity bit 326 (1199 bytes, 151 / 93); plus `node` not volatile 325 (1200 bytes, 125 / 86: the
+// structural lead); the tail and the byte bit on main's volatiles 282 (160 / 102); the 325 form plus the header
+// from OBJECT_HEADER_GET(index) and the saved activity ahead of the parent, shift-form bit 7/8/6 tests and the
+// type test as a mask 394 (1169 bytes, 152 / 102; 0xb8ee0 lost); plus the parent's node-matrix base read ahead of
+// the link stores (0xb8bd0's body by hand, diagnostic) 303 at 1236 bytes (158 / 115). Nothing reaches 277; body
+// unchanged. BLOCKED-BY 0xb8bd0 as before.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {
