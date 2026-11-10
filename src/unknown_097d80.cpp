@@ -369,6 +369,10 @@ struct c_aggregate : c_child
 // positive/complementary bool/byte/short/long: 31/31/31/31/31/31/31/31. Original independent escaped
 // outputs restored; native frame and low loop homes remain unresolved. NOT kept: no qualifying
 // exact/native-shape gain; original complete body restored.
+// Round 139 (m3 lane 7, fast with the six file-mates): the count output parameter of `v5` declared `long const *` 31 (same
+// code); the cleanup's item count read once into a named local 74; the cleanup's empty-item test as an early `continue` 31
+// (same code); the total added under `if (produced != 0)` 136 (389 bytes); the count output named `result` like the
+// cleanup's output (one name in two scopes) 31. Frame 0x8024 in each; still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
