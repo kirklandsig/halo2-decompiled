@@ -321,6 +321,8 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // in EBX with a four-byte frame, while ours reserves eight bytes and pushes ESI and EDI, so the
 // prologue and every later use of the two arguments differ; the request convention is fixed by the
 // eight matched callers in other lanes' files.
+// not kept (coordinator, 11-10): the swapped start calls (166) unmatch 9 functions in
+// 189010.cpp/189a50.cpp at link time (batch 250 gate 1); main's order restored.
 // score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // this round: no new form and no lower score; retail still takes the first
@@ -522,7 +524,7 @@ long function_21d110(s_sound_play_state *state, long tag_index)
 		}
 		sound_effect_attach(effect_index, state);
 
-		long sound_index = function_125f70(tag_index, (s_looping_detail_request *)state, NULL);
+		long sound_index = sound_start(state, tag_index);
 		if (sound_index != NONE)
 		{
 			s_sound_effect *effect = sound_effect_get(effect_index);
@@ -537,7 +539,7 @@ long function_21d110(s_sound_play_state *state, long tag_index)
 		}
 		return sound_index;
 	}
-	return sound_start(state, tag_index);
+	return function_125f70(tag_index, (s_looping_detail_request *)state, NULL);
 }
 
 PRIVATE __forceinline long function_21d2c1(s_sound_effect_definition *arg_0)
