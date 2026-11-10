@@ -731,6 +731,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // 113 (1136) [89]; on that, the motion through vector3f_rotate_into_axes 119 (1140) [96], the emitter-definition
 // block base named once before the loop 284 (1118) [176], the motion rotated from the particle's velocity into its
 // copy 141 (1140) [135], plus the position rotated from the particle's position into its copy 199 (1143) [221].
+// T79: Independent alpha/color/scale admission results at all original emitter/particle flag
+// observations, bool subsets 1/2/4/3/5/6/7 then all long: 155/217/136/234/143/236/227/173.
+// NOT kept: unmatched one-use decisions grow the extent; original complete body and all
+// shared alias-safe rotations restored. Offset/default/reload and row-i schedules remain.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

@@ -360,6 +360,10 @@ bool g_47f05b;
 // forward zero-default/reverse sentinel-default overrides 43/43.
 // NOT kept: all regress, several outline the constructor, and both exact constructor peers lose.
 // Original complete shared constructor and initializer restored; intermediate vtable/arm reload remain.
+// T79: Existing four-word member lifetime via uninitialized_fill/uninitialized_fill_n,
+// prefix/full zero ranges then sentinel, body/member-list fixed-base initialization: eight 56s.
+// NOT kept: extent 129/146 and four shared-user regressions per form, losing both exact
+// constructor peers. Complete header and body restored; intermediate vtable/arm reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {
