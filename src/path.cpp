@@ -368,6 +368,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// MiniMax C (11-10): 286 -> 200 not kept: it came from a bool started false and set by if/else for the link test, the same
+// bool reset and reused for the surface test, an origin pointer and two-arm start/end fallbacks; test-set flags are kept only
+// with a byte match (lane 13 r63 held 16 with the same kind of flags). Retail keeps the edge flag in a byte at esp+0xf and reads
+// it back at the join; ours folds the bit into the test.
 // MiniMax D (11-08): no new form, no lower score (286); our frame is 0xe8 against retail's 0xe4, and in the scan
 // retail keeps the link index in a register (ECX) and multiplies it by 0x44 while ours reloads it from a stack slot
 // each time, so the two sides' frame slots sit four bytes apart; the first loop's block count and the scan's flags
