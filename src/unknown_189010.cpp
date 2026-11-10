@@ -336,6 +336,15 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // M3 lane 11 r81 (plain, with the eight matched callers): flag base as `5 + (source ? 0x20 : 0)` 110, as `source ? 0x25 : 5` 110,
 // as `long` 110, end time as `game_time + 10 + ticks` 110 (all same code); the end test reading the audible byte from the request
 // 135 at retail's 470 bytes, but the request stays live and all eight matched callers are lost.
+// Round 82 (m3 lane 1, fast with the eight matched callers, 0x221810 and 0x21d110; the fast image reads 110 for this body):
+// retail's whole header at once, the priority from the request's audible byte, the flag word started at 5 with three
+// set-or-clear steps (source bit 5, object bit 3, platform bit 8, the file-local macro other files use), the location copied
+// after the flag store and the marker size set in an if/else: 166 (500 bytes; the first 0x221810 call is still expanded);
+// that with the +0xa flag bits as word bitfields 173 (505); the three steps applied to state.flags itself 170 (499; the
+// request then arrives in another register and all eight callers differ by 1 to 4); the local form with word bitfields and
+// the end test split into bit 8, bit 11 and the audible test 190 (518); the state.flags form with both 193 (516, callers
+// differ). Retail calls 0x221810 out of line at every site (see its comment in src/unknown_221490.cpp); giving it a file of
+// its own is a build-flag decision this lane does not make. Body unchanged.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

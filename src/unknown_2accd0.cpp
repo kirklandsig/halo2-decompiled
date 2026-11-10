@@ -610,6 +610,17 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
+// MiniMax C (11-09): NOT kept: 28 (was 34), I's form again (a one-use local is kept only with a match): the entry total
+// folded into its float conversion (no total local) and the signature case naming the file handle once, which puts the entry sum in EDX with the task pointer in EAX and the
+// signature case's header size in EDX with the handle in EAX, as retail has them. Left: the dispatch still hoists
+// body_size into ESI where retail reuses the switch register ECX, so the signature sum stays a one-byte-shorter add
+// where retail has `lea esi, [ecx + edx]`, every later branch shifts by that byte, and the body's size and position
+// stay in ESI and EDI where retail has them in EDI and ESI. Also tried and reverted: the position declared before
+// the handle (28, unchanged), the signature sum's operands in the other order (28, unchanged), the position computed
+// before the buffer arms (152), a separate capacity variable for the scratch getter (158). Also tried and reverted here:
+// a local for the header size (28, unchanged), the position written as two statements (28, unchanged), the sum with a
+// zero addend (28, unchanged), and the position computed at the top of the function (228: the entry sum then shares the
+// position's addend and the body size load does reach ECX, but the entry no longer matches).
 // MiniMax I (11-09): NOT kept: 28 (was 34) with the entry total inline for the float conversion plus a one-use
 // HANDLE local for SetFilePointer only (the sum then lands in EDX, task pointer in EAX, as retail has it); a one-use
 // local is kept only with a match, and the same local used by ReadFile too scores 203. The dispatch still hoists
@@ -962,6 +973,11 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // as (position, file); the sum written body first; the helper plain inline; a three-parameter helper adding (start, offset) inside.
 // Retail's sum keeps the body size in its own temporary, as if it were read again after the sum; no form found that keeps it apart.
 // Nothing kept (one-caller helper; the field clamp reads the field beside a local copy).
+// Round 161 (m3 lane 6, fast; 0x2adb10 matched throughout): the total as `sizeof + (header + body)` 34; the result as
+// `!memcmp(...)` 34; the body progress summed offset first 34; the header case as two early `break`s on the failure
+// tests 34; the signature seek and read as nested ifs 34 (all the same code; the first and last re-measure listed forms).
+// New on top: the total as header + sizeof + body 34 (same code); the bool passed straight as XCalculateSignatureBegin's
+// flag (its value is 1) 71.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

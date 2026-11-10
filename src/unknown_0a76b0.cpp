@@ -4060,6 +4060,8 @@ bool __stdcall function_ec2d0(long unit_index, s_unit_request *request)
 
 void function_e5750(long unit_index);
 
+/* The biped test is nested in itself: at one level of nesting the build expands function_e5750 here, where
+   retail calls it (as it does under the two tests of function_ec9a0). */
 // MiniMax I (11-09): no new form, no lower score (52); function_e5750 still expands here (95 bytes) where retail
 // calls it out of line (67 bytes), and the unit pointer is still read after the 0xec0d0 call where retail reads it before.
 // MiniMax H (11-07): no new form, no lower score (52); function_e5750 still expands here (95
@@ -4096,9 +4098,14 @@ void function_e5750(long unit_index);
 // @retail 0xec330
 void __stdcall function_ec330(long unit_index, long type)
 {
+	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
+
 	function_ec0d0(unit_index, 0x6000542, 0x400000c);
-	if (UNIT_ACTION_UNIT_GET(unit_index)->object_type == 0)
-		function_e5750(unit_index);
+	if (unit->object_type == 0)
+	{
+		if (unit->object_type == 0)
+			function_e5750(unit_index);
+	}
 }
 
 /* raises a weapon to point (type 41): its animation, and when it ends */
@@ -4213,6 +4220,13 @@ extern vector3f *g_4687bc;
 // the material NONE store back after function_d6660 148 (retail stores it first; d6660 then overwrites it).
 // Round 145: material declaration/assignment split, direct initialization and renamed material; rigid-body
 // reference, base then index, const component and first-node dereference all 45; shared array base 58. Original restored.
+// Round 65 (m3 lane 15, fast; base 31): the component index named ahead of the material 31 (same code); the material
+// default-constructed and assigned after the component lookup 33; 0x188180's seventh parameter as the 2-byte material
+// type by value, changed at its definition, five declarations and six calls together 45 (0x188180 77 -> 95: the effect
+// value takes EAX and the point ECX; 0xe4d90 154 -> 168, 0xceee0 94 -> 103, 0x10c880 67 -> 65, 0x247070 29 -> 15; all
+// restored): retail's 0x188180 takes its tag from the stack into EBX for 0x1883e0, so its inputs follow that callee
+// (BLOCKED-BY 0x1883e0, whose declaration in src/impacts.cpp is held); the rigid body through a const reference to the
+// array 31 (same code); the node count and first node read through the array at each use 35.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

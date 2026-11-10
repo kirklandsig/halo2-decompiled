@@ -1329,6 +1329,12 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // through object_get 87 (same code, kept: drops a one-use local); the current object through object_get 87;
 // the no-model flag before the matrix 88; the parent index read at each use 87; the index declared before
 // the defaults 87.
+// Round 83 (m3 lane 10, fast, on 87): one function-scope parent index assigned in each branch 87 (same code); the no-model
+// matrix and mirrored flag under two separate index tests 97 (1383 bytes: data from EDI again); the no-model flag through
+// object_header_get 87 (same code); one parent header pointer read at both uses 95 (1385); the no-model defaults set in an
+// else arm 93 (1387). Lead from the last: with the defaults out of EAX/EDX at the index load, ours keeps g_4e0300 in ECX and
+// re-reads only its data field (`mov eax, [ecx + 0x44]`), as retail; retail's defaults sit before the test, so its index
+// takes ESI (copied to EAX for the mask) where ours takes ECX and reloads the pool. What gives the index ESI there is open.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
