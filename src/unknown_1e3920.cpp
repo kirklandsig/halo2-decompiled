@@ -1312,6 +1312,15 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // the squad-index test both in the guard and in the while (a repeated test, diagnostic) 337 (1256, 0x1e4990 out of line, aligned 221,
 // masked 204), with the ternary break 296 (1258, aligned 218, masked 201: retail's entry and loop; what is left is the unit arm placed
 // after the perception arm and two byte-store orders in the query setup). Lead: the redundant guard is what keeps the call cold.
+// Round 106 (lane 9, fast with 0x1e4990/0x2036c0/0x203900/0x1e04a0): on the current base the flag loop (`bool replace =
+// true; ... while (replace && next != NONE)`, ternary result) 296 (1258 bytes, first difference +0x4b: entry, sentinel
+// and loop are retail's; left are the unit arm's placement, the stack slots and one store pair), with the arms
+// swapped (`if (!(*flags & 1))`, unit arm first) 232 (1263); the arms swapped alone 339 (1273); the flag-free
+// `while (squad_index != NONE && next != NONE)` 420 and with its terms swapped 408 (both inline 0x1e4990). Diagnostic:
+// the real 0xb7b40/0xb8540 bodies in place of their stubs leave 253 (masked aligned 222 either way).
+// On the flag loop: the unit arm reached by a goto after the actor block and jumping back to the actor test 336 (1275);
+// a switch on the bit (case 1 perception, default unit) 299 (1272 bytes, unit arm first); switch case 1 written first
+// 296 (same code); the cleanup arm first (`if (actor_index == NONE)`) 301 (1253). None places the unit arm after case 2.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

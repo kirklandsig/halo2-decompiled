@@ -407,6 +407,13 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // and minimum locals renamed to sort the other way 592 (same code: names do not order these homes). Retail's low frame is
 // success byte +0xb, ray index +0xc, minimum +0x10, hit bytes +0x14, cross result +0x18; ours success +0x7, minimum +0x8,
 // ray index +0xc, cross result +0x10, hit bytes +0x1c.
+// M3 lane 9 r105 (fast; "masked" = aligned count with registers and stack offsets ignored, control 592 masked 216): a
+// grid of the inactive exit last (`if (field_48 > 0) { ... return local_0; } return true;`) x the range read first
+// inside the body x a named inverse range for both products: 8 forms 592-684 (the inverse range alone 604, re-measured); exit last with the range first 656
+// (2830 bytes, masked 204), the inverse range adds 11-12 masked everywhere. On the 656 form: the FLT_MAX minimum
+// declared inside the body 669 (masked 209); the hit flags declared inside the body 687 (216); the origin copy taken
+// first in the body 691 (289). The ray loop as `do { ... } while (++local_17 < 4);` without the countdown 751 (2772
+// bytes, masked 250), on the 656 form 731 (239).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

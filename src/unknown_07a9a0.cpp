@@ -1277,6 +1277,13 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // the shared tail where retail has its own `result = false` epilogue); that with a long histogram 928 (2700 bytes, masked
 // 376); grouped labels and a long histogram without the guard 850; the early exit as `result = false; return result;` 766
 // (same code). Lead: retail's call site is out of line with no guard, so its inline choice comes from elsewhere.
+// Round 103 (m3 lane 9, fast): the player value through a call to 0x63220 1097 (2524 bytes: 0x63220 stays a call, the top
+// 0x192e60 lookup still inlines, and the session then arrives in EAX with `ret 4`, so 0x73530 matches); with an `inline`
+// declaration of 0x63220 in this file 1097; a file-local inline helper of 0x63220's shape 1097 (it stays a call too, and still
+// does with the body cut after the player loop);
+// a `__forceinline` declaration before 0x63220's definition (diagnostic) 1032 (2588: 0x63220 inlines but its own
+// 0x192e60/0x631f0/0x1931a0 calls stay out of line, and 0x6e910 then inlines it, 0 -> 155); the loop's availability test through
+// the matched 0x193f50 857 (2804, it stays a call); both early exits as `result = false; return result;` 766 (same code).
 // MiniMax I (11-10): no new form, no lower score; retail's party histogram is 16 dwords at frame+0x44, cleared twice with `rep stosd` and indexed as `mov ebx,[esp + eax*4 + 0x40]` with the count-1 folded into the displacement, so our word cells and the 0xd4 frame stay (the dword cells reach retail's 0xb4 frame but score 844), and the session ingress and the inlined lookup remain the only differences.
 // Round 66 (m3 lane 2, fast; 0x6fa60, 0x63220 and 0x192e60 stay matched, 0x71730 426 throughout): retail makes seven calls here
 // (0x192e60 at the top, 0x1931a0, 0x193250, 0x1932c0, 0x1934f0, 0x91e30, 0x91f00) and inlines everything else, the

@@ -627,6 +627,11 @@ extern point2f *g_468778;
 // the facing pointer taken straight from the 0x25d740 call, no view local, 375; the settings test as its own `if`
 // around the flag tests 374 (one count, not kept); the facing-test planar pair copied whole 384. Retail's two
 // `local_9 = *local_8` copies stay separate (the copy arm jumps past a local_6 reload); ours cross-jumps them.
+// Round 106 (lane 9, fast; re-measures of lane 1 r71's chain on the current base): actor first with constant returns
+// 393 (1549 bytes, masked 134), plus the velocity field through a named pointer 417 (1563), plus the direction
+// pointer inside its test 412 (1560), plus the second distance's zero in its arm 420 (1560), plus the planar pair
+// copied whole 412 (1552). Retail's homes: arg_0 EDI, actor EBP, slot ESI, prop EBX, settings in memory.
+// Diagnostic: 0x110ab0 as an opaque stub leaves 375 (masked 134), so that unmatched callee is not the cause.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

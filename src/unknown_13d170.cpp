@@ -536,6 +536,11 @@ struct s_physical_block_iterator
 // as retail, but setb/setl), with the second age as `MAX(physical->time - best.time, 0)` 227 (1183 bytes, aligned 61);
 // with that clamp: case 0 as a ternary on the time test 209 (1228), as an if / else-if pair setting true 209 (1228), the
 // take test as `better || !have_best` 209 (1228), all aligned 84.
+// Round 104 (m3 lane 9, fast): case 0 as `if (time < best time) better = true; else if (times equal) better =
+// pages < best pages;` 235 (1178 bytes, aligned 118 -> 95: case 0 sits in place after case 1 as in retail, only its
+// last test is a setl where retail branches to `mov al, 1`); that with the second age as `MAX(physical->time -
+// best.time, 0)` 209 (1193, aligned 112); case 0 as a ternary on the times being unequal 284 (1182), with the clamp
+// 279; as an if/else on the times being unequal 284, with the clamp 279.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

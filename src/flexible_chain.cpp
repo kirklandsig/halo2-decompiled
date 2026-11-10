@@ -555,6 +555,11 @@ void __stdcall function_1160c0(real dt)
 // New segment spellings (fast, 0x116750 matched): the segments base hoisted above the loop 301 (1370 bytes); `&segments[i]` then
 // `segment--` for the last node 292 (1357); the base, `segment += i`, then `segment--` 292; the index as `i < count ? i : count - 1`
 // 172; as `i < count - 1 ? i : count - 1` 179. None gives the EDX base after the index.
+// Round 104 (m3 lane 9, fast): names do not order these homes: `offset` renamed `rest_offset` 171, with `segment`
+// renamed `current_segment` too 171, `length` renamed `axis_length` 171 (same code; the compile-only harness's frame
+// offsets do not move either); the normalization with `*=` in all three rows 171; `fabs(length) < .0001f` 171. Lead:
+// 0x170d70's file-private rotate_vector_170d70 has this rotation's shape (round 130 measured it as a local helper,
+// 163); using that existing helper needs it in a shared header, and its file is one of the held files this round.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

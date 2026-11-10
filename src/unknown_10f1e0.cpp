@@ -1669,6 +1669,18 @@ long function_cbd50(long unit_index, short weapon_index);
 // of line, and only then is the data reloaded, after the call); the second slot read as a byte-offset expression
 // 349, the first 349, both 349 (same code as the macro). So neither a store to the flag nor another spelling of the
 // lookup stops the sharing; only a real call between the queries did. NOT kept: body below unchanged.
+// M3 lane 9 r105 (fast; "masked" = aligned count with registers and stack offsets ignored, control 164 masked 49): a
+// grid of depletion (`&&` / if-form: first sets with `<= 0`, second clears on `> 0`) x an object-headers local (none /
+// in the controlling block for the two weapon-object lookups / at entry for the unit and both lookups) x byte/bool
+// result x slot reads (macro / entry unit): 24 forms 164-361, none below 164 (the bool result 194/1262, if-form 330/1292,
+// if-form with bool 361/1243, entry headers 334/1273, 339 and 325/1286 cells re-measure listed forms); best masked the `&&` depletion with the
+// block headers local and a bool result 326 (masked 23). The headers taken at entry for the weapon lookups only (unit
+// by the macro) with the if-form and bool result 349 (masked 25; round 77's form, re-measured), other cells 323-351; on it the three flags in all six declaration orders
+// 341-351, interruptible declared before depleted 351 (1255 bytes, masked 18: depleted then takes BL with retail's
+// setle and interruptible goes to memory, as retail; left: retail loads the controlling field into EBX before the
+// flag stores, stores all three zeroes to memory and reloads depleted's false from +0x12 at both joins, and re-reads
+// the pool's data in the second query); with the controlling field tested directly 351 (same code); with a byte
+// result 322 (masked 40).
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {

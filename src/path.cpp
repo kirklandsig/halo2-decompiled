@@ -718,6 +718,19 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // returns 321; both with the surface test as a second inline predicate 130/337; `edge_index != NONE &&` ahead of the
 // range test 182 (1397 bytes), as `if (edge_index == NONE) continue;` 182; `if (node_index == NONE) break;` at the
 // traversal's end 2 (same code). NOT kept: none matches and the flag form is match-only; body below unchanged.
+// M3 lane 9 r105 (fast, 0x270930 and the file's other matches kept): lane 13 r72's flag lead rebuilt at 2 (re-measured; only
+// `mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]` swapped at the scan loop's back edge). On it: one bool shared by the
+// link test and the special test 2 (same code); `break;` after `count = j + 1; complete = false;` 335 (1390 bytes);
+// `edge_index != NONE &&` after the range test 179 (1397 B, not folded); the traversal as `for (; node_index != NONE;
+// node_index = node->parent)` 2 (same code); one `short j` shared by an indexed fill and the scan 2 (control with
+// separate indices 2); the scan index named i, k, index, step_index, n, a or z and the steps parameter named
+// path_steps, output_steps, a_steps, z_steps or route 2 each (same code); the 0x26f3f0 call's result tested by an
+// empty `if`, either sense, 2 (same code: an empty body leaves no block); the margin computed inside the scan loop
+// 333; the step point written as `steps[j].point` at each use instead of the `point` local 375 (1421 B). 0x113980
+// shows the same swapped back-edge pair with every callee matched, so an unmatched callee is not the cause. On the
+// body below (286): `break;` after the count update 312 (1391 B); the traversal as a `for` with `node` declared before
+// it 286 (same code); the margin computed inside the scan loop 300; one `short j` for an indexed fill and the scan
+// 380 (1400 B).
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

@@ -70,8 +70,7 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
-// MiniMax E (11-09): no new form, no lower score (356).
-// score 356 (was 356): r136 lane 7: a compile-only copy reproduces this build's register skeleton exactly; screened
+// score 343 (was 356): round 103 below. r136 lane 7 (at 356): a compile-only copy reproduces this build's register skeleton exactly; screened
 // there, then built: `sinf(angle)` 357, `cosf(angle)` 357, matrix entries in retail's computation order (forward.i,
 // forward.j, left.i, left.j, forward.k, up.i, up.k, left.k, up.j) 381 (1750 bytes), caller-computed sine/cosine with
 // both angles and all four trig values first 370 (1796 bytes), the same with double angles 371.
@@ -182,24 +181,32 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // stores-only order 380 (1760); squares vector with either order 398/408, before trig 395; the other combinations
 // 376/378/383/399/413/420/429/433/434/441/453/463. Builder and body unchanged.
 // R223, second pass: the two matrices declared second, first 356 (same code).
+// MiniMax E (11-09): no new form, no lower score (356).
+// Round 103 (m3 lane 9, fast, confirmed plain): both passes rotate straight from g_467104's rows (retail reads the rows back from
+// the global in its second pass) 356 -> 343 (1785 bytes, frame 0x90 as retail; kept); with separately declared locals 343 (same
+// code); each row rotated in place 368 (1749); entry copies with direct publication and copy-back 384 (1811); the second pass
+// from the locals 376 (1738); the vector by value, rows in place 371 (1795); a per-row copy before an in-place rotation, three
+// locals / one `vector` local 384 / 359 (1774: an integer aggregate copy where retail loads floats); plus named angles 353 (1795).
+// Left: retail rotates each row in place in the first pass (i and j copied as floats, k re-read), keeps six of the first
+// matrix's entries in XMM1-XMM6, and has both angles on the x87 stack before the first fsin. On the kept body: the first pass in
+// place with the second as kept 343 (aligned 532 against 519); squares before the trig 354 (1762); the vector by value 363 (1789);
+// the two matrices declared separately 343 (same code). Main's entry copies with only the second pass read from the rows 422
+// (1846), so both passes reading g_467104 carry the gain.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
     matrix3x3 first, second;
     rotation_from_axis(&g_485618.forward, step * 0.5f, &first);
     rotation_from_axis(&g_485618.up, step * 0.3f, &second);
-    vector3f forward = g_467104.forward;
-    vector3f left = g_467104.left;
-    vector3f up = g_467104.up;
-    forward = rotate_axis_vector(&first, &forward);
-    left = rotate_axis_vector(&first, &left);
-    up = rotate_axis_vector(&first, &up);
+    vector3f forward = rotate_axis_vector(&first, &g_467104.forward);
+    vector3f left = rotate_axis_vector(&first, &g_467104.left);
+    vector3f up = rotate_axis_vector(&first, &g_467104.up);
     g_467104.forward = forward;
     g_467104.left = left;
     g_467104.up = up;
-    forward = rotate_axis_vector(&second, &forward);
-    left = rotate_axis_vector(&second, &left);
-    up = rotate_axis_vector(&second, &up);
+    forward = rotate_axis_vector(&second, &g_467104.forward);
+    left = rotate_axis_vector(&second, &g_467104.left);
+    up = rotate_axis_vector(&second, &g_467104.up);
     g_467104.forward = forward;
     g_467104.left = left;
     g_467104.up = up;
@@ -2636,6 +2643,11 @@ real magnitude3d(vector3f const *v);
 // R223, second pass: `step * acos(dot)` 170 (same code); the angle as `(real)acos(dot)` then `angle *= step` 170 (same code); both
 // dot3f calls with their arguments swapped 170 (same code); the axis through the existing cross3f(&first, &second, &axis) 182
 // (1058 bytes); cos(angle) written at both of its uses with no cosine local until after the projection 170 (same code).
+// Round 103 (m3 lane 9, fast with 0x24590/0x30bf0, control 170): the rotation size as `a + PIN(delta, -step, step)` 170 (same
+// code); `step * (real)acos(dot)` 170; the rotation delta clamped by if/else-if before `real size = a + delta;` 170 (aligned 220);
+// the fallback store as `delta + current->n[component]` (retail adds into the delta register in its first component) 170 (same
+// code); the fallback through PIN 188 (1025 bytes, the noted nested-ternary form); `first` and `second` declared at their
+// normalizations 170 (same code).
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {

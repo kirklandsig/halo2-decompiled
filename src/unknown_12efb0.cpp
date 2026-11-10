@@ -143,6 +143,7 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // MiniMax E (11-05): no new form, no lower score; the palette and accumulator carriers are as the earlier
 // rounds left them, and retail's `mulss scalar, t` product form has no legal spelling here.
 // Earlier at 616: Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
+// Earlier 616 (was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
 // Earlier: Frame 0x4820 and metadata cursor agree; native palette width and accumulator carriers differ.
 // Frame, clear prefix and metadata cursor agree; palette/cluster carriers and accumulator scheduling remain.
 // Frame 0x4820, clears and metadata cursor agree; cluster-index EDI, palette carriers and helper update scheduling differ.
@@ -458,6 +459,14 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // test and the lookup 666 (retail's early movsx); on that, NULL assigned in the lookup arm instead of at the declaration
 // 666 (same code: still threaded). Left in that block: NONE in EDX and the lookup result in EAX (retail EAX/EDX), the zero
 // in XMM5 (retail XMM7) and retail's unthreaded NULL test; the accumulator schedule after it is unchanged.
+// M3 lane 9 r105 (fast; "masked" = aligned count with registers and stack offsets ignored, control 607 masked 220): a
+// grid of the palette slot (short / char) x the three-scalar helper's statement order (w m r g b i d h as now /
+// r g b i d h w m / r g w b i d h m / r h g w i d m b) x the merge helper's weight and remaining updates after
+// the colour block (no / yes): 16 forms 607-732; the merge helper's late weight lowers the masked count in every
+// pairing (220 -> 191 alone, 705), best r g w b i d h m with it 732 (3847 bytes, masked 153); on that the
+// four-channel helper's weight terms first 714 (masked 173); r g b w i d h m with the late merge weight 732
+// (masked 155); r g w b i d m h 698 (masked 260); the merge helper reading the source weight at each use 732 (same
+// code). Retail keeps 0.0 in xmm7 for the whole loop body (43 uses, no other value), which none of these give.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
