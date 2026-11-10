@@ -92,6 +92,10 @@ union s_6ec80
 // local_2 in memory, players in EBX): players declared first 225, players declared last 225, local_2 declared last
 // 225, the counter declared at the top and zeroed in the guard 225, counter then mask at the guard top 227, the two
 // flags declared true flag first 227, a short counter 247 (981 bytes).
+// Round 83 (m3 lane 10, fast), all with the mask scoped in the guard (alone 225: NONE takes EDI for the whole
+// setup and the frame's second_id/name and short/data slots swap): the block pointer, mask and counter named
+// machines/player_mask/player_index 225; the block pointers set in an if/else (no zero ahead of the test) 227;
+// the guard tested players first 225, with the if/else pointers 227; a typed player-record pointer for the loop 225.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

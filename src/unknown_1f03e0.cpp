@@ -577,6 +577,11 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // merging); a forceinline contact-entry getter (component, index) at all six entry reads 43 (same code), with case 3 selected-first 178
 // (the same 178 as without it: the getter shifts nothing); case 2 averaging arm and case 3 selected arm both first 215; case 3
 // selected-first with case 2's `selected != 0` arm first 199. Body restored.
+// Round 161 (m3 lane 5, fast with 0x1201a0 and 0x1f2e60; aligned in brackets, control 43 [20]): the extra byte is the inlined
+// 0x1201a0 tail's j product (ours `movss; mulss xmm0` 9 bytes, retail `movaps xmm1, xmm0; mulss [ebx + 4]` 8). Case 1's copy
+// through a named element pointer 225 (995 bytes) [42]; the stepping flag named in the loop 43 [21]; case 2's selected arms as
+// one cross3f_staged call with ternary operands 213 (954 bytes) [65]; the stepping flag as `& 2` 43 [20] (same code); case 3's
+// k row as `normal->k * scale` 43 [20] (same code).
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)

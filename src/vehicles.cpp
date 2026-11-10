@@ -967,6 +967,10 @@ __forceinline long vehicle_round(real value)
 // and the dot written out (diagnostic) 24/83/93/94, the dot alone 10; vehicle_cross at the side cross 8;
 // vehicle_cross first with cross3f_staged at the side 6; cross3f_staged first with vehicle_cross at the side 10;
 // cross3f_staged at both 10; the strength test as `mode == 4 || mode == 2` 10; a tick-length getter for the rate 12.
+// Round 84 (lane 10, fast), at 8: an up pointer at the first cross with cross3f_staged at the side cross 6 (current
+// body; one-use pointer, needs a match); axis set to forward before the mode test with the cross overwriting it 173;
+// the side scale named before the side cross 82; the three vectors declared at function scope 11; the velocity call
+// before the strength value 146; cross3f_staged at the side with the dot as dot3f(&linear_velocity, &forward) 8.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -1736,11 +1740,11 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
    sideways drift, speed, forward speed and two engine overlays, the
    graph's function animations and the three aiming overlays) to the
    callback with its value */
+// score 9 (was 9): the cross is now retail's; left: the two VEHICLE_GET lookups' SIB order (2), the three
+// reloads after the overlay-kind loop (3) and the forward-speed sum's first two products (4).
 // MiniMax R (11-06): no new form, no lower score (9); the flat sum keeps (i + j) + k here for every term order and
 // operand orientation and for the array-member spelling too, while a compile-only probe of the same expression
 // gives retail's (k + j) + i order when the three products have fresh component nodes.
-// score 9 (was 9): the cross is now retail's; left: the two VEHICLE_GET lookups' SIB order (2), the three
-// reloads after the overlay-kind loop (3) and the forward-speed sum's first two products (4).
 // Earlier at 13: Graph-loop scope fixes constructor/load scheduling; header SIB forms, join reload
 // order and cross/dot operand ranks remain.
 // Earlier at 40 (was 44): the overlay lookups now call 0x1cb9d0 directly (each gets its own result home: frame 0x9c as
@@ -1844,6 +1848,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // the i term retail's at +1 local, 13), eight term orders on it 13 each; one forward pointer for the cross and the
 // speed 17; a named header pointer for the first lookup (0xef4f0's form) 13, for both 13 (SIB unchanged). Matched
 // 0xeeb80 gets retail's data-first SIB from the same two lookup lines.
+// Round 84 (lane 10, fast), at 9: the graph/state guard as an early return 9 (same code); the forward speed computed
+// once before the guard 508 (2043 bytes: VC computes it eagerly, no sinking into the arm); both lookups indexed by
+// `(word)vehicle_index` 178 (2011 bytes); vehicle_speed_fraction plain `inline` 581 (1803 bytes, out of line under
+// /Ob1); the update test written `vehicle->unknown400 != state->graph_tag_index` 10.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2745,6 +2753,9 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // the gear test `!= NONE` with the computed arm first 18; the wrap helper called with `torque * dt` 70, with the
 // contacts store too 71; torque, throttle or i renamed to sort first or last 10 each (spill slots ignore names); a
 // tick-length getter for dt 10, for dt and the braking test 65.
+// Round 84 (lane 10, fast), at 10: every contact access written `state->contacts[i].x` (no contact pointer) 46; the
+// half angle written into both trig calls 65; braking preset false and set by the test 222; the spin as `dt * torque`
+// 10 (same code); dt read after the vehicle and definition lookups 192.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3876,11 +3887,13 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 /* the orientation the vehicle's physics aims for: its facing held level,
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
+
+// score 136 (was 136): projection/cross input ranks and angle/trig homes remain;
 // MiniMax E (11-08): no new form, no lower score (136); the dot's i term still multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy still moves one word and two floats where retail moves three words, and the trig block still spills the sine and cosine through the stack where retail keeps the angle on the x87 stack.
 // MiniMax E (11-07): no new form, no lower score (136); the projection and cross operand ranks and the
 // x87 angle and trig homes are unchanged from the earlier rounds' forms.
 // MiniMax R (11-06): no new form, no lower score (136); the entry and the frame agree, and the body differences of the note below are unchanged.
-// score 136 (was 136): Fallback up setter with staged cross, native up receiver and rotation setters kept;
+// Earlier (136, was 136): Fallback up setter with staged cross, native up receiver and rotation setters kept;
 // projection/cross operand ranks and trig homes remain.
 // Shared cross 204; external cross 326; native forward/up/both 263/269/298;
 // shared cross with forward/both 263/298. Wide angle 177 rejected without exact equality;
@@ -4042,6 +4055,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // then immutable complete inputs: 179/179/175/169/169/179/165/165.
 // NOT kept: all regress and lengthen; unmatched input copies require equality.
 // Original shared projection providers and entire body restored; projection/cross/trig homes remain.
+// T80: Canonical fallback comparison, degenerate/normalized bool/byte/short/long:
+// 159/159/159/159/159/159/159/159, all 831/806 bytes. Projection/cross input ranks and angle/trig
+// homes remain.
+// NOT kept: no byte equality or qualifying gain; original complete body restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4284,6 +4301,7 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
+// MiniMax S (11-10): no new form, no lower score (48): the marker count sum still lands in EAX here and in EDI in retail, the scratch zero store still follows the sum here and precedes it in retail, and the 0x146320 set-up pair still waits on that file.
 // MiniMax E (11-08): no new form, no lower score (48); the marker count sum still lands in EAX here and in EDI in retail, the scratch zero store still follows the sum here and precedes it in retail, the effect block's tag and colour still ride in the other order, and the 0x146320 set-up pair still waits on that file.
 // MiniMax E (11-07): no new form, no lower score; the marker count sum still lands in EAX here and in
 // EDI in retail, and the 0x146320 set-up pair still waits on that file.
@@ -4382,6 +4400,7 @@ extern byte g_5107ee;
    marker's downward pitch, the distance and the vehicle's speed; the
    effect's last marker sits between the marker and the hit, aimed along
    the reflected ray */
+// MiniMax S (11-10): no new form, no lower score (41): the cone call's EDI-before-ECX pair still waits on 0x146320's file, and the middle-point copy is still scheduled ahead of the reflection's loads.
 // MiniMax E (11-08): no new form, no lower score (41); the middle-point copy is still scheduled ahead of the reflection's loads where retail stores its z and y words after the first products, retail keeps the colour constant in ECX across those products while ours materialises it in EAX, and the cone call's EDI-before-ECX pair still waits on 0x146320's file.
 // MiniMax E (11-07): no new form, no lower score (41); the cone call's EDI-before-ECX pair still
 // waits on 0x146320's file, and the middle-point copy is still scheduled ahead of the reflection's loads.

@@ -1980,11 +1980,16 @@ void function_204450(long definition_index, long squad_index)
 bool function_1e11b0(long actor_index, bool active);
 
 #pragma inline_depth(0)
+// score 64 (was 64): frame 0xc agrees; the squad address stays in EBX instead of
+// retail's spilled ESI pointer and EBP handle. The common loop head and
+// full-width return mask still differ.
+
+// score 64 (was 64): EBP handle/receiver spill, common loop head and return width remain;
 // MiniMax H (11-07): no new form, no lower score (64); the squad address is still kept in EBX
 // where retail keeps the parameter in EBP and the squad address in ESI (spilled into the slot above
 // the argument), the loop is still rotated with its test at the bottom, and the flag store still
 // reads the byte into a register where retail updates the byte in memory and reads it back.
-// score 64 (was 64): frame 0xc agrees; the squad address stays in EBX instead of
+// Earlier (64, was 64): frame 0xc agrees; the squad address stays in EBX instead of
 // retail's spilled ESI pointer and EBP handle. The common loop head and
 // full-width return mask still differ.
 // byte record 64; native absolute index 64 (caller loss); record field types 64.
@@ -2162,11 +2167,20 @@ bool function_1e11b0(long actor_index, bool active);
 // the same domains sourced from the initialized iterator full handle: four 65s at
 // 199 bytes, losing both matched callers. NOT kept: native EBP handle/receiver spill
 // and return mask remain; original real record, parameter store and whole body restored.
+// T80: Signed-word current/stale stamp admission in bool/byte/short/long: 64/64/64/64/64/64/64/64.
+// Native EBP handle, receiver spill, common loop head and full-width return remain.
+// NOT kept: no byte equality or qualifying gain; original complete body restored.
 // P401: Complete loop admission/exhaustion carried by bool/byte/short/long in the
 // ordinary for predicate: eight 81s at 214 bytes. Full-width value argument alone/with
 // word flag publication and full mask 64/65, both lose the two matched callers.
 // NOT kept: no native EBP handle/receiver spill or common loop head; original
 // scalar parameter, every interface, direct condition and complete body restored.
+// Round 84 (m3 lane 10, fast): the 13 form rebuilt (no function-level pragma, 0x203d70's loop with the statement-level
+// pair, squad_get twice, one read of the index through its address at the +0x34 store, game time before a word flag
+// store, short-view return) 13 at 199 B, 0x203d70/0x201ea0 still matched, only index EBX/next EBP against retail's
+// EBP/EBX; on it: the actor declared in the while condition 13, the parameter renamed 13, the 0x1e11b0 test as
+// `if (...) continue;` 13, its result in a named bool 13 (all same code). Without the address read the index is
+// homed in EBX and LTCG passes it in a register; retail homes it in EBP, which keeps the stack convention.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2898,6 +2912,9 @@ short function_290cd0(short arg_0, long arg_1, long arg_2, short *arg_3, short *
 bool function_290e20(short arg_0, long arg_1, long arg_2);
 bool function_1fb8a0(long arg_0, short arg_1);
 
+// score 50 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
+// squad index for the first 0x1fb8a0 call (retail `mov eax, ebp`, ours reloads its home, 2 bytes longer),
+// which shifts the later jump targets and drops the actor loop's alignment nop.
 // MiniMax R (11-09): five more forms around that call all give 50 with the same code: the call without the short cast
 // on the choice, the test and the call without the casts, a local copy of the squad before the call, before the pair
 // of calls, and the squad copied at the top of the function and used for every call.
@@ -2910,9 +2927,6 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // copy-propagated back and compiles to the same reload (50).
 // MiniMax C (11-05): no new form, no lower score: the first call still reloads the squad index from its stack
 // home where retail keeps it in EBP.
-// score 50 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
-// squad index for the first 0x1fb8a0 call (retail `mov eax, ebp`, ours reloads its home, 2 bytes longer),
-// which shifts the later jump targets and drops the actor loop's alignment nop.
 // Earlier: task zeroing/retest, predicate load and iterator head remained.
 // Earlier: frame 0x1c agrees; task zeroing/retest and iterator head remain; optional producer scope, delay scope, both scopes, native trigger entry, signed entry index, threshold selection, iterator name and native entry with producer scopes each 152.
 // frame 0x1c agrees; task zeroing/retest, optional-output width and iterator head differ.
@@ -3077,6 +3091,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // bool/byte/short/long: 50/50/50/50/50/50/50/50. NOT kept: no equality;
 // all one-use outcomes and the complete body restored. First-event EBP reload
 // and displaced actor-loop alignment remain.
+// Round 84 (m3 lane 10, fast), at 50: the first test's lock bit read dword-wide 50 (same code); the first test's entry
+// through the existing getter 0x203330 (null test, then its bit) 162 (580 B); the lock bit as `!TEST_FIELD_BIT(... & 1)`
+// 50; the bit declared as a one-bit field of the entry (overlaid on the byte view) and tested through the table's
+// entries 50 (same code); the first condition in a named bool tested once 50.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
