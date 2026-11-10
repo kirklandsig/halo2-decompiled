@@ -402,10 +402,19 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // layout only: retail places the second type-0 branch and the type 1/7/11 arms after the join (0x2c12a3-0x2c1441, jumping back into it) and keeps
 // the skip flag at [esp+0x12], a profile-style block order that source order has not reproduced. The unit_index and actor volatiles carry no
 // retail meaning beyond forcing the reloads retail shows at the loop back edge (0x2c0f68 edi from [esp+0x2ce0], 0x2c0f6f ebp from [esp+0x44]).
+// M3 lane 3 r225 (plain; base 901 after the merge, aligned [exact, stack-masked, register-masked] [750, 662, 363]; fast 919 with
+// CAVEATs): `else straight = true;` after the actor block (retail stores 1 into straight a second time at 0x2c0e9a) 912 [750, 665, 361];
+// that plus no unit/actor volatiles and plain location/raised locals 986 (3655 bytes, frame 0x2cb0) [584, 630, 327]; unit volatile
+// dropped alone 928 [749, 661, 362]; actor volatile dropped alone 982 (3662, frame 0x2cb4) [581, 628, 334]; the query grouping
+// dropped alone (plain location and raised) 922 (3708, frame 0x2cb4) [753, 665, 357]. The volatile-free forms align far better
+// but lose the positional count; retail reloads actor_index/unit_index at the loop back edge and keeps actor at [esp+0x24].
 // m3 lane 12 r106 (fast, control 901 = plain baseline): the type-1 arm as `if (team == ... || !function_1df560(...))
 // skip_classification = true;` (retail 0x2c13a9 stores only the 1) 924; the type test inverted, `if (type != 0) { 1/7/11
 // chain } else { type 0 }` 915 (3737 bytes; the chain just moves ahead of type 0, nothing goes past the ret); both 927;
 // the 1/7/11 arms as separate `if`s 901 (same code); that with the type-1 conditional set 924.
+// MiniMax D (11-10): no new form, no lower score: retail and this build agree on the arguments (the previous
+// direction arrives in ECX and ten arguments are pushed), so only the frame (0x2cb8 against 0x2cac) and the local
+// homes still differ.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1267,10 +1276,11 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
     s_path_location const *location, s_avoidance_trace *trace);
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
+// score 400 (was 418): the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
+// MiniMax E (11-10): no new form, no lower score (400); the frame is 0x114 here and 0x10c there, because the edge value and the other-side flag are kept in stack slots here and in ebx and bl there, which moves every other home by eight bytes.
 // MiniMax lane E (11-01): reading the step through a pointer instead of copying it, as retail does,
 // scores 490 (490 as well when the pointer is assigned in a second statement); no form tried
 // lowered the 444.
-// score 400 (was 418): the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // Earlier 444: frame 0x11c versus 0x10c, 1740 bytes against 1746. Ours copies the whole step
 // (`rep movsd`) where retail reads it through a pointer and keeps only its type and link in stack slots;
 // retail places the count <= 1 arm at the end, keeps 0 in EBX for the whole function, compares the
@@ -1664,6 +1674,13 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // Round 85 (m3 lane 10, all plain with 0x270930 and 0x2c2a70, which stay matched; positional/register-masked aligned, base 400/58): edge as a `word` 462/63
 // (1759 bytes); `++used` after the type/link stores 400/61; `unknown02` copied before the output index 400/59; `*complete` cleared before the count is
 // stored 464/70 (1753); the typed branch setting type and link before next 400/57. No form moves count out of BX or edge into EBX; frame 0x114 stays.
+// Round 66 (m3 lane 2, fast; 0x270930 and 0x2c2a70 stay matched): retail's EBX is the zero only up to the loop, then edge
+// (`mov ebx, 0xffff`); ours gives EBX to the NONE constant and EDI to the step pointer, retail EDI to index. Named step
+// pointers for the fallback's points[next - 1] and points[next] reads 426 (1761 bytes); the step's fields read through
+// points[index] at each use 473 (1758 bytes); the scan's trace declared before the candidate loop, the two trace results
+// before the attempt loop, the delta block's start/end beside delta: 400 each (same code, frame 0x114 unchanged).
+// Diagnostic, not kept: the distance test as a call to 0x210a30 with src/unknown_20fe20.cpp's /Ob1 dropped 657 (1554 bytes):
+// the call still stays out of line (and 0x270930 moves to 5), so that file's /Ob1 is not what keeps it out.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

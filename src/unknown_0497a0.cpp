@@ -283,7 +283,14 @@
 // inline taking them, unread aggregate members 620; `if (!special)` same pops, frame 0x64. An inline helper filling a local wave
 // vector from the global point (first sine, then the named factors, the unused third component written through a copy of the
 // result pointer) gives the same sequence (659 at 2584 B): retail's direct global reads may come from such a helper.
+// score 661 (was 661): behaviour and helper fixes from the b2E walk, each raising the score: the sixth input product is
 // score 661 (was 661; 537 before that): behaviour and helper fixes from the b2E walk, each raising the score: the sixth input product is
+// MiniMax D (11-10): 594 (was 661): the wave sines read the global point and each wave scale is written at its
+// use; the frame is still 0x54 against retail's 0x60 and the sines are still not evaluated in retail's order.
+// Retail's two crosses share their products, so its cross result is scalarized while its second cross is a
+// vector; forms tried: the two wave values as an array 604, the cross with shared products written out 677,
+// the cross moved after the two sines 655, all worse than 594 and reverted.
+// score 661 (was 537): behaviour and helper fixes from the b2E walk, each raising the score: the sixth input product is
 // a plain mulss as at 0x49f0d (the integer truncation was +78: 537 -> 615); the camera shifts and the vector scales
 // call vector3f_add_scaled / vector3f_scale (+10, 2622 bytes); the wave's first add calls vector3f_add_scaled (+11);
 // the sine of x * 5.6 + y keeps the sum on the x87 stack as at 0x498a7-0x498d7 (+25, then the sine is stored as a
@@ -296,6 +303,18 @@
 // as a named double 650; s1 before the cross product / after s0 650/650. Kept spelling (double)(x * 5.6f) + y: same score,
 // and fld/fmul dword/fadd dword/fsin as retail (the (double)x * 5.6f spelling gave fmul qword). s0 stays double-rounded: retail
 // 0x4995f stores the x87 sum * 0.5 as a float and 0x49963-0x49969 scales it by SSE; ours does fmul 0.5, fmul 0.03, fstp.
+// M3 lane 3 r225 (fast = plain 661 here; [exact, stack-masked, register-masked] aligned counts, base [654, 592, 180]; the frame is now
+// 0x5c against retail's 0x60, not 0x64, and both return with ret 0x20): global sine arguments with the 8.2 argument and the three
+// factors as named doubles 665 (2575 bytes, frame 0x58) [646, 601, 176]; global sine arguments alone re-measured 654 (2579, frame
+// 0x58) [655, 582, 178]. Perspective rows (retail scales r by the first reciprocal, then s by the second, then forms inv * 0.5):
+// vector3f_add_scaled into r and s with named reciprocals and a named half inverse, then two vector3f_scale 677 (2568) [576, 583, 181];
+// the same with the reciprocals and inv * 0.5f written in the calls 664 (2574) [610, 590, 139]; rows in place then two vector3f_scale
+// 671 (2622 bytes, retail's length) [562, 557, 163]; every row as (a * b + c) * k 661 (same code). With the global sines: calls form
+// 659 [618, 579, 129], in-place form 673 (2626) [549, 545, 153]. The two wave values in one two-float local read from the global
+// point 641 (2602 bytes, frame 0x64) [642, 587, 175], as a two-element array 642; with the calls form 639 [622, 583, 128], with the
+// in-place form 692 (2645). Not kept: a local that only groups the two values, and no match. Lead: retail stores both sines as
+// floats at once (0x4990e, 0x4995f) and keeps the cross product ahead of the first fsin, as if they were written to memory the
+// compiler could not sink; with the global arguments in plain locals our build sinks the first sine past the second.
 // m3 lane 12 r106 (fast): with offsets and registers normalised the listings differ only in the special arm (global
 // sine arguments, retail's x87 order, the cross products' order); the rest of the 661 is the 4-byte frame shift
 // (sub esp 0x5c against 0x60, a cross-product spill at [esp+0x14] pushing shape0 to +0x18). On the global sine
@@ -335,12 +354,10 @@ void function_0497a0(
 		vector3f c;
 		cross3f(&v4, &v2, &c);
 		/* retail 0x498a7-0x498d7 keeps x * 5.6 + y on the x87 stack up to fsin (no float rounding of the sum) */
-		real s1 = (real)sin((double)(v1.x * 5.6f) + v1.y);
-		real s0 = (real)((sin(v1.x * 8.2f) * cos(v1.y * 7.8f) * sin(v1.x) + cos(v1.y * 7.75f)) * 0.5f);
-		real amp = s0 * 0.03f;
-		vector3f_add_scaled((vector3f const *)&v1, &v4, amp, (vector3f *)&v1);
-		real k = s1 * 0.025f;
-		vector3f_add_scaled((vector3f const *)&v1, &c, k, (vector3f *)&v1);
+		real s1 = (real)sin((double)(g_4b9da0.x * 5.6f) + g_4b9da0.y);
+		real s0 = (real)((sin(g_4b9da0.x * 8.2f) * cos(g_4b9da0.y * 7.8f) * sin(g_4b9da0.x) + cos(g_4b9da0.y * 7.75f)) * 0.5f);
+		vector3f_add_scaled((vector3f const *)&v1, &v4, s0 * 0.03f, (vector3f *)&v1);
+		vector3f_add_scaled((vector3f const *)&v1, &c, s1 * 0.025f, (vector3f *)&v1);
 		cross3f(&v2, &v4, &w);
 	}
 	else
@@ -603,13 +620,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
     return pixel;
 }
 
+// score 250 (was 250): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
 // MiniMax D (11-09): the colour written component by component gives 447/604/623 against 250, and the
 // interpolation unrolled on its own gives 250; the scope moves give 620/250/620 and the case-0 and
 // colour store orders 246/248/244/250/255. The best is 244, under the bar, so the body is unchanged.
-// score 250 (was 250): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // MiniMax D (11-05): four declaration orders for the u and v scalars and their step and width partners
 // give 274/287/285 against 265; the frame stays 0xa8 against retail's 0xac, so no lower score.
@@ -979,6 +996,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // helper's blue channel +0xa8) and keeps v + width and the u step in 4-byte homes among the channels. Register-masked aligned differences left: 30, all small
 // schedules (case 0's half-width add and y spill, case 1/2's x load, case 4's position pointer formed after the neighbour lookup, the side length's `fst`,
 // the colour store order and one tail reload).
+// Round 66 (m3 lane 2, fast; 0x42c50, 0x42b20 and 0x43740 stay matched): retail's top homes are 8-byte spill slots (as our
+// first.y spill), so its u step and v + width are register temporaries there, not named locals with 4-byte homes as ours.
+// Retail inlines the matched pack_color4f (0x131e50) at link time where ours inlines the same-file ribbon_pixel copy; the
+// copy as plain `inline` 250 and with no inline keyword 250 (both same code: the compiler still inlines it). `u -= u_step`
+// with no negation 611 (2596 bytes); the tint as three statements 447 (2580 bytes); the object index read from the source
+// at each use 276. Re-measure (diagnostic): `u += -u_step` with the V sum at the outer store 610 (u_step stays a 4-byte home).
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

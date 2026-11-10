@@ -450,6 +450,10 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // taking the slot from `&entries[count++]` with memcpy 32, with an aggregate assignment 32. No existing function appends to
 // the location table. A `room` flag set in the found block and tested in the do/while condition 159 (668 bytes), with
 // an index copy and memcpy 175 (671): the flag lives in BL and a stack byte.
+// Round 106 (lane 9, fast; re-measures): the bool append helper (`bool result = count != 4096;`, index copy, `count =
+// index + 1`, memcpy) as an ordinary function in unknown_216b60.cpp that LTCG inlines, on the shared location table
+// type, 51; with `long index = table->count++;` 51; with the index read first and tested 51: the helper's file does
+// not matter. The path append and directory strip are 0x137320/0x1373c0, whose /Ob1 file keeps them out of line.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

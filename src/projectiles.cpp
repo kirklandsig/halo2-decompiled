@@ -385,6 +385,7 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 }
 
 /* the rotation a spinning projectile makes each tick */
+// MiniMax I (11-10): no new form, no lower score (3); letting the axis local's address escape puts retail's flag order back but squares the components in i, j, k order instead of retail's k, j, i (14), spelling the magnitude in i, j, k order (14) or naming the squares (14) does not change that, and the copy-in written component by component gives 63.
 // MiniMax H (11-04): no new form, no lower score; retail keeps the rotating-flag OR and store ahead of the first axis load and ours hoists that load above the flag store.
 // MiniMax A (11-03): no new form, no lower score.
 // score 3 (was 3): this round: the rate computed after the flag write scores 10, and the axis stored
@@ -768,40 +769,44 @@ void function_fcbc0(long definition_index, point3f const *point, vector3f const 
 	effect_new_from_parameters(&parameters);
 }
 
-/* the effect values of an effects block's effect (+0x58), NONE without one */
+/* the effects and sounds of an effects block's effect (+0x58), three of
+   each, NONE without one:
+   0x1883e0 gives sounds as its "first" values and effects as its "second"
+   (retail passes the effect slots it reads back, the fifth argument, ecx
+   and edx, as 0x1883e0's second_value04, second_value and second_value0c) */
 // @retail 0xfd740
 void function_fd740(point3f const *point, byte const *effects, long index, long element_index,
-	long *first_value04, long *second_value04, long *first_value, long *second_value, long *first_value0c,
-	long *second_value0c)
+	long *effect0, long *sound0, long *effect1, long *sound1, long *effect2, long *sound2)
 {
 	long effect_index = *(long const *)(effects + 0x58);
 
 	if (effect_index != NONE)
 	{
-		function_1883e0(effect_index, false, point, g_47d8e0, element_index, index, 0, first_value04, second_value04,
-			first_value, second_value, first_value0c, second_value0c);
+		function_1883e0(effect_index, false, point, g_47d8e0, element_index, index, 0, sound0, effect0,
+			sound1, effect1, sound2, effect2);
 		return;
 	}
-	if (first_value04)
-		*first_value04 = NONE;
-	if (second_value04)
-		*second_value04 = NONE;
-	if (first_value)
-		*first_value = NONE;
-	if (second_value)
-		*second_value = NONE;
-	if (first_value0c)
-		*first_value0c = NONE;
-	if (second_value0c)
-		*second_value0c = NONE;
+	if (effect0)
+		*effect0 = NONE;
+	if (sound0)
+		*sound0 = NONE;
+	if (effect1)
+		*effect1 = NONE;
+	if (sound1)
+		*sound1 = NONE;
+	if (effect2)
+		*effect2 = NONE;
+	if (sound2)
+		*sound2 = NONE;
 }
 
 /* the same for what a projectile hit: ignoring distance for multiplayer
-   objects the network owns */
+   objects the network owns. The three sounds come first (the stack
+   arguments) and the three effects after them (ecx, edx and edi in retail) */
 // @retail 0xfd7d0
 void function_fd7d0(long object_index, point3f const *point, byte const *effects,
-	long index, long element_index, long *first_value04, long *second_value04, long *first_value, long *second_value,
-	long *first_value0c, long *second_value0c)
+	long index, long element_index, long *sound0, long *sound1, long *sound2, long *effect0,
+	long *effect1, long *effect2)
 {
 	long effect_index = *(long const *)(effects + 0x58);
 
@@ -816,22 +821,22 @@ void function_fd7d0(long object_index, point3f const *point, byte const *effects
 			if (g_4e6948->state == 2 && g_4e6948->mode != 4 && *(long *)((byte *)object + 0xd4) != NONE)
 				ignore_distance = true;
 		}
-		function_1883e0(effect_index, ignore_distance, point, g_47d8e0, element_index, index, 0, first_value04, second_value04,
-			first_value, second_value, first_value0c, second_value0c);
+		function_1883e0(effect_index, ignore_distance, point, g_47d8e0, element_index, index, 0, sound0, effect0,
+			sound1, effect1, sound2, effect2);
 		return;
 	}
-	if (first_value04)
-		*first_value04 = NONE;
-	if (second_value04)
-		*second_value04 = NONE;
-	if (first_value)
-		*first_value = NONE;
-	if (second_value)
-		*second_value = NONE;
-	if (first_value0c)
-		*first_value0c = NONE;
-	if (second_value0c)
-		*second_value0c = NONE;
+	if (sound0)
+		*sound0 = NONE;
+	if (effect0)
+		*effect0 = NONE;
+	if (sound1)
+		*sound1 = NONE;
+	if (effect1)
+		*effect1 = NONE;
+	if (sound2)
+		*sound2 = NONE;
+	if (effect2)
+		*effect2 = NONE;
 }
 
 /* sticks a projectile to what it hit; location is the hit's s_location, which the
@@ -907,6 +912,7 @@ real function_30bf0(vector3f *v);
 /* aims a falling projectile along an arc: the slowest speed that reaches
    the target, then the time to it at the speed used (high or low arc),
    falling back to the slowest arc when the speed can't reach it */
+// MiniMax I (11-10): no new form, no lower score (232); the two pointer parameters are still enregistred in EDI and EDX where retail loads each at its use, and the frame, the rounded horizontal root and the two separate divisions still differ.
 // MiniMax H (11-04): no new form, no lower score; the difference the earlier rounds describe is still there.
 // MiniMax A (11-03): no new form, no lower score.
 // score 232 (was 232): the convention now agrees with retail (target EAX, origin ECX, direction
@@ -1224,6 +1230,7 @@ extern vector3f *g_4687ac;
 
 /* whether a projectile's path to a point hits anything: the line from it,
    and for projectiles with a radius the two lines either side of it */
+// MiniMax I (11-10): no new form, no lower score (163); the frame stays 0x40 against retail's 0x34 and the three ray queries still inline 0x16a040, whose defining file is not this lane's.
 // MiniMax H (11-04): no new form, no lower score; the three ray queries have to inline 0x16a040, whose defining file is not this lane's.
 // MiniMax A (11-03): no new form, no lower score.
 // score 163 (was 163): simultaneous offset endpoints recover 757/756 bytes; frame 0x48
@@ -1376,6 +1383,7 @@ long function_189fe0(s_sound_request const *request, long tag_index);
 
 /* the effects and sounds of an effects block (a material's response) at
    a point */
+// MiniMax I (11-10): no new form, no lower score (4); only the four register arguments of the 0xfd740 call differ, and that callee's own parameter order is not this lane's to change.
 // MiniMax H (11-04): no new form, no lower score; the four register arguments of the 0xfd740 call follow that callee's own parameter order, which this lane may not change.
 // MiniMax A (11-03): no new form, no lower score.
 // score 4 (was 4): only the four register arguments of the 0xfd740 call differ: retail passes
@@ -1472,6 +1480,7 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 
 /* a projectile's detonation effects and sounds at a point, attached to an
    object's node when it stuck to one */
+// MiniMax I (11-10): no new form, no lower score (115); the frame and the extent agree, and the point's home and the 0xfd740 selector call's registers still follow that callee, which is not one of this lane's functions.
 // MiniMax H (11-04): no new form, no lower score; the selector call's registers and the point's lifetime follow the unmatched 0xfd740 in this file.
 // MiniMax A (11-03): no new form, no lower score.
 // score 115 (was 115): frame 0x150 and extent agree; point EBX/EDI, zero lifetime and selector call registers differ.
@@ -1643,6 +1652,7 @@ PRIVATE inline long projectile_object_root(long object_index)
 /* the projectile type's new callback: its target, lifetime, range,
    attachment, starting velocity and spin, whether it starts under water,
    and the seat flags of the unit that fired it */
+// MiniMax R (11-10): no new form, no lower score (296): retail expands 0xfbfd0 inline after the 0xfbd40 call and holds index * 12 in EBP, a body the rules forbid writing out by hand, so the pool and tag homes, the speed update's schedule and the seat-bit tests stand.
 // MiniMax D (11-10): no new form, no lower score (296).
 // score 296 (was 307; 535-source image; the 4-source reduced image allocates differently and scores
 // higher, so measure this with a big caller such as 0xfaa60 in the check).
@@ -1856,6 +1866,7 @@ real function_17c900(short function_type, real input);
 
 /* where a guided projectile aims: its target's point, led by the target's
    velocity, then wobbled around the line to it or wandering */
+// MiniMax R (11-10): no new form, no lower score (348): the aim point's stack home is [esp+0x24] in retail against [esp+0x28] here, and retail pushes EBP and ESI at a different point, so the rotation's register homes still differ.
 // MiniMax D (11-10): no new form, no lower score (348): the aim point's stack home is [esp+0x24] in retail against [esp+0x28] here, and retail pushes EBP/ESI after the lookup where ours pushes EBX/EBP/ESI before it.
 // score 348 (was 348): Frame 0x30 recovered; index EAX/output-stack contract and normalization/rotation scheduling remain, four bytes long.
 // Earlier 382 (was 382): Frame 0x2c versus 0x30 and index EAX versus stacked index remain.
@@ -2137,6 +2148,7 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 /* detonates a projectile: (once) its sound, contrail, direct and area
    damage, impact or airburst effects, and the effects of the material
    under it */
+// MiniMax R (11-10): no new form, no lower score (504): the home of the parent and owner block, the probe's material term and the order of the two damage stores still differ; every declaration order of the Booleans, the parent and the probe measured the same code as the body above.
 // MiniMax D (11-10): the parent index read from the projectile at each use instead of in a local (fast 519 -> 504, 2171 bytes);
 // the flag word is still loaded once, so the parent lookup still reloads the table pointer and the tail stays one dword copy out.
 // score 519 (was 535; 527 before round 1): Frame 0x184 agrees; the stack slots and the flag word differ, see below.

@@ -762,6 +762,11 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // update the same way 28 (both same code); the occupied key through a const reference to `collection->players[i]` 41;
 // the swap's update through a block-scoped pointer 28 (same code); the occupied key as
 // `watcher->players.players[i].key` 294 (1064 bytes).
+// Round 106 (lane 9, fast with 0x84e90/0x69260/0x84c90/0x83c90), all on the swap order (collection, player, update,
+// other) at definition, declaration and call (32, the swap call's `updates` load then retail's): find_slot given
+// `&watcher->players` 32; the swap's update in the `update` local in its own block 32; the occupant key pointer
+// taken before the swap call 222; `slot`/`occupied` declared at the else arm's top 32; the conflict scan through
+// `collection` (players and mask) 264. Swap order restored to main's.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

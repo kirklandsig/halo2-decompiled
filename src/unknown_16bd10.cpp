@@ -727,8 +727,8 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
-// MiniMax C (11-05): no new form, no lower score; the plane's three normal copies are reloaded in the same order in both (i, k, j), but retail gives them XMM3/4/5 for i/j/k where ours gives XMM5/3/4; the squared length in field order scores 389, in k,i,j order 243, with the first two addends swapped 238, written from the direction alone 465, and with the multiply operands swapped it is byte-identical at 236.
 // score 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
+// MiniMax C (11-05): no new form, no lower score; the plane's three normal copies are reloaded in the same order in both (i, k, j), but retail gives them XMM3/4/5 for i/j/k where ours gives XMM5/3/4; the squared length in field order scores 389, in k,i,j order 243, with the first two addends swapped 238, written from the direction alone 465, and with the multiply operands swapped it is byte-identical at 236.
 // b5K 11-06 statement walk against retail found no wrong field, offset, condition, callee or loop; the one
 // behaviour fix is the point-mode timer, which retail computes as (ticks * rate) / scale (cvtsi2ss, mulss [ebx+4], divss at
 // 0x16ca6e-0x16ca78) and the one-line ternary compiled as (rate / scale) * ticks, rounding differently; the `seconds` local makes
@@ -991,6 +991,22 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // and the shared zero in XMM1), the default arm's split `or` plus its own xorps (retail jumps over the NONE path's xorps), the
 // distance dot's operand loads (retail forward for k and j, position for i), the pan quaternion sum order, the FOV target reused
 // from its test register in the reached arm (ours reloads it). Body restored.
+// Round 65 (m3 lane 2, fast, control 331): the plane arm now has retail's normal XMM3/5/4 and offset; the first real
+// difference is the length's hoisted load (retail left.j, ours left.k), which puts retail's zero in XMM0 for the rest.
+// Re-measured on this body: the length written out j,k,i 374 (1700 B: the left.j preload, but the normal rotates), left-first products 374, j,i,k 374,
+// k,j,i 371; `0.0f != length_squared` 330 (only the ucomiss operands, one point, not kept); the length before plane.d 377
+// (1700 B); the zero arm first 341; `t = 0.0f` then the guarded assignment 382 (1704 B); `t = -(...)` either grouping 331
+// (same code; new from here); `command->distance = -distance` 331 (same code); one function-scope `t` for the plane, pan and FOV blends
+// 371 (1700 B), for the pan and FOV blends only 331.
+// Lane 5 r166 (fast alone, control 331 = plain baseline; CAVEAT on callee 0x16cfa0): `switch (camera->mode)` with no mode
+// local 331; camera_object_index as long 331; case 1 with its own `flags |= 0x40; break;` instead of falling into default 331
+// (same code); `t` preset to 0.0f with no else arm 454 (1704 bytes); the length as length_sq3f(&camera->point.left) 480 (1720).
+// Body restored.
+// m3 lane 14 r77 (fast; masked = difflib count with registers and offsets masked, control 25): on round 63's dot3f base
+// (the reason to re-measure old length orders) the length written out, the other dot3f calls kept: (j + k) + i 374,
+// (k + j) + i 371, (i + k) + j 371, (i + j) + k (dot3f's own body written out) 376, j + (k + i) 376, i + (j + k) 374,
+// k + (i + j) 372, all 1700 bytes (masked 26-29). A compile-only build (no /GL) loads the plane's first length operand from the other
+// base register (EDI for retail's ESI), so it is no screen for this block.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

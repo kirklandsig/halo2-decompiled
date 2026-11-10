@@ -521,6 +521,11 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // Round 222 (m3 lane 3, fast with 0x404b0): `current = first + count` 157 (492 bytes); `long first; current = first =
 // previous;` 158 (492 bytes); `dword first` 2; first and current each reading previous 2; the copy size as
 // `sizeof(s_44940_entry) * count` 2 (same code each).
+// Round 65 (m3 lane 2, fast): the mode parameter renamed draw_mode / selection_mode 2/2 (parameter names do not move
+// the spill either); shape as a short 128 (490 bytes); the part context declared once outside the part loop 2 (same code);
+// `if (chosen == NONE) continue;` 2 (same code); `entry->unknown10[0xa] != 0` 3. Re-spellings of listed forms: the count
+// guard as an early return 2; chosen as if/else 52 and material as if/else 76 (the listed ternaries' code); entry and index
+// at block scope before the `for` 2; the geometry result as `long const *part_count` 2.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

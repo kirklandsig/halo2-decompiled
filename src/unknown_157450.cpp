@@ -757,6 +757,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // data 32/77/63; the added mask declared at function scope 32/77/63. Re-measured near repeats: the update as `globals->team_mask |=`
 // 130 (main), 131 (dword+plain), 130 (word+plain); both tail stores through the getter 32/77/63/100; `*const` globals and mask
 // pointer 77/63 (word bases). Renaming present or globals (diagnostic) 63 each.
+// Round 69 (m3 lane 15, fast): the globals through the getter at each use with no local (0x1584c0's idiom) on this dword-mask,
+// volatile-present body 32 (identical code); the real record-pool step function in place of the header iterator copy is ruled
+// out (its file is /Ob1, so the link would keep a call where retail has the loop inline).
 // @retail 0x158140
 void function_158140(void)
 {
@@ -2326,6 +2329,11 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // Round 222 (m3 lane 3, fast with 0x15b1e0 and 0x15ace0): a 32-form screen of index at function or loop scope x
 // `NONE != ...` or `... != NONE` x the old index in a named local or read at each use x an entry element pointer or
 // `entries[index]` at each use x the bounds test negated with the clear arm first or not: 8 in all 32.
+// Round 65 (m3 lane 2, fast; 0x15b1e0 and 0x15aad0 matched each time): the probe re-run (one dead read right after
+// the bounds test gives retail's lookup and tail; inside the old-index guard it does not). A file-local inline release-if-present helper taking (entries, index)
+// 8, with the old index in a local inside it 8, taking the equipment pointer 8, taking the old index as an argument 8,
+// taking `&entries[index]` 8; the release's index argument as the re-read `local.object->netgame_entry` 8; an entry
+// pointer for the test, the call and both tail stores 8 (re-measured). Diagnostic: the release's lookup through engine_object_get 9.
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {
@@ -5722,6 +5730,13 @@ void __stdcall function_d6bc0(long object_index);
 // block 7, with the field test 172; the reset counter through one `short *` 182 (857 B), with the field test 183 (851 B); the field
 // test with the tail on the loop-top index 201 (873 B, frame 0x1c). A permuter run on the 7 form (600 s, 16 tries on a loaded
 // machine, full-image baseline 931 s): none below 7.
+// Round 69 (m3 lane 15, fast): the 7 recipe rebuilt is 7 again, its field-test variant 172 (858 B); a 600 s permuter run on
+// the 7 form (11 tries on a loaded machine) found nothing below 7. On the 7 form: the schedule test on the field with the
+// expiry block testing the loop-top index without a re-read 201 (873 B, diagnostic); the schedule decision in a forceinline
+// bool helper taking (entries, i, placement, object) and testing the field itself 172 (858 B: the inliner folds the helper's
+// parameter into `entries`, which again takes EDI); that helper taking a const entry pointer 172; the field test with the
+// arms the other way round 172; the field test with 0x15aad0's `*const *entries_reference = &entries` read once at the
+// 0x15aad0 call 172 (same code). Left as before: only the index test on the local keeps `entries` out of a register.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

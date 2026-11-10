@@ -268,6 +268,9 @@ void function_1d56f0(s_havok_component *component)
 // fixed-first body 73 in all six (0x1d0cf0 88, 0x1d0c20 40). On that body, with this function's call removed (diagnostic)
 // 0x1d0cf0 stays 88, with 0x1d0c20's call removed 86: neither caller keeps the component out of EBX. The transformed flag in
 // a named bool ahead of the copy 73; the refetch assigned to the body pointer 73. Still BLOCKED-BY 0x1d0cf0.
+// MiniMax R (11-10): no new form, no lower score (77): the component lookup still reads [eax + edx + 0x40]
+// where retail reads [edx + eax + 0x40], and the tail's register and slot use is set by the callee in the
+// other file.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)
