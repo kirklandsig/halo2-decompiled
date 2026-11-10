@@ -1147,6 +1147,8 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // scope 535 (same code); face_count declared before secondary_count 535 (retail's store order for the two counts,
 // slots unchanged); the first plane at function scope 535; the selected plane alone 535; start/end alone 535 (all
 // the same frame homes: scope and declaration order do not move a slot in this body).
+// MiniMax D (11-10): no new form, no lower score: the definition pointer, the count and the zeroed word
+// still sit in other frame slots than retail's (0x94, 0x20 and 0x54 against our 0xb4, 0x18 and 0x4c).
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

@@ -1570,6 +1570,8 @@ struct s_looping_detail_request
 // (depth 0) and 0x13c250 (depth 1) inline it, 0x1df3e0 (`a && b && !c`) and 0x219ed0 (`a && b`, then the audible test)
 // call it; retail's else arm has only the count test above the call (no hidden test in its code), so what differs
 // is the call site's static frequency as LTCG estimates it.
+// MiniMax D (11-10): no new form, no lower score: the first-player query is still expanded here where retail
+// calls it, and every way to make the call is outside this file or a forbidden form.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

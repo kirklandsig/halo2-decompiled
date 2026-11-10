@@ -420,6 +420,8 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // masked 226), the rigid-body position copied field by field (retail's movss copy) 1004 (4283 B, masked 218). Diagnostics (not keepable): a long scale counter with the
 // contact-array frees written out 1177 (4030 B, masked 207: listed as 1174), both with the nested tests 1199 (4022 B,
 // masked 201). So the nested validity tests and the unrolled scale loops are independent structural fixes.
+// MiniMax D (11-10): no new form, no lower score: the removal path as an else arm after the body 902 (4267 bytes),
+// the entry flag word in a named local 917, the motion point copied member by member 943 (4283 bytes); all reverted.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

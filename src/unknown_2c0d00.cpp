@@ -412,6 +412,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // skip_classification = true;` (retail 0x2c13a9 stores only the 1) 924; the type test inverted, `if (type != 0) { 1/7/11
 // chain } else { type 0 }` 915 (3737 bytes; the chain just moves ahead of type 0, nothing goes past the ret); both 927;
 // the 1/7/11 arms as separate `if`s 901 (same code); that with the type-1 conditional set 924.
+// MiniMax D (11-10): no new form, no lower score: retail and this build agree on the arguments (the previous
+// direction arrives in ECX and ten arguments are pushed), so only the frame (0x2cb8 against 0x2cac) and the local
+// homes still differ.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

@@ -285,6 +285,12 @@
 // result pointer) gives the same sequence (659 at 2584 B): retail's direct global reads may come from such a helper.
 // score 661 (was 661): behaviour and helper fixes from the b2E walk, each raising the score: the sixth input product is
 // score 661 (was 661; 537 before that): behaviour and helper fixes from the b2E walk, each raising the score: the sixth input product is
+// MiniMax D (11-10): 594 (was 661): the wave sines read the global point and each wave scale is written at its
+// use; the frame is still 0x54 against retail's 0x60 and the sines are still not evaluated in retail's order.
+// Retail's two crosses share their products, so its cross result is scalarized while its second cross is a
+// vector; forms tried: the two wave values as an array 604, the cross with shared products written out 677,
+// the cross moved after the two sines 655, all worse than 594 and reverted.
+// score 661 (was 537): behaviour and helper fixes from the b2E walk, each raising the score: the sixth input product is
 // a plain mulss as at 0x49f0d (the integer truncation was +78: 537 -> 615); the camera shifts and the vector scales
 // call vector3f_add_scaled / vector3f_scale (+10, 2622 bytes); the wave's first add calls vector3f_add_scaled (+11);
 // the sine of x * 5.6 + y keeps the sum on the x87 stack as at 0x498a7-0x498d7 (+25, then the sine is stored as a
@@ -348,12 +354,10 @@ void function_0497a0(
 		vector3f c;
 		cross3f(&v4, &v2, &c);
 		/* retail 0x498a7-0x498d7 keeps x * 5.6 + y on the x87 stack up to fsin (no float rounding of the sum) */
-		real s1 = (real)sin((double)(v1.x * 5.6f) + v1.y);
-		real s0 = (real)((sin(v1.x * 8.2f) * cos(v1.y * 7.8f) * sin(v1.x) + cos(v1.y * 7.75f)) * 0.5f);
-		real amp = s0 * 0.03f;
-		vector3f_add_scaled((vector3f const *)&v1, &v4, amp, (vector3f *)&v1);
-		real k = s1 * 0.025f;
-		vector3f_add_scaled((vector3f const *)&v1, &c, k, (vector3f *)&v1);
+		real s1 = (real)sin((double)(g_4b9da0.x * 5.6f) + g_4b9da0.y);
+		real s0 = (real)((sin(g_4b9da0.x * 8.2f) * cos(g_4b9da0.y * 7.8f) * sin(g_4b9da0.x) + cos(g_4b9da0.y * 7.75f)) * 0.5f);
+		vector3f_add_scaled((vector3f const *)&v1, &v4, s0 * 0.03f, (vector3f *)&v1);
+		vector3f_add_scaled((vector3f const *)&v1, &c, s1 * 0.025f, (vector3f *)&v1);
 		cross3f(&v2, &v4, &w);
 	}
 	else
