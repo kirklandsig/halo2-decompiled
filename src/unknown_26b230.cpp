@@ -2038,6 +2038,14 @@ void function_269250(long clump_index, long actor_index);
 // test inside and both by reference; an unsigned selection; the activity flag read from the global in the walk call; `best < score`
 // with the selection stored first and best declared first. In-arm with the iterator's datum index re-measured 128 [108]. Body
 // unchanged.
+// Round 161 (m3 lane 6, fast; control 87 fast and plain; 0x268840, 0x269580, 0x269250, 0x2694d0, 0x268bb0 matched throughout):
+// the post-walk test turned round (`selected == NONE` creates first, then `else if (selected != current)`) 112 (480 bytes);
+// the score started at 0 instead of best 90 (480 bytes); the activity snapshot taken before the walk's init 87 (same code);
+// best and the selection declared before the walk 90; the compare as `best < score` 87 (same code); all five re-measure
+// listed forms. New: the team read once into a `short` used by the test and the creation call 100 (481 bytes); the actor
+// walk as a `for` with the actor declared in it 87; the creation arm ending in `continue` when nothing is created 87; the
+// selected arm ending in `continue` when the selection is the current clump 87; both continues 87 (the last four the same
+// code). Body unchanged.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

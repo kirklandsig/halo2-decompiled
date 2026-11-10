@@ -2088,6 +2088,14 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // system, effect) 179. Body unchanged.
 // MiniMax C (11-09): score 128 (was 128): the early colour home is still missing and the frame is
 // 0x40 against retail's 0x44. Untouched this round.
+// Round 161 (m3 lane 6, fast with 0x178eb0/0x179020/0x178bc0, all matched): matched 0x174a30's shape (colour locals read
+// before the spawn record, a named definition from 0x1751d0, both queries in the call's argument list) 187 (568 bytes);
+// the spawn record declared at its stores 128; the 0x1751d0 definition named in the type block 128; the query results
+// `bool const` 128 (the last three the same code); the colour locals declared first and read after the spawn stores,
+// `multiplied()` as the argument 178 (572 bytes, as the earlier early-colour forms; the first and last re-measure listed
+// forms). New on top: the zone helper reading g_4e0348 at each use instead of a bsp local 128 (same code); the node flag as
+// `node_index != NONE && node_index < 0` 133. Untested lead: 0x175a80's body (its file held by another lane this round),
+// though the call's argument registers already agree with retail's.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3371,6 +3379,15 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // MiniMax C (11-09): score 93 (was 93): the system pointer and the next index swap ESI and EDI
 // (retail keeps the system in ESI and the next index in EDI), retail's frame is 0x54 against our
 // 0x4c and it spills the definition pointer early. Untouched this round.
+// Round 161 (m3 lane 6, fast with 0x176f60/0x178bc0, both matched throughout), all on the spawn-record cursor with a long
+// cached mode (frame 0x54, 337 bytes; masked aligned difference 18): the cursor stored before the colour reads 88; colour B
+// read first 88; the mode cached before the cursor 89; the colour reads inside the type-query block 88; the type-query
+// block's braces removed 88. Left on it: system EDI / next index ESI (retail ESI / EDI), colour A in EBX and the type object
+// in ESI (retail colour A spilled, colour B in EDI, type object in EBX), and the cached mode where retail spills the
+// definition and reads the mode per call. Not kept (the record only groups the cursor; gain 5). Four of these re-measure
+// listed forms; new on the current body: the node flag as `node_index != NONE && node_index < 0` 94 (339 bytes); the
+// particle system derived again from g_510c74 and its index for the 0x1751d0 type query 118, for the loop's 0x248c60
+// call 112, for the particle-location cursor 119 (each turns the effect index into a register argument; 0x176f60 25).
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
