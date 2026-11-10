@@ -636,6 +636,24 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // MiniMax S (11-09): no new form, no lower score; retail still keeps the false result in BL and
 // re-reads the last argument from its stack slot, while ours promotes that argument into EBP and
 // returns the result through EAX, which also shifts the frame by four bytes.
+// Round 159 (lane 5, fast with 0xa5a00/0xa5b10/0xa5b40/0xa5b80/0x108e10/0xbb780, all matched throughout). Reading: retail's
+// temporary EBP only means the pool pointer stays live in EDX across the first data load, so the pool global is shared while
+// the data load and the index are not. On the bool result (false first, true after the attach): a pool-copy local at the top
+// for both lookups 74, for the flag only 60, for the object only 61 (176 bytes each, but the copy is read ahead of the virtual
+// call and held in EBP); the copy inside the NONE test, one or two copies, 78/77/77/77 (160, propagated); a named header
+// pointer for the flag, for the object, both, a data local 77 each; the store and attach through 0xbb780 with the local or the
+// entity's field as either index 77 each; no index local at all with 0xbb780 67 (176: the index is recomputed as retail does,
+// the data load still shared and `f` cached in EBP), with a pool copy for the flag 67, hand-written 82 (157), with 0xbb780
+// reading through a pool copy, a named object, a named header or both 67 each (0xbb780 unchanged); an address-taken flag byte
+// or a by-value flag view with a test member 67 each. A reset store ahead of a second NONE test on the entity's field, flat or
+// nested, 61 hand-written, 67 through 0xbb780 (the data load is then repeated with the pool kept, but the reset path is not
+// threaded: store, reload, compare); the same with the local cleared too and re-tested 75 (160: threaded early, lookups
+// merged). The local cleared in the flagged arm, stored to the entity again at the join and re-tested 38 (first difference
+// +0x3a: retail's whole head with the temporary EBP, the repeated data load and index; left is the join, `or eax, -1; cmp;
+// mov; je` for retail's `jne` to a constant store at the end), flat 64, without the first store 68/64; the entity reset plus
+// the local cleared, re-tested on the entity's field 37, entity reset only 55, index from the field 61/82. The result cleared
+// in the flagged arm and re-tested: bool 73 (178), long 45, long from the NONE test 52, bool from it 69. None kept: 37/38 need
+// a local cleared inside a test and tested again, without a byte match.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

@@ -949,6 +949,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // MIN(remaining, buffer_size)`) 161 (691 bytes), with the total and the signature position written body first 161; the signature
 // position written body first alone 34 (same code); the direct arm's size before its buffer with `MIN(remaining, size)` 35; the
 // body case's file handle in a two-use local 168 (695 bytes).
+// Round 160 (m3 lane 5, fast; 0x2adb10 matched throughout), each on the no-total-local form (88 alone): `bytes` declared in the
+// `!unknown1` block 88; both signature buffers declared at the top of that block 177 (688 bytes); the body case as an early out on
+// `body_offset >= body_size` 122; the buffer arms swapped 93; the scratch clamp as an explicit if on the field difference 88. The
+// matched sibling's signature seek is `mov edi, [header]; add edi, [body]` (coalesced) where this retail sums two temporaries with `lea`.
 // Round 97 (m3 lane 9, fast; 0x2adb10 matched throughout; aligned counts in brackets): the in-place total with a new (file, position)
 // seek helper at the signature seek re-measured 28 [17]; on it: the direct arm's size before its buffer 28 (same code); size declared
 // before the buffer 28 (same code); the body test as `body_size > body_offset` 157 (689 bytes); the helper at the body seek too 155 (689);

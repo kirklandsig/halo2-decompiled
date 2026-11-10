@@ -2026,6 +2026,11 @@ void function_269250(long clump_index, long actor_index);
 // selection in EDI with a reload at the loop top, and the found block placed after the loop body); on it a `byte` activity
 // snapshot 126, the group declared in the while condition 126, a `dword` selection 126, the score declared at the top of the
 // walk body 126, the candidate index named before the score call 126 (all the same code).
+// Round 160 (m3 lane 5, fast; this body 89 fast, 87 plain; in-arm 126 plain, 480 bytes): on the in-arm form, the activity snapshot
+// declared first and best before selected 126; the actor's current clump in a named local for the post-loop tests 140; the
+// selection written through a `long *` 126 (same code); the activity read from the global at each step 126; the datum-index
+// selection on the walk variant that calls the out-of-line step 243 (375 bytes). In the in-arm form the scan's count takes EDI,
+// so the selection (EDI) is reloaded at every step; retail spills the walk's pool (EBX) around the scan instead.
 // Round 97 (m3 lane 9, fast; this body 89 fast, 87 plain; aligned in brackets, this body [58]): in-arm compare re-measured 126 (480
 // bytes) [60]: every instruction left is the selection cached in EDI across the walk (ours) against the walk's pool cached in EBX
 // with the selection read from its slot at each use, also after the post-loop calls (retail). On the in-arm form, all 126 [60] and

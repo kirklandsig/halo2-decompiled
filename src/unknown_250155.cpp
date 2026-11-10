@@ -2787,6 +2787,11 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // pointer/reference and direct/captured mode contracts: eight forms 95 each.
 // NOT kept: no gain or equality; original helper, both uses and complete body restored.
 // Frame 0x788 agrees; scalar homes, voice-query reload and final screen receiver remain.
+// Round 159 (m3 lane 6, fast): the third loop counting with shown_count itself 211 (931 bytes); the slot helper's
+// mode as long 95 (same code), its slot as short 95 (same code); the second loop's team defaults declared after
+// the helper call 189 (928 bytes); the first loop's search through local_player_find 256 (933 bytes); the first
+// loop walking an item pointer (`item++` in the for) 97. The last loop calls only 0x22ee47 (matched), so its
+// spill choice (screen left in its home, bitmap_a in EBX) is not the 0x53b40 chain's doing.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
