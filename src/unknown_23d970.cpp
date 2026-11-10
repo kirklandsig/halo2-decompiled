@@ -883,6 +883,10 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // through cross3f_staged 221 (1272, re-measure of round 84). No untried natural form of the
 // two products is left; both differences sit in them (right.i/right.j colours, retail's k-first second product) and in the else
 // arm's forward stores.
+// Round 164 (m3 lane 6): no untried natural form found. What differs now: the first product's two temporaries swapped
+// (right.i/right.j in xmm1/xmm2, retail xmm2/xmm1), the second product's rows scheduled j, k, i where retail does k, j, i with
+// copies of right's registers (the extra byte), the else arm's forward.j/k stores through EDI (retail ECX), and address
+// fields shifted by the length. Every form for these above is listed with its score. Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

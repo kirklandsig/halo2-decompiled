@@ -3391,6 +3391,22 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // the stack and 0xdd360 222). Retail also keeps the centre sums
 // in xmm4-xmm6 across the mass call with the total and the hit in memory (ours keeps the hit and the total in registers and the
 // centre in memory), loads the component pool before masking the index, and takes the hit body in EBP once the index is dead.
+// Round 164 (m3 lane 6, fast with 0xdd360, which stays 222 unless noted): the mass as a `long` local 526; the hit-body lookup
+// in its own nested if 517 (same code); a for-scoped index per scan 517 (same code); the difference vector loaded from the hit
+// point and reduced by the centre in place 535 (the same code as the hit setter, re-measured 535: the hit then holds xmm5-xmm7
+// across the mass loop and the centre goes to memory, retail the reverse); the total summed before the centre rows 514 (three
+// points, an order picked by score); that with the three loops on the size field 523 (the push loop is then retail's, offset in
+// EBP and index in memory, but our mass-loop cursor takes EBX and the biped spills).
+// HELD (needs the owner's OK; 0xe16b0 is a contributor's matched function; measured and put back, diff in
+// build/r164/held-e0ef0.patch): 0xe16b0 given an unread `bool` second parameter, passed a named local holding
+// `(flags_348 >> 9) & 1`, with the three loops on the size field: 360 plain (aligned 259, masked 120, 0xe16b0 MATCH, 0xdd360
+// 222); retail's dead byte store appears (retail stores that byte at 0xe1142, between the index push and the call). The
+// measurement reproduces the store; it does not show that 0xe16b0's source had that parameter. It needs the owner's OK and a
+// byte match: the named local is a one-use copy, and the value passed straight into the call gives 523 (no store). On the
+// held form: the total
+// summed first 352 fast (masked 125); a definition pointer at the hit block's top 350 (frame 0x4c as retail, but the index goes
+// to EAX and 0xdd360 to 224), that with the hit setter 416, with the nested hit-body if 350, with a case-0 definition local as
+// well 352; the hit setter alone 519.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3770,6 +3786,12 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // if (!(flags & 8)) limit = definition + 0.0001f;` (retail loads 0.99 first and jumps over the other arm) 614 (2735 bytes,
 // aligned 369); the wall block's side and facing through the existing cross3f 598 (2714 bytes, aligned 398), through
 // cross3f_staged 604 (aligned 417); the sine as cross3f(facing, forward) with dot3f(up, cross) 639, with dot3f(cross, up) 646.
+// Round 164 (m3 lane 6, plain; --fast still builds this at 600-605 with every callee and 0x11dbb0's callers listed; masked =
+// aligned count with registers and stack offsets masked, 250 for this body): the current weapon read after the first 0xe5d50
+// call as retail does (a sign-extended short) 578 (masked 217); the animation value in a named two-use local with the 0x6000084
+// test in a nested block 573 (masked 231); both 576 (masked 215); the wall turn through the existing rotate_direction (the same
+// formula) 634 (2757 bytes, masked 214), with both 631; the pitch rows with double sine and cosine (retail computes them on the
+// x87 stack with unrounded fsin/fcos and loads the pitch twice) 587 (masked 256). Body unchanged.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

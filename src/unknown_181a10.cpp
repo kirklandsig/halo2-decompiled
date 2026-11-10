@@ -819,6 +819,19 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // query_node_entity alone 361, with the dead walk inline 384, without it 404. The else arm calls query_node_entity and
 // the normal publish uses vector3f_assign instead of a (point3f *) cast (same code, 239). `results[key].normal =
 // contact->normal` 272 (1243 bytes), `results[key].position = hit` 340.
+// Round 163 (m3 lane 6, fast; aligned/masked = difflib counts, addresses or also registers and stack offsets
+// masked, control 177/112): retail's 12-byte home at +0x38 holds only origin x, y and z sit in first's and
+// friction's slots, as if the point were split into scalars; the clamp idiom (`mov ecx, 1; cmp ecx, edx; jg`)
+// appears nowhere else in retail. Origin by components z, y, x from the transform 309 (1245 B, 167/90, origin
+// still one 12-byte home); that with the hit by components, aggregate hit publication and a kind-24 shape local
+// 361 (1273 B); the distance sum operands swapped 239 (same code); both side tests through the existing
+// plane_distance_to_point 239 (183/112); origin z, y, x through a position pointer with the hit by components
+// (y, x, z) and aggregate publication 346 (1247 B, 265/173); the dead second walk through the real get_last 357
+// (1227 B: called out of line); our build pads that walk's loop head (`lea ebx, [ebx]`) where retail has none.
+// The decode as `switch (data >> 29)` with default/case 1 (0xdd990 switches on the same key) 239 at 1243 B
+// (179/114: retail's `shr 0x1d; dec; je`, but the surface index still sinks into the instance arm where retail
+// computes it before the branch; a switch for an if, not kept); the structure global read at both uses in place of
+// the `bsp` local 239 (same code). All restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

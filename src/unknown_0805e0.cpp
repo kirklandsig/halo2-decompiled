@@ -324,6 +324,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // and the step in the loop test 51 (127); a for loop stepping from a successor that is read into a short first 51
 // (127); the current loop with four `continue` filters (the identity pair and the exclusion pair joined by `||`) and
 // `return true` 52 (127). All restored.
+// Round 163 (m3 lane 6, fast with 0x1a303b/0x2b393c, both stay matched; aligned/masked control 30/33): the
+// guest test spelled on the xuid_flags dword, through a byte cast of it, as two one-bit byte tests, the name
+// test through the record's `name[0]`, and the dword guest test with `name[0]`: 43 each (same code; the mask
+// stays an immediate). All restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

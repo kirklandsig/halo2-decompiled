@@ -1264,6 +1264,17 @@ bool function_2715a0(byte *buffer)
 // (weight+1)*distance 0x2719eb-0x271a07; penalty types 1,2,5,6 only; remaining fst/fadd/fstp 0x271a81-0x271a93; x10 truncation and
 // 32767 / distance_limit rejects; hash & 0x1ff * 8, probe & 0xfff, 0.09 on x,z,y sum; unknownae < 1024; child field stores incl.
 // dword type at +0x10; depth +2 for 1,5,6, surface-word test for 2, +1 otherwise; heap insert or cost update; closest update; result.
+// Round 163 (m3 lane 6, fast with 0x271fd0/0x2713f0; aligned/masked = difflib counts with addresses, or also registers and
+// stack offsets, masked; control 530/228): the four callee-saved roles are one rotation (retail state EBP, node EBX, count ESI,
+// link EDI = ours with EBP taken first). Retail inlines 0x271fd0 here and cross-jumps its 0x271e50 call with the cost-update
+// arm's (one 0x271e50 call), but calls it from 0x2713f0. `inline` on 0x271fd0's definition 488 (plain too: still a call, frame
+// 0xc58); a `__forceinline` redeclaration placed after 0x2713f0 579 (2152 B, 389/211: retail's call list, but 0x2713f0 inlines it
+// too, 108); the post-probe test as `if (next != NONE) {cost test} else {allocate}` 590 (2148 B, still a call); the
+// `(short)link->type != NONE` test ahead of the penalty switch 579 (2128 B: state is then re-read from its stack slot, still a
+// call); `inline` with the outer loop as `for (;;)` and a top break 488 (rotated the same). Ours re-tests `next == NONE` on the
+// probe loop's break path where retail jumps straight to the cost test. The estimated distance as an if/else on the
+// destination test 570 (2128 B); the destination distance stored straight from the 0x210970 call without the
+// `remaining` copy 487. All restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
