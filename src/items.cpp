@@ -1898,6 +1898,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // 140/141/140/141/142/142/195/195. NOT kept: one-use field inputs require equality; original direct flag
 // expression, two-use spin, release helper and full body restored. Return byte and release/contact/event homes
 // remain.
+// MiniMax R (11-10): no new form, no lower score; the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write (a byte pointer cast, a masked assignment and a narrowed mask all leave the code as it was), the return byte still sits at esp+0xe where retail puts it at esp+0xf, and the callee 0xba300's parameter order is fixed in a file this lane may not edit.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

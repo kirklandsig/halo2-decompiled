@@ -227,7 +227,7 @@ struct s_item_object_2bc1
 /* updates a team's item each tick: how long it has been away from home, its
    return home once it has waited too long, and the points of the player
    holding it */
-// MiniMax S (11-05): score 54 (was 62): the countdown is kept as an int holding the same signed
+// score 54 (was 62): MiniMax S (11-05): the countdown is kept as an int holding the same signed
 // byte value, so the expiry test drops the unsigned byte cast, and the tally is counted before the
 // timer is reset. Still different: retail builds the ceiling in esi and keeps the state pointer in
 // ebx, ours builds the ceiling in ebx and keeps the state in esi; retail copies the timer into cl,
@@ -242,7 +242,7 @@ struct s_item_object_2bc1
 // counted before the timer reset, and the test written `(unsigned char)timer != 0xff` (a byte compare, as
 // retail's cmp al,0xff); the cast is the steering part: without it the same form is 55, under the keep bar.
 // A byte cast that only steers the compare is kept only with a byte match.
-// score 62 (was 97): retail spills the item pointer to the stack before it
+// Earlier, at 62 (was 97): retail spills the item pointer to the stack before it
 // reads the rate, so the rate and its forty-times multiply land in different
 // registers than ours; the countdown is also still decremented in al, while
 // retail keeps the decremented byte in cl.
@@ -288,6 +288,16 @@ struct s_item_object_2bc1
 // `countdown <= 0` 91 (one jg, state moves to ESI); the decremented value stored and the field
 // tested 91; `--field <= 0` 91; `= --timer` then `timer <= 0` 69 (state back in EBX, only the copy
 // and later offsets differ); the decremented value assigned back to the timer 91.
+// Round 160 (m3 lane 6, fast; counts are positional, so a one-instruction shift shows as ~60): `countdown <= 0` on the
+// int countdown 91 (543 bytes, one jg); a char countdown tested `<= 0` 91 (542, `dec al; test al, al`); `state->point_timers
+// [team] = --timer; if (timer <= 0)` 69 (542; the state back in EBX and the ceiling in ESI as retail, only the prologue's
+// spill order, the missing `mov cl, al ... mov al, cl` copy and the tally's load order differ); on that form the timer
+// reset ahead of the tally 69, the field decremented and tested 91, `= timer = timer - 1` 69, `timer = field = timer - 1`
+// 91, `timer--` then the store 69, `--field <= 0` 91, the field re-read after the store 91, the countdown computed ahead
+// of the NONE test 91 (543), a pointer to the timer element with `--*timer <= 0` 91, the stored assignment's value
+// tested 91, an unsigned local timer 69, with the countdown ahead of the test 70 (543): every form decrements in al.
+// On the base: the timer reset ahead of the tally 55. The copy sequence occurs nowhere else in retail. Diagnostic on the
+// 69 form: the countdown from a force-inline one-line helper 91 (the copy is propagated; still `dec al`).
 // @retail 0x2bc990
 void __stdcall function_2bc990(long team)
 {

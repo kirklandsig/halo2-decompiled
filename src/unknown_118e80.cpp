@@ -1208,6 +1208,7 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // the output with length_sq3f 90, that passed straight to the flag setter 90, through a named real 90 (two points, not kept);
 // the velocity copy through the first object pointer (no second lookup) 307; the 0x119bc0 result as `!= false` 93. The two
 // stacked score lines above are merged into this one note.
+// MiniMax R (11-10): no new form, no lower score; the squared length still sums the three components in the order the compiler picks (i, j, k) where retail sums them from k down to i, and three component locals that follow retail's order score 90, under the bar; the 0x119bc0 result still travels in al where retail stores it to a stack byte and pushes the containing dword, which needs 0x1c4b00's last parameter declared as a bool in a file this lane may not edit.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
