@@ -850,7 +850,7 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // retail sums i, k, j) NOT kept. flags is read as a byte (retail 0x17fdd2, +0xc of the 16-byte entry) through the cast.
 // MiniMax E (11-05): no new form, no lower score; the first +0x41 tag spill, the plane base, the first
 // selectors and the product memory sides are as the earlier rounds left them.
-// score 539 (was 539): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
+// score 535 (was 539): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // Frame 0x21dc and length 3647 agree; tag/count/plane homes and rotation spills remain.
 // Earlier: 552 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // at +0xb4 versus retail +0x94. Count/plane homes, initial face-call scheduling and rotation spills remain.
@@ -1135,6 +1135,20 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // DH385: Entry output-counter native memset/first-face memcpy producers, seven subsets,
 // then first-face memmove: 562/562/539/566/562/562/566/789. NOT kept: no gain or tag-home
 // recovery; original scalar counters, face publication, all helpers and complete body restored.
+// M3 lane 3 r225 (plain; base 535, aligned [exact, stack-masked, register-masked] [676, 501, 366]; the first ~400 instructions agree
+// once stack offsets and registers are masked, apart from the first loop's index increment and the secondary-count store): the axis
+// scale through vector3f_scale with the named inverse 559 (3631 bytes) [679, 471, 348]; with 1.0f / length written in the call 568
+// (3631) [674, 468, 341]; as three `*=` statements 559 (3631); the three diagonal terms as (1 - square) * cosine + square 535 (same
+// code); `remaining` declared under the flags test and tested before the do-while 534 (retail's store ahead of the jle, one point,
+// not kept). Lead: retail loads 1.0f into xmm0 before the reciprocal and reuses it for the sign, the clamp and every 1 - x of the
+// rotation (ours reloads the constant at each use), and it spills the k * k, j * sine and i * sine products (i * sine through x87),
+// so the rotation block's register pressure differs, not its statement order.
+// m3 lane 12 r106 (plain; fast gives 834 on the unchanged body here): start/end and the selected plane at function
+// scope 535 (same code); face_count declared before secondary_count 535 (retail's store order for the two counts,
+// slots unchanged); the first plane at function scope 535; the selected plane alone 535; start/end alone 535 (all
+// the same frame homes: scope and declaration order do not move a slot in this body).
+// MiniMax D (11-10): no new form, no lower score: the definition pointer, the count and the zeroed word
+// still sit in other frame slots than retail's (0x94, 0x20 and 0x54 against our 0xb4, 0x18 and 0x4c).
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

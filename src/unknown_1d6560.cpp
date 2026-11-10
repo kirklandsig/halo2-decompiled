@@ -343,6 +343,14 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // rigid body ECX in place, and `mov al` + `movzx` for the type); on it a model local for the rigid body 24 [0] (same code), the type
 // through a header element pointer 121 [194] (272 bytes). On the current body: the main switch's type in a byte local 96 [0] (same
 // code); case 11 as `level <= 1 ? 4 : (level >= 5 ? 5 : 3)` 96 [0] (same code); the rigid body computed after the kind-7 block 100 [0].
+// m3 lane 1 r85 (fast, caller 0x1d5bf0 in brackets): round 60's 24 form rebuilt 24 [0]; on it a top-level const header
+// pointer, a const rigid-body pointer, the type declared after `result`, the rigid body as `bodies + index`, a const type
+// 24 each (same code); with no type local and both switches on `headers[absolute_index].type` 86 at 264 B [13] (flip).
+// m3 lane 12 r106 (fast, caller 0x1d5bf0 in brackets, control 96 [0]): one byte `type` read at entry shared by both kind
+// routes with case 0 through havok_object_get(object_index) (every local used twice) 133 at 220 B [213]; that with the
+// kind-7 route as `return type == 1 ? 0xc : 1;` 136 at 216 B [213]; with the rigid body declared first 132 [213]; with
+// the type read before the rigid body 117 at 236 B [213]; the current body with a `headers` local for its two type
+// reads 117 at 272 B [160].
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

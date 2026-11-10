@@ -79,6 +79,7 @@ void cache_copy_forget(char const *map_name);
 bool map_copy_request(char const *map_name, long priority);
 void __stdcall cache_copy_record_use(char const *map_name);
 
+// MiniMax R (11-10): no new form, no lower score; the state 11 chunk forms (the clamp as an in-place if, a min-clamp, a named limit and the total, completed and limit read in the other order) all keep the three loads one step rotated and score 30, the release before the slot store in state 19 scores 36, state 7 without the file local scores 327 and state 9 with a named handle scores 296.
 // MiniMax B (11-04): no new form, no lower score (the state 11 clamp as an in-place if, a min-clamp and a named-limit ternary all keep the same register rotation).
 // MiniMax B (11-03): no new form, no lower score.
 // MiniMax S (11-01): the state 11 clamp keeps the completed value in EDX and the limit in ECX; no lower score.

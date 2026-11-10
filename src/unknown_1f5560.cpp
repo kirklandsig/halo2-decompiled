@@ -1323,6 +1323,17 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
+// MiniMax D (11-10): no new form, no lower score (137); retail scales the actor index into EDX before the
+// register saves and keeps the actor pointer in EDI with the object in ESI, ours hoists the global loads and
+// keeps the actor in ESI with the object in EDI; retail's function_1e5450 also takes its definition index
+// from the stack where our call leaves it in EDX.
+// MiniMax D (11-10): no new form, no lower score (137); retail computes the masked actor offset into EDX
+// before the prologue and adds the pool data with an address LEA (`lea edi, [edx + esi]`), ours loads the
+// pool global first, keeps the offset in ESI and adds it with `add esi, edi`; the two pointers keep the
+// other way round (ours actor ESI / object EDI, retail actor EDI / object ESI), which is what decides
+// the LEA against the ADD, and the two entry stores of the 1.0 factors come out in the opposite order
+// (ours `[esp + 0x10]` then `[esp + 0x1c]`, retail `[esp + 0x1c]` then `[esp + 0x10]`); the actor and
+// object pointers as const pointers change nothing (137).
 // MiniMax S (11-10): no new form, no lower score (137): the actor and object pointers still take the other way round (ours actor in esi / object in edi, retail actor in edi / object in esi), so the prologue is one byte shorter and every later row pairs with the wrong row.
 // MiniMax C (11-09): no new form, no lower score (137); the body differs only by the actor/object pointer pair (ours actor ESI / object EDI, retail actor EDI / object ESI), so the prologue is one byte shorter and every later row pairs with the wrong row.
 // Round 16: retail passes the object index in EAX and the actor index in ECX, ours passes the
@@ -1655,6 +1666,9 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax D (11-10): no new form, no lower score (238); our frame puts the two saved values at
+// [esp + 0x28] and [esp + 0x2c] where retail has [esp + 0x1c] and [esp + 0x20], and retail materialises
+// the side flag only at the comparison while this build stores 1 at the top.
 // MiniMax S (11-10): no lower score (238): dropping the pointer-to-parameter origin copies gives 255 (worse) and is reverted; retail still materialises the side flag only at the comparison (store 1, ja, store 0) while this build stores 1 at the top and keeps the flag live from there.
 // MiniMax C (11-09): no new form, no lower score (238); retail materialises the side flag only at the comparison (store 1, ja, store 0) while this build stores 1 at the top and keeps the flag live from there.
 // MiniMax G (11-06): no new form, no lower score; retail keeps the normalizer length in the dead target

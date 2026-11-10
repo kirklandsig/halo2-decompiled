@@ -385,6 +385,7 @@ PRIVATE inline long polygon_round_19f(real value)
     return result;
 }
 
+// MiniMax E (11-10): no new form, no lower score (370); the frame is still 0x34 against retail's 0x30 and retail still makes its two 1.5 multiplies from the factor in its .data (the centre distance in single precision 379, the fade limit written out 402, a writable global factor 389 and the parameter read without its alias 419 all score worse).
 // MiniMax I (11-05): no new form, no lower score. Retail's callee 0x4b2d0 takes the tag in edx, the
 // group in ecx and the variant in eax (src/unknown_01cf50.cpp, another lane's file), so retail loads
 // the variant into ebp at the entry and ours keeps it on the stack.

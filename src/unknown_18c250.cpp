@@ -595,6 +595,7 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
+// MiniMax E (11-10): no new form, no lower score (246); the literal 1 is still pooled in EBX, so the frame stays 0x84 against retail's 0x80 (a byte flag field 324, word bitfields 246 and the flag-0 bitfield test 324 all score the same or worse).
 // MiniMax E (11-06): score 246 (was 264): the type cases now run 0, 2, 3 as retail does, with the type test
 // falling through to case 3; case 3 keeps its own failure byte and calls the position routine only when
 // flag1 is clear; the audibility byte is declared at the audibility call. Not kept (coordinator): case 0's listener

@@ -516,6 +516,21 @@ void function_14bac0()
 // unit read from the player at both calls 262 (1048, frame 0x44). Retail's first iterator is the 16-byte datum one (lane 10
 // r13), so the first-loop change is not retail's. On the original body: the relocation point used directly alone 245 (1048);
 // `point3f alternate, destination;` 222 (same code).
+// Round 84 (m3 lane 1, fast with 0x6b380 and 0x14bac0 listed, 222 as the full check; aligned and masked aligned counts in brackets, base [122, 77],
+// frame 0x50, retail 0x3c). Re-measured listed combinations: the relocation point used directly 245 (1048, frame 0x44) [117, 72] (r60); the second loop
+// on a block-local datum iterator through data_datum_iterator_next 229 (1036) [122, 87]; plus the unit read at both calls 264 (frame 0x54) [101, 57]
+// (r72); plus the relocation point used directly 259 (1048, 0x48) [97, 53] (r72); plus stamp/slot locals 258 [109, 49] (r27); plus a marker base
+// pointer 260 [126, 50]; r64's iterator + unit + marker + stamp form 259 (1048) [70, 45], with r64's early-return next-used scan 268 (1027) [92, 45],
+// the scan alone on it 267 (1027) [136, 54] (r212); the centre in a bare block 259/268 (r139), through an inline helper 279/333 (left out of line here),
+// declared first 259/268 (r72), one point shared by the probes and the centre 262/271. New on the 259/268 forms: the centre in a `do { } while (false)`
+// 259/268, through a force-inline helper taking a flag pointer or returning the flag 259/268 (same code as the bare block). New finding: retail reads
+// the visit stamp from the global at every test (`mov ecx, [stamp]`, then `cmp [eax*4 + marks], ecx` and a `mov edx, ecx` copy for the store); with a
+// stamp or slot local on the iterator forms ours forwards the incremented stamp in ESI across the loop (reloaded after 0xb75a0 only), and that spills
+// the scenario where retail keeps it in EDI. On r64's 259 form the stamp test through a force-inline or inline (index, stamp) helper, or one reading the
+// stamp inside, 259 each (same code); a slot local alone on the iterator forms 259 [70] / 258 [109] (forwarded again); an inline (index) helper reading
+// the global 259/258. On the kept body a slot local alone (`long slot = root & 0xffff;`) gives retail's in-loop reload and indexed compare: 247 (1032,
+// frame 0x50) [111, 70]; with the relocation point used directly 244 (1048, 0x44) [107, 66], with the block-local datum iterator 248 (1036) [123, 81],
+// with both 242 (1036, 0x44) [122, 81], with a marker base pointer 223 (1036, 0x50) [93, 104]. Body unchanged.
 // M3 lane 13 r72 (fast; brackets: aligned count with registers and stack offsets masked, base 222 [60]). Retail's three
 // aggregate slots are 12, 16 and 16 bytes: +0x20 relocation point and destination; +0x2c offset, both probe points,
 // centre and the second 16-byte iterator; +0x3c first iterator and alternate; height and radius sit at +0x1c/+0x18.
@@ -531,6 +546,26 @@ void function_14bac0()
 // in every form. Left besides the frame: the offset subtracted per component as it is loaded, the stamp copied for
 // its store, both marker addresses formed with two adds, and the tail scan's `inc eax; js` entry with its found
 // block after the return. NOT kept: body below unchanged.
+// Round 87 (m3 lane 1, fast with 0x6b380 and 0x14bac0, base 222): the visit-stamp test through a forceinline (index, stamp)
+// helper shaped like src/unknown_0bbf40.cpp's object_stamp_ab (test, store, bool result) 263 (1020 bytes). Round 72's 259
+// structure (second loop on a block-local datum iterator through data_datum_iterator_next with the unit read at the call, the
+// relocation point used directly, centre/height/radius in their own block) re-measured 259 (1048 bytes, frame 0x48; its second
+// iterator sits at +0x48 where retail shares +0x2c with the offset, probe points and centre); with the stamp helper 258 (masked
+// 55); diagnostic, the second iterator's datum also cleared at its start 253 (1064, frame 0x44): the first-use state of that
+// iterator moves its home. The root walk is 0xbaf80's body written out (0xbaf80 has a noinline declaration in avoid-listed
+// src/unknown_0bad50.cpp); it differs from retail only in its loop entry layout. No existing initializer for the datum iterator
+// exists to try. Beyond these, this note already covers the iterator kinds and scopes, the relocation point, the unit reads, the
+// marker pointers, the stamp and slot locals, the readiness flags, the point declarations and the tail scans; no untried natural
+// form is left. Body unchanged.
+// Round 164 (m3 lane 6, fast with the nine callees; masked = aligned count with registers and stack offsets masked, 87 for this
+// body): the tail scan through the existing data_find_index 222 (same code); with the second scan on a block-local
+// s_data_datum_iterator through the out-of-line data_datum_iterator_next, set up data, index, datum_index as matched 0x1bbf40 does,
+// 229 (masked 70); plus the relocation point used directly 238 (1052 bytes, frame 0x44, masked 63); on that the first scan's
+// iterator taking its pool from g_4e8c24 directly 267 (aligned 130; the entry reorders, frame 0x48); the centre, height and
+// radius in their own block 238 (frame 0x40, masked 63: relocation point and destination share, offset, probes and centre share,
+// but the second iterator packs with the first and the alternate stays alone where retail packs the alternate with the first
+// iterator and the second iterator with the probe slot; the height takes the player's dead slot); with the unit re-read from the
+// player at both calls re-measured 259 (frame 0x48, as Round 20). Body unchanged.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

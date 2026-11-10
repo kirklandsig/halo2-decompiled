@@ -436,6 +436,10 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // sequence inline); i and j as short 149 (672); the collector without align(16) 19 (it moves 4 bytes); the b
 // point stored by three field stores in place of real_point3d_set 36; the contacts read through
 // collector.entries.data at each use (no contacts local) 8; (re-measured) a contact count local 865.
+// Round 181 (m3 lane 4, fast): the existing havok_component_get and havok_component_rigid_body_get getters with the
+// real component type and its body array 8; i and j as int 8; the collector, dispatch and contact loop as a forceinline
+// pair helper returning the closer flag 152 (685 bytes, every home moves); the outer loop as while 8; the contact buffer
+// declared before the collector 8. Diagnostic: j, first, i renamed to sort in retail's slot order 8 (names do not order them).
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
@@ -821,6 +825,24 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // forward-first makes VC compute them as retail does, (up*k + left*j) + forward*i (lane 14 r64's row orders, re-measured: rows alone
 // 239, masked 107); a shape local for the kind test and the kind-24 block 362 (1206 bytes); the structure global read at each use
 // 239 (same code); re-measured: the normal through matrix_transform_vector 332 (1265 bytes).
+// Round 163 (m3 lane 6, fast; aligned/masked = difflib counts, addresses or also registers and stack offsets
+// masked, control 177/112): retail's 12-byte home at +0x38 holds only origin x, y and z sit in first's and
+// friction's slots, as if the point were split into scalars; the clamp idiom (`mov ecx, 1; cmp ecx, edx; jg`)
+// appears nowhere else in retail. Origin by components z, y, x from the transform 309 (1245 B, 167/90, origin
+// still one 12-byte home); that with the hit by components, aggregate hit publication and a kind-24 shape local
+// 361 (1273 B); the distance sum operands swapped 239 (same code); both side tests through the existing
+// plane_distance_to_point 239 (183/112); origin z, y, x through a position pointer with the hit by components
+// (y, x, z) and aggregate publication 346 (1247 B, 265/173); the dead second walk through the real get_last 357
+// (1227 B: called out of line); our build pads that walk's loop head (`lea ebx, [ebx]`) where retail has none.
+// The decode as `switch (data >> 29)` with default/case 1 (0xdd990 switches on the same key) 239 at 1243 B
+// (179/114: retail's `shr 0x1d; dec; je`, but the surface index still sinks into the instance arm where retail
+// computes it before the branch; a switch for an if, not kept); the structure global read at both uses in place of
+// the `bsp` local 239 (same code). All restored.
+// M3 lane 10 r88 (fast with 0x1829b0, 0x1821d0, 0x182800, 0x183670; base 239, aligned 177, masked 112): the kind-24 block reading
+// `second->shape->data` at each use instead of the `data` local 237 (1245 bytes; two points, not kept; retail holds the shape in EBX
+// there and decodes with `shr ecx, 0x10; shr eax, 0x1d; ... dec eax; je`, ours with `and eax, 0xe0000000; cmp`); the distance written
+// radius-first 239; the 1..16 classifier as `value > 16 ? 16 : (value < 1 ? 1 : value)` 239 (same code); the classifier with no value
+// local, `(long)shape->data` at each use, re-measured 239 (same code).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
