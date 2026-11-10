@@ -483,6 +483,16 @@ struct s_ai_scene_assignment
 // Round 80 (m3 lane 10, fast): the direct maximum (no int copy) 59 (350 bytes, control); on it a forceinline helper filling the role's four fields
 // with a short role 59, with a long role 59; that helper on the int-copy form 12, with a long role 12 (348 bytes, same code); the compares on the
 // short parameter with the int copy only for the recursion 58 (351 bytes).
+// Round 177 (m3 lane 4, fast): the iterator calls take their argument in ESI, so ESI is free only inside one pass of the body;
+// retail gives it to the maximum there (a dword load at the head test, live across the scorer to the recursion's push) and
+// reads the role index twice (pushed for the scorer; then one dword load that serves the four stores through `movsx eax, cx`
+// and, kept in ECX across the last-role test, the recursion's `inc ecx; push ecx`). Ours on the direct maximum gives ESI to the
+// role index. Direct maximum (control) 59 (350 bytes). New, all on it: an int role local for the entry uses only 59
+// (propagated); the last-role flag as `role_count - role_index <= 1` 69 (352); the scorer told the role as the role pointer's
+// index 80 (355); the four stores in field order (actor, score, name, variant) 60; in reverse order 60. Re-measured: an int role
+// local for the entry uses and the recursion 102 (352); an int next-role local set at the entry for the flag and the recursion
+// 59 at 347 bytes (round 14's 61 form: retail's ESI and head exactly, the stores then read the role with one movsx from the
+// slot and the recursion adds 1 to it).
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)
