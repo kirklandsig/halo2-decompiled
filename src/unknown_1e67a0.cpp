@@ -826,6 +826,10 @@ bool g_51e9bc;
 // inputs and separate assignments:
 // 56/56/51/56/56/51/51/51. NOT kept: raw one-use input storage is unmatched; original shared producer and
 // complete body restored. Projection j/k ownership and native jitter spill homes remain.
+// T77: Negative-default actual jitter sign groups x/y/xy/z/xz/yz/xyz
+// 73/72/72/80/77/77/76; all signs in exhaustive arms 64. NOT kept: no gain;
+// native-length forms disturb unity allocation from +0x21, before the original projection gap.
+// Original full body restored; projection j/k ownership and jitter spill homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -1217,6 +1221,10 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // preset and set in its test and the side dots as (up, new) * (up, old) 90 at 1382 bytes (rotation products, the turn crosses'
 // registers, the alignment and side dots and the load-all exits left); the moved-away test written inline in the condition 160 (1367);
 // a named `axis` pointer for the rotation and both side dots 148 (1382). Body restored.
+// T77: Complete goal-output record staging mutable/read-only, immediate or flags-between
+// input capture and publication 140/134/140/134; turned-output record staging or full
+// coordinate initializer, mutable/read-only 140/189/140/189. NOT kept: eager copy-boundary
+// diagnostics miss equality; original full body and shared rotation call restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
