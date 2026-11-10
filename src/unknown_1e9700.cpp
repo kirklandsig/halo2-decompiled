@@ -443,6 +443,13 @@ struct s_object_damage_view
 // ESI) and the frame grows to 0x54. On it: `selected` declared first 464; `if (killer != NONE) { if (killer ==
 // reported_player) ... } else if (reported valid)` 438 (1567); that with the consideration flag as a true default cleared
 // by the test 433 (match-only flag form; diagnostic). No form reaches below 353.
+// Round 163 (m3 lane 5, fast): the damage code read after the validation block 342 (1568 bytes; retail reads it
+// before the validation's test, a statement order by score, not kept); `if (killer == NONE && reported valid)
+// killer = reported; if (killer == reported) code` 332, discarded: not the same behaviour (retail leaves the code
+// alone when the fallback fails); the selection fallback below the hostile/threshold/count defaults 386; the
+// record's player assigned to killer first and cleared when the validation fails 415 (1612); the credited player's
+// team byte as a twice-used char local for the team store and the query 358 (1552), as a short local 358. Retail
+// keeps the credited player in its home (+0x14; reloaded into EDX at the fallback, into EDI at the team block).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
