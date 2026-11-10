@@ -1618,6 +1618,20 @@ long function_cbd50(long unit_index, short weapon_index);
 // splits depleted (memory home for the initial false, BL from the first query on) because EAX (pool) and EDX (index*12)
 // stay live for the second query's fresh data load, which none of these forms reproduce. On the headers-at-entry form:
 // the controlling read before the overlay and name reads 325; the second weapon object through the pool macro 325.
+// M3 lane 13 r72 (fast; brackets: aligned count with registers and stack offsets masked, control 164 [33]). Retail's
+// second query reloads the pool's data through the pool pointer kept in EAX from entry and re-reads the unit, while
+// both weapon-object reads use the entry's data in EBP; the first query copies EBP. Re-measured with the if-form
+// depletion (earlier rounds' forms, scores agree): headers local at entry for the unit and both weapon objects, bool
+// result 336 (1259 B) [26], byte result 325 (1286 B) [37], with the `&&` depletion 334 (1273 B) [26]; headers for the
+// weapon objects only 349 (1257 B) [20]; the depletion written through a pointer local 349 (same code). New, each
+// judged by whether a second `[pool + 0x44]` load appears after the first query (none did): result/interruptible/
+// depleted declaration order on the entry-headers form 335; that form without the parameter's re-read 362 (1232 B)
+// [33]; on the weapon-headers form: the depletion flag made memory-resident (diagnostic, reverted) 334 [23]; both
+// handles in a two-element local array filled before the tests 330 (1278 B) [34]; both lookups ahead of both tests
+// 330 (same code); the handles returned through an out-parameter inline getter 364 (1239 B: 0xcbd50 then stays out
+// of line, and only then is the data reloaded, after the call); the second slot read as a byte-offset expression
+// 349, the first 349, both 349 (same code as the macro). So neither a store to the flag nor another spelling of the
+// lookup stops the sharing; only a real call between the queries did. NOT kept: body below unchanged.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
