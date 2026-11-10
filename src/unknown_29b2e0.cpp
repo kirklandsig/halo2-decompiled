@@ -408,6 +408,15 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // shared producers on the in-place graph, seven subsets then shared publication:
 // 234/247/257/265/282/254/262/265. NOT kept: no exact unity/root/yaw/rotation homes;
 // original numeric contract, alias-safe scalar results and full body restored.
+// M3 lane 13 r72 (fast with 0x29b990, which stayed matched except where marked). Both builds put spills in dead
+// parameter homes: retail the final pitch in the scale's home, the first sine at +0x10 and the cosine in the first
+// stack parameter's home; ours the pitch at +0x10, the sine and cosine in those two homes. Retail reads the actor's two
+// angle fields from memory at each use and loads the degree factor into XMM7 ahead of the first limit. New forms: the
+// two turn-rate blocks as one inline helper taking the current angle and the rate by value, on the single-exit
+// normalizer + early XY form 246 (1706 bytes, the fields then read once), on the body below 253 (1706); the same
+// helper taking the angle's address and the rates record 278/285 (1716); both angles as arm locals with the two actor
+// stores written in each arm 244 on the lead, 251 on the body below (1743), with the result store in each arm too 471
+// (1749, 0x29b990 6). Lead re-measured 169. NOT kept: all regress; body below unchanged.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

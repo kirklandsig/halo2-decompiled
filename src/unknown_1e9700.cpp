@@ -443,6 +443,14 @@ struct s_object_damage_view
 // ESI) and the frame grows to 0x54. On it: `selected` declared first 464; `if (killer != NONE) { if (killer ==
 // reported_player) ... } else if (reported valid)` 438 (1567); that with the consideration flag as a true default cleared
 // by the test 433 (match-only flag form; diagnostic). No form reaches below 353.
+// M3 lane 13 r72 (fast with 0x1e9ce0 and 0x1ea5b0, unchanged at 13 and 106; brackets: aligned count with registers and
+// stack offsets masked, base 353 [35]). Retail's two award loops have no compare after the prefix search (the search
+// leaves straight to the next award when it finds the player). The search as an inline early-return list predicate
+// used by both loops 366 (1528 B) [37]; with the killer-team call argument read from the player byte again 365 [38];
+// with the consideration flag as a true default cleared by the test 357 [35]; those three with the `if (killer !=
+// NONE) { if (killer == reported_player) ... } else if (reported valid)` layout 358 [33]; plus the assist stores
+// re-reading the record's player index 366 (1544 B, retail's length, first difference +0x8) [39]; the predicate with
+// that killer layout alone 383 (1512 B). NOT kept: all above 353; body below unchanged.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
