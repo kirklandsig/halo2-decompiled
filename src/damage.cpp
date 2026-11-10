@@ -1228,6 +1228,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // rotate); with that copy through the pointers 355; declared at the top and assigned in the node branch 38 (same code).
 // Diagnostics, reverted: no direction reads in the cone dot, another source for the NONE copy, or no node updates in
 // the near block all leave the else arm's i/k rows as they are, so no single later read sets them.
+// T79: Original near-surface comparison owned by near/far bool/byte/short/long
+// admission results: eight 44s at 1535 bytes. NOT kept: no exact result form; original
+// complete body restored. Near-normal stores/k addition and far i/k operands remain.
 // Round 81 (m3 lane 10, fast with 0xd6c80 and the matched callees): each row as `surface_normal.i = 0.0f -
 // surface_normal.i; node_direction->i += surface_normal.i;` 286 (the zero register flips); the negated names as
 // unary minus 38 (same code); the else arm reading `data->direction.i` 46; `node_direction` declared first in the
@@ -5004,6 +5007,9 @@ struct s_damage_object_creation
 // Round 157 (m3 lane 5): the mask's zero declared, or assigned, just before the first node loop 170/170 (aligned 107
 // against 25: object_index loses ESI to the datum offset); the piece loop as `!= 0` 156 (aligned 24, retail's bottom
 // jne), with a dword mask 156; the tag test in the loop condition, retail's guard order, 188 (776 bytes).
+// T79: Mutable/immutable next-detached bitmap at node-record production, state-byte store,
+// first metadata byte and final metadata word: eight 156s. NOT kept: no exact recurrence form;
+// original complete body restored; late bitmap zero and piece/search entry remain.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

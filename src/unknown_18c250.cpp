@@ -314,6 +314,8 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // score 2 (was 2): only the two loads' registers differ: ours loads the samples address into EDI (the data
 // pointer's dying register) and the entry's data offset into EDX, retail the samples into EDX and the offset into EDI.
 // MiniMax E (11-09): 2 (was 7): the samples pointer is copied into a dword and the scale is passed
+// sample-base/offset registers and final object setup remain;
+// MiniMax E (11-09): score 2 (was 7): the samples pointer is copied into a dword and the scale is passed
 // straight to the callee, so the scale is loaded early and the sum's first operand is the samples pointer,
 // which matches retail's load order and its call setup (the curves address by lea ecx and the object index
 // loaded after the pushes); what is left is the two loads' destination registers, ours putting the samples
@@ -337,6 +339,7 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // samples in ESI where retail has the samples in EDX and the offset in the dying EDI, the object index still
 // loads before the pushes, and the permuter's 1806 tries never beat 7.
 // Earlier 7 (was 7): the tail still loads the entry offset into EDX and the samples pointer into ESI, where
+// Earlier (7, was 7): the tail still loads the entry offset into EDX and the samples pointer into ESI, where
 // retail loads the samples into EDX and the offset into the dying EDI, and the object index is still loaded
 // into ECX before the pushes where retail loads it after them, with the curves address computed by lea eax
 // where retail uses lea ecx. This round: the front end canonicalises the sum, so every spelling gives the
@@ -355,6 +358,8 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // folds back to the pointer form at 7, and the index form, a pointer local and an unsigned index leave the offset
 // in the add's destination, at 7 or 8.
 // Earlier 2 (was 7): sample-base and offset registers plus object call setup remain; readonly data
+// Earlier (7, was 7): sample-base and offset registers plus object call setup remain; readonly data
+// score 2 (was 7): sample-base and offset registers plus object call setup remain; readonly data
 // input 7; readonly entry input 7; native count identity 7; output count lifetime 52; existing
 // scale storage lifetime 7; input pointer home names 7; existing scale home names 7; inline matched
 // output callee 7; final object address read 7; split construction around count 9; split
@@ -367,6 +372,9 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // MiniMax H (11-04): the curve address built from the samples' address copied into a dword with memcpy, plus
 // the entry's data offset, with the scale passed straight to the callee: 7 -> 2. NOT kept: the memcpy reads the
 // field's bits through its address (kept only with a byte match); without it the same body is 8.
+// T80: Count-presence/missing results at the original comparison, bool/byte/short/long:
+// 7/7/7/7/7/7/7/7. Sample-base/offset register reuse and final object setup remain.
+// NOT kept: no byte equality or qualifying gain; original complete body restored.
 // MiniMax R (11-09): no new form, no lower score (7): the curve set's address is built from the
 // entry's data offset plus the samples' address with the operands in the other order here (ours adds
 // the samples to the offset, retail the offset to the samples), the curve pointer is computed in eax

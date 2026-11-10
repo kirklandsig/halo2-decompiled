@@ -1983,10 +1983,15 @@ bool function_1e11b0(long actor_index, bool active);
 // score 64 (was 64): frame 0xc agrees; the squad address stays in EBX instead of
 // retail's spilled ESI pointer and EBP handle. The common loop head and
 // full-width return mask still differ.
+
+// score 64 (was 64): EBP handle/receiver spill, common loop head and return width remain;
 // MiniMax H (11-07): no new form, no lower score (64); the squad address is still kept in EBX
 // where retail keeps the parameter in EBP and the squad address in ESI (spilled into the slot above
 // the argument), the loop is still rotated with its test at the bottom, and the flag store still
 // reads the byte into a register where retail updates the byte in memory and reads it back.
+// Earlier (64, was 64): frame 0xc agrees; the squad address stays in EBX instead of
+// retail's spilled ESI pointer and EBP handle. The common loop head and
+// full-width return mask still differ.
 // byte record 64; native absolute index 64 (caller loss); record field types 64.
 // record flag bitfield 64; existing actor step 100 (caller loss); existing actor getter 84.
 // frame pointer 74; size preference 82; native index stdcall 69.
@@ -2162,6 +2167,9 @@ bool function_1e11b0(long actor_index, bool active);
 // the same domains sourced from the initialized iterator full handle: four 65s at
 // 199 bytes, losing both matched callers. NOT kept: native EBP handle/receiver spill
 // and return mask remain; original real record, parameter store and whole body restored.
+// T80: Signed-word current/stale stamp admission in bool/byte/short/long: 64/64/64/64/64/64/64/64.
+// Native EBP handle, receiver spill, common loop head and full-width return remain.
+// NOT kept: no byte equality or qualifying gain; original complete body restored.
 // P401: Complete loop admission/exhaustion carried by bool/byte/short/long in the
 // ordinary for predicate: eight 81s at 214 bytes. Full-width value argument alone/with
 // word flag publication and full mask 64/65, both lose the two matched callers.
