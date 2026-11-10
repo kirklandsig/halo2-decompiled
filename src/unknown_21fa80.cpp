@@ -304,6 +304,14 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // DL271: Existing integer-clamp pointer/in-place/returned-pointer/reference outputs
 // 548/548/548/548; real-clamp output protocols 549/549/545/549 (control 545).
 // NOT kept: no equality or gain; original producer ownership, frame and body restored.
+// Lane 5 r164 (plain; aligned/register-masked LCS [369/246] for 544): retail builds the first send flag as
+// `shr; and al,1; neg al; sbb eax,eax; and eax,4` (a select on a bool value), ours folds it to a shift whatever the
+// spelling: `(bool)` on that bit 545, all five input bits as one-bit fields of field_30 declared in the input record 545
+// (same code), flags zeroed then file-local SET_FLAG per bit (the macro five files define) 561 (1916 bytes). The four
+// levels as one 16-byte memcpy 560 (1885 bytes). Mode and direct read before the gain with the voice sends as a case-1-
+// into-case-0 switch 572 (1879 bytes [350/238]). Lead: every flag test in the function (input bits and sends.flags bits)
+// stores its bool to [esp+0xe] (direct's home), written about ten times and read once, and sends.flags is reloaded
+// after each such store, as if that byte were address-taken memory that may alias the send record.
 // Lane 12 r102 (plain; full 544, the fast image 536 with the builds-differently caveat): gain bits read before the
 // stream pointer 555; the sends as retail's fall-through two-case switch on the mode (case 1 into case 0) 542 (1901
 // bytes; the block then has retail's shape); fabsf at all six tests 544; the three send-bit sets through a set helper

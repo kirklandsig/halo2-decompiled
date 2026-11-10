@@ -1017,6 +1017,10 @@ bool c_projectile_type::v8(long a, long b)
 // the field through an indexed long view 12; the field read directly at the NONE test and the mask 12 (re-measured);
 // the group index read into a local at entry 50; flags declared before the lookup with the call's mask from `b` 12;
 // the object through the existing inline object_get 12.
+// Round 165 (m3 lane 5, fast, 0xa5e70 kept): both value checks through one shared inline (value, source, bit) update
+// helper returning the bit or 0, with `result |=` at each, 56 (190 bytes) with the word read and 58 (192) with the mask (the
+// zero arm is not threaded); the 0xa5e70 call through an inline (object index, flags, update) forwarding helper with the mask
+// 12, passing the masked flags 12, with the word read 5. The tie is not moved by the call's argument webs.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

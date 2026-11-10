@@ -107,6 +107,12 @@ PRIVATE __forceinline long texture_floor(real value)
 // (reverted): a probe load stored to a global in the latch takes ECX and the clear keeps EDX, so EAX is held off
 // at the latch rather than one rotation step behind. A one-file LTCG link with 0x143c0's file reproduces EDX but
 // not 0x143c0's register convention.
+// Round 165 (m3 lane 5, fast with 0x143c0 and 0x16b90): `fabsf` for the magnitude test 4; `fmodf(frame, (real)count)`
+// for the frame 4 (same code). Diagnostics on the LTCG image (reverted): the clear keeps EDX with the bitmap block
+// removed, the second floor removed, the call removed, a zero bitmap in the call, a void callee in place of 0x143c0,
+// and with the loop body cut to one 0x143c0 call (the cut-down bodies also changed this function's frame or homes:
+// `state` moved into a register, `remaining` into EBP, so they do not isolate the latch); matched 0x18e80's latch takes EAX after a call that leaves EAX
+// unused. No untried natural form of the latch or the frame block is left in this note.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {

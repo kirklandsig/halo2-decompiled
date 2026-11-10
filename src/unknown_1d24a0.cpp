@@ -403,6 +403,14 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // with no copy 965 (4216, frame 0x1e4) [642, 591, 369]; that plus the scale helper as three statements 1246 (3971, frame 0x1c8)
 // [570, 471, 323]; the three statements alone re-measured 1184 (4023, frame 0x1d4) [557, 471, 338]. Retail walks the element
 // array through a computed pointer kept at [esp+0x64] (shl/add) where ours uses indexed addressing, and saves EBX at entry.
+// Lane 5 r166 (fast alone, control 902): the repeated `field_4 != NONE` dropped from the attached-component test 960 (4251
+// bytes); the second read of field_1 into local_15 dropped 984; a named contacts pointer for the final free 917 (4283); local_3
+// declared before local_2 902; the attached component chosen by a ternary 901 (one point, not kept); the object lookup as
+// `local_13 = NULL; if (...) local_13 = ...` 902; the entry flag as `fabs(arg_1) >= 0.0001f` 1009 (4299); the two field tests
+// nested 902; a short loop index 989 (4272); response_fraction declared at the top 902; the contact array pointer read
+// once before the loop and used in its test 1004 (4287). All restored. The unroll lead
+// (no destructor call) needs the contact array type in include/unknown_1cec30.h, whose other users 0x1cf9f0 and 0x1d2070
+// sit in src/unknown_1cec30.cpp (another lane's file this round).
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

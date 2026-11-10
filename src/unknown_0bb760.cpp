@@ -311,16 +311,6 @@ real function_0bff60(real a, real b);
 real function_c18e0();
 real function_1588b0(long player_index, long type);
 
-/* the word of flags at 0x10a of an object */
-struct s_object_flags_10a
-{
-    byte unknown000[0x10a];
-    word bit0 : 1;
-    word bit1 : 1;
-    word bit2 : 1;
-    word : 13;
-};
-
 // @retail 0xbcc20
 bool __stdcall function_bcc20(long object_index, long id, real *out, bool *active)
 {

@@ -355,6 +355,13 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // seven subsets then native history transfer: 849/840/822/834/835/835/836/799. NOT kept:
 // no gain or native frame/entry recovery; original input storage, helper arithmetic,
 // vector transfers and complete body restored. Early object/input/heading homes remain.
+// Lane 5 r164 (plain; aligned/register-masked LCS [394/232] for 715): the input copy's length through the existing
+// normalize_inline (retail sums i, k, j; ours k, j, i either way) 807; the +0x290 address written at each use (no local_4)
+// 875; local_15 and local_17 both as planar vector2f copies 723 (3466 bytes [380/226]); the clamp helper as an if/else-if on
+// its parameter 795; field_64 read once into a named local for the three blend rows (retail keeps it in XMM6) 731. The
+// region from local_4 to the end of the if-chain in its own block (diagnostic) 715, the same code. Lead: matched 0x4d640 and
+// 0x9eac0 save EBX around plain sequential statements, so the region's form is not what keeps our push at entry; ours uses
+// EBX only inside that region too (same live range and jumps), and the head/tail esp shifts cost about 70 instructions.
 // Lane 12 r102 (plain; the fast image 648 carries the builds-differently caveat): both planar inputs as aggregate copies
 // (`*(vector2f const *)arg_2`, `*(vector2f const *)local_4`) 723 (3466 bytes; both copies then take retail's integer
 // moves, the shifts cost more), local_17's alone 723, local_15's alone 717; with normalize_inline for local_9 824;

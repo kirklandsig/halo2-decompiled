@@ -949,12 +949,12 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
+// score 114 (was 114): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // MiniMax S (11-07): no new form, no lower score; the crosses declared apart, declared at first use or
 // declared at the top of the body give 114, the two cross calls swapped give 124 and the goal copy by
 // components gives 120, so the body stays; the rotation products, the side-dot order and the exit copies differ.
 // MiniMax R (11-05): no new form, no lower score; writing the two turn-block crosses out with retail's
 // differing third terms gives 140 at retail length (the rotation block is re-generated), so the body stays.
-// score 114 (was 114): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // Round 16: retail takes the animation state in EAX, the component index in EDX, the physics
 // pointer in ECX and the output pointer in EDI, then the object index, the definition, the value
 // and the flags on the stack; this file's declaration describes another order and the callers are
@@ -1252,6 +1252,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // either operand order) 127 (1382, al 103/66: every rotation product load-first), with the flag form 170, with the side dots too 168.
 // Left on the lead: the four rotation products and the new cross's goal.j products (retail copies the register and
 // multiplies from memory), the old cross's two forward.i products (retail loads forward.i), the side-dot order and the flag byte.
+// Lane 5 r166 (fast, 0x24590/0x1cd6c0/0x1ecf50 listed, control 114): `__forceinline` on initial_cross 114 (same code; last
+// measured on the 155 body); the angle guard as `fabs(angle) >= 0.0001f` 205 (1391 bytes); the rotation angle computed before
+// the forward copy 125 (1388); angle declared before movement 114; the side test as `0.0f >= product` 114. Body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

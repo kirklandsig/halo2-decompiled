@@ -1921,6 +1921,11 @@ dword function_015cd0(long index, dword entry);
 // zero colour as one chained assignment 4; (re-measured) UV filled by field stores 4. Permuter
 // (600 s, 63 variants, --fast --anneal) best 4. A one-file LTCG link with the callee files does not give this body's
 // convention (ret 0x18), so link-level screens need more files here.
+// Round 165 (m3 lane 5, fast; 0xd16d0 kept its match in each): the 0x137550 call through a two-parameter inline
+// forwarding helper 4; `out` declared at each of the five other positions, definition and both calls, 4 each (both
+// retail callers set EBX after the pushes, as ours do with `out` last); the bsp entry through an inline
+// (globals, index, size) element getter 4; flags as dword 4; the bitmap held as the lookup's return type with casts
+// at the texture calls 4. The two leas never moved.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {

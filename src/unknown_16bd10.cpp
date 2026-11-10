@@ -727,8 +727,8 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
-// MiniMax C (11-05): no new form, no lower score; the plane's three normal copies are reloaded in the same order in both (i, k, j), but retail gives them XMM3/4/5 for i/j/k where ours gives XMM5/3/4; the squared length in field order scores 389, in k,i,j order 243, with the first two addends swapped 238, written from the direction alone 465, and with the multiply operands swapped it is byte-identical at 236.
 // score 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
+// MiniMax C (11-05): no new form, no lower score; the plane's three normal copies are reloaded in the same order in both (i, k, j), but retail gives them XMM3/4/5 for i/j/k where ours gives XMM5/3/4; the squared length in field order scores 389, in k,i,j order 243, with the first two addends swapped 238, written from the direction alone 465, and with the multiply operands swapped it is byte-identical at 236.
 // b5K 11-06 statement walk against retail found no wrong field, offset, condition, callee or loop; the one
 // behaviour fix is the point-mode timer, which retail computes as (ticks * rate) / scale (cvtsi2ss, mulss [ebx+4], divss at
 // 0x16ca6e-0x16ca78) and the one-line ternary compiled as (rate / scale) * ticks, rounding differently; the `seconds` local makes
@@ -990,6 +990,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // (1700 B); the zero arm first 341; `t = 0.0f` then the guarded assignment 382 (1704 B); `t = -(...)` either grouping 331
 // (same code; new from here); `command->distance = -distance` 331 (same code); one function-scope `t` for the plane, pan and FOV blends
 // 371 (1700 B), for the pan and FOV blends only 331.
+// Lane 5 r166 (fast alone, control 331 = plain baseline; CAVEAT on callee 0x16cfa0): `switch (camera->mode)` with no mode
+// local 331; camera_object_index as long 331; case 1 with its own `flags |= 0x40; break;` instead of falling into default 331
+// (same code); `t` preset to 0.0f with no else arm 454 (1704 bytes); the length as length_sq3f(&camera->point.left) 480 (1720).
+// Body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
