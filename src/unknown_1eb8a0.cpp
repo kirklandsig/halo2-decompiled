@@ -183,12 +183,19 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// score 636 (was 642): retail keeps q (the fourth stack argument) in EBX from entry and reads d from its stack
+// slot at each use; ours keeps d in EBX. Frame 0x24 and clock EDI agree; xmm homes and coefficient schedules remain.
+// retail keeps q in EBX from entry (reloading it after the activation copies, where EBX serves
+// a copy) and reads d from its stack slot at each use; ours keeps d in EBX. Frame 0x24 and clock EDI agree; the
+// speed-factor selection order, direction/sample homes and coefficient schedules remain.
 // MiniMax I (11-10): copying q into qr field by field (q->i, q->j, q->k) instead of one vector copy gives 636 (was 646)
 // at 2880 bytes; the d slot still takes EBX where retail keeps q, and the coefficient schedule still differs.
 // MiniMax h (11-05): the argument order is right (d in the third stack slot, q in the fourth, position in the fifth); retail copies the q slot into EBX and reads d from its own slot at each use, ours copies the d slot, and assigning the fallback pointer with a ternary instead of an if gives 642 with the same code, so no new form is kept.
 // MiniMax A (11-04): no new form, no lower score; retail branches on the fast flag before the rate multiply and loads the
 // constant there, ours multiplies first (642, same code).
-// score 642 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// score 646 (was 642; the settling-ratio fix took 642 to 646): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// Earlier at 642: retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// Earlier (642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
 // activation copies) and reads d from its stack slot at each use; ours keeps d in EBX from entry. Frame 0x24
 // and clock EDI agree; direction/sample homes and coefficient schedules remain.
 // MiniMax E run 26: retail passes the state in ESI and the update flag in AL and reads its first argument from a different stack slot than the fastcall form ours compiles to; the declaration and the /Gr convention are fixed, so the prologue and every stack-relative access stay four bytes off and the direction/sample homes and the coefficient schedule still differ.
@@ -415,7 +422,30 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 74 (m3 lane 10, fast, caller 0x1eb6f0 MATCH in each): second step count as a ternary 640 (2881 bytes, a gain of 2, not kept); both as ternaries 681 (2880). A one-file harness screen of 127 plain spellings (ternary and if both ways, nested tests,
 // compare forms, commutative operands, constant declarations swapped) found none lower; commutative operand swaps change nothing, the sums and products are canonicalised.
 // Same round, fast: `s->distance` as if/else 671 (2884); duration with its 7/1 as if/else 680 (2891); limit test as nested ifs 642 (2878); `rem = rem < 0.f ? 0.f : rem` 642 (2878); `s->limited = false; if (limit != 0.f) s->limited = len2 > limit;` 687 (2883).
+// Round 65 (m3 lane 2, fast, caller 0x1eb6f0 MATCH in each; control 646 at 2875 bytes after the settling-ratio fix,
+// difflib aligned/register-masked in brackets [754/305]): delta scaled through vector3f_scale(&delta, dt / len, &delta) 678
+// (2893) [662/285]; the impulse through vector3f_scale(a, f, &s->impulse) 704 (2896) [636/269]; both 669 (2886) [700/288];
+// impulse helper + the 12/8 factor selected before t at the first site 700 (2886) [629/259], first two sites 702 (2873)
+// [547/255], all three 702 (2873) [545/247]. Lead: that last form has retail's k-before-t head and keeps the caller, but the
+// zero's xorps moves to the entry (a one-line shift) and the limit is spilled; d still takes EBX (those three re-measure round
+// 166's write + factor-first forms on this base; delta through vector3f_scale is the listed existing displacement scale).
+// `if (!s->active && dt > 0.001f)` as one test 646, `s->active == false` 646 (same code each); the final flag test's arms
+// swapped 646 (same code); `s->ticks_left = 0` before `fail = true` 646; the counter bumped in place and read back
+// (`s->counter++; long new_counter = s->counter;`) 643 (2877 bytes: retail's `inc edx; mov [esi+4], edx; mov eax, edx`);
+// void return alone 646 (same code); void with the read-back 642 (2877; `out` then goes to EAX before the flag update, as
+// retail, whose EAX at `ret` is `out`: retail returns nothing, and the only caller ignores the result); that with `s->duration
+// + 6 > new_counter` 642; the listed second-count ternary on this base 644, with void and the read-back 640 (2880 bytes).
+// Lead: the void/read-back tail is retail's but for duration + 6 in ECX (retail EDX); the gain is under the keep threshold.
 // MiniMax I (11-10): the fallback through a named pointer local (the parameter left unwritten) 666, the same fallback spelled at each component 649, the position copy written field by field 648 and the w*rate multiply moved after the qr reads 638; both builds lay the arguments out the same (out E+0x04, dt E+0x08, d E+0x0c, q E+0x10, pos E+0x14) and both reuse the pos slot for the fail byte, so the whole head difference is that the prologue copies d into EBX where retail copies q, and the fallback can only be retail's cmove once EBX holds q.
+// Round 181 (m3 lane 4, fast, caller 0x1eb6f0 MATCH in each): the impulse through the existing vector3f_scale 675
+// (2896 bytes); with the 12/8 factor selected before t at the first site 679 (retail's al/test/movss/jne/movss head,
+// caller kept); at all three sites 666 (2883; step, the 0.001 constant and zero still in other xmm registers, d still
+// EBX); on that, s->limit read at each use (no limit local) 705 (the constants and b move to the prologue), alone on
+// the current body 667; the three clamps as PIN(t, 0.001f, rate * k) 664, the first only 717.
+// Round 68 (m3 lane 15, fast, caller 0x1eb6f0 checked): the 12/8 factor selected before t in all three clamps 695
+// (2867 B, frame 0x20, caller 22); the time globals read at each use (no globals local; retail reloads g_510c54 in
+// the non-update part) 634 (2883 B, caller matched; gain 2, not kept); on that, the third clamp's factor before t3
+// 651, the counter conversion without `volatile` 703, the counter-stage dot with q first in the j and k products 634.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
