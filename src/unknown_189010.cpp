@@ -149,6 +149,8 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax E (11-09): no new form, no lower score (110); the priority and the flag word are
+// still formed after the location copy, and the first 0x221810 call is still expanded by our link.
 // MiniMax I (11-08): no new form, no lower score (110).
 // MiniMax B (11-06): no new form, no lower score; retail reads the audible byte from the request and
 // builds the priority and the flag word before it copies the request, this build copies the request first

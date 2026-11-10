@@ -1048,6 +1048,7 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // out[2] before out[3]. A `real *zero = out + 1` copy in cases 14/18 makes this match exactly, but
 // it hides 0x1b2c0's write summary from LTCG and costs 0x19ca0 its byte-for-byte match (this
 // header read 2, was 0, before the stacked notes below were merged into it).
+// MiniMax D (11-09): no new form, no lower score (2); the tail shared by cases 12 and 13 still stores out[3] before out[2] where retail stores out[2] before out[3], and every spelling that asks for out[2] first makes the compiler order that pair descending in cases 10 and 14/18 as well (6); a `real *zero = out + 2` copy in cases 12 and 13 matches this function byte for byte, but it hides its write summary from LTCG and drops the matched 0x19ca0 to 130, so the direct stores stay.
 // MiniMax D (11-06, run 49): no new form, no lower score (2); cases 12 and 13 still share one tail that stores out[3] before out[2], retail stores out[2] before out[3].
 // MiniMax B (11-06, run 42): no new form and no lower score (2); retail stores out[2] before out[3] in the tail that
 // cases 12 and 13 share, ours stores out[3] first; reversing the chain in either case scores 6.
@@ -1061,6 +1062,20 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // places those blocks at 18/19's positions); the 14/18 chain as `out[1] = out[2] = out[3]` 4, as
 // separate statements 2 (same code), that with the 12/13 chains reversed 6. Any change to the 12/13
 // pair's order flips cases 10 and 14 to +0xc first as well, while the shared tail stays +0xc first.
+// MiniMax C (11-09): score 2 (was 2): the shared tail's zero pair is out[3] before out[2] in every
+// spelling; writing the second zero through a pointer expression (`out[2] = 0.0f; *(out + 3) =
+// 0.0f;`) scores 6, because the independent stores also reorder cases 10 and 14/18 into
+// descending pairs. Original body restored.
+// MiniMax C (11-09): score 2 (was 2): the tail that cases 12 and 13 share still stores out[3]
+// before out[2], retail stores out[2] first. Reversing the zero chain in both cases and writing
+// the two zeros as separate statements each score 6, and each flips the store order in cases
+// 10 and 14/18 with them; the pointer copy that matches exactly hides the write summary and
+// costs 0x19ca0 its match, so it stays rejected.
+// MiniMax C (11-09): score 2 (was 2): the shared tail's pair is out[3] before out[2] in every
+// spelling: the chain in either direction, two separate statements and a chain with a repeated
+// target all compile to the same descending pair and score 6, because they also flip the store
+// order in cases 10 and 14/18; putting the zeros ahead of the width and height stores in case 13
+// rebuilds the whole switch (97). Original body restored.
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {

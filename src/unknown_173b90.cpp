@@ -472,6 +472,9 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax C (11-09): no new form, no lower score (42); row i still sums the up product before the forward one and
+// the emitter loop still reloads its two saved registers in the other order; the shared rotation in
+// include/matrix_transform.h keeps that sum order.
 // MiniMax I (11-08): no new form, no lower score (42): row i still sums the up product before the forward
 // one, the offset's zero store still comes before the list test, the two 1.0 stores are still swapped, and
 // after each property call ours still reloads the particle before the emitter definition. The two in-place
