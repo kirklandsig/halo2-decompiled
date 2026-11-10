@@ -383,6 +383,17 @@ bool g_47f05b;
 // the earlier store even after the branch becomes a `sete`. So retail's kept 0x453760 store points at a branch or block
 // boundary that this construction alone had there and that later vanished; in the shared constructors it would also
 // reach 0x146b80, 0x146e30 and 0x22c3e0, which drop the store. No other untried form on this function's side is known.
+// M3 lane 2 r67 (fast with 0x146b80/0x146e30/0x22c3e0): the fixed base's three member stores in reverse order 34 (same
+// code here; matched 0x146b80 goes to 2), so not kept. Every constructor change reaches 0x146b80 too, which drops the
+// abstract vtable store in retail, so the cause has to be one this call site alone has (retail's construction here keeps
+// the store and reloads g_479888 in the arm, 0x146b80's does neither); the call-site forms above cover the placement,
+// buffer and result spellings.
+// m3 lane 10 r87 (fast with 0x146b80/0x146e30/0x22c3e0/0x1470f0/0x147110/0x22c0a0, header trials restored): an empty
+// virtual destructor in the fixed base 34, in the fixed allocator 34 (retail's vtables give both the abstract's deleting
+// destructor 0x1470f0, so neither derived allocator has its own); the fixed base's count cleared through an inline member call 34;
+// the abstract's four words set through an inline member call 34 (near the listed compile-only init-method form),
+// through a word cursor 34. The store is dropped after
+// inlining whatever calls or loop shape the constructors have.
 // @retail 0x146a20
 void function_146a20(void)
 {

@@ -369,6 +369,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 }
 
 // score 286 (was 286): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
+// MiniMax C (11-10): 286 -> 200 not kept: it came from a bool started false and set by if/else for the link test, the same
+// bool reset and reused for the surface test, an origin pointer and two-arm start/end fallbacks; test-set flags are kept only
+// with a byte match (lane 13 r63 held 16 with the same kind of flags). Retail keeps the edge flag in a byte at esp+0xf and reads
+// it back at the join; ours folds the bit into the test.
 // MiniMax D (11-08): no new form, no lower score (286); our frame is 0xe8 against retail's 0xe4, and in the scan
 // retail keeps the link index in a register (ECX) and multiplies it by 0x44 while ours reloads it from a stack slot
 // each time, so the two sides' frame slots sit four bytes apart; the first loop's block count and the scan's flags
@@ -728,6 +732,19 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // join block (210 with its own lines); at the end of the scan body it takes both reloads into its block in retail's order (38);
 // inside the edge block it leaves them (63); a plain copy of `steps` for the scan or for the traversal 2 (propagated away).
 // So the order follows the traversal loop's block count at allocation: retail has one more block there that is gone afterwards.
+// M3 lane 9 r105 (fast, 0x270930 and the file's other matches kept): lane 13 r72's flag lead rebuilt at 2 (re-measured; only
+// `mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]` swapped at the scan loop's back edge). On it: one bool shared by the
+// link test and the special test 2 (same code); `break;` after `count = j + 1; complete = false;` 335 (1390 bytes);
+// `edge_index != NONE &&` after the range test 179 (1397 B, not folded); the traversal as `for (; node_index != NONE;
+// node_index = node->parent)` 2 (same code); one `short j` shared by an indexed fill and the scan 2 (control with
+// separate indices 2); the scan index named i, k, index, step_index, n, a or z and the steps parameter named
+// path_steps, output_steps, a_steps, z_steps or route 2 each (same code); the 0x26f3f0 call's result tested by an
+// empty `if`, either sense, 2 (same code: an empty body leaves no block); the margin computed inside the scan loop
+// 333; the step point written as `steps[j].point` at each use instead of the `point` local 375 (1421 B). 0x113980
+// shows the same swapped back-edge pair with every callee matched, so an unmatched callee is not the cause. On the
+// body below (286): `break;` after the count update 312 (1391 B); the traversal as a `for` with `node` declared before
+// it 286 (same code); the margin computed inside the scan loop 300; one `short j` for an indexed fill and the scan
+// 380 (1400 B).
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -1274,6 +1291,26 @@ bool function_2715a0(byte *buffer)
 // (weight+1)*distance 0x2719eb-0x271a07; penalty types 1,2,5,6 only; remaining fst/fadd/fstp 0x271a81-0x271a93; x10 truncation and
 // 32767 / distance_limit rejects; hash & 0x1ff * 8, probe & 0xfff, 0.09 on x,z,y sum; unknownae < 1024; child field stores incl.
 // dword type at +0x10; depth +2 for 1,5,6, surface-word test for 2, +1 otherwise; heap insert or cost update; closest update; result.
+// Round 163 (m3 lane 6, fast with 0x271fd0/0x2713f0; aligned/masked = difflib counts with addresses, or also registers and
+// stack offsets, masked; control 530/228): the four callee-saved roles are one rotation (retail state EBP, node EBX, count ESI,
+// link EDI = ours with EBP taken first). Retail inlines 0x271fd0 here and cross-jumps its 0x271e50 call with the cost-update
+// arm's (one 0x271e50 call), but calls it from 0x2713f0. `inline` on 0x271fd0's definition 488 (plain too: still a call, frame
+// 0xc58); a `__forceinline` redeclaration placed after 0x2713f0 579 (2152 B, 389/211: retail's call list, but 0x2713f0 inlines it
+// too, 108); the post-probe test as `if (next != NONE) {cost test} else {allocate}` 590 (2148 B, still a call); the
+// `(short)link->type != NONE` test ahead of the penalty switch 579 (2128 B: state is then re-read from its stack slot, still a
+// call); `inline` with the outer loop as `for (;;)` and a top break 488 (rotated the same). Ours re-tests `next == NONE` on the
+// probe loop's break path where retail jumps straight to the cost test. The estimated distance as an if/else on the
+// destination test 570 (2128 B); the destination distance stored straight from the 0x210970 call without the
+// `remaining` copy 487. All restored.
+// Round 149 (m3 lane 8, fast with 0x2713f0/0x271fd0; aligned = register-masked difflib count, base 228): the insertion
+// 0x271fd0 stays a call only because of its site's weight: dropping both the `next == NONE` re-test and the `quantized >=
+// 32767` reject (diagnostics, value-wrong) inlines it with retail's call list, either alone, the limit reject, or two earlier
+// rejects do not, nor do positive `if` wraps of the tail or `for` spellings of the outer/probe loops. Retail also threads the
+// probe loop's two breaks straight to the found arm and reads that arm through the loop's node pointer ([ecx + 0x3c],
+// [ecx + 0x40]). Tried: the found arm through the probe's `candidate` (declared before the loop) 549 (2012 bytes, aligned
+// 191: that arm as retail, 0x271fd0 still a call; with 0x271fd0 forced inline aligned 168 but 0x2713f0 108), on it a found
+// flag set at both breaks 546 (2008), `!(d > 0.09f)` 557 (2004); the quantized reject as two tests 486 (same code); the
+// found arm first (`if (next != NONE)`) 590 (2148). Re-measured: `inline` on 0x271fd0 488 (frame 0xc58, still a call).
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

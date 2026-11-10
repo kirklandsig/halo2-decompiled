@@ -1163,6 +1163,17 @@ void function_143250(
 // 0x23690 467); the workspace matrix ahead of the rotation terms 1766 (fast); that with the 648 single-use terms in
 // their next statement 1775 plain (10763 bytes, ret 4, frame 0x314; 0x22850 235, 0x23690 467); only the 37 rotation
 // snapshot copies propagated 1948 (fast, 10949 bytes: the band-start copies keep the snapshots out of the workspace).
+// M3 lane 3 r225 (plain; base 1766, frame 0x314, ret 8 against retail's ret 4 with rotation in EAX; fast builds it differently,
+// frame 0x30c): `result[0] = coefficients[0]` as the first statement 1766 (same score, aligned 3009 against 3005); the matrix pointer
+// declared ahead of the rotation reads 1766; rotation[7] read straight after the other eight 1766; the matrix pointer dropped for
+// `workspace.matrix[...]` at every use 2027 (10501 bytes, frame 0x304, ret 8); the first copy first with rotation[7] in line 1766.
+// None moves rotation into a register: the entry statement order is not the convention's cause.
+// Lane 5 r166 (fast, 0x22850/0x23690/0x143250 listed, control 1766/223/401/MATCH): the nine leading rotation copies
+// dropped and rotation[] read at each use (matrix a plain array) 2516 (10021 bytes; rotation then arrives in ESI, 0x23690 350);
+// parameters as (result, rotation, coefficients, order), definition, declaration and all seven calls updated, 1766 (callers
+// unchanged); the matrix as its own array beside the eight grouped terms 2089 (10438); `result[0] = coefficients[0];` first
+// 1766; the matrix pointer as `real *const` 1766; the matrix pointer defined right after the grouped terms (top of the
+// body) 1766. Both builds compute the seven sqrt(N.0) terms at run time (seven fsqrt each). All restored.
 // m3 lane 14 r77: fast (convention pinned by the last full build, as lane 10 round 34 found), 0x143250 matched each time:
 // the workspace with matrix[49] as its first member 1766 (frame 0x314, ret 8); band one's five single-use negations and
 // copies written into their matrix stores 1791 (10740 B; a subset of round 145's first-400 form). Re-measured listed

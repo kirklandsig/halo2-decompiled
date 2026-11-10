@@ -839,6 +839,17 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // inclusive/complementary selection maxima: 34/35/34/34/34/35/34/34. NOT kept:
 // no exact count/fill/clamp allocation repair; native 0x48 frame and 190-byte extent
 // remain. Original complete body, direct input reads and scalar maximum restored.
+// m3 lane 3 r227: both builds keep next_party at frame+0; the only difference is the entry convention (player
+// count EAX in retail, EDX here), which follows the first pass's order for the rep stosd operands: ours loads the fill value
+// before the count and destination (`mov eax, [esp + 0xc]` first), retail after them, so retail's player count can live in EAX
+// until `sub ecx, eax`. Every natural fill/maximum/clamp form is listed above at 34 or worse; only value-changing fill values
+// move the load, and the caller 0x7e210 (src/unknown_07a9a0.cpp) is outside this round's files. New (fast): next_party scoped to a
+// block holding both loops 34; next_party and the index in that block 34 (same code). No other untried natural form is left.
+// Round 149 (m3 lane 8, fast with 0x91e30/0x7e210): the copy loop forms `party + 1` once per pass (`lea edi, [edx + 1]`)
+// in retail as here, so a running largest index filled with `largest + 1` is not retail's. Combinations, all 34 with the
+// player count still in EDX: the extra-first sum with next_party declared first, with the fill as `while (i < total)
+// parties[i++] = next_party;`, with the subtraction in place (`imbalance -= open_slots;`); next_party declared first with
+// the subtraction in place; the `while` fill with the subtraction in place.
 // Round 76 (m3 lane 14, fast): the fill counted down over the extra count 70 (diagnostic: the extra count then goes
 // to the stack); the clamp assigned back to the imbalance with an extra-first sum 45 (192 bytes); next_party as a
 // dword 35 (same roles); the copy bound as `player_count > i` 34 (same code); open slots computed just before the call

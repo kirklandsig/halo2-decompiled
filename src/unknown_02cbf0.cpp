@@ -49,6 +49,7 @@ static __forceinline long floor_to_long_inline(real value)
 	}
 }
 
+// MiniMax R (11-10): no new form, no lower score (10): retail builds the first word's OR chain in the opposite source order (the category's shift, then the flags' mask, then the entry's own word) and MSVC canonicalizes the chain here, so the two loads that feed it come in the other order and every spelling of the chain measures the same.
 // MiniMax S (11-09): no new form, no lower score (10); the six orders of the first word's OR terms are
 // canonicalised by the compiler into one schedule, so the order cannot be steered from the source; the
 // fifteen kind-word spellings tried this round (the shift on the call's result, on a long local, a
@@ -282,6 +283,11 @@ static __forceinline long floor_to_long_inline(real value)
 // seven subsets then reversed initial field stores: 14/14/10/79/83/83/79/14.
 // NOT kept: no equality; the real declaration does not recover native OR/shift/pool
 // scheduling. Original record declaration, packed expressions and body restored.
+// MiniMax E (11-10): no new form, no lower score: the kind's shift still comes after the copy to
+// esi where retail shifts before it, and the two loads that feed the record's OR chain come in the
+// other order; six fresh forms (the kind as a dword, the kind's shift written inline, the pool
+// taken as a local, the pool call without its cast, the second argument read from the entry and
+// the kind and the pool together) all score 10 or worse.
 // MiniMax D (11-09): no new form, no lower score: MSVC canonicalises the order of the first word's
 // three OR terms, so re-writing them in retail's order ((category|flags)|unknown00) gives
 // byte-identical code and the score stays 10; the `long kind_word` spelling, with its extra

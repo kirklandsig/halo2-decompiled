@@ -53,6 +53,13 @@ struct c_aggregate : c_child
 
 
 // score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
+// reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
+// loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its
+// for-init, which gives retail's starts[i]/starts[i + 1] load order; left: only the frame, 0x8024 against
+// 0x8020 (`produced` keeps its own slot where retail packs the loop-2 cursor and loop-3 count into it, and the
+// two temporary slots are swapped). This body built without /GL is byte-exact (BLOCKED by the build flag). Compiled without /GL (screen only) the body
+// gets retail's 0x8020 frame and every slot, 20 left (EBX/EBP and the boundary loads); every /GL form
+// screened keeps 0x8024.
 // MiniMax S (11-10): no new form, no lower score (31); the frame is still 0x8024 against retail's
 // 0x8020: retail packs the loop-2 cursor and the loop-3 count into the address-taken produced slot
 // (frame +0x00) while ours keeps a slot of its own for the produced count, and the two temporary slots
@@ -392,6 +399,14 @@ struct c_aggregate : c_child
 // virtual v5 at [eax + 0x14]; under LTCG an address that reaches an unknown callee keeps its own slot, so the shared
 // slot needs this body out of LTCG (the flag lead above, a user decision). Every source-side lever I could think of
 // (scopes, wrappers, shared outputs, types, names, loop shapes) is already listed with its score.
+// Round 228 (m3 lane 3, fast with the six file-mates, all still matched; only the frame differs, 0x8024 against
+// 0x8020): produced's statements in an extra brace block inside the collection test 31; the collection loop as a
+// `while` 31; the cleanup's outer loop as a `while` 31; the query result as `result = get_info(...) ? result : NONE`
+// 31; the collection call through the children's real class (`children[i]` as c_handle_table_450cd0, v5 = 0x98cf0,
+// with its own parameter types) 31 (same code each). Re-measured: the nested child/error tests 31, `blocks + total`
+// 31, the early `continue` guard 42. Still BLOCKED by the build flag.
+// Round 147 (m3 lane 8, fast): one function-scope index for the collection and dispatch loops 31 (same code, as
+// rounds 42 and 66 found); no unlisted form left. Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

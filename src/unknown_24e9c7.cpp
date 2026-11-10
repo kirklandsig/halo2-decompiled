@@ -115,6 +115,7 @@ struct s_24e9c7_bounds
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// score 125 (was 125): the frame size, the bounds stores and the marker copy agree; what is
 // MiniMax C (11-09): no new form, no lower score (125): the full build's diff shows the group of
 // the result, kind and bitmap homes eight bytes above retail's, with retail's spill at -8 and its
 // unused slot at -0xc above them, and the 1.0 constant in xmm4 where retail uses xmm5; the bounds
@@ -126,7 +127,6 @@ struct s_24e9c7_bounds
 // MiniMax B (11-06): no new form, no lower score (125); the source permuter (240 s) found 123, but it adds a bool set by one test and tested by the next and swaps two arguments of function_22a664, so the original body is restored.
 // MiniMax b (11-04): no new form, no lower score; the result/kind/bitmap homes stay eight bytes above retail's, the 1.0 constant stays in xmm4 where retail uses xmm5, and the geometric SSE schedule stays ours.
 // MiniMax D (run 46): no new form, no lower score.
-// score 125 (was 125): the frame size, the bounds stores and the marker copy agree; what is
 // left is the result, kind and bitmap homes eight bytes above retail's, the 1.0 constant in
 // xmm4 where retail uses xmm5, and the geometric SSE schedule — no source form found this round.
 // Earlier (125, was 125): reassociating the corner sums and splitting them into two steps both
@@ -413,6 +413,15 @@ struct s_24e9c7_bounds
 // ours (-0x14 back y, -0x18 untouched) below kind/bitmap. Side, up or back declared at function top (before or after result) 125 each
 // (same code); first corner's base copy after the half width 138 (740 bytes, as round 217); all four corner base copies there 128 (aligned 121 -> 116,
 // the across terms still sink: points has not escaped); first corner's base copy right after the across terms 124.
+// Round 65 (m3 lane 2, fast; 0x24e59f matched each time; register-masked aligned in brackets, control [94]): re-measured lane 17
+// r36's in-place side point 144 (746 bytes) [107], with `*=` 144, with `0.0f -` 139 (742) [105], round 33's bounds initializer
+// 125, the constant-first size 125. New: size and both across products before the bitmap pointer 125 (same code); the
+// shader-index test first 129 [102]; the bounds by chained assignments 131 [107]; height and half_width `long const` 125 (same
+// code); `result = height` 125 (same code).
+// Lane 5 r166 (fast, 0x24e59f matched each time, control 125): the default bounds as two chained assignments 131; the
+// sequence index read from the kind at each use 125 (same code); the bitmap index read from the kind at each use 182 (739 bytes);
+// `if (first_bitmap == NONE) return result;` with the drawing block un-nested 149 (first difference +0xe); the two outer
+// guards as early returns 130. Body restored.
 // m3 lane 14 r77 (fast, 0x24e59f matched each time; masked = difflib count with registers and offsets masked, control 60):
 // re-measured listed forms: an initialised across point, `{ size * (0.0f - forward_j), size * forward_i }`, with side
 // from it 139 (742 B, masked 64; lane 13 r35's), side initialised with the across products and scaled in place 139 (same

@@ -74,6 +74,10 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax D (11-10): no new form, no lower score (106); retail keeps the old maximum in ECX with the enable
+// byte in AL and reads the 15-bit counter with the 16-bit idiom (`xor eax, eax` then a word load), ours keeps
+// the maximum in EAX, the enable byte in DL and zero-extends the counter; the enable reloads and the two
+// inlined helpers of src/unknown_1967d0.cpp stay out of reach.
 // score 106 (was 106): no frame; enable observations and maximum/register homes differ.
 // MiniMax H (11-04): no new form, no lower score; the enable reloads and the maximum homes still differ.
 // Earlier 106 (was 107): no frame; enable observations and maximum/register homes differ.
@@ -227,7 +231,14 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
+// MiniMax C (11-10): the score is 353 (was 353); the three homes sit in rotated slots (ours +0x14/+0x1c/+0x18 against retail's +0x18/+0x14/+0x1c) and our function is four bytes longer, so the first branch's jump lands elsewhere.
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
+// Round 147 (m3 lane 8, fast; [aligned ours/retail, masked ours/retail], control 353 [128/132, 31/35]): the related unit's
+// player index read at each use (retail reads +0x13c again for the store) 357 (1552 B) [119/124, 29/34]; with the killer's
+// team byte passed to 0x1df560 at the call 370 (1564 B) [131/132, 32/33]; the dedupe searches as `for (j...) if (==) break;`
+// 357 (same code); diagnostic, the dedupe through a two-site inline search returning from its loop (retail's threaded exits,
+// no `j == i` test) 361 (1532 B) [115/126, 25/36], with `player_index == players[i]` (retail's `cmp ecx, [mem]`) 361
+// [113/124, 23/34]; that plus the assist record's player index read at each use 371 (frame moves) [154/161, 35/42].
 // MiniMax H (11-04): the selected damage record read through a local record pointer 454; not
 // kept, the original body is restored.
 // MiniMax S (11-06): the record walk is anchored at the field with the most source-level reads, ties going to the lowest offset: reading the timestamp twice moves the selection walk onto retail's 0x2f0 base (373) and reading the assist player index at each use moves that walk onto retail's 0x2fc base (390), both loops together 390; every such form drops a frame word (0x4c against 0x50) and the base spill, so the original body stays.
@@ -463,6 +474,15 @@ struct s_object_damage_view
 // (same code); `victim != NONE && killer != NONE` 354; `victim != NONE &&` ahead of the killer-team query 371 (1564
 // bytes); `reported_slot` declared before `object` 355; `hostile = true;` ahead of the hostility count increment 353
 // (same code). The three rotated scalar homes and the biased history cursor stay.
+// Round 228 (m3 lane 3, fast with 0xd9640, 0x1e9700, 0x1ea770 and the other file-mates, which keep their state;
+// aligned counts exact/stack-masked/register-masked in brackets, base 353 [179/160/56]): the assist index short 353,
+// the entry test as an enclosing `if` instead of the early return 353, the award searches as `for` loops with a
+// `break` 353 (same code each). Retail reads the related unit's player field again for the assist store (after the
+// team call): that field read at each use in the related block 357 (1552 B) [170/151/53] (the block is then retail's);
+// with both award searches through a two-caller early-return predicate 361 (1532 B) [166/147/49] (retail's searches
+// leave straight for the next award); with the assist stores re-reading the record's player as well 371 (1544 B,
+// frame 0x4c) [198/141/56], plus one history pointer for both loops 371 [198/141/55]; the selection amount in a local
+// under the time test on those 441/442 (1563 B). All restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

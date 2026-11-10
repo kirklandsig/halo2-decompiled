@@ -1590,6 +1590,7 @@ bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
 #pragma inline_depth(2)
+// MiniMax E (11-10): no new form, no lower score (301); retail reads the actor pool global before the datum pool and takes the actor index into ebp among the pushes, this build reads the datum pool first and takes the actor index into esi after the four pushes, and retail puts both return tails (the zero result and the shared 2) at the end of the function where this build leaves the 2 inline in the middle.
 // score 301 (was 301): the object index stays in ESI and the output pointer in EBP (retail EBP and ESI), the first exit test falls into the failure return, and some bodies are 24 bytes short.
 // Lead (round 91, m3 lane 9): at the 1/19 site, the `field_3 |= 0x40` store written before the point copy (a store through the
 // output ahead of the reference re-read) gives retail's arg_0 EBP and output ESI and the reload `mov edi, [edi + 0x28]`, 297
@@ -1921,6 +1922,29 @@ void function_b7360(long object_index);
 // (0x258dc5 and 0x258e15 are reached from both the 15/16/17 and the 1/19 call sites; ours duplicates them) and ends
 // on the failure block; case 13's flag OR is load/or/store (retail `or byte ptr [ecx+0x10a]`). Tried this walk:
 // `bool success;` with `case 11: default: return 2;` 471 (1832, worse); `case 11: return 2;` with the initializer 301.
+// m3 lane 8 r146 (fast; aligned/masked base 151/107): case 13's 0xb7360 call once after the if/else 301 (same code); case 4's
+// range result as a ternary 437 (1820 bytes); case 5's clamp as a ternary 304; case 7's mask as `&= ~0x18; |= 4;` 301 (same code);
+// case 13's OR value as a ternary with one store 319 (1808). Ours already cross-jumps the 0x259ec0 blocks as retail does.
+// M3 lane 10 r89 (fast; positional, stack-masked/register-masked aligned 158/107): the `#pragma inline_depth(2)`
+// that wrapped this function removed, 301 (same code; not kept: a compiler-setting change with no gain); the 1/19 point arm as an explicit else 301;
+// its destination as the address of field_8 301; case 0 as `success = true; break;` 301 (same code); case 4's range
+// as `local_6 < 4` 480 (1828 bytes); case 5's as `local_16 <= 2` 480 (1828). Re-measured: local_1 through the
+// existing cs_get 301 (same code); the 1/19 point read through a re-derived datum, `cs_get(arg_3)->unknown28`
+// (round 75's 483-506), 480 now at 1848 bytes, 146/76 (the reference is reloaded as in retail, but the scaled cs
+// index then stays live in ESI from the entry). The wait block as a two-site helper is round 27's 513 form. Retail reloads the reference after 0x25ab50 at
+// this site and at case 5, where 0x25a380 and 0x1b13b0 keep it across the same call, so the cause is in this caller.
+// Round 68 (m3 lane 15, fast): a second datum pointer from the same lookup expression, used for the two cs_point_get
+// reads, on this body 490 (prologue reorders); case 9 reading g_4e0350 at each use (no scenario local) 301 (case 9 then
+// has retail's test/jl/load order). Lead (match-only forms): lane 9's round-75 246 form plus that second pointer at the
+// 1/19 and case 5 point reads 107 at 1848 B with retail's arg_0 EBP/output ESI and both reference reloads after 0x25ab50
+// (what lane 13 got from a store inside 0x25ab50, without touching it); with case 10's selector and case 5's selector
+// read through it (loads and stores through different pointer variables keep their order: retail's +0x8c/+0x99/+0x9a
+// clears before the selector loads) and case 9 as above 100. Left on 100: the prologue (the duplicated lookup leaves a
+// shared offset temp, `lea edi, [ecx+edx]`, where retail computes the datum in EDI in place), the join's `xor eax, eax`/
+// `mov eax, 2` from the `short result` tail (retail `xor ax, ax`/`mov ax, 2`; the 1-byte shift moves every jump-table
+// entry) and case 7's dot sides. On 100: `if (success) return 0; return 2;` 169 (1816), `if (!success) return 2;` 179
+// (1812), with a failure label 179, failures back to `return 2` 174 (with those tails 169/179), dot3f arguments swapped
+// 102, the second pointer declared before the datum/before the actor 104/132, a plain copy of the datum pointer 244.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2311,6 +2335,8 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// score 479 (was 610; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
+// MiniMax R (11-10): no new form, no lower score.
 // score 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
 // (0x2594b5 `comiss xmm0, [1.0]; jbe 0x2597fa`, true for a NaN distance); `d <= 1.f` compiled to
 // `comiss 1.0, d; jae`, false for NaN. The body is now 2396 bytes like retail, but the positional
@@ -2547,6 +2573,19 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // test and the countdown tail keep our layout; the case-1 point read, the plain returns in place
 // of the shared exit and the command script lookup before the actor all stay at 469 or worse,
 // so the body is unchanged.
+// Round 179 (m3 lane 4, fast with 0x110ab0, 0x258cf0, 0x25a130 and the file's matched functions, plain-confirmed):
+// kept: case 2's turn-command vector published through the existing vector3f_assign into `unknown424.vector` from a
+// `turn_facing` pointer (in place of the aggregate copy) 610 -> 479 (2404 bytes): the actor takes EBX and the
+// state EDI as in retail, the first point moves to +0x10 and case 1 reloads the state from its home as retail, so the
+// prologue, the dispatch and case 1 agree; first difference +0x51. Tried, not kept: the same three member stores
+// written out 466 (2400 bytes; that is vector3f_assign's body by hand), with two pointers 466; case 2's planar copy by
+// components 615, as two scalar stores 615. On the 466 form: case 4's facing read at each use (retail's form there)
+// 636 and case 18's two point references held in locals across the 0x25ab50 calls (retail's command reads then agree
+// one for one) 618, both 628: each gives the state EBX again; the tail's current-facing publication per component
+// 576, with both 551; the case 2 dot's terms i-first in four operand orders 464, j-first in three 466; the case 7/8
+// flag as `c ? true : byte` or an if/else 475; plain returns for the three goto exits 474. Left: retail's aggregate
+// copy at +0x424 (`lea ecx`), case 4's direct facing reads, case 18's held references, case 14's block after 21, case
+// 6's two flag stores and the post-switch test laid out after case 0.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2588,7 +2627,8 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 					if (normalize2d(&local_6) > 0.f &&
 						local_0->unknown290.j * local_6.y + local_6.x * local_0->unknown290.i < 0.984f)
 					{
-						*(vector3f *)((byte *)local_0 + 0x424) = *(vector3f *)((byte *)local_0 + 0x4d8);
+						vector3f const *turn_facing = (vector3f const *)((byte *)local_0 + 0x4d8);
+						vector3f_assign(&local_0->unknown424.vector, turn_facing->i, turn_facing->j, turn_facing->k);
 						*(short *)((byte *)local_0 + 0x41c) = 3;
 						*(short *)((byte *)local_0 + 0x420) = 4;
 						*((byte *)local_0 + 0x44d) = 1;
