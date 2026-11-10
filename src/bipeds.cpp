@@ -2633,7 +2633,7 @@ void function_dfdb0(long arg_159e6d, long *surface, long *location, point3f *poi
 }
 
 bool __stdcall function_c5460(long object_index, long ignore_index, point3f const *position, point3f *result,
-	long a5, real radius, bool a7);
+	real a5, real radius, bool a7);
 
 /* drops the biped out of a vehicle: level and upright, at a clear spot
    by the vehicle (or anywhere clear) */
