@@ -951,6 +951,15 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // range transfers, eight nonoriginal pairs:
 // 598/598/733/750/745/769/735/729. NOT kept: no exact native frame/home recovery;
 // original complete body, observations, helper and call graph restored.
+// M3 lane 8 r144 (fast; control 250, frame 0xa8): retail's unused 4-byte home is at +0xa8, just below v + width (+0xac).
+// The V sum formed at the outer vertex's store 252; the U step negated at the advance (`u += -u_step`) 611 (2596 bytes, frame
+// 0xa8); both 610; both with the sum's operands swapped 610; a named V end declared after the width scaling 250 (same code); u
+// and v read after the two scales 271; one read of the source scale for both tests 608; the colour stored to the first vertex
+// first 248. Re-measures of the rejected grouping (a two-member texture scale vector; not kept, the same locals-grouping form
+// the coordinator threw out for r155): i negated in place with a named V end 239 (frame 0xac); a named U step from i and the V
+// end kept in j 224 (frame 0xac, confirmed in the plain check; the diff is build/r144/lead-42cf0.patch); both in place 250
+// (frame 0xa8). On the 224 form: the colour store order 222; case 4's offsets named in all three rows 459 (2580 bytes, frame
+// 0xa4); case 1/2's offsets named in both rows 490 (2588); both 443 (2596 bytes, frame 0xa4). Body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
