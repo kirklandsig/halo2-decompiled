@@ -69,6 +69,10 @@ s_unit_action_state function_e70b0(long unit_index);
 long function_1469f0(real seconds);
 
 #pragma intrinsic(_ReadWriteBarrier)
+// MiniMax D (11-10): no new form, no lower score (13); the slot's reference is still loaded into EDX after the
+// actor's index arithmetic where retail loads it into ECX before it, and the inlined action lookup still scales
+// the index into ECX where retail scales it into EDX and reads the unit table late - that order comes from the
+// macro in a file this lane may not edit, so the function cannot match from here.
 // MiniMax I (11-08): no new form, no lower score (13); the reference copied into a named local gives 16 with the table base in ESI instead of EDX, the barrier at five positions 94, and the action helper's result unused 13 (the same code).
 // MiniMax C (11-06): no new form, no lower score; the slot reference still loads into EDX after the actor's index arithmetic where retail loads it into ECX before it, and the inlined action lookup still scales the index in ECX where retail scales it into EDX.
 // MiniMax I (11-06): no new form, no lower score; the slot reference still loads into EDX after the actor's index arithmetic where retail loads it into ECX before it, and the inlined action lookup still scales the index in ECX where retail scales it into EDX; this round the reference copied into a named local after the actor's lookup (99) and before it (100) both move the load but grow the body, and the permuter (420 s) found no candidate.
