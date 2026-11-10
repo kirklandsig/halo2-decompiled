@@ -4814,19 +4814,19 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 			if (rigid_body_index != NONE)
 			{
 				s_location location;
-				point3f object_position;
+				point3f center;
 				point3f target;
 				vector3f offset;
 				point3f *root_point = 0;
 				long root_index = NONE;
 				point3f root_origin;
 
-				function_b9dd0(object_index, &object_position);
+				function_b9dd0(object_index, &center);
 				function_b9ef0(object_index, &target);
-				offset.i = target.x - object_position.x;
-				offset.j = target.y - object_position.y;
-				offset.k = target.z - object_position.z;
-				target = position ? *position : object_position;
+				offset.i = target.x - center.x;
+				offset.j = target.y - center.y;
+				offset.k = target.z - center.z;
+				target = position ? *position : center;
 				if (object->unknown13c != NONE && ignore_index != NONE && ignore_index == function_baf80(ignore_index))
 				{
 					root_index = ignore_index;
@@ -4834,12 +4834,12 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 				}
 				for (short attempt = 0; attempt < 3; attempt++)
 				{
-					if (function_1d48f0(&object_position, component, rigid_body_index, header[3] ? 0xc : 9, &target, &offset, &location, a5,
+					if (function_1d48f0(&center, component, rigid_body_index, header[3] ? 0xc : 9, &target, &offset, &location, a5,
 						radius, a7, root_point, root_index))
 					{
 						if (result)
 						{
-							*result = object_position;
+							*result = center;
 						}
 						moved = true;
 						break;
@@ -4860,7 +4860,7 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 				}
 				if (moved)
 				{
-					function_b75a0(object_index, &object_position, 0, 0, &location, false);
+					function_b75a0(object_index, &center, 0, 0, &location, false);
 					function_b9b90(object_index, false);
 				}
 			}
