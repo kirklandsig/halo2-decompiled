@@ -226,6 +226,16 @@ extern long g_55c154;
 // the copy out of line with retail's edi/ecx/esi call but scores 88. Still different: our
 // link expands the copy in place where retail calls 0x13fac0, and the default/existing
 // classification is spilled to a byte slot where retail tests the selected index directly.
+// R223 (lane 3, fast with 0x13fac0/0x212bc0/0x238c69, control 61; aligned count in brackets, control [25]): the saved index
+// and the variant as two separate extern symbols instead of the storage record's members (diagnostic) 61 [25] on the one-load
+// body and 174 [67] on two arms: the address constant is hoisted either way, so the record is not the cause. One load with the
+// saved test and the load joined by `&&` 65 [28]; two arms setting a `started` flag in place of the returns 174 [67]; two arms
+// with the selected arm first 174 [79]; plain two arms 174 [67]. Size preference off on two arms (one diagnostic) 467 (808
+// bytes): the missing hoist is not a speed-preference artefact.
+// R223, second pass (one-load body): the name buffer as word[0x80] 61 [25] (same code); the arms swapped under `!create_default`
+// 60 [30] (one point, not kept); `long saved = NONE;` set under the name test with the saved test after it 61 [25] (same code);
+// no bool or index local, `selected == NONE ? saved : selected` in the load call and `selected == NONE` at the arms 77 (574
+// bytes) [25]; the same on entry->variant with no selected re-read 154 (577 bytes) [25].
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
