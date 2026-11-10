@@ -547,6 +547,30 @@ void __stdcall function_1160c0(real dt)
 // M3 lane 11 r81 (fast): delta, axis or vertical as three statements instead of an aggregate initializer 171 each, delta and axis
 // together 171, the node as `record->nodes + i` 171 (all same code); diagnostic: target rows written without vector3f_add_scaled
 // (previous no longer address-taken) 177 with the homes unchanged.
+// m3 lane 3 r227: the first real difference is still the segments base in EDI and the segment in ECX where
+// retail uses EDX for both (`mov edx, [ebx + 0x9c]; ... add eax, edx; mov edx, eax`), after the ternary index. Every natural
+// spelling of the index, base and stiffness read is listed above, and the in-place rotation through the existing rotate_direction
+// (src/unknown_1eb8a0.cpp) or 0x170d70's helper is J253's 196-236; round 130's output-writing helper (163) would be a one-caller
+// helper: match-only.
+// New segment spellings (fast, 0x116750 matched): the segments base hoisted above the loop 301 (1370 bytes); `&segments[i]` then
+// `segment--` for the last node 292 (1357); the base, `segment += i`, then `segment--` 292; the index as `i < count ? i : count - 1`
+// 172; as `i < count - 1 ? i : count - 1` 179. None gives the EDX base after the index.
+// Round 104 (m3 lane 9, fast): names do not order these homes: `offset` renamed `rest_offset` 171, with `segment`
+// renamed `current_segment` too 171, `length` renamed `axis_length` 171 (same code; the compile-only harness's frame
+// offsets do not move either); the normalization with `*=` in all three rows 171; `fabs(length) < .0001f` 171. Lead:
+// 0x170d70's file-private rotate_vector_170d70 has this rotation's shape (round 130 measured it as a local helper,
+// 163); using that existing helper needs it in a shared header, and its file is one of the held files this round.
+// M3 lane 10 r89 (fast, 0x116750/0x73360 still matched; fast agrees with plain at 171): the segments base in a
+// named pointer local re-measured 172 (round 154's 174); cosine computed before sine re-measured 172 (round 132's
+// 179); the existing normalize3d for the axis re-measured 178
+// (0x73360 kept its match on the fast image); dot3f for the projection re-measured 171 (same code); the x row's
+// first product as `axis.i * along` 171 (same code); the cosine product first in each rotation row 171 (same code);
+// the blend rows as `predicted.x * stiffness + (1.f - stiffness) * target.x` 171 (same code); each cross term
+// negated and added (`+ (axis.j * offset.k - axis.k * offset.j) * sine`) 209; the length test's arms inverted
+// (`if (!(.0001f > fabs(length)))` scales, else zero) 171; a 600 s permuter run (66 tries) none below 171. Retail's
+// rotation evaluates the written expressions but schedules the y and z cross terms right after the dot, before
+// the x row, loading all six axis/offset components into registers first (and reading offset k from memory twice
+// more later); ours reads its offset k from memory at the dot and at two later products.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

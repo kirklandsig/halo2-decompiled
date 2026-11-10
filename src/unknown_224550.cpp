@@ -94,6 +94,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// score 211 (was 223): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
+// second UV set have swapped homes (ours +0x60/+0x50, retail +0x50/+0x60), and retail keeps the blend in XMM5
+// through the aspect block (ours reloads it), so the extents, reciprocals and aspect homes differ.
 // MiniMax R (11-09): no new form, no lower score (211); the tint's home is still exchanged with the second UV set's bounds and the blend still leaves XMM5 in the aspect block, and no spelling of the declaration order moved either this round.
 // MiniMax B (11-06) round 2: no new form, no lower score (211); the uv set declared before the
 // tint, the two uv sets declared one on each side of the tint and the tint declared at the top
@@ -107,9 +110,6 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // the clamp pointer from the whole tint and putting the tint in an inner block all give the
 // same code or a worse score (236).
 // MiniMax S (11-01): the tint computed after the UV block moves the first difference earlier; no lower score.
-// score 211 (was 223): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
-// second UV set have swapped homes (ours +0x60/+0x50, retail +0x50/+0x60), and retail keeps the blend in XMM5
-// through the aspect block (ours reloads it), so the extents, reciprocals and aspect homes differ.
 // Earlier at 381: Frame 0x50 versus 0x60 (the tint lived in a one-caller helper's scope, so uv_b reused its
 // slot); the angle is stored in a dead argument slot instead of a frame slot and the second UV set has no
 // frame home of its own; the cache is kept in EBP where retail reloads it into EBX; scalar homes remain.
@@ -480,6 +480,22 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // forceinline helper taking the blend by value 211 (same code: the parameter is copy-propagated), with the flip passed in
 // 250, with the pivot by value 349; both helpers 220; a two-use `&frames[index % count]` getter 439 (first difference
 // moves to +0xb); the unit default bounds through a four-real setter 211 (same code).
+// m3 lane 3 r227 (fast; re-measures of round 431's loop forms on the current base): the colour modulation as a plain three-pass
+// loop 220, the seed modulation as one 214, both 213, the four clamps written out 211 (same code); the tint/second-UV homes stay
+// swapped in every form, so loop nesting does not set their order (and per round 91 neither do added reads, names or declaration
+// order). Diagnostics (wrong values, reverted): the direct-bounds arm without `uv_b = uv_a` 365, homes unchanged; an early
+// uv_b store above the tint is dropped as dead (211, same code). New combinations (fast): the tint in its own block ending at
+// the pack (re-measured 236, 1906 bytes, the tint then shares the second set's home, frame 0x50) with the colour modulation
+// loop 245, with the seed modulation loop 242, with both 240; the seed loop with the clamps written out 214; both modulation
+// loops with the clamps written out 214. The home order rule is still unknown.
+// Round 181 (m3 lane 4, fast): the aspect defaults declared with the pivot at the top of the bitmap arm 405 (1964 bytes);
+// the next-aspect products written blend first, `blend*(by*inv_bx)` 211 (same code); the inverse next terms blend first 211
+// (same code); the second UV set flipped before the first 271; the pivot first in the centre products 211 (same code).
+// Round 104 (m3 lane 9, fast): both aspect blends as one expression each 211; the pivot weight `1.0f - blend` named
+// once 211; `ax <= ay` with the arms swapped 211 (all the same code); `bx <= by` with the arms swapped 211 (aligned
+// 151 -> 159); the width product after the two flip calls 423 (1932 bytes). The compile-only harness does not
+// reproduce this body (normalized difference 394 against our own build), so the blend's XMM5 residence could not be
+// screened there.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

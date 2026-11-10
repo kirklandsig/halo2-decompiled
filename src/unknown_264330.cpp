@@ -654,6 +654,13 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // 0x25c230 and 0x265680 stay matched: the lead narrows to keeping it out of 0x264210 alone. On that inlined form: update
 // as long 495, sample/update at function scope 497, maximum a plain word 497, sampled_one as long 496; the actor stays a
 // stack argument (0x1e34e0 26) in all of them. All restored.
+// Round 66 (m3 lane 15, fast with 0x1e34e0 26, 0x263210 231, 0x264330/0x264210/0x2641c0 matched throughout): retail's inlined 0x2641c0 copies its 0x38 bytes with
+// `rep movsd`, which takes ESI and EDI inside the loop, and 0x2640c0 takes its output in EDI, so retail keeps the node index and the next index in stack slots
+// (0x14/0x18, reloaded before each use), the three flags in stack bytes (0x11/0x12/0x13), the prior state as a word at 0x2c, the actor pointer at 0x20 and the actor's
+// pool offset at 0x28 (shared with the inlined body), with only the actor index in EBX and the node in EBP. Retail's maximum is a 32-bit slot set from a zero-extended
+// word and compared as 16 bits. The maximum without its qualifier: long 428 (1616 bytes), dword 428, short 429, long with the compare reversed 428; long or dword with
+// a short prior state 433 / 433 (1620 bytes). The qualifier stays (412). Still BLOCKED-BY 0x2641c0 (its noinline declaration is in src/unknown_265cb0.cpp, another
+// lane's file this round).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
@@ -974,6 +981,7 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 void function_26bfa0(long object_index, long *location_index, s_location_view *location);
 real function_296600(long actor_index, long prop_ref_index);
 
+// MiniMax I (11-10): no new form, no lower score (163).
 // MiniMax B (11-04): no new form, no lower score.
 // score 163 (was 257): retail's length, frame 0x20, actor EBX. Left: the object and table registers (ours EAX/ECX, retail ECX/EAX, time read after the table pointer), the
 // suppression/current byte homes swapped, root and not_current in each other's slots with `!current` evaluated at the named local where retail evaluates it among the first
@@ -1133,6 +1141,14 @@ real function_296600(long actor_index, long prop_ref_index);
 // calls with no named local, re-measured, 267 (1278 bytes); the three object lookups through the existing ai_object_get 163 (same
 // code); current as a byte 163 (same code); the time read ahead of the prop lookup 168 (1269 bytes). Retail computes the hit
 // pointer and the mode ahead of the pushes and then `sete` for `!current` between them, storing it for the second call.
+// Lane 12 r107 (plain; masked aligned count with registers and esp offsets masked in brackets, 30 at 163): HELD (needs the
+// owner's OK): 0x25cb60's last parameter as `short` (contributor code: its definition line and its cast to 0x263ed0, plus the
+// declaration here; the held patch is listed in the round 107 report) 90 [27] (1268 B; 0x25cb60 stays 12, the movsx goes). What is
+// left on that base: the game time read ahead of the object index and the object pool load (ours loads the pool global first),
+// and `!current` (retail's `sete` sits between the first call's pushes, stored for the second call). On the held base: `!current`
+// written in both calls 263 [24] (1275 B; the hit pointer spills, current takes CL where retail's root is stored at once and
+// current takes AL); the time read after the object 93 [32]; before the prop 92 [34]; current before suppressed 373 [82]
+// (1274 B); not_current declared before root 258 [25] (1269 B).
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

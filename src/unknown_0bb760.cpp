@@ -311,16 +311,6 @@ real function_0bff60(real a, real b);
 real function_c18e0();
 real function_1588b0(long player_index, long type);
 
-/* the word of flags at 0x10a of an object */
-struct s_object_flags_10a
-{
-    byte unknown000[0x10a];
-    word bit0 : 1;
-    word bit1 : 1;
-    word bit2 : 1;
-    word : 13;
-};
-
 // @retail 0xbcc20
 bool __stdcall function_bcc20(long object_index, long id, real *out, bool *active)
 {
@@ -456,6 +446,7 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// MiniMax S (11-10): no new form, no lower score (84): the permuter (60 tries, 610 s) found nothing below the baseline's 84, the first scan still leaves on `!=` where retail leaves on a signed `jl` (a scan bounded by less than is unrolled here at 637, and as a do-while 221), and the blend still sits at esp+0x38 where retail keeps it at esp+0x1c with the choices pointer in the other slot (a local for that pointer scores 208).
 // MiniMax D (11-10): no new form, no lower score; both builds run the same instructions, only four
 // places differ, and this round's reading of the two listings pins them down. The first is the clamp
 // entry: retail zeroes the float register and only then loads the 1.0 constant, ours loads the

@@ -577,6 +577,21 @@ static inline bool teams_enabled_19e1c0()
 // re-measured on the plain result); the clamps as `remaining < result`
 // on the plain result 691 (same code as the plain result); the four clamps as `result > remaining ? remaining : result`
 // on the volatile result 415 (1446 bytes); the text buffer declared ahead of the volatile result 390 (same code).
+// Round 84 (m3 lane 11, fast, control 390): every length clamp (four name/team cases and the token fallback) through
+// an inline (length, capacity) function returning `capacity <= length ? capacity : length` (one wcslen, retail's
+// cmp/cmovle shape): plain result 694 (1168 bytes, tails still merge), the volatile result 414 (1439 bytes); the
+// function's parameters swapped (capacity, length) with the plain result 694; as `length < capacity ? length :
+// capacity` plain 694, volatile 414. Retail's own tails: the result is a plain ESI variable (a dead `mov esi, eax`
+// after the engine call at 0x19e726), `remaining` in EBP and the token reloaded into a scratch register (or ESI in
+// the last compare, 0x19e6c1) for every compare.
+// M3 lane 16 r100 (fast, 0x19e0f0 stays matched): our volatile-result build makes retail's local-team and spawn/lives joins; the
+// switch-side-time case keeps its own `return remaining` tail, and both team-name cases join the fallback at its copy call (retail
+// joins the cause-team case at the fallback's clamp). The plain result re-measured 691 (1170 B: token in EDI, token length in EBX,
+// event in EBP, `remaining` on the stack); the fallback's engine through a `c_engine_peer *engine` local 390 / plain 691 (same code
+// each); the format-failure ternary re-measured 514 / plain 691 (same code); a named `s_event_player *player` in the spawn-time and
+// lives cases 387 (1443 B, retail's length), in the spawn-time case only 389 (1439 B; retail's spawn-time case has the pointer's dead
+// `add eax, ebx`, its lives case does not); the cause-team score read into a named local before 0x159130 390 (same code). Body
+// unchanged (gains under 4 are not kept).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

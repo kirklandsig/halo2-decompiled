@@ -521,6 +521,13 @@ struct s_physical_block_iterator
 // M3 lane 11 r81 (fast): the take test as `better || !have_best` 201 (same code); the walk's overlap conditions swapped 203 (+0xcc);
 // the policy as an if/else-if chain 240 (1178 bytes: cases in line but in source order, case 0 still threaded, aligned 118 -> 109);
 // case 0 as two `better = true` arms 201; default ages written inside the comparison 201. Retail's `sub eax, 0` chain is a switch.
+// m3 lane 3 r227 (fast): our case 0 is jump-threaded into the take test (its true/false edges jump straight to the take
+// and skip blocks), which is what moves cases 0 and 1 past the end; retail materialises the result (`xor al, al; ... mov al, 1`)
+// and tests it at the join. Case 0 as `candidate->time == best.time ? pages < best.pages : time < best.time` 284 (1182 bytes:
+// no threading, cases in place, but `setl`/`setb` values and every frame slot shifted, first difference +0x2f); as `if (time !=
+// best.time) better = time < best.time; else better = pages < best.pages;` 284 (same code); negated (`!(time > best.time ||
+// (time == best.time && pages >= best.pages))`) 222 (1220); the ternary with the second age's mask restored 279; the mask
+// alone 209 (re-measure); `have_best = true` before the record copy 201 (same code).
 // Round 149 (m3 lane 8, fast; aligned = register-masked difflib count, base 86): ours folds the second age's
 // `MAX(0, ...)` away (unsigned, `0 > x` never holds) where retail computes both clamps (`cmp; sbb; and`), and our case 0
 // is threaded into the take test, which moves cases 0/1 past the loop; retail keeps default, 1, 0 in place and case 0
@@ -529,6 +536,11 @@ struct s_physical_block_iterator
 // as retail, but setb/setl), with the second age as `MAX(physical->time - best.time, 0)` 227 (1183 bytes, aligned 61);
 // with that clamp: case 0 as a ternary on the time test 209 (1228), as an if / else-if pair setting true 209 (1228), the
 // take test as `better || !have_best` 209 (1228), all aligned 84.
+// Round 104 (m3 lane 9, fast): case 0 as `if (time < best time) better = true; else if (times equal) better =
+// pages < best pages;` 235 (1178 bytes, aligned 118 -> 95: case 0 sits in place after case 1 as in retail, only its
+// last test is a setl where retail branches to `mov al, 1`); that with the second age as `MAX(physical->time -
+// best.time, 0)` 209 (1193, aligned 112); case 0 as a ternary on the times being unequal 284 (1182), with the clamp
+// 279; as an if/else on the times being unequal 284, with the clamp 279.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
