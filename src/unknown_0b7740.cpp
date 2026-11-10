@@ -927,6 +927,15 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // (closest by aligned count, 63), with result or final declared first 281/290; early returns of input_matrices 240;
 // single exit without 0xbfe20 270; the mask as an aggregate copy and the bit-30 flag in a local before the copy
 // (same code: the load still sinks below the copy).
+// Round 78 (m3 lane 14, fast; masked aligned in brackets, kept body 240 [47]): the existing 0xbfe20 clear with the
+// bit-29/+0x34b tests read through `header->object` 194 [38] at 814 bytes (definition spilled as in retail; a fresh
+// read beside the `object` local, a mix, not kept), the same through a named `current = header->object` local 194
+// (same code), through a fresh table lookup 262 (merged with `object`); on 194: result declared ahead of the header 293
+// (829 bytes), early returns of input_matrices 194, final_matrices at the top 194, result and final at the top either
+// order 293. On the kept body: result declared ahead of the header 240; `current` from a fresh table lookup 240,
+// from header->object without 0xbfe20 276 (= round 76's header->object form). The existing object_get() at every use
+// with no `object` local 298 (818 bytes), with 0xbfe20 298; header->object at every use 315 (807), with 0xbfe20 317.
+// On 0xbfe20 alone: result first 262, early returns of input_matrices 262, both 262. Entry roles still swapped in all.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

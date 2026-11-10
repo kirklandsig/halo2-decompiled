@@ -423,6 +423,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // out parameter into a local 263 (1719 bytes); the normalizer's length store ahead of the K scaling 176 (same
 // code); the first length from the normalizer's return value 263 (1719); the XY pair built after the second
 // normalization 368 (1712); the first length from the return value with the planar test as `> 0.0f` 316 (1715).
+// Round 78 (m3 lane 14, fast with 0x29b990; masked aligned in brackets, base 176 [125]): the normalizer with one named
+// inverse for all three components 384 (1715 bytes) [162], 0x29b990 then 6; the else arm's angle zeros chained 179
+// [126]; the result vector stored before the two angle fields 182 [128]; the second normalization's failure test as
+// `!` 203 (1718 bytes); the XY normalization's result tested as a bool 176 (same code).
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

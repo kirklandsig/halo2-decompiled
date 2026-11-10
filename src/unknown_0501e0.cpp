@@ -424,6 +424,12 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // arm) 247 (1136 bytes, the rows still sum the first point's term first); the else arm's weights as
 // `local_4 = local_5 = 1.f` 206 (same code); the orthographic dot as dot3f(&local_10, &g_4b9dac) 206 (same code); one
 // counter for both offset loops 207 (1141 bytes).
+// Round 78 (m3 lane 14, fast): the orthographic length and clamped value renamed so their names sort the other way
+// (two spellings) 206 each (same code: names do not move these two slots, retail has the length at [esp], ours the
+// clamped value); the copied word field stored before the two halved fields 206; the halves as `0.5f * (a + b)` 206;
+// the blend divisor declared at the function's top 206 (all the same code). Retail loads the scale once into XMM6
+// and tests it for both views where ours reloads it; the natural forms aimed at that are listed above (a caller scale
+// local 253, the helper reading the global 318, rows indexed into the output 226), so none was left to try.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

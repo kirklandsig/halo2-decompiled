@@ -667,6 +667,13 @@ real function_30bf0(vector3f *vector);
 // in-place ternary 84; facing_ pair declared first and secondary copied first 84. Diagnostics, reverted: 0x263d70 storing
 // both output pointers to scratch globals leaves the first form at 199, and so does this function defined ahead of
 // 0x263d70 and 0x263740: neither an escaping pointer nor definition order makes our link keep the thresholds in memory.
+// Round 78 (m3 lane 14, fast, masked aligned in brackets, base 84 [19]): the actor looked up after the settings 310
+// at retail's 1308 bytes [34]; the vehicle index read ahead of the first 0x263740 call 146 [24] (origin then in EBX);
+// both 315 (1308) [37]; the endpoint test with explicit `!= NULL` and `== 0` 84 (same code); the outer range test
+// inverted with the out-of-range arm first 152 (1312) [37]; re-measure of the listed long seat count on this base 193
+// (1318) [51]. A volatile float local read ahead of the range load (one --fast diagnostic in src, reverted at once)
+// leaves the range in XMM2, so its register is not a rotation step; the compile-only /Gr screen gives another
+// allocation here.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2257,6 +2264,17 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 0x30bf0's magnitude through a one-line inline helper 168 (same code, 0x30bf0 still matches); 0x30bf0 reading its
 // parameter through its address 513 (0x30bf0 21, its convention changes). Retail's shape needs the normalize call to
 // be able to write `direction`; no form of 0x30bf0 that keeps its bytes makes our link think so.
+// Round 78 (m3 lane 14, fast unless marked; masked aligned in brackets, base 168 [59]): the other actor's object as a
+// named pointer used for both reads (`other_object = object_get(node->object_index)`) 163 [59], plain 163 (aligned 80
+// -> 75: that block's EAX/ECX/EDX homes become retail's; a gain of 5, not kept); the same lookup written out at both
+// uses with no index local 168; the existing 0x1df560 called in place of team_is_enemy 679 (2797 bytes, stays a
+// call); the player pointer as a ternary 372. On 163: score declared at the loop top 374 (2884 bytes); a long player
+// slot 385 (2899, a re-measure of the listed long player slot); a short first-search counter 171; the vehicle read
+// through object_get() at both uses 622 (2902); the player pointer declared at the loop top 368; the index named again
+// beside the object pointer 168; re-measure of round 33's long second counter 164. Diagnostics, each in src for one
+// --fast check and reverted at once: one or two volatile reads through the address of the player table global, or of
+// an actor field, ahead of the players iterator move the first difference to +0x13, so they do not isolate the table
+// pointer's register in this function.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
