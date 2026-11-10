@@ -381,7 +381,6 @@ void function_10cd50(long weapon_index);
 bool unit_action_active(long unit_index, long action_type);
 byte function_10fcd0(long unit_index, long unknown, long state_name, long action_name);
 bool function_100880(long weapon_index, long magazine_index);
-bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value);
 bool function_10f930(long object_index, real time, bool from_end);
 /* who is responsible for damage (damage.cpp) */
 struct s_damage_owner
@@ -454,6 +453,7 @@ void __stdcall function_d6800(long object_index, s_damage_owner const *owner, bo
 void function_d6a70(long object_index);
 void __stdcall function_caa60(long unit_index, long object_index, point3f const *point, bool knocked, bool force);
 void __stdcall function_bd020(long object_index);
+bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value);
 void function_1e9070(long player_index);
 void function_a7a30(long object_index, dword mask);
 void function_a8950(long unit_index, long definition_index);
@@ -822,6 +822,9 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // Round 38 (lane 17, plain): 0xe4bd0 declared first among the callees 13; declared just before this function
 // 13; the mask test `== 1` 13; flag 2 cleared through the file's s_unit_flags_10a_view bit (struct moved up)
 // 13; an early return before the 0xe4bd0 call 13. Still BLOCKED-BY 0xe4bd0 (its file held by other lanes).
+// Round 82 (lane 11, fast): 0xe4bd0 declared after 0xbd020 (the move that gave 0xc98a0 retail's convention) 13; after
+// 0xdb5c0 13; 0xe5930 declared before it 13; the word pointer local with the move 10 (not kept: one-use local, no match);
+// the unit re-read for the type test 58 (repeat). BLOCKED-BY 0xe4bd0 (src/bipeds.cpp held this round) and 0xe5930.
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {
@@ -1877,43 +1880,19 @@ void __stdcall function_d0870(long weapon_index, long unit_index, long secondary
 }
 
 /* drops every weapon the unit holds (mode 1: deletes them) */
-#pragma inline_depth(0)
-// score 1 (was 105): only the continue jump differs: retail's skip path lands on the reload of the slot
-// pointer (mov eax, [esp+0x14]); ours knows eax already holds it and jumps past the reload. The slot-change
-// expansion (0xb58c0 with the two slot bits, then 0xcea00) is written out in the loop: the old static helper
-// stayed out of line under inline_depth(0) and cost the 105. Forms tried for the jump, all 1: continue-first
-// body, while loop with i++/slot++ in the body, do-while, unit declared outside the loop. slot++ before i++ 9;
-// slot declared before i 7. Round 1 of #1049, none moved it: indexed `slots[i]` without a slot pointer 31
-// (no pointer induction variable, cmp [eax+ecx*4]); `*slot++` in the test 42; init in for-init with `slot++, i++`
-// 11; a named short slot_index for the shifts and indexing 1. Retail's skip edge treats eax as stale (reloads it)
-// but ecx as live, so the compare operand there is probably a separate web from the slot variable; no source
-// form found that does that.
-// Permuter (25 min on #1049, about 300 variants): nothing below 1.
 // @retail 0xccf20
 void function_ccf20(long unit_index)
 {
-	long i = 0;
-	long *slot = UNIT_GET(unit_index)->weapon_object_indices;
+	s_unit *unit = UNIT_GET(unit_index);
 
-	for (; i < 4; i++, slot++)
+	for (long i = 0; i < 4; i++)
 	{
-		if (*slot != NONE)
+		if (unit->weapon_object_indices[i] != NONE)
 		{
-			s_unit *unit = UNIT_GET(unit_index);
-			long weapon_index = unit->weapon_object_indices[(short)i];
-
-			unit->weapon_object_indices[(short)i] = NONE;
-			function_ce470(1, unit_index, weapon_index);
-			unit = UNIT_GET(unit_index);
-			if (unit->unknown0d4 != NONE)
-			{
-				function_b58c0(unit->unknown0d4, (1 << ((short)i + 0x12)) | (1 << ((short)i + 0xe)));
-			}
-			function_cea00(unit_index);
+			function_cea70(1, (short)i, NONE, unit_index);
 		}
 	}
 }
-#pragma inline_depth()
 
 /* counts down the unit's timers: +0x2e8 (clearing +0x2e4), +0x2ca (then
    runs 0x1c9c80 with +0x2c8..+0x2d0) and +0x1f4 (then 0xcffc0); whether
@@ -2374,6 +2353,10 @@ void function_cfec0(long unit_index)
 // at the top 99 (layout moves the exit first). The optimizer substitutes -1 on the NONE edge whatever the
 // spelling of the returned copy.
 // Permuter (25 min on #1049, about 900 variants): nothing below its own baseline (1 in its render).
+// Round 82 (lane 11, fast): `NONE != unit_index` 2; `!(unit_index == NONE)` 2; the seat-level and parent-level returns
+// merged into the final one 39 (246 B); the parent-level return merged into the final one 12 (252 B: the shared exit
+// returns `mov eax, ebx` as retail, but VC then pushes EDI before the first test); the seat-level return merged into
+// the parent-level one 32. So retail's NONE exit is a separate epilogue without the edge constant.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
@@ -2628,34 +2611,6 @@ struct s_unit_placement
 /* places the unit from the scenario: its +0xec and flags, and, when the
    placement says so, starts it dead (animation, damage, no weapons or
    grenades) */
-// score 10 (was 10): Frameless entry and animation lookup agree; retail passes 0xc98a0's direction in ECX
-// (ours pushes it) and pushes 0xcaa60's unit (ours EAX). Animation owner 22; initial scale local 65;
-// scale/owner 65; chained zero stores 22; dead-placement guard 22; const animation 22; owner/const
-// animation 22; owner/scale/chained stores 65. Round 151: 0xc98a0 declared __stdcall (the /Gr default
-// passed its unit in EDX) 10, kept; 0xcaa60's unit read once through its address 5 (not kept without a
-// match); 0xc98a0's unit read through its address 22/10; its direction declared last/second 7/10; a
-// separate output local for its value 10; its direction test named at entry 10. Round 89 (through
-// 0xc98a0, BLOCKED-BY 0xc98a0 and 0xcaa60 conventions): 0x11cc90 operands in retail's order 10; TEST_FIELD_BIT
-// definition tests 10/10; angle/turn/flag declared first 10; `!(time >= 0.0f)` 10.
-// Round 204: 0xcaa60 inline; shared flag-6 setter alone/inline; initial flag-12/15
-// setters alone/inline; all three setters alone/inline; all setters/byte predicates/inline:
-// eight forms 10 each. Original callee declaration and all flag operations restored.
-// MiniMax R (10-31): no new form, no lower score.
-// Round 5 of #1049: 0xc98a0 declared after 0xbd020 without __stdcall takes the direction in ECX as retail, but
-// 0xd6800 then takes ECX/EDX, 0xd6bc0 (matched) goes to 63 and this function to 32; not kept.
-// Round 96: unit/placement declarations swapped 10; expanded flag-6 assignment 10; animation declaration
-// before its call 10; nested animation tests 10; NULL at each pointer argument 10/10; fresh unit lookup
-// for flag 76; caller unit read through its address 10; null direction local 10. Original body restored.
-// Round 38 (lane 17, plain): 0xc98a0 fastcall with its unit read through its address 22 (fast); 0xc98a0
-// __cdecl 58 (fast); 0xc98a0 declared after 0xbd020/0xd6a70/0xd6800 34/34/34 (0xc98a0 gets retail's ECX,
-// 256 -> 250, but 0xd6800 takes ECX/EDX and 0xd6bc0 is lost); 0xcaa60 declared before 0xc98a0 32 at 291
-// bytes (0xc98a0 ECX and 0xcaa60 pushed as retail; only 0xd6800's fastcall left; 0xd6bc0 lost); order
-// 0xcaa60/0xd6800/0xc98a0 32; 0xc98a0/0xcaa60/0xd6800 10. Diagnostic: that order plus 0xd6800 __stdcall
-// (its definition in another lane's file) MATCH here, but the full check loses 18 (0xe5930, 0xb8890,
-// 0x1c3770 ...). Nothing kept.
-// Round 96: unit/placement declarations swapped 10; expanded flag-6 assignment 10; animation declaration
-// before its call 10; nested animation tests 10; NULL at each pointer argument 10/10; fresh unit lookup
-// for flag 76; caller unit read through its address 10; null direction local 10. Original body restored.
 // @retail 0xc42e0
 void __stdcall function_c42e0(long unit_index, void const *placement)
 {
@@ -3034,35 +2989,6 @@ void __stdcall function_ced30(long unit_index, long object_index)
 
 /* the request a weapon event sends the unit holding the weapon (and the
    unit +0x24c names): by the event type, for its first or second hand */
-// score 2 (was 127): only the rider lookup after the first 0xe68c0 call differs: retail loads the unit into ESI (the
-// dying scaled index), ours into EDX. Round 220 (m3 lane 3): the first hand read through its own copy of the pool, as
-// 0xd1540 reads each hand, gives retail's second-hand reload and register plan (and matches 0xfff40, which inlines this
-// through 0x1058b0); the weapon index reference is no longer needed (0x1058b0 still matches). Forms (fast): both hands
-// written out through two pool copies 117; 0xcbd50 kept with each/only the second/only the first hand's slot argument
-// through a pool copy 28/28/127; the copy declared between the hands 127; the second hand written out through the copy
-// 3 (with a named unit pointer 3, the copy at function entry 3, the rider lookup through it too 102); on the kept form:
-// the second hand's argument through the same copy 124, the reference read at the second hand 2, the rider field read at
-// each use 2, rider index declared with the other locals 2, the second hand written out through the global 2, the
-// rider through the existing unit view getter 2, a named unit pointer for the first hand 131 (register convention),
-// the rider through the pool copy 123 (368 B), a char slot index for the first hand 35 (0xfff40 then 11).
-// Earlier: score 127 (was 131): retail reloads the pool's data and the unit for the second hand's lookup,
-// keeping g_4e0300 in EDI and the type on the stack; ours reuses the first lookup's unit, so the
-// registers differ (with the second lookup's data read through a volatile pool, a diagnostic
-// only: 28). The existing weapon getter for both hands and retail's case order (3, 4, 1, 2, 7, 8)
-// give retail's lookups and its switch layout; the address read keeps the weapon index on the
-// stack, which matched 0x1058b0. Tried: the weapon indices compared after both lookups 147; a
-// unit local per hand, the masked-index getter for one or both hands, the slot read into a
-// short first, the existing current-weapon header helper and action declared first: 131 each.
-// Also: the type read through a reference instead of the weapon index 131 (with both 127); the two
-// lookups through one inline helper taking the hand 127; the second hand computed first 135.
-// Round 2 of #1049 (fast): aligned with retail the only structural differences are the reload of the pool's data and the
-// unit for the second hand (2 instructions, then the type read from the stack with `dec eax` instead of `lea eax, [ebp-1]`
-// and the register shuffle that follows from it); the rest (switch layouts, action tables, rider call) is the same. The
-// reload implies retail had a store through an address-taken local between the lookups (the global pool pointer, which
-// nothing can alias, stays in EDI; its data field is reloaded). Tried: the type read through a stack reference instead of
-// the weapon index 131; a two-iteration loop over the hand (unrolls and CSEs, 127); the matches stored into a local array
-// by pointer 132, by a loop 136; bools written through a pointer 127; each lookup in an inline helper writing its result
-// through an out pointer 146 (static) / 146 (forceinline), writing the comparison 139 / 139: all fold to direct locals.
 // @retail 0xc9d00
 void __stdcall function_c9d00(long unit_index, long weapon_index, long type)
 {
@@ -3137,10 +3063,10 @@ void __stdcall function_c9d00(long unit_index, long weapon_index, long type)
 			return;
 		}
 		function_e68c0(action, unit_index);
-		long rider_index = UNIT_GET(unit_index)->unknown24c;
-		if (rider_index != NONE)
+		s_unit *unit = UNIT_GET(unit_index);
+		if (unit->unknown24c != NONE)
 		{
-			function_e68c0(action, rider_index);
+			function_e68c0(action, unit->unknown24c);
 		}
 	}
 }
@@ -5783,6 +5709,10 @@ void function_cf040(long unit_index, short type)
 // @coldspear (#104, 2026-10-30): the remaining difference is the order of an address's two registers on a byte array
 // (ours [index + pointer], retail [pointer + index]), as in 0x4c450, 0x181cf0, 0x23600, 0x1988e0 and 0x194710. About 20
 // forms tried on two of them (index spelling, declaration order, pointer formation, char and const types): none changed it.
+// Round 82 (lane 11, fast): the weapon loop through the existing 0xcbd50 getter 1, with the
+// holder kept for its slot argument 1; the first unit lookup through unit_at_masked_index 1, both lookups through it 1;
+// the unit looked up before the vehicle 139. Diagnostic: 1-32 initialised unused locals at the top or before the loop
+// leave the order unchanged (not symbol numbering here).
 // @retail 0xc92c0
 bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_index, long *blocker_index, bool *grouped)
 {
@@ -6286,7 +6216,7 @@ done:
    fell toward (front, back, left, right), plays its death (0x10ff40) and,
    from type 3, sets its ragdoll timer +0x1f5, its flags and (when the
    death had no animation) its deadness; a free biped turns to face it */
-// score 254 (was 256): Frame 0x24 agrees; retail takes the direction in ECX (ours on the stack) and keeps
+// score 250 (was 254): Frame 0x24 agrees; retail takes the direction in ECX (round 82: now ours too) and keeps
 // the unit pointer in EBX, the definition on the stack. Round 5 of #1049: retail's epilogue clears AL (`xor al,
 // al` on every path, including the early return), so the function returns bool false (256 -> 254). The
 // convention is coupled to 0xd6800's: declaring this function after 0xbd020 (forward declarations) WITHOUT
@@ -6308,6 +6238,8 @@ done:
 // pointer local, `holder` re-read: no change); `or byte [mem], imm` flag updates (ours load/or/store through
 // AL); the tail loading ESI = unit_index at the join. On the committed (stdcall) convention these forms
 // score worse (facing copy 310, scale split 263, __assume 271, duration 270), so they are not applied.
+// Round 82 (lane 11): the declaration moved after 0xbd020's (still __stdcall) gives retail's convention, the
+// direction in ECX and the rest pushed: 254 -> 250 (aligned 198 -> 96), and matches 0xc42e0.
 // Round 151: __stdcall in place of the file's /Gr
 // fastcall (which passed the unit in EDX) 258, kept; the unit read through its address 258; the
 // direction declared last/second 255/256 (no retail evidence, not kept). Round 89: 0x11cc90 takes its
