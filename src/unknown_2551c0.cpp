@@ -730,6 +730,24 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // subtraction written into it 17 (same code), the length variable declared at the function's top 17, the sides zeroed by
 // one chained assignment 18, the lateral first in the final side comparison 17; the permuter on that form (anneal, 600 s,
 // 53 tries) best 17. Body unchanged at 89.
+// Round 141 (m3 lane 7, fast): lane 17's 17 form rebuilt 17; on it the adjusted projection written into the length local by the last
+// subtraction 17 (groups retail's, the two groups at 0x14/0x18 the wrong way round), with the sides declared swapped 18; the sides
+// swapped alone 19; the size local in the adjusted subtraction 185 (970 B). Diagnostics (one more read of the length, the second side
+// or the sum) grow the frame (979-985 B) and leave the length at 0x14. On the current body: the lateral dot through the file's private
+// dot helper 97, the 0.95 test through it 89 (same code), both 97; the target index initialized at its declaration 89 (same code);
+// the heading length as a ternary 89 (same code). Body unchanged at 89.
+// M3 lane 14 r74 (fast): no existing inline getter or forwarder fits the 0x110ab0 call (include/ has none for the actor's unit), so the EAX
+// argument still needs the one-use unit local. Lane 17's match-only 17 form rebuilt 17 (aligned 17, registers masked 10; left: sum at 0x10 for
+// retail's 0x14, length 0x14 for 0x18, adjusted 0x1c for 0x18, index 0x18 for 0x1c, lateral XMM3 and maximum XMM2 for retail's XMM2, XMM3). On it the
+// whole side decision (location query, reversed probe direction, both probes, the maximum test) as a file-local helper returning the side: `inline`
+// with (target, side vector, lateral), (target, lateral, side vector), (lateral, target, side vector), (side vector, lateral, target) or a
+// `real const &` lateral 382/382/383/383/382 (748 bytes: called out of line); forceinline 17 (same code as the block). Body unchanged at 89.
+// On the kept 89 body (fast, no caveat; aligned 65): the 0x110ab0 result compared `== false` 89 (same code); the last two guard terms as
+// `f(unit) ? false : flag` 89 (same code); the kind test as a one-case switch around the rest of the guard 226 (965 bytes, aligned 67); the argument
+// read through a second actor_get(arg_0) 236 (963 bytes, aligned 40: the argument takes EAX as retail, but the entry then forms the actor in EAX/EDX
+// and tests the target against memory). Diagnostics, reverted at once (a volatile local read, never kept): one dead read before the guard, or
+// inside it just ahead of the call, 240 (975 bytes, aligned 61), two ahead of the call 245 (979, aligned 35): the rotation there is one step
+// from retail's, and no plain spelling of the guard supplies it.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

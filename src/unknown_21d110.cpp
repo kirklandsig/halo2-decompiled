@@ -1035,6 +1035,11 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // the plain 30, so those previews were not real scores): the bool declared before repeat_state 30 (fast 67); both initialised 61 at 825 bytes
 // (fast 92); a byte flag 162 at 836 bytes (fast 140); repeat_state assigned before the flag in the looping arm 191 (fast 192); the pair declared
 // before the location 30 (pair at the top, fast 58).
+// Round 101 (m3 lane 12, plain; control 30): the flag captured by an if/else on `flags & 0x10` 30 (same code); the looping
+// pointer chosen by a ternary at function scope and tested for the capture 196; the flag as `(flags & 0x10) == 0x10` 191;
+// the loop-state test with the type compared first 132 (831 bytes); `loop_alternate != false` in the alternate ternary 158
+// (832 bytes). No existing record type with a long and a bool was found in include/ or the sound files, so the pair still
+// waits on a ruling about a two-member record for it (rounds 39 and 9 measured that form at 0).
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {

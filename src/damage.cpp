@@ -847,6 +847,12 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 
 /* whether any entry of the block at +0x70 (0x60 byte entries) has the flag
    at +0x40 of the structure it points to */
+// MiniMax I (11-10): the index's zeroing moves into the entry block when the increment is fused into the loop
+// condition (`while (++i < count)`), which keeps the owner in ecx and the index in edx like retail: score 2.
+// Left: retail increments the index before it advances the entry pointer, ours advances it first and increments
+// afterwards; every form that increments in the body (two reads of the index) swaps the owner and index registers
+// (8), and the fused condition with the pointer advance in the same expression gives the same order as retail but
+// the swap again (8).
 // MiniMax C (11-09): hoisting the index above the guard scores 8 in three declaration orders, a base-pointer split 8, `count - count` 8, an int index 8, a while-loop form 7 and a local pointing at the element 9; no lower score (5).
 // MiniMax E (11-09): no new form, no lower score (5); retail zeroes the index before the count guard and adds 0x40 to the base before `push edi`, ours does both inside the guarded block; every form that hoists the zeroing to function scope swaps the owner and index registers (8), a for-loop over the entries lifts the entry load above the guard (9), and an early `return true` in the loop rebuilds the exits (26).
 // MiniMax D (11-06, run 49): no new form, no lower score (5); the index is still zeroed inside the guarded block, so our `xor edx, edx` lands after the base load where retail zeroes it before the guard.
@@ -854,7 +860,9 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 // retail does `xor edx,edx` in the entry block before the count test, ours does it inside the guarded block after
 // `push ebx`; every placement that moves the zeroing into the entry block takes the index register away from the
 // owner parameter and renames it to edx.
-// score 5 (was 7): the count guard, the base load and the entry walk now sit in retail's order and the registers
+// score 2 (was 5): the count guard, the base load and the entry walk now sit in retail's order and the registers
+// agree (owner in ecx, the index in edx). Left: the index is zeroed before the guard like retail, but retail
+// increments the index before it advances the entry pointer and ours advances it first.
 // agree (owner in ecx, the index in edx). Left: the index is zeroed inside the guarded block instead of before
 // the guard, so our `xor edx, edx` lands after the base load.
 // MiniMax A (11-04, run 41): an explicit `count > 0` guard around a do/while, with the index and the entry
@@ -895,10 +903,10 @@ bool function_d74b0(byte const *owner)
 {
 	bool result = false;
 	long count = *(long const *)(owner + 0x74);
+	long i = 0;
 
 	if (count > 0)
 	{
-		long i = 0;
 		byte const *entry = *(byte const *const *)(owner + 0x70) + 0x40;
 
 		do
@@ -908,9 +916,8 @@ bool function_d74b0(byte const *owner)
 				result = true;
 				break;
 			}
-			i++;
 			entry += 0x60;
-		} while (i < count);
+		} while (++i < count);
 	}
 	return result;
 }
@@ -2641,6 +2648,7 @@ struct s_unit_event
 /* destroys a permutation of a region: hides it, starts its effects and
    area damage, and applies its side effects to the object (depletes the
    body, drops weapons, ejects riders, destroys attached children) */
+// MiniMax D (11-10): no new form, no lower score (472): the second lookup still reloads the table pointer where retail derives the array base from the pointer it kept in ECX into EDX.
 // MiniMax R (11-06): no new form, no lower score (472); the frame agrees, and the entry takes the argument first here and the global first in retail.
 // b5N walk (11-06, against retail block by block, fast 472 unchanged): no behaviour difference found. Every field, offset, test
 // direction, callee and argument agrees: region state word |= 1 << permutation (0xda1e8), the 0x22/0x20 NONE tests, the type&3 and

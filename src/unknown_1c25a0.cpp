@@ -866,6 +866,11 @@ void function_1c54b0(char const *variants, long object_index)
 // `removed ? 0 : 1` 18, as `removed == false` 18, as `island_index = island_index + !removed` 18; count declared before the
 // entity count 18; the flag address-taken (harness only) 18, set through a force-inline discard helper taking its address
 // (harness only) 18. The ternary step with the flag before the call 4 (same code).
+// Round 162 (m3 lane 5, fast, all with the flag after the call): a 600 s permuter run from that form (40 tries) best 4, by
+// moving the flag back before the call; count and entity index at function scope 20; the component test as `continue` then the
+// flag test 18; a world local inside the discard block 18; the count test inverted with an empty then-arm 18; `while` with nested
+// tests and `entity_count <= count` 55. Retail's zero-trip jump lands on the count test, past both reloads: the world pointer and
+// the island index are both reloads on the entity loop's exit edge, world first in retail, index first here.
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {
@@ -1662,6 +1667,12 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // Round 137 (lane 7, fast): the selected index stored before the count 5; the mirror declared then assigned 0 3; the index
 // declared at the top of the component block 3; the rigid-body count initialised at its declaration 3; the mirror stored in the
 // for statement's increment clause (`++i` at the end of the body) 3.
+// Round 75 (m3 lane 14, fast): re-measured the while loop 3, a positive guard around a do/while 3 and the mirror set from i 3;
+// an early `return result` for no rigid bodies 281 (902 bytes); the node index stored in the selection's condition 6; no mirror
+// with i at function scope 125 (858 bytes, round 127's no-mirror code); the component flag in a named bool for both tests 240
+// (894 bytes); the main-body comparison as `index == main index` 4; one rigid-body fetch shared by the linear and angular reads
+// 67 (861 bytes). Retail's 0x1d1160 (ends at +0xc5) never touches EBX; its only direct call, 0x1d1010, saves it, so the index
+// spill is no callee clobber in the bytes.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

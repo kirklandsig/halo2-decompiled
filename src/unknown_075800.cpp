@@ -961,6 +961,12 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// MiniMax S (11-10): no new form, no lower score (153 in the wider set, 196 in the two-source reduced
+// one); the case bodies call the same functions as retail (0x93f60, 0x93fa0, 0x940b0 and the rest are
+// in this file), but the reduced build does not pair their call targets, so most of the rows are that
+// pairing and not a real difference. What is left is the register that carries the address argument
+// (retail keeps it in EDI and pushes ESI for the case bodies, ours keeps it in ESI) and the jump
+// table's address, which follows the data layout of the build.
 // MiniMax H (11-05): no new form, no lower score; forcing 0x94420 inline gives 106 with retail's
 // convention and the delayed ESI save, but 0x93aa0 then inlines it too and loses its match, and
 // retail's final code has no use that crosses a call to home the address in EDI.

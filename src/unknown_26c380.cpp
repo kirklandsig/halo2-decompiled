@@ -439,6 +439,22 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // 38/38/32/32/38/38/32/32. Four full-input graphs with a local line record: 300 each.
 // NOT kept: no byte equality; the cross j product, line/sector homes, XMM roles and
 // tail stores remain. Original private helper, loop exits and complete body restored.
+// Lane 1 r83 (fast with 0x26c380/0x26c4e0/0x26ccb0/0x26d370, plain for the kept form; control 244 at 1593 bytes): `success = false;` ahead
+// of `next_sector_index = NONE; break;` at both two-level exits 229 at retail's 1605 bytes, plain confirmed (NOT kept: success is already
+// false on every path there, so the statement is redundant in the source even though retail's shared exit block has that byte store; the
+// aligned count stays 71, masked 55, so the 15 points are realignment from the length; ours then has one `mov byte ptr [esp+0xe], 0;
+// or edi, -1; jmp` per exit where retail jumps to one copy of the final tail; build/r83/lead-0x26c590-229.patch, needs a ruling),
+// the two statements swapped 229 (same code); the final tail's five statements written out at both exits with `goto done`, success
+// first, last or absent 696/696/708 (1302/1292 bytes, 0x26c4e0 and 0x26ccb0 lost); on the 229 form the previous sector, the line distance
+// or the line normal renamed to change the name order of the 4-byte locals (four names) 229 each, no slot moves. The held goto form
+// re-measured 34. Body restored at 244.
+// Round 102 (m3 lane 9, fast): retail's two two-level exits jump to one block that stores success = false and falls
+// into the final tail, the plain loop exit to the final tail itself: the held goto form. On it (34, rebuilt on this
+// body): the cross written out in retail's x87 operand order 303 (1612 bytes); the previous sector at function scope
+// 34; the first-edge and hit flags at function scope 34; the planar normal as two member stores 431 (1557 bytes); the
+// redundant `success = false;` dropped from the two false-result tails 73 (1609 bytes); `success = result->blocked =
+// true;` in the location tail 121 (1595); the magnitude test as `1e-5 < magnitude` 34 (same code); the planar normal
+// as `{ normal.i, normal.j }` 431.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
