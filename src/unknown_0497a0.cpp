@@ -283,7 +283,7 @@
 // inline taking them, unread aggregate members 620; `if (!special)` same pops, frame 0x64. An inline helper filling a local wave
 // vector from the global point (first sine, then the named factors, the unused third component written through a copy of the
 // result pointer) gives the same sequence (659 at 2584 B): retail's direct global reads may come from such a helper.
-// score 661 (was 537): behaviour and helper fixes from the b2E walk, each raising the score: the sixth input product is
+// score 661 (was 661; 537 before that): behaviour and helper fixes from the b2E walk, each raising the score: the sixth input product is
 // a plain mulss as at 0x49f0d (the integer truncation was +78: 537 -> 615); the camera shifts and the vector scales
 // call vector3f_add_scaled / vector3f_scale (+10, 2622 bytes); the wave's first add calls vector3f_add_scaled (+11);
 // the sine of x * 5.6 + y keeps the sum on the x87 stack as at 0x498a7-0x498d7 (+25, then the sine is stored as a
@@ -296,6 +296,12 @@
 // as a named double 650; s1 before the cross product / after s0 650/650. Kept spelling (double)(x * 5.6f) + y: same score,
 // and fld/fmul dword/fadd dword/fsin as retail (the (double)x * 5.6f spelling gave fmul qword). s0 stays double-rounded: retail
 // 0x4995f stores the x87 sum * 0.5 as a float and 0x49963-0x49969 scales it by SSE; ours does fmul 0.5, fmul 0.03, fstp.
+// m3 lane 12 r106 (fast): with offsets and registers normalised the listings differ only in the special arm (global
+// sine arguments, retail's x87 order, the cross products' order); the rest of the 661 is the 4-byte frame shift
+// (sub esp 0x5c against 0x60, a cross-product spill at [esp+0x14] pushing shape0 to +0x18). On the global sine
+// arguments (654, listed): s1 before the first cross and cross3f_staged for c 654 (frame 0x58, same code as without
+// the reorder); plus cross3f_staged for w 655; w staged with c plain 654; c staged with s1 after the cross 654; both
+// staged with s1 after the cross 655.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

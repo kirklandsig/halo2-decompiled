@@ -211,7 +211,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 882 (was 882): frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
+// score 901 (was 882): frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
 // point workspace names 866; initial actor value 869; query index value 916;
 // conditional self-unit 911; wide initial predicates 1011; native location copy 911.
 // Frame pointer 1207; size preference 1436; native object fields 866;
@@ -402,6 +402,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // layout only: retail places the second type-0 branch and the type 1/7/11 arms after the join (0x2c12a3-0x2c1441, jumping back into it) and keeps
 // the skip flag at [esp+0x12], a profile-style block order that source order has not reproduced. The unit_index and actor volatiles carry no
 // retail meaning beyond forcing the reloads retail shows at the loop back edge (0x2c0f68 edi from [esp+0x2ce0], 0x2c0f6f ebp from [esp+0x44]).
+// m3 lane 12 r106 (fast, control 901 = plain baseline): the type-1 arm as `if (team == ... || !function_1df560(...))
+// skip_classification = true;` (retail 0x2c13a9 stores only the 1) 924; the type test inverted, `if (type != 0) { 1/7/11
+// chain } else { type 0 }` 915 (3737 bytes; the chain just moves ahead of type 0, nothing goes past the ret); both 927;
+// the 1/7/11 arms as separate `if`s 901 (same code); that with the type-1 conditional set 924.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
