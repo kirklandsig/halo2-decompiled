@@ -446,6 +446,7 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// MiniMax S (11-10): no new form, no lower score (84): the permuter (60 tries, 610 s) found nothing below the baseline's 84, the first scan still leaves on `!=` where retail leaves on a signed `jl` (a scan bounded by less than is unrolled here at 637, and as a do-while 221), and the blend still sits at esp+0x38 where retail keeps it at esp+0x1c with the choices pointer in the other slot (a local for that pointer scores 208).
 // MiniMax D (11-10): no new form, no lower score; both builds run the same instructions, only four
 // places differ, and this round's reading of the two listings pins them down. The first is the clamp
 // entry: retail zeroes the float register and only then loads the 1.0 constant, ours loads the
