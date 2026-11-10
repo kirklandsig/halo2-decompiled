@@ -1402,11 +1402,12 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
+// score 47 (was 47): availability clear/production and later view observation remain;
 // MiniMax I (11-08): no new form, no lower score (47).
 // MiniMax C (11-06): no new form, no lower score; the availability flag is still computed with neg/sbb/inc where retail clears BL before the view test and sets it with a branch, and retail still re-reads the view global after the 0x17afd0 call.
 // MiniMax S (11-09): the availability set by a branch that turns it true scores 135, the same branch with its
 // initialisation moved after the view load 131, and the same-value ternary 47 (the same code); the base's 47 stands.
-// score 47 (was 47): frame 0x14, NONE/owner and Boolean stack homes agree;
+// Earlier (47, was 47): frame 0x14, NONE/owner and Boolean stack homes agree;
 // availability clear/result and the post-attachment view refresh remain.
 // availability clear/production and the post-attachment view observation remain.
 // frame 0x14, eligibility width, NONE/owner and Boolean homes agree;
@@ -1660,6 +1661,9 @@ bool function_17afd0(long effect_index, long value);
 // positive/complementary byte/short/long/dword results: 47/47/47/47/47/47/47/47.
 // NOT kept: one-use suppression results require equality; original admission and body restored.
 // Availability clearing/production and post-attachment view observation remain.
+// T80: Partial cluster-sentinel present/absent admission in bool/byte/short/long:
+// 47/47/47/47/47/47/47/47. Availability clear/production and later view observation remain.
+// NOT kept: no byte equality or qualifying gain; original complete body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

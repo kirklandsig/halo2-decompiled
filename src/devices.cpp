@@ -633,6 +633,8 @@ struct s_device_machine_view
 };
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
+
+// score 34 (was 34): group-word load/EAX sharing and velocity-zero join remain;
 // MiniMax A (11-06, run 52), not kept: 2 (from 34) with MiniMax D's form below, the group flags read
 // through the device-group macro into a word before the machine test and masked into a byte after
 // it, plus `function_value = 0.0f;` first in case 0x1200055f's velocity block (a dead store there,
@@ -654,7 +656,7 @@ struct s_device_machine_view
 // MiniMax D (11-07): the flags read in both arms of the machine-flags test plus `function_value = 0.0f;` at the top
 // of case 0x1200055f's velocity block 3, Round 62's form; not kept (a read written into both arms only to shape the
 // load, and a store of the 0 the result already holds).
-// score 34 (was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
+// Earlier (34, was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
 // retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
 // retail's shifted by one. Plain masks plus the zero store leave only the group pointer's register.
@@ -902,6 +904,9 @@ struct s_device_machine_view
 // leave EAX.
 // MiniMax E (11-08): no new form, no lower score: retail loads the group's flags as a word and tests bit 1 then bit 2, ours loads a byte and masks it with 3, and testing the word without the mask scores 120.
 // MiniMax E (11-09): no new form, no lower score: retail loads the group's flags as a word and tests bits 1 and 2, ours loads a byte and masks it with 3; dropping the mask gives retail's word load but moves the group pointer into esi (120).
+// T80: Partial position-zero closed/displaced admission in bool/byte/short/long:
+// 34/34/34/34/34/34/34/34. Group-word load/EAX sharing and power-velocity zero join remain.
+// NOT kept: no byte equality or qualifying gain; original complete body restored.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
