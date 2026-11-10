@@ -961,6 +961,12 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// MiniMax S (11-10): no new form, no lower score (153 in the wider set, 196 in the two-source reduced
+// one); the case bodies call the same functions as retail (0x93f60, 0x93fa0, 0x940b0 and the rest are
+// in this file), but the reduced build does not pair their call targets, so most of the rows are that
+// pairing and not a real difference. What is left is the register that carries the address argument
+// (retail keeps it in EDI and pushes ESI for the case bodies, ours keeps it in ESI) and the jump
+// table's address, which follows the data layout of the build.
 // MiniMax H (11-05): no new form, no lower score; forcing 0x94420 inline gives 106 with retail's
 // convention and the delayed ESI save, but 0x93aa0 then inlines it too and loses its match, and
 // retail's final code has no use that crosses a call to home the address in EDI.
@@ -1336,6 +1342,12 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // 207/205/207/205/207/204/202/200 reduced, control 196, full 153. NOT kept:
 // no exact delayed-save/late-handler repair; original classifiers, all case interiors
 // and call tuples restored. Every trial is 456 bytes against native 444.
+// Round 85 (m3 lane 10, all plain, on the one retail-order switch, control 217/420, 0x7afd0 3, 0x93aa0 matched): case 4's receiver field in a named local
+// ahead of the call 217 (same code: retail loads that field before its pushes, ours after them because the address holds EAX); the connection index
+// initialised to NONE at function scope 217 (the dead store goes before allocation); cases 18 and 11 under one label with an inner type test 217/420 (the
+// test is threaded away before allocation and adds no weight to the type); a `message_type < 0` early return 212 (428 bytes, same convention); the link
+// read once into a function-scope local for the three lookups 239 (400 bytes, 0x7afd0 6: the link takes ESI at entry). Reading: the type must outrank the
+// address for EAX at allocation; two extra type tests do it (round 45) but leave their code behind, and every test that folds, folds before allocation.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

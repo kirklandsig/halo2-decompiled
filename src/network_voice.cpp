@@ -1525,6 +1525,8 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
+// a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
 // MiniMax R (11-09): no lower score (60): what still differs is the register split - the player bit sits
 // in EBX and the entry size in EBP where retail keeps the bit in EBP and the size in EBX, the kept mask
 // is computed in EAX where retail computes it in EBX, and retail loads the queue's mask word after the
@@ -1548,7 +1550,7 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // in EBP where retail keeps them in EBP and EBX, the kept mask is computed in EAX instead of EBX, the
 // capacity is decremented through a register instead of in place (so the capacity-fail exit keeps its
 // own `xor eax, eax` epilogue) and the loop head has an extra jump; the code is 460 bytes against 449.
-// score 60 (was 134): the retained mask is a plain local and the pre-loop statements run entry size,
+// Earlier, score 60 (was 134): the retained mask is a plain local and the pre-loop statements run entry size,
 // kept, capacity, written: the clamp test now agrees with retail. Still differs: the player bit and
 // the entry size sit in EBX and EBP where retail has EBP and EBX, the kept mask is computed in EAX,
 // the capacity is decremented through a register and the capacity-fail exit gets its own
@@ -1697,8 +1699,25 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // the player EBP and goes on the stack); has-player test first with `else if (active) result = NONE` 147 (threads to
 // the same code, block order differs); kept declared before the capacity test and assigned inside it 127 (same code as
 // the mask declared inside).
+// Round 61 (m3 lane 2, fast with 0x56380 and 0x53b00; baseline 134, already `ret 0xc`): the two failures only assigning NONE and
+// the rest under a following `if (result == 0)` 134 (same code: the test is threaded away and the result is still a constant,
+// so EAX's zero is shared and the capacity exit gets its own epilogue), as `!result` 134, as `result != NONE` 134; that form
+// with the retained mask first (mask, written, capacity, size) 137 and written first 137 (445 B each, the cursor then arrives
+// in EAX and the player on the stack, 0x56380 13); the clamp ahead of one `!has || clamped != player` assignment 162; the
+// length built in place from the counter (assign, scale, add 2) 134 (same code). Retail's call in 0x56380 sets EAX (player)
+// then EDX (cursor), which fits the declared order. Original body restored.
 // P399: Actual queue-count/recipient-count/aggregate-mask field identities, subsets 1-7, then entry-recipient word identity:
 // 133/134/133/133/133/133/133/133. NOT kept: no byte equality or native home repair; original complete body restored.
+// Round 142 (m3 lane 7; one-file LTCG harness, exact: 60 at 460, 0x56380 matched): the 24 orders of entry size (e), kept
+// (k), capacity (c), written (w) x the size as `11 + 2 * include_mask` / `include_mask ? 13 : 11` / `11 + (include_mask ? 2
+// : 0)` x the result before the header stores or at the end of the capacity block (144 forms): best 60 (main); kept-first
+// orders move the player to the stack (0x56380 12-13), the result at the end moves the convention (0x56380 137, 449-452 B).
+// cewk with `include_mask ? 13 : 11` 134 but aligned 18 against 41: retail's EBP bit, EBX size and setne/lea; left is the
+// zero result in EAX reused for the clamp (`cmp edi, eax`) and `written = 0`, and the capacity failure's own epilogue. On
+// that: direct NONE returns 170, `else result = 0;` on the capacity test 201, the zero set only in the inactive and
+// capacity-fail arms 177, direct returns plus that else 189 (0x56380 73 each). Diagnostic, result started from a global
+// read 145 (still two epilogues). 300 random forms (orders x sizes x bit at top/pre-loop/at use x if/else-if or ternary
+// clamp x failure arm first or second): best 60, lowest aligned with the caller kept 18-19 (130-134).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -3466,6 +3485,8 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
+// score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
+// homes differ.
 // MiniMax R (11-09): no lower score (139): the base and the offset kept apart, with the packet pointer never
 // formed, compiles to the same bytes as the indexed form (139), so the gap is not the address form: retail holds
 // the channel in ebp from the entry and spills the member word, ours holds the member in ebp and reloads the
@@ -3474,7 +3495,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // MiniMax R (11-09): no lower score (139): with the packet cursor advanced on its own the code reaches retail's
 // cursor in edi but the member word takes ebp over the channel (164), and naming the channel, the member or the
 // size does not change that; the indexed form stays the better of the two (139).
-// score 139 (was 139): channel/cursor/count registers and route homes differ;
+// Earlier, score 139 (was 139): channel/cursor/count registers and route homes differ;
 // MiniMax E (11-07): no new form, no lower score; the channel and the cursor homes follow the earlier
 // rounds' forms, none of which reaches retail's channel in ebp with the cursor in edi.
 // MiniMax h (11-06): no new form, no lower score: with the packet cursor advanced on its own the member word takes ebp over the channel (164), and retail's channel in ebp, advancing cursor in edi and stride in esi stay out of reach together.
@@ -3683,6 +3704,17 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Round 71 (m3 lane 13, fast with 0x564c0): on the packet-cursor form (164, member in EBP) the packet-kind test ahead of
 // the member call 145, the plain arm as `else if (packet[0] < 2) {...} else return NONE;` 164, both 145; without the
 // cursor the plain-arm form 139 (same code) and both 150. The member keeps EBP in every form.
+// Round 61 (m3 lane 2, fast with 0x564c0; baseline 139): retail loads the channel into EBP at entry, ahead of the count test,
+// keeps the member in memory ([esp+0x1c], stored right after its call) and puts the route in the channel argument's dead home;
+// ours gives EBP to the member, so the route takes the fourth frame slot. On the separate-cursor form (164, 478 B, re-measured):
+// a short member 159 (480 B), the route at function scope 164, the cursor advanced in the for's increment 166, the cursor
+// declared ahead of the consumed count 139 (488 B, the cursor folds back into data + consumed: main's code), a named member bit
+// for the test and the clear 179 (467 B), the stride chosen after the cursor 164. The member keeps EBP in every one.
+// Round 142 (m3 lane 7; one-file LTCG harness, exact: 139 at 488, 0x564c0 matched): the packet cursor beside the count
+// 164 (478 B, member in EBP); a channel->index read at the loop top (diagnostic store) 163 (no flip there). 96 random forms
+// (no cursor / cursor advanced last / cursor advanced first x member test joined or split x four entry orders of the
+// stride, `size -= 2` and consumed x `(members >> member) & 1` or the mask test x member declared at the loop top or
+// in the relay arm): best 139 (main's code), the cursor forms 162-165 (aligned 58 against 71).
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

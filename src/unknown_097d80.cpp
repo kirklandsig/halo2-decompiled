@@ -52,6 +52,12 @@ struct c_aggregate : c_child
 };
 
 
+// MiniMax S (11-10): no new form, no lower score (31); the frame is still 0x8024 against retail's
+// 0x8020: retail packs the loop-2 cursor and the loop-3 count into the address-taken produced slot
+// (frame +0x00) while ours keeps a slot of its own for the produced count, and the two temporary slots
+// stay swapped. Hoisting the produced count out of the loop measures 42 and a table local for the
+// children measures 126, so both are reverted; the body is byte exact only in a /GL- build of this
+// file, which costs 0x97f60, 0x97fe0 and 0x980d0 their matches.
 // MiniMax D (11-08): the frame is 0x8024 against retail's 0x8020 and the two output
 // slots differ - retail keeps the address-taken block count at +0x10 shared with the loop spills and the
 // allocator output at +0x1c, ours gives the count +0x1c and the allocator output +0x20; the byte-exact form
@@ -377,6 +383,11 @@ struct c_aggregate : c_child
 // count-field reference subsets: 78/78/78/78/78/78/78/78. Native 0x8020 frame returns
 // by removing a cleanup spill, but callback output stays separate and low homes differ;
 // all shorten to 359/373. NOT kept: no gain or byte match; original full body restored.
+// Round 85 (m3 lane 10, fast; siblings stay matched): an empty exception specification on the child's v5 and v6 31; v5's
+// request parameter as `void const *` 31; the cleanup item test as an early `continue` 31; this function moved to the
+// end of the file 31; the three aggregate functions moved below the handle-table functions 31 (frame 0x8024 in each, same
+// code). Diagnostic, removed at once: `#pragma optimize("a", on)` around the body 31 (frame 0x8024: even the no-aliasing
+// setting keeps the escaped output apart under LTCG). Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

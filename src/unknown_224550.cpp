@@ -469,6 +469,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // ahead of the tint 249 (same homes), with natural indices 223 (tint still +0x40); the pivot as two reals 313 (1978
 // bytes); the seed colour scratch declared at function scope 211 (same code); the direct-bounds arm encoding the
 // second set itself instead of copying the first 649 (2100 bytes).
+// M3 lane 11 r81 (fast): both UV encodings right after the flip 431 (1925 bytes); the flip before the extents 250 (1949);
+// the 0x2000 quarter-turn right after the angle read 483 (1939); the bitmap read from the context at each use 211 (same code);
+// pivot products written pivot-first 211 (same code).
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

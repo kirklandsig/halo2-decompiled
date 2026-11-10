@@ -12,6 +12,12 @@ struct s_visibility_bound_record
     byte padding[3];
 };
 
+// score 443 (was 476; plain, 1760 B): the releases through the existing release_visibility_list (moved from
+// unknown_044720.cpp to unknown_044e90.h; retail's `test; js`), counts and capacities as chained assignments, and the tag
+// table in a local read at entry (retail's ESI). Left: the entry in EDI (retail EBX via `lea`), the flags read ahead of
+// the tag test (retail in each arm), the parts calls' pushes hoisted (retail sets up each arm), register rotations.
+// Earlier (476, was 406; fast, 1700 B, aligned ratio 0.675 -> 0.727): the plane transform is a call to function_1428b0, retail's inlined
+// MiniMax I (11-10): entry flags read in each branch and the tag table read once at the top, 475 each; a per-file inline threshold changes nothing, and retail keeps the scaled tag index in EAX (`movsx eax,[ebp+8]; shl eax,5; lea ebx,[eax+0x4ba138]`) where our build computes it in EBX with `add ebx,imm`, so the remaining head difference is the inline of function_1428b0, which lives in another file.
 // score 476 (was 406; fast, 1700 B, aligned ratio 0.675 -> 0.727): the plane transform is a call to function_1428b0, retail's inlined
 // body, which also stores 0 into the distance for a zero scale (behaviour fix, b2L walk 11-06). Entry/table and stack homes remain.
 // Earlier: frame/list strides and entry/table/plane homes differed.
@@ -336,16 +342,26 @@ struct s_visibility_bound_record
 // (in place; 0x1428b0 and 0x17e670 unchanged). Tried with the call: whole-plane store 478, normal vector copy 478, d first 476,
 // views declared before the entry 487, tag table in a local 485. Remaining: retail spills views [esp+0x2c] and entry [esp+0x30]
 // and loads the table into ESI up front; ours keeps them in registers (42 bytes smaller).
+// m3 lane 12 r103 (fast unless marked; aligned = difflib unmatched ours/retail raw, then registers masked; base 243/250,
+// 120/127): releases as `!(capacity & 0x80000000)` 464 (1760 B; 233/235, 119/121); with chained counts/capacities 455
+// (1751 B; 234/238, 130/134); with the tag table local 443 (1760 B; 247/247, 138/138; plain 443, kept); then the flags
+// at each use 465; mask tests and table local without the chains 450 (1744 B); chains and table local with `>= 0` tests
+// 486 (1696 B; 226/236, 111/121); 0x458d0/0x45a80's index `long` with `(short)index` in their bodies and 0x45560 passing
+// its long index (retail's arms push `movsx eax, word [ebp + 8]`; all three stay matched) 480 (1776 B; 242/238, 132/128);
+// the chains in retail's store order (counts fourth = third = first = second, capacities fourth = third) 443 (retail's
+// count and capacity stores exactly; 245/245, 134/134), not kept (no gain); on the kept form a state local for the views
+// read and the active test 463, a structure local for the else arm's three reads 443, both 468.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
     s_visibility_query_workspace workspace;
     s_44940_entry *entry = &g_4ba138[entry_index];
+    s_tag_instance *tags = g_4e3b44;
     dword flags = entry->flags;
     byte *geometry;
     if (entry->tag != NONE)
     {
-        byte *definition = g_4e3b44[entry->tag & 0xffff].bytes;
+        byte *definition = tags[entry->tag & 0xffff].bytes;
         byte *sections = *(byte **)(definition + 0x28);
         geometry = *(byte **)(sections + ((flags >> 9) & 0x1ff) * 0x5c + 0x34);
     }
@@ -371,17 +387,12 @@ void __stdcall function_44e90(short entry_index, short section_index)
         if (parts)
             query_data += (*(long *)(query_data + 0x20) + 15) & ~15;
         workspace.first.list.indices = workspace.first.indices;
-        workspace.first.list.count = 0;
-        workspace.first.list.capacity = (long)0x80000400;
         workspace.second.list.indices = workspace.second.indices;
-        workspace.second.list.count = 0;
-        workspace.second.list.capacity = (long)0x80000400;
         workspace.third.list.indices = workspace.third.indices;
-        workspace.third.list.count = 0;
-        workspace.third.list.capacity = (long)0x80000800;
         workspace.fourth.list.indices = workspace.fourth.indices;
-        workspace.fourth.list.count = 0;
-        workspace.fourth.list.capacity = (long)0x80000800;
+        workspace.first.list.count = workspace.second.list.count = workspace.third.list.count = workspace.fourth.list.count = 0;
+        workspace.first.list.capacity = workspace.second.list.capacity = (long)0x80000400;
+        workspace.third.list.capacity = workspace.fourth.list.capacity = (long)0x80000800;
         __declspec(align(16)) plane3f planes[6];
         s_visibility_plane_query query = { 6, planes };
         for (long view = 0; view < *(short *)views; ++view)
@@ -414,16 +425,12 @@ void __stdcall function_44e90(short entry_index, short section_index)
                 function_458d0(entry_index, true, (s_geometry_visibility_list *)&workspace.second.list,
                     (s_geometry_visibility_list *)&workspace.first.list);
         }
-        if (workspace.fourth.list.capacity >= 0)
-            g_480118->allocate((long)workspace.fourth.list.indices, (workspace.fourth.list.capacity & 0x7fffffff) * 4, 0x12);
-        if (workspace.third.list.capacity >= 0)
-            g_480118->allocate((long)workspace.third.list.indices, (workspace.third.list.capacity & 0x7fffffff) * 4, 0x12);
-        if (workspace.first.list.capacity >= 0)
-            g_480118->allocate((long)workspace.first.list.indices, (workspace.first.list.capacity & 0x7fffffff) * 4, 0x12);
-        if (workspace.second.list.capacity >= 0)
-            g_480118->allocate((long)workspace.second.list.indices, (workspace.second.list.capacity & 0x7fffffff) * 4, 0x12);
+        release_visibility_list(&workspace.fourth.list);
+        release_visibility_list(&workspace.third.list);
+        release_visibility_list(&workspace.first.list);
+        release_visibility_list(&workspace.second.list);
     } else {
-        byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
+        byte *tag = tags[entry->tag & 0xffff].bytes;
         long object_index = **(long **)entry->unknown10;
         byte *object = (byte *)((s_render_object_header *)g_4e0300->data)[object_index & 0xffff].object;
         long node_count = *(short *)(object + 0x114) / sizeof(transform4x3f);
