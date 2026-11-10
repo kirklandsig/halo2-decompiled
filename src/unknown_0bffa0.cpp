@@ -1058,7 +1058,7 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
     result->y = scale * transformed.j;
 }
 
-// score 290 (was 315; 482 before round 68): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
+// score 290 (was 290; 315 before round 79; 482 before round 68): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
 // now agree; retail stores the +radius vertex group first (so 1.0 lands in XMM2, not XMM1) and
 // computes each projection's forward row first. Kept: the file's cross helper for both crosses
 // (it sets the +0x4c base; the shared cross3f for the forward one gives +0x50), normalize3d for
@@ -1202,6 +1202,16 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // (same code); the first three re-measure listed forms. New on top: has_plane as `0.0f < offset` 290 (same code); the cone
 // corners read back from the bounds fields 290 (same code); the sphere depth stored right after the radius read 310.
 // Body unchanged.
+// Round 84 (m3 lane 1, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, 290 as the full check; aligned and masked aligned counts in brackets,
+// base [199, 81]): r148's lead (`entry` declared before `bounds` with the cone arm's `entry = entries; memset(entry, 0, sizeof(*entry));`) re-measured
+// 288 [180, 71]; new: those two with the cone bounds stored after the points as x0, y0, x1, y1 288 [178, 67] (everything up to the first cross and the
+// loop tail are then retail's; only float operand folding, the length sum and the projection rows are left; two points, not kept:
+// build/r84/lead-0xc1d90-288.patch); that with the far edges as `half + centre` 288 [178, 67] (same code); the cone-arm form with the bounds order,
+// with or without the far edges, 290 [179, 68]; `entry` first with the bounds order and far edges 288 [196, 76]. Diagnostic on the 288 form: dead
+// initialised locals +1..+8 at the top 477/478/478/482/481/481/477/477 (2809-2814 bytes) [189-196]: no symbol-count phase is nearer than the current
+// one. On the 288 form: the reference as a pointer chosen by a ternary 701 (2749 bytes, first difference +0x2) [382, 173], chosen by an if 684 (2757)
+// [313, 173], chosen by an if before the up negate 704 (2763) [357, 203]; the bounds copied after the memset 305 (2830) [186, 75]. The if-chosen pointer
+// on the kept body 685 (2757) [330, 183]: a reference pointer changes the prologue (retail copies the reference). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

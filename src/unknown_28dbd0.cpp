@@ -351,6 +351,18 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // 173 (same code); rows as `arg_2->i += arg_1->i + local_3.i` 173; scales axis, vector, cross 233 (1222 bytes); rows axis term
 // first 173 (as round 120); the forward copy after the outer cross 190; velocity products speed first 173 (same code); rows
 // `arg_2->i + local_3.i + arg_1->i` 173.
+// Round 84 (m3 lane 1, fast with 0x28dab0 and 0x259d0 listed, 173 as the full check; aligned and masked aligned counts in brackets, base [131, 72]).
+// Reading of retail's rotation (r206 already lists X.j/X.k spilled and X.i formed in row i): that is the order in-place row writes give, because row
+// i's store kills the vector's i, which only X.j and X.k read. Retail keeps the vector's i and j in registers throughout and gives the zero k a register
+// only for the outer cross and the dot; ours gives the zero a register throughout and re-reads the vector's j from its home. Re-measured listed shapes:
+// sine, named dot, cosine, scalar X.j/X.k, X.i in row i 237 (1221) (r206), sine, dot, cosine with `projection *= 1 - cosine` 237 (1220), sine, cosine,
+// projection 237 (1220) (r73's 237s), in-place rows with dot3f 228 (1194, frame 0x114) [124, 63] (r68), three scalar cross terms with a named dot 236
+// (1190) (lane 1 r64), cross3f(vector, axis) 213 (1209, frame 0x11c) [129, 91] (r68) and 226 (frame 0x120) (r206). New: the cosine called at each use
+// 238 (1221) [144, 84]; in-place rows with scalar X.j/X.k and a named dot before the cosine 236 (1187, 0x114) [140, 82]; three scalar cross terms with
+// sine, cosine, projection 232 (1189) [139, 78]; the vector's components read into three locals first, scalar X.j/X.k or all three, either trig order,
+// 227 each (1211, frame 0x11c) [144, 87]; a local copy of the vector with scalar cross terms 251/250/251/250 (1224, frame 0x114) [155-159, 96], with
+// cross3f 256 (1228, frame 0x11c) and 249 (1221, frame 0x11c). No form has retail's 0x118 frame: scalar cross terms keep X.j in a register (one spill,
+// 0x114) and a cross vector takes a 12-byte home (0x11c or more). Helper restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

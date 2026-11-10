@@ -516,6 +516,21 @@ void function_14bac0()
 // unit read from the player at both calls 262 (1048, frame 0x44). Retail's first iterator is the 16-byte datum one (lane 10
 // r13), so the first-loop change is not retail's. On the original body: the relocation point used directly alone 245 (1048);
 // `point3f alternate, destination;` 222 (same code).
+// Round 84 (m3 lane 1, fast with 0x6b380 and 0x14bac0 listed, 222 as the full check; aligned and masked aligned counts in brackets, base [122, 77],
+// frame 0x50, retail 0x3c). Re-measured listed combinations: the relocation point used directly 245 (1048, frame 0x44) [117, 72] (r60); the second loop
+// on a block-local datum iterator through data_datum_iterator_next 229 (1036) [122, 87]; plus the unit read at both calls 264 (frame 0x54) [101, 57]
+// (r72); plus the relocation point used directly 259 (1048, 0x48) [97, 53] (r72); plus stamp/slot locals 258 [109, 49] (r27); plus a marker base
+// pointer 260 [126, 50]; r64's iterator + unit + marker + stamp form 259 (1048) [70, 45], with r64's early-return next-used scan 268 (1027) [92, 45],
+// the scan alone on it 267 (1027) [136, 54] (r212); the centre in a bare block 259/268 (r139), through an inline helper 279/333 (left out of line here),
+// declared first 259/268 (r72), one point shared by the probes and the centre 262/271. New on the 259/268 forms: the centre in a `do { } while (false)`
+// 259/268, through a force-inline helper taking a flag pointer or returning the flag 259/268 (same code as the bare block). New finding: retail reads
+// the visit stamp from the global at every test (`mov ecx, [stamp]`, then `cmp [eax*4 + marks], ecx` and a `mov edx, ecx` copy for the store); with a
+// stamp or slot local on the iterator forms ours forwards the incremented stamp in ESI across the loop (reloaded after 0xb75a0 only), and that spills
+// the scenario where retail keeps it in EDI. On r64's 259 form the stamp test through a force-inline or inline (index, stamp) helper, or one reading the
+// stamp inside, 259 each (same code); a slot local alone on the iterator forms 259 [70] / 258 [109] (forwarded again); an inline (index) helper reading
+// the global 259/258. On the kept body a slot local alone (`long slot = root & 0xffff;`) gives retail's in-loop reload and indexed compare: 247 (1032,
+// frame 0x50) [111, 70]; with the relocation point used directly 244 (1048, 0x44) [107, 66], with the block-local datum iterator 248 (1036) [123, 81],
+// with both 242 (1036, 0x44) [122, 81], with a marker base pointer 223 (1036, 0x50) [93, 104]. Body unchanged.
 // @retail 0x14b6a0
 void function_14b6a0()
 {
