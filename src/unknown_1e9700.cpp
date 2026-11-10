@@ -227,6 +227,7 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
+// MiniMax C (11-10): the score is 353 (was 353); the three homes sit in rotated slots (ours +0x14/+0x1c/+0x18 against retail's +0x18/+0x14/+0x1c) and our function is four bytes longer, so the first branch's jump lands elsewhere.
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // MiniMax H (11-04): the selected damage record read through a local record pointer 454; not
 // kept, the original body is restored.

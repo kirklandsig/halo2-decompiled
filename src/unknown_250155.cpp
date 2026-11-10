@@ -1362,6 +1362,7 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
+// MiniMax C (11-10): the score is 83 (was 83); the two counts sit in exchanged homes (item_count at ebp-8 where retail has index_count) and the tail rows are filled by a pointer walk where retail fills them with a guarded word store.
 // MiniMax R (11-09): no new form, no lower score (83); the tail fill is still a pointer walk where retail's is a guarded word fill, and the two counts keep the next stack slot round from retail's.
 // MiniMax I (11-06): retail's guarded rep stosd does come from an index loop over the tail
 // (`for (i = index_count; i < 16; i++) indices[i] = NONE;`): the idiom appears, but the write count then

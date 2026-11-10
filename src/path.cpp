@@ -8,6 +8,8 @@
 #include <float.h>
 #include <string.h>
 
+#define MIN(a, b) ((a) > (b) ? (b) : (a))
+
 real function_30bf0(vector3f *v);
 
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long start_node_index,
@@ -368,6 +370,7 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// MiniMax C (11-10): the score is 200 (was 200); the frame is 0xe4 as retail's, but retail keeps the edge flag in a byte at esp+0xf and reads it back at the join while ours folds the bit into the test and keeps the flag's home for the else path's reset, so the two instruction streams part at the flag store and every later branch lands elsewhere.
 // MiniMax D (11-08): no new form, no lower score (286); our frame is 0xe8 against retail's 0xe4, and in the scan
 // retail keeps the link index in a register (ECX) and multiplies it by 0x44 while ours reloads it from a stack slot
 // each time, so the two sides' frame slots sit four bytes apart; the first loop's block count and the scan's flags
@@ -726,15 +729,15 @@ PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 {
 	s_path_lookup_view *lookup = (s_path_lookup_view *)state;
 	s_path_input_view const *input = (s_path_input_view *)&state->source;
+	s_path_node_key_view *node;
 	long edge_indices[40];
 	short previous_index = NONE;
 	s_path_node_key_view *previous = NULL;
-	short count = 0;
-	long link_count = 0;
 	bool complete = true;
-	long initialize_count = lookup->nodes[node_index].depth + 1;
-	if (initialize_count > maximum_steps)
-		initialize_count = maximum_steps;
+	short link_count = 0;
+	bool node_flag;
+	node = &lookup->nodes[node_index];
+	long initialize_count = MIN(node->depth + 1, maximum_steps);
 	s_path_step_view *initialize_step = steps;
 	long *initialize_edge = edge_indices;
 	for (short remaining = initialize_count; remaining > 0; --remaining)
@@ -745,14 +748,24 @@ PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 		initialize_step->unknown02 = 0;
 		initialize_step++;
 	}
+	short count = 0;
 	while (node_index != NONE)
 	{
-		s_path_node_key_view *node = &lookup->nodes[node_index];
-		if (link_count < maximum_links && (node->unknown10 != NONE ||
-			(node->unknown14 >= 0 && node->unknown14 < ((s_path_links_data_view const *)state->pathfinding)->edge_count &&
-			TEST_FIELD_BIT((((s_path_links_data_view const *)state->pathfinding)->edges[node->unknown14].flags >> 7) & 1))))
+		node = &lookup->nodes[node_index];
+		if (link_count < maximum_links)
 		{
-			memcpy(&links[link_count++], &node->unknown10, sizeof(*links));
+			s_path_links_data_view const *data = (s_path_links_data_view const *)state->pathfinding;
+
+			if (node->unknown10 != NONE)
+				node_flag = true;
+			else if (node->unknown14 >= 0 && node->unknown14 < data->edge_count)
+				node_flag = (((unsigned)data->edges[node->unknown14].flags >> 7) & 1);
+			else
+				node_flag = false;
+			if (node_flag)
+			{
+				memcpy(&links[link_count++], &node->unknown10, sizeof(*links));
+			}
 		}
 		if (node->depth >= maximum_steps)
 		{
@@ -760,6 +773,8 @@ PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 		}
 		else
 		{
+			node_flag = false;
+
 			if (count == 0)
 				count = node->depth + 1;
 			steps[node->depth].node_index = node->node_index;
@@ -771,10 +786,11 @@ PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 				if (previous->unknown10 == NONE)
 					edge_indices[node->depth] = previous->unknown14;
 			}
-			bool special = node->unknown10 == 2 &&
-				((s_path_links_data_view const *)state->pathfinding)->surfaces[node->unknown14].unknown0a == 0;
+			if (node->unknown10 == 2 &&
+				((s_path_links_data_view const *)state->pathfinding)->surfaces[node->unknown14].unknown0a == 0)
+				node_flag = true;
 			if (node->unknown10 == 1 || node->unknown10 == 6 ||
-				node->unknown10 == 5 || special)
+				node->unknown10 == 5 || node_flag)
 			{
 				steps[node->depth - 1].type = node->unknown10;
 				steps[node->depth - 1].link_index = (short)node->unknown14;
@@ -826,20 +842,30 @@ PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 				}
 			}
 			vector3f delta;
-			if (input->start.output_index == point->output_index)
+			s_type_c3b527 const *origin = &input->start;
+
+			if (origin->output_index == point->output_index)
 			{
-				delta.i = point->point.x - input->start.point.x;
-				delta.j = point->point.y - input->start.point.y;
-				delta.k = point->point.z - input->start.point.z;
+				delta.i = point->point.x - origin->point.x;
+				delta.j = point->point.y - origin->point.y;
+				delta.k = point->point.z - origin->point.z;
 			}
 			else
 			{
 				point3f start, end;
-				if (input->start.output_index == NONE ||
-					!function_2104b0(input->start.output_index, &input->start.point, &start))
-					start = input->start.point;
-				if (point->output_index == NONE ||
-					!function_2104b0(point->output_index, &point->point, &end))
+				if (origin->output_index != NONE)
+				{
+					if (!function_2104b0(origin->output_index, &origin->point, &start))
+						start = origin->point;
+				}
+				else
+					start = origin->point;
+				if (point->output_index != NONE)
+				{
+					if (!function_2104b0(point->output_index, &point->point, &end))
+						end = point->point;
+				}
+				else
 					end = point->point;
 				delta.i = end.x - start.x;
 				delta.j = end.y - start.y;
