@@ -197,9 +197,9 @@ static inline real normalize2d(vector2f *v)
 	return m;
 }
 
-static inline bool points2d_equal(point2f const *a, point2f const *b)
+static inline bool points2d_differ(point2f const *a, point2f const *b)
 {
-	return fabs(a->x - b->x) < k_real_epsilon && fabs(a->y - b->y) < k_real_epsilon;
+	return !(fabs(a->x - b->x) < k_real_epsilon && fabs(a->y - b->y) < k_real_epsilon);
 }
 
 /* two pi, set up at run time */
@@ -305,6 +305,35 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
+// MiniMax C (11-10): score 169 (was 169): no lower score this round. The frame is still 0x18 against
+// retail's 0x14; retail's outer pass has one dword counter in EBX, stored at F-0x10, reloaded at the
+// loop's head and compared as a word with the count home, it copies the count into EDX for the scan
+// bound and reads the count home again for the current index where this build keeps the count in EBX
+// and compares the scan index against it, its departure flag is a byte in the dead index argument's
+// home where this build has a dword of its own, and its compaction is the CRT's memcpy where the
+// reduced image has it inline. The single-counter forms were measured again: the while over the
+// counter 242, the same with a short comparison 201 (this one matches retail's frame), a for over the
+// same counter 259, the short comparison with the departure flag as a byte 262 (this one puts the
+// flag in retail's index home and the counter in the frame), the departure flag as a byte on its own
+// 256, and casting the count in the scan or in the current index 169 each. A 5400 second permuter run
+// (3398 tries) reached 158, but every gain comes from forms that are not allowed: a pointer local used
+// once (162 on its own), moved declarations, and the compaction with its source and destination
+// swapped, which changes the copy. Measured apart, each of the permuter's other edits is 169 or worse
+// (the comparison of the two points with the arguments swapped 171, the compaction bound as a word 176)
+// and 176 or worse together, so the body stands.
+// MiniMax C (11-10): score 169 (was 169): no lower score this round. One hull counter driving the outer
+// pass (`while ((short)hull_count < count)` with `indices[(short)hull_count] = current; hull_count++;`)
+// gives the frame 0x14 and retail's homes for the distance, the best angle, the previous angle and the
+// angle, but the counter then sits in the dead index argument's home and the pass test rotates to the
+// loop's foot: 203. The same counter with the departure flag as a byte puts that flag in retail's index
+// home and the counter in the frame: 223. A short hull counter 275 (751 bytes); moving the heading's
+// initialization ahead of the lowest scan 262 (757 bytes). Retail's shape is one dword counter at F-0x14
+// compared as a word with the count home, the scan bound copied into EDX, the departure flag a byte in
+// the index home, the pass test at the loop's head, and the compaction a CRT call where this body has it
+// inline.
+// MiniMax C (11-10): score 169 (was 170): the departure test is the negated difference predicate assigned
+// straight to the flag, so the flag is written in the branches; the frame is 0x18 against retail's 0x14, and
+// the count and departure homes, the scan bound and the compaction still differ.
 // MiniMax S (11-08): no new form, no lower score (170); the frame is 0x18 against retail's 0x14, and the count and departure homes, the scan bound, the equality test and the compaction still differ.
 // MiniMax G (11-06): a bool departure flag 248, the angle zeroed before the lowest scan 207, both together 204, the
 // hull counter merged into the pass counter as a while loop with the increment at the top 272, and a 16-bit copy of
@@ -624,10 +653,10 @@ short function_239e50(short count, point2f const *points, short *indices)
 			if (next == NONE)
 				goto finished;
 			if (!left_start)
-				left_start = !points2d_equal(&points[next], &points[indices[0]]);
+				left_start = points2d_differ(&points[next], &points[indices[0]]);
 			if (next == indices[0])
 				goto finished;
-			if (left_start && points2d_equal(&points[next], &points[indices[0]]))
+			if (left_start && !points2d_differ(&points[next], &points[indices[0]]))
 				goto finished;
 		}
 
@@ -973,6 +1002,20 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // the side-change test as `previous_inside ? !inside : inside` 279 (915); the epsilon side tests moved to the loop end 264 (877);
 // one `short point_count = count` copy at all six uses 129 (same code); the current side declared before the loop 129 (same
 // code, as round 294); the `*clipped = false` reset moved just before the loop 221.
+// MiniMax C (11-10): score 129 (was 129): no lower score this round. The count's 32-bit form is what
+// the first difference is: retail loads the whole home into ECX and narrows it (`mov ecx, dword ptr
+// [ebp + 8]; movsx edi, cx`), this build sign-extends the word home directly, and every int-typed use
+// of the count folds back into that word load: an int index 129, a long index 129, an int count used
+// for the index and the loop test 293. The zero also lands in XMM4 against retail's XMM2 and the
+// epsilon in XMM5 against XMM4, which follows from the same allocation.
+// MiniMax C (11-10): score 129 (was 129): no lower score this round. Retail's count argument is 32 bits
+// wide: it loads the whole home (`mov ecx, dword ptr [ebp + 8]`) and narrows it (`movsx edi, cx`) for the
+// previous point's address, while the copy size reads the same home as a word (`movsx ecx, word ptr
+// [ebp + 8]`); with this declaration's short count the address reads the word directly, so every
+// instruction after the first difference is out of step. Widening the parameter to 32 bits and narrowing
+// the copy sizes back to words reproduces retail's frame (0x1014), its flag homes (F-0xe, F-0xf, F-0x10)
+// and its count load, but the points argument then takes EAX instead of ESI and the score rises to 163;
+// the parameter's declared type is not ours to change.
 // MiniMax A (11-05): retail reads the count argument as a dword and narrows it (`mov ecx, [ebp + 8]; movsx edi, cx`) where this declaration's short count is read as a word (`movsx edi, word ptr [ebp + 8]`), so the parameter type, not the body, keeps the rest of the function out of step; no lower score.
 // Lane 11 round 80 (fast; al/m = difflib-aligned and register-masked aligned counts, this body al 85 m 20): previous side
 // as byte 129 (same code), char 242 (892 bytes), long 266 (893); `previous_inside = inside;` between the two appends (round
