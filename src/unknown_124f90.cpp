@@ -655,6 +655,13 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // values): the bound as a constant 70, read from an extern array 64, the sound index stored as 0 3, the type stored last
 // 11, the voice index not advanced 62; `inc esi` stays right after `inc edi` in every one, so neither the table's aliasing
 // nor the first stores' operands place it.
+// Round 145 (m3 lane 8, fast under the 0x219b40 CAVEAT; the plain baseline and one plain diagnostic read 3 too): the stores from unknown0a on inside `do { } while (false)` 3; those
+// stores through a forceinline clear helper taking the voice 3; the voice lookup with its first two stores in a
+// forceinline helper returning the voice 3 (all three the same code); the voice as `g_4e6378[voice_index + i]` with the
+// index advanced by the count after the inner loop 85 (574 bytes); the per-type loop in a forceinline helper returning
+// the next voice index 54 (555 bytes). Permuter (47 tries, 600 s): best 2, the listed type-before-sound-index store
+// swap, nothing else below 3. Diagnostic (wrong value): `unknown0b = (byte)i` 90; the scheduler then reorders the
+// stores and each increment follows its register's last use, so the stores are not pinned to source order.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
