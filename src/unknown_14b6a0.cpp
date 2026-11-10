@@ -546,6 +546,17 @@ void function_14bac0()
 // in every form. Left besides the frame: the offset subtracted per component as it is loaded, the stamp copied for
 // its store, both marker addresses formed with two adds, and the tail scan's `inc eax; js` entry with its found
 // block after the return. NOT kept: body below unchanged.
+// Round 87 (m3 lane 1, fast with 0x6b380 and 0x14bac0, base 222): the visit-stamp test through a forceinline (index, stamp)
+// helper shaped like src/unknown_0bbf40.cpp's object_stamp_ab (test, store, bool result) 263 (1020 bytes). Round 72's 259
+// structure (second loop on a block-local datum iterator through data_datum_iterator_next with the unit read at the call, the
+// relocation point used directly, centre/height/radius in their own block) re-measured 259 (1048 bytes, frame 0x48; its second
+// iterator sits at +0x48 where retail shares +0x2c with the offset, probe points and centre); with the stamp helper 258 (masked
+// 55); diagnostic, the second iterator's datum also cleared at its start 253 (1064, frame 0x44): the first-use state of that
+// iterator moves its home. The root walk is 0xbaf80's body written out (0xbaf80 has a noinline declaration in avoid-listed
+// src/unknown_0bad50.cpp); it differs from retail only in its loop entry layout. No existing initializer for the datum iterator
+// exists to try. Beyond these, this note already covers the iterator kinds and scopes, the relocation point, the unit reads, the
+// marker pointers, the stamp and slot locals, the readiness flags, the point declarations and the tail scans; no untried natural
+// form is left. Body unchanged.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

@@ -73,11 +73,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
-// MiniMax S (11-06): the permuter's 42 rewrites all score 173 or worse on the reduced image; no new form, no lower score.
-// MiniMax D (11-09), not kept by the coordinator: the struct's trailing bytes cut to 0xc0 gives a 0x118 frame and 161, but local_0 is the 0xc4-byte creation data function_b7930 fills (s_damage_object_creation in damage.cpp ends with unknownc0), so a shorter local lets b7930 write past it.
 // score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
 // where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
 // first, stored after the dot) and colours the cross terms differently.
+// MiniMax S (11-06): the permuter's 42 rewrites all score 173 or worse on the reduced image; no new form, no lower score.
+// MiniMax D (11-09), not kept by the coordinator: the struct's trailing bytes cut to 0xc0 gives a 0x118 frame and 161, but local_0 is the 0xc4-byte creation data function_b7930 fills (s_damage_object_creation in damage.cpp ends with unknownc0), so a shorter local lets b7930 write past it.
 // Earlier 185: Frame 0x11c versus retail 0x118; the request is four bytes
 // late, and cross-term/sine/cosine homes differ. Earlier delayed-sine forms 180/209
 // recover the frame/frame plus request homes but do not meet the keep gate.
@@ -386,6 +386,14 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // into a result vector 230 [30] (1212 bytes, frame 0x11c). On the body below alone: the in-place scalar helper 228
 // [35], cosine at each use 236, result vector 275, cross3f vector 213, scalar results 237.
 // NOT kept: nothing below 173; body below unchanged.
+// Round 87 (m3 lane 1, fast with 0x28dab0, matched throughout; aligned/masked base 131/72): matched 0x23d260's in-place rotation shape
+// in the helper (sine, cosine, axis k local, staged projection, cross i/j/k, staged rows stored as they finish) 236 (1190 bytes,
+// aligned 136, masked 83); matched 0x1055b0's shape (cosine, sine, `(1 - cosine) * dot3f(direction, axis)`, scalar cross, rows)
+// 231 (1192 bytes, the code of the listed 231 forms). Round 72's jitter-arm base rebuilt from its description (both 0.1 updates
+// and a zero-k jitter offset through vector3f_add_scaled) gives 252 here (1243 bytes, masked 94), not 234; on it 0x23d260's shape
+// 253 (1233), 0x2551f0's (vector, axis, sine, cosine) shape 251 (1232). This note already covers the rotation's trig order,
+// dot and cross spellings, helper shapes of the matched rotating functions, the heading, jitter and velocity arms, scales and
+// creation data size; no untried natural form is left. Helper restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

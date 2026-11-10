@@ -876,6 +876,13 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // (one local for both products) 63 (1261) [28] and with the else pointer 216 (1261) [30]; new on it: the in-place first product
 // staged with the else pointer 57 (1264) [28], through the setter cross 56 (1262) [28] (r205's staged 56), with the else pointer
 // 57, with retail's operand sides and the else pointer 57. All restored.
+// Round 87 (m3 lane 1, `--fast 0x23de50 0x1f0870`, 45 as the full check, aligned/masked 20/8): an inline identity function wrapped
+// 1, 2 or 3 times round the target index before the products 45/45/45 (diagnostic, same code: the inline-expansion count does not
+// move the product colours here); the target read through the existing object_get 45 (same code); previous_up copied after the
+// distance store with cross3f_staged (retail's k, j, i schedule) for the second product 245 (1270 bytes, masked 25); both products
+// through cross3f_staged 221 (1272, re-measure of round 84). No untried natural form of the
+// two products is left; both differences sit in them (right.i/right.j colours, retail's k-first second product) and in the else
+// arm's forward stores.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

@@ -1212,6 +1212,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // one. On the 288 form: the reference as a pointer chosen by a ternary 701 (2749 bytes, first difference +0x2) [382, 173], chosen by an if 684 (2757)
 // [313, 173], chosen by an if before the up negate 704 (2763) [357, 203]; the bounds copied after the memset 305 (2830) [186, 75]. The if-chosen pointer
 // on the kept body 685 (2757) [330, 183]: a reference pointer changes the prologue (retail copies the reference). Body unchanged.
+// Round 87 (m3 lane 1, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, base 290): `bounds` declared at function scope and
+// assigned at the loop top 290 (same code); the entry pointer as a loop cursor (`entry = entries`, `entry++` in the for) 656
+// (2807 bytes). On round 84's 288 lead (re-measured 288, aligned/masked 178/67): the projection storing y before x 297 (2840
+// bytes, retail's length, aligned 195), the plane distance as dot(normal, plane point) 313, the sphere depth from the radius local
+// 529. No other natural form that this note does not already list is left (projection rows, sums, normalize helpers, vertex and
+// face tables, store orders, symbol-count probes). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
