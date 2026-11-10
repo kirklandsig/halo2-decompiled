@@ -1591,6 +1591,18 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // and reloaded after the unlink calls 57 (same code); the flag declared before the bounds 57 (same code); the `<` arm
 // tested first 338; the forward copy as `g[i] = g[i + 1]` from lower 367 (1162 bytes); the forward copy as one memmove
 // behind `if (i <= upper)` 364.
+// M3 lane 9 r105 (fast; 0x80330/0x80490 kept): re-measured, the plain admission (`long removed = NONE; if (g_4cf978 == 350)`)
+// without the two extra flag stores, as a grid of lower spelling (`position < removed ? position : removed` /
+// `removed > position ? position : removed`) x upper spelling (`removed > position ? removed : position` /
+// `position < removed ? removed : position`) x `<` arm order (decrements first / flag first) x count path order
+// (lower first / upper first): 16 forms 368-373, all 1162 bytes, so retail's two extra `xor bl, bl` stores are what
+// the nine bytes are. On round 141's 5 form (match-only, rebuilt at 5): the guard as `if (lower < upper)` 355; the
+// cursor from a named `long i = lower + 1;` 54 (1174 bytes, re-measured); the flag set last in the `<` arm 8; the flag declared
+// before the bounds with the plain `function_7fd10(removed)` 7 (left: the entry load into ESI before EDX, and the
+// cursor's start from lower in ESI where retail forms `&g[i]` from the index in EAX before the upper reload). With
+// a per-pass `entry = &g_4cf98c[i]; entry[-1] = *entry;` in place of the cursor (53 re-measured: retail's address
+// derivation, but upper back in EAX): the bounds assigned upper first 57, upper declared before lower 53 (same code),
+// the count path upper first 52, the flag declared first 53 (same code), all three upper-first changes 56.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

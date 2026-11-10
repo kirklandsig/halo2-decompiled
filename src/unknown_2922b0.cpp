@@ -399,6 +399,13 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // M400: Complete original input/basis/origin/distance/ray/root/rotation-cross/projection defaults
 // 603/677/637/665/671/592/592/598. NOT kept: none improves; original
 // producers and all in-place snapshots restored; result/input/minimum/hit homes remain.
+// M3 lane 9 r105 (fast; "masked" = aligned count with registers and stack offsets ignored, control 592 masked 216): a
+// grid of the inactive exit last (`if (field_48 > 0) { ... return local_0; } return true;`) x the range read first
+// inside the body x a named inverse range for both products: 8 forms 592-684 (the inverse range alone 604, re-measured); exit last with the range first 656
+// (2830 bytes, masked 204), the inverse range adds 11-12 masked everywhere. On the 656 form: the FLT_MAX minimum
+// declared inside the body 669 (masked 209); the hit flags declared inside the body 687 (216); the origin copy taken
+// first in the body 691 (289). The ray loop as `do { ... } while (++local_17 < 4);` without the countdown 751 (2772
+// bytes, masked 250), on the 656 form 731 (239).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

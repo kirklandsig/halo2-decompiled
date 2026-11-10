@@ -384,6 +384,23 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // M402: Native dword query/choice counts and duplicate-failure-first search,
 // direct count/repeated flags/repeated tag subsets 0..7: 966/966/966/966/966/966/965/965.
 // NOT kept: earlier entry mismatch and 3301/3327 extent; original counters/search/body restored.
+// M3 lane 9 r105 (fast; "masked" = aligned count with registers and stack offsets ignored, control 866 masked 503):
+// re-measured the query count short / long / read directly x the choice count short / long, 866-956 as listed
+// (masked 495-503). New: `bool inside = clusters[0] == cluster;` 866 (same code); the fade table read from the
+// global at each use in the third loop only 924 (3327 bytes, masked 549: a mix, diagnostic), in both loops 929
+// (3305 B, 528); `inside` computed right after the query 933 (512); the four choice stores in retail's order (tag,
+// source, decibels, cluster) with the indexed choice 866 (masked 502); the portal distance as an if/else 865 (3333 B,
+// masked 493); on that: the second loop's match test through a named `other` sound pointer under nested ifs 947
+// (3297 B, masked 536); the store order with the if/else distance 865 (492); `muted = !g_509420` 866 (same code);
+// the 1.0f chain reversed so it stores inside, portal, outside 866 (same code); that chain with the store order and
+// the if/else distance 865 (492); on the body below: the reversed chain with the store order 866 (502); the second
+// loop's test as nested ifs 866 (same code); `muted` stored before the three products in its arm 865 (masked 501);
+// `if (choice_count && inside)` for the primary 866 (505); the source range read at each use 908 (504); `target->audible
+// = !i && ...` 866 (same code); the flag-2 portal override before the flag-4 outside one 866 (502); the duplicate
+// test as `sound->tag == choices[j].tag` 866 (504); the tag tested through `bsp->sounds[index]` before the sound
+// pointer 940 (3327 B, masked 580); `muted = false` stored ahead of the flag-8 test instead of an else 869 (509).
+// Retail's gains array shares +0xec with the later existing list and its count (stack packing), so the
+// four query-array homes follow lifetimes and use weights, not names.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
