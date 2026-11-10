@@ -2942,6 +2942,12 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // one, then 26 (location, position, velocity, compression), 27 (three forms), 28 (nine), 29 (six), 40 (retail's order), 42, 43, 43.
 // The attached call loads scale into EDI because position and direction already hold EAX and ECX in our evaluation order; that and
 // the detached arm's rotation still need 0x189060's order. BLOCKED-BY 0xbf600, 0xceee0 (their calls) and 0x17e670.
+// Round 101 (m3 lane 9, fast): retail's record order re-measured 40 (aligned 36; only scratch rotation differs: the
+// point copy starts in EDX against retail's ECX); the sound case's object index as a case-scope local for the test
+// and the call 23 (same code), with retail's order 40; a case-scope tag index for both arms 62, with retail's order
+// 63; the sound record declared at function scope 23 (same code), with retail's order 40. The attached call's scale
+// takes EDI because the position and direction temporaries are defined before it (arguments are evaluated last to
+// first), so the cause stays 0x189060's order: BLOCKED-BY 0xbf600 (its call) and 0x17e670 (the decal call).
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {

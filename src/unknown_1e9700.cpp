@@ -39,7 +39,7 @@ struct s_object_values
 void function_b58c0(long index, dword mask);
 struct s_statborg;
 void function_1968b0(long index, long team, long counter, long value);
-void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short delta);
+void function_1e9df0(long team, s_statborg *statistics, long field, long counter, short delta);
 long function_196ef0(byte code);
 void function_196e60(long player_index, long counter, long code, long delta);
 void function_225880(long player_index);
@@ -444,6 +444,13 @@ struct s_object_damage_view
 // ESI) and the frame grows to 0x54. On it: `selected` declared first 464; `if (killer != NONE) { if (killer ==
 // reported_player) ... } else if (reported valid)` 438 (1567); that with the consideration flag as a true default cleared
 // by the test 433 (match-only flag form; diagnostic). No form reaches below 353.
+// Round 163 (m3 lane 5, fast): the damage code read after the validation block 342 (1568 bytes; retail reads it
+// before the validation's test, a statement order by score, not kept); `if (killer == NONE && reported valid)
+// killer = reported; if (killer == reported) code` 332, discarded: not the same behaviour (retail leaves the code
+// alone when the fallback fails); the selection fallback below the hostile/threshold/count defaults 386; the
+// record's player assigned to killer first and cleared when the validation fails 415 (1612); the credited player's
+// team byte as a twice-used char local for the team store and the query 358 (1552), as a short local 358. Retail
+// keeps the credited player in its home (+0x14; reloaded into EDX at the fallback, into EDI at the team block).
 // M3 lane 13 r72 (fast with 0x1e9ce0 and 0x1ea5b0, unchanged at 13 and 106; brackets: aligned count with registers and
 // stack offsets masked, base 353 [35]). Retail's two award loops have no compare after the prefix search (the search
 // leaves straight to the next award when it finds the player). The search as an inline early-return list predicate
@@ -648,6 +655,12 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // globals in a local at the top for the dirty test 24 (field at entry, engine load at the top), with the engine peer read
 // before the store 25; plain field with only the peer read before the store 85 (folded); the volatile field with the peer
 // read before the store 14.
+// Round 143 (m3 lane 7, fast; the two volatiles cannot carry a match, so volatile-free scores too):
+// volatile-free control 85; volatile-free with the engine globals pointer named at the top 32 (the field
+// load is retail's, the delta movsx is hoisted into EDX, the engine load sits at the top), with the volatile
+// delta 24, named at the join 85; a named field copy for the entry and the team call 80 volatile-free, 85
+// with the volatile delta, for the entry only 85; the delta read through its own address with the top
+// engine local 32, alone 85, at the join 85; a 600 s permuter run, 59 tries, none below 13.
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)
@@ -667,7 +680,7 @@ void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	{
 		byte *player = datum_get_absolute_inlined(g_4e8c24, index);
 		if (player && (char)player[0xc0] != NONE)
-			function_1e9df0(field, counter, (char)player[0xc0], statistics, delta);
+			function_1e9df0((char)player[0xc0], statistics, field, counter, delta);
 	}
 }
 
@@ -1155,8 +1168,10 @@ bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 }
 
 // The new statistic callers allow this body without the earlier LTCG regressions.
+// Parameter order from retail's calls: 0x15b650 sets ECX, EAX and then EDX (a register copy) last,
+// 0x15b3a0 computes EDX between the delta and team pushes.
 // @retail 0x1e9df0
-void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short volatile delta)
+void function_1e9df0(long team, s_statborg *statistics, long field, long counter, short volatile delta)
 {
  short *entry = &((s_object_values *)statistics)->team_values[team][field];
  long value = *entry + delta;

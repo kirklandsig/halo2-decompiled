@@ -743,6 +743,10 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // accumulators 63; a signed-char team local 65 (383 B); the mask field through a reference instead of the pointer 63; both
 // accumulators filled by a force-inlined routine through pointers with the masks stored through globals 139 (368 B, a repeat:
 // inlining removes the address use, present still takes EDI). Original body restored.
+// Round 142 (m3 lane 7, fast): the team test as an early `continue` in the player loop 77 on the word mask, 32 on the
+// dword mask (same code each); the added teams as `playing & ~old_playing` 77/32 (same code); a `word *const` mask
+// pointer 77; the early return when nothing changed with both field stores straight through `globals` 77; re-measured
+// with the early `continue`: the mask stored through `globals` but read through the pointer 77 (lane 14 r55's form).
 // @retail 0x158140
 void function_158140(void)
 {
@@ -2702,79 +2706,11 @@ void function_15b980(bool skip_event)
 	}
 }
 
-void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short delta);
+void function_1e9df0(long team, s_statborg *statistics, long field, long counter, short delta);
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics, long field, long delta, bool by_team);
 
-// score 3 (was 44): retail's length; only the 0x1e9df0 call's register setup differs (retail `or ecx, -1; xor eax, eax;
-// mov edx, ebx`, ours the statistics copy first). BLOCKED-BY 0x1e9df0 for that order (its file was held this round);
-// the older lines below describe the earlier blockers, which the win test's move resolved.
-// MiniMax D (11-06): no new form, no lower score (44); retail sets up the 0x1e9df0 arguments after the
-// zero and the NONE (or ecx,0xffffffff / xor eax,eax / mov edx,ebx) and reloads g_4e6948 through EAX
-// instead of holding it in EBX, which also rotates the per-case delta registers; both come from the
-// callees' file (0x1e9df0 in src/unknown_1e9700.cpp, 0x1967d0 elsewhere), so the blockers stand.
-// MiniMax C (11-06): no new form, no lower score; the blockers stand — 0x1e9df0's register-argument
-// setup lives in src/unknown_1e9700.cpp and retail's reload of g_4e6948 after the 0x1967d0 calls
-// lives in src/unknown_1967d0.cpp, both off limits this round.
-// MiniMax H (11-04): no new form, no lower score; the two blockers below still stand.
-// MiniMax R (11-01): no new form, no lower score; beyond the parameter-order block noted below,
-// retail's three 0x1967d0 switch arms use rotated temp registers (case 9 -> ECX, 3 -> EDX,
-// 1 -> EAX) and reload g_4e6948 into EAX/ECX at each use where ours keeps it in EBX.
-// MiniMax R (11-01): no new form, no lower score; the 0x1e9df0 call's register setup and the
-// 0x1967d0 delta rotation stay as they are.
-// Earlier: frame 0x10 agrees. BLOCKED-BY 0x1967d0 (the options reload after it follows
-// what the compiler thinks 0x1967d0 writes: a 0x4e6948 store there gives the reload) and the
-// 0x1e9df0 call's register setup (retail sets counter, field, then statistics last; ours
-// statistics first; 0x15b3a0's retail order fits the current declaration, so no consistent
-// parameter reorder gives both).
-// Value-initialized iterator 102; shared iterator record 44; immutable mode/old score 44;
-// current-score lifetime 44; frame pointer 118; global optimization disabled 219; size
-// preference 191; record reference 44; final aggregate acceptance 106; final rejection 106;
-// old-score retention 215; old-score-first result 51; post-event winner guard 44; retained
-// result/winner guard 215; acceptance with immutable receiver 106; old-score-first acceptance
-// 105; statistics reference/narrow delta 44/44; event-only delta 116; event-mode snapshot 44;
-// combined selection 78; aggregate if arms 50 (retail length); shared index initialization 44;
-// improvement value 57; statistics getter at the call 109; old score through the getter 111;
-// named score-to-win 44; one change local for all calls 125; early equal-score return 44;
-// short-cast delta at the 0x1e9df0 call 44; change local for that call only 44; delta +
-// old score 44; mode read before the statistics getter 85; const statistics pointer 44.
-// Round 116: mode tested from the field without the local 44; score declared first 60; iterator
-// at function scope 44; the loop's switch on the mode local 120; score set to the minimum only
-// in the iterator arm 51. Diagnostic (reverted): with g_4e6948 address-taken anywhere this gives
-// 3 at 359 bytes (only the 0x1e9df0 setup left), but matched 0x15b3a0/0x1582d0 then reload it
-// after a pointer store, and retail 0x241620 keeps it in EBP across 0x1967d0 calls.
-// Earlier (44): mode read before the statistics getter 85; const statistics pointer 44; short old score
-// 121; score-to-win local inside `score > old_score` 44; the change test as old != new 45; the
-// counter switch cases in the order 9/3/1 or 3/9/1 44.
-// Round 81: the final test nested under the score test 44; old score read before the mode 44;
-// the mode read in its test (no local) 44; an options pointer local for the final test 44;
-// the score declared before the old score 44. Our build keeps the variant pointer in EBX across
-// 0x1967d0, where retail reloads it (retail's compiler treats 0x1967d0's counter store as one
-// that may reach the variant global; ours knows it only writes the counter table).
-// Lane 3 r173 (fast): one 0x1967d0 call with the counter chosen by the switch 73 (340 B); the
-// 0x1e9df0 call given `&function_xaee93d()->statborg` 84 (the convention becomes `ret 4`); the
-// delta named once for the three 0x1967d0 calls 116 (338 B); the score-to-win compare's
-// operands swapped 44; the 0x1967d0 dispatch as an if/else-if chain 53 (352 B). Both blockers
-// (0x1e9df0's file and 0x1967d0's file) were off limits this round.
-// Lane 13 r58 (fast): the mode read into a local before the 0x1e9df0 call 88 (369 B); `delta` reassigned to
-// `score - old_score` for the change test and all four calls 128 (331 B); `delta + old_score` 44 (same code); the
-// loop's mode switch as an if/else-if chain 50 (359 B, retail's length); named score-to-win 44 (repeat). Both
-// blockers stand: retail reloads g_4e6948 after 0x1e9df0 and 0x1967d0 and sets up counter, field, statistics.
-// Round 152 (m3 lane 5, fast): old score through a second statistics getter 123 (364 B); final test `!= 0 && <=` 44 (same code);
-// statistics named by a second getter at the call 109 (385 B); mode read ahead of the 0x1e9df0 call 88 (369 B). Aligned [3, 13]:
-// options read through the getter in the final test's first read 44, both reads 44, the mode switch 44 (same code); the score-to-win test
-// ahead of the score test 45. both blockers stand; 0x1967d0's and 0x1e9df0's files were off limits this round.
-// Round 96 (m3 lane 9, fast; aligned [11]): `team == iterator.player->team` 45 [12]; case 2 as `current >= score` 46 [13];
-// case 1 as `current < score` 46 [13]; the minimum as `-0x7fffffff - 1` 44; `score_to_win <= score` in the final test 44 [13].
-// Both blockers stand (src/unknown_1e9700.cpp and src/unknown_1967d0.cpp were off limits this round).
-// Round 61 (m3 lane 2, fast with 0x15b3a0, then plain): the win test moved out of the `score != old_score` block to follow it
-// 44 -> 3 (359 B, kept): the options global is then read again at each use as retail's, and the three counter arms take retail's
-// ECX/EDX/EAX. Before it, on the 44 body: `do { } while (false)` around the counter switch 44, an explicit `default: break;` 44,
-// the win test nested with a named score-to-win 44, the 0x1e9df0 call in each mode arm 139 (386 B). On the 3 body, for the
-// setup order: statistics through the inline getter at the call 116 (391 B), through the out-of-line getter 55 (364 B), a
-// short cast on the difference 3, a pointer to the team score for the old score 3, the difference named for that call 3,
-// named for all four calls 118 (340 B), assigned to `delta` 3, the mode read ahead of the statistics getter 53, the change
-// test as a difference 119 (342 B). 0x15b3a0's retail call (`lea edx` between the pushes, then ECX, EAX) fits the same
-// declaration, so the order here is the register copy being scheduled after the two constants.
+/* sets a team's score from a delta (or, in the per-player modes, from its players' lowest or highest
+   score), posts the change to the statistics and the counters, and tests the score to win */
 // @retail 0x15b650
 void __stdcall function_15b650(long team, long delta)
 {
@@ -2807,7 +2743,7 @@ void __stdcall function_15b650(long team, long delta)
 	}
 	if (score != old_score)
 	{
-		function_1e9df0(0, NONE, team, statistics, score - old_score);
+		function_1e9df0(team, statistics, 0, NONE, score - old_score);
 		switch (g_4e6948->mode_180)
 		{
 		case 1: function_1967d0(NONE, team, 0xe, score - old_score); break;
@@ -2851,7 +2787,7 @@ void function_15b3a0(long player_or_team, bool value)
 	{
 		if (score_teams_enabled())
 		{
-			function_1e9df0(7, 6, player_or_team, &globals->statborg, 1);
+			function_1e9df0(player_or_team, &globals->statborg, 7, 6, 1);
 			s_engine_player_iterator iterator;
 
 			iterator.data = g_4e8c24;
@@ -5491,7 +5427,7 @@ void function_159880(void)
 
 void __stdcall function_d6bc0(long object_index);
 
-// score 52 (was 60): native frame 0x18 and 869-byte length; initial scenario/rate stores, cached index test,
+// score 52 (was 52): native frame 0x18 and 869-byte length; initial scenario/rate stores, cached index test,
 // case-1 CL versus AL (the same cause as the index test) and removal index reload remain; the kind admission order
 // (kind == 0 first, then 1..7, one tail-merged dispatch) now agrees through the switch in each kind arm. Earlier at 60
 // (was 97): case-1 CL versus AL, modifier admission order and removal index reload remained. Earlier at 112: timer at +0x20
@@ -5761,6 +5697,14 @@ void __stdcall function_d6bc0(long object_index);
 // field with no local 172, the schedule flag declared at the loop top 172, the tail as if/else arms without the continue
 // 172, a `*const` parameter 172, a long loop counter 237 (877 B); diagnostic, the tail testing the field but passing the
 // loop-top index to 0x158ff0 207 (878 B, frame 0x1c: the index goes to memory instead of holding EBX). Body unchanged.
+// Round 142 (m3 lane 7, fast with 0x15c150 and the callees): the 7 recipe rebuilt is 7 again (left: the index test on the
+// local where retail reloads the field, `cmp dword [eax+esi*8], -1`, and case 1 in CL). New on it: the flag started from
+// the field test (`bool schedule = entries[i].index == NONE; if (!schedule) switch ...`) 154 (863 B); true-default
+// cleared by the field test 172 (858 B); a named timer pointer from the zero test with the local test 178 (853 B);
+// diagnostics `(void)&entries` and the field test read through the parameter's address 172 (same code: `entries` still
+// becomes a register variable in EDI from the reset block on, the timer in EBX). Re-measured listed forms: the field
+// test 172 (858 B); 0xd6bc0 given the local 175; the countdown's index in its own local 172; the timer through `*timer`
+// with the field test 177 (854 B).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

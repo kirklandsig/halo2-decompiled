@@ -740,8 +740,10 @@ struct s_palette_168f40
 	s_material_168f40 *materials;
 };
 
+// `inline`: retail's callers keep no XMM value across this call (0xf6670 re-makes its zero after it, where a
+// plain definition lets the caller hold it in XMM7); the function stays out of line and matches either way.
 // @retail 0x168f40
-bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray,
+inline bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray,
 	long ignore_object_index, long ignore_object_index2)
 {
 	bool result = false;

@@ -419,6 +419,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // (1749, 0x29b990 6). Lead re-measured 169. NOT kept: all regress; body below unchanged.
 // P399: Actual previous-yaw/previous-pitch/policy field references, subsets 1-7, then immutable actor/object bindings:
 // 299/280/262/303/305/272/272/272. NOT kept: no byte equality or native home repair; original complete body restored.
+// Round 163 (m3 lane 5, fast, sibling 0x29b990 MATCH throughout): the second normalization's length through its
+// out parameter into a local 263 (1719 bytes); the normalizer's length store ahead of the K scaling 176 (same
+// code); the first length from the normalizer's return value 263 (1719); the XY pair built after the second
+// normalization 368 (1712); the first length from the return value with the planar test as `> 0.0f` 316 (1715).
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

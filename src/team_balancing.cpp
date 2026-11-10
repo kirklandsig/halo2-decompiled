@@ -568,6 +568,12 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 /* whether the players and the extra players joining them can be balanced
    into the teams within the given imbalance; each extra player is a party
    of its own */
+// MiniMax S (11-10): no new form, no lower score (34); the `(short)` fill still moves the player count
+// into EAX (7) and with the extra count read first in the sum it still measures 7, so the operand
+// order of the sum is not what decides the base register: what is left there is the lea's operand
+// order and the narrowing load (191 bytes against retail's 190). Retail's own fill is a dword load
+// (`mov eax, dword ptr [esp+0xc]`), so the narrowing form is left out. The permuter run on this
+// function was killed by its own time limit and produced no result.
 // MiniMax h (11-05): the count roles stay as they are in a local player count used by the sum and
 // the copy loop (34), in the sum as `extra + player` (34), as `total = extra; total += player` (34)
 // and through a local extra or players (34); only the value-changing `(short)` fill moves the player

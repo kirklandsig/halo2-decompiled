@@ -297,6 +297,12 @@ void function_2232a0(void)
 // code); the counter declared in the for 164, declared early and assigned in the for 164; the for loop with
 // `local_2 + 1` at both uses 120 (aligned 63); the do-while with the view count declared after it 135; the getter
 // without the loop-top zero 122 (aligned 66). Of the eight functions that block 0x2b5d0, 0x131030 now matches.
+// Round 62 (m3 lane 2, fast; 0x223240 and 0x2232a0 match each time): a pretested `for` with the view count computed after
+// the loop and the source initialised NULL at the loop top (no else arms) 123 (retail's pretest and loop-top zero, but
+// the counter/count/record registers rotate to EBP/EBX/EDI against retail's and the do-while's EDI/EBP/EBX); that with
+// the found arm as a default-last conditional 118; with the counter declared first 160; with the source declared before
+// the loop and cleared at its top 123; the source looked up after the scan with the in-place `index != NONE &&
+// g_4686c4 != NONE` test 179. g_4e9c8c[i] is the same memory as `&g_4e9bd4[i].state` (globals.h). Still BLOCKED-BY 0x2b5d0.
 // @retail 0x2234e0
 void function_2234e0(void)
 {
