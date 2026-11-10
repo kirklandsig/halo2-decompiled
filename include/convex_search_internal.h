@@ -4,6 +4,7 @@
 // in unknown_303360.cpp and unknown_303b80.cpp.
 #include "convex_pair_2ee2e0.h"
 #include <math.h>
+#include <string.h>
 struct triangle_303360;
 struct segment_3037a0;
 struct triangle_3037a0;
@@ -21,9 +22,8 @@ struct closest_points_308590
 	float distance_squared;
 };
 int __cdecl function_308590(__m128 const *, __m128 const *, __m128 const *, __m128 const *, closest_points_308590 *);
-// Pending integration with upstream's file-local 0x303540 implementation.
-// Preserve the reconstruction's explicit ordinary-convention test boundary.
-int __cdecl convex_search_tetrahedron_boundary(__m128 const *point, __m128 const *tetrahedron, float orientation);
+// The real tetrahedron reducer, shared with unknown_303110.cpp.
+int __cdecl function_303540(__m128 const *vertices, __m128 const *point, float orientation);
 extern __m128 g_4801e0;
 static __declspec(align(16)) const unsigned long search_sign[4] = {0x80000000,0x80000000,0x80000000,0x80000000};
 static __declspec(align(16)) const unsigned long search_magnitude[4] = {0x7fffffff,0x7fffffff,0x7fffffff,0x7fffffff};
@@ -60,7 +60,9 @@ inline __m128 search_cross(__m128 a, __m128 b)
 	return _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(a,a,0xc9),_mm_shuffle_ps(b,b,0xd2)),
 		_mm_mul_ps(_mm_shuffle_ps(a,a,0xd2),_mm_shuffle_ps(b,b,0xc9)));
 }
-inline __m128 search_negate(__m128 a) { return _mm_xor_ps(a,*(__m128 const *)search_sign); }
+inline __m128 search_sign_mask() { __m128 mask; memcpy(&mask,search_sign,sizeof(mask)); return mask; }
+inline __m128 search_magnitude_mask() { __m128 mask; memcpy(&mask,search_magnitude,sizeof(mask)); return mask; }
+inline __m128 search_negate(__m128 a) { return _mm_xor_ps(a,search_sign_mask()); }
 inline __m128 search_transform(c_query_transform const *t, __m128 p)
 {
 	return _mm_add_ps(_mm_add_ps(_mm_mul_ps(t->axes[0],_mm_shuffle_ps(p,p,0)),_mm_mul_ps(t->axes[1],_mm_shuffle_ps(p,p,0x55))),
@@ -88,7 +90,7 @@ __forceinline int search_reduce(search_features_303dd0 &s)
 		{
 		case 9:
 			s.normal = _mm_sub_ps(s.b[0],s.a[0]);
-			goto complete;
+			{ s.previous_b = s.count_b; return 0; }
 		case 19: case 26:
 		{
 			int result;
@@ -97,7 +99,7 @@ __forceinline int search_reduce(search_features_303dd0 &s)
 			else
 				result = helper->function_3037a0((segment_3037a0 *)s.b,(triangle_3037a0 *)s.a,&s.count_b,&s.count_a,s.previous_b == 2,-1);
 			if (result == 1) return 1;
-			if (result != 2) goto complete;
+			if (result != 2) { s.previous_b = s.count_b; return 0; }
 		}
 		case 18:
 		{
@@ -114,14 +116,14 @@ __forceinline int search_reduce(search_features_303dd0 &s)
 			}
 			s.normal = search_cross(da,db);
 			if (!search_negative_dot(s.normal,_mm_sub_ps(s.a[0],s.b[0]))) s.normal = search_negate(s.normal);
-			goto complete;
+			{ s.previous_b = s.count_b; return 0; }
 		}
 		case 12: case 33:
 		{
 			bool second = s.count_b == 4;
 			__m128 *corners = second ? s.b : s.a;
 			__m128 *point = second ? s.a : s.b;
-			int index = convex_search_tetrahedron_boundary(point,corners,second ? -1.0f : 1.0f);
+			int index = function_303540(corners,point,second ? -1.0f : 1.0f);
 			if (index < 0) return 1;
 			if (second) { --s.count_b; s.source_b[index] = s.source_b[3]; } else --s.count_a;
 			corners[index] = corners[3];
@@ -133,7 +135,7 @@ __forceinline int search_reduce(search_features_303dd0 &s)
 			__m128 *point = second ? s.a : s.b;
 			int &count = second ? s.count_b : s.count_a;
 			int inside = helper->function_303360(point,(triangle_303360 *)corners,second ? 1 : -1);
-			if (inside == 7) goto complete;
+			if (inside == 7) { s.previous_b = s.count_b; return 0; }
 			int index = search_corner[inside];
 			if (index >= 0)
 			{
@@ -175,7 +177,7 @@ __forceinline int search_reduce(search_features_303dd0 &s)
 			{
 				__m128 across = search_cross(end,start);
 				s.normal = second ? search_cross(across,direction) : search_cross(direction,across);
-				goto complete;
+				{ s.previous_b = s.count_b; return 0; }
 			}
 			if (end_sign)
 			{
@@ -184,13 +186,10 @@ __forceinline int search_reduce(search_features_303dd0 &s)
 			}
 			if (second) --s.count_b; else --s.count_a;
 			s.normal = _mm_sub_ps(s.b[0],s.a[0]);
-			goto complete;
+			{ s.previous_b = s.count_b; return 0; }
 		}
 		default: return 1;
 		}
 	}
-complete:
-	s.previous_b = s.count_b;
-	return 0;
 }
 #endif

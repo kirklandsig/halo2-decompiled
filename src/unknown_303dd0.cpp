@@ -54,12 +54,12 @@ int class_3048a0::function_303dd0(convex_2fefd0 const *first, convex_2fefd0 cons
 		return result;
 	}
 	s.count_a = s.count_b = 3;
-	if (!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.a[1],s.a[2]),*(__m128 const *)search_magnitude))) & 7) ||
-		!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.a[0],s.a[2]),*(__m128 const *)search_magnitude))) & 7)) s.count_a = 2;
-	if (!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.a[0],s.a[1]),*(__m128 const *)search_magnitude))) & 7)) s.a[0] = s.a[--s.count_a];
-	if (!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.source_b[1],s.source_b[2]),*(__m128 const *)search_magnitude))) & 7) ||
-		!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.source_b[0],s.source_b[2]),*(__m128 const *)search_magnitude))) & 7)) --s.count_b;
-	if (s.count_b >= 2 && !(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.source_b[0],s.source_b[1]),*(__m128 const *)search_magnitude))) & 7)) s.source_b[0] = s.source_b[--s.count_b];
+	if (!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.a[1],s.a[2]),search_magnitude_mask()))) & 7) ||
+		!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.a[0],s.a[2]),search_magnitude_mask()))) & 7)) s.count_a = 2;
+	if (!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.a[0],s.a[1]),search_magnitude_mask()))) & 7)) s.a[0] = s.a[--s.count_a];
+	if (!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.source_b[1],s.source_b[2]),search_magnitude_mask()))) & 7) ||
+		!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.source_b[0],s.source_b[2]),search_magnitude_mask()))) & 7)) --s.count_b;
+	if (s.count_b >= 2 && !(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.source_b[0],s.source_b[1]),search_magnitude_mask()))) & 7)) s.source_b[0] = s.source_b[--s.count_b];
 	for (int j=0; j<s.count_b; ++j) s.b[j] = search_transform(transform,s.source_b[j]);
 	if (s.count_a+s.count_b > 4) ((class_303360 *)this)->function_303b80();
 	search_reduce(s);

@@ -1,7 +1,8 @@
 """Optional retail differential tests with synthetic convex features and shapes.
 
-The separately owned tetrahedron helper and penetration-query boundary are
-intercepted. Other feature helpers execute normally in both images.
+The tetrahedron helper executes normally in the integration parameterization;
+the other parameterization intercepts it to isolate search control flow.
+The penetration-query boundary is synthetic in both. Other feature helpers execute.
 """
 import math
 import random
@@ -116,10 +117,11 @@ def test_penetration_fallback_against_retail(solver_images,precision):
         assert results[0]==results[1],(seed,precision,'first difference',next((i for i,(a,b) in enumerate(zip(results[0][1],results[1][1])) if a!=b),None))
 
 @pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
-def test_closest_search_against_retail(solver_images,precision):
+@pytest.mark.parametrize('real_tetrahedron',[False,True])
+def test_closest_search_against_retail(solver_images,precision,real_tetrahedron):
     retail,compiled,symbols=solver_images
     entry=address(symbols,'class_3048a0::function_3048a0'); pen=address(symbols,'function_30a6b0')
-    tetra=address(symbols,'convex_search_tetrahedron_boundary'); zero=address(symbols,'g_4801e0')
+    tetra=address(symbols,'function_303540'); zero=address(symbols,'g_4801e0')
     visited=set()
     for seed in range(320):
         rng,data,put=base_case(seed+10000)
@@ -167,9 +169,9 @@ def test_closest_search_against_retail(solver_images,precision):
                 elif pc==pen_at: penetration_hook(machine,pc,seed,output,trace)
                 elif pc==tetra_at:
                     if is_retail: point=machine.reg_read(UC_X86_REG_EBX); corners=machine.reg_read(UC_X86_REG_EAX); sign=words(machine,sp+4,1)[0]
-                    else: point,corners,sign=words(machine,sp+4,3)
+                    else: corners,point,sign=words(machine,sp+4,3)
                     trace.append(('tetra',point,corners,sign))
-                    return_from(machine,-1 if seed%3==0 else seed%4,0)
+                    if not real_tetrahedron: return_from(machine,-1 if seed%3==0 else seed%4,0)
             handle=uc.hook_add(UC_HOOK_CODE,hook)
             try: results.append(execute(uc,start,[FIRST,SECOND,TRANSFORM,STATE,RESULT],precision))
             finally: uc.hook_del(handle)
