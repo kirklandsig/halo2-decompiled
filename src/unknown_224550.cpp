@@ -462,6 +462,13 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // P393: Seed-color admission at the original tint boundary, positive/complementary
 // bool/byte/short/long: 211/211/211/211/211/211/211/211. NOT kept: unmatched one-use outcomes; tint/secondary-UV
 // homes and continuous blend residence remain. Original body and all alias-safe UV captures restored.
+// M3 lane 16 r97 (fast; body restored; retail's homes from low to high are geometry, tint, second UV, first UV, ours
+// geometry, second UV, tint, first UV, with the same 21 and 30 references): the clamp loop indexing the tint directly
+// with no component pointer local 211 (same code); the two UV sets as one two-element array with the first set at
+// index 1 249 (the array takes the top 0x20 and the tint drops to +0x40, under geometry), with geometry declared
+// ahead of the tint 249 (same homes), with natural indices 223 (tint still +0x40); the pivot as two reals 313 (1978
+// bytes); the seed colour scratch declared at function scope 211 (same code); the direct-bounds arm encoding the
+// second set itself instead of copying the first 649 (2100 bytes).
 // M3 lane 11 r81 (fast): both UV encodings right after the flip 431 (1925 bytes); the flip before the extents 250 (1949);
 // the 0x2000 quarter-turn right after the angle read 483 (1939); the bitmap read from the context at each use 211 (same code);
 // pivot products written pivot-first 211 (same code).
