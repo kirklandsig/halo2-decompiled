@@ -2750,11 +2750,21 @@ static inline real sound_vector_normalize(vector3f *v)
 /* the doppler shift of a sound for a listener, in cents: from the speeds of
    the listener and the sound toward each other, the speed of sound 111.5
    world units a second, the frequency ratio between 1/8 and 4 */
-// score 122 (was 122): direction j/k versus i register/memory split and length scheduling differ.
+// score 92 (was 122): the two speeds through dot3f fix the direction spill (retail keeps j/k in XMM7/6, i on
+// the stack); left: the velocity rotation's scale products commute (retail reloads the scale for each) and the
+// rotated components take other XMM registers. Retail inlines 0x142640 here (src/unknown_141590.cpp is /Ob1, so
+// ours never can): with `inline` on 0x142640's declaration and the call in place of the rotation it matches
+// (0 with the dot3f speeds, 145 without), but 0x16c2f0 is lost (its calls then reload ECX); the lead is that
+// file's /Ob1 (a flags decision, not tried). Writing the rotation through a pointer to listener_velocity also
+// matches (diagnostic only: a pointer to a whole local).
 // Shared length helper 122; early source speed 143; projection order 133; cached direction 125; void normalizer 122.
 // Closest form (129, ratio 0.96): normalize written in the body (not a helper) on the struct, if-body order j, k, i,
 // and an inline copy of 0x142640's body (x/y/z copies, matrix->scale) for the velocity; only retail's j/k loads
 // hoisted above the branch (no else block) still differ. Scalar j/k copies 170; scalars before the length 161.
+// Round 63 (m3 lane 2, fast): length summed k, j, i 122 (same code); normalize3d 145; on dot3f speeds: x/y/z
+// scalar copies 92 (same code), plus the rotation read through a transform4x3f pointer 83, x/y/z declared last 83,
+// the listener dot's operands swapped 83 (same code), the velocity through a vector pointer 83; vector3f_scale +
+// matrix_transform_vector 103 (frame 0x20).
 // @retail 0x12a9d0
 real function_12a9d0(long listener_index, s_sound_position const *position)
 {
@@ -2780,8 +2790,8 @@ real function_12a9d0(long listener_index, s_sound_position const *position)
 	listener_velocity.i = listener->up.i * velocity.k + listener->left.i * velocity.j + listener->forward.i * velocity.i;
 	listener_velocity.j = listener->up.j * velocity.k + listener->left.j * velocity.j + listener->forward.j * velocity.i;
 	listener_velocity.k = listener->up.k * velocity.k + listener->left.k * velocity.j + listener->forward.k * velocity.i;
-	listener_speed = 0.0f - (listener_velocity.k * direction.k + listener_velocity.j * direction.j + listener_velocity.i * direction.i);
-	source_speed = position->velocity.k * direction.k + position->velocity.j * direction.j + position->velocity.i * direction.i + 111.548553f;
+	listener_speed = 0.0f - dot3f(&listener_velocity, &direction);
+	source_speed = dot3f(&position->velocity, &direction) + 111.548553f;
 	ratio = (111.548553f - listener_speed) / (source_speed > 0.001f ? source_speed : 0.001f);
 	return (real)log(PIN(ratio, 0.125, 4.0f)) * 1731.234f;
 }
@@ -3655,7 +3665,7 @@ vector3f *vector3d_decompress(dword arg_0, vector3f *arg_1);
 
 vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vector3f *arg_2);
 
-// score 101 (was 310): LTCG inlines the class lookup function_221810 that retail calls out of line, which
+// score 101 (was 101): BLOCKED-BY 0x221810: LTCG inlines the class lookup function_221810 that retail calls out of line, which
 // shifts the rest of the listing; with the call kept out of line (a #pragma inline_depth(0) pair around
 // it inside the body, which DECOMPILING.md rules out) the score is 4: the no-distance path's flag set
 // folds to a store (retail ors the byte), and the fade gain sum loads the distance gain first where
@@ -3664,6 +3674,12 @@ vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vec
 // Tried: one gain local stored after the if/else 35; decibels_sum with a by-value operand 128 (6 at site 2
 // alone); the sum through decibels_sum instead of the local 6; 1000 - fade - time inside PIN 6.
 // Depth zero 417, depth one 310, fade scope 310, shared attenuation 334, callback table 311.
+// Round 63 (m3 lane 2, fast): the lookup read as `((s_sound_promotion_view *)function_221810(...))->gain` (0x14) 101
+// (same code); case 1's rotation rows through dot3f on a copied forward 365 (the lookup still expands, so the
+// caller's inline count is not what decides it); fade gain sum written selected-first 101 (same code); the
+// class-gain block ahead of the field_0/c/10 stores 107; the definition and class-table lookups in one expression 101. Ours
+// expands the lookup in large callers (here, 0x128020, 0x128ca0, 0x127010, 0x189fe0) and calls it from small
+// ones (0x124fc0, 0x125010); retail never expands it, which points at its file's build (avoid list, flags).
 // @retail 0x129aa0
 void function_129aa0(short arg_0, long *arg_1, s_looping_channel_spatialization *arg_2)
 {

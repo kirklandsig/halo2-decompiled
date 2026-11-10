@@ -522,6 +522,12 @@ union s_185be7
 // a `long none_index = NONE` local for the first test and the three unit tests 739. Diagnostics, not kept: an unknown extern in place of
 // pow 1013, or of magnitude3d 1017: the root global is then reloaded at the flag test as in retail (so retail's pow or 0x24590 acts as a
 // clobbering call where ours is known side-effect free), but EBX is still not given to NONE (stays `or ecx, -1`, immediates in the unit tests).
+// Round 63 (m3 lane 2, fast; control 590): the two angle limits through one `real const *` row pointer 962; the
+// settings copy ahead of the angle conversion 589 (order only, not kept); the two clears swapped 592; the flag test's
+// game-time pair as `!(active && unknown01)` 590 (same code); the first test written as an empty `if` with the work in
+// its `else` 989 (3781 B). Retail 0x24590 is pure x87 (no XMM writes), yet retail's callers here and in 0xd1e10 treat
+// it as clobbering (zero remade, root global reloaded): BLOCKED-BY 0x24590's declaration (src/unknown_023540.cpp,
+// avoid list this round; `inline` on it is the open lead).
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
