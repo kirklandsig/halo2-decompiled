@@ -910,6 +910,23 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // swapped on it 114 (same code). New: both outside flags named (`outside1` for the cull and the crossing test) 362 (1867
 // bytes, first +0x15); `if (denominator)` 115 (same code); a const plane pointer 115 (same code); near_sum/near_distance
 // `real const` 115 (same code); the projection cursor declared before the segment guard 115 [75/35].
+// m3 lane 14 r77: lane 6 r147's match-only recipe rebuilt (fast; not keepable below a byte match, it writes out the point and
+// scale helpers and names one delta of three): plane3f locals, `real delta_i` only, the denominator staged j, k, i from
+// `(p1->y - p0->y)` expressions, named scaled rows 25; `total` declared first in the projection block 22 (at the top of the
+// function 468, 1835 B); walking `out` plus a `source` pointer 21 (first +0x28a; saved as build/r77/1652e0-r77-21.patch in
+// worktree m3-lane14); the denominator staged i, k, j instead 37. A compile-only (no /GL) build reproduces that form's
+// clip block exactly, so screened there (SSE stream against retail, 25 at the 21 form): every subset of named deltas in
+// every staged order (48) and every named-before / expression / named-after-t choice per axis for the denominator and
+// the rows in both staged orders (250): none below the 21 form; all 48 ungrouped classification spellings give identical
+// code (grouped ones worse), so its first-row j operand order is not set by the source spelling; all 72 orders of the two
+// planes' negations (and d first or last) none better. Left at 21: the classification first-row j term (both loops), the
+// denominator's computation order (retail x, z, y with y loaded first in its product; a named delta loads first, temps
+// copy first, and the same named x must copy t in the rows), the distance's k operands, and total's register. New fast
+// checks on the 21 form (all screened first; 144 distance spellings, staged or single, none better either): the
+// distance through plane_distance_to_point 153 (1830 B), through dot3f 153 (1830 B); the classification through
+// plane_distance_to_point 39; the denominator in retail's x, z, y order with delta_j named and the rows' x named after
+// t 32 (masked 11 against the 21 form's 13: retail's denominator shape, the deltas computed z, x, y into XMM2/3/5 for
+// retail's x, z, y into XMM5/3/2, and the copied-t row is y for retail's x); the distance staged i, j, k 25.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

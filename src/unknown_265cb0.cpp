@@ -674,6 +674,13 @@ real function_30bf0(vector3f *vector);
 // [57/39]; the actor's +7 flag read once into a bool used by both tests 85 [20/18]. Re-measured on this body: a long seat
 // count 193 [64/41]. In the first seat-loop cross product ours loads the forward component in the up.i * forward.k and
 // up.j * forward.i products where retail loads the world-up component.
+// Round 78 (m3 lane 14, fast, masked aligned in brackets, base 84 [19]): the actor looked up after the settings 310
+// at retail's 1308 bytes [34]; the vehicle index read ahead of the first 0x263740 call 146 [24] (origin then in EBX);
+// both 315 (1308) [37]; the endpoint test with explicit `!= NULL` and `== 0` 84 (same code); the outer range test
+// inverted with the out-of-range arm first 152 (1312) [37]; re-measure of the listed long seat count on this base 193
+// (1318) [51]. A volatile float local read ahead of the range load (one --fast diagnostic in src, reverted at once)
+// leaves the range in XMM2, so its register is not a rotation step; the compile-only /Gr screen gives another
+// allocation here.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2275,6 +2282,17 @@ real function_2683f0(long actor_index, long node_index, short type)
 // on that, 0x1c8150 with an early return 367 (0x1c8150 and five callers then differ; reverted at once), the vehicle index
 // read once into a local 204 [79/40] (ours keeps it in ESI where retail reloads it; the loop-head pad realigns, not a
 // real gain), the vehicle object fetched again after the type test 378 (same code); on 163 the vehicle index local 425.
+// Round 78 (m3 lane 14, fast unless marked; masked aligned in brackets, base 168 [59]): the other actor's object as a
+// named pointer used for both reads (`other_object = object_get(node->object_index)`) 163 [59], plain 163 (aligned 80
+// -> 75: that block's EAX/ECX/EDX homes become retail's; a gain of 5, not kept); the same lookup written out at both
+// uses with no index local 168; the existing 0x1df560 called in place of team_is_enemy 679 (2797 bytes, stays a
+// call); the player pointer as a ternary 372. On 163: score declared at the loop top 374 (2884 bytes); a long player
+// slot 385 (2899, a re-measure of the listed long player slot); a short first-search counter 171; the vehicle read
+// through object_get() at both uses 622 (2902); the player pointer declared at the loop top 368; the index named again
+// beside the object pointer 168; re-measure of round 33's long second counter 164. Diagnostics, each in src for one
+// --fast check and reverted at once: one or two volatile reads through the address of the player table global, or of
+// an actor field, ahead of the players iterator move the first difference to +0x13, so they do not isolate the table
+// pointer's register in this function.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

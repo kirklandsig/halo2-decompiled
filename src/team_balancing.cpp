@@ -850,6 +850,15 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // player count still in EDX: the extra-first sum with next_party declared first, with the fill as `while (i < total)
 // parties[i++] = next_party;`, with the subtraction in place (`imbalance -= open_slots;`); next_party declared first with
 // the subtraction in place; the `while` fill with the subtraction in place.
+// Round 76 (m3 lane 14, fast): the fill counted down over the extra count 70 (diagnostic: the extra count then goes
+// to the stack); the clamp assigned back to the imbalance with an extra-first sum 45 (192 bytes); next_party as a
+// dword 35 (same roles); the copy bound as `player_count > i` 34 (same code); open slots computed just before the call
+// 87 (170 bytes). A /Gd compile-only harness of this body (all-stack first pass) loads the extra count into EAX in
+// all 13 spellings screened (sums, total/open-slot placement, fill forms, signature orders), but it does not show the
+// role change the `(short)` fill gives in the real build, so it cannot screen this cause. The countdown fill, the clamp
+// assigned back, the dword next_party and the open slots before the call re-measure listed forms; new: the copy bound
+// form above and one loop over the total that copies below the player count and fills above it 83 (174 bytes). No
+// untried natural form left in this note's lists.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

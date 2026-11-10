@@ -434,6 +434,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // 72 against 69), with the single-exit normalizer 185 (that normalizer alone re-measured 171); the rotation's
 // projection computed after the three cross terms 176 (same code). Left: sine/cosine/pitch homes (retail +0x10/arg_3's
 // home/arg_4's home, ours the pitch at +0x10 and sine/cosine in the two homes) and the rotations' schedule.
+// Round 78 (m3 lane 14, fast with 0x29b990; masked aligned in brackets, base 176 [125]): the normalizer with one named
+// inverse for all three components 384 (1715 bytes) [162], 0x29b990 then 6; the else arm's angle zeros chained 179
+// [126]; the result vector stored before the two angle fields 182 [128]; the second normalization's failure test as
+// `!` 203 (1718 bytes); the XY normalization's result tested as a bool 176 (same code).
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

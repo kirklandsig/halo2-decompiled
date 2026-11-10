@@ -994,6 +994,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // local 331; camera_object_index as long 331; case 1 with its own `flags |= 0x40; break;` instead of falling into default 331
 // (same code); `t` preset to 0.0f with no else arm 454 (1704 bytes); the length as length_sq3f(&camera->point.left) 480 (1720).
 // Body restored.
+// m3 lane 14 r77 (fast; masked = difflib count with registers and offsets masked, control 25): on round 63's dot3f base
+// (the reason to re-measure old length orders) the length written out, the other dot3f calls kept: (j + k) + i 374,
+// (k + j) + i 371, (i + k) + j 371, (i + j) + k (dot3f's own body written out) 376, j + (k + i) 376, i + (j + k) 374,
+// k + (i + j) 372, all 1700 bytes (masked 26-29). A compile-only build (no /GL) loads the plane's first length operand from the other
+// base register (EDI for retail's ESI), so it is no screen for this block.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

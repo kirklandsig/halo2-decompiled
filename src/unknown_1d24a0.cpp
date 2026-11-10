@@ -411,6 +411,15 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // once before the loop and used in its test 1004 (4287). All restored. The unroll lead
 // (no destructor call) needs the contact array type in include/unknown_1cec30.h, whose other users 0x1cf9f0 and 0x1d2070
 // sit in src/unknown_1cec30.cpp (another lane's file this round).
+// m3 lane 14 r77 (fast; difflib counts with registers and offsets masked, control 232): retail never tests the attached
+// component pointer after its lookup and places the swap-remove block after the body: the validity tests (object index,
+// object, component index) as one `if` around the lookup, the slot clamp compared in a nested `if` around the body, the
+// body ending in `continue;` and the removal after both, 964 (4267 B, masked 228; close to round 148's removal-after-body
+// part, whose own score the note does not single out); on it the clamped slot named again 964, the component pointer
+// declared ahead of the tests 964 (both the same code), the record flags read from the field at each bit 972 (4248 B,
+// masked 226), the rigid-body position copied field by field (retail's movss copy) 1004 (4283 B, masked 218). Diagnostics (not keepable): a long scale counter with the
+// contact-array frees written out 1177 (4030 B, masked 207: listed as 1174), both with the nested tests 1199 (4022 B,
+// masked 201). So the nested validity tests and the unrolled scale loops are independent structural fixes.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

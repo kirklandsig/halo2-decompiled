@@ -2105,6 +2105,15 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // 184 (masked 29); a `dword const *colors = &effect->color_a` pointer after set_location with colors[0] and colors[1]
 // in the call 128 (the loads still sink to the call). In every early-colour form colour A takes EBX and the system EDI,
 // so colour B and the tint spill.
+// Round 76 (m3 lane 14, fast with 0x178eb0/0x179020/0x177040/0x176f60/0x178bc0): retail's type-query block holds the
+// tint in EBX, colour B in EDI, the type object in ESI and the effect in EBP, so the system and colour A have no
+// register there (colour A gets the frame slot, the system is read from its parameter slot for the colour call), and
+// the definition takes EDI through the loop where ours keeps the system there. Early colour locals with the spawn
+// stores as unknown, scale, location 184 (572 bytes); colours read between the scale/unknown stores and the location
+// store 184; the system's location index named and read with both colours before the spawn stores 180; colours read
+// at the top of the type-query block with `multiplied()` in the call 178; the first form with colour B declared and read
+// first 185 (the first, third, fourth and fifth re-measure round 58/92/160 forms; the second is new). 0x175a80's
+// body (its file held this round) stays the untested lead; no untried natural colour placement is left.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {

@@ -1016,6 +1016,18 @@ extern "C" void _ReadWriteBarrier(void);
 // bytes, 0x220fd0 builds 199 in the reduced image), the same without both barriers 134; a named float product in the
 // helper (`real decibels = log10(gain) * 2000.0f; volume = (long)decibels;`) 21 (same code), without both barriers 28;
 // `real const decibels` as the parameter 21 (same code); a 600 s permuter run (66 tries) none below 21.
+// Round 78 (m3 lane 14, fast; compile-only /O2 /arch:SSE /Gr reproduces every register here, two probe loads at the
+// top, at the memset or after either volume give all of retail's, after the 0x12aff0 call only the later ones; with
+// a 4-byte memset (immediate stores, no zero register) all are retail's, and removing or constant-folding either
+// volume changes nothing, so the zero is the only rotation step ahead of the decibels load): the two buffer calls
+// as the C++ methods 21 (same code); the volume clamp as an inline helper taking the truncated long, without barriers
+// 175 (677 bytes); the voice through an inline getter taking globals and the index 21; decibels as an s_decibels
+// parameter and field (plain; 0x220e00 and 0x220fd0 still match) 21; re-measure between round 75's one- and
+// four-parameter forwarders: the 0x12aff0 call through an inline (decibels, flag) forwarder 21;
+// the filter declared ahead of the buffer parameters, without barriers 28 (same as that control). Compile-only, same
+// registers: forwarders with one, two (with the index) or four parameters, const globals or voice, the buffer
+// parameters declared first, a dword index, the voice from the global or ahead of `globals`, a zero local for the
+// memset, the memset after the first volume.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

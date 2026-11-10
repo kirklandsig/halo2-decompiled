@@ -907,7 +907,8 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 
 
 /* samples and overlays an object's node orientations and rebuilds its matrices, when it has any */
-// score 291 (was 309): 830 bytes against 856, first difference +0x2. Walked statement by statement against retail on 2026-11-06: no behaviour
+// score 240 (was 291): 829 bytes against 856, first difference +0x2. Earlier at 291 (was 309): 830 bytes against 856, first
+// difference +0x2. Walked statement by statement against retail on 2026-11-06: no behaviour
 // difference found (every field offset, test direction, callee, argument order and the two loops agree). Still differs: retail reads the object through the
 // header at each early test and again at the bit-29 test (it does not reuse its object register there), keeps the matrices result and the matrices passed on
 // as two values, holds the sample flag in a stack byte, and has four separate epilogues; our frame is 4 bytes larger. Forms: the sample loop as
@@ -915,6 +916,26 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // bit_vector_test 291 (same as the written-out test, 291). Tried: sample flag volatile 264 (not kept: no new volatile); the early tests through an `object`
 // local 295; `result` declared after the early returns 289 (not kept: retail stores it before the first early return); the bit-30 flag read into a local before
 // the mask copy 291.
+// Round 76 (m3 lane 14, fast): kept: the sample loop as `!sample && node < count` (retail tests the count at the loop top
+// and the flag after the increment) with `object` read through the existing object_get() (retail reads the object again
+// after the early tests and again for the bit-29 test) 240; either alone 290/291. Still differs: retail holds the input
+// matrices in EDX and object_index in ESI at entry (ours the reverse), so it pushes EBX for the +0xb3 byte and has four
+// epilogues; it reads bit 30 before the mask copy and the object again after it, and reloads the flags for the clear.
+// Tried: final_matrices declared at the top 240; the bit-29/+0x34b tests through object_get() 240 (same code), through
+// header->object 276; both early tests through object_get() 270 (863 bytes); bit 30 cleared through the existing
+// 0xbfe20 262 (frame 0x4c and orientations in ESI as retail, but 813 bytes), on that a single exit (nested ifs) 282
+// (closest by aligned count, 63), with result or final declared first 281/290; early returns of input_matrices 240;
+// single exit without 0xbfe20 270; the mask as an aggregate copy and the bit-30 flag in a local before the copy
+// (same code: the load still sinks below the copy).
+// Round 78 (m3 lane 14, fast; masked aligned in brackets, kept body 240 [47]): the existing 0xbfe20 clear with the
+// bit-29/+0x34b tests read through `header->object` 194 [38] at 814 bytes (definition spilled as in retail; a fresh
+// read beside the `object` local, a mix, not kept), the same through a named `current = header->object` local 194
+// (same code), through a fresh table lookup 262 (merged with `object`); on 194: result declared ahead of the header 293
+// (829 bytes), early returns of input_matrices 194, final_matrices at the top 194, result and final at the top either
+// order 293. On the kept body: result declared ahead of the header 240; `current` from a fresh table lookup 240,
+// from header->object without 0xbfe20 276 (= round 76's header->object form). The existing object_get() at every use
+// with no `object` local 298 (818 bytes), with 0xbfe20 298; header->object at every use 315 (807), with 0xbfe20 317.
+// On 0xbfe20 alone: result first 262, early returns of input_matrices 262, both 262. Entry roles still swapped in all.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
@@ -923,7 +944,7 @@ transform4x3f const *__stdcall function_bd610(long object_index, byte const *nod
 	transform4x3f const *result = input_matrices;
 	if (*(short *)((byte *)header->object + 0x112) == NONE || (object_index != NONE && ((byte *)header->object)[0xb3] > 0))
 		return result;
-	byte *object = (byte *)header->object;
+	byte *object = (byte *)object_get(object_index);
 	byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
 	long model_index = *(long *)(definition + 0x38);
 	if (model_index == NONE)
@@ -940,11 +961,11 @@ transform4x3f const *__stdcall function_bd610(long object_index, byte const *nod
 	transform4x3f *matrices = 0;
 	rigid_transform_scaled *orientations = 0;
 	if ((bool)((*(dword *)(object + 4) >> 30) & 1) &&
-		!((bool)((*(dword *)((byte *)header->object + 4) >> 29) & 1)) &&
-		(!((1 << definition[0]) & 1) || !((byte *)header->object)[0x34b]))
+		!((bool)((*(dword *)(object + 4) >> 29) & 1)) &&
+		(!((1 << definition[0]) & 1) || !object[0x34b]))
 	{
 		long render_node_count = *(long *)(render_model + 0x1c);
-		for (long node = 0; node < render_node_count && !sample; ++node)
+		for (long node = 0; !sample && node < render_node_count; ++node)
 		{
 			byte index = nodes[node];
 			if (index != 0xff && function_0bfe60((dword const *)(model + 0xc4), index))
