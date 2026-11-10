@@ -1718,6 +1718,13 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // capacity-fail arms 177, direct returns plus that else 189 (0x56380 73 each). Diagnostic, result started from a global
 // read 145 (still two epilogues). 300 random forms (orders x sizes x bit at top/pre-loop/at use x if/else-if or ternary
 // clamp x failure arm first or second): best 60, lowest aligned with the caller kept 18-19 (130-134).
+// M3 lane 16 r100 (fast with 0x56380; both builds already return with ret 0xc): the result computed at the end of the capacity
+// block re-measured 155 (0x56380 137); include_mask typed char with the size as `include_mask ? 13 : 11` 147 (461 B); the size as
+// `include_mask != 0 ? 13 : 11` 147 (461 B); kept computed before a ternary size 171 (0x56380 12); the player bit typed word 139
+// (445 B, 0x56380 13); the clamp's tests on the clamped copy 60 (same code). Rebuilt for reference: round 142's cewk order with the
+// ternary 134 (aligned 19: retail's EBP bit, EBX size and setne; the zero result in EAX is then reused for `cmp edi, eax` and the
+// written store, and kept takes EAX), retail's visible kwce order with the ternary 137 (player passed on the stack, 0x56380 13).
+// Body unchanged.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

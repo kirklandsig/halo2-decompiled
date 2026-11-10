@@ -634,6 +634,13 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // (The first four are one compiled body; the cross/dot-on-the-global form re-measures round 206's 164 at 893 bytes.) On the opening: the time
 // product with its factors swapped 117 (same code); the time globals through a pointer local used for both reads 117 (same code); the fraction
 // held as a double 122; the angle as `fraction * (oscillation * oscillation) * 0.15f` 197 (882 bytes), the square as a named local 197 (882).
+// M3 lane 16 r100 (fast, 0x118140 stays matched; the build already returns with a plain ret and takes wind in EBX), re-measured on
+// the current body: the `old` copy dropped with cross3f, dot3f and the rows on the global 173 (862 B; round 37 had 152 at 854),
+// the projection first 175 (858 B, frame 0x1c; round 39 had 148 at 852), that with dot3f(&g_55ecd4, &axis) or vector-first rows
+// 175 (same code); the cross-file rotate_direction on the global (plain check) 183 (852 B; round 28 had 150): cross i then sinks
+// into the i row and cross j, k form early as in retail, but the global's j/k reload in the i row. Round 69's tail (`cos((real)(time
+// * 0.001))`, `(real)sin((real)(time * 0.005))`) re-measured 171 (892 B; retail's fxch pair and fst stores), with rotate_direction
+// 171 (864 B), with rotate_vector_170d70 170 (864 B); with rotate_direction on an `old` copy stored back 161 (889 B). Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

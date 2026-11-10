@@ -569,6 +569,14 @@ static inline bool teams_enabled_19e1c0()
 // on the volatile/plain result 395/693; plain result with every compare as `wcsncmp(...) == 0` 691; both team
 // admissions with the team test first 401 (1438 B). Retail cross-jumps whole case tails (the local-team case enters the
 // cause-team case's 0x1587f0 call with the team in EDI, the formatted cases share one vsnprintf/failure tail).
+// M3 lane 16 r100 (fast, 0x19e0f0 stays matched): our volatile-result build makes retail's local-team and spawn/lives joins; the
+// switch-side-time case keeps its own `return remaining` tail, and both team-name cases join the fallback at its copy call (retail
+// joins the cause-team case at the fallback's clamp). The plain result re-measured 691 (1170 B: token in EDI, token length in EBX,
+// event in EBP, `remaining` on the stack); the fallback's engine through a `c_engine_peer *engine` local 390 / plain 691 (same code
+// each); the format-failure ternary re-measured 514 / plain 691 (same code); a named `s_event_player *player` in the spawn-time and
+// lives cases 387 (1443 B, retail's length), in the spawn-time case only 389 (1439 B; retail's spawn-time case has the pointer's dead
+// `add eax, ebx`, its lives case does not); the cause-team score read into a named local before 0x159130 390 (same code). Body
+// unchanged (gains under 4 are not kept).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

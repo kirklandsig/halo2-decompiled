@@ -748,6 +748,11 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // and tests the target against memory). Diagnostics, reverted at once (a volatile local read, never kept): one dead read before the guard, or
 // inside it just ahead of the call, 240 (975 bytes, aligned 61), two ahead of the call 245 (979, aligned 35): the rotation there is one step
 // from retail's, and no plain spelling of the guard supplies it.
+// M3 lane 16 r100 (fast; caveat: 0x110ab0 builds differently in the reduced image): lane 17's match-only 17 form rebuilt 17; on it
+// the side result typed long 128 (931 B), the reverse probe through the existing vector3f_scale (normalize3d.h) 17 (same code), the
+// second object lookup taking the named unit 227 (965 B; round 27's 227 re-measured), the side choice as an if/else 17 (same code),
+// the projection through dot3f(&local_7, &local_3) in place of the private dot 27, a named `point3f *location` for both probe calls
+// 17 (same code). Body unchanged at 89.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

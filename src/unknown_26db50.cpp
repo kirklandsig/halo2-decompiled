@@ -801,6 +801,19 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // 238 (1103), with the named double 241 (1088); the distance without the (double) cast 90 (same code). Body unchanged.
 // (The named phase re-measures rounds 17 and 53's 143; the named j, k cross terms give 90 here where round 50 records 100 for "cross j, k before
 // i", so that round's form was a different one and was not rebuilt.)
+// M3 lane 16 r100 (fast, 0x26dde0 stays matched). Lead: the existing cross-file rotate_direction (declared as bipeds.cpp does; list
+// 0x1ecf50 so --fast inlines it) for record_rotate_vector gives retail's rotation shape with no spill: cross j and k form early, cross
+// i sinks into the i row. Alone 100 (1081 B, frame 0xd4 for 0xd8); with the ring phase named in the outer loop (`real phase =
+// (real)ring * 0.39269909262657166f;`, angle `spoke * 0.785.. + phase`) 96 (1090 B, frame 0xd8, retail's cvtsi2ss/store/fld/mulss/
+// fmul ring sequence). Left at 96: the dot's terms (ours j, k, i; retail i, j, k) and an XMM3/4/5 permutation, the radius copied
+// through EDX with the sector read late, the phase stored before the spoke's zero, the direction copy based in ECX. On it: a plain
+// radius local 112, a const radius local 112, the sector read first 263, the phase after the distance 96 (same code); a named float
+// ring value without the phase 100 (same code as alone). The cross-file rotate_vector_170d70 100, with the phase 96 (same code); the
+// file helper in rotate_direction's shape (named cross terms read from the vector, dot3f(axis, vector)) 100 / 96 (same code: the dot
+// order does not follow dot3f's argument order); cross terms named from the i/j/k copies 90 (same code as the body); crosses before
+// the dot 103; crosses read from the vector with the copies kept for the rows 114 (either order; the dot then starts with i as
+// retail but adds k before j; all six declaration orders of the copies 114, same code). The dot written out i, j, k or k, j, i, or as
+// `(1.0f - cosine) * dot3f(..)`, compiles the same (VC orders the terms itself). Body unchanged.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
