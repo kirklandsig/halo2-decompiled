@@ -347,7 +347,13 @@ struct s_path_result_view;
 struct s_29e730;
 struct s_29de21;
 struct s_29e0f9;
-short *function_e70b0(short *value, long unit_index);
+/* a unit action state, returned by value through the caller's temporary */
+struct s_unit_action_state
+{
+	short value;
+	s_unit_action_state(short state) : value(state) {}
+};
+s_unit_action_state function_e70b0(long unit_index);
 long function_1e4a50(long character_index);
 void __stdcall function_26c2d0(long prop_index);
 bool function_1f9490(long actor_index, s_reference reference, s_actor_move_request *request);
@@ -372,7 +378,7 @@ struct s_1f8a70_actor
 // than retail's (ours at esp+0x10 where retail has esp+0x12), retail switches on the word at
 // esp+0x14 with a jump table where ours tests the mode with branches, and ours is twenty bytes
 // shorter than retail (1632 against 1652).
-// score 188 (was 188): Frame 0x80, prologue and first exit agree; the route test's layout, case 7's stores and the result's home differ.
+// score 182 (was 182; earlier 188): Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
 // Earlier at 228: Frame 0x84 versus 0x80; pool/data entry order and unit-output/route/result homes differ.
 // MiniMax S (10-31): no new form, no lower score. Deferring the result's initializer reproduces retail's
 // 0x80 frame and prologue exactly (the first difference moves from +0x0 to +0x33), but the aligned body
@@ -616,7 +622,6 @@ struct s_1f8a70_actor
 // route dispatch, expired unit/result home and failure-result storage still differ. Original body restored.
 // P325: On the two-result graph, inner-result declarations after unit/reset/destination,
 // at entry and at route selection all tie 188; unit-output declarations at active phase/entry
-// scored 206/206; outer failure result assigned before cleanup 188. All restored;
 // gave 206/206; outer failure result assigned before cleanup 188. All restored;
 // unit/result packing and the native memory-result cleanup remain.
 // N367: Early active/arrival/mode success joins on the two-result word-selector graph, seven subsets
@@ -680,6 +685,20 @@ struct s_1f8a70_actor
 // P393: Both route root-override admissions, positive/complementary bool/byte/short/long:
 // 188/188/188/188/188/188/188/188. NOT kept: one-use outcomes do not match; unit/result +0x12,
 // route dispatch and late memory result remain. Original complete two-result body restored.
+// M3 lane 16 r97: kept 188 -> 182 (plain): 0xe70b0 returns its two-byte action state by value (a record with a
+// converting constructor; retail's callee takes the result pointer in ECX and returns it in EAX), so the unit mode
+// here is the call's temporary and sits at frame +0x12 as retail, sharing the route result's byte. Measured first
+// with a one-caller inline wrapper returning such a record 182 (diagnostic), a two-short array with the mode second
+// 206 (frame 0x84). With a default constructor and a named local returned, matched 0x1afb30 (which inlines the getter)
+// read 114; the converting-constructor form keeps it matched. On the 182 body (fast; aligned = difflib count with
+// targets masked, 31 here, 37 before): case 7 storing the destination node before the radius (retail's store order)
+// 360 (1640 bytes, aligned 32); the route admission in a named bool 182 (same code), both 360; the route test nonzero
+// side first 182 (aligned 39); case 6's inner test with the `route_mode = 1` arm last 326 (1616 bytes, aligned 30),
+// both 326 (aligned 38). Left: the route dispatch follows case 7 (retail: after case 5, with cases 6 and 7 behind it,
+// then the zero test and the failure block), and the final result goes through BL where retail returns its frame byte.
+// Round 143 (m3 lane 7, fast): the mode cases in source order 672345 382, 234675 372, 234576 334,
+// 567234 388, the default label first 182 (block layout follows source order); `result = route_found;`
+// once after the final if/else 326, first with the test on it 317, the failing arm first 369.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
@@ -708,8 +727,7 @@ bool __stdcall function_1f8a70(long actor_index, long unknown)
 
 		short route_mode = actor->unknown229 != 0;
 		{
-			short unit_mode;
-			if (*function_e70b0(&unit_mode, actor->unknown018) == 5)
+			if (function_e70b0(actor->unknown018).value == 5)
 			{
 				byte *properties = (byte *)function_1e4990(actor->unknown054);
 				byte *movement = (byte *)function_1e4a50(actor->unknown054);

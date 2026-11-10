@@ -280,7 +280,13 @@ void function_e6a20(long unit_index, long name, bool active, bool keep)
 }
 
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name);
-PRIVATE short *function_e70b0(short *state, long unit_index);
+/* a unit action state, returned by value through the caller's temporary */
+struct s_unit_action_state
+{
+	short value;
+	s_unit_action_state(short state) : value(state) {}
+};
+PRIVATE s_unit_action_state function_e70b0(long unit_index);
 
 /* when an animation of a unit ends: the action it ends, and the state and
    action animations that follow */
@@ -341,9 +347,7 @@ void function_e6b00(long unit_index, long name, long *state_name, long *action_n
 			break;
 		case 0x400004a:
 		{
-			short count;
-
-			if (*function_e70b0(&count, unit_index) != 0)
+			if (function_e70b0(unit_index).value != 0)
 			{
 				if (TEST_FIELD_BIT((actions->active[1] >> 8) & 1))
 				{
@@ -509,10 +513,9 @@ bool function_e7020(long unit_index, bool *alternate, long name)
 /* the unit's action state (its actions' +0x36): stores it and returns where
    it went, so callers test it through the result */
 // @retail 0xe70b0
-PRIVATE short *function_e70b0(short *state, long unit_index)
+PRIVATE s_unit_action_state function_e70b0(long unit_index)
 {
-	*state = UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index))->unknown36;
-	return state;
+	return s_unit_action_state(UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index))->unknown36);
 }
 
 /* readies the weapon in a unit's hand (the second hand when it's dual
@@ -1254,6 +1257,12 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // copy per lookup 16; the later two through the copy 17; on the 16 form `result = true` before the active-bit store 16, before
 // function_a8c10 18, the notice block ending in `return result` 42 (958 bytes). Left: retail's success path falls into the
 // shared exit and the notice block carries its own copy; ours pops edi/esi inside the success path, which then carries it.
+// Round 75 (m3 lane 14, fast): re-measured: every goto as `return result` 264 (948 bytes, round 144's code: constants folded);
+// the notice block ending in `return false` 45 (958 bytes, round 21's code; the exit then follows the immediate path); round
+// 21's structured forms combined with `immediate || !active` 19. New: the notice in the then-arm with the rest in its else 19;
+// the animated throw before the immediate 115 (968 bytes); the two early rejections as one condition 19; the marker test as two
+// gotos 19; the active test nested under `!immediate` 19. Without the notice block (diagnostic) the exit follows the success
+// path as in retail (851 bytes); a compile-only model keeps it last for every other shape tried.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {

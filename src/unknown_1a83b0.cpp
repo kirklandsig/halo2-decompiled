@@ -527,6 +527,13 @@ s_1a8a10 g_4453c0[] =
 // first sum as `i * y - j * x` 86 (a repeat of the listed subtraction form); the unrotated cases copying the point as
 // an aggregate 128 (548 bytes). Diagnostic: the rotated point's address stored to a global after the last call 137
 // (504 bytes: the point then stays in registers and the j re-read still does not appear).
+// Round 140 (m3 lane 7, fast): new: the rotated point as two scalar reals 48 (frame 0x38: both go to dead argument
+// slots, so retail's point is a two-float aggregate); both sums from the copy (negated copy j) 31; the negated j
+// product written point-first 17 (same code); the rotated point written through the existing cross-file point2f_set
+// 122 (524 bytes; inline_depth(0) keeps the setter a call), with the final switch through it too 137 (508 bytes).
+// Re-measured (listed): y carried through the switch in a scalar and stored after the facing copy 24 (round 163),
+// also with the final switch reading the point through a pointer 24 (the scalar takes the 0x50 slot and the point's
+// y is never stored; j still folded); the value array and the copy declared before the first switch 17 (rounds 99, 90).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

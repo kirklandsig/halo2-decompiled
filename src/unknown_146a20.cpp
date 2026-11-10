@@ -369,6 +369,13 @@ bool g_47f05b;
 // 34 (149 bytes: the 1s become immediates and `block` takes a pushed EDI); `block` read after the three
 // stores with `block ? new ... : NULL` 34 (same code); `g_479890 = g_479880 = true` 36; the stores ordered
 // g_479880, g_479890, g_479884 38. The base vtable store stays dropped in all.
+// m3 lane 12 r103 (fast, 0x146b80/0x22c3e0 matched throughout): the buffer at `block + sizeof(c_havok_fixed_memory)` 34
+// (same code); with g_479888 at both placements (38, 144 B, retail's code but for the base vtable store and 1 as
+// immediates): an explicit `if (g_479888)` / `else g_479894 = NULL` 38 and the pool through a named pool pointer 38 (near
+// repeats of the block-form if/else and published-result forms above); the placement through g_479888 with the buffer
+// through `block` 36 (146 B, `mov edx, eax; add edx, 0x30`); placement and pool through `block`, buffer through
+// g_479888 43 (139 B). 0x453760 is
+// stored in retail only here and in the abstract allocator's deleting destructor 0x1470f0.
 // @retail 0x146a20
 void function_146a20(void)
 {

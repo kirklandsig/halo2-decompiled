@@ -655,6 +655,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // the local cleared, re-tested on the entity's field 37, entity reset only 55, index from the field 61/82. The result cleared
 // in the flagged arm and re-tested: bool 73 (178), long 45, long from the NONE test 52, bool from it 69. None kept: 37/38 need
 // a local cleared inside a test and tested again, without a byte match.
+// m3 lane 12 r103 (fast, 0xa5b10/0xbb780/0x108e10 matched throughout), all on the long result: a pool copy declared at
+// the top for the flag test 72, for the object read 72, one for each 93 (188/188/194 bytes: the copies are read ahead
+// of the creation call and held across it); the value call on the local index 67; the result assigned in every arm
+// (no initializer) 71.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

@@ -685,6 +685,10 @@ void function_1a6d80(void)
 // is stored; with the call result kept live past both stores (diagnostic) valid EDX, count ECX 19 (110 bytes). Retail's
 // valid ECX / count EDX with the valid store first needs the count pointer loaded first; every copy or reference of the
 // parameter is folded back to its use (6).
+// Round 162 (m3 lane 5, fast): the count pointer read through its own parameter's address after the call and before the valid
+// store 6, with the valid store through its own address too 6, the address taken before the call 6 (all folded to the same code,
+// and 0x1a77a0 then scores 20); `static` on the definition 6; `inline` on 0x1a71f0's definition 6; the valid store as constant
+// stores in an if/else on the call 15. Retail 0x1a71f0 writes eax, ecx and edx, so its clobbers do not explain the tie.
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {

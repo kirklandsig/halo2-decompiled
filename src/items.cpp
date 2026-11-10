@@ -1189,6 +1189,7 @@ struct s_item_flags_view_10b850
 // (0x130); + `x < 0 ? -x : x` instead of fabs 940 (frame 0x12c, 4013 bytes, slots all differ); scalar side alone
 // 925; cross3f into a vector 931; ternary abs alone 860; merged value_13a store 866; declaration reorders of
 // carrier_delta/collision with the 0x12c form 940 each.
+// MiniMax S (11-10): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c, the two entry bit tests stay in registers here while retail keeps the bytes in stack slots and re-reads the flags word, and the definition pointer sits at 0x38 against retail's 0x1c. The 815 of the earlier round is the two-flag body (a separate flag for the definition bit and another for the position update); retail keeps one flag, set before the ray query and cleared only by the settle branch, so that body is not restored.
 // Earlier: Frame 0x154 versus 0x12c; entry Boolean publications and carrier/collision/flow/marker/rotation homes differ.
 
 // Earlier: Frame 0x154 versus 0x12c, entry Boolean bytes and collision/carrier/rotation homes still differ.
