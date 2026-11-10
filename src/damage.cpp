@@ -525,6 +525,7 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 }
 
 // MiniMax C (11-09): no new form, no lower score (3); a 300 s permuter run (24 tries) found nothing lower.
+// MiniMax E (11-09): no new form, no lower score (3); the `or eax, -1` still comes right after the load of g_47d8e0, where retail stores that word at +0x7c first, loads g_4686c4 and only then does the `or`.
 // MiniMax D (11-06, run 49): no new form, no lower score (3); the `or eax, -1` still comes right after the load of g_47d8e0, retail stores that value at +0x7c first, loads g_4686c4 and only then does the `or`.
 // MiniMax A (11-04, run 41): no new form, no lower score (3); the permuter on this function was stopped by the
 // harness before it produced a try, and only the `or eax, -1` schedule against the two global loads is left.
@@ -847,6 +848,7 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 /* whether any entry of the block at +0x70 (0x60 byte entries) has the flag
    at +0x40 of the structure it points to */
 // MiniMax C (11-09): hoisting the index above the guard scores 8 in three declaration orders, a base-pointer split 8, `count - count` 8, an int index 8, a while-loop form 7 and a local pointing at the element 9; no lower score (5).
+// MiniMax E (11-09): no new form, no lower score (5); retail zeroes the index before the count guard and adds 0x40 to the base before `push edi`, ours does both inside the guarded block; every form that hoists the zeroing to function scope swaps the owner and index registers (8), a for-loop over the entries lifts the entry load above the guard (9), and an early `return true` in the loop rebuilds the exits (26).
 // MiniMax D (11-06, run 49): no new form, no lower score (5); the index is still zeroed inside the guarded block, so our `xor edx, edx` lands after the base load where retail zeroes it before the guard.
 // MiniMax B (11-06, run 42): no new form and no lower score (5); the only difference left is the index's zeroing:
 // retail does `xor edx,edx` in the entry block before the count test, ours does it inside the guarded block after
@@ -1611,6 +1613,7 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 /* damages an object with the globals' default damage (from +0x144), credited
    to an owner if one is given */
 // MiniMax C (11-09): no new form, no lower score (10).
+// MiniMax E (11-09): no new form, no lower score (10); the copy of *owner still goes through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after `push edi` where retail stores them before; reading and writing the flags through the overlapping dword instead of the byte-array alias changes nothing (10), and so does putting the store in the first argument of the call (10).
 // MiniMax D (11-06, run 49): no new form, no lower score (10); the copy of *owner still goes through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after `push edi` where retail stores them before.
 // MiniMax A (11-04, run 41): no new form, no lower score (10); the aggregate copy of *owner keeps ecx, edx, eax
 // where retail has eax, ecx, edx, and retail stores the flags before `push edi`.
@@ -2283,6 +2286,7 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // MiniMax C (11-09): no new form, no lower score (3); an entry local before the info test moves the load above the
 // branch but costs the register allocation (228), the two null tests nested (228) and the && operands swapped (3, the
 // tests then in the wrong order).
+// MiniMax E (11-09): no new form, no lower score (3); retail loads the region entry above the `info` test and addresses the region flags as [eax + edx + 4], ours loads the entry after the test and uses [edx + eax + 4]; an entry local before the test moves the definition into a register argument and spills the object (227), and the scaled-index-first form of the same address grows the function to 880 bytes (34).
 // MiniMax D (11-06, run 49): no new form, no lower score (3); the region pointer is still loaded after the `info` test where retail loads it before, the object pointer and the 1 << type shift still use different registers, and the `lea ebx, [ecx + 8]` still comes before the last call's first push.
 // MiniMax B (11-06, run 42): no new form and no lower score (3); retail loads the region index before the branch
 // that tests the entry pointer, ours loads it after the branch, so the load and the `je` are swapped.
@@ -2452,6 +2456,7 @@ void function_176330(point3f const *point, s_effect_marker *markers);
 /* starts a destroyed permutation's effect: attached to the object, or at
    the marker with the object's velocity */
 // MiniMax C (11-09): no new form, no lower score (69); the convention is set by the stubbed callees, which live in other files.
+// MiniMax E (11-09): no new form, no lower score (69); the flag still comes from the stack (`mov al, [esp + 4]`) where retail takes it in al, and that convention is settled by the call cycle through the stubbed bodies outside this file, so only work outside this file can move it.
 // MiniMax G (11-04): no new form, no lower score; the flag's register is still fixed by the call cycle that
 // runs through the stubbed functions outside this file.
 // MiniMax E (11-06): no new form, no lower score; the flag stays on the stack because the call cycle
@@ -3022,6 +3027,7 @@ PRIVATE inline real damage_random_range(real lower, real upper)
    amount between the definition's bounds, scaled by the event, the owner's
    AI and the game engine; sets *friendly when the team scale applies */
 // MiniMax C (11-09): an explicit else scores 5 and splitting the two returns into separate exits scores 28; an early return for the team test keeps the same block order (5), a single final return 24, an inverted enemy test 16 and a function-scope enemy flag 24; no lower score (5).
+// MiniMax E (11-09): no new form, no lower score (5); the two final return blocks keep our order, retail puts the xmm1 copy before the stack reload; an early `return damage` for the not-enemy case moves the blocks the other way and costs 11 (16).
 // MiniMax D (11-06, run 49): no new form, no lower score (5); the two final return blocks keep our order, retail puts the no-team return before the not-enemy one.
 // MiniMax A (11-04, run 41): no new form, no lower score (5); the two final return blocks keep our order (the
 // team-false one reloads damage from the stack where retail copies the xmm1 copy), and splitting the damage
@@ -4788,6 +4794,7 @@ dword function_db810(long object_index, long node_index)
 
 /* the model node of the object's lowest ranked physics node */
 // MiniMax C (11-09): no new form, no lower score (4).
+// MiniMax E (11-09): no new form, no lower score (4); the tag index is still masked after `push ebp` where retail masks it before, and the tag entry is still loaded into edx where retail reuses eax; a tag-entry local and a masked-index local both leave the same four instructions.
 // MiniMax D (11-06, run 49): no new form, no lower score (4); the tag index is still masked after `push ebp` where retail masks it before, and the tag entry is still loaded into edx where retail uses eax.
 // MiniMax A (11-04, run 41): no new form, no lower score (4); naming the masked tag index in a local leaves the
 // same four instructions (the mask after `push ebp`, and the tag entry in edx where retail uses eax).
