@@ -76,6 +76,10 @@ bool function_1946f0(s_bitstream *stream)
 // after 62; a named popped checkpoint index 2; the mask without the byte cast 2; the subscript through `(dword)byte_index` 2.
 // Compile-only, both LEAs data-first: embedded index assignment in the bound test, a byte mask local in a block,
 // `*(byte_index + stream->data)`, `saved % 8` named before the index.
+// Round 162 (m3 lane 5, fast; all the same code, 2): a local view of the stream with a plain data pointer, with data and size
+// as a nested first member, as a base type, or the data as a one-element array (diagnostics); the index cast to a pointer and
+// the data to an integer at both addresses (diagnostic); forceinline address helpers taking (data, index), (stream, index) or
+// (index, data); the address as an integer sum from the dword buffer member.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {
