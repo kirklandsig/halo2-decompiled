@@ -163,6 +163,8 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 #define request_weapon(player, slot, headers) \
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
+// score 118 (was 118): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
+// getter (retail table ECX, result EAX; ours the reverse) and runs through the later temporaries.
 // MiniMax S (11-09): still differs in the inlined table lookup: retail keeps the table in ecx and the null result
 // in eax, ours keeps the table in eax and the null result in ecx; the two are the same code with those two
 // registers exchanged, and the getter's early-return and declaration-order spellings give the same code.
@@ -181,8 +183,6 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // MiniMax G (11-06): no new form, no lower score: the gap opens at the getter's table/result rotation
 // (ours table EAX and result ECX, retail table ECX and result EAX) and that rotation is fixed by the
 // parameter order of 0xd0590, which lives outside this file.
-// score 118 (was 118): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
-// getter (retail table ECX, result EAX; ours the reverse) and runs through the later temporaries.
 // Earlier: retail loads the state table into ESI and the state pointer into EDI, then reuses
 // ESI for the player index and the player pointer and keeps the unit pointer in EBX; ours folds the base
 // into the add and keeps the state in ESI, and retail returns from inside each switch case.
@@ -400,6 +400,17 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // through the indexed array instead of the seat pointer 449. What is left under the held order is one rotation per case: the
 // definition pointer (ours EDX, retail EAX again), the seat-flag temporaries (ours ECX then EDX, retail EDX then ECX), the
 // child's seat product (ours EAX, retail EDX) and each weapon lookup's product and unit registers.
+// Round 62 (m3 lane 2, fast; 0x1e83c0 and 0x1e8d50 matched each time): most of the 118 is shifted jump targets: the
+// getter is one byte short (`mov eax, [abs]` against retail's `mov ecx, [abs]`) and case 4's child loop one byte long
+// (`test cl, 1` against `test al, 1`), so every jump between them is off by one. The child seat read once into a short
+// local 118 (same code); the loop as `while (!blocked && next)` with `blocked` taken from the seat bit 498 (2320 bytes);
+// the existing 0x1e8d50 for the entry with that short local 166 (2312 bytes: the getter is then retail's, the child
+// loop keeps `movsx eax` / `test cl, 1` where retail has `movsx edx` / `test al, 1`); on 0x1e8d50, the parent seat's
+// flags copied into a named local 434 (the `add` folds into the load); on 0x1e8d50, the child test with an early
+// `continue` 166; on 0x1e8d50, the child test nested as 0x1a58b0 writes it (seat test outside) 166; on 0x1e8d50, the
+// child flag through a raw seat pointer and a dword shift as damage.cpp writes it 465 (2304 bytes: it becomes a mask
+// test). The 0x1e8d50 entry itself repeats round 54's 166. Still BLOCKED-BY 0xd0590 (held order; case 4's parent then
+// takes ESI as retail).
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

@@ -108,6 +108,8 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 }
 
 #pragma inline_depth(1)
+// score 94 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
+// creation-call setup and transform scratch ranks differ.
 // MiniMax S (11-09): still differs in the count loop: retail tests the count with a signed compare and then
 // widens it without sign, ours keeps the count sign-extended; retail also reads arg-5 before the prologue's
 // pushes and holds arg-3 in ecx, ours reads arg-5 into ecx after the pushes. The count's spelling was permuted
@@ -120,8 +122,6 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // homes agree, so this is the allocator's choice, not the parameter order); the guard split into three
 // separate returns gives 650 and the negated guard compiles identically, so both were reverted.
 // MiniMax S (11-06): no new form, no lower score.
-// score 94 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
-// creation-call setup and transform scratch ranks differ.
 // Earlier: BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in
 // MiniMax R (11-01): no new form, no lower score (the permuter's 56 tries left it at 94; the
 // prologue differs only in the eax/ecx swap of the input pointer, and two 4-byte slots are swapped).
@@ -203,6 +203,11 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // compile the same either way); plus luminance terms red, blue, green 545 (aligned 80); the luminance counter
 // reused as the strip loop's counter 293 (2663 bytes), as the strip loop's vertex base 284 (2667 bytes); the count
 // loop's bound compared as an unsigned word 94 (aligned 66). Still BLOCKED-BY 0x17cfa0 (contributor, unmatched).
+// Round 62 (m3 lane 2, fast): the luminance stored into the packed vector's k inside the vertex loop (retail's store
+// sits after the loop's pretest) 546 (held in xmm6 and stored every pass, not hoisted); a named short strip count read
+// once for the guard and both strip loops 649 (2703 bytes); the vertex source fields read at each use without the
+// element pointer 94 (same code); the luminance as one conditional expression 593 (2663 bytes); the squared distance
+// through the existing vector3d_from_points3d and length_sq3f 507 (2697 bytes). Still BLOCKED-BY 0x17cfa0.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {
