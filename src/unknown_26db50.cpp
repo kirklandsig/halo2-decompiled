@@ -806,6 +806,25 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // counters declared countdown first 90; the first pathfinding lookup as an if/else assignment 217 (1086 B, the same code as
 // round 133's ternary); the trace point declared ahead of the trace distance 90; the second pathfinding lookup through its
 // own structure local 90 (all 90s the same code).
+// M3 lane 16 r100 (fast, 0x26dde0 stays matched). Lead: the existing cross-file rotate_direction (declared as bipeds.cpp does; list
+// 0x1ecf50 so --fast inlines it) for record_rotate_vector gives retail's rotation shape with no spill: cross j and k form early, cross
+// i sinks into the i row. Alone 100 (1081 B, frame 0xd4 for 0xd8); with the ring phase named in the outer loop (`real phase =
+// (real)ring * 0.39269909262657166f;`, angle `spoke * 0.785.. + phase`) 96 (1090 B, frame 0xd8, retail's cvtsi2ss/store/fld/mulss/
+// fmul ring sequence). Left at 96: the dot's terms (ours j, k, i; retail i, j, k) and an XMM3/4/5 permutation, the radius copied
+// through EDX with the sector read late, the phase stored before the spoke's zero, the direction copy based in ECX. On it: a plain
+// radius local 112, a const radius local 112, the sector read first 263, the phase after the distance 96 (same code); a named float
+// ring value without the phase 100 (same code as alone). The cross-file rotate_vector_170d70 100, with the phase 96 (same code); the
+// file helper in rotate_direction's shape (named cross terms read from the vector, dot3f(axis, vector)) 100 / 96 (same code: the dot
+// order does not follow dot3f's argument order); cross terms named from the i/j/k copies 90 (same code as the body); crosses before
+// the dot 103; crosses read from the vector with the copies kept for the rows 114 (either order; the dot then starts with i as
+// retail but adds k before j; all six declaration orders of the copies 114, same code). The dot written out i, j, k or k, j, i, or as
+// `(1.0f - cosine) * dot3f(..)`, compiles the same (VC orders the terms itself). Body unchanged.
+// M3 lane 16 r102 (fast, 0x26dde0 stays matched, 0x1ecf50 listed): round 100's rotate_direction + named-phase lead re-measured with the
+// phase after the distance and before it, 96 both (1090 B, registers masked 20 against 33; left: the radius copied through EDX where
+// retail uses XMM0, the sector field read after it, then registers). On the lead: the ring as one named float for the distance and the
+// phase 96, the angle as `phase + spoke * 0.785f` 96 (same code each); the direction copied after the sine and cosine 246 (1104 B); sine and cosine passed
+// straight to rotate_direction 230 (1094 B). The `volatile` pathfinding copy removed 204 (1056 B; retail keeps the lookup), on the
+// lead 199 (1061 B). Body unchanged at 90.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

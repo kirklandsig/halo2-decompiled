@@ -235,6 +235,14 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // sorts after both and the position after the offset (member_position/member_offset/steering, neighbour_point/neighbour_offset/
 // steering, position/away/steering), the post-walk vector alone (adjustment), position/offset as point/offset: 280 each, identical
 // code; names do not order these slots.
+// M3 lane 16 r102 (plain checks with 0x293b30, which stays matched; `--fast` builds this function differently, control 280 there;
+// aligned / registers-masked / registers-and-slots-masked counts on the 252 body: 62 / 59 / 14): the scalar reused for four strengths
+// split into one named local per use: the waypoint strength 338 (3717 B), the wander (0x295600) strength 253 (same shape), the path
+// (0x294050) strength 355 (3723 B), all three 280 (3716 B; the object spill / nearest distance pair becomes retail's), waypoint + wander
+// 341, wander + path 372 (3722 B), waypoint + path 340; the cohesion strength apart from the alignment weight sum 293 (3717 B); all four
+// 522 at 3716 B but aligned 57 / masked 55: object / nearest pair and the second 0x2949aa site's dots as retail, record / sum and
+// position / offset pairs, the first 0x2949aa site, the walk's 1.0 load and the centroid's y/z loads still differ (lead, not kept).
+// A `vector3f const *` forward pointer for the scale, the walk dot and the k drop 614 (3708 B). Body unchanged at 252.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

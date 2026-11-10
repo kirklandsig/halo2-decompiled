@@ -573,7 +573,7 @@ real magnitude3d(vector3f const *v);
 bool g_46fcc4 = true;
 bool g_51e9bc;
 
-// score 49 (was 49; before r98 was 118): MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
+// score 49 (was 49; before r98 was 118; r101 unchanged): MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
 // argument; the dot's term order and the jitter block's register allocation still differ.
 // Before 11-07 (118, was 132): the first 79 lines and the frame agree; projection order and x-operands, the velocity row schedule and the jitter spills (retail spills y and the z on/off value into the limits' slots, ours x and the z on/off into parameter homes) remain. Earlier: 1.0 sat in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
 // (tests al/ah) and tests the on/off bits 1, 2, 4 before the sign bits 8, 16, 32, spilling the z on/off factor and
@@ -848,6 +848,11 @@ bool g_51e9bc;
 // the on/off values defaulting to 0 and set on their bits 179 (1058, the ternary code); the offset as one aggregate
 // initializer 49 (same code). Spellings giving listed numbers: the on/off values as if/else 179, the signs as if/else 64
 // (1081), the half scales as named if/else selects 56 (1079).
+// Round 101 (m3 lane 16, fast, 0x24590 listed): the scaled add given `-projection` 49, the jitter offset as one aggregate
+// initializer 49, the movement scaled as `scale * movement.i` 49, the movement add given `&movement` first 49 (all four same
+// code); the on/off values zero by default and set to 1.0f on their bits 179 (1058 bytes). Re-measured: `real angular` declared
+// first 49, dword bits 49, a velocity pointer before the first store 166 (1023 bytes). In the listing the projection's j and k products
+// trade registers (retail k in XMM7, j in XMM0) and the jitter's on/off values start one register on (ours XMM1, retail XMM2).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
