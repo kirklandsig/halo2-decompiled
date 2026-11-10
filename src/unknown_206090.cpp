@@ -448,6 +448,14 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Round 101 (m3 lane 9): 0x182800 became a member of the bounded world (it matched 0xf6670); here the world now
 // loads straight into ESI as in retail (0x2063e6), one instruction fewer (6243 bytes still, masked aligned 986 ->
 // 977), and the positional score moves 1355 -> 1379.
+// m3 lane 1 r85 (fast = full here): the magnitude helper's result in a named real 1424 (6195 B, frame still 0x5cc,
+// register-blind aligned 870 -> 743), as a double local cast on return 1448 (6275 B); re-measured: that with the sum
+// i, j, k 1424, the snapshot initialised member by member 1622 (6022 B), snapshot and named result const 1424.
+// Away from the helper: the contact flag bit as `(dword & 2) != 0` 1376 (colouring only); the query-record NONE loop
+// stepping by the record size 1427 (6259 B); `++local_32`, the counters one per line, `0.0001f < x` 1379 each (same
+// code); the first loop's arg_2 accumulation before arg_1's 1367 (not retail's order: retail adds arg_1 first); on it
+// the bit test as above 1364, the named magnitude result 1424, then the 0xb4 field read at each use 1440 (6211 B),
+// `1.0f + c * x` 1364, the products as `x * scale` 1364 (same code), `-a * b` 1388.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
