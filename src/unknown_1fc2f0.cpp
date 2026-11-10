@@ -619,6 +619,11 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // (first +0x2f); that with the deltas through scaled_difference3f at 1.0f 82, with deltas i, j, k and the existing in-place scale helper plus
 // vector3f_add for the correction 77, with both helpers and the 1.0f delta 80; the in-place scale helper and vector3f_add alone 57 (369 bytes).
 // All restored.
+// M3 lane 10 r88 (fast with 0x1fc660, 0x1fc350, 0x1fc2f0; base 32, aligned 29, masked 13): the squared length written out
+// `j*j + k*k + i*i` on these deltas 32 (same code); `i*i + (j*j + k*k)` 78 (first +0x2f: the grouping moves the chain order); deltas
+// defined j, k, i with `i*i + j*j + k*k` 52 (+0x20), k, j, i 72; deltas i, j, k (re-measured 79) with `j*j + k*k + i*i`, `(k*k + j*j) + i*i`
+// or `i*i + (k*k + j*j)` 79 each (same code). Retail squares j first, then k, adds, then i, with the chains j, i, k and the
+// stores i, j, k.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

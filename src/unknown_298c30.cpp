@@ -345,6 +345,15 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // 394, no product named 416; y row stored first 458; rotation in a point2f 367; sine as if/else 443. Retail stores the near arm's cosine and sine as floats and
 // takes the y row in SSE; ours keeps both on x87. Inline distance through point pointers 395 (same code); dx/dy locals in it 451, delta point 450; 2-D normalizer
 // with `fabs < eps`, else-zero and return 395 (same code), `local_1 * x` 395.
+// M3 lane 10 r88 (fast with 0x29a190, 0x299460, 0x298c30, 0x29cbb0; base 393, aligned 373, masked 145): one sine/cosine pair
+// declared at the loop top and used by both arms 393 (same code); the distance assigned without the `(real)` cast 393 (same code); the
+// test written `field_24 > distance` 393 (same code); on a separate rotated point in the angle loop (re-measured 399, aligned 382): the
+// emitter's stores in retail's order (angle, side, facing test, direction) 452 (1698 bytes, masked 124; 0x29a190 362: the entry no
+// longer reads the object index first and the frame grows to 0x6c); that with the short candidate count 502 (1657, masked 140; 0x29a190
+// 684). Re-measured on this base: cosf/sinf in the near arm 398; short candidate count 510 (1651, 0x29a190 684); separate rotated point
+// with the short count 502 (aligned 267). Retail's far arm stores the rotated point to its own temporaries (0x44/0x48, not the
+// difference's 0x3c/0x40) and keeps its x bits in EBX across the emitter, so the outer counter's EBX is spilled and arg_3's EDI is
+// reloaded after the emitter; with a short count ours gives arg_3 EBX for the whole body and LTCG then passes it in EBX.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -502,7 +511,7 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
-// score 733 (was 633, 719 before that; the rise is the unrounded sine/cosine below): frame 0x114 as retail, 81 bytes short; radius and trace/pivot homes differ.
+// score 629 (was 733, 633 and 719 before that; the rise to 733 was the unrounded sine/cosine below): frame 0x114 as retail, 49 bytes short; radius and trace/pivot homes differ.
 // MiniMax S (11-06): Our frame is 0x120 against retail's 0x114, so every esp-relative home is four bytes
 // off; retail loads the scale factor into xmm1 after the first branch where ours loads xmm5 before it,
 // and the four scale locals and the two trace results still sit at other offsets.
@@ -765,6 +774,32 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // by its offset, then the y row and offset, 742 (3287, masked 253); the offsets written radius-first 733 (same code); on the sweep
 // order, the body under `if (sector != NONE) { ... return result; } return true;` 818 (3322, masked 205), the rotation order 801
 // (3303, masked 210). All restored.
+// M3 lane 10 r88 (fast with 0x29a190, 0x298d90, 0x298c30, 0x29cbb0; base 733, aligned 486, masked 261; 0x29a190 MATCH throughout): kept 629
+// (plain-confirmed). Retail stores the rotated obstacle point, the circle point and its difference as floats and rereads them in SSE: the circle
+// point through the existing function_2994a1, the difference through vector2d_from_points2d and the distance through magnitude2d 671 (3328 bytes,
+// masked 221). Retail clamps the facing dot on x87 with double constants as the clamped value (`fld qword [1.0]`, 0x299f11-0x299f50): the clamp as
+// a double expression passed straight to the arccos helper 669 (that block then matches instruction for instruction); with the obstacle angle in
+// double (`(double)field_4 + pi : -(double)field_4`, retail's unrounded `fadd`/`fchs` feeding `fld st(0); fsin; fxch; fcos`) 637 (3313, aligned
+// 270, masked 197). Leave-one-out: without the angle 669, without the clamp 697, without the helpers 715; the angle alone 753. Then the obstacle
+// direction through vector2d_from_points2d 629 (3317, masked 195). Also: the clamp assignments as `1.0`/`-1.0` 733 (same code); the rotation
+// rows without the `(double)` operand casts 649 (sine/cosine rounded to SSE), `(real)` on each whole row 649, the y row first and sine-first
+// 637/637 (same code); the bounds sum `local_3 + field_10 + arg_6` or `arg_6 + local_3 + field_10` 629 (same code), `field_10 + (local_3 +
+// arg_6)` 629; the bounds' two declarations swapped 558 (masked 201: listing realignment, a declaration order kept only with a match); the
+// side endpoints local_21/local_22 through function_2994a1 712 (masked 169), the reverse one alone 717 (masked 174), with the sweep scales each
+// before its products 798 (masked 148); the sweep order alone (re-measured) 771 (masked 153), forward arm 770, else arm 824; the body under
+// `if (local_11 != NONE) { ... } return local_0;` 825, with the endpoints 806, with the sweep order too 819, with `return true` after 807; the
+// sweep distance helper's squares z-y-x 629 (same code), `x + (y + z)` 626, `x + (z + y)` 626, y-z-x 629; normalize2d_fast for the obstacle
+// direction 629 (same code); the edge clearance as an if/else 629 (same code). Diagnostic: the obstacle owner's actor through a named pointer
+// gives retail's dead `add eax, edx` before 0x1df560 (which reads only CX and SI) and realigns the obstacle loop up to the normalizer (where
+// retail preloads the direction's y into XMM1), but moves function_299a36's x87 schedule: 689; a one-use pointer, not kept.
+// Then (plain-confirmed, 0x29a190 MATCH): retail lays out the facing-false value `2pi - angle` first in the second side's selection
+// (`test bl, bl; jne` to the plain angle), the reverse of the first side: that ternary written `!local_47 ? 2pi - angle : angle` 569 (3323
+// bytes, aligned 261, masked 189; a lead: an arm order picked by score is kept only on a match, reverted at review, 629). Leave-one-out on 569: without the helpers 703, without the clamp 644, without the double angle 578
+// (aligned 391), without the direction helper 629, without the arm order 629. The same arm order in 0x298d90's selection gives retail's
+// block order there too (masked 145 -> 138) but 399, not kept. The owner actor pointer with the endpoint helpers 724 (masked 168), with the
+// sweep order as well 797 (masked 147), with the sweep order alone 794; diagnostics, not kept.
+// On 569: the first side's selection written `!local_47 ? angle + pi : pi - angle` 569 (masked 196), the clearance ternary as
+// `!(arg_6 > distance) ? ... : ...` 569 (masked 194); the owner actor pointer again 743.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
@@ -907,15 +942,13 @@ bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 			real local_45 = arg_6 - local_3 - local_38->field_10;
 			if (!(local_44 > local_43 && local_43 > local_45))
 				continue;
-			point2f local_46 = { local_38->field_8.x - local_2.x, local_38->field_8.y - local_2.y };
+			point2f local_46;
+			vector2d_from_points2d(&local_2, &local_38->field_8, &local_46);
 			function_298df3(&local_46);
 			bool local_47 = arg_4->j * local_46.y + arg_4->i * local_46.x >= 0.0f;
 			real local_48 = local_46.x * arg_5->i + local_46.y * arg_5->j;
-			if (local_48 > 1.0)
-				local_48 = 1.0f;
-			else if (local_48 < -1.0)
-				local_48 = -1.0f;
-			real local_49 = function_50650(local_48);
+			// retail clamps the unrounded dot on x87 against double bounds (0x299f11-0x299f50)
+			real local_49 = function_50650(local_48 > 1.0 ? 1.0 : local_48 < -1.0 ? -1.0 : local_48);
 			real local_50;
 			if (arg_1->field_0)
 				local_50 = local_47 ? 3.1415927410125732f - local_49 : local_49 + 3.1415927410125732f;
@@ -927,14 +960,17 @@ bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 				local_51 = arg_6 > local_43 ? local_43 - local_45 : local_44 - local_43;
 			else
 			{
-				real local_52 = arg_1->field_0 ? arg_1->field_4 + 3.1415927410125732f : -arg_1->field_4;
+				// retail forms the angle on x87 and never rounds it before fsin/fcos (0x29a041-0x29a050)
+				real local_52 = arg_1->field_0 ? (double)arg_1->field_4 + 3.1415927410125732f : -(double)arg_1->field_4;
 				// retail multiplies the unrounded sine and cosine in x87 (0x29a04c-0x29a085)
 				point2f local_55;
 				local_55.x = cos(local_52) * (double)arg_5->i - sin(local_52) * (double)arg_5->j;
 				local_55.y = cos(local_52) * (double)arg_5->j + sin(local_52) * (double)arg_5->i;
-				real local_56 = local_55.x * arg_6 + local_2.x - local_38->field_8.x;
-				real local_57 = local_55.y * arg_6 + local_2.y - local_38->field_8.y;
-				local_51 = local_3 + local_38->field_10 - (real)sqrt(local_57 * local_57 + local_56 * local_56);
+				point2f local_56;
+				function_2994a1(&local_2, arg_6, &local_55, &local_56);
+				point2f local_57;
+				vector2d_from_points2d(&local_38->field_8, &local_56, &local_57);
+				local_51 = local_3 + local_38->field_10 - magnitude2d((vector2f const *)&local_57);
 				if (!(local_51 > 0.0f))
 					continue;
 			}

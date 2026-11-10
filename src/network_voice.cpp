@@ -3715,6 +3715,12 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // (no cursor / cursor advanced last / cursor advanced first x member test joined or split x four entry orders of the
 // stride, `size -= 2` and consumed x `(members >> member) & 1` or the mask test x member declared at the loop top or
 // in the relay arm): best 139 (main's code), the cursor forms 162-165 (aligned 58 against 71).
+// M3 lane 10 r88 (fast with 0x564c0, matched each time; base 139, aligned 84, masked 47): the member test as `member < 0` 139
+// (other code: `test; jl` where retail has `cmp eax, -1`); on the packet-cursor form (re-measured 164, masked 36) the same test 165;
+// the cursor set from the count, `data + consumed`, after `size -= 2` and `consumed = 2` with the stride last 164 (masked 32), with
+// the stride before the cursor 162 (479 bytes). In every cursor form our EBP serves the member and the consumed update in turn and
+// the channel gets no register; retail's cursor starts with `add edi, 2` (an immediate, outside the constant 2 that `size -= 2` and
+// `consumed` share in ECX) and its zero-trip exit returns that ECX. No untried natural form left that adds a channel reference.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
