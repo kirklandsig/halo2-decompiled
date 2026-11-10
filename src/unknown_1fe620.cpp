@@ -12,6 +12,8 @@ void function_1fe410(point3f *arg_0, real arg_1);
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax R (11-10): no new form, no lower score (373); the two flag bytes are still stored before the random
+// state is loaded, where retail loads the state pointer first and then stores the bytes.
 // MiniMax R (11-10): no new form, no lower score.
 // MiniMax A (11-04): no new form, no lower score; the third input copied into a named local scores 415 and the +0x1c value
 // named 437 (both restored), and retail re-reads the third input from its stack slot after the 0x2104b0 call.

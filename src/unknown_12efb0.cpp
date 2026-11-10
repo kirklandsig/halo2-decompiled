@@ -142,6 +142,7 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // clamps): no logic, field, condition or callee difference; the 607 is scheduling and register homes only.
 // MiniMax E (11-05): no new form, no lower score; the palette and accumulator carriers are as the earlier
 // rounds left them, and retail's `mulss scalar, t` product form has no legal spelling here.
+// Earlier (616, was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
 // Earlier at 616: Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
 // Earlier 616 (was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
 // Earlier at 616 (was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
@@ -452,6 +453,21 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // tag arm's range clamp read from the field at each use 610 (aligned 236 -> 230), the three-scalar helper in retail's
 // scheduled order (red, height, green, weight, blue, intensity, distance, remaining) 718 (two more instructions,
 // aligned 210), its red term ahead of weight and remaining 607 (aligned 224).
+// M3 lane 8 r150 (fast; "al" aligned count 491 and register-masked 220 on this body): the palette byte read from the
+// cluster record at every use, `*(signed char *)(record + 0x6f)` as matched 0x12eb00 does (test, bounds, index, source
+// index store), with the else-if lookup through an inline getter shaped like matched 0x1318a0 (NULL result, then the
+// global, the bounds and the entry) gives 600 at retail's 3817 bytes (al 777, masked 228): the lookup's control flow is
+// then retail's (every failure through the `test record` join, the byte compared as a byte, the source index store
+// re-reading the byte), but it is a new one-caller getter and 7 under the keep bar, so it is a lead, not kept. Left on
+// it: the 0x130f60 result stays in EAX with NONE in EDX (retail result EDX, NONE EAX), record EDI and tag EBX (retail
+// EBX/EDI, cluster index in EDI until the tag), zero in XMM5 (retail XMM7), so the accumulator products copy the weight.
+// On it: a named cluster index 600 (masked 228 -> 220; re-measure of rounds 78/111's form); the getter's index `signed char` 707; the byte as a typed
+// record field 600 (same code); the table as a typed view 600 (same code); the clamp written in the three-scalar
+// helper as 0x1317a0 writes its own 684 (3799 bytes, masked 186; re-measure of lane 12 r76's form); the getter forceinline
+// 600 (same code); the per-use byte with a copy of 0x12eb00's entry_at_index (NULL default inside, the global tested by
+// the caller) 603 (3822 bytes). Alone: the per-use byte 666 (3827); the getter alone
+// 604 (3822, re-measure of round 107's form); the char slot 700 (re-measure); the NULL default in the else arm with
+// the per-use byte 666 (same code as without it), with the global in a local 666.
 // Round 181 (m3 lane 4, fast): retail tests the +0x6f byte as a char (`cmp cl, al` against EAX's NONE), widens it once
 // (`movsx ecx, cl`) before the previous-index test, and re-reads the byte for the source-index store. The slot as char 700
 // (3828 bytes: the byte compare, but widened at each use); as long 706; char with a long index for the lookup and the

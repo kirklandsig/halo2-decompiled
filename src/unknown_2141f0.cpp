@@ -80,6 +80,7 @@ bool map_copy_request(char const *map_name, long priority);
 void __stdcall cache_copy_record_use(char const *map_name);
 
 // MiniMax R (11-10): no new form, no lower score; the state 11 chunk forms (the clamp as an in-place if, a min-clamp, a named limit and the total, completed and limit read in the other order) all keep the three loads one step rotated and score 30, the release before the slot store in state 19 scores 36, state 7 without the file local scores 327 and state 9 with a named handle scores 296.
+// MiniMax R (11-10): score 29 (was 30): state 11's clamp compares the remaining against the limit so the chunk lands in the limit's register and the compare order matches retail; left: states 7 and 9 keep the file handle in another register, state 11 still swaps the completed and limit registers, state 16 sets the state ahead of the header clear, and state 19's slot store sinks.
 // MiniMax B (11-04): no new form, no lower score (the state 11 clamp as an in-place if, a min-clamp and a named-limit ternary all keep the same register rotation).
 // MiniMax B (11-03): no new form, no lower score.
 // MiniMax S (11-01): the state 11 clamp keeps the completed value in EDX and the limit in ECX; no lower score.
@@ -410,7 +411,7 @@ bool function_2141f0(void)
 		if (g_55bd18)
 		{
 			long remaining = g_55bcf8.total - g_55bcf8.completed;
-			long chunk = g_55bd1c > remaining ? remaining : g_55bd1c;
+			long chunk = remaining > g_55bd1c ? g_55bd1c : remaining;
 			long slot = g_55bd10;
 			g_55bcf4 = chunk;
 			g_55bd00 = async_copy_position(g_55bd14, g_557c90[slot].file, (void *)g_55bd18,
