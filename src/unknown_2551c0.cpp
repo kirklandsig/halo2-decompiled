@@ -753,6 +753,12 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // second object lookup taking the named unit 227 (965 B; round 27's 227 re-measured), the side choice as an if/else 17 (same code),
 // the projection through dot3f(&local_7, &local_3) in place of the private dot 27, a named `point3f *location` for both probe calls
 // 17 (same code). Body unchanged at 89.
+// M3 lane 16 r102 (fast, the file's matched functions unchanged): the request's target argument from the named target index
+// instead of the actor field 109 (957 B; retail re-reads the field there); the target index and its object lookup ahead of the
+// heading copy (round 31's 94 form) with that request argument 106 (958 B, registers masked 19, the request then takes EBP);
+// the target object looked up at each use (no object pointer) 195; the animation id chosen by a ternary 136 (950 B), by an
+// if/else 178 (931 B) in place of the switch; re-measured: the target index initialised at its declaration
+// 89 (same code). Body unchanged at 89.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

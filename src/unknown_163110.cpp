@@ -901,6 +901,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // after the normal copy k = 1..8 119 135 130 242 246 135 127 135; the first difference stays +0xbb (the e4.i load is not a numbering tie).
 // Store through `*(outside0 ? p1 : p0)` 368 (1867 bytes); `p1 = p0 + 1` 256 (1867); both segment loops as plain for loops 129;
 // intersection rows point-first 115 (same code); total counted per projected point 116.
+// M3 lane 16 r102 (fast, the file's matched functions and 0x320b0 unchanged): the two planes as two named plane locals (either
+// declaration order) 242 (1830 B); the far plane's `pass == 1 &&` test dropped 370; `segment_culled` zeroed by an `= {0}` initializer
+// in place of the memset 489 (1867 B); the far-plane mask as `if (!view->flag84 && !view->flag85) use_plane1 = false;` 474 (1835 B).
+// Body unchanged at 115.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

@@ -1825,6 +1825,17 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // original full body restored; initial cursor/slot and request/completion homes remain.
 // Round 74 (m3 lane 10, fast, callers 0x641a0 and 0x8df50 checked): on the note's 702 form rebuilt (`received != 6` first, `failed = true` in each state arm, 2862 bytes, a gain of 7, not kept): bound limits through a
 // `long const *` local 702; `value` as `= 0; if (type)` 703; write poll `state == 0 || state == 1` 718 (2878); `long failed` 719 (2878); properties_used declared first 702; `now` read first 702.
+// M3 lane 16 r102 (plain checks of the whole file plus 0x641a0, 0x8df50 and the getter files' functions): function_75870() at every
+// clock read 817 (2750 B, called), with function_75890(start) for the two elapsed tests 816 (called; round 103's form, re-measured
+// plain); the existing function_6c7e0() for
+// the opening test 805 (called). The users loop through the existing getters 0x647a0/0x647d0 with a per-file `__forceinline`
+// redeclaration 828 (2928 B, both still called). Lead, not kept: with `inline` on 0x647d0's definition (src/unknown_054fe0.cpp) and the
+// slot index + properties read through it, the users loop becomes retail's instruction for instruction (cursor at the record start,
+// `lea edx, [ecx + 1]; mov eax, edx` for the xuid), 720 at retail's 2862 bytes, aligned 316 against 330, nothing lost (0x18fd94 stays
+// matched); `inline` on 0x647a0 as well gives the same code but loses 0x199c47/0x199c94 (they inline it where retail calls it); both
+// getters called with only 0x647d0 inline 749; the 720 form with online_logon_connected() 759 (2878 B, aligned 309).
+// In the 720 form the identity-change clear loop gains a jmp + pad (its head lands at another offset mod 16: retail's cmovne is one
+// byte shorter than our je/mov), so the positional count runs off from there; the loop-head pads follow byte offsets, not the source.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

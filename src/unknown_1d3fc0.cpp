@@ -345,6 +345,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // difference +0x44); the private normalizer's sum as `j*j + (i*i + k*k)` 152, through dot3f(arg_0, arg_0) 153 (the 2-form's
 // normalizer alone; aligned 32 against 38, forward then preloads k first), through the existing length_sq3f with dot3f(up, forward)
 // 153; normalize_inline for forward only (the private helper for up and left) 112 (first difference +0x153). Body unchanged.
+// M3 lane 16 r102 (fast, 0x1c4a80 stays matched): the 2-form rebuilt 2 (masked 0: only the dot's i term operands); on it the squared
+// length through the existing length_sq3f 2, `vector3f *const` pointers 2, a `real const` dot 2 (same code each); the shared
+// normalizer's scale stores ordered k, j, i 102, j, i, k 28, i, k, j 140 (925 B). Body unchanged at 110.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

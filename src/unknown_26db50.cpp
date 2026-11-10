@@ -814,6 +814,12 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // the dot 103; crosses read from the vector with the copies kept for the rows 114 (either order; the dot then starts with i as
 // retail but adds k before j; all six declaration orders of the copies 114, same code). The dot written out i, j, k or k, j, i, or as
 // `(1.0f - cosine) * dot3f(..)`, compiles the same (VC orders the terms itself). Body unchanged.
+// M3 lane 16 r102 (fast, 0x26dde0 stays matched, 0x1ecf50 listed): round 100's rotate_direction + named-phase lead re-measured with the
+// phase after the distance and before it, 96 both (1090 B, registers masked 20 against 33; left: the radius copied through EDX where
+// retail uses XMM0, the sector field read after it, then registers). On the lead: the ring as one named float for the distance and the
+// phase 96, the angle as `phase + spoke * 0.785f` 96 (same code each); the direction copied after the sine and cosine 246 (1104 B); sine and cosine passed
+// straight to rotate_direction 230 (1094 B). The `volatile` pathfinding copy removed 204 (1056 B; retail keeps the lookup), on the
+// lead 199 (1061 B). Body unchanged at 90.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
