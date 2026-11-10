@@ -772,6 +772,7 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // needs path.cpp's declaration and caller local changed; state->source.unknown04 reaches avoidance_search as a raw
 // zero-extended byte (0x2c4741 xor ecx,ecx; mov cl,[eax+4]) where ours emits test/setne, so the field is a bool in retail
 // (path.h declares byte); the (byte) cast on flags is codegen-neutral (dropped = 675).
+// MiniMax D (11-10): no new form, no lower score: the permuter ran past its time limit without a result.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

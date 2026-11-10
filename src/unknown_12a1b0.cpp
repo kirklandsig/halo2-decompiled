@@ -1557,6 +1557,8 @@ struct s_looping_detail_request
 // assignment is the same code; the assignment first, second or third 19/18/17, after the size 31, with the result
 // first 24/23/22/20/35); the 7 left are the player arm's flag byte in DL for CL and the listener base loaded before
 // the index is scaled. Without the query's call that form reads 132, so nothing is kept.
+// MiniMax D (11-10): no new form, no lower score: the first-player query is still expanded here where retail
+// calls it, and every way to make the call is outside this file or a forbidden form.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

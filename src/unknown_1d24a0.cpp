@@ -397,6 +397,8 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // destructor call plus operator delete 925, with the long counter 930; long counter alone 933 (listed); a byte local
 // renamed on the unrolled body 1174 (same code). Next: retail frees the list with no destructor call, so the contact
 // array type wants a plain free path (all three users, 0x1cf9f0 and 0x1d2070 matched); the asm conversion is no blocker.
+// MiniMax D (11-10): no new form, no lower score: the removal path as an else arm after the body 902 (4267 bytes),
+// the entry flag word in a named local 917, the motion point copied member by member 943 (4283 bytes); all reverted.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

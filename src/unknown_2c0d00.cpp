@@ -402,6 +402,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // layout only: retail places the second type-0 branch and the type 1/7/11 arms after the join (0x2c12a3-0x2c1441, jumping back into it) and keeps
 // the skip flag at [esp+0x12], a profile-style block order that source order has not reproduced. The unit_index and actor volatiles carry no
 // retail meaning beyond forcing the reloads retail shows at the loop back edge (0x2c0f68 edi from [esp+0x2ce0], 0x2c0f6f ebp from [esp+0x44]).
+// MiniMax D (11-10): no new form, no lower score: retail and this build agree on the arguments (the previous
+// direction arrives in ECX and ten arguments are pushed), so only the frame (0x2cb8 against 0x2cac) and the local
+// homes still differ.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

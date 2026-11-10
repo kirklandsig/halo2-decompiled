@@ -1128,6 +1128,8 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // DH385: Entry output-counter native memset/first-face memcpy producers, seven subsets,
 // then first-face memmove: 562/562/539/566/562/562/566/789. NOT kept: no gain or tag-home
 // recovery; original scalar counters, face publication, all helpers and complete body restored.
+// MiniMax D (11-10): no new form, no lower score: the definition pointer, the count and the zeroed word
+// still sit in other frame slots than retail's (0x94, 0x20 and 0x54 against our 0xb4, 0x18 and 0x4c).
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
