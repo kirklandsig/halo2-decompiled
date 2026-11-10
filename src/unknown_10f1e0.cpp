@@ -1669,6 +1669,13 @@ long function_cbd50(long unit_index, short weapon_index);
 // of line, and only then is the data reloaded, after the call); the second slot read as a byte-offset expression
 // 349, the first 349, both 349 (same code as the macro). So neither a store to the flag nor another spelling of the
 // lookup stops the sharing; only a real call between the queries did. NOT kept: body below unchanged.
+// M3 lane 1 r88 (fast with 0xcbd50, 0xc70b0 and 0x1103a0, which stays 453): a headers local (the pool's data) for the
+// two weapon-object reads only, combined with the result type and depletion form: in the controlled block with a bool
+// result and the `&&` depletion 326 (1280 B); at entry with the byte result and the if-form depletion 326 (1280 B); at
+// entry with the byte result and the `&&` depletion 351 (1309 B); re-measured in the controlled block with a bool result
+// and the if-form 341 (1269 B) and at entry with a bool result and the if-form 349 (1257 B). Re-measured: the plain
+// parameter at the 0xc70b0 call (no `unit_reference`, no volatile read) 322. New: that with a bool result 372 (1236 B);
+// the interruptibility test spelled `state->channels[0].unknown14 & 0x10` as 0x1103a0 does 164 (same code).
 // M3 lane 9 r105 (fast; "masked" = aligned count with registers and stack offsets ignored, control 164 masked 49): a
 // grid of depletion (`&&` / if-form: first sets with `<= 0`, second clears on `> 0`) x an object-headers local (none /
 // in the controlling block for the two weapon-object lookups / at entry for the unit and both lookups) x byte/bool
