@@ -975,6 +975,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // pushes esi), so the callee conventions decide this one.
 // MiniMax C (11-08): no new form, no lower score.
 // score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
+// Round 147 (m3 lane 8): no unlisted form. Retail's convention needs the address live across a call, but retail calls
+// 0x94420 and 0x94270 out of line and has no such use. Its connection handlers take no address (retail passes them the
+// index in EAX and the message in EDX), so an unread address parameter on them has no retail evidence and was not tried.
 // Earlier: retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
 // MiniMax lane E (11-01): no new form, no lower score; retail's parameter order is (message_type,
 // message, address) with the receiver in EDX, which this file's declaration cannot change.

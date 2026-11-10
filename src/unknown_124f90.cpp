@@ -2757,7 +2757,7 @@ static inline real sound_vector_normalize(vector3f *v)
 /* the doppler shift of a sound for a listener, in cents: from the speeds of
    the listener and the sound toward each other, the speed of sound 111.5
    world units a second, the frequency ratio between 1/8 and 4 */
-// score 92 (was 122): the two speeds through dot3f fix the direction spill (retail keeps j/k in XMM7/6, i on
+// score 92 (was 92; 122 before round 63): the two speeds through dot3f fix the direction spill (retail keeps j/k in XMM7/6, i on
 // the stack); left: the velocity rotation's scale products commute (retail reloads the scale for each) and the
 // rotated components take other XMM registers. Retail inlines 0x142640 here (src/unknown_141590.cpp is /Ob1, so
 // ours never can): with `inline` on 0x142640's declaration and the call in place of the rotation it matches
@@ -2772,6 +2772,10 @@ static inline real sound_vector_normalize(vector3f *v)
 // scalar copies 92 (same code), plus the rotation read through a transform4x3f pointer 83, x/y/z declared last 83,
 // the listener dot's operands swapped 83 (same code), the velocity through a vector pointer 83; vector3f_scale +
 // matrix_transform_vector 103 (frame 0x20).
+// Round 147 (m3 lane 8, fast): a per-file `__forceinline` redeclaration of 0x142640 with the call 262 (374 B: a body
+// in another file stays a call); the scale products as `*=` 92 (same code); the rotation ahead of the direction 132;
+// the listener dot's operands swapped 92 (same code); the velocity copied as one aggregate 137. BLOCKED-BY 0x142640
+// (its file's /Ob1; that file was on this round's avoid list, so `inline` there was not re-measured).
 // @retail 0x12a9d0
 real function_12a9d0(long listener_index, s_sound_position const *position)
 {

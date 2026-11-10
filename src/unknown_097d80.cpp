@@ -388,6 +388,8 @@ struct c_aggregate : c_child
 // end of the file 31; the three aggregate functions moved below the handle-table functions 31 (frame 0x8024 in each, same
 // code). Diagnostic, removed at once: `#pragma optimize("a", on)` around the body 31 (frame 0x8024: even the no-aliasing
 // setting keeps the escaped output apart under LTCG). Still BLOCKED by the build flag.
+// Round 147 (m3 lane 8, fast): one function-scope index for the collection and dispatch loops 31 (same code, as
+// rounds 42 and 66 found); no unlisted form left. Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
