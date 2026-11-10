@@ -79,7 +79,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
 // MiniMax C (11-05): no new form, no lower score; retail's three selected-index homes are at [esp+0x44], [esp+0x28] and [esp+0x24] where ours are at [esp+0x40], [esp+0xc] and [esp+0x20]; retail holds the node pointer in ebx and the group table in ebp where we hold them the other way round, and loading the group table before the node pointer scores 397.
-// score 391 (was 390): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// score 391 (was 391): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // Round 64 (fast; masked aligned count in brackets, base 390 [182]): NOT kept, scratch recipe reaching 155 [11] at retail's 1596 bytes with every stack
 // slot right (aligned 428 -> 22): (1) group as `long`, tested on the field read and copied after: `if (bit_vector_test(visited_groups, entry.field_0))
 // continue; long local_15 = entry.field_0;`, set through bit_vector_set: 398 [161] (read beside a local copy, match-only; without it the rest stays 435-461);
@@ -375,6 +375,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // whatever the written order (three per-site orders tried, same code), so the per-site x87 association stays 390-level.
 // Width only, no behaviour: retail compares the nearest point as a word (0x29e60c, 0x29e680, 0x29e687): short local_2 392;
 // local_29 as short/word/long 447/447/436 (1563/1579 bytes), unsigned char 391; indices stay below 32 (one-word visited bitmap).
+// m3 lane 8 r146 (fast; aligned/masked base 420/178; 0x29e730 MATCH throughout): both bitmaps or the group bitmap alone through the
+// existing bit_vector_test/bit_vector_set 425/425 (1567 bytes); the group bitmap cleared by memset 388 (aligned 382, masked 176; three
+// points, not kept), both bitmaps by memset 388 (same code); the output as `&arg_4->field_30[local_37]` with no cursor 396 (masked 164);
+// the found flag declared first 393; memset + indexed output 393 (aligned 356, masked 162), with the flag first 395.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

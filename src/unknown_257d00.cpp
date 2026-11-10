@@ -1921,6 +1921,9 @@ void function_b7360(long object_index);
 // (0x258dc5 and 0x258e15 are reached from both the 15/16/17 and the 1/19 call sites; ours duplicates them) and ends
 // on the failure block; case 13's flag OR is load/or/store (retail `or byte ptr [ecx+0x10a]`). Tried this walk:
 // `bool success;` with `case 11: default: return 2;` 471 (1832, worse); `case 11: return 2;` with the initializer 301.
+// m3 lane 8 r146 (fast; aligned/masked base 151/107): case 13's 0xb7360 call once after the if/else 301 (same code); case 4's
+// range result as a ternary 437 (1820 bytes); case 5's clamp as a ternary 304; case 7's mask as `&= ~0x18; |= 4;` 301 (same code);
+// case 13's OR value as a ternary with one store 319 (1808). Ours already cross-jumps the 0x259ec0 blocks as retail does.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

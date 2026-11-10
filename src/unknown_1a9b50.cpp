@@ -1019,6 +1019,9 @@ static __forceinline long real_to_long(real value);
 // `return false;` 509; the result declared before the slot view 382 (same code); the prediction scale written rate first
 // 382 (same code); the entry tests as `f13 || f14` and `else if (f2d)` false arms ahead of the body 382 (same code).
 // Aligned by sequence, 160 rows differ: the false exit placed last shifts everything up to retail's place for it.
+// m3 lane 8 r146 (fast; aligned/masked base 155/105): `local_2 = true` at the end of its block 508; `local_4 = NULL` declared before
+// the actor pointer 494 (1913 bytes); `bool local_2 = true;` at its declaration 397; local_2 declared before local_0 382 (same code);
+// local_6 computed directly from its three tests, no else arm 389.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
