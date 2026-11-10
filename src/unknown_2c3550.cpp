@@ -772,6 +772,24 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // needs path.cpp's declaration and caller local changed; state->source.unknown04 reaches avoidance_search as a raw
 // zero-extended byte (0x2c4741 xor ecx,ecx; mov cl,[eax+4]) where ours emits test/setne, so the field is a bool in retail
 // (path.h declares byte); the (byte) cast on flags is codegen-neutral (dropped = 675).
+// m3 lane 14 r77 (fast, 0x270930 and 0x2c4030 matched each time; difflib counts with addresses masked / registers and
+// offsets and XMM/integer registers masked too, control 418/275): retail passes the end-node local ([esp+0x18], the one carried to the next step) as
+// both searches' goal node: previous_node there 735 (2960 B, masked 273). Retail's three sibling `input->type == NONE`
+// tests (setup; search-or-copy; object-index pass, the node walk then reading input->point.output_index; MiniMax A's
+// listed 770) re-measured 822 (2906 B, masked 237), with that goal 778 (2945 B, 216), with the copy block reading the step back from its output entry (retail's
+// `lea edx, [eax + 0xc]` after the rep movsd) 813 (217), both 759 (2945 B, 213). On 759: the start/start_node if/else 769
+// (206), short transform-loop indices 764 (203), short frame 752 (211), all three 782 (194). On that: retail's retry flow
+// (a second search assigning `found` in each branch, one `if (!found)` failure block), `!avoid` first / `avoid` first
+// 730/758 (2937 B, frame 0x1f8c: the byte `last` is normalised into a new slot), with retail's flag loop (short index,
+// `flag` tested per obstacle under `step == count - 1`) 730/758 (masked 191/187); plus `bool last` 779/769 (2921 B,
+// masked 186/183); plus bool result 741/745 (2938 B, 772 against 775 instructions, masked 178/175: retail's separate
+// `xor al, al` and out-count epilogues appear). On 745: obstacle/search pointers set before `last` 754 (168), input after
+// start/start_node 772 (162), both 778 (162); on 778: the radius ternary 809, pathfinding after the radius 780,
+// first_output zeroed at entry 798, ternary with first_output 771 (plain 771, 2938 B, aligned 357, masked 155; the whole
+// form is build/r77/2c41b0-r77-shape.patch in worktree m3-lane14). Left there: ours keeps count in BP and state in EDI
+// through the prologue (retail: state EDX, object_index ESI, flag EDI, EBP scratch), and source.unknown04 is a byte here
+// (test/setne at both searches) where retail zero-extends a raw byte; that field is assigned in held 0x261280 and lane
+// 13's 0x260670, so it was not retyped. Nothing kept: every form scores above 675.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

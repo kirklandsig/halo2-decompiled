@@ -983,6 +983,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // camera->point.left 356; the timer as `time_scale == 0.0f ? 0.0f : ...` 331; command->object_index from the
 // camera_object_index local 342; start declared before t 331. Main's call-site seconds local in place of the
 // helper's 373. The pan quaternion length still sums j, k, w, i where retail keeps the helper's w, k, j, i.
+// m3 lane 14 r77 (fast; masked = difflib count with registers and offsets masked, control 25): on round 63's dot3f base
+// (the reason to re-measure old length orders) the length written out, the other dot3f calls kept: (j + k) + i 374,
+// (k + j) + i 371, (i + k) + j 371, (i + j) + k (dot3f's own body written out) 376, j + (k + i) 376, i + (j + k) 374,
+// k + (i + j) 372, all 1700 bytes (masked 26-29). A compile-only build (no /GL) loads the plane's first length operand from the other
+// base register (EDI for retail's ESI), so it is no screen for this block.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
