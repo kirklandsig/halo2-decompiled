@@ -665,6 +665,21 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // bool/byte/short/long positive then complementary: 156/156/161/160/156/156/161/160.
 // NOT kept: every one-use result regresses and grows to 1153..1157/1144. Original
 // complete body restored; entry velocity/unity and later SSE/x87 homes remain.
+// Round 101 (m3 lane 9, fast), at 126 (aligned 87, masked 23): the velocity as a planar aggregate copy
+// (`velocity = *(point2f const *)&vehicle->local_velocity`) 130; that with the speed's squares written y then x 122
+// (the copy is then retail's: x into EAX, y into ECX, x stored and squared first; four points, under the bar, not
+// kept). On it: the entry magnitude after the speed 274 (1147 bytes), after the velocity copy 124; the magnitude as
+// two statements (i and j squares, then `+=` the third), adjacent 128, around the copy and the speed 278/278 (the
+// 1.0 load only moves ahead of both adds). The reversing test as `fabs(atan2(...)) >= 1.9198622f` gives retail's
+// `fxch; fcompi; jb` (ours `!(... < c)` is `fcompi; ja`, which also differs from retail for a NaN angle) but is two
+// bytes longer until the SSE homes agree: alone 218 at 1145 (masked 20), with the velocity form 214 at 1145
+// (aligned 80, masked 20; a score rise, not kept). On that 214 form: the normalize helper's products as `*=` for
+// y / for both / y through a named local / y statement first / both value-first / both inverse-first 214, 214,
+// 214, 213, 214, 214 (same code: VC picks the product's destination itself); the direction as `velocity / speed`
+// 214 (same code). Left: retail holds 1.0 in XMM3 (ours XMM2; it loads between the entry sum's two adds), keeps the
+// normalized forward in XMM1/XMM0 where it was computed and multiplies it in place by the blend weight (ours moves
+// it to XMM4/XMM7 and multiplies a copy of the weight), and loads each normalize's y into a register ahead of the
+// divide.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -967,6 +982,10 @@ __forceinline long vehicle_round(real value)
 // and the dot written out (diagnostic) 24/83/93/94, the dot alone 10; vehicle_cross at the side cross 8;
 // vehicle_cross first with cross3f_staged at the side 6; cross3f_staged first with vehicle_cross at the side 10;
 // cross3f_staged at both 10; the strength test as `mode == 4 || mode == 2` 10; a tick-length getter for the rate 12.
+// Round 84 (lane 10, fast), at 8: an up pointer at the first cross with cross3f_staged at the side cross 6 (current
+// body; one-use pointer, needs a match); axis set to forward before the mode test with the cross overwriting it 173;
+// the side scale named before the side cross 82; the three vectors declared at function scope 11; the velocity call
+// before the strength value 146; cross3f_staged at the side with the dot as dot3f(&linear_velocity, &forward) 8.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -1736,11 +1755,11 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
    sideways drift, speed, forward speed and two engine overlays, the
    graph's function animations and the three aiming overlays) to the
    callback with its value */
+// score 9 (was 9): the cross is now retail's; left: the two VEHICLE_GET lookups' SIB order (2), the three
+// reloads after the overlay-kind loop (3) and the forward-speed sum's first two products (4).
 // MiniMax R (11-06): no new form, no lower score (9); the flat sum keeps (i + j) + k here for every term order and
 // operand orientation and for the array-member spelling too, while a compile-only probe of the same expression
 // gives retail's (k + j) + i order when the three products have fresh component nodes.
-// score 9 (was 9): the cross is now retail's; left: the two VEHICLE_GET lookups' SIB order (2), the three
-// reloads after the overlay-kind loop (3) and the forward-speed sum's first two products (4).
 // Earlier at 13: Graph-loop scope fixes constructor/load scheduling; header SIB forms, join reload
 // order and cross/dot operand ranks remain.
 // Earlier at 40 (was 44): the overlay lookups now call 0x1cb9d0 directly (each gets its own result home: frame 0x9c as
@@ -1844,6 +1863,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // the i term retail's at +1 local, 13), eight term orders on it 13 each; one forward pointer for the cross and the
 // speed 17; a named header pointer for the first lookup (0xef4f0's form) 13, for both 13 (SIB unchanged). Matched
 // 0xeeb80 gets retail's data-first SIB from the same two lookup lines.
+// Round 84 (lane 10, fast), at 9: the graph/state guard as an early return 9 (same code); the forward speed computed
+// once before the guard 508 (2043 bytes: VC computes it eagerly, no sinking into the arm); both lookups indexed by
+// `(word)vehicle_index` 178 (2011 bytes); vehicle_speed_fraction plain `inline` 581 (1803 bytes, out of line under
+// /Ob1); the update test written `vehicle->unknown400 != state->graph_tag_index` 10.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2745,6 +2768,9 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // the gear test `!= NONE` with the computed arm first 18; the wrap helper called with `torque * dt` 70, with the
 // contacts store too 71; torque, throttle or i renamed to sort first or last 10 each (spill slots ignore names); a
 // tick-length getter for dt 10, for dt and the braking test 65.
+// Round 84 (lane 10, fast), at 10: every contact access written `state->contacts[i].x` (no contact pointer) 46; the
+// half angle written into both trig calls 65; braking preset false and set by the test 222; the spin as `dt * torque`
+// 10 (same code); dt read after the vehicle and definition lookups 192.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4048,6 +4074,25 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // 159/159/159/159/159/159/159/159, all 831/806 bytes. Projection/cross input ranks and angle/trig
 // homes remain.
 // NOT kept: no byte equality or qualifying gain; original complete body restored.
+// Round 101 (m3 lane 9, fast), at 136 (828 bytes, aligned 81, masked 54). Retail's flip block: the fraction is
+// loaded on the x87 stack once ahead of the switch, each case scales it there (`fmul; fsub` / `fmul; fsubr` /
+// `fmul`) and the angle never goes to memory (`fld st(0); fcos; fstp; ...; fsin; fstp`), so the angle is a double.
+// Retail keeps cosine at +0x18 and sine at +0x1c (the two dead stack-parameter homes; ours the other way round),
+// loads cosine into XMM4 in each arm, forms `cosine * up.i` in each arm with its own operand form (a copy of the
+// cosine times memory after the default arm's forward rows; the loaded up.i times XMM4 in the other arm), and joins
+// at the sine load; it stores each rotated up component before loading the next. Tried: `double angle`, re-measured,
+// 174 at 778 (aligned 68, masked 41; caller 0xf4800 unchanged in fast, 1087); that with `*up = *g_4687a8` 134 at
+// 784; with the rotated up as three member assignments 132 at 784; with the default arm's forward rows as member
+// assignments too 130 at 786 (aligned 68, masked 42; six points, under the bar, not kept). On that 130 form: sine
+// declared before cosine 130 (same code); either one renamed (diagnostic) 130 (same code: names move no slot); the
+// default arm's cosine computed before its sine 136; the up rows and the left cross written in both paths with the
+// default arm returning 121 at 797 (aligned 106: VC merges the whole second copy back into the first; plain 121 with
+// caller 0xf4800 unchanged at 1087; not kept: it needs vector3f_assign written out as member assignments, which is
+// 232 at 881 with the helper, round 68), sine first 121; both rotations inside the switch (cases 1 and 2 sharing a ternary angle, default first/last) 230/230 at 893,
+// with an if/else angle 146/146 at 788; the up rows as an inline helper called in both arms, (axis, sine, cosine)
+// 276 at 939, (axis, cosine, sine) 276, with the roll arm's sine and cosine evaluated in the call 272 at 935.
+// Left on the 130 form: the two slots, the default arm's first forward row (ours `sine * up.i` first), the
+// per-arm cosine product, and the first cross's and the dot's operand forms.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4290,6 +4335,7 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
+// MiniMax S (11-10): no new form, no lower score (48): the marker count sum still lands in EAX here and in EDI in retail, the scratch zero store still follows the sum here and precedes it in retail, and the 0x146320 set-up pair still waits on that file.
 // MiniMax E (11-08): no new form, no lower score (48); the marker count sum still lands in EAX here and in EDI in retail, the scratch zero store still follows the sum here and precedes it in retail, the effect block's tag and colour still ride in the other order, and the 0x146320 set-up pair still waits on that file.
 // MiniMax E (11-07): no new form, no lower score; the marker count sum still lands in EAX here and in
 // EDI in retail, and the 0x146320 set-up pair still waits on that file.
@@ -4388,6 +4434,7 @@ extern byte g_5107ee;
    marker's downward pitch, the distance and the vehicle's speed; the
    effect's last marker sits between the marker and the hit, aimed along
    the reflected ray */
+// MiniMax S (11-10): no new form, no lower score (41): the cone call's EDI-before-ECX pair still waits on 0x146320's file, and the middle-point copy is still scheduled ahead of the reflection's loads.
 // MiniMax E (11-08): no new form, no lower score (41); the middle-point copy is still scheduled ahead of the reflection's loads where retail stores its z and y words after the first products, retail keeps the colour constant in ECX across those products while ours materialises it in EAX, and the cone call's EDI-before-ECX pair still waits on 0x146320's file.
 // MiniMax E (11-07): no new form, no lower score (41); the cone call's EDI-before-ECX pair still
 // waits on 0x146320's file, and the middle-point copy is still scheduled ahead of the reflection's loads.
@@ -4509,7 +4556,12 @@ void __stdcall function_f62f0(long vehicle_index)
 	}
 }
 
-bool function_182800(s_vehicle_ray *ray, long ignore_index, void *world);
+/* the bounded world a havok component queries rays against */
+class c_bounded_query_world
+{
+public:
+	bool function_182800(s_vehicle_ray *ray, long ignore_index);
+};
 bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray, long ignore_object_index, long ignore_unit_index);
 byte function_11f470(real lo, real hi, real value);
 long function_189060(long object_index, short value, real scale, point3f const *position,
@@ -4520,218 +4572,6 @@ long function_189060(long object_index, short value, real scale, point3f const *
    pushes it (every fourth tick, a spread of the vehicles' work, else the
    last one), which sets the function's value; a hard landing plays the
    definition's sound */
-// MiniMax R (11-09), at 176: the override search with a NULL found pointer and the Havok world read into a local give 151; the compression clamp spelled out as a store then if/else-if (the PIN macro's ternary expands to the opposite comparison) gives 141 at retail's 1361 bytes; left: the world loaded into EAX then moved to ESI, the fallback's zero held across 0x168f40 and the block layout.
-// MiniMax R (11-06): no new form, no lower score (176); the frame agrees and the permutation and flag-store order of the note below are unchanged.
-// score 141 (was 176): Frame 0xec, the override search and ray translation agree.
-// World is loaded through EAX then ESI; fallback zero/select and the final byte flag writer differ.
-// The first differing branch is still +0x5a.
-// Earlier at 206 (was 206): Frame 0xec agrees; changed/permutation stores, found-index retest, ray scale/world/zero and fallback-result ownership remain.
-// Earlier at 206 (was 251): every frame slot now retail's; left: the override search's exit (retail tests the found
-// every frame slot now retail's; left: the override search's exit (retail tests the found
-// element out of line, threaded from the loop; ours re-tests i < count), the permutation pointer's load order,
-// integer registers in the ray copies, the scale products (ours copy the scale, retail scales in place), the
-// clamp/fallback store placement and the final flag writer. Before round 45 (286, was 303): the state/permutation
-// and byte flag slots, the late zero register and the component pointer's NULL test also differed.
-// Earlier: frame 0xe0 versus 0xec, iterator/scalar homes and final flag stores remain.
-// Native point copy 350; up copy 341; both 333; both with long quantization 328;
-// both with post-search scalar selection 321; all three 316 (kept); scalar selection alone 362;
-// native ray setters 333; ray/marker/both at entry and complete workspace names 316 each.
-// Round 425: point before up 317; shared word flag writer 316, with point first 317; long sound
-// result 319, with point first 319, with writer/everything 341/341; both long decisions with all 344.
-// All original source restored; missing twelve frame bytes and iterator/scalar homes remain.
-// Lane 13 round 25: the twelve bytes are the ray's hit normal (0x182800 fills a 0x28-byte ray: point, vector, t,
-// normal; the struct gained the field) 303 (kept). On it: the override search as a NULL element pointer set on the
-// match (retail's loop and threaded exit exactly) 276 (a flag set in the loop: kept only on a match); the element
-// pointer kept from the loop with `i < count` 292; with a count local 286; the count local alone 314; the point
-// before up 303; the three offsets loaded rest first 303; `if (!marker.node_index) {...} else value = 0` 300; all
-// three 300; with the component read at each use behind the index test (no NULL test) 298; byte_flags_set 300;
-// word_flags_set bit 8 (retail's or/and RMW and split epilogue) 310 at 1378 bytes; that with the NULL pointer
-// search 288; the iterator initialized before the largest change, permutations and changed flag 298 (stores
-// then in retail's order).
-// Lane 13 round 28: the element pointer kept from the loop with `i < count` 306 (frame moves); with a count local
-// 286 (kept: the loop is retail's; its exit still re-tests i < count). On 286: the ray point before up 288; the
-// offsets loaded rest first 289; `iterator.animation_id = c_type_709360();` after the index (on 303) 322; explicit
-// graph_index/index stores in member order 286 (init then in retail's order); the init before the largest change,
-// permutations and changed 286; `if (!marker.node_index) {...} else value = 0` 286 (zero block out of line as
-// retail); havok_component_get at each use (no NULL test) 284; both 285; `sounded` declared first 284; the init
-// first too 284; the NULL found pointer 276 (a flag set in the loop).
-// Round 182 (retail packs sounded/changed as bytes +0xe/+0xf of one dword, ours puts them in two dwords at
-// +0xf/+0x17, which moves largest_change, current and the state/permutations slots): changed declared at
-// function scope beside sounded 289 (still two dwords); changed renamed (slot order by name) 286 (same slots);
-// the update bit through word_flags_set bit 8 296 (1383 bytes); the permutation count inside the pointer
-// expression 286 (identical); the ray declared at the top of the block 286 (identical).
-// Round 45 (lane 1): the averaged value written in the quantize call instead of assigned back to value 277 (kept:
-// retail's sounded/changed packed dword, call temp slot and permutation/state order); sounded declared first 273
-// (kept); the iterator stores in member order before largest_change/changed 276 on 277 (with or without the
-// redundant id stores); the point copied before up 275 on 273; `if (!marker.node_index) {...} else value = 0`
-// 274 on 273 (retail's layout); vector3f_scale for the ray vector 274 (identical); offset/rest/length assignment
-// order 270 on 273, with the component read at each use behind the index test (no NULL test, 0xf6bd0's form) 268
-// with the moved init / 269 without (kept); the component change alone 271; offset/length/rest orders
-// rol/lor/rlo 264/265/272 against orl 261 on the NULL found pointer form (that form 264; a flag set in the loop).
-// Round 45, second pass on 269: the point copied first 271; SET_FLAG for the update bit 269; `node_index != 0`
-// 269; the fallback as `value = 0.0f; if (function_168f40(...)) value = 1.0f;` 265 (the XMM7 zero goes); with the
-// point first 265, with the node test's zero arm last 263, with both 251 (kept); on 251 `real reach = 0.0f -
-// length;` before the ray / at the products / after the copies / between the copies 249/251/249/249 (in-place
-// products but a hoisted zero); the Havok clamp as an explicit store then if/else-if 257.
-// Round 44 (lane 11): the permutation count/pointer through the existing 0xba690 (count, NULL, NULL, &pointer;
-// LTCG inlines it with retail's loads) 250 -> 214 (kept); the iterator's constructor and real-typed floats
-// (0x1dceb0 still matches; iterator stores then exactly retail's, the casts at the reads gone) 251 -> 250 and
-// 214 -> 206 (kept); 0xba690 before the iterator 215; the havok component pointer read before the && chain 204
-// (computed ahead of the NONE test); as `index != NONE ? get : NULL` 206; the fallback ternary 236, as if/else
-// 242 (LTCG keeps its zero in an XMM register across 0x168f40); word_flags_set bit 8 216; the update bit through
-// the word-bits view in if/else 216 (retail's `or/and byte [edi+0x349]` and split epilogue exactly, a score rise
-// at 1376 bytes); `ray.vector.i *= 0.0f - length` 272; the ray vector copied by components 318; the override
-// search as a NULL found pointer 206 (retail's loop exit exactly; a flag set in the loop); the Havok clamp as a
-// store then if/else-if 212 (retail's clamp block exactly); `changed` declared after the 0xba690 call 199 with
-// reach / 204 without (retail's store order; under the bar); `real reach = 0.0f - length;` used in all three
-// products, before/after/between the ray copies 199/199/199 (retail's in-place products, but the zero is then
-// hoisted to XMM5; 7 points, under the bar); reach declared with offset or first, or at the products, 206
-// (identical); vector3f_scale 206; an inline helper returning the active component's world (NULL otherwise),
-// diagnostic: with the found pointer, the bit writer and the clamp store 211 at 1375 bytes, the component block
-// then retail's (`[eax+ebx+4]` flag read, then `add eax, ebx`), a bool ray-cast helper the same; all of those
-// with reach 181. Left on that set: the world loaded into EAX then moved to ESI (retail loads ESI), the zero
-// hoisting with reach, and the fallback select (retail `movss 1.0 / jne / xorps`).
-// Round 469: Integer-displacement grouping with indexed mismatch-continue, body-stepped
-// cursor, predicate-owned cursor and indexed while searches 251/257/257/251;
-// the four searches with the original displacement 251/257/257/251. Original body restored;
-// frame 0xec agrees, metadata load order and found-index retest remain.
-// J222: Translated-point setter, reused change and both 206/206/206; promoted current sample alone and with
-// point/change/both 245 each; point/change/scale plus named compression and travel 205 (one point, restored).
-// Original complete executable body and all helper declarations restored; no calibrated loss.
-// J222: Fresh compression/travel parts with the recorded three-use negative factor 199; adding late change-flag
-// initialization 197; the same pair on the translated-point/reused-change graph 199/197. The expression parts
-// add no further gain on these graphs. Selected the simpler joint 197 source (nine points from round baseline
-// 206), already ordinary whole-program confirmed without a loss; no isolated seven/two/one-point form kept.
-// Failed all-root comparisons t10/t11 excluded; exact-source fallbacks t13/t14 and final t15 are archived.
-// J224: Native override records 197; with live iterator index/live count/scalar role names 197/265/197.
-// True-first fallback 207; with records 207; with completed clamp-result assignment 203;
-// all three 203. Original executable source restored; frame and first +0x5a unchanged.
-// Round 251: Iterator/search/ray workspace lifetime subsets 1/2/4/3/5/6/7 and all with native iterator value
-// construction 197 each. Original complete body restored; frame 0xec agrees, found-index retest and
-// scalar/world/fallback homes remain.
-// Round 236: Default offset/rest/length before search, with reused change/default collision result/both
-// 264/264/268/268; defaults at the search exit with those same result subsets
-// 263/263/273/273. Pre-search frame stays 0xec; exit defaults grow it to 0xf0.
-// Original complete body restored; found-index retest and scalar/world/fallback homes remain.
-// M309: Shared scaled-vector translation in-place/direct 197/330; with late three-use reach
-// 176/330; completed clamp 203/318; both 182/318. In-place helper with late reach kept
-// at 176 by the full check; frame/length unchanged, zero and vector staging closer.
-// Round 366: Actual override endpoints, byte/native records, less-than/not-equal
-// bounds and branched/conditional empty endpoints: 262/262/253/253/262/262/253/253.
-// Original indexed search and full body restored; first-match/world/fallback homes remain.
-// Earlier retained form: 176 (was 197).
-// Round 525: Search-owned active scalars with six default creation orders and two threshold-failure
-// exits, eight forms 261/261/260/261/260/261/261/261. The found-index retest goes but extent falls to 1339;
-// original complete search, scalar observations and body restored.
-// F327: Four-use component index, completed true-arm return and both 176/176/176;
-// native byte quantization alone/with either/both 178 each; all with twice-used change
-// 178. Original complete body restored; found-index retest and collision/result allocation remain.
-// F332: Sound admission produces the returned Boolean, original/entry/pre-call/
-// pre-iterator change-state storage 271/271/279/279; with late constant sound
-// initialization 215/215/334/334. Original result production and all lifetimes restored.
-// Round 368: Two-use admitted world value, conditional/branch producer with completed fallback/clamp
-// subsets: 176/176/220/220/182/182/218/218; original complete body restored.
-// F334: Completed current/cached byte-to-real results, original/default-first arms,
-// with shared in-place ray scaling: 191/170/185/176/191/170/185/184.
-// Cached default-first reaches 1361 bytes, but the six-point lead is below the keep gate;
-// original full body restored. Found-index/world/clamp/final flag allocation remains.
-// Round 544: Four marker-query/name admission scopes with the live field or
-// one twice-used marker identifier, eight forms 176 each. Original marker
-// admission and complete body restored; found-index/world/final flag gaps remain.
-// M327: Complete active/default scalar orders olr/rol/rlo/lor/lro on shared translation and late reach:
-// 180/179/194/181/194. Three-use post-search admission with complete scalar results in bool/byte/long:
-// 176/176/176. Original full body restored; found-index retest and collision/result homes remain.
-// M331: Independent offset/length/rest/value declaration ranks vorl/orlv/lorv/lrov/rolv/rlov/volr/vrlo,
-// original producers fixed: 176/176/176/176/176/176/176/176. NOT kept: no qualifying gain or byte match.
-// Original complete body restored; frame 0xec agrees; found-index retest and scalar/world/fallback homes
-// remain.
-// P288: Actual sound-clamp result producers with complete collision input/publication phases
-// 176/181/176/176/182/170/182/182. Store-first sound/collision clamps reach 170 at 1360/1361,
-// six points below the baseline: under the keep gate. Original complete body restored;
-// found-index retest, world/fallback and final flag allocation remain.
-// M333: Static-marker/cache-schedule/component-hit predicate results, seven subsets:
-// 176 each; all with default-first cached conversion 170 at 1361 bytes. NOT kept:
-// six-point gain below the gate, and one-use predicates require a match. Full body restored.
-// M340: Complete indexed predicate for/while, identity/validity first, cached/live count: 255/255/255/255/255/255/255/255. NOT kept: no exact search/world/result graph; original body restored.
-// P290: Completed final update-bit writers, set-first/clear-first returns with
-// bool/byte/short/long sound result: 176/176/185/185/289/289/291/291.
-// Original body/result restored; native split writer epilogues, found-index retest,
-// world/zero/fallback allocation and scalar homes remain. No qualifying gain.
-// M342: Selected override ordinal serves both threshold fields; NONE/count defaults,
-// for/while scans and producer/entry declaration scopes: 262/261/262/261/262/261/262/261. NOT kept:
-// no exact selected-result graph. Original search/body restored; found-index/world/fallback homes remain.
-// P299: Selected-record for/while scans, indexed/body-stepped cursor, once-read/live
-// count on the shared translation graph: 161/161/167/167/161/161/169/169. NOT kept:
-// selected pointer requires a byte match, and 1354/1361 bytes moves away from retail. Full body restored.
-// Y559: Complementary silent then unchanged carriers, each bool/byte/short/long:
-// 188/188/289/293/177/177/283/285. NOT kept: no byte match; native positive flag
-// producers, found-index retest and world/fallback/final-writer homes remain.
-// M342: Selected override ordinal serves both threshold fields; NONE/count defaults,
-// for/while scans and producer/entry declaration scopes: 262/261/262/261/262/261/262/261. NOT kept:
-// no exact selected-result graph. Original search/body restored; found-index/world/fallback homes remain.
-// F359: Plain ray-scale vector-array loops, seven ordinal domains and body-stepped component cursor:
-// 349/349/349/349/349/349/349/235. NOT kept: no exact induction/publication repair.
-// Original complete body and helpers restored.
-// Y579: Remaining-record cursor, signed/normalized unsigned count, direct/selected
-// admission and post-search/pre-search defaults: 237/259/237/259/248/261/248/261.
-// NOT kept: no gain; native ascending search/world/fallback gaps remain. Original full body restored.
-// M376: Selected override receiver with cached-default/collision-clamp/sound-clamp
-// producer subsets, then all with repeated delta: 117/151/168/163/147/151/169/169.
-// Original indexed search with cached/collision, cached/sound, all, all/delta:
-// 182/165/177/177. NOT kept: selected receivers require equality; original-index 165 is 1353/1361, farther from retail.
-// Original indexed search, scalar producers and complete body restored.
-// Y591: Complete guarded component/query outcome, direct/exhaustive in bool/byte/short/long:
-// 177/177/177/177/177/177/177/177. NOT kept: deferred outcome requires equality;
-// original full search, component reads, collision/fallback and body restored.
-// Y594: First valid search hit owns complete threshold admission in bool/byte/short/long,
-// for/while scans: 173/173/198/197/173/173/198/197. NOT kept: inside-search
-// decision requires a byte match; best gain three is below the gate and 1359 bytes
-// is farther from native 1361. Original whole search and body restored.
-// Y596: Identity/validity hit flag before the original later threshold, positive/complement bool/byte/short/long:
-// 161/161/161/161/161/161/161/161. NOT kept: search flag needs equality; 1354/1361 bytes moves away from native; full original body restored.
-// M378: Complete ray point/up library transfers, memcpy alone/both, memmove alone/both,
-// and mixed transfers: 176/176/176/269/267/277/267/269. NOT kept: no native
-// first-match/world/result repair; original complete copies and body restored.
-// M382: Actual contiguous iterator scalar selection, conditional/branched/default-first/active-first,
-// original scalar snapshots 270/270/289/289; consistent at-use field observations 377/377/362/362.
-// NOT kept: no native first-match/world/result repair or byte equality; original complete body restored.
-// M384: Twice-used sample-change result, bool/byte/short/long, persistent OR before/after
-// cache publication: 208/208/216/214/208/208/216/214. NOT kept: all regress and lengthen;
-// original complete body restored; found-index/world/fallback/final-writer gaps remain.
-// Y596: Identity/validity hit flag before the original later threshold, positive/complement bool/byte/short/long:
-// 161/161/161/161/161/161/161/161. NOT kept: search flag needs equality; 1354/1361 bytes moves away from native; full original body restored.
-// Round 92 (lane 9), at 176 (aligned 42), re-measured on this body: the update bit through word_flags_set bit 8 186
-// at 1370 (retail's or/and byte RMW and split epilogue); the compression clamp as a store then if/else-if 182 at 1368
-// (retail's clamp block); the fallback as `value = call ? 1.0f : 0.0f` 220 at 1372 (LTCG keeps the zero in XMM7
-// across 0x168f40); writer + clamp 192 at 1376 (aligned 23); writer + fallback 225; fallback + clamp 218; all three
-// 228; the override search as a NULL found pointer (a flag set in the loop) 161 at 1354; writer + clamp + found
-// pointer 164 at 1368, aligned 21: only the component block (world loaded into EAX then moved to ESI, the flag read
-// after the pointer add) and the fallback select are left; all four 199.
-// Round 68 (lane 13), at 176 (aligned 59): the component test in 0x206090's matched shape (index test, then a
-// component local and the flag/world/hit chain) with the fallback written in both paths 257 (1383 bytes, frame
-// 0xf0: VC does not tail-merge the two fallbacks); that with the fallback as `call ? 1.0f : 0.0f` 282; with the
-// clamp as a store then if/else-if 264. Re-measured at 176: a component local read before the && chain (index
-// test kept first) 175 (aligned 63, under the bar); that with the store-then-if/else-if clamp 182 (aligned 44;
-// left: the found-index retest, the component block's registers, the fallback select and the split bit writer).
-// 0x168f40's whole callee tree matches and none of it uses XMM7: the ternary's XMM7 zero is no callee blocker.
-// Round 95 (lane 9), at 176, on round 92's writer + clamp + NULL found pointer base (164, aligned 21): the
-// component chain as `void *world = NULL; if (index != NONE) { component = havok_component_get(index); if (flag5)
-// world = component->unknown9c; } if (world && function_182800(&ray, NONE, world))` 156 at 1369 (aligned 6:
-// retail's `[eax+ebx+4]` flag read before the add; a world-returning inline helper, three spellings, the same);
-// left: the world loaded into EAX then ESI (our 0x206090 does the same at its 0x182800 call, retail loads ESI in
-// both) and the fallback select. Subsets: clamp + found pointer + world 141 at 1361 bytes (aligned 12), writer +
-// clamp + world 193 (aligned 8), writer + found pointer + world 148; all need a match (a pointer set in a loop, a
-// value set in a test). Fallback forms (`call ? 1.0f : 0.0f`, if/else, true-first, negated) 196-199 on the base,
-// 188-191 on the world form (VC holds one 0.0f in XMM7 across 0x168f40 for reach, the node-else store and the
-// fallback); that select through a function pointer to 0x168f40 (diagnostic) is retail's exactly: BLOCKED-BY
-// 0x168f40 (its register summary; no retail caller keeps an XMM value across it). The 0x390 store in both arms 223.
-// P391: Per-record match/rejection results at the original search test in bool/byte/short/long:
-// 176/176/176/176/176/176/176/176. NOT kept: one-use decisions do not match; original
-// loop, found-index retest, field observations and complete body restored.
-// P400: Native frame/search/translation now agree. Fallback contact truth converted to real,
-// direct bool/byte/short/long 158/158/158/158; exhaustive test results 152/152/142/157.
-// NOT kept: no exact one-use result or gain; 1348-1354 bytes moves away from native 1361.
-// Original full body restored; world receiver, fallback zero/select and final flag writer remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -4813,7 +4653,7 @@ bool __stdcall function_f6670(long vehicle_index, bool update)
 					}
 					else
 					{
-						void *world = NULL;
+						c_bounded_query_world *world = NULL;
 						s_havok_component *component;
 
 						if (vehicle->havok_component_index != NONE)
@@ -4822,11 +4662,11 @@ bool __stdcall function_f6670(long vehicle_index, bool update)
 
 							if (TEST_FIELD_BIT(component->flag5))
 							{
-								world = (void *)component->unknown9c;
+								world = (c_bounded_query_world *)component->unknown9c;
 							}
 						}
 
-						if (world && function_182800(&ray, NONE, world))
+						if (world && world->function_182800(&ray, NONE))
 						{
 							real compression = ray.t * length - rest;
 							real travel = length - rest;
@@ -4844,11 +4684,7 @@ bool __stdcall function_f6670(long vehicle_index, bool update)
 						}
 						else
 						{
-							value = 0.0f;
-							if (function_168f40(0x8c2d, &ray, vehicle_index, NONE))
-							{
-								value = 1.0f;
-							}
+							value = function_168f40(0x8c2d, &ray, vehicle_index, NONE) ? 1.0f : 0.0f;
 						}
 						((byte *)vehicle->unknown390)[index] = function_11f470(0.0f, 1.0f, value);
 					}
@@ -4881,14 +4717,7 @@ bool __stdcall function_f6670(long vehicle_index, bool update)
 			function_bba20(vehicle_index);
 		}
 	}
-	if (update)
-	{
-		vehicle->flags349 |= 1;
-	}
-	else
-	{
-		vehicle->flags349 &= ~1;
-	}
+	word_flags_set((word *)&vehicle->flags348, 8, update);
 	return sounded;
 }
 

@@ -1250,6 +1250,22 @@ bool function_68670(byte *source, long size, void *block);
 // reads, and the advance taking the remainder first (`long next = start + count; next %= size; used -= count; start = next;`). Retail's own order there is idiv, used update, start store. The remainder in the local's initializer 2; returned from the helper and stored by it 2;
 // `buffer->start = consume(view, count)` with a returning helper 2. Same helpers, start stored before used 121 (554), with no named next 121; used first with no next 133 (559). The one read helper calling a view advance helper 2, without next 121 (554); advance on `this` or on the ring pointer, without next 24 (553), with next 133 (558);
 // next and used-first in one read helper with no advance 133 (558), start first 24; used first without next 29; a whole read member 24; forced-inline read or both helpers 121; the advance through a re-derived ring inside one helper 26 (559); direct read calls plus the advance helper 24 (556).
+// Round 73 (m3 lane 13): HELD (needs the owner's OK for 0x68670, a contributor's function). Re-measured on this tree:
+// round 217's two-helper read (a position-read helper and an advance helper taking the remainder first) 24 -> 2 (fast),
+// and with 0x68670 declared (block, source, size) at its definition, declaration and this call 0x865d0 and 0x68670
+// both MATCH in the plain check of both files, nothing else in them changed. Code put back; the full diff is
+// build/r73/held-0x865d0.patch. Without the owner's change the read form stays match-only (2), so it is not kept.
+// Leave-one-out with that order in place (fast): this body alone 22; one helper with the named remainder 133; two
+// helpers without it 122, with the used update first 133; one helper with the used update first 27; two helpers with
+// `long next = (start + count) % size;` as one initialiser MATCH (the patch uses this, the smallest form that
+// matches); one helper with that initialiser 133. Both the helper pair and the named remainder are needed.
+// Round 65 (m3 lane 15): HELD (needs the owner's OK), build/r65/held-865d0.patch: MATCH, fast and plain (0x68670 still
+// matches and no other function of the two files changes) with round 217's read split (a position-read helper, then an
+// advance helper that names the remainder ahead of the used update) and 0x68670's parameters declared block, source,
+// size at its definition in src/unknown_067e10.cpp (a contributor body), its declaration and its one call here: retail
+// sets EAX to the payload before ESI to the block. On the split form the other orders: source, block, size 2; size,
+// source, block 2; main's order 2. The advance with the named remainder inside the one read helper 133 (558 bytes).
+// Body, helper and 0x68670 put back to main (24).
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

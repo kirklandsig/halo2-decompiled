@@ -9,7 +9,11 @@
 extern hkWorld *g_51e9a4;
 struct s_vehicle_ray;
 bool __stdcall function_168f40(long arg_0, s_vehicle_ray const *arg_1, long arg_2, long arg_3);
-bool function_182800(s_vehicle_ray *arg_0, long arg_1, void *arg_2);
+class c_bounded_query_world
+{
+public:
+	bool function_182800(s_vehicle_ray *arg_0, long arg_1);
+};
 void function_1d43d0(s_havok_component *arg_0, transform4x3f const *arg_1, transform4x3f *arg_2);
 void function_11bed0(s_location *arg_0, point3f const *arg_1);
 
@@ -378,7 +382,7 @@ bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long
    s_1d48f0 local_20;
    local_20.field_0 = *arg_9;
    vector3d_from_points3d(&local_20.field_0, &local_19, &local_20.field_c);
-   if (function_182800((s_vehicle_ray *)&local_20, local_2, local_1) && !local_0) continue;
+   if (((c_bounded_query_world *)local_1)->function_182800((s_vehicle_ray *)&local_20, local_2) && !local_0) continue;
   }
   transform4x3f local_21;
   transform4x3f local_22;

@@ -139,7 +139,7 @@ void function_174f80(s_particle_system_datum *system, void *a, void *b, void *c)
 struct s_particle_render_request_173c90
 {
 	s_particle_system_datum *system;
-	void *location;
+	s_particle_location_datum *location;
 };
 
 // @retail 0x173c90
@@ -734,6 +734,11 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // 113 (1136) [89]; on that, the motion through vector3f_rotate_into_axes 119 (1140) [96], the emitter-definition
 // block base named once before the loop 284 (1118) [176], the motion rotated from the particle's velocity into its
 // copy 141 (1140) [135], plus the position rotated from the particle's position into its copy 199 (1143) [221].
+// Lane 9 r99 (fast): matched 0x248c60 walks the same emitter chain with `objects + index * 0xb8` and a for-loop
+// index; that spelling here 115 (1136 bytes, the indexed form's code), with scale first 113; also with the emitter
+// read as `&data[index & 0xffff]` 115; the frame locals (rotation, origin, both result pointers, colour) at function
+// scope 42 (same code), with the sibling spelling and scale first 113. Re-measured AC517's chains `multiplier =
+// scale = 1.0f` / `scale = multiplier = 1.0f` 120/122 (1136 bytes), on the indexed form 115/117 (1138 bytes).
 // T79: Independent alpha/color/scale admission results at all original emitter/particle flag
 // observations, bool subsets 1/2/4/3/5/6/7 then all long: 155/217/136/234/143/236/227/173.
 // NOT kept: unmatched one-use decisions grow the extent; original complete body and all
@@ -1172,38 +1177,24 @@ struct s_sort_record;
 typedef bool (__stdcall *t_record_fill)(long, void *, long, long, long, void *, s_sort_record *);
 void function_40e30(short, long, real, long, short, dword, dword, t_record_fill, dword, void *);
 
-/* the particle system definition's flags byte at 0x16, as 0x174420 tests it */
-struct s_definition_flags_174420
-{
-    byte : 5;
-    byte flag5 : 1;
-    byte : 2;
-};
-
-/* `in` rotated into the frame `m` (in may be out) */
-static inline void matrix_transform_174420(matrix3x3 const *m, vector3f const *in, vector3f *out)
-{
-    vector3f copy;
-
-    if (in == out)
-    {
-        copy = *in;
-        in = &copy;
-    }
-    out->i = (in->j * m->left.i + in->k * m->up.i) + in->i * m->forward.i;
-    out->j = (in->i * m->forward.j + in->j * m->left.j) + in->k * m->up.j;
-    out->k = (in->i * m->forward.k + in->j * m->left.k) + in->k * m->up.k;
-}
-
-static inline void cross_product3d_174420(vector3f const *a, vector3f const *b, vector3f *result)
-{
-    result->i = a->j * b->k - a->k * b->j;
-    result->j = a->k * b->i - a->i * b->k;
-    result->k = a->i * b->j - a->j * b->i;
-}
-
 // MiniMax S (11-06): the permuter's 41 rewrites all score 135 or worse on the reduced image; no new form, no lower score.
-// score 135 (was 135): frame and length agree, and so do the entry saves. Left: the tag index lands
+// score 108 (was 135): lane 9 r99: the loop reads the request's location field at every use (typed as a location
+// pointer; retail reloads it from the request after 0x1e4e0), the camera rotation and cross product go through the
+// existing vector3f_rotate_into_axes and cross3f, the second getter call's result is kept as a pointer whose tag is
+// read at each use, and bit 5 is the definition's named flag5 (retail's mov dl/shr/test). Left: the tag is
+// read per path (retail once into EDX), the location index and request are read after the camera block (retail
+// before: EAX holds the index, so its camera copies avoid EAX), view_pass is loaded late at the loop top, the up
+// row's products load the matrix first, and the 0x165010/0x1e4e0/0x40e30 argument setups differ.
+// Lane 9 r99 trials (fast, plain-confirmed where kept): request field at each use 125 (aligned 82 -> 87), plus
+// vector3f_rotate_into_axes 118, plus cross3f 118 (same code; kept as base 118); on 118: an early-return inline
+// lookup helper 118, the request before the camera block 118, the cross product before/between the copies 118/118,
+// bit 5 as `(byte >> 5) & 1` 118, as the shifted word 320; the second getter's result as a pointer with the tag
+// read at each use 113 (one `definition` for both calls 113), plus the shifted-word bit 5 108, plus the named
+// header bit 108 (kept with the separate pointer; one shared `definition` 108 too); on 108: the tag in a local
+// read from that pointer 290 (aligned 60: retail's EDX tag, but the camera copies use EAX and the loop padding
+// grows), plus the index and request before the camera block 62 (aligned 53; match-only: moved declaration), with
+// only the request moved 284/285; the index and request moved alone 112; TAG_GROUP read twice 108.
+// Earlier 135 (was 135): frame and length agree, and so do the entry saves. Left: the tag index lands
 // in EAX (retail EDX, 0x137bd0's register) and the extra `mov edx, eax` shifts the camera block;
 // retail tests definition bit 5 as `mov dl; shr dl, 5; test dl, 1`; it reloads the location
 // after 0x1e4e0 (BLOCKED-BY 0x1e4e0, todo) and calls 0x1751d0 before pushing 0x40e30's arguments.
@@ -1293,17 +1284,17 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
     s_particle_system_datum *system = DATUM(g_510c74, s_particle_system_datum, system_index);
     if (function_137bd0(system->function_1751d0()->tag_index))
     {
-        long tag_index = system->function_1751d0()->tag_index;
+        s_effect_particle_system_definition *tag_definition = system->function_1751d0();
         long const *reference;
-        dword group = TAG_GROUP(tag_index);
+        dword group = TAG_GROUP(tag_definition->tag_index);
         if (group == 0x5052544d || group == 'prt3')
-            reference = function_137bd0(tag_index)->function_x947334();
-        else reference = *(long const **)(TAG_GET(byte, tag_index) + 0x24);
+            reference = function_137bd0(tag_definition->tag_index)->function_x947334();
+        else reference = *(long const **)(TAG_GET(byte, tag_definition->tag_index) + 0x24);
         byte *shader = TAG_GET(byte, *reference);
         byte *table = *(byte **)(shader + 0x5c);
         dword render_flags = *(dword *)(*(byte **)(table + 4) + 2);
         s_effect_particle_system_definition *definition = system->function_1751d0();
-        if (!TEST_FIELD_BIT(((s_definition_flags_174420 const *)((byte *)definition + 0x16))->flag5))
+        if (!TEST_FIELD_BIT(definition->flag5))
         {
             real bias = *(short *)definition->unknown14 * 0.05f;
             matrix3x3 camera;
@@ -1311,46 +1302,45 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
             {
                 camera.forward = g_4b9dac;
                 camera.up = g_4b9db8;
-                cross_product3d_174420(&g_4b9db8, &g_4b9dac, &camera.left);
+                cross3f(&g_4b9db8, &g_4b9dac, &camera.left);
             }
             s_particle_render_request_173c90 request;
             request.system = system;
             for (long index = system->location_index; index != NONE; )
             {
-                s_particle_location_datum *location = DATUM(g_51ec8c, s_particle_location_datum, index);
-                request.location = location;
-                bool in_view = ((byte *)location)[2] != 0;
+                request.location = DATUM(g_51ec8c, s_particle_location_datum, index);
+                bool in_view = ((byte *)request.location)[2] != 0;
                 if (view_pass == in_view)
                 {
                     bool draw = true;
                     point3f position;
                     if (camera_relative)
                     {
-                        matrix_transform_174420(&camera, (vector3f const *)&location->position, (vector3f *)&position);
+                        vector3f_rotate_into_axes(&camera, (vector3f const *)&request.location->position, (vector3f *)&position);
                         position.x = g_4b9da0.x + position.x;
                         position.y = g_4b9da0.y + position.y;
                         position.z = g_4b9da0.z + position.z;
-                        *(dword *)((byte *)location + 0x30) = g_4ba034;
+                        *(dword *)((byte *)request.location + 0x30) = g_4ba034;
                     }
                     else
                     {
                         long cluster = system->location.cluster_index;
                         bool visible = function_3eb20(cluster) || (bool)(((dword)*(word const *)((byte const *)system + 0xc) >> 10) & 1);
                         bool in_pool = (g_547f88.flags[cluster >> 5] & (1 << (cluster & 31))) != 0;
-                        if (force_visible || (bool)(((dword)*(word const *)((byte const *)definition + 0x16) >> 9) & 1) || in_pool || visible)
+                        if (force_visible || TEST_FIELD_BIT(definition->flag9) || in_pool || visible)
                         {
                             if (!visible && !force_visible)
                             {
-                                if (!(bool)(((dword)*(word const *)((byte const *)definition + 0x16) >> 9) & 1))
+                                if (!TEST_FIELD_BIT(definition->flag9))
                                 {
                                     bool contained = false;
                                     draw = function_165010((s_frustum_set_view const *)g_547f88.context,
                                         ((signed char *)g_547f88.indices)[cluster],
-                                        (point3f const *)((byte *)location + 0x20), *(real *)((byte *)location + 0x2c), &contained);
+                                        (point3f const *)((byte *)request.location + 0x20), *(real *)((byte *)request.location + 0x2c), &contained);
                                 }
                                 else
                                     draw = function_181800((s_sphere_frustum const *)((byte *)g_547f88.context + 0x94),
-                                        (point3f const *)((byte *)location + 0x20), *(real *)((byte *)location + 0x2c)) != 0;
+                                        (point3f const *)((byte *)request.location + 0x20), *(real *)((byte *)request.location + 0x2c)) != 0;
                             }
                             if (draw)
                             {
@@ -1358,18 +1348,18 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
                                     system->flag10 = true;
                                 else
                                     system->flag10 = false;
-                                vector3f delta = {location->position.x - g_4b9da0.x,
-                                    location->position.y - g_4b9da0.y, location->position.z - g_4b9da0.z};
+                                vector3f delta = {request.location->position.x - g_4b9da0.x,
+                                    request.location->position.y - g_4b9da0.y, request.location->position.z - g_4b9da0.z};
                                 if (!visible)
                                 {
                                     real distance = (real)(sqrt(delta.k * delta.k + delta.j * delta.j + delta.i * delta.i) * g_4b9dcc);
                                     draw = function_249bb0((s_distance_fade const *)definition, distance) > 0.0f;
                                 }
                                 else draw = true;
-                                *(dword *)((byte *)location + 0x30) = g_4ba034;
+                                *(dword *)((byte *)request.location + 0x30) = g_4ba034;
                             }
                         }
-                        position = location->position;
+                        position = request.location->position;
                     }
                     if (draw)
                     {
@@ -1383,8 +1373,8 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
                                 (t_record_fill)function_173cb0, (dword)function_173d80, (void *)system_index);
                     }
                 }
-                else *(dword *)((byte *)location + 0x30) = g_4ba034;
-                index = location->next_index;
+                else *(dword *)((byte *)request.location + 0x30) = g_4ba034;
+                index = request.location->next_index;
             }
         }
     }
@@ -1674,6 +1664,16 @@ bool function_17afd0(long effect_index, long value);
 // `effect_index != NONE && available && ...` 46 (the attached block threads differently from retail; a one-point
 // change, not kept); `view_pass == same_view` 48; the availability left uninitialised and set in both arms of the
 // view test (`else available = false;`) 125 (492 bytes).
+// Lane 9 r99 (fast; the view global read at each use and the availability false after the owner and set on success
+// unless noted): the 12 form (same_view true before the availability, cleared on the failed test) differs only in
+// where VC puts the `same_view = 1` store (the view test's block, retail the third test's block), also with the true
+// declared between the availability's clear and its test 12, or the clearing test written with `||` 12; the value
+// same_view 138 (510 bytes: same_view takes BL, NONE EBX); effect index tested first in attached 138; `else if
+// (available && attached && ...)` 149; availability declared at the arm's top 138; availability in one if/else 113
+// (498 bytes); owner defaulted to NONE 138; attached false-then-set 146; same_view false-then-set 141, both 149;
+// same_view if/else 138, negated first 138, `? true : false` 138; the current body with the view at each use 110 (500
+// bytes; only the xor placement and neg/sbb/inc left), with the clear after the owner 121 (496 bytes), with a nested
+// set 138, with the early clear and the set on success 142.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
@@ -1685,7 +1685,7 @@ void __stdcall function_174220(bool view_pass)
         s_effect_particle_system_definition *definition = system->function_1751d0();
         short cluster = system->location.cluster_index;
         if (cluster != NONE &&
-            ((bool)((*(word *)((byte *)definition + 0x16) >> 9) & 1) ||
+            (TEST_FIELD_BIT(definition->flag9) ||
              bit_vector_test(g_547f88.flags, cluster) || function_3eb20(cluster)) &&
             system->unknown4c == NONE && system->location_index != NONE)
         {
@@ -1707,7 +1707,7 @@ void __stdcall function_174220(bool view_pass)
             if (same_view)
             {
                 if (view != NONE && *(short *)((byte *)g_4ed284 + view * 0x94 + 0x42) != NONE)
-                    draw = (((byte *)definition)[0x16] >> 6) & 1;
+                    draw = definition->flag6;
                 if (definition->unknown0c != 0) camera_relative = true;
             }
             else if (attached && definition->location_mode == 2) draw = false;

@@ -1788,7 +1788,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00091a30,244,game,speed,a16 pad ebp,,,00091690 00091760 000917c0 000919a0,src/team_balancing.cpp,matched
 00091b30,81,game,speed,a16 pad,,,00091620,src/team_balancing.cpp,matched
 00091b90,54,game,speed,a16 pad,,,00091dd0,src/team_balancing.cpp,matched
-00091bd0,512,game,speed,a16 pad ebp,,,00091690 000916e0 00091800 00091860 000918c0 00320560,src/team_balancing.cpp,todo
+00091bd0,512,game,speed,a16 pad ebp,,,00091690 000916e0 00091800 00091860 000918c0 00320560,src/team_balancing.cpp,matched
 00091dd0,93,game,unknown,a16,,,00091bd0,src/team_balancing.cpp,matched
 00091e30,195,game,speed,a16 pad,,,00091fc0,src/team_balancing.cpp,matched
 00091f00,190,game,speed,a16 pad,,,00091e30,src/team_balancing.cpp,todo
@@ -3268,7 +3268,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 000ec0d0,480,game,speed,a16 pad,,,00030bf0 000b75a0 000b8890 000ba160 000bd020 000e5930 000ee460 0010f430 0010f9b0 00141590 00141f60 00142a60,src/unknown_0a76b0.cpp,matched
 000ec2b0,23,game,unknown,a16,,,000ec0d0,src/unknown_0a76b0.cpp,matched
 000ec2d0,82,game,speed,a16 pad,,,000ec050,src/unknown_0a76b0.cpp,matched
-000ec330,67,game,speed,a16 pad,,,000e5750 000ec0d0,src/unknown_0a76b0.cpp,todo
+000ec330,67,game,speed,a16 pad,,,000e5750 000ec0d0,src/unknown_0a76b0.cpp,matched
 000ec380,364,game,speed,a16 pad,,,000e69c0 000edff0 00113e90 001c6ee0,src/unknown_0a76b0.cpp,matched
 000ec4f0,1098,game,speed,a16 pad,,,00030bf0 000b67a0 000b9dd0 000badc0 000baf80 000d6660 000d66d0 000d7b80 00188180 001eb020,src/unknown_0a76b0.cpp,todo
 000ec940,36,game,speed,a16 pad,,,000ee090,src/unknown_0a76b0.cpp,matched
@@ -3346,7 +3346,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 000f6010,72,game,speed,a16 pad,,,000f6060 000f62f0,src/vehicles.cpp,matched
 000f6060,653,game,speed,a16 pad ebp,,,000b8d30 001201a0 00146320 001697c0 00175fa0 001763a0,src/vehicles.cpp,todo
 000f62f0,889,game,speed,a16 pad ebp,,,000b8d30 001201a0 00146320 001697c0 00175fa0 001763a0,src/vehicles.cpp,todo
-000f6670,1361,game,speed,a16 pad,,,000b8d30 000bba20 0011f470 00168f40 00182800 00189060 001dceb0,src/vehicles.cpp,todo
+000f6670,1361,game,speed,a16 pad,,,000b8d30 000bba20 0011f470 00168f40 00182800 00189060 001dceb0,src/vehicles.cpp,matched
 000f6bd0,308,game,speed,a16 pad,,,,src/vehicles.cpp,matched
 000f6d10,2974,game,speed,a16 pad,,,00024590 000d1210 000e6fe0 000f5d70 000f78b0 000f78e0 000f8070 0011d580,src/vehicles.cpp,todo
 000f78b0,38,game,speed,a16 pad,,,,src/vehicles.cpp,matched
@@ -8015,7 +8015,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 0022d28d,42,game,size,packed,,,00140420,src/user_interface_text_parser.cpp,matched
 0022d2b7,55,game,size,ebp packed,,,0008cc20 0013fac0 0022d2ee,src/user_interface_text_parser.cpp,matched
 0022d2ee,360,game,size,ebp packed,,,003207ed 00320870 00320890 00321ce4,src/user_interface_text_parser.cpp,matched
-0022d456,173,game,size,packed,,,000649c0 0008cc20 00148350 001a0180,src/user_interface_text_parser.cpp,todo
+0022d456,173,game,size,packed,,,000649c0 0008cc20 00148350 001a0180,src/user_interface_text_parser.cpp,matched
 0022d503,43,game,size,packed,,,000649c0 0008cc20,src/user_interface_text_parser.cpp,matched
 0022d52e,56,game,size,ebp packed,,,000641f0 0008cc20 001944c0,src/user_interface_text_parser.cpp,matched
 0022d566,65,game,size,ebp packed,,,000641f0 0008cc20 00194540,src/user_interface_text_parser.cpp,matched
@@ -11287,7 +11287,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 002c9f55,30,game,size,packed,,,002c9e69 00321379,src/unknown_2c9ddb.cpp,matched
 002c9f73,47,game,size,packed,,,00148a58 0024bb9c 002c9fa2 002ca225,src/unknown_2c9ddb.cpp,matched
 002c9fa2,82,game,size,ebp packed,,,00120e70 0024c515 002b2327,src/unknown_2c9ddb.cpp,matched
-002c9ff4,157,game,size,ebp packed,,,00215b50 0022edb8 00253b1a,src/unknown_2c9ddb.cpp,todo
+002c9ff4,157,game,size,ebp packed,,,00215b50 0022edb8 00253b1a,src/unknown_2c9ddb.cpp,matched
 002ca091,72,game,size,packed,,,0024bd61 002ca244,src/unknown_2c9ddb.cpp,matched
 002ca0d9,332,game,size,ebp packed,,,0016b7a0 0016b840 0019fd00 001a2c81 00212bc0 00215900 0024c0c4 00320560,src/unknown_2c9ddb.cpp,matched
 002ca225,31,game,size,packed,,,0016bbc0 0024c515 002ca0d9,src/unknown_2c9ddb.cpp,matched

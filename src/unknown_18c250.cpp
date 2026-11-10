@@ -311,7 +311,10 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 }
 #pragma inline_depth(255)
 
-// score 7 (was 7): sample-base/offset registers and final object setup remain;
+// score 2 (was 2): only the two loads' registers differ: ours loads the samples address into EDI (the data
+// pointer's dying register) and the entry's data offset into EDX, retail the samples into EDX and the offset into EDI.
+// MiniMax E (11-09): 2 (was 7): the samples pointer is copied into a dword and the scale is passed
+// sample-base/offset registers and final object setup remain;
 // MiniMax E (11-09): score 2 (was 7): the samples pointer is copied into a dword and the scale is passed
 // straight to the callee, so the scale is loaded early and the sum's first operand is the samples pointer,
 // which matches retail's load order and its call setup (the curves address by lea ecx and the object index
@@ -335,6 +338,7 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // MiniMax D (11-01): no new form, no lower score; the sample sum still puts the entry offset in EDX and the
 // samples in ESI where retail has the samples in EDX and the offset in the dying EDI, the object index still
 // loads before the pushes, and the permuter's 1806 tries never beat 7.
+// Earlier 7 (was 7): the tail still loads the entry offset into EDX and the samples pointer into ESI, where
 // Earlier (7, was 7): the tail still loads the entry offset into EDX and the samples pointer into ESI, where
 // retail loads the samples into EDX and the offset into the dying EDI, and the object index is still loaded
 // into ECX before the pushes where retail loads it after them, with the curves address computed by lea eax
@@ -353,6 +357,7 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // sample base in EDX and the offset in EDI, ours the other way round); a round trip of the base through a dword
 // folds back to the pointer form at 7, and the index form, a pointer local and an unsigned index leave the offset
 // in the add's destination, at 7 or 8.
+// Earlier 2 (was 7): sample-base and offset registers plus object call setup remain; readonly data
 // Earlier (7, was 7): sample-base and offset registers plus object call setup remain; readonly data
 // score 2 (was 7): sample-base and offset registers plus object call setup remain; readonly data
 // input 7; readonly entry input 7; native count identity 7; output count lifetime 52; existing
@@ -376,6 +381,11 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // here and in ecx in retail, and the scale is loaded before the pointer's push in retail and after it
 // here; the memcpy form that reads the field's bits through its address is the only one that reaches
 // 2 and it is kept out of this lane's changes.
+// Lane 9 r99 (fast): a file-local helper returning a tag data's address plus an offset, over the promotion data's head
+// read as that tag data (diagnostic cast), 8, with the count stored first 10, the helper indexing `&address[offset]` 8;
+// the count stored before the address 4; on the memcpy body the offset in a named local before or after the copy 2/2,
+// the sum as an integer sum either way round 2/2, the offset written first 2 (all the same code); `samples_address +=
+// offset` then the cast 8; the copy made straight into the curve set's address field, then `+=` 8.
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {

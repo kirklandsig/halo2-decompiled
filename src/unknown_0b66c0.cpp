@@ -777,6 +777,11 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // finding: a direct `return true` in the would-block arm puts the restore last (retail's place) but the success result then
 // shares BL with the false one (the loop test loses EBX); a real statement in the not-would-block arm (diagnostic redundant
 // `result = false`) puts that arm right after the sentinel test (retail's place for the BL exit) but folds it to `xor al, al`.
+// Round 100 (m3 lane 9, fast; goto-free forms in the style of the matched receive above): a `done` flag with
+// `do ... while (!done)`, the completion inside the success arm and `else if (sent != -2) done = true; else`
+// the restore 10; the same with the sentinel arm first 10; with `while (!done && position != total)` and the
+// completion under `if (!done)` after the loop 10; with the 0xb6320 success arm first 10; `while (true)` with
+// nested ifs, `continue` while short of the total and one return at the loop's end 10. All the same code.
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {

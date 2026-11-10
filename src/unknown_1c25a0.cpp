@@ -866,6 +866,11 @@ void function_1c54b0(char const *variants, long object_index)
 // `removed ? 0 : 1` 18, as `removed == false` 18, as `island_index = island_index + !removed` 18; count declared before the
 // entity count 18; the flag address-taken (harness only) 18, set through a force-inline discard helper taking its address
 // (harness only) 18. The ternary step with the flag before the call 4 (same code).
+// Round 162 (m3 lane 5, fast, all with the flag after the call): a 600 s permuter run from that form (40 tries) best 4, by
+// moving the flag back before the call; count and entity index at function scope 20; the component test as `continue` then the
+// flag test 18; a world local inside the discard block 18; the count test inverted with an empty then-arm 18; `while` with nested
+// tests and `entity_count <= count` 55. Retail's zero-trip jump lands on the count test, past both reloads: the world pointer and
+// the island index are both reloads on the entity loop's exit edge, world first in retail, index first here.
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {

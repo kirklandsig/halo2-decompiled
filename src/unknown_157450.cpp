@@ -735,6 +735,14 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // volatile present: the playing store, plus index24, plus the mask store through function_xaee93d() 77/77/77 [15] (identical
 // code); `*team_mask |= (word)present_teams` 130 (375 B); `old_team_mask != present_teams` 77; the OR as `(word)present_teams |
 // old_team_mask` 77. A `long` mask 32 (same code as dword). Original body restored.
+// Round 61 (m3 lane 2, fast; baseline 32): on the word mask with a plain present (63 control, 384 B: globals is rematerialised
+// in EAX, the pool takes EBP and present EDI; the dword mask with a plain present, 102 at 378 B, has retail's loop and
+// globals/pool homes, so the mask's width alone flips which of globals and present gets the last saved register): a 16-bit
+// bit-field view of a dword mask 128 (396 B, the store becomes a masked merge); the mask in a small word flags type with
+// inline get/set 59; `do { } while (false)` around the player loop 63, around the change block 179 (446 B); long
+// accumulators 63; a signed-char team local 65 (383 B); the mask field through a reference instead of the pointer 63; both
+// accumulators filled by a force-inlined routine through pointers with the masks stored through globals 139 (368 B, a repeat:
+// inlining removes the address use, present still takes EDI). Original body restored.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -2697,7 +2705,9 @@ void function_15b980(bool skip_event)
 void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short delta);
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics, long field, long delta, bool by_team);
 
-// score 44 (was 44): frame 0x10 agrees; BLOCKED-BY 0x1967d0 and the 0x1e9df0 call's setup, as the older lines below describe.
+// score 3 (was 44): retail's length; only the 0x1e9df0 call's register setup differs (retail `or ecx, -1; xor eax, eax;
+// mov edx, ebx`, ours the statistics copy first). BLOCKED-BY 0x1e9df0 for that order (its file was held this round);
+// the older lines below describe the earlier blockers, which the win test's move resolved.
 // MiniMax D (11-06): no new form, no lower score (44); retail sets up the 0x1e9df0 arguments after the
 // zero and the NONE (or ecx,0xffffffff / xor eax,eax / mov edx,ebx) and reloads g_4e6948 through EAX
 // instead of holding it in EBX, which also rotates the per-case delta registers; both come from the
@@ -2756,6 +2766,15 @@ void function_1e9ce0(long player_index, long counter, s_statborg *statistics, lo
 // Round 96 (m3 lane 9, fast; aligned [11]): `team == iterator.player->team` 45 [12]; case 2 as `current >= score` 46 [13];
 // case 1 as `current < score` 46 [13]; the minimum as `-0x7fffffff - 1` 44; `score_to_win <= score` in the final test 44 [13].
 // Both blockers stand (src/unknown_1e9700.cpp and src/unknown_1967d0.cpp were off limits this round).
+// Round 61 (m3 lane 2, fast with 0x15b3a0, then plain): the win test moved out of the `score != old_score` block to follow it
+// 44 -> 3 (359 B, kept): the options global is then read again at each use as retail's, and the three counter arms take retail's
+// ECX/EDX/EAX. Before it, on the 44 body: `do { } while (false)` around the counter switch 44, an explicit `default: break;` 44,
+// the win test nested with a named score-to-win 44, the 0x1e9df0 call in each mode arm 139 (386 B). On the 3 body, for the
+// setup order: statistics through the inline getter at the call 116 (391 B), through the out-of-line getter 55 (364 B), a
+// short cast on the difference 3, a pointer to the team score for the old score 3, the difference named for that call 3,
+// named for all four calls 118 (340 B), assigned to `delta` 3, the mode read ahead of the statistics getter 53, the change
+// test as a difference 119 (342 B). 0x15b3a0's retail call (`lea edx` between the pushes, then ECX, EAX) fits the same
+// declaration, so the order here is the register copy being scheduled after the two constants.
 // @retail 0x15b650
 void __stdcall function_15b650(long team, long delta)
 {
@@ -2795,9 +2814,9 @@ void __stdcall function_15b650(long team, long delta)
 		case 3: function_1967d0(NONE, team, 0x17, score - old_score); break;
 		case 9: function_1967d0(NONE, team, 0x12, score - old_score); break;
 		}
-		if (score > old_score && g_4e6948->score_to_win && score >= g_4e6948->score_to_win)
-			function_15b3a0(team, false);
 	}
+	if (score > old_score && g_4e6948->score_to_win && score >= g_4e6948->score_to_win)
+		function_15b3a0(team, false);
 }
 
 struct s_round_limit_options
@@ -4818,6 +4837,11 @@ bool function_158eb0()
 // temporary ahead of the index load. Chained `iterator.index = iterator.absolute_index = NONE` 5; next() given `&iterator.player`
 // 5; the iterator set through its record-pool view 5; `flag != false` 5; the raw rank named and halved in the test 5.
 // Original body restored.
+// Round 98 (m3 lane 16, fast): inline helpers whose parameters could supply the missing rotation step: a typed
+// wrapper around the iterator's next call 5; the iterator's three stores in an inline setter taking its address 5;
+// both 5; the rank call through a forwarding helper taking (mode, index) 5, (bool flag, index) 5, (mode, index,
+// value) 5, (index, flag) with the halving inside 5; the whole test in an inline predicate taking the index 5
+// (the same code in all eight). Original body restored.
 // @retail 0x158f50
 bool function_158f50()
 {
@@ -5368,6 +5392,7 @@ void function_36580(void);
 void function_36880(s_short_rectangle const *rectangle, color4f const *color);
 void function_161420(long player_index, real alpha);
 
+// MiniMax C (11-10): no new form, no lower score (2); the player copy (mov edx, ebx) still precedes the x87 argument store (fstp dword ptr [esp]) before the 0x161420 call where retail stores the power first, and a double power expression with a cast to real measures 2; the callee's declaration in src/unknown_1600f0.cpp fixes the argument order.
 // MiniMax D (11-06): no new form, no lower score (2); the only difference is still the order of the
 // player copy (mov edx, ebx) and the x87 argument store (fstp dword ptr [esp]) in front of the
 // 0x161420 call. This round a braced named power local (real and float), the power computed before
@@ -5728,6 +5753,14 @@ void __stdcall function_d6bc0(long object_index);
 // P391: Abandonable initialization phase reaching the shared countdown, mode 1/0 first,
 // short/word/int/long selectors: 57/57/51/51/94/94/95/95. NOT kept: no exact match;
 // best gains one and every extent shortens away from 869. Original full body restored.
+// Round 61 (m3 lane 2, fast; baseline 52): the 7 recipe rebuilt on this body is 7 again (869 B) and its field-test variant 172
+// (858 B). 0x158ff0 takes its index in EBX, so the loop-top index and the tail's reload both sit there; in the 172 form the
+// `entries` argument becomes a register variable in EDI (reloaded after each 0x15f060 call, which takes EDI) and the timer
+// address takes EBX between the two index ranges, where retail never keeps `entries` in a register. On the 172 form: an entry
+// pointer for the iteration declared at the loop top 172 (same code; on the 7 form 7, same code), the countdown through the
+// field with no local 172, the schedule flag declared at the loop top 172, the tail as if/else arms without the continue
+// 172, a `*const` parameter 172, a long loop counter 237 (877 B); diagnostic, the tail testing the field but passing the
+// loop-top index to 0x158ff0 207 (878 B, frame 0x1c: the index goes to memory instead of holding EBX). Body unchanged.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

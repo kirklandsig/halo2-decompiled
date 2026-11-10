@@ -75,6 +75,12 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
+// MiniMax I (11-09): no new form, no lower score; the fast check gives 90 (575 bytes against retail's 575)
+// and the listing confirms what the earlier rounds recorded: retail's outer loop carries a pretest
+// (`cmp ebp, edi; jle` at the loop's head, with the bottom test `cmp edi, ebp; jl` jumping back into the
+// body), our do-while has no pretest; retail holds the slot pointer in EDX (`lea edx, [ecx + esi*4 + 0xc]`)
+// and the predicate result in CL (`setne cl`), ours holds both in ECX and AL; and the whole tail after the
+// loop still differs because it needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // MiniMax I (11-09): no new form, no lower score; the plain and the fast check both give 90, retail's outer pretest (cmp ebp, edi; jle) is still missing from our do-while and the tail call still needs 0x2b5d0's own body, so the function stays blocked by that stub.
 // MiniMax I (11-06): no new form, no lower score; retail's outer loop still has a pretest (cmp ebp, edi; jle) that our do-while lacks, the player-scan base pointer is still EDX in retail against ECX in ours, and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // MiniMax H (11-05): no new form, no lower score; the tail still needs 0x2b5d0's own body (a stub in
@@ -291,6 +297,12 @@ void function_2232a0(void)
 // code); the counter declared in the for 164, declared early and assigned in the for 164; the for loop with
 // `local_2 + 1` at both uses 120 (aligned 63); the do-while with the view count declared after it 135; the getter
 // without the loop-top zero 122 (aligned 66). Of the eight functions that block 0x2b5d0, 0x131030 now matches.
+// Round 62 (m3 lane 2, fast; 0x223240 and 0x2232a0 match each time): a pretested `for` with the view count computed after
+// the loop and the source initialised NULL at the loop top (no else arms) 123 (retail's pretest and loop-top zero, but
+// the counter/count/record registers rotate to EBP/EBX/EDI against retail's and the do-while's EDI/EBP/EBX); that with
+// the found arm as a default-last conditional 118; with the counter declared first 160; with the source declared before
+// the loop and cleared at its top 123; the source looked up after the scan with the in-place `index != NONE &&
+// g_4686c4 != NONE` test 179. g_4e9c8c[i] is the same memory as `&g_4e9bd4[i].state` (globals.h). Still BLOCKED-BY 0x2b5d0.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

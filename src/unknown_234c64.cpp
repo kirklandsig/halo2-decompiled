@@ -337,6 +337,13 @@ void c_window_channel::v9()
 // free helper taking the request pointer gives 3; VC copy-propagates a pointer parameter back to `&new_request` (so ECX
 // is reused after the call) but not an inlined method's `this`. BLOCKED by the no-wrapper rule unless an existing
 // member function of the request turns up whose body calls the builder on `this`.
+// Round 100 (m3 lane 9, fast; diagnostics, all restored): HELD lead, build/r100/held-23531c.patch (needs the held
+// files' owners). The builder as a member function of the parameters type (`new_request.function_149f49(0, ...)`, the
+// same bytes for 0x149f49) gives retail's `lea` here: MATCH, v9 and 0x2354aa stay matched, but matched 0x2358c3 then
+// re-forms its address too (3). 0x2358c3 comes back with its load call through an inline member of the parameters type
+// (`return load(this);`): all five MATCH; with a two-use pointer local there, MATCH; with base-type storage there, 3.
+// The inline load member with the free builder: 3 here and 0x2358c3 lost. Not applied: the builder has about 110 calls
+// in 28 files (some held), and every caller that uses its request right after the call needs the member load form.
 // @retail 0x23531c
 void c_window_channel::v10()
 {
