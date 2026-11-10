@@ -1217,6 +1217,7 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // kept); the member form with the in-place object pointer 90; the copy through memcpy 92; the squared-length test written
 // `0.0f < sum` 92. Still BLOCKED-BY 0x1c4b00's `long force` parameter (src/unknown_1c25a0.cpp and its declarations,
 // held by other lanes this round).
+// MiniMax R (11-10): no new form, no lower score; the squared length still sums the three components in the order the compiler picks (i, j, k) where retail sums them from k down to i, and three component locals that follow retail's order score 90, under the bar; the 0x119bc0 result still travels in al where retail stores it to a stack byte and pushes the containing dword, which needs 0x1c4b00's last parameter declared as a bool in a file this lane may not edit.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

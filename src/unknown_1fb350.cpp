@@ -323,6 +323,11 @@ extern "C" void _ReadWriteBarrier(void);
 // hoisted into EBP; the fast check builds a reduced image in which g_4e0300 and g_4f5724 are unresolved, so
 // every load of one of them counts as a difference and the fast score overstates the real gap.
 // MiniMax I (11-09): no new form, no lower score; the pool's second stack home for the element is still missing, so the frame stays at 0xc against retail's 0x14; this round a four-field datum iterator with the pool in a second local and the scan reading the iterator's data through a cast of its own address reproduces retail's frame size and slot layout at 119, a gain of 3, which is below the gate and was not kept.
+// MiniMax S (11-09): no new form, no lower score (122); retail's frame is 0x14 against our
+// 0xc, it copies the pool to two stack homes and keeps the datum index in a register, while
+// we forward the pool into edi and hold the object pool in ebp; the pool read from the global
+// and the iterator's pool passed as the element's pool keep the same code, so the frame and
+// the register split stand.
 // MiniMax R (11-09): no new form, no lower score (122); retail keeps the pool in two stack homes and the datum index in a register, ours keeps the pool in edi and lifts g_4e0300 into ebp at the entry.
 // MiniMax A (11-06): no new form, no lower score; retail's frame is 0x14 with the pool in two stack homes
 // (one for the scan, one for the element), the index home a third, the datum index in EDI and the object

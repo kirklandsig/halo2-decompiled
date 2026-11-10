@@ -93,6 +93,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	return result;
 }
 // score 107 (was 107): Frameless entry saves, fresh unit lookup and late prior-state carrier remain.
+// MiniMax D (11-09): no new form, no lower score (107); the unit pointer is still fetched once and kept
+// across the two calls to 0xbadc0, while retail looks it up again after them, because retail's link treats
+// that callee as writing memory and this link knows it writes none; the callee's body is in another file
+// this lane may not edit.
 // MiniMax R (11-09): no new form, no lower score; the entry's second unit fetch is still merged into the
 // first, because the lookup callee that decides it lives in another file.
 // MiniMax D (11-08), at 107: retail re-fetches the unit pointer and both pool globals after

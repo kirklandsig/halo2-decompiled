@@ -110,6 +110,10 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 #pragma inline_depth(1)
 // score 94 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
 // creation-call setup and transform scratch ranks differ.
+// MiniMax D (11-09): no new form, no lower score (94); the sixth argument is still read into ECX after the
+// prologue's pushes where retail reads it into EAX before them, and the third argument is still kept in
+// EAX where retail keeps it in ECX, so the whole body sits two instructions off; copying the sixth
+// argument into a local of its own scores 287 and was reverted.
 // MiniMax S (11-09): still differs in the count loop: retail tests the count with a signed compare and then
 // widens it without sign, ours keeps the count sign-extended; retail also reads arg-5 before the prologue's
 // pushes and holds arg-3 in ecx, ours reads arg-5 into ecx after the pushes. The count's spelling was permuted
