@@ -333,6 +333,9 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // then the same four with inline metadata: 110/110/134/110/110/110/134/110.
 // NOT kept: native EAX state/stack tag setup is not recovered; all interface, provider and caller changes restored.
 // Frame 0xa8 agrees; early header work, first class-query expansion and playback homes remain.
+// M3 lane 11 r81 (plain, with the eight matched callers): flag base as `5 + (source ? 0x20 : 0)` 110, as `source ? 0x25 : 5` 110,
+// as `long` 110, end time as `game_time + 10 + ticks` 110 (all same code); the end test reading the audible byte from the request
+// 135 at retail's 470 bytes, but the request stays live and all eight matched callers are lost.
 // Round 82 (m3 lane 1, fast with the eight matched callers, 0x221810 and 0x21d110; the fast image reads 110 for this body):
 // retail's whole header at once, the priority from the request's audible byte, the flag word started at 5 with three
 // set-or-clear steps (source bit 5, object bit 3, platform bit 8, the file-local macro other files use), the location copied

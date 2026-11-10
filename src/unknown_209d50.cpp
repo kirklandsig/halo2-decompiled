@@ -113,6 +113,16 @@ static inline void *function_xc5914d(long thread_index, short size)
 // after the first allocation 95 (266 bytes), after the second 98 (264), after the third 68 (280: the pressure spill moves to the argument-index
 // pointer); the result as a long integer 95; the frame reference after the allocations with `return NULL` in the arm and `return arguments` at
 // the end 90 (290).
+// Round 177 (m3 lane 4, fast): retail's reload in the evaluated arm goes into EAX while EAX still holds the same pointer (nothing
+// writes EAX between the copy and the reload), so retail's build treats the result (EAX from the copy on, kept clear of every
+// temporary up to the return) and the argument pointer (stack home, loaded again) as two values, and the early copy is the
+// home's load forwarded inside its block. Without the volatile our build merges the two into one register. New: one variable
+// for both (`arguments = NULL` in the arm, `return arguments`) 95 (266 bytes); the arm stepping the pointer (`arguments +=
+// argument_index`) and passing it 95; the allocation stored through `*(void **)&arguments` 95; the result read as
+// `*(long *const *)&arguments` 95; the arm's element taken through that cast 95 (all promoted, 266 bytes). Re-measured: the
+// result copy declared after the three allocations 95; result cleared first in the arm 83 (277: the pointer is computed
+// straight into EAX and the two still merge); the result set in an else arm 90 (277: the pointer in EDX, the frame reference
+// in EAX, no home).
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

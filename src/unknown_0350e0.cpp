@@ -173,6 +173,15 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // R221 (lane 3; whole-file harness, exact 356): builder with a sine*axis vector 358 (1773); plus a shared inverse*k
 // 358; rows stored in pair order 391 (1747); the src/unknown_153950.cpp builder's staged scalars with one matrix copy
 // 450 (1847), stored per field 358.
+// R223 (lane 3, fast, control 356): retail's second matrix keeps the three squares in adjacent homes (+0x1c/+0x20/+0x24) and the
+// three sine products in adjacent homes (+0x10/+0x14/+0x18), and produces forward.i, xy, left.i, forward.j, left.j, xz, up.i,
+// forward.k, up.k, yz, left.k, up.j. Builder grid of 24 (squares as scalars or a vector3f; sine products inline or a vector3f;
+// stores in source order, each cross product named right before its pair, or products first with the stores in retail's order;
+// trig before or after the squares): squares vector 379 (1750); sine vector 358 (1773); squares before trig 369 (1761); interleaved
+// order 372 (1755); stores-only order 372 (1760); both vectors 390 (1743), with the interleaved order 387 (1752), with the
+// stores-only order 380 (1760); squares vector with either order 398/408, before trig 395; the other combinations
+// 376/378/383/399/413/420/429/433/434/441/453/463. Builder and body unchanged.
+// R223, second pass: the two matrices declared second, first 356 (same code).
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2015,6 +2024,20 @@ real game_time_get_seconds();
 // declaration), with the C-style calls 530, on the kept form 549; on the 464 form: attenuation before the delta 564,
 // beside `animated` at the top 564, `animated` after the delta 472, after the forward dot 472, both after the delta
 // 564; `reflected` assigned j, i, k 512; `!(visibility > 0.0f)` 463.
+// R223 (lane 3, fast, control 492; second and third numbers are an aligned count and one with stack offsets masked, from
+// build/r223/al.py, control 285 and 201: the positional score moves little while the frame is 0x90). Retail shows: (a) the
+// visibility test as `!(visibility > 0.0f)`; (b) the context alpha and the vertex-data value clamped by the PIN macro's store
+// form, the other four clamps by the helper; (c) the sampled colour copied into the animated one field by field, and each
+// entry's colour started as an aggregate copy of the animated colour and then multiplied by the entry's fields; (d) the far
+// distance read from the definition at each use; (e) the opacity factor as an if/else; (f) attenuation's 1.0 stored beside the
+// animated colour's; (g) all four dot products in one shape (j term first, global on the left). (b) on the context alpha 520,
+// 267, 198; (a) 491, 283, 199; both 519, 265, 196; (b) with a named product 560, 283, 212; (c) sampled copy 523, 279, 190;
+// (c) entry colour 547 (2302 bytes), 264, 190, declared ahead of the angle 546, 282, 204; (b) at the vertex call 494, 284,
+// 199; (a)+(b)+(c) 555 (2322), 224, 154, with the copy at the old place 552, 227, 165, without (a) 556, 226, 156; plus (d) 560,
+// 233, 157; plus (f) (a moved declaration, diagnostic) 579 (2315), 242, 150; (a) to (e) 553 (2320), 233, 154; on that, forward,
+// projection or the camera sums through dot3f in either argument order 553 each (same code, so (g) is not a spelling).
+// Diagnostic only: unused initialised locals ahead of the delta move the whole layout (558 at 2297 bytes, masked 149 to 144),
+// so the remaining order differences follow the count of locals, not the expressions. Nothing kept: no form is 8 below 492.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2591,6 +2614,14 @@ real magnitude3d(vector3f const *v);
 // current length shares a's slot (retail +0xc); on that, a named raw length 266, `a = PIN(a, ..)` 269, if/else clamps
 // 269/266; a named raw length alone 251, with only the dot copy 267. The copies are one-use (a byte match needed).
 // A same-file noinline normalize copy in place of function_30bf0 moves the raw length to +0xc (168, 1051 bytes).
+// R223 (lane 3, fast with 0x30bf0/0x24590, control 170): the dot named `cosine` and assigned again by cos(angle) 170 (same code);
+// one variable for the dot, the angle and the cosine 170 (same code); dot/angle/cosine and sine as the elements of a two-real
+// array 177 (frame 0x3c); sine and cosine alone in that array 170; the rotation through a file-local inline (vector, axis, sine,
+// cosine, out) helper called with sin(angle) and cos(angle) 178 (1035 bytes), kept out of line (diagnostic) 386 (832). None splits
+// the promoted dot or angle copy: reassignment, array storage and helper arguments are all folded back to one value.
+// R223, second pass: `step * acos(dot)` 170 (same code); the angle as `(real)acos(dot)` then `angle *= step` 170 (same code); both
+// dot3f calls with their arguments swapped 170 (same code); the axis through the existing cross3f(&first, &second, &axis) 182
+// (1058 bytes); cos(angle) written at both of its uses with no cosine local until after the projection 170 (same code).
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {

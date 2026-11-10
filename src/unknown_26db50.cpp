@@ -788,6 +788,14 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // (retail keeps the three components in registers, ours spills one); naming the ring value
 // once for both the distance and the angle scores 259 and the distance term written with the
 // inner cast scores 259, so the body is unchanged.
+// M3 lane 14 r74 (fast, base 90, aligned 58): in the rotation helper the j and k cross terms named ahead of the rows 90 (same code); only their
+// subtrahends named (axis k times i, axis i times j, the two products retail forms beside the dot) 215 (1092 bytes, aligned 67); the ring phase named
+// before or after the distance 143 (1088 bytes, aligned 113: retail's cvtsi2ss, store, fld, but the radius then copies through an integer register),
+// with the named cross terms 143, with the named subtrahends 233 (1095); the ring as a named float used by the phase and the distance 143, with the
+// named cross terms 143; the 1.2 product as a named double ahead of the loop 119 (1086, aligned 87), with the named phase 143; a float ring counter
+// 238 (1103), with the named double 241 (1088); the distance without the (double) cast 90 (same code). Body unchanged.
+// (The named phase re-measures rounds 17 and 53's 143; the named j, k cross terms give 90 here where round 50 records 100 for "cross j, k before
+// i", so that round's form was a different one and was not rebuilt.)
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

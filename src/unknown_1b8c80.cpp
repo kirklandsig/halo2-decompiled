@@ -393,6 +393,7 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// MiniMax C (11-10): no new form, no lower score (8); the exclusive bound gives 11 with the count in EBP and the index in ESI (the reversed comparison 12), a seats local with the exclusive bound 23 and with the inclusive bound 27, an explicit count guard 135 and a while loop with the index declared first 23 — every exclusive form moves the count to EBP and the index to ESI.
 // MiniMax I (11-08): no new form, no lower score (8); the exclusive bound with the count in a local, the index declared before the seat pointer and the reversed comparison all give 11 or 12 with the count in EBP and the index in ESI.
 // MiniMax R (11-06): no lower score (8); the exclusive bound 11, the same with the count in a local 11, the index declared before the seat pointer 11, both together 11 and the inclusive bound with a local count 26 all move the count to EBP and the index to ESI; a long count local with the index declared before the seat pointer is 11 as well, and a short count makes the compiler compare in 16 bits and rewrites the loop.
 // MiniMax E (11-06): no new form, no lower score.
@@ -1643,6 +1644,20 @@ void function_1f86a0(long actor_index);
 // in `same` 134. Register-blind aligned difference 49 of 247: the prologue object-table load, the loop (decline path with
 // its own next-entry call, mask spill, EBX entry) and the default arm (flags re-read after the object-index store and the
 // 0x20 load hoisted above the slot-bool test) are three separate blocks.
+// Lane 11 round 80 (fast; al/m = difflib-aligned and register-masked aligned counts, this body al 109 m 49; the positive
+// predicate 134 al 97 m 36). On the positive predicate: bit 5 through a byte bitfield at both uses with no mask local and a
+// plain 0x40 mask 240 (861 bytes, frame 0x10, the bit value in BL, the 0x40 test re-read from memory as retail); bits 5 and 6
+// both through the bitfield 240; the flags through a `byte const *` field pointer with no mask local 240 (864 bytes, frame
+// 0x14, m 28), with the byte mask local 134 (same code); the mask local set from the bitfield as `? 0x20 : 0` 134 (same
+// code); `same` from the bitfield with the plain mask in the decline 136, the reverse 136; no mask local with plain masks
+// 240 (864 bytes, m 28). Predicates with one shared same-object test, with / without the mask local: `u && !bit40 || (u ||
+// specified) && !same` 234 (862) / 244 (870); two decline ifs ending in `continue` 255 (880) / 269 (888); an if / else-if
+// chain 255 / 269 (same code); positive `(!u || bit40) && (!(u || specified) || same)` 165 (883) / 265 (891); `u && !bit40
+// || !same && (specified || u)` 244 (870); a nested ternary `(u ? !bit40 : !specified) ? u : !same` 268 (886) / 251 (873);
+// m 44-59 for all of these. On the no-mask-local positive form: a header-table local for the unit lookup 240 (same code),
+// the unit lookup nested in the actor lookup 245 (m 41), no unit local 240 (same code); a flags byte local above the slot
+// bool test in the found block 238 (862 bytes, m 27), with the slot bool named too 238, a bool `specified` there 247 (m 33);
+// with the mask local, that flags local 142, the header-table local 134. All restored.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
