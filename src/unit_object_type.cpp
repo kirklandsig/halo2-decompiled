@@ -545,7 +545,6 @@ void havok_component_delete(long component_index);
 void function_1cf120(long component_index);
 void function_1d1540(s_havok_component *component);
 void __stdcall function_b9b90(long object_index, bool disable);
-struct s_unit_move_result;
 bool function_1d48f0(point3f *arg_0, s_havok_component *component, long rigid_body_index, long type, point3f const *target,
 	vector3f const *offset, s_location *location, real a5, real radius, bool a7, point3f const *root_point,
 	long root_index);
@@ -4755,13 +4754,6 @@ void __stdcall function_c7300(real distance, real velocity, real speed_limit, re
 	motion->coast_time = coast;
 }
 
-/* where a move by Havok's phantom check (0x1d48f0) ends */
-struct s_unit_move_result
-{
-	s_location location;
-	point3f position;
-};
-
 /* moves an object to a point (its own center by default) while the
    physics allow it: finds a clear spot near the target with its Havok
    component (made for the check when it has none, tried with a doubling
@@ -4786,7 +4778,8 @@ struct s_unit_move_result
 // long (227); `moved` split into an outer result (BL) plus an inner flag copied after the loop (233); the header
 // expression written out at each use instead of a `header` local (230); declaration order of root_index/root_point/
 // root_origin (225).
-// Round 85 (m3 lane 11): HELD (needs the owner's OK): byte match in the plain check (0xe0070, 0xe18d0 and 0x14e200 stay
+// MATCH (applied 11-10 by the m3 coordinator from lane 11 r85's held patch; full check: lost [], gained [0xc5460]).
+// Round 85 (m3 lane 11), held then: byte match in the plain check (0xe0070, 0xe18d0 and 0x14e200 stay
 // MATCH) with a5 a `real` passed straight to 0x1d48f0 (which reads it with movss; 0x14e200 passes a float's bits), which
 // needs this function's declarations in src/bipeds.cpp (a contributor's file) and src/unknown_14e0f0.cpp retyped, plus a
 // `long` rigid body index (retail stores and compares it 32-bit), the location and the moved position as two plain locals
@@ -4798,7 +4791,7 @@ struct s_unit_move_result
 // All but `real a5` together 237.
 // @retail 0xc5460
 bool __stdcall function_c5460(long object_index, long ignore_index, point3f const *position, point3f *result,
-	long a5, real radius, bool a7)
+	real a5, real radius, bool a7)
 {
 	byte *header = (byte *)g_4e0300->data + (object_index & 0xffff) * 0xc;
 	s_unit *object = ((s_unit_header *)header)->unit;
@@ -4816,17 +4809,17 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 		if (object->parent_index == NONE && object->unknownb4 != NONE)
 		{
 			s_havok_component *component = havok_component_get(object->unknownb4);
-			short rigid_body_index = havok_component_main_rigid_body_index_get(component);
+			long rigid_body_index = havok_component_main_rigid_body_index_get(component);
 
 			if (rigid_body_index != NONE)
 			{
-				s_unit_move_result move;
+				s_location location;
+				point3f center;
 				point3f target;
 				vector3f offset;
-				long root_index = NONE;
 				point3f *root_point = 0;
+				long root_index = NONE;
 				point3f root_origin;
-				point3f &center = move.position;
 
 				function_b9dd0(object_index, &center);
 				function_b9ef0(object_index, &target);
@@ -4834,19 +4827,19 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 				offset.j = target.y - center.y;
 				offset.k = target.z - center.z;
 				target = position ? *position : center;
-				if (object->unknown13c != NONE && ignore_index != NONE && function_baf80(ignore_index) == ignore_index)
+				if (object->unknown13c != NONE && ignore_index != NONE && ignore_index == function_baf80(ignore_index))
 				{
 					root_index = ignore_index;
 					root_point = function_b9ef0(ignore_index, &root_origin);
 				}
 				for (short attempt = 0; attempt < 3; attempt++)
 				{
-					if (function_1d48f0(&move.position, component, rigid_body_index, header[3] ? 0xc : 9, &target, &offset, &move.location, *(real *)&a5,
+					if (function_1d48f0(&center, component, rigid_body_index, header[3] ? 0xc : 9, &target, &offset, &location, a5,
 						radius, a7, root_point, root_index))
 					{
 						if (result)
 						{
-							*result = move.position;
+							*result = center;
 						}
 						moved = true;
 						break;
@@ -4867,7 +4860,7 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 				}
 				if (moved)
 				{
-					function_b75a0(object_index, &move.position, 0, 0, &move.location, false);
+					function_b75a0(object_index, &center, 0, 0, &location, false);
 					function_b9b90(object_index, false);
 				}
 			}

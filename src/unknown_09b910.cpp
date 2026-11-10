@@ -1002,6 +1002,10 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // 0xfcea0 133 (579 B) and 0xfc330 540; short with the parameter's slot read as long at that call 0 here, 0xfcea0 4,
 // 0xfc330 540 (aligned 395 -> 360, 2143 B): not kept, a cast that reads 4 bytes of a 2-byte parameter. Retail's 0xfc330
 // also pushes its spilled dword unextended. Still BLOCKED-BY 0xfd740.
+// Round 182 (m3 lane 4): no untried natural form left at this call: the field is loaded `xor edx, edx; mov dx` only for a
+// 16-bit parameter, and the value then stays 16-bit through 0xfd740 (contributor, held for its owner) into 0x1883e0's
+// fifth parameter, whose declarations include held src/impacts.cpp (this round's Avoid list), so the whole chain cannot
+// be retyped together. Still BLOCKED-BY 0xfd740 and 0x1883e0.
 // @retail 0xa17d0
 bool c_projectile_effect_event::v11(long a, long const *entities, long c, void const *data)
 {

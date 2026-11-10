@@ -118,12 +118,12 @@ void function_14bac0()
 	s_record_pool_iterator *iterator_reference = &iterator;
 	players_pending_creation_process(iterator_reference);
 }
+// score 222 (was 222): Frame 0x50 versus 0x3c, exchanged player/scenario spills, point/recipient overlap and readiness homes remain.
 // MiniMax I (11-08): no new form, no lower score (222): the frame is still 0x50 against retail's 0x3c, and
 // the exchanged player/scenario spills, the point/recipient overlap and the readiness homes still differ.
 // Retail keeps three point-sized slots (the offset, the marker point and the capsule centre share one, the
 // translated position and the destination share another, the alternate a third); ours gives the centre a
 // slot of its own at +0x44 and puts the alternate at +0x38 where retail has it at +0x3c.
-// score 222 (was 222): Frame 0x50 versus 0x3c, exchanged player/scenario spills, point/recipient overlap and readiness homes remain.
 // Round 64 (fast; masked aligned count in brackets, base 222 [87]; ranks by structure where the positional score hides it): stamp through
 // `index`/`stamp` locals and the relocation point used directly 244 [78]; on that: second loop on a block-local datum iterator through
 // 0x6b380 242 [56], unit read at each call 236 [66], marker element pointer 208 [74] (retail's add/add, but a one-use pointer: not kept),
@@ -566,6 +566,15 @@ void function_14bac0()
 // but the second iterator packs with the first and the alternate stays alone where retail packs the alternate with the first
 // iterator and the second iterator with the probe slot; the height takes the player's dead slot); with the unit re-read from the
 // player at both calls re-measured 259 (frame 0x48, as Round 20). Body unchanged.
+// Round 166 (m3 lane 6, fast; masked = register-masked aligned count, base 87): round 164's form (second scan on a block-local
+// datum iterator through the out-of-line 0x6b380 step, relocation point used directly, centre/height/radius in their own
+// block) re-measured 238 (frame 0x40, masked 63). On it, local names renamed one at a time so each sorts on the other side of
+// its same-size neighbours (second iterator, first iterator, alternate, centre, offset): 238 each, identical code, so names
+// do not decide which locals share a slot here (retail: relocation point + destination, offset + probes + centre + second
+// iterator, first iterator + alternate; ours pairs the two iterators). Also on it: the second iterator declared at the
+// second block's top, ahead of the two accepted points, 238 (same code); the first scan's iterator declared at the request
+// block's top 238 (same code); the alternate assigned member by member with the 1.0 in its z expression 240 (masked 69).
+// Frame 0x40 in all. Body unchanged.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

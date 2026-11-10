@@ -398,6 +398,7 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// MiniMax C (11-10): no lower score (8); a seat-count test around a scan whose index is declared before that test puts the count in ESI and the index in EBP and keeps the native cmp/jl, but the test compares against a second zero in EAX and the selected pointer's NULL store takes that zero too (6); the same test written with the index folds into the loop (11), the reversed spelling of it keeps a constant test (6), a count read before the flags test hoists the load (14), a last-seat local is 108 with the inclusive bound and 118 with a strict one, and the inclusive bound with the index declared before the loop is byte-identical to the kept body.
 // MiniMax C (11-10): no new form, no lower score (8); the exclusive bound gives 11 with the count in EBP and the index in ESI (the reversed comparison 12), a seats local with the exclusive bound 23 and with the inclusive bound 27, an explicit count guard 135 and a while loop with the index declared first 23 — every exclusive form moves the count to EBP and the index to ESI.
 // MiniMax I (11-08): no new form, no lower score (8); the exclusive bound with the count in a local, the index declared before the seat pointer and the reversed comparison all give 11 or 12 with the count in EBP and the index in ESI.
 // MiniMax R (11-06): no lower score (8); the exclusive bound 11, the same with the count in a local 11, the index declared before the seat pointer 11, both together 11 and the inclusive bound with a local count 26 all move the count to EBP and the index to ESI; a long count local with the index declared before the seat pointer is 11 as well, and a short count makes the compiler compare in 16 bits and rewrites the loop.
@@ -1434,6 +1435,10 @@ void function_1f86a0(long actor_index);
 // after the root calls) where ours keeps the mask in BL and the entry in memory, and retail still
 // takes the object-header data in the prologue and reads the flags once above the slot-flag test;
 // the mask read once before the loop scores 136, so the mask is read per iteration as it was.
+// score 134 (was 134; round 103 unchanged): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
+// F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
+// and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
+// object-header data in the prologue and reads the flags once above the slot-flag test.
 // MiniMax G (11-05): the element index, the flags and the same-object result read as wider or narrower types give 134/134/244/248/253, and the mask as a bool 241; retail's EBX entry and spilled mask byte against our BL mask and memory entry, and the frame 0x10 against 0x14, stay unmatched; retail loads the object-table global at +0x06 where ours loads it at +0x0f, and its decline block falls through into the loop latch where ours jumps to a latch at the end of the body, but the header lookup written out is the same code, a nested actor_get gives 230 and an explicit continue in the decline path is the same code; no new form, no lower score.
 // Before round 62: the frame 0x14 agrees; retail takes the object-header data before scaling
 // the actor (actor index in EDX, ours ECX), keeps the loop entry in EBX (spilled at F+4), spills the
@@ -1698,6 +1703,12 @@ void function_1f86a0(long actor_index);
 // the unit lookup nested in the actor lookup 245 (m 41), no unit local 240 (same code); a flags byte local above the slot
 // bool test in the found block 238 (862 bytes, m 27), with the slot bool named too 238, a bool `specified` there 247 (m 33);
 // with the mask local, that flags local 142, the header-table local 134. All restored.
+// Round 103 (m3 lane 16, fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70, all matched): `same` started false and set by an
+// `if (specified)` 241; the element as a pointer to const 134 and the selection as a const pointer 134 (both the same code).
+// Diagnostics (reverted): the two root calls through the matched pure reader 0x1b8c80 136 (aligned 86, register-masked 50,
+// against this body's 84/49), through 0x1b8d40 380 (973 bytes, it inlines). 0xbaf40's own memory summary stays untested:
+// its file is held this round. The slot data-block form (state through `slot->unknownc`) is round 39's 134 (same code).
+// Also: `joint_index` declared at the top of the function 134 and the entry declared in the while condition 134 (both the same code).
 // Round 103 (m3 lane 9, fast): no unit pointer (the field test on object_get directly) 134 (same code); the mask before the element
 // lookup 240 (862 bytes); the positive ternary `unknown86 ? (flags & 0x40) && same : !specified || same` with the accept call
 // inside and the decline in the else 134 (aligned 97), with `continue` after a failed accept 134; `joint_index` declared before

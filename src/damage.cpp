@@ -997,6 +997,9 @@ PRIVATE inline long damage_object_root(long object_index)
 
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
+// MiniMax D (11-10): no new form, no lower score (206); the first 0xbadc0 use is still expanded in this build, so
+// the frame stays 0x1a4 against retail's 0x1b4; the out-of-line form of that site that makes the body byte exact
+// is in a file this lane may not edit.
 // MiniMax S (11-10): no lower score (206): the record-pool iterator with the iterator's address escaping gives 225, the index-based scan with it 228, and the squared-distance helper called at both tests with the mask in a named local 225; the first 0xbadc0 use is still expanded here, and the frame stays 0x1a4 against retail's 0x1b4.
 // MiniMax D (11-09): no new form, no lower score; retail's player scan keeps the ordinal in [esp + 0x34] and tests
 // the pool's used-bit word at [g_4e8c24 + 0x48 + (index >> 5) * 4] itself, and its frame is 0x1b4 against our
@@ -3764,7 +3767,7 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 				{
 					s_damage_object_datum *datum = &((s_damage_object_datum *)g_4e0300->data)[objects[i] & 0xffff];
 
-					if (!((1 << datum->type) & 3) || function_1df560(datum->object->team, data->owner.team))
+					if (!((1 << datum->type) & 3) || function_1df560(data->owner.team, datum->object->team))
 					{
 						*(byte *)&data->unknown84 = (*(byte *)&data->unknown84 & 0x3f) | 0x80;
 						kill = true;

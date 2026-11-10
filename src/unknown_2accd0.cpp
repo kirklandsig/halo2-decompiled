@@ -610,6 +610,7 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
+// score 34 (was 34; round 103 unchanged): the scratch buffer is one address-taken record (storage, owner, buffer,
 // score 34 (was 34): the scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
 // and size through pointers; with the `void *` parameters view and one function-scope byte count the
@@ -986,6 +987,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // tests 34; the signature seek and read as nested ifs 34 (all the same code; the first and last re-measure listed forms).
 // New on top: the total as header + sizeof + body 34 (same code); the bool passed straight as XCalculateSignatureBegin's
 // flag (its value is 1) 71.
+// Round 103 (m3 lane 16, fast with 0x2adb10 matched; the compile-only /Gr harness gives the same code as fast for each): both
+// positions `dword const` 34; the signature position as `position = header_size; position += body_size;` 34; the signature
+// seek compare as `position == SetFilePointer(...)` 35; the direct arm's size as `size = body_size; size -= body_offset;` 34; the
+// body position as a `long` 34 (harness: the signature position as a `long`, the body position through `+=`, both the same code).
 // Lane 12 r105 (fast; 0x2adb10 and 0x2ada70 matched throughout): the total converted in place re-measured 88 (entry agrees to
 // +0x3f; the signature case then hoists body_size into ESI, position's register, where retail loads it into ECX). Retail gives both
 // cases' positions ESI and the body case's size EDI (ours size ESI, position EDI). New: one function-scope position for both
