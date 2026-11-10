@@ -113,7 +113,11 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // retail reads at 0x294a1e for the 0x294050 argument list comes from the slot 0x84 after one push, not from
 // the stored one; in the scaled-centre block ours reloads the scalar into xmm0 where retail reuses the value it
 // already holds, so ours is one instruction longer there and every later slot offset stays off.
-// score 446 (was 446; before r98 was 523): entry and registers now retail's (first difference +0x72, masked aligned 25 lines; fast check 465 at 3712 bytes, full build 446). Left: retail's
+// score 252 (was 446): the walk's self test is an if-block around the body and the centroid is scaled into its own point; that
+// brings back retail's dead store of zero to the speed vector's i and retail's walk head (no pad), and the length is retail's 3716.
+// Left (masked aligned 25): three slot pairs swapped against retail (record spill/centroid sum, object spill/nearest distance,
+// walk position/offset), the local_13 copy against the 3.4e38 store, load folding at the walk's alignment i term and both
+// 0x2949aa dot i terms, the scaled centre's y/z loads, one product at +0x598. Before round 141: 446 (was 446; before r98 523): entry and registers now retail's (first difference +0x72, masked aligned 25 lines; fast check 465 at 3712 bytes, full build 446). Left: retail's
 // dead store of zero to the speed vector's i (0x294552, overwritten at 0x294feb) is missing, 9 bytes, so the walk head gets
 // a pad and every later line is two off; the walk's position and offset vector take each other's homes (position at 0x94,
 // retail shares 0x20 with the post-walk vector); the character and shortest-distance slots are swapped (0x6c/0x74);
@@ -207,6 +211,15 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // its distance 458; the neighbour count raised before the position sums 456 (the record's spill stays at 0x78 in all three).
 // Next: the if-block form plus whatever puts the record's spill (shared with the cohesion block's 3 - total) back above the
 // centroid sum.
+// Round 141 (m3 lane 7, plain unless marked fast): the if-block form 455 (3712); on it, 18 fast forms (sum through vector3f_add, count
+// first, nearest point first, iterator fields swapped, self test operands swapped, speed zeros first, reciprocal inline, mixes)
+// 462-483 fast, record slot unchanged; diagnostics (not kept): one or three extra reads of the sum flip the record/sum slots, an
+// extra object read moves the object spill to 0xa0, an extra position read leaves the position at 0x94. The centroid scaled into
+// a separate point 280 fast, 252 plain at 3716 (kept); on it `3 - total` unnamed 462 fast; 30 fast forms (the options above,
+// dot3f inputs swapped, the self test through the walk pointer, the nearest test operands, mixes) 280-552, slots unchanged;
+// the nearest distance declared first 334 fast (slots unchanged); the offset declared before the position 280 fast (same code);
+// the centroid scaled in place through scale_particle_vector_2b 462 fast, copied then scaled 785 fast (3766). Diagnostic on 252
+// (plain, not kept): three extra reads of the sum put the record spill at 0x80 as retail but move the object spill to 0x78 (470, 3734).
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {
@@ -246,35 +259,37 @@ void function_294380(long arg_0, long arg_1)
         while ((local_21 = function_2937a1(&local_20)) != NULL)
         {
             s_slot_object_view *local_22 = (s_slot_object_view *)local_21;
-            if (local_22 == local_2) continue;
-            point3f local_24;
-            function_b9dd0(local_20.object_index, &local_24);
-            vector3f local_25;
-            vector3d_from_points3d(&local_4, &local_24, &local_25);
-            real local_26 = function_30bf0(&local_25);
-            if (dot3f(&local_25, &local_2->forward) > (real)cos(local_1->field_50))
+            if (local_22 != local_2)
             {
-                if (local_1->field_34 > local_26 && local_26 > 0.0f)
+                point3f local_24;
+                function_b9dd0(local_20.object_index, &local_24);
+                vector3f local_25;
+                vector3d_from_points3d(&local_4, &local_24, &local_25);
+                real local_26 = function_30bf0(&local_25);
+                if (dot3f(&local_25, &local_2->forward) > (real)cos(local_1->field_50))
                 {
-                    real local_27 = 1.0f / (local_26 * local_26);
-                    real local_28 = local_1->field_40 * local_27;
-                    function_294669(&local_13, local_28, &local_22->forward);
-                    local_16 += local_28;
-                    if (local_1->field_38 * local_1->field_38 > local_26 * local_26)
+                    if (local_1->field_34 > local_26 && local_26 > 0.0f)
                     {
-                        real local_29 = (local_27 - 1.0f / (local_1->field_38 * local_1->field_38)) * local_1->field_44;
-                        function_294669(&local_14, -local_29, &local_25);
-                        local_17 += local_29;
+                        real local_27 = 1.0f / (local_26 * local_26);
+                        real local_28 = local_1->field_40 * local_27;
+                        function_294669(&local_13, local_28, &local_22->forward);
+                        local_16 += local_28;
+                        if (local_1->field_38 * local_1->field_38 > local_26 * local_26)
+                        {
+                            real local_29 = (local_27 - 1.0f / (local_1->field_38 * local_1->field_38)) * local_1->field_44;
+                            function_294669(&local_14, -local_29, &local_25);
+                            local_17 += local_29;
+                        }
+                        local_9.x += local_24.x;
+                        local_9.y += local_24.y;
+                        local_9.z += local_24.z;
+                        local_15++;
                     }
-                    local_9.x += local_24.x;
-                    local_9.y += local_24.y;
-                    local_9.z += local_24.z;
-                    local_15++;
-                }
-                else if (local_10 > local_26)
-                {
-                    local_10 = local_26;
-                    local_11 = local_24;
+                    else if (local_10 > local_26)
+                    {
+                        local_10 = local_26;
+                        local_11 = local_24;
+                    }
                 }
             }
         }
@@ -327,8 +342,9 @@ void function_294380(long arg_0, long arg_1)
                     real local_33 = 3.0f - local_5;
                     local_16 = local_1->field_5c * local_33;
                     real local_34 = 1.0f / local_15;
-                    vector3f_scale((vector3f *)&local_9, local_34, (vector3f *)&local_9);
-                    vector3d_from_points3d(&local_4, &local_9, &local_30);
+                    point3f local_40;
+                    vector3f_scale((vector3f *)&local_9, local_34, (vector3f *)&local_40);
+                    vector3d_from_points3d(&local_4, &local_40, &local_30);
                     real local_35 = function_30bf0(&local_30);
                     if (local_35 > local_1->field_60)
                     {

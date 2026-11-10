@@ -788,6 +788,11 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // (retail keeps the three components in registers, ours spills one); naming the ring value
 // once for both the distance and the angle scores 259 and the distance term written with the
 // inner cast scores 259, so the body is unchanged.
+// Round 141 (m3 lane 7, fast, caller 0x26dde0 matched): the record as `&records[result & 0xffff]` 90; the ring converted once into
+// a named value for the distance and the angle 90 (the conversion stays `fild` then `fst`), with the array record 90; the rotation
+// helper through cross3f into a cross vector 233 (1101 B), with the named ring 233; the entry direction stored j then i 93, the
+// entry's field10 stored before the direction 90 (same code); the second pathfinding lookup read through the global at both uses 90;
+// a named axis pointer for every g_4687b0 use 268 (1068 B); the trace test as two nested ifs 90 (same code). Body unchanged at 90.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

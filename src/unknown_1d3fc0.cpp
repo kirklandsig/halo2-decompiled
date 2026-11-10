@@ -327,6 +327,13 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // magnitude/result-first completions with post-normalization receivers 110/110/110/110;
 // early actual receivers 150/150/150/150. NOT kept: no late forward-k/reciprocal repair;
 // original pointer-return helper, all calls and complete body restored.
+// Round 141 (m3 lane 7; one-file LTCG harness with 0x1c4a80 and the callee files, scored on the axis block, which it reproduces
+// exactly: 38 here, 2 for the 2 form): dot3f with each input as the pointer or the matrix field, either order, either normalizer
+// 28/38 (same code); 96 written-out dots around the 2 form (i term through the pointer or the matrix on either side, six term
+// orders, i operand order, `a + (b + c)`) best 2; the normalizer's scale all scale-first or all value-first 2 (no change); rows
+// through vector3f_add_scaled 37/44, rows k, j, i 2/28, cross3f_staged 82/100; the existing normalize3d 80-136. Fast on the current body: rows through
+// vector3f_add_scaled(up, forward, -dot, up) 156 (929 B), with `0 - dot` 156, with dot3f(&up field, &forward field) 156; the normalizer's
+// scale all value-first 110, all scale-first 110 (same code).
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
