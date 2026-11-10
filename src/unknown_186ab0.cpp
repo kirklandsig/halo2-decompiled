@@ -310,6 +310,16 @@ void player_action_initialize(s_player_action *arg_0);
 // truth domains: eight forms 134 each. Earlier first-count ternaries excluded.
 // NOT kept: no gain or equality; original signed count test, short cyclic index,
 // observations and whole body restored. Comparison/count, cyclic ranks and cold clear remain.
+// Round 224 (m3 lane 3, fast with every callee listed; round 27's form still scores 1 at 1515 bytes): on it, the
+// latch without the toggle flag: the held byte read into a local, a conditional `= true` store and a re-test
+// `pressed && !was_held` after the arms 165 (1517 bytes); the same with the release arm first 164; a named
+// `pressed && !held` bool for the store and the toggle 180 (1528); the local with a plain if/else store and the
+// re-test 231 (1503); the nested latch again 140 (1515, aligned 11): the release arm stays inline each time.
+// Diagnostics on 0xcbec0's body for the inlined count read (contributor code, restored at once; none flips ours
+// from [edx + edi] to retail's [edi + edx]): the count compare as `0 < count`, `*(counts + type)`,
+// `type[counts]` or with a `(short)` cast 1 each with 0xcbec0 still matching; result declared before the unit 331
+// (0xcbec0 38); the direction test inverted with its arms swapped 419 (0xcbec0 18); a named counts pointer in
+// place of the unit 288 (0xcbec0 45). BLOCKED-BY 0xcbec0 stands.
 // M3 lane 8 r144 (fast with 0xcbec0, 0xcdff0, 0x13cb40, 0x11df30 and 0x14d040, which stay matched; control 134): round 27's
 // form rebuilt on today's file still scores 1 at 1515 bytes (the diff is build/r144/lead-186ab0.patch), only the inlined 0xcbec0
 // count read [edx + edi] against retail's [edi + edx]. On it, at the cycle call: the grenade type through a named short
