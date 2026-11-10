@@ -261,6 +261,13 @@ void function_1d56f0(s_havok_component *component)
 // MiniMax S (11-09): no new form, no lower score; the local block still sits eight bytes higher
 // than retail's and the block around the call to 0x1d0cf0 still differs in register and stack slot
 // use; 0x1d0cf0 is in another lane's file.
+// R223 (lane 3, fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x115b10; 0x1d0cf0 varied and restored): retail sets ECX = index, EBX =
+// component, EAX = transform, in that order, which implies 0x1d0cf0(transform, component, index). All six parameter orders,
+// definition, declaration and both calls together: on its current body 77/77/77 for the orders with the index ahead of the
+// component (same code) and 78/78/78 for the others (0x115b10 lost at 4, 0x1d1b60 at 2); on its set-copy, body-pointer,
+// fixed-first body 73 in all six (0x1d0cf0 88, 0x1d0c20 40). On that body, with this function's call removed (diagnostic)
+// 0x1d0cf0 stays 88, with 0x1d0c20's call removed 86: neither caller keeps the component out of EBX. The transformed flag in
+// a named bool ahead of the copy 73; the refetch assigned to the body pointer 73. Still BLOCKED-BY 0x1d0cf0.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

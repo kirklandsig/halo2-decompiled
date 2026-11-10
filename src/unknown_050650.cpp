@@ -1551,6 +1551,11 @@ struct s_actor_looking_structure_view
 // compatibility overload 39 (first call only 39, loop call only 23, same code); the candidate copy as memcpy
 // 82; sinf/cosf in the angle helper 145 (928 bytes). Diagnostics: the candidate not passed to 0x26c590 43, nor
 // to 0x2105b0 74 (axis j still loaded after the copy, so the candidate's escape is not what orders it).
+// Round 140 (m3 lane 7): the existing cross-file forceinline rotate_direction (0x1ecf50's file) with a named
+// angle 33 (plain; the rotation block is byte-identical to ours, only the selected-direction test flips, so
+// cross-module inlining does not set the ranks); the helper writing a result vector copied back 203; the
+// vector's i, j, k named in the helper everywhere 243, everywhere but the dot 150; the axis's i, j, k named
+// 233; both named 216. Diagnostics (fast, same code): forward and the candidate array renamed.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
