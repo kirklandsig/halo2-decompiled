@@ -281,6 +281,11 @@ static __forceinline long floor_to_long_inline(real value)
 // `sar eax, 0xc`, scores 11, and the kind's shift still comes after the copy to esi where retail
 // shifts before it.
 // MiniMax D (11-09): no new form, no lower score: the body is unchanged at 10 (1033 bytes against retail's 1033); the whole of the difference is still the first word's three-address OR against our one-expression OR, and the pool's `mov edx, esi` above the `jbe`.
+// MiniMax R (11-09): no new form, no lower score (10): the two loads that feed the record's OR chain
+// come in the other order here - the entry's own word and the global's mask - while retail loads the
+// global first; the OR chain itself is canonicalized by MSVC, so reordering the three terms of the
+// store, naming the kept bits or splitting the word's or into an assignment all give byte-identical
+// code and the same score, and the low word built in two steps was measured at 10 as well.
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, short instance, dword flags,
     long tag, dword key, long category, long material, byte *object, short mask, byte mode,

@@ -753,6 +753,12 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // ours takes the forward vector in EDX and the tag index in EBX), because retail's parameter list puts the
 // forward vector third and has eleven parameters against our ten, and that list is fixed by the declaration and
 // by the callers in src/items.cpp and src/bipeds.cpp, which this lane may not edit.
+// MiniMax R (11-09): no new form, no lower score (77): the scan's registers are rotated against
+// retail's (the index, the none and the scale sit in other registers), retail pushes edi after the
+// first float multiply while we push it before, and the curve values are stored at other stack
+// offsets; the block is still blocked by 0x1883e0's declarations, which live in src/impacts.cpp and
+// src/projectiles.cpp and name the old parameter types, so the effect point and the velocity forms
+// that were measured (77 each) leave the body as it is.
 // @retail 0x188180
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
 	long entry_element_index, long effect_value, s_location const *location, real scale)

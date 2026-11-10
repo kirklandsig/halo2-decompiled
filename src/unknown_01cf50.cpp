@@ -2346,6 +2346,7 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 // MiniMax E (11-08): no new form, no lower score: retail takes the count's subtraction before the sorter's last push and adds 0x84 after the block copy, ours does both the other way round.
 // MiniMax E (11-09): no new form, no lower score: retail takes the count's subtraction before the sorter's last push and adds 0x84 after the second rep movsd, ours does both the other way round; the stipple block lies inside the XDK inline.
 // MiniMax D (11-09): no new form, no lower score: the body is unchanged at 4 (359 bytes, as retail's); the whole difference is that retail takes the count's subtraction between the scratch's `lea` and the scratch's push while we take it after the push. This round: the count in a local before the call, the count in a local outside the call's block, the scratch behind a pointer local, the count cast to unsigned long and the `first` local declared as an int all score 4 with the same code, and a count computed before the loop scores 97. MSVC sinks the count's expression into the call's argument setup, and the argument's order (the scratch's address before the count) puts the subtraction last.
+// MiniMax R (11-09): no new form, no lower score (4): retail takes the count's subtraction before the sorter's last push of the 0x13df80 call, ours after it, and retail adds 0x84 after the second rep movsd of the stipple block, ours before it; the count in a local and the stipple block inside the XDK inline were measured and keep both orders.
 // @retail 0x1e370
 void function_1e370(void)
 {
@@ -2402,6 +2403,7 @@ void function_1e370(void)
 // into eax are fixed by the shared one-caller helpers cache_record_new and cache_record_take, whose
 // bodies the rules forbid writing out by hand, so the edi/ebp difference stays.
 // MiniMax D (11-09): no new form, no lower score: the body is unchanged at 8 (241 bytes, as retail's); the record pool's base is held in edi here and in ebp in retail, and the payload copy's count then needs a register of its own, so the two choices cannot be made at once from this source.
+// MiniMax R (11-09): no new form, no lower score (8): the record pool's base is held in edi here and in ebp in retail, and the copy of the payload saves and restores the register that choice leaves free; the allocator's store order and the records pointer in the allocator were measured and all tie at 8.
 // @retail 0x1e4e0
 bool function_1e4e0(point3f const *position, t_1e4e0_callback callback, void const *data, long size)
 {
@@ -2676,6 +2678,7 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
 // both give retail's `comiss` operand order, but the result then lands in xmm0 where retail keeps it
 // in xmm1; the 26-scoring body stays.
 // MiniMax D (11-09): no new form, no lower score: the body is unchanged at 26 (169 bytes, as retail's); the maximum's comparison has its operands in the other order, the divisor makes a round trip through the stack where retail keeps it in a register, and both branches share one call setup where retail repeats it; the only form that reached retail's shape needed a per-function #pragma, which the rules forbid.
+// MiniMax R (11-09): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the divisor still makes a round trip through the stack where retail keeps it in a register and multiplies by g_4b9ff8 with an explicit mulss, the clamp still reloads 1.0f, and the two branches still share one call setup where retail repeats it in each of them. This round: the enabled branch first gives 29 and was restored, the reversed multiply gives 32 and was restored, and the round trip with an explicit multiply, the maximum in a local and the four forms of the maximum were all measured and all score worse or the same.
 // @retail 0x25ca0
 void function_25ca0(bool enabled)
 {
@@ -2770,6 +2773,7 @@ struct s_queued_material_payload
 // MiniMax E (11-08): no new form, no lower score: the count reaches the 0x4b220 call in eax here and in ecx in retail, and the callee's declaration fixes that register.
 // MiniMax E (11-09): no new form, no lower score: the count reaches the 0x4b220 call in eax here and in ecx in retail, and the callee's own declaration picks that register home.
 // MiniMax D (11-09): no new form, no lower score: the body is unchanged at 2 (144 bytes, as retail's); the count of the payload reaches the 0x4b220 call in eax here and in ecx in retail, and that callee's parameter home is its own declaration's, which may not change.
+// MiniMax R (11-09): no new form, no lower score (2): the count of the payload still reaches the 0x4b220 call in eax here and in ecx in retail, so the two register setups differ; the register home is the callee's own declaration in this file, which this lane may not change, and declaring the mode as a pointer (the only form that moves the count into ecx) lowers this function to 1 but changes the declaration.
 // @retail 0x35b00
 void __stdcall function_35b00(void *payload)
 {
@@ -2936,6 +2940,7 @@ struct s_429a0_payload
 // the shared one-caller helper cache_record_take, whose body the rules forbid writing out by hand;
 // the 16-scoring body stays.
 // MiniMax D (11-09): no new form, no lower score: the body is unchanged at 16 (379 bytes against retail's 378); the only real difference is the fold of the record's base into eax, which retail takes after the payload's type byte and we take after the payload's first long, one store later; the rest of the difference is the reduced image's addresses for the globals and the callback.
+// MiniMax R (11-09): no new form, no lower score (16): retail folds the record base into the payload pointer one store earlier than we do, our body is a byte longer than retail's so the relocation mask stops applying, and the callback's address is a build address the comparison cannot map; the three variants that move that fold were measured and all tie at 16.
 // @retail 0x429a0
 void function_429a0(byte type, long a, long b, long c, point3f const *position,
     point3f const *endpoint, vector3f const *first, vector3f const *second, real opacity)
@@ -3582,6 +3587,11 @@ bool function_14600()
     return result;
 }
 
+// MiniMax R (11-09): score 32 (was 40): the ratio block now runs in retail's order - the width
+// ratio is computed first, the -1.0f is taken off it before the double, and the height ratio is
+// divided only after that; what still differs is that the width quotient lands in xmm0 where
+// retail divides into xmm2, the -1.0f lands in xmm2 where retail keeps it in xmm3, and the flag
+// test reads al here and the flag byte in memory in retail.
 // MiniMax H (11-05): no new form, no lower score; retail's ratio block keeps the width difference
 // in EDX and the height difference in EAX and reuses xmm2 for the height quotient, ours uses the
 // other pair of registers and xmm0, so the two blocks stay different whatever the source order.
@@ -5155,6 +5165,7 @@ void function_1bd50(void *state);
 // retail's 204 bytes, but the score rises to 15, because MSVC gives `movzx eax, word ptr [...]`
 // where retail writes `xor eax, eax` and then `mov ax, word ptr [...]`; the 13-scoring body stays.
 // MiniMax D (11-09): no new form, no lower score: the body is unchanged at 13 (206 bytes against retail's 204); retail takes the fallback as a word in the same register as the other arm (`xor eax, eax`; `mov ax, word ptr [0x4858b8]`) so that both arms write one variable and the value is a phi in eax, while ours loads the long global and masks it, two bytes longer. This round: about sixteen forms (the two-call if/else with a shared or a separate variable, the plain ternary with both arms long or both short, the mixed `(word)` and long ternary, the mixed `(short)` and long ternary, the local-variable forms, the unsigned casts) all score 15 or worse; MSVC if-converts a ternary whose arms share a type into a `cmove`, widens a mixed-type one with a `movzx` or a `movsx`, and gives the value a fresh register when the arms write different variables.
+// MiniMax R (11-09): no new form, no lower score (13): retail loads the fallback index as a word and widens it with an xor while ours loads the long global g_4858b8 and masks it, and the branch sits after the element argument's push in retail and before it here; the global's type is a declaration this lane may not change, and reading it through a cast of its own address is not allowed either.
 // @retail 0x1c0d0
 void function_1c0d0(long tag, long stage)
 {

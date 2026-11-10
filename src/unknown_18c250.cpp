@@ -365,6 +365,12 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // MiniMax H (11-04): the curve address built from the samples' address copied into a dword with memcpy, plus
 // the entry's data offset, with the scale passed straight to the callee: 7 -> 2. NOT kept: the memcpy reads the
 // field's bits through its address (kept only with a byte match); without it the same body is 8.
+// MiniMax R (11-09): no new form, no lower score (7): the curve set's address is built from the
+// entry's data offset plus the samples' address with the operands in the other order here (ours adds
+// the samples to the offset, retail the offset to the samples), the curve pointer is computed in eax
+// here and in ecx in retail, and the scale is loaded before the pointer's push in retail and after it
+// here; the memcpy form that reads the field's bits through its address is the only one that reaches
+// 2 and it is kept out of this lane's changes.
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {
