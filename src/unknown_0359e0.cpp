@@ -288,6 +288,10 @@ PRIVATE inline long swizzle_log2(dword value)
 // minimum 80; `if (common > height)` on the copy 57 (identical); the function, table and logarithm in a new `/O2
 // /Gr` file without /arch:SSE (the exception) 57 (identical); x and y used directly 150 again. Retail's minimum
 // shares ECX with the width count and is stored once after the join; ours takes EBP with a store at each definition.
+// T77: On the retained branched minimum, x-only then y-only promotions after width log,
+// both logs or common selection 62/72/72/56/71/66; both promotions after width/both logs
+// 72/97. NOT kept: best gain one, longer extent and lost exact caller; all forms lose
+// the direct caller, both late paired forms lose its caller too. Original body restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

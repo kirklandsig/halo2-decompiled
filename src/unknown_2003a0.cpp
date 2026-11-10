@@ -3073,6 +3073,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // 50/50/103/103/50/50/103/103. NOT kept: unmatched one-use/condition-assignment forms;
 // explicit next-result lifetimes grow to 620 bytes. Original complete body restored;
 // first-event index reload and shifted actor-loop alignment remain.
+// T78: Complete pending/latch scan-join available/blocked outcomes,
+// bool/byte/short/long: 50/50/50/50/50/50/50/50. NOT kept: no equality;
+// all one-use outcomes and the complete body restored. First-event EBP reload
+// and displaced actor-loop alignment remain.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

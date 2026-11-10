@@ -78,6 +78,12 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // one `now` read of the game time shared by both elapsed values 21; force renamed stale 21. Diagnostic rerun of update
 // before force 218: object in ebx with retail's homes, but sample/update timestamps take edi/esi, the false store follows
 // the home store and the force arm has no reload.
+// Round 143 (m3 lane 8, fast): `update = false` before force re-measured as the base, 218: its only real differences are
+// three allocator choices (no reload in the force arm, the false store after the object's home store, and the two
+// timestamps in EDI/ESI for ESI/EDI); every other line is the four-byte shift. On that base: `if (force) update = true;`
+// then `if (!force && flag) return;` 218 (threaded to the same code); the object through a named header-entry pointer
+// 218; the elapsed clamp right after the zero return 246 (816 bytes); the existing ai object getter 218; force declared
+// before update and assigned after it 218. A 600 s permuter run on the kept body (45 tries) found nothing below 21.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

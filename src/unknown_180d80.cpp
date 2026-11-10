@@ -198,6 +198,11 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // subsets and complete output-reference return: eight forms 94 each.
 // NOT kept: no gain or equality; original helper, both calls and whole body restored.
 // Frame 0x4040 agrees; early mesh, count homes, creation setup and transform ranks remain.
+// Round 159 (m3 lane 6, fast; aligned counts from an instruction diff, 64 for the body as it stands): the short
+// strip-count index 547 (aligned 85); with the three field sums spelled lower field first 547 (aligned 82, the sums
+// compile the same either way); plus luminance terms red, blue, green 545 (aligned 80); the luminance counter
+// reused as the strip loop's counter 293 (2663 bytes), as the strip loop's vertex base 284 (2667 bytes); the count
+// loop's bound compared as an unsigned word 94 (aligned 66). Still BLOCKED-BY 0x17cfa0 (contributor, unmatched).
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

@@ -923,7 +923,7 @@ struct s_tail_transfer_traits
 	byte grenades[2];
 };
 
-// MiniMax D (11-08): score 153 (was 153): the difference starts at the selection loop's unit index - the
+// MiniMax D (11-08): the difference starts at the selection loop's unit index - the
 // unit pointer, the chosen weapon, the age and the NONE home are kept in different registers and at different
 // stack offsets than retail.
 // MiniMax B (11-06): no new form, no lower score; the first 0x11c bytes agree with retail and the rest is
@@ -1017,6 +1017,10 @@ struct s_tail_transfer_traits
 // declaration, separate assignments and complete declaration with chain:
 // 153/153/153/153/153/153/153/153. NOT kept: no eligible native default/home recovery; original defaults and
 // complete body restored. Traits/unit/NONE and no-seat pool reloads remain.
+// T78: Per-pass first/exclusion truths, conditional/default/primary-seeded excluded handles,
+// slot admission/rejection predicates and conditional first-pass admission: 150/150/188/185/185/153/153/202.
+// NOT kept: no eligible match; best three points is below the gain gate. Original complete
+// body restored; selected-traits/unit/NONE homes and native no-seat reloads remain.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1241,6 +1245,10 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 // P402: Attachment output walk, lower/upper range, direct hand count, while range and cursor stepped at use:
 // 263/300/252/254/263/300/263/300. NOT kept: best native-length form gains only two; original indexed
 // attachment clear and entire body restored. Pool/player and lazy tag-table homes remain.
+// T77: Live unit-index field references mutable/read-only and pointer before pool acquisition
+// 303/303/303; first-loop-only references 254/254; real weapon/paired-slot array references
+// 254/254; paired selected-slot field references 280. NOT kept: no native pool/player/tag
+// ownership equality; original lookups, observations and complete body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1534,6 +1542,9 @@ void function_150820(dword *bits, bool local_only)
 // and the weapon read through the global, no unit pointer 43; a unit_index local for the test, the lookup and the 0xcd7b0
 // argument with player->unit_index after the call 43; the weapon index as `slot != NONE ? unit->weapons[slot] : NONE` 43; the
 // hand declared after the unit lookup 70 (207 bytes).
+// T77: Live unit-index field mutable/read-only references and field pointer, entry/guarded
+// lifetimes 73/73/73/73/73; real held-slot/weapon array references and selected-weapon field
+// reference 43/43/70. NOT kept: no native saved-role equality; original body restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

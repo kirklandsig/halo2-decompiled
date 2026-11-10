@@ -32,6 +32,9 @@ struct s_245850
 // MiniMax C (11-09): no new form, no lower score (1): the only difference left is the plane index,
 // loaded with a 16 bit move where retail sign extends it; retail's index is 32 bits wide, so the
 // sign extension has to come from the callee's parameter declaration, which is in another file.
+// MiniMax C (11-09, later round): no new form, no lower score (1): the plane index is still loaded with a
+// 16 bit move where retail sign extends it, so the sign extension has to come from bsp3d_get_plane's
+// parameter declaration in src/unknown_14a280.cpp and its four other declarations, all outside this lane.
 // MiniMax S (11-06): no new form, no lower score (1): the plane index in a named long, int or short local, and an explicit (short)(long) cast at the call, all keep the 16 bit load (1 each).
 // MiniMax B (11-06): no new form, no lower score (1).
 // MiniMax I (11-05): no new form, no lower score: the plane index is still loaded with a 16 bit move where retail sign extends it; retail's index is 32 bits wide, so the sign extension needs bsp3d_get_plane's definition (src/unknown_14a280.cpp:50) and its four other declarations changed, which are outside this lane's two files.
