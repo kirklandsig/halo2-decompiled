@@ -5730,12 +5730,13 @@ extern real g_47f05c;
 /* lands or is knocked to the ground: a crouching biped standing up into a
    ceiling is lifted clear, the hit is remembered (+0x44c..), and a flag
    plays the knocked-down animation */
-// Matches with the handle first (handle, point, contact, knocked), the order Claude lane 17 found in round 5:
-// retail takes the point in EAX and the handle in ECX, and its callers 0xcaa60 and 0x9c610 set them up that way.
+// Matches with the handle first, the order Claude lane 17 found in round 5: retail takes the point in EAX and the
+// handle in ECX, and its callers 0xcaa60 and 0x9c610 set them up that way. The contact comes before the point
+// (Claude lane 16 round 99): this function matches either way, and 0x9c610's call matches only with this order.
 // The lift cap is read from the global g_47f05c (retail loads it from .data and doubles it at run time), and the
 // upward sum is k-first (retail's j*j, then k*k, then i).
 // @retail 0xe4a20
-void __stdcall function_e4a20(long arg_159e6d, point3f const *point, long object_index, bool knocked)
+void __stdcall function_e4a20(long arg_159e6d, long object_index, point3f const *point, bool knocked)
 {
 	s_biped *biped = BIPED_GET(arg_159e6d);
 

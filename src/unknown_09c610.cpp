@@ -243,7 +243,7 @@ struct s_damage_report;
 point3f *function_b9dd0(long arg_0, point3f *arg_1);
 void function_d6a70(long arg_0);
 void function_d9640(s_damage_report const *arg_0, long arg_1);
-void __stdcall function_e4a20(long arg_1, point3f const *arg_0, long arg_2, bool arg_3);
+void __stdcall function_e4a20(long arg_1, long arg_2, point3f const *arg_0, bool arg_3);
 
 struct s_9c610
 {
@@ -307,12 +307,12 @@ struct s_input_9c610
 // tail read 23; both byte reads 46; word notification read 46; word tail read 23; both word
 // reads 46; signed-byte tail read 23; byte notification/signed tail 46.
 // Round 11 (lane 17): unchanged; 0xe4a20 (contributor code, src/bipeds.cpp) is still todo at 104.
-// Round 99 (lane 16): HELD (needs the owner's OK), build/r99/held-9c610.patch in the m3-lane16 worktree:
-// with 0xe4a20's parameters as (handle, contact, point, knocked) this function matches byte for byte in the
-// plain check, 0xe4a20 stays matched and 0xcaa60 stays at 224. The point is then evaluated between the two
+// MATCH (lane 16 round 99; the call line in 0xcaa60 changed with its owner's OK on #1109): with 0xe4a20's
+// parameters as (handle, contact, point, knocked) this function matches byte for byte, 0xe4a20 stays matched
+// and 0xcaa60 stays at 224. The point is then evaluated between the two
 // pushes, so its EAX is taken when the contact is loaded and the movsx goes to ECX. (handle, contact, knocked,
-// point) matches too; (point, handle, contact, knocked) 4 and loses 0xe4a20. The definition is in src/bipeds.cpp
-// and the other call in src/unit_object_type.cpp, so the tree keeps the old order. In this body alone (all 2,
+// point) matches too; (point, handle, contact, knocked) 4 and loses 0xe4a20.
+// Before the order changed, in this body alone (all 2,
 // same code): a short contact local, a long contact local, a point local; a word contact field 2 (movzx);
 // the contact read back from the filled record 8 (430 bytes).
 // @retail 0x9c610
@@ -368,7 +368,7 @@ bool c_damage_aftermath_event_definition::v11(long arg_0, long const *arg_1, lon
                 function_d6a70(local_1);
             function_d9640((s_damage_report const *)&local_10, local_1);
             if (g_4e0300->data[(local_1 & 0xffff) * 12 + 3] == 0 && (input->field_20 & 0x80))
-                function_e4a20(local_1, (point3f const *)&input->field_c, input->field_2e, false);
+                function_e4a20(local_1, input->field_2e, (point3f const *)&input->field_c, false);
         }
         local_0 = true;
     }
