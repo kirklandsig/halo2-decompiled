@@ -3590,6 +3590,18 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // 82; a 45-form grid of increment, entry argument, declaration order and range placement best 6 (range above the mode
 // 53/55, one global entry argument 11/31); the pool global at every use 78 (24 with the range above the mode);
 // sound_index declared in the for init 78; a 600 s permuter run on the 6 form (63 tries) best 6.
+// Round 84 (m3 lane 11, fast): retail has no pool reload at the loop top (the loop-end value in EBP feeds it),
+// which fits the loop top read through the `sounds` local; with that and the range in case 0 (29 re-measured: every body
+// register retail's but the pool in ESI, reloaded before the next-index ternary): sound_index scoped to the for
+// statement 29 (same code); the mode as if/else 29 (same code). Re-measured listed forms on it: the reload embedded in
+// the find's argument 82 (index and pool swap EBX/EBP), the sound pointer taken once before the start test 162 (561
+// bytes), 0x128020's `(s_sound_playback *)sounds->data + index` spelling at the loop top 29 (same code). On the 6 form
+// (the 29 form with the loop-end find through the global; re-measured 6, only the pool load sits between `cmp ebx, -1`
+// and its jne where retail loads it after the ternary's join): the range declared at the arm's top and assigned in
+// case 0 6 (same code); `reason` declared at function scope 6 (same code); the increment as the find through the
+// global into sound_index, then `sounds = g_4e637c`, then the datum (measured only: the name reused for the
+// absolute index) 78; re-measured, the reload embedded in the datum argument 82. Every form that puts the
+// loop-carried pool load after the ternary swaps index and pool between EBX and EBP. Original 24 body restored.
 // @retail 0x1282d0
 void function_1282d0(void)
 {

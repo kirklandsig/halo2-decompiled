@@ -2052,6 +2052,14 @@ real game_time_get_seconds();
 // projection or the camera sums through dot3f in either argument order 553 each (same code, so (g) is not a spelling).
 // Diagnostic only: unused initialised locals ahead of the delta move the whole layout (558 at 2297 bytes, masked 149 to 144),
 // so the remaining order differences follow the count of locals, not the expressions. Nothing kept: no form is 8 below 492.
+// Round 84 (m3 lane 11, fast, control 492; second and third numbers are LCS-aligned unmatched lines, plain and with
+// stack offsets masked, build/r84/aligned.py, control 296 and 215): the entry table pointer read once before the loop
+// 543 (2302 bytes), 284, 198; an entry pointer advanced in the for statement 546 (2268 bytes), 290, 209; the opacity
+// through clamp_2e9e0 in place of PIN 562 (2246 bytes), 285, 200; the flags read once as a word value 483 (2295
+// bytes), 347, 261; x_scale and y_scale set in an else arm in place of their 1.0 initialisers 461 (2285 bytes), 298,
+// 219: NOT kept, the positional gain is realignment only (aligned counts rise), and retail stores both 1.0 defaults
+// before the `i == 0` branch (0x2ef25-0x2ef2b), which is the original form. On that form (diagnostic) the visibility,
+// context alpha or attenuation default in an else arm 475/467/528, the flags as a value 542.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2867,6 +2875,16 @@ s_cached_input_list g_5234e8[4];
 // without it 113 (same code each). Diagnostics, reverted: one extra use of object 121 (556 bytes; object is then
 // loaded before the definition as in retail, registers unchanged), four extra uses 177 (object still ESI), extra
 // early uses of `output` 166 (it takes EBX and becomes the cursor). Reference counts do not move object off ESI.
+// Round 84 (m3 lane 11; fast with round 64's callee chain, control 113): the loop as an inline helper taking the list
+// as a parameter (like sibling 0x33400) 618 (75 bytes, not inlined), as `__forceinline` 155 (557 bytes); the index
+// as a dword 113 (same code); the loop counter as `short` 116 (551 bytes); the entry pointer computed before the
+// 0x31590 call (a moved declaration, measured only) 105 (aligned 150 -> 146, the index still in EDI). Re-measured on
+// this image (listed on the default fast image): the view clamp as an if/else chain 132 (558 bytes); index declared
+// at function scope 113 (same code); the score written straight into the record 113 (same code); the list as a
+// `byte const *` local 132. The first
+// divergence is the index taking EDI (0x31590's argument register, which 0x31590 never writes) for the whole body
+// where retail keeps it in EBX and copies it to EDI for the call; that frees EBX for the cursor and EBP for the
+// list or total in ours, and retail then has nothing left for list and total, so both are spilled (frame 0xa0).
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
