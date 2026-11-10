@@ -961,6 +961,7 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // MiniMax S (11-10): no new form, no lower score (153 in the wider set, 196 in the two-source reduced
 // one); the case bodies call the same functions as retail (0x93f60, 0x93fa0, 0x940b0 and the rest are
 // in this file), but the reduced build does not pair their call targets, so most of the rows are that
@@ -974,7 +975,6 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // the switch's cases still take their arguments in registers other than retail's (it pushes edi where ours
 // pushes esi), so the callee conventions decide this one.
 // MiniMax C (11-08): no new form, no lower score.
-// score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // Earlier: retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
 // MiniMax lane E (11-01): no new form, no lower score; retail's parameter order is (message_type,
 // message, address) with the receiver in EDX, which this file's declaration cannot change.
@@ -1348,6 +1348,11 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // test is threaded away before allocation and adds no weight to the type); a `message_type < 0` early return 212 (428 bytes, same convention); the link
 // read once into a function-scope local for the three lookups 239 (400 bytes, 0x7afd0 6: the link takes ESI at entry). Reading: the type must outrank the
 // address for EAX at allocation; two extra type tests do it (round 45) but leave their code behind, and every test that folds, folds before allocation.
+// Round 228 (m3 lane 3, all plain with 0x7afd0, 0x93aa0, 0x92ef0, 0x92d10, 0x94420, 0x94270; control 153 at 464
+// bytes): every first-switch case ending in `break` 153; each connection case returning early when the lookup fails
+// 153; the late switch's cases returning, with `default: return;` 153; the connection index declared inside the first
+// switch's body 153 (same code each); the three connection cases moved into the late switch ahead of 18 and 11 225
+// (470 bytes, 0x7afd0 3: the convention moves). All restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
