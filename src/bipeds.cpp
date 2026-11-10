@@ -4791,6 +4791,12 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// MiniMax S (11-10): no new form, no lower score (79); the reduced build of this function is not the
+// full build (in the narrow three-source image it is 483 bytes against retail's 887 and two calls
+// reach what the image leaves out, in the wide image it is 894 bytes), so the fast check cannot be
+// used as the signal here and the body stays as it is: the shared rotation helper's bytes, the
+// normalization SIMD numbering and the first rotation's cross terms still read the forward x
+// load-first where retail multiplies by it in memory.
 // MiniMax B (11-07): 63 (892 bytes), not kept: the first rotation and the normalize call take &biped->forward
 // while the forward local declared above them serves the later uses; with the local in all of them 79 (main),
 // with the field in all of them 154, with the local declared at its first use (the first cross) 77 at 887 bytes.
