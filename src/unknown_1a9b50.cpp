@@ -620,6 +620,11 @@ extern point2f *g_468778;
 // (1558 bytes); the slot pointer declared first 375 (same code); the prop lookup before the clock 380; a velocity
 // pointer for the magnitude call and the eight prediction reads 397 (1576 bytes); the request direction stored
 // through its pointer 375 (same code). Aligned by sequence, 263 rows differ.
+// Round 106 (lane 9, fast; re-measures of lane 1 r71's chain on the current base): actor first with constant returns
+// 393 (1549 bytes, masked 134), plus the velocity field through a named pointer 417 (1563), plus the direction
+// pointer inside its test 412 (1560), plus the second distance's zero in its arm 420 (1560), plus the planar pair
+// copied whole 412 (1552). Retail's homes: arg_0 EDI, actor EBP, slot ESI, prop EBX, settings in memory.
+// Diagnostic: 0x110ab0 as an opaque stub leaves 375 (masked 134), so that unmatched callee is not the cause.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
