@@ -28,38 +28,6 @@ extern firing_position_post_evaluator g_44adf0[12];
 extern s_type_b36ac5 *g_51eca0;
 short g_51ec9c;
 
-struct hash_node
-{
-	void *key;
-	dword hash;
-	hash_node *next;
-	byte data[1];
-};
-struct hash_table
-{
-	byte unknown00[0x20];
-	dword bucket_count;
-	long maximum_count;
-	long data_size;
-	dword (__stdcall *hash_proc)(const void *key);
-	bool (__stdcall *compare_proc)(const void *a, const void *b);
-	c_data_allocator *allocator;
-	hash_node *free_list;
-	hash_node *buckets[1];
-};
-hash_node *function_13e2d0(hash_table *table, void *key);
-
-PRIVATE inline bool reference_owner_find(hash_table *table, void *key, void *data)
-{
-	hash_node *node = function_13e2d0(table, key);
-	if (node && data)
-	{
-		memcpy(data, node->data, table->data_size);
-		return true;
-	}
-	return false;
-}
-
 struct s_reference_candidate_view;
 struct s_reference_direction_request;
 real function_30bf0(vector3f *vector);
@@ -67,6 +35,7 @@ void function_260530(s_reference_candidate_view *entry, s_reference_direction_re
 void function_260060(long actor_index, long mode, s_type_967e20 *context, s_type_b36ac5 *position);
 bool function_2600a0(long actor_index, s_type_967e20 *context, s_type_b36ac5 *position);
 long function_1e4a50(long index);
+long function_262a30(s_reference reference);
 struct s_260670_state
 {
 	s_reference result;
@@ -76,7 +45,22 @@ struct s_260670_state
 	real best_score;
 };
 
-// score 700 (was 697): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// score 611 (was 700): the owner is read through the existing 0x262a30 (its file is /Ob1, so the hash lookup 0x13e2d0 stays a call
+// as in retail; the private copy of its lookup let 0x13e2d0 inline here): 700 -> 611 plain at 3072 bytes. Left: the five state values'
+// stack homes (retail: bools 0x6/0x7, result 0x8, a dword-stored selected at 0xc, best score 0x18; ours keep them in one aggregate at
+// 0x4..0x10), 0x2600a0 still inlined at the sorted-loop call where retail calls it, retail inlines 0x262a30's body (with 0x13e2d0
+// called) where ours calls it, the random path's jump to the shared `selected == NONE` test, and x87/SSE operand orders in the loops.
+// Round 75 (m3 lane 13, fast; aligned count in brackets, masked+stack, base 610 [205-270 masked]): first evaluator pass as a call to
+// 0x2600a0 708 (613 with the owner call; retail's `result && proc` loop shape, but site 2 stays inlined); perpendicular distance through the
+// existing 0x11e000 752 (frame 0x8ac); all three 629; `inline` on 0x262a30's definition 726 (0x13e2d0 inlines with it), with the evaluator
+// call 721, with 0x11e000 756, both 750; the `selected == NONE` test after the if/else (retail's flow) 623 [262], the tail nested under
+// `selected != NONE` 628, both with the inline 724/737; the sorted loop as a while 610, its call test nested 610, the 25f7b0/score/
+// 2600a0 steps as an inline helper 610 (same code: site 2 stays inlined in every form); the five state values as plain locals 742
+// (frame 0x8a4, retail's dword store for selected and best at 0x18), in another order 742, with the sort scratch word declared in its
+// block 734 [240] (frame 0x8a0), with the sorted array there too 730, plus the shared selected test 752 [238], plus normalize3d and the
+// evaluator call 766 [230]; normalize3d for the unknown40 loop 610 [268] (retail's x87 length order exactly; only the scale products
+// differ). Earlier: score 700 (was 697): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done`
+// as returns 700 (697 with them). Enabling it lets callers keep
 // a bool output in a register across a later call, as retail (0x1b0540 matched with plain output locals).
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
@@ -318,8 +302,7 @@ s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *
 	state.result = positions[state.selected].reference;
 	if (reported_owner)
 	{
-		long owner = NONE;
-		reference_owner_find((hash_table *)g_557c6c, *(void **)&state.result, &owner);
+		long owner = function_262a30(state.result);
 		*(long *)reported_owner = owner != actor_index ? owner : NONE;
 	}
 	if (actor[0x3f2] && !actor[0x220] && !positions[state.selected].unknown5b)

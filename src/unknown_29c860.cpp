@@ -130,6 +130,14 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
+// score 378 (was 393): the left vector is built from the named left_i (`{left_i, local_8.i, 0.0f}`): 393 -> 378 plain at retail's 2825
+// bytes, but mostly positional: the compiler now propagates left_i into the side test and shares its product with the 0.9 block (a new
+// temp, frame 0x5b8 against retail's 0x5b4; masked aligned 53 -> 107, with stack offsets masked 44 -> 49), while retail reads the left
+// vector's home there. The avoidance vector, local_7 and the left vector now sit in retail's order, 4 bytes high. Undo it when working on
+// the frame. M3 lane 13 r75 (fast): on the 393 form, left_i as `0.0f - local_8.j` 393, normalize_inline inside 0x29cc7e 393, 0x29cc7e plain
+// `inline` 393, the side-test sum written local_25 first 393 (all the same code); on the 378 form, the local_16 dot through dot_product2d
+// 380, local_12 scaled through vector3f_scale 419 (2804 bytes), the velocity dot through dot3f 378, left_i as `0.0f - j` 378, the side
+// test through dot_product2d 378.
 // MiniMax I (11-05, run 37): no new form, no lower score (277); the 0.9 steering block is still one instruction short and the left and avoidance vectors still swap their slots.
 // Walk b5A (11-06, statement by statement against retail 0x29cbb0, every block, field offset, constant value, call argument and branch
 // direction): no behaviour difference found. The body now calls the helpers it had written out: length_sq3f for local_10 (277, same code),
@@ -140,7 +148,7 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // (vector3f_scale takes its address and moves every stack slot: 356 alone, 432 with the 3x store, 66 hunks; retail never takes 0x3c's
 // address), the velocity dot (retail adds k, j, then i; dot3f adds i, j, k) and the local_16 dot (j product first; dot_product2d is i first).
 // Steering block under the new base: i-sum first, old-i temp, one-expression sums, di/dj locals: 393 each (same code).
-// score 393 (was 277): the steering block's loads and product order differ (it now loads i, j first); the left vector and the avoidance
+// Before: score 393 (was 277): the steering block's loads and product order differ (it now loads i, j first); the left vector and the avoidance
 // vector swap their 12-byte slots; the 0x5d0 flag store now matches; the early 0x44 load and the local_16 dot's x87 order differ.
 // Older notes follow, written against the 277 form. score 277 (was 277): the 0.9 steering block is one instruction short (145 of the count); the left and avoidance vectors swap their
 // 12-byte slots; the second normalize's j product, the 0x5d0 flag store, the early 0x44 load and the local_16 dot's x87 order differ.
@@ -272,7 +280,7 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 	vector3f local_12 = *g_4687a4;
 	vector3f local_11 = local_8;
 	real left_i = -local_8.j;
-	vector3f local_13 = {-local_8.j, local_8.i, 0.0f};
+	vector3f local_13 = {left_i, local_8.i, 0.0f};
 	if (!local_2)
 		*(real *)(local_0 + 0x660) = 0.0f;
 	else if (!*(bool *)(local_0 + 0x5d0) || *(bool *)(local_0 + 0x5d2))
