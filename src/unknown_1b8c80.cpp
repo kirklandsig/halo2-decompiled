@@ -1399,6 +1399,33 @@ void function_1f86a0(long actor_index);
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
 // object-header data in the prologue and reads the flags once above the slot-flag test.
+// MiniMax C (11-10): score 132 (was 132): no lower score this round. The frame is still 0x10 against
+// retail's 0x14, and the mask's home is the whole difference: retail keeps the 0x20 mask byte in the
+// stack at F-0x13 and the loop entry in EBX, this build keeps the mask in BL and spills the entry, so
+// every stack offset after it shifts by four. Fifteen forms of the mask and of the comparison were
+// tried and none of them puts the mask in memory: the else arm re-reading the flags 244, the mask as
+// a bool 241, the comparison as a ternary 228, the comparison inlined without the mask 250, a second
+// mask assignment under an if 255, the mask as a dword 248, as an int 248, as a word 253, the
+// comparison with an extra and 241, and the mask as an unsigned char, the comparison with a
+// not-equal test, the comparison as a byte, a separate copy of the flags byte and the mask computed in
+// two steps at 132 each. Four more shapes of the same value were measured since: the same value under
+// an if 240, the same value as a ternary 228, the decline test as a separate boolean local 132 and the
+// same value under an if with braces 240; the frame stays 0x10 and the mask stays in BL in all of them.
+// MiniMax C (11-10): score 132 (was 133): the joint index is held in a dword and the second test against NONE
+// compares it as a signed value, which is the pair that lowers the score (the dword alone and the cast alone
+// each score 133); the frame is still 0x10 against retail's 0x14, retail still spills the 0x20 mask byte to
+// F+3 and keeps the loop entry in EBX where ours keeps the mask in BL and the entry in memory, and retail
+// still takes the object table base in the prologue, into ESI, where ours loads it into EAX after the actor
+// index math.
+// MiniMax C (11-10): score 133 (was 134): the element index is stored before the slot flag, which pairs the
+// two stores the way retail orders them; the frame is still 0x10 against retail's 0x14, retail still spills
+// the 0x20 mask byte to F+3 and keeps the loop entry in EBX where ours keeps the mask in BL and the entry in
+// memory, and retail still takes the object table base in the prologue, into ESI, where ours loads it into
+// EAX after the actor index math.
+// MiniMax C (11-10): score 134 (was 134): the iterator loop is the for form of the matched sibling
+// 0x1b4680, which gives the same score and the exact length of 861 bytes, with the first difference at
+// +0x2 (the frame) instead of +0x4; retail still spills the 0x20 mask byte to F+3 and keeps the loop entry
+// in EBX where ours keeps the mask in BL and the entry in memory.
 // MiniMax I (11-08): no new form, no lower score (134).
 // MiniMax C (11-06): no new form, no lower score; the frame is still 0x10 against retail's 0x14,
 // retail still spills the 0x20 mask byte to F+3 and keeps the loop entry in EBX (home F+4, reloaded
