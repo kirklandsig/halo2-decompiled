@@ -1590,6 +1590,7 @@ bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
 #pragma inline_depth(2)
+// MiniMax E (11-10): no new form, no lower score (301); retail reads the actor pool global before the datum pool and takes the actor index into ebp among the pushes, this build reads the datum pool first and takes the actor index into esi after the four pushes, and retail puts both return tails (the zero result and the shared 2) at the end of the function where this build leaves the 2 inline in the middle.
 // score 301 (was 301): the object index stays in ESI and the output pointer in EBP (retail EBP and ESI), the first exit test falls into the failure return, and some bodies are 24 bytes short.
 // Lead (round 91, m3 lane 9): at the 1/19 site, the `field_3 |= 0x40` store written before the point copy (a store through the
 // output ahead of the reference re-read) gives retail's arg_0 EBP and output ESI and the reload `mov edi, [edi + 0x28]`, 297
