@@ -436,6 +436,10 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // sequence inline); i and j as short 149 (672); the collector without align(16) 19 (it moves 4 bytes); the b
 // point stored by three field stores in place of real_point3d_set 36; the contacts read through
 // collector.entries.data at each use (no contacts local) 8; (re-measured) a contact count local 865.
+// Round 181 (m3 lane 4, fast): the existing havok_component_get and havok_component_rigid_body_get getters with the
+// real component type and its body array 8; i and j as int 8; the collector, dispatch and contact loop as a forceinline
+// pair helper returning the closer flag 152 (685 bytes, every home moves); the outer loop as while 8; the contact buffer
+// declared before the collector 8. Diagnostic: j, first, i renamed to sort in retail's slot order 8 (names do not order them).
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {

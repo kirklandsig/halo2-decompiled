@@ -3150,6 +3150,8 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
+// score 93 (was 93): frame 0x4c versus 0x54, the particle system in EDI (retail ESI) and the location mode cached
+// where retail spills the definition and reads the mode at each call.
 // MiniMax A (11-06): no new form, no lower score; the same cause as 0x178c80: retail reads both colours
 // before the type query and keeps the particle system in ESI with colour B in EDI, ours keeps the system
 // in EDI and the datum in ESI, and retail's frame is 0x54 against our 0x4c; the recorded best form (the
@@ -3163,7 +3165,7 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // scores 108, the same form with the particle system declared before the effect 119 and with color B
 // read at the call 110; no new form, no lower score.
 // MiniMax E (11-09): no new form, no lower score; the particle system and the next index trade ESI and EDI against retail, and the form that would free the definition's frame slot (the location mode read again for each call) is not usable because it drops the matched caller 0x176f60 to 25; the declaration-order and width variants score 93 or worse.
-// score 93 (was 93): frame 0x4c versus 0x54 (retail spills the definition and keeps two more
+// Earlier summary (frame 0x4c versus 0x54; retail spills the definition and keeps two more
 // dwords), the particle system in EDI (retail ESI), color B spilled (retail EDI) and the cached
 // mode differ. Tried: transform name 109; query results, particle cursor and colors at entry 109;
 // read-only settings 109; immutable mode once 96 (kept); size policy 146; inline depth zero 109;
@@ -3397,6 +3399,15 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // listed forms; new on the current body: the node flag as `node_index != NONE && node_index < 0` 94 (339 bytes); the
 // particle system derived again from g_510c74 and its index for the 0x1751d0 type query 118, for the loop's 0x248c60
 // call 112, for the particle-location cursor 119 (each turns the effect index into a register argument; 0x176f60 25).
+// Round 180 (m3 lane 4, fast with 0x176f60, which matches unless given; aligned/masked = difflib counts with
+// addresses / also stack offsets masked): permuter 30 minutes, best 81 on its own count only with a volatile tinted
+// result, colour A narrowed to a word (a value change) and the loop rotated by hand: not kept. The tinted result
+// declared at the block scope above the type query 93 (same code); on the spawn cursor with a long mode
+// (re-measured 89, aligned 37, masked 33): that 89 (same code), colour B read first 89 (aligned 36); tinted at block
+// scope with the mode read per call 108 (0x176f60 25). On the spawn form only the system/next ESI/EDI swap, the
+// type object/colour A registers and the per-call mode read from the spilled definition remain. Also: the effect
+// looked up after the definition call (declared first) 121 (346 bytes); the node flag's tests swapped, sign bit first,
+// 92 (aligned 51, against 48 at 93).
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

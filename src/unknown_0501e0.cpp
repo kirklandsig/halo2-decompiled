@@ -433,6 +433,12 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // sqrt argument and the blend scale/length in each other's slot ([esp] and [esp+4]) at all three tails. On that form:
 // the second offset loop first 292 (same code); offsets through vector3d_from_points3d 297 [164/55]; blend terms
 // swapped 292 (same code); through an `s_camera const *camera = &g_4b9e14` local 298 at 1083 B [155/55].
+// Round 179 (m3 lane 4, fast with 0x30290, 0x142640 and 0x30bf0, all matched each time): the helper's scaled copy
+// assigned field by field 206 (same code: the copy still coalesces with the raw offsets, scaled in place); the second
+// offset through the existing vector3d_from_points3d 207 (1141 bytes); one shared scale local for both views 255 at
+// retail's 1136 bytes (frame still 0x20), with that offset helper too 255; the copy scaled in place through
+// vector3f_scale 206 (same code). Retail keeps raw and scaled apart (copies before the test, `scale * raw` into the
+// copies) and loads the first view's coefficients, holding right.i in xmm7 for the second view.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

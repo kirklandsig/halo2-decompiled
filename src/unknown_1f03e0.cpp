@@ -967,6 +967,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // sides and the low-normal arm's homes remain as noted below.
 
 // score 347 (was 347; before r723 358): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
+// score 347 (was 347): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
 // bytes (retail 3047). Statement-by-statement walk against retail (b2K, 2026-11-06, fast): every
 // arm, compare direction, field offset (flags 0x14, settings 0x8, speed 0x20, normal 0x8c, damping 0x98, facing 0x9c, flag 0xa8,
 // up 0x100, basis 0x118, velocity 0x124, gravity 0x130, input 0x138, accelerations 0x144/0x148), constant (0.001, 0.234, 5.0, 1.0,
@@ -1225,6 +1226,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // before the gravity spill, then the first cross's product sides; a gain of 4, not kept), flying, direct, gravity, damping 346; on
 // the first order the input pointer declared after the flags 346 (3051 B; r89 had 417 on its form); the general arm's input length
 // through magnitude3d 587 (3025 B; 403 on the 358-era body), with the first order 583.
+// Round 178 (m3 lane 4, fast; aligned = difflib count with addresses masked, 152 here): left are product operand
+// orders (retail loads the state field first in the crosses and the flying arm's 0x1f087b products), the input
+// length's x87 load order (retail k, j, i), the low arm's two projections' schedule, the damping flag's register
+// (retail EDX, computed first) and the delta/limited homes in both arms. Tried: `gravity = false` written in each arm
+// of the general step test (no limited_step bool) 516 (aligned 278); that with the short-step arm first 517 (285); the
+// general arm clamping delta from the normalized copy (no copy back, delta used after) 574 (285); the direct arm the
+// same way 566 (3037 bytes, aligned 175); both 557 (297).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

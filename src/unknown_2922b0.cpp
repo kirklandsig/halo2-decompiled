@@ -74,11 +74,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
+// score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // MiniMax S (11-06): The frame size agrees but the homes do not: the success byte sits at frame+0x13 where
 // retail keeps it at frame+0x17, the float at frame+0x10 against frame+0x18, the four-flag array at
 // frame+0x24 against frame+0x1c and the copied vector at frame+0x4c against frame+0x40, and the first
 // comparison branches the other way round.
-// score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // W14L: full statement walk against retail (0x2922b0-0x292df3; args 0x120..0x134 after the pushes): fields +0x14/+0x30/+0x48,
 // tests, callees (0x1e5450, 0x30bf0 x3, 0x1697c0 with its six stack args), both cross/fallback chains, the four points,
 // ray loop, per-ray clamps and signs, both rotations and the arg_6 tails agree; no behaviour difference found. Constants
@@ -399,6 +399,14 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // M400: Complete original input/basis/origin/distance/ray/root/rotation-cross/projection defaults
 // 603/677/637/665/671/592/592/598. NOT kept: none improves; original
 // producers and all in-place snapshots restored; result/input/minimum/hit homes remain.
+// Round 181 (m3 lane 4, fast): the active test written positively with `return local_0` at the end of its block and
+// `return true` after it (or as its else) 674/674 (2841 bytes: retail's jbe to a last inactive exit, but the range
+// field is read again after the output clears); with the range local read before that test 665 (2830: retail's reuse
+// of the compared register for the range home); the range local before the current negative test 594 (2828); the cross
+// helper's products in retail's load order 592 (same code), with the positive range form 665. Diagnostic: the success
+// and minimum locals renamed to sort the other way 592 (same code: names do not order these homes). Retail's low frame is
+// success byte +0xb, ray index +0xc, minimum +0x10, hit bytes +0x14, cross result +0x18; ours success +0x7, minimum +0x8,
+// ray index +0xc, cross result +0x10, hit bytes +0x1c.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

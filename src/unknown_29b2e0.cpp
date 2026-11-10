@@ -51,6 +51,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
+// score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax S (11-06): no new form, no lower score; the single-exit normalizer with the XY vector read before
 // the second copy reaches 169, one point short of the eight-point bar, and the original body is restored.
 // The rotation's cross terms and rows written with the axis component first, which is retail's order, score
@@ -59,7 +60,6 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // MiniMax D (11-09): no new form, no lower score; the length the normalizer stores sits four
 // bytes higher in the frame than retail's (ours +0x10, retail +0xc), and the unity constant and
 // the scaled components then get different registers.
-// score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // Frame 0x2c agrees at 1711/1706 bytes; unity XMM5/XMM4, root +0x10/yaw +0xc and rotation product/register homes remain.
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1711 bytes against 1706); the sqrt temporaries sit at +0x10 with
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
@@ -428,6 +428,12 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // the rotation helper's three cross terms through cross3f into a vector 213 (1707 B [131/55], frame 0x24 against
 // 0x2c, the root then at retail's +0xc), with the single-exit normalizer 209 [127/55], plus the rows stored directly
 // 209 (same code), plus the XY vector before the second copy 209 [126/54]. Single-exit normalizer re-measured 171.
+// Round 179 (m3 lane 4, fast with 0x29b990, 0x1e5450, 0x11ce20 and 0x11cc90, all matched each time): the rotation
+// vector as the first input copy's own variable (no separate rotation local) 192 (1708 bytes); the second axis rows
+// with every product's factors swapped 176 (same code); those rows written k, j, i 190 at retail's 1706 bytes (masked
+// 72 against 69), with the single-exit normalizer 185 (that normalizer alone re-measured 171); the rotation's
+// projection computed after the three cross terms 176 (same code). Left: sine/cosine/pitch homes (retail +0x10/arg_3's
+// home/arg_4's home, ours the pitch at +0x10 and sine/cosine in the two homes) and the rotations' schedule.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

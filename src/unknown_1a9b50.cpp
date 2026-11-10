@@ -413,8 +413,8 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
-// MiniMax H (11-04): no new form, no lower score; the four orders of the entry declarations (the actor first, the actor and its slot first, the actor second and the slot before the actor) give 413, 413, 375 and 413 against 375.
 // score 375 (was 375): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
+// MiniMax H (11-04): no new form, no lower score; the four orders of the entry declarations (the actor first, the actor and its slot first, the actor second and the slot before the actor) give 413, 413, 375 and 413 against 375.
 // b2G walk (r719): every block, field offset, constant and call argument checked against retail 0x1aa0d0-0x1aa6da; no logic or
 // precision difference found (float sums in retail's k,j,i order, 0x24590 called, 0x2b400/0x30bf0 results as retail); the 20 matched callees and
 // the file's matched siblings still match. What remains is allocation and scheduling only.
@@ -620,6 +620,13 @@ extern point2f *g_468778;
 // (1558 bytes); the slot pointer declared first 375 (same code); the prop lookup before the clock 380; a velocity
 // pointer for the magnitude call and the eight prediction reads 397 (1576 bytes); the request direction stored
 // through its pointer 375 (same code). Aligned by sequence, 263 rows differ.
+// Round 179 (m3 lane 4, fast, the file's 15 matched functions and 0x265d30 matched each time): actor first with
+// `return !f14 && !f13 && !f2d;` in the arm re-measured 393 (arg_0 EBX, actor EDI, settings ESI, slot EBP, prop in
+// arg_1's home); on the 375 body: the distance left uninitialised and zeroed in the copy arm 384 (1551 bytes); a
+// separate local for the second prediction time 375 (same code); the prop index in a two-use local 375 (same code);
+// the facing pointer taken straight from the 0x25d740 call, no view local, 375; the settings test as its own `if`
+// around the flag tests 374 (one count, not kept); the facing-test planar pair copied whole 384. Retail's two
+// `local_9 = *local_8` copies stay separate (the copy arm jumps past a local_6 reload); ours cross-jumps them.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
