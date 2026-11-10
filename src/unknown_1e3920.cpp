@@ -1303,6 +1303,15 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // B452: Actual tag/squad/placement input layouts, seven subsets then all with immutable
 // squad/placement bindings: eight at 253. NOT kept: sentinel and query homes unchanged;
 // original input observations, outputs and complete body restored at the native frame/extent.
+// Round 78 (m3 lane 13, fast): the compile-only harness shows `if (substitute && squad) while (squad_index != NONE &&
+// next != NONE)` is retail's exact loop shape (squad index tested once, aligned head testing next only, back-edge jmp
+// past the squad test by jump threading); every other loop spelling there rotates. Under LTCG it inlines 0x1e4990
+// at the in-loop call: re-measured 420; terms swapped 408 (re-measure of lane 9 r106). New: that loop with the
+// definition reads through character_definition_get 420 (still inlined); with the arms swapped 425; with the
+// in-loop 0x1e4990 call before the definition update 378 (1314 bytes, first difference +0x4b as the flag loop's);
+// that with nested break tests (`if (forced) { if (!0x203900) break; } else if (!enabled) break;`) 372; the call
+// before the definition update on the current loop 258 (1272 bytes). Lane 9's flag loop keeps 0x1e4990 out of line
+// because the call no longer dominates the back edge; no flag-free spelling found that does the same.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1577,7 +1586,19 @@ void function_1e3b60(long actor_index);
 // 0x262ba0 inlines it as retail does: 26 (0x262ba0 497 at 1688 bytes; 0x264210 inlines it too and loses its match; its
 // five other callers stay matched); on that, 0x262ba0's update flag as long 26 (495), sample/update at function scope 26
 // (497), maximum a plain word 26 (497), sampled_one as long 26 (496). The actor stays a stack argument in every form.
-// BLOCKED-BY 0x262ba0 (stacked actor) and 0x1f38c0 (stub until #581 is solved).
+// Round 78 (m3 lane 13, fast): in 0x262ba0 the case-2 and completion view lookups through the existing 0x25d740
+// (retail's NONE test, NULL test and +0x70 there) 26 (0x262ba0 413, inlined at both sites); 0x1f38c0's real body
+// enabled alone (0x1f6090 as a stdcall stub) 90: LTCG pads the callers by four bytes (`push ecx` here, in 0x1c83c0 38
+// and 0x137fe0 80; 0x1e2f50 2), which is #581; with 0x29bab0's distance as `real` 90. Bisect (diagnostics, reverted):
+// the padding comes from two named doubles below 0x1f38c0, 0x29bab0's `double local_27` and 0x1f9e70's `double dot`
+// (through 0x29bab0's call; a static copy of 0x1f9e70 pads with `double dot`, not with `real dot`). With both gone 25
+// (`mov eax, ebx` before the 0x1f38c0 call, as retail) and 0x1c83c0, 0x1e2f50 and 0x137fe0 match. Cutting the 0x29cbb0,
+// 0x29ab90 or 0x296580 calls instead leaves 90. 0x1f38c0's own frame stays 0x1c (lowest slot unused) either way.
+// In 0x262ba0 (fast): case 2's distance through the existing vector2d_from_points2d and dot_product2d gives retail's
+// block exactly (y first, the dead `add eax, 4`) but 26 here, 0x262ba0 425 at 1624 bytes (masked aligned 218); with the
+// 0x25d740 lookups too 26 (417, masked 219).
+// BLOCKED-BY 0x262ba0 (stacked actor) and 0x1f38c0 (stub until #581 is solved: 0x1f9e70's named double, in
+// src/unknown_1f5560.cpp, and 0x29bab0's local_27).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
@@ -2072,6 +2093,16 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // fstp 0x1e2e48), the (hi+1-lo)*random>>16 rounds, the 0.5 halving, store targets (unit+0x1f5 low byte, +0x23e) and
 // condition directions all agree. Raw offsets replaced by existing fields (s_ai_object flags134/unknown23c,
 // s_ai_globals unknown340): 251 (same code). Remaining difference is pool/actor/options residency only.
+// Round 78 (m3 lane 13, fast; register-masked aligned 60): retail loads the pool global into EDI above 0x1e5240's NONE
+// branch (0x1e5280 is a pure leaf, so this is allocation, not a callee summary), re-derives the unit after 0x1e53e0 and
+// again after the weapons[0] store, keeps the loop counter in a stack home (EDI reused inside), and passes the weapon
+// to 0x101a10 in EBX (the random-state pointer is reloaded after it). Tried: the block-2 queries through the existing
+// 0xcbd50 280 (re-measure of lane 12 r107), with a long counter 333 (1186 bytes); 0x1e53e0 with `return entry;`
+// in the loop and `return NULL;` (no goto; retail's two epilogues) 304 (0x1e53e0 becomes 81 bytes and loses its match).
+// Struct views (load CSE follows the view): block 2's unit through the existing moving_object_get with raw +0x23c/+0x23e
+// 251 (same code); the block-2 queries taking the unit index from the existing actor_moving_get(actor_index) 334 at 1261
+// bytes (register-masked aligned 60 -> 45: the field is re-read as retail's, but the actor base is re-derived and the frame
+// grows to 0x18); every block-2 unit-index read through it 324 (masked 72).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

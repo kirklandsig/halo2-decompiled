@@ -491,14 +491,6 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1);
 
 s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 
-PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const *arg_1)
-{
-	real local_0 = arg_0->i * arg_1->i;
-	local_0 += arg_0->j * arg_1->j;
-	local_0 += arg_0->k * arg_1->k;
-	return local_0;
-}
-
 // MiniMax C (11-09): no new form, no lower score (89): compared with retail instruction by instruction,
 // the frame homes of both vectors and of the two lengths agree, and what is left is the schedule:
 // retail loads the object table global into ecx before the three pushes and does the object lookup
@@ -514,7 +506,7 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // MiniMax G (11-05): a split guard with the unit index in a one-use local reaches 19 (the object lookup first and the short request store first), but a one-use local is match-only, so it and the forms without it (guard split 89, guard reorder 296, nested heading length 1263) are reverted; moving the object lookup ahead of the two vector copies reproduces retail's prologue (the global load at +0x15 and the lookup before the copies) but gives 94, because the register rotation (retail EAX/ECX/EDX against ours ECX/EDX/EAX) and the tail homes still differ; no new form, no lower score.
 // MiniMax G (11-06): the object-plus-radius sum named as a local 222, the two addends of that sum in the
 // other order 89, and the object lookup moved before the two vector copies 94; no lower score.
-// score 89 (was 89): the object-plus-radius sum is written at both of its uses, the timing
+// score 87 (was 89): the object-plus-radius sum is written at both of its uses, the timing
 // default is a ternary, and the heading vector is declared ahead of the object index; the frame is
 // 0x54 and the length matches retail's. Still differs in the 0x110ab0 argument register (ECX where
 // retail uses EAX) and the scratch-register rotation after it, the sum's operand order (retail
@@ -748,6 +740,13 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // and tests the target against memory). Diagnostics, reverted at once (a volatile local read, never kept): one dead read before the guard, or
 // inside it just ahead of the call, 240 (975 bytes, aligned 61), two ahead of the call 245 (979, aligned 35): the rotation there is one step
 // from retail's, and no plain spelling of the guard supplies it.
+// Round 78 (m3 lane 13; plain 87, register-masked aligned 23 -> 21): kept: the projection, the 0.95 heading test and the
+// lateral dot through the existing dot3f (the projection's private accumulating helper dropped, the two hand-written dots
+// replaced). Measured alone (fast): projection 87, 0.95 test 89 and lateral 89 (same code each). Left as before: the
+// 0x110ab0 argument's scratch register, the target lookup against the copies, XMM2/XMM3 at the side maximum and the
+// timing-call loads and request stores (the radius sum now loads the field first, as retail). On 87 (fast): the three
+// dot3f calls with their arguments swapped 87/87/87 (same code); the side vector and the reversed probe direction as
+// initializers 87/87 (same code).
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
@@ -771,7 +770,7 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1)
 			real local_6 = *(real *)((byte *)function_1e4a50(local_0->unknown054) + 4);
 			vector3f local_7;
 			vector3d_from_points3d(&local_0->position, &local_2->unknown030, &local_7);
-			real local_8 = function_255741(&local_7, &local_3);
+			real local_8 = dot3f(&local_7, &local_3);
 			if (local_8 > 0.f)
 			{
 				if (local_2->unknown03c + local_6 + local_5 > local_8)
@@ -780,14 +779,14 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1)
 					local_10.i = 0.f - local_3.j;
 					local_10.j = local_3.i;
 					local_10.k = 0.f;
-					real local_11 = local_7.j * local_10.j + local_7.i * local_10.i + local_7.k * local_10.k;
+					real local_11 = dot3f(&local_7, &local_10);
 					if (fabs(local_11) < (local_2->unknown03c + local_6) * 0.6f)
 					{
 						s_slot_object_view *local_12 = object_get(local_0->unknown018);
 						if (local_12->type == 0)
 							local_8 -= *(real *)(g_4e3b44[local_12->tag_index & 0xffff].bytes + 0x270);
 						local_8 -= local_2->unknown03c;
-						if (local_4.i * local_3.i + local_4.j * local_3.j + local_4.k * local_3.k > 0.95f)
+						if (dot3f(&local_4, &local_3) > 0.95f)
 						{
 							short local_17;
 							{

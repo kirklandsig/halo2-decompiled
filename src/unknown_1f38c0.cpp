@@ -3,6 +3,11 @@
 // 0x1e2f50 under whole-program optimisation; neither byte-matches yet. fecheck: both behave like retail on 6/6
 // in-game snapshots (0x1f38c0 takes the actor in eax; 0x1f6090 is __stdcall, 7 pushed arguments, ret 0x1c).
 // The stub for 0x1f38c0 stays.
+// Round 78 (m3 lane 13, fast): enabling this body alone (0x1f6090 as a stdcall stub) pads its callers 0x1e34e0, 0x1c83c0
+// and 0x137fe0 by four bytes (`push ecx`). The cause is two named doubles below it: 0x29bab0's `double local_27` and
+// 0x1f9e70's `double dot` (through 0x29bab0's call). With both removed (diagnostic) 0x1c83c0, 0x1e2f50 and 0x137fe0
+// match and 0x1e34e0 passes this function's argument in EAX as retail does (25). This body's own frame stays 0x1c
+// (retail 0x18, its lowest slot unused) either way. Diagnostic patch: build/r78/held-581-diag.patch (m3-lane13).
 #if 0
 /* UNKNOWN_1F38C0.CPP: an actor's movement update: it picks the path point or
    the plane it moves toward, runs the mover for the kind of thing it drives,
