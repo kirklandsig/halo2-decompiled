@@ -906,6 +906,12 @@ struct s_device_machine_view
 // through the macro with no group pointer 124 (655 bytes); a zero-initialised local for the velocity fraction, copied
 // to the result at the end of the 0x1200055f block, 117 (the local takes a stack slot); the group pointer formed after
 // the machine test with the lane S bits 124 (655 bytes); a `long` machine-flags local 34 (same code).
+// Round 161 (m3 lane 5, fast): retail zero-initialises the result at entry (`movaps xmm0, xmm1` before the dispatch) and
+// again in both velocity blocks, so the 0x1200055f zero store is a second copy as in case 0xf00055e, not a missing entry
+// initialiser. Re-measured: the plain word masks 120 (pointer `lea esi`, pushed and popped around the first test). Tried: no
+// group pointer, the word read through the macro after the machine test 53 (index in EAX, table base in a pushed ESI, `mov ax,
+// [esi + eax*4 + 2]`); the word local zero-initialised at its declaration 120; the power group index in a case-scoped local
+// with word masks 121; the mask form plus the 0x1200055f zero store 117 (657 bytes); the word local at function scope 120.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1316,6 +1322,13 @@ bool function_108530(long device_index, long name)
 // and four clamp-order variants uses all eight xmm registers before the first fld; retail uses seven there.
 // MiniMax E (11-08): no new form, no lower score: the clamp chain keeps its value in xmm7 here and in xmm5 in retail, and the second clamp uses xmm2 here and xmm7 in retail.
 // MiniMax E (11-09): no new form, no lower score: retail keeps the initial velocity in xmm6 and returns 0x14 stack bytes, ours passes it on the stack and returns 0x18; the parameter list is not mine to change.
+// Round 161 (m3 lane 5, fast, both callers 31/13 unless noted; every form ret 0x18 with the initial velocity on the stack unless
+// noted): the ramp times renamed acceleration/deceleration time 121 (same code, so allocation ties do not follow names); no
+// `remaining` local, written out at the clamp and the cruise time 121 (same code); half times as `/ 2.0f` 121 (same code); the
+// eight reset stores through an inline reset helper 121 (same code); the inner block as a plain inline plan helper 359 (kept out
+// of line, 291 bytes, ret 0x14; callers 26/28). Diagnostic, reverted at once: a volatile ramp-down parameter on this body 165
+// (546 bytes, a `push ecx` frame, the target passed in a register, the initial velocity still on the stack; callers 26/28).
+// After the five: the same plan helper as forceinline 121 (same code); the cruise velocity as one ternary 121 (same code).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
