@@ -459,6 +459,15 @@ struct s_object_damage_view
 // NONE) { if (killer == reported_player) ... } else if (reported valid)` layout 358 [33]; plus the assist stores
 // re-reading the record's player index 366 (1544 B, retail's length, first difference +0x8) [39]; the predicate with
 // that killer layout alone 383 (1512 B). NOT kept: all above 353; body below unchanged.
+// Round 228 (m3 lane 3, fast with 0xd9640, 0x1e9700, 0x1ea770 and the other file-mates, which keep their state;
+// aligned counts exact/stack-masked/register-masked in brackets, base 353 [179/160/56]): the assist index short 353,
+// the entry test as an enclosing `if` instead of the early return 353, the award searches as `for` loops with a
+// `break` 353 (same code each). Retail reads the related unit's player field again for the assist store (after the
+// team call): that field read at each use in the related block 357 (1552 B) [170/151/53] (the block is then retail's);
+// with both award searches through a two-caller early-return predicate 361 (1532 B) [166/147/49] (retail's searches
+// leave straight for the next award); with the assist stores re-reading the record's player as well 371 (1544 B,
+// frame 0x4c) [198/141/56], plus one history pointer for both loops 371 [198/141/55]; the selection amount in a local
+// under the time test on those 441/442 (1563 B). All restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

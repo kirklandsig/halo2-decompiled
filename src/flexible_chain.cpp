@@ -547,6 +547,14 @@ void __stdcall function_1160c0(real dt)
 // M3 lane 11 r81 (fast): delta, axis or vertical as three statements instead of an aggregate initializer 171 each, delta and axis
 // together 171, the node as `record->nodes + i` 171 (all same code); diagnostic: target rows written without vector3f_add_scaled
 // (previous no longer address-taken) 177 with the homes unchanged.
+// m3 lane 3 r227: the first real difference is still the segments base in EDI and the segment in ECX where
+// retail uses EDX for both (`mov edx, [ebx + 0x9c]; ... add eax, edx; mov edx, eax`), after the ternary index. Every natural
+// spelling of the index, base and stiffness read is listed above, and the in-place rotation through the existing rotate_direction
+// (src/unknown_1eb8a0.cpp) or 0x170d70's helper is J253's 196-236; round 130's output-writing helper (163) would be a one-caller
+// helper: match-only.
+// New segment spellings (fast, 0x116750 matched): the segments base hoisted above the loop 301 (1370 bytes); `&segments[i]` then
+// `segment--` for the last node 292 (1357); the base, `segment += i`, then `segment--` 292; the index as `i < count ? i : count - 1`
+// 172; as `i < count - 1 ? i : count - 1` 179. None gives the EDX base after the index.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

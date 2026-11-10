@@ -1290,6 +1290,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // that with grouped labels 851 (2808 bytes). Re-measures: the 0x63220 call alone 1097 (2524 bytes, 0x73530 matches); the
 // accessors alone 904. Diagnostic, not kept: `#pragma inline_depth(255)` with the 0x63220 call 1097 (no change), so inline
 // depth does not keep 0x63220 out of line. Blockers left: the link's inline choices, and 0x63220 staying a call here.
+// Round 226 (m3 lane 3, fast, control 766, 0x73530 8): the player loop written as 0x63220's body with its calls (0x192e60 for
+// the variant, 0x631f0 for the group's highest rating, a two-evaluation max of 0x1931a0) 1032 at 2588 B: 0x73530 matches (the
+// top 0x192e60 call stays out of line), but none of the four loop calls inline (retail inlines 0x192e60, 0x631f0 and the first
+// 0x1931a0 there); with a forceinline redeclaration of 0x631f0 here 1032 (no effect); with the capacity helper forceinline 998
+// (2656 B, the top call inlines again, 0x73530 8); with forceinline redeclarations of 0x192e60 and 0x1931a0 as well 998.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

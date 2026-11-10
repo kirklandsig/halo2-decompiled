@@ -839,6 +839,12 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // inclusive/complementary selection maxima: 34/35/34/34/34/35/34/34. NOT kept:
 // no exact count/fill/clamp allocation repair; native 0x48 frame and 190-byte extent
 // remain. Original complete body, direct input reads and scalar maximum restored.
+// m3 lane 3 r227: both builds keep next_party at frame+0; the only difference is the entry convention (player
+// count EAX in retail, EDX here), which follows the first pass's order for the rep stosd operands: ours loads the fill value
+// before the count and destination (`mov eax, [esp + 0xc]` first), retail after them, so retail's player count can live in EAX
+// until `sub ecx, eax`. Every natural fill/maximum/clamp form is listed above at 34 or worse; only value-changing fill values
+// move the load, and the caller 0x7e210 (src/unknown_07a9a0.cpp) is outside this round's files. New (fast): next_party scoped to a
+// block holding both loops 34; next_party and the index in that block 34 (same code). No other untried natural form is left.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

@@ -397,6 +397,12 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // destructor call plus operator delete 925, with the long counter 930; long counter alone 933 (listed); a byte local
 // renamed on the unrolled body 1174 (same code). Next: retail frees the list with no destructor call, so the contact
 // array type wants a plain free path (all three users, 0x1cf9f0 and 0x1d2070 matched); the asm conversion is no blocker.
+// M3 lane 3 r225 (fast = plain 902; aligned [exact, stack-masked, register-masked] base [688, 620, 370]): the type mask through the
+// existing object-header element (`1 << header->type`) 902 (same code; retail loads the byte with movzx); the mask as a long 902
+// (same code); the position copy without its one-use pointer 965 (4284 bytes) [784, 908, 379]; the position read through a pointer
+// with no copy 965 (4216, frame 0x1e4) [642, 591, 369]; that plus the scale helper as three statements 1246 (3971, frame 0x1c8)
+// [570, 471, 323]; the three statements alone re-measured 1184 (4023, frame 0x1d4) [557, 471, 338]. Retail walks the element
+// array through a computed pointer kept at [esp+0x64] (shl/add) where ours uses indexed addressing, and saves EBX at entry.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

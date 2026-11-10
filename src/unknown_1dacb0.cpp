@@ -1302,6 +1302,16 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // at the top of the loop body 965 (2825 B, the candidate reset leaves the lookup's argument pushes). Retail's three
 // epilogues (early NONE, the no-result/loop end pair through ECX, the empty second inheritance loop through EDX) stay one.
 // MiniMax I (11-10): no new form, no lower score; the iterate helper takes its fourth output in EBX in both builds and its first two on the stack, retail's three found locals sit at E-0x2c, E-0x28 and E-0x24 while ours puts the third one in the dead found_mode argument slot at E+0x18, and the result struct (E-0x20) and the iterator base (E-0x1c) already agree, so only that third local's home and retail's EBP zero carrier are left.
+// m3 lane 3 r227 (fast): the siblings' two-call form (755, re-measured) is retail's loop: our two iterate calls cross-jump into one
+// (`jne exit; jmp call`) at 2825 bytes, and its first 95 lines differ only in homes. From the second request on, retail holds the found
+// mode in EBP across the lookups and keeps `this` in EBX (the +0x34 table in found_mode's dead slot), where ours re-reads iterator_mode
+// from its home per lookup and gives EBX the table, EBP `this`; matched 0x1dc8c0 re-reads its address-taken key per lookup in retail
+// too, so retail's EBP copy is particular to this body. The three outputs as one record re-measured 755: the second request still
+// re-reads the mode. `return result;` inside the found block as well 1012 (2839 bytes: the listed early-return form's code, a
+// re-measure). New forms: on the two-call form `if (found)` as
+// the post-loop test 1060 (2873), `found` declared first in the block 755 (same code); both twins' bodies as one shared forceinline
+// helper (overlay bool) 828 (same code); the search as `while (result.index == NONE)` 828 (same code, the first test folds; close to
+// the listed result-driven while). No other untried natural loop, return or declaration form is left on either base.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

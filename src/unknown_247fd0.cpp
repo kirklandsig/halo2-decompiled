@@ -223,9 +223,9 @@ public:
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
-// MiniMax E (11-09): no new form, no lower score (334).
-// score 334 (was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
+// score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
 // gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
+// MiniMax E (11-09): no new form, no lower score (334).
 // Earlier first line: score 356 (was 356): frame 0xb0, 1643 bytes against 1652. Left: retail saves EBP at entry and
 // shares one epilogue (ours saves it after the early exits); retail keeps the blend in XMM2-4
 // across the first 0x143070 call (here it goes through the grouped local's memory); retail's
@@ -561,6 +561,23 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // integer arithmetic 334 (same code); the reader returning the byte, `!= 0` in the caller, 334 (same code); the child
 // reciprocal as 0x247fd0's if/else alone 334 (aligned 188 -> 179). Retail's
 // sibling 0x247fd0 folds `[eax + edx]`; this one never folds base+index, so the cause is in the function, not the spelling.
+// Round 228 (m3 lane 3, fast; aligned counts exact/stack-masked/register-masked in brackets, base 334 [246/231/104]):
+// the 0x1697c0 query's result buffer is 0x5c bytes (matched 0x0b8ca0 declares it so); at that size retail's frame
+// reads probe 0x14, direction 0x20, result 0x2c, placement 0x88, with the blend and the first draw in registers. On
+// that shape (in-loop particle_object_for_tag, blend and first draw as plain locals, the result padded to 0x5c in an
+// aggregate wrapper; diagnostic): workspace {probe, direction, placement} 419 (1664) [180/177/98]; all plain locals
+// 419 [199/177/98] (the result renamed, declared last or as a 0x5c byte array, the placement renamed: same code);
+// probe, direction and result declared in the trace block 422 [175/170/87], the placement in the allocation block
+// as well 422 (same code); the placement's NONE store at the allocation 360 (same frame). Plain address-taken locals
+// here sort by size, smallest lowest: a 0x20-byte result lands below the placement (frame 0x78), and six extra
+// placement stores move nothing (455), so retail's result-below-placement order does not come from plain locals of
+// these sizes. The else arm's sum as three field statements (a helper body by hand; diagnostic) 343 (1652)
+// [241/215/93]: that gives retail's scaled-position block exactly (three products held in XMM2-4, the stores after
+// the age update, the else arm adding the held values), because the stored fields are then forwarded; through
+// vector3f_add_scaled, or a point-typed forceinline copy of it at both point sites, 334 (same code): an inlined
+// helper's pointer reads are not forwarded. Scaling through vector3f_scale 354 [272/246/113]. On main: a named
+// `point3f *position` for the record's position at every use 335 [269/236/116], with the point-typed helper at both
+// point sites 335 (same code); the else arm's scale folded into the call 334 (same code). All restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

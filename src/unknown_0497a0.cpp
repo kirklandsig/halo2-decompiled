@@ -283,7 +283,7 @@
 // inline taking them, unread aggregate members 620; `if (!special)` same pops, frame 0x64. An inline helper filling a local wave
 // vector from the global point (first sine, then the named factors, the unused third component written through a copy of the
 // result pointer) gives the same sequence (659 at 2584 B): retail's direct global reads may come from such a helper.
-// score 661 (was 537): behaviour and helper fixes from the b2E walk, each raising the score: the sixth input product is
+// score 661 (was 661): behaviour and helper fixes from the b2E walk, each raising the score: the sixth input product is
 // a plain mulss as at 0x49f0d (the integer truncation was +78: 537 -> 615); the camera shifts and the vector scales
 // call vector3f_add_scaled / vector3f_scale (+10, 2622 bytes); the wave's first add calls vector3f_add_scaled (+11);
 // the sine of x * 5.6 + y keeps the sum on the x87 stack as at 0x498a7-0x498d7 (+25, then the sine is stored as a
@@ -296,6 +296,18 @@
 // as a named double 650; s1 before the cross product / after s0 650/650. Kept spelling (double)(x * 5.6f) + y: same score,
 // and fld/fmul dword/fadd dword/fsin as retail (the (double)x * 5.6f spelling gave fmul qword). s0 stays double-rounded: retail
 // 0x4995f stores the x87 sum * 0.5 as a float and 0x49963-0x49969 scales it by SSE; ours does fmul 0.5, fmul 0.03, fstp.
+// M3 lane 3 r225 (fast = plain 661 here; [exact, stack-masked, register-masked] aligned counts, base [654, 592, 180]; the frame is now
+// 0x5c against retail's 0x60, not 0x64, and both return with ret 0x20): global sine arguments with the 8.2 argument and the three
+// factors as named doubles 665 (2575 bytes, frame 0x58) [646, 601, 176]; global sine arguments alone re-measured 654 (2579, frame
+// 0x58) [655, 582, 178]. Perspective rows (retail scales r by the first reciprocal, then s by the second, then forms inv * 0.5):
+// vector3f_add_scaled into r and s with named reciprocals and a named half inverse, then two vector3f_scale 677 (2568) [576, 583, 181];
+// the same with the reciprocals and inv * 0.5f written in the calls 664 (2574) [610, 590, 139]; rows in place then two vector3f_scale
+// 671 (2622 bytes, retail's length) [562, 557, 163]; every row as (a * b + c) * k 661 (same code). With the global sines: calls form
+// 659 [618, 579, 129], in-place form 673 (2626) [549, 545, 153]. The two wave values in one two-float local read from the global
+// point 641 (2602 bytes, frame 0x64) [642, 587, 175], as a two-element array 642; with the calls form 639 [622, 583, 128], with the
+// in-place form 692 (2645). Not kept: a local that only groups the two values, and no match. Lead: retail stores both sines as
+// floats at once (0x4990e, 0x4995f) and keeps the cross product ahead of the first fsin, as if they were written to memory the
+// compiler could not sink; with the global arguments in plain locals our build sinks the first sine past the second.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
