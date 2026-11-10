@@ -5076,10 +5076,12 @@ void __stdcall function_c8290(vector3f *aim, point3f *point, long unit_index, ve
 	function_ba1d0(root_index, velocity, 0);
 }
 
+void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
+
 /* the unit's wandering direction: its actor's (else the default vector)
    turned about the world's up by the angle +0x2d8, which drifts by a
    random turn rate (+0x2dc) kept away from its limits */
-// score 91 (was 91): earlier 99, was 120; only register numbering differs. Retail keeps the clamps in xmm4/xmm5 and the pi/4 and
+// score 58 (was 91): earlier 99, was 120; only register numbering differs. Retail keeps the clamps in xmm4/xmm5 and the pi/4 and
 // 4.244 constants share xmm3; ours puts them in xmm3/xmm6 and 4/5, then needs one more register in the rotation.
 // Reading direction->k directly in the three terms (instead of a cached z) gave 120 -> 99.
 // Tried (all 99): operand order of the angle and rate products, swapped high/low declaration order, low copied
@@ -5102,17 +5104,15 @@ void __stdcall function_c8290(vector3f *aim, point3f *point, long unit_index, ve
 // existing function_259d0 101; the axis read from its global at each use 91 (same code). Left: the 1.0 constant
 // and the clamps take xmm5 and xmm2/xmm6 where retail has xmm2 and xmm4/xmm5, and retail interleaves the cross
 // terms with the dot product.
-// Round 66 (m3 lane 2): HELD lead, not kept. The rotation as a call to the existing rotate_direction (forced inline in
-// src/unknown_1eb8a0.cpp, matched in 0x1ecf50 and already called from other files through a declaration) gives 58 plain
-// (810 bytes; 0xc49b0, 0x1e3370, 0x1ecf50 stay matched): its dot first, then the three cross terms, is retail's order, and
-// 1.0 then takes xmm2 as retail's does. But the full check then loses 0x41640 (its table/definitions spill homes swap, the
-// whole-image link tie its own note describes), so the body stays as main; diff in build/r66/lead-d0080.patch (m3-lane2).
-// Left on 58: high/low take xmm3/xmm6 and the a/b constants xmm4/xmm5 where retail has xmm4/xmm5 and one shared xmm3 (retail
-// forms the second sum before the first product, so pi/4 dies and its scale reuses xmm3), and three cross products take
-// their operands the other way round. On 58 (fast): the sums as locals declared first (re-measure) 170 (masked 19, 1.0 in
-// xmm2 but high/low in xmm3/xmm4); the sums with below declared first 170; sums in the a/b block only 168; in the c/d block
-// only 61; each product right before its test (re-measure) 74; `high = low = 1.0f` 58 (same code); one declaration for
-// both 58 (same code); the same helper copied privately here 58 (same code).
+// Round 66 (m3 lane 2, plain 91 -> 58, kept): the rotation is the existing rotate_direction (forced inline in
+// src/unknown_1eb8a0.cpp, matched in 0x1ecf50 and already called from other files through a declaration): its dot
+// first, then the three cross terms, is retail's order, and 1.0 now takes xmm2 as retail's does. Left: high/low take
+// xmm3/xmm6 and the a/b constants xmm4/xmm5 where retail has xmm4/xmm5 and one shared xmm3 (retail forms the second
+// sum before the first product, so pi/4 dies and its scale reuses xmm3), and three cross products take their
+// operands the other way round. On 58 (fast): the sums as locals declared first (re-measure) 170 (masked 19, 1.0 in
+// xmm2 but high/low in xmm3/xmm4); the sums with below declared first 170; sums in the a/b block only 168; in the
+// c/d block only 61; each product right before its test (re-measure) 74; `high = low = 1.0f` 58 (same code); one
+// declaration for both 58 (same code). Also tried, not kept: the same helper copied privately here 58 (same code).
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
@@ -5190,17 +5190,7 @@ void function_d0080(long unit_index, vector3f *direction)
 	{
 		unit->unknown2d8 -= 6.2831855f;
 	}
-	real sine = (real)sin(unit->unknown2d8);
-	real cosine = (real)cos(unit->unknown2d8);
-	vector3f const *axis = g_4687b0;
-	vector3f cross;
-
-	cross3f(direction, axis, &cross);
-	real along = dot3f(axis, direction) * (1.0f - cosine);
-
-	direction->i = axis->i * along + direction->i * cosine - cross.i * sine;
-	direction->j = axis->j * along + direction->j * cosine - cross.j * sine;
-	direction->k = direction->k * cosine + axis->k * along - cross.k * sine;
+	rotate_direction(direction, g_4687b0, (real)sin(unit->unknown2d8), (real)cos(unit->unknown2d8));
 }
 
 /* the best seat for the unit to enter among the object's and its riders'
