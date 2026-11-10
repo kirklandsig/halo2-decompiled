@@ -1839,6 +1839,9 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// score 87 (was 87): retail hoists the walk's pool load into ebx and keeps the selection
+// only on the stack (stored from esi, best stored in a tail shared with the initialisation);
+// ours keeps the pool in memory and the selection in edi.
 // MiniMax C (11-09): score 87 (was 87): no new form and no lower score; retail still hoists the walk's pool into EBX
 // (reloading it from the stack after the bit scan takes EBX) where ours keeps it in memory and loads it into ECX at
 // each use, retail still keeps the selection on the stack where ours caches it in EDI and reloads it at the loop top,
@@ -1858,10 +1861,8 @@ void function_269250(long clump_index, long actor_index);
 // selection's copy in edi.
 // MiniMax E (11-07): no new form, no lower score; the walk's pool load stays in memory and the
 // selection stays in edi where retail hoists the pool into ebx and keeps the selection on the stack.
-// score 87 (was 87): retail hoists the walk's pool load into ebx and keeps the selection
+// score 87 (was 87; round 103 unchanged): retail hoists the walk's pool load into ebx and keeps the selection
 // MiniMax B (11-03): no new form, no lower score.
-// only on the stack (stored from esi, best stored in a tail shared with the initialisation);
-// ours keeps the pool in memory and the selection in edi.
 // Earlier: retained frame pointer 187; depth zero 304; selected-result reuse 134; team snapshot 133;
 // size preference 338; double candidate/both scores 157/158; activity while 160; role-based scalar
 // names 134; inline depth two 134; the clump datum walk with a cached activity flag 126 (retail's frame);
@@ -2046,6 +2047,12 @@ void function_269250(long clump_index, long actor_index);
 // test inside and both by reference; an unsigned selection; the activity flag read from the global in the walk call; `best < score`
 // with the selection stored first and best declared first. In-arm with the iterator's datum index re-measured 128 [108]. Body
 // unchanged.
+// Round 66 (m3 lane 15, fast; this body 87 plain, in-arm 126 at 480 bytes): retail loads the selection from its slot at every use after the loop too, where both
+// callee-saved registers are free, so it is never a register candidate there. On the in-arm form: the selection, score and best as members of one local record 126; the
+// selection and best as members with a plain score 126; the selection alone in a one-member record 126 (all the same code: members of a local record are still given
+// registers here); the score call and compare in an inline function returning whether the best improved, the selection assigned by the caller, in one test with the team
+// or nested 126/126 (same code). Permuter on the in-arm form (600 s, 39 tries): best 108 in the full image, only with the creation arm first and the created index
+// declared short, which truncates a datum index (not a real form); nothing else below 126.
 // Round 161 (m3 lane 6, fast; control 87 fast and plain; 0x268840, 0x269580, 0x269250, 0x2694d0, 0x268bb0 matched throughout):
 // the post-walk test turned round (`selected == NONE` creates first, then `else if (selected != current)`) 112 (480 bytes);
 // the score started at 0 instead of best 90 (480 bytes); the activity snapshot taken before the walk's init 87 (same code);
@@ -2054,6 +2061,25 @@ void function_269250(long clump_index, long actor_index);
 // walk as a `for` with the actor declared in it 87; the creation arm ending in `continue` when nothing is created 87; the
 // selected arm ending in `continue` when the selection is the current clump 87; both continues 87 (the last four the same
 // code). Body unchanged.
+// Round 103 (m3 lane 16, fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched): the
+// in-arm compare re-measured 126 (480 bytes; register-masked aligned 23 against this body's 25); on it the score as `real const` 126 and
+// the team test as `actor->unknown024 == group->team` 126 (both the same code), the score test as `if (score <= best) continue;` 128;
+// on this body the score set in an else arm (`else score = best;`) 128 (484 bytes) and the swapped team test 87 (same code). Retail keeps
+// the walk's pool field cached in EBX across the score call, so it treats the walk as not escaping; ours re-reads it from the frame at
+// each use. The compile-only /Gr harness promotes both walk fields to registers (frame 0x2c), so it does not model this body.
+// Lane 12 r105 (fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x268510/0x268c90/0x26ae30, all matched): the in-arm
+// compare with the selection stored first re-measured 126 (480 B; the post-loop is retail's but for the selection in EDI); without
+// the callees in the reduced build 0x269580's arguments swap, as round 107 found. Diagnostics (an existing helper written out, not
+// keepable): the walk's init in the body 89; the walk's step in the body too, as a loop with a top break, 146 (458 B); the step
+// with the scan written out so the walk's address is never taken 146 (458 B, the loop shape changes, so this does not isolate the
+// address). 0x268bb0 calls the sqrt routine at 0x322b0c, so it may write memory in both builds. New: the selection and best
+// declared at function scope and set per actor, in-arm 126, on this body 87 (same code each).
+// Round 69 (m3 lane 15, fast): in-arm compare with the selection stored first re-measured 126 (480 B; retail's code skips the
+// score call on a team mismatch, so that is retail's form). On it, a one-caller forceinline walk variant assigning the clump
+// only in the found arm (not-found leaves it NULL) with the clump-index copy at the join 126 (same code); with the clump index
+// set in each arm instead 128 (480 B: pool in EDI and the selection memory-only as retail, but the not-found path threads,
+// the walk top loses `xor eax, eax`, and the homes rotate). The join copy is what stops the threading; it also ties the
+// selection to the walk's index, which then outweighs the pool.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

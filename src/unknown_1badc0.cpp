@@ -12,21 +12,24 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
-// score 180 (was 180): this round: no new form and no lower score; retail still forms d3.x, local_6.x,
+// score 180 (was 180): retail's length (1025) and frame agree; the opening's copy and difference schedule and the SSE
+// scheduling still differ. A 132 form and a byte-match recipe are measured but not kept (see Round 66 at the end of this note).
+// Earlier at 180: no new form and no lower score; retail still forms d3.x, local_6.x,
 // d1.x, d1.y, d3.y and local_6.y before the products while ours forms d1.y first and the two d3
 // components last, and the two numerator terms swapped give the same code.
+// MiniMax E (11-10): no new form, no lower score (180); the length (1025) and the frame 0x90 agree, but the opening still forms the components in our order, which the query helper in src/unknown_1c20f0.cpp fixes.
 // MiniMax D (11-09): no new form, no lower score (180); the opening still copies the point and orders the
 // components differently from retail, and the escape of the point pointer through the query helper in
 // another file this lane may not edit is what orders those copies.
 // MiniMax S (11-09): still differs in the order of the components: retail forms d3.x, local_6.x, d1.x, d1.y, d3.y
 // and local_6.y before the products, ours forms d1.y first and the two d3 components last; the two numerator terms
 // swapped give the same code.
-// MiniMax D (11-07): score 180 (was 180): no new form and no lower score; the opening copies, the SSE
+// MiniMax D (11-07): at 180: no new form and no lower score; the opening copies, the SSE
 // scheduling and the query-success join still differ, and the earlier rounds' best form (47) needs the
 // difference helpers written out by hand, so there is no keepable form here; the opening stays blocked by
 // the unmatched 0x26d100.
 // MiniMax E (11-05): no new form, no lower score: the projection's multiply order swapped, the point-minus-actor vector written as two scalars, and both together 180; the centre-minus-actor scalar pair 238 (1031 bytes); the permuter's 83 tries all 180.
-// score 180 (was 180): retail's length (1025), output in EBP and the input copy at +0x28 now agree; SSE scheduling of the
+// Earlier at 180 (was 180): retail's length (1025), output in EBP and the input copy at +0x28 now agree; SSE scheduling of the
 // opening point copies and differences remains (retail reads the second copy back from memory for the actor difference).
 // Earlier: frame 0x90 agrees; output EBX/EBP, point/vector homes and SSE scheduling remain.
 // Round 132 (m3 lane 5, fast): the output-parameter address read is what keeps the output on the stack
@@ -393,6 +396,27 @@ real normalize2d(point2f *arg_0);
 // once after its if/else 238 (aligned 160); direct returns in place of the result 251 (1016). The far path's copy still
 // takes EAX for data where retail copies EBP into EAX. Body restored at 180; the opening stays BLOCKED-BY 0x26d100 (its
 // files are held this round).
+// Round 66 (m3 lane 15, fast, plain confirmed; 0x1ba5c0/0x1bdad0/0x1bff80, 0x26d100, 0x1c19b0, 0x30c60 matched throughout). The 0x26d100 parameter reorder is on
+// main now, so that blocker is gone. NOT kept, needs a ruling on its three order changes (the clearance moved into its use block, `result = true` ahead of the
+// output store, the centre copied before the radius; without the first two it is above 180): existing helpers only, 180 -> 132 (1025 bytes, plain and a full check
+// with nothing lost; saved as build/r66/1badc0-132-form.patch): a named actor-to-centre vector through
+// vector3d_from_points3d used through dot_product2d at both projections, both point differences from the function's own copy of the point (read once), the centre copied
+// before the radius (the order of 0x30c60's body), `2.0f - local_11` inside the normalize-success block where retail computes it, and `result = true` ahead of the
+// output store. Steps: vector + dots 233; clearance in the block 245; radius `*=` 185; result first 241; vector + clearance 221; those + result first 153; + copy
+// source 139; + centre first 132. Leave one out on 132: no clearance move 243, no result first 209, difference from arg_2 143, radius first 139. On 139 or 132:
+// vector declared after the point difference 139 (same code), after the in-place difference 231-240; the point difference from the second copy 203 (1027); the second
+// copy from the first 139 (same code, so the parameter is read once); `local_4 *= 1.1f` 146 / 140; a named `local_4 * 1.1f` 132 (same code); local_10's squares i, j, k 231; local_1 copied after
+// the object lookup 153; second dot or the squared length through dot_product2d 132 / 132 (same code); `local_12.k = 0` ahead of its rows 234. Without the centre swap 139; without it and without result first 210; the result written directly
+// (`result = local_17 != NONE`, four spellings) 266 / 274 / 266 / 272 (997-1006 bytes; 0x1ba5c0 52, 0x1bdad0 26, 0x1bff80 115: the convention changes).
+// The lane 7 r130 recipe re-measured on today's tree: byte match in a plain check with every listed caller and callee matched, NOT kept: it needs `inline` on
+// 0x30c60's definition, which takes 0x3d7f0 from 177 to 224 (BLOCKED-BY 0x3d7f0: it inlines 0x30c60 where retail calls it; its file is another lane's this round),
+// and the dead `(void)local_9.x`. `inline` or `__forceinline` only on this file's declaration of 0x30c60 287 (988 bytes, still a call, three callers lost). The
+// mention only turns the second dot's i product from (perpendicular x, centre x) into (centre x, perpendicular x) and its sum to j term first; without it 177 (1028
+// bytes). Replacements for it on the recipe, none a match: perpendicular helper with a local or stores swapped 175 / 175; second dot's arguments swapped 177; second
+// dot through the accumulating helper either way 177 / 177; the perpendicular as a vector2f or vector3f 177 / 177; its address bound to an empty inline function's
+// parameter 177; the mention ahead of the getter 20 (1024); second dot through a scalar-parameter helper in three spellings 177 each; written out in three operand
+// orders 177 each; one planar vector for the actor-to-point difference rotated in place to the perpendicular 187 / 185 / 187 (1031 / 1028 / 1031). Recipe saved as
+// build/r66/held-1badc0.patch.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

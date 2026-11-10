@@ -1372,11 +1372,11 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 	return result;
 }
 
+// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,
 // iterator_weapon_class at frame+0x00 and iterator_mode at frame+0x08, while ours keeps iterator_weapon_type
 // at frame+0x00, iterator_mode at frame+0x04 and iterator_weapon_class in the reused argument slot; our
 // result shorts therefore land at frame+0x08 instead of frame+0x0c and the tail compares out of step.
-// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // result/output homes and initial ECX/EDX differ;
 // original mode/class/type via iterator 837/991/837; mode assigned only
 // by iterator 828; graph pointer initialized last 828 (fast counts).
@@ -1583,6 +1583,27 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // at the top of the loop body 965 (2825 B, the candidate reset leaves the lookup's argument pushes). Retail's three
 // epilogues (early NONE, the no-result/loop end pair through ECX, the empty second inheritance loop through EDX) stay one.
 // MiniMax I (11-10): no new form, no lower score; this twin of 0x1db170 differs from ours in the same two places, the third found local's home (E-0x24 in retail, the dead found_mode argument slot at E+0x18 in ours) and the per-attempt candidate's home, with retail's EBP zero carrier still shifting the request block.
+// m3 lane 7 r146 (fast, both twins, 0x2963f0/0x1dc790/0x1dc8c0 matched unless stated; aligned/masked = difflib counts with addresses /
+// registers and stack offsets masked, base 828 [580/74]): retail reads the second request's mode once into EBP (`mov ebp, [esp+0x10]`), so its
+// iterate callee lets the mode output's pointee escape and the inline argument becomes a copy. The iterate body reading `found_mode` through
+// its own address at the ANY_NAME store gives that copy: 821 on both twins [583/76] (match-only form, gain under 8; the copy spills into the
+// input mode's dead home, EBP takes found_weapon_class and the candidate takes that parameter's dead home); with the single-exit guard 1034;
+// with the siblings' found-flag body 777 at 2841 bytes [544/44] (siblings' body alone re-measured 755 [297/55]); on that body the class
+// output's escape 774 (0x1dc8c0 0 -> 56), the type's 1034 (iterate, 0x1dc790 and 0x1dc8c0 lost), mode+class 785, mode+type 1034, class+type
+// 1077, all three 1099; mode escape with the outputs declared type/class/mode 776 (EBP still on found_weapon_class). Diagnostic: the second request
+// keyed by the input mode 829 (EBP again takes found_weapon_class). Left: retail has found_mode in EBP and the candidate plus the +0x34 table
+// temp in its dead home; every form that lightens iterator_mode moves EBP to found_weapon_class instead.
+// Then, on the mode escape plus siblings' body (777): no candidate, the result set in both named arms 1041 (2857 bytes); the found
+// flag declared before the outputs 777 (same code); the iterator stored in declaration order 787; `while (entry && !found)`
+// 1131 (2925 bytes); the escape read at the copied-mode store instead 777 (same code).
+// m3 lane 10 r87 (fast with 0x1db170/0x1dc8c0/0x1dd9d0/0x1dd560/0x2963f0; al = aligned count): re-measured the
+// `if (weapon_class != NONE)` block 1040 (2857 bytes, al 580 -> 153), the sibling's iterator store order 828, both 1040
+// (al 146), the while/break loop 998 (2839) and all three 1049 (2873). New: `this` through a named graph pointer 828
+// (same code); on the block form the same 1040; the block form with `if (result.index == NONE) return result;` ahead
+// of the requests 1016 (2839 bytes, al 134), with the graph pointer 1016, with the sibling's iterator store order 1015
+// (2839 bytes, al 113). Retail has three epilogues (the early exit for a NONE
+// weapon_class, with two pops; the loop end and no-result exit; a copy for the empty second inheritance loop); ours
+// merges them into one.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

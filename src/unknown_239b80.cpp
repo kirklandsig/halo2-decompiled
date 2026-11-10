@@ -27,12 +27,13 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 	point2f const *first, point2f const *second, long count, short capacity, point2f *output)
 {
 	real fraction = 0.0f;
-	real dx = first->x - second->x;
+	real dx = (first->x - second->x);
 	real dy = first->y - second->y;
 	real denominator = plane->n.i * dx + plane->n.j * dy;
 	if ((denominator < -0.0001f || denominator > 0.0001f) && count < capacity)
 	{
-		fraction = (plane->n.j * first->y + plane->n.i * first->x - plane->d) / denominator;
+		real dot = (first->y * plane->n.j) + (first->x * plane->n.i);
+		fraction = (dot - plane->d) / denominator;
 		output->x = first->x - dx * fraction;
 		output->y = first->y - dy * fraction;
 		return true;
@@ -40,92 +41,7 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 	return false;
 }
 
-// score 5 (was 5): loop setup stores [esp+0x10]/[esp+0x18] in another order (retail stores
-// previous*4, loads the output, then current*8 and current*4; ours current*8 first), and the
-// first intersection's x product loads the plane before the point. A compile-only build of this
-// file reproduces both; the product operand orders follow the whole function (a no-op product in
-// the classification loop rotates them), not the helper's spelling. Round 45: a plane-distance
-// helper for the classification and the numerator 11 (x-first body 11); for the numerator only
-// 7, with dy computed first 25; dot product numerator with dy first 25; a named current-side
-// local 7; 576 compile-only combinations (distance spellings, dx/dy and output store orders,
-// result placement, epsilon compare, returned count) never fixed the x product without flipping
-// the denominators or the second numerator, and none moved the setup stores.
-// Round 72 (full build): helper
-// parameters (first, second, plane) 7 and (first, plane, second) 7, both making the second
-// intersection's x product plane-first too; (plane, second, first) 5; a separate input pointer
-// for the points or their copy 9 (x term first in the first intersection), declared first 9.
-// The fraction defaulted first,
-// x-first displacements and the scale inside the output expressions gave retail's XMM homes
-// and length (101 -> 5). Then: current declared before previous 5; named current/previous
-// point pointers 28; dot_product2d numerator 5; fraction shared with the classification
-// distance 5; previous updated at the loop end 5; staged/reversed denominators and helper
-// parameter orders screened compile-only without change. Earlier: frame 0x618 agrees; cursor/result initialization, delta XMM
-// homes and extra fraction copies remain. X-first deltas 109; full denominator 103;
-// scales before stores 101; first input record 207; Boolean helper result 101;
-// aggregate intersection 152; capacity-first gate 108; native input count 153;
-// intersection role names 101; output-first helper 101; count-result helper 101;
-// x-first deltas with full denominator 107.
-// Shared difference/projection/both 109/101/109; actual output cursor 256;
-// difference/projection with output cursor 256/256; natural previous update 101; cursor with previous update 256.
-// Second/both input records 163/247; complete/staged projection numerator 101/103;
-// parallel output offsets 101; second record with offsets 163; numerator with offsets
-// 101; nested eligibility/capacity scopes 101. Original helper and body restored.
-// Immutable displacements 101; both projection products 101; plane value 269; word output/classification/clipping ordinals 231/220/202; common output result 138; current before previous 101.
-// Round 54: numerator `y + (x - d)` 14; split sum then `(sum - d) / denominator` 7 (both
-// products point-first but x first; explicit parentheses always order x first); both indices
-// declared in the for 5; while loop with the updates at the end 5; `y - d + x` 14.
-// Round 8: previous/current/result names 5 each; previous declared early or before the exits 5;
-// point-first numerator and plain inline 5; normal-i/first-x locals 110/180; named x/y products
-// 9/7; y product with point/plane parameter orders 7; both named products 9; defaulted y product 7.
-// Original helper and body restored.
-// Round 119 (lane 5): `count` used without the `original_count` copy 178 (699); negative counter declared first 7;
-// sides declared before the copy buffer 5; result declared after the early exits 168 (680); short counters 118.
-// Round 121 (lane 8, fast): the loop temporaries are created by a backward scan of the loop body, so retail's setup
-// order needs no `points[current]` in the copy or the second intersection and no `sides[current]` in the second
-// test. A `side` local alone 7; `side` with a current-point pointer at the loop top for the copy and both
-// intersections 8 (setup and slots retail's, all numerator products flipped); with that pointer only in the else arm
-// 6, (plane, second, first) or (second, plane, first) parameters 6; pointers for both points at the loop top 16-30;
-// previous-point pointers in one arm 6, in both arms 4 (first intersection x-first); that with the numerator through a
-// named `dot` local, `-=` or a dot helper in a local 2 (the first intersection's x product still loads the plane
-// first); the same dot without the previous-point pointers 6, with the two parameter orders above 4. On the 2 form:
-// parameter orders, `long size` for the copy, term and operand spellings, a named current point in the first arm, side
-// at outer or function scope, denominator spellings 2; normal pointer 4-6, plane or d local 6, plane-distance helper
-// 6-8, scaled locals 6, `dx *=` 6, y output first 64; `+=` numerators give the first intersection exactly but flip
-// the second 4. Unused locals (diagnostic) rotate the second intersection's products only.
-// Round 83: defaulted classification distance 5; side-array pointer induction 208 (712 bytes);
-// side/previous/current pointers with a named projection 16, direct `points + current` 16,
-// without the defaulted distance 16, with an early defaulted projection 16; output base declared
-// after the previous index 9; staged point-first numerator 9. Original helper and loop restored;
-// the three setup stores and first intersection's x product remain.
-// Round 124 (m3 lane 7, fast): the copy as `output[result] = ...; result++;` 5; the arms swapped (`!= 0` arm
-// first) 93; the helper's points as references 5; plane, points and output all references 5; a point pointer in
-// the classification loop 9. Original body restored.
-// Round 70 (lane 10; a one-file LTCG harness that reproduces the real build's hunks, 64 loop-top pointer placements
-// with 0-15 probe locals): retail's setup store order appears only with a side local plus a current-point pointer
-// used by the second intersection and the copy (6: the first intersection then sums x first; with 4 probe locals 4);
-// probe locals rotate only the second intersection's products. Tried (--fast): current- and previous-point pointers
-// for both intersections and the copy 28; a current-point pointer for the first intersection only 5; a side local
-// only 7; a current-point pointer for the second intersection only 7. Numerator spellings and probes in the helper
-// or the first arm never change the first intersection's term order.
-// Round 94 (one-file LTCG harness): the helper indexing the point array (`points, a, b` parameters) 9; with the
-// element addresses at each use 5 (same code); deltas as a vector2f local 7; helper parameter renames 5 (no change);
-// `distance < -epsilon` 5 (same code). Removing the classification's x or y product or the denominator's x term
-// reorders the first intersection's numerator, so its x product is a numbering tie with the whole function.
-// Round 97 (m3 lane 12, one-file LTCG harness, base 5 exact): numerator, denominator and classification spellings
-// (operand sides, term orders) 5 each, 6 each on the side + current-point form (all compile the same); previous-point
-// pointer at the loop top 20 (with side + current-point 20); current-point pointer at the loop top 30, with side 32;
-// the else-arm current-point pointer without side 28; classification point pointer 9 (with side + current-point 8);
-// one index variable for both loops 196 (199 instructions).
-// Round 72 (m3 lane 14, fast): current- and previous-point pointers at the loop top for both intersections and the
-// copy 28; that with a side local 16 (output loaded before the constants, current*4/current*8 homes swapped, first
-// intersection x product unchanged); side and previous-side locals 119 (701 bytes), with both pointers 119; previous
-// declared in the `for` header 5 (same code). A compile-only screen (1232 loop forms x 0-7 probe locals; not
-// faithful here, it passes the parameters in ECX/EDX) puts the two pointers at d=3 against retail with 2-4 probes,
-// but the real build does not follow it. Probe locals anywhere rotate only the second intersection's products.
-// Round 60 (m3 lane 2, fast): `!sides[current]`/`!sides[previous]` tests 5 (same code); the helper's capacity as long
-// 5 (same code); the no-negative exit copying and returning the count parameter 178 (699 bytes); the classification
-// loop bounded by the count parameter 7; positive/negative declared before the count copy 5 (same code); result
-// declared at the top beside the buffers 177 (680 bytes).
+/* clips the polygon against the line, keeping the points on the side the normal points to; returns the new count */
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
@@ -167,19 +83,27 @@ short function_23a430(short count, point2f const *points, plane2f const *plane,
 	long previous = original_count - 1;
 	for (long current = 0; current < original_count; previous = current++)
 	{
-		if (sides[current] == 0)
+		long side = sides[current];
+		if (side == 0)
 		{
-			if (sides[previous] == 1 && polygon_clip_intersection_23a430(plane,
-				&points[current], &points[previous], result, capacity, &output[result]))
-				result++;
+			if (sides[previous] == 1)
+			{
+				point2f const *previous_point = &points[previous];
+				if (polygon_clip_intersection_23a430(plane, &points[current], previous_point, result, capacity, &output[result]))
+					result++;
+			}
 		}
 		else
 		{
-			if (sides[current] == 1 && sides[previous] == 0 && polygon_clip_intersection_23a430(plane,
-				&points[previous], &points[current], result, capacity, &output[result]))
-				result++;
+			point2f const *current_point = &points[current];
+			if (side == 1 && sides[previous] == 0)
+			{
+				point2f const *previous_point = &points[previous];
+				if (polygon_clip_intersection_23a430(plane, previous_point, current_point, result, capacity, &output[result]))
+					result++;
+			}
 			if (result < capacity)
-				output[result++] = points[current];
+				output[result++] = *current_point;
 		}
 	}
 	return (short)result;
@@ -197,9 +121,9 @@ static inline real normalize2d(vector2f *v)
 	return m;
 }
 
-static inline bool points2d_equal(point2f const *a, point2f const *b)
+static inline bool points2d_differ(point2f const *a, point2f const *b)
 {
-	return fabs(a->x - b->x) < k_real_epsilon && fabs(a->y - b->y) < k_real_epsilon;
+	return !(fabs(a->x - b->x) < k_real_epsilon && fabs(a->y - b->y) < k_real_epsilon);
 }
 
 /* two pi, set up at run time */
@@ -305,6 +229,35 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
+// MiniMax C (11-10): score 169 (was 169): no lower score this round. The frame is still 0x18 against
+// retail's 0x14; retail's outer pass has one dword counter in EBX, stored at F-0x10, reloaded at the
+// loop's head and compared as a word with the count home, it copies the count into EDX for the scan
+// bound and reads the count home again for the current index where this build keeps the count in EBX
+// and compares the scan index against it, its departure flag is a byte in the dead index argument's
+// home where this build has a dword of its own, and its compaction is the CRT's memcpy where the
+// reduced image has it inline. The single-counter forms were measured again: the while over the
+// counter 242, the same with a short comparison 201 (this one matches retail's frame), a for over the
+// same counter 259, the short comparison with the departure flag as a byte 262 (this one puts the
+// flag in retail's index home and the counter in the frame), the departure flag as a byte on its own
+// 256, and casting the count in the scan or in the current index 169 each. A 5400 second permuter run
+// (3398 tries) reached 158, but every gain comes from forms that are not allowed: a pointer local used
+// once (162 on its own), moved declarations, and the compaction with its source and destination
+// swapped, which changes the copy. Measured apart, each of the permuter's other edits is 169 or worse
+// (the comparison of the two points with the arguments swapped 171, the compaction bound as a word 176)
+// and 176 or worse together, so the body stands.
+// MiniMax C (11-10): score 169 (was 169): no lower score this round. One hull counter driving the outer
+// pass (`while ((short)hull_count < count)` with `indices[(short)hull_count] = current; hull_count++;`)
+// gives the frame 0x14 and retail's homes for the distance, the best angle, the previous angle and the
+// angle, but the counter then sits in the dead index argument's home and the pass test rotates to the
+// loop's foot: 203. The same counter with the departure flag as a byte puts that flag in retail's index
+// home and the counter in the frame: 223. A short hull counter 275 (751 bytes); moving the heading's
+// initialization ahead of the lowest scan 262 (757 bytes). Retail's shape is one dword counter at F-0x14
+// compared as a word with the count home, the scan bound copied into EDX, the departure flag a byte in
+// the index home, the pass test at the loop's head, and the compaction a CRT call where this body has it
+// inline.
+// MiniMax C (11-10): score 169 (was 170): the departure test is the negated difference predicate assigned
+// straight to the flag, so the flag is written in the branches; the frame is 0x18 against retail's 0x14, and
+// the count and departure homes, the scan bound and the compaction still differ.
 // MiniMax S (11-08): no new form, no lower score (170); the frame is 0x18 against retail's 0x14, and the count and departure homes, the scan bound, the equality test and the compaction still differ.
 // MiniMax G (11-06): a bool departure flag 248, the angle zeroed before the lowest scan 207, both together 204, the
 // hull counter merged into the pass counter as a while loop with the increment at the top 272, and a 16-bit copy of
@@ -562,6 +515,12 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // EBP, the hull count in ESI and reloads indices from its argument home, and rotates the loop test to the bottom;
 // retail tests at the top (three back edges) and reloads the hull count from +0x10 at each join. An inline
 // duplicate-removal helper taking the count by pointer: not inlined 331 (663), forceinline 271 (same code).
+// Round 70 (m3 lane 15, fast with 0x239d50): the departure as `equal ? false : true` 171 (786 B); the if/else departure (the
+// 168 form) with the flag declared first at function scope 252, with the left-start exit nested 168 (re-measure: the 168
+// form's code), with `short next` declared first in the pass 170, with previous_angle declared beside the current index 206; `bool
+// left_start` with the plain update and the nested exit 248. Lead: retail stores the departure byte directly (0 between the
+// coordinate tests, 1 on a difference) and its y test is `fxch; fcompi; jb` where the exit test's is `fcompi; jbe`, so the
+// two comparisons are not one expression in retail; no form here gives the fxch.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -624,10 +583,10 @@ short function_239e50(short count, point2f const *points, short *indices)
 			if (next == NONE)
 				goto finished;
 			if (!left_start)
-				left_start = !points2d_equal(&points[next], &points[indices[0]]);
+				left_start = points2d_differ(&points[next], &points[indices[0]]);
 			if (next == indices[0])
 				goto finished;
-			if (left_start && points2d_equal(&points[next], &points[indices[0]]))
+			if (left_start && !points2d_differ(&points[next], &points[indices[0]]))
 				goto finished;
 		}
 
@@ -973,6 +932,20 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // the side-change test as `previous_inside ? !inside : inside` 279 (915); the epsilon side tests moved to the loop end 264 (877);
 // one `short point_count = count` copy at all six uses 129 (same code); the current side declared before the loop 129 (same
 // code, as round 294); the `*clipped = false` reset moved just before the loop 221.
+// MiniMax C (11-10): score 129 (was 129): no lower score this round. The count's 32-bit form is what
+// the first difference is: retail loads the whole home into ECX and narrows it (`mov ecx, dword ptr
+// [ebp + 8]; movsx edi, cx`), this build sign-extends the word home directly, and every int-typed use
+// of the count folds back into that word load: an int index 129, a long index 129, an int count used
+// for the index and the loop test 293. The zero also lands in XMM4 against retail's XMM2 and the
+// epsilon in XMM5 against XMM4, which follows from the same allocation.
+// MiniMax C (11-10): score 129 (was 129): no lower score this round. Retail's count argument is 32 bits
+// wide: it loads the whole home (`mov ecx, dword ptr [ebp + 8]`) and narrows it (`movsx edi, cx`) for the
+// previous point's address, while the copy size reads the same home as a word (`movsx ecx, word ptr
+// [ebp + 8]`); with this declaration's short count the address reads the word directly, so every
+// instruction after the first difference is out of step. Widening the parameter to 32 bits and narrowing
+// the copy sizes back to words reproduces retail's frame (0x1014), its flag homes (F-0xe, F-0xf, F-0x10)
+// and its count load, but the points argument then takes EAX instead of ESI and the score rises to 163;
+// the parameter's declared type is not ours to change.
 // MiniMax A (11-05): retail reads the count argument as a dword and narrows it (`mov ecx, [ebp + 8]; movsx edi, cx`) where this declaration's short count is read as a word (`movsx edi, word ptr [ebp + 8]`), so the parameter type, not the body, keeps the rest of the function out of step; no lower score.
 // Lane 11 round 80 (fast; al/m = difflib-aligned and register-masked aligned counts, this body al 85 m 20): previous side
 // as byte 129 (same code), char 242 (892 bytes), long 266 (893); `previous_inside = inside;` between the two appends (round
@@ -990,6 +963,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // (893); `count ? &points[count - 1] : points` for the previous point 293 (903), with the if/else fraction 288;
 // `points + count` then a separate `previous--` statement 129 (same code). Guard with the if/else fraction and
 // the four-flag aggregate 99 (890).
+// Round 70 (m3 lane 15, fast): both dedupe tests nested under `if (result != 1)` 129, the alias copy size as
+// `sizeof(point2f) * count` 129, the crossing bit as `SET_FLAG(mask, result, true)` 129 (same code); `points = (point2f
+// const *)memcpy(copy, ...)` 372 (975 B); re-measured: the deltas through polygon_difference_23a220 129 (round 366's shared
+// 2-D difference). No untried natural form targets the cause: the one lever is the count's ECX at the alias join, which only
+// the repeated `if (count > 0)` guard gives (match-only, best 92 with the if/else fraction).
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

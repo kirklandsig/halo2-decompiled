@@ -224,6 +224,10 @@ void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
 // score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
+// MiniMax C (11-10): the score is 334 (was 334); the gate flag keeps its dead store where retail folds the address, and the settings pointer, the effect address and the random draws still live in different homes.
+// MiniMax E (11-09): no new form, no lower score (334).
+// score 334 (was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
+// MiniMax E (11-09): no new form, no lower score (334).
 // gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
 // MiniMax E (11-09): no new form, no lower score (334).
 // Earlier first line: score 356 (was 356): frame 0xb0, 1643 bytes against 1652. Left: retail saves EBP at entry and
@@ -554,6 +558,21 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // gate as a file-local inline helper returning its `result`, byte read / bit-field read 351/351; the flag as
 // `index != NONE && bit` 406; the flag set in both arms of the index test 411. Retail's `add eax, edx` then
 // `mov dl, [eax + 2]` and the +0x1b home (under the definition pointer at +0x1c) are still open.
+// M3 lane 14 r79 (fast with 0x247fd0/0x248cc0, both kept): only the two effect-record lookups fold base+index here
+// (`[eax + edx + 2]` for the flag, `lea [ecx + eax + 0x30]` for the velocity); retail computes both with a separate
+// `add eax, edx`. The velocity as a default `g_4687a4` set to `&effect->velocity` from a named effect record under
+// `if (local_0 != NONE)` 348 (frame 0xb4; the lea still folds).
+// Retail's matched 0x249170 builds the same `index != NONE ? &record->field : default` pointer from the same pool with
+// a folded `lea [eax + ecx + 0x74]`, so retail's split `add eax, edx; add eax, 0x30` here is this function's source, not
+// the pool or the flags: a boundary between the record pointer and the field offset that a same-file inline getter
+// does not keep (listed above, 356). Retail's 0x18cbc0 folds the same velocity lookup too (`lea [eax + edx + 0x30]`).
+// m3 lane 1 r85 (fast; 0x247fd0 stays matched): an inline effect getter at both effect lookups 334 (same code, the flag
+// address still folds); the definition pointer named `definition` or `system_definition` 334/334 (same code); the flag
+// through an inline reader of the effect pointer returning bool 417 at 1665 B (the flag takes retail's +0x1b and the
+// definition pointer retail's +0x1c, by the extra read-back of the volatile; still folded); the effect pointer from
+// integer arithmetic 334 (same code); the reader returning the byte, `!= 0` in the caller, 334 (same code); the child
+// reciprocal as 0x247fd0's if/else alone 334 (aligned 188 -> 179). Retail's
+// sibling 0x247fd0 folds `[eax + edx]`; this one never folds base+index, so the cause is in the function, not the spelling.
 // Round 228 (m3 lane 3, fast; aligned counts exact/stack-masked/register-masked in brackets, base 334 [246/231/104]):
 // the 0x1697c0 query's result buffer is 0x5c bytes (matched 0x0b8ca0 declares it so); at that size retail's frame
 // reads probe 0x14, direction 0x20, result 0x2c, placement 0x88, with the blend and the first draw in registers. On

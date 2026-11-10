@@ -147,6 +147,8 @@ c_2d8ab0 *g_47f044;
 // uses EDX and EAX where retail uses EAX and ECX; the entity list and the index through named locals
 // and the index read before the element all compile to the same 507 bytes and leave the same seven
 // differences.
+// MiniMax R (11-10): no new form, no lower score (7); the body is unchanged, and the two register pairs of
+// the group scan and the release scan still differ from retail's.
 // @retail 0x1c3d30
 void function_1c3d30()
 {

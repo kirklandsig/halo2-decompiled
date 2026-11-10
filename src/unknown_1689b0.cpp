@@ -1578,6 +1578,8 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // Still differs: retail re-reads the axis after the first point's stores (ours keeps it in a register), starts the `%` before the first reconstruction, and the sum homes (face +0x50, nearest +0x5c, edge +0x60).
 // Tried with the helper: pair struct for first/second 662, `next` index named first (+ long counts) 676.
 // MiniMax C (11-05): no new form, no lower score; retail's prism loop walks &prism->plane.j (plane.i at [esi-4], the point count at [esi+0x14]) where ours walks &prism->point_count (plane.i at [esi-0x18]), and our accumulator homes sit sixteen bytes above retail's.
+// score 637 (was 640): earlier 552; frame 0xb964 agrees; sum/zero homes, axis re-read and early idiv remain.
+// frame 0xb964 agrees; sum/zero homes, axis re-read and early idiv remain.
 // frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
 // Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
 // product (540 -> 539 on the reduced image, one point, below the retention margin). Retail multiplies
@@ -1803,6 +1805,26 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // `inside ? 0.0f : nearest` after the closest copy 642; `face = false` after both edge rays 661 (2939). The second point's
 // address first with no guard gives retail's entry exactly (frame 0xb964, ESI zero, `cmp word ptr [esp + 0x16c], si`): the zero
 // register follows the edge loop's pressure from the early remainder.
+// Round 163 (m3 lane 6, fast; aligned/masked = difflib counts with addresses, or also registers and stack offsets,
+// masked; control 735/337): the call list already agrees (0x120790 inlined in both). Retail starts the `%` and the
+// next index (`inc eax`, stored for the back edge) at the loop top and re-reads axis and side for the second point.
+// Both point pointers taken before the two reconstructions (`point2f const *start = &prism->points[edge_index];`,
+// `end` likewise with the `%`) 620 (2902 B, 684/319: retail's idiv placement and axis/side re-read; one-use
+// pointers, kept only with a byte match); on it the plane distance terms written k, j, i 620 and projected y as
+// `(0.0f - distance) * plane.j` 620 (both same code: the sum order follows the prism cursor's anchor, ours at the
+// point count, retail at plane.j); the reconstructed points renamed edge_start/edge_end 620 (same slots). The
+// listed `next` index named first re-measured 676 (2947 B, 616/275: retail's loop-head sequence exactly, but the
+// side/perpendicular rows spill two XMM values). Scores below split as differing lines + length term (base 605 + 35):
+// the distance through the existing plane_distance_to_point 634 (606 + 28, frame kept); that with a two-use
+// `point2f const *points = prism->points;` before the edge loop 629 (2903 B, frame 0xb960); that local alone 622 plain
+// (607 + 15: the drop is the length term only; it removes retail's spilled point cursor `lea ebp, [esi + 0x18]` at
+// +0x98 and its slot, frame 0xb960 versus 0xb964, not kept); the local at the prism's scope 597 (587 + 10, 2872 B,
+// frame 0xb954, aligned 793/masked 388, not kept); X1's pointers count 600 + 20. A `next` index used for the `%`
+// and as the loop step (`edge_index = next`) 652 (2929 B, 640/296, frame kept); only the `end` pointer taken first
+// 620 (same code as both pointers). Outside the edge loop: the direction magnitude through sqrtf 641; the midpoint
+// rows as `0.5f * (negative + positive)` 640 (same code); radius_squared declared before the query call 624 (607 + 17:
+// the product moves ahead of the call where retail forms it after the count test, the zero moves to EBX; not kept);
+// the magnitude through length_sq3f 640 and the midpoint through real_point3d_set 640 (both same code). All restored.
 // R229 (m3 lane 3, fast with 0x16a440/0x120790/0x2469b0): re-measure of the listed face classification from the normal
 // selection (553 then) on the current body: the separate face flag dropped and the final test made on `use_normal` (the
 // flag only ever mirrored it) 637 (2915 bytes; now a tie, kept as a clean-up, plain 637); one `ray` vector declared for

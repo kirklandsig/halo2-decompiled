@@ -592,6 +592,13 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // through a named element pointer 225 (995 bytes) [42]; the stepping flag named in the loop 43 [21]; case 2's selected arms as
 // one cross3f_staged call with ternary operands 213 (954 bytes) [65]; the stepping flag as `& 2` 43 [20] (same code); case 3's
 // k row as `normal->k * scale` 43 [20] (same code).
+// M3 lane 2 r67 (fast with 0x1201a0/0x1f2e60; aligned/masked in brackets, control 43 [32/26]): retail keeps the entry's
+// g_4687b0 register for cases 1 and 3 and reloads it in case 2's arms. r135's lead (case 3 selected-first with an up
+// pointer read once for case 3) re-measured 21 [27/21]; forms listed above re-measured on it: `0.0f - normal->k` 21, the
+// k row as `normal->k * scale` 21,
+// both dots as dot3f(vector, desired) 21, the first cross through the existing cross3f 21 (all same code), the average
+// through the existing vector3f_add(b, a) 47 (974 bytes) [27/25]. Left on the lead: the first cross's a.k * b.i and
+// average.i operand order, both dots' term order and the tail's j product.
 // Round 226 (lane 3, fast; aligned exact/stack/regs in brackets, control 43 [33/27/27]): lane 9 r89's match-only lead rebuilt (case 3
 // selected-first with a case-3 `up` pointer at its four reads, both dots as statement sequences) 9 [8/8/6]: left are the first cross's
 // a.k*b.i and average.i (b.i loaded second) and the inlined 0x1201a0 tail's j product. On it: the first cross written out 9, all
@@ -970,6 +977,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // sides and the low-normal arm's homes remain as noted below.
 
 // score 347 (was 347; before r723 358): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
+// score 347 (was 347): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
 // bytes (retail 3047). Statement-by-statement walk against retail (b2K, 2026-11-06, fast): every
 // arm, compare direction, field offset (flags 0x14, settings 0x8, speed 0x20, normal 0x8c, damping 0x98, facing 0x9c, flag 0xa8,
 // up 0x100, basis 0x118, velocity 0x124, gravity 0x130, input 0x138, accelerations 0x144/0x148), constant (0.001, 0.234, 5.0, 1.0,
@@ -1228,6 +1236,28 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // before the gravity spill, then the first cross's product sides; a gain of 4, not kept), flying, direct, gravity, damping 346; on
 // the first order the input pointer declared after the flags 346 (3051 B; r89 had 417 on its form); the general arm's input length
 // through magnitude3d 587 (3025 B; 403 on the 358-era body), with the first order 583.
+// Round 178 (m3 lane 4, fast; aligned = difflib count with addresses masked, 152 here): left are product operand
+// orders (retail loads the state field first in the crosses and the flying arm's 0x1f087b products), the input
+// length's x87 load order (retail k, j, i), the low arm's two projections' schedule, the damping flag's register
+// (retail EDX, computed first) and the delta/limited homes in both arms. Tried: `gravity = false` written in each arm
+// of the general step test (no limited_step bool) 516 (aligned 278); that with the short-step arm first 517 (285); the
+// general arm clamping delta from the normalized copy (no copy back, delta used after) 574 (285); the direct arm the
+// same way 566 (3037 bytes, aligned 175); both 557 (297).
+// Round 183 (m3 lane 4, fast; aligned = difflib count with addresses masked, 152 here, register-masked 98): retail
+// tail-shares the first arm's out.k store with the general arm's (its first arm jumps to 0x1f0f58, the 5 bytes of the
+// length gap); ours stores the gravity flag after that store, and the general arm's k sum commutes into xmm2 (`addss
+// xmm2, [eax+8]`, retail `movss xmm0, [eax+8]; addss xmm0, xmm2`), so the tails differ. Retail's general limited shares
+// desired's slot (0x20) and delta takes 0x2c; ours the reverse (and the direct pair is swapped too). Tried: `gravity =
+// false` at the top of the first arm 346 (aligned 152; the flag store lands before the out.k store as retail, a
+// statement order only, not kept); with the general output through vector3f_add 468 (3047 bytes, aligned 154; the
+// history sum then takes retail's `addss xmm0, [edi+0x64]`, the k sum still commutes); delta written from desired with
+// no scaled vector 391 (aligned 211, homes unchanged); vector3f_add(&difference, out + 0x64, &change) 346 (same code);
+// desired reused as the bounded copy (diagnostic) 514 (general delta takes 0x2c but every other slot moves);
+// vector3f_scale into delta, then `delta.i -= current->i` per row 351 (3053); on the first-arm form, the general
+// arm's k row as `limited.k + current->k` 346 (same code: the sum still commutes into xmm2).
+// MiniMax S (11-10): no new form, no lower score (347): the entry block still extracts the damping bit into ECX where
+// retail uses EDX and is one `mov ecx, eax` short, and retail stores the gravity byte before its `lea ebp` where ours
+// stores it after. The recorded flag-order sweep (412-500) and the flag widths recorded above never beat this body.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

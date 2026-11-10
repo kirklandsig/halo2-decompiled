@@ -511,6 +511,10 @@ void __stdcall function_26c2d0(long prop_index);
 bool function_1fef40(s_type_c3b527 const *target, long actor_index);
 extern vector3f *g_4687b0;
 void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
+// MiniMax D (11-10): no new form, no lower score (77); retail multiplies the scale into x and y as
+// `scale * x` and `y * scale` and keeps the test zero in XMM0 for the caller's magnitude test, ours hoists
+// the zero into XMM6 above the helper's products and multiplies x * scale; the normalisation helper is in
+// include/unknown_11cc90.h and the turn in src/unknown_1eb8a0.cpp.
 // MiniMax I (11-09): no new form, no lower score; the test zero is still one XMM register held from above the divide through the inlined rotation, so our `comiss` still precedes the `divss` where retail materialises the zero after the scale products.
 // MiniMax I (11-06): no new form, no lower score; the frame and the prop and point refresh still agree and the first planar normalization is still the difference: retail divides first and tests the planar length after the scale products, ours tests the length against zero before dividing, and that schedule comes from the normalization helper, which is in another file.
 // MiniMax G (11-05): no new form, no lower score; the zero's lifetime depends on the inlined rotation from another file, so the rematerialised test zero stays unmatched.

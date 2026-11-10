@@ -975,6 +975,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // the switch's cases still take their arguments in registers other than retail's (it pushes edi where ours
 // pushes esi), so the callee conventions decide this one.
 // MiniMax C (11-08): no new form, no lower score.
+// score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
+// Round 147 (m3 lane 8): no unlisted form. Retail's convention needs the address live across a call, but retail calls
+// 0x94420 and 0x94270 out of line and has no such use. Its connection handlers take no address (retail passes them the
+// index in EAX and the message in EDX), so an unread address parameter on them has no retail evidence and was not tried.
 // Earlier: retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
 // MiniMax lane E (11-01): no new form, no lower score; retail's parameter order is (message_type,
 // message, address) with the receiver in EDX, which this file's declaration cannot change.
@@ -1075,7 +1079,6 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // Direct-case orders 3,4,0,2 / 4,3,0,2 / 2,4,0,3 / 3,2,4,0 score 196/196/191/195 fast;
 // keep 2,4,0,3 at plain 193, retail length. Lookup orders 7,5,6 / 6,7,5 give 196/195;
 // acknowledgment first in residual phase 196; unified observed order 218. All call inputs preserved.
-
 // Earlier at 153: register inputs, the delayed ESI save and the late case layout still differ.
 // Earlier (153, was 153): register inputs, the delayed ESI save and the late case layout still differ.
 // Direct orders 0,4,2,3 / 0,4,3,2 / 2,0,4,3 / 2,3,0,4 give 193/196/193/195 fast;
@@ -1348,6 +1351,15 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // test is threaded away before allocation and adds no weight to the type); a `message_type < 0` early return 212 (428 bytes, same convention); the link
 // read once into a function-scope local for the three lookups 239 (400 bytes, 0x7afd0 6: the link takes ESI at entry). Reading: the type must outrank the
 // address for EAX at allocation; two extra type tests do it (round 45) but leave their code behind, and every test that folds, folds before allocation.
+// M3 lane 1 r88 (one retail-order switch re-measured 217 plain / 218 fast at 420 bytes, 0x7afd0 3; the rest fast with
+// 0x7afd0, 0x93aa0, 0x92ef0, 0x92d10, 0x94420, 0x94270): on the one switch, cases 18 and 11 first 218; the address parameter
+// copied into a local at entry (body unchanged) 218; an explicit empty `case 1` 218; an unused trailing address parameter on
+// the case 5 and 7 handlers (0x94ae0, 0x94bb0, both stay matched: the link drops it) 218; the connection index declared
+// in each of the case 5, 6 and 7 blocks 218 (same code). Diagnostic (not a trial: it inlines a function retail calls and
+// breaks 0x93aa0): __forceinline on
+// 0x94270 251 (500 bytes) with retail's convention (type EAX, message ECX kept in EBX, address on the stack), as round 60's
+// forced 0x94420 106: inlining either session case, whose body uses the address after a call, is what makes the address a
+// stack argument kept in a callee-saved register; retail calls both, so something else in retail keeps the address live.
 // Round 228 (m3 lane 3, all plain with 0x7afd0, 0x93aa0, 0x92ef0, 0x92d10, 0x94420, 0x94270; control 153 at 464
 // bytes): every first-switch case ending in `break` 153; each connection case returning early when the lookup fails
 // 153; the late switch's cases returning, with `default: return;` 153; the connection index declared inside the first
