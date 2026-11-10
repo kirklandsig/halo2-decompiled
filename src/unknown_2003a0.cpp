@@ -3627,167 +3627,181 @@ void function_2011f0(long arg_0);
 // and is then set to the entry address 229/229 [28] on the row-first order, 221 [15] flag-first (same code). With the placement index also read in the in-range arm, ahead of the NULL test, 229 [28]
 // (the dereference lets the test fold early). The actor result declared NONE at loop level with its block after the range test, or
 // set NONE in an else arm of the range test, 229/229 (threaded early, same code). The 237 body is in build/r162/201520_237_form.txt.
+// MiniMax R (11-10) score 275 (was 318): the options record by if/else with NULL in its own arm, the seat as a
+// dword set once per arm, the squad row through the pool pointer and the fresh count read for the memset.
+// Retail's frame is 0x134 against our 0x130, its row and seat slots are swapped and its difficulty load is sign-extended.
+// MiniMax R (11-10): no lower score kept: our frame is one dword short because `replaced` shares the seat's stack home (retail keeps it in its own slot at esp+0x30); giving it its own home scores 271 and enlarging `available` to two dwords scores 262, but both are reverted forms and neither reproduces retail's slots.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {
     if (!g_4f55d0->active)
         return;
-    byte *local_5 = *(byte **)(((byte *)g_4e0350) + 0x164) + ((word)arg_1) * 0x74;
-    long squad_offset = ((word)arg_1) * 0x98;
-    long local_7 = NONE;
-    bool local_8 = false;
+    long squad_offset = (arg_1 & 0xffff) * 0x98;
+    byte *squad = (byte *)g_51e9d8->data + squad_offset;
+
+    bool flag = false;
+
+    s_squad_placement_definition *row = &((s_squad_placement_table *)g_4e0350)->squads[arg_1 & 0xffff];
+    long head = NONE;
     if (arg_2 != NONE)
         arg_0 = 1;
-    byte *local_9 = NULL;
-    if (*(short *)((g_51e9d8->data + squad_offset) + 0x2a) != NONE)
-        local_9 = *(byte **)(((byte *)g_4e0350) + 0x244) + *(short *)((g_51e9d8->data + squad_offset) + 0x2a) * 0x7c;
+    byte *options;
+    if (*(short *)(squad + 0x2a) != NONE)
+        options = *(byte **)(((byte *)g_4e0350) + 0x244) + *(short *)(squad + 0x2a) * 0x7c;
+    else
+        options = NULL;
+
     if (arg_0 == NONE)
     {
-        short local_10 = g_4e6948->state == 1 ? g_4e6948->difficulty : 1;
-        switch (local_10)
+        short difficulty = g_4e6948->state == 1 ? g_4e6948->difficulty : 1;
+        switch (difficulty)
         {
-        case 0: arg_0 = *(short *)(local_5 + 0x2c); break;
-        case 1: arg_0 = *(short *)(local_5 + 0x2c); break;
-        case 2: arg_0 = (short)((*(short *)(local_5 + 0x2c) + *(short *)(local_5 + 0x2e)) / 2); break;
-        case 3: arg_0 = *(short *)(local_5 + 0x2e); break;
+                case 0: arg_0 = *(short *)((byte *)row + 0x2c); break;
+                case 1: arg_0 = *(short *)((byte *)row + 0x2c); break;
+                case 2: arg_0 = (short)((*(short *)((byte *)row + 0x2c) + *(short *)((byte *)row + 0x2e)) / 2); break;
+                case 3: arg_0 = *(short *)((byte *)row + 0x2e); break;
         }
+
     }
-    dword local_11[1];
-    dword local_12[1];
-    memset(local_11, 0xff, ((*(long *)(local_5 + 0x48) + 31) >> 5) * sizeof(dword));
-    local_12[0] = 0;
+    dword available[1];
+    dword blocked[1];
+    memset(available, 0xff, ((((s_squad_placement_table *)g_4e0350)->squads[(word)arg_1].count + 31) >> 5) * sizeof(dword));
+    blocked[0] = 0;
     if (arg_2 == NONE)
-        function_201460(((word)arg_1), local_12);
-    else if (!arg_3 && !function_201400(((word)arg_1), arg_2))
+        function_201460(arg_1, blocked);
+    else if (!arg_3 && !function_201400(arg_1, arg_2))
         arg_0 = 0;
-    if (arg_0 > 0)
+    for (short attempt = 0; attempt < arg_0; attempt++)
     {
-        long local_13 = (word)arg_0;
-        do
+        short spawn = arg_2;
+        if (spawn == NONE)
+            spawn = function_2039d0(arg_1, available, blocked);
+        if (spawn >= 0 && spawn < row->count)
         {
-            short local_14 = arg_2;
-            if (local_14 == NONE)
-                local_14 = function_2039d0((short)((word)arg_1), local_11, local_12);
-            if (local_14 >= 0 && local_14 < *(long *)(local_5 + 0x48))
+            s_squad_placement_entry *placement_entry = &row->entries[spawn];
+            long placement_object = NONE;
+            short placement = placement_entry->placement_index;
+            if (placement != NONE)
             {
-                byte *local_15 = *(byte **)(local_5 + 0x4c) + local_14 * 0x64;
-                s_squad_placement_entry const *placement_entry = (s_squad_placement_entry const *)local_15;
-                long local_16 = NONE;
-                word local_17 = *(word *)(local_15 + 0x3c);
-                if (local_17 != (word)NONE)
+                placement_object = function_201330(placement);
+                if (!arg_3 && placement_object != NONE)
                 {
-                    local_16 = function_201330((short)local_17);
-                    if (!arg_3 && local_16 != NONE)
+                    s_unit_request request;
+                    request.type = 0x32;
+                    *(word *)request.arguments = (word)arg_1;
+                    *(short *)(request.arguments + 2) = spawn;
+                    if (function_e6900(placement_object, &request))
+                        flag = true;
+                }
+            }
+            if (!flag)
+            {
+                long location = *(short *)((byte *)placement_entry + 0x28);
+                if (location == NONE)
+                    location = *(short *)((byte *)row + 0x34);
+                long actor = NONE;
+    long seat;
+
+
+                if (location != NONE && placement_entry->field2a != 7)
+                {
+                    seat = NONE;
+
+                    actor = function_201010(head, (short)location, placement_entry->field2a, (short *)&seat);
+                    if (actor == NONE)
                     {
-                        s_unit_request local_18;
-                        local_18.type = 0x32;
-                        *(word *)local_18.arguments = ((word)arg_1);
-                        *(short *)(local_18.arguments + 2) = local_14;
-                        if (function_e6900(local_16, &local_18))
-                            local_8 = true;
+                        byte creation[0xc4];
+                        function_b7930(creation, *(long *)(*(byte **)(((byte *)g_4e0350) + 0x7c) + location * 0x28 + 4), NONE, NULL);
+                        function_210850((s_type_c3b527 const *)((byte *)placement_entry + 4), (point3f *)(creation + 0x1c));
+                        function_11dfb0((vector2f const *)((byte *)placement_entry + 0x14), (vector3f *)(creation + 0x28), (vector3f *)(creation + 0x34));
+                        long field = *(long *)((byte *)placement_entry + 0x34);
+                        if (!field)
+                            field = *(long *)((byte *)row + 0x44);
+                        if (field)
+                            *(long *)(creation + 0xc) = field;
+                        seat = NONE;
+
+                        actor = function_b7b40(creation);
+                        if (actor != NONE)
+                        {
+                            byte *actor_datum = *(byte **)(g_4e0300->data + (actor & 0xffff) * 12 + 8);
+                            *(long *)(actor_datum + 0x3a0) = arg_1;
+                            *(long *)(actor_datum + 0x3a4) = head;
+                            *(long *)(actor_datum + 0x3a8) = *(long *)placement_entry;
+                            head = actor;
+                            if (!squad[0x76])
+                            {
+                                byte *object = g_4e3b44[*(long *)actor_datum & 0xffff].bytes;
+                                if (*(short *)(object + 0xc0))
+                                    *(short *)(squad + 0x76) = *(short *)(object + 0xc0);
+                            }
+                            else
+                                *(short *)(actor_datum + 0x138) = (signed char)squad[0x76];
+                            function_a7870(actor);
+                            if (placement_entry->field2a != 6)
+                            {
+                                long replaced = NONE;
+                                seat = function_200ee0(actor, placement_entry->field2a, &replaced, NULL);
+                                if (seat != NONE)
+                                    actor = replaced;
+                            }
+                        }
+                    }
+                    if (actor != NONE && (*(dword *)((byte *)row + 0x20) & 0x2000))
+                    {
+                        byte *actor_datum = *(byte **)(g_4e0300->data + (actor & 0xffff) * 12 + 8);
+                        dword *flags = (dword *)(actor_datum + 0x134);
+                        *flags |= 0x1000;
                     }
                 }
-                if (!local_8)
+                else
                 {
-                    long local_19 = *(short *)(local_15 + 0x28);
-                    if (local_19 == NONE)
-                        local_19 = *(short *)(local_5 + 0x34);
-                    long local_20 = NONE;
-                    short local_21;
-                    if (local_19 != NONE && placement_entry->field2a != 7)
+                    seat = NONE;
+
+                }
+                if (placement_entry->field2a != 6)
+                {
+                    long spawned = function_203780(placement_object, spawn, (short)arg_1, arg_4);
+                    if (spawned != NONE)
                     {
-                        local_21 = NONE;
-                        local_20 = function_201010(local_7, (short)local_19, placement_entry->field2a, &local_21);
-                        if (local_20 == NONE)
+                        ++*(short *)(squad + 0x24);
+                        if (options)
+                            function_1e4570(spawned, (s_actor_options const *)options);
+                        if (actor != NONE && (short)seat != NONE)
                         {
-                            byte local_23[0xc4];
-                            function_b7930(local_23, *(long *)(*(byte **)(((byte *)g_4e0350) + 0x7c) + local_19 * 0x28 + 4), NONE, NULL);
-                            function_210850((s_type_c3b527 const *)(local_15 + 4), (point3f *)(local_23 + 0x1c));
-                            function_11dfb0((vector2f const *)(local_15 + 0x14), (vector3f *)(local_23 + 0x28), (vector3f *)(local_23 + 0x34));
-                            long local_24 = *(long *)(local_15 + 0x34);
-                            if (!local_24)
-                                local_24 = *(long *)(local_5 + 0x44);
-                            if (local_24)
-                                *(long *)(local_23 + 0xc) = local_24;
-                            local_21 = NONE;
-                            local_20 = function_b7b40(local_23);
-                            if (local_20 != NONE)
+                            byte *actor_view = g_4f55f0->data + (spawned & 0xffff) * 0x888;
+                            s_unit_request request;
+                            request.type = 0x1c;
+                            request.type1c.object_index = actor;
+                            request.type1c.seat_index = (short)seat;
+                            request.type1c.unknowna = true;
+                            request.type1c.unknownb = false;
+                            if (function_e6900(*(long *)(actor_view + 0x18), &request))
                             {
-                                byte *local_25 = *(byte **)(g_4e0300->data + (local_20 & 0xffff) * 12 + 8);
-                                *(long *)(local_25 + 0x3a0) = ((word)arg_1);
-                                *(long *)(local_25 + 0x3a4) = local_7;
-                                *(long *)(local_25 + 0x3a8) = *(long *)local_15;
-                                local_7 = local_20;
-                                if (!(g_51e9d8->data + squad_offset)[0x76])
-                                {
-                                    byte *local_26 = g_4e3b44[*(long *)local_25 & 0xffff].bytes;
-                                    if (*(short *)(local_26 + 0xc0))
-                                        (g_51e9d8->data + squad_offset)[0x76] = local_26[0xc0];
-                                }
-                                else
-                                    *(short *)(local_25 + 0x138) = (signed char)(g_51e9d8->data + squad_offset)[0x76];
-                                function_a7870(local_20);
-                                if (placement_entry->field2a != 6)
-                                {
-                                    long local_27 = NONE;
-                                    local_21 = function_200ee0(local_20, placement_entry->field2a, &local_27, NULL);
-                                    if (local_21 != NONE)
-                                        local_20 = local_27;
-                                }
+                                byte *actor_datum = *(byte **)(g_4e0300->data + (actor & 0xffff) * 12 + 8);
+                                *(short *)(actor_datum + 0x138) = *(short *)(actor_view + 0x24);
                             }
                         }
-                        if (local_20 != NONE && (*(dword *)(local_5 + 0x20) & 0x2000))
-                        {
-                            byte *local_28 = *(byte **)(g_4e0300->data + (local_20 & 0xffff) * 12 + 8);
-                            dword *local_29 = (dword *)(local_28 + 0x134);
-                            *local_29 |= 0x1000;
-                        }
-                    }
-                    else
-                    {
-                        local_21 = NONE;
-                    }
-                    if (placement_entry->field2a != 6)
-                    {
-                        long local_30 = function_203780(local_16, local_14, (short)((word)arg_1), arg_4);
-                        if (local_30 != NONE)
-                        {
-                            ++*(short *)((g_51e9d8->data + squad_offset) + 0x24);
-                            if (local_9)
-                                function_1e4570(local_30, (s_actor_options const *)local_9);
-                            if (local_20 != NONE && local_21 != NONE)
-                            {
-                                byte *local_31 = g_4f55f0->data + (local_30 & 0xffff) * 0x888;
-                                s_unit_request local_32;
-                                local_32.type = 0x1c;
-                                local_32.type1c.object_index = local_20;
-                                local_32.type1c.seat_index = local_21;
-                                local_32.type1c.unknowna = true;
-                                local_32.type1c.unknownb = false;
-                                if (function_e6900(*(long *)(local_31 + 0x18), &local_32))
-                                {
-                                    byte *local_33 = *(byte **)(g_4e0300->data + (local_20 & 0xffff) * 12 + 8);
-                                    *(short *)(local_33 + 0x138) = *(short *)(local_31 + 0x24);
-                                }
-                            }
-                            function_201b70(((word)arg_1), local_14, local_30);
-                        }
+                        function_201b70(arg_1, spawn, spawned);
                     }
                 }
             }
         }
-        while (--local_13);
-        while (local_7 != NONE)
-        {
-            long local_34 = local_7;
-            byte *local_35 = *(byte **)(g_4e0300->data + (local_7 & 0xffff) * 12 + 8);
-            local_7 = *(long *)(local_35 + 0x3a4);
-            byte *local_36 = *(byte **)(g_4e0300->data + (local_34 & 0xffff) * 12 + 8);
-            *(long *)(local_36 + 0x3a4) = *(long *)((g_51e9d8->data + squad_offset) + 0x70);
-            *(long *)((g_51e9d8->data + squad_offset) + 0x70) = local_34;
-        }
-        if (local_8)
-            return;
     }
-    function_2011f0(((word)arg_1));
+    if (head != NONE)
+    {
+        long cursor = head;
+        do
+        {
+            byte *squad_row = (byte *)g_51e9d8->data + squad_offset;
+            byte *actor_datum = *(byte **)(g_4e0300->data + (cursor & 0xffff) * 12 + 8);
+            long next = *(long *)(actor_datum + 0x3a4);
+            *(long *)(actor_datum + 0x3a4) = *(long *)(squad_row + 0x70);
+            *(long *)(squad_row + 0x70) = cursor;
+            cursor = next;
+        }
+        while (cursor != NONE);
+    }
+    if (!flag)
+        function_2011f0(arg_1);
 }
