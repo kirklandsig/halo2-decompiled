@@ -223,6 +223,14 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // score 192 (was 192): this round: no new form and no lower score; the frame is still 0x84 against
 // retail's 0x90 with the origin's x and y and the edge vectors in stack homes, and the point-in-polygon
 // query still needs the points before the point, which only the definition in another lane's file fixes.
+// MiniMax I (11-09): no new form, no lower score (192); the aligned view shows retail loading the ray's and the
+// vertices' six components into xmm2-xmm7 first and computing the three edge vectors in registers (frame 0x90),
+// while ours forms each difference and spills it to the stack (frame 0x84), because the helpers take their
+// operands by reference and the edge vectors need homes; the header's normalize_inline and cross3f_staged
+// spellings leave the same code, and the count read into a dword local before the query call gives 193 (1020
+// bytes). Still different: the ray and edge homes and the call setup, which is BLOCKED-BY 0x23a220 (retail's
+// callers pass the points before the point and its definition is in src/unknown_239b80.cpp, another lane's
+// file); the chain that reaches 2 only gains on top of that swap.
 // MiniMax C (11-09): no new form, no lower score (192); the point-in-polygon query's call setup still differs (BLOCKED-BY src/unknown_239b80.cpp).
 // MiniMax I (11-05): no new form, no lower score. The header normalize_inline for the normal gives 193
 // and the header cross3f_staged for the cross gives the same code; retail's normal length sums k, j, i

@@ -163,6 +163,16 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 #define request_weapon(player, slot, headers) \
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
+// MiniMax I (11-09): no new form, no lower score (118); the aligned view (build/mm/align.py) shows that every
+// difference is a register rotation: retail keeps the table in ECX and the null result in EAX in the inlined
+// lookup, ours keeps the table in EAX and the result in ECX, and case 4 then differs throughout (retail holds
+// the parent in ESI, ours in ECX, so the index temporary, the definition pointer and the two flag copies move
+// with it). The second table read, the nested table test, the lookup written out at the call site and the
+// out-of-line 0x1e8d50 (165) all leave the rotation; the seat read moved inside the parent's test gives 117
+// (one point, restored) and the parent loaded before the 0x13cb40 call does put it in ESI and settles the whole
+// case 4 rotation, but measures 115 (three points, restored) and reads the parent before the call.
+// Still different: the lookup's two registers and case 4's rotation; the frame, the length and every other
+// case agree.
 // MiniMax S (11-09): still differs in the inlined table lookup: retail keeps the table in ecx and the null result
 // in eax, ours keeps the table in eax and the null result in ecx; the two are the same code with those two
 // registers exchanged, and the getter's early-return and declaration-order spellings give the same code.
