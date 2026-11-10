@@ -469,6 +469,14 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // with the complete graph immutable, then immutable dot alone:
 // 48/52/48/50/52/50/48/48. NOT kept: no live-plane, first-selector or product-side
 // equality; immutable dot differs earlier at +0x67. Original complete body restored.
+// Round 140 (m3 lane 7, `--fast 0x17d9a0 0x120850 0x22bbca`, 46 as the full check): new: `bounds` typed as the box
+// both callers pass (corners from x0/x1/y0/y1, the two casts dropped, one of them in a contributor's 0x17ef10) 46
+// (same code); the plane built in a local plane3f and copied into the quad, axis from the quad 240 (1013 bytes) or
+// from the local 246 (1017 bytes); a local copy of the up vector feeding the plane copy and the dot 236 (1005 bytes);
+// the plane's normal and position read from the quad's own matrix copy 68. Re-measured (listed): a plane pointer or
+// reference for the copy, dot and store (and the axis call) 65/65 (store base as retail; the dot and every corner
+// product swap sides together), also with the box parameter 65; that with the dot reading matrix->up 208 (986 bytes);
+// the distance from matrix->up stored before the normal copy 206 (the listed dot-through-up score).
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
