@@ -278,6 +278,12 @@ bool function_25d9b0(long prop_index);
 // M400: Original velocity/iterator defaults via aggregates or CRT, at original phases/entry,
 // separately/together: 95/90/163/211/231/187/187/230. NOT kept: all regress;
 // original twelve-byte workspace producers, busy test and all exits restored.
+// MiniMax R (11-09): no new form, no lower score (49): the busy call's tail is still the select
+// neg al, sbb eax, eax, not eax and and eax, esi where retail tests the flag and branches to its
+// own return-priority block, and the velocity's square is still built from the twelve-byte
+// workspace; the native velocity producers, the paired observations and the busy select forms were
+// all measured (49 each), and the form that removes the select (30) was dropped at review because
+// it tests the prop index where retail tests the node.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
@@ -522,6 +528,10 @@ evaluate:
 // 88/88/92/92 in both (earlier single-result lowering, confirmations only).
 // Actual status/prop-index eight-byte homes: status signed/unsigned 83/83, index
 // signed/unsigned 92/92, four joint domains 106 each. Original body restored.
+// MiniMax R (11-09): no new form, no lower score (73): the call to 0x25d740 is still expanded at
+// this site, so the prologue still differs from retail's sunk ESI/EDI saves; the inline-ness is set
+// in src/unknown_25d690.cpp, which this lane may not edit, and the forms that hold the call out of
+// line (a noinline declaration or the file's own /Ob1 setting) all compile to the same bytes.
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

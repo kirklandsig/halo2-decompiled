@@ -748,6 +748,12 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // aggregate initializer 77; the first scan on a `long` index to a literal 3 77; both arrays NONE-initialized in
 // their declarations 77 (all the same code). 0x1883e0 is in this file; the block is its declarations in
 // src/impacts.cpp (held change) and src/projectiles.cpp, which name the old parameter types.
+// MiniMax R (11-09): no new form, no lower score (77): the scan's registers are rotated against
+// retail's (the index, the none and the scale sit in other registers), retail pushes edi after the
+// first float multiply while we push it before, and the curve values are stored at other stack
+// offsets; the block is still blocked by 0x1883e0's declarations, which live in src/impacts.cpp and
+// src/projectiles.cpp and name the old parameter types, so the effect point and the velocity forms
+// that were measured (77 each) leave the body as it is.
 // @retail 0x188180
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
 	long entry_element_index, long effect_value, s_location const *location, real scale)

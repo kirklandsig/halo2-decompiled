@@ -100,6 +100,12 @@ long function_1469f0(real seconds);
 // Native field view and all scope forms restored; both remaining load regions still differ.
 // Early reference predicate/default-first/wide-result/presence predicate 109/108/111/109;
 // complete current/both reference values 100/104; native word equality logical/bitwise 222/130.
+// MiniMax R (11-09): no new form, no lower score (13): the slot's reference is still loaded into
+// edx after the actor's index arithmetic where retail loads it into ecx before it, and the action
+// lookup still scales the index into ecx and reads the unit table early where retail scales into edx
+// and reads the table late; the reference copied into a named local, the barrier at five positions,
+// the scope forms of the three locals and the action helper's unused result were all measured and
+// all score 13 or more, so the body stands as it is.
 // @retail 0x1bf0f0
 short __stdcall function_1bf0f0(long actor_index, s_slot *slot, bool active)
 {

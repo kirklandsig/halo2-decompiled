@@ -275,6 +275,11 @@ static __forceinline long floor_to_long_inline(real value)
 // seven subsets then reversed initial field stores: 14/14/10/79/83/83/79/14.
 // NOT kept: no equality; the real declaration does not recover native OR/shift/pool
 // scheduling. Original record declaration, packed expressions and body restored.
+// MiniMax R (11-09): no new form, no lower score (10): the two loads that feed the record's OR chain
+// come in the other order here - the entry's own word and the global's mask - while retail loads the
+// global first; the OR chain itself is canonicalized by MSVC, so reordering the three terms of the
+// store, naming the kept bits or splitting the word's or into an assignment all give byte-identical
+// code and the same score, and the low word built in two steps was measured at 10 as well.
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, short instance, dword flags,
     long tag, dword key, long category, long material, byte *object, short mask, byte mode,
