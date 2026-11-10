@@ -201,6 +201,11 @@ void juggernaut_set(long player_index, bool juggernaut)
 // but wrong: the modulo becomes an unsigned div and the count test jbe where retail has
 // cdq/idiv and jle). The argument arrives as in retail (on the stack, ret 4) and the caller
 // 0x192530 calls it as retail does (push -1), so the caller does not decide this.
+// Round 99 (lane 16): the existing juggernaut_is((short)player_index) for the bit test 74 (233 bytes); a
+// named absolute index as in 0x192530 20; one named bool for the whole candidate test 20; the bit test as
+// a `continue` guard 20; the players word in a local 20; iterator.player read at each use 20; the waiting
+// test as nested ifs with `continue` 77 (251 bytes); `if (count <= 0) return;` 20. All the 20s are the
+// same code.
 // @retail 0x192a30
 void function_192a30(long excluded_player_index)
 {

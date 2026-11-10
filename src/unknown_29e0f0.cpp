@@ -78,8 +78,18 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
+// MiniMax E (11-10): no new form, no lower score (391); the frame size agrees (0x64), but retail holds the node pointer in ebx and the group table in ebp where this build holds them the other way round, and the three selected-index homes sit at other frame offsets.
+// MiniMax C (11-05): no new form, no lower score; retail's three selected-index homes are at [esp+0x44], [esp+0x28] and [esp+0x24] where ours are at [esp+0x40], [esp+0xc] and [esp+0x20]; retail holds the node pointer in ebx and the group table in ebp where we hold them the other way round, and loading the group table before the node pointer scores 397.
 // score 391 (was 390): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // MiniMax C (11-05): no new form, no lower score; retail's three selected-index homes are at [esp+0x44], [esp+0x28] and [esp+0x24] where ours are at [esp+0x40], [esp+0xc] and [esp+0x20]; retail holds the node pointer in ebx and the group table in ebp where we hold them the other way round, and loading the group table before the node pointer scores 397.
+// score 391 (was 391): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// frame 0x64 agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// Earlier 391 (was 390): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// M3 lane 13 r75 (fast, on the round-64 recipe rebuilt on today's file: 155 at 1596 bytes, masked aligned 20; all match-only): the found
+// flag stored first in the success block 152 (our compiler then stores it from AL too: retail's AL comes from local_29 loading into EDX,
+// not EAX); local_29 stored first 161; the call compare as `1 == call` 155 (same code); the call nested under the distance test 155 (same
+// code); the two pair distances summed in the other order 164. Retail's ECX-then-ESI setup at 0x29de20 is forced by the shuffle (ESI holds
+// the table), so it is no evidence for a parameter reorder.
 // Round 64 (fast; masked aligned count in brackets, base 390 [182]): NOT kept, scratch recipe reaching 155 [11] at retail's 1596 bytes with every stack
 // slot right (aligned 428 -> 22): (1) group as `long`, tested on the field read and copied after: `if (bit_vector_test(visited_groups, entry.field_0))
 // continue; long local_15 = entry.field_0;`, set through bit_vector_set: 398 [161] (read beside a local copy, match-only; without it the rest stays 435-461);
@@ -386,6 +396,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // (not kept, diagnostic only: each volatile alone 155). Left on the recipe: retail keeps arg_3 in ESI from the range test to
 // the 0x29de20 call and loads arg_0 into EDX for the third distance (`mov ecx, esi; mov esi, edx`), ours loads arg_0 into ESI
 // and reloads arg_3. The flag store from AL, the step's EAX and the jmp over the output loop's padding follow from that.
+// m3 lane 8 r146 (fast; aligned/masked base 420/178; 0x29e730 MATCH throughout): both bitmaps or the group bitmap alone through the
+// existing bit_vector_test/bit_vector_set 425/425 (1567 bytes); the group bitmap cleared by memset 388 (aligned 382, masked 176; three
+// points, not kept), both bitmaps by memset 388 (same code); the output as `&arg_4->field_30[local_37]` with no cursor 396 (masked 164);
+// the found flag declared first 393; memset + indexed output 393 (aligned 356, masked 162), with the flag first 395.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

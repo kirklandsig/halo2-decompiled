@@ -1632,7 +1632,7 @@ bool __stdcall function_25ff90(
 // @retail 0x260060
 void function_260060(
 	long a,
-	long b,
+	short b,
 	s_type_967e20 *context,
 	s_type_b36ac5 *position)
 {

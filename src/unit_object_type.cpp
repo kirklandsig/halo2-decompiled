@@ -595,7 +595,7 @@ real function_10f690(long object_index, real *duration);
 bool function_a7670(long object_index);
 void __stdcall function_d6bc0(long object_index);
 void function_edfa0(long unit_index, point2f const *facing);
-void __stdcall function_e4a20(long arg_159e6d_2, point3f const *point, long object_index, bool knocked);
+void __stdcall function_e4a20(long arg_159e6d_2, long object_index, point3f const *point, bool knocked);
 void function_14cad0(long player_index, long unit_index);
 void function_152340(void);
 void function_1e2a90(long actor_index);
@@ -3716,20 +3716,6 @@ void __stdcall function_d09c0(long unit_index, long slot_index, long definition_
 
 /* damages the unit with a damage definition from its center against its
    velocity +0x168 (in mode 4, through its player's controller) */
-// score 26 (was 110): the mode 4 half now matches retail byte for byte (the rest differs only in the order the second
-// half interleaves its pushes and the origin/position copies with the direction negation). Round 2 of #1049: the
-// player index is retail's inlined unit_get_player_index (0x14de90 = badc0(unit, 3), NONE when null), so the test and
-// the controller lookup call it twice (not a hand-written null test); that removed the `ebx = NONE` register retail
-// never has. Retail also zeroes direction.j/.k before filling them (two dword stores from the shared zero register):
-// memset(&direction.j, 0, 2 * sizeof(real)) gives exactly those stores (memset of the whole vector zeroes .i too, 74;
-// a plain `= {0}` initializer or long-view zeroing is dropped as dead, 80). Declaring `owner` before `direction` puts
-// the owner's zero short after the other stores like retail's (50 -> 27). The owner's padding short is written as 0.
-// Behaviour fix (earlier round): retail sets the material to NONE before 0xd6660, which then overwrites it with its
-// default. Tried: second-half statement order, all 24 orders of flags/origin/position/direction (best 26 kept: the
-// direction before position; origin first 27; others 29-33); `origin = position = ...` chain 44; s_damage_owner as a
-// three-member aggregate drops the zero short (55); memset(&owner) form (117); the position source through a local
-// point3f pointer (26-27).
-// Permuter (25 min on #1049, about 440 variants): 25 only with 0xd7b80's unit and NONE arguments swapped; not kept.
 // @retail 0xd03e0
 void function_d03e0(long unit_index, long definition_index)
 {
@@ -3757,19 +3743,21 @@ void function_d03e0(long unit_index, long definition_index)
 				function_153d10(controller, definition_index, &owner, &direction, 0, 1.0f, 1.0f, 0);
 			}
 		}
-		return;
 	}
-	s_type_1e6529 damage;
+	else
+	{
+		s_type_1e6529 damage;
 
-	damage.material_index = NONE;
-	function_d6660(&damage, definition_index);
-	damage.flags |= 8;
-	damage.origin = unit->unknown030;
-	damage.direction.i = 0.0f - unit->unknown168.i;
-	damage.direction.j = 0.0f - unit->unknown168.j;
-	damage.direction.k = 0.0f - unit->unknown168.k;
-	damage.position = unit->unknown030;
-	function_d7b80(&damage, unit_index, NONE, NONE, NONE, 0);
+		damage.material_index = NONE;
+		function_d6660(&damage, definition_index);
+		damage.flags |= 8;
+		damage.direction.i = 0.0f - unit->unknown168.i;
+		damage.direction.j = 0.0f - unit->unknown168.j;
+		damage.direction.k = 0.0f - unit->unknown168.k;
+		damage.origin = unit->unknown030;
+		damage.position = unit->unknown030;
+		function_d7b80(&damage, unit_index, NONE, NONE, NONE, 0);
+	}
 }
 
 /* what a unit's melee hit: an object, or a surface */
@@ -5088,10 +5076,12 @@ void __stdcall function_c8290(vector3f *aim, point3f *point, long unit_index, ve
 	function_ba1d0(root_index, velocity, 0);
 }
 
+void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
+
 /* the unit's wandering direction: its actor's (else the default vector)
    turned about the world's up by the angle +0x2d8, which drifts by a
    random turn rate (+0x2dc) kept away from its limits */
-// score 91 (was 99; earlier 99, was 120): only register numbering differs. Retail keeps the clamps in xmm4/xmm5 and the pi/4 and
+// score 58 (was 91): earlier 99, was 120; only register numbering differs. Retail keeps the clamps in xmm4/xmm5 and the pi/4 and
 // 4.244 constants share xmm3; ours puts them in xmm3/xmm6 and 4/5, then needs one more register in the rotation.
 // Reading direction->k directly in the three terms (instead of a cached z) gave 120 -> 99.
 // Tried (all 99): operand order of the angle and rate products, swapped high/low declaration order, low copied
@@ -5114,6 +5104,15 @@ void __stdcall function_c8290(vector3f *aim, point3f *point, long unit_index, ve
 // existing function_259d0 101; the axis read from its global at each use 91 (same code). Left: the 1.0 constant
 // and the clamps take xmm5 and xmm2/xmm6 where retail has xmm2 and xmm4/xmm5, and retail interleaves the cross
 // terms with the dot product.
+// Round 66 (m3 lane 2, plain 91 -> 58, kept): the rotation is the existing rotate_direction (forced inline in
+// src/unknown_1eb8a0.cpp, matched in 0x1ecf50 and already called from other files through a declaration): its dot
+// first, then the three cross terms, is retail's order, and 1.0 now takes xmm2 as retail's does. Left: high/low take
+// xmm3/xmm6 and the a/b constants xmm4/xmm5 where retail has xmm4/xmm5 and one shared xmm3 (retail forms the second
+// sum before the first product, so pi/4 dies and its scale reuses xmm3), and three cross products take their
+// operands the other way round. On 58 (fast): the sums as locals declared first (re-measure) 170 (masked 19, 1.0 in
+// xmm2 but high/low in xmm3/xmm4); the sums with below declared first 170; sums in the a/b block only 168; in the
+// c/d block only 61; each product right before its test (re-measure) 74; `high = low = 1.0f` 58 (same code); one
+// declaration for both 58 (same code). Also tried, not kept: the same helper copied privately here 58 (same code).
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
@@ -5191,17 +5190,7 @@ void function_d0080(long unit_index, vector3f *direction)
 	{
 		unit->unknown2d8 -= 6.2831855f;
 	}
-	real sine = (real)sin(unit->unknown2d8);
-	real cosine = (real)cos(unit->unknown2d8);
-	vector3f const *axis = g_4687b0;
-	vector3f cross;
-
-	cross3f(direction, axis, &cross);
-	real along = dot3f(axis, direction) * (1.0f - cosine);
-
-	direction->i = axis->i * along + direction->i * cosine - cross.i * sine;
-	direction->j = axis->j * along + direction->j * cosine - cross.j * sine;
-	direction->k = direction->k * cosine + axis->k * along - cross.k * sine;
+	rotate_direction(direction, g_4687b0, (real)sin(unit->unknown2d8), (real)cos(unit->unknown2d8));
 }
 
 /* the best seat for the unit to enter among the object's and its riders'
@@ -5878,7 +5867,7 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
    otherwise), takes its team from the creation data (in campaign, the
    definition's when unset), starts its animation and finds its two
    animation graph entries */
-// score 202 (was 253, 282 before that): the logic agrees with retail statement by statement (re-walked in round 5 of #1049).
+// score 202 (was 202; 253, 282 before that): the logic agrees with retail statement by statement (re-walked in round 5 of #1049).
 // Round 5 of #1049: the four weapon slots are cleared with memset(.., 0xff, 16), which gives retail's lea/pointer fill
 // (definition spilled first, EDX the pointer, ECX the value; 253 -> 202). What still differs: (1) retail's early
 // `return false` after the animation check keeps its own epilogue (jne over `pop edi/esi/ebp; xor al,al; pop ebx;
@@ -5898,6 +5887,18 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // as a long or dword loop, a pointer loop, `*slot++`, four stores through a pointer local, an inline fill helper
 // (281-299 or no change). Tried for (2): unit_at_masked_index, the header written as byte offset + array, base + 8
 // + offset (no change); the animation check held in a bool 257; the amount stored first in the source loop 266.
+// m3 lane 12 r106 (fast, plain where noted): (1) is solved when the out-of-memory arm sets the return value before
+// its store: `bool result;`, the early `return false` (or the whole body single-exit with `result = false` in the
+// check's arm), then `if (failed) { result = false; *out_of_memory = true; } else { ...; result = true; } return
+// result;` gives retail's three return blocks exactly at 1040 bytes, 59 (plain 59). Not kept: with the store first
+// it is 202 again (statement order by score). Left at 59: the success arm's scratch registers (ours edx, eax, ecx
+// where retail has eax, ecx, edx: the g_4e0300 reload, the +0x33e offset, the creation pointer, the vector copies)
+// and (2). Without the flag (the || chain in the if, or an else-if chain) the success arm gets retail's registers
+// but the check and out-of-memory blocks move to the end 193; `if (allocated) {...} else {...}` 193; nested single
+// exit with result false at entry 198; result started true and cleared in the arm 305 (stack slot), declared
+// after the check and started false 305; `return !failed` 317; `result = a && b && c` 312; on the 59 form result
+// declared first, no data local, an `allocated` flag, `!(a && b && c)`, `failed = false; if (...) failed = true;`
+// 59 each (same code). A 600 s permuter run on the 59 form (--fast --anneal), 45 tries, none below 59.
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {
@@ -6476,7 +6477,7 @@ void __stdcall function_caa60(long unit_index, long object_index, point3f const 
 
 	if ((1 << unit->type) & 1)
 	{
-		function_e4a20(unit_index, point, object_index, knocked);
+		function_e4a20(unit_index, object_index, point, knocked);
 	}
 	if (unit->unknown13c != NONE)
 	{

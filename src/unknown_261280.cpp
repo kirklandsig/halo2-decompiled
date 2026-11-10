@@ -351,7 +351,7 @@ short __stdcall function_262180(long actor_index, long block_index, long range_i
     return *count;
 }
 
-void function_260060(long actor_index, long mode, s_type_967e20 *context, s_type_b36ac5 *position);
+void function_260060(long actor_index, short mode, s_type_967e20 *context, s_type_b36ac5 *position);
 bool function_2600a0(long actor_index, s_type_967e20 *context, s_type_b36ac5 *position);
 void __stdcall function_25f7b0(long actor_index, s_type_967e20 *context, s_type_b36ac5 *position);
 

@@ -658,6 +658,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // tested on `definition == NULL` 228 (719 bytes); the strip indices indexed from the section at each fetch
 // (no pointer local) 221 (747 bytes).
 // MiniMax D (11-09): no new form, no lower score: the body is unchanged at 172 (726 bytes against retail's 726); the difference is the frame's shape (our slots sit one word lower than retail's and we do not push ebx first) and the 0x11e800 callee's registers, which are outside this file.
+// MiniMax S (11-10): no new form, no lower score (172): retail pushes ebx first and keeps the BSP global in ebx, we keep it in ebp and defer the ebp and esi pushes, so the prologue order differs although the frame slots agree; our zero constant takes ebx where retail gives it to edi.
 // MiniMax R (11-10): no new form, no lower score (172): the result as a bool (182), the result declared first (212/197) and four orders of the prologue reads (172/172/223/172) all leave retail's push-ebx-first prologue and its BSP in EBX unreproduced.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
