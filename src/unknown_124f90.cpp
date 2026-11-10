@@ -4271,6 +4271,7 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 	arg_2->k = (rotation_i * arg_1->j - rotation_j * arg_1->i) * local_2 + rotation_k * local_1 + local_0 * arg_1->k;
 }
 
+// MiniMax S (11-10): no new form, no lower score (554); the frame is 0x130 against retail's 0xe8 because the fallback reverb is a 48-byte stack copy here while retail reads the existing const g_44a2a0, which needs a declaration outside this file; a file-static copy of the same data removes the copy and the frame with it but takes 218 bytes off the length, so the differing count stays 535 and the plain score rises to 734; the two entry bytes, the rotation call's registers and the listener records still differ.
 // MiniMax R (11-01): retail's 0x11d6a0 call still sets edx, ecx, eax where ours sets edx, eax, ecx;
 // the callee's own file is not mine, so the order cannot be produced from here.
 // score 554 (was 535): Frame 0x130 versus 0xe8; native rotation, environment and listener-index homes remain.
