@@ -309,6 +309,16 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // const 24 (same code). The 21 form re-measured 21 [13]: it has the 24 form's colouring (headers ESI, object index EDX, rigid body ECX against
 // retail's EDX, ECX, ESI) and only flips the incoming pair. The fast check shows 0x1d5940 at 221 for every body, the current one included
 // (a reduced-image artifact; 9 in the full build).
+// Round 141 (m3 lane 7; one-file LTCG harness with 0x1d5bf0 and its callee files, harness counts, the caller's aligned count in
+// brackets, [2] = matched): round 60's 24 form 34 [2], the 21 form 31 [15]; the rigid body through a forceinline (model, index) or
+// (owner, index) helper in nine statement orders, same code as without it (31-96); the type as long/int/dword/unsigned long on the
+// 24 form 97 (retail's `movzx` load, scheduled after the kind test), short/word 44 at 260; rigid body first 96 (component on the
+// stack); 96 random forms (orders, long/dword/no object index, absolute local or not, byte/long type, case 0 through the component,
+// the object index or the absolute index, kind-7 switch with or without a default, `&[]` or `+` rigid body): best 31 [15], best
+// with the caller kept 75 [2]. Fast, caller in brackets: the 24 form with the rigid body through an (owner, index) helper 24 [0] (same
+// code), with `+` for the rigid body and a default in the kind-7 switch 24 [0]; no object index local, absolute index, headers,
+// `+` rigid body, byte type, case 0 through the component, kind-7 default 68 [0]; object index, absolute, headers, rigid body, long
+// type, case 0 through headers[absolute] 68 [0]; the same with a dword object index, long type, case 0 through the absolute index 67 [9].
 // M3 lane 14 r74 (fast, caller 0x1d5bf0 in brackets, 0 = still matched): round 60's 24 form rebuilt 24 [0], with a long type 89 [0]. A grid of
 // declaration orders (o object_index, a absolute_index, r rigid body, h headers, t type through absolute_index, T type through `object_index & 0xffff`
 // with no absolute_index), type long or byte, and case 0 through hc `headers[component->object_index & 0xffff]`, ho `headers[object_index & 0xffff]`,
