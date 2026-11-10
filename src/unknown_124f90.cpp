@@ -1254,6 +1254,13 @@ long function_2197f0(real gain);
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
 // score 94 (was 94; 177 before lane 10 round 69): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
+// MiniMax C (11-09): no new form, no lower score (94).
+// MiniMax H (11-07): no new form, no lower score (94); the fade block still holds the running
+// difference in another register (ours xmm2, retail xmm3) and still divides by the fade-in time in
+// the other form (ours multiplies by its reciprocal).
+// MiniMax R (11-06): no new form, no lower score (94).
+// MiniMax D (11-06, run 49): no new form, no lower score (94); the first arm's sum still differs (retail loads the gain into a register and adds the interpolation into it), the register rotation (inverse, elapsed, 1.0, fade-out) still differs and the gain is still carried differently into the last arm.
+// score 94 (was 177): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
 // 1.0, fade-out), and the gain value carried into the last arm.
 // Round 160: the gain and ducking gains as s_decibels, the interpolation by value and the hold sum through the

@@ -417,6 +417,8 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // helper taking the angle's address and the rates record 278/285 (1716); both angles as arm locals with the two actor
 // stores written in each arm 244 on the lead, 251 on the body below (1743), with the result store in each arm too 471
 // (1749, 0x29b990 6). Lead re-measured 169. NOT kept: all regress; body below unchanged.
+// P399: Actual previous-yaw/previous-pitch/policy field references, subsets 1-7, then immutable actor/object bindings:
+// 299/280/262/303/305/272/272/272. NOT kept: no byte equality or native home repair; original complete body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

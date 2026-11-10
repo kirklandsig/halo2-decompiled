@@ -428,6 +428,11 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // seven groups then truth before point publication: 410/386/243/563/437/385/574/354.
 // NOT kept: no exact byte, home or progress-tail recovery; original result owner,
 // every publication, point/query call and full traversal restored.
+// P401: On the exact-only shared-exit graph (control 34), both planar-product vector
+// inputs staged, reversed declarations/full point inputs/point-first, then immutable:
+// 38/38/32/32/38/38/32/32. Four full-input graphs with a local line record: 300 each.
+// NOT kept: no byte equality; the cross j product, line/sector homes, XMM roles and
+// tail stores remain. Original private helper, loop exits and complete body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

@@ -600,6 +600,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
+// MiniMax D (11-09): the colour written component by component gives 447/604/623 against 250, and the
+// interpolation unrolled on its own gives 250; the scope moves give 620/250/620 and the case-0 and
+// colour store orders 246/248/244/250/255. The best is 244, under the bar, so the body is unchanged.
 // score 250 (was 250): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // MiniMax D (11-05): four declaration orders for the u and v scalars and their step and width partners
@@ -951,6 +954,8 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // range transfers, eight nonoriginal pairs:
 // 598/598/733/750/745/769/735/729. NOT kept: no exact native frame/home recovery;
 // original complete body, observations, helper and call graph restored.
+// P399: Actual current/next color-bound identities and complete next-color record, subsets 1-7, then output-color identity:
+// 250/250/482/250/250/250/490/447. NOT kept: no byte equality or native home repair; original complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
