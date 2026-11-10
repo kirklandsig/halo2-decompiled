@@ -469,6 +469,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // with the complete graph immutable, then immutable dot alone:
 // 48/52/48/50/52/50/48/48. NOT kept: no live-plane, first-selector or product-side
 // equality; immutable dot differs earlier at +0x67. Original complete body restored.
+// Round 100 (m3 lane 12, `--fast 0x17d9a0 0x120850 0x22bbca`, 46 as the full check): the plane distance computed after the axis call 65; the side
+// test through `.n[axis]` 46 (same code); the normal copied before the bounds 70; the corner helper's x and y read into named reals first 137
+// (971 bytes); the inverse zeroed before the edge test with no else 108 (975 bytes). All restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
