@@ -147,6 +147,11 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // on cache_index 141 (518 bytes, aligned 24), with only the initialize test on it 85; `initialize = result
 // != NONE;` 116 (495); the walk as a forceinline helper writing the best index through a pointer 85 (same
 // code as the 85 form), returning it 108.
+// Round 101 (lane 16, fast with 0x3dd10): ours returns the constant on the walk's NONE path (`or eax, esi`, ESI known -1); retail
+// returns the variable (`mov eax, esi`) from a second epilogue after the main one. The early return returning cache_index 77,
+// `long result = NONE;` 77, `result = cache_index = record_pool_allocate(...)` 77 (all same code); one early return after the
+// if/else in place of the `if (result != NONE)` block 152 (497 bytes); the early return as `goto done` to the only return 85
+// (504 bytes, the two NONE tests merge).
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
