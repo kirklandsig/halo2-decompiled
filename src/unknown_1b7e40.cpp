@@ -278,6 +278,10 @@ bool function_25d9b0(long prop_index);
 // M400: Original velocity/iterator defaults via aggregates or CRT, at original phases/entry,
 // separately/together: 95/90/163/211/231/187/187/230. NOT kept: all regress;
 // original twelve-byte workspace producers, busy test and all exits restored.
+// MiniMax E (11-10): no new form, no lower score (49); our build still turns the busy call's result into a mask (neg al; sbb eax,eax; not eax; and eax,esi) where retail tests it and branches to its own epilogue that returns the priority in AX, and our shared "return 0" exit still sits after the fallback block where retail's sits before it, so the body stays six bytes longer (557 against 551) (the inverted test and the busy test folded into the chain with the negated call both score 65, and 61 permuter tries found nothing lower).
+// MiniMax E (11-10): no new form, no lower score: the sequence matches retail's up to the last block, and
+// what is left is its layout and the form of the final choice, which is a mask in our build and a
+// branch to an epilogue of its own in retail, so our body is six bytes longer.
 // MiniMax E (11-09): no new form, no lower score (49); the instruction sequence matches retail's up to the
 // last block, and what is left is its layout and the form of the final choice: retail tests the 0x25d9b0 result
 // and branches to an epilogue of its own that returns the priority in AX (pop edi; mov ax,si), where our build
@@ -534,6 +538,10 @@ evaluate:
 // 88/88/92/92 in both (earlier single-result lowering, confirmations only).
 // Actual status/prop-index eight-byte homes: status signed/unsigned 83/83, index
 // signed/unsigned 92/92, four joint domains 106 each. Original body restored.
+// MiniMax E (11-10): no new form, no lower score (73); the length (264) agrees, but our build saves esi and edi in the prologue before the seat's count test and still expands the call to 0x25d740, whose inline-ness is set in src/unknown_25d690.cpp.
+// MiniMax E (11-10): no new form, no lower score: our build saves esi and edi in the prologue and
+// tests the seat's count after the saves where retail tests it before any save, and retail calls
+// 0x25d740 out of line where our build inlines it; the inline-ness is set in another file.
 // MiniMax E (11-09): no new form, no lower score (73); our build saves esi and edi in the prologue and tests the
 // seat's count after the saves, while retail tests it before any save and keeps esi as a scratch register (it
 // pushes esi only after the count check and does not push edi at the top), so every instruction after the

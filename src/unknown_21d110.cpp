@@ -313,6 +313,16 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 struct s_looping_detail_request;
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
 
+// MiniMax E (11-10): score 166 (was 181): the effect path starts the sound through the sound
+// module's request entry and the fallback path through this file's start helper, so the start and
+// the availability checks are inlined into the effect path as retail has them; retail still takes
+// the state pointer in EAX, which needs the callers in another file to follow.
+// MiniMax E (11-10): no new form, no lower score: retail takes the first argument in EAX and keeps it
+// in EBX with a four-byte frame, while ours reserves eight bytes and pushes ESI and EDI, so the
+// prologue and every later use of the two arguments differ; the request convention is fixed by the
+// eight matched callers in other lanes' files.
+// not kept (coordinator, 11-10): the swapped start calls (166) unmatch 9 functions in
+// 189010.cpp/189a50.cpp at link time (batch 250 gate 1); main's order restored.
 // score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // this round: no new form and no lower score; retail still takes the first

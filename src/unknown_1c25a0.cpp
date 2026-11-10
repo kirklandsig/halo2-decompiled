@@ -764,14 +764,6 @@ PRIVATE inline char model_permutation_region_get(s_model_region_view const *regi
 	return permutation == NONE ? NONE : region->permutations[permutation].region;
 }
 
-// score 6 (was 64): only the two loaded bytes swap registers: retail loads the
-// variant from [edi] into al and the current one into cl, ours the other way round.
-// The loop strength-reduces to retail's shape once both arrays are indexed by i;
-// whichever byte is read second becomes the edi base. Tried: the variants++
-// pointer with an offset local (64, the old form), variant read first (83, the
-// variants argument moves to the stack), variants++ with current[i] (91), a count
-// local (7), the NONE tests in the other order (87), model_permutation_region_get
-// (65), variants[current - variants + i] (83).
 // @retail 0x1c54b0
 void function_1c54b0(char const *variants, long object_index)
 {
@@ -788,17 +780,15 @@ void function_1c54b0(char const *variants, long object_index)
 		for (i = 0; i < model->region_count; i++)
 		{
 			s_model_region_view const *region = &model->regions[i];
-			char current_variant = current[i];
-			char variant = variants[i];
 
-			if (current_variant == variant)
+			if (variants[i] == current[i])
 				continue;
-			if (variant == NONE || current_variant == NONE)
+			if (variants[i] == NONE || current[i] == NONE)
 			{
-				if (region->permutations[variant == NONE ? current_variant : variant].region == NONE)
+				if (region->permutations[variants[i] == NONE ? current[i] : variants[i]].region == NONE)
 					continue;
 			}
-			else if (region->permutations[current_variant].region == region->permutations[variant].region)
+			else if (region->permutations[variants[i]].region == region->permutations[current[i]].region)
 				continue;
 			function_1c3770(object_index, 0);
 			break;

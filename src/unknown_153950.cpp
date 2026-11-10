@@ -556,6 +556,8 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // 23/13/15/21/31/21/27; both planar helpers with the vector setter 27. NOT kept:
 // no byte equality or gain. Original body and includes restored; held rotation helper
 // untouched. Native j/k input-load and sum ownership remain.
+// MiniMax R (11-10): no new form, no lower score (13): the rotation's j and k rows still differ from retail's,
+// and the shared rotate helper in the other file decides them.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {
@@ -724,6 +726,10 @@ struct s_player_axes_153d10
 // in the player state and a named 0x8c vector in the speed slot (globals.h), the cross and slot stores through them
 // without the axes view 4 (this product right, the k row's forward.i x up.j and the j row's forward.k x up.i flipped).
 // Untried on that named-field form: the axis pointers dropped or declared after the cross.
+// Round 145 (m3 lane 7, plain): a compile-only build differs from the LTCG build in products 1 and 5 together, so
+// its screens are no model here. The i and j rows read partly through forward/up (the closest form of a compile-only
+// screen) 14; mixed reads with every product swapped 25; this product's up.k through the up pointer 16 (the
+// up.k-against-forward.j product flips with it); its forward.i through the forward pointer 2 (same code); both 16.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

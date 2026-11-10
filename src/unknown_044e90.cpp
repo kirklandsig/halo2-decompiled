@@ -12,13 +12,20 @@ struct s_visibility_bound_record
     byte padding[3];
 };
 
-// score 443 (was 476; plain, 1760 B): the releases through the existing release_visibility_list (moved from
+// score 443 (was 443): earlier 443 was 476 (plain, 1760 B); the releases through the existing release_visibility_list (moved from
+// score 443 (was 443; 476 before; plain, 1760 B): the releases through the existing release_visibility_list (moved from
 // unknown_044720.cpp to unknown_044e90.h; retail's `test; js`), counts and capacities as chained assignments, and the tag
 // table in a local read at entry (retail's ESI). Left: the entry in EDI (retail EBX via `lea`), the flags read ahead of
 // the tag test (retail in each arm), the parts calls' pushes hoisted (retail sets up each arm), register rotations.
+// Round 147 (m3 lane 8, fast, agreeing with the full build at 443): retail's part centre is 0x142570's body inlined (sums
+// up*z + left*y + forward*x + position, ours forward first), so BLOCKED-BY 0x142570 (src/unknown_141590.cpp is /Ob1 and
+// was on this round's avoid list). The 0x142570 call for the centre 645 (1544 B, not inlined); the centre rows in
+// 0x142570's order, written out (diagnostic) 440; 0x1428b0 is already inlined here: a per-file `__forceinline`
+// redeclaration 443, `inline` on its definition 443 (same code), `__forceinline` there (diagnostic) 443 with 0x17e670
+// 429 -> 1131 (retail calls it there).
 // Earlier (476, was 406; fast, 1700 B, aligned ratio 0.675 -> 0.727): the plane transform is a call to function_1428b0, retail's inlined
 // MiniMax I (11-10): entry flags read in each branch and the tag table read once at the top, 475 each; a per-file inline threshold changes nothing, and retail keeps the scaled tag index in EAX (`movsx eax,[ebp+8]; shl eax,5; lea ebx,[eax+0x4ba138]`) where our build computes it in EBX with `add ebx,imm`, so the remaining head difference is the inline of function_1428b0, which lives in another file.
-// score 476 (was 406; fast, 1700 B, aligned ratio 0.675 -> 0.727): the plane transform is a call to function_1428b0, retail's inlined
+// Earlier score line: 476 (was 406; fast, 1700 B, aligned ratio 0.675 -> 0.727): the plane transform is a call to function_1428b0, retail's inlined
 // body, which also stores 0 into the distance for a zero scale (behaviour fix, b2L walk 11-06). Entry/table and stack homes remain.
 // Earlier: frame/list strides and entry/table/plane homes differed.
 // Earlier: Frame 0x7494 versus 0x74a4; list strides, entry/table and plane homes differ.
@@ -351,6 +358,12 @@ struct s_visibility_bound_record
 // the chains in retail's store order (counts fourth = third = first = second, capacities fourth = third) 443 (retail's
 // count and capacity stores exactly; 245/245, 134/134), not kept (no gain); on the kept form a state local for the views
 // read and the active test 463, a structure local for the else arm's three reads 443, both 468.
+// Round 228 (m3 lane 3, fast with 0x44720, 0x458d0, 0x45a80, 0x45560, all still matched; aligned counts
+// exact/stack-masked/register-masked in brackets, base 443 [336/298/148]): the tag table local declared after the
+// flags 443; `parts` declared const 443; the doubled part count written `count * 2` 443; the plane copy declared,
+// then assigned 443 (same code each); the views and view-range pointers computed ahead of the tag test 452 (1763 B)
+// [336/313/147]. Re-measured: the flags read in each arm 465 [367/296/138]; the six-plane `do`/`while` as a plain
+// `for` 2639 (3504 B, fully unrolled; retail keeps it rolled). All restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

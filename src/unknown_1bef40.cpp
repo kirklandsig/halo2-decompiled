@@ -106,6 +106,9 @@ long function_1469f0(real seconds);
 // Native field view and all scope forms restored; both remaining load regions still differ.
 // Early reference predicate/default-first/wide-result/presence predicate 109/108/111/109;
 // complete current/both reference values 100/104; native word equality logical/bitwise 222/130.
+// MiniMax E (11-10): no new form, no lower score: the slot's reference is still loaded into edx after
+// the actor's index arithmetic where retail loads it into ecx before it, and the inlined action
+// lookup's own order comes from the macro's order in another file, which this lane may not edit.
 // MiniMax E (11-09): no new form, no lower score (13); the barrier decides where the slot's reference load
 // sits: with the barrier before the compare the load sinks to the compare and the global stays folded in
 // it, with the barrier moved away the global is materialised into a register instead (94 at the top of
