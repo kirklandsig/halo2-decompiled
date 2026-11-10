@@ -49,6 +49,13 @@ static __forceinline long floor_to_long_inline(real value)
 	}
 }
 
+// MiniMax S (11-09): no new form, no lower score (10); the six orders of the first word's OR terms are
+// canonicalised by the compiler into one schedule, so the order cannot be steered from the source; the
+// fifteen kind-word spellings tried this round (the shift on the call's result, on a long local, a
+// multiplication by 0x20000000, a two-use temporary, a fresh expression) all keep the copy-then-shift
+// schedule and the score of 10, and the pool argument copied from a local keeps the copy inside the
+// branch; reading the pool's global a second time before the clear hoists the copy like retail and
+// scores 7, but that reads a global twice and was not kept.
 // MiniMax D (11-08): no new form, no lower score (10); retail ORs the first word's terms as (category | flags) | entry
 // bits where ours does (category | entry bits) | flags, retail shifts the kind in the call result's register and then
 // copies it (`shl eax, 0x1d; mov esi, eax`) where ours copies first and shifts in ESI, and retail copies the pool
@@ -275,6 +282,17 @@ static __forceinline long floor_to_long_inline(real value)
 // seven subsets then reversed initial field stores: 14/14/10/79/83/83/79/14.
 // NOT kept: no equality; the real declaration does not recover native OR/shift/pool
 // scheduling. Original record declaration, packed expressions and body restored.
+// MiniMax D (11-09): no new form, no lower score: MSVC canonicalises the order of the first word's
+// three OR terms, so re-writing them in retail's order ((category|flags)|unknown00) gives
+// byte-identical code and the score stays 10; the `long kind_word` spelling, with its extra
+// `sar eax, 0xc`, scores 11, and the kind's shift still comes after the copy to esi where retail
+// shifts before it.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 10 (1033 bytes against retail's 1033); the whole of the difference is still the first word's three-address OR against our one-expression OR, and the pool's `mov edx, esi` above the `jbe`.
+// MiniMax R (11-09): no new form, no lower score (10): the two loads that feed the record's OR chain
+// come in the other order here - the entry's own word and the global's mask - while retail loads the
+// global first; the OR chain itself is canonicalized by MSVC, so reordering the three terms of the
+// store, naming the kept bits or splitting the word's or into an assignment all give byte-identical
+// code and the same score, and the low word built in two steps was measured at 10 as well.
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, short instance, dword flags,
     long tag, dword key, long category, long material, byte *object, short mask, byte mode,
