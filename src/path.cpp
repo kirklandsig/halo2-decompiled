@@ -368,12 +368,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// score 286 (was 286): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
 // MiniMax D (11-08): no new form, no lower score (286); our frame is 0xe8 against retail's 0xe4, and in the scan
 // retail keeps the link index in a register (ECX) and multiplies it by 0x44 while ours reloads it from a stack slot
 // each time, so the two sides' frame slots sit four bytes apart; the first loop's block count and the scan's flags
 // still differ.
 // MiniMax R (11-06): forms tried, none lower (286; the permuter's best was 281 in the full image, below the eight-point gate and using a pointer to a local); the frame is 0xe8 here and 0xe4 in retail, and every frame slot differs between the two sides.
-// score 286 (was 286): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
 // M3 lane 2 r47: the projection through the existing dot3f(&offset, &edge_vector) 286 plain (kept, 1389 bytes: retail's k, j, i
 // sum order; written out ours summed i first), dot3f(&edge_vector, &offset) 286. On 286 (fast): short link count 359 (1375);
 // the node type named once 345 (1400); count zeroed after the init loop 359 (1391); `special` false then set by an if 287
@@ -718,6 +718,16 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // returns 321; both with the surface test as a second inline predicate 130/337; `edge_index != NONE &&` ahead of the
 // range test 182 (1397 bytes), as `if (edge_index == NONE) continue;` 182; `if (node_index == NONE) break;` at the
 // traversal's end 2 (same code). NOT kept: none matches and the flag form is match-only; body below unchanged.
+// M3 lane 14 r79 (fast; 0x270930 kept; both builds end in `ret 0x24` here): lane 11 r71's flag form rebuilt (usable/special
+// set by ifs, short link count, MIN clamp, nested conversions, per-arm distance) 2 again (`mov edx, [esp + 0x10]` and
+// `mov ebp, [esp + 0x104]` at the scan's join in the other order). On that 2: a two-step bool set by an if 62 (arms laid out
+// again); a first-step bool set by an if 2; the traversal as `for (; node_index != NONE; node_index = node->parent)` 2; the
+// edge-index record as a separate `if (previous_index != NONE && ...)` after the point copy 2; margin computed inside the scan
+// loop 49 (not hoisted); re-measured on this base: valid/far flags 2, one flag for the link test and special 2. Diagnostics
+// (removed): a neutral `if` with a body at the end of the traversal loop flips the pair to retail's order in the same empty
+// join block (210 with its own lines); at the end of the scan body it takes both reloads into its block in retail's order (38);
+// inside the edge block it leaves them (63); a plain copy of `steps` for the scan or for the traversal 2 (propagated away).
+// So the order follows the traversal loop's block count at allocation: retail has one more block there that is gone afterwards.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

@@ -223,8 +223,8 @@ public:
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
-// MiniMax E (11-09): no new form, no lower score (334).
 // score 334 (was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
+// MiniMax E (11-09): no new form, no lower score (334).
 // gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
 // Earlier first line: score 356 (was 356): frame 0xb0, 1643 bytes against 1652. Left: retail saves EBP at entry and
 // shares one epilogue (ours saves it after the early exits); retail keeps the blend in XMM2-4
@@ -554,6 +554,14 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // gate as a file-local inline helper returning its `result`, byte read / bit-field read 351/351; the flag as
 // `index != NONE && bit` 406; the flag set in both arms of the index test 411. Retail's `add eax, edx` then
 // `mov dl, [eax + 2]` and the +0x1b home (under the definition pointer at +0x1c) are still open.
+// M3 lane 14 r79 (fast with 0x247fd0/0x248cc0, both kept): only the two effect-record lookups fold base+index here
+// (`[eax + edx + 2]` for the flag, `lea [ecx + eax + 0x30]` for the velocity); retail computes both with a separate
+// `add eax, edx`. The velocity as a default `g_4687a4` set to `&effect->velocity` from a named effect record under
+// `if (local_0 != NONE)` 348 (frame 0xb4; the lea still folds).
+// Retail's matched 0x249170 builds the same `index != NONE ? &record->field : default` pointer from the same pool with
+// a folded `lea [eax + ecx + 0x74]`, so retail's split `add eax, edx; add eax, 0x30` here is this function's source, not
+// the pool or the flags: a boundary between the record pointer and the field offset that a same-file inline getter
+// does not keep (listed above, 356). Retail's 0x18cbc0 folds the same velocity lookup too (`lea [eax + edx + 0x30]`).
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
