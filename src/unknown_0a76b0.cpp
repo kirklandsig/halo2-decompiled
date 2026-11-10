@@ -280,7 +280,13 @@ void function_e6a20(long unit_index, long name, bool active, bool keep)
 }
 
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name);
-PRIVATE short *function_e70b0(short *state, long unit_index);
+/* a unit action state, returned by value through the caller's temporary */
+struct s_unit_action_state
+{
+	short value;
+	s_unit_action_state(short state) : value(state) {}
+};
+PRIVATE s_unit_action_state function_e70b0(long unit_index);
 
 /* when an animation of a unit ends: the action it ends, and the state and
    action animations that follow */
@@ -341,9 +347,7 @@ void function_e6b00(long unit_index, long name, long *state_name, long *action_n
 			break;
 		case 0x400004a:
 		{
-			short count;
-
-			if (*function_e70b0(&count, unit_index) != 0)
+			if (function_e70b0(unit_index).value != 0)
 			{
 				if (TEST_FIELD_BIT((actions->active[1] >> 8) & 1))
 				{
@@ -509,10 +513,9 @@ bool function_e7020(long unit_index, bool *alternate, long name)
 /* the unit's action state (its actions' +0x36): stores it and returns where
    it went, so callers test it through the result */
 // @retail 0xe70b0
-PRIVATE short *function_e70b0(short *state, long unit_index)
+PRIVATE s_unit_action_state function_e70b0(long unit_index)
 {
-	*state = UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index))->unknown36;
-	return state;
+	return s_unit_action_state(UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index))->unknown36);
 }
 
 /* readies the weapon in a unit's hand (the second hand when it's dual

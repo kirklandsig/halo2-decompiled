@@ -59,7 +59,13 @@ void *function_1e4d10(long actor_index);
 void function_1f86a0(long index);
 
 short function_2684f0(s_actor_view *actor);
-short *function_e70b0(short *value, long unit_index);
+/* a unit action state, returned by value through the caller's temporary */
+struct s_unit_action_state
+{
+	short value;
+	s_unit_action_state(short state) : value(state) {}
+};
+s_unit_action_state function_e70b0(long unit_index);
 long function_1469f0(real seconds);
 
 #pragma intrinsic(_ReadWriteBarrier)
@@ -113,8 +119,7 @@ short __stdcall function_1bf0f0(long actor_index, s_slot *slot, bool active)
 	}
 	else if (actor->unknown504 == 2)
 	{
-		short action;
-		if (*function_e70b0(&action, actor->unknown018) == 5)
+		if (function_e70b0(actor->unknown018).value == 5)
 		{
 			if (state->unknown06 > 0)
 				state->unknown06--;

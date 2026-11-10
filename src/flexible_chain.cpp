@@ -538,6 +538,12 @@ void __stdcall function_1160c0(real dt)
 // P394: Actual terminal-segment decision before reciprocal/node acquisition, terminal/interior
 // bool/byte/short/long results: 171/171/171/171/171/171/171/171. NOT kept: no byte equality; original
 // direct selection and complete body restored. Segment EDX and mirrored scalar/vector homes remain.
+// M3 lane 16 r97 (fast, 0x116750 matched each time; body restored). Retail's homes from low to high: length +0x10,
+// segment (later the sine) +0x14, axis +0x18, rest offset +0x50, previous +0x5c; ours: axis +0x10, segment +0x1c,
+// length +0x20, previous +0x50, rest offset +0x5c. Declaration placement does not move them: `predicted, previous`
+// order 171; the rest offset declared bare at the loop top 171; length and axis bare at the loop top 171; length,
+// axis and offset bare ahead of previous in the outer block 171; offset, previous/predicted, axis, length in the
+// outer block 171 (all five the same code).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

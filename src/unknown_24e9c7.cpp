@@ -403,6 +403,12 @@ struct s_24e9c7_bounds
 // N396: Signed eight-byte selected ordinal/pixel-height/half-width storage, seven subsets
 // then full bitmap-handle graph: 220/125/220/148/235/148/235/238. NOT kept: no native narrow-domain
 // equality or gain; original body restored, early across spill and eight-byte-high scalar homes remain.
+// M3 lane 16 r97 (fast, 0x24e59f matched each time; body restored): plain two-real arrays in place of the point
+// locals, each with `size * (0.0f - forward_j)`: side set to the across products and scaled in place 139 (742 bytes);
+// across an array with side a point 139 (742); side and back both arrays 139 (742); the side array with forward_i
+// named for the across product and the upper x 141 (741); across and side both arrays 139 (742). The sprite's bounds
+// declared as a four-member record and copied from its address 125 (same code: the `mov eax / lea esi` pair of
+// retail's bounds copy stays `mov esi / add esi`). An array homes like a point, below the scalars.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
