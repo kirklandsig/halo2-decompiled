@@ -201,6 +201,8 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// score 32 (was 32): frame 0x10 and the prediction prefix agree; first difference at +0x65: the velocity stores
+// and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
 // MiniMax D (11-09): no new form, no lower score (32); the permuter run was killed with no candidate.
 // MiniMax R (11-09): the squares written out by hand in the three orders give 29 with the same code, and the store order whose
 // operations match retail's still shuffles the registers against it, so the difference stays inside the inlined length helper.
@@ -228,8 +230,6 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // the ticks through the existing scaled_difference3f (the same arithmetic as the hand-written chains): 32, with
 // the tick conversion in XMM3 as retail's. Not kept: the deltas reordered to k, i, j for 30 (an order picked by
 // score; i, j, k with the helpers 79).
-// score 32 (was 32): frame 0x10 and the prediction prefix agree; first difference at +0x65: the velocity stores
-// and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
 // Earlier: the limit test is written the other way round, so the comparison matches
 // retail's operand order and its branch, but the scheduler computes the components i, j, k where
 // retail does j, i, k, so the tick conversion takes xmm4 where retail reuses xmm3, the deltas land
@@ -619,6 +619,11 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // (first +0x2f); that with the deltas through scaled_difference3f at 1.0f 82, with deltas i, j, k and the existing in-place scale helper plus
 // vector3f_add for the correction 77, with both helpers and the 1.0f delta 80; the in-place scale helper and vector3f_add alone 57 (369 bytes).
 // All restored.
+// Round 165 (m3 lane 6, fast with 0x1fc660): the output rows written j, i, k 32 (masked 13 -> 18) and k, j, i 32 (masked
+// 21); the correction added through vector3f_add(&state->velocity, &correction, ...) 57 (369 bytes, listed) and with the
+// operands swapped 57 (same code); the delta scaled straight into the output, then `+= state->velocity` per component
+// 101 (384 bytes); the scale's divisor through the rate local 82 (372 bytes). Retail's deltas end in XMM4/XMM2/XMM3
+// (i/j/k) where ours end in XMM4/XMM3/XMM2: the j and k homes are swapped.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

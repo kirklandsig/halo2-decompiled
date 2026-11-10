@@ -156,9 +156,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
+// score 866 (was 866): frame layout and register homes remain (earlier starts 919 and 886 below).
 // MiniMax E (11-05): no new form, no lower score; the entry zero, the target, primary and query-array homes
 // and the choice carriers are as the earlier rounds left them.
-// score 866 (s1F walk 11-06): walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// s1F walk (11-06), at 866: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
 // counts as dwords (0x18aeef, 0x18af10, 0x18af84, 0x18af81); the `short` copies here narrow them (no observable difference:
 // counts <= 64). As `long` it scores 942, so it is not kept without a match. Frame 0x4e0 agrees; on the long form the choice count
 // and first-loop index stay in memory (retail: ESI/EDI), 3297 bytes (retail 3327). s1F also tried, on that base: grouping
@@ -384,6 +385,19 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // M402: Native dword query/choice counts and duplicate-failure-first search,
 // direct count/repeated flags/repeated tag subsets 0..7: 966/966/966/966/966/966/965/965.
 // NOT kept: earlier entry mismatch and 3301/3327 extent; original counters/search/body restored.
+// Round 165 (m3 lane 6, fast): on the listed nested-if first loop (924 at 3327 bytes: retail's ESI zero register):
+// `s_loop_path_choice *choice = &choices[choice_count++]` with every store through it 966 (3268 bytes); the query count
+// used directly as the bound 928; the duplicate search as a `for` with `duplicate = true; break;` 953 (3287 bytes); the
+// 1.0f defaults as three statements 924 (same code); diagnostic only, the existing list grouped with its count in one
+// object 918 (masked 528). Names and declaration order of the four query arrays re-measured 866 (same code: listed).
+// On this body: the choice distance's ternary as if/else 865 (3333 bytes; on the nested-if loop 919); with it, the
+// detail tag as `long detail = NONE; if (primary != NONE) detail = ...;` 863 (3332 bytes; three points, under the
+// keep bar, restored: a lead). On that 863 form: the second scan's ternaries as if/else 941 (3349 bytes); `muted` as one
+// value expression 880; the gain choice through a named near gain 863 (same code); `audible` cleared then set by an
+// `if` 904; the fraction's outer ternary as if/else 863 (same code); the override gain computed once above its loop 980
+// (3396 bytes); the final listener test nested 863 (same code); the fade time named with an `if` in the fade scan 864
+// (3334 bytes, aligned 1101 -> 897: the frame shifts by one slot), in the target loop 889 (the listed shared step),
+// both 891.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

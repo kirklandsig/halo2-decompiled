@@ -1154,6 +1154,8 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
+// score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
+// checksum register and header-validation joins remain.
 // MiniMax D (11-09): no new form, no lower score (33); the query-size and write-count homes are still exchanged (ours size at [esp + 0x28], write count at [esp + 0x24], retail the other way round) and the write call still builds its flags zero in EAX where retail builds it in ECX with the handle already in EAX.
 // MiniMax R (11-09): the two out parameters sit in each other's homes, the size at [esp + 0x28] where retail keeps
 // it at [esp + 0x24] and the bytes written the other way round; declaring the bytes written local beside, before
@@ -1167,8 +1169,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // compares against an immediate 1 where retail holds it in ESI.
 // MiniMax h (11-05): the query-size and write-count stack homes are exchanged against retail (retail size@0x24, write count@0x28, ours the other way round); moving either between scopes, changing its type and reordering the two declarations all leave the homes unchanged (33), zero-initialising the write count at its declaration gives 85, and the permuter's best over 300 s is 33.
 // MiniMax H (11-04): no new form, no lower score; our expected-size and query-size locals sit four bytes above retail's in the frame, which moves every later access.
-// score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
-// checksum register and header-validation joins remain. Earlier diagnosis before native handles:
+// Earlier diagnosis before native handles:
 // the read-call value transport differed. The retained API and handle prefix now agree.
 // frame 0x1144 and the entry prefix agree; size/count homes, write setup,
 // checksum register and write/header validity joins remain.
@@ -1580,6 +1581,13 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // Round 100 (m3 lane 12, fast): the slot range as `index > 0 && index < 2` 104 (932 bytes); the write count typed long 33 (same code); the
 // remove-later flag cleared before its call with `resized` declared above it 35; the checksum as `!(a != b)` 33 (same code); the size test as
 // `expected > size || expected < size` 171 (942 bytes); the open test through `g_557c90[index].handle` 33 (same code). All restored.
+// Round 165 (m3 lane 6, fast): round 53's 7 form rebuilt again 7 (aligned 6, masked 2: the write's handle loaded after
+// the flags zero, the checksum compare in EDX), its write-handle local 114 at 917 (only the close argument copy and the
+// checksum register left). New on the 7 form: one handle copy declared before `if (resized)` and passed to both the write
+// and the close 127 (915 bytes: the copy stays in ESI); the close test nested under `if (!written)` 7; the wait helper
+// taking the flag by reference 7 (both the same code); the handle as a reference to the element instead of a pointer
+// (`handle.handle`, `handle` passed by value) 7 (same code); `valid` declared at the loop top 7 (same code); a 1200 s
+// permuter run (146 tries) none below 7.
 // @retail 0x213970
 void function_213970(void)
 {
