@@ -70,7 +70,7 @@ bool function_1b6070(long index, short unknown0, short unknown2);
 bool function_262890(long actor_index, s_reference reference);
 void *function_272a00(long actor_index);
 void *function_1e5240(long actor_index);
-short function_267a80(real *distance, point3f const *point, vector3f const *direction, point3f const *position, vector3f *unknown);
+short function_267a80(point3f const *point, vector3f const *direction, point3f const *position, real *distance, vector3f *unknown);
 void function_1b0710(long object_index, long actor_index, real *distance_squared, real *maximum_distance_squared);
 
 /* the squads (g_51e9d8, 0x98 bytes): the zone they hold and their leader */
@@ -1218,7 +1218,7 @@ void __stdcall function_25f290(
 
 				if (type == 0 || type == 1)
 				{
-					short result = function_267a80(&distance, &context->lines[j].point, &context->lines[j].direction, point, 0);
+					short result = function_267a80(&context->lines[j].point, &context->lines[j].direction, point, &distance, 0);
 
 					if (nearest > distance)
 					{
@@ -1241,7 +1241,7 @@ void __stdcall function_25f290(
 
 					if (result == 0 && context->unknown55)
 					{
-						result = function_267a80(NULL, &context->lines[j].point, &position->unknown40, point, 0);
+						result = function_267a80(&context->lines[j].point, &position->unknown40, point, NULL, 0);
 						if (moving <= result)
 						{
 							moving = result;

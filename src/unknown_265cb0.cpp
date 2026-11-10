@@ -1186,8 +1186,11 @@ void function_267700(long actor_index, s_prop_datum *node, s_type_76cf92 *prop, 
 		view->unknown60 = value;
 }
 
+// Parameter order (point, direction, position, distance, unknown) is retail's: the callers' argument
+// setup in 0x267c50 sets the NULL distance (ecx) before the address leas only with distance fourth,
+// and with it 0x267c50 matches while this function still matches (found by MiniMax S and E, 11-10).
 // @retail 0x267a80
-short function_267a80(real *distance, point3f const *point, vector3f const *direction, point3f const *position, vector3f *unknown)
+short function_267a80(point3f const *point, vector3f const *direction, point3f const *position, real *distance, vector3f *unknown)
 {
 	long result = 0;
 	vector3f *offset = (vector3f *)unknown;
@@ -1582,8 +1585,8 @@ void function_267c50(long actor_index)
 					{
 						bool active = false;
 						vector3f offset = {0.0f, 0.0f, 0.0f};
-						short proximity = function_267a80(NULL, &state->position, &direction,
-							(point3f *)(data + 0x238), &offset);
+						short proximity = function_267a80(&state->position, &direction,
+							(point3f *)(data + 0x238), NULL, &offset);
 						if (proximity >= 1)
 						{
 							*(bool *)(data + 0x3de) = true;
@@ -1613,7 +1616,7 @@ void function_267c50(long actor_index)
 									ahead.x = movement.i * 0.4f + *(real *)(data + 0x238);
 									ahead.y = movement.j * 0.4f + *(real *)(data + 0x23c);
 									ahead.z = movement.k * 0.4f + *(real *)(data + 0x240);
-									short projected = function_267a80(NULL, &state->position, &direction, &ahead, 0);
+									short projected = function_267a80(&state->position, &direction, &ahead, NULL, 0);
 									if ((projected > proximity ? projected : proximity) >= 1)
 									{
 										real dot = movement.k * offset.k + movement.j * offset.j + movement.i * offset.i;
@@ -1627,7 +1630,7 @@ void function_267c50(long actor_index)
 							}
 						}
 					}
-					if (check_target && function_267a80(NULL, (point3f *)(data + 0x238), &target_direction, &state->position, 0) >= 2)
+					if (check_target && function_267a80((point3f *)(data + 0x238), &target_direction, &state->position, NULL, 0) >= 2)
 						*(bool *)(data + 0x3df) = true;
 				}
 			}
