@@ -352,7 +352,7 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // sample base in EDX and the offset in EDI, ours the other way round); a round trip of the base through a dword
 // folds back to the pointer form at 7, and the index form, a pointer local and an unsigned index leave the offset
 // in the add's destination, at 7 or 8.
-// score 7 (was 7): sample-base and offset registers plus object call setup remain; readonly data
+// score 2 (was 7): sample-base and offset registers plus object call setup remain; readonly data
 // input 7; readonly entry input 7; native count identity 7; output count lifetime 52; existing
 // scale storage lifetime 7; input pointer home names 7; existing scale home names 7; inline matched
 // output callee 7; final object address read 7; split construction around count 9; split

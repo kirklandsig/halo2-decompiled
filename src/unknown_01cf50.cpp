@@ -3607,7 +3607,7 @@ bool function_14600()
 // before the width; the gain is under the keep bar, so the original body stands.
 // score 40 (was 40): this round found no gain - retail computes the width ratio first and keeps it in
 // xmm2; declaring x before y gives 74 and reordering the constants gives 78, so the original order stands.
-// score 40 (was 73): retail loads the width pair first and only then the
+// score 32 (was 73): retail loads the width pair first and only then the
 // height pair, ours loads the height pair first; the conversions of the two
 // differences into EDX and EAX now agree
 // MiniMax D (11-06): no new form, no lower score.
