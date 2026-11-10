@@ -521,6 +521,13 @@ struct s_physical_block_iterator
 // M3 lane 11 r81 (fast): the take test as `better || !have_best` 201 (same code); the walk's overlap conditions swapped 203 (+0xcc);
 // the policy as an if/else-if chain 240 (1178 bytes: cases in line but in source order, case 0 still threaded, aligned 118 -> 109);
 // case 0 as two `better = true` arms 201; default ages written inside the comparison 201. Retail's `sub eax, 0` chain is a switch.
+// m3 lane 3 r227 (fast): our case 0 is jump-threaded into the take test (its true/false edges jump straight to the take
+// and skip blocks), which is what moves cases 0 and 1 past the end; retail materialises the result (`xor al, al; ... mov al, 1`)
+// and tests it at the join. Case 0 as `candidate->time == best.time ? pages < best.pages : time < best.time` 284 (1182 bytes:
+// no threading, cases in place, but `setl`/`setb` values and every frame slot shifted, first difference +0x2f); as `if (time !=
+// best.time) better = time < best.time; else better = pages < best.pages;` 284 (same code); negated (`!(time > best.time ||
+// (time == best.time && pages >= best.pages))`) 222 (1220); the ternary with the second age's mask restored 279; the mask
+// alone 209 (re-measure); `have_best = true` before the record copy 201 (same code).
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
