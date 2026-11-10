@@ -1327,6 +1327,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // 200/208/206/197/204/208/206/204 reduced, control 196, full 153. Original case interiors and late
 // classifier restored; early ESI/late expansion remain. NOT kept: no qualifying exact/native-shape
 // gain; original complete body restored.
+// P400: Connection-first primary priorities CDQSP/CDQPS/CDSQP/CDSPQ/CDPQS/CDPSQ/CQDSP/CQDPS:
+// 207/205/207/205/207/204/202/200 reduced, control 196, full 153. NOT kept:
+// no exact delayed-save/late-handler repair; original classifiers, all case interiors
+// and call tuples restored. Every trial is 456 bytes against native 444.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

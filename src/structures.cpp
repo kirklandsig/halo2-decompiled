@@ -651,6 +651,13 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // surface local) 201; the 0x16e1b0 call moved after the vertex fetches 282 (774 bytes). Body restored.
 // MiniMax E (11-08): no new form, no lower score: our frame's store slots are shifted (we store to esp+0x30 where retail stores to esp+0x34) and we do not push ebx first.
 // MiniMax E (11-09): no new form, no lower score: our frame's store slots are shifted (we store to esp+0x30 where retail stores to esp+0x34) and we do not push ebx first.
+// Round 82 (m3 lane 10, fast, control 172, aligned 99): the type tests as a switch with the instance case
+// second and the NULL definition in a default 217 (728 bytes); the unknown18 clear before the byte result's
+// declaration 172 (same code); the published instance index from the instance-index local 232 (720 bytes,
+// and callers 0xd47d0/0x14af40 lose their match: the convention moves); both reference/surface selections
+// tested on `definition == NULL` 228 (719 bytes); the strip indices indexed from the section at each fetch
+// (no pointer local) 221 (747 bytes).
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 172 (726 bytes against retail's 726); the difference is the frame's shape (our slots sit one word lower than retail's and we do not push ebx first) and the 0x11e800 callee's registers, which are outside this file.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
