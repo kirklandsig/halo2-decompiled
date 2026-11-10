@@ -335,7 +335,7 @@ __forceinline void capsule_triangle_2f4f00(void const *a, void const *b, void co
 				float slope = change.m128_f32[edge];
 				float const inverse = 1.0f / (slope * slope + rise_squared);
 				// Keep the height load before the slope multiplication.
-				float const &height_for_offset = heights[0].m128_f32[3];
+				float const volatile &height_for_offset = heights[0].m128_f32[3];
 				float const offset = height_for_offset * slope - change.m128_f32[3] * heights[0].m128_f32[edge];
 				float const distance_squared = offset * offset * inverse;
 				if (distance_squared < (contact->point(3) + radius) * (contact->point(3) + radius))
