@@ -412,6 +412,12 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // existing setter, indexed for/while, component cursors and array aggregate:
 // 330/330/330/252/255/255/333/206. NOT kept: no native frame/coefficient recovery;
 // original aggregate, input-before-output helper and complete body restored.
+// Round 162 (m3 lane 6, fast with 0x30290, which stays matched; masked = aligned count with registers and stack offsets masked):
+// a one-argument in-place helper on the global with an aggregate copy of the input (`vector3f copy = *v;`), `scale * v->i`
+// under the scale test and coefficient-first rows, on the offset loops or after vector3d_from_points3d offsets 318/318 (1188 bytes,
+// frame 0x2c, masked 125); the same through a camera pointer with separate input and output arguments, called in place, after
+// either offsets 318/318; the scale arm through vector3f_scale 318. All five are the same code: the aggregate copy is made
+// through integer moves into its own frame slots, so the copy has to be three reals.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

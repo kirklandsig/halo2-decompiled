@@ -2167,6 +2167,16 @@ bool function_1e11b0(long actor_index, bool active);
 // word flag publication and full mask 64/65, both lose the two matched callers.
 // NOT kept: no native EBP handle/receiver spill or common loop head; original
 // scalar parameter, every interface, direct condition and complete body restored.
+// Round 162 (m3 lane 6, fast): the 13 form rebuilt (no function-level pragma, squad_get plus a second squad_get in the +0x7e
+// test, the parameter read once through its address at the 0x204d30 call, the forceinline step with the statement pair, stamp
+// before the word flag store, short-view return) 13 at 199 bytes: only the index EBX/next EBP against retail's EBP/EBX. Retail
+// saves EBP (index) and ESI (squad) at entry and EBX (next) and EDI (actor index, 0x203ed0's register argument) only around the
+// loop, and spills the squad into the parameter's own stack slot, as the 13 form does. On it: one lookup, with or without the
+// address read 71/71 (191 B: the squad keeps EBX, the index stays in memory); the plain argument 63 (0x203d70 105, 0x201ea0 24: the
+// index becomes a register argument); diagnostics: the +0x34 store of a constant 68 (203 B, the index leaves its register), the
+// store moved after both calls 16, a fourth index use after the loop 37 (205 B): the index keeps EBX in each. So the index takes
+// EBX whenever it has a register at all, whatever its use count; retail's order fits the loop's values (next, actor, actor
+// index) being given registers ahead of the index.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -3077,6 +3087,12 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // bool/byte/short/long: 50/50/50/50/50/50/50/50. NOT kept: no equality;
 // all one-use outcomes and the complete body restored. First-event EBP reload
 // and displaced actor-loop alignment remain.
+// Round 162 (m3 lane 6, fast; aligned 2 = the reload and the pad it shifts): `(void)&arg_1;` at the top (the matched siblings'
+// form), alone or with `(void)&arg_0;` 50/50; the follow-up as two statements with the task test repeated 50; the task test with an
+// empty then-arm 50; `return` in place of the trigger loop's `break` 50; the trigger half behind an early return 50 (all the same
+// code). Diagnostics on the later index uses: the 0x290e20 argument, the 0x204d30 argument, the last 0x1fb8a0 argument or the last
+// two replaced by a constant 87/49/54/54, and the first follow-up still reloads the index in each: any one later use ends the
+// index's EBP range before the first follow-up, so it is not one particular second-half read.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3572,6 +3588,27 @@ void function_2011f0(long arg_0);
 // P384: Persistent complementary missing-reuse state, byte/char/signed-char/short/word/int/long/dword:
 // 318/318/318/357/357/357/357/357. NOT kept: no exact transport repair; original requests, sticky success,
 // creation/final-return consumers, narrowed inputs and complete body restored. Native input/seat/chain homes remain.
+// Round 162 (m3 lane 6, fast; [aligned]): the 221 recipe rebuilt from lane 1's steps 221 [15]. On it: the row, head, flag declared
+// in that order (retail's three entry stores) 229 [28] (roles swap); a compiled-out `do {} while (false)` around the range test or
+// the whole loop body 221/221, inside the range test's block 292 (1332) [47]; the range test as two nested ifs 221; the entry
+// through squad_placement_entry 221; `short index = arg_2; if (index == NONE)` 264 [24]; the entry pointer or the actor result
+// declared at loop or function scope and assigned where they are now 229 each on the row-first order (same code).
+// Lead, not kept (a NULL test retail lacks): the entry pointer declared ahead of the range test and set in both arms (`if (range)
+// entry = &row->entries[index]; else entry = NULL; if (entry) { ... }`, or the same as a ternary) on the row, head, flag order
+// 237 [8], first difference at +0x1bf: retail's entry stores, row EBX/arg_2 EBP, the row reloaded at the loop top with the entry
+// jumping past it, and the row/seat slots (+0x18/+0x14) all agree. Left on it: the `je` after the entry address, NONE cached in
+// ESI two instructions early for the +0x28 test, and the two loads ahead of the splice loop swapped. The same with the flag
+// declared first 240 [10] (flag store first); with NULL set ahead of the range test 257 [29] (the entry then conflicts with the
+// row and takes arg_2's register); with `__assume(entry != NULL)` in the in-range arm 221 [15] (the test folds early and the
+// reload returns to the block before the latch); with the range test repeated in place of the NULL test 291 (1336). So the row
+// is reloaded on the back edge only when the out-of-range path still carries a definition of the pointer that shares its
+// register when registers are assigned. A per-pass bool in place of the pointer (false by default or in an else arm, `= !flag` at
+// the end of the in-range arm, the creation block under it at loop level) 133/133 [32]: the bool is built with sete, the
+// out-of-range path is threaded before registers are assigned and the reload stays in the block before the latch; a long NONE
+// default behaves the same way, so only a pointer set NULL has moved the reload. One byte pointer per pass that starts as the row
+// and is then set to the entry address 229/229 [28] on the row-first order, 221 [15] flag-first (same code). With the placement index also read in the in-range arm, ahead of the NULL test, 229 [28]
+// (the dereference lets the test fold early). The actor result declared NONE at loop level with its block after the range test, or
+// set NONE in an else arm of the range test, 229/229 (threaded early, same code). The 237 body is in build/r162/201520_237_form.txt.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {
