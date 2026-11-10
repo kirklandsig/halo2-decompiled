@@ -227,6 +227,14 @@ extern real g_4c9798[36];
 // M402: Complete reciprocal/depth-scale/offset result arms, seven subsets, then
 // complete fallback-first reciprocal: 174/174/323/174/323/323/323/323. NOT kept:
 // offset default moves after its branch; original scalar results and whole body restored.
+// Round 82 (m3 lane 10, fast, control 174, aligned 89): `size` renamed `dimension` or `buffer_size`, `mode`
+// renamed `technique`, `extent` renamed `radius` 174 each (identical: retail keeps the clamped size in the
+// lowest slot below the mode, ours the mode lowest, and names move no slot here); `maximum` written as
+// `(real)max_width` at each use 179 (1490 bytes, aligned 86); border stores [13] before [12] 178; the first
+// plane's `d` scaled before its normal 178; the four g_51f3c8 clears before the mode byte store 172 (two
+// points, not kept), with the mode byte after function_1cf50 178, with the clears in reverse order 172. The
+// 0x1ddd0 call now matches retail (width/height in ESI/EDI, 0x1ddd0 matched). Still BLOCKED-BY 0x48e70
+// (machine 1's file): retail spills the clamped size across its calls, which sets the frame slots.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

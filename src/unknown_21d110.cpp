@@ -313,6 +313,8 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 struct s_looping_detail_request;
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
 
+// score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
+// opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // MiniMax b (11-06): no new form, no lower score; retail takes the state pointer in EAX and the tag on
 // the stack and reads the tag late, ours takes the tag in EAX and the state on the stack and reads the
 // tag at the entry, and retail inlines the start sequence (0x126c30, 0x126ec0, 0x126000) at both the
@@ -329,8 +331,6 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // MiniMax A (11-07, run 54): no new form, no lower score (181); retail still takes the state pointer in
 // EAX and the tag on the stack where ours takes the tag in EAX and the state on the stack, and the only
 // form that fixes that moves 0x189fe0's request in another file: still BLOCKED-BY 0x189fe0.
-// score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
-// opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // Round 112: definition/effect declarations swapped, branch-defined effect index, sound result
 // before attachment and at function scope, private output declarations reversed, result after
 // outputs, initialized outputs, and negated rate admission without the redundant NONE assignment
@@ -483,6 +483,12 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // keeps it in EBX with a four-byte frame, while ours reserves eight bytes and pushes ESI and EDI, so
 // the prologue and every later use of the two arguments still differ; the request convention cannot
 // change here without the eight matched callers in other lanes' files.
+// Round 82 (m3 lane 10, fast, 0x189fe0 and its eight callers unchanged in every form): the allocation
+// helper with one exit (fields set under `effect_index != NONE`, no early return) 181; the allocation as
+// `definition->count ? record_pool_allocate(...) : NONE` 181; the definition query held in a named bool
+// 181; the category flag bit through TEST_BIT 181; the sound index stored through a fresh sound_effect_get as
+// 0x21d2c0 does for its scale 193 (468 bytes); (re-measured: the rate test negated without the NONE arm
+// 181). Still BLOCKED-BY 0x189fe0.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {
