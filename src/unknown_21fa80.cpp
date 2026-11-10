@@ -304,11 +304,25 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // DL271: Existing integer-clamp pointer/in-place/returned-pointer/reference outputs
 // 548/548/548/548; real-clamp output protocols 549/549/545/549 (control 545).
 // NOT kept: no equality or gain; original producer ownership, frame and body restored.
+// Lane 5 r164 (plain; aligned/register-masked LCS [369/246] for 544): retail builds the first send flag as
+// `shr; and al,1; neg al; sbb eax,eax; and eax,4` (a select on a bool value), ours folds it to a shift whatever the
+// spelling: `(bool)` on that bit 545, all five input bits as one-bit fields of field_30 declared in the input record 545
+// (same code), flags zeroed then file-local SET_FLAG per bit (the macro five files define) 561 (1916 bytes). The four
+// levels as one 16-byte memcpy 560 (1885 bytes). Mode and direct read before the gain with the voice sends as a case-1-
+// into-case-0 switch 572 (1879 bytes [350/238]). Lead: every flag test in the function (input bits and sends.flags bits)
+// stores its bool to [esp+0xe] (direct's home), written about ten times and read once, and sends.flags is reloaded
+// after each such store, as if that byte were address-taken memory that may alias the send record.
 // Lane 12 r102 (plain; full 544, the fast image 536 with the builds-differently caveat): gain bits read before the
 // stream pointer 555; the sends as retail's fall-through two-case switch on the mode (case 1 into case 0) 542 (1901
 // bytes; the block then has retail's shape); fabsf at all six tests 544; the three send-bit sets through a set helper
 // with a bool parameter 544 (identical) and through one function-scope bool assigned before each test 544 (identical).
 // The 17 x87 rounding stores ours has (retail none) still come from the file's /Op: lead for the user, flags unchanged.
+// m3 lane 7 r146 (fast control 536 at 1906 bytes, full 544; fast is unreliable here, so plain checks decide): `sends.flags` started at 0 and
+// bit 1 set by an if 554 fast; the voice read at its one use (no voice pointer) 525 fast, 544 -> 552 plain; the gain reference dropped
+// (gain_bits cast at both uses) 536 fast (same code); the status local declared in each arm 544 plain (same code); the two-case switch
+// re-measured 562 plain at 1884 bytes [masked 225 against 235], with the voice read at its use 563 plain (1921 bytes). In every form the
+// stream stays in EBP and gain_bits in EBX (retail: EBX and EBP). Retail also inlines exp, sqrt and log10 as x87 code (f2xm1/fscale,
+// fsqrt, fldlg2/fyl2x) where this /Op file calls the CRT, and copies the four levels and the send fields through integer registers.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

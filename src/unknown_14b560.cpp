@@ -885,6 +885,8 @@ bool function_e4050(long object_index);
 // bytes): the 0xe4050 exit storing the unit local, a use after the call 200 (377); 0xe4050 passed the field 171; the
 // walk variable declared first and the unit object looked up through it 82 (433; the frame returns, the unit still
 // EAX); the unit declared at function scope 171. On the kept body: the unit declared at function scope 44 (same code).
+// MiniMax R (11-10): no new form, no lower score (43): the walk's unit and parent still take the opposite
+// registers from retail, and the iterator step in the other file decides that colouring.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -1375,6 +1377,9 @@ static inline s_players_globals *players_globals_14f2e0()
 
 /* gives a player its unit (the unit kept for it, the unit waiting to be
    reused, or a new unit at a starting location) and resets its spawn state */
+// MiniMax R (11-10): no new form, no lower score (46); the sentinel is still materialised with the five-byte
+// `mov eax, 0xffffffff`, the two outputs take the opposite stack slots and their stores the opposite order; the
+// outputs declared in the other order give 48, a named sentinel local and the second output copied from the first 46.
 // MiniMax S (11-09): no new form, no lower score (46); the NONE outputs are still materialised with
 // `mov eax, 0xffffffff` where retail uses `or eax, 0xffffffff`, and the zero/flag store schedule
 // still differs.
@@ -2544,6 +2549,8 @@ static __forceinline long player_round_ticks(real value)
 // MiniMax C (11-09): score 701 (was 701): the frame is still 0x4c against retail's 0x74 (retail keeps
 // two separate request homes and calls 0x151b80 and 0xccd20 out of line, ours has one request home
 // and LTCG expands those calls). Untouched this round.
+// MiniMax R (11-10): no new form, no lower score (701): our link-time inlining still expands the two callees
+// that retail calls, and the frame is 0x4c against retail's 0x74.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3100,6 +3107,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // keeps the iterator's data and index in EBX/EBP and stores only datum and datum index into the iterator loop 2 uses;
 // ours also stores `iterator.data` before loop 1. BLOCKED-BY 0xe4050 stands; the status-block lead shows the globals
 // web also depends on how the status codes are stored.
+// MiniMax R (11-10): no new form, no lower score (193 on the reduced image, 103 on the full one): the two
+// loops' datum and unit still take the opposite registers from retail, and the callee's inline rounding in
+// the other file decides the globals pointer.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

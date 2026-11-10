@@ -1260,6 +1260,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax E (11-10): no new form, no lower score (94).
 // score 94 (was 94; 177 before lane 10 round 69): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
 // MiniMax C (11-09): no new form, no lower score (94).
 // MiniMax H (11-07): no new form, no lower score (94); the fade block still holds the running
@@ -2539,6 +2540,8 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // MiniMax E (11-05): no new form, no lower score; merging the two set-chunk calls into one site with the
 // range and permutation indices in named locals gives 193 (short indices) and 192 (long indices) - our frame
 // drops to 8 against retail's 0xc. Reverted.
+// MiniMax E (11-10): no new form, no lower score (17); the note below already lists the named short and the
+// flags pointer, and both stay as they are.
 // score 17 (was 23): left: the range index is sign-extended (`movsx ebp, ax`, one byte) for
 // 0x219070's long set index, the 0x219070 call runs after the chunk index push, and the
 // delayed start sets flag0 before storing the start time. Earlier: the two set-chunk calls narrow their indices to char
@@ -2763,7 +2766,7 @@ static inline real sound_vector_normalize(vector3f *v)
 /* the doppler shift of a sound for a listener, in cents: from the speeds of
    the listener and the sound toward each other, the speed of sound 111.5
    world units a second, the frequency ratio between 1/8 and 4 */
-// score 92 (was 122): the two speeds through dot3f fix the direction spill (retail keeps j/k in XMM7/6, i on
+// score 92 (was 92; 122 before round 63): the two speeds through dot3f fix the direction spill (retail keeps j/k in XMM7/6, i on
 // the stack); left: the velocity rotation's scale products commute (retail reloads the scale for each) and the
 // rotated components take other XMM registers. Retail inlines 0x142640 here (src/unknown_141590.cpp is /Ob1, so
 // ours never can): with `inline` on 0x142640's declaration and the call in place of the rotation it matches
@@ -2778,6 +2781,10 @@ static inline real sound_vector_normalize(vector3f *v)
 // scalar copies 92 (same code), plus the rotation read through a transform4x3f pointer 83, x/y/z declared last 83,
 // the listener dot's operands swapped 83 (same code), the velocity through a vector pointer 83; vector3f_scale +
 // matrix_transform_vector 103 (frame 0x20).
+// Round 147 (m3 lane 8, fast): a per-file `__forceinline` redeclaration of 0x142640 with the call 262 (374 B: a body
+// in another file stays a call); the scale products as `*=` 92 (same code); the rotation ahead of the direction 132;
+// the listener dot's operands swapped 92 (same code); the velocity copied as one aggregate 137. BLOCKED-BY 0x142640
+// (its file's /Ob1; that file was on this round's avoid list, so `inline` there was not re-measured).
 // @retail 0x12a9d0
 real function_12a9d0(long listener_index, s_sound_position const *position)
 {
@@ -2909,6 +2916,9 @@ static inline short sound_voice_find_available_channel(char type)
 // bytes.
 // MiniMax R (11-06): no new form, no lower score (96).
 // MiniMax D (11-06, run 49): no new form, no lower score (96); retail still keeps the result in al (set at the entry, cleared through bl on the failure path and set again after the commit) with an eight-byte frame, ours keeps it in a stack byte with a twelve-byte frame, and retail's failure block still follows the success path.
+// MiniMax E (11-10): no new form, no lower score (96); the body with two exits and no result variable, the
+// same body with a bool result and the failure path returning false directly were measured (131, 113, 134)
+// and the byte result with the shared exit stays the best.
 // score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
 // through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
 // keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
@@ -3602,6 +3612,18 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // 82; a 45-form grid of increment, entry argument, declaration order and range placement best 6 (range above the mode
 // 53/55, one global entry argument 11/31); the pool global at every use 78 (24 with the range above the mode);
 // sound_index declared in the for init 78; a 600 s permuter run on the 6 form (63 tries) best 6.
+// Round 84 (m3 lane 11, fast): retail has no pool reload at the loop top (the loop-end value in EBP feeds it),
+// which fits the loop top read through the `sounds` local; with that and the range in case 0 (29 re-measured: every body
+// register retail's but the pool in ESI, reloaded before the next-index ternary): sound_index scoped to the for
+// statement 29 (same code); the mode as if/else 29 (same code). Re-measured listed forms on it: the reload embedded in
+// the find's argument 82 (index and pool swap EBX/EBP), the sound pointer taken once before the start test 162 (561
+// bytes), 0x128020's `(s_sound_playback *)sounds->data + index` spelling at the loop top 29 (same code). On the 6 form
+// (the 29 form with the loop-end find through the global; re-measured 6, only the pool load sits between `cmp ebx, -1`
+// and its jne where retail loads it after the ternary's join): the range declared at the arm's top and assigned in
+// case 0 6 (same code); `reason` declared at function scope 6 (same code); the increment as the find through the
+// global into sound_index, then `sounds = g_4e637c`, then the datum (measured only: the name reused for the
+// absolute index) 78; re-measured, the reload embedded in the datum argument 82. Every form that puts the
+// loop-carried pool load after the ternary swaps index and pool between EBX and EBP. Original 24 body restored.
 // @retail 0x1282d0
 void function_1282d0(void)
 {

@@ -480,6 +480,13 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // Round 100 (m3 lane 12, `--fast 0x17d9a0 0x120850 0x22bbca`, 46 as the full check): the plane distance computed after the axis call 65; the side
 // test through `.n[axis]` 46 (same code); the normal copied before the bounds 70; the corner helper's x and y read into named reals first 137
 // (971 bytes); the inverse zeroed before the edge test with no else 108 (975 bytes). All restored.
+// Round 66 (m3 lane 2, `--fast 0x17d9a0 0x120850 0x22bbca`): retail's first corner indexes with the call's raw short (`movsx edx, ax`)
+// and the flag in CL, both still in registers after their stores, and reloads both from the quad for corners 1-3; ours keeps
+// the long axis in ECX, so the flag takes AL. The side test reading matrix->up 47; `axis` and a `positive` local passed to all
+// four corners 241 (923 bytes); the axis local alone 179 (966 bytes); the positive local alone 190 (962 bytes). Diagnostic: VC
+// keeps `up.i * 0.0f`, so the corners are not a (x, y, 0) point through a full transform. The compile-only harness is not
+// faithful here (masked 151 against our own build). The corner lookup through a call to the existing prism_project
+// (src/unknown_245bd0.cpp, used by matched 0x245bd0) 178 plain (976 bytes; `--fast` 330, the reduced image leaves it out). All restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -1134,6 +1141,20 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // ternaries 613 (re-measure of DH383's conditional producers, 614); the axis scaled `inverse * axis.i`, `axis.j * inverse`,
 // `axis.k * inverse` for the component loop 559; the edge side as `long reverse` 646 (3631 B).
 // Retail's offset rotation writes each partial sum to +0x10 and reloads it: a register-pressure spill, not a source form.
+// M3 lane 3 r225 (plain; base 535, aligned [exact, stack-masked, register-masked] [676, 501, 366]; the first ~400 instructions agree
+// once stack offsets and registers are masked, apart from the first loop's index increment and the secondary-count store): the axis
+// scale through vector3f_scale with the named inverse 559 (3631 bytes) [679, 471, 348]; with 1.0f / length written in the call 568
+// (3631) [674, 468, 341]; as three `*=` statements 559 (3631); the three diagonal terms as (1 - square) * cosine + square 535 (same
+// code); `remaining` declared under the flags test and tested before the do-while 534 (retail's store ahead of the jle, one point,
+// not kept). Lead: retail loads 1.0f into xmm0 before the reciprocal and reuses it for the sign, the clamp and every 1 - x of the
+// rotation (ours reloads the constant at each use), and it spills the k * k, j * sine and i * sine products (i * sine through x87),
+// so the rotation block's register pressure differs, not its statement order.
+// m3 lane 12 r106 (plain; fast gives 834 on the unchanged body here): start/end and the selected plane at function
+// scope 535 (same code); face_count declared before secondary_count 535 (retail's store order for the two counts,
+// slots unchanged); the first plane at function scope 535; the selected plane alone 535; start/end alone 535 (all
+// the same frame homes: scope and declaration order do not move a slot in this body).
+// MiniMax D (11-10): no new form, no lower score: the definition pointer, the count and the zeroed word
+// still sit in other frame slots than retail's (0x94, 0x20 and 0x54 against our 0xb4, 0x18 and 0x4c).
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
