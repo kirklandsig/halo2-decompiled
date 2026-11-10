@@ -962,6 +962,11 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // as (position, file); the sum written body first; the helper plain inline; a three-parameter helper adding (start, offset) inside.
 // Retail's sum keeps the body size in its own temporary, as if it were read again after the sum; no form found that keeps it apart.
 // Nothing kept (one-caller helper; the field clamp reads the field beside a local copy).
+// Round 161 (m3 lane 6, fast; 0x2adb10 matched throughout): the total as `sizeof + (header + body)` 34; the result as
+// `!memcmp(...)` 34; the body progress summed offset first 34; the header case as two early `break`s on the failure
+// tests 34; the signature seek and read as nested ifs 34 (all the same code; the first and last re-measure listed forms).
+// New on top: the total as header + sizeof + body 34 (same code); the bool passed straight as XCalculateSignatureBegin's
+// flag (its value is 1) 71.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

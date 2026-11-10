@@ -427,6 +427,10 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 // every difference is one scratch register on from retail (origin before pool data in the prologue, pool before
 // index in the loop, the reload and the sign extension), the round-robin pattern seen in 0x5c720, so the cause is
 // likely one allocation more or less before the prologue's actor block, not any one statement's form.
+// Round 160 (m3 lane 6, fast with 0x1e3b60 and 0x28f890): the actor pool's data as a typed actor array, the actor as
+// array + index 28 (same code); a pool pointer local with the data read at the actor computation 99; the record as a
+// typed perception element 28 (same code); the pool's data read before the NONE test 41 (hoisted to the entry); a named
+// sample pointer for the reset and the call 30.
 // @retail 0x28f8d0
 void function_28f8d0(long arg_0)
 {
