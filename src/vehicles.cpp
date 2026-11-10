@@ -532,11 +532,11 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
-// MiniMax R (11-09): the input rotation before the forward copy with the entry magnitude after the velocity copy is 122 (four points, under the bar) and the permuter's thirty tries found no variant, so the original body is kept at 126.
-// MiniMax R (11-06): no new form, no lower score (126); the frame agrees and only the SSE colouring and x87 operand orders of the note below are left.
 // score 126 (was 126): frame, length and layout now retail's; left: SSE register colouring (the 1.0 constant in
 // xmm2 against retail's xmm3, the normalized forward/heading in other registers), the velocity copy's eax/ecx, two
 // x87 operand orders in the atan2 sums and the reversing compare's operand order (`fxch`, jb).
+// MiniMax R (11-09): the input rotation before the forward copy with the entry magnitude after the velocity copy is 122 (four points, under the bar) and the permuter's thirty tries found no variant, so the original body is kept at 126.
+// MiniMax R (11-06): no new form, no lower score (126); the frame agrees and only the SSE colouring and x87 operand orders of the note below are left.
 // Earlier: frame 0x20 versus 0x28, initial magnitude and vector homes differ.
 // Entry magnitude/direction/shared-normalizer subsets 306/337/324/327/309/339/303
 // restored; early magnitude observation needs a match. Existing turn approach 330.
@@ -680,6 +680,13 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // normalized forward in XMM1/XMM0 where it was computed and multiplies it in place by the blend weight (ours moves
 // it to XMM4/XMM7 and multiplies a copy of the weight), and loads each normalize's y into a register ahead of the
 // divide.
+// Round 180 (m3 lane 4, fast; aligned/masked = difflib counts with addresses / also stack offsets masked, 74/61 at
+// 126; only 23 instructions differ once registers and offsets are masked too): the planar velocity copy with the
+// speed's squares y first re-measured 122 (aligned 70, masked 57); with heading as a planar copy of the local
+// velocity 128, forward as a planar copy of the vehicle's forward 124, both 130; with the reversing test as
+// `fabs(...) >= 1.9198622f` 214 (1145 bytes, masked 55), that with the forward copy 222. Left: the entry magnitude's
+// add order (retail adds i*i + j*j before squaring k, so 1.0 lands in XMM3), each normalize's y loaded ahead of the
+// divide, and the blend rows stored y first. Also: both perpendicular x terms as a unary minus 126 (same code).
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -4800,10 +4807,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 /* the vehicle object type's function values (+0x4c): its boost, brakes,
    ground contact, speeds, steering, engine and wheels; false for a name it
    does not know */
+// score 749 (was 749): Frame 0x18 and retail length agree; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain (was 765 before round 180).
 // MiniMax S (11-10): no new form, no lower score (749); the definition pointer is re-derived from the tag table at each use while retail keeps one copy in a callee-saved register (used at seven of its sites) and re-derives it at nine others; the zero and the result take different SSE registers and the 1.0 is loaded once per site here.
 // MiniMax R (11-09): no new form, no lower score (749); the definition pointer kept in a local unifies the branches and regresses to 1027, and retail's four-push prologue and per-site 1.0 load are not reachable from the source.
 // MiniMax R (11-06): no new form, no lower score (749); the frame and the length agree, and the SSE zero register is xmm4 here and xmm2 in retail.
-// score 749 (was 765): Frame 0x18 and retail length agree; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain.
 // Earlier at 817 (was 864): Frame 0x18 agrees; definition EBP and scalar/SSE allocation differ.
 // v1C statement walk (retail 0xf6d10-0xf78ab, 2026-11-06): every case label, field offset, condition direction, constant,
 // callee and argument order, clamp/forced/active publication and the default return agree with retail; no behaviour
@@ -4946,6 +4953,21 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // paired square+chain, all three and immutable all: 749/749/749/749/749/749/749/749.
 // NOT kept: no gain or native entry-definition/SIMD recovery. Original complete body
 // restored; frame 0x18 agrees, zero/result/unity residence remains.
+// Round 180 (m3 lane 4, fast): LEAD (match-only, not kept). Retail's limit reads at 0x900000e/0xa00000f/0xa00001a/
+// 0xb00001b/0xb000713/0xc000582/0xd00057f/0xe00057a/0xe00057c/0xe00057d/0xe000583/0xf000584/0x10000585/0x1300057e are
+// function_f78e0's own case code expanded in place (its result staged through a parameter home: `fstp [esp+0x2c];
+// mov edx, [esp+0x2c]; ...; push edx; fabs; push ecx`), each re-deriving the definition from the tag table, while
+// the entry definition in EBP serves only the 0x264/0x1f0/0x20c fields. Entry definition from `vehicle` with the
+// limit sites re-looking the vehicle up in place 768 (3014 bytes, the pool goes to EBP); entry definition through
+// a second in-place lookup with the sites through `vehicle` 835 (2897 bytes, aligned 266 -> 143: retail's entry and
+// EBP uses); on that, named limit locals at the four single-limit sites 818 (no staging through memory). With
+// function_f78e0 marked `inline` and called at every limit site 797 (3029 bytes; our inliner expands the first 15
+// sites in source order and keeps the limit-0 sites called, retail expands 15 too, a different set); moving cases
+// 0x10000585/0x1300057e to the top (diagnostic) 723 at 2974 bytes, aligned 374; moving 0xb000587, 0xb000597/0xc0005a5
+// and 0xd000586 after 0x1300057e gives retail's exact nine f78e0 calls: 736 at 3011 bytes, aligned 105 (a case
+// order picked by score: match-only). Left on it: the zero/result SSE numbering (ours xmm3/xmm2, retail xmm2/xmm1),
+// retail's `xorps xmm2, xmm2` after six f78b0 calls, the cross-jumped `fstp [esp]; call` tails (0x900000e into
+// 0xa00000f's tail) and the 0xe000583 flag test materialized as a bool (`setne cl; test cl, cl`).
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5420,7 +5442,7 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    start, thrust toward the speed along the facing (faster diving, with
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
-// score 1087 (was 1095): Frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
+// score 1052 (was 1087; 1095 before): Frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
 // V1A: statement-by-statement walk against all of retail's 1180 instructions found no logic difference (fields,
 // conditions, constants, callees, argument orders, clamp and bank cases all agree). Two source shapes that retail
 // shows and ours lacks, both measured by opcode alignment with offsets and registers ignored (0.757 -> 0.793):
@@ -5589,6 +5611,21 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // then branch-owned differences: 1104/1076/1087/1104/1104/1076/1104/1087. NOT kept: the 1076
 // forms shorten to 5088/5094 while frame stays 0xf8/0xd8; other forms tie or regress.
 // Original complete feedback and body restored; handle/matrix/vector homes remain.
+// Round 180 (m3 lane 4, fast, plain-confirmed 1052): kept the boost set in both arms of an if/else (retail stores
+// 1.0 in the else arm) 1069, and the reverse throttle as `-(speed / limit)` (retail `subss` from the zero
+// register; `0.0f - speed / limit` became a constant divide and multiply) 1052 at 5088 bytes. Same boost as a
+// ternary 1069 (identical); `-speed / limit` 1069. Not kept: the later vehicle_index uses through a pointer to
+// the parameter 1088 (still EDI; retail re-reads [esp+0xec] after f44a0); `(void)&vehicle_index` 1087 (same code);
+// the reversal loop as a ternary store (retail stores every pass) 1133, still unrolled; `speed` computed after the
+// velocity correction (retail reads +0x354 after 0xba1d0) 1086, with the if/else boost 1068 (a moved declaration);
+// `dive *` first or `(g_4678d8 * 1.6976527f)` grouped 1069/1073; bool boosting with the if/else 1114; the round-68
+// frame lead (`difference` block + bool boosting) on the if/else 1093. On 1052: the strafe fraction as
+// `-(strafe / maximum)` 1063 (its arm is then retail's, masked aligned 744 -> 742, but 5072 bytes); with the lift
+// block as retail's macro expansions, `MAX(|speed|, MAX(|turn|, horizontal))` and `MIN(MAX(0.0f, fastest -
+// g_4678c8), g_4678c4)`, 1142 (5172 bytes, masked 730); that plus the frame lead 1120 (5155 bytes, aligned 834 ->
+// 767, masked 764 -> 720: the best structure, LEAD); without the lift 1138 (5043). Left on the lead: the unrolled
+// reversal loop (+12 instructions; retail keeps a 3-pass byte-offset loop), the vehicle index in EDI for the
+// whole body, and the rotation/torque tail's homes.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -5627,11 +5664,15 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 		vehicle->forward.j * vehicle->forward.j));
 	real dive = 0.0f > pitch ? 1.0f : -1.0f;
 	real climb = PIN((pitch >= 0.0f ? pitch : 0.0f - pitch), 0.0f, 0.58904862f) * dive * g_4678d8 * 1.6976527f + 1.0f;
-	real boost = 1.0f;
+	real boost;
 
 	if (TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit4))
 	{
 		boost = function_d1210(vehicle_index) * (*(real *)(definition + 0x1d0) - 1.0f) + 1.0f;
+	}
+	else
+	{
+		boost = 1.0f;
 	}
 
 	real maximum_speed = *(real *)(definition + 0x1f4) * boost * climb;
@@ -5657,7 +5698,7 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 	else
 	{
 		throttle = 0.001f > (*(real *)(definition + 0x1f8) >= 0.0f ? *(real *)(definition + 0x1f8) : 0.0f - *(real *)(definition + 0x1f8)) ? 0.0f :
-			0.0f - vehicle->speed / *(real *)(definition + 0x1f8);
+			-(vehicle->speed / *(real *)(definition + 0x1f8));
 	}
 	function_f1380(&acceleration, &target, &velocity, *(real *)(definition + 0x1fc) * throttle,
 		*(real *)(definition + 0x200) * throttle, g_510c54->rate);

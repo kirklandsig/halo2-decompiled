@@ -1105,7 +1105,7 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 bool function_a98b0(long index, vector3f *position);
 bool function_a9940(long index, vector3f *up, vector3f *forward);
 
-// score 87 (was 97): retail is 2 bytes longer. Left: retail tests the node count for > 0 before
+// score 87 (was 87; 97 before): retail is 2 bytes longer. Left: retail tests the node count for > 0 before
 // the node loop from 1 (no loop-head pad), and in the no-model branch keeps the object table pointer
 // in ecx and re-reads only its data pointer (parent index in esi); ours now re-reads both there (round
 // 81: the parent looked up through the existing object_get/object_node_matrix accessors, once for the
@@ -1342,6 +1342,12 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // test and the lookup and no index local 44 (same code each); the two-lookup body with the field re-read in the
 // first lookup only 54 at 1406, in the second only 380 at 1402, in both with no index local 20 (same code as the
 // local). A re-read of the field does not give the `mov eax, esi` copy here.
+// Round 180 (m3 lane 4, fast; aligned = difflib count with addresses masked, 10 at 87): the render node count named
+// after the root block for the loop bound 146 (1391 bytes, frame slots shift); the bound written first in the loop
+// test 87 (aligned 12); one parent-object local from object_get for the no-model matrix and flag 97 (1383 bytes:
+// data reused from EDI); diagnostics re-measured on the current body: the count > 0 guard 20 (1399 bytes, aligned 8),
+// with the one-object local 44 (1390). The guard stays match-only. The no-model parent index and node read through
+// the existing object view's parent fields 87, in the render branch too 87 (same code).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

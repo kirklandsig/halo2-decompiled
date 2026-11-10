@@ -39,7 +39,7 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 }
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
-// score 286 (was 320; 306 and 345 before): frame 0x64 and retail's entry copies agree (1865 bytes against 1863); saved-direction homes, planar operand order and xmm numbers of the floors remain.
+// score 286 (was 286; 320, 306 and 345 before): frame 0x64 and retail's entry copies agree (1865 bytes against 1863); saved-direction homes, planar operand order and xmm numbers of the floors remain.
 // b3M walk (11-06), every block against retail 0x29ab90..0x29b2d4: entry copies/0x658-0x678 history shift,
 // actor+0x26c test, 3-D magnitude (k,j,i sum, unrounded fabs test), 0x5d0/*arg_7 scale test, 1f9760 call, planar
 // normalizations (j,i sum), 2922b0 call, 30bf0 == 0 fallback, 0x47c branch, floor/ceiling clamps, 29b2e0 call
@@ -409,6 +409,13 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // `local_17 >= local_18` 271 at 1863 bytes (on 286: 298; retail's own compare is `comiss local_18, local_17; ja`,
 // the existing form, so the gain is a shift); the speed clamp as a ternary 320 (same code); on 286 the history
 // pointer read at each use 286 (aligned 183), the velocity pointer local dropped 286 (aligned 185).
+// Round 180 (m3 lane 4, fast; aligned/masked = difflib counts with addresses / also stack offsets masked, 184/107
+// at 286): field_50 written as the first factor of the 0x1f9e70 product 286 (same code; retail reads +0x50 before
+// the call into a stack temp); local_20 as the planar copy `*(vector2f const *)&local_27` 310 at 1864 bytes, but
+// aligned 170 and masked 90 (LEAD: the copy of local_27 and local_20's home are then retail's, local_27.i stays in
+// ESI); local_13 / local_15 as planar copies 286/286 (same code); all three 310. Left: site 1's normalize keeps the
+// zero path as the fall-through and a separate result home (retail stores 0 into the magnitude's own home after
+// the scaling path), the 0x1c/0x20 entry homes and the xmm numbering.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
