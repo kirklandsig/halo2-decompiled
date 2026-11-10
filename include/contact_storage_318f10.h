@@ -24,8 +24,5 @@ struct s_contact_storage_318f10
 	s_contact_point_318f10 *points;
 	unsigned char unknown48[0x58];
 	s_contact_property_318f30 *properties;
-	s_contact_point_318f10 *point(unsigned short id);
-	s_contact_property_318f30 *property(unsigned short id);
-	void collect(array_2d91d0 *out) const;
 };
 #endif

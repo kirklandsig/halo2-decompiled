@@ -219,7 +219,7 @@ def test_contact_modifier_builders_against_retail(solver_images, va, name, preci
                 machine.reg_write(UC_X86_REG_EAX, JOINT + 0x100 if seed % 2 else 0)
                 return_from_hook(machine)
 
-            hooks = [(0x31bdf0 if original else address(symbols, 'lane_b_contact_constraint_prefix::build'), contact_build),
+            hooks = [(0x31bdf0 if original else address(symbols, 'contact_default_31c000::build'), contact_build),
                      (0x1cf380 if original else address(symbols, 'havok_entity_property_2003_get'), property_get)]
             result = bytearray(execute(uc, va if original else address(symbols, name), data,
                                        [PAIR, OUTPUT], JOINT, hooks, precision=precision))

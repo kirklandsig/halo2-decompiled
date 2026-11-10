@@ -30,7 +30,7 @@ def normalize_table(data, offset, original, symbols, class_name, retail_value):
     if original:
         assert value == retail_value
     else:
-        suffix = {0x4153c8: '6Bconstraint_reference_31b9e0@@@', 0x4153b8: '6Blane_a_constraint_interface@@@'}.get(retail_value, '')
+        suffix = {0x4153c8: '6Bregistry_reference_31b9e0@@@', 0x4153b8: '6Blane_a_constraint_interface@@@'}.get(retail_value, '')
         tables = {s.va for s in symbols.symbols if s.name.startswith('??_7' + class_name + '@@')
                   and (not suffix or s.name.endswith(suffix))}
         assert value in tables, (class_name, hex(value), tables)

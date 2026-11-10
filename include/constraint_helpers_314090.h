@@ -1,7 +1,7 @@
 #ifndef CONSTRAINT_HELPERS_314090_H
 #define CONSTRAINT_HELPERS_314090_H
 #include "lane_b_constraint_dependencies.h"
-#include "unknown_0a9f20.h"
+#include "registry_reference_31b9e0.h"
 
 // Description layouts follow the retail constructors and import/export copies.
 // The base occupies twelve bytes, followed by aligned vector fields.
@@ -98,15 +98,7 @@ class hkEntity;
 class shape_bounds_314650;
 // The counted reference owns the shared out-of-line registry teardown.
 // These slots reuse the existing registry operations on the common prefix.
-class __declspec(novtable) motion_reference_314710 : public c_reference_a9f20
-{
-public:
- virtual unsigned int v1(char *buffer, unsigned int size)
- { return ((c_a *)this)->c_a::v1(buffer, size); }
- virtual void v2(char const *name) { ((c_a *)this)->c_a::v2(name); }
- virtual void *v3() { return &g_480120; }
- virtual void v4(dword unused) {}
-};
+typedef registry_reference_31b9e0 motion_reference_314710;
 // Its vector fields make it 16-byte aligned, which is why the game's 0x1d1540
 // allocates 0x70 bytes for the eight-byte subclass c_1d19d0.
 // Retail table 0x414abc has the five registry slots, two motion tests, and kind.

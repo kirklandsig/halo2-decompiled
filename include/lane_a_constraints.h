@@ -1,7 +1,7 @@
 #ifndef LANE_A_CONSTRAINTS_H
 #define LANE_A_CONSTRAINTS_H
 #include "unknown_1efac0.h"
-#include "unknown_0a9f20.h"
+#include "registry_reference_31b9e0.h"
 #include "reference_counted_2d88a0.h"
 #include <xmmintrin.h>
 #include "matrix_compare_2da7f0.h"
@@ -48,15 +48,7 @@ struct lane_a_constraint_interface
 };
 // Registry virtuals share the counted reference's out-of-line teardown.
 // This interface introduces no intermediate table during destruction.
-class __declspec(novtable) constraint_reference_31b9e0 : public c_reference_a9f20
-{
-public:
-	virtual unsigned int v1(char *buffer, unsigned int size)
-	{ return ((c_a *)this)->c_a::v1(buffer, size); }
-	virtual void v2(char const *name) { ((c_a *)this)->c_a::v2(name); }
-	virtual void *v3() { return &g_480120; }
-	virtual void v4(dword unused) {}
-};
+typedef registry_reference_31b9e0 constraint_reference_31b9e0;
 class lane_a_constraint : public constraint_reference_31b9e0, public lane_a_constraint_interface
 {
 public:

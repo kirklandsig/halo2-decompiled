@@ -52,10 +52,8 @@ class contact_default_31c000 : public contact_constraint_315510
 {
 public:
 	contact_default_31c000();
-	virtual void build(lane_a_solver_input const *input, lane_a_solver_output *output)
-	{ ((lane_b_contact_constraint_prefix *)this)->build(input, output); }
-	virtual void info(lane_a_constraint_info *output) const
-	{ ((lane_b_contact_constraint_prefix *)this)->get_sizes((lane_b_constraint_sizes *)output); }
+	virtual void build(lane_a_solver_input const *input, lane_a_solver_output *output);
+	virtual void info(lane_a_constraint_info *output) const;
 };
 
 // Both concrete modifiers share this out-of-line teardown wrapper.

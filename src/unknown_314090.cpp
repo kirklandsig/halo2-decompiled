@@ -309,13 +309,13 @@ float c_314710::update_radius_squared(shape_bounds_314650 const *shape)
 void contact_sizes_3155f0::info(lane_a_constraint_info *output) const
 {
 	lane_b_constraint_sizes *sizes = (lane_b_constraint_sizes *)output;
-	((lane_b_contact_constraint_prefix *)this)->get_sizes(sizes);
+	contact_default_31c000::info((lane_a_constraint_info *)sizes);
 	sizes->op_bytes += 0x28;
 }
 // @retail 0x315720
 void contact_sizes_315720::info(lane_a_constraint_info *output) const
 {
 	lane_b_constraint_sizes *sizes = (lane_b_constraint_sizes *)output;
-	((lane_b_contact_constraint_prefix *)this)->get_sizes(sizes);
+	contact_default_31c000::info((lane_a_constraint_info *)sizes);
 	sizes->op_bytes += 0x88;
 }
