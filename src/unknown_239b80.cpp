@@ -546,6 +546,22 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // taking the hull count by address or reference 242 (same code), as the `while` condition with goto exits 242 (same code
 // as the `done` form), with return exits 256 (767). Grid of 20 over those choices: long departure 243-251, heading and
 // flag declared after the scan 248-251, return exits 254-257, nothing below 242. All restored.
+// Round 224 (m3 lane 3, fast with 0x239d50; aligned counts in brackets, this body 104): retail's departure update is
+// direct byte stores (0 between the two coordinate tests, 1 on a difference). `if (points2d_equal(...)) left_start =
+// false; else left_start = true;` gives them with no setcc: on this body 168 at retail's 784 bytes [97] (a two-point
+// gain, not kept), with memmove as well 169 (784) [102]; with a bool flag 256 (767); bool flag, that update and the
+// angle declared before the scan 204 (784) [93]. This body's registers are retail's (count EBX, indices EBP, points
+// ESI reloaded in the inner loop), and they come only with the long pass against a widened count (the extra frame
+// word): a short pass 276 (751, points EBP); short pass and short hull count 226 (767); short hull count 239 (0x239d50
+// then 80); `(short)pass < count` 211 (765, frame 0x14 but points EBP), with a cast index 227; cast index only 227
+// (767, frame 0x18). Retail-shaped body (short hull count as the while counter, bool flag, angle first, memmove):
+// return exits 271 (750) [109], goto exits 265 (759) [98]; with the if/else update and gotos 273 (748) [93]; with
+// the equality written out in `left_start = !(...)` and gotos 267 (757) [88], then a long hull count 267 [89], five
+// declaration orders 266-267 or 238 [88-89], memcpy 275 [96], a long current 282 (0x239d50 lost); the top test
+// inside `for (;;)` with the compaction under it compiles as the goto form (273/267). Each of these keeps points in
+// EBP, the hull count in ESI and reloads indices from its argument home, and rotates the loop test to the bottom;
+// retail tests at the top (three back edges) and reloads the hull count from +0x10 at each join. An inline
+// duplicate-removal helper taking the count by pointer: not inlined 331 (663), forceinline 271 (same code).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -966,6 +982,14 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // on the moved copy five renames of the side locals 157 each (same code: names move no slot here), a byte previous side 157,
 // with the if/else fraction 164. The parameter is read as a dword wherever it is enregistered in this body too (`mov ebx,
 // [ebp + 8]` at the tail), so the count's declared type is not the cause. All restored.
+// Round 224 (m3 lane 3, fast): none of these loads count once into ECX (only the repeated `if (count > 0)` guard
+// does). The four flags as members of one local aggregate 198 (scalar-replaced, 887 bytes), with the if/else
+// fraction 127 (880); the two side flags as one aggregate 147, with the if/else fraction 259; the fraction as one
+// ternary initialiser 249 (880); a named `long size` after the alias copy for both tail copies 129 (same code),
+// with the if/else fraction 249; the entry distance read through points[count - 1] with the if/else fraction 256
+// (893); `count ? &points[count - 1] : points` for the previous point 293 (903), with the if/else fraction 288;
+// `points + count` then a separate `previous--` statement 129 (same code). Guard with the if/else fraction and
+// the four-flag aggregate 99 (890).
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

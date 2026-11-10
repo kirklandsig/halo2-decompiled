@@ -1579,6 +1579,13 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // native payload then library suffix 446/435/503, both library subranges 446/435/503,
 // both metadata-first native/library payloads 374/374. NOT kept: all regress to 1222-1270
 // bytes versus 1171; original capacity, full-record copies, repairs and complete tail restored.
+// Round 101 (m3 lane 12, fast with 0x80490/0x80330; control 49): the plain admission (`long removed = NONE; if (g_4cf978 ==
+// 350) { removed = g_4cf980; ... }`), `removed > position ? position : removed` lower, an explicit `>` arm and a count path
+// that both store `downward = false`, plain copy loops 57 (the entry agrees to +0x1f; upper still takes EAX and the backward
+// index coalesces with it, where retail holds upper in ECX and starts both indices in EAX); on it a named count read once
+// and reloaded after the unlink calls 57 (same code); the flag declared before the bounds 57 (same code); the `<` arm
+// tested first 338; the forward copy as `g[i] = g[i + 1]` from lower 367 (1162 bytes); the forward copy as one memmove
+// behind `if (i <= upper)` 364.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
