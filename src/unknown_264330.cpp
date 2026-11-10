@@ -649,6 +649,13 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // from its stack home 12 times (retail keeps it in EBX, flags in stack bytes). `maximum` as a plain word 429 (1616 bytes);
 // sample/update declared at function scope 412; the 0x2641c0 result in its own bool 412; old_state short 413; the actor
 // pointer declared then assigned 412.
+// MiniMax E (11-10): no lower score (412). A 20-minute permuter (95 tries) found no variant below the baseline,
+// and the blockers are unchanged: retail takes the actor index in EAX (plain `ret`), keeps the actor pointer in
+// EBX with the node index in EDI, reserves 0xa0 of frame and holds three byte flags at +0x11/+0x12/+0x13, while
+// ours passes the index on the stack (`ret 4`), holds the actor in EDI with the index in EBX, reserves 0xa4 and
+// keeps the flags at +0x13/+0x17/+0x1b. Retail inlines 0x2641c0 here and the noinline declaration that stops it
+// is in this lane's src/unknown_265cb0.cpp, but dropping it inlines the call in 0x264210 as well (round 143 above:
+// 497 at 1688 bytes), which costs more than it gains here. Nothing kept.
 // Round 143 (m3 lane 8, fast with 0x1e34e0): without 0x2641c0's noinline declaration this body inlines it as retail
 // does (497, 1688 bytes), but so does 0x264210 (68 -> 139 bytes, unmatched), while 0x25d020, 0x1be120, 0x1fba10,
 // 0x25c230 and 0x265680 stay matched: the lead narrows to keeping it out of 0x264210 alone. On that inlined form: update

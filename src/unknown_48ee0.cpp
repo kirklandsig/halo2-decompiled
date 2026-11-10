@@ -253,6 +253,17 @@ extern real g_4c9798[36];
 // calls (BLOCKED-BY 0x48e70). The same two forms on this body 255 [32], on the plain switch 219 [41], with the aspect
 // after the switch 254 [32]; the first plane's dot on the local normal 202 [117]. Nothing kept: every count but 171
 // is higher. Next, once 0x48e70's definition is `inline`: start from the switch with the long limit and the direct normal.
+// MiniMax E (11-10): the parameter layout is retail's, confirmed from the compiled prologue, which matches
+// retail opcode for opcode: `fld dword ptr [ecx + 8]` for the aspect, `mov edi, [esp + 0x34]` for
+// the tag and the matrix read through EBX. So ECX is the state, EBX the matrix and [E+4] the tag in both, and
+// nothing here is blocked by the declaration. Most of the 174 is the reduced image's relocated globals (ours
+// 0x4efb28 against retail 0x4c9798).
+// MiniMax E (11-10): no lower score (174). A 20-minute permuter (107 tries) found one improving form, a
+// `volatile short` store to g_51f3c8[1][2], which is a banned form and was reverted; the same run's dot3f
+// argument swap is byte-neutral here (174 with and without) and was reverted too. What is left is the mode
+// flag's register (retail keeps g_4c1a80 in EAX and shifts it there, ours in EDX) and the mode/extent homes
+// (+0xc/+0x14 in retail, +8/+0x10 in ours); the EAX form needs the distance local declared after the switch,
+// a declaration moved by score, which the round above records as not kept. Nothing kept.
 // MiniMax R (11-10): no new form, no lower score (174): the mode flag stays in EDX in all 16 expression forms and 5 position variants tried, where retail keeps it in EAX; the reduced image also forces the global address fields, which are most of the 174.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)

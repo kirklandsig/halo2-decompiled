@@ -1392,6 +1392,16 @@ long function_146650(void);
 // MiniMax S (11-10): retail's 0x267a80 takes (point, direction, position, distance, unknown); with that order this function
 // matches and 0x267a80 still matches (its body matches under both orders, only the callers differ), but the change needs
 // src/unknown_25fc30.cpp's declaration (line 73) and its two call sites (lines 1221, 1244), which is outside this lane - reported, not applied.
+// MiniMax E (11-10): the parameter layout is retail's, confirmed from the compiled prologue of 0x267c50,
+// which matches retail opcode for opcode (`mov ebx, [esp + 0x68]`, i.e. the single stack argument
+// at [E+4], and the same `and ebp, 0xffff` / `imul ebp, 0x888` index math), so the one argument here is the
+// same in both and nothing is blocked by the declaration.
+// MiniMax E (11-10): no new form, no lower score (7). The NULL distance argument written as 0 instead
+// of NULL compiles to the same code (7). The one remaining difference is where the `xor ecx, ecx` for
+// that NULL distance is emitted: retail sets ECX before the local-address leas of EDI (and of EDX in the
+// projected call), ours sets it last. Retail's order is the reverse of the argument order with the
+// distance argument fourth, i.e. it matches 0x267a80 declared as (point, direction, position, distance,
+// unknown); that is a parameter-order change, which is a banned form, so it is not applied here.
 // score 7 (was 7): the five 12-byte homes now agree; only the argument setup at the three 0x267a80 calls
 // differs: retail sets ECX (the NULL distance, `xor ecx, ecx`) before the local-address lea of EDI (and of EDX
 // in the projected call), ours sets ECX last. Earlier note, from before the homes agreed: retail stacks
