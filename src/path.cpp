@@ -1079,6 +1079,7 @@ bool function_2715a0(byte *buffer)
 	return result;
 }
 
+// MiniMax D (11-10): no new form, no lower score (486).
 // MiniMax R (11-06): no new form, no lower score (486); the frame agrees and EBP is pushed here where retail keeps it as the state pointer.
 // score 486 (was 486): State/node/link registers, scalar homes and heap-helper expansion differ.
 // Earlier field-bit mask forms 501 (from 533).
