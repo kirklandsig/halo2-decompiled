@@ -1596,6 +1596,16 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // ... } while (false);` 7 (same code). Retail loads the write's handle (`mov eax, [ebp]`) ahead of its pushes, so the flags zero takes ECX,
 // and the checksum load takes EAX; both need the scratch steps the earlier rounds located. The note already lists every helper, local, view
 // and spelling form found for them, and none is natural without a match.
+// Lane 12 r104 (fast): with the count scoped to the write block and no zero store, a goto past the close when all
+// 0x800 bytes were written (`if (bytes_written == 0x800) goto written;`, the close test on the handle alone) 83: the
+// frame, the size/count homes and retail's `je` from the resize test straight to the close are retail's (B446 and
+// round 56 reached 83 the same way), the range test's merged compare shifts the rest; with the header read as
+// `else if (cache_file_header_read(index))` and `valid = true` 7 (the round 53 plateau through the goto; left the
+// write's handle loaded after the flags zero and the checksum in EDX). On that 7: the empty header declared at the top
+// of the size-mismatch block 7, the write's buffer as `(void const *)&empty_header` 7, each async call's returned task
+// passed into the wait helper 7 (all the same code), the stored checksum read through `handle` 7 (same code), a named
+// `s_file_write_flags flags(0)` at the top of the size-mismatch block 141 (917 bytes). Restored: the 7 needs the goto and
+// the set-in-test validity.
 // @retail 0x213970
 void function_213970(void)
 {

@@ -2086,6 +2086,18 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // lane 18's long copy of gains[i] (ACMBXd) re-measured 248, 134/50, frame 0x12c. Left on the 334 form: in the second
 // pitch loop retail holds NONE in EBX and track_definition in EBP where ours holds the datum and track indices;
 // retail stores the mask clear before the gains; the pitch sum still adds the lower bound first.
+// Lane 12 r104 (plain, 0x21b940 MATCH throughout): retail's pitch block here is 0x21b940's instruction for instruction
+// (`lea ..+8` bounds pointer, playing pitch added before the lower bound). Re-measured as an inline helper in
+// 0x21b940's spelling (same code as the listed forms): 418 (gain and base pitch by value, or the track and playing sound),
+// with the memset 411, with that and a count per pitch-range loop 371 (1907). New: that helper called after the seed 350
+// (1908). On the memset (control re-measured 306; it keeps the approach's memory-operand add): the sum split as `pitch =
+// range * gain + playing->pitch; pitch += lower;` 307 (retail's add order and retail's approach, one line shifted there);
+// that with a count local in each pitch-range loop's init 372 (1907; the whole update head then takes retail's registers:
+// track EBX, playback EDI, previous BP, playing ESI, g_4e637c reloaded); that with the bounds through
+// `s_short_bounds *bounds = &..pitch_bounds` 369 (1907; the head through the 0x218f50 call is retail's but for slot
+// offsets); that with lane 18's match-only (c) mask bit at each use and (d) gains[i] copied into a long 246 at 1923
+// (lane 18's count). Left at 246: frame 0x11c, the first loop's mask update loads/ors/stores where retail ORs into
+// memory, and the second loop holds index and track index in EBX/EBP where retail holds NONE and track_definition.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

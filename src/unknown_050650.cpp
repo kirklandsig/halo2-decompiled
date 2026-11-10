@@ -518,6 +518,9 @@ struct s_collision_result_buffer_1697c0
 // temporary (the length, the integer and the sine) at the frame bottom where ours puts it above the
 // result byte, so the axis and result homes sit four lower, and ours is twelve bytes longer than
 // retail (1435 against 1423).
+// score 303 (was 303; 322 before that): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
+// integer and the sine) at the frame bottom where ours puts it above the result byte, so the axis/result
+// homes sit 4 lower; the two rotations keep the candidate in registers in retail (ours spills it between them).
 // Round 85 (m3 lane 12): `real versine = 1.f - cosine;` named in the rotate-in-place helper 293 (NOT kept (review):
 // a one-use local, match only; retail forms the dot then 1 - cos, as the inline product; there the axis/result homes
 // agree and first +0x31: retail keeps the length, random integer and sine in one frame-bottom temp; 0x297d30 stays 23); sine/cosine passed in the rotate call 303; cosine computed first 300, with versine 290 (0x297d30 23 -> 41);
@@ -735,6 +738,10 @@ struct s_collision_result_buffer_1697c0
 // bytes; the lead to pair with a rotation fix); the clear path's output normalized in place after the copy 313
 // (aligned 292); the best-direction tail the same way 338 (1403 bytes, 0x297660 4); both 356 (0x297660 40); the
 // no-collision case as an early `continue` 303 (same code).
+// m3 lane 12 r106 (fast, 0x297660 matched and 0x297d30 23 throughout): `result = true` before the output store in the
+// best-direction tail 303, in both success paths 303, before the candidate's normalize 303 (all the same code); the
+// result byte renamed `success` 303 (same home); `return true` in the tail with the collision flag read once through
+// its address 359 at 1442 B.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

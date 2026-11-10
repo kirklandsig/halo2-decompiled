@@ -5877,7 +5877,7 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
    otherwise), takes its team from the creation data (in campaign, the
    definition's when unset), starts its animation and finds its two
    animation graph entries */
-// score 202 (was 253, 282 before that): the logic agrees with retail statement by statement (re-walked in round 5 of #1049).
+// score 202 (was 202; 253, 282 before that): the logic agrees with retail statement by statement (re-walked in round 5 of #1049).
 // Round 5 of #1049: the four weapon slots are cleared with memset(.., 0xff, 16), which gives retail's lea/pointer fill
 // (definition spilled first, EDX the pointer, ECX the value; 253 -> 202). What still differs: (1) retail's early
 // `return false` after the animation check keeps its own epilogue (jne over `pop edi/esi/ebp; xor al,al; pop ebx;
@@ -5897,6 +5897,18 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // as a long or dword loop, a pointer loop, `*slot++`, four stores through a pointer local, an inline fill helper
 // (281-299 or no change). Tried for (2): unit_at_masked_index, the header written as byte offset + array, base + 8
 // + offset (no change); the animation check held in a bool 257; the amount stored first in the source loop 266.
+// m3 lane 12 r106 (fast, plain where noted): (1) is solved when the out-of-memory arm sets the return value before
+// its store: `bool result;`, the early `return false` (or the whole body single-exit with `result = false` in the
+// check's arm), then `if (failed) { result = false; *out_of_memory = true; } else { ...; result = true; } return
+// result;` gives retail's three return blocks exactly at 1040 bytes, 59 (plain 59). Not kept: with the store first
+// it is 202 again (statement order by score). Left at 59: the success arm's scratch registers (ours edx, eax, ecx
+// where retail has eax, ecx, edx: the g_4e0300 reload, the +0x33e offset, the creation pointer, the vector copies)
+// and (2). Without the flag (the || chain in the if, or an else-if chain) the success arm gets retail's registers
+// but the check and out-of-memory blocks move to the end 193; `if (allocated) {...} else {...}` 193; nested single
+// exit with result false at entry 198; result started true and cleared in the arm 305 (stack slot), declared
+// after the check and started false 305; `return !failed` 317; `result = a && b && c` 312; on the 59 form result
+// declared first, no data local, an `allocated` flag, `!(a && b && c)`, `failed = false; if (...) failed = true;`
+// 59 each (same code). A 600 s permuter run on the 59 form (--fast --anneal), 45 tries, none below 59.
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {

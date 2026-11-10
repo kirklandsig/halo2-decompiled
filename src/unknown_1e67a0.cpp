@@ -840,6 +840,14 @@ bool g_51e9bc;
 // first +0x21) [52]; the on/off values as ternaries 179 (1058 bytes) [73]; each half-scale select folded into its offset product
 // (x/y/z assigned once) 171 (1067 bytes) [82]; the offset declared at the top of the jitter block 49 [42] (same code); the half
 // scales named before each `x = scale_x * x` 56 (1079 bytes) [44].
+// Lane 12 r104 (fast, 0x24590 and 0x1cd6c0 listed, control 49): what differs in the jitter block is the register of on_x
+// (retail XMM2, ours XMM1); from it -1.0 takes XMM2 here (retail reuses XMM0), x is spilled where retail spills y, and the
+// spills reuse the rsqrt temporaries' slots (+0x2c/+0x30) where retail reuses limits.j/limits.k's (+0x20/+0x24). Tried:
+// `limits` renamed to sort before the rsqrt temporaries 49 (same code: names move no spill slot); the on/off factor on the
+// left of each sign product 49 (same code); the offset vector's components as the jitter's working values 74 (1079 bytes);
+// the on/off values defaulting to 0 and set on their bits 179 (1058, the ternary code); the offset as one aggregate
+// initializer 49 (same code). Spellings giving listed numbers: the on/off values as if/else 179, the signs as if/else 64
+// (1081), the half scales as named if/else selects 56 (1079).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -1255,6 +1263,14 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // Lane 5 r166 (fast, 0x24590/0x1cd6c0/0x1ecf50 listed, control 114): `__forceinline` on initial_cross 114 (same code; last
 // measured on the 155 body); the angle guard as `fabs(angle) >= 0.0001f` 205 (1391 bytes); the rotation angle computed before
 // the forward copy 125 (1388); angle declared before movement 114; the side test as `0.0f >= product` 114. Body restored.
+// Lane 12 r104 (fast, 0x24590/0x1cd6c0/0x1ecf50 listed, control 114): lane 1's lead (goal copied into `rotated`, one store
+// at the end) re-measured 114; on it the flag store before the goal copy 107 (1384 bytes, lane 9's number for that order on
+// this body); that with `moved_away ||` tested first 112 (1374); both orders on this body with its early return 111 (1374);
+// `moved_away ||` first alone on this body 104 (1382; it short-circuits past the side products, which retail evaluates
+// first (its jae at 0x1e60d1, then the flag), so not retail's order and not kept); the sine and cosine named before the rotation call 150 (1382).
+// Also: both side crosses with their arguments reversed (the product's sign is unchanged) 138 (1394); the side dots' arguments
+// swapped on this body 111 (1393; lane 1's number for that swap on the lead); moved_away preset false and assigned the second
+// comparison inside the 0.99 test 117 (1391).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

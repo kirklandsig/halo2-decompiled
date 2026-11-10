@@ -1143,6 +1143,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // not kept). Lead: retail loads 1.0f into xmm0 before the reciprocal and reuses it for the sign, the clamp and every 1 - x of the
 // rotation (ours reloads the constant at each use), and it spills the k * k, j * sine and i * sine products (i * sine through x87),
 // so the rotation block's register pressure differs, not its statement order.
+// m3 lane 12 r106 (plain; fast gives 834 on the unchanged body here): start/end and the selected plane at function
+// scope 535 (same code); face_count declared before secondary_count 535 (retail's store order for the two counts,
+// slots unchanged); the first plane at function scope 535; the selected plane alone 535; start/end alone 535 (all
+// the same frame homes: scope and declaration order do not move a slot in this body).
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

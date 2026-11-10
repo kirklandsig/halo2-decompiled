@@ -408,6 +408,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // dropped alone 928 [749, 661, 362]; actor volatile dropped alone 982 (3662, frame 0x2cb4) [581, 628, 334]; the query grouping
 // dropped alone (plain location and raised) 922 (3708, frame 0x2cb4) [753, 665, 357]. The volatile-free forms align far better
 // but lose the positional count; retail reloads actor_index/unit_index at the loop back edge and keeps actor at [esp+0x24].
+// m3 lane 12 r106 (fast, control 901 = plain baseline): the type-1 arm as `if (team == ... || !function_1df560(...))
+// skip_classification = true;` (retail 0x2c13a9 stores only the 1) 924; the type test inverted, `if (type != 0) { 1/7/11
+// chain } else { type 0 }` 915 (3737 bytes; the chain just moves ahead of type 0, nothing goes past the ret); both 927;
+// the 1/7/11 arms as separate `if`s 901 (same code); that with the type-1 conditional set 924.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

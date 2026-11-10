@@ -2054,6 +2054,13 @@ void function_269250(long clump_index, long actor_index);
 // walk as a `for` with the actor declared in it 87; the creation arm ending in `continue` when nothing is created 87; the
 // selected arm ending in `continue` when the selection is the current clump 87; both continues 87 (the last four the same
 // code). Body unchanged.
+// Lane 12 r105 (fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x268510/0x268c90/0x26ae30, all matched): the in-arm
+// compare with the selection stored first re-measured 126 (480 B; the post-loop is retail's but for the selection in EDI); without
+// the callees in the reduced build 0x269580's arguments swap, as round 107 found. Diagnostics (an existing helper written out, not
+// keepable): the walk's init in the body 89; the walk's step in the body too, as a loop with a top break, 146 (458 B); the step
+// with the scan written out so the walk's address is never taken 146 (458 B, the loop shape changes, so this does not isolate the
+// address). 0x268bb0 calls the sqrt routine at 0x322b0c, so it may write memory in both builds. New: the selection and best
+// declared at function scope and set per actor, in-arm 126, on this body 87 (same code each).
 // @retail 0x2689d0
 void function_2689d0(void)
 {

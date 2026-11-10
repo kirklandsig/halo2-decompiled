@@ -978,6 +978,12 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // tests 34; the signature seek and read as nested ifs 34 (all the same code; the first and last re-measure listed forms).
 // New on top: the total as header + sizeof + body 34 (same code); the bool passed straight as XCalculateSignatureBegin's
 // flag (its value is 1) 71.
+// Lane 12 r105 (fast; 0x2adb10 and 0x2ada70 matched throughout): the total converted in place re-measured 88 (entry agrees to
+// +0x3f; the signature case then hoists body_size into ESI, position's register, where retail loads it into ECX). Retail gives both
+// cases' positions ESI and the body case's size EDI (ours size ESI, position EDI). New: one function-scope position for both
+// cases 34 (same code), with the total converted in place 88; the body position computed at the top of the body block 158; a
+// `remaining` count computed before the two buffer arms 161, with the total converted in place 178; the body case as an early
+// return once the body is complete 103.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
