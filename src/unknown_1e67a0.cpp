@@ -573,7 +573,7 @@ real magnitude3d(vector3f const *v);
 bool g_46fcc4 = true;
 bool g_51e9bc;
 
-// score 49 (was 118): MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
+// score 49 (was 49; before r98 was 118): MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
 // argument; the dot's term order and the jitter block's register allocation still differ.
 // Before 11-07 (118, was 132): the first 79 lines and the frame agree; projection order and x-operands, the velocity row schedule and the jitter spills (retail spills y and the z on/off value into the limits' slots, ours x and the z on/off into parameter homes) remain. Earlier: 1.0 sat in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
 // (tests al/ah) and tests the on/off bits 1, 2, 4 before the sign bits 8, 16, 32, spilling the z on/off factor and
@@ -817,6 +817,19 @@ bool g_51e9bc;
 // jitter/function declarations and post-movement/entry constant defaults: 56/111/95/125/111/111/139/265.
 // NOT kept: one-use factor storage requires equality; all regress. Original body restored.
 // Projection j/k ownership and consumed-limit jitter spill homes remain.
+// Lane 9 r98 (fast, 0x24590 listed, control 49): jitter products as `(x * 0.2f) * limits.i` 54 (1077 bytes: retail's 0.2-first
+// products, but the limits.i product upstream reassociates at +0x13b); the scales as `x *= (bits & 64) ? 1.0f : 0.5f` 49 (same
+// code); the jitter added straight into the velocity components 194 (limits.j/k merge); `dot3f(&direction, &state->velocity)` 56;
+// limits as three scalars 85 (frame 0x24, the limits spill to [esp]..[esp+8]; the jitter still spills on_z and x into the parameter
+// homes where retail spills on_z and y into the limits' frame slots). Body restored.
+// P402: Shared dot complete raw first/second/both input scalars, mutable then immutable, coordinate-paired
+// inputs and separate assignments:
+// 56/56/51/56/56/51/51/51. NOT kept: raw one-use input storage is unmatched; original shared producer and
+// complete body restored. Projection j/k ownership and native jitter spill homes remain.
+// T77: Negative-default actual jitter sign groups x/y/xy/z/xz/yz/xyz
+// 73/72/72/80/77/77/76; all signs in exhaustive arms 64. NOT kept: no gain;
+// native-length forms disturb unity allocation from +0x21, before the original projection gap.
+// Original full body restored; projection j/k ownership and jitter spill homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -1202,6 +1215,16 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // reference-output consumed results and all-reference input/output contracts:
 // 114/114/114/114/114/150/114/114. NOT kept: no native rotation/side/output equality;
 // original private helper, both invocations and complete body restored.
+// Lane 9 r98 (fast, 0x24590/0x1cd6c0/0x1ecf50 listed, control 114): the flags store before the goal copy 107 (1384 bytes; ours
+// then ORs the flags in memory, retail loads them into EBX among the goal loads; a statement order picked by score, gain 7, not
+// kept); the side crosses through the existing cross3f 114 (same code); diagnostic only, that flags order with the moved-away flag
+// preset and set in its test and the side dots as (up, new) * (up, old) 90 at 1382 bytes (rotation products, the turn crosses'
+// registers, the alignment and side dots and the load-all exits left); the moved-away test written inline in the condition 160 (1367);
+// a named `axis` pointer for the rotation and both side dots 148 (1382). Body restored.
+// T77: Complete goal-output record staging mutable/read-only, immediate or flags-between
+// input capture and publication 140/134/140/134; turned-output record staging or full
+// coordinate initializer, mutable/read-only 140/189/140/189. NOT kept: eager copy-boundary
+// diagnostics miss equality; original full body and shared rotation call restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

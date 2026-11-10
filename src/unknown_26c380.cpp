@@ -434,6 +434,11 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // the first-edge flag declared at function scope 244 (same code); success declared after the edge pointer 382 (first
 // difference +0x2c); the previous sector declared at function scope 244 (same code); the hit flag declared at function
 // scope ahead of success 244 (same code). All restored.
+// P401: On the exact-only shared-exit graph (control 34), both planar-product vector
+// inputs staged, reversed declarations/full point inputs/point-first, then immutable:
+// 38/38/32/32/38/38/32/32. Four full-input graphs with a local line record: 300 each.
+// NOT kept: no byte equality; the cross j product, line/sector homes, XMM roles and
+// tail stores remain. Original private helper, loop exits and complete body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
