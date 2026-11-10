@@ -843,6 +843,14 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // loads it after the corner tests; the lower positional count comes from the entry being one line shorter, which only
 // re-aligns the later lines (masked 22 -> 37); plain 169 too, with 0x270d90 still 286 but 1390 bytes for 1389. Left as before: every form that loads the actor at entry loads it ahead of
 // `push ebx`, so link-time code generation hands pathfinding over in EDX; retail's load follows `mov ebx, eax`.
+// Round 148 (m3 lane 8, fast with the file's 15 other functions, 0x270d90 and 0x30bf0; aligned/masked = difflib counts on
+// the listing, masked ignores registers and stack offsets, base 54/13). Re-measured: case 5's position declared before its
+// direction 266 (as round 153); with corners a, b, c, d 290 (1284 B, aligned 37, masked 11, as rounds 151/82); on that the
+// function-scope actor bool 364 (1292 B, as lane 17 round 6) and the surface ahead of the start-out alias 290 (same code).
+// New: on that a, b, c, d graph the result as a plain bool 281 (1280 B, aligned 80). On the 219 body, each the same code
+// (219, aligned 54, masked 13): both projections in one expression with no projected/origin locals; the edge vectors
+// declared at function scope; the trace result declared at function scope; case 5's direction declared at function scope;
+// case 1/6 leaving through `break` to the final `return result`.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

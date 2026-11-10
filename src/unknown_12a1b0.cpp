@@ -1277,6 +1277,13 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // Round 222 (m3 lane 3, fast with the same list): the state test moved into the call as `state == 2 ? index : NONE` 24; a
 // 32-form screen of iterator or index declared first x no element local or a named element local x `if` block or early-return
 // guard x macro or track-view lookup x `index` or `iterator.index` at the lookup and the call: 24 in all 32 (same code).
+// Round 148 (m3 lane 8, fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all matched each time): the iterator's index set
+// from its first field 24 (round 89's form again once inlined); the next link test as if/else stores 24; const parameters 24;
+// both iterator helpers taking the iterator by reference 24; 0x126df0's fade-in half setting the fading bit directly in place
+// of the 0x0bfe40 call 25 (0x126df0 5); a const links pointer in the next helper 24. Diagnostic re-measure: the forced-inline
+// fade-in helper on a named element 35 at 211 bytes (index EDI, element ESI as retail; the offset is computed in the element's
+// register, `mov esi, edi; and; imul; mov al, [esi + edx + 2]; add esi, edx`, where retail forms it in EDX and `lea esi, [edx + eax]`);
+// the element formed offset first, `(index & 0xffff) * size + data`, the same code (35).
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

@@ -634,6 +634,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // (The first four are one compiled body; the cross/dot-on-the-global form re-measures round 206's 164 at 893 bytes.) On the opening: the time
 // product with its factors swapped 117 (same code); the time globals through a pointer local used for both reads 117 (same code); the fraction
 // held as a double 122; the angle as `fraction * (oscillation * oscillation) * 0.15f` 197 (882 bytes), the square as a named local 197 (882).
+// Round 148 (m3 lane 8, fast with the file's other functions, 0x118140, 0x30bf0 and 0x117c80; base 117, aligned 68, masked 45),
+// each the same code (117, 880 bytes): `old` as a const copy; dot3f(&old, &axis); the axis as a const copy; `cross` declared
+// ahead of the axis and `old`; the three rows and the 0x117c80 call through a named direction pointer to the global.
+// The frame's extra eight bytes are `old` kept in memory (its address goes to cross3f and dot3f); retail holds the global's
+// j and k in XMM5/XMM4 and reads i late, and none of these forms changes that.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
