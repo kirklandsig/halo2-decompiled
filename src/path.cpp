@@ -710,6 +710,14 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // merge, frame 0xe8); link admission as one direct condition re-measured 322 (frame 0xe8); the link test as a
 // plain inline predicate with a single-exit result, called in the condition, 2 (same code as the flag: with lane
 // 11's inline surface test the body then holds no flag, but both are new helpers with one caller). Body restored.
+// M3 lane 13 r72 (fast; 0x270930 kept; both builds return with `ret 0x24`, the frame is 0xe8 against 0xe4). Lane 11
+// r71's flag form rebuilt from the r63 held patch with both conversions nested and the pointer fill: 2 again (the same
+// reload pair). Its indexed fill with the long bound (`i < initialize_count`) 263. On the 2: an inline node getter for
+// the three node lookups 2 (same code; with it the plain clamp was not measured); the link test as an inline predicate
+// with a result variable called in the `if` 12 (moves the projection's xmm3/xmm4 homes, pair unchanged), with direct
+// returns 321; both with the surface test as a second inline predicate 130/337; `edge_index != NONE &&` ahead of the
+// range test 182 (1397 bytes), as `if (edge_index == NONE) continue;` 182; `if (node_index == NONE) break;` at the
+// traversal's end 2 (same code). NOT kept: none matches and the flag form is match-only; body below unchanged.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

@@ -1647,6 +1647,12 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // MiniMax S (11-09): no new form, no lower score; the frame is still eight bytes larger than retail's
 // (0x114 against 0x10c) and the first locals sit at higher offsets, so every stack slot and the
 // register choices in the two loops still differ; no form tried recovers retail's frame.
+// M3 lane 8 r144 (fast; control 400, frame 0x114): retail returns with `ret 0x18` as ours, so the six stack arguments
+// agree. The output element taken with a post-increment of the emitted count 400 (same code); the previous point chosen by
+// an if/else in place of the conditional expression 400 (same code); edge declared at the top of the scan arm 481 (1769
+// bytes); the next step's pointer declared inside the type test 400 (same code); the previous point's test as `next != 0`
+// 401; the forward scan as a for with the end declared outside 636 (1911 bytes, frame 0x124); the emitted type from the
+// local 403 (1755); the trace target initialised whole 400 (same code). Body restored.
 // P401: Forward scan ordinal word/dword/unsigned-int64 with short reverse candidate:
 // 488/501/535; with signed-int64 reverse candidate 591/572/664; signed-int64 forward
 // with short/int64 reverse 535/664. NOT kept: wider/unsigned scan interference grows

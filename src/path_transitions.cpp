@@ -818,7 +818,31 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // P394: Paired-edge clamp admission before reciprocal/fraction, wide-edge/midpoint truth
 // in bool/byte/short/long: 367/367/371/369/367/367/371/369. NOT kept: no byte equality; original
 // comparison, geometry, result and whole body restored. Early root/actor ingress remains.
+// Round 82 (m3 lane 1, fast; 0x270d90 286, 0x270400 matched throughout; aligned = sequence-aligned count with targets
+// masked, base 76): round 151's lead rebuilt on this body, corners declared a, b, c, d: 288 at 1284 bytes (aligned 67);
+// with case 5's position declared before its direction 290 (aligned 50: all of case 5, case 2 and the copies then
+// agree). Left on that lead, two causes: the entry (actor_index is loaded into EAX first, so pathfinding arrives in EDX
+// for retail's EAX; retail copies pathfinding to EBX and only then loads the actor) and both dot sums (retail loads
+// first.j, first.k and adds (j + k) + i; ours loads k, j and adds (k + j) + i, which also swaps XMM6/XMM7 and leaves
+// the margin a separate `movss` + `mulss` for retail's `mulss xmm2, [radius]`, the 4 extra bytes). On the lead: the
+// margin multiplied into the reciprocal in place 288 (same code); the sums written out j, k, i 299 (1288 B, aligned
+// 74; the terms still come out k, j); dot3f with &first as its first argument 288 (same code); `second, first`
+// declared 288 (same code); the sums written with first's fields on the left 300 (aligned 57); `i + (j + k)` grouped
+// 305 (aligned 62); each product cast to real 300 (57); origin computed before projected 290 (same code); a named
+// copy of actor_index declared before or after the result, used in cases 5 and 2 or in 5 only, 297 (aligned 51; the
+// load still comes first); the surface declared before start_out 290 (same code). Nothing kept: every form scores
+// above 219.
 // MiniMax D (11-09): no new form, no lower score: the body is unchanged at 219 (1280 bytes against retail's 1280); the early root and actor ingress and the paired projection's ownership are still the whole of the difference, and every earlier round's actor-query, corner-order and paired-edge forms tie at 219.
+// Round 145 (m3 lane 8, fast; masked = register-masked aligned count, base 219 [22], aligned 99): an unused forceinline
+// use of actor_index in case 1/6 (diagnostic) 219, same code: no entry load. Corners a, b, c, d re-measured 288 [32]
+// (1284 bytes); on them: the surface through a named `surfaces` table local 295 [27]; the actor test nested 288 (same
+// code); one function-scope vertices pointer read after the result 306 [49] at 1280 bytes; one case-scope vertices pointer
+// for case 1/6 read ahead of the corner tests 174 [34] at 1280 bytes, and the same on the b, a, c, d corners 169 [37] at
+// 1280 bytes (aligned 149). Neither is kept: the actor is then loaded as the first instruction, pathfinding arrives in
+// EDX and is read from there with no copy to EBX, and the vertex table is loaded ahead of the parent test where retail
+// loads it after the corner tests; the lower positional count comes from the entry being one line shorter, which only
+// re-aligns the later lines (masked 22 -> 37); plain 169 too, with 0x270d90 still 286 but 1390 bytes for 1389. Left as before: every form that loads the actor at entry loads it ahead of
+// `push ebx`, so link-time code generation hands pathfinding over in EDX; retail's load follows `mov ebx, eax`.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

@@ -140,6 +140,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // value between the enable gates 110; separate player/team inner results 109/109; two-call by-value
 // accessor 107; player record copy 71 (434 bytes), read-only copy 71, with the team-mode helper 78.
 // NOT kept: the one-use record copy spills through the code slot, absent in retail; original body restored.
+// MiniMax C (11-10): no new form, no lower score (106); retail still keeps the old maximum in ECX with the enable byte in AL and reads the 15-bit counter with the 16-bit idiom (xor eax, eax; mov ax, [mem]) while ours keeps them in EAX and DL with a zero-extend, and the enable reload stays blocked by src/unknown_1967d0.cpp.
 // MiniMax C (11-05): no new form, no lower score: the enable reload, the maximum homes and the word
 // schedule still differ here.
 // Round 74 (m3 lane 11, fast and plain): the team test through the existing function_x340af0() in the condition 106
@@ -450,6 +451,14 @@ struct s_object_damage_view
 // record's player assigned to killer first and cleared when the validation fails 415 (1612); the credited player's
 // team byte as a twice-used char local for the team store and the query 358 (1552), as a short local 358. Retail
 // keeps the credited player in its home (+0x14; reloaded into EDX at the fallback, into EDI at the team block).
+// M3 lane 13 r72 (fast with 0x1e9ce0 and 0x1ea5b0, unchanged at 13 and 106; brackets: aligned count with registers and
+// stack offsets masked, base 353 [35]). Retail's two award loops have no compare after the prefix search (the search
+// leaves straight to the next award when it finds the player). The search as an inline early-return list predicate
+// used by both loops 366 (1528 B) [37]; with the killer-team call argument read from the player byte again 365 [38];
+// with the consideration flag as a true default cleared by the test 357 [35]; those three with the `if (killer !=
+// NONE) { if (killer == reported_player) ... } else if (reported valid)` layout 358 [33]; plus the assist stores
+// re-reading the record's player index 366 (1544 B, retail's length, first difference +0x8) [39]; the predicate with
+// that killer layout alone 383 (1512 B). NOT kept: all above 353; body below unchanged.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

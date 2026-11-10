@@ -297,8 +297,13 @@ PRIVATE __forceinline long function_91862(s_balance_solution const *solution)
 // @retail 0x91860
 long s_balance_solution::count_spread() const
 {
-	long maximum = function_91861(this);
-	long minimum = function_91862(this);
+	/* the results are written through references: a store through a pointer here is what
+	   makes try_swap (0x91bd0) query the candidate's spread ahead of the reference's */
+	long extremes[2];
+	long &maximum = extremes[1];
+	long &minimum = extremes[0];
+	maximum = function_91861(this);
+	minimum = function_91862(this);
 	return maximum - minimum;
 }
 
@@ -387,369 +392,6 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 }
 #pragma function(_ReadWriteBarrier)
 
-// MiniMax G (11-06): no new form, no lower score: our build queries the reference's count_spread first in
-// both spread pairs whatever the operand order (reference-left 65 and 66, a const reference 67), while retail
-// queries the candidate's first; the extra two-byte `mov ebx, esi` and the 514 against 512 byte length
-// follow from that same ordering.
-// MiniMax A (11-05): the reference on the left of the first comparison 65 (only the compare operands
-// match retail; the branch polarity flips and the call order stays reference-first), a named spread for
-// each side 67, both sides as const references 67; nothing gained 8, so the body is unchanged.
-// score 67 (was 67): the count delta now matches retail (the delta named, then the two new team
-// counts); what remains is the order of the spread queries: retail calls the candidate's
-// count_spread first in both comparisons (and the reference's cost first), ours calls the
-// reference's first whatever the operand order, which also adds a `mov ebx, esi` (514 bytes).
-// Round 37 (on the named delta): every comparison with the reference on the left 65; only the
-// equality/only the less-than so 66/66; cost operands swapped 67; candidate spread named after the
-// selection 65; the selection as a reference 65; `bool better` chain 81; candidate spread named
-// before the selection 74. Compile-only screens of ~60 one-tree delta spellings all reassociate
-// (they do not show the named-delta effect, which only the LTCG build gives).
-// Earlier (score 80/116): count homes, signed party delta and pure-query ownership remain.
-// frame 0x2694 agrees; the full build now scores as the reduced image (80). Left:
-// our build reassociates the new count difference into 2*(b-a) - B + A (retail keeps (A - 2*(a-b)) - B
-// with `lea ecx, [eax+eax]`), so the inner party pointer takes EAX (retail ECX), the A/B count-address
-// homes swap (+0x34/+0x2c against +0x2c/+0x34), and every later line is offset by one; retail also
-// calls the candidate spread before the reference spread.
-// Tried (reduced image unless noted): count fields A/B/both 80/80/80; early roots 173; players
-// A/B/both 78/75/80; reverse count roots 173; B players root before A/first/between views 82/88/82;
-// immutable B root 75 (B players plain 115 in the full build); team/party/both lexical priority
-// 80/80/80; short outer/inner/both ordinals 142/142/155; scope and comparison names 80/80;
-// candidate/reference/both spread values 135/127/137; spread delta 132; candidate A/B/both team roots
-// 80/150/150; outer party cursor 91; first spread order 80; equal spread order 80; spread orders 80;
-// cost order 78; first spread/cost order 78; equal spread/cost order 78; query orders 78; inner party
-// cursor 132; cursor/spread orders 132; reused signed team delta 161; reused party delta 80; reused
-// team and party deltas 161; A/B/both count references 80/80/80; early count references 173; inline
-// count spread 225; inline total spread 80; inline spread queries 225. Full build (when it scored 116):
-// first party pointer in the outer loop 116; nested ifs instead of continues 116; teams read in full
-// at each use 146 (loses 0x91dd0); comparison operands swapped 116; explicit outer party pointer
-// stepping 116. No-link screens: every delta spelling folds to the same 2*(b-a) sequence.
-// Round 82 (full build 80): all three comparisons with the reference on the left (cost compare as
-// retail) 78; that with the reference chosen by if/else 78; party pointer A in the outer loop 78;
-// count-after-swap totals, a named party delta subtracted from both, `- 2 * delta` 78/78/78;
-// `+ (b-a) * 2` 78; `b - a + (a-b) * 2` 78 (A/B count-address homes then agree; the reassociation
-// stays); an inline absolute-difference helper for both differences 78.
-// frame 0x2694 and entry agree; from +0x3e the A/B count-address homes are
-// swapped, the inner party pointer takes EAX (retail ECX) so the count delta is built as 2*(b-a),
-// and the two count_spread queries run reference first (retail candidate first). The full and the
-// reduced build now agree at 80 (earlier rounds saw 116 in the full build).
-// Tried: count fields A/B/both 80/80/80; early roots 173; players A/B/both 78/75/80; reverse
-// count roots 173; B players root before A/first/between views 82/88/82; immutable B root 75
-// (B players plain 115, an ineligible one-count gain); team/party/both lexical priority 80/80/80;
-// short outer/inner/both ordinals 142/142/155; scope and comparison names 80/80;
-// candidate/reference/both spread values 135/127/137; spread delta 132; candidate A/B/both team
-// roots 80/150/150; outer party cursor 91; first/equal/both spread orders 80/80/80; cost order 78;
-// first/equal spread with cost order 78/78; query orders 78; inner party cursor 132;
-// cursor/spread orders 132; reused signed team delta 161; reused party delta 80; reused team and
-// party deltas 161; A/B/both count references 80/80/80; early count references 173; inline count
-// spread 225; inline total spread 80; inline spread queries 225.
-// Full-build forms (when it scored 116): first party pointer in the outer loop, nested ifs
-// instead of continues, comparison operands swapped (the call order follows the operands, not
-// their position), explicit outer party pointer stepping 116 each; teams read in full at each use
-// 146 (loses 0x91dd0). No-link screens: every delta spelling (named, doubled, parenthesised,
-// count-after-swap, abs forms) folds to the same 2*(b-a) sequence; reference/local/method forms
-// keep reference first.
-// Round 9: party elements at each use, no party pointers 140; cost test written candidate first
-// 78 (the cost order form again); delta grouped a - b - 2 * (pa - pb) 80; named a_count/b_count
-// pointers 80 (the count references again); b declared before a 87; both absolute values as
-// ternaries 80; the reference picked by `= &current; if (improved) = &best;` 80. Compile-only
-// screen: the spread queries' order ignores the operands' order.
-// Round 11: outer party pointer declared in the outer loop 80; the new team counts as two named
-// locals 80; nested tests instead of the continues 80; candidate declared at function scope 184
-// (558 bytes); the candidate's spread named before the comparison 80 (the reference's query still
-// runs first: LTCG treats count_spread as pure and reorders the calls); permuter 58 tries, best 80.
-// count homes, signed party delta and pure-query ownership remain.
-// Earlier: count-address homes, party registers, delta and query order differ.
-// Reduced control 80 (full 116); count fields A/B/both 80/80/80; early roots 173;
-// players A/B/both 78/75/80; reverse count roots 173; B players root before A/first/
-// between views 82/88/82; immutable B root 75. B players plain 115 is an ineligible
-// one-count gain; all subobject forms restored.
-// frame 0x2694 agrees; team-pointer homes, delta and query ownership differ.
-// Reduced baseline 80 (full 116); team/party/both lexical priority 80/80/80;
-// short outer/inner/both ordinals 142/142/155; accepted scope and comparison names 80/80.
-// Earlier: count homes, signed delta and query ownership remain.
-// Reduced candidate/reference/both spread values 135/127/137; spread delta 132;
-// candidate A/B/both team roots 80/150/150; outer party cursor 91 (reduced baseline 80).
-// Reduced trials (opening 80; full 116):
-// first spread order 80; equal spread order 80; spread orders 80; cost order 78;
-// first spread/cost order 78; equal spread/cost order 78; query orders 78; inner party cursor 132;
-// cursor/spread orders 132; reused signed team delta 161; reused party delta 80;
-// reused team and party deltas 161; A count reference 80; B count reference 80; count references 80;
-// early count references 173; inline count spread 225; inline total spread 80;
-// inline spread queries 225.
-// the inner party pointer takes EAX (retail ECX), so the count delta is
-// built as 2*(b-a) and the A/B count-address homes swap; the full build also calls each pair of
-// queries in the other order (reference spread first, candidate cost first; retail the reverse).
-// The reduced image scores 80 and orders the cost calls as retail: trust only the plain check.
-// Plain-checked: first party pointer in the outer loop 116; nested ifs instead of continues 116;
-// teams read in full at each use 146 (loses 0x91dd0); comparison operands swapped 116 (the call
-// order follows the operands, not their position); explicit outer party pointer stepping 116.
-// No-link screens: every delta spelling (named, doubled, parenthesised, count-after-swap, abs
-// forms) folds to the same 2*(b-a) sequence; reference/local/method forms keep reference first.
-// Earlier (reduced-image) forms: control 80; count fields A/B/both 80/80/80; early roots 173;
-// players A/B/both 78/75/80; reverse count roots 173; B players root before A/first/between views
-// 82/88/82; immutable B root 75 (B players plain 115, an ineligible one-count gain);
-// team/party/both lexical priority 80/80/80; short outer/inner/both ordinals 142/142/155;
-// scope and comparison names 80/80; candidate/reference/both spread values 135/127/137; spread
-// delta 132; candidate A/B/both team roots 80/150/150; outer party cursor 91.
-// Round 295: separate noinline declarations for count/total/rank query methods,
-// all seven nonempty subsets, 80 each; rank-only inline declaration 80. Every
-// declaration and body restored; count homes, inner party and query ownership remain.
-// Round 47: with the reference on the left (65) only the four count_spread calls differ (aligned
-// 8). Compile-only screens: a local candidate against a reference pointer calls the reference
-// first in every operand order, as LTCG does; only the candidate's spread named first calls it
-// first there (LTCG reorders that too, 74/80 above). Reference selected before the candidate copy
-// 128 (moves try_swap's register parameters, 0x91dd0 then 2), with the reference on the left 128;
-// selected at the top of the inner loop 121; `(improved ? best : current)` at each use 112.
-// Round 230: solution selection at every query, alone, with A/B/both team observations,
-// outer-party lifetime, both candidate-team roots, shared candidate spread and equality-first
-// acceptance: 112/179/150/186/112/182/107/115. Original selection, named post-swap counts and body restored.
-// Lane 14 r20: the first test as `!(candidate >= reference)` 67; the reference pointer declared
-// `const` 67; the condition rewritten as `<= && (!= || cost)` 100 (512 bytes but reference spread
-// still first and the frame 0x268c); the reference selected right after the candidate copy, before
-// the swaps, 151 (521 bytes; 0x91dd0 9); the cost test written candidate first 67.
-// Round 127 (lane 4): the reference selected right after the candidate copy 151 (0x91dd0 9; the
-// reference is still queried first); the reference on the left of both comparisons 65 (reference
-// still first); the comparison as an in-class solution method called on the candidate 188 (not
-// inlined under /Ob1, 420 bytes); the improvement as an if / else-if pair 150 (0x91dd0 8); the
-// reference pointer declared `const` 67 (same code).
-// Round 46 (lane 9): the cost compare written candidate first (`candidate.cost() < reference->cost()`) 67, with
-// both spread compares reference first 65 (the cost compare is then retail's; only the four count_spread calls
-// differ: ours reference first in every operand order, retail candidate first), with only the first spread
-// compare reference first 66; `candidate - reference spread < 0` for the first test 67; the selection written
-// at each use as `(improved ? &best : &current)->` 112 (not CSE'd; still reference first);
-// `!(candidate.count_spread() >= reference->count_spread())` 67; the selection written `!improved ? &current :
-// &best` 70; the selection moved after the candidate copy (before the swaps) 151; `best = candidate;` before
-// `improved = true;` 71. No other function calls count_spread, total_spread or rank_spread out of line.
-// Round 14 (lane 2): aligned the only cause is the count_spread order (and the `mov ebx, esi` it
-// adds); a compile-only screen reproduces it even with count_spread's body defined after this
-// function, so it is not purity: VC queries the stack-local candidate (`lea ebx, [esp+0x38]`) after
-// any pointer or member solution, in every operand order (probes against `best` and `current`
-// directly do the same). Real builds, 67 each (same code): the comparison as a forceinline
-// `better_than` method on the candidate, as a forceinline `worse_than` method on the reference, as a
-// forceinline free function of both pointers, the selection as an if/else, the reference declared at
-// the top of the inner loop and assigned after the swaps. Compile-only, same order: `this->` inside
-// the method, the selection passed as the call's argument, `(&candidate)->`, a reference variable,
-// the selection written at each use, `!(reference <= candidate)`.
-// Lane 16 r46: the reference declared at the top 67; count_spread as a free function on a pointer 67; the
-// test in a forceinline (candidate, reference) helper 67; renamed trial/baseline 67; `candidate(current)`
-// 67. Compile-only (no /GL, extern methods): the call on the stack copy runs after the call through the
-// pointer in every operator, operand order, helper, free/__stdcall and naming form; with two stack copies
-// the right operand of `<`/`==` runs first. So retail's candidate-first order is not a reorder that only
-// LTCG's readonly knowledge makes.
-// Round 135 (lane 4): a compile-only screen shows the order of two count_spread calls ranks their `this`
-// expressions, not the operands: `&best` (this + 0x2668) before the reference variable before `this` (current)
-// before the stack candidate, in both operand orders; a pointer local to the candidate (declared before or after
-// the reference), a storage-array candidate, a cast to const and forceinline helpers taking (reference,
-// candidate) or (candidate, reference) still query the candidate last (its address is propagated first). Real
-// builds: the reference pointer non-const 67; that with `candidate.cost() < reference->cost()` 67; with both
-// spread tests reference-left 65; count_spread non-const 67; the selection as a reference variable 67.
-// Round 33 (m3 lane 11), fast: the test as a forceinline solution method on the candidate
-// (`candidate.better_than(reference)`) with its comparisons this-first 67, this-first with the cost
-// written other-first 67, all other-first 65; the candidate declared in the outer loop and copied in
-// the inner one 209 (570 bytes); the reference as `&(improved ? best : current)` 67 (same code).
-// Round 38 (m3 lane 10): compile-only micro tests: VC calls a method on a stack local after the same
-// call through a register pointer, a member, a global or a pointer parameter, whatever the operand
-// order; between two stack locals the right operand runs first; named one-use results keep their
-// statement order only while the callee's body is unseen (an extern declaration), not with it
-// defined in the file, and not at LTCG with it defined anywhere. Real builds (fast): the three
-// spread definitions moved below this function 67 (same code), with both spreads named 67;
-// `continue` on `candidate > reference` and on equal spreads with `candidate cost >= reference
-// cost` 100 (512 bytes; first difference +0x7), the same with the reference on the left 100; the
-// candidate spread named and used in both tests (three queries) 80 (512 bytes).
-// Round 55 (lane 12; a one-file LTCG harness of this file reproduces the build exactly): the test in a
-// forceinline (candidate, reference) helper written `b > a || (b == a && cost)` 65, `a < b || (b == a && cost)`
-// 66; the qualified call `candidate.s_balance_solution::count_spread()` 67; `a - b < 0 || (a - b == 0 &&
-// cost)` 67; the test as two `continue`s 100 (512 bytes). Harness probes: the stack candidate's call runs
-// last against any pointer, even `&best` or a parameter; against a second stack copy the older copy runs
-// first in either operand order; nested `<=` then `<` 55 aligned, else-if pair 66 aligned (both worse).
-// Round 138 (lane 4; a one-file LTCG harness of this file reproduces the build): `continue` on `candidate >
-// reference` and on equal spreads with `candidate cost >= reference cost` 100 (512 bytes, again); the first test
-// as `!(candidate < reference)` with the rest nested under it and a `continue` 67 (same code); a `bool better`
-// set from the first test and refined by the equal-spread cost test 82 (524 bytes); the two first spreads named
-// in one declaration (`long candidate_spread = ..., reference_spread = ...;`) 67 (same code: LTCG still queries
-// the reference first across the comma); the count difference named once (two queries instead of four) 81
-// (496 bytes). Harness only: the spread queries through an inline forwarding member 9 aligned (unchanged order),
-// an inline (candidate, reference) value comparison helper unchanged, a volatile address of the reference or of a
-// candidate pointer (diagnostic) still reference first: no form evaluated the candidate's count_spread first.
-// Round 27 (m3 lane 15, plain): pointers to the candidate's two teams for the swaps 150 (518 bytes,
-// 0x91dd0 then 9); the first test as `!(reference->count_spread() <= candidate.count_spread())` 66; the
-// condition named `bool better` 67; only the equality written reference first 66; the equality-and-cost
-// clause tested before the `<` 107 (536 bytes). The candidate's count_spread still runs last.
-// Round 23 (m3 lane 2, fast): an inline `operator<` on the solution (`candidate < *reference`) 188 (420 bytes, not
-// inlined under /Ob1), as a free inline operator 185 (422 bytes); the equality named first as a bool 67; the candidate
-// through a `s_balance_solution const *trial = &candidate;` pointer 67; the test as a forceinline optimizer member taking
-// the candidate (reference selected inside) 67. The candidate's count_spread still runs last.
-// Round 32 (m3 lane 14, fast): not purity: count_spread made to look writing (a store through a copy
-// of `this`, diagnostic, 0x91860 then 38) still queries the reference first, 97 (it takes EDX then);
-// that with the reference on the left 97; the spreads passed as arguments of forceinline `less`/`equal`
-// helpers (candidate first) 67 (same code); a `const &` alias of the candidate in the test 67; a const
-// pointer to the candidate for all six queries 67.
-// Round 125 (lane 6, fast with 0x91dd0/0x91860): `reference->count_spread() - candidate.count_spread() > 0`
-// for the first test 72 (516 bytes); the reference picked by `= &current; if (improved) = &best;` on this
-// body 70; nested ifs in place of the two continues on this body 67; the selection through a forceinline
-// optimizer member returning `improved ? &best : &current` 67; party_b's pointer declared before party_a's
-// 67 (the last three identical code). The candidate's count_spread still runs second.
-// Round 25 (m3 lane 2, fast): a placement-new candidate (`*new (storage) s_balance_solution(current)`, as 0x91fc0
-// builds its optimizer) 67 (same code); the candidate default-built and filled by memcpy 204 (560 bytes, the
-// team constructors run; 0x91dd0 9); count_spread declared first in the solution 67; the cost test as
-// `reference->cost() - candidate.cost() > 0` 36, not kept (VC distributes it into 7 * (t - t') + 3 * (r - r'),
-// unlike retail's two-cost compare, and the code is 510 bytes plus two int3: only the tail realigns; the count
-// pairs still run reference first); as `candidate.cost() - reference->cost() < 0` 67 (508 bytes); the first
-// test as `reference->count_spread() - candidate.count_spread() > 0` 72 (516 bytes, reference still first).
-// Round 61 (m3 lane 9, fast): the first test as `reference->count_spread() - candidate.count_spread() > 0`
-// 72 (516 bytes); nested `if (candidate <= reference) { if (candidate < reference || cost) ... }` in the
-// real build 100 (512 bytes); the equality spelled `!(candidate > reference)` 67 and `candidate <=
-// reference` 67 (same code); the reference selected once before the loops and set to `&best` after an
-// improvement 125 (spilled to the stack, still queried first).
-// Round 34 (m3 lane 14, fast): 1-8 initialized unused locals at the top, before the reference and before the
-// candidate (24 probes) 67 each, same code (not a numbering tie); the candidate in raw `long` storage bound by a
-// reference (balance_teams' pool idiom) 67; the cost test as `candidate.cost() < reference->cost()` 67 (same
-// code); the copy, swaps and test in a forceinline helper (candidate an inlinee local) 67, with a forceinline
-// comparison 67; the reference from `= &current; if (improved) reference = &best;` 70; the reference declared
-// ahead of the candidate copy 128 (512 bytes, loop-entry registers rotate, still reference first); an in-class
-// `better_than` method stays out of line 188 (420 bytes); a one-element candidate array 204 (constructor runs).
-// Round 114 (lane 8; one-file LTCG harness of this file, exact at 67): the copy, swaps and queries through a
-// non-const `s_balance_solution *trial = &candidate` 67 (same code); `s_balance_solution const &reference =
-// improved ? best : current` at the test 67; `(improved ? best : current).` at each of the six queries 112 (539
-// bytes); `reference[0].count_spread()` 67; the spread tests through forceinline `spread_greater(reference,
-// candidate)` / `spread_equal(reference, candidate)` helpers 65 (the reference-left code). Retail queries the left
-// operand first in both the spread compares (candidate left) and the cost compare (reference left); ours queries
-// the stack candidate last in every form.
-// Round 69 (lane 16, fast): the candidate as a reference bound to a copied temporary 123 (535 bytes); a
-// `__forceinline` free `operator<` on two solution references, `candidate < *reference`, 67 (same code), with the
-// cost written candidate first inside it 67; the first test as a `? true :` ternary 67 (same code); diagnostic: the
-// reference as a full stack copy (`s_balance_solution const reference = improved ? best : current;`) 126, its
-// count_spread (the newer, higher stack copy) still runs before the candidate's.
-// Round 441: byte/word outer and inner ordinal domains (word/long, long/word, word/word,
-// byte/long, long/byte, byte/byte, word/byte, byte/word) 146/146/151/142/148/150/155/144.
-// All regress; narrowed inner domains also lose the matched caller. Original body restored;
-// reference-first spread queries and the extra two bytes remain.
-// Round 276: complete selected-solution value after edits with no/candidate/reference/both
-// retained spread results 126/97/100/99; before candidate copy 183/152/155/139.
-// Original selected-pointer graph restored; candidate-first query ownership remains.
-// Round 21 (lane 17, fast; compile-only /FAs screen agrees): the candidate in a one-member struct 67 (same code), a
-// `static` candidate 183 (546 bytes), the reference from a two-entry pointer table 108 (523 bytes), the reference as
-// a byte offset from `this` 80 (516 bytes), all diagnostics; a stack or global candidate is queried after any
-// pointer or `this`; 1-7 dead temporaries (diagnostic) 67 each.
-// M294: Existing cost weighted products/accumulator/staged weighting/raw query parts,
-// in-class then forced expansion:
-// 67/67/67/67/67/67/67/67. Original complete executable source restored.
-// M296: Single current-team count observations A/B/both, mutable then const,
-// then both with reverse declaration priority [75, 151, 154, 75, 151, 154, 154, 154]. Original per-use count reads restored.
-// Round 341: Equality-first lexicographic acceptance in bool/byte/short/long
-// result storage 92/92/106/105; complementary rejection results 92/92/106/105.
-// Bool/byte reach 512 bytes but lose the original frame; original query graph restored.
-// Round 121 (lane 8): compile-only, the reference's query runs first with an undefined free function, through
-// forceinline per-query wrappers, and with each pair in scoped named locals; only locals used twice (two calls in all)
-// put the candidate first. Real (fast): scoped named pairs under a bool result 67; a forceinline compare returning the
-// difference of two named queries 67; `inline` on the spread query's definition 192 (596 bytes, partly inlined); the
-// two tests as a bool result with `else if` 67; the two tests as rejecting `continue`s 100 (512 bytes).
-// A const reference bound to the candidate's first spread puts its query first: alone 64 (510 bytes + padding), with a
-// second one under a bool chain and the cost written candidate first 65, with `candidate.cost() < reference->cost()` in
-// the `||` form 64. Aligned, those differ from retail by one instruction: `cmp [esp+0x30], eax` where retail reloads a
-// spilled value (`mov ecx, [esp+0x30]; cmp ecx, eax`). A named copy of the reference 65. Lead: retail's order with a
-// spilled (not address-taken) first result.
-// P264: whole/header-team best publication via memcpy/memmove, native candidate
-// 67/83/79/95; default-built memmove candidate 185/173/197/186.
-// Native copies, original candidate lifetime, queries and complete body restored.
-// Round 124 (m3 lane 8, fast): both spread tests reference-left re-measured 65 (ours still queries the reference
-// first); the reference pointer `const *const` 67; the first test as `reference spread - candidate spread > 0` 72
-// (516 bytes); the candidate direct-initialised `candidate(current)` 67; `best = candidate;` before
-// `improved = true;` 71 (517 bytes); the loop counters declared before the loops 67 (same code).
-// Round 81 (m3 lane 12, fast): the reference selected before the candidate copy 128 (512 bytes); the
-// improvement as `if (less) ... else if (equal && cost) ...` with the same arm 150 (517); the candidate's
-// spread named once for both tests 80; named candidate team pointers for the swaps 150 (518); the candidate
-// declared at the top of the inner loop and assigned from current 224 (576). Original body restored.
-// Round 144 (m3 lane 6, fast): `improved` read into a `bool const` before the candidate copy and the reference
-// chosen from it 105; the whole test duplicated per `improved` arm against `best`/`current` 273 (609 bytes); the first
-// candidate spread named before the test with the cost written candidate first 67 (same code: the one-use local is
-// forwarded back into the compare); improve() defined above this function 67 (same code); `bool better` from the first
-// test refined by `if (!better && equal) better = candidate cost < reference cost` 82 (524 bytes). Diagnostic,
-// reverted: count_spread made impure (a store to a probe global) with the four queries named in candidate-first
-// statement order 89: the candidate is then queried first and the cost compare is retail's `cmp esi, edi; jge`, but
-// all four calls run before the first compare. So the order follows statements only for an impure count_spread.
-// M3 lane 2 r47 (fast): the spreads passed by value to forceinline (reference, candidate) compare helpers 65 (the
-// reference-left code: argument order does not move the stack candidate's call); the candidate spread named `long const`
-// for both tests 80 (512 bytes), as `long const &` 80; a plain `long const` for the first test only 67 (same code);
-// `long const &` for the first test written reference-left 64 (512 bytes: that pair runs candidate first but folds
-// `cmp eax, [esp + 0x30]` where retail reloads into ECX; the equality pair stays reference first).
-// Lane 17 r42 (fast with 0x91dd0, which stays matched; a compile-only /FAs screen without /GL reproduces the order):
-// the spreads in a `long spreads[2] = { candidate, reference }` initializer (the only plain spelling the screen queries
-// candidate first) 81, both pairs that way 82 (frame homes move); a named candidate spread with _ReadWriteBarrier()
-// (intrinsic) before the reference's query 67 (the pure query still moves); round 121's `long const &` lead with the
-// value copied to a plain local, first pair only, 64; both pairs that way as `if (a < b) goto improve;` then
-// `if (!(equal && cost)) continue;` 65 (aligned 6), with the cost written `candidate.cost() < reference->cost()` 65
-// (aligned 4: one real difference, the first pair compares `[esp+0x30]` from memory where retail reloads it into ECX);
-// the copy dropped or the reference's spread named too 65/65. Not kept: const-reference temporaries and the goto.
-// F362: Existing signed-dword query results as int, count/total/rank subsets
-// 1..7 and cost alone: 67 each at 514/512 bytes. NOT kept: reference-first
-// query ownership and extra receiver move remain; all result contracts restored.
-// B408: Complete post-swap best/current selection outcomes bool/byte/short/long:
-// positive 67/67/67/67, complementary 70/70/70/70 (control 67). All 21 peer
-// measurements unchanged; NOT kept: one-use captures do not match or recover candidate-first
-// query order. Original selector, four spread calls, costs and complete body restored.
-// P306: Complete current/best solution receivers, pointer/reference singles and pairs:
-// 67/67/84/84/84/84/84/84. NOT kept: best bindings reach 512 bytes but regress;
-// original record observations, selection, publication and complete body restored.
-// M358: Original less-first acceptance byte/short/word/long and complementary rejection
-// bool/byte/short/long: 67 each. NOT kept: one-use decision carriers do not match;
-// original query graph restored; reference-first spread calls and two extra bytes remain.
-// M362: Native signed int delta/parallel populations/final difference, seven
-// subsets then immutable complete inputs: 67 each at 514/512 bytes.
-// NOT kept: no exact candidate-first query repair; all file controls unchanged.
-// Original long intermediates, queries and complete body restored.
-// M364: Whole candidate copy lifetimes at entry, team roots, population difference and loop
-// admissions; reused copy-initialized records outside the inner loop:
-// 180/180/178/157/152/152/174/174. NOT kept: no exact candidate-first query graph; early copy
-// lifetimes also lose the matched caller; original lifetime, queries and body restored.
-// M366: Complete three-way spread result from original less/equal tests, signed char/short/long/int64:
-// branch production 67/67/67/67; conditional production 96/103/102/122. NOT kept: no exact
-// candidate-first query repair; original complete body restored; reference-first calls and two extra bytes remain.
-// M370: Reference selection inside the four candidate mutations, after first removal,
-// second removal or first addition, conditional/current-default/best-default forms:
-// 147/117/121/116/122/115/77/103. NOT kept: all regress; one conditional form also
-// loses the caller. Original selection restored; reference-first queries and two extra bytes remain.
-// M372: Outer/inner while induction and positive flag admission, seven subsets
-// then all with entry selector declaration: 67/132/67/132/67/132/132/132. NOT kept:
-// inner advance regresses to 523/512 bytes and first +0x3e; original body restored;
-// reference-first spread queries and two extra bytes remain.
-// M377: Actual memcpy/memmove destination as candidate query/all-use receiver,
-// ordinary/immutable bindings: 174/174/218/218/216/216/210/210. NOT kept: aliases do not match,
-// construction/receiver changes regress and lose the matched caller. Original
-// native copy, four spread queries, party edits and complete body restored.
-// Lane 13 r62 (fast with 0x91dd0): the first pair named with `do {} while (false);` between the queries 67 (the reference's query
-// still runs first); both pairs that way under a bool result 75 (519 bytes); under if/else with the improvement in both arms 150 (517
-// bytes, 0x91dd0 8); the spread query declared `__stdcall` or `__cdecl` so its `this` is pushed 67/67 (same code; 0x91860 still matches).
-// M391: Shared spread-query pair in plain two-pass long/short/word/byte loops, positive then complementary decision: 172/172/172/175/158/158/158/169.
-// NOT kept: No exact candidate-first query repair; frame grows from 0x2694 to 0x269c and extent moves away from native. Decision flags require equality. Original complete body restored.
-// M3 lane 16 r91 (fast with 0x91dd0/0x91b90, control 67; compile-only /FAs screens without /GL agree on the call order):
-// the selection written inside each comparison (`improved ? best.count_spread() : current.count_spread()`, which the
-// compiler folds back into one selected `this`) 150 (566 B); count_spread's definition moved below this function 67 (same
-// code); a `const` reference pointer with the reference on the left 65 (the listed reference-left code); the reference
-// from a two-entry pointer table indexed by `improved` 108 (523 B); the candidate through a pointer local 67. Screens:
-// between two stack solutions the right operand's query runs first (`a < b` queries b, `b > a` queries a), but a query
-// whose `this` is a register pointer (the reference, or `best` itself) runs before one on a stack address whatever the
-// side; count_spread's body left out of the unit, const-reference helper parameters and operand order do not change that.
-// Round 91 (m3 lane 9, fast): the reference spreads written `(improved ? best.count_spread() :
-// current.count_spread())` at both uses 128 (546 bytes; the arm calls are not merged), that with the costs too
-// 150 (566 bytes); the party pointers as `s_balance_party const &` 67 (same code); the reference defaulting to
-// `&best` with `if (!improved) reference = &current;` 117 (540 bytes); `improved` read into a `bool const`
-// after the swaps 67; cost() summing two named queries 67. The candidate's count_spread still runs second.
-// Round 135 (m3 lane 7, fast with 0x91dd0/0x91860, both stay matched): the spreads passed to forceinline `greater`/`equal`
-// value helpers in (reference, candidate) order, to test right-to-left argument evaluation, 65 (the reference's query still
-// runs first); that with the cost written candidate-first 65; only the `<` test through the reversed helper 66; the swaps and
-// the test in a forceinline optimizer method taking the candidate by value 395 (not inlined, 265 bytes; 0x91dd0 10); the
-// candidate copied at the top of the inner loop, ahead of the party tests, 174 (537 bytes).
-// P382: Producer-owned pre-copy party incompatibility in bool/char/signed-char/byte/
-// short/word/long/dword: 67 each. NOT kept: reference-first query pairs and extra receiver
-// move remain at 514/512 bytes; original flag admission, candidate lifetime and full body restored.
-// MiniMax E (11-08): no new form, no lower score: the ebx save around the calls is reversed (retail reloads it after the call) and the compare's operands are swapped.
-// P392: Complete pre-copy count-prune outcomes, admission then rejection in bool/byte/short/long:
-// 67/67/67/67/67/67/67/67. NOT kept: no candidate-first query or extent repair; one-use predicates require
-// equality. Original complete body restored.
-// P401: Selected-solution receivers shared separately by the less/equal/cost query pairs,
-// seven nonempty subsets then scoped demand: 87/115/132/114/132/130/130/131.
-// NOT kept: no candidate-first query graph; frame stays 0x2694 but extents grow.
-// Original selection, four spread queries, costs, party calls and whole body restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -781,7 +423,7 @@ void s_balance_optimizer::try_swap(long team_a, long team_b)
 			candidate.teams[team_b].add_party(party_a);
 			s_balance_solution const *reference = improved ? &best : &current;
 			if (candidate.count_spread() < reference->count_spread() ||
-				(candidate.count_spread() == reference->count_spread() && reference->cost() > candidate.cost()))
+				(candidate.count_spread() == reference->count_spread() && candidate.cost() < reference->cost()))
 			{
 				improved = true;
 				best = candidate;
@@ -1181,6 +823,12 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // P391: Limit-based acceptance (nonnegative maximum and excess within it), both test
 // priorities with bool/byte/short/long results: 53/69/82/78/53/69/82/78. NOT kept:
 // all lengthen to 197-217/190; original clamp, Boolean result and full body restored.
+// Round 139 (m3 lane 7, fast with 0x91e30): the fill loop written after `long imbalance = NONE;` 37 (the NONE store moves
+// ahead of the fill's test; the fill value is still loaded first); `register long next_party` 34 (same code); `long const`
+// player and extra count parameters 34 (same code); the excess as `long excess = imbalance; excess -= open_slots;` 34 (same
+// code); the fill counted down over the extra count, `parties[total - i]`, 72. Re-measured: the maximum as one ternary
+// assignment 34, the fill through a walking pointer to an end 63 (199 bytes), the clamp assigned back to the imbalance 45
+// (192 bytes). The player count stays EDX in each.
 // P400: Repeated live input-cell reference/pointer with inclusive/strict branch and
 // inclusive/complementary selection maxima: 34/35/34/34/34/35/34/34. NOT kept:
 // no exact count/fill/clamp allocation repair; native 0x48 frame and 190-byte extent

@@ -633,7 +633,9 @@ struct s_device_machine_view
 };
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
-// score 34 (was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
+
+// score 34 (was 34): group-word load/EAX sharing and velocity-zero join remain;
+// the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
 // retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
 // retail's shifted by one. Plain masks plus the zero store leave only the group pointer's register.
@@ -657,6 +659,10 @@ struct s_device_machine_view
 // MiniMax D (11-07): the flags read in both arms of the machine-flags test plus `function_value = 0.0f;` at the top
 // of case 0x1200055f's velocity block 3, Round 62's form; not kept (a read written into both arms only to shape the
 // load, and a store of the 0 the result already holds).
+// Earlier (34, was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
+// and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
+// retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
+// retail's shifted by one. Plain masks plus the zero store leave only the group pointer's register.
 // MiniMax A (11-04, run 41): no new form, no lower score (34); the device-group flags are still a byte load
 // with a mask where retail loads a word, and retail's zero store in case 0x1200055f is still missing.
 // Lane S (34, was 42): masking the group flags into a dword local gives retail's `test al, 1` and
@@ -901,6 +907,9 @@ struct s_device_machine_view
 // leave EAX.
 // MiniMax E (11-08): no new form, no lower score: retail loads the group's flags as a word and tests bit 1 then bit 2, ours loads a byte and masks it with 3, and testing the word without the mask scores 120.
 // MiniMax E (11-09): no new form, no lower score: retail loads the group's flags as a word and tests bits 1 and 2, ours loads a byte and masks it with 3; dropping the mask gives retail's word load but moves the group pointer into esi (120).
+// T80: Partial position-zero closed/displaced admission in bool/byte/short/long:
+// 34/34/34/34/34/34/34/34. Group-word load/EAX sharing and power-velocity zero join remain.
+// NOT kept: no byte equality or qualifying gain; original complete body restored.
 // Round 81 (m3 lane 10, fast with all of this file): the two 0x1200055f arms as ternaries with a 0.0f false value on
 // the lane S form 104 (each false arm gets its own `movaps xmm0, xmm1; jmp` block, no shared zero); the lane S bits read
 // through the macro with no group pointer 124 (655 bytes); a zero-initialised local for the velocity fraction, copied
@@ -1329,6 +1338,9 @@ bool function_108530(long device_index, long name)
 // of line, 291 bytes, ret 0x14; callers 26/28). Diagnostic, reverted at once: a volatile ramp-down parameter on this body 165
 // (546 bytes, a `push ecx` frame, the target passed in a register, the initial velocity still on the stack; callers 26/28).
 // After the five: the same plan helper as forceinline 121 (same code); the cruise velocity as one ternary 121 (same code).
+// T79: Both duration/distance admissions formed at their original post-reset/post-fabs tests,
+// tiny/active bool/byte/short/long outcomes: eight 121s; both callers stay 31/13. NOT kept:
+// no exact result form; original body restored, initial-speed/ramp-down residency remains.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

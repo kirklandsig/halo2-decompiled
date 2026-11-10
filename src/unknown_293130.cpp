@@ -309,6 +309,13 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // record setup call 282; the two record stores after the range draw 63; the member arms inverted (no member first) 77;
 // the two accumulators declared in the other order 32. Diagnostic: the 0xb7b40 stub letting the record escape (our stub
 // ignores it, retail's body uses it) 30, identical listing, so the record's escape does not order the rotation.
+// Round 140 (m3 lane 7, fast unless noted): new: the z flag as `(flags & 0x10) == 0` 30 (same code); the helper
+// taking the input vector by value (copied from the global at the call) with a separate output 88 (1408 bytes);
+// the three negated radii as `0.0f - radius` 30 (same code); the existing cross-file record_rotate_vector
+// (0x26d570's file) with sine and cosine from the caller 78 (plain, 1407 bytes); the selected entry indexed at
+// every use instead of its pointer local 412 (1459 bytes). Re-measured (listed): the z draw as a ternary 30 and
+// the z arms inverted 56 (round 31's compile-only screen); a vector pointer local for the copy and the call 60
+// (round 108's form, 118 then). Diagnostic: +0x1a stored from the +0x10 field just written 113 (not a source form).
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

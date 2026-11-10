@@ -195,6 +195,18 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // dot as dot3f(forward, offset) 465 (same code); the neighbour count as a long 712 (retail tests it with `test si, si`, so short is
 // right). Retail's slots also show the object pointer at 0x6c and the nearest distance at 0x74 (ours the reverse), the same reversal
 // as the walk's two vectors. Body restored.
+// Round 161 (m3 lane 6; fast control 465, plain 446): the speed vector's i set with `+=` the speed 465 fast, 446 plain (the
+// zero folds, the store stays gone); the three speed zeros before the forward scale 468 fast, 449 plain; the nearest distance
+// and point declared after the zeros 481 fast, 458 plain. Lead: the walk's self test as an if-block around the rest of the body instead of `continue` 462 fast, 455
+// plain (3712 bytes): retail's dead store of zero to the speed vector's i at 0x88 comes back, the walk head's pad goes and
+// the walk's jumps are retail's (masked aligned 25 -> 22), but the pool record's spill moves below the centroid sum (record
+// 0x78, sum 0x7c-0x84, retail sum 0x78-0x80, record 0x84), so the body is 4 bytes short and every later jump differs. On
+// that form: the record or the centroid sum renamed to sort last or first 462 (homes unchanged); one exit for the early
+// test (the body inside `if (parent == NONE && member)`) 462 fast, 455 plain (same code); plain, on the if-block form: the
+// request's speed vector stored before its forward vector 458 (aligned 84 -> 82, masked 22); the nearest point copied before
+// its distance 458; the neighbour count raised before the position sums 456 (the record's spill stays at 0x78 in all three).
+// Next: the if-block form plus whatever puts the record's spill (shared with the cohesion block's 3 - total) back above the
+// centroid sum.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

@@ -1571,6 +1571,15 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // seven subsets then all at function scope: 33/33/104/33/104/104/104/104.
 // NOT kept: the asynchronous-output exception requires equality; query/count
 // homes and write/header joins remain. Every trial qualifier and complete body restored.
+// Round 140 (m3 lane 7, fast): every form re-measured a listed one, no new form found: one `success` flag for the
+// resize result, `success = bytes_written == 0x800` in the write block 112 (DL262's assigned form); the size test's arms
+// swapped 175 (937 bytes, B444's equal-size-first form); `(!resized || bytes_written != 0x800)` with no zero store 157
+// (round 90). Round 53's 7 form on this body 7 (the write's handle after the flags zero, the checksum in EDX); on it the
+// checksum `&&` 78 and if/else 15, the empty header declared after the resize call 7 (listed before it: 7), the byte
+// count outside the write block 7 (T7). All restored: the 7 needs match-only forms.
+// Round 100 (m3 lane 12, fast): the slot range as `index > 0 && index < 2` 104 (932 bytes); the write count typed long 33 (same code); the
+// remove-later flag cleared before its call with `resized` declared above it 35; the checksum as `!(a != b)` 33 (same code); the size test as
+// `expected > size || expected < size` 171 (942 bytes); the open test through `g_557c90[index].handle` 33 (same code). All restored.
 // @retail 0x213970
 void function_213970(void)
 {
