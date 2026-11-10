@@ -1849,6 +1849,10 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax E (11-10): no new form, no lower score (285): dropping the volatile from the activity flag reproduces
+// retail's eight-bit shift of the header's flags byte, but the pool pointer then moves out of ebx and the score
+// rises to 289; writing the same bit as `(header->flags & 4) != 0` gives the same 289, and the compiler rewrites
+// both shift-form bit tests back into a sign test and a mask test.
 // MiniMax C (11-09): no new form, no lower score (285): retail reaches one shared epilogue at 0xb987a from the
 // ancestry-loop match, the !allowed test and the later branch, ours duplicates it, so the first difference is
 // still the jump target at +0x76; retail also inlines function_b8bd0's marker pointer, and that file is /Ob1
