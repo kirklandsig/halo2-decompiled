@@ -843,7 +843,7 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // retail sums i, k, j) NOT kept. flags is read as a byte (retail 0x17fdd2, +0xc of the 16-byte entry) through the cast.
 // MiniMax E (11-05): no new form, no lower score; the first +0x41 tag spill, the plane base, the first
 // selectors and the product memory sides are as the earlier rounds left them.
-// score 539 (was 539): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
+// score 535 (was 539): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // Frame 0x21dc and length 3647 agree; tag/count/plane homes and rotation spills remain.
 // Earlier: 552 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // at +0xb4 versus retail +0x94. Count/plane homes, initial face-call scheduling and rotation spills remain.
@@ -1128,6 +1128,12 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // DH385: Entry output-counter native memset/first-face memcpy producers, seven subsets,
 // then first-face memmove: 562/562/539/566/562/562/566/789. NOT kept: no gain or tag-home
 // recovery; original scalar counters, face publication, all helpers and complete body restored.
+// Round 108 (m3 lane 9, plain; masked = aligned with stack offsets and registers masked, baseline 496): `matrix.scale = 1.0f;`
+// before the position 535 (masked 469); `short remaining = secondary_count;` before the guard, tested there 539; the counts
+// declared face count first 535 (re-measure); `sign * decal_normal_angle_17fd20(...)` 535 (same code); the edge's min/max as two
+// ternaries 613 (re-measure of DH383's conditional producers, 614); the axis scaled `inverse * axis.i`, `axis.j * inverse`,
+// `axis.k * inverse` for the component loop 559; the edge side as `long reverse` 646 (3631 B).
+// Retail's offset rotation writes each partial sum to +0x10 and reloads it: a register-pressure spill, not a source form.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
