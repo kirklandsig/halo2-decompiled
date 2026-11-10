@@ -1252,6 +1252,9 @@ long function_1931a0(long count, s_surface_description *variant);
 // variant lookup replaced by the existing 0x192e60 call 8 (0x7e210 766 -> 857, 2772 bytes: the loop call stays out of
 // line, the top one inlines); its result flag declared first 8 (766), declared last and set after the clear 8 (766).
 // Here: the ratings buffer declared at the top 8; an early return when 0x7e210 fails 8. All restored.
+// Round 226 (m3 lane 3, fast, still BLOCKED-BY 0x7e210): 0x7e210's player loop written as 0x63220's body with its calls
+// (0x192e60, 0x631f0, a two-evaluation max of 0x1931a0) gives this function its match (the top 0x192e60 call stays out of line
+// and the session arrives in EAX) but raises 0x7e210 766 -> 1032; with its capacity helper forceinline 8 here, 998 there.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {

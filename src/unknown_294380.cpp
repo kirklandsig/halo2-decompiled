@@ -231,6 +231,10 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // their own block-local vector instead of the shared one 755/756/755 (3737-3738 B), all three 764 (3734 B): retail
 // reuses one vector. Re-measured (Round 64 lists it): the position, the offset or both declared at the walk body's top
 // 280 each (same code).
+// Round 226 (m3 lane 3, fast, control 280): the walk's position, offset and the post-walk vector renamed so the post-walk vector
+// sorts after both and the position after the offset (member_position/member_offset/steering, neighbour_point/neighbour_offset/
+// steering, position/away/steering), the post-walk vector alone (adjustment), position/offset as point/offset: 280 each, identical
+// code; names do not order these slots.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

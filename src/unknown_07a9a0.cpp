@@ -1278,6 +1278,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 376); grouped labels and a long histogram without the guard 850; the early exit as `result = false; return result;` 766
 // (same code). Lead: retail's call site is out of line with no guard, so its inline choice comes from elsewhere.
 // MiniMax I (11-10): no new form, no lower score; retail's party histogram is 16 dwords at frame+0x44, cleared twice with `rep stosd` and indexed as `mov ebx,[esp + eax*4 + 0x40]` with the count-1 folded into the displacement, so our word cells and the 0xd4 frame stay (the dword cells reach retail's 0xb4 frame but score 844), and the session ingress and the inlined lookup remain the only differences.
+// Round 226 (m3 lane 3, fast, control 766, 0x73530 8): the player loop written as 0x63220's body with its calls (0x192e60 for
+// the variant, 0x631f0 for the group's highest rating, a two-evaluation max of 0x1931a0) 1032 at 2588 B: 0x73530 matches (the
+// top 0x192e60 call stays out of line), but none of the four loop calls inline (retail inlines 0x192e60, 0x631f0 and the first
+// 0x1931a0 there); with a forceinline redeclaration of 0x631f0 here 1032 (no effect); with the capacity helper forceinline 998
+// (2656 B, the top call inlines again, 0x73530 8); with forceinline redeclarations of 0x192e60 and 0x1931a0 as well 998.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
