@@ -521,6 +521,13 @@ struct s_physical_block_iterator
 // M3 lane 11 r81 (fast): the take test as `better || !have_best` 201 (same code); the walk's overlap conditions swapped 203 (+0xcc);
 // the policy as an if/else-if chain 240 (1178 bytes: cases in line but in source order, case 0 still threaded, aligned 118 -> 109);
 // case 0 as two `better = true` arms 201; default ages written inside the comparison 201. Retail's `sub eax, 0` chain is a switch.
+// M3 lane 5 r167 (fast, 0x13d320 matched each time; base 201, aligned 87, masked 57): the second age's mask restored with case 0
+// negated, `!(time > best || (time == best && pages >= best))`, 209 (1228 bytes); the two products named with the mask
+// restored 209; the best's age computed first 203 (1213 bytes, masked 59), with named products 203; the mask restored
+// with case 1 as `if (...) better = true;` 229 (1228 bytes, first difference +0x4e). Re-measured: one `dword now` with
+// both clamps as ternaries 209 (lane 16's M+N), the named products alone 201 (same code). With both masks
+// (209, masked 52) the default arm is retail's but for the first age in EAX where retail uses ECX, which folds the best
+// pages into `imul eax, [mem]` where retail loads them first; the case 0/1 blocks still sit at the end. All restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

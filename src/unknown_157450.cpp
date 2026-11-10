@@ -747,6 +747,13 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // dword mask (same code each); the added teams as `playing & ~old_playing` 77/32 (same code); a `word *const` mask
 // pointer 77; the early return when nothing changed with both field stores straight through `globals` 77; re-measured
 // with the early `continue`: the mask stored through `globals` but read through the pointer 77 (lane 14 r55's form).
+// M3 lane 5 r167 (fast; base 32, aligned 25, masked 16). New: on the word mask, `1 << team` in both updates with present
+// declared before playing 85 (383 bytes); on the team-bit carrier with an early `continue` and the word mask (the listed
+// carrier-on-word 78, aligned 13, masked 10: only the block after the loop and one alignment shift left), the OR uncast
+// 78, a word old playing mask 56/56 (with and without the cast), the compare operands swapped 78. Re-measured:
+// `player->team` at every use 46 (382 bytes), the carrier with an early `continue` 29 (same code as the carrier), the word
+// mask with `(flags & 2) == 0` and a `continue` 77, with the compares and OR swapped 78, `1 << team` in both 83 (383 bytes). Retail reloads
+// the spilled word once into ECX ahead of the first jne and keeps playing in EDX; ours reloads at each use. All restored.
 // @retail 0x158140
 void function_158140(void)
 {
