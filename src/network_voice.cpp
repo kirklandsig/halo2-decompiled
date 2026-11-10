@@ -1718,6 +1718,13 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // capacity-fail arms 177, direct returns plus that else 189 (0x56380 73 each). Diagnostic, result started from a global
 // read 145 (still two epilogues). 300 random forms (orders x sizes x bit at top/pre-loop/at use x if/else-if or ternary
 // clamp x failure arm first or second): best 60, lowest aligned with the caller kept 18-19 (130-134).
+// Round 181 (m3 lane 4, fast with 0x56380), re-measured on the `include_mask ? 13 : 11` size: current order 147 (461
+// bytes), capacity/size/written/kept 134 (head matches retail through the active test; EAX's zero then serves the
+// clamp and `written = 0`, and kept takes EAX), with round 71's NONE-then-0 result 129 (445 bytes, 0x56380 13), with
+// written inside the capacity block 197, with kept inside it 127 (449 bytes). New on the 134 form: include_mask typed
+// char 134 (same code); the clamp compare written `player != clamped` 135; the clamp testing its copy (`clamped < 0`,
+// `clamped > 15`) 134 (same code); written typed short 135 (461 bytes); the compaction test without the word cast,
+// `kept != (dword)((1 << queue->count) - 1)`, 128 (457 bytes).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
