@@ -1281,6 +1281,7 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax I (11-10): no new form, no lower score (94).
 // MiniMax R (11-09): no lower score (94): the order of the three statements in the block - the identity flag,
 // the total and the channel pointer - was measured again: the flag, the pointer and the total (93), the total,
 // the pointer and the flag (94), the pointer, the flag and the total (99), the pointer, the total and the flag
@@ -1861,6 +1862,7 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax I (11-10): no new form, no lower score (85).
 // MiniMax R (11-09): no lower score (85): the second port-flag query marked `inline` was measured again and
 // confirms the recorded result - 0x55990 goes to 102 while the matched callers 0x54890 and 0x53a20 are lost
 // (83 and 84), and 0x53b90 and 0x53bb0 keep matching either way.

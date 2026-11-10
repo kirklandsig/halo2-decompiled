@@ -459,6 +459,7 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 	vector->k = axis->k * along + k * cosine - (axis->j * i - axis->i * j) * sine;
 }
 
+// MiniMax I (11-10): no new form, no lower score (90).
 // MiniMax D (11-09): no new form, no lower score; retail keeps the ring value as a float in a
 // stack slot and reloads it as a double for the radius product where ours converts the counter
 // directly, and retail's two global loads use swapped registers.
