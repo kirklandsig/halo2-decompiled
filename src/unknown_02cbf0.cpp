@@ -275,6 +275,12 @@ static __forceinline long floor_to_long_inline(real value)
 // seven subsets then reversed initial field stores: 14/14/10/79/83/83/79/14.
 // NOT kept: no equality; the real declaration does not recover native OR/shift/pool
 // scheduling. Original record declaration, packed expressions and body restored.
+// MiniMax D (11-09): no new form, no lower score: MSVC canonicalises the order of the first word's
+// three OR terms, so re-writing them in retail's order ((category|flags)|unknown00) gives
+// byte-identical code and the score stays 10; the `long kind_word` spelling, with its extra
+// `sar eax, 0xc`, scores 11, and the kind's shift still comes after the copy to esi where retail
+// shifts before it.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 10 (1033 bytes against retail's 1033); the whole of the difference is still the first word's three-address OR against our one-expression OR, and the pool's `mov edx, esi` above the `jbe`.
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, short instance, dword flags,
     long tag, dword key, long category, long material, byte *object, short mask, byte mode,
