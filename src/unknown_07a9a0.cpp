@@ -1052,6 +1052,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	}
 }
 // score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
+// where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
+// expanded here while retail calls the matched 0x192e60 out of line.
 // MiniMax E (11-05): no new form, no lower score; the session's EAX home belongs to the caller's
 // declaration, which this lane may not change.
 // w14C (11-06): walked against retail block by block; no behaviour difference. The histogram cells are dwords in retail
@@ -1302,6 +1304,16 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // top 0x192e60 call stays out of line), but none of the four loop calls inline (retail inlines 0x192e60, 0x631f0 and the first
 // 0x1931a0 there); with a forceinline redeclaration of 0x631f0 here 1032 (no effect); with the capacity helper forceinline 998
 // (2656 B, the top call inlines again, 0x73530 8); with forceinline redeclarations of 0x192e60 and 0x1931a0 as well 998.
+// Round 69 (m3 lane 15, fast): the capacity helper with grouped case labels and external `inline` linkage together 876
+// (2852 B, 0x73530 8: the switch inlines as a table, the top call still inlines). Our link inlines only the first direct
+// 0x192e60 site here, and retail's one inlined copy is inside the inlined 0x63220, which fits one inlined copy of a callee
+// per caller; 0x63220 never inlines in this link, so that cannot be tested from this function. No natural no-code test
+// fits the top call: retail calls 0x192e60(-1) on the invalid-state path with no compare. Retail's out-of-line 0x63220
+// itself calls 0x192e60, and so do matched 0x741f0, 0x73ca0, 0x596d0 and 0x19a0c5, all from files built without /arch:SSE
+// (or /O1, /Ob1), so retail inlines 0x192e60 only inside the copy of 0x63220 it inlines here. This function's retail
+// code has no float instruction, so its build's /arch cannot be read from it. Lead for the flags owner (not tried): this
+// file is /arch:SSE like 0x192e60's, 0x63220's file is not; a non-SSE build of this body may keep the top call out of line
+// as 0x741f0's does and let 0x63220 inline.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

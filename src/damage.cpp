@@ -675,6 +675,8 @@ void __stdcall object_get_damage_owner(long object_index, s_damage_owner *owner)
 // Round 339: byte/word setters and native byte/word masks 31/0/28/6; CRT clear 28/11/28/11.
 // Word setter matches at 124 bytes but loses an outside reload pair (2); include positions
 // and field-pointer forms keep that loss. Original body and includes restored.
+// Round 67 (m3 lane 15, plain, on main 52e02b51a): the word_flags_set form still matches and still costs 0x54590 (2);
+// bit_vector.h included without the call keeps 0x54590, so the setter's own code moves it. Not kept.
 // @retail 0xd6a70
 void function_d6a70(long object_index)
 {
@@ -1971,6 +1973,11 @@ long function_1e4a10(long index);
 // non-contributor functions through real_to_long 7, or through one shared seconds-to-ticks inline helper 7 (d5de0
 // 400 -> 393, the rest unchanged); not kept (one point). `shield_damage *= multiplier` 8 (same code); the side effect 3
 // and in-radius test as one named bool used at both places 231 (895 bytes).
+// Round 67 (m3 lane 15, fast): 0xd6a70 matched through word_flags_set (0x54590 lost, not kept) 8 (same reload orders);
+// both object lookups through slot_handler.h's object_get 8 (same code); the stun block's actor index in a local used at
+// the test and the lookup 23 (883 bytes, read ahead of the type test), declared inside the type test 8; the multiplier
+// declared uninitialised at the block top and assigned 1.0f at its old place 8 (same code); the shield default as
+// `shield_damage = body_damage; if (shield_damage <= 0.0f) shield_damage = 0.0f;` 10 (the compare flips).
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -4304,6 +4311,10 @@ void function_db670(long object_index, long vehicle_index)
 // original body, owner initialization, parameter order and every callee interface restored.
 // Round 157 (m3 lane 5): in every walk that gives 0xd9d60 its retail convention (see its note) this function is 42;
 // the remaining differences are only the 0xd9d60 and 0xda110 call setups.
+// Round 67 (m3 lane 15): 0xb8540 enabled alone (plain screen) gives 0xd9d60 retail's AL convention (8) but this function
+// 42 at 170 bytes and about 25 matched functions lost, restored; fast: an early `if (!info) return;` 54 (the owner zeroing
+// moves above the test); the flag as `(flags & 0x100000) != 0` 28 (same code); the permutation fields read through the
+// indexed expression at each use 27 (172 bytes); the mode test inverted with the arms swapped 41.
 // @retail 0xdb760
 void function_db760(long region_index, long object_index, long permutation_index, long mode)
 {

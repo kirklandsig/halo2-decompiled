@@ -830,6 +830,14 @@ bool sound_driver_voice_create_buffer(
 // count as `voice_count++` 70 (same code), the voice as a pointer local 70 (same code), the mix-bin count stored
 // before the pointer 72 (619 B); the count stored after the voice reference 72 (a late `inc esi`), stored before the
 // first block 78. None kept: the one-use device local and the moved count store need a match.
+// Round 67 (m3 lane 15, fast with 0x191420; aligned/masked = difflib counts with targets / registers masked, base 71
+// aligned 54 masked 14): retail's 3D bool dies at its test and play is reloaded into BL there (`mov bl, [esp + 0x13]`),
+// so BL goes to the one-use 3D bool for the short first range and to play for the rest. The count stored before the
+// descriptor clear 71 (one store moves); the result assigned at the block top 71; both 71; the 3D flag defined first 182
+// (599 bytes, aligned 122, masked 67); that with a long result 158 (618 bytes, aligned 63, masked 23: both bools take
+// retail's roles, the result is a sign-extended copy stored after the range test). After the matched 0x220a70's idiom:
+// both mix-bin records stored count first 74; the 3D block's direct-sound object in a local read before its zeroing 92;
+// the 3D pair array and its own mix-bin record inside the success arm, count first, with that local 117 (623 bytes).
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

@@ -1932,6 +1932,18 @@ void function_b7360(long object_index);
 // (round 75's 483-506), 480 now at 1848 bytes, 146/76 (the reference is reloaded as in retail, but the scaled cs
 // index then stays live in ESI from the entry). The wait block as a two-site helper is round 27's 513 form. Retail reloads the reference after 0x25ab50 at
 // this site and at case 5, where 0x25a380 and 0x1b13b0 keep it across the same call, so the cause is in this caller.
+// Round 68 (m3 lane 15, fast): a second datum pointer from the same lookup expression, used for the two cs_point_get
+// reads, on this body 490 (prologue reorders); case 9 reading g_4e0350 at each use (no scenario local) 301 (case 9 then
+// has retail's test/jl/load order). Lead (match-only forms): lane 9's round-75 246 form plus that second pointer at the
+// 1/19 and case 5 point reads 107 at 1848 B with retail's arg_0 EBP/output ESI and both reference reloads after 0x25ab50
+// (what lane 13 got from a store inside 0x25ab50, without touching it); with case 10's selector and case 5's selector
+// read through it (loads and stores through different pointer variables keep their order: retail's +0x8c/+0x99/+0x9a
+// clears before the selector loads) and case 9 as above 100. Left on 100: the prologue (the duplicated lookup leaves a
+// shared offset temp, `lea edi, [ecx+edx]`, where retail computes the datum in EDI in place), the join's `xor eax, eax`/
+// `mov eax, 2` from the `short result` tail (retail `xor ax, ax`/`mov ax, 2`; the 1-byte shift moves every jump-table
+// entry) and case 7's dot sides. On 100: `if (success) return 0; return 2;` 169 (1816), `if (!success) return 2;` 179
+// (1812), with a failure label 179, failures back to `return 2` 174 (with those tails 169/179), dot3f arguments swapped
+// 102, the second pointer declared before the datum/before the actor 104/132, a plain copy of the datum pointer 244.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

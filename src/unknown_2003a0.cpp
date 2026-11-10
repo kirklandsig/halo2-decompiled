@@ -1984,6 +1984,7 @@ bool function_1e11b0(long actor_index, bool active);
 // retail's spilled ESI pointer and EBP handle. The common loop head and
 // full-width return mask still differ.
 // Earlier (64, was 64): EBP handle/receiver spill, common loop head and return width remain;
+// Earlier (64): EBP handle/receiver spill, common loop head and return width remain;
 // MiniMax H (11-07): no new form, no lower score (64); the squad address is still kept in EBX
 // where retail keeps the parameter in EBP and the squad address in ESI (spilled into the slot above
 // the argument), the loop is still rotated with its test at the bottom, and the flag store still
@@ -2199,6 +2200,12 @@ bool function_1e11b0(long actor_index, bool active);
 // the lookup) 69 at 204 bytes, masked 18: the index stays a stack argument in EBX, the squad takes ESI with its spill
 // into the parameter's home and the back-edge reload as retail; left: index EBX/next EBP against EBP/EBX, `movzx`
 // for retail's `and 0xffff`, the rotated loop, the byte flag store and the byte return.
+// Round 68 (m3 lane 15, fast): the 13 form rebuilt (no function-level pragma, squad_get plus a second squad_get in the
+// +0x7e test, the index read once through its address at the 0x204d30 call, 0x203d70's step loop with the statement-level
+// pair, game time before the word flag store, short-view return) 13 at 199 B, 0x203d70/0x201ea0 matched, index EBX/next
+// EBP. On it: the index read through its address into a loop-local copy each pass (ahead of the 0x1e11b0 call) 13; a
+// local copy `long index = *index_reference;` at the top used for both lookups, the call and the store 13; that copy
+// made just before the iterator call 13; the address read in both lookups with the plain parameter at the call 13.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -3123,6 +3130,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // long passed to 0x290cd0 through a short view 51; a const index parameter 50 (same code); the pending word read as a
 // signed short 68; the count test as `>= 1` 55 (580 bytes); the pending arm's two assignments swapped 50 (same code).
 // The listing is retail's apart from the first follow-up's index load (ours `mov eax, [esp+0x30]`) and the loop pad.
+// Round 68 (m3 lane 15, fast): the pending word read through squad_get(arg_1) 134 (581 B); the follow-up event as a
+// named short for its test and the call 50; `short local_2;` set NONE just before the pending test 50; the trigger
+// definition pointer by if/else with NULL in its own arm 50; the 0x290cd0 definition argument through squad_get(arg_1)
+// 182 at 578 B (the index and the squad pointer swap EBP/ESI from entry). 0x290e20 differs in scheduling only.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3399,6 +3410,10 @@ long function_203780(long arg_0, short arg_1, short arg_2, bool arg_3);
 long function_201010(long arg_0, short arg_1, short arg_2, short *arg_3);
 void function_2011f0(long arg_0);
 
+// score 222 (was 276): 1328 bytes; frame 0x134, the seat type and the final splice loop agree. Left (16 aligned rows):
+// the entry stores (retail row, head, flag; ours flag first, and with the flag last the row takes EBP and arg_2 EBX),
+// the row and seat slots swapped (+0x14/+0x18), the row reloaded before the latch where retail reloads it at the loop
+// top, and the difficulty load (retail sign-extends it in the arm).
 // MiniMax I (11-09): no new form, no lower score (318); retail's third parameter is a dword where our declaration has
 // a short (the declaration is used by other files), and the row, seat and chain homes still differ.
 // MiniMax B (11-07): no new form, no lower score (318); retail reads the index as a dword and masks it with AND
@@ -3407,7 +3422,7 @@ void function_2011f0(long arg_0);
 // MiniMax C (11-07): round 53: no new form, no lower score; the squad index's word carrier, the masked third argument and the row/seat/chain slots stay as the earlier rounds left them.
 // MiniMax R (11-05): no new form, no lower score; retail reads the index and the 0x98 stride before the pushes and
 // keeps the squad pointer in its own slot, ours sinks that load into the definition test (a named squad pointer 403).
-// score 318 (was 318): 1332 bytes against 1328. Left: the squad index is kept as a zero-extended word in EBP
+// Earlier (318): 1332 bytes against 1328. Left: the squad index is kept as a zero-extended word in EBP
 // and passed masked to the calls where retail keeps the third parameter in EBP, masks the index with AND,
 // keeps the squad address and the 0x98 offset in their own slots and passes the index unmasked; the frame
 // slots of the row, seat, chain and entry index differ.
@@ -3643,13 +3658,29 @@ void function_2011f0(long arg_0);
 // dword set once per arm, the squad row through the pool pointer and the fresh count read for the memset.
 // Retail's frame is 0x134 against our 0x130, its row and seat slots are swapped and its difficulty load is sign-extended.
 // MiniMax R (11-10): no lower score kept: our frame is one dword short because `replaced` shares the seat's stack home (retail keeps it in its own slot at esp+0x30); giving it its own home scores 271 and enlarging `available` to two dwords scores 262, but both are reverted forms and neither reproduces retail's slots.
+// Round 68 (m3 lane 15, fast, plain 222): kept: the seat as `short seat = NONE;` beside the actor (retail stores it with
+// dword moves but compares and copies it as a word; 0x201010 takes a short pointer), no cast or per-arm sets, 276 -> 269
+// (frame 0x134); the spawn index set in each arm of `arg_2 == NONE` 265; the splice as `next = head; do { cursor = next;
+// next = ...; } while (next != NONE)` with the record read through squad_transfer_object at both uses (no record local:
+// retail loads it twice) 223, the squad row there through squad_get(arg_1) 222 (the splice is then exact); the squad
+// pointer at the top through squad_get(arg_1), squad_offset dropped, 222 (same code). Tried: long difficulty by if/else
+// switched as short 221 (gain 1, not kept); row/head/flag declaration order 273 (on the first two forms) and 231;
+// `bool flag;` first and set false after head 230; the splice walking head itself 262, through a separate walker in a
+// plain while 335, main's do-while with the record read before the squad row 270, the kept splice as a plain while 339
+// (1332); the entry read through row->entries[spawn] at each use 262 (1344); the difficulty switch reading the row in
+// place 395 (1360); seat at function scope 222; the 0x200ee0 output declared beside the seat 222; seat renamed 222.
+// Lead (match-only): lane 6's entry pointer set in both arms of the range test and tested with `if (entry)`, plus the
+// row/head/flag order and the long difficulty, leaves 8 aligned rows (the NULL `je`, NONE cached in ESI for the +0x28
+// test, the splice's two hoisted loads swapped): the slots, the loop-top reload and the entry stores are then retail's.
+// Also kept: the three other actor-record reads through squad_transfer_object 222 (same code). Leave-one-out on the
+// 222 body: main's long seat with the cast and per-arm sets 268, main's `spawn = arg_2; if (spawn == NONE)` 265, main's
+// `cursor = head; ... cursor = next;` splice shape with the helper reads 271.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {
     if (!g_4f55d0->active)
         return;
-    long squad_offset = (arg_1 & 0xffff) * 0x98;
-    byte *squad = (byte *)g_51e9d8->data + squad_offset;
+    byte *squad = (byte *)squad_get(arg_1);
 
     bool flag = false;
 
@@ -3685,9 +3716,11 @@ void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_
         arg_0 = 0;
     for (short attempt = 0; attempt < arg_0; attempt++)
     {
-        short spawn = arg_2;
-        if (spawn == NONE)
+        short spawn;
+        if (arg_2 == NONE)
             spawn = function_2039d0(arg_1, available, blocked);
+        else
+            spawn = arg_2;
         if (spawn >= 0 && spawn < row->count)
         {
             s_squad_placement_entry *placement_entry = &row->entries[spawn];
@@ -3712,14 +3745,10 @@ void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_
                 if (location == NONE)
                     location = *(short *)((byte *)row + 0x34);
                 long actor = NONE;
-    long seat;
-
-
+                short seat = NONE;
                 if (location != NONE && placement_entry->field2a != 7)
                 {
-                    seat = NONE;
-
-                    actor = function_201010(head, (short)location, placement_entry->field2a, (short *)&seat);
+                    actor = function_201010(head, (short)location, placement_entry->field2a, &seat);
                     if (actor == NONE)
                     {
                         byte creation[0xc4];
@@ -3736,7 +3765,7 @@ void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_
                         actor = function_b7b40(creation);
                         if (actor != NONE)
                         {
-                            byte *actor_bytes = *(byte **)(g_4e0300->data + (actor & 0xffff) * 12 + 8);
+                            byte *actor_bytes = squad_transfer_object(actor);
                             *(long *)(actor_bytes + 0x3a0) = arg_1;
                             *(long *)(actor_bytes + 0x3a4) = head;
                             *(long *)(actor_bytes + 0x3a8) = *(long *)placement_entry;
@@ -3761,15 +3790,10 @@ void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_
                     }
                     if (actor != NONE && (*(dword *)((byte *)row + 0x20) & 0x2000))
                     {
-                        byte *actor_bytes = *(byte **)(g_4e0300->data + (actor & 0xffff) * 12 + 8);
+                        byte *actor_bytes = squad_transfer_object(actor);
                         dword *flags = (dword *)(actor_bytes + 0x134);
                         *flags |= 0x1000;
                     }
-                }
-                else
-                {
-                    seat = NONE;
-
                 }
                 if (placement_entry->field2a != 6)
                 {
@@ -3779,18 +3803,18 @@ void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_
                         ++*(short *)(squad + 0x24);
                         if (options)
                             function_1e4570(spawned, (s_actor_options const *)options);
-                        if (actor != NONE && (short)seat != NONE)
+                        if (actor != NONE && seat != NONE)
                         {
                             byte *actor_view = g_4f55f0->data + (spawned & 0xffff) * 0x888;
                             s_unit_request request;
                             request.type = 0x1c;
                             request.type1c.object_index = actor;
-                            request.type1c.seat_index = (short)seat;
+                            request.type1c.seat_index = seat;
                             request.type1c.unknowna = true;
                             request.type1c.unknownb = false;
                             if (function_e6900(*(long *)(actor_view + 0x18), &request))
                             {
-                                byte *actor_bytes = *(byte **)(g_4e0300->data + (actor & 0xffff) * 12 + 8);
+                                byte *actor_bytes = squad_transfer_object(actor);
                                 *(short *)(actor_bytes + 0x138) = *(short *)(actor_view + 0x24);
                             }
                         }
@@ -3802,17 +3826,16 @@ void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_
     }
     if (head != NONE)
     {
-        long cursor = head;
+        long next = head;
         do
         {
-            byte *squad_row = (byte *)g_51e9d8->data + squad_offset;
-            byte *actor_bytes = *(byte **)(g_4e0300->data + (cursor & 0xffff) * 12 + 8);
-            long next = *(long *)(actor_bytes + 0x3a4);
-            *(long *)(actor_bytes + 0x3a4) = *(long *)(squad_row + 0x70);
+            long cursor = next;
+            next = *(long *)(squad_transfer_object(cursor) + 0x3a4);
+            byte *squad_row = (byte *)squad_get(arg_1);
+            *(long *)(squad_transfer_object(cursor) + 0x3a4) = *(long *)(squad_row + 0x70);
             *(long *)(squad_row + 0x70) = cursor;
-            cursor = next;
         }
-        while (cursor != NONE);
+        while (next != NONE);
     }
     if (!flag)
         function_2011f0(arg_1);

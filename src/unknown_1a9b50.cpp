@@ -1048,6 +1048,9 @@ static __forceinline long real_to_long(real value);
 // through the view's field) 494 [164] (1918 B), formed after the direction vector 509 [168] (1940 B); lane 6's computed
 // entry flag with an object pointer for the velocity reads 533 [129] (1945 B); the 0.95 facing test through the existing
 // dot_product2d 382 [103] (same score; retail's j-then-i product order is not restored).
+// Round 68 (m3 lane 15, fast): the admission as an else-if chain setting the result false per flag 527 (1885 B); the
+// result as `char` returned as `!= 0` 438 (1925 B); `bool local_2 = false;` with nested flag ifs 495; the else arm as
+// `return false;` 508; the result declared before the state pointer 382 (same code).
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

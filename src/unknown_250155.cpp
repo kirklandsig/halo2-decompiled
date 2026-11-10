@@ -2801,6 +2801,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // the helper call 189 (928 bytes); the first loop's search through local_player_find 256 (933 bytes); the first
 // loop walking an item pointer (`item++` in the for) 97. The last loop calls only 0x22ee47 (matched), so its
 // spill choice (screen left in its home, bitmap_a in EBX) is not the 0x53b40 chain's doing.
+// Round 66 (m3 lane 15, fast; 0x2507c3, 0x22f042 and 0x250155 matched throughout): retail keeps the address of players[i] in ESI across the voice query and reads
+// the player again after it, so its link-time summary of the 0x53b40 chain allows a memory write; a callee's summary comes from its source before optimisation, so the
+// lead is a store through a pointer somewhere in that chain's source (src/network_voice.cpp, another lane's file this round: BLOCKED-BY 0x53b40's chain). Tried here:
+// one named flag for the team test shared by the first two loops 295 (921 bytes); `no_team = false` in the second loop's team arm 184 (912 bytes); the last loop as a
+// while with its own increment 95 (same code); the voice state defaulted to 2 re-measured 119 (932 bytes); the empty-list arm clearing shown_count first and passing it
+// 166 (918 bytes, the two list-fill calls merge); the second loop's player looked up after the local search 127 (925 bytes).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
