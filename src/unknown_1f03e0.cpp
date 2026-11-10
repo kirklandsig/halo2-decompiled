@@ -1203,6 +1203,18 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // of the general step test (no limited_step bool) 516 (aligned 278); that with the short-step arm first 517 (285); the
 // general arm clamping delta from the normalized copy (no copy back, delta used after) 574 (285); the direct arm the
 // same way 566 (3037 bytes, aligned 175); both 557 (297).
+// Round 183 (m3 lane 4, fast; aligned = difflib count with addresses masked, 152 here, register-masked 98): retail
+// tail-shares the first arm's out.k store with the general arm's (its first arm jumps to 0x1f0f58, the 5 bytes of the
+// length gap); ours stores the gravity flag after that store, and the general arm's k sum commutes into xmm2 (`addss
+// xmm2, [eax+8]`, retail `movss xmm0, [eax+8]; addss xmm0, xmm2`), so the tails differ. Retail's general limited shares
+// desired's slot (0x20) and delta takes 0x2c; ours the reverse (and the direct pair is swapped too). Tried: `gravity =
+// false` at the top of the first arm 346 (aligned 152; the flag store lands before the out.k store as retail, a
+// statement order only, not kept); with the general output through vector3f_add 468 (3047 bytes, aligned 154; the
+// history sum then takes retail's `addss xmm0, [edi+0x64]`, the k sum still commutes); delta written from desired with
+// no scaled vector 391 (aligned 211, homes unchanged); vector3f_add(&difference, out + 0x64, &change) 346 (same code);
+// desired reused as the bounded copy (diagnostic) 514 (general delta takes 0x2c but every other slot moves);
+// vector3f_scale into delta, then `delta.i -= current->i` per row 351 (3053); on the first-arm form, the general
+// arm's k row as `limited.k + current->k` 346 (same code: the sum still commutes into xmm2).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

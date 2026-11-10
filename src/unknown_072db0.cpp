@@ -1578,10 +1578,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// score 703 (was 703; 709 before; 2910 bytes): Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax H (11-04): the logon-status test written as (status - 1 == 0) reaches retail's
 // `dec eax` and its exact 2862 bytes but scores 729; not kept, the original body is restored.
-// score 703 (was 709; 2910 bytes): Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // w14D (fast, callers 0x641a0/0x8df50 and the file's matched functions stay MATCH): walked statement by
 // statement against retail: no logic difference found (fields, conditions, callees, arguments, loop and
 // poll shapes all agree). Retail inlines the existing getter 0x192e60 (pointer range check at 0x74be0,
@@ -1825,6 +1825,14 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // original full body restored; initial cursor/slot and request/completion homes remain.
 // Round 74 (m3 lane 10, fast, callers 0x641a0 and 0x8df50 checked): on the note's 702 form rebuilt (`received != 6` first, `failed = true` in each state arm, 2862 bytes, a gain of 7, not kept): bound limits through a
 // `long const *` local 702; `value` as `= 0; if (type)` 703; write poll `state == 0 || state == 1` 718 (2878); `long failed` 719 (2878); properties_used declared first 702; `now` read first 702.
+// Round 183 (m3 lane 4, fast; aligned/register-masked difflib counts 330/238 at 703): re-measured function_75870()
+// in place of query_time_now() at all eight uses 817 (2750 bytes: eight calls, its /Ob1 file keeps it out of line;
+// the "Not tried" line above is stale, round 124's clock helpers 932 were the same form). Lead: in the variant loop
+// retail re-reads the count word (`cmp word ptr [0x47d8fc], 0`) after each 0x1934f0 call and counts down in EBX;
+// ours hoists the word into BX across that call and ends the loop on the variant pointer. LTCG hoists across a call
+// only when the callee summary shows no store, so 0x1934f0 or one of its callees in src/matchmaking_hopper.cpp
+// (declared in src/unknown_1932c0.cpp with another pointer type) differs in what it may write. The slot test's
+// cmovne still needs /arch:SSE (a file-flag decision), so this function cannot match as the file stands.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

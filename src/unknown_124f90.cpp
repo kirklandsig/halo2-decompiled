@@ -21,6 +21,7 @@
 #include <string.h>
 #include <float.h>
 #include <math.h>
+#include "matrix_transform.h"
 
 #define k_pi 3.14159274f
 #define PIN(value, lower, upper) ((lower) > (value) ? (lower) : ((value) > (upper) ? (upper) : (value)))
@@ -2757,21 +2758,6 @@ static inline real sound_vector_normalize(vector3f *v)
 /* the doppler shift of a sound for a listener, in cents: from the speeds of
    the listener and the sound toward each other, the speed of sound 111.5
    world units a second, the frequency ratio between 1/8 and 4 */
-// score 92 (was 122): the two speeds through dot3f fix the direction spill (retail keeps j/k in XMM7/6, i on
-// the stack); left: the velocity rotation's scale products commute (retail reloads the scale for each) and the
-// rotated components take other XMM registers. Retail inlines 0x142640 here (src/unknown_141590.cpp is /Ob1, so
-// ours never can): with `inline` on 0x142640's declaration and the call in place of the rotation it matches
-// (0 with the dot3f speeds, 145 without), but 0x16c2f0 is lost (its calls then reload ECX); the lead is that
-// file's /Ob1 (a flags decision, not tried). Writing the rotation through a pointer to listener_velocity also
-// matches (diagnostic only: a pointer to a whole local).
-// Shared length helper 122; early source speed 143; projection order 133; cached direction 125; void normalizer 122.
-// Closest form (129, ratio 0.96): normalize written in the body (not a helper) on the struct, if-body order j, k, i,
-// and an inline copy of 0x142640's body (x/y/z copies, matrix->scale) for the velocity; only retail's j/k loads
-// hoisted above the branch (no else block) still differ. Scalar j/k copies 170; scalars before the length 161.
-// Round 63 (m3 lane 2, fast): length summed k, j, i 122 (same code); normalize3d 145; on dot3f speeds: x/y/z
-// scalar copies 92 (same code), plus the rotation read through a transform4x3f pointer 83, x/y/z declared last 83,
-// the listener dot's operands swapped 83 (same code), the velocity through a vector pointer 83; vector3f_scale +
-// matrix_transform_vector 103 (frame 0x20).
 // @retail 0x12a9d0
 real function_12a9d0(long listener_index, s_sound_position const *position)
 {
@@ -2785,18 +2771,18 @@ real function_12a9d0(long listener_index, s_sound_position const *position)
 
 	vector3d_from_points3d(&listener->position, &position->position, &direction);
 	sound_vector_normalize(&direction);
+	/* the listener's scale, axes and position form a transform4x3f, as at the 0x142700 call below */
+	transform4x3f const *matrix = (transform4x3f const *)&listener->velocity_scale;
 	velocity.i = listener->velocity.i;
 	velocity.j = listener->velocity.j;
 	velocity.k = listener->velocity.k;
-	if (listener->velocity_scale != 1.0f)
+	if (matrix->scale != 1.0f)
 	{
-		velocity.i = listener->velocity_scale * velocity.i;
-		velocity.j = listener->velocity_scale * velocity.j;
-		velocity.k = listener->velocity_scale * velocity.k;
+		velocity.i = matrix->scale * velocity.i;
+		velocity.j = matrix->scale * velocity.j;
+		velocity.k = matrix->scale * velocity.k;
 	}
-	listener_velocity.i = listener->up.i * velocity.k + listener->left.i * velocity.j + listener->forward.i * velocity.i;
-	listener_velocity.j = listener->up.j * velocity.k + listener->left.j * velocity.j + listener->forward.j * velocity.i;
-	listener_velocity.k = listener->up.k * velocity.k + listener->left.k * velocity.j + listener->forward.k * velocity.i;
+	function_2477b1(&matrix->rotation, &velocity, &listener_velocity);
 	listener_speed = 0.0f - dot3f(&listener_velocity, &direction);
 	source_speed = dot3f(&position->velocity, &direction) + 111.548553f;
 	ratio = (111.548553f - listener_speed) / (source_speed > 0.001f ? source_speed : 0.001f);
