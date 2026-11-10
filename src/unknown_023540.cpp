@@ -2396,6 +2396,17 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax D (11-10): no new form, no lower score; retail's 0x2a8d0 reads a fourteenth stack
+// argument, the byte at esp+0x70, in the short arm where this source reads preserve_alpha, and
+// because that argument is a different value the second flag dies at the test, so retail loads it
+// into al after the store into the global while this build keeps it in cl across the branch. The
+// declaration may not be changed in this lane and the callers are in src/unknown_0350e0.cpp, so
+// retail's parameter list is reported here instead: tag, bitmap_index, source, destination, mask,
+// color, strength, blend, inverse, alternate_target, screen_target, simple, preserve_alpha and one
+// more byte argument after them, read only by the short arm. This round: the arms swapped
+// (simple || preserve_alpha first) give 140 and 1729 bytes, the same code as before, and the short
+// arm reading simple instead of preserve_alpha gives 138, a gain of two that is under the keep
+// threshold and changes what the arm computes, so the body stands.
 // MiniMax S (11-09): no new form, no lower score (140); the round's `(simple != 0 ? 0 : 0x18) << 8`
 // spelling gave 138, but a gain under the keep threshold is dropped, so the body is restored;
 // caller flag residency and native fallback selection remain.
