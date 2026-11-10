@@ -74,6 +74,10 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax D (11-10): no new form, no lower score (106); retail keeps the old maximum in ECX with the enable
+// byte in AL and reads the 15-bit counter with the 16-bit idiom (`xor eax, eax` then a word load), ours keeps
+// the maximum in EAX, the enable byte in DL and zero-extends the counter; the enable reloads and the two
+// inlined helpers of src/unknown_1967d0.cpp stay out of reach.
 // score 106 (was 106): no frame; enable observations and maximum/register homes differ.
 // MiniMax H (11-04): no new form, no lower score; the enable reloads and the maximum homes still differ.
 // Earlier 106 (was 107): no frame; enable observations and maximum/register homes differ.
