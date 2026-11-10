@@ -413,6 +413,11 @@ struct s_24e9c7_bounds
 // ours (-0x14 back y, -0x18 untouched) below kind/bitmap. Side, up or back declared at function top (before or after result) 125 each
 // (same code); first corner's base copy after the half width 138 (740 bytes, as round 217); all four corner base copies there 128 (aligned 121 -> 116,
 // the across terms still sink: points has not escaped); first corner's base copy right after the across terms 124.
+// Round 65 (m3 lane 2, fast; 0x24e59f matched each time; register-masked aligned in brackets, control [94]): re-measured lane 17
+// r36's in-place side point 144 (746 bytes) [107], with `*=` 144, with `0.0f -` 139 (742) [105], round 33's bounds initializer
+// 125, the constant-first size 125. New: size and both across products before the bitmap pointer 125 (same code); the
+// shader-index test first 129 [102]; the bounds by chained assignments 131 [107]; height and half_width `long const` 125 (same
+// code); `result = height` 125 (same code).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

@@ -901,6 +901,15 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // after the normal copy k = 1..8 119 135 130 242 246 135 127 135; the first difference stays +0xbb (the e4.i load is not a numbering tie).
 // Store through `*(outside0 ? p1 : p0)` 368 (1867 bytes); `p1 = p0 + 1` 256 (1867); both segment loops as plain for loops 129;
 // intersection rows point-first 115 (same code); total counted per projected point 116.
+// Round 65 (m3 lane 2, fast; 0x1648d0 and 0x320b0 matched each time; difflib aligned/register-masked in brackets, control
+// [73/33]): ours copies `output` (EAX) then `out` (EDX) from the cursor, one `mov` more than retail's `mov edx, edi`, so the
+// inner loop's pad is 3 bytes where retail has `jmp` + pad. Re-measured lane 6 r147's natural forms: walking `out` alone 249
+// (1867 bytes) [69/31]; with the `source` element pointer 114 [71/32]; walking out with `total` first 249 [67/29]; all three
+// 114 [69/30] (the classification's first-row j terms then match; left: e4.i, the denominator and numerator rows, the
+// intersection adds, the outer loop's `jmp` pad and `total` in ECX), on plane3f planes 114; the distance terms' operands
+// swapped on it 114 (same code). New: both outside flags named (`outside1` for the cull and the crossing test) 362 (1867
+// bytes, first +0x15); `if (denominator)` 115 (same code); a const plane pointer 115 (same code); near_sum/near_distance
+// `real const` 115 (same code); the projection cursor declared before the segment guard 115 [75/35].
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

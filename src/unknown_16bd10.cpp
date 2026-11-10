@@ -983,6 +983,13 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // camera->point.left 356; the timer as `time_scale == 0.0f ? 0.0f : ...` 331; command->object_index from the
 // camera_object_index local 342; start declared before t 331. Main's call-site seconds local in place of the
 // helper's 373. The pan quaternion length still sums j, k, w, i where retail keeps the helper's w, k, j, i.
+// Round 65 (m3 lane 2, fast, control 331): the plane arm now has retail's normal XMM3/5/4 and offset; the first real
+// difference is the length's hoisted load (retail left.j, ours left.k), which puts retail's zero in XMM0 for the rest.
+// Re-measured on this body: the length written out j,k,i 374 (1700 B: the left.j preload, but the normal rotates), left-first products 374, j,i,k 374,
+// k,j,i 371; `0.0f != length_squared` 330 (only the ucomiss operands, one point, not kept); the length before plane.d 377
+// (1700 B); the zero arm first 341; `t = 0.0f` then the guarded assignment 382 (1704 B); `t = -(...)` either grouping 331
+// (same code; new from here); `command->distance = -distance` 331 (same code); one function-scope `t` for the plane, pan and FOV blends
+// 371 (1700 B), for the pan and FOV blends only 331.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
