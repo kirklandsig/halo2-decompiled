@@ -565,12 +565,12 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
+// score 239 (was 239): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// the plane); classifier clamp form, origin and hit copies, transformed-plane and output homes remain.
 // MiniMax I (11-06): the node-type guard as a named local, as a field reference, against a
 // constant held in a local, with an unsigned field and as an if/else all keep the folded memory
 // compare; no lower score.
 // MiniMax lane A (11-04): no new form, no lower score.
-// score 239 (was 239): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
-// the plane); classifier clamp form, origin and hit copies, transformed-plane and output homes remain.
 // normal component loop 319; material-output scope 319; direct validity 351;
 // key-clamp result arms 319; optional entity result 319.
 // j92: frame 0x48 versus 0x44 and node/plane/output homes remain; delayed reads and native rotation copy regress; coordinate names and positive root guard tie.
@@ -815,6 +815,12 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // query_node_entity alone 361, with the dead walk inline 384, without it 404. The else arm calls query_node_entity and
 // the normal publish uses vector3f_assign instead of a (point3f *) cast (same code, 239). `results[key].normal =
 // contact->normal` 272 (1243 bytes), `results[key].position = hit` 340.
+// Round 68 (m3 lane 2, fast): both plane side tests through the existing plane_distance_to_point 239 (aligned 183; arm 2's
+// hand-written test is that helper's body, identical code; arm 1 alone 239, aligned 183); `first->shape->radius + contact->distance`
+// 239 (same code); the normal rows written forward, left, up with plane.d's terms reversed 239 (masked 112 -> 107): writing the rows
+// forward-first makes VC compute them as retail does, (up*k + left*j) + forward*i (lane 14 r64's row orders, re-measured: rows alone
+// 239, masked 107); a shape local for the kind test and the kind-24 block 362 (1206 bytes); the structure global read at each use
+// 239 (same code); re-measured: the normal through matrix_transform_vector 332 (1265 bytes).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
