@@ -1,7 +1,7 @@
 // @flags /O2 /GL-
 // Havok (third-party physics library): puts one object in a whole row and a
 // whole column of an 8x8 table of reference-counted objects.
-#include "reference_counted_2d88a0.h"
+#include "dispatcher_views_2e5990.h"
 #include "agent_table_2e5d50.h"
 
 static inline void assign_2e5a20(referenced_2d88a0 *&slot, referenced_2d88a0 *object)
@@ -14,20 +14,6 @@ static inline void assign_2e5a20(referenced_2d88a0 *&slot, referenced_2d88a0 *ob
 	}
 	slot = object;
 }
-
-// The same object as s_1c3a40 (include/agent_table_2e5d50.h), seen from these two functions.
-class table_2e5a20
-{
-public:
-	char unknown0[0xc];
-	referenced_2d88a0 *entry[8][8];
-	unsigned long masks[32];
-	char unknown18c[0x4d90 - 0x18c];
-	alternate_types_2e5d50 alternate_types;
-
-	void set_all(referenced_2d88a0 *object, long index);
-	void function_2e5ce0(long target, long source, long depth);
-};
 
 // @retail 0x2e5a20
 void table_2e5a20::set_all(referenced_2d88a0 *object, long index)
