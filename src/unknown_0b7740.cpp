@@ -907,7 +907,8 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 
 
 /* samples and overlays an object's node orientations and rebuilds its matrices, when it has any */
-// score 240 (was 240): 829 bytes against 856, first difference +0x2. Earlier at 291 (was 309): 830 bytes against 856, first
+// score 240 (was 240): earlier 240 (was 291); 829 bytes against 856, first difference +0x2. Earlier at 291 (was 309): 830 bytes against 856, first
+// 829 bytes against 856, first difference +0x2. Earlier at 291 (was 309): 830 bytes against 856, first
 // difference +0x2. Walked statement by statement against retail on 2026-11-06: no behaviour
 // difference found (every field offset, test direction, callee, argument order and the two loops agree). Still differs: retail reads the object through the
 // header at each early test and again at the bit-29 test (it does not reuse its object register there), keeps the matrices result and the matrices passed on
@@ -955,6 +956,17 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // header 293 [29] (repeats round 78's 293). On the kept body: a single exit with final_matrices at the top 282 (839 B)
 // [41]; the render-node count read in the loop test at each pass, no local, 240 [45]. All but the last are
 // match-only (the mix, declaration moves); the 287 form (single exit + final at the top on the 194 lead) is the lead.
+// M3 lane 16 r108 (fast; m = register-masked aligned count, this body m 104): the two early tests are the bodies of
+// the existing 0xbf5d0 (orientations offset != NONE, its file /Ob1, so it is never inlined) and 0xbfc90 (index !=
+// NONE and awake count > 0, inlined at link time); retail calls neither here. The awake test through function_bfc90
+// 291; both early tests as separate `if ... return result;` 294 (823 B, m 111); a named pointer for the +0xc4 node
+// mask 277 (845 B, m 101; retail recomputes model + 0xc4 each pass); the node index read at each use, the scan as a
+// while loop, the header through object_header_get with `header->type` 240 each (same code); renamed result/header 240
+// (same code). Round 168's 287 lead rebuilt reproduces 287 (825 B, m 52: ours keeps the first test's header->object
+// load in EDX through to the bit-29 test, where retail reloads it through the saved header because its EDX holds
+// input_matrices until the final_matrices store); on it final_matrices declared before result 287 (m 53), the header
+// computed after result and final 293 (823 B, m 56). The matched 0xe3c90 has the same fresh object read for its
+// bit-29 test beside a header-derived object local.
 // m3 lane 7 r150 (fast with 0xbfe60, 0xbfe20, 0xbdb60, all MATCH; masked = aligned count with registers and stack offsets masked):
 // retail loads the input matrices into EDX at entry and keeps that copy live until final_matrices is set, with the result as a
 // separate EDI copy stored to its home at once, so object_index takes ESI and the +0xb3 byte takes BL (EBX pushed before that
