@@ -4590,6 +4590,10 @@ void function_c50a0(long unit_index)
    riders, in two passes (plain seats, then seat groups whose rider is in
    place), recursing into ridden units; tells 0x1bbdf0 when the driver
    changed */
+// MiniMax S (11-11): no lower score (166): the vehicle's definition index in a named local with the definition
+// read through it gives the same code (166, 665 bytes); retail loads the object pool into EDX before the
+// callee-saved pushes and keeps the vehicle in ESI where ours loads the pool into ESI after the push and keeps
+// the vehicle in EBP, and that register plan does not follow from the source spelling.
 // MiniMax I (11-11): no new form, no lower score (166); retail keeps the vehicle pointer in ESI and the
 // NONE constant in EBP where ours keeps the vehicle in EBP, and the load of the old driver index sits
 // before the definition lookup in ours and after it in retail.
@@ -5811,6 +5815,10 @@ void function_cf040(long unit_index, short type)
    free, its seat group's partner friendly and willing, no enemy riding
    (outside state 2), and for players a clear line to the vehicle; also
    the seat's occupant and whether the seat is grouped */
+// MiniMax S (11-11): no lower score (1): the weapon loop's holder through unit_at_masked_index 1 (same code), the
+// lookup as the pool data plus the masked index times twelve plus eight 1 (same code), the same address as an
+// integer with the offset first and the data first 1, the data read untyped at the pool's 0x44 1 and the offset
+// as a pointer cast 1 - every spelling keeps our [eax+edi+8] against retail's [edi+eax+8].
 // MiniMax I (11-11): no new form, no lower score (1); the only difference left is the base and index
 // order of the header lookup inside the weapon loop - retail addresses it with the byte offset as the
 // base and the data pointer as the index, ours has them the other way round, and writing that lookup as
@@ -5989,6 +5997,11 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
    otherwise), takes its team from the creation data (in campaign, the
    definition's when unset), starts its animation and finds its two
    animation graph entries */
+// MiniMax S (11-11): no lower score (59): the header read as the pool data plus the masked index times twelve plus
+// eight through a named offset local 59 (same code), the same with the data expression inline 59 (same code) and the
+// header through a named header pointer at that offset 59 (same code) - every spelling keeps our [esi+ecx+8] against
+// retail's [ecx+esi+8], and the success arm keeps the copy source in edx and the destination in ecx where retail has
+// ecx and edx.
 // MiniMax I (11-11): no new form, no lower score (59); the two header reads still take the byte offset
 // as the base where retail takes the data pointer, and the success arm's scratch registers (the g_4e0300
 // reload, the +0x33e offset, the creation pointer and the two vector copies) are ours EDX, EAX and ECX
@@ -7048,6 +7061,9 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
    and grenade choices, zoom (with the weapon's or the globals' zoom
    sounds), and passes each hand's trigger state to its weapon; whether
    anything changed */
+// MiniMax S (11-11): no lower score (253): the trigger flags' first bit with the word cast moved in front of the
+// shift 253 (same code, still a movzx cx,cl and a 32-bit shl where retail has a 16-bit shl cx,1) and the same with
+// an explicit word cast around the bit 257 (1446 bytes, worse); the frame stays 0x24 against retail's 0x28.
 // MiniMax I (11-11): no new form, no lower score (253); the frame is still 0x24 against retail's 0x28
 // (retail keeps the second loop's `first` in a stack slot, the flags word in memory and the hand index
 // spilled), the unit is still held in EDX, and retail still looks the unit up again after 0x110ab0 and
@@ -7340,6 +7356,10 @@ struct s_unit_turn_state_view
    is in state 1 at +0x1bc), within its aim and look limits when they are
    on (0xc7840); records the aim's turn speeds (+0x243, +0x1f8); whether
    either moved */
+// MiniMax S (11-11): no new form, no lower score (395 in the plain build, 453 in the reduced one, which builds
+// 0x11f0d0 differently): the three differences left are the moved flag's stack byte, the state and aim pointer's
+// register roles and the one reciprocal the two divisions share, and the forms for each of them are in the note
+// below.
 // MiniMax I (11-11): no new form, no lower score (395 in the plain build, 453 in the reduced one, which
 // builds 0x11f0d0 differently); the moved flag still sits in a register where retail keeps it in a stack
 // byte, the state pointer and the aim pointer still take the other register roles, and the two divisions

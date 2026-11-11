@@ -1176,6 +1176,9 @@ struct s_item_flags_view_10b850
 // through a byte field view and folds the 0x20000000 bit into the field in memory where ours copies the word
 // out first. The open behaviour differences stand as they were: the node handed to 0xb8bd0 as a raw dword and the
 // type chain's compare at 0x10bd1c.
+// MiniMax S (11-11): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c, the two entry
+// bit tests stay in registers here while retail keeps the bytes in stack slots and re-reads the flags word, and
+// the definition pointer sits at 0x38 against retail's 0x1c.
 // MiniMax A (11-10): no new form, no lower score (824): our frame is 0x154 against retail's 0x12c
 // from the first instruction, so every stack home sits 0x28 further out and the two open behaviour
 // differences - the node handed to 0xb8bd0 as a raw dword and the type chain's compare - stay.
