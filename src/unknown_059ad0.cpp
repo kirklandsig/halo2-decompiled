@@ -3546,6 +3546,7 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
+// MiniMax D (11-11): no new form, no lower score (101): still BLOCKED-BY 0x769a0 in src/unknown_075870.cpp, where the call's register home is the callee's to decide.
 // MiniMax R (11-10): no new form, no lower score (101); the timed-out call's owner argument still has no home, because the callee that would take it is in another file.
 // MiniMax R (11-09): no new form, no lower score; the timed-out call's owner argument still has no home,
 // because the callee that would take it is in another file.

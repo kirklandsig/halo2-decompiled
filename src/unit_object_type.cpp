@@ -4934,6 +4934,7 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 /* clamps a direction to the unit's yaw and pitch limits for aiming (or,
    when asked, for looking, relative to its aim) in its own frame; whether
    it changed */
+// MiniMax D (11-11): no new form, no lower score (169).
 // score 169 (was 169; earlier 179): the logic agrees with retail statement by statement (re-walked in round 4 of #1049).
 // Round 4 of #1049: the two cross products through the repo's cross3f_staged / cross3f (retail's left vector is
 // never stored and all three components are formed before the up stores) give 169 here, but including

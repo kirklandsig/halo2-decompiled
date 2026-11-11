@@ -3408,6 +3408,7 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
+// MiniMax D (11-11): no new form, no lower score (486).
 // score 486 (was 486): frame 0x60 versus 0x38; retail keeps one 12-byte home for the previous camera position and
 // each element's old position, reads the delta from the stored view position, and copies the scaled projection
 // inputs into fresh registers in both arms; those forms lower the aligned count but shorten the body (below).
