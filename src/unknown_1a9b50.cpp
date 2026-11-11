@@ -830,6 +830,7 @@ struct s_1aab50
 static __forceinline long real_to_long(real value);
 
 // MiniMax E (11-11): no new form, no lower score (382): the frame and the length agree and the early false exit's place is right, but the object/magnitude and query scalar homes still differ, and the helper retail keeps out of line is expanded here (0x25d740, in another file): BLOCKED-BY 0x25d740.
+// MiniMax S (11-11): no new form, no lower score (382): the frame and the length agree, but the early false exit's place, the object/magnitude homes and the query scalar homes still differ.
 // score 382 (was 382): the frame and the length agree, and the early false exit's place, the
 // object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
 // b2G walk (r719): every block, field offset, constant and call argument (including 0xfa1a0's 3 register + 11 stack arguments, whose

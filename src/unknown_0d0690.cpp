@@ -1351,6 +1351,7 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// MiniMax S (11-11): no new form, no lower score (529): retail hands this function its block in eax and its query in edx while this build swaps them, and its frame is 0x2c against retail's 0x28.
 // score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
 // MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
 // and its query in edx while ours swaps them, and the parameter order is not ours to change.
@@ -2226,6 +2227,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
+// MiniMax S (11-11): no new form, no lower score (542): the frame is the same 0x90, but the status, mesh, colour and sample homes sit 0xc bytes lower than retail's, and the second arm's 0x13da30 lookup expands here where retail calls it (that helper lives in another file).
 // MiniMax D (11-10): no new form, no lower score (542); the second arm's 0x13da30 lookup expands here where
 // retail calls it, and that helper lives in another file.
 // MiniMax S (11-10): no new form, no lower score (542): the frame is the same 0x90, but the status, mesh,
