@@ -907,7 +907,7 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 
 
 /* samples and overlays an object's node orientations and rebuilds its matrices, when it has any */
-// score 240 (was 291): 829 bytes against 856, first difference +0x2. Earlier at 291 (was 309): 830 bytes against 856, first
+// score 240 (was 240): 829 bytes against 856, first difference +0x2. Earlier at 291 (was 309): 830 bytes against 856, first
 // difference +0x2. Walked statement by statement against retail on 2026-11-06: no behaviour
 // difference found (every field offset, test direction, callee, argument order and the two loops agree). Still differs: retail reads the object through the
 // header at each early test and again at the bit-29 test (it does not reuse its object register there), keeps the matrices result and the matrices passed on
@@ -936,6 +936,13 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // from header->object without 0xbfe20 276 (= round 76's header->object form). The existing object_get() at every use
 // with no `object` local 298 (818 bytes), with 0xbfe20 298; header->object at every use 315 (807), with 0xbfe20 317.
 // On 0xbfe20 alone: result first 262, early returns of input_matrices 262, both 262. Entry roles still swapped in all.
+// Round 91 (m3 lane 1, fast): the two early tests as two `if`s 294 (823 bytes); final_matrices set from result 240 (same
+// code); the first test inverted into a block around the rest (single exit for it only) 249 (820); with the existing 0xbfe20
+// clear (re-measured 262, 813 bytes): the bit-29/+0x34b tests through slot_handler.h's object_header_get 262 (merged with
+// `object`, no reload), final_matrices set after the mask copy 312 (804). Diagnostics: the matrices parameter renamed 240,
+// `(void)&result;` 240 (both the same code). In the 0xbfe20 + `header->object` form (194) our build keeps the first
+// `header->object` read alive in EAX to the bit-29 test, where retail reloads it from the header (a second and a third
+// read); retail also reads bit 30 into EDX ahead of the mask copy. Body restored.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

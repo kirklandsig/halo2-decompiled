@@ -975,7 +975,7 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // the switch's cases still take their arguments in registers other than retail's (it pushes edi where ours
 // pushes esi), so the callee conventions decide this one.
 // MiniMax C (11-08): no new form, no lower score.
-// score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
+// Earlier note (153, was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // Round 147 (m3 lane 8): no unlisted form. Retail's convention needs the address live across a call, but retail calls
 // 0x94420 and 0x94270 out of line and has no such use. Its connection handlers take no address (retail passes them the
 // index in EAX and the message in EDX), so an unread address parameter on them has no retail evidence and was not tried.
@@ -1365,6 +1365,12 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // 153; the late switch's cases returning, with `default: return;` 153; the connection index declared inside the first
 // switch's body 153 (same code each); the three connection cases moved into the late switch ahead of 18 and 11 225
 // (470 bytes, 0x7afd0 3: the convention moves). All restored.
+// Round 91 (m3 lane 1, all plain with 0x7afd0, 0x93aa0, 0x94420, 0x94270; control 153 at 464 bytes): the late switch as
+// `if (type == 18) ... else if (type == 11)` 155; the late switch with case 11 ahead of 18 153 (same code); the late switch
+// nested in the first switch's `default` 153 (same code); `case 11: case 18: break; default: return;` in the first switch
+// with an if/else dispatch after it 216 (420 bytes, 0x7afd0 3: the compiler threads both labels into the jump table, so this
+// is the unified switch and its convention); `case 11: case 18:` added over the first switch's `default: break;` 153 (same
+// code). Body restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

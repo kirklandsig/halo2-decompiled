@@ -1861,7 +1861,7 @@ void function_269250(long clump_index, long actor_index);
 // selection's copy in edi.
 // MiniMax E (11-07): no new form, no lower score; the walk's pool load stays in memory and the
 // selection stays in edi where retail hoists the pool into ebx and keeps the selection on the stack.
-// score 87 (was 87; round 103 unchanged): retail hoists the walk's pool load into ebx and keeps the selection
+// Earlier note (87, was 87; round 103 unchanged): retail hoists the walk's pool load into ebx and keeps the selection
 // MiniMax B (11-03): no new form, no lower score.
 // Earlier: retained frame pointer 187; depth zero 304; selected-result reuse 134; team snapshot 133;
 // size preference 338; double candidate/both scores 157/158; activity while 160; role-based scalar
@@ -2080,6 +2080,12 @@ void function_269250(long clump_index, long actor_index);
 // set in each arm instead 128 (480 B: pool in EDI and the selection memory-only as retail, but the not-found path threads,
 // the walk top loses `xor eax, eax`, and the homes rotate). The join copy is what stops the threading; it also ties the
 // selection to the walk's index, which then outweighs the pool.
+// Round 91 (m3 lane 1, fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched;
+// this body 87, in-arm compare with the selection stored first re-measured 126 at 480 bytes): on the in-arm form, the clump walk
+// declared at function scope 126 (same code), the post-walk test turned round (`selected == NONE` creates, then `else if
+// (selected != current)`) 130, the selection and best declared ahead of the walk 129; on this body, the walk at function scope
+// 87 and the selection stored ahead of best 87 (both the same code). The in-arm form's x87 compare (`fstp` score, `fld` best,
+// `fcompi`) and homes are retail's; the found block of the walk still sits after the score block. Body restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

@@ -1061,7 +1061,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // histogram[16]` with a memset for each clear recovers retail's frame 0xb4 (machine_ids and the histogram share slots) but
 // scores 844 (2772 bytes). The histogram is never read, so it is not kept without a match. Tried: the add-loop minimum as a
 // three-way type 5/4/other (no effect).
-// score 766 (was 766; round 103 unchanged): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
+// Earlier note (766, was 766; round 103 unchanged): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
 // where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
 // expanded here while retail calls the matched 0x192e60 out of line.
 // Earlier: Frame 0xd4/0xb4, stacked session and protected opening lookup expansion remain.
@@ -1319,6 +1319,14 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // code has no float instruction, so its build's /arch cannot be read from it. Lead for the flags owner (not tried): this
 // file is /arch:SSE like 0x192e60's, 0x63220's file is not; a non-SSE build of this body may keep the top call out of line
 // as 0x741f0's does and let 0x63220 inline.
+// Round 91 (m3 lane 1, fast with 0x72db0, 0x71730 and 0x192e60): the top lookup through a file-local inline wrapper of
+// 0x192e60 766 (the wrapper and 0x192e60 both inline: call depth is not what keeps retail's call out of line); with the
+// capacity helper's case labels grouped (re-measured 876, 2852 bytes, the switch then inlines as retail's table), the top
+// lookup after the capacity read 850 (2836), after the summary read 869 (2844), that after-capacity form with the loop's
+// variant through 0x192e60 844 (2788: the top call inlines and the loop call stays out of line, retail's reverse), and
+// (diagnostic, not keepable) an `__assume` on the index ahead of the lookup 876 (no effect on the inline choice); this
+// function with its helpers and records moved up to just after the identity records, ahead of 0x7ed20, 766 (same code,
+// the file's 21 other functions unchanged). Body restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
