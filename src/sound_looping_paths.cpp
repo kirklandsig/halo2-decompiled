@@ -167,7 +167,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // MiniMax E (11-05): no new form, no lower score; the entry zero, the target, primary and query-array homes
 // and the choice carriers are as the earlier rounds left them.
 // s1F walk (11-06), at 866: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
-// score 866 (s1F walk 11-06): walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// Earlier at 866 (s1F walk 11-06): walked against retail block by block, no behaviour difference. Retail accesses the query and choice
 // counts as dwords (0x18aeef, 0x18af10, 0x18af84, 0x18af81); the `short` copies here narrow them (no observable difference:
 // counts <= 64). As `long` it scores 942, so it is not kept without a match. Frame 0x4e0 agrees; on the long form the choice count
 // and first-loop index stay in memory (retail: ESI/EDI), 3297 bytes (retail 3327). s1F also tried, on that base: grouping
@@ -437,6 +437,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // pointer 940 (3327 B, masked 580); `muted = false` stored ahead of the flag-8 test instead of an else 869 (509).
 // Retail's gains array shares +0xec with the later existing list and its count (stack packing), so the
 // four query-array homes follow lifetimes and use weights, not names.
+// Lane 4 r186 (fast with 0x18bb80/0x18d730; aligned/masked lines in brackets, control 866 [703/537]): the portal read once into a two-use
+// local 866 (three lines move); the fade scan's silent flag set through `sound` 876 (3311 B); the listener's detail sound through one
+// `current` pointer 872 (3333 B); the target loop's `existing[j]` in a three-use local 870 at retail's length (3327 B) [710/404: the
+// closest shape so far]; that with the first loop's stores through `&choices[choice_count++]` 970 (3272 B) [706/396]; the listener slot
+// read at each use 874 (3335 B). Same code: the target loop's `delta` folded into the pin call.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
