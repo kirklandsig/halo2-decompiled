@@ -2833,6 +2833,11 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // depth of the constant's uses does not raise its rank. Plain: the siblings' request idiom (0x1147e0, 0x114710:
 // the three extra defaults stored unconditionally after the sound index) followed by `if (extra) memcpy` 73 (221
 // bytes: the defaults stay unconditional, roles unchanged).
+// Round 91 (m3 lane 11, fast): the delay computed into a local ahead of the clear 45; the delay stored first after the
+// clear 44. Ours colours the NONE constant last (lighter than the index and the priority despite seven uses), so
+// ours treats it as a rematerialisable constant where retail weighs it as a variable; no natural form found that
+// gives a NONE-valued variable (a constant-only local is a reverted form). Every other statement, test and type
+// form above is listed.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

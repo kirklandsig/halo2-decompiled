@@ -1662,6 +1662,21 @@ struct s_actor_looking_structure_view
 // cross-module inlining does not set the ranks); the helper writing a result vector copied back 203; the
 // vector's i, j, k named in the helper everywhere 243, everywhere but the dot 150; the axis's i, j, k named
 // 233; both named 216. Diagnostics (fast, same code): forward and the candidate array renamed.
+// Round 91 (m3 lane 11, fast): explicit parentheses are honoured. The loop score as `(i + k) + j` gives retail's
+// score order and also the rotation dot's (j, i, k, axis j loaded ahead of the copy), but the pathfinding push sinks
+// below the rotation and the cross k, cross i and k-row products load the other operand: 124 at 928 bytes (same code:
+// `j + (i + k)`, `j + (k + i)`, fraction before the copy, the constant first in the angle, the best locals before the
+// array; equal to round 73's two-stage score). On it: the selected test grouped `i + (j + k)` 143; cross terms
+// written k, j, i 133 (j, k, i same code); cross terms first 140; rows k, j, i 49 (924 bytes, the cursor moves to j);
+// dot3f(vector, axis) or (axis, vector) in the helper 35 (924 bytes); cross3f or cross3f_staged into a local 145;
+// dot3f and cross3f 43; rotate_direction with sine/cosine locals 128; best score declared first 126; the score
+// named `dot` before the clamp 124 (other code). Grid with the selected test: loop `(i + j) + k` 128, `(j + k) + i`
+// 142; flat loop score with the selected test `(j + k) + i` 60; dot3f loop score with dot3f(best, &forward) 35.
+// LEAD, not kept: the helper's dot parenthesized `(j + i) + k` on top gives 13 at 924 bytes, plain too (left: the dot's and
+// the score's accumulator choice and a j-row register swap; inner written orders are canonicalised, 13 each), but
+// it raises 0x296e60 303 -> 311, and retail's 0x296e60 sums its two dots (k + j) + i and (i + j) + k, so a fixed
+// grouping in the shared helper is not retail's. The helper's dot parenthesized with the flat score 31.
+// Kept: the selected test as dot3f(best, &forward), same code (the hand-written dot was dot3f's body).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
@@ -1710,7 +1725,7 @@ PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 					if (best_index != NONE)
 					{
 						vector3f *best = &directions[best_index];
-						if (0.7f > best->j * forward.j + best->k * forward.k + best->i * forward.i)
+						if (0.7f > dot3f(best, &forward))
 						{
 							function_2105b0(actor->location.point.output_index, best, best);
 							specification->type = 4;

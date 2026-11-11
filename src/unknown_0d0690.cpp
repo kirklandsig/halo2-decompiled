@@ -7,6 +7,7 @@
 #include "unknown_11c920.h"
 #include "unknown_0259d0.h"
 #include "vector_products.h"
+#include "normalize3d.h"
 #include "globals.h"
 #include "unknown_0d0690.h"
 #include "geometry_cache.h"
@@ -252,6 +253,15 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // Round 143 (m3 lane 7, fast): colour first re-measured 121; the blend through a forced-inline in-place
 // wrapper (colour, other colour, ratio) 254, with colour first 299; the constant colour0 store ahead of the
 // loop 214, with colour first 207 (the store stays at the top); colour first with a library copy 121.
+// Round 91 (m3 lane 11, fast; colour first re-measured 121 at 828 bytes, only the post-call add and the ECX/EDI
+// pair differ): retail's latch is `inc ebx` as ours, so the add's only cause is its operand order (ours loads the
+// power as the destination and moves the sum to XMM7). Real trials (the round 85 screen of these was compile-only,
+// which does not model this add): {count, address} block views of the lights and the entries, singly or both,
+// same code on either arm order; the light count in a local 34, colour first 125; the lights array in a local 39,
+// colour first 130; an entry-colour pointer for the copy and the blend call 168, colour first 166; the no-lights
+// fill through vector3f_assign 32, colour first 120; the clamps through pinned_real 66 at 821 bytes (the clamp
+// joins change), colour first 121. Kept: the ray through the existing vector3f_scale (same code on both arm orders;
+// the hand-written ray was its body).
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -295,9 +305,7 @@ long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_
                 }
                 function_30bf0(&direction);
                 vector3f ray;
-                ray.i = direction.i * 100.0f;
-                ray.j = direction.j * 100.0f;
-                ray.k = direction.k * 100.0f;
+                vector3f_scale(&direction, 100.0f, &ray);
                 bool hit = function_1697c0(0x10000001, point, &ray, ignore_object_index, NONE,
                     (s_collision_result_1697c0 *)collision);
                 bool open = hit ? *(short *)(collision + 0x5a) == NONE : false;

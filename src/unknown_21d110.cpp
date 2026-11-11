@@ -1059,6 +1059,11 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // the loop-state test with the type compared first 132 (831 bytes); `loop_alternate != false` in the alternate ternary 158
 // (832 bytes). No existing record type with a long and a bool was found in include/ or the sound files, so the pair still
 // waits on a ruling about a two-member record for it (rounds 39 and 9 measured that form at 0).
+// Round 91 (m3 lane 11): no counted trial. The whole 30 is the flag's byte slot, and only an aggregate moves a
+// lone byte (rounds 29, 43, 73, 124), so statement, order, name and width forms cannot reach it. The looping pool's
+// users and record types (the g_4ed28c readers, the looping-sound datum and effect looping-sound views) expose no
+// existing interface that returns the state and the flag together, so the {long, bool} record (0 in rounds 9 and
+// 39) still has no real type behind it and waits on the ruling.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {
