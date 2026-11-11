@@ -487,6 +487,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 	}
 	return false;
 }
+// MiniMax I (11-11): no new form, no lower score (172): retail pushes ebx first and keeps the BSP pointer in ebx, we keep it in ebp and defer the ebp and esi pushes, and our frame's store slots sit one word lower than retail's; the callee's four argument registers (0x11e800) are outside this file.
 
 // MiniMax E (11-10, run 73): no new form, no lower score (172); retail pushes ebx first and keeps the BSP global in ebx where we keep it in ebp, and the promoted clone of 0x11e800 hands its four pointers over in another register order (retail ecx, edx, eax, esi; ours ecx, edx, esi, eax); that callee lives in another file.
 // MiniMax D (11-11): no new form, no lower score (172): the BSP pointer still lands in EBP where retail keeps it in EBX, and the body is still seven bytes longer than retail's 726.
@@ -660,6 +661,14 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // and callers 0xd47d0/0x14af40 lose their match: the convention moves); both reference/surface selections
 // tested on `definition == NULL` 228 (719 bytes); the strip indices indexed from the section at each fetch
 // (no pointer local) 221 (747 bytes).
+// MiniMax I (11-11): no new form, no lower score (172): the three 0x16e1b0 output homes follow the
+// call's argument positions (arg3 to esp+0x34, arg4 to esp+0x38, arg5 to esp+0x3c) and not the
+// declaration order (swapping the two output declarations is byte-identical); retail keeps the
+// always-zero output at esp+0x38 and the range index at esp+0x34, so its two homes are swapped
+// against ours, and its tail stores esp+0x34 into part_index and esp+0x38 into unknown18 where we
+// store them the other way round. Swapping the two arguments (with or without the two field
+// assignments) reproduces one side of the swap only, and the whole frame's other slots and the
+// ebx/ebp split differ as well.
 // MiniMax D (11-10): no new form, no lower score (172): the BSP pointer still lands in EBP where retail
 // keeps it in EBX, so the cluster pointer takes EDX here and EBP there, and the section, BSP and instance
 // slots sit one word apart; a const BSP pointer compiles the same code.

@@ -11,6 +11,10 @@ struct s_visibility_bound_record
     byte transform_index;
     byte padding[3];
 };
+// MiniMax I (11-11): no new form, no lower score (443): the first difference is at +0x10, where retail forms the entry address as a sign-extended index scaled by the entry size and added to the entry table (`movsx eax, word [ebp + 8]`, `shl eax, 5`, `lea ebx, [eax + 0x4ba138]`) and we form it as a shifted copy added to the same table (`shl edi, 5`, `add edi, ...`); retail then keeps the tag table in esi and spills the entry at [esp+0x30], we keep the entry in a register.
+// MiniMax I (11-11): reading the entry's flags in each arm instead of through the `flags` local (retail loads
+// them per arm) scores 465 and is not kept: the tag then takes eax and the flags edx, retail's tag is in eax
+// and the flags in ecx, and the body's length stays 1760 against retail's 1742.
 
 // score 443 (was 443): earlier 476; plain, 1760 B: the releases through the existing release_visibility_list (moved from
 // earlier 443 was 476 (plain, 1760 B); the releases through the existing release_visibility_list (moved from
