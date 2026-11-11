@@ -70,6 +70,9 @@ long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
 // MiniMax C (11-11): no new form, no lower score (49); the busy test folded into the && chain (65), the inverted busy test (65) and an explicit if/else (49) all leave the numeric select where retail branches to its own priority epilogue.
+// MiniMax H (11-11): no new form, no lower score (49); the body is unchanged, because the busy call's
+// result still becomes a numeric select where retail tests it and branches to its own epilogue that returns
+// the priority, and the fallback still tests the prop index where retail tests the node.
 // MiniMax I (11-08): no new form, no lower score (49); the busy-true path falling through to the shared zero exit gives 65 with the actor and node registers swapped.
 // MiniMax R (11-07, run 38): no new form, no lower score (49); the busy test still becomes a numeric select
 // where retail branches to a last `return priority` and falls into the shared `xor eax, eax` exit, and the
@@ -360,6 +363,9 @@ evaluate:
 	return 0;
 }
 
+// MiniMax H (11-11): no new form, no lower score (73); the body is unchanged, because retail calls
+// function_25d740 out of line and sinks the ESI/EDI saves while our build inlines it at this site; the
+// inline-ness of that helper is set in src/unknown_25d690.cpp, which this lane may not edit.
 // score 73 (was 73): retail calls function_25d740 out of line and sinks the ESI/EDI saves; our
 // build inlines it, so the prologue differs at +0x13. This round: reading the slot's expected
 // index into a local before the actor lookup, the reversed compare, a named actor local and the

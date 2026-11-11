@@ -3796,6 +3796,9 @@ vector3f *vector3d_decompress(dword arg_0, vector3f *arg_1);
 
 vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vector3f *arg_2);
 
+// MiniMax H (11-11): no new form, no lower score (101); the body is unchanged, because the lookup of the
+// object type is still expanded where retail calls it out of line and the depth pair that would keep it
+// out of line is ruled out; 0x221810 lives in src/unknown_221490.cpp, which this lane may not edit.
 // MiniMax E (11-11): no new form, no lower score (101); the lookup of the object type is still expanded by the
 // compiler where retail calls it out of line, and that expansion shifts the rest of the listing; the depth pair
 // that would keep it out of line is ruled out, so the difference stays here.

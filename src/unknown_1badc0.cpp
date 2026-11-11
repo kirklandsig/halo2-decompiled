@@ -1,6 +1,7 @@
 #include "unknown_11c920.h"
 #include "slot_handler.h"
 #include "unknown_0259a0.h"
+#include "vector2f_products.h"
 // @flags /O2 /arch:SSE /Gr
 
 struct s_1badc0
@@ -13,6 +14,12 @@ struct s_1badc0
 real normalize2d(point2f *arg_0);
 
 // MiniMax C (11-11): no new form, no lower score (180); the length (1025) and the frame 0x90 agree, but the opening still forms the components in our order, and the copy schedule it needs is set by the query helper in src/unknown_1c20f0.cpp and the inline-ness of 0x30c60, both in other files this lane may not edit.
+// score 171 (was 180): the centre is copied before the radius and both projections now go through
+// dot_product2d on a named actor-to-centre vector, and the squared length sums its j term first as
+// retail does; the opening still hoists the point's y difference above the copy.
+// MiniMax H (11-11): round 66's other two changes re-measured here - `result = true` ahead of the
+// output store and `2.0f - local_11` inside the normalize block give 238 and 242 alone, 226 with
+// one point copy feeding both differences; the tail then matches retail exactly but the body does not.
 // score 180 (was 180): retail's length (1025) and frame agree; the opening's copy and difference schedule and the SSE
 // scheduling still differ. A 132 form and a byte-match recipe are measured but not kept (see Round 66 at the end of this note).
 // Earlier at 180: no new form and no lower score; retail still forms d3.x, local_6.x,
@@ -431,24 +438,26 @@ bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     {
         point3f local_1 = *arg_2;
         byte *local_2 = (byte *)object_get(arg_1);
-        real local_4 = *(real *)(local_2 + 0x3c);
         point3f local_3 = *(point3f *)(local_2 + 0x30);
+        real local_4 = *(real *)(local_2 + 0x3c);
         vector3f local_5;
         vector3d_from_points3d(&local_0->position, arg_2, &local_5);
         vector3f local_6 = *(vector3f const *)arg_2;
         vector3d_from_points3d((point3f const *)&local_6, &local_3, &local_6);
-        real local_7 = local_5.j * local_5.j + local_5.i * local_5.i;
+        vector3f local_centre;
+        vector3d_from_points3d(&local_0->position, &local_3, &local_centre);
+        real local_7 = local_5.i * local_5.i + local_5.j * local_5.j;
         if (local_7 > 0.0f)
         {
-            real local_8 = ((local_3.y - local_0->position.y) * local_5.j +
-                (local_3.x - local_0->position.x) * local_5.i) / local_7;
+            real local_8 = dot_product2d((vector2f const *)&local_centre,
+                (vector2f const *)&local_5) / local_7;
             if (local_8 > 0.0f && local_8 < 1.2f)
             {
                 point2f local_9;
                 local_9.x = 0.0f - local_5.j;
                 local_9.y = local_5.i;
-                if ((local_3.y - local_0->position.y) * local_5.i +
-                    (local_3.x - local_0->position.x) * local_9.x > 0.0f)
+                if (dot_product2d((vector2f const *)&local_centre,
+                    (vector2f const *)&local_9) > 0.0f)
                 {
                     local_9.x = 0.0f - local_9.x;
                     local_9.y = 0.0f - local_9.y;
