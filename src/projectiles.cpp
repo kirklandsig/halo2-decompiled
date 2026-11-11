@@ -2913,7 +2913,12 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
    material hit (detonating, bouncing, reflecting, attaching), the impact
    effects and sounds, then the projectile's action */
 // MiniMax S (11-11): no new form, no lower score (1220); retail's frame is eight bytes smaller and it keeps the biped in ebp where ours keeps it in ebx, and no form tried this round matches both, so the body stands as found.
+// MiniMax G (11-11): the material index is a dword local here, so the call to 0xfd7d0 pushes it raw as retail
+// does instead of sign-extending a word, and the store into the projectile keeps its 16-bit width.
 // MiniMax S (11-10): no new form, no lower score (1190); the frame is 0x220 against retail's 0x218, the velocity argument arrives on the stack where retail takes it in eax and keeps it in a callee-saved register, and the collision, effect and sound homes still differ. The sound and effect records start at the same address as retail's, so the eight extra frame bytes sit in the small scalar homes; the velocity pointer is kept in esi on both sides, but only retail's callers hand it over in eax.
+// score 1196 (was 1220): the frame is 0x220 against retail's 0x218, the velocity arrives on the stack where retail
+// takes it in eax, and 0xfd7d0's register arguments (retail takes the projectile index in eax and three of the six
+// out-pointers in ecx, edx and edi) still differ; that split is the compiler's choice for the callee.
 // score 1190: Frame 0x220 versus 0x218, stacked velocity and normalization/effect scheduling remain.
 // Round 1 of #1061 (logic walk against retail, all blocks): no statement-level behaviour difference found except the
 // two below. collision_count is a dword in retail (`cmp dword ptr [esp+0x23c], 1`; the caller does `movsx edx, ax;
@@ -2992,7 +2997,7 @@ void function_faa60(vector3f *velocity, long projectile_index, s_collision_resul
 {
 	s_projectile *projectile = PROJECTILE_GET(projectile_index);
 	s_projectile_definition *definition = PROJECTILE_DEFINITION_GET(projectile->tag_index);
-	short material_index = collision->unknown24;
+	long material_index = collision->unknown24;
 	vector3f direction = *velocity;
 	real speed = normalize_inline(&direction);
 	real scale_a = 1.0f;

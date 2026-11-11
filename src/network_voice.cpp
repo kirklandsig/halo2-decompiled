@@ -1483,6 +1483,11 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // contribution parenthesised `total += (value * size + 2)` 94 (still one lea), unsigned 13u/11u 94 (all four the same
 // code); the loop test `i != 16` 287 (154 bytes, not unrolled). Re-measured: the flag declared first 111 (channels moves
 // to EBP and the stack, 0x54990 1; the flag still takes BL).
+// MiniMax G (11-11): no new form, no lower score: the identity flag read first (before the total and the channel
+// pointer) 111 (0x54990 1); the flag computed inside the loop 165 (390 bytes); the getter result in a named local
+// 94 (the same code); the flag computed before the entry test 108 (0x54990 1). Retail keeps the channel pointer live
+// past the flag, so the flag lands in al; our hoisted pointer frees bl and the flag lands in bl, which shifts the
+// mask and the product registers with it.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -1905,6 +1910,11 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax G (11-11): no new form, no lower score: the second availability byte still loads lazily where retail
+// loads it beside the first and keeps it in dl for the mode test, and the remote mask still loads into edx
+// where retail uses esi; that pair appears only when the session getters 0x59670/0x596a0 are opaque to LTCG,
+// which is outside this file. `inline` on the second port-flag query scores 102 here and loses the matched
+// callers 0x54890 (83) and 0x53a20 (84); an eager muted gate (the two bytes anded) scores 105. Both restored.
 // MiniMax D (11-10): no lower score (85): the inner query forms tried this round - the raw getter for both
 // port-flag terms 122, the raw getter's bit in a byte temp read in the condition 117, and the third term behind
 // voice_available() with the raw getter 89 - are all worse; the per-site inlining of the second query still
