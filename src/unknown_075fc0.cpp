@@ -70,6 +70,12 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
     return local_0;
 }
 
+// score 356 (was 371): frame 0x38 versus 0x34 (local_18 still has a stack home, retail EBP); observer/channel/result
+// and counter homes remain.
+// MiniMax R (11-10): no new form, no lower score (356); the frame is still 0x38 here against retail's 0x34, this
+// still takes a frame pointer where retail keeps the connection in EDI, the packet-availability result still lands
+// in bl where retail keeps the host state there, and the helper whose result retail tests as a byte is still declared
+// to return a long in a file this lane may not edit; the body stands.
 // MiniMax D (11-10): no new form, no lower score (356); the frame is still 0x38 here against retail's 0x34, this
 // still takes a frame pointer where retail keeps the connection in EDI, the packet-availability result still lands
 // in bl where retail keeps the host state there and publishes the packet state in a separate byte, and the helper
@@ -77,8 +83,6 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // MiniMax R (11-06): no new form, no lower score (371); the frame is 0x38 here and 0x34 in retail, and this takes a frame pointer where retail keeps the connection in EDI.
 // MiniMax E (11-10): no new form, no lower score (356); the extra frame bytes come from the local that still has
 // a stack home where retail keeps the connection in a register.
-// score 356 (was 371): frame 0x38 versus 0x34 (local_18 still has a stack home, retail EBP); observer/channel/result
-// and counter homes remain.
 // MiniMax I (11-01): 374 with the has-host and packet flags as words (score-picked, see below), the record as
 // observer + index*0x528 with the 0xa8 folded into the field offsets, the search through the channel array and
 // the counter snapshot through the existing union; with the two flags back to bool 430, also without the union
@@ -248,6 +252,19 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // threshold 396 (1356) 155/96. Left on the 368 form: retail keeps NONE in ESI and the index in EBP (ours the reverse), forms the channel base right
 // after the connection, zeroes the has-host byte before its call, keeps the reliable payload in EBP ahead of the quotient test with local_6 in memory,
 // and tests 0x75910's result as a byte (`test al, al`; BLOCKED-BY 0x75910: its definition returns long and sits in a held file).
+// Round 112 (m3 lane 9, fast, base 356): the tick interval as `g_485ac0 > 0 ? g_485ac0 : 60` 430 at 1383 bytes;
+// the `arg_3 ? 4.0f : 0.0f` rate as if/else 356 (same code); local_32's ternary as if/else 356 (same code);
+// local_30 initialised to 0 with the else arm dropped 391 at 1372; the state-5 block folded into the
+// `if (!local_8)` block above it 414 at 1376.
+// No further untried natural form: retail's has-host form is a flag set in a test (match-only), the channel-field,
+// snapshot, NONE-first, window/threshold/tail and capacity forms are listed, and 0x75910's byte result stays
+// BLOCKED-BY 0x75910.
+// MiniMax I (11-10): no lower score (356 kept); dropping the redundant copy of the host state (a bool local that only
+// ever mirrors another local) does reach retail's 0x34 frame, but the score rises to 416 (1356 bytes) because the
+// register allocation shifts with the frame. What still differs: retail keeps `this` in EDI with four register saves
+// and none in ESI, keeps the channel index in EBP, and spills into the argument area, ours reserves 0x38 and splits
+// the saves differently; retail also keeps the NONE state in ESI and forms the channel base right after the
+// connection.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

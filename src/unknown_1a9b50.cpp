@@ -639,6 +639,13 @@ extern point2f *g_468778;
 // local for the second prediction time 422 (same code); the first prediction in i, j, k order 418 [91] (1535 B); without the
 // velocity pointer 420 [111] (1525 B); `return !f14 && !f13 && !f2d;` in the arm 411 [99] (1549 B); that with the distance zero
 // at its declaration 403 [102] (1549 B), and with the planar pair as `{i, j}` 407 [106] (1555 B).
+// Round 169 (m3 lane 6, fast with the file's 15 matched functions and 0x1aab50): a forceinline facing-request helper shared
+// with 0x1aab50 (memset, mode, type, planar direction, both normalize2d fallbacks, 0x0e6900 and the entry request) 375 (same
+// code); a forceinline predicted-offset helper (target velocity times scale plus its point minus the origin, i, j, k: retail
+// gives i, j, k xmm1/xmm2/xmm3 in both functions) for both predictions here and 0x1aab50's 375 (same code; 0x1aab50 444);
+// a forceinline planar facing test shared with 0x1aab50 (cosine as a parameter) 384; the final result set by
+// `if (...) result = true;` 380; the first facing dot read through the prop view (retail's `[edi + 0x34]`, then `add edi,
+// 0x2c`) with the facing pointer kept for the rest 394 (1555 bytes).
 // M3 lane 1 r90 (fast with the file's functions and 0x265d30; aligned/register-masked counts in brackets, control 375
 // [263/104]): base B = the actor looked up first, `if (!local_1 || f13 || f14 || f2d) return false;` and `return !f14 &&
 // !f13 && !f2d;` in the arm, re-measured 393 [266/104]; B with the -0.4 facing dot read off the view (round 145's form,
@@ -657,6 +664,12 @@ extern point2f *g_468778;
 // 129); that with the result returned in the arm (`return !f14 && !f13 && !f2d;`, `return false;` last) 386 (1549, 154); the facing
 // through the view with that return on the original order 408 (1549, 153). Re-measured: actor first 413 (1555, masked 134); the
 // velocity pointer alone 397 (1576, masked 136).
+// M3 lane 2 r73 (plain with the file's 17 functions and 0x265d30; aligned 263, masked 102 at 375): the 0.866 planar test
+// through vector2f_products.h's dot_product2d 375 (masked 103: the -0.4 dot's j product takes the actor field first).
+// Census of the other natural forms, all listed above with scores: dot3f at the three facing dots 407/398/398 (all 407),
+// the one-use clock read at its use 391, the facing pointer straight from the 0x25d740 call 375, the actor first 413,
+// constant exits 440, the prediction pipelines through the point helpers 375-377, a separate second prediction time 375,
+// the slot pointer declared first 375, the prop lookup before the clock 380.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -1069,6 +1082,11 @@ static __forceinline long real_to_long(real value);
 // Round 68 (m3 lane 15, fast): the admission as an else-if chain setting the result false per flag 527 (1885 B); the
 // result as `char` returned as `!= 0` 438 (1925 B); `bool local_2 = false;` with nested flag ifs 495; the else arm as
 // `return false;` 508; the result declared before the state pointer 382 (same code).
+// Round 169 (m3 lane 6, fast with the file's 15 matched functions and 0x1aa0d0 unless noted): the object-speed root
+// through the existing magnitude3d, plain check, 481 (1887 bytes: still a call in the full build too); the facing-request
+// helper shared with 0x1aa0d0 382 (same code); the prediction products written field first 382 (same code); the weight's
+// dot read through the prop view (retail's `[eax + 0x34]`) 401 (1909 bytes); no facing pointer until after the prediction
+// 516 (1944 bytes); the shared predicted-offset helper 444 (1906 bytes); the shared planar facing test 480 (1915 bytes).
 // M3 lane 1 r90 (fast with the file's functions and 0x265d30; aligned/register-masked counts in brackets, control 382
 // [155/82]): BLOCKED-BY 0x25d740's inlining. Lane 6's computed entry result (`bool local_2 = !f13 && !f14 && !f2d;
 // if (local_2) {...} return local_2;`, re-measured 508 [239/121], 1921 B, frame 0x54) is retail's shape except that our

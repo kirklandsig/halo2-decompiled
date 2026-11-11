@@ -892,6 +892,9 @@ byte g_55e708;
 // Round 160 (m3 lane 5, fast with the same list), each on the current form: no absolute-index local (the mask at the lookup and both
 // calls) 38; the opacity clamp as if/else-if in place of PIN 45; the first-person count as a ternary initialiser 38; the fallback as
 // `count = count ? count : ...` 38; the single-marker arm first 107.
+// m3 lane 2 r71 (fast with the same list): the loop index declared at the top of the function, before or after the
+// absolute index, 38/38; the marker array declared at the top of the function 38 (all three the same code: the loop's
+// load order does not follow declaration order here).
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
@@ -1226,11 +1229,25 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // a `short` loop index 659 (2809 bytes); the forward cross through the plain shared cross3f 579 (2801 bytes); in the cone arm
 // the up negate before the two copied axes 356 at 2840 bytes (masked 160); the bounds declared once outside the loop 290
 // (same code); the cone plane point from the shape's origin instead of the matrix position 600 (2777 bytes). Body unchanged.
+// m3 lane 2 r71 (fast with the same list): light_projection_point_ab with `transformed` declared first 290 (same
+// code), with the rows as three named scalars 539 (2801 bytes), with the point copied as a vector3f 623 (2891); the
+// point read in each arm of the scale test (if/else) 554 (2756); the face table declared first, then vertices and
+// directions 424, then directions and vertices 442 (both at retail's 2840 bytes; the bounds copy and memset then
+// misalign). Body unchanged.
 // M3 lane 9 r109 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, base 290, aligned 273, masked 148): what differs is
 // unchanged (the entry pointer formed before the bounds' last stores, the projection rows' sum orders per instance, the left
 // normalize's sum, the cone plane distance stored through [esi + 0x80] where retail stores through the plane's own pointer, the
 // cone scale divided before the centre projection, the loop-end cursor registers); no untried natural form left and no
 // existing plane setter in include/. Body unchanged.
+// M3 lane 14 r83 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0/0xc35a0/0xc28b0; matched 0xc35a0 reads DIFF in every
+// --fast run here, the unmodified file too): the cone half height before the half width 290 (different code); the plane
+// distance as dot(plane point, frame->forward) 600 (2777 B); the plane point scaled by shape->origin_offset 554 (2803 B);
+// the cone bounds computed into `bounds` and the corners read back from it 486 (2809 B); the scale before the centre
+// projection re-measured 597 (2780 B). Round 84's 288 lead with the half height first 288 (masked 106 against 126); on it
+// the cone scale from entry->plane_offset 560 (2815 B), depth stored before the plane 301, has_plane tested on
+// entry->plane_offset after its store 560, the matrix scale stored before the position 305, the edges computed x0, y0,
+// x1, y1 288 (masked 101). Same code: `real const radius`, `transformed` declared first in the projection helper, its
+// -1/k local renamed.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

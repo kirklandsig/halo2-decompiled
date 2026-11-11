@@ -788,6 +788,13 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // prologue are byte for byte retail's; the player loop then folds the mask read and rotates its argument registers);
 // on it the bit-first mask test 100, the mask in a loop local 100, the bit in a loop local 100, nested mask and slot
 // tests 100, the slot test first 99, the copy bounded by `session->member_count` 138 (both callers lost).
+// Round 168 (m3 lane 6, fast with the inlined callees and both callers; control 22): re-measured the preset stored
+// pair with the variant named before the summary getter 46 (both callers lost; only the session, index and player
+// pointer homes and the copy temporaries differ). With a plain `for` copy loop on the preset pair: an output pointer
+// walked in the player loop's increment 109, the variant named just before the player loop 108, the pair assigned
+// players first 108, the summary fetched before the variant 108, the copy through memcpy per machine 108 (all 477
+// bytes, the session in ESI, 0x6e500 69 and 0x72700 94). Every preset-pair / `for`-copy combination collapses to
+// 108, so the next round should skip that base.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1102,6 +1109,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // on it `__assume(count <= 16)` or `>= 0` 195, `long identity_count = count` at the call 195, `s_session_owner *owner` 195, a mask local 357 (559 bytes, no
 // unrolling), else-arm named source, named size, field read twice 195 each; destination assigned in each arm 195, with a dead advance at the else arm's end
 // 195 (three spellings); a parameter read through its address 195, with the post-increment 40.
+// Round 168 (m3 lane 6, fast with 0x6fcc0, 0x6f940 and 0x6fa60): the player loop as a do-while (0x6fa60's
+// spelling) 359 (559 bytes, not unrolled); the call's five state arguments through a `&view->part` pointer 9 (same
+// code), the same on the indexed form 195; the indexed form on a flat 48-dword identity array 195; the indexed form
+// with an unsigned count 195. Re-measured: the indexed form 195 (the count spilled, the state in EBX through the
+// call), `identities[count++]` 40 (only the copy's source and destination registers differ). A 600 s permuter run
+// on this body: 67 tries, nothing below 9 (the reduced image scores the original 35).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

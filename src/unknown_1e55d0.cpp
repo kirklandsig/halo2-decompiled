@@ -67,6 +67,10 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// MiniMax H (11-10): no new form, no lower score (319): the move and input pointers still trade EBX and
+// EDI, and the case-3 callee's stub convention settles that swap: BLOCKED-BY 0x1ec690
+// (src/stubs/bipeds.cpp).
+// score 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
 // Walk b3I (11-06): every statement and block checked against retail 0x1e55d0-0x1e5a58 (field offsets, switch table 1..6 with
 // 4/5 shared, case-6 0.3f scale and fistp into the countdown byte, shape compare at 0x1e5740-0x1e5757/0x1e591a, capsule arm at
 // 0x1e5940-0x1e59f9, position range test at 0x1e587f-0x1e58ae, constants 0.3/1e-4/0.001/0.5/+-32768 read from the XBE): no
@@ -82,7 +86,6 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // output in ebx and the physics pointer in edi, ours takes all three on the stack; retail's case-3
 // callee 0x1ec690 also takes the input in edi and the state in eax (src/stubs/bipeds.cpp, another lane).
 // MiniMax B (11-04): no new form, no lower score.
-// score 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
 // Earlier: Aligned frame 0x94 agrees; move/input ownership, physics reloads and native velocity guard remain.
 // MiniMax lane C (run 36, 10-31): no new form, no lower score; the move and input pointers still
 // trade EBX and EDI, and ours still keeps the state pointer in ESI where retail reads it from its
@@ -220,6 +223,13 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // M400: Complete original matrix/position/conversion output defaults, seven subsets and CRT,
 // 312/330/323/319/312/330/323/317. NOT kept: matrix default gives native move/input registers
 // and first +0x8f at 312, but grows to 1200/1164 bytes and gains only seven; all original producers restored.
+// Round 112 (m3 lane 9, fast): both builds end in `mov esp, ebp; pop ebp; ret 8`; retail puts the epilogue
+// mid-body with the non-compound shape test and the capsule/flag arms after it. Ours inlines 0x1c4a80 where retail
+// calls it (an inline budget or site-frequency effect, perhaps of retail inlining 0xb77d0 here). Tried: the position
+// through the existing vector3f_add_scaled 320; case 6 as `0.3f * ticks` 319 (same code); the bounds as
+// `x <= 32768.0f` 319 (same code); `*(long *)(state + 4)` at each use instead of object_index 339 at 1192; object_get()
+// for the two tail lookups 319 (same code). The move/input registers stay BLOCKED-BY 0x1ec690 (stub in
+// src/stubs/bipeds.cpp); M400's matrix default looks like an initialiser that rigid_body_matrix_get overwrites.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {
