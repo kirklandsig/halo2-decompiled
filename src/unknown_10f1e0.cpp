@@ -1815,6 +1815,8 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
+// score 445 (was 453): retail keeps the result byte in the first argument's dead slot and re-derives the unit in both seat
+// queries (rounds 85, 149 and 93 below).
 // MiniMax R (11-04): no new form, no lower score.
 // MiniMax R (10-31): no new form, no lower score.
 // MiniMax H (11-06): the result initialised to true at the declaration gives 450, the same code as the
@@ -1831,7 +1833,6 @@ bool __stdcall function_110ab0(long unit_index)
 // (value set then overridden) is now the ternary, 453 (1793 B, was 450 at 1789 B); the raw +0x14/+0xb0
 // flag tests use the named `channels[0].unknown14` / `channel_9c.unknown14`, same code. Tried:
 // `bool result = true;` with the default arm dropped 483 (1785 B).
-// score 445 (was 453): this round found no gain - retail keeps the result byte in the first argument's dead
 // earlier 453 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
 // slot (round 85's `bool result = true;` with no default arm is the spelling that lands it there) and holds
 // index*12 in EDX so the unit is re-derived for the query; ours keeps the unit in a register.
@@ -2024,6 +2025,18 @@ bool __stdcall function_110ab0(long unit_index)
 // entry unit only 445; for the unit and both seat reads 478 (callers 154/596); for the seat reads and the weapon
 // lookups 504 (154/596); the seat bytes read through the `unit` local 445 (round 115's listed form); the flag as a
 // `? true : false` ternary 445; the flag as `(bool)((state->channels[0].unknown14 >> 4) & 1)` 452.
+// Round 93 (m3 lane 10, fast with 0x10ff40/0x111650, unchanged unless given; al = difflib count of aligned lines, base
+// 351): the first slot byte through `unit` with the second re-derived (0x82b70's mixed form) 445 (same code); the
+// 0x600008d group as `(requested == 0xc000043 || requested == 0xd000042) ? true : interruptible` 505 (1749 B), as an
+// if/else 505 (same code); `control` declared at the overlay section 507 (1749 B; unit index in ECX, 0x10ff40 154,
+// 0x111650 596); the weapon counts through slot_handler.h's object_get 445 (same code). Lead, exact-only (it needs one
+// read of the unit index through its address, as 0x1130f0 does): `bool result = true;` with the 0x400076c/0x700005c
+// groups as `if (requested != 0x600008c) result = interruptible;` / `if (requested == 0x400000c) result = allow;` and no
+// default 471 (1805 B, al 214: frame 0xc and the true byte in the unit index's home as retail, callers unchanged); with
+// the 0x600008d group as that if/else 486 (1769 B, al 203); with a bool depleted 498 (1757 B, al 199); with the
+// interruptible flag as the if-form 539. Left there: every first-switch arm stores to the true byte's slot, where retail
+// keeps the result in DL and reloads the slot only on the default edge; `requested` takes EDI (retail: memory, ECX per
+// region) because retail re-derives the unit in both seat queries (index*12 kept in EDX, the pool data in ESI).
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2500,6 +2513,15 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // the in-place projection 836 (3407 B, masked 157), the conditional `active` clear 840 (3391 B, masked 145),
 // function_111651 at the four channel tests 767 (masked 154). Masked keeps falling with the retail-shaped forms while
 // the positional count rises; the loop's channel_play still expands two levels where retail calls 0x1cb490.
+// Round 93 (m3 lane 10, fast; call counts named through the reduced image's map): one `c_type_709360 id` at function
+// scope for the overlay loop and the 0x114 block (retail stores both ids and its dead entry lookup to +0x20) 776 (only XMM
+// choices move), at the top of the 0xe0000c2 block 776 (same code); a named `real const *ratios` base for the +0x288 reads
+// 847 (3391 B). Re-measured: the do-loop with the id copied inside the index test 842 (3389 B; the loop's channel_play
+// still inlined: set x5, channel_play x4, 0x11df30 x2); the `for` loop with it 873 (3337 B; the first 0x11df30 inlines,
+// two fpatan, but the loop's call stays inlined two levels down to set). Retail also reloads `transforms` from its home on
+// every loop pass, where ours hoists it into ESI, the register retail gives the ratio cursor. No other untried natural
+// form was found for these two causes: no existing helper covers the twice-written `function_1d9240(slot, active, active ?
+// 0.267f : 0.1335f)` call, the slot-flag-then-weight reads or the two-axis centred test (grep of include/ and this file).
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

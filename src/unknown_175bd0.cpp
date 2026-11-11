@@ -2122,6 +2122,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // then holds the definition in EDI and reloads the system as retail; LEAD), on it both colours early 188 (568 bytes),
 // colour B only early 153 (aligned 35), colour A only early 153 (masked 26). Left on the lead: the system in EDI at the
 // entry (retail ESI, reloaded for the colour call), the early colour reads and frame 0x40/0x44.
+// Round 93 (m3 lane 10): no new form. Retail reads both colours right after set_location (colour A to +0x10, colour B
+// in EDI), keeps the system in ESI up to the colour call and the definition in EDI through the loop; those registers are
+// set by the 0x175a80 call, whose file is in another lane's set this round (the lead this note already names).
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3443,6 +3446,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // 92 (aligned 51, against 48 at 93).
 // MiniMax R (11-10): no new form, no lower score (93): the system pointer and the next index still take the
 // opposite registers from retail, and the frame is 0x4c against retail's 0x54.
+// Round 93 (m3 lane 10): no new form. Every remaining lever in this note runs through 0x175a80's body (its file is in
+// another lane's set this round) or changes the convention that matched caller 0x176f60 relies on (the mode read per call
+// passes the effect index in a register). The /Gd first-pass harness loads the system index into EBP, where the full
+// build passes it in EAX, so it cannot screen this convention either.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
