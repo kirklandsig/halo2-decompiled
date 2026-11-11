@@ -1263,6 +1263,8 @@ long function_2197f0(real gain);
    previous ambience */
 // MiniMax E (11-10): no new form, no lower score (94).
 // score 94 (was 94; 177 before lane 10 round 69): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
+// register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
+// 1.0, fade-out), and the gain value carried into the last arm.
 // MiniMax C (11-09): no new form, no lower score (94).
 // MiniMax H (11-07): no new form, no lower score (94); the fade block still holds the running
 // difference in another register (ours xmm2, retail xmm3) and still divides by the fade-in time in
@@ -1272,6 +1274,7 @@ long function_2197f0(real gain);
 // Earlier at 94 (was 177): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
 // 1.0, fade-out), and the gain value carried into the last arm.
+// Earlier 94 (was 177): the same three differences (two stacked score lines merged in r229).
 // Round 160: the gain and ducking gains as s_decibels, the interpolation by value and the hold sum through the
 // by-value operator 127 (682 bytes); on it the raw index, `gain +=` in the first arm and divisions with a fade_out
 // local 208 (640 bytes), `t = 1.0f; if (1.0f > time) t = time;` in arms 2 and 4 177 (672 bytes), the fade table read
@@ -1474,6 +1477,13 @@ long function_2197f0(real gain);
 // ducking->gain` 105 (678: drops retail's by-value copy through a stack temporary). Our five extra bytes are all at the
 // arm-3/arm-4 join: ours keeps the arm-3 sum in XMM0 and loads the gain on the bypass edge (jmp, movss, register add), retail
 // re-reads the gain from its home in arm 4's add.
+// R229 (m3 lane 3, fast with 0x1251e0): one to eight unused-local probes at the top (diagnostic, removed) 94 each (same
+// code: the XMM colours do not follow symbol numbering here); `gain +=` in arm 4 alone, in arm 3 alone 94 each, and in
+// both (a re-measure of round 160's form, 125 then, on the current body) 94 (same code: the last arm still takes the gain
+// from XMM0 across the join where retail re-reads [esp+8]); one shared interpolation after the fade-out test's two arms
+// (t chosen in each) 218 (606 bytes; retail keeps two copies); one ducking pointer for arms 3 and 4 94 (same code); the
+// hold sum as `gain += ducking->gain` 105 (678 bytes: the ducking gain's stack copy goes); arm 3's clamp as
+// `t = time; if (0.0f > time) t = 0.0f; else if (time > 1.0f) t = 1.0f;` 119 (688).
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2887,6 +2897,12 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
+// through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
+// keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
+// and its channel search keeps the channel in EDI with one `or ebp, -1` shared between the channel
+// compare and the driver and buffer defaults. A `bool` result carrier on this body measures 113 at
+// retail's length and was reverted.
 // MiniMax R (11-09): no new form, no lower score; the result still lives in a stack byte where retail keeps
 // it in al, and the frame is still twelve bytes against retail's eight.
 // MiniMax D (11-08): score 96 (was 96): retail returns from two places - the failure block clears the result
@@ -3099,6 +3115,16 @@ static inline short sound_voice_find_available_channel(char type)
 // the for/break search with that failure-first form 141 (437). N314's 64 form rebuilt for reading: its tail and failure block are
 // retail's byte for byte; left are the entry registers, the scan's post-loop bound test (retail's found path goes straight to the
 // `(short)i != NONE` test, as the for/break search does), the shared `or ebp, -1` and the complemented status.
+// R229 (m3 lane 3, fast with 0x129100): `bool result = true;` with `result = false;` at the top of the channel block,
+// `result = true;` after the commit and the failure calls under `if (!result)` 129 (430 bytes: retail's `mov al, 1`
+// at the entry, but the false value lives in a stack byte and the failure block follows the search loop); the same
+// with a byte result 151 (450); the false assigned in `else` arms of the buffer and channel tests, failure calls under
+// `if (!result)`, 114 (430); bool result with `return true;` after the commit (re-measured 139, 415 bytes: the whole
+// result in EBX, the sound in EDI) plus the driver default declared at the top of the channel block, before the
+// search, 155 (407), at function scope 145 (442). Diagnostic re-measure: bool result on the kept goto body 113 (430:
+// `mov al, 1` stored to a stack byte for the goto path, `xor bl, bl ... mov al, bl` failure as retail). The first form is
+// a variant of round 94's (false after the search, 132) and the driver-before-search one of lane 16 r50's / round 117's
+// on another base. Also: `result = false;` after the two failure calls, byte result 96 (same code), bool result 136 (430).
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {

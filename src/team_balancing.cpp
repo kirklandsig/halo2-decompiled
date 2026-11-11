@@ -839,6 +839,12 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // inclusive/complementary selection maxima: 34/35/34/34/34/35/34/34. NOT kept:
 // no exact count/fill/clamp allocation repair; native 0x48 frame and 190-byte extent
 // remain. Original complete body, direct input reads and scalar maximum restored.
+// M3 lane 5 r167 (fast with 0x91e30; base 34, aligned 23, masked 2: only register roles are left): the copy as a
+// `while` loop with the maximum as one ternary 34; the extra-first sum with the clamp as `excess >= 0 ? excess : 0` 34;
+// per-loop `long i` declarations with the extra-first sum 34; the maximum as one ternary with the fill bound written
+// `player_count + extra_count` 34; `long const` total and open slots with the copy as a `while` loop 34. Re-measured:
+// the clamp as `if (excess < 0) excess = 0;` 46; next_party first with open slots as the capacity then `-= total` 34;
+// an early `return false` (here with the clamp assigned back to the imbalance) 63 (203 bytes). All restored.
 // m3 lane 3 r227: both builds keep next_party at frame+0; the only difference is the entry convention (player
 // count EAX in retail, EDX here), which follows the first pass's order for the rep stosd operands: ours loads the fill value
 // before the count and destination (`mov eax, [esp + 0xc]` first), retail after them, so retail's player count can live in EAX

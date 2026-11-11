@@ -952,6 +952,13 @@ real g_55e618;
 // (aligned 16, same code); velocity.i named once ahead of the normal locals 170 (1542 bytes, aligned 33); the velocity pointer
 // and keep declared ahead of the normal locals 41 (aligned 31). Retail hoists the record's word above the particle stores,
 // which ours cannot while the record escapes: BLOCKED-BY 0x1697c0 (unmatched) and 0x169510 (contributor).
+// Round 107 (m3 lane 9, fast; the file's other scores unchanged throughout): the particle record typed (identifier
+// and flags words, reals at +8 and +0x34, no flags pointer) re-measured 99; with the final rows scaled in place
+// through vector3f_scale 103; with dot3f 99; the perpendicular as a copy of the normal scaled by the in-file
+// scale_particle_vector_2b 265 (1591 B); the final rows through scale_particle_vector_2b 101 (one point, not kept);
+// both 264; the typed record with the perpendicular helper 265, with both helpers 264, with the rows helper 103; only
+// the tangent through the helper 102, only the perpendicular 198 (1552 B). 0x1697c0's own 25 are dot-product operand
+// orders and its result byte, not the record capture.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
