@@ -439,6 +439,15 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // inverse for all three components 384 (1715 bytes) [162], 0x29b990 then 6; the else arm's angle zeros chained 179
 // [126]; the result vector stored before the two angle fields 182 [128]; the second normalization's failure test as
 // `!` 203 (1718 bytes); the XY normalization's result tested as a bool 176 (same code).
+// Round 105 (m3 lane 16, fast with 0x29b990, which stayed matched): the entry convention (ECX/EAX indices) agrees and
+// 0x11cc90 is already called. From +0x6e the differences are homes: retail's first root sits at +0xc (ours +0x10), and
+// the rotated result's spill homes use the first input copy's slot (+0x20, as retail's `mov ecx, [esp+0x20]` at the
+// join shows) where ours uses the second's (+0x2c), which moves every load order in the two rotations. New forms: the
+// rotation helper in 0x1f6090's actor_path_rotate spelling (cross with the axis first, aggregate result copy) 289 at
+// 1757; the actor fields and `*arg_5` stored in each arm with no shared result local 246 at 1741; the XY pair read
+// from the `local_5` copy instead of `arg_2` 430 at 1744; the second rotation's axis computed before the first rotation
+// 220 at 1731 (masked 95 -> 89). Re-measured: 0x11d3b0's rotation spelling (k, j, i dot, rows stored in place) 189 at
+// 1706 (the listed direct rows; masked 95 -> 68); the result local declared first 176 (same code).
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

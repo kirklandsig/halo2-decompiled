@@ -865,6 +865,12 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // assigned back, the dword next_party and the open slots before the call re-measure listed forms; new: the copy bound
 // form above and one loop over the total that copies below the player count and fills above it 83 (174 bytes). No
 // untried natural form left in this note's lists.
+// Round 105 (m3 lane 16, compile-only `/O2 /Ob1 /arch:SSE /Gd` first pass, the all-stack pass LTCG takes register
+// arguments from): next_party takes EAX there because the `rep stosd` fill wants its value in EAX, so the player count
+// goes to callee-saved EBX and LTCG then gives it the leftover EDX, with the extra count (loaded into EAX first)
+// keeping EAX. A `while` copy loop, the imbalance declared first and an early `return false` keep that (EBX); a
+// named party value moves it to EDX and the fill counted over the extra count to EBP (both listed, 73 and 62). Retail
+// needs the player count loaded into EAX in that pass, which only the value-changing `(short)` fill gives.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
