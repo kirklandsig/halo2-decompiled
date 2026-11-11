@@ -760,6 +760,15 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // definition formed as the first statement inside the list block, before the 1.0 defaults, 57; both scale products written
 // multiplier first 42 (same code); the multiplier test through the existing flag getter 0x173b90 273 (1110 bytes); the next
 // particle index read between the two particle copies and the particle-cache invalidation 273 (1113 bytes).
+// m3 lane 14 r82 (fast): register/esp-masked aligned diff 13 rows (row i's sums in both rotations, the offset's zero store ahead of
+// the list test, two reload pairs); indexed definitions re-measured 115 (1136 bytes, masked 55: the integer rows become retail's and
+// every rotation row reorders). The body is unchanged since round 20's permuter run (58 tries, none below 42), so it was not rerun.
+// Also r82, each with scale first (re-measured 40): the 0x107f0 mask named 40 (same code); the offset declared at the function top
+// 63; the emitter-mask refresh before the frame query 140 (1131 bytes, as listed alone); the multiplier as a ternary at its
+// declaration 259; the particle copies after the particle-cache invalidation 179; the position rotated from the particle into its
+// copy 189 (1131, as listed alone); the translation through the existing vector3f_add 120 (1136); the next index read right after
+// the particle lookup 272 (1113, as listed alone); the emitter definition formed in the list block after the defaults 57; the first
+// particle read at the guard and again for the loop 310 (1162).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1725,6 +1734,18 @@ bool function_17afd0(long effect_index, long value);
 // follows the owner load]; the definition call after the availability 126 (499) [70], after same_view 87 (498) [59]; the camera flag
 // declared before the availability 138 [58], at the block's top 102 (494) [48], between availability and same_view or after same_view
 // 138; attached or same_view declared false before the availability and assigned later 138/138, all three flags so 138. Body unchanged.
+// m3 lane 14 r82 (fast): register/esp-masked aligned diff 7 rows: the availability's `xor bl, bl` ahead of the second definition
+// call (retail after the view read), `neg; sbb; inc` for retail's `test; jne; mov bl, 1`, and retail's view reload after 0x17afd0.
+// No untried natural form for them; the listed branchy and view-at-each-use forms all move NONE out of EBP.
+// Also r82: the listed 12 form (the view global at each use, availability false after the owner and set on success, `bool
+// same_view = true;` just before the availability, cleared by one `owner == NONE || g != owner || !available` test) re-measured
+// 12 at 498 bytes, aligned 2: ours stores the true in the view-test block, retail between `test bl, bl` and `jne` in the third
+// test's block (the plain `&&` expression's pattern). Permuter on it (600 s, 56 tries): best 12.
+// Also r82 on this body (fast): the location-mode test before `attached` 52; same_view as `view == owner && owner != NONE &&
+// available` 47 (other code), `available && owner != NONE && view == owner` 107 (492 bytes), `owner != NONE && available && view ==
+// owner` 46 (masked 14, test order only, not kept); on that, the location-mode swap 51, the attached test effect-index first 46;
+// `view == owner && available && owner != NONE` 46, `available && view == owner && owner != NONE` 106 (492), the equality first
+// with the location-mode swap 52.
 // m3 lane 13 r79 (fast, base 47): the camera test in the idiom of src/unknown_03f2b0.cpp (`g_4b9ed8 != NONE &&
 // g_4ed284->entries[g_4b9ed8].index != NONE`) with the availability false early and set by a branch 142 (510 bytes);
 // the branchy availability with the attachment testing the effect index first 135 (504); the camera idiom with the
