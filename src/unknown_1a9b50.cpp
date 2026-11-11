@@ -413,6 +413,10 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
+// MiniMax B (11-11): no new form, no lower score (375); retail loads the actor table before its register saves,
+// keeps arg_0, the actor, the slot and the prop in edi, ebp, esi and ebx and computes the actor's table entry
+// before the settings call, where ours keeps that entry in ebx after the call and the slot in ebp; the frame
+// itself agrees (0x40), so only the carriers and the prediction homes differ.
 // score 375 (was 375): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // MiniMax H (11-04): no new form, no lower score; the four orders of the entry declarations (the actor first, the actor and its slot first, the actor second and the slot before the actor) give 413, 413, 375 and 413 against 375.
 // b2G walk (r719): every block, field offset, constant and call argument checked against retail 0x1aa0d0-0x1aa6da; no logic or
