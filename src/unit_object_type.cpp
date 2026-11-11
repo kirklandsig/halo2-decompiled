@@ -3316,6 +3316,7 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // array 127 each; the test inverted with the plain arm first 127; the copies through a two-use inline copy helper
 // (forceinline or inline) 127; the camera's address taken (`(void)&camera`, or both copies through a const reference
 // to it) 127, all the same code: the camera keeps EBP in every form that names it twice.
+// MiniMax A (11-11), NOT kept (coordinator 11-11): 113 -> 78 with the camera parameter and the result made volatile; volatile is reverted, body at 113.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
