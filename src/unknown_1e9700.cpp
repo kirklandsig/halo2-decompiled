@@ -237,6 +237,13 @@ struct s_object_damage_view
 };
 
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
+// Round 170 (m3 lane 5, fast with the file's functions and 0xd9640; base aligned 132, masked 35): slot references counted in
+// both listings: retail killer 8, victim_team 8, damage_code 7 (killer stays in its home and is reloaded into EDX/EDI around the
+// fallback, the code is read once into ESI for both pushes); ours victim_team 8, damage_code 8, killer 6 (killer in EBP through
+// the killer block). Tried: the related-assist limit as `assist_count < 5` (no cast) 353 (aligned 133, masked 36); `self` as
+// `victim == reported_player` 353 (133/36); the selection fallback as `selected = selected != NONE ? selected : reported_slot`
+// 353 (same code); `byte damage_code = code;` declared just before the selected block 470 (1578 B, first difference +0x8);
+// `long killer = NONE;` declared there 409 (1564 B; aligned 137, masked 37).
 // MiniMax C (11-10): the score is 353 (was 353); the three homes sit in rotated slots (ours +0x14/+0x1c/+0x18 against retail's +0x18/+0x14/+0x1c) and our function is four bytes longer, so the first branch's jump lands elsewhere.
 // Round 147 (m3 lane 8, fast; [aligned ours/retail, masked ours/retail], control 353 [128/132, 31/35]): the related unit's
 // player index read at each use (retail reads +0x13c again for the store) 357 (1552 B) [119/124, 29/34]; with the killer's

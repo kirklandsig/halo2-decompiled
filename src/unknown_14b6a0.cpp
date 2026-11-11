@@ -119,6 +119,12 @@ void function_14bac0()
 	players_pending_creation_process(iterator_reference);
 }
 // score 222 (was 222): Frame 0x50 versus 0x3c, exchanged player/scenario spills, point/recipient overlap and readiness homes remain.
+// Round 170 (m3 lane 5, plain with 0x14bac0, 0x6b380 and every function of src/unknown_0bbf40.cpp): the visit test as a call of the
+// existing 0xbec70 with `inline` added at its definition (so it expands here; 0xbec70 and its matched caller 0x269e60 keep their
+// match) 263 (1020 B; aligned 112, masked 53): retail's `cmp [eax*4 + marks], ecx` compare but still no `mov edx, ecx` stamp copy,
+// the same score and length as round 87's force-inline stamp helper (a re-measure in effect); with the relocation point used
+// directly 244 (1048 B; aligned 107, masked 49), round 84's slot-local numbers. The other levers are listed above or blocked:
+// retail inlines the root walk 0xbaf80, which is pinned noinline in avoid-listed src/unknown_0bad50.cpp (BLOCKED-BY 0xbaf80).
 // MiniMax I (11-08): no new form, no lower score (222): the frame is still 0x50 against retail's 0x3c, and
 // the exchanged player/scenario spills, the point/recipient overlap and the readiness homes still differ.
 // Retail keeps three point-sized slots (the offset, the marker point and the capsule centre share one, the

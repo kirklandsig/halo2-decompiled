@@ -851,6 +851,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // initializer from the position pointer 312 (1248 B, aligned 99, origin still one home in x, y, z order), with the hit as a
 // brace initializer too 362 (1261 B); the final test as `valid && scale < contact->normal.k` 239 (same code). Diagnostic,
 // not kept: the dead second walk as an empty-body `next` chase 239 (the loop-head pad stays).
+// Round 171 (m3 lane 5, fast with 0x1829b0, 0x1821d0, 0x182800; control 239, aligned 137, masked 71): the origin as
+// three reals read z, y, x 308 (1245 B, 135/64); that plus the hit assigned by components 362 (1258 B); the hit by
+// components alone 325 (1262 B); the hit as `point3f const &hit = contact->position` 335 (1243 B), with the scalar
+// origin 333 (1243 B); the component scan at the top through the existing header havok_entity_property_get 239 (same
+// code).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

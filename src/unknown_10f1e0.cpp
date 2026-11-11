@@ -1459,6 +1459,7 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// score 164 (was 164):
 // MiniMax S (11-09): no new form, no lower score (164); retail keeps index*12 as a value and re-reads
 // the unit through that offset for both depletion queries, and writes the first depletion with setle.
 // MiniMax H (11-06): the index masked in a local of its own gives 322, the unit pointer dropped in favour of
@@ -1475,7 +1476,7 @@ long function_cbd50(long unit_index, short weapon_index);
 // MiniMax I (11-08): no new form, no lower score (164): retail keeps the pool pointer in EAX and its data
 // in EBP, re-reads the unit pointer for both depletion queries and writes the first depletion with setle;
 // ours keeps the unit in EAX and builds the result with a branch.
-// score 164 (was 164): this round found no gain - retail keeps index*12 as a value (lea/shl) and re-reads
+// this round found no gain - retail keeps index*12 as a value (lea/shl) and re-reads
 // the unit through that offset for both depletion queries, and it writes the first depletion with setle;
 // the byte-offset entry with re-derived queries gives 325 and the if-form depletion gives 330.
 // this round found no gain - retail keeps the pool pointer in EAX and the data in
@@ -1694,6 +1695,12 @@ long function_cbd50(long unit_index, short weapon_index);
 // <= 0;` 343 (1299 B); the 0xc70b0 test negated, switches first, `else result = true` 325 (1295 B). On lane 9 r105's
 // entry-headers/if-form/bool-result/interruptible-first base (re-built: 351 at 1255 B): `controlling` read before the
 // overlay and name 351 (same code); the second clear as `depleted &=` under `if (second != NONE)` 350 (1256 B).
+// Round 172 (m3 lane 5, fast; aligned/masked counts in brackets, control [85/33]): a pool copy `objects` at entry for
+// the entry unit and both slot reads (0xcbd50 keeps its own lookup) 362 (1315 B) [75/40]; at entry for the entry unit
+// and both weapon-object reads 351 (1309 B) [67/42]; declared in the controlling block for both slot reads and both
+// weapon-object reads 349 (1303 B) [69/32], the slot reads only 355 (1311 B) [60/31], the weapon-object reads only
+// 331 (1292 B) [87/36]; at entry for everything 378 (round 162's pool receivers). See 0x152660's note for the
+// copy/global load-sharing observation.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {

@@ -999,14 +999,23 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
+// score 347 (was 347): before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
+// 33 bytes equal retail's input-length block, and `magnitude3d(&change) + g_47ffb0` alone makes the history block
+// (0x1f0fd0-0x1f10ab) byte-exact, registers included: 573 (3038 B; aligned 152 -> 165, masked 64 -> 73), the product operand
+// orders in the crosses and the low arm flipping instead. With the input length as `magnitude3d(&state->input)` too, the input
+// block is exact as well, 583 (3027 B; aligned 177, masked 80; the low arm 18 B short); through the `input` pointer local the
+// inlined sum moves the offset-0 term last, (j2 + k2) + i2, 585 (3027 B). On that both-sites form (r170, plain): the flags
+// declared flying, direct, damping, gravity 579 (3027 B, first difference +0x31); no `input` local, every read through
+// state->input, 573 (3033 B). Lead: keep both magnitude3d calls in any rewrite; the product operand order moves with each
+// added inlined call, so look for what else retail inlines here.
 // MiniMax C (11-06): the direct arm's magnitude and the history arm's maximum now add their three squares in
 // retail's term order and grouping (344, 3052 bytes against retail's 3047). Left: the magnitude's x87 stack still
 // shuffles differently (ours fmulp/faddp/fxch/fstp against retail's fmul/faddp/fstp), the direct arm's four
 // products and its two vector homes sit in other registers and stack slots than retail's, and the crosses' product
 // sides and the low-normal arm's homes remain as noted below.
 
-// score 347 (was 347; before r723 358): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
-// score 347 (was 347): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
+// Earlier 347 (was 347; before r723 358): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
+// Earlier 347 (was 347): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
 // bytes (retail 3047). Statement-by-statement walk against retail (b2K, 2026-11-06, fast): every
 // arm, compare direction, field offset (flags 0x14, settings 0x8, speed 0x20, normal 0x8c, damping 0x98, facing 0x9c, flag 0xa8,
 // up 0x100, basis 0x118, velocity 0x124, gravity 0x130, input 0x138, accelerations 0x144/0x148), constant (0.001, 0.234, 5.0, 1.0,
