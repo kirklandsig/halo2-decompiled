@@ -2881,6 +2881,15 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // for the flag test and the copy 615. Left on the guard form: the creation compare after the two stores, source
 // loaded into ESI where retail uses EDX then copies it, the gains clear in memset's lea form, state in EBX and
 // NONE in ESI at the track loop (ours NONE in EBX).
+// Lane 14 r81 (fast with callers and callees, control 597 as the full check; second number the register-masked
+// aligned count, 197 for 597): the two impulse truths as dword values 598 (197); impulse_states read after the two
+// truths 598 (2508 bytes, 195). Re-measured: alternate inside the definition guard 615 plain (2500 bytes, as listed;
+// the fast image gives 716 at 2455 bytes for it, so screen guard forms plain); the four impulse sets through
+// flag_set_12a1b0 597 (same code); the four sets through the existing bit_vector_set (the mask is a per-state bit
+// vector) 617 (2544 bytes, 300); diagnostic, reverted: the gains cleared by assigning a zeroed four-real aggregate 727
+// (still `lea` plus a stack copy, not retail's direct stores). Retail reads the
+// track flags twice (a byte for `& 1`, a dword for the shifted bits) and tests each truth twice without threading;
+// every form here threads the second test into the first.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
