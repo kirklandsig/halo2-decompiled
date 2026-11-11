@@ -1881,6 +1881,7 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// MiniMax H (11-11): no new form, no lower score (11); retail still loads the object-pool global into ECX and the unit header into EDX before it loads the type argument, while ours loads the type into ECX first and puts the global in EDX, so the type compare lands before the index arithmetic instead of after it; the rest of the function matches instruction for instruction.
 // MiniMax C (11-10): score 11 (was 11): no lower score this round. Two new spellings of the lookup were
 // measured and dropped: a named unit header pointer 65, and a named pointer to the active bit vector 11 with
 // the entry order unchanged. A permuter run (300 s) was stopped at its time limit without a result.
