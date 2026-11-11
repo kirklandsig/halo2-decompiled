@@ -454,6 +454,16 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Lead: the iterator walk (both scans, masked 287) is 63 bytes short, about retail's nine extra 8-byte xmm4 reloads of
 // g_44a0b4 (5 reads here against 14). They need g_44a0b4 const, and its declaration in src/sound_portal_paths.cpp sits
 // in the held sort_4byte change's files.
+// m3 lane 15 r72 (fast with 0x18bb80): re-measured the query count read directly with a long choice count 942 (3297 bytes):
+// the choice address is strength-reduced into a pointer stepped by 0x28 ahead of the loop (`lea esi, [esp + 0x44]`) with
+// the counts in memory, where retail keeps the choice count in ESI, the query index in EDI, and forms each choice address
+// from the incremented count. The stacked second score line is merged. No new form was run: each remaining axis is listed or
+// ruled out. Counter widths and domains (query, choice, target, existing, ordinals: short/long/byte/word/unsigned) 866-1025;
+// the query count copied or read directly 919/942; the choice address (indexed, post-increment pointer, count-first) is
+// strength-reduced on any long count (953-969); loop shapes (continue or nested ifs, cap test placement, duplicate-search
+// forms) 866-1001; store orders and the 1.0f defaults (same code); array names, order and scope (same code: homes follow
+// lifetimes); helper routes for the pin/log/linear conversions and getters; grouping a count with its array would only move
+// homes (an aggregate made up to steer), so it is not a candidate.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

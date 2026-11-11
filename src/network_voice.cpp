@@ -1733,6 +1733,16 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // ternary 134 (aligned 19: retail's EBP bit, EBX size and setne; the zero result in EAX is then reused for `cmp edi, eax` and the
 // written store, and kept takes EAX), retail's visible kwce order with the ternary 137 (player passed on the stack, 0x56380 13).
 // Body unchanged.
+// Round 73 (m3 lane 15; one-file LTCG harness, exact: base 60 at 460 bytes, 0x56380/0x564c0 matched): `result` itself counting
+// the written entries (no `written` local; `output[1] = (byte)result; result = result * entry_size + 2;`) 153 (458 bytes,
+// 0x56380 55), the same on the ternary cewk base 151 (0x56380 13); `capacity -= 2` inside the capacity test 60 (same code);
+// the writer after the active test as a forced-inline helper with early returns (NONE, NONE, `return 0` on capacity, the
+// length) 166 (queue moves to EAX, 0x56380 133), with one result variable 187 (477 bytes, 0x56380 66); as plain `inline` it
+// stays out of line (diagnostic, 553). Re-measured: the length local with `return length;` ending the capacity block 216 (494
+// bytes, 0x56380 73; round 90's 220 form): the zero result then becomes a stack variable and queue/player arrive in EAX/ECX.
+// Round 73, continued: the clamp test through the existing voice_packet_clamp_count (`voice_packet_clamp_count((byte)player,
+// 0, 15) != player`, the same result for every player) 157 (0x56380 55).
+// Round 73, continued: voice_channel_has_player as `static __forceinline` 60 (same code, 0x56380 and 0x564c0 still matched).
 // M3 lane 8 r151 (fast, control 60; both builds return with ret 0xc): what still differs is register allocation (retail
 // keeps the zero result in EAX as a variable from entry to the capacity-fail exit, as matched 0x56380 keeps its zero in
 // ESI, and gives the bit EBP and the size EBX). New forms: the written count typed byte 140 (462 bytes), with the size as
