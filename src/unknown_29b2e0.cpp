@@ -424,6 +424,11 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // out parameter into a local 263 (1719 bytes); the normalizer's length store ahead of the K scaling 176 (same
 // code); the first length from the normalizer's return value 263 (1719); the XY pair built after the second
 // normalization 368 (1712); the first length from the return value with the planar test as `> 0.0f` 316 (1715).
+// M3 lane 10 r90 (fast with 0x29b990, MATCH throughout, and 0x11cc90): no gain. The score line moved to the top of this note (it sat
+// below the MiniMax lines). Lead re-measured: single-exit normalizer + XY vector before the second copy 169. On it: both turn tests as
+// `product >= 0.0f` 174 (masked 196); the second axis through the existing cross3f 234 (1706 bytes, frame changes, first difference +0x2).
+// On 169 the x87 transfer temporaries (roots, acos) still share +0x10 with local_11 where retail packs them at +0xc with the clamp input and
+// the yaw; the yaw clamp's zero copy still sits below its branch.
 // Round 86 (m3 lane 1, fast with 0x29b990, which stays matched; aligned/masked in brackets, base 176 [133/69]): the
 // second axis through the existing cross3f (vector_products.h) on the single-exit normalizer 234 (1706 B [133/75]);
 // the rotation helper's three cross terms through cross3f into a vector 213 (1707 B [131/55], frame 0x24 against

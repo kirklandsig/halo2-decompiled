@@ -143,6 +143,7 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // block's left_i load, the early 0x44 load, and the tail, where retail reloads the actor offset from +0x64 at both setters
 // and pops before the last one (ours keeps it in EBX).
 // Earlier 393 (was 393): the steering block's loads and product order differ (it now loads i, j first); the left vector and the avoidance
+// 393 earlier; the steering block's loads and product order differ (it now loads i, j first); the left vector and the avoidance
 // vector swap their 12-byte slots; the 0x5d0 flag store now matches; the early 0x44 load and the local_16 dot's x87 order differ.
 // 393 before m3 lane 13 r75. The left vector is built from the named left_i (`{left_i, local_8.i, 0.0f}`): 393 -> 378 plain at retail's 2825
 // bytes, but mostly positional: the compiler now propagates left_i into the side test and shares its product with the 0.9 block (a new
@@ -256,6 +257,18 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // if/else with the rest in the else (no goto) 393 (same code); the local_16 dot through the existing dot_product2d
 // 395 (aligned 51); with the left vector first 392 (aligned 49); dot_product2d plus the 0x44 setting read before the
 // local_16 test (a one-use local, diagnostic) 380 (aligned 49); the left vector first without the goto 390.
+// Round 148 (m3 lane 7, fast; [stack+register masked, register masked] aligned counts, this body [45, 120]): the 393 form
+// (`{-local_8.j, local_8.i, 0.0f}`) re-measured 393 [41, 56] (frame 0x5b4 as retail, 2815 bytes). A compile-only frame probe
+// (no LTCG) gives both forms retail's 0x5b4 frame and retail's slots (avoidance vector 0x78, left vector 0x84), so the frame
+// and the slot tie come from LTCG: on this body the callee summaries let the side test's `local_9.i * left_i` be CSE'd into
+// the 0.9 block across 0x299460 (the extra 4-byte temp; retail reads the left vector's home there), and on the 393 form the
+// tie between the two 12-byte vectors falls the other way only in the LTCG build. On the 393 form: the left vector stored by
+// components 393 (same code); its 0.9-block term read from local_13.i 376 [49, 123] (2825 bytes and frame 0x5b4, but the slots
+// do not move and the product CSE comes back at another temp; gain 2, not kept); the left vector declared const 393 (same
+// code); the avoidance k cleared ahead of the local_4 test (`if (local_4 && function_30bf0(...) == 0.0f)`) 480, the same on
+// this body 481; the left vector declared const on this body 378 (same code); the left vector built from the local_8 copy
+// (`{-local_11.j, local_11.i, 0.0f}`) 537 [79, 281] (2836 bytes); re-measured: the side-test sum written local_25 first on the
+// 393 form 393. No unlisted natural form left for the slot tie.
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

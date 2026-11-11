@@ -439,6 +439,11 @@ struct s_24e9c7_bounds
 // spills across j to -8), so result keeps -8 and side y spills at -0x14 below the scalars. Retail's -8 slot has five
 // references (across j stored and reloaded, side y stored, reloaded for back and for the corners), which puts it above
 // result by weight.
+// M3 lane 3 r231 (fast with 0x24e59f and 0x22a664, both matched each time; control 125): the scale read before size 125 (same
+// code); the across j product before across i 125 (same code); the half width halved as a second statement (`half_width /=
+// 2;`) 125 (same code); the four marker stores to the view globals before the corner points 131 (retail interleaves them with
+// the last corner sums); `up.y` as `-(result * forward_j)` 125 (same code). Close to round 147's half width before the height:
+// the result conversion after the half width 131.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

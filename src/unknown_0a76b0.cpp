@@ -854,10 +854,18 @@ void function_fd560(long projectile_index, long object_index, short node_index, 
 	vector3f const *forward);
 extern vector3f *g_4687b0;
 
+/* a unit's vehicle seat definition */
+PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
+{
+	byte *parent_definition = g_4e3b44[UNIT_ACTION_UNIT_GET(unit->parent_object_index)->definition_index & 0xffff].bytes;
+
+	return *(byte **)(parent_definition + 0x1cc) + unit->seat_index * 0xb0;
+}
+
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
 // MiniMax lane A (11-04): no new form, no lower score.
-// score 152 (was 288): left are the origin and direction frame homes (swapped), the projectile index, grenade type
+// score 152 (was 152): earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
 // and throw-globals homes, the release point (retail its own local in center's slot), the velocity scale's first
 // product and the spread blend's schedule. Before this round 288, 298 before lane 15 round 61's throw velocity through
 // vector3f_scale; earlier, flag 17 cleared and restored through bit_vector_set (retail reads the flags word
@@ -1036,6 +1044,12 @@ extern vector3f *g_4687b0;
 // speed read at each use 148, direction-first products 65, separate origins 246. On 288 earlier: the
 // release point as its own local with a `placed` result 313 (frame 0xd8), with the parent velocity in a block 313, with
 // the release point in a block 309 (frame 0xcc), with one origin 287, with the copy 279 (frame 0xd8); one origin 295.
+// m3 lane 2 r69 (fast, plain-confirmed 152): the seat test through the existing unit_action_seat_get (its body was
+// written out here; the helper now sits above this function) 152, the same code: kept. Retail's frame puts the block
+// vectors (the a76b0 forward copy, center, ...) below the grenade type and projectile index slots, ours above
+// (slot order follows use weight, not names). Tried: the a76b0 branch passing the unit's facing straight to 0xa91c0
+// 341 (1682 bytes: retail copies it); the parent velocity declared at the top of the not-cancelled block 152; the
+// projectile subtraction as vector3f_add_scaled(-1) 152 (same code); the blend with the velocity term first 152.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1068,8 +1082,7 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 
 	if (unit->parent_object_index != NONE && unit->seat_index != NONE)
 	{
-		byte *parent_definition = g_4e3b44[UNIT_ACTION_UNIT_GET(unit->parent_object_index)->definition_index & 0xffff].bytes;
-		byte *seat = *(byte **)(parent_definition + 0x1cc) + unit->seat_index * 0xb0;
+		byte *seat = unit_action_seat_get(unit);
 
 		if (TEST_FIELD_BIT((*(dword *)seat >> 11) & 1))
 		{
@@ -1220,14 +1233,6 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 
 	return *(long *)(globals + 0x100) ?
 		&(*(s_unit_action_grenade **)(globals + 0x104))[unit->current_grenade_index] : NULL;
-}
-
-/* a unit's vehicle seat definition */
-PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
-{
-	byte *parent_definition = g_4e3b44[UNIT_ACTION_UNIT_GET(unit->parent_object_index)->definition_index & 0xffff].bytes;
-
-	return *(byte **)(parent_definition + 0x1cc) + unit->seat_index * 0xb0;
 }
 
 /* starts throwing a grenade (type 22) */

@@ -581,6 +581,15 @@ void function_14bac0()
 // second block's top, ahead of the two accepted points, 238 (same code); the first scan's iterator declared at the request
 // block's top 238 (same code); the alternate assigned member by member with the 1.0 in its z expression 240 (masked 69).
 // Frame 0x40 in all. Body unchanged.
+// m3 lane 13 r79 (fast with 0x6b380 and 0x14bac0, matched throughout; brackets: difflib aligned / register-masked, base
+// 222 [99/84]): round 164's form (relocation point used directly, centre/height/radius in their own block, second scan on
+// a block-local datum iterator through 0x6b380) re-measured 238 (1052 bytes, frame 0x40) [73/39]: structurally the closest
+// (masked 84 -> 39), but the positional count rises. On it: the readiness flags declared destination first 240 [71/37];
+// the first scan on a 12-byte pool iterator through the calling step 238 (same code); `point3f alternate, destination;`
+// 238; the player iterator declared ahead of the offset 238; height and radius at the second block's scope with only the
+// centre in its own block 238 (each the same code). The unit read from the player at both calls re-measured 259 (frame
+// 0x48). Left on round 164's form: the second iterator shares the first iterator's slot and the alternate gets its own,
+// where retail packs the alternate with the first iterator and the second iterator with the offset/probe/centre slot.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

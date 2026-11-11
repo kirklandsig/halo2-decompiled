@@ -426,6 +426,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // arm) 247 (1136 bytes, the rows still sum the first point's term first); the else arm's weights as
 // `local_4 = local_5 = 1.f` 206 (same code); the orthographic dot as dot3f(&local_10, &g_4b9dac) 206 (same code); one
 // counter for both offset loops 207 (1141 bytes).
+// M3 lane 10 r90 (fast with 0x30290, MATCH; the fast image leaves six camera globals unresolved, so fast scores are a screen only): no
+// gain. The blend weights as unary negations `-local_2.k` / `-local_3.k` 206 and the width differences doubled constant-first 206 (both same
+// code). No other untried natural form found: the remaining levers (lazy depth limits, the second offset kept in the frame, the blend
+// scale's home) are all listed above.
 // Round 86 (m3 lane 1, fast; aligned/masked counts in brackets, base 206 [167/103]): the blend products written
 // weight first 206 (same code); a shared `real scale` local with the depth limits written in the condition 256
 // (1136 B [170/81]: the second offset spilled whole, both scale tests early). LEAD: the existing transform_vector of

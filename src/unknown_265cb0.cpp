@@ -669,6 +669,10 @@ real function_30bf0(vector3f *vector);
 // in-place ternary 84; facing_ pair declared first and secondary copied first 84. Diagnostics, reverted: 0x263d70 storing
 // both output pointers to scratch globals leaves the first form at 199, and so does this function defined ahead of
 // 0x263d70 and 0x263740: neither an escaping pointer nor definition order makes our link keep the thresholds in memory.
+// M3 lane 10 r90 (fast with 0x263740/0x25c9d0, both MATCH): no gain. The plane distance through dot3f 138 (1308 bytes, masked 28); the
+// intersection test as `amount >= 0.0f` 236; the vehicle index read at each use instead of the `object_index` local 84, `range * scale`
+// 84, the three threshold compares written distance-first 84 (all same code). The permuter (`--fast --anneal`, 600 s after a 1041 s
+// scratch build) tried 65 variants and found none below 82 instructions.
 // Round 86 (m3 lane 1, fast with 0x263740/0x25c9d0; aligned/masked in brackets, base 84 [19/17]): the squared
 // distance declared uninitialised at the settings-block top 84 (same code: declaration position moves no slot); the
 // occupant's forward as a vector copy 195 (1312 B [77/47]); the plane distance through dot3f 138 at 1308 B [34/24];
@@ -1190,8 +1194,11 @@ void function_267700(long actor_index, s_prop_datum *node, s_type_76cf92 *prop, 
 		view->unknown60 = value;
 }
 
+// Parameter order (point, direction, position, distance, unknown) is retail's: the callers' argument
+// setup in 0x267c50 sets the NULL distance (ecx) before the address leas only with distance fourth,
+// and with it 0x267c50 matches while this function still matches (found by MiniMax S and E, 11-10).
 // @retail 0x267a80
-short function_267a80(real *distance, point3f const *point, vector3f const *direction, point3f const *position, vector3f *unknown)
+short function_267a80(point3f const *point, vector3f const *direction, point3f const *position, real *distance, vector3f *unknown)
 {
 	long result = 0;
 	vector3f *offset = (vector3f *)unknown;
@@ -1396,6 +1403,16 @@ long function_146650(void);
 // MiniMax S (11-10): retail's 0x267a80 takes (point, direction, position, distance, unknown); with that order this function
 // matches and 0x267a80 still matches (its body matches under both orders, only the callers differ), but the change needs
 // src/unknown_25fc30.cpp's declaration (line 73) and its two call sites (lines 1221, 1244), which is outside this lane - reported, not applied.
+// MiniMax E (11-10): the parameter layout is retail's, confirmed from the compiled prologue of 0x267c50,
+// which matches retail opcode for opcode (`mov ebx, [esp + 0x68]`, i.e. the single stack argument
+// at [E+4], and the same `and ebp, 0xffff` / `imul ebp, 0x888` index math), so the one argument here is the
+// same in both and nothing is blocked by the declaration.
+// MiniMax E (11-10): no new form, no lower score (7). The NULL distance argument written as 0 instead
+// of NULL compiles to the same code (7). The one remaining difference is where the `xor ecx, ecx` for
+// that NULL distance is emitted: retail sets ECX before the local-address leas of EDI (and of EDX in the
+// projected call), ours sets it last. Retail's order is the reverse of the argument order with the
+// distance argument fourth, i.e. it matches 0x267a80 declared as (point, direction, position, distance,
+// unknown); that is a parameter-order change, which is a banned form, so it is not applied here.
 // score 7 (was 7): the five 12-byte homes now agree; only the argument setup at the three 0x267a80 calls
 // differs: retail sets ECX (the NULL distance, `xor ecx, ecx`) before the local-address lea of EDI (and of EDX
 // in the projected call), ours sets ECX last. Earlier note, from before the homes agreed: retail stacks
@@ -1586,8 +1603,8 @@ void function_267c50(long actor_index)
 					{
 						bool active = false;
 						vector3f offset = {0.0f, 0.0f, 0.0f};
-						short proximity = function_267a80(NULL, &state->position, &direction,
-							(point3f *)(data + 0x238), &offset);
+						short proximity = function_267a80(&state->position, &direction,
+							(point3f *)(data + 0x238), NULL, &offset);
 						if (proximity >= 1)
 						{
 							*(bool *)(data + 0x3de) = true;
@@ -1617,7 +1634,7 @@ void function_267c50(long actor_index)
 									ahead.x = movement.i * 0.4f + *(real *)(data + 0x238);
 									ahead.y = movement.j * 0.4f + *(real *)(data + 0x23c);
 									ahead.z = movement.k * 0.4f + *(real *)(data + 0x240);
-									short projected = function_267a80(NULL, &state->position, &direction, &ahead, 0);
+									short projected = function_267a80(&state->position, &direction, &ahead, NULL, 0);
 									if ((projected > proximity ? projected : proximity) >= 1)
 									{
 										real dot = movement.k * offset.k + movement.j * offset.j + movement.i * offset.i;
@@ -1631,7 +1648,7 @@ void function_267c50(long actor_index)
 							}
 						}
 					}
-					if (check_target && function_267a80(NULL, (point3f *)(data + 0x238), &target_direction, &state->position, 0) >= 2)
+					if (check_target && function_267a80((point3f *)(data + 0x238), &target_direction, &state->position, NULL, 0) >= 2)
 						*(bool *)(data + 0x3df) = true;
 				}
 			}
@@ -2288,6 +2305,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 0x30bf0's magnitude through a one-line inline helper 168 (same code, 0x30bf0 still matches); 0x30bf0 reading its
 // parameter through its address 513 (0x30bf0 21, its convention changes). Retail's shape needs the normalize call to
 // be able to write `direction`; no form of 0x30bf0 that keeps its bytes makes our link think so.
+// M3 lane 10 r90 (fast with 0x25d810/0x26be00/0x25d740, all MATCH): no gain. The iterator's datum index stored before its index 170; visible
+// as one direct bool (`reference == NONE || ... >= 1`) 428 (frame changes); the byte alias of the actor dropped 168 (same code). Re-measured:
+// player NULL before the first search 373; the elapsed counter read at each use 168; the NONE fields chained 170. Every other natural form
+// screened this round (prop/state getters, threshold and decrease arithmetic, the close flags) is already listed above.
 // Round 86 (m3 lane 1, fast with 0x25d810; aligned/masked in brackets, base 168 [80/38]): the first scratch-rotation
 // difference is the other actor's lookup (retail reuses EAX for the object pointer, ours takes ECX, and the actor lookup
 // after it is one step on). LEAD: the object read into a pointer local and its actor index read at each use

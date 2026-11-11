@@ -38,11 +38,6 @@ public:
 };
 
 
-// @stub 0x3048a0
-int class_3048a0::function_3048a0(convex_2fefd0 const *first, convex_2fefd0 const *second, c_query_transform const *transform, pair_state_2fefd0 *state, closest_3048a0 *closest)
-{
-	return 0;
-}
 
 
 

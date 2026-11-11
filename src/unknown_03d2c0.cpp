@@ -152,6 +152,19 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // `long result = NONE;` 77, `result = cache_index = record_pool_allocate(...)` 77 (all same code); one early return after the
 // if/else in place of the `if (result != NONE)` block 152 (497 bytes); the early return as `goto done` to the only return 85
 // (504 bytes, the two NONE tests merge).
+// M3 lane 8 r151 (fast; control 77): retail's found path skips the merge test on a constant, not on the index: with the
+// merge test spelled `!initialize || result != NONE` (diagnostic, an implied test) the found path jumps straight to the
+// record block and the merge block becomes retail's `cmp esi, -1; mov cl, 1; je` (83, 508 bytes; only the walk's NONE exit
+// still differs: ours inline returning the constant, retail a second epilogue at the end returning ESI). Our build folds
+// `return result` after any direct NONE test of result to the constant (the walk exit returning cache_index, a copy of
+// result tested, `result == cache_index`, the result typed dword, the walk writing through a pointer: 83/83/83/83/83; on the
+// plain body dword 77 and the pointer 77, same code). New forms: the found test as the else arm of an alloc-first
+// `cache_index == NONE || owner != object_index` 77 (same code); `if (initialize && result == NONE) return result;` ahead of an
+// unconditional record block 138 (518 bytes, merge block as retail, the else arm laid out after the main return), with
+// `return NONE` 138; the NONE test with its return at the end of the else arm, record block unconditional, 138 (518 bytes);
+// that without the walk's own return 145. Re-measured: the listed `if (result != NONE) initialize = true; else return
+// result;` 72 now (519 bytes: the walk's NONE return moves to the end as retail, but returns `or eax, -1`), with the merge
+// test spelled as above 87; one variable for the allocation and the result 141.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
