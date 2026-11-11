@@ -1282,6 +1282,10 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
+// MiniMax D (11-11): no new form, no lower score (561): the damage record cut to retail's 0x80 bytes (the frame 0x1990 to 0x1988) and the buffer and the names moved to the function's top scope change nothing, so the frame is still four bytes above retail's 0x1984 and every later slot shifts; the word at +0xc0 is still read into EAX where retail reads it into ECX.
+// MiniMax D (11-10): no new form, no lower score (561): the frame is 0x1990 where retail's is 0x1984, so
+// the physics state's layout is twelve bytes too big here and every later slot shifts with it; the word
+// at +0xc0 is read into EAX where retail reads it into ECX.
 // score 561 (was 561): earlier 562; frame 0x1990 versus retail 0x1984, native flag-result byte stores (the six dead [esp+0x13]
 // earlier at 561 (was 562). Frame 0x1990 versus retail 0x1984, native flag-result byte stores (the six dead [esp+0x13]
 // stores), sum-loop unrolling, the flags348 write/read forms and scalar/SSE homes remain.
@@ -4502,6 +4506,7 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
+// MiniMax D (11-11): 47 (was 48): the two zero fields of the effect parameters now share one chained assignment (unknown3c and unknown30); what is left is that the two marker counts sum into EAX where retail sums them into EDI, the colour constant takes EAX where retail takes ECX, and the definition pointer is read into EDX early where retail reads it into EAX at the end.
 // MiniMax S (11-10): no new form, no lower score (48): the marker count sum still lands in EAX here and in EDI in retail, the scratch zero store still follows the sum here and precedes it in retail, and the 0x146320 set-up pair still waits on that file.
 // MiniMax E (11-08): no new form, no lower score (48); the marker count sum still lands in EAX here and in EDI in retail, the scratch zero store still follows the sum here and precedes it in retail, the effect block's tag and colour still ride in the other order, and the 0x146320 set-up pair still waits on that file.
 // MiniMax E (11-07): no new form, no lower score; the marker count sum still lands in EAX here and in
@@ -4530,6 +4535,9 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // Round 91: long primary count 169; primary-count address reference 48; direct definition macro at
 // the tag store 138; const definition 48; const primary count 48; const total 48; facing copied in
 // j/k/i order 67; four-byte-aligned short primary count 127 (prologue changed). Original body restored.
+// MiniMax D (11-10): no new form, no lower score (48): the two marker counts still sum into EAX where retail
+// sums them into EDI, the scale is still computed before the memset where retail computes it after, and the
+// colour constant still takes EAX where retail takes ECX; the permuter's run found nothing below 48.
 // Round 147 (m3 lane 7, fast, with 0xf62f0 and 0xf6010): the colours as one chained assignment 48; the scales chained
 // 50; length declared at its assignment 48; length and the ray vector declared where computed 48; the ray products
 // written `length * direction.i` 48 (all same code but the scales). No untried natural form is left here that
@@ -4576,8 +4584,7 @@ void __stdcall function_f6060(long vehicle_index)
 				memset(&parameters, 0, sizeof(parameters));
 				parameters.unknown34 = 0;
 				parameters.unknown38 = 0;
-				parameters.unknown3c = 0;
-				parameters.unknown30 = 0;
+				parameters.unknown3c = parameters.unknown30 = 0;
 				parameters.source = NULL;
 				parameters.color_a = 0xff808080;
 				parameters.color_b = 0xff808080;
@@ -4605,6 +4612,28 @@ extern byte g_5107ee;
    marker's downward pitch, the distance and the vehicle's speed; the
    effect's last marker sits between the marker and the hit, aimed along
    the reflected ray */
+// MiniMax D (11-11): no lower score (2): the cone call's forward address and its seed address each in a
+// named local compile to the same code, so the seed's add still precedes the forward's lea where retail has
+// them the other way round; that pair belongs to 0x146320's parameter order, whose file is not this lane's.
+// The seed's address as byte-pointer arithmetic and as an index into the globals compile the same (2), and
+// the forward taken from the marker array rather than from the marker pointer scores 4. This file's
+// declaration of the cone call is what fixes the register mapping: swapping its first two parameters moves
+// the seed into EAX and the result into EDX, which is not what 0x146320 reads, so the order cannot change.
+// MiniMax D (11-11): 2 (was 6): the name store now comes before the three forward values and before the
+// colour stores, and the compiler then emits the name and the three forward values in retail's order;
+// what is left is the cone call's set-up pair, where ours adds the seed's offset before it takes the
+// forward's address and retail does the reverse.
+// MiniMax D (11-11): no lower score (6): the name store moved ahead of the three forward values scores 7,
+// and the same order with the three forward values in named locals scores 7 as well, because the compiler
+// sinks the three products and differences to their stores; retail computes them before the colour stores
+// and stores the name ahead of the three forward values, which our compiler does not do in one order.
+// MiniMax D (11-10): 6 (was 9): the three forward values are now computed before the colour stores, as
+// retail does, and the name store comes after them; what is left is the cone call's EDI-before-ECX pair
+// (it waits on 0x146320's file) and the four stores' order, where retail keeps the name ahead of the
+// three forward values.
+// MiniMax D (11-10): the flag test through the field-bit macro, the tag test and the strength test as
+// nested ifs, the marker, direction, collision and vector locals in retail's declaration order, and the
+// colour store ahead of the source store.
 // MiniMax S (11-10): no new form, no lower score (41): the cone call's EDI-before-ECX pair still waits on 0x146320's file, and the middle-point copy is still scheduled ahead of the reflection's loads.
 // MiniMax E (11-08): no new form, no lower score (41); the middle-point copy is still scheduled ahead of the reflection's loads where retail stores its z and y words after the first products, retail keeps the colour constant in ECX across those products while ours materialises it in EAX, and the cone call's EDI-before-ECX pair still waits on 0x146320's file.
 // MiniMax E (11-07): no new form, no lower score (41); the cone call's EDI-before-ECX pair still
@@ -4657,76 +4686,79 @@ extern byte g_5107ee;
 // @retail 0xf62f0
 void __stdcall function_f62f0(long vehicle_index)
 {
-	if (g_5107ee)
+	if (TEST_FIELD_BIT(g_5107ee))
 	{
 		s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 		byte *definition = VEHICLE_DEFINITION_GET(vehicle);
 
-		if (*(long *)(definition + 0x2a0) != NONE && vehicle->unknown25c > 0.0f)
+		if (*(long *)(definition + 0x2a0) != NONE)
 		{
-			s_object_marker markers[16];
-			short count = function_b8d30(vehicle_index, 0xf0000bb, markers, 15, false);
-
-			for (short marker_index = 0; marker_index < count; ++marker_index)
+			if (vehicle->unknown25c > 0.0f)
 			{
-				s_object_marker *marker = &markers[marker_index];
-				s_vehicle_wash_collision collision;
-				vector3f direction;
-				vector3f vector;
+				s_object_marker markers[16];
+				short count = function_b8d30(vehicle_index, 0xf0000bb, markers, 15, false);
 
-				collision.unknown24 = NONE;
-				random_vector_in_cone(&marker->matrix.forward, &direction, &g_4e7408->seed, 0.0f, 15.0f);
-				vector3f_assign(&vector, direction.i, direction.j, direction.k);
-				if (function_1697c0(0x800007, &marker->matrix.position, &vector, vehicle_index, NONE,
-					(s_collision_result_1697c0 *)&collision))
+				for (short marker_index = 0; marker_index < count; ++marker_index)
 				{
-					real strength = PIN((1.0f - collision.t) * (0.0f - marker->matrix.forward.k) * vehicle->unknown25c,
-						0.0f, 1.0f);
+					s_object_marker *marker = &markers[marker_index];
+					vector3f direction;
+					s_vehicle_wash_collision collision;
+					vector3f vector;
 
-					if (strength > 0.0f)
+					collision.unknown24 = NONE;
+					random_vector_in_cone(&marker->matrix.forward, &direction, &g_4e7408->seed, 0.0f, 15.0f);
+					vector3f_assign(&vector, direction.i, direction.j, direction.k);
+					if (function_1697c0(0x800007, &marker->matrix.position, &vector, vehicle_index, NONE,
+						(s_collision_result_1697c0 *)&collision))
 					{
-						s_effect_marker effect_markers[7];
-						s_effect_parameters parameters;
-						point3f middle;
-						real dot;
+						real strength = PIN((1.0f - collision.t) * (0.0f - marker->matrix.forward.k) * vehicle->unknown25c,
+							0.0f, 1.0f);
 
-						middle.x = (marker->matrix.position.x + collision.point.x) * 0.5f;
-						middle.y = (marker->matrix.position.y + collision.point.y) * 0.5f;
-						middle.z = (marker->matrix.position.z + collision.point.z) * 0.5f;
-						vector3f facing = direction;
-						function_1201a0(&facing, g_4687bc);
-						function_1763a0(&collision.point, &facing, effect_markers, &collision.normal);
-						dot = (collision.normal.i * facing.i + facing.j * collision.normal.j +
-							facing.k * collision.normal.k) * 2.0f;
-						effect_markers[6].position = middle;
-						memset(&parameters, 0, sizeof(parameters));
-						parameters.unknown34 = 0;
-						parameters.unknown38 = 0;
-						parameters.unknown3c = 0;
-						parameters.unknown30 = 0;
-						parameters.source = NULL;
-						parameters.color_a = 0xff808080;
-						parameters.color_b = 0xff808080;
-						effect_markers[6].name = 0x80000ba;
-						effect_markers[6].forward.i = facing.i - collision.normal.i * dot;
-						effect_markers[6].forward.j = facing.j - collision.normal.j * dot;
-						effect_markers[6].forward.k = facing.k - collision.normal.k * dot;
-						parameters.unknown18 = NONE;
-						parameters.object_index = NONE;
-						parameters.owner.unknown4 = NONE;
-						parameters.owner.unknown0 = NONE;
-						parameters.owner.unknown8 = NONE;
-						parameters.tag_index = *(long *)(definition + 0x2a0);
-						parameters.marker_count = 7;
-						parameters.markers = effect_markers;
-						parameters.flags = 4;
-						parameters.scale_a = strength;
-						parameters.scale_b = strength;
-						effect_new_from_parameters(&parameters);
+						if (strength > 0.0f)
+						{
+							s_effect_marker effect_markers[7];
+							s_effect_parameters parameters;
+							point3f middle;
+							real dot;
+
+							middle.x = (marker->matrix.position.x + collision.point.x) * 0.5f;
+							middle.y = (marker->matrix.position.y + collision.point.y) * 0.5f;
+							middle.z = (marker->matrix.position.z + collision.point.z) * 0.5f;
+							vector3f facing = direction;
+							function_1201a0(&facing, g_4687bc);
+							function_1763a0(&collision.point, &facing, effect_markers, &collision.normal);
+							dot = (collision.normal.i * facing.i + facing.j * collision.normal.j +
+								facing.k * collision.normal.k) * 2.0f;
+							effect_markers[6].position = middle;
+							memset(&parameters, 0, sizeof(parameters));
+							parameters.unknown34 = 0;
+							parameters.unknown38 = 0;
+							parameters.unknown3c = 0;
+							parameters.unknown30 = 0;
+							effect_markers[6].name = 0x80000ba;
+							effect_markers[6].forward.i = facing.i - collision.normal.i * dot;
+							effect_markers[6].forward.j = facing.j - collision.normal.j * dot;
+							effect_markers[6].forward.k = facing.k - collision.normal.k * (real)dot;
+							parameters.color_a = 0xff808080;
+							parameters.source = NULL;
+							parameters.color_b = 0xff808080;
+							parameters.unknown18 = NONE;
+							parameters.object_index = NONE;
+							parameters.owner.unknown4 = NONE;
+							parameters.owner.unknown0 = NONE;
+							parameters.owner.unknown8 = NONE;
+							parameters.tag_index = *(long *)(definition + 0x2a0);
+							parameters.marker_count = 7;
+							parameters.markers = effect_markers;
+							parameters.flags = 4;
+							parameters.scale_a = strength;
+							parameters.scale_b = strength;
+							effect_new_from_parameters(&parameters);
+						}
 					}
 				}
-			}
 
+			}
 		}
 	}
 }
