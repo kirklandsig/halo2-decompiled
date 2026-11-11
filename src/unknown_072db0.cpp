@@ -2167,6 +2167,7 @@ void function_73ca0(byte *results)
 bool online_task_service_unavailable(long task_index);
 long online_round_extend(XNKID const *session_id, ULONGLONG const *round_key, word seconds);
 
+/* the logon task's poll result: an unknown state still drops the pending task */
 // @retail 0x755d0
 void function_755d0(void)
 {
@@ -2194,6 +2195,8 @@ void function_755d0(void)
                     case 1:
                         g_510518 = 2;
                         g_510534 = function_75870();
+                    default:
+                        /* an unknown state still drops the pending task */
                         function_6b640(g_510530);
                         g_510530 = NONE;
                         break;
