@@ -491,7 +491,7 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1);
 
 s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 
-// MiniMax G (11-11): the guard's unit index travels in a named local and the object lookup comes
+// MiniMax G (11-11), NOT kept (coordinator 11-11: 87 -> 20 by the unit index assigned inside the guard plus local_1 declared ahead of local_3, both match-only; a plain one-use local before the guard 68, the local at all four reads 241; body at 87): the guard's unit index travels in a named local and the object lookup comes
 // before the two vector copies, so the whole prologue and the guard now match retail's bytes.
 // score 20 (was 87): the frame is 0x54 and the length matches retail's, and the prologue, the
 // guard and the two vector copies all agree. Still differs in the scalar stack homes: the radius
@@ -791,13 +791,13 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
 	s_actor_view *local_0 = actor_get(arg_0);
-	long unit_index;
 	if (local_0->unknown5ac != NONE && local_0->unknown5b0 == 2 &&
-		!function_110ab0(unit_index = local_0->unknown018) && local_0->unknown5d0)
+		!function_110ab0(local_0->unknown018) && local_0->unknown5d0)
 	{
-		long local_1 = local_0->unknown5ac;
-		s_slot_object_view *local_2 = object_get(local_1);
 		vector3f local_3 = local_0->unknown5ec;
+		long local_1;
+		local_1 = local_0->unknown5ac;
+		s_slot_object_view *local_2 = object_get(local_1);
 		local_3.k = 0.f;
 		vector3f local_4 = local_0->unknown290;
 		local_4.k = 0.f;
