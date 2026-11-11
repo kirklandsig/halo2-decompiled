@@ -130,7 +130,7 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
-// score 378 (was 378): 393 earlier; the steering block's loads and product order differ (it now loads i, j first); the left vector and the avoidance
+// score 378 (was 378): 378, 393 earlier; the steering block's loads and product order differ (it now loads i, j first); the left vector and the avoidance
 // vector swap their 12-byte slots; the 0x5d0 flag store now matches; the early 0x44 load and the local_16 dot's x87 order differ.
 // 393 before m3 lane 13 r75. The left vector is built from the named left_i (`{left_i, local_8.i, 0.0f}`): 393 -> 378 plain at retail's 2825
 // bytes, but mostly positional: the compiler now propagates left_i into the side test and shares its product with the 0.9 block (a new
@@ -256,6 +256,14 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // this body 481; the left vector declared const on this body 378 (same code); the left vector built from the local_8 copy
 // (`{-local_11.j, local_11.i, 0.0f}`) 537 [79, 281] (2836 bytes); re-measured: the side-test sum written local_25 first on the
 // 393 form 393. No unlisted natural form left for the slot tie.
+// M3 lane 13 r83 (fast; fully masked aligned count in brackets, control 378 [30]). Diagnostic, reverted at once: the call to
+// 0x299460 made opaque (through a volatile function pointer) stops the left vector's store forwarding into the side test,
+// which then reads the vector's home as retail does and the 4-byte product temp goes, so the frame word is BLOCKED-BY 0x299460
+// (unmatched: its summary for the left vector argument). The same probe on 0x2c0d60 or 0x1f9760 leaves the temp. Kept, same
+// code: the speed as the existing magnitude3d(arg_2) (retail's block is 0x24590's body). Tried: local_26 as one ternary
+// initializer 378 [36]; the local_17 selection with its arms swapped and the test negated 378 (same code); the path offset named
+// as 0x29a190 writes it plus the local_16 dot through dot_product2d 380 [25] (both blocks then retail's); those two on the left
+// vector built `{-local_8.j, local_8.i, 0.0f}` 395 (2815 B) [21: frame 0x5b4 as retail, the two 12-byte vectors still swapped].
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
@@ -307,7 +315,7 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 	vector3f local_9 = *arg_2;
 	if (function_29cc7e(&local_9) == 0.0f)
 		*(bool *)(local_0 + 0x5d0) = false;
-	real local_10 = (real)sqrt(length_sq3f(arg_2));
+	real local_10 = magnitude3d(arg_2);
 	vector3f local_12 = *g_4687a4;
 	vector3f local_11 = local_8;
 	real left_i = -local_8.j;
