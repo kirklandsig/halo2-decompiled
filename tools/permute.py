@@ -2454,6 +2454,21 @@ def prepare_scratch(scratch):
         s = os.path.join(ROOT, d)
         if os.path.isdir(s):
             shutil.copytree(s, os.path.join(scratch, d), copy_function=shutil.copy2)
+    # A generated stand-in unit names its source by absolute path, so the copies
+    # still name the working tree's source. Repoint them at this root's copy, or
+    # the build regenerates every unit and recompiles all ~1800 objects before
+    # the search's first try.
+    gen_dir = os.path.join(scratch, 'build', 'gen')
+    for name in (os.listdir(gen_dir) if os.path.isdir(gen_dir) else ()):
+        if not name.endswith('.cpp'):
+            continue
+        path = os.path.join(gen_dir, name)
+        with open(path, encoding='utf-8') as f:
+            text = f.read()
+        fixed = text.replace(ROOT + os.sep, scratch + os.sep)
+        if fixed != text:
+            with open(path, 'w', encoding='utf-8', newline='') as f:
+                f.write(fixed)
     # The working tree's headers can be newer than its objects (a fresh checkout
     # or a header edit since the last build). The copies are exact, so the
     # objects are still valid; stamp them newer than everything copied, or every

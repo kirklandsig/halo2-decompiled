@@ -374,6 +374,23 @@ def test_prepare_scratch_makes_copied_objects_current(monkeypatch, tmp_path):
     assert (scratch / 'build' / 'obj' / 'a.obj').stat().st_mtime > (scratch / 'include' / 'a.h').stat().st_mtime
 
 
+def test_prepare_scratch_repoints_generated_units(monkeypatch, tmp_path):
+    """A copied stand-in unit must name the scratch tree's source, or the build
+    rewrites every unit and recompiles all of its objects."""
+    root = tmp_path / 'repo'
+    for d in ('src', 'include', 'config', 'build/obj', 'build/gen'):
+        (root / d).mkdir(parents=True, exist_ok=True)
+    (root / 'src' / 'a.cpp').write_text('')
+    (root / 'build' / 'gen' / 'a_tu.cpp').write_text(f'#include "{root / "src" / "a.cpp"}"\n')
+    monkeypatch.setattr(permute, 'ROOT', str(root))
+    scratch = tmp_path / 'scratch'
+    scratch.mkdir()
+    permute.prepare_scratch(str(scratch))
+    text = (scratch / 'build' / 'gen' / 'a_tu.cpp').read_text()
+    assert str(scratch / 'src' / 'a.cpp') in text
+    assert str(root / 'src' / 'a.cpp') not in text
+
+
 # ------------------------------------------------------------ --fast
 
 def marker(va, path, stub=False):
