@@ -859,6 +859,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // assigned back, the dword next_party and the open slots before the call re-measure listed forms; new: the copy bound
 // form above and one loop over the total that copies below the player count and fills above it 83 (174 bytes). No
 // untried natural form left in this note's lists.
+// Round 184 (m3 lane 4, fast): the copy through an output cursor (`*party++ = party_indices[i]`) 78 (175 bytes);
+// through an input cursor alone 77 (172 bytes); that cursor with the fill through a walking pointer 64; the output
+// cursor continued by the fill over the extra count 86 (173 bytes); the total as `player_count` then `+= extra_count`
+// 34 (same code); re-measured: the fill through a walking pointer 63 (199 bytes). No untried natural form is left in
+// this note's lists; the player count still arrives in EDX.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

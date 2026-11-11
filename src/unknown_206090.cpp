@@ -145,7 +145,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 
 #pragma inline_depth(1)
 #include "vector_products.h"
-// score 1379 (was 1379): earlier 1355; frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
+// score 1367 (was 1379): earlier 1355; frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
 // 0x2078f0 twice with unknown38 0 then 1, 0x2079f0 on both its paths, 0x227990, 0x2294a0, 0x22a4b0), loop shapes (the found
@@ -469,6 +469,15 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // first 1393 [1388/1556/929], the list entries re-derived 1379 (6255 B) [1370/1543/895]. Retail's final loop is not
 // rotated (the latch jumps back to a head that re-reads the list handle) and its duplicate search sits after the
 // loop, entered by `jg` when the found list is not empty. All restored.
+// Round 184 (m3 lane 4, fast; stack- and register-masked difflib count 579 at 1379): kept the four magnitudes
+// (local_95/96 and local_97/98) as `x >= 0.0f ? x : -x`, 1379 -> 1367 (masked 568): retail tests each as `comiss x, 0;
+// jb` to the negating arm, so a NaN takes `0 - x`, which `x < 0.0f ? -x : x` did not; the steering pair alone 1391
+// (6211 bytes). On 1367: the contact ratio's three arms in retail's predicates (`local_24 >= local_26 ? 0.0f : 1.0f`,
+// `local_24 >= local_26 ? 0.0f : (local_26 >= local_23 ? 1.0f : ...)`, `local_23 >= local_26 ? 1.0f : (local_26 >=
+// local_24 ? 0.0f : ...)`, each read from retail's branches) 1392 (6211 bytes, masked 560: the block is then retail's
+// but for local_98, which retail computes only after the first threshold test); the clamp's mass bounds named before
+// PIN (retail computes both before its first branch) 1378; both 1386 at 6238/6238 bytes (masked 574); the ratio arms
+// with the final loop's count in its head 1402 (6264 bytes, masked 534), with the bounds too 1406 (masked 535).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
@@ -495,8 +504,8 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
         local_11 = (local_0->field_74.i >= 0.0f ? -1.0f : 1.0f) * local_11;
         real local_12 = -(local_0->field_74.j * *(real *)(local_7 + 0x88));
         real local_13 = local_11 * local_11 * (local_11 != 0.0f ? (local_11 < 0.0f ? -1 : 1) : 0) * *(real *)(local_7 + 0x88);
-        real local_95 = local_12 < 0.0f ? -local_12 : local_12;
-        real local_96 = local_13 < 0.0f ? -local_13 : local_13;
+        real local_95 = local_12 >= 0.0f ? local_12 : -local_12;
+        real local_96 = local_13 >= 0.0f ? local_13 : -local_13;
         real local_14 = local_95 > local_96 ? local_12 : local_13;
         real local_15 = local_14 > 0.0f ? PIN(local_14 - 0.1f, 0.0f, 1.0f) : PIN(local_14 + 0.1f, -1.0f, 0.0f);
         real local_16 = *(real *)(local_1 + 0x2c) * local_15 + 1.0f;
@@ -519,8 +528,8 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
                 real local_26 = *(real *)(local_7 + 0x24);
                 real local_97 = local_23 - local_24;
                 real local_98 = local_24 - local_23;
-                if ((local_97 < 0.0f ? -local_97 : local_97) < 0.001f ||
-                    (local_98 < 0.0f ? -local_98 : local_98) < 0.001f)
+                if ((local_97 >= 0.0f ? local_97 : -local_97) < 0.001f ||
+                    (local_98 >= 0.0f ? local_98 : -local_98) < 0.001f)
                     local_25 = local_24 < local_26 ? 1.0f : 0.0f;
                 else if (local_23 > local_24)
                     local_25 = local_24 < local_26 ? (local_26 < local_23 ? (local_26 - local_24) / local_97 : 1.0f) : 0.0f;
