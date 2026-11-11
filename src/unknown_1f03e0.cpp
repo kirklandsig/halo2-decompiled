@@ -1008,6 +1008,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // declared flying, direct, damping, gravity 579 (3027 B, first difference +0x31); no `input` local, every read through
 // state->input, 573 (3033 B). Lead: keep both magnitude3d calls in any rewrite; the product operand order moves with each
 // added inlined call, so look for what else retail inlines here.
+// no lower form in round 170 (m3 lane 6); see that round's line at the end of this note.
 // MiniMax C (11-06): the direct arm's magnitude and the history arm's maximum now add their three squares in
 // retail's term order and grouping (344, 3052 bytes against retail's 3047). Left: the magnitude's x87 stack still
 // shuffles differently (ours fmulp/faddp/fxch/fstp against retail's fmul/faddp/fstp), the direct arm's four
@@ -1296,6 +1297,14 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // MiniMax S (11-10): no new form, no lower score (347): the entry block still extracts the damping bit into ECX where
 // retail uses EDX and is one `mov ecx, eax` short, and retail stores the gravity byte before its `lea ebp` where ours
 // stores it after. The recorded flag-order sweep (412-500) and the flag widths recorded above never beat this body.
+// Round 170 (m3 lane 6, fast, 0x1f0450 MATCH in each): the history parameter typed as the caller's `s_shape_state *` (its +0x10
+// vector typed) 347 (same code); magnitude3d(input) with a `__forceinline` or an `inline` declaration in this file 587/587 (still
+// called out of line, as the plain call: retail's input-length block is 0x24590's own code, ours never expands that function
+// here; its file was held by another lane this round). On the 347 body: the direct arm's speed read from the field at each use
+// 437 (3053 B), the ground arm's facing read from the field (no pointer local) 415 (3047 B), the low arm's normal read from the
+// field 350, both 364, the direct arm's rotation rows through `input` 570 (3029 B). Diagnostics (not kept): 1-8 unused initialised
+// locals at the top 347/478/579/575/490/479/474/474; magnitude3d with 0-7 of them 587/584/592/599/611/603/599/588. Seen in the
+// listing: in the first cross retail makes up.k the loaded operand of both products it is in, ours the memory operand.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

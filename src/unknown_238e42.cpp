@@ -888,6 +888,14 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// score 90 (was 90): the difference is purely the register colouring of the two
+// values the matched callee 0xac050 takes (retail reloads the selected identity pointer into
+// eax and the requested rank into ecx, so the callee needs no copy; ours keeps the pointer in
+// ecx and the rank in eax and inserts a `mov eax, ecx` before the call, which shifts every
+// later jump). Copying the identity into a local, reading the own rank before the identity
+// test, copying the requested rank into a local before that test, a has-identity flag and
+// four local declaration orders all score 90, so the colouring is fixed by the callee's
+// convention and the body stands.
 // MiniMax D (11-10): no new form, no lower score (90); the identity pointer and the requested rank keep
 // the other way round (ours identity ECX / rank EAX, retail identity EAX / rank ECX), and the identity's
 // two halves follow the pointer into the other register (ours `mov eax, [ecx]`, `or eax, [ecx + 4]`,
@@ -924,14 +932,6 @@ bool __stdcall function_2399da(long controller_index)
 // inserts a move before the call, which shifts every later jump; removing the rank's store and storing a
 // constant instead gain one point each, below the eight-point gate.
 // MiniMax D (run 46): no new form, no lower score.
-// score 90 (was 90): the difference is purely the register colouring of the two
-// values the matched callee 0xac050 takes (retail reloads the selected identity pointer into
-// eax and the requested rank into ecx, so the callee needs no copy; ours keeps the pointer in
-// ecx and the rank in eax and inserts a `mov eax, ecx` before the call, which shifts every
-// later jump). Copying the identity into a local, reading the own rank before the identity
-// test, copying the requested rank into a local before that test, a has-identity flag and
-// four local declaration orders all score 90, so the colouring is fixed by the callee's
-// convention and the body stands.
 // Earlier (90, was 90): frame 0xf00 agrees; selected identity ECX/rank EAX and the extra removal move remain.
 // Earlier 90 (was 90): identity/rank registers and the extra move before removal remain; selection guard,
 // frame 0xf00 agrees; selected identity ECX/rank EAX and extra removal move remain.
@@ -1169,6 +1169,12 @@ bool __stdcall function_2399da(long controller_index)
 // N396: Signed eight-byte requested/own/task residency, seven subsets then late requested producer:
 // 198/195/243/126/208/207/253/198. NOT kept: native narrow domains and extent regress;
 // original body restored, selected identity/rank registers and extra removal move remain.
+// Round 170 (m3 lane 6, fast with 0xac050/0xac360/0x2399da, all matched; register-masked aligned count 3: the `mov eax, ecx` and
+// the rank store's place): `have_member` started false and set when the member id is non-zero 93 (three lines differ);
+// `have_member` computed after the friends call, beside may_change, 159 (420 B); the membership output typed as 0x18ffc3's own
+// 0x92-byte block with the own rank read at +0x1c as its other callers do 90 (same code). Re-measured: the copy arm nested as
+// `if (!have_member) { if (may_change) copy; else { deny; return; } }` 92 (430 B, round 10's folded arm). No other untried natural
+// form found: the rank keeps EAX over the identity while both its store and the removal call stay (round 150, r211 diagnostics).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

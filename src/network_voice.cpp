@@ -3747,6 +3747,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // the stride before the cursor 162 (479 bytes). In every cursor form our EBP serves the member and the consumed update in turn and
 // the channel gets no register; retail's cursor starts with `add edi, 2` (an immediate, outside the constant 2 that `size -= 2` and
 // `consumed` share in ECX) and its zero-trip exit returns that ECX. No untried natural form left that adds a channel reference.
+// Round 168 (m3 lane 6): no trial; every candidate form (member storage and scope, channel-index reads, cursor
+// placement and order, arm order, bit helpers, count and size locals, record views) is already listed above, the
+// cursor forms all give 164 with the member in EBP, and no untried natural form is left that adds a channel use or
+// removes a member use.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

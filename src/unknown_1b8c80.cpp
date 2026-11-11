@@ -1402,7 +1402,7 @@ void function_1f86a0(long actor_index);
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
 // object-header data in the prologue and reads the flags once above the slot-flag test.
-// MiniMax C (11-10): score 132 (was 132): no lower score this round. The frame is still 0x10 against
+// MiniMax C (11-10), at 132 (was 132): no lower score this round. The frame is still 0x10 against
 // retail's 0x14, and the mask's home is the whole difference: retail keeps the 0x20 mask byte in the
 // stack at F-0x13 and the loop entry in EBX, this build keeps the mask in BL and spills the entry, so
 // every stack offset after it shifts by four. Fifteen forms of the mask and of the comparison were
@@ -1414,18 +1414,18 @@ void function_1f86a0(long actor_index);
 // two steps at 132 each. Four more shapes of the same value were measured since: the same value under
 // an if 240, the same value as a ternary 228, the decline test as a separate boolean local 132 and the
 // same value under an if with braces 240; the frame stays 0x10 and the mask stays in BL in all of them.
-// MiniMax C (11-10): score 132 (was 133): the joint index is held in a dword and the second test against NONE
+// MiniMax C (11-10), at 132 (was 133): the joint index is held in a dword and the second test against NONE
 // compares it as a signed value, which is the pair that lowers the score (the dword alone and the cast alone
 // each score 133); the frame is still 0x10 against retail's 0x14, retail still spills the 0x20 mask byte to
 // F+3 and keeps the loop entry in EBX where ours keeps the mask in BL and the entry in memory, and retail
 // still takes the object table base in the prologue, into ESI, where ours loads it into EAX after the actor
 // index math.
-// MiniMax C (11-10): score 133 (was 134): the element index is stored before the slot flag, which pairs the
+// MiniMax C (11-10), at 133 (was 134): the element index is stored before the slot flag, which pairs the
 // two stores the way retail orders them; the frame is still 0x10 against retail's 0x14, retail still spills
 // the 0x20 mask byte to F+3 and keeps the loop entry in EBX where ours keeps the mask in BL and the entry in
 // memory, and retail still takes the object table base in the prologue, into ESI, where ours loads it into
 // EAX after the actor index math.
-// MiniMax C (11-10): score 134 (was 134): the iterator loop is the for form of the matched sibling
+// MiniMax C (11-10), at 134 (was 134): the iterator loop is the for form of the matched sibling
 // 0x1b4680, which gives the same score and the exact length of 861 bytes, with the first difference at
 // +0x2 (the frame) instead of +0x4; retail still spills the 0x20 mask byte to F+3 and keeps the loop entry
 // in EBX where ours keeps the mask in BL and the entry in memory.
@@ -1734,6 +1734,16 @@ void function_1f86a0(long actor_index);
 // index 233 (round 39's), the loop as a `for` 134 (MiniMax C's). The slot data-block form is round 39's 134 (same code). No
 // untried natural form is left in this body: the remaining lever is 0xbaf40's memory summary, and its file
 // (src/unknown_0bad50.cpp) is on this round's avoid list again.
+// Round 170 (m3 lane 6, fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70, all matched; masked = register-masked aligned count,
+// 75 for this body): retail has one next-entry call in the loop (0x1ba17a); its decline block falls into it and the failed
+// accept jumps back to it (round 130's "duplicated" call is block placement). Forms: the mask read through the slot view
+// (`state->flags & 0x20`) 244 (866 B); the seat index after the 0x26c test read through the top's unit pointer 249 (frame 0x14,
+// masked 66, but the early return gets its own epilogue and the mask stays in BL); the 0x26c compare's operands swapped 134
+// (two lines differ); the iterator's reference fields stored unknown0 first 134 (two lines differ); the found block's bit-6
+// store ahead of the object store 229. Same code as this body: the unknown86 arm as `!((flags & 0x40) && same)`, the entry
+// initialised to NULL, `specified != 0` in `same`, the 0xc byte as a typed `bool` member of the slot state, bit 6 as
+// `(flags & 0x40) != 0` at the store and the 0x1ba990 argument, the 0x2676d0/0x1e2030 test negated with its arms swapped.
+// Re-measured: the slot/selection pointers after the early return 233 (round 45's 261 on an older body).
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

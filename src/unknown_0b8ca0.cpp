@@ -858,6 +858,12 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // of the dot product and applies fcos after it; it keeps the player index in memory, re-tests it against NONE at
 // the latch and keeps the masked index from the loop top for the step; it loads the cluster bit table ahead of
 // the first query, and has no NONE re-test after the cluster loop.
+// Round 170 (m3 lane 6, fast with 0xbf2c0/0x268c90, both matched in each row; masked = register-masked aligned count, 93 for
+// this body), forms listed on the 230 body re-measured on this one: the step helper's test as `index != NONE ? ... : 0` 165
+// (masked 91); the model index read at each use 176; the player pool read at each use and the near test reversed 165 (same
+// code); the rest of the body inside the cluster loop's found branch (no re-test after the loop, as retail) 212 (873 B,
+// masked 80), with the step test inverted too 212 (masked 79). New: a named `double angle` ahead of the test 286 (857 B, frame
+// no longer self-aligns); the sum as `cos((double)((real)atan2(...) + 0.785...f))` 165 (retail's `fadd dword`, masked 92).
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {

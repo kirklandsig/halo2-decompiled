@@ -101,6 +101,8 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // first index 86 (356 B); an unsigned inner counter 17; one entry's effect as an inline helper 230 (223 B); the palette
 // index named before the tag 17. Diagnostic on scratch copies (one-link harness, exact at 16 on this body): 0x17e670
 // declared (point, source, ...) 7, and with the entry declared before the tag 0. Still BLOCKED-BY 0x17e670.
+// Round 168 (m3 lane 6): no trial; still BLOCKED-BY 0x17e670 (the call passes the effect source in EDX and the
+// point in ECX where retail passes them in ECX and EDX; the callee's parameter order is not this file's to change).
 // @retail 0x23aad0
 void __stdcall function_23aad0(long previous_address, long current_address, long count)
 {
