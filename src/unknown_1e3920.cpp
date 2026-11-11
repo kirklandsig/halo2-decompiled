@@ -537,6 +537,11 @@ real normalize2d(point2f *vector);
 real function_267370(long object_index);
 
 
+// MiniMax H (11-10): no new form, no lower score (14): `cross3f` for both crosses gives 46 (plain, against the
+// 14 baseline), a named forward pointer 417, a value local for the copied direction 419 and `left` declared
+// before the copy 416, all against the 416 fast control; the two cross products and the inlined zone product
+// still differ in operand order, and both helpers live in headers this lane may not edit
+// (include/location_zones.h, include/vector_products.h).
 // MiniMax S (11-10): no new form, no lower score (14): the plane x product and the two cross products still differ in operand order, and both helpers live in headers this lane may not edit (include/location_zones.h, include/vector_products.h).
 // MiniMax C (11-09): no new form, no lower score (14); the axis global is still loaded after the copy instead of
 // between the j and k copies, and the plane x product and both cross products still differ in operand order
@@ -1102,9 +1107,9 @@ void __stdcall swarm_delete(long perception_index);
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
 
-// MiniMax E (11-10): no new form, no lower score (253); the fields, conditions, callees and argument order all agree with retail, but the sentinel is held in edi here and in esi there, and the successor and query homes sit at other frame offsets, so the blocks after the first call are laid out differently.
 // score 253 (was 253): Frame 0x118 and length agree; persistent sentinel EDI/ESI, squad/substitution homes, the unrotated
 // substitution loop and the unit arm's placement (retail puts it after the mode-2 case) remain.
+// MiniMax E (11-10): no new form, no lower score (253); the fields, conditions, callees and argument order all agree with retail, but the sentinel is held in edi here and in esi there, and the successor and query homes sit at other frame offsets, so the blocks after the first call are laid out differently.
 // b5C (fast, 253): statement-by-statement walk against retail 0x1e0850 found no logic difference: every field, offset,
 // condition direction, callee/argument order (1e04a0's primary tag in EAX, grenade `(ebx - 1)` sign-extended on the
 // data path and `(word)cx - 1` on the squad path), the cos/sin products (fstp dword at 0x1e0a2c/0x1e0a37/0x1e0a42, same
@@ -1347,6 +1352,17 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // (the bool stays in memory, no threading); the else arm as `else if (!(*flags & 1))` 296 (same code, folded); the perception
 // result as one conditional 321 [236] (1273 B). On the original loop: probability declared before the two bools 253 (same code);
 // the three query outputs declared in the enclosing block and set in the loop 253 (same code).
+// M3 lane 12 r111 (fast, 0x1e4990/0x2036c0/0x203900/0x1e02f0/0x1e0160/0x1e04a0/0x1e06b0/0x1e4a50 matched each time; aligned =
+// difflib count, then registers masked, base 142/115). Lane 9's flag loop rebuilt 296 (119/102). Its unit arm: retail lets the
+// perception arm fall into the actor test and parks the unit arm (it ends in a jump back to that test) after the first
+// unconditional jump that follows, case 2's break; ours lets the unit arm fall into the actor test. Retail also shares one slot
+// between the squad pointer, the squad bit and the actor index, reads the count at +0x98 and the table at +0x9c at each use with
+// the scenario pointer in EDX, sign-extends each index before its `>= 0` test, and compares `grenade - 1` with NONE as an int
+// (the data path re-extends the short, `movsx edx, bx; dec edx`, and recomputes `lea eax, [ebx - 1]` for the value). Trials:
+// the two grenade tests without the (short) casts 352 (1283 B, frame 0x11c; the compare becomes retail's but the value reuses it);
+// the count read at each use 257 (1273 B, 151/111); on the flag loop the count at each use 346 (1263 B, 155/108); on the flag
+// loop the bit dispatched as `switch (*flags & 1)` with `case 1` perception and `case 0` unit 356 (1281 B, 163/116); a two-call
+// inline helper taking the index as `long` and reading the block at its use 379 (1231 B, 179/121). Body restored.
 // M3 lane 8 r152 (fast, the matched callees listed; masked aligned 115 at 253). The creation arm moves after case 2, as in
 // retail (and retail's 0x2902b0, which carries a copy of this body), only when the whole arm from 0xb7930 to 0x1e0160 is a
 // forced-inline body. Forced-inline creation helper (actor returned, unit through a pointer) 448 (1368 B, masked 70: the arm
@@ -1363,6 +1379,13 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // only under two tests; the tail's calls only at the tail's current depth), and an out-pointer for unit_index or
 // perception_index stops the jump threading that sends retail's failures straight to `return NONE`. Diagnostic (reverted):
 // `__declspec(noinline)` on this file's 0x11dfb0 declaration changes nothing (LTCG goes by the definition). Body unchanged.
+// Round 155 (m3 lane 8, fast; masked = register-masked aligned count, 115 at 253): re-measured on this base, lane 5 r77's
+// palette count read at each use 257 (1273 B, masked 111: the count reads then match retail), int grenade tests 352 (1283 B),
+// both 276 (masked 116). On round 78's loop shape (420 re-measured): character_definition_get for both definition reads plus
+// file-local inline squad-entry and palette getters 431 (diagnostic: 0x1e4990 still inlined in the loop, so this function's
+// inline budget is not what keeps retail's call); 0x1e4990 respelled as a `while` with an early return 421 (0x1e4990's own
+// code changes, still inlined). Retail inlines 0x1e4990 at 0x1e1a00's top-level call, so call frequency is not the reason
+// either.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -2185,6 +2208,21 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // Re-measured: both second-block queries through 0xcbd50 with a fresh slot lookup 280 (LTCG inlines it at that depth, giving
 // retail's `or -1` shape), with a `long` index 333. What remains is the pool and seed globals' register weights (retail holds the
 // pool in EDI and reloads the seed into EBX; ours the reverse) and the spilled 32-bit index. Body unchanged.
+// m3 lane 3 r233 (fast, base 251, aligned 135, register-masked 57). Likely contributor, not confirmed: src/unknown_0259a0.cpp
+// is built /GL-, so the first block's 0x259a0 call is opaque to the link: ours loads the random-state global for that call
+// and again after it, and with the 298 form below the pool global is reloaded after it too (retail loads the random state
+// once into EBX ahead of the call and keeps the pool in EDI across it). Diagnostic (reverted at once): that file without /GL-
+// 306, worse (the random state then rides in EDX across 0x259a0 and 0x259d0; the pool still not held). Flags are the owner's
+// call: lead only.
+// Forms: the secondary weapon through the existing 0x1e1fd0(actor_index) 272 (1195 B, it stays a call); the matched
+// siblings' idiom (0x1e1f20/0x1e1fd0: `long unit_index = actor->unknown018;` then 0xcbd50(unit_index, slot read through
+// a fresh lookup)) for the first block's two calls 361 (1171 B, the score and length of lane 12 r107's listed slot arguments
+// read from `unit`, likely the same code); for the second block's two queries through 0xcbd50 298 at
+// 1232 B but aligned 92, masked 51: actor ESI and options EBP as retail, and the pool global loaded once above 0x1e5240's
+// `je` and held through the first block (in EBX, retail EDI), then reloaded after the opaque 0x259a0 call; the same with
+// `unit_index` declared at the top of the second block 309 (aligned 155); on both blocks 315 (1216 B, aligned 155); the
+// queries' lookups through `unit_index` too 294 (1229 B, aligned 124, masked 51). Lead: the 298 form plus a transparent
+// 0x259a0. Body unchanged.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

@@ -424,6 +424,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // inactive arm first 1; dispose initialised false at its declaration with the pre-loop reset dropped (per-pass reset kept) 1;
 // both loop switches with an explicit `case 3` and an unreachable `default` 1 (same code each); the end-time store before
 // the next-time step 1; a 600 s permuter run (seed 8383, 65 tries, 812 s full baseline) none below 1.
+// Round 75 (m3 lane 15, fast): the inactive arm reading the flags field at each use 1; the flags local declared after
+// the timing locals 1; the direction flips as `*= -1` 1; the fraction as `elapsed / (real)frame_time` 1 (round 11's uncast
+// elapsed, re-measured on this base); explicit `!= 0` bit tests in the three restart expressions 1 (all the same code); the
+// end-time test as `g_54d5b8 >= animation.end_time` 3 (the compare flips).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

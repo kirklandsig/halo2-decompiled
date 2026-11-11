@@ -87,6 +87,9 @@ void function_1d56f0(s_havok_component *component)
     }
 }
 
+// MiniMax H (11-10): no new form, no lower score (77): the rigid-body lookup's two address operands
+// still read in the other order than retail's, and the success tail still pushes what retail passes in
+// EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp) and the call cycle behind it.
 // MiniMax I (11-09): no new form, no lower score; the lookup still reads [edx + eax + 0x40] where retail reads [eax + edx + 0x40], and the rigid body, the motion transform and the index in named locals all leave the same 77; the success tail still pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
 // MiniMax D (11-06): no new form, no lower score; the success tail cannot be matched from this file, because retail's 0x1d0cf0 takes the transform in EAX, the component in EBX and the index in ECX and returns plainly, while our call pushes the component and the index on the stack: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
 // MiniMax I (11-06): no new form, no lower score; the lookup still reads [eax + edx + 0x40] where retail reads [edx + eax + 0x40], and the success tail still pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
@@ -271,6 +274,10 @@ void function_1d56f0(s_havok_component *component)
 // MiniMax R (11-10): no new form, no lower score (77): the component lookup still reads [eax + edx + 0x40]
 // where retail reads [edx + eax + 0x40], and the tail's register and slot use is set by the callee in the
 // other file.
+// M3 lane 13 r82 (fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x115b10/0x1d0ee0/0x1d56f0/0xe0c70/0x1d3fc0/0xe1c40): this function,
+// 0x1d0cf0 and 0x1d0c20 all as members of the component (inline free-function spellings kept for the other callers,
+// diagnostic): 77 (only the tail differs), 0x1d0cf0 65 and 0x1d0c20 38 unchanged (component and index still pushed),
+// matched 0x1d1b60 (2) and 0x115b10 (4) lost, 0xe0c70 63 -> 66. Restored. BLOCKED-BY 0x1d0cf0 (component in EBX).
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)
