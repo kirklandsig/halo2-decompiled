@@ -1265,6 +1265,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // 303/303/303; first-loop-only references 254/254; real weapon/paired-slot array references
 // 254/254; paired selected-slot field references 280. NOT kept: no native pool/player/tag
 // ownership equality; original lookups, observations and complete body restored.
+// MiniMax B (11-11): no new form, no lower score (215); retail computes the pool element address before the
+// prologue's register saves and keeps it whole in ebp, while this build splits the multiply from the base add,
+// keeps the pool pointer in a register of its own and frames 0x1c against retail's 0x18.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {

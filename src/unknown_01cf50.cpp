@@ -3530,7 +3530,16 @@ bool g_55e6bc;
 // MiniMax E (11-10): no new form, no lower score (87 alone, 127 with this file's other addresses); the near
 // plane folded into one product with the global (114), the far plane declared first (122) and a row base with
 // constant indices (951) all score worse, and the row's three products are still summed in a rotated order.
-// score 87 (was 87): retail keeps the projection base in ECX and the row counter in EDI and splits
+// score 17 (was 87): the matrix base, the row base, the advancing cursor and the row counter now
+// sit in the registers retail uses, and each row's three products are summed in the source order;
+// what is left is the far plane's load, which retail takes before the near-plane multiply into
+// xmm2 and ours takes afterwards into xmm1, and three products whose operands this build loads
+// the other way round.
+// MiniMax B (11-10): the projection matrix is now a local of its own, so the base lands in ECX
+// and the varying row pointer in EAX, the output is written through a row base and an advancing
+// cursor as retail does, each row's three products are summed through an accumulator so the sum
+// keeps the source order, the near plane is multiplied with the global at the call and the far
+// plane is passed as it stands: 87 -> 17, plain and fast alike.
 // the output into a row base (ESI) and an advancing cursor (EDX); ours uses one cursor in ECX, the
 // counter in EDX, and multiplies the near plane in a register where retail folds the global into
 // the multiply.
@@ -3538,32 +3547,43 @@ bool g_55e6bc;
 // retail multiplies the near plane before it reads the buffer's begin and end and writes the three shared
 // render globals (the near plane, the far plane and the flag word) after the check, where ours multiplies
 // after the compare and writes them before it.
+// MiniMax B (11-11): no new form, no lower score (17); the depth-clip arguments swapped score 10 but hand the
+// device the wrong plane (the inlined call stores its first argument in the lower plane register, as retail's own
+// stores show), so it was reverted; a local for the far plane hoists its load to the function entry (18), and the
+// three products stay as they are because this build keeps the higher-addressed factor in the register whatever
+// order the source uses (the swapped row scores the same 17, one row written as a single expression 27).
 // @retail 0x12d50
 void function_12d50(bool scaled, real const *projection, real *output)
 {
     real constants[16];
-    real near_plane = scaled ? 0.15f : 1.0f;
-    real far_plane = g_485ae0;
-    near_plane *= g_485adc;
-    D3DDevice_SetDepthClipPlanes(near_plane, far_plane,
+    D3DDevice_SetDepthClipPlanes((scaled ? 0.15f : 1.0f) * g_485adc, g_485ae0,
         D3DSDCP_SET_VERTEXPROGRAM_PLANES);
-    if (!projection)
-        projection = g_48568c;
+    real const *matrix = projection ? projection : g_48568c;
     if (!output)
         output = constants;
     real scale = 16777215.0f / g_48565c;
+    real *row = output;
     real *next = output;
     for (long i = 0; i < 4; ++i)
     {
-        *next++ = (projection[38 + i] * projection[3] + projection[1] * projection[30 + i]
-            + projection[34 + i] * projection[2]) * scale;
-        *next++ = (projection[38 + i] * projection[6] + projection[30 + i] * projection[4]
-            + projection[34 + i] * projection[5]) * scale;
-        *next++ = (projection[38 + i] * projection[9] + projection[8] * projection[34 + i]
-            + projection[30 + i] * projection[7]) * scale;
-        *next++ = (projection[38 + i] * projection[12] + projection[11] * projection[34 + i]
-            + projection[30 + i] * projection[10]) * scale;
-        next[-1] += projection[42 + i] * scale;
+        real value = matrix[38 + i] * matrix[3];
+        value += matrix[30 + i] * matrix[1];
+        value += matrix[34 + i] * matrix[2];
+        *row = value * scale;
+        value = matrix[38 + i] * matrix[6];
+        value += matrix[30 + i] * matrix[4];
+        value += matrix[34 + i] * matrix[5];
+        *++next = value * scale;
+        value = matrix[38 + i] * matrix[9];
+        value += matrix[8] * matrix[34 + i];
+        value += matrix[30 + i] * matrix[7];
+        *++next = value * scale;
+        value = matrix[38 + i] * matrix[12];
+        value += matrix[11] * matrix[34 + i];
+        value += matrix[30 + i] * matrix[10];
+        *++next = value * scale;
+        row = ++next;
+        next[-1] += matrix[42 + i] * scale;
     }
     if (scaled)
         for (long j = 0; j < 16; ++j)
@@ -6379,6 +6399,10 @@ void function_22850(void);
 // multiplies that inverse into the low and the high word (and by 16777215.0f), while our build divides the
 // 16777215.0f constant by the high word and multiplies that into the two words, so the two bounds come out of
 // a different association.
+// MiniMax B (11-11): no new form, no lower score (153); retail copies the frame timestamp as one dword into a
+// four-byte global at 0x4858a0 and keeps five more dword globals after it, while the shared global here is a double
+// declared in include/timed_effect.h and defined in src/unknown_01fbb0.cpp, so the copy goes through x87 and the
+// second field cannot be reached.
 // @retail 0x12a50
 void function_12a50(s_frame_parameters_12a50 const *parameters)
 {
@@ -7242,6 +7266,9 @@ real scenario_ramp_evaluate_current(long index);
 // build expands it into the float arithmetic, and the ramp's three results sit in different frame slots
 // (retail's esp+0xc, esp+0x6c and esp+0x10 against our esp+0x10, esp+0x14 and esp+0x74), so the difference
 // is not only the four-byte frame offset.
+// MiniMax B (11-11): no new form, no lower score (139); retail saves ebp around the filter loop (at 0x13a43, popped
+// at 0x13b72) and frames 0x58, while this build saves it in the prologue and frames 0x5c, so every instruction
+// after the prologue pairs against the wrong one and the rest of the function cannot be read off the diff.
 // @retail 0x13870
 void __stdcall function_13870(bool finish, bool blur)
 {
@@ -9002,6 +9029,9 @@ __declspec(noinline) void function_016a30(real scale, short y, short x);
 // 16-bit values (movsx ecx,cx and movsx edx,ax after the two movs, with the width left in EAX as well) where
 // ours passes the two constants as dwords; the callee's declaration, which decides that, is in another file
 // this lane may not edit.
+// MiniMax B (11-11): no new form, no lower score (171); retail sign-extends the two offsets into the argument
+// registers of 0x16a30 and passes the palette global itself as the out-parameter, while the callee here takes
+// shorts and the palette is reached through a local; the callee's declaration lives in src/unknown_0167a0.cpp.
 // @retail 0x12560
 void function_12560()
 {

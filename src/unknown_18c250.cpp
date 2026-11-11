@@ -762,13 +762,17 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // Tried: flags |= 0x1000 or unknown0c |= 1 in place of the byte-wide or 249 (word or); the case-3 failure as a block-local
 // without the true default (call path only, size 1029 as retail) 285 (loses the failure byte retail stores at 0x18cc60 on the
 // call path only); cluster as short 250. Not matched: frame 0x84/0x80, the constant 1 in EBX, case 2's `or byte [edi], 2` (ours folds to a word store).
+// MiniMax B (11-11): score 184 (was 246): the location's second dword now takes the owner's value instead of
+// the address of the owner field, which keeps the address out of the load; still different: the frame is 0x84
+// against retail's 0x80, the literal 1 is still pooled in EBX (retail tests with immediates and materialises it
+// only for the shift), and the audibility byte and the flag stores still take other registers.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {
 	s_loop_location_datum *sound = &((s_loop_location_datum *)g_4ed28c->data)[looping_sound_index & 0xffff];
 	byte *definition = g_4e3b44[sound->tag & 0xffff].bytes;
 	location->flags = 0;
-	location->unknown08 = *(sound->type == 0 ? &sound->owner : &g_444ae0);
+	location->unknown08 = sound->type == 0 ? sound->owner : g_444ae0;
 	location->unknown02 = 0;
 	switch (sound->type)
 	{
