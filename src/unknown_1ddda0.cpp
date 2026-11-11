@@ -212,8 +212,9 @@ PRIVATE __forceinline real function_1de6d4(vector3f const *arg_0, vector3f const
  return arg_0->k * arg_1->k + arg_0->j * arg_1->j + arg_0->i * arg_1->i;
 }
 
-// score 2 (was 2): the inlined dot product multiplies the i terms with the
-// operands in the other order; the compiler canonicalises every source order.
+// A match: the inline dot product's arguments are in retail's order. The dot
+// product is symmetric, so the value is unchanged; the i terms' operands in
+// the expanded body are what the compiler had to see swapped.
 // @retail 0x1de6d0
 bool __stdcall function_1de6d0(s_1de6d0 *arg_0, long arg_1, real arg_2, real arg_3)
 {
@@ -222,7 +223,7 @@ bool __stdcall function_1de6d0(s_1de6d0 *arg_0, long arg_1, real arg_2, real arg
   s_1de6d1 const *local_0 = &arg_0->field_4->field_4[arg_1 & 0x7fffff];
   plane3f const *local_1 = &arg_0->field_4->field_c[local_0->field_0];
   real local_2 = local_1->k * arg_0->field_10->z + local_1->j * arg_0->field_10->y + local_1->i * arg_0->field_10->x - local_1->d;
-  real local_3 = function_1de6d4(arg_0->field_14, &local_1->n);
+  real local_3 = function_1de6d4(&local_1->n, arg_0->field_14);
   real local_15 = local_3 * arg_2 + local_2;
   real local_16 = local_3 * arg_3 + local_2;
   bool local_4 = local_15 >= 0.0f;
@@ -247,8 +248,7 @@ bool __stdcall function_1de6d0(s_1de6d0 *arg_0, long arg_1, real arg_2, real arg
  if (arg_1 != NONE)
  {
   local_8 = arg_1 & 0x7fffff;
-  byte local_18 = arg_0->field_4->field_14[local_8].field_0;
-  local_9 = (local_18 & 1) ? 2 : 1;
+  local_9 = (arg_0->field_4->field_14[local_8].field_0 & 1) ? 2 : 1;
  }
  dword local_11 = arg_0->field_0;
  long local_12 = NONE;
