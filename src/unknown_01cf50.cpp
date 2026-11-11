@@ -95,6 +95,7 @@ void __stdcall function_1c710(void *state);
 // inline_depth(0) pair around the (3, 1, 0) vertex call matched (full check); new in-body pragmas
 // are not kept, so the pair was dropped at review: 188 (fast, 1457 bytes, retail 1422; main 316).
 // Permuter (25 min on #1066, about 800 variants): 104 only with SetVertexData2s/4f arguments swapped; not kept.
+// MiniMax I (11-11), NOT kept (coordinator 11-11): 188 -> 96 only by moving the inline_depth pragma pair from the fourth corner's vertex call to the second's (pragmas are never kept); body at 188.
 // @retail 0x46230
 void __stdcall function_46230(short target, real const *bounds)
 {
@@ -153,15 +154,15 @@ void __stdcall function_46230(short target, real const *bounds)
     D3DDevice_Begin(D3DPT_TRIANGLEFAN);
     D3DDevice_SetVertexData2s(3, 0, 0);
     D3DDevice_SetVertexData4f(0, 0.53125f, 0.53125f, 16777215.0f, 16777215.0f);
-#pragma inline_depth(0)
     D3DDevice_SetVertexData2s(3, 1, 0);
-#pragma inline_depth()
     D3DDevice_SetVertexData4f(0, 64.53125f, 0.53125f, 16777215.0f, 16777215.0f);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData2s(3, 1, 1);
 #pragma inline_depth()
     D3DDevice_SetVertexData4f(0, 64.53125f, 64.53125f, 16777215.0f, 16777215.0f);
+#pragma inline_depth(0)
     D3DDevice_SetVertexData2s(3, 0, 1);
+#pragma inline_depth()
     D3DDevice_SetVertexData4f(0, 0.53125f, 64.53125f, 16777215.0f, 16777215.0f);
     D3DDevice_End();
     function_14bc0((short)g_4858b8, 0, true);
@@ -4110,6 +4111,7 @@ extern long g_485898;
 // merges the two loads; retail's size table shares the slots of the screen values. Tried: if/else for scale (288, layout
 // matches retail's diamond), the 0x40 test on its own lookup with the definition taken inside the if (294), the table
 // cached in a local (301), position copied after the scale test (304). None lower than 285, none kept.
+// MiniMax I (11-11), NOT kept (coordinator 11-11): 285 -> 272 from three one-use scaled locals, the scale as a ternary re-reading the definition, and the four corners in a bounds[4] array (stack-home steer); body at 285.
 // @retail 0x2e540
 long __stdcall function_2e540(s_slot *slot, byte *data)
 {
@@ -4117,15 +4119,14 @@ long __stdcall function_2e540(s_slot *slot, byte *data)
     long tag = *(long *)data;
     point3f position = *(point3f *)(data + 4);
     vector3f offset;
-    real scaled_i = data[0x10] * (2.0f / 255.0f);
-    real scaled_j = data[0x11] * (2.0f / 255.0f);
-    real scaled_k = data[0x12] * (2.0f / 255.0f);
-    offset.i = scaled_i - 1.0f;
-    offset.j = scaled_j - 1.0f;
-    offset.k = scaled_k - 1.0f;
-    real scale = (g_4e3b44[tag & 0xffff].bytes[0x28] & 0x40) ? *(real *)(data + 0x14) : 1.0f;
+    offset.i = data[0x10] * (2.0f / 255.0f) - 1.0f;
+    offset.j = data[0x11] * (2.0f / 255.0f) - 1.0f;
+    offset.k = data[0x12] * (2.0f / 255.0f) - 1.0f;
     byte *definition = g_4e3b44[tag & 0xffff].bytes;
-    if (tag != NONE && !(definition[0x28] & 2))
+    real scale = 1.0f;
+    if (definition[0x28] & 0x40)
+        scale = *(real *)(data + 0x14);
+    if (tag != NONE && !(g_4e3b44[tag & 0xffff].bytes[0x28] & 2))
     {
         real radius = *(real *)(definition + 0x10) * scale;
         if ((*(dword *)slot & 0x38) == 0x20)
@@ -4156,12 +4157,11 @@ long __stdcall function_2e540(s_slot *slot, byte *data)
             else if (extent[0] > 128.0f) extent[0] = 128.0f;
             if (extent[1] < 2.0f) extent[1] = 2.0f;
             else if (extent[1] > 128.0f) extent[1] = 128.0f;
-            real bounds[4];
-            bounds[0] = (real)floor((double)screen[0] - extent[0]);
-            bounds[2] = (real)floor((double)screen[1] - extent[1]);
-            bounds[1] = (real)floor((double)screen[0] + extent[0]);
-            bounds[3] = (real)floor((double)screen[1] + extent[1]);
-            real area = (bounds[3] - bounds[2]) * (bounds[1] - bounds[0]);
+            real left = (real)floor((double)screen[0] - extent[0]);
+            real top = (real)floor((double)screen[1] - extent[1]);
+            real right = (real)floor((double)screen[0] + extent[0]);
+            real bottom = (real)floor((double)screen[1] + extent[1]);
+            real area = (bottom - top) * (right - left);
             if (area > 0.0f && area <= 2147483648.0f)
             {
                 if (screen[2] < 0.0f) screen[2] = 0.0f;
@@ -4169,10 +4169,10 @@ long __stdcall function_2e540(s_slot *slot, byte *data)
                 if (screen[3] < 0.0f) screen[3] = 0.0f;
                 else if (screen[3] > 16777215.0f) screen[3] = 16777215.0f;
                 D3DDevice::Begin(D3DPT_TRIANGLEFAN);
-                D3DDevice::SetVertexData4f(0, bounds[0], bounds[2], screen[2], screen[3]);
-                D3DDevice::SetVertexData4f(0, bounds[1], bounds[2], screen[2], screen[3]);
-                D3DDevice::SetVertexData4f(0, bounds[1], bounds[3], screen[2], screen[3]);
-                D3DDevice::SetVertexData4f(0, bounds[0], bounds[3], screen[2], screen[3]);
+                D3DDevice::SetVertexData4f(0, left, top, screen[2], screen[3]);
+                D3DDevice::SetVertexData4f(0, right, top, screen[2], screen[3]);
+                D3DDevice::SetVertexData4f(0, right, bottom, screen[2], screen[3]);
+                D3DDevice::SetVertexData4f(0, left, bottom, screen[2], screen[3]);
                 D3DDevice::End();
                 result = (long)area;
             }
@@ -5780,12 +5780,7 @@ dword g_4b8430;
 // `fraction`/`size` agree with retail: no behaviour difference. The cross product is cross3f's body written out; calling
 // cross3f (vector_products.h) scores 128, since it puts `sine` in retail's shared temp [esp+0x14], but the full build then
 // loses the matched 0xc2d00 (its scheduling tie), so the written-out form stays. The alpha clamp is PIN's body written out.
-struct s_4e260_model_entry
-{
-    long unknown00;
-    long model;
-};
-
+// MiniMax I (11-11), NOT kept (coordinator 11-11): 127 -> 2 with the reference entry bound as `s_4e260_model_entry const *const &entry = &((s_4e260_model_entry const *)references)[index]` (a reference to a one-use pointer: match-only) and the index < 0 test ahead of the geometry load; the same struct read as a plain typed index with the split test is 125 (under the keep bar). Lead: retail keeps the entry's address before reading its model; find the plain form that does that.
 // @retail 0x4e260
 void __stdcall function_4e260(long tag, long context, long first, long second,
     long third, dword handle, byte *material)
@@ -5804,9 +5799,7 @@ void __stdcall function_4e260(long tag, long context, long first, long second,
     byte *table = *(byte **)((byte *)g_4e0348 + 0x238);
     byte *references = *(byte **)((byte *)g_4e0350 + 0x37c);
     byte *record = *(byte **)(table + 0x1c) + ((handle >> 8) & 0x3fffff) * 24;
-    s_4e260_model_entry const *const &entry =
-        &((s_4e260_model_entry const *)references)[(signed char)record[0]];
-    long model = entry->model;
+    long model = *(long *)(references + (signed char)record[0] * 8 + 4);
     byte *definition = g_4e3b44[model & 0xffff].bytes;
     byte *block = *(byte **)(table + 0x14) + *(short *)(record + 6) * 0x2c;
     word const *indices = *(word **)(definition + 0x2c);
@@ -5831,9 +5824,8 @@ void __stdcall function_4e260(long tag, long context, long first, long second,
         for (long part = 0; part < *(short *)(record + 0xa); ++part)
         {
             long index = *(short *)(record + 8) + part;
-            if (index < 0) continue;
             byte *geometry = *(byte **)(block + 0x28);
-            if (index >= *(long *)geometry) continue;
+            if (index < 0 || index >= *(long *)geometry) continue;
             byte *vertex = *(byte **)(geometry + 4) + index * 24;
             dword packed = *(dword *)vertex;
             byte *group = *(byte **)(definition + 0x14) + (packed & 7) * 20;
