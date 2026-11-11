@@ -2620,6 +2620,7 @@ dword __cdecl function_131fc0(real alpha);
 // reverted: a temporary caller in the 0x289e0 stub making the three calls the disabled 0x289e0 makes 140 [53] (plain), so
 // the missing caller is not what keeps the parameters in registers. A permuter run (43 tries in 622 s) reached 105 only
 // through an `int` temporary for one texture coordinate (changes what is drawn) and two volatile casts; nothing usable.
+// MiniMax A (11-11), NOT kept (coordinator 11-11): 140 -> 54 with both default-rectangle fallbacks written through volatile pointers to the parameters; volatile is reverted, body at 140.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
