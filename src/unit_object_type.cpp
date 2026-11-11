@@ -4252,6 +4252,13 @@ void function_c9e70(long unit_index, dword flags, s_type_1e6529 const *data, s_d
 // same code); both 163; field-bit tests for the 0x90005a1 pair and the 0x140005a2 bit with a function-scope `found =
 // true` returned at the store tail 170 (613 bytes, no BL constant). Retail's shared-bound `movaps xmm0, xmm1` clamp
 // and its BL constant 1 (`test bl, al`, `mov al, bl`) did not appear in any form.
+// Round 234 (m3 lane 3): retail's weapon query is function_cbd50 inlined (`movsx cx, byte [unit+0x212]; cmp cx, -1`);
+// calling it as the sibling 0xc8960 does 169 (it stays a call here). A function-level `bool found = true` that the
+// default case assigns before jumping to the one final `return found` after the store tail 170 (620 bytes): retail's
+// `push ebx; mov bl, 1` and `mov al, bl` returns appear (masked 52 -> 48), but the store tail is still copied into the
+// 0.0 path; with field-bit tests for the 0x90005a1 pair 172 (masked 45), and for the 0x140005a2 bit too 177 (masked
+// 43); the 0x90005a1 pair as a ternary on those 170 and 177 (same code). The weapon name as a ternary with the index
+// initialised at its declaration 174 (619 bytes); that on the single-exit form 191 (640 bytes).
 // @retail 0xc6b90
 bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *active)
 {
@@ -4680,6 +4687,14 @@ void __stdcall function_cc810(long vehicle_index)
 // st*0.5*v*0.5) 215; an inline discriminant helper 162 (with the three 180/215). The frame comes from the single-use
 // discriminant going to x87 (compile-only: every one-use spelling, sqrtf included, does; a second use or a `> 0` guard
 // keeps it in SSE and drops the frame, as retail, but retail shows neither).
+// Round 234 (m3 lane 3): `negative` and its two stores after the speed limit (three store orders) 167 (same code as the
+// stores alone); the else branch using `negative` in place of `a` 167 (703 bytes); `a` read from motion->acceleration
+// 167; `peak` by if/else 164; the coast stored in each branch 167 (713 bytes); the limit clamp as a ternary 162 (same
+// code). Compile-only: every discriminant spelling (constant first or last, named parts, `root` reused, `b = v + v`)
+// stays on x87 with the frame; a `< 0` clamp of a named discriminant moves it to SSE and drops the frame.
+// Root choice: the second root's clamp as an else-if chain 162 and the test as `second < 0.0f || first < second` 162
+// (both same code); the test negated with the arms swapped 162 (other code); second computed before first 175 (716
+// bytes); `time` defaulted to the clamped second root and overridden by the first 174 (715 bytes).
 // @retail 0xc7300
 void __stdcall function_c7300(real distance, real velocity, real speed_limit, real acceleration, s_unit_motion *motion)
 {
@@ -5019,7 +5034,7 @@ bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking
    a point projected onto the aim line from its center, moved by offsets
    along the aim and its left and up, then held clear of the world from
    its center; and its root object's velocity */
-// score 184 (was 202; earlier 218): the frame, convention (aim and point in registers, the other six arguments on the stack,
+// score 2 (was 184; earlier 202, 218): the frame, convention (aim and point in registers, the other six arguments on the stack,
 // ret 0x18), branch shapes and call order agree; what differs is xmm register allocation and operand order.
 // Retail loads the dot product's seven operands first (aim.i in xmm0, the center in xmm4-6) and multiplies in a
 // register; ours folds the aim into memory operands. In each offset step retail loads the vector component and
@@ -5046,8 +5061,22 @@ bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking
 // function_baf40() directly (aligned 35). Left (16 bytes short): aim in EDI and point in ESI (retail ESI/EDI); the dot
 // product folds aim.i and sums j first; the k*j cross terms load the other operand; the first add_scaled product copies
 // the scale; the root loop head gets a 2-byte pad (retail inlines 0xbaf80, which is noinline here).
+// Round 234 (m3 lane 3): 184 -> 12 (808 bytes) by declaring point before aim: retail's callee keeps aim from EAX and point
+// from ECX, and its one caller (0x104150) sets EAX, then ECX; ours had them the other way round (definition, the
+// weapons.cpp declaration and the call changed together). Left at 12: the dot sums (i + k) + j in retail, ours
+// (i + j) + k; and in the first cross product retail loads a->k for the j minuend where ours loads b->i. On 12: the
+// dot written in i, k, j order, named or inline, 12 (the compiler reorders it); dot3f(&offset, aim) 12; the sum inline
+// as j + k + i 2, j + i + k 2, dot3f's own body inline (i + j + k) 2, offset-first orders 2 (all hand-written dots,
+// so not kept without a match); on those, cross3f_staged 2, the first cross product written out 91 (796 bytes), with
+// the j minuend's operands swapped 91; the permuter on the inline-dot form found nothing below 2.
+// Then 12 -> 2 with both cross products through the existing cross3f_staged (the dot then sums as retail, dot3f kept);
+// only the second staged 12, only the first 12; on 2 the inline dot forms and dot3f(&offset, aim) 2 (same code). Left:
+// the first cross product's j minuend `a->k * b->i` loads b->i first (retail a->k); it does so even without the
+// projection block (diagnostic), so it is local to that product. The world-up global in a local first 6; the first
+// cross product written out (staged order) 108 (796 bytes), with that minuend's operands swapped 108.
+// Also on 2: `up` declared before `left` 2, `up` declared after the zero test 2, `0.0f == function_30bf0(&left)` 121.
 // @retail 0xc8290
-void __stdcall function_c8290(vector3f *aim, point3f *point, long unit_index, vector3f *velocity, real const *offsets,
+void __stdcall function_c8290(point3f *point, vector3f *aim, long unit_index, vector3f *velocity, real const *offsets,
 	bool project, bool use_aim, bool clip)
 {
 	s_unit *unit = UNIT_GET(unit_index);
@@ -5073,12 +5102,12 @@ void __stdcall function_c8290(vector3f *aim, point3f *point, long unit_index, ve
 		vector3f left;
 		vector3f up;
 
-		cross3f(g_4687b0, aim, &left);
+		cross3f_staged(g_4687b0, aim, &left);
 		if (function_30bf0(&left) == 0.0f)
 		{
 			left = *g_4687ac;
 		}
-		cross3f(aim, &left, &up);
+		cross3f_staged(aim, &left, &up);
 		function_30bf0(&up);
 		vector3f_add_scaled((vector3f const *)point, aim, offsets[0], (vector3f *)point);
 		vector3f_add_scaled((vector3f const *)point, &left, offsets[1], (vector3f *)point);
@@ -5341,7 +5370,7 @@ struct s_unit_damage_source
    entry, else filling a free one or replacing the least recent of those
    but the largest); when asked, counts a hit from an ally against the
    unit or vehicle seat responsible (betrayal, reset after four seconds) */
-// score 31 (was 129; earlier 140, 313): size and structure agree (854 bytes); what is left is register allocation:
+// score 31 (was 31; earlier 129, 140, 313): size and structure agree (854 bytes); what is left is register allocation:
 // retail keeps the largest source's index in EDX and the slot in EAX where ours has them the other
 // way round (it widens the index once, `movsx edx, dx`; ours copies it to a long, `kept`, which
 // gives that widening but in the other register), and retail holds NONE in EBP for the team, player,
@@ -5388,6 +5417,14 @@ struct s_unit_damage_source
 // a pointer to the source entry, the time store first, found declared before now, `last` read at each use, the player
 // as a typed player datum, the notify return without braces (found stored first changes other code). Also: the
 // player's unit index assigned alone then looked up after its own NONE test 142.
+// Round 234 (m3 lane 3), each on the one-use short limit (13): the damage sources as a real member array of s_unit
+// in place of the byte pad and cast 13 (same code); the time global read at each use 54; `(short)(c ? 5 : 3)` 13;
+// `c ? (short)5 : (short)3` 13; `short const limit` 13; `c == NONE ? 3 : 5` 13; `short limit = 3; if (c) limit = 5;`
+// before the active test 59 and as if/else 71; inside `if (g_4f55d0->active)` with `limit = 3; if (c) limit = 5;` 24
+// (the add takes retail's order, but the limit is a branch where retail has setne/lea), with `limit <= count` 24,
+// if/else 60, `limit = 5; if (c == NONE) limit = 3;` 36, `limit += 2` 36, `long limit` 31. Re-measured under LTCG:
+// `total = amount + source` 13, found declared first 13, `last` read at each use 13. In the harness only the second
+// half's code moves the add (spellings, operand sides, nested early returns and dummy stores do not).
 // @retail 0xca700
 void __stdcall function_ca700(long unit_index, real amount, short type, bool notify, long player_index, short team,
 	long object_index, byte flag)
@@ -5505,26 +5542,6 @@ void __stdcall function_ca700(long unit_index, real amount, short type, bool not
    tick and the last, in the camera's frame scaled by its data; sets flag
    25 (and, seated, flag 26) when it passes the data's limits; then eases
    the smoothed copy at +0x288 toward it */
-// score 165 (was 165; earlier 187): flag 2 of +0x10a read through the word bitfield view gives retail's load, shift
-// and test (168). Left: the vector scheduling and which values spill (retail keeps left.j in the frame,
-// ours left.k; retail loads forward.k and the three up fields into registers and reads forward.i/j from
-// memory), the order of the three velocity loads, the keep/take constants loaded in the other order and
-// the smoothing carriers. left.j before left.i 165 (other orders of the three left statements 165-168);
-// velocity before left 188; velocity/acceleration in k,j,i order 168; keep/take declared take-first 170;
-// a sweep of the smoothing sums' operand orders was cut short with no drop. Earlier: the two lookups through the masked-index
-// getter 205; frame 0x6c agrees. Shared cross 212; scaled differences 205; native byte/word flags
-// 206/206; role names 206; separate thresholds 206; shared writer 188; writer wide extraction 188;
-// initial clears only 192; weight names 188; writer scaled/cross/both 224/203/223.
-// Round 3 of #1049: a fresh statement-by-statement walk against retail found no behaviour difference (flags, the still
-// test, the cross product, velocity/acceleration, the three k-j-i dots, the limits and the smoothing all agree). Swapping
-// the operands of each of the six cross-product terms singly 165-166 (the compiler orders commutative operands itself);
-// reading g_510c54->field_2_3 at each use instead of through ticks 168 (935 bytes); limit declared bare and assigned
-// before its test 165. Retail keeps only forward.k and the three up fields in registers at the top and reads forward.i/j
-// from memory, and keeps keep in XMM0 loaded first where ours has it in XMM1.
-// Round 144 (m3 lane 7): forward and up copied into local vectors for the cross product and dots 244 (994 bytes), with
-// left in i, j, k order 246; ticks read before the still test 209 (946 bytes); keep/take assigned in an if/else 163
-// (936 bytes, constants loaded in both arms, not kept); the flag cleared before the keep/take overrides 165 (same
-// code); left declared before velocity and acceleration 165 (same code).
 // @retail 0xce0c0
 void function_ce0c0(long unit_index)
 {
@@ -5543,21 +5560,16 @@ void function_ce0c0(long unit_index)
 		vector3f acceleration;
 		vector3f left;
 
-		left.j = matrix.up.k * matrix.forward.i - matrix.forward.k * matrix.up.i;
-		left.i = matrix.forward.k * matrix.up.j - matrix.up.k * matrix.forward.j;
-		left.k = matrix.forward.j * matrix.up.i - matrix.up.j * matrix.forward.i;
+		cross3f_staged(&matrix.up, &matrix.forward, &left);
 		velocity.i = (matrix.position.x - unit->unknown270.x) * ticks;
 		velocity.j = (matrix.position.y - unit->unknown270.y) * ticks;
 		velocity.k = (matrix.position.z - unit->unknown270.z) * ticks;
 		acceleration.i = (velocity.i - unit->unknown27c.i) * ticks;
 		acceleration.j = (velocity.j - unit->unknown27c.j) * ticks;
 		acceleration.k = (velocity.k - unit->unknown27c.k) * ticks;
-		unit->unknown294.i = (matrix.forward.k * acceleration.k + matrix.forward.j * acceleration.j +
-			matrix.forward.i * acceleration.i) * camera.unknown00;
-		unit->unknown294.j = (left.k * acceleration.k + left.j * acceleration.j + left.i * acceleration.i) *
-			camera.unknown04;
-		unit->unknown294.k = (matrix.up.k * acceleration.k + matrix.up.j * acceleration.j +
-			matrix.up.i * acceleration.i) * camera.unknown08;
+		unit->unknown294.i = dot3f(&matrix.forward, &acceleration) * camera.unknown00;
+		unit->unknown294.j = dot3f(&left, &acceleration) * camera.unknown04;
+		unit->unknown294.k = dot3f(&matrix.up, &acceleration) * camera.unknown08;
 		real forward = (real)fabs(unit->unknown294.i);
 		real sideways = (real)fabs(unit->unknown294.j);
 		real vertical = (real)fabs(unit->unknown294.k);
@@ -7726,7 +7738,7 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
    delay and stun, the timer +0x2bc, its death direction, the player and
    betrayal bookkeeping, the hit animation, the actor's perception of the
    attacker, its camera shake and, when it was a killing blow, its death */
-// score 129 (was 383; earlier 399): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
+// score 116 (was 129; earlier 383, 399): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
 // block), report in ebp and the unit in esi, and spills the definition to [esp+0x10]; ours spills unit_index and the
 // definition and uses ebx and edi as temporaries, so the prologue order, the stack slots (retail: definition 0x10,
 // total 0x18, unit 0x1c, hard 0x20) and the byte re-load of flags for the sign test differ. Retail passes the bit of
@@ -7771,6 +7783,19 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // definition pointer (`mov eax, edx`, no shared loads); the late blocks' ECX/EDX roles; the 0xc98a0 call sets its ECX
 // argument before the pushes (a parameter-order lead for 0xc98a0, whose matched caller 0xc42e0 would have to follow);
 // the owner store order; the damage NONE/byte store order. BLOCKED-BY 0xbc190's /Ob1 file for the owner fill.
+// Round 234 (m3 lane 3): 129 -> 116 by the damage's NONE material store before function_b9dd0/function_d6660, where
+// retail stores it (d6660 then clears the record and sets its own default, so retail's damage keeps that default);
+// between the two calls 120. On 116: `inline` on 0xbc190's definition with the owner through function_bc190 141 (1598
+// bytes; the grenade block matches, but 0xfaa60 inlines it too and rises 1220 -> 1275); the owner in 0xbc190's order
+// (re-measure) 112; a named `distance` for the shake 61 positional only (aligned 46 unchanged, masked 14 -> 15, an extra
+// register load); the stun's globals read at each use 93 (1606 bytes, masked 16); the shake test with its sides swapped,
+// `scale * def[0x34]`, `x = x + add`, the minimum first in the shake sum and the grenade globals at each use 116 (same
+// code); a named fraction 125 (1598 bytes, masked 12) and the shake in two steps 125.
+// Combinations: distance + fraction 63 (aligned 45, masked 14, still the extra distance load), with the owner order 59
+// (masked 10); globals at each use + fraction 138, + distance 122 (1610 bytes), all three 93; distance + owner order
+// 57 (masked 11), fraction + owner order 121 (1598 bytes, masked 8), globals + owner order 89 (1606 bytes); the cap's
+// upper test as `cap > 1.0f` 116 (other code, masked 15). The low counts are positional; only the owner order (a
+// statement order, kept only with a match) and the fraction's stun multiply order move masked lines.
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {
@@ -7802,9 +7827,10 @@ void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 				point3f center;
 				s_type_1e6529 damage;
 
+				/* retail sets the material before the record is initialized, which then replaces it with its default */
+				damage.material_index = NONE;
 				function_b9dd0(unit_index, &center);
 				function_d6660(&damage, damage_definition_index);
-				damage.material_index = NONE;
 				damage.owner = owner;
 				*(byte *)&damage.unknown84 = 4;
 				damage.unknown54 = 1.0f;
