@@ -568,6 +568,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 /* whether the players and the extra players joining them can be balanced
    into the teams within the given imbalance; each extra player is a party
    of its own */
+// MiniMax R (11-11): no new form, no lower score (34); the player count still arrives in EDX where retail's
+// only caller 0x7e210 (src/unknown_07a9a0.cpp, out of this lane) loads it into EAX, and the copy loop, the
+// `rep stosd` fill, the call setup and the final clamp all follow from that one exchange; the body, not the
+// parameter order or the declarations, decides which register carries the count.
 // MiniMax S (11-10): no new form, no lower score (34); the `(short)` fill still moves the player count
 // into EAX (7) and with the extra count read first in the sum it still measures 7, so the operand
 // order of the sum is not what decides the base register: what is left there is the lea's operand

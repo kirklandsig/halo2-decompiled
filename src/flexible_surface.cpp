@@ -365,6 +365,13 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// MiniMax D (11-11): no new form, no lower score (117); the frame is still 0x28 against retail's 0x20, and the
+// eight extra bytes are still the copy of the old direction that has to live in memory because its address is
+// handed to the cross and dot helpers; dropping that copy and reading the global at each use gives 173. Retail
+// keeps the rotation scalar, so the cross terms are the shared helper's body written out, which is kept only
+// with a match; with the helper in place the rotation stays in the vector form.
+// MiniMax E (11-11): no new form, no lower score (117); retail's frame is 0x28 bytes where ours is 0x20 and the
+// seed global is read later in ours than in retail.
 // score 117 (was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
 // MiniMax I (11-10): no new form, no lower score (117); the draw before the time product (193) and the oscillation
 // before the draw (197) move the seed update up but split the float chain, so both are worse.

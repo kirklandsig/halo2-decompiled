@@ -338,6 +338,10 @@ struct s_pending_message_storage : s_pending_message_header
 // elapsed = now - start;` on a zeroed elapsed 138 (321 bytes) and it alone gives retail's 0x18 frame; `elapsed = now - start;
 // if (now - start < 0) elapsed = 0;` 108 (288 bytes, frame 0x14); `if (pumps++ < maximum_pumps)` 75 (282 bytes, frame 0x1c).
 // The frame follows how often start is read before the reads merge.
+// Round 95 (m3 lane 10, fast, on a copy of both helpers in this file, header untouched; the copy reproduces 14): the
+// retry helper as a statement macro (no parameter copies) 14; the reader's dead stamp as a two-long volatile array 14;
+// the pump and timeout arms as `result == 0 && pumps < maximum_pumps` then `else if (result == 0)` 14; this file's own
+// existing reader (pending_read_ticks) for the first reading 14, for both readings 14. The frame stays 0x1c in all.
 // @retail 0x80e10
 bool function_80e10(s_pending_message_storage *request, void **output, long *size)
 {

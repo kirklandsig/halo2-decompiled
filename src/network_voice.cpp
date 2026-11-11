@@ -198,6 +198,11 @@ bool voice_xhv_get_runtime_parameters(XHV_RUNTIME_PARAMS *parameters, c_voice_xh
 // bool pointer 166 while it stays a call (195 bytes), 42 force-inlined. Every inlined or dead address is resolved,
 // so the result is a plain value again, the true store folds into a `mov al, 1` exit and the epilogue is copied
 // three times; retail's one epilogue needs the result's load to be opaque on every edge.
+// Round 95 (m3 lane 10, fast; natural bodies, no volatile, goto or result pointer): the natural nested body without the
+// final true store (the result is already true there) 26 (275 bytes: no `mov al, 1` exit, but push ebp still sinks past the
+// guard and the esi region's exit copies the reload); that with the engine pointer bound before the guard 20 (275, lea
+// before the je again), bound at the function's top 24; `if (!result) return result;` then the flat body 90 (270 bytes,
+// a separate `xor al, al` exit); a false-initialised result set true inside the parameters test 108 (278).
 // @retail 0x55810
 bool voice_xhv_create(c_voice_xhv *xhv)
 {
@@ -1483,6 +1488,12 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // contribution parenthesised `total += (value * size + 2)` 94 (still one lea), unsigned 13u/11u 94 (all four the same
 // code); the loop test `i != 16` 287 (154 bytes, not unrolled). Re-measured: the flag declared first 111 (channels moves
 // to EBP and the stack, 0x54990 1; the flag still takes BL).
+// MiniMax G (11-11): no new form, no lower score: the identity flag read first (before the total and the channel
+// pointer) 111 (0x54990 1); the flag computed inside the loop 165 (390 bytes); the getter result in a named local
+// 94 (the same code); the flag computed before the entry test 108 (0x54990 1). Retail keeps the channel pointer live
+// past the flag, so the flag lands in al; our hoisted pointer frees bl and the flag lands in bl, which shifts the
+// mask and the product registers with it.
+// MiniMax R (11-11): no new form kept this round, no lower score (94): the first difference is at +0xd, where the exit out of the initialization test lands at a different place than retail's, and moving the identity flag ahead of the total gives 111, so the flag keeps BL here and AL in retail.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -1536,6 +1547,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// MiniMax I (11-11): no new form, no lower score (60); retail keeps the zero result in EAX from entry to the
+// capacity-failure exit and gives the player bit EBP and the entry size EBX, and every order of the result,
+// capacity, size and written locals compiles to the same code.
 // score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
 // MiniMax R (11-09): no lower score (60): what still differs is the register split - the player bit sits
@@ -1570,6 +1584,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // and the single mask read at the end now agree with retail. Still differs: EAX's zero is reused for
 // `written = 0` and the PIN test (retail `test edi, edi`, immediate store), so the capacity-fail exit
 // gets its own `xor eax, eax` epilogue and the code is 460 bytes against 449.
+// MiniMax E (11-11): no new form, no lower score (60): retail normalises the include_mask byte with
+// `cmp`/`setne` before the lea that forms the entry size while ours widens the bool with `movzx`;
+// writing that normalisation out (`include_mask != 0`, or through a byte local) measures 146, and
+// moving the statements (kept, written, capacity, entry size) measures 137 with a different call
+// convention (`ret 0x10` against retail's `ret 0xc`), so both are worse and the body stands.
 // MiniMax E (11-07): no new form, no lower score; the earlier round's 24 statement orders of the
 // capacity, size, written and mask statements leave the result in EAX with its own epilogue.
 // MiniMax h (11-06): no new form, no lower score: all 24 orders of the capacity, size, written and mask statements were measured and the current one is the best (134); every order with the mask first (135-171) moves the player onto the stack and breaks 0x56380, so retail's mask in EBX, its literal zero store and its single epilogue stay out of reach.
@@ -1902,6 +1921,11 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax G (11-11): no new form, no lower score: the second availability byte still loads lazily where retail
+// loads it beside the first and keeps it in dl for the mode test, and the remote mask still loads into edx
+// where retail uses esi; that pair appears only when the session getters 0x59670/0x596a0 are opaque to LTCG,
+// which is outside this file. `inline` on the second port-flag query scores 102 here and loses the matched
+// callers 0x54890 (83) and 0x53a20 (84); an eager muted gate (the two bytes anded) scores 105. Both restored.
 // MiniMax D (11-10): no lower score (85): the inner query forms tried this round - the raw getter for both
 // port-flag terms 122, the raw getter's bit in a byte temp read in the condition 117, and the third term behind
 // voice_available() with the raw getter 89 - are all worse; the per-site inlining of the second query still
@@ -2030,6 +2054,7 @@ static inline dword voice_get_player_mask_inlined(void);
 // (0x53a20 keeps the call and stays matched: a folding test ahead of the call stops the inlining there), but a repeated
 // mask test or `i < 16` ahead of it in 0x54890 does not (83/97); `~local & players` 85 (same code); the active mask as a
 // ternary on voice_available() 120; `mask = remote; mask &= ~muted;` 85 (same code).
+// MiniMax R (11-11): no new form tried this round, no lower score (85): the first branch is at +0xb and leaves for a different place than retail's shared exit at +0x1a6, while the three later branches agree, so only the uninitialized path's exit sits at the wrong address.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {

@@ -866,6 +866,8 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
+// MiniMax E (11-11): no new form, no lower score (535 on the full build, 834 on the reduced image):
+// the frame is still 0x21d8 against retail's 0x21dc and the locals still sit in other stack homes.
 // w14H (11-06, fast, plain): statement-by-statement walk against retail found no logic difference (fields, offsets,
 // condition directions, callee arguments, loop shapes, rotation coefficients and bounds all agree). The angle helper's second
 // clamp is now the existing function_50650 (retail's inlined clamped arccosine) instead of its body written out: fast 795 -> 793,

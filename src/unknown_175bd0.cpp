@@ -1556,7 +1556,7 @@ void function_176970(s_effect_owner const *owner, real scale_a, long tag_index, 
 }
 
 // @retail 0x176ad0
-void function_176ad0(long marker_count, s_effect_marker *markers, s_effect_owner const *owner, vector3f const *velocity, long tag_index, long unknown30, real scale_a, real scale_b, point3f const *origin, vector3f const *direction, long mode)
+void function_176ad0(s_effect_owner const *owner, vector3f const *velocity, long marker_count, s_effect_marker *markers, long tag_index, long unknown30, real scale_a, real scale_b, point3f const *origin, vector3f const *direction, long mode)
 {
 	s_effect_parameters parameters;
 
@@ -1882,6 +1882,7 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax S (11-11): no new form, no lower score (128); retail spills colour A into a frame home at +0x10 right after set_location, and those four bytes are what make its frame 0x44 against our 0x40 and shift every stack reference; the tint also still reaches the colour call on the stack, because 0x175a80's register contract (ECX colour A, EDI colour B, AL tint) lives in another lane's file and cannot be changed from here.
 // score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
 // MiniMax A (11-06): no new form, no lower score; retail's head takes the definition (its third stack
 // argument) into EAX and the location index from there, keeps the effect in EBP and the particle system in
@@ -2402,6 +2403,7 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax C (11-11): no new form, no lower score (63); the object index stays cached across 0xbadc0 where retail keeps NONE in ESI and reads the object index into EAX, and the head's load is folded into the datum address where retail forms the pointer; 0xbadc0 and 0xbaf80 live in another file.
 // MiniMax E (11-11): no new form, no lower score (63); retail still reloads the object's index from the effect after
 // the 0xbadc0 validity call, and that reload only appears when the compiler cannot prove that call read-only, so
 // the difference cannot be produced from this side (BLOCKED-BY 0xbadc0).
@@ -2848,7 +2850,7 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 	}
 }
 
-// score 23 (2 held; was 30): with the held change below only the decal call's two register arguments remain,
+// score 23 (2 held; was 23; 30 before): with the held change below only the decal call's two register arguments remain,
 // BLOCKED-BY 0x17e670 (contributor): its
 // body takes the source in ECX and the point in EDX in retail, ours the other way round. Round 80 (m3 lane 1): the
 // round 117 lead applied, 0x189060 as (object, value, position, direction, scale, tag) at its definition, every
@@ -2980,6 +2982,8 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // 63; the sound record declared at function scope 23 (same code), with retail's order 40. The attached call's scale
 // takes EDI because the position and direction temporaries are defined before it (arguments are evaluated last to
 // first), so the cause stays 0x189060's order: BLOCKED-BY 0xbf600 (its call) and 0x17e670 (the decal call).
+// M3 lane 15 r76: no trial. The first difference (+0x24f) is still the decal call's two register arguments into 0x17e670
+// (contributor, unmatched at 429), and the sound arms still need the held 0x189060 order (aligned 25, register-masked 14).
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
@@ -3191,6 +3195,8 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
+// MiniMax E (11-11): no new form, no lower score (93): the frame is still 0x4c against retail's 0x54,
+// and the per-call mode and the particle system still take the opposite registers.
 // score 93 (was 93): frame 0x4c versus 0x54, the particle system in EDI (retail ESI) and the location mode cached
 // where retail spills the definition and reads the mode at each call.
 // MiniMax A (11-06): no new form, no lower score; the same cause as 0x178c80: retail reads both colours

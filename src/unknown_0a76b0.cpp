@@ -1257,6 +1257,8 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 }
 
 /* starts throwing a grenade (type 22) */
+// score 19 (was 19): the three unit lookups are data-first (retail index-first) and the success path carries its own
+// exit copy where retail's success falls into the shared exit and the notice block carries the copy.
 // MiniMax H (11-07): no new form, no lower score (19); the three unit lookups still read the
 // table with the other base and index order (`[ecx + edi + 8]` against retail's
 // `[edi + ecx + 8]`), the success block still stores the flag byte and the result in the other
@@ -1272,7 +1274,7 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 // three lookups, so they use retail's address operand order, and the result stored before the action's
 // flag store; not kept (an address-cast read stays only with a byte match). The exit block still follows
 // the notice block; retail has it before the notice block, which ends with its own copy of it.
-// score 19 (was 272): Frame, setup and width domains agree; success pop/store/result schedule and
+// Earlier (19, was 272): Frame, setup and width domains agree; success pop/store/result schedule and
 // failure-branch spans remain. The slot index masked once into a local and the macro's lookup
 // written out by hand at its three uses gave 16 (not kept: a hand copy of UNIT_ACTION_UNIT_GET).
 // Hand getter/result-first/both/split/all-ordinal setup 266/272/266/272/266/272/266/265; common
@@ -1311,6 +1313,12 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 // the animated throw before the immediate 115 (968 bytes); the two early rejections as one condition 19; the marker test as two
 // gotos 19; the active test nested under `!immediate` 19. Without the notice block (diagnostic) the exit follows the success
 // path as in retail (851 bytes); a compile-only model keeps it last for every other shape tried.
+// Round 156 (m3 lane 8, fast): the notice block after `return result`, reached and left by gotos, 19 (same code); the
+// notice as a file-local inline helper under `if (animate)` 96 (909 bytes, kept a call), with `animate` as its parameter
+// 101 (905), with a player-index local 93 (911); the same helpers forced inline 74/74/74 (989 bytes, the player-index
+// getter then inlines too); the existing player value getter for the notice 19 (same code); the pool local for the entry
+// lookup 16 (a repeat). Compile-only: retail's layout comes back only when the success path ends with the a8c10 call
+// (the bit set and `result = true` before it) or without the notice block; every other order or shape keeps ours.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
@@ -1873,9 +1881,15 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// MiniMax H (11-11): no new form, no lower score (11); retail still loads the object-pool global into ECX and the unit header into EDX before it loads the type argument, while ours loads the type into ECX first and puts the global in EDX, so the type compare lands before the index arithmetic instead of after it; the rest of the function matches instruction for instruction.
 // MiniMax C (11-10): score 11 (was 11): no lower score this round. Two new spellings of the lookup were
 // measured and dropped: a named unit header pointer 65, and a named pointer to the active bit vector 11 with
 // the entry order unchanged. A permuter run (300 s) was stopped at its time limit without a result.
+// MiniMax A (11-11): no new form, no lower score (11); the entry block still holds the same eleven instructions in
+// another order: retail reads the object pool global, the pool data and the type argument, computes the unit and the
+// actions pointer and only then does `cmp ecx, 8; sete bl`, ours loads the type first and compares it before the pool
+// data is read. The primary computed inside the test's block (82), the primary declared before the lookup (11) and a
+// copy of the type parameter in a local (11) all keep the same order, so the body stands.
 // MiniMax I (11-09): no new form, no lower score (11); the entry block keeps the same eleven instructions in
 // another order (retail reads the object pool, the pool data and the type, and only then compares the type with 8),
 // and a copy of the type parameter in a local changes nothing.
@@ -2457,6 +2471,7 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// MiniMax I (11-11): no new form, no lower score (234): the pool's and the offset's register homes are still ebp and edi where retail has edi and ebx, the NONE sentinel still rides in ebp where retail keeps it in ebx, and the lunge's divide still comes from memory.
 // score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
 // single exit and the layout switch: not kept at review (match-only forms); without the gotos 305.

@@ -873,6 +873,7 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
+// MiniMax H (11-11): no new form, no lower score (257); the two flags' byte homes are still swapped against retail's (the result byte and the presence byte), and our case 1 and case 2 blocks still cross-jump where retail keeps them apart, so the direction chain's layout predecessor stands.
 // score 257 (was 257): frame 0x8c agrees; the result/point-valid byte homes, the direction chain's layout predecessor
 // (retail: case 2's remembered-prop 0x1e3b00 tail, which case 1's copy cross-jumps into) and the weapon path's registers differ.
 // MiniMax D (11-10): no new form, no lower score (257).
@@ -1326,6 +1327,9 @@ done:
 	return result;
 }
 
+// MiniMax H (11-11): no new form, no lower score (9); retail still builds the actor offset in EAX and forms the actor with a lea where ours keeps the scaled index in the pointer register and adds the base, and the shared getter cannot be respelled because sixteen matched callers depend on it.
+// MiniMax B (11-11): no new form, no lower score (9): the getter is shared with sixteen matched callers, so no
+// spelling of it can be changed on its own account, and none of the subscript forms reaches retail's prologue.
 // MiniMax E (11-10, run 73): no new form, no lower score (9); retail builds the actor offset in EAX and forms the actor with lea esi,[eax+edx] where we build the offset in ESI and add the base, and the shared getter's spelling cannot change because sixteen matched functions depend on it.
 // MiniMax E (11-10): no new form, no lower score (9): four more spellings of the actor address (a byte base
 // local with an offset local, the offset local alone, the typed subscript and the base after the offset) all
@@ -1660,6 +1664,21 @@ struct s_actor_looking_structure_view
 // cross-module inlining does not set the ranks); the helper writing a result vector copied back 203; the
 // vector's i, j, k named in the helper everywhere 243, everywhere but the dot 150; the axis's i, j, k named
 // 233; both named 216. Diagnostics (fast, same code): forward and the candidate array renamed.
+// Round 91 (m3 lane 11, fast): explicit parentheses are honoured. The loop score as `(i + k) + j` gives retail's
+// score order and also the rotation dot's (j, i, k, axis j loaded ahead of the copy), but the pathfinding push sinks
+// below the rotation and the cross k, cross i and k-row products load the other operand: 124 at 928 bytes (same code:
+// `j + (i + k)`, `j + (k + i)`, fraction before the copy, the constant first in the angle, the best locals before the
+// array; equal to round 73's two-stage score). On it: the selected test grouped `i + (j + k)` 143; cross terms
+// written k, j, i 133 (j, k, i same code); cross terms first 140; rows k, j, i 49 (924 bytes, the cursor moves to j);
+// dot3f(vector, axis) or (axis, vector) in the helper 35 (924 bytes); cross3f or cross3f_staged into a local 145;
+// dot3f and cross3f 43; rotate_direction with sine/cosine locals 128; best score declared first 126; the score
+// named `dot` before the clamp 124 (other code). Grid with the selected test: loop `(i + j) + k` 128, `(j + k) + i`
+// 142; flat loop score with the selected test `(j + k) + i` 60; dot3f loop score with dot3f(best, &forward) 35.
+// LEAD, not kept: the helper's dot parenthesized `(j + i) + k` on top gives 13 at 924 bytes, plain too (left: the dot's and
+// the score's accumulator choice and a j-row register swap; inner written orders are canonicalised, 13 each), but
+// it raises 0x296e60 303 -> 311, and retail's 0x296e60 sums its two dots (k + j) + i and (i + j) + k, so a fixed
+// grouping in the shared helper is not retail's. The helper's dot parenthesized with the flat score 31.
+// Kept: the selected test as dot3f(best, &forward), same code (the hand-written dot was dot3f's body).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
@@ -1708,7 +1727,7 @@ PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 					if (best_index != NONE)
 					{
 						vector3f *best = &directions[best_index];
-						if (0.7f > best->j * forward.j + best->k * forward.k + best->i * forward.i)
+						if (0.7f > dot3f(best, &forward))
 						{
 							function_2105b0(actor->location.point.output_index, best, best);
 							specification->type = 4;
@@ -1787,6 +1806,13 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax H (11-11): no new form, no lower score (442 plain, 548 on the reduced image); retail still calls 0x1fdd90 out of line with the slot offset spilled to [esp+0x30] and the actor index in ESI where ours expands the call inline and keeps the index in EDI, and that helper is defined in another file, so its inline decision cannot be moved from here. BLOCKED-BY 0x1fdd90.
+// MiniMax A (11-11): no new form, no lower score (442 plain, 548 on the reduced image); retail calls 0x1fdd90
+// out of line with the slot offset spilled to [esp+0x30] and the actor index in ESI, ours expands the call inline
+// and keeps the index in EDI, so the entry block and the frame (0xcc against retail's 0xc8) differ; the helper is
+// defined in another file, so its inline decision cannot be moved from here. The statement walk the earlier rounds
+// recorded agrees with the source on every block, condition, callee and constant, so what is left is that call and
+// the register and frame layout. BLOCKED-BY 0x1fdd90.
 // MiniMax D (11-10): no new form, no lower score (442): retail calls 0x1fdd90 out of line with the slot offset spilled to [esp+0x30] and the actor index in ESI where ours expands the call inline and keeps the index in EDI; 0x1fdd90 is defined in another file.
 // b2J (11-06) statement walk against retail 0x298370..0x298b3e (align.py 548 fast, 442 full): every block, offset,
 // condition direction, callee, argument order (0x2980d0 looking/bounds flags, 0x2967b0 type pointers +0x420/+0x434/+0x688 and the movement temp, 0x10f630 first=ESI,

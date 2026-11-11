@@ -181,6 +181,12 @@ static __forceinline long function_925c2()
     return local_0;
 }
 
+// MiniMax S (11-11): no new form, no lower score (14); the guard's `jle` jumps to the count check's own `jg` where
+// retail jumps past it, because ours reuses the guard's flags to skip the compare, and this round's forms (an outer
+// count guard, the count compared as < 1001, the count check turned into an early exit) measure 131, 16 and 14.
+// MiniMax R (11-10): no new form, no lower score (14); the one difference left is the register the user flags load
+// into (eax here, the dying user-pointer register ecx in retail), and every spelling of the two tests still leaves
+// them in eax, so the body stands.
 // MiniMax I (11-10): no new form, no lower score (14); the user flags are still loaded into eax where retail loads them into the dying user pointer register ecx, and every spelling of the two tests leaves the load in eax.
 // MiniMax D (11-10): no new form, no lower score; the flags are still loaded into eax where retail
 // loads them into the dying user pointer register ecx, and the sibling 0x92220 in this file matches
