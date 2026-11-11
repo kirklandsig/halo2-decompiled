@@ -504,6 +504,7 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
+// MiniMax H (11-11): no new form, no lower score (303); the frame agrees at 0xa8, but retail keeps the first temporary (the length, the random integer and the sine) at the frame bottom while ours puts it above the result byte, so the axis and result homes sit four bytes lower here, and ours is twelve bytes longer than retail's (1435 against 1423).
 // score 303 (was 303; 322 before that): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
 // score 303 (was 303; 322): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
 // integer and the sine) at the frame bottom where ours puts it above the result byte, so the axis/result
