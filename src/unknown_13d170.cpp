@@ -170,6 +170,17 @@ struct s_block_candidate
 	long pages;
 };
 
+/* whether the candidate was used longer ago than the best one, or at the same
+   time is smaller */
+static inline bool candidate_is_older(s_block_candidate const *candidate, s_block_candidate const *best)
+{
+	bool result = false;
+
+	if (candidate->time < best->time || (candidate->time == best->time && candidate->pages < best->pages))
+		result = true;
+	return result;
+}
+
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 /* a walk over the blocks, the current one ahead of the iterator */
@@ -188,6 +199,11 @@ struct s_physical_block_iterator
 // so they sit past the loop. The documented forms for the clamp, the case 0 shapes and the take test were
 // measured before and are worse on their own (209 to 284); the 93 form needs the policy helper, which is match-only.
 // score 201 (was 201): earlier 201 (was 347): frame 0x1054 and entry/ring roles agree; weighted-age mask registers, detached policy cases and final linking differ.
+// score 93 (was 201): the policy switch, the ring scan's successor and the block insertion now follow retail's shape; the walk's EBX/EDI roles, the overlap sum's register and the NONE register still differ.
+// MiniMax E (11-11): 201 -> 93 (1213 bytes, retail's length, first difference +0x338): the case 0 policy
+// goes through a small helper in 0x13d320's style, the second age is spelled MAX(age, 0), the before
+// block is read again through a fresh pool base with its successor in a local, the insertion is in two
+// stages with the first-block test repeated, and the scan writes its successor at both uses.
 // MiniMax E (11-09): 209 -> 201 (1214 bytes against retail's 1213): the second age is now spelled
 // MAX(0, physical->time - best.time), which for the unsigned difference is the same value as the
 // clamped one, so our mask for it and the multiply that follows it go away. What still differs: the
@@ -666,8 +682,7 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 			for (long i = head; i != tail; )
 			{
 				s_block_candidate *candidate = &candidates[i];
-				long next = (i + 1) % 256;
-				_mm_prefetch((char *)&candidates[next], _MM_HINT_T0);
+				_mm_prefetch((char *)&candidates[(i + 1) % 256], _MM_HINT_T0);
 				if (segment_time > candidate->time)
 					candidate->time = segment_time;
 				candidate->pages += segment_pages;
@@ -679,7 +694,7 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 						switch (physical->state)
 						{
 						case 0:
-							better = candidate->time < best.time || (candidate->time == best.time && candidate->pages < best.pages);
+							better = candidate_is_older(candidate, &best);
 							break;
 						case 1:
 							better = physical_memory_candidate_is_better(physical, (s_physical_block_view *)candidate, (s_physical_block_view *)&best);
@@ -687,7 +702,7 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 						default:
 							{
 								long age = MAX(physical->time - candidate->time, 0);
-								long best_age = MAX(0, physical->time - best.time);
+								long best_age = MAX(physical->time - best.time, 0);
 								better = best.pages * age > candidate->pages * best_age;
 							}
 							break;
@@ -700,7 +715,7 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 					}
 					head = (head + 1) % 256;
 				}
-				i = next;
+				i = (i + 1) % 256;
 			}
 		}
 		if (have_best)
@@ -727,28 +742,42 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 				s_physical_block *entry = &blocks[result & 0xffff];
 				if (best.previous == NONE)
 				{
-					entry->previous = NONE;
 					if (physical->first == NONE)
+					{
+						entry->previous = NONE;
 						physical->last = result;
+					}
 					else
-						blocks[physical->first & 0xffff].previous = result;
-					entry->next = physical->first;
-					physical->first = result;
+					{
+						s_physical_block *first = &blocks[physical->first & 0xffff];
+						entry->previous = NONE;
+						first->previous = result;
+					}
 				}
 				else
 				{
-					s_physical_block *before = &blocks[best.previous & 0xffff];
-					if (before->next == NONE)
+					long next = ((s_physical_block *)physical->blocks->data)[best.previous & 0xffff].next;
+
+					if (next == NONE)
 					{
 						entry->previous = physical->last;
 						physical->last = result;
 					}
 					else
 					{
-						s_physical_block *after = &blocks[before->next & 0xffff];
+						s_physical_block *after = &((s_physical_block *)physical->blocks->data)[next & 0xffff];
 						entry->previous = after->previous;
 						after->previous = result;
 					}
+				}
+				if (best.previous == NONE)
+				{
+					entry->next = physical->first;
+					physical->first = result;
+				}
+				else
+				{
+					s_physical_block *before = &((s_physical_block *)physical->blocks->data)[best.previous & 0xffff];
 					entry->next = before->next;
 					before->next = result;
 				}

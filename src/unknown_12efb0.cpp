@@ -138,6 +138,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 
 // MiniMax I (11-11): no new form, no lower score (607): the 0x130f60 call's result still stays in EAX where retail moves it to EDX and keeps NONE in EAX, so the palette slot is still read as a word and the body is one instruction short from there on; that register home is set by the clamp in the three-scalar helper here, whose other callers keep their own match.
 // score 607 (was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
+// MiniMax E (11-11): no new form, no lower score (607); the palette and accumulator carriers still differ from
+// retail in their scheduling only - every statement, field, condition and callee agrees, so the gap is register
+// and stack home placement that no legal spelling of this source reaches.
 // Behaviour walk (w14J, 11-06): every block compared with retail 0x12efb0-0x12fe96 (accumulator and output offsets, the
 // four weight tests, tag/palette dispatch, fallback double weight, f0 store, tag-arm best-weight rule, final publication
 // clamps): no logic, field, condition or callee difference; the 607 is scheduling and register homes only.
