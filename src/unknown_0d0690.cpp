@@ -1572,6 +1572,15 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // query reads move ahead of the scan; aligned 333 -> 326), with the mask at the top too 566, with early `return true`/`return
 // false` instead 567 (frame 0x28 and block EAX -> EBX as retail, masked+stack aligned 319, the lowest seen; count and mask stay
 // EAX/EDI). (The result placement and the early normal copy are round 39's forms, measured here on the current base.)
+// Round 169 (m3 lane 6, plain checks with the file's 28 other functions, 0x3db00 and 0x3dfe0): our function already returns
+// `ret 0xc` (block EAX, query EDX, type ECX in retail; ours query EAX, block EDX). Retail's length is the x87 body of an
+// inlined magnitude3d taken before the normal copy: magnitude3d(input_normal) in place 529 (inlined, same code: the copy
+// defined first reverses the sum); the length through magnitude3d ahead of the normal copy 528 (retail's exact x87
+// sequence; one point, not kept); that with `adjusted = *lightmap` right after the length and the bias added in place
+// after the normalize 552 (2191 bytes; loses matched 0x3db00, 8, and 0xd4080 378 -> 508); on the 528 form `bool result
+// = false;` with `result = true;` first in the block 573 (2172 bytes, masked lower), constant exits (`if (!parameters)
+// return false; ... return true;`) 568 (2168 bytes), `real bias = parameters->bias;` read once 559 (loses 0x3db00 again,
+// 8; 0xd4080 508), the selection loop without the outer count test 579 (2172 bytes).
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

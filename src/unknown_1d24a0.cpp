@@ -422,6 +422,13 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // masked 201). So the nested validity tests and the unrolled scale loops are independent structural fixes.
 // MiniMax D (11-10): no new form, no lower score: the removal path as an else arm after the body 902 (4267 bytes),
 // the entry flag word in a named local 917, the motion point copied member by member 943 (4283 bytes); all reverted.
+// Round 169 (m3 lane 6, fast; control 902): retail reads the record's option word twice (bits 2 and 1, then 25 and 26
+// after the two simulating calls), keeps the element pointer in ESI (`shl 3; add`) with the array in EBX, and keeps the
+// element's object index in EDI across the 0x0badc0 call. Re-measured on this body: the option word read at each of the
+// four flags 971 (4232 bytes; frame unchanged); the attached object index in a three-use local 917 (4283 bytes). New: the
+// clamp folded into the removal test 902 (same code); the element's field_1 read at each use with local_15 defined at
+// its later assignment 956 (4244 bytes); `local_1 = local_0` cleared by the bit-13 test 941; the element array as a
+// named typed local for the element and the removal copy 917 (4283 bytes).
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

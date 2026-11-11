@@ -635,6 +635,16 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // the tick count read after the prediction helper 32 (same code); the root named before the scale 46 on this body
 // (listed as 33 on an earlier one). Re-measured as listed: the delta as an aggregate initialiser 79; limit declared
 // at its assignment 32. The squared length through reciprocal_normalize.h's k, i, j statement-sum helper 32 (same code).
+// Round 169 (m3 lane 6, fast with the file's five matched functions; masked = aligned count with registers and stack
+// offsets masked, base 11): a 600 s permuter run (60 tries) reached 29 only through a volatile read of the rate (not used).
+// The squared length accumulated k, j, i on the j, i, k deltas 78 (the stores, deltas and (k + j) + i sum as retail, but
+// the prediction chains then run i, j, k); that with deltas i, j, k 79, j, k, i 54 (masked 4), k, j, i 54, i, k, j 79,
+// k, i, j 76; `k*k + j*j` then `+= i*i` 78, `j*j + k*k` then `+= i*i` 78, `k*k` then `+= j*j + i*i` 32; accumulated
+// j, k, i on the j, i, k deltas 30 (chains as retail, stores j, i), with `s = k*k + s` for the second term 30, with deltas
+// k, i, j 29, i, j, k 55, i, k, j 55, j, k, i 55 (369 bytes), k, j, i 55 (369 bytes). Retail's chain order and its store
+// order come from different sum forms here; no form gives both. On the 29 form: the first output row written
+// `correction.i + state->velocity.i` 29, `sqrt((real)length_squared)` 29, `0.5f * rate` for the limit 29, `delta`
+// declared before `velocity` 29 (all the same code), the output through vector3f_add 57 (369 bytes).
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

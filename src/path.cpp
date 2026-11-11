@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "unknown_20fe20.h"
 #include "unknown_0259a0.h"
+#include "vector_products.h"
 #include <float.h>
 #include <string.h>
 
@@ -43,6 +44,15 @@ struct s_path_destination_view
 	real destination_radius;
 };
 
+/* what a link crosses: its type (NONE for a sector edge) and the edge or surface index;
+   a node keeps the one it was entered through */
+struct s_path_link_target
+{
+	short type;
+	short unknown02;
+	long index;
+};
+
 /* The existing s_type_136112 view begins at the heap-index field. This view
    begins at the actual node's start and exposes the hash key at +8. */
 struct s_path_node_key_view
@@ -55,9 +65,7 @@ struct s_path_node_key_view
 	bool flag0d;
 	bool flag0e;
 	byte unknown0f;
-	short unknown10;
-	short unknown12;
-	long unknown14;
+	s_path_link_target target;
 	s_type_c3b527 entry_point;
 	real entry_distance;
 	real attractor_distance;
@@ -96,10 +104,9 @@ struct s_path_location_view
 struct s_path_link_view
 {
 	long node_index;
-	word flags;
+	short flags;
 	short unknown06;
-	long type;
-	long index;
+	s_path_link_target target;
 	s_type_c3b527 point;
 	vector3f vector;
 	bool unknown2c;
@@ -775,11 +782,11 @@ PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	while (node_index != NONE)
 	{
 		s_path_node_key_view *node = &lookup->nodes[node_index];
-		if (link_count < maximum_links && (node->unknown10 != NONE ||
-			(node->unknown14 >= 0 && node->unknown14 < ((s_path_links_data_view const *)state->pathfinding)->edge_count &&
-			TEST_FIELD_BIT((((s_path_links_data_view const *)state->pathfinding)->edges[node->unknown14].flags >> 7) & 1))))
+		if (link_count < maximum_links && (node->target.type != NONE ||
+			(node->target.index >= 0 && node->target.index < ((s_path_links_data_view const *)state->pathfinding)->edge_count &&
+			TEST_FIELD_BIT((((s_path_links_data_view const *)state->pathfinding)->edges[node->target.index].flags >> 7) & 1))))
 		{
-			memcpy(&links[link_count++], &node->unknown10, sizeof(*links));
+			memcpy(&links[link_count++], &node->target, sizeof(*links));
 		}
 		if (node->depth >= maximum_steps)
 		{
@@ -795,26 +802,26 @@ PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 			else
 			{
 				steps[node->depth].point = previous->entry_point;
-				if (previous->unknown10 == NONE)
-					edge_indices[node->depth] = previous->unknown14;
+				if (previous->target.type == NONE)
+					edge_indices[node->depth] = previous->target.index;
 			}
-			bool special = node->unknown10 == 2 &&
-				((s_path_links_data_view const *)state->pathfinding)->surfaces[node->unknown14].unknown0a == 0;
-			if (node->unknown10 == 1 || node->unknown10 == 6 ||
-				node->unknown10 == 5 || special)
+			bool special = node->target.type == 2 &&
+				((s_path_links_data_view const *)state->pathfinding)->surfaces[node->target.index].unknown0a == 0;
+			if (node->target.type == 1 || node->target.type == 6 ||
+				node->target.type == 5 || special)
 			{
-				steps[node->depth - 1].type = node->unknown10;
-				steps[node->depth - 1].link_index = (short)node->unknown14;
+				steps[node->depth - 1].type = node->target.type;
+				steps[node->depth - 1].link_index = (short)node->target.index;
 				s_path_node_key_view *parent = &lookup->nodes[node->parent];
 				function_26f3f0((s_pathfinding_data *)state->pathfinding,
-					node->unknown14, &node->entry_point, actor_index, state,
+					node->target.index, &node->entry_point, actor_index, state,
 					&parent->entry_point, parent->node_index, &parent->node_index,
 					&steps[node->depth - 1].point, &steps[node->depth - 1].node_index);
 			}
-			else if (node->unknown10 == 2)
+			else if (node->target.type == 2)
 			{
-				steps[node->depth - 1].type = node->unknown10;
-				steps[node->depth - 1].link_index = (short)node->unknown14;
+				steps[node->depth - 1].type = node->target.type;
+				steps[node->depth - 1].link_index = (short)node->target.index;
 			}
 		}
 		previous_index = node_index;
@@ -1054,8 +1061,8 @@ PRIVATE bool function_2713f0(s_type_f17a25 *state)
 			node->flag0c = (sector->flags >> 12) & 1;
 			node->flag0d = (sector->flags & 0x3c0) != 0;
 			node->flag0e = false;
-			node->unknown10 = NONE;
-			node->unknown14 = NONE;
+			node->target.type = NONE;
+			node->target.index = NONE;
 			if (destination->destination_valid)
 			{
 				state->unknown90 = index;
@@ -1106,211 +1113,86 @@ bool function_2715a0(byte *buffer)
 	return result;
 }
 
-// MiniMax D (11-10): no new form, no lower score (486).
-// MiniMax R (11-06): no new form, no lower score (486); the frame agrees and EBP is pushed here where retail keeps it as the state pointer.
-// score 486 (was 486): State/node/link registers, scalar homes and heap-helper expansion differ.
-// Earlier field-bit mask forms 501 (from 533).
-// State EBX/EBP, node/link cursors and scalar homes remain. Force-inline insertion 577 (loses matched caller);
-// scalar role names 501; early inherited result 503; squared-length helpers 500; point setter 501; plain
-// result 517; shared inherited result 538; plain shared result 501; direct views 510; early projection margin
-// 502; ordinary inline insertion 497 (four-count gain below threshold). All restored; one-count helper gain
-// rejected.
-// Frame 0xc54 agrees; state EBX/EBP, scalar homes, link ownership and selective heap expansion remain.
-// Earlier: two mask tests read as field bits (TEST_FIELD_BIT) give retail's load-and-shift; the rest still differs.
-// DH round 254: actual link cursors with count/ordinal widths and readonly ownership
-// 518/544/497/497/518/544/497/497. Wide cursor with direct high/low/both masks 529/525/527;
-// both masks with wide count 527. All restored; 497 gains only four, and native mask forms shorten away from retail.
-// Round 194: Invariant diameter/shared square/both 520/528/538; default entry cost 504; single distance result 501; diameter with default cost 528; square/diameter/cost with original/single distance 517/517. Root view after sift before sentinel 486 (kept), native metadata store 486; after sentinel 485/485 (one point rejected); after pruning/query 502/502/502/502. Frame 0xc54 and length agree; state/base, link and scalar registers still differ.
-// N227: Native signed root/bounded hash/signed collision lookup carriers, seven subsets
-// 515/509/538/501/540/517/542; all with readonly node 542. Original lookup domains
-// and body restored; state/node/link registers and heap expansion remain.
-// Round 320: actual exclusion-search ordinal as result, short/long with joined/separate query guards
-// 599/584/599/584; all live penalty reads 578/567/578/567. All lengthen the body.
-// Complete original search, penalty snapshot, heap operations and result qualifier restored.
-// Round 215: short remaining count and mutable links 503; short remaining count with native masks
-// 515; short remaining count and readonly links 503; short remaining count with readonly
-// links/native masks 515; long remaining count and mutable links 502; long remaining count with
-// native masks 516; long remaining count and readonly links 502; long remaining count with
-// readonly links/native masks 516.
-// Round 33 (lane 15, fast): retail takes the link length's root before the 0x210be0 call and keeps it as a
-// stored float (`fstp [esp + 0x14]`, later `divss`); ours sinks `fsqrt` past the call and divides on x87.
-// `sqrtf` 486 (same code); the margin computed before the call 487 (root before the call, x87 divide);
-// the insertion 0x271fd0 declared inline (inlined, frame 0xc58) 488; `node` declared at function scope 486
-// (same code); both link flag tests as plain masks 522 (2052 bytes); state read once through its address
-// (diagnostic) 486 (same code). The four-way rotation (state/node/link/count EBX/ESI/EBP/EDI for retail's
-// EBP/EBX/EDI/ESI) and the shrink-wrapped pushes remain.
-// Round 62 (m3 lane 16, fast): retail tests the two link bits as masks (`test ah, 0x10`, `test byte ptr [edi], 2`):
-// bit 12 as `& 0x1000` 497, bit 1 as `& 2` 497, both 522 (2052 bytes); the location-flags test through
-// `state->location.unknown00` 498. Diagnostic (a new one-caller helper, not kept): the heap pop as a forceinline
-// `short pop(state)` returning NONE when the heap is empty, looped as `while ((index = pop(state)) != NONE)`, 512 but
-// LCS-aligned 530 -> 405: the loop becomes un-rotated with every push at the top as retail; left: state in EBX where
-// retail keeps EBP (node EBX, link cursor EDI), the result byte's slot, a `jmp` over the loop-head pad, and the
-// inlined insertion (0x271fd0) retail expands.
-// Round 106 (fast): retail also takes the link length's root before the 0x210be0 call (stored, divided
-// in SSE after it; ours sinks it past the call into an x87 divide) and tests `(short)link->type != NONE`
-// before the penalty switch. Both link points through a point-along-vector helper 486; sqrtf root 486;
-// margin computed before the call 487; both link flag tests as masks 522 (2052 bytes); the NONE type test
-// before the penalty switch 579 (2128 bytes).
-// Round 35 (lane 13): pop-or-NONE outer loop with the break before/after the node pointer 508/510 (gives
-// retail's top-tested loop and entry pushes; state stays EBX); point-along-vector helper for the midpoint and
-// projection 486 (same code); links declared before result 486; per-case `child->depth = node->depth + N`
-// stores 481 (cases 1/5/6 and default take retail's shape; five points, not kept); case 2 as if/else stores
-// 566 (2136 bytes; node moves to EBX, state to ESI), with the child's stored index 566, its ternary 481;
-// per-case stores with the pop-or-NONE loop 502; per-case stores with native flag masks 512 (2060 bytes).
-// Round 66 (m3 lane 16, plain; retail's case 2 reads the surface index back from the child and joins its +1 path
-// to the default's `inc`): case 2 on `surfaces[child->unknown14]` with the ternary 486 (same code); as if/else 523
-// (2100 bytes); per-case child depth stores with case 2 if/else 566 (2136 bytes); per-case depth local with case 2
-// `if (clear) { +2; break; }` falling into the default 528 (2104 bytes); the surface test through a helper shared
-// with 0x270d90's special test 486 (same code), with case 2 as if/else 523.
-// Round 70 (m3 lane 16, fast): `volatile` dropped from `result` 525 (2056 bytes; retail stores the byte at entry and
-// reads it back at the end, like an address-taken bool). Retail compares the location entry with the link field
-// loaded first; `(short)link->type == entries[j].unknown00 && link->index == entries[j].node_index` gives that form
-// 489. Both link flag tests as masks 522 (2052 bytes). Retail's hash-loop distance test is `!(d > 0.09f)` (comiss d,
-// [0.09]; jbe found): that form 502 (2060 bytes). The location order, `!(d > 0.09f)`, `(link->flags & 0x3c0) > 0`
-// (retail's setg) and per-case `child->depth = node->depth + N` stores with case 2 reading `child->unknown14`, all
-// together: 486 at 2076 bytes (same count; opcode-only alignment 121 -> 104, the closest structure so far). The
-// four-register rotation (state EBX/EBP) remains; the compile-only harness puts state in EDI, so it cannot screen it.
-// Round 507: Embedded heap/node/heap+node/hash/heap+hash/node+hash/all/all-after-defaults
-// bases 486/568/568/486/486/568/568/568. Node-base forms shorten to 2004/2076 bytes;
-// state/node/link homes still differ. Original complete body restored.
-// Round 311: Captured squared length reused in the projection denominator, with complete
-// parallel dot parts and root/vector declaration-ownership masks 0..7: 531/531/531/531/531/531/531/531.
-// Original fresh denominator, root lifetime and full body restored; state EBP and scalar/link homes remain.
-// DH278: Entry-owned candidate point/projection direction/attraction output, seven subsets and complete behavior names 486/486/486/486/486/486/486/486.
-// Complete opening body restored; no qualifying keeper.
-// DH280: Complete child-depth case priorities ADB/BAD/BDA/DAB/DBA, then update-first heap arms with
-// ABD/ADB/BAD [486, 488, 488, 486, 488, 490, 490, 492]. Original executable body restored.
-// DH283: Repeated decremented-count/child-heap-index/stored-cost ownership subsets
-// 486/494/494/486/486/494/494; complete graph with promoted remaining count 516.
-// Original heap observations, cost casts, helper calls and complete body restored.
-// P270: complete point memcpy at goal/child/both/closest/goal+closest/child+closest/all,
-// then memmove at all three: 486/486/486/486/486/486/486/520. Original aggregate
-// transfers and complete body restored; state/node/link and scalar homes remain.
-// DH303: Fresh projection numerator/denominator and native entry receiver,
-// producer-scoped or link-scoped root/direction workspace 485/486/485/486/485/486/485/486.
-// One-point reductions rejected; original body restored; state/scalar/root homes remain.
-// B383: Native branch-updated radius/pruning maxima and attraction minimum,
-// seven subsets, then the complete conditional projection clamp:
-// 488/502/486/504/488/502/504/504. All tie or regress; original scalar producers and body restored.
-// DH312: Actual coordinate-array midpoint, long/dword/short/byte ordinals
-// 579/579/591/591; paired projected-point array production 579/579/508/508.
-// Narrow pairs recover state EBP at frame 0xc54 but grow eight bytes and regress;
-// original scalar producers and complete body restored.
-// M339: Actual node/link/child array-element references, subsets 1/2/4/3/5/6/7 then collision candidate:
-// 486/486/486/486/486/486/486/486. Original receivers and complete body restored.
-// Round 44 (m3 lane 2, fast): the pop-or-NONE forceinline loop again 512 (diagnostic; retail's prologue and
-// un-rotated loop, state EBX); with the location order, `!(d > 0.09f)`, the setg flag and per-case depth
-// stores all together 526 (2056 bytes); with each alone 528 (2056)/517 (2064)/512/504. The diameter written
-// at each use, `(radius * 2.0f) * (radius * 2.0f)`, 481 (2084 bytes; retail reloads the radius and
-// re-multiplies in the second test, as this gives; five points, a computed value at each use, not kept).
-// The root stored back into the squared length (diagnostic) 486, same code: the fsqrt still sinks past the
-// 0x210be0 call.
-// M339: Actual node/link/child array-element references, subsets 1/2/4/3/5/6/7 then collision candidate:
-// 486/486/486/486/486/486/486/486. Original receivers and complete body restored.
-// M3 lane 9 r83 (fast): the node pointer taken after the NONE break 485 (one point, not kept); on it: a forceinline
-// declaration of the insertion 0x271fd0 579 (2152 bytes; matched 0x2713f0 inlines it too, 466 bytes); the edge margin
-// computed before the 0x210be0 call 486 (the root then precedes the call as retail, but the divide stays x87 ahead of
-// it); the diameter computed once at entry 510 (2084); the entry_distance copy dropped 485; the heap update arms
-// swapped (`!= NONE` first) 489.
-// M3 lane 6 r142 (fast): the pop-or-NONE forceinline loop with 0x271fd0 declared `__forceinline` (diagnostic) 556
-// (2116 bytes; 0x2713f0 108); `result` declared before the link penalty 486 (same code); the node pointer taken
-// before the pop and used for the NONE heap-index store 501; the NONE break before the node pointer 485 (one point,
-// not kept). Original body restored.
-// N361: Existing projection/distance/weight/heap-removal inline call visibility, four
-// individuals, three projection pairs and all four: 486 each; existing actual magnitude
-// producer 498 (2064 bytes, unresolved reduced call). Original declarations and body restored.
-// NOT kept: no gain or native register/root recovery; state/node/link and scalar homes remain.
-// DH351: Complete positive/complementary exclusion-test outcomes in bool/byte/short/long
-// storage: 486 each. NOT kept: no gain; original search, inherited result qualifier,
-// heap operations and body restored; state/node/link and scalar homes remain.
-// DH357: Fresh post-conversion denominator squares, with complete segment,
-// projection and collision operation families in eight forms: 486 each.
-// NOT kept: all tie; original fresh reads, sum trees and complete body restored.
-// M3 lane 13 r63 (fast, restored; masked = aligned with registers and stack offsets ignored, control 228): pop-or-NONE forceinline helper 512 (masked 211); location order 489 (224); `!(d > 0.09f)` 502 (2060, 217); per-case depth stores 481 (195);
-// both flag masks 522 (2052, 226); a named link point pointer for the midpoint, the 0x210be0 argument and the projection 486 (226: retail's `lea esi, [edi + 0xc]` and `[esi + 4]`); `> 0` for the 0x3c0 mask 486 (228). Per-case, `!(d > 0.09f)` and location
-// order together 486 (195); with masks 523 (193); with the pointer and `> 0` 523 (192); helper with per-case 504 (179); with `!(d > 0.09f)` and location order 526 (2056, 167); everything 544 (2040, 169). Left: state EBP, node EBX, link EDI for ours EBX, ESI, EBP,
-// the length root before the 0x210be0 call, the location flags read once, the NONE type test ahead of the penalty switch, and the inlined insertion.
-// Y595: Per-iteration 64-link output at iteration/after-sift/after-sentinel/query boundaries, inherited/descriptive names:
-// 486/486/486/486/486/486/486/486. NOT kept: no byte equality; original complete body restored.
-// DH359: Separate terminal reached result bool/byte/short/long with inherited fallback
-// 486/495/542/538; missed counterparts 521/521/567/563. NOT kept: no gain or
-// byte match; original returns, fallback qualifier, heap operations and whole body restored.
-// DH361: Heap-root/link/collision-lookup ordinals declared at function scope, seven subsets,
-// then the actual child receiver too: eight at 486. Original observation/initializer sites,
-// declarations and body restored; native state/node/link registers and scalar homes remain.
-// DH363: Existing penalty-switch label orders 1265/1526/2156/5612 all 486;
-// those four with the positive-penalty guard owned by the grouped cases all 487.
-// NOT kept: no match or state/root-home recovery; original dispatch and complete body restored.
-// DH366: Direct native state-member accesses on the retained split-root graph, input/destination/lookup
-// seven subsets then closest/location pair: 486/486/486/486/486/486/486/498. NOT kept: no byte match or
-// qualifying native repair; original complete body restored.
-// DH368: Direct named link/root/child array elements, seven subsets then collision candidate:
-// 624/528/486/659/624/528/659/684. NOT kept: child-only ties, others regress or grow;
-// original array receivers, inherited fallback qualifier and complete body restored.
-// Y606: Actual short link discriminator with paired metadata halves/direct depth/shared
-// point producers, masks 0..7: 486/492/481/498/486/492/481/498. NOT kept:
-// five-point leads below eight; half transfers grow extent. Original type/body restored.
-// F396: Complete per-link flags/type/node scalar observations, seven subsets then all immutable: 505/490/485/506/478/524/547/547.
-// NOT kept: 478 grows frame to 0xc58 versus native 0xc54 and combines nonqualifying snapshots; native repeated reads/state EBP remain. Original complete body and helpers restored.
-// M3 lane 11 r71 (fast, control 486 at 2076 bytes). Retail loads the child's entry point into four registers ahead of
-// the closest test's `jbe`: the entry point copied to a local inside `if (destination_valid)` and used by the closest
-// update 488 (masked lower, retail's four loads), declared before the whole test 488; NONE type test ahead of the
-// penalty 578 (2128), after it 579 (2128); location count and flags read once before the walk 486, count only 486
-// (both same code).
-// Y606: Actual short link discriminator with paired metadata halves/direct depth/shared
-// point producers, masks 0..7: 486/492/481/498/486/492/481/498. NOT kept:
-// five-point leads below eight; half transfers grow extent. Original type/body restored.
-// F396: Complete per-link flags/type/node scalar observations, seven subsets then all immutable: 505/490/485/506/478/524/547/547.
-// NOT kept: 478 grows frame to 0xc58 versus native 0xc54 and combines nonqualifying snapshots; native repeated reads/state EBP remain. Original complete body and helpers restored.
-// DH379: Original back-edge/flag/exclusion/diameter/distance/child-index positive
-// pipeline owners, then split distance and flag rejections: eight at 486. NOT kept:
-// no native state/register recovery; original guards and complete body restored.
-// DH383: Complete link vector/point/both input values, mutable then immutable, 518/525/510/518/525/510;
-// paired acquisition 510/510. NOT kept: no exact record-copy form; frame or length moves away from
-// retail. Original live geometry inputs, fresh denominator, inherited result qualifier and entire body
-// restored.
-// DH385: Whole native heap-root/child-metadata transfers, copy/move singly and paired,
-// 486/542/486/498/486/560/498/542. NOT kept: ties or frame/length regressions; original
-// aggregate heap transfer, metadata store and complete body restored. State/node/link/scalar homes remain.
-// M3 lane 11 r71 (fast, control 486 at 2076 bytes). Retail loads the child's entry point into four registers ahead of
-// the closest test's `jbe`: the entry point copied to a local inside `if (destination_valid)` and used by the closest
-// update 488 (masked lower, retail's four loads), declared before the whole test 488; NONE type test ahead of the
-// penalty 578 (2128), after it 579 (2128); location count and flags read once before the walk 486, count only 486
-// (both same code).
-// b5M walk (11-06, 486, no source change): every block read against retail 0x271630-0x271e20; fields, offsets, condition
-// directions, callees, argument order, switch shapes and float rounding agree, with two code-shape differences and no logic one.
-// (1) Margin: retail rounds the link-length root to a stored float before the 0x210be0 call (0x2718f0 fsqrt, 0x2718f8 fstp [esp+0x14])
-// and divides in SSE (0x27194e divss radius, root); ours sinks fsqrt past the call and divides on x87 (fdivr), so radius / root uses the
-// unrounded root: a last-bit precision difference in the clamped projection (unfixed; see Rounds 33/106 above for the forms tried).
-// (2) Penalty switch: retail tests (short)link->type != NONE first (0x271a3b cmp ax, 0xffff; je); no behaviour change, since NONE
-// falls out of the 1..6 range check anyway; the explicit test is 579 (2128 bytes), as recorded above.
-// Checked and equal: radius = max(0.2, input radius) 0x271646; heap pop and heap[1] = heap[count] 0x271684-0x2716c6; closest/NONE
-// breaks 0x2716cb, 0x271db4; limit 5.0 / x10 prune 0x2716f2-0x271723; link skips 0x271760-0x271802 (location mask, type, node);
-// length_squared i,j,k sum 0x271808; diameter tests; midpoint 0.5; projection j,k,i dot and i,j,k denominator 0x271901-0x27195c;
-// margin clamp both arms; distance fst then fadd node path_distance (unrounded sum, one fstp) 0x2719cb-0x2719d7; attractor min and
-// (weight+1)*distance 0x2719eb-0x271a07; penalty types 1,2,5,6 only; remaining fst/fadd/fstp 0x271a81-0x271a93; x10 truncation and
-// 32767 / distance_limit rejects; hash & 0x1ff * 8, probe & 0xfff, 0.09 on x,z,y sum; unknownae < 1024; child field stores incl.
-// dword type at +0x10; depth +2 for 1,5,6, surface-word test for 2, +1 otherwise; heap insert or cost update; closest update; result.
-// Round 163 (m3 lane 6, fast with 0x271fd0/0x2713f0; aligned/masked = difflib counts with addresses, or also registers and
-// stack offsets, masked; control 530/228): the four callee-saved roles are one rotation (retail state EBP, node EBX, count ESI,
-// link EDI = ours with EBP taken first). Retail inlines 0x271fd0 here and cross-jumps its 0x271e50 call with the cost-update
-// arm's (one 0x271e50 call), but calls it from 0x2713f0. `inline` on 0x271fd0's definition 488 (plain too: still a call, frame
-// 0xc58); a `__forceinline` redeclaration placed after 0x2713f0 579 (2152 B, 389/211: retail's call list, but 0x2713f0 inlines it
-// too, 108); the post-probe test as `if (next != NONE) {cost test} else {allocate}` 590 (2148 B, still a call); the
-// `(short)link->type != NONE` test ahead of the penalty switch 579 (2128 B: state is then re-read from its stack slot, still a
-// call); `inline` with the outer loop as `for (;;)` and a top break 488 (rotated the same). Ours re-tests `next == NONE` on the
-// probe loop's break path where retail jumps straight to the cost test. The estimated distance as an if/else on the
-// destination test 570 (2128 B); the destination distance stored straight from the 0x210970 call without the
-// `remaining` copy 487. All restored.
-// Round 149 (m3 lane 8, fast with 0x2713f0/0x271fd0; aligned = register-masked difflib count, base 228): the insertion
-// 0x271fd0 stays a call only because of its site's weight: dropping both the `next == NONE` re-test and the `quantized >=
-// 32767` reject (diagnostics, value-wrong) inlines it with retail's call list, either alone, the limit reject, or two earlier
-// rejects do not, nor do positive `if` wraps of the tail or `for` spellings of the outer/probe loops. Retail also threads the
-// probe loop's two breaks straight to the found arm and reads that arm through the loop's node pointer ([ecx + 0x3c],
-// [ecx + 0x40]). Tried: the found arm through the probe's `candidate` (declared before the loop) 549 (2012 bytes, aligned
-// 191: that arm as retail, 0x271fd0 still a call; with 0x271fd0 forced inline aligned 168 but 0x2713f0 108), on it a found
-// flag set at both breaks 546 (2008), `!(d > 0.09f)` 557 (2004); the quantized reject as two tests 486 (same code); the
-// found arm first (`if (next != NONE)`) 590 (2148). Re-measured: `inline` on 0x271fd0 488 (frame 0xc58, still a call).
+/* takes the cheapest node off the open heap; NONE when the heap is empty */
+static __forceinline short path_heap_pop(s_type_f17a25 *state)
+{
+	s_path_lookup_view *lookup = (s_path_lookup_view *)state;
+	if (state->heap_count <= 1)
+	{
+		return NONE;
+	}
+	short index = state->heap[1].node;
+	lookup->nodes[index].heap_index = NONE;
+	if (--state->heap_count > 1)
+	{
+		state->heap[1] = state->heap[state->heap_count];
+		function_271ef0(state, 1);
+	}
+	return index;
+}
+
+/* whether a node already stands for a link's destination: the same sector node, entered at the same
+   point (within 0.3) unless neither the node nor the link carries the special flag */
+static __forceinline bool path_node_matches_link(s_path_node_key_view const *candidate, s_path_link_view const *link)
+{
+	if (candidate->node_index != link->node_index)
+	{
+		return false;
+	}
+	if (!candidate->flag0e && !link->unknown2e)
+	{
+		return true;
+	}
+	real dx = candidate->entry_point.point.x - link->point.point.x;
+	real dy = candidate->entry_point.point.y - link->point.point.y;
+	real dz = candidate->entry_point.point.z - link->point.point.z;
+	real distance_squared = dx * dx;
+	distance_squared += dz * dz;
+	distance_squared += dy * dy;
+	if (distance_squared > 0.09f)
+	{
+		return false;
+	}
+	return true;
+}
+
+/* the node to update for a link: the matching node when the new cost is lower and it is still in the
+   heap, or a new node when none matches; NONE when the match is no better or the table is full */
+static __forceinline short path_link_child_node(s_type_f17a25 *state, s_path_link_view const *link, long quantized)
+{
+	s_path_lookup_view *lookup = (s_path_lookup_view *)state;
+	short result = NONE;
+	short hash = (short)((link->node_index & 511) * 8);
+	short next = lookup->hash_table[hash];
+	while (next != NONE)
+	{
+		s_path_node_key_view *candidate = &lookup->nodes[next];
+		if (path_node_matches_link(candidate, link))
+		{
+			if (quantized < candidate->quantized_cost && candidate->heap_index != NONE)
+			{
+				result = next;
+			}
+			return result;
+		}
+		hash = (short)((hash + 1) & 4095);
+		next = lookup->hash_table[hash];
+	}
+	if (state->unknownae < 1024)
+	{
+		result = state->unknownae++;
+		lookup->hash_table[hash] = result;
+		lookup->nodes[result].heap_index = NONE;
+	}
+	return result;
+}
+
+/* The search loop: pops the cheapest open node, stops at the destination node or when every open node is
+   too far past the closest one, and opens or improves a child node for each link out of it. Matches retail
+   with the heap pop, the child find-or-add and its same-node test as inline helpers (retail's jump-threaded
+   early returns), the link point along its vector through vector3f_add_scaled, the root of the link's
+   squared length bound by a const reference (rounded before the 0x210be0 call), the link target copied as
+   one record, and each closest update storing its index and distance before the point, as 0x2713f0 does. */
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
@@ -1320,30 +1202,20 @@ PRIVATE bool function_271630(s_type_f17a25 *state)
 	s_path_closest_view *closest = (s_path_closest_view *)state;
 	s_path_location_view *location = (s_path_location_view *)&state->location;
 	real radius = 0.2f > input->radius ? 0.2f : input->radius;
-	real link_penalty = input->link_penalty;
 	bool volatile result = true;
+	real link_penalty = input->link_penalty;
 	s_path_link_view links[64];
-	while (state->heap_count > 1)
+	short index;
+	while ((index = path_heap_pop(state)) != NONE)
 	{
-		short index = state->heap[1].node;
-		lookup->nodes[index].heap_index = NONE;
-		if (--state->heap_count > 1)
-		{
-			state->heap[1] = state->heap[state->heap_count];
-			function_271ef0(state, 1);
-		}
 		s_path_node_key_view *node = &lookup->nodes[index];
-		if (index == NONE)
-		{
-			break;
-		}
 		if (destination->destination_valid)
 		{
 			if (node->node_index == destination->destination_node_index)
 			{
-				closest->point = destination->destination;
 				closest->node_index = index;
 				closest->distance = 0.0f;
+				closest->point = destination->destination;
 				break;
 			}
 			real limit = 5.0f > closest->distance ? 5.0f : closest->distance;
@@ -1360,25 +1232,25 @@ PRIVATE bool function_271630(s_type_f17a25 *state)
 			{
 				continue;
 			}
-			if (!(link->flags & 1) || (node->flag0c && TEST_FIELD_BIT((link->flags >> 12) & 1)))
+			if (!(link->flags & 1) || (node->flag0c && (link->flags & 0x1000)))
 			{
 				continue;
 			}
 			bool blocked = false;
-			if (location->flags > 0)
+			if (state->location.unknown00 > 0)
 			{
 				for (short j = 0; j < location->count; ++j)
 				{
 					if ((location->flags & (1 << j)) &&
-						location->entries[j].unknown00 == (short)link->type &&
-						location->entries[j].node_index == link->index)
+						link->target.type == location->entries[j].unknown00 &&
+						link->target.index == location->entries[j].node_index)
 					{
 						blocked = true;
 						break;
 					}
 				}
 			}
-			if (blocked || (!input->unknown04 && TEST_FIELD_BIT((link->flags >> 1) & 1) &&
+			if (blocked || (!input->unknown04 && (link->flags & 2) &&
 				function_1fa6b0((s_pathfinding_data *)state->pathfinding,
 					&((s_pathfinding_data *)state->pathfinding)->nodes[link->node_index])))
 			{
@@ -1386,26 +1258,20 @@ PRIVATE bool function_271630(s_type_f17a25 *state)
 			}
 			real length_squared = link->vector.i * link->vector.i +
 				link->vector.j * link->vector.j + link->vector.k * link->vector.k;
-			real diameter = radius * 2.0f;
-			if (link->unknown2c && !link->unknown2d && diameter * diameter > length_squared)
+			if (link->unknown2c && !link->unknown2d && (radius * 2.0f) * (radius * 2.0f) > length_squared)
 			{
 				continue;
 			}
 			s_type_c3b527 point;
-			point.point.x = link->vector.i * 0.5f + link->point.point.x;
-			point.point.y = link->vector.j * 0.5f + link->point.point.y;
-			point.point.z = link->vector.k * 0.5f + link->point.point.z;
+			vector3f_add_scaled((vector3f const *)&link->point.point, &link->vector, 0.5f, (vector3f *)&point.point);
 			point.output_index = link->point.output_index;
 			if (destination->destination_valid && length_squared > 16.0f &&
-				length_squared > diameter * diameter)
+				length_squared > (radius * 2.0f) * (radius * 2.0f))
 			{
-				real length = (real)sqrt(length_squared);
+				real const &length = (real)sqrt(length_squared);
 				vector3f to_destination;
 				function_210be0(&link->point, &destination->destination, &to_destination);
-				real t = (link->vector.j * to_destination.j +
-					link->vector.k * to_destination.k + link->vector.i * to_destination.i) /
-					(link->vector.i * link->vector.i + link->vector.j * link->vector.j +
-					link->vector.k * link->vector.k);
+				real t = dot3f(&link->vector, &to_destination) / length_sq3f(&link->vector);
 				real margin = radius / length;
 				if (margin > t)
 				{
@@ -1415,9 +1281,7 @@ PRIVATE bool function_271630(s_type_f17a25 *state)
 				{
 					t = 1.0f - margin;
 				}
-				point.point.x = link->vector.i * t + link->point.point.x;
-				point.point.y = link->vector.j * t + link->point.point.y;
-				point.point.z = link->vector.k * t + link->point.point.z;
+				vector3f_add_scaled((vector3f const *)&link->point.point, &link->vector, t, (vector3f *)&point.point);
 			}
 			real distance = function_210970(&node->entry_point, &point);
 			real entry_distance = distance;
@@ -1436,9 +1300,9 @@ PRIVATE bool function_271630(s_type_f17a25 *state)
 				attractor_distance = 0.0f;
 				entry_cost = entry_distance;
 			}
-			if (link_penalty > 0.0f)
+			if (link_penalty > 0.0f && link->target.type != NONE)
 			{
-				switch ((short)link->type)
+				switch (link->target.type)
 				{
 				case 1: case 2: case 5: case 6:
 					entry_cost += link_penalty;
@@ -1450,52 +1314,15 @@ PRIVATE bool function_271630(s_type_f17a25 *state)
 			real destination_distance;
 			if (destination->destination_valid)
 			{
-				real remaining = function_210970(&point, &destination->destination);
-				destination_distance = remaining;
-				estimated_distance = remaining + cost;
+				destination_distance = function_210970(&point, &destination->destination);
+				estimated_distance = destination_distance + cost;
 			}
 			long quantized = (long)(estimated_distance * 10.0f);
 			if (quantized >= 32767 || (input->distance_limit_valid && path_distance > input->distance_limit))
 			{
 				continue;
 			}
-			short hash = (short)((link->node_index & 511) * 8);
-			short next = lookup->hash_table[hash];
-			while (next != NONE)
-			{
-				s_path_node_key_view *candidate = &lookup->nodes[next];
-				if (candidate->node_index == link->node_index)
-				{
-					if (!candidate->flag0e && !link->unknown2e)
-					{
-						break;
-					}
-					real dx = candidate->entry_point.point.x - link->point.point.x;
-					real dy = candidate->entry_point.point.y - link->point.point.y;
-					real dz = candidate->entry_point.point.z - link->point.point.z;
-					if (dx * dx + dz * dz + dy * dy <= 0.09f)
-					{
-						break;
-					}
-				}
-				hash = (short)((hash + 1) & 4095);
-				next = lookup->hash_table[hash];
-			}
-			if (next == NONE)
-			{
-				next = state->unknownae;
-				if (next >= 1024)
-				{
-					continue;
-				}
-				++state->unknownae;
-				lookup->hash_table[hash] = next;
-				lookup->nodes[next].heap_index = NONE;
-			}
-			else if (quantized >= lookup->nodes[next].quantized_cost || lookup->nodes[next].heap_index == NONE)
-			{
-				continue;
-			}
+			short next = path_link_child_node(state, link, quantized);
 			if (next == NONE)
 			{
 				continue;
@@ -1511,25 +1338,29 @@ PRIVATE bool function_271630(s_type_f17a25 *state)
 			child->cost = cost;
 			child->estimated_distance = estimated_distance;
 			child->quantized_cost = (short)quantized;
-			child->flag0c = (link->flags >> 12) & 1;
-			child->flag0d = (link->flags & 0x3c0) != 0;
+			child->flag0c = ((dword)link->flags >> 12) & 1;
+			child->flag0d = (link->flags & 0x3c0) > 0;
 			child->flag0e = link->unknown2e;
-			*(long *)&child->unknown10 = link->type;
-			child->unknown14 = link->index;
-			short depth = node->depth;
-			switch ((short)link->type)
+			child->target = link->target;
+			switch (child->target.type)
 			{
 			case 1: case 5: case 6:
-				depth += 2;
+				child->depth = node->depth + 2;
 				break;
 			case 2:
-				depth += *(short *)((byte *)&((s_pathfinding_data *)state->pathfinding)->surfaces[link->index] + 0xa) == 0 ? 2 : 1;
+				if (*(short *)((byte *)&((s_pathfinding_data *)state->pathfinding)->surfaces[child->target.index] + 0xa) == 0)
+				{
+					child->depth = node->depth + 2;
+				}
+				else
+				{
+					child->depth = node->depth + 1;
+				}
 				break;
 			default:
-				++depth;
+				child->depth = node->depth + 1;
 				break;
 			}
-			child->depth = depth;
 			if (child->heap_index == NONE)
 			{
 				function_271fd0(state, next, (short)quantized);
@@ -1539,13 +1370,16 @@ PRIVATE bool function_271630(s_type_f17a25 *state)
 				state->heap[child->heap_index].cost = (short)quantized;
 				function_271e50(state, child->heap_index);
 			}
-			if (destination->destination_valid && destination->destination_radius > 0.0f &&
-				closest->distance > destination_distance)
+			if (destination->destination_valid)
 			{
-				closest->point = child->entry_point;
-				closest->node_index = next;
-				closest->distance = destination_distance;
-				closest->estimated_distance = estimated_distance;
+				s_type_c3b527 entry_point = child->entry_point;
+				if (destination->destination_radius > 0.0f && closest->distance > destination_distance)
+				{
+					closest->node_index = next;
+					closest->distance = destination_distance;
+					closest->point = entry_point;
+					closest->estimated_distance = estimated_distance;
+				}
 			}
 		}
 	}
@@ -1655,8 +1489,8 @@ PRIVATE short function_272020(s_pathfinding_data const *pathfinding,
 					{
 						s_path_link_view *link = &links[count];
 						link->node_index = next_node;
-						link->index = edge_index;
-						*(short *)&link->type = NONE;
+						link->target.index = edge_index;
+						link->target.type = NONE;
 						link->flags = nodes[next_node].flags;
 						point3f const *first_vertex = &pathfinding->vertices[edge->vertices[0]];
 						point3f const *second_vertex = &pathfinding->vertices[edge->vertices[1]];
@@ -1728,8 +1562,8 @@ PRIVATE short function_272020(s_pathfinding_data const *pathfinding,
 					point3f const *link_point = &pathfinding->vertices[surface->unknown08];
 					point3f const *link_end = &pathfinding->vertices[surface->unknown0a];
 					s_path_link_view *link = &links[count];
-					*(short *)&link->type = surface->type;
-					link->index = surface_index;
+					link->target.type = surface->type;
+					link->target.index = surface_index;
 					link->node_index = surface->unknown0e;
 					link->unknown2c = true;
 					link->unknown2d = true;
@@ -1763,8 +1597,8 @@ PRIVATE short function_272020(s_pathfinding_data const *pathfinding,
 						}
 					}
 					s_path_link_view *link = &links[count];
-					link->index = surface_index;
-					*(short *)&link->type = 2;
+					link->target.index = surface_index;
+					link->target.type = 2;
 					link->node_index = surface->unknown04;
 					link->flags = nodes[link->node_index].flags | 1;
 					link->point.point = *point;
@@ -1797,8 +1631,8 @@ PRIVATE short function_272020(s_pathfinding_data const *pathfinding,
 					}
 					point3f const *point = &pathfinding->vertices[surface->unknown08];
 					s_path_link_view *link = &links[count];
-					link->index = surface_index;
-					*(short *)&link->type = 5;
+					link->target.index = surface_index;
+					link->target.type = 5;
 					link->node_index = surface->unknown04;
 					link->flags = nodes[link->node_index].flags;
 					link->point.point = *point;
@@ -1829,9 +1663,9 @@ PRIVATE short function_272020(s_pathfinding_data const *pathfinding,
 			if (next_node != NONE && next_node != 0xffff)
 			{
 				s_path_link_view *link = &links[count];
-				link->index = edge_index;
+				link->target.index = edge_index;
 				link->node_index = next_node;
-				*(short *)&link->type = NONE;
+				link->target.type = NONE;
 				link->flags = nodes[next_node].flags;
 				link->unknown2c = ((dword)edge->flags >> 7) & 1;
 				link->unknown2d = false;
