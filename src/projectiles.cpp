@@ -3006,6 +3006,7 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // Round 229: full-width potential/settled/created carrier subsets 1213/1197/1222/1187/1216/1206/1229;
 // all three short 1228. Created long gains only three and is rejected; all original Boolean
 // carriers and executable source restored. Frame 0x220/0x218, velocity and request homes remain.
+// MiniMax R (11-11): no new form tried this round, no lower score (1220): the body is 4856 bytes against retail's 4828, so 28 bytes are extra here, and the differences sit in many separate blocks rather than in one local's home.
 // @retail 0xfaa60
 void function_faa60(vector3f *velocity, long projectile_index, s_collision_result_1697c0 const *collision,
 	point3f *end_point, vector3f *displacement, short collision_count)

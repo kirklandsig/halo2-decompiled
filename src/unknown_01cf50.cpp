@@ -7586,6 +7586,7 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // counter at [esp+0x40] instead of retail's imul; a thirty-two bit index with the step at the end of the
 // body 513 (2000 bytes) - the loop's zero register moves to ebp and the frame pointer is pushed in the
 // prologue. The body was restored.
+// MiniMax R (11-11): no new form kept this round, no lower score (299): the +8 field test written as <= 0 gives retail's load, test and jle, but the one-byte shift it makes downstream raises the score to 313, so the original test stays.
 // @retail 0x4f010
 void __stdcall function_4f010(void *payload)
 {

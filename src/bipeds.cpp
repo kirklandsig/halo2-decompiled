@@ -550,6 +550,7 @@ void function_e5930(long unit_index);
 // at 415 (under the bar). Diagnostics on 0xe5930's body, restored: no mode local, switch cases with returns, six copies of the mode, the arm's biped or
 // state named, a forced-inline getter one or two levels deep, a forced-inline arm: 118 each, 0xe5930 still matching and still inlined here; an if chain
 // 121 (0xe5930 23), an explicit case 0 124 (27), the biped named at entry 110 (35). No spelling of its body keeps it out of line. Still BLOCKED-BY 0xe5930.
+// MiniMax R (11-11): no new form tried this round, no lower score (118): the body matches retail's first 0x10a bytes and is 70 bytes longer overall, the extra bytes all coming from the reset helper expanding at this call site.
 // @retail 0xde4c0
 void __stdcall function_de4c0(long arg_159e6d)
 {
@@ -2879,6 +2880,7 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // M3 lane 9 r110 (fast, control 63): the success arm's first flag clear before the settled store 63 (same code: the
 // stores keep our schedule); the failure arm's clear before the +0x134 flag 64; both 64. Permuter (600 s, 5 tries on
 // this busy machine): best 62 only by swapping 0x1d5120's and 0x1c3770's arguments (a behaviour change), rejected.
+// MiniMax R (11-11): no new form tried this round, no lower score (63): the body is retail's length and the first difference is at +0x1a, where retail tests the +0x3aa byte in place and this build sign-extends it into a long before the test.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -4766,6 +4768,7 @@ void function_e4300(long arg_159e6d)
 // `asleep` bool read after the calls 98; field_bit_test 98. Still BLOCKED-BY 0xe5930.
 // Round 214 (m3 lane 3, fast): TEST_FIELD_BIT on the flag test 98 (118 bytes); a named copy of the index 91. 0xe5930 body spellings as in 0xde4c0's note:
 // 91 while it still matches, 94 and 98 otherwise. 0xcaf00 stays 13 throughout. Still BLOCKED-BY 0xe5930.
+// MiniMax R (11-11): no new form tried this round, no lower score (91): retail keeps the index in ESI and pushes only the result pointer and the 1, this build saves the index in EBX and pushes it too, so the prologue saves three registers against retail's one.
 // @retail 0xe4bd0
 void function_e4bd0(long arg_159e6d)
 {
@@ -5379,6 +5382,7 @@ real magnitude3d(vector3f const *v);
 // Round 259: Bounded event enum with retained/at-use time, long/native-word ticks and
 // original/shared complete flight scale 2/30/2/184/2/30/2/184. All restored;
 // actor move versus second argument push remains the only two differences.
+// MiniMax R (11-11): no new form tried this round, no lower score (2): the two points are still the 0x1fb7e0 call setup - the first NONE has to be pushed after the actor moves into ECX and before EDX is zeroed - and that push order comes from the callee's declaration and the argument list, which this lane may not edit.
 // @retail 0xe3380
 void __stdcall function_e3380(long arg_159e6d)
 {

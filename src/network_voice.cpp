@@ -1493,6 +1493,7 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // 94 (the same code); the flag computed before the entry test 108 (0x54990 1). Retail keeps the channel pointer live
 // past the flag, so the flag lands in al; our hoisted pointer frees bl and the flag lands in bl, which shifts the
 // mask and the product registers with it.
+// MiniMax R (11-11): no new form kept this round, no lower score (94): the first difference is at +0xd, where the exit out of the initialization test lands at a different place than retail's, and moving the identity flag ahead of the total gives 111, so the flag keeps BL here and AL in retail.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -2053,6 +2054,7 @@ static inline dword voice_get_player_mask_inlined(void);
 // (0x53a20 keeps the call and stays matched: a folding test ahead of the call stops the inlining there), but a repeated
 // mask test or `i < 16` ahead of it in 0x54890 does not (83/97); `~local & players` 85 (same code); the active mask as a
 // ternary on voice_available() 120; `mask = remote; mask &= ~muted;` 85 (same code).
+// MiniMax R (11-11): no new form tried this round, no lower score (85): the first branch is at +0xb and leaves for a different place than retail's shared exit at +0x1a6, while the three later branches agree, so only the uninitialized path's exit sits at the wrong address.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
