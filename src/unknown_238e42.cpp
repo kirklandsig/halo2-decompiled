@@ -1169,6 +1169,13 @@ bool __stdcall function_2399da(long controller_index)
 // N396: Signed eight-byte requested/own/task residency, seven subsets then late requested producer:
 // 198/195/243/126/208/207/253/198. NOT kept: native narrow domains and extent regress;
 // original body restored, selected identity/rank registers and extra removal move remain.
+// MiniMax R (11-10): no new form, no lower score (90): ours is 434 bytes against retail's 432 and the
+// first difference is at +0x1d; what is left is a turnover of the xuid pointer between eax and ecx
+// with one extra mov, and behind it the shape of the tails — retail calls the shared helpers and
+// pushes its own string addresses where we call the local copies, so the blocks that follow land at
+// other offsets and every jump into them counts. The forms the earlier rounds record (the identity
+// and rank registers, the eight-byte residency subsets, the late requested producer, the removed
+// extra mov) all measure 90 or worse.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

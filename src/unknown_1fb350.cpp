@@ -537,6 +537,14 @@ extern "C" void _ReadWriteBarrier(void);
 // const references to the result 152 [26] each; `__assume` after the lookup, three facts, 161 [29], with the shared step 152 [26]. The
 // barrier moved into the lookup 149 [28], with the shared step 153 [24], four-field 153 [24] (branch shape right; still frame 0x10
 // and g_4e0300 in a register).
+// MiniMax R (11-10): no new form, no lower score (122): both sides are 473 bytes and the first
+// difference is at +0x2, the frame. Retail opens a 0x14 frame, loads the object pool into eax, copies
+// it to two stack homes and sets the index home to -1; we open 0xc, keep the pool in edi, the global
+// iterator in ebp and write one home and the -1. Retail then reads the unit's count through the pool
+// home in ecx and keeps the datum index in edi, we read the count through edi and keep the index in
+// eax, so the whole body is a register turnover on top of the missing frame. The forms the earlier
+// rounds record (the pool local, the two pool homes, the iterator's fields in five orders, the barrier
+// in its places, the step written out, the shared step in the body) all measure 122 or worse.
 // @retail 0x1fb510
 void function_1fb510(void)
 {
