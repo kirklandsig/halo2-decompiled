@@ -1481,8 +1481,21 @@ void function_87d00(s_bitstream *stream, void *message);
 bool function_87e90(s_bitstream *stream, void *message);
 void function_847d0(s_simulation_controller *controller, s_player_action *input);
 
+// score 3 (was 3): only the register destination arrives in differs. Retail takes it in edx
+// (`push edi; mov edi, edx; mov edx, ecx`), this build in eax (`mov edx, ecx; push edi;
+// mov edi, eax`); the rest, including the late `mov [esp+4], edi` before rep stosd, is retail's,
+// so retail is this build with the entry copy taken from edx. With the standard marker (as
+// 0xd5990) destination arrives in edx and 0x869a0 matches, but the stream.data store then reads
+// edx before `mov edx, ecx` (4); whether the marker may be used here is pending maintainer review,
+// so it is not used. In retail an argument copied into a callee-saved register at entry arrives
+// in eax 873 times and in edx 6 when both are free, and only 0x685f0 has no visible reason.
+// Tried, about 1,000 builds (PR #959): every parameter order and convention 3; the data store
+// after the memset 30, through memset's return 39; the store inside memset's arguments, helpers,
+// constructors and Bungie's reset shape (0x95581) 3, or 4 with the marker; extra uses of
+// destination 39-53; /Oa /Ow /O1 /Os /G5-/G7, /d2 options and its own file 3. Only a call between
+// the store and the memset gives edx with the edi store (49).
 // @retail 0x685f0
-bool function_685f0(void *block, long *size, byte *destination, long capacity)
+bool function_685f0(long capacity, byte *destination, void *block, long *size)
 {
  bool result = true;
  s_bitstream stream;
