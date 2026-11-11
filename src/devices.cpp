@@ -1829,7 +1829,7 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
-// MiniMax b (11-11): score 58 (was 250): the acceleration and the speed are each one product added into the
+// MiniMax b (11-11): 58 (was 250), NOT kept (coordinator 11-11: needs the one-use `rate` local, match-only; without it 380; body at 250): the acceleration and the speed are each one product added into the
 // running value (the 0xcc term opens the acceleration, the 0xc4 term opens the speed, and the 0xd4 and 0xd0
 // terms are added into them), so both sums keep retail's operand order and its registers; the definition
 // pointer's `volatile` is dropped and the rate is read into a local just before the power 0x11eed0 call;
@@ -2131,8 +2131,8 @@ bool function_0b6760(s_index_pair const *pair);
 bool __stdcall function_106790(long device_index)
 {
 	s_device *device = DEVICE_GET(device_index);
-	byte const *saved_definition = g_4e3b44[device->definition_index & 0xffff].bytes;
 	bool result = false;
+	byte const *volatile saved_definition = g_4e3b44[device->definition_index & 0xffff].bytes;
 	s_animation_state *state = NULL;
 	if (device_has_animation_state(device_index))
 		state = device_get_animation_state(device);
@@ -2166,11 +2166,11 @@ bool __stdcall function_106790(long device_index)
 		{
 			if (state && device_channel_valid(&device->channels[0]))
 				device->channels[0].set_frame_ratio(device->power);
-			real acceleration = *(real const *)(saved_definition + 0xcc) * device->position;
-			real remaining_position = 1.0f - device->position;
-			acceleration += *(real const *)(saved_definition + 0xd4) * remaining_position;
-			real speed = *(real const *)(saved_definition + 0xc8) * device->position;
-			speed += *(real const *)(saved_definition + 0xd0) * remaining_position;
+			real position_acceleration = *(real const *)(saved_definition + 0xcc) * device->position;
+			real remaining_acceleration = *(real const *)(saved_definition + 0xd4) * (1.0f - device->position);
+			real acceleration = position_acceleration + remaining_acceleration;
+			real speed = *(real const *)(saved_definition + 0xc8) * device->position +
+				*(real const *)(saved_definition + 0xd0) * (1.0f - device->position);
 			bool increasing = device->power_velocity > 0.0f;
 			device->flags = acceleration > 0.0f && speed > 0.0f ?
 				device->flags | 0x100 : device->flags & ~0x100;
@@ -2187,9 +2187,8 @@ bool __stdcall function_106790(long device_index)
 				real previous = device->power;
 				if (fabs(local_c01284_2) > speed)
 					device->power_velocity = increasing ? speed : 0.0f - speed;
-				real rate = g_510c54->rate;
 				bool reached = function_11eed0(&device->power, &device->power_velocity,
-					group->value, rate, speed, acceleration,
+					group->value, g_510c54->rate, speed, acceleration,
 					(*(byte const *)(saved_definition + 0xbc) & 1) != 0, 0.0f, 1.0f);
 				if (reached)
 					function_107980(device_index, increasing ? *(long const *)(saved_definition + 0xf0) : *(long const *)(saved_definition + 0xf8));
@@ -2226,9 +2225,8 @@ bool __stdcall function_106790(long device_index)
 		s_device_group *group = DEVICE_GROUP_GET(device->position_group_index);
 		if (group->value != device->position || device->position_velocity != 0.0f)
 		{
-			c_animation_channel *position_channel = &device->channels[1];
-			if (state && function_0b6760((s_index_pair const *)position_channel))
-				position_channel->set_frame_ratio(device->position);
+			if (state && function_0b6760((s_index_pair const *)&device->channels[1]))
+				device->channels[1].set_frame_ratio(device->position);
 			real previous = device->position;
 			function_11eed0(&device->position, &device->position_velocity, group->value, g_510c54->rate,
 				*(real const *)(saved_definition + 0xc0), *(real const *)(saved_definition + 0xc4), false, 0.0f, 1.0f);
@@ -2249,7 +2247,7 @@ bool __stdcall function_106790(long device_index)
 			function_bd020(device_index);
 			machine_keyframe_rigid_bodies(device_index, true);
 		}
-		if (device_index == NONE || *((byte *)DEVICE_GET(device_index) + 0xb3) <= 0)
+		if (device_index == NONE || *((byte *)DEVICE_GET(device_index) + 0xb3) == 0)
 			device->flags &= ~0x80;
 		return true;
 	}
