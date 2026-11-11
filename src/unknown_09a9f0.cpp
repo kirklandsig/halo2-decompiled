@@ -226,6 +226,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
+// MiniMax A (11-11, run 58): no lower score (49) - taking the result from the entity's published index after
+// the arm scores 66 and the bool result set after the attach scores 80; retail keeps the false result in BL from
+// before the creation call, saves EBP only around the header test and looks the header up twice, while ours
+// keeps the validity result in EBP and shares one header address between the flag test and the object lookup.
 // score 49 (was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
 // earlier first lines 49 (was 49), 49 (was 49); retail's bool result in BL, the EBP borrow around the
 // header test and the data reload remain; round 151's entry is the last one above the marker.

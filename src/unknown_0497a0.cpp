@@ -15,6 +15,7 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
+// MiniMax G (11-11): no new form, no lower score: the permuter over this file's wave spellings produced no variant that matches retail's bytes; retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y are what keep those three on the x87 stack until after the product, and no plain spelling of the wave expression gives them a second use.
 // score 536 (was 594): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
 // against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
@@ -636,6 +637,11 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 }
 
 // score 233 (was 233): earlier 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// MiniMax C (11-11): no new form, no lower score (233); the frame is still 0xa8 against retail's 0xac, and the u
+// step and the V end still take 4-byte homes among the channel slots where retail spills them to the 8-byte homes
+// at +0xa4 and +0xac, so the body stays four bytes short after case 4; a permuter run over this function (300 s,
+// 31 tries, reduced image) found nothing below its 230 baseline, and the case-1/2 second x load and case 4's
+// per-arm position pointer remain the open leads.
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.

@@ -150,6 +150,10 @@ void __stdcall function_187510(long arg_0, real arg_1, real arg_2);
 void player_action_initialize(s_player_action *arg_0);
 
 #pragma inline_depth(0)
+// MiniMax E (11-11): no new form, no lower score (134): the tail still copies the pair of floats as
+// two whole words where retail moves each of them with a single-float move, the flag block still
+// folds retail's two masks into one and still writes the flag from the mask, and the counted byte is
+// still read without retail's sign extension.
 // MiniMax D (11-10): no new form, no lower score (134); the first difference is the else target of
 // the selection compare, and the counted byte is still read without retail's sign extension.
 // MiniMax S (11-10): no new form, no lower score (134): the equality test on the selected record's field 212

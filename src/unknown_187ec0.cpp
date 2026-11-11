@@ -758,6 +758,7 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // aggregate initializer 77; the first scan on a `long` index to a literal 3 77; both arrays NONE-initialized in
 // their declarations 77 (all the same code). 0x1883e0 is in this file; the block is its declarations in
 // src/impacts.cpp (held change) and src/projectiles.cpp, which name the old parameter types.
+// MiniMax S (11-11): no new form, no lower score (165): the call's register split still follows the parameter list that 0x1883e0's declarations in src/impacts.cpp and src/projectiles.cpp fix, so our frame is 0x16c against retail's 0x48 and the two scans sit elsewhere.
 // MiniMax E (11-10): no new form, no lower score (77); the first difference is still the call's register split, which follows the parameter list that 0x1883e0's declarations in src/impacts.cpp and src/projectiles.cpp fix.
 // MiniMax E (11-10): no new form, no lower score: the arguments land in the other registers and the
 // scan's registers are rotated against retail's, because retail's parameter list puts the forward
@@ -774,6 +775,7 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // offsets; the block is still blocked by 0x1883e0's declarations, which live in src/impacts.cpp and
 // src/projectiles.cpp and name the old parameter types, so the effect point and the velocity forms
 // that were measured (77 each) leave the body as it is.
+// MiniMax R (11-11): no new form, no lower score (46): retail's second scan keeps a dword index in EDI and the scale in EBP, ours strength-reduces the scan into a pointer walk with a countdown in EBP; a 32-bit index gives retail's index form but rotates the other homes.
 // @retail 0x188180
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
 	long entry_element_index, long effect_value, s_location const *location, real scale)

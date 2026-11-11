@@ -308,6 +308,10 @@ static inline bool teams_enabled_19e1c0()
 }
 
 /* writes the text of one token for the event, returning its length */
+// MiniMax b (11-11): no new form, no lower score (390); our frame is still 0x208 against retail's 0x204, the
+// volatile result keeps our four name and team copy tails apart where retail keeps a copy of the length and
+// clamp in each case, and retail's prologue forms the first token compare with the string, the stack argument
+// and the token in the other registers.
 // score 390 (was 390): retail clamps the copy length with `cmp remaining, length` and a conditional
 // move, so the comparison written as `remaining <= result` was tried: with the volatile result 466,
 // with a plain result 652 (against 390 and 691). The plain result does match retail's frame 0x204
@@ -593,6 +597,11 @@ static inline bool teams_enabled_19e1c0()
 // unchanged (gains under 4 are not kept).
 // Round 73 (m3 lane 15, fast with 0x19e0f0): `long const capacity = remaining;` at entry used for every later read, with the
 // plain/volatile result 691/390 (both fold to the existing code).
+// MiniMax E (11-11): no new form tried, no lower score (390): the volatile result keeps our four name and
+// team copy tails apart and our frame at 0x208 against retail's 0x204, while the plain result matches
+// retail's frame but merges the tails; retail clamps the copy length with `cmp remaining, length` and a
+// conditional move and keeps a copy of the length and the clamp in each case, so the clamp's own local is
+// what is left; the forms listed above all score the same or worse, so the body stands.
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax h (11-04): no new form, no lower score; the volatile result keeps our case tails apart and our frame is 0x208 against retail's 0x204.
 // M3 lane 1 r89 (fast with 0x19e0f0, which stays matched; control 390, aligned 197, masked 125; the two MiniMax lines above

@@ -634,11 +634,25 @@ struct s_device_machine_view
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
+// MiniMax E (11-11): no new form, no lower score (34); retail loads the group's flags as a word sharing the group
+// pointer's EAX (mov ax, [eax+2]) and tests bit 1 then bit 2, ours loads a byte and masks it with 3, and dropping
+// the mask gives retail's word load but moves the group pointer into a pushed ESI; case 0x1200055f's zero store is
+// still missing.
 // score 34 (was 34): group-word load/EAX sharing and velocity-zero join remain;
 // the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
 // retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
 // retail's shifted by one. Plain masks plus the zero store leave only the group pointer's register.
+// MiniMax D (11-11): no new form, no lower score (34); the group's flags have to reach retail's shape (a word
+// load into AX with the element address still in EAX, tested twice on AL) but VC splits the two: a computed
+// flags value frees the address into EAX and narrows the load to a byte with a mask (115), while a plain word
+// copy keeps retail's word load and pushes the address into ESI (122). The address alone never gives the lea
+// plus the word load together - as an index variable with the pool base in a local (53), as a word pointer to
+// the element (120), as an integer address (120) or read through the macro twice (122). Reading the flags
+// after the machine test gives retail's delayed load but the address still lands in ESI, and reading them
+// before it gives the combined address (117); the zero store of case 0x1200055f on top of the committed body
+// is 117, not a gain. A byte cast widened back to a dword to keep the whole word is 120, so it is no better
+// than the byte load with its mask.
 // MiniMax E (11-10): no new form, no lower score (34); retail loads the group's flags as a word into AX with the
 // group pointer still in EAX and tests bits 1 and 2, ours loads a byte and masks it with 3 - every word form moves
 // the pointer into ESI (120) or folds the index into the load's address (117), and the nested and compared tests
@@ -1829,6 +1843,17 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
+// MiniMax b (11-11): 58 (was 250), NOT kept (coordinator 11-11: needs the one-use `rate` local, match-only; without it 380; body at 250): the acceleration and the speed are each one product added into the
+// running value (the 0xcc term opens the acceleration, the 0xc4 term opens the speed, and the 0xd4 and 0xd0
+// terms are added into them), so both sums keep retail's operand order and its registers; the definition
+// pointer's `volatile` is dropped and the rate is read into a local just before the power 0x11eed0 call;
+// 1495 bytes, as retail. Left: the position arm's channel pointer (ours in ECX with a copy into ESI, retail's
+// in ESI), the state slot read into EAX where retail reads it into ECX, and the order in which the position
+// 0x11eed0 and 0x1c6920 calls set their arguments up.
+// MiniMax G (11-11): no new form, no lower score (250); the frame 0x20 and the state test agree, but the index and index * 12
+// sit in EDI/ESI where retail has ESI/EBX, the result stays in DL where retail keeps a stack byte, and the definition is re-read
+// where retail reads it once; the rate local, the clamp as an if/else, the channel pointer and the position arm's earlier
+// previous-value read all give the same code or a higher score.
 // score 250 (was 250): the same body measured 248 at lane 14 round 62 and 250 in round 79's baseline. Earlier (248, was 285):
 // frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // where retail has ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads.
