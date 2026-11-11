@@ -931,6 +931,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // declaration order) 242 (1830 B); the far plane's `pass == 1 &&` test dropped 370; `segment_culled` zeroed by an `= {0}` initializer
 // in place of the memset 489 (1867 B); the far-plane mask as `if (!view->flag84 && !view->flag85) use_plane1 = false;` 474 (1835 B).
 // Body unchanged at 115.
+// M3 lane 8 r152 (fast; masked aligned 22): retail's `segment_culled` update is the `|=` (`or byte`) and its bound updates and
+// projection arithmetic are ours. Compile-only, identical code: `for (long i ...)` scope, the clip test as nested ifs, `bool`
+// outside and culled arrays. Real: `outside[segment * 2]` read at each use in place of `outside0` 249 (1867 B); the culled update
+// as `|= !(a | b)` 383, as `x = x || (...)` 284; the clip test's `&&` operands in the other order 275; the `w` clamp as an
+// if-statement on a copy of t.z 249 (all 1867 B). Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

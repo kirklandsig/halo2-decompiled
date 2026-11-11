@@ -826,6 +826,14 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // phase 96, the angle as `phase + spoke * 0.785f` 96 (same code each); the direction copied after the sine and cosine 246 (1104 B); sine and cosine passed
 // straight to rotate_direction 230 (1094 B). The `volatile` pathfinding copy removed 204 (1056 B; retail keeps the lookup), on the
 // lead 199 (1061 B). Body unchanged at 90.
+// M3 lane 8 r152 (fast, 0x1ecf50 listed): re-measured the rotate_direction + named-phase lead 96 (masked 20: the radius copied
+// through EDX with the sector read late, spoke-loop scheduling, the marker order) and it with trace.distance at each use 89
+// (1089 B). New on the lead: a `long` spoke counter 239 (1080 B); the radius as a `real const &` bound straight to the object's
+// field 263 (1078 B); the spoke's angle term named (`spoke_angle + phase`) 220 (1083 B); an early `return NONE` after the first
+// lookup 255 (1090 B), the same on the body 255. Same code as the lead or the 89 form: the collision marker stored before the
+// entry pointer. The 0.1-offset point as a copy of the collision point plus three `+=` 189 (1109 B, likely the listed
+// collision-offset vector). Compile-only identical: `record->count++;` split from the 32 test, the trace failure as a guard
+// `continue`, the trace or world declared in the outer scope, the entry flag set after its direction fields. Body unchanged at 90.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
