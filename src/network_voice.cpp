@@ -198,6 +198,11 @@ bool voice_xhv_get_runtime_parameters(XHV_RUNTIME_PARAMS *parameters, c_voice_xh
 // bool pointer 166 while it stays a call (195 bytes), 42 force-inlined. Every inlined or dead address is resolved,
 // so the result is a plain value again, the true store folds into a `mov al, 1` exit and the epilogue is copied
 // three times; retail's one epilogue needs the result's load to be opaque on every edge.
+// Round 95 (m3 lane 10, fast; natural bodies, no volatile, goto or result pointer): the natural nested body without the
+// final true store (the result is already true there) 26 (275 bytes: no `mov al, 1` exit, but push ebp still sinks past the
+// guard and the esi region's exit copies the reload); that with the engine pointer bound before the guard 20 (275, lea
+// before the je again), bound at the function's top 24; `if (!result) return result;` then the flat body 90 (270 bytes,
+// a separate `xor al, al` exit); a false-initialised result set true inside the parameters test 108 (278).
 // @retail 0x55810
 bool voice_xhv_create(c_voice_xhv *xhv)
 {
