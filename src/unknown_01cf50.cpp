@@ -7549,6 +7549,7 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // The call to 0x4f7e0 matches retail's register setup (tag in ecx, eight stack words).
 // Permuter, 30 minutes (11-06, on the source before the facing-sum change): 291 only with call arguments swapped (pow's
 // two, function_13bb90's last two, function_4ff50's last two), which changes behaviour. Not kept.
+// MiniMax R (11-11): no new form kept this round, no lower score (299): the +8 field test written as <= 0 gives retail's load, test and jle, but the one-byte shift it makes downstream raises the score to 313, so the original test stays.
 // @retail 0x4f010
 void __stdcall function_4f010(void *payload)
 {

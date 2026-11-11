@@ -3181,6 +3181,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // its full build took 972 s and its reduced image scores 529 against the full image's 211. The compile-only harness
 // reproduces the corner region of that base exactly; the helper's spellings (four u sums, three v sums, scale/bias/half
 // operand sides, statement order: 192 forms, 6 distinct codes) give nothing closer to retail than main's spelling.
+// MiniMax R (11-11): no new form tried this round, no lower score (94): the body is retail's length and the first difference is at +0x524, where the address of a global that is not matched yet differs, so most of the score here is the unmatched globals and not the statements.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

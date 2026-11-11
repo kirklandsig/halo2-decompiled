@@ -2259,6 +2259,7 @@ struct s_unit_motion
 // A `start_velocity` copy in the first phase (velocity updated before position) puts step in XMM2 as retail (24 out of
 // line, time XMM1 / velocity XMM3, still inlined); in both accelerating phases 58 (233 bytes, out of line, same losses);
 // on this stack form 103. BLOCKED-BY 0xc7840 (call-site frequency and its convention).
+// MiniMax R (11-11): no new form tried this round, no lower score (104): the body is 265 bytes against retail's 227 - 38 bytes of extra expansion - and the same body inlined into 0xc7840 is what holds that caller at 563.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -2382,6 +2383,7 @@ void function_cfec0(long unit_index)
 // load alike; the 11 matched functions whose NONE edge returns the register all reach a return shared with another path.
 // Hypothesis (inferred from that scan, not measured): retail's NONE exit was a shared return split again before the pushes
 // were placed.
+// MiniMax R (11-11): no new form tried this round, no lower score (2): the body is 258 bytes against retail's 257 and the last exit is the only difference left; every exit form measured before moves retail's lazy pushes into the prologue.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
@@ -2915,6 +2917,7 @@ void function_c5740(long unit_index, bool start)
 // through [edi+0x44] after 0x1012c0), and reads unit_index and the material from the stack at each use, while
 // ours puts unit_index in EBX and the material in BP; and 0x188180 is still unmatched (bipeds.cpp, items.cpp
 // and unknown_187ec0.cpp), so which registers carry its first arguments is not ours to decide.
+// MiniMax R (11-11): no new form tried this round, no lower score (90): the body is retail's length and the first difference is at +0x0, so what is left is the register home of the two index arguments and the width of the material argument, which the callers' setup fixes outside this file.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -3428,6 +3431,7 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // definition 12; a typed header view 18; root and body-index role renames 12/12; root and component
 // predeclarations 12/12; a guarded do/while root traversal 12; a short body result copied to a
 // widened body index 12. Original body and helper declaration restored.
+// MiniMax R (11-11): no new form tried this round, no lower score (12): the body is retail's length and the first difference is at +0xe, in the pair that tests the rigid-body index against -1; every form that changes that test also changes which registers the whole function keeps, so the EBP against EDI choice and the test cannot be made separately.
 // @retail 0xcc460
 bool __stdcall function_cc460(long object_index)
 {
@@ -4395,6 +4399,7 @@ store:
 // `speed = speed * scale`. Retail's order (fstp, forward, result, seed) is the source order of the call's
 // arguments after the spill; ours emits the forward pointer before the spill and the result after the seed.
 // Permuter (25 min on #1049, about 450 variants): nothing below 4.
+// MiniMax R (11-11): no new form tried this round, no lower score (4): the body is retail's length and the frame agrees; the four differences stay the two swapped pairs, and the named forms of that setup compile to the same four instructions.
 // @retail 0xce6b0
 void function_ce6b0(long unit_index, long name, long object_index, real scale)
 {
@@ -7573,6 +7578,7 @@ real function_50650(real cosine);
 // duplicated into the wraps and else arms (no inlining, 2575 bytes, the compiler does not merge them) 718. The inliner
 // keeps the calls out of line only when they sit in a conditional block (round 197's tests), never from the size
 // of the caller or the callee's linkage.
+// MiniMax R (11-11): no new form tried this round, no lower score (563): retail tests its second pointer at the entry and leaves the body when it is null, this build stores two zeroed speeds first and only then branches, and the frame is 0x8c against retail's 0x80.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
