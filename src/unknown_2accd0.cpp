@@ -1020,6 +1020,14 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // left for the rotation: the levers are the hoisted body_size's register and the total's coalescing, and every form listed here
 // leaves both or moves only one (the one-use HANDLE local that fixes the folded form's signature case is reverted unless the
 // function matches).
+// m3 lane 11 r90: no new form run (baseline 34, masked aligned 2: register rotation only). Each candidate checked against this
+// note is listed: getter references, size/position spellings, total local and orders, clamp forms, case/test orders, field
+// types, the signature file-handle local, the existing MIN and remaining helpers, the body early-out. A scan of include/ for
+// helpers this body writes out found none.
+// M3 lane 2 r72 (fast with 0x2adb10 and 0x2ada70, both matched throughout; masked = registers/slots-masked aligned count, base 2):
+// the task's state store first, then the total and its conversion 232 (masked 33); the total, then the state store, then the
+// conversion 42 (masked 6); the body case's `bytes == size` as `size == bytes` 34 (same code); the direct arm's size before
+// its buffer on this base 34 (masked 4); the scratch clamp as `MIN(body_size - body_offset, size)` 35 (masked 3).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

@@ -67,6 +67,9 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// MiniMax H (11-10): no new form, no lower score (319): the move and input pointers still trade EBX and
+// EDI, and the case-3 callee's stub convention settles that swap: BLOCKED-BY 0x1ec690
+// (src/stubs/bipeds.cpp).
 // score 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
 // Walk b3I (11-06): every statement and block checked against retail 0x1e55d0-0x1e5a58 (field offsets, switch table 1..6 with
 // 4/5 shared, case-6 0.3f scale and fistp into the countdown byte, shape compare at 0x1e5740-0x1e5757/0x1e591a, capsule arm at

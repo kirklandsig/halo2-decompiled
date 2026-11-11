@@ -72,6 +72,10 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 
 // score 356 (was 371): frame 0x38 versus 0x34 (local_18 still has a stack home, retail EBP); observer/channel/result
 // and counter homes remain.
+// MiniMax R (11-10): no new form, no lower score (356); the frame is still 0x38 here against retail's 0x34, this
+// still takes a frame pointer where retail keeps the connection in EDI, the packet-availability result still lands
+// in bl where retail keeps the host state there, and the helper whose result retail tests as a byte is still declared
+// to return a long in a file this lane may not edit; the body stands.
 // MiniMax D (11-10): no new form, no lower score (356); the frame is still 0x38 here against retail's 0x34, this
 // still takes a frame pointer where retail keeps the connection in EDI, the packet-availability result still lands
 // in bl where retail keeps the host state there and publishes the packet state in a separate byte, and the helper
@@ -255,6 +259,12 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // No further untried natural form: retail's has-host form is a flag set in a test (match-only), the channel-field,
 // snapshot, NONE-first, window/threshold/tail and capacity forms are listed, and 0x75910's byte result stays
 // BLOCKED-BY 0x75910.
+// MiniMax I (11-10): no lower score (356 kept); dropping the redundant copy of the host state (a bool local that only
+// ever mirrors another local) does reach retail's 0x34 frame, but the score rises to 416 (1356 bytes) because the
+// register allocation shifts with the frame. What still differs: retail keeps `this` in EDI with four register saves
+// and none in ESI, keeps the channel index in EBP, and spills into the argument area, ours reserves 0x38 and splits
+// the saves differently; retail also keeps the NONE state in ESI and forms the channel base right after the
+// connection.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

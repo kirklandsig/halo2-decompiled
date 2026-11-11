@@ -107,8 +107,17 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
     arg_1->z = local_4 + arg_0->position.z;
 }
 
+// MiniMax G (11-11): no new form, no lower score (93): the first difference is at +0xa, in the prologue - retail loads the fifth argument into eax before the pushes and keeps it there, ours loads it into ecx after the pushes and puts the cluster query in eax; the guard's three tests and the body length agree (2683 bytes both), and the guard written as three early returns scores 648 and is reverted.
 #pragma inline_depth(1)
 // score 93 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
+// MiniMax I (11-10): no new form, no lower score (93); the count sum and the vertex cursor still take the
+// opposite stack slots, the three field sums still load the lower field first where retail loads the higher
+// and adds the lower (MSVC canonicalises the spelling either way), and the transform x row's product order
+// is not steerable by the source order; a short strip counter reproduces retail's prologue exactly but
+// scores 102 and was restored, and casting the strip count to unsigned short does reproduce retail's movzx
+// of the count but then widens the guard's signed test as well (93, restored), as an unsigned short local
+// for the count (168).
+// score 94 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
 // creation-call setup and transform scratch ranks differ.
 // MiniMax D (11-09): no new form, no lower score (94); the sixth argument is still read into ECX after the
 // prologue's pushes where retail reads it into EAX before them, and the third argument is still kept in

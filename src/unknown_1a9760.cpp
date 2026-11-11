@@ -209,6 +209,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Lane 9 r99 (fast): the length declared at the top and assigned later 4; the reciprocal declared at the top 4; each
 // square sum term cast `(double)(real)(...)` 4; the half-step row without its parentheses 4; the component counter
 // declared at function scope 4 (all the same code).
+// Round 171 (m3 lane 6, fast): the flag store ahead of the facing pointer 4; each row's half-stepped position
+// named in the loop body 4; the length as `sqrt` of the float sum (float overload) 266 (1045 bytes, sqrtf called);
+// the component counter at function scope 4; the rows as a `while` loop 4.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
