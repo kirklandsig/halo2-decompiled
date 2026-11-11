@@ -442,6 +442,18 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // `current` pointer 872 (3333 B); the target loop's `existing[j]` in a three-use local 870 at retail's length (3327 B) [710/404: the
 // closest shape so far]; that with the first loop's stores through `&choices[choice_count++]` 970 (3272 B) [706/396]; the listener slot
 // read at each use 874 (3335 B). Same code: the target loop's `delta` folded into the pin call.
+// Round 155 (m3 lane 8, fast; masked = register-masked aligned count, 305 at 866): retail's two pool scans are record-pool
+// iterator walks (the found path computes the datum, then `(salt << 16) | index`, then saves the index; the not-found path
+// is threaded straight to the exit and each body is placed remotely). Re-measured on this base through the existing
+// data_iterator_next_inlined (round 224's idea): the fade scan 877 (3309 B, masked 296: retail's threaded exit into the
+// tail), the first scan 893 (3281 B, masked 293), both 910 (3264 B, masked 287). `loop_path_start` without
+// `__forceinline`, plain or `inline`, 866 each (same code: LTCG still inlines it and still folds `flags = 0; flags |=
+// 0x100`, where retail stores the word and then ors byte +5). Retail's g_44a0b4 sits in .rdata (a const global) and is
+// read from memory 14 times, into xmm4 again after pointer stores; ours (a plain `real` in unknown_2197f0.cpp) stays in
+// xmm5 for the whole function. Diagnostic: read through its address in this file 938 (3405 B, masked 318), reverted.
+// Lead: the iterator walk (both scans, masked 287) is 63 bytes short, about retail's nine extra 8-byte xmm4 reloads of
+// g_44a0b4 (5 reads here against 14). They need g_44a0b4 const, and its declaration in src/sound_portal_paths.cpp sits
+// in the held sort_4byte change's files.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

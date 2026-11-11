@@ -1165,7 +1165,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // MiniMax R (11-08): no new form, no lower score (33); the write call still builds its flags zero in EAX where
 // retail builds it in ECX with the handle already in EAX, and the slot-range test still compares against an
 // immediate 1 where retail holds it in ESI.
-// MiniMax D (11-07): score 33 (was 33): no new form and no lower score; the write call's flags zero still takes
+// MiniMax D (11-07): 33 (was 33): no new form and no lower score; the write call's flags zero still takes
 // EAX where retail builds it in ECX with the handle already in EAX (ours loads the handle after the zero and
 // reloads it), the checksum compare still takes EDX where retail takes EAX, and the slot-range test still
 // compares against an immediate 1 where retail holds it in ESI.
@@ -1606,6 +1606,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // passed into the wait helper 7 (all the same code), the stored checksum read through `handle` 7 (same code), a named
 // `s_file_write_flags flags(0)` at the top of the size-mismatch block 141 (917 bytes). Restored: the 7 needs the goto and
 // the set-in-test validity.
+// Round 153 (m3 lane 8, fast): `!resized ||` in the close test with the count declared at the loop body's top 157 (frame
+// 0x1140, as with the count beside size). Round 80's 7 form rebuilt (goto past the close, header-read `else if` with
+// `valid = true`) 7: left the write's handle load after the flags zero and the checksum in EDX. On it: the close test and
+// store through `g_557c90[index]` 7 (same code); the stored checksum through `g_557c90[index]` 114 (frame moves); one handle
+// copy after the resize wait for both the write and the close 127 (915 B); matched 0x2151f0's pattern (a handle copy, then a
+// named flags local, just before the write) 114 (917 B, the close copy dropped as with the write-local form).
 // Round 87 (m3 lane 11, fast; aligned/masked in brackets): lane 12's 6 form rebuilt 6 [6/0]. New on it: the resize
 // helper's handle taken as `s_file_handle const &` 114 [6/3] at 917 bytes (resize handle ECX and header lea EDX become
 // retail's); with a by-value close helper (call and wait) as well 114 [4/3]: the checksum compare then takes EAX as in

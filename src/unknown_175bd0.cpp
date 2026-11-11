@@ -2551,6 +2551,9 @@ event_done:
 // first; 0xbadc0 and 0xbaf80 live in another file, so the reload cannot be forced here.
 // MiniMax R (11-10): no new form, no lower score (63): the object index stays cached across the call where
 // retail reloads it, and the callees in the other file decide that caching.
+// Round 155 (m3 lane 8): first difference unchanged (+0x29: retail keeps NONE in ESI and reads the object index into EAX
+// for 0xbadc0, then reads it again; ours keeps the index in ESI). Still BLOCKED-BY 0xbadc0 and 0xbaf80: their file was
+// avoid-listed again, so no new form was tried.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {

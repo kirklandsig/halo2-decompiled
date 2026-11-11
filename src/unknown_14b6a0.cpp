@@ -118,6 +118,9 @@ void function_14bac0()
 	s_record_pool_iterator *iterator_reference = &iterator;
 	players_pending_creation_process(iterator_reference);
 }
+/* a pending request: moves every player's root object by the offset between two
+   markers, then points the other players at a destination marker (or the requester
+   unit's centre) and an optional alternate; then clears +0x2a of every player */
 // score 222 (was 222): Frame 0x50 versus 0x3c, exchanged player/scenario spills, point/recipient overlap and readiness homes remain.
 // Round 170 (m3 lane 5, plain with 0x14bac0, 0x6b380 and every function of src/unknown_0bbf40.cpp): the visit test as a call of the
 // existing 0xbec70 with `inline` added at its definition (so it expands here; 0xbec70 and its matched caller 0x269e60 keep their
@@ -594,15 +597,13 @@ void function_14bac0()
 void function_14b6a0()
 {
 	byte *globals = (byte *)g_4e8c20;
-	s_record_pool *players = g_4e8c24;
 	short request = *(short *)(globals + 0xa4);
 	if (request != NONE)
 	{
-		s_record_pool_iterator iterator;
 		long player_index = *(long *)(globals + 0xa8);
-		byte *player = players->data + (player_index & 0xffff) * 0x21c;
 		byte *scenario = (byte *)g_4e0350;
 		byte *record = *(byte **)(scenario + 0x134) + request * 14;
+		byte *player = g_4e8c24->data + (player_index & 0xffff) * 0x21c;
 		if (*(short *)(record + 8) != NONE)
 		{
 			byte *markers = *(byte **)(scenario + 0x1e4);
@@ -619,7 +620,7 @@ void function_14b6a0()
 			++g_4de2fc;
 			g_4de2f8 = true;
 			s_data_datum_iterator player_walk;
-			player_walk.data = players;
+			player_walk.data = g_4e8c24;
 			player_walk.index = NONE;
 			while (data_datum_iterator_next_called(&player_walk))
 			{
@@ -634,30 +635,32 @@ void function_14b6a0()
 						byte *object = *(byte **)(headers + (unit & 0xffff) * 12 + 8);
 						unit = *(long *)(object + 0x14);
 					} while (unit != NONE);
-					if (g_4de300[root & 0xffff] != g_4de2fc)
+					long slot = root & 0xffff;
+
+					if (g_4de300[slot] != g_4de2fc)
 					{
-						g_4de300[root & 0xffff] = g_4de2fc;
+						g_4de300[slot] = g_4de2fc;
 						point3f translated;
-						point3f *position = function_b9dd0(root, &translated);
-						position->x += offset.i;
-						position->y += offset.j;
-						position->z += offset.k;
-						function_b75a0(root, position, NULL, NULL, NULL, false);
+						function_b9dd0(root, &translated);
+						translated.x += offset.i;
+						translated.y += offset.j;
+						translated.z += offset.k;
+						function_b75a0(root, &translated, NULL, NULL, NULL, false);
 					}
-					players = g_4e8c24;
 				}
 			}
 			g_4de2f8 = false;
 		}
 		if (*(long *)g_4e8c20 > 1)
 		{
-			bool have_alternate = false;
 			bool have_destination = false;
+			bool have_alternate = false;
 			point3f destination, alternate;
 			short target_marker = *(short *)(record + 0xa);
 			if (target_marker != NONE)
 			{
-				point3f point = *(point3f *)(*(byte **)(scenario + 0x1e4) + target_marker * 0x38 + 0x24);
+				byte *marker = *(byte **)(scenario + 0x1e4) + target_marker * 0x38;
+				point3f point = *(point3f *)(marker + 0x24);
 				while (function_168f40(0x800005, (s_vehicle_ray const *)&point, NONE, NONE)) {}
 				have_destination = true;
 				destination = point;
@@ -665,48 +668,50 @@ void function_14b6a0()
 			short alternate_marker = *(short *)(record + 0xc);
 			if (alternate_marker != NONE)
 			{
-				point3f point = *(point3f *)(*(byte **)(scenario + 0x1e4) + alternate_marker * 0x38 + 0x24);
+				byte *marker = *(byte **)(scenario + 0x1e4) + alternate_marker * 0x38;
+				point3f point = *(point3f *)(marker + 0x24);
 				while (function_168f40(0x800005, (s_vehicle_ray const *)&point, NONE, NONE)) {}
+				have_alternate = true;
 				alternate = point;
 				alternate.z += 1.0f;
-				have_alternate = true;
 			}
-			point3f center;
-			real height, radius;
-			long target_unit = *(long *)(player + 0x2c);
-			function_df5f0(target_unit, &center, &height, &radius);
-			if (have_destination)
-				destination.z += radius;
-			else if (!function_168f40(0x800005, (s_vehicle_ray const *)&center, NONE, NONE))
 			{
-				destination = center;
-				have_destination = true;
+				point3f center;
+				real height, radius;
+				function_df5f0(*(long *)(player + 0x2c), &center, &height, &radius);
+				if (have_destination)
+					destination.z += radius;
+				else if (!function_168f40(0x800005, (s_vehicle_ray const *)&center, NONE, NONE))
+				{
+					destination = center;
+					have_destination = true;
+				}
 			}
 			if (have_destination)
 			{
+				s_data_datum_iterator iterator;
 				iterator.data = g_4e8c24;
-				iterator.datum_index = NONE;
 				iterator.index = NONE;
-				while (data_iterator_next_calling(&iterator))
+				iterator.datum_index = NONE;
+				while (data_datum_iterator_next(&iterator))
 				{
 					if (iterator.datum_index != *(long *)((byte *)g_4e8c20 + 0xa8))
 					{
 						function_1c7e70(iterator.datum_index, g_4686c4);
-						function_14e0f0(iterator.datum_index, target_unit, &destination,
+						function_14e0f0(iterator.datum_index, *(long *)(player + 0x2c), &destination,
 							have_alternate ? &alternate : NULL);
 					}
 				}
 			}
-			players = g_4e8c24;
 		}
 		*(short *)((byte *)g_4e8c20 + 0xa4) = NONE;
 	}
-	long index = NONE;
-	while ((index = data_next_absolute_index_inlined(players, index + 1)) != NONE)
-	{
-		byte *player = players->data + players->size * index;
-		if (!player) break;
+	s_record_pool_iterator players;
+	byte *player;
+
+	players.data = g_4e8c24;
+	players.index = NONE;
+	while ((player = data_iterator_next_inlined(&players)) != NULL)
 		*(short *)(player + 0x2a) = NONE;
-	}
 	function_152340();
 }

@@ -405,6 +405,9 @@ bool g_47f05b;
 // stores, split and counted-down loops, member calls, a word cursor, a const table and the refcount initializer. The base vtable
 // store comes from the shared constructors in include/unknown_146a20.h: BLOCKED-BY 0x146b80, 0x22c3e0 (matched; retail drops that
 // store at both). The header reaches no contributor body: its contributor includers build none of these allocators.
+// Round 155 (m3 lane 8): retail 0x146b80 (same constructor, base store dropped) stores the fixed base's count before
+// its buffer and size; retail here keeps declaration order and keeps the store, so the two inlined copies differ in
+// scheduling, not in source. No untried form on either side; body unchanged.
 // @retail 0x146a20
 void function_146a20(void)
 {
