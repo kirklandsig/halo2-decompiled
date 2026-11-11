@@ -3297,6 +3297,14 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // *camera_data;`) 152 (342 bytes) gives retail's registers (camera read at the copy, seat or definition in EBP, the result
 // a stack byte) but no second copy of the tail; NULL-initialised pointer tested 148; memcpy 152; `return true` inside 170;
 // early failure return 174; two copies from the shared pointer 130 (the camera is hoisted whenever it is named twice).
+// M3 lane 2 r72 (fast; masked = registers/slots-masked aligned count, base 32): `unit->parent_index` read at the seat
+// lookup and the call (no parent local) 117 (masked 30); that with the single-return form 127 at 403 bytes, masked 18
+// (the parent test reads memory and the parent loads into EBX as retail; only the camera/seat swap for EBP is left).
+// On that form: result declared first 126; marker declared at the top or first in the block 127 (same code); one
+// function-scope `byte *source` for the seat and the definition 127; a named parent unit, parent definition or seat
+// array 127 each; the test inverted with the plain arm first 127; the copies through a two-use inline copy helper
+// (forceinline or inline) 127; the camera's address taken (`(void)&camera`, or both copies through a const reference
+// to it) 127, all the same code: the camera keeps EBP in every form that names it twice.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {

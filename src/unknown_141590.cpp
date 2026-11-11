@@ -1197,6 +1197,14 @@ void function_143250(
 // `term_N = term_9`) read from rotation[] 1780 (10788 B): rotation then arrives in ESI and result in EDI, but coefficients
 // moves to the stack (still ret 8; 0x23690 401 -> 350); both 1776 (10792 B); band two's 22 only 2050 (11035 B, rotation
 // ESI). Use count alone gives rotation a register but never a third register parameter (retail EAX/ECX/ESI).
+// M3 lane 2 r72 (plain checks with 0x22850/0x23690/0x143250; base 1766, aligned 2934, callers 223/401 unchanged in each,
+// 0x143250 matched): retail ends `ret 4` (rotation EAX) and ours `ret 8` as the prompt says (both listings' last lines).
+// Bands two and three nested under `if (order > 2)` / `if (order > 3)` with one `return result;` 1766 (same code); rotation
+// read through one `real const *` local copy at the nine reads 1766 (same code); every term declared at its first
+// assignment instead of at the top 1766 (same code); the workspace declared after the 1341 terms (plain; earlier rounds
+// measured it fast only, where the convention is pinned) 1766 (same code); the two root products term_41/term_221 stored as
+// real 1766 (aligned 2952). Diagnostic (not kept): `#pragma optimize("p", on)` around the body 3960 (12712 bytes), so
+// retail's source-order schedule is not the float-consistency setting.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
