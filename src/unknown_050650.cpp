@@ -1326,6 +1326,8 @@ done:
 	return result;
 }
 
+// MiniMax B (11-11): no new form, no lower score (9): the getter is shared with sixteen matched callers, so no
+// spelling of it can be changed on its own account, and none of the subscript forms reaches retail's prologue.
 // MiniMax E (11-10, run 73): no new form, no lower score (9); retail builds the actor offset in EAX and forms the actor with lea esi,[eax+edx] where we build the offset in ESI and add the base, and the shared getter's spelling cannot change because sixteen matched functions depend on it.
 // MiniMax E (11-10): no new form, no lower score (9): four more spellings of the actor address (a byte base
 // local with an offset local, the offset local alone, the typed subscript and the base after the offset) all
