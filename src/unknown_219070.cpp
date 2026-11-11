@@ -12,7 +12,7 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 void function_219310(s_animation_state *state, s_animation_ref *ref, short value);
 void function_2192b0(s_animation_state *state, s_animation_ref *ref, byte value);
 long function_219370(s_animation_state *state, s_animation_ref *ref);
-dword function_2194c0(s_packed_value *value, s_animation_ref *ref);
+dword function_2194c0(s_animation_ref *ref, s_packed_value *value);
 void function_219560(s_packed_value *value, s_animation_ref *ref, dword data);
 short function_219110(s_set_ref *ref, short offset, dword *used_mask, short previous,
 	dword *seed, bool *all_used, bool mirror);
@@ -32,7 +32,7 @@ short function_219070(long set_index, s_sound_definition const *definition)
 		function_2192b0((s_animation_state *)set, ref, (byte)permutation);
 		return permutation;
 	}
-	dword permutations = function_2194c0((s_packed_value *)set, ref);
+	dword permutations = function_2194c0(ref, (s_packed_value *)set);
 	short permutation = function_219110((s_set_ref *)definition, (short)set_index, &permutations,
 		(short)function_219370((s_animation_state *)set, ref), &g_4e7408->seed, NULL, false);
 	function_219560((s_packed_value *)set, ref, permutations);
