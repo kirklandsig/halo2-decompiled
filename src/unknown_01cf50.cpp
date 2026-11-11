@@ -3561,6 +3561,7 @@ void __stdcall function_1e930(long opaque)
 }
 
 bool g_55e6bc;
+// MiniMax C (11-11): no new form, no lower score (76 with this file's other addresses, 17 on its own); the far plane is still loaded after the near-plane multiply and the three row products are still summed in a rotated order, and the inlined depth-clip call in this image pushes the segment size and its half where retail pushes only the half.
 // MiniMax D (11-10): no new form, no lower score; the body is unchanged at 87 measured on its own (587 bytes),
 // but in a reduced image that holds other addresses as well it is 127 at 571 bytes, so the score of this function
 // depends on what else is checked beside it.
@@ -6478,6 +6479,7 @@ void geometry_cache_update(void);
 void function_12c600(void);
 void function_1de50(void);
 void function_22850(void);
+// MiniMax C (11-11): no new form, no lower score (153); retail copies the frame timestamp into the global as two dwords and uploads the gamma ramp inline against the device's own ramp buffers, while the shared global is a double in include/timed_effect.h and this build goes through x87 and calls D3DDevice_SetGammaRamp.
 // MiniMax D (11-10): no new form, no lower score (153); the timestamp's two halves cannot be written to the
 // shared global from this file, since the global is declared as a double in a header this lane may not edit and
 // a cast of its own address is not allowed.
@@ -7359,6 +7361,7 @@ void __stdcall function_214f0(real passes, real distortion, real strength, real 
     real scale, bool blend, bool preserve);
 bool function_022710();
 real scenario_ramp_evaluate_current(long index);
+// MiniMax C (11-11): no new form, no lower score (139); retail saves ebp around the filter loop (at 0x13a43) and frames 0x58, this build saves it in the prologue and frames 0x5c, so every stack slot sits four bytes off and the four unused bytes above the grid remain.
 // MiniMax D (11-10): no new form, no lower score (139); the frame is still 0x5c with a frame pointer pushed in
 // the prologue against retail's 0x58, where retail keeps ebp for the grid loop's counter and pushes it only around
 // that block, so every stack slot sits eight bytes off; the ramp function and the strength pair are called the
@@ -9125,6 +9128,7 @@ point3f g_4b72b4;
 __declspec(noinline) bool function_1d3f0(long index, void const *colors, D3DPalette **out);
 __declspec(noinline) void function_0169f0();
 __declspec(noinline) void function_016a30(real scale, short y, short x);
+// MiniMax C (11-11): no new form, no lower score (171); retail hands the two offsets to 0x16a30 sign-extended (movsx ecx,cx and movsx edx,ax) and reaches the palette through a different call sequence, while the callee's declaration lives in src/unknown_0167a0.cpp, which this lane may not edit.
 // MiniMax D (11-10): no new form, no lower score (171); the two offsets still reach 0x16a30 in the other order
 // than retail's, and their width is the callee's own declaration's, which is in another file this lane may not
 // edit.

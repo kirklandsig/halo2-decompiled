@@ -686,6 +686,7 @@ struct s_biped_flags_10a_view
 	word bit7 : 1;
 };
 
+// MiniMax C (11-11): no new form, no lower score (222); retail computes the state pointer up front and spills it at [esp+0x20] with the biped index at [esp+0x24], ours spills the index there and reads the parent through the parent-object helper, and retail pushes EBX after its early-exit test and shares one epilogue where ours has its own.
 // score 222 (was 224; 241; 280 before round 48): frame 0x16c agrees; retail computes the state pointer at the top and spills it (ours reads it at
 // its one use, so the head is 25 bytes short), the 0x111650 call takes names in EAX where retail pushes both
 // arguments (BLOCKED-BY 0x111650, unmatched, ret 8 in retail), and the type-0 bit is read as `and al, 4` (retail

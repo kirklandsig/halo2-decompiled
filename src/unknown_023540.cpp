@@ -2775,6 +2775,7 @@ bool spherical_harmonics_evaluate_directional_light(vector3f const *direction, d
     real red, real green, real blue, real *red_result, real *green_result, real *blue_result);
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green,
     real *blue, byte order, vector3f *direction, point3f const *position);
+// MiniMax C (11-11): no new form, no lower score (364); retail keeps the second copy of 0x235a0 out of line because of its call-site frequency (the call appears 17 times in retail), and the sample block's second test and the allocator still differ; the forms tried here score 401 and above.
 // MiniMax I (11-10): 364 (was 401): the sample flag is written the way retail writes it (0 at 0x23716 before the
 // admission chain, 1 at 0x23745 after it, read at 0x238ad and 0x23b62), the level clamp is `>=` (retail's cmovge),
 // the coefficient pointer starts at layout->data and reaches the level entry through pointer arithmetic (retail

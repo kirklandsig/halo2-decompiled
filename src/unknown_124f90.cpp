@@ -2579,6 +2579,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax C (11-11): the 0x219070 call is a statement of its own now, so the chunk index is pushed after it as
+// in retail (15, was 17); left: the range index is still sign extended (`movsx ebp, ax`) where retail copies the
+// whole eax (0x218f50 returns short), and the delayed start still sets flag0 before storing the start time.
 // MiniMax E (11-11): no new form, no lower score (17); the range index is still sign extended to a short for the
 // 0x219070 call and the delayed start still stores the flag byte before the start time; both widths are fixed by
 // the callee declarations in other files, so the difference stays here.
@@ -2598,7 +2601,10 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // drops to 8 against retail's 0xc. Reverted.
 // MiniMax E (11-10): no new form, no lower score (17); the note below already lists the named short and the
 // flags pointer, and both stay as they are.
-// score 17 (was 23): left: the range index is sign-extended (`movsx ebp, ax`, one byte) for
+// score 15 (was 17): left: the range index is sign-extended (`movsx ebp, ax`, one byte) for
+// 0x219070's long set index and the delayed start sets flag0 before storing the start time.
+// Earlier: the 0x219070 call ran after the chunk index push, and the
+// two set-chunk calls narrow their indices to char
 // 0x219070's long set index, the 0x219070 call runs after the chunk index push, and the
 // delayed start sets flag0 before storing the start time. Earlier: the two set-chunk calls narrow their indices to char
 // (byte loads, a sign-extended range index) where retail passes words, and
@@ -2703,7 +2709,8 @@ long function_126000(long tag_index, long listener_index, s_sound_play_state *st
 
 					arg_58ecd0 = function_218f50((s_looping_playback_definition *)definition, NONE, ((real)pitch_bounds[1] - lower) * state->location.scale + sound->pitch + lower);
 				}
-				sound_playback_set_chunk(result, tag_index, (short)arg_58ecd0, function_219070(arg_58ecd0, definition), (short)chunk_index);
+				short permutation = function_219070(arg_58ecd0, definition);
+				sound_playback_set_chunk(result, tag_index, (short)arg_58ecd0, permutation, (short)chunk_index);
 			}
 			sound->value_a0 = (char)rate_limit_stage;
 			sound->fade_end_time = chunk_index;
@@ -4396,6 +4403,7 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 	arg_2->k = (rotation_i * arg_1->j - rotation_j * arg_1->i) * local_2 + rotation_k * local_1 + local_0 * arg_1->k;
 }
 
+// MiniMax C (11-11): no new form, no lower score (535); our frame is 0x134 against retail's 0xe8, the fallback reverb constant's linkage lives in another file, and every form tried here lengthens the body and regresses.
 // MiniMax E (11-11): no new form, no lower score (535); the frame is still 0x134 against retail's 0xe8 because the
 // fallback reverb is copied to the stack here while retail reads the existing const, whose declaration is in
 // another file; the state pointer, the counter register and the anchor offsets still differ.
