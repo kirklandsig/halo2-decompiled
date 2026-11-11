@@ -1100,6 +1100,14 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // and a separate `lea edi` output (a different local). Here retail loads the object after the third push and
 // recomputes `lea edi` for the same `&point`, which lets case 1's remembered copy join case 2's instead; ours loads
 // the object first and copies the pushed address (`mov edi, ecx` / `mov edi, eax`).
+// Round 111 (m3 lane 9, fast with 0x297a50/0x297660/0x2980d0 and every callee, control 258, full 257): `result = false;
+// point_valid = false;` as two statements 260; same code: case 6's lookup with `NONE` for its second argument, the output
+// test with `!= NULL`, the normalize tests as `0.f < function_30bf0(direction)`, the aim test as `if (aiming) goto ...; goto
+// direction_from_actor;`; re-measured: case 1's remembered test nested (lane 14 r81) 258 (same code). The layout cause
+// stays: retail's case 1 and case 2 0xcafc0 blocks are byte-identical (`lea eax, [esp + 0x14];
+// mov ecx, ebx; call; jmp 0x296a18`) yet stay apart, and the direction chain follows case 2's 0x1e3b00 block, which case 1's
+// copy joins after its third push because retail recomputes `lea edi` for the output and loads the object after the pushes;
+// ours merges the two 0xcafc0 blocks into the one block that falls into the chain and passes &point to EDI by `mov edi, ecx`.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

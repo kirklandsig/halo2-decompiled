@@ -1939,7 +1939,7 @@ PRIVATE inline real clamp_2e9e0(real value)
 
 real game_time_get_seconds();
 
-// score 492 (was 507): every D3D call here in the D3DDevice:: member form (retail inlines the vertex push-buffer
+// score 492 (was 492): earlier 492 (was 507): every D3D call here in the D3DDevice:: member form (retail inlines the vertex push-buffer
 // write, 0x2f17c-0x2f1ba; only the member form inlines it) and clamp_2e9e0 as an initialised single-exit result:
 // retail length, EBX definition and EBP NONE as retail. Frame 0x90 versus 0x94, the 12-byte output homes (ours
 // direction below position, retail position below direction) and the loop's xmm5/xmm6 constants remain.
@@ -2093,6 +2093,21 @@ real game_time_get_seconds();
 // position and moved with `+=` 546 (2302 bytes, 248); the point declared at function scope 492 (same code: retail's
 // point keeps its own frame-top slot, ours shares the direction's); delta through the existing vector3d_from_points3d
 // 492 (229: the reflected rows then store j at retail's slot); that with `!(visibility > 0.0f)` 491 (228).
+// Round 111 (m3 lane 9, fast with the callees, control 492 = full): x_scale/y_scale as one `point2f scale` (the file's
+// existing 2-D type, as function_2afa0's scale pair; defaults by initialiser or member stores, same code) 533 at 2270 bytes with
+// retail's frame 0x94 (retail keeps the pair in the dead direction slot and gives the draw point a fresh frame-top slot;
+// register-masked aligned 244 -> 212); an aggregate copy of the definition pair 541 (2262 bytes); with the context alpha
+// through PIN in place of clamp_2e9e0 (retail's store form) 466 at 2285 bytes (plain too), NOT kept: a match-only lead, since each
+// half alone raises the count (PIN alone 520) and the pair only moves stack homes. Re-measured on that 466 form's 0x94 frame (R223's (a), (b), (c), (e), (g) and listed forms): `!(visibility >
+// 0.0f)` 465; the vertex-data value through PIN 468; both 467; the sampled colour copied field by field 510 (2288 bytes); delta
+// through vector3d_from_points3d 467; far distance read at each use 511; the opacity factor as if/else 468; the flags read once
+// as a word value 469 (2301 bytes); the projection dot j term first 466 (same code); each entry colour started as a copy of the
+// animated colour and multiplied by the entry's fields 537 (2308 bytes; three spellings, same code). New on the 466 form:
+// `scale.x = scale.y = 1.0f;` 466; the angle attenuation's near angle read at each use 466; the animated colour defaults as
+// one chained member assignment 466 (all three different code); the clamp, angle-clamp, curve and opacity products written
+// factor first (`attenuation = clamp_2e9e0(alpha) * attenuation` ...) 466 each, same code. Renaming direction moves no slot.
+// Left: the locals' frame order (alpha, tag, visibility, position, direction in retail; ours alpha, direction, tag,
+// visibility, position), the loop's 0.0/1.0/amount registers.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2538,10 +2553,10 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
-// MiniMax E (11-09): no new form, no lower score (170); the float trigonometry (fabsf, acosf, sinf, cosf) compiles to the same bytes as the double calls, so the trigonometry is not what differs.
 // score 170 (was 170): r136 lane 7 (fast with 0x24590/0x30bf0 in the image): ours keeps a double copy of the dot
 // (`fst qword`) for acos where retail re-reads the float; `acos((double)dot)` 170, `fabs((double)dot)` 170,
 // `acos(dot) * step` 170, `acosf(dot) * step` with `fabsf(dot)` 170, `(real)acos(dot) * step` 170.
+// MiniMax E (11-09): no new form, no lower score (170); the float trigonometry (fabsf, acosf, sinf, cosf) compiles to the same bytes as the double calls, so the trigonometry is not what differs.
 // MiniMax H (11-06): no new form, no lower score.
 // Retail computes the angle through a single-precision arccosine wrapper (0x322bd8) that loads the dot
 // product as a float from [esp+0xc]; we keep a double-precision copy of the dot at [esp+0xc] and call the
@@ -2687,6 +2702,15 @@ real magnitude3d(vector3f const *v);
 // rotated components staged as `= projection * axis.i; += cosine * first.i; -= cross * sine;` 170 (same code), with cross3f
 // 182; three named scalar components 170 (same code; MiniMax R's named components, re-measure); `rotated.i * size` stores
 // 170 (same code); `(1.0f - cosine) * dot` 170 (same code); the fallback loop index as `short` 250. Retail's rotated.i partial sums are written to +8 after each step and its result lands in first.i's slot.
+// Round 111 (m3 lane 9, fast with 0x24590/0x30bf0, control 170): `first` rotated in place with only the j and k cross terms
+// (the two that read the old first.i) named ahead of the rows and the i row's cross inline, as retail schedules them (j/k
+// crosses early, the i cross late, rotated.i stored into first.i's slot) 181 at 1030 bytes (register+stack-masked aligned
+// 116 -> 85; the dot's double copy, the angle's `fld st(0)` and the i row's partial-sum spills to +8 remain); the rotation
+// size computed before the crosses 175 (1054 bytes). Same code as the in-place form (confirmations, not new forms): all three
+// crosses named, the cosine term first in each row, the stores as `first.i * size`, the projection as dot3f(&first, &axis), each
+// 181. Renaming a/b/dot/angle leaves the code byte-identical (170). Re-measured on this base: the fallback as three scoped or
+// separately named per-axis blocks 166 each (1039 bytes, frame 0x34; round 524's 163 does not reproduce), with the cosine
+// computed first 167, with the in-place rotation 178 (1028 bytes).
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2936,6 +2960,14 @@ s_cached_input_list g_5234e8[4];
 // place of total 174 (518 bytes; the object is then loaded before the definition tag as in retail, but the count
 // takes EBP). In retail `total` gets no register (reloaded into EAX at the compare) and `i` shares
 // ESI with the entry; ours gives total EBP (shared with the entry) and lets `i` share ESI with the object.
+// Round 111 (m3 lane 9, fast with the round 64 callee chain plus 0x241620, control 113): `count` renamed `selected` (sibling
+// 0x33400's name) 113, byte-identical (a re-measure of round 360's name trials); the object flag stored straight into the
+// record 115 (551 bytes); the object read from the entry at each use 142 (543 bytes); same code: the result as `output +
+// count`, the view through PIN, the definition flags through a `dword const *` local, a `byte const *` definition. The first
+// difference is the prologue's early `push ebp` because `total` takes EBP for the whole body, which
+// follows from the index being coalesced into 0x31590's EDI argument (our build treats EDI as preserved across that call;
+// retail keeps the index in EBX and copies it to EDI), so EBX/EBP go to the cursor and total and retail's spilled list and
+// total never appear.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
