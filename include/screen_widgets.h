@@ -18,6 +18,7 @@
 #include "data_array.h"
 #include "unknown_0259d0.h"
 #include "unknown_19d220.h"
+#include "tag_groups.h"
 
 class __single_inheritance c_class_1473c9;
 struct s_screen_parameters;
@@ -123,13 +124,6 @@ struct s_screen_value_block
 	byte unknown00[4];
 	long count;
 	long *values;
-};
-
-/* a tag reference of a tag block */
-struct s_tag_reference
-{
-	dword group_tag;
-	long tag_index;
 };
 
 /* a list's definition in its screen's pane */

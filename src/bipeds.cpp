@@ -23,6 +23,7 @@ files; 0xdc370, at the start of the range, is c_a's destructor
 #include "unknown_1efac0.h"
 #include "unknown_1eb550.h"
 #include "unknown_1cafc0.h"
+#include "object_tag_definitions.h"
 #include <math.h>
 #include <string.h>
 
@@ -183,6 +184,11 @@ __forceinline long vehicle_round_ticks(real value)
 
 #define BIPED_GET(index) (((s_biped_header *)g_4e0300->data)[(index) & 0xffff].biped)
 #define BIPED_DEFINITION_GET(biped) (g_4e3b44[(biped)->definition_index & 0xffff].bytes)
+/* the same definition, typed (object_tag_definitions.h): a biped's, a unit's
+   (the vehicle a biped rides) or any object's */
+#define BIPED_DEFINITION(biped) ((s_biped_definition *)BIPED_DEFINITION_GET(biped))
+#define UNIT_DEFINITION(unit) ((s_unit_definition *)BIPED_DEFINITION_GET(unit))
+#define OBJECT_DEFINITION(object) ((s_object_definition *)BIPED_DEFINITION_GET(object))
 
 void __stdcall function_c42e0(long unit_index, void const *placement);
 void __stdcall function_de4c0(long arg_159e6d);
@@ -553,7 +559,7 @@ void function_e5930(long unit_index);
 void __stdcall function_de4c0(long arg_159e6d)
 {
 	s_biped *biped = BIPED_GET(arg_159e6d);
-	byte *definition = BIPED_DEFINITION_GET(biped);
+	s_biped_definition *definition = BIPED_DEFINITION(biped);
 	s_biped *current;
 
 	biped->flags_348 = 0;
@@ -583,7 +589,7 @@ void __stdcall function_de4c0(long arg_159e6d)
 	current->unknown360 = NONE;
 	current->unknown364 = NONE;
 	current->unknown350 = NONE;
-	if ((*(dword *)(definition + 0x1f0) >> 1) & 1)
+	if ((definition->biped.flags >> 1) & 1)
 	{
 		*(byte *)&biped->flags_348 |= 8;
 	}
@@ -739,7 +745,7 @@ struct s_biped_flags_10a_view
 bool __stdcall function_dd360(long arg_159e6d)
 {
 	s_biped *biped = BIPED_GET(arg_159e6d);
-	byte *definition = BIPED_DEFINITION_GET(biped);
+	s_biped_definition *definition = BIPED_DEFINITION(biped);
 	long parent_index = function_baf40(biped->parent_object_index);
 	bool changed = false;
 	long names[3];
@@ -772,8 +778,8 @@ bool __stdcall function_dd360(long arg_159e6d)
 
 				if (biped->seat_index != NONE)
 				{
-					byte *local_a2a045 = BIPED_DEFINITION_GET(BIPED_GET(biped->parent_object_index));
-					byte *seat = *(byte **)(local_a2a045 + 0x1cc) + biped->seat_index * 0xb0;
+					s_unit_definition *local_a2a045 = UNIT_DEFINITION(BIPED_GET(biped->parent_object_index));
+					byte *seat = (byte *)local_a2a045->unit.seats.address + biped->seat_index * 0xb0;
 
 					if (*(real *)(seat + 0x20) > 0.0f)
 					{
@@ -798,7 +804,7 @@ bool __stdcall function_dd360(long arg_159e6d)
 		s_biped_physics_output output;
 
 		if (TEST_FIELD_BIT(((s_biped_flags_10a_view *)&biped->flags_10a)->bit2) ||
-			(biped->physics_mode != 2 && !(TEST_FIELD_BIT((*(dword *)(definition + 0x264) >> 3) & 1))))
+			(biped->physics_mode != 2 && !(TEST_FIELD_BIT((definition->biped.physics.flags >> 3) & 1))))
 		{
 			biped->facing_goal.k = 0.0f;
 			if (function_30bf0(&biped->facing_goal) == 0.0f)
@@ -1250,7 +1256,7 @@ void __stdcall function_dd990(long arg_159e6d)
 							if (object_index != NONE && (TEST_FIELD_BIT((BIPED_GET(object_index)->object_flags >> 22) & 1)))
 							{
 								s_biped *object = BIPED_GET(object_index);
-								byte *model = g_4e3b44[*(long *)(BIPED_DEFINITION_GET(object) + 0x38) & 0xffff].bytes;
+								byte *model = g_4e3b44[OBJECT_DEFINITION(object)->model.tag_index & 0xffff].bytes;
 								byte *region = *(byte **)(model + 0x74) + (surface & 0x1f) * 0x10;
 								long permutation = (char)(*(byte **)(region + 0xc))[(surface >> 5 & 0xff) * 8 + 5];
 								dword position = (((char)region[4] << 8) | (permutation & 0xff)) << 16;
@@ -1355,7 +1361,7 @@ struct s_biped_collision
 /* the point a biped grabs from: its eye (its standing or crouching height
    up from its origin), moved to its head marker unless something is in
    the way */
-PRIVATE __forceinline void biped_eye_raise(long arg_159e6d, s_biped *self, byte *self_definition, real crouch,
+PRIVATE __forceinline void biped_eye_raise(long arg_159e6d, s_biped *self, s_biped_definition *self_definition, real crouch,
 	point3f *eye)
 {
 	point3f head;
@@ -1369,7 +1375,7 @@ PRIVATE __forceinline void biped_eye_raise(long arg_159e6d, s_biped *self, byte 
 
 		real_point3d_set(&scratch, eye->x, eye->y, eye->z);
 	}
-	eye->z += ((1.0f - crouch) * *(real *)(self_definition + 0x218) + *(real *)(self_definition + 0x21c) * crouch) *
+	eye->z += ((1.0f - crouch) * self_definition->biped.standing_camera_height + self_definition->biped.crouching_camera_height * crouch) *
 		self->scale;
 	head = *eye;
 	collision.unknown24 = NONE;
@@ -1425,7 +1431,7 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 	vector3f const *forward, real const *offsets)
 {
 	s_biped *self = BIPED_GET(arg_159e6d);
-	byte *self_definition = BIPED_DEFINITION_GET(self);
+	s_biped_definition *self_definition = BIPED_DEFINITION(self);
 	real crouch;
 
 	if (mode == 0)
@@ -1745,7 +1751,7 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
 	s_biped *biped = BIPED_GET(arg_159e6d);
-	byte *definition = BIPED_DEFINITION_GET(biped);
+	s_biped_definition *definition = BIPED_DEFINITION(biped);
 	s_havok_component *component = havok_component_get(biped->havok_component_index);
 	byte *state = (byte *)biped + *(short *)((byte *)biped + 0x12a);
 	word const *animation_flags = (word const *)((byte *)biped + biped->unknown33e);
@@ -1769,7 +1775,7 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 	{
 		velocity = *g_4687a4;
 	}
-	if (field_bit_test(*(dword *)(definition + 0xbc), 11))
+	if (field_bit_test(definition->unit.flags, 11))
 	{
 		facing = biped->forward;
 	}
@@ -1783,12 +1789,12 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 	}
 	else
 	{
-		if (biped->physics_mode == 1 && field_bit_test(*(dword *)(definition + 0x264), 2) && !airborne)
+		if (biped->physics_mode == 1 && field_bit_test(definition->biped.physics.flags, 2) && !airborne)
 		{
 			speed_scale = (1.0f - biped->unknown2e4 * *(real *)(*(byte **)((byte *)g_4e034c + 0x134) + 0x78)) *
 				function_dfa60(arg_159e6d);
 		}
-		if (field_bit_test(*(dword *)(definition + 0x1f0), 6) && !biped->unknown1bc)
+		if (field_bit_test(definition->biped.flags, 6) && !biped->unknown1bc)
 		{
 			real spread = function_1e9700(8);
 
@@ -1797,18 +1803,18 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 	}
 	if (!(biped->control_flags & 1) && field_bit_test(biped->flags_134, 23))
 	{
-		if (*(long *)(definition + 0x28c))
+		if (definition->biped.physics.pill_shapes.count)
 		{
-			material = *(long *)(definition + 0x290) + 0x20;
+			material = (long)definition->biped.physics.pill_shapes.address + 0x20;
 		}
 		else
 		{
-			material = *(long *)(definition + 0x298) + 0x30;
+			material = (long)definition->biped.physics.sphere_shapes.address + 0x30;
 		}
 	}
 	if (biped->control_flags & 0x800)
 	{
-		boost = function_d1210(arg_159e6d) * (*(real *)(definition + 0x1d0) - 1.0f) + 1.0f;
+		boost = function_d1210(arg_159e6d) * (definition->unit.boost.boost_peak_power - 1.0f) + 1.0f;
 	}
 	else
 	{
@@ -1818,7 +1824,7 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 	bool turning = *(long *)(state + 0x7c) == 0x900000e || *(long *)(state + 0x7c) == 0xa00000f;
 
 	function_1e5bb0(output, &biped->physics_mode, state, speed_scale, biped->havok_component_index, arg_159e6d,
-		definition + 0x264, 9, field_bit_test(biped->flags_c0, 6), turning, TEST_FIELD_BIT((biped->control_flags >> 3) & 1),
+		&definition->biped.physics, 9, field_bit_test(biped->flags_c0, 6), turning, TEST_FIELD_BIT((biped->control_flags >> 3) & 1),
 		field_bit_test(*animation_flags, 2), field_bit_test(biped->flags_c0, 8), function_e4050(arg_159e6d),
 		field_bit_test(biped->flags_348, 1), biped->unknown39d != 0, g_51e9c4->unknown0, boost, &biped->control, &position,
 		&biped->forward, &biped->up, &biped->facing_goal, &facing, &velocity, material);
@@ -1826,7 +1832,7 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 	{
 	case 1:
 		function_1e6120(output, &biped->physics_mode,
-			g_510c54->rate / *(real *)(definition + 0x214) * (real)biped->unknown39d, airborne,
+			g_510c54->rate / definition->biped.stun_duration * (real)biped->unknown39d, airborne,
 			*(long *)(state + 0x70) == 0x6000085, TEST_FIELD_BIT((biped->flags_348 >> 7) & 1), biped->crouch);
 		break;
 	case 2:
@@ -1939,9 +1945,9 @@ void function_b75a0(long object_index, point3f const *point, vector3f const *for
 void __stdcall function_de620(long arg_159e6d, vector3f const *impulse)
 {
 	s_biped *biped = BIPED_GET(arg_159e6d);
-	byte *definition = BIPED_DEFINITION_GET(biped);
+	s_biped_definition *definition = BIPED_DEFINITION(biped);
 
-	if (!(TEST_FIELD_BIT((*(dword *)(definition + 0xbc) >> 20) & 1)))
+	if (!(TEST_FIELD_BIT((definition->unit.flags >> 20) & 1)))
 	{
 		bool strong = impulse->i * impulse->i + impulse->j * impulse->j + impulse->k * impulse->k > 1.4f * 1.4f;
 		bool spinning = false;
@@ -1953,7 +1959,7 @@ void __stdcall function_de620(long arg_159e6d, vector3f const *impulse)
 			vector3f_scale(&velocity, 0.5f, &velocity);
 		}
 		word_flags_set(&biped->flags_348, 1, true);
-		if ((TEST_FIELD_BIT(((s_biped_flags_10a_view *)&biped->flags_10a)->bit2)) || (TEST_FIELD_BIT((*(dword *)(definition + 0x264) >> 3) & 1)) || biped->physics_mode == 2)
+		if ((TEST_FIELD_BIT(((s_biped_flags_10a_view *)&biped->flags_10a)->bit2)) || (TEST_FIELD_BIT((definition->biped.physics.flags >> 3) & 1)) || biped->physics_mode == 2)
 		{
 			vector3f axis;
 			real magnitude;
@@ -2030,14 +2036,14 @@ bool __stdcall function_de9d0(long arg_159e6d, long target_index)
 	if ((1 << ((byte *)header)[3]) & 1)
 	{
 		s_biped *target = header->biped;
-		byte *target_definition = BIPED_DEFINITION_GET(target);
+		s_biped_definition *target_definition = BIPED_DEFINITION(target);
 		point3f center;
 		point3f eye;
 		real height;
 		long count;
 		long i;
 
-		if (*(dword *)(target_definition + 0x264) & 1)
+		if (target_definition->biped.physics.flags & 1)
 		{
 			center = *(point3f *)((byte *)target + 0x30);
 			count = 1;
@@ -2048,8 +2054,8 @@ bool __stdcall function_de9d0(long arg_159e6d, long target_index)
 			real span;
 
 			function_df5f0(target_index, &center, &height, &span);
-			height += *(real *)(target_definition + 0x270);
-			center.z -= *(real *)(target_definition + 0x270) * 0.5f;
+			height += target_definition->biped.physics.radius;
+			center.z -= target_definition->biped.physics.radius * 0.5f;
 			count = 3;
 		}
 		biped_eye_point(&eye, self_index, 0, NULL, NULL, NULL);
@@ -2876,7 +2882,7 @@ void __stdcall function_1c3770(long object_index, dword flags);
 void function_e0c70(long arg_159e6d)
 {
 	s_biped *biped = BIPED_GET(arg_159e6d);
-	byte *definition = BIPED_DEFINITION_GET(biped);
+	s_biped_definition *definition = BIPED_DEFINITION(biped);
 
 	long steps = (char)biped->unknown3aa;
 	if (steps && biped->havok_component_index != NONE)
@@ -2887,7 +2893,7 @@ void function_e0c70(long arg_159e6d)
 		long settled;
 
 		if (rigid_body != NONE &&
-			function_1d5120(component, rigid_body, 9, *(long *)(definition + 0x290) + 0x20, g_510c54->rate * 0.15f,
+			function_1d5120(component, rigid_body, 9, (long)definition->biped.physics.pill_shapes.address + 0x20, g_510c54->rate * 0.15f,
 				&settled, steps))
 		{
 			biped->unknown3aa = settled;
@@ -3515,7 +3521,7 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 		{
 			break;
 		}
-		model = g_4e3b44[*(long *)(BIPED_DEFINITION_GET(biped) + 0x38) & 0xffff].bytes;
+		model = g_4e3b44[BIPED_DEFINITION(biped)->object.model.tag_index & 0xffff].bytes;
 		if (*(long *)(model + 0x24) == NONE || TEST_FIELD_BIT((biped->flags_348 >> 10) & 1))
 		{
 			break;
@@ -3523,7 +3529,7 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 		result = true;
 		if (!g_5107ed)
 		{
-			if (!TEST_FIELD_BIT((*(dword *)(BIPED_DEFINITION_GET(biped) + 0x1f0) >> 11) & 1))
+			if (!TEST_FIELD_BIT((BIPED_DEFINITION(biped)->biped.flags >> 11) & 1))
 			{
 				bool held = TEST_FIELD_BIT((biped->flags_134 >> 27) & 1) && !TEST_FIELD_BIT((biped->flags_348 >> 9) & 1);
 
@@ -3587,7 +3593,7 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 										vector3f_add_scaled(&direction, &along, 0.0f - dot, &direction);
 										if (function_30bf0(&direction) != 0.0f)
 										{
-											real push = *(real *)(BIPED_DEFINITION_GET(biped) + 0x258) > 0.7f ? 0.7f : *(real *)(BIPED_DEFINITION_GET(biped) + 0x258);
+											real push = BIPED_DEFINITION(biped)->biped.headshot_acceleration_scale > 0.7f ? 0.7f : BIPED_DEFINITION(biped)->biped.headshot_acceleration_scale;
 											real farthest = 0.0f;
 
 											push *= strength;
@@ -3909,7 +3915,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
 	s_biped *biped = BIPED_GET(arg_159e6d);
-	byte *definition = BIPED_DEFINITION_GET(biped);
+	s_biped_definition *definition = BIPED_DEFINITION(biped);
 	byte *state = (byte *)biped + *(short *)((byte *)biped + 0x12a);
 	bool changed = false;
 
@@ -3923,9 +3929,9 @@ bool __stdcall function_e01d0(long arg_159e6d, long *names)
 		{
 			if (*(long *)((byte *)biped + 0x3ec) <= 0)
 			{
-				real rate = (biped->control_flags & 8) ? 0.99f : *(real *)(definition + 0x24c);
+				real rate = (biped->control_flags & 8) ? 0.99f : definition->biped.cosine_stationary_turning_threshold;
 
-				function_1faf80(arg_159e6d, definition + 0x2cc, &biped->control, rate, &biped->facing_goal,
+				function_1faf80(arg_159e6d, &definition->biped.physics.flying_physics, &biped->control, rate, &biped->facing_goal,
 					&biped->unknown3a0);
 			}
 			else
@@ -3936,7 +3942,7 @@ bool __stdcall function_e01d0(long arg_159e6d, long *names)
 		else if (biped->physics_mode != 5 && *(long *)(state + 0x70) != 0x6000084)
 		{
 			long special = *(long *)(state + 0x70) == 0x7000039;
-			bool wall = TEST_FIELD_BIT((*(dword *)(definition + 0x264) >> 3) & 1);
+			bool wall = TEST_FIELD_BIT((definition->biped.physics.flags >> 3) & 1);
 			vector3f facing;
 			real sine;
 			real cosine;
@@ -3984,9 +3990,9 @@ bool __stdcall function_e01d0(long arg_159e6d, long *names)
 					left = false;
 				}
 			}
-			if (biped->unknown34a == 1 || (*(dword *)(definition + 0x1f0) & 1))
+			if (biped->unknown34a == 1 || (definition->biped.flags & 1))
 			{
-				real angle = g_510c54->rate * *(real *)(definition + 0x1ec);
+				real angle = g_510c54->rate * definition->biped.moving_turning_speed;
 				real turn_cosine = (real)cos(angle);
 				real turn_sine = (real)sin(angle);
 				vector3f turned = biped->forward;
@@ -4069,9 +4075,9 @@ bool __stdcall function_e01d0(long arg_159e6d, long *names)
 			}
 			else if (!biped->unknown34a && !special && !(TEST_FIELD_BIT((biped->flags_134 >> 11) & 1)))
 			{
-				real limit = (biped->control_flags & 8) ? 0.99f : *(real *)(definition + 0x24c) + 0.0001f;
+				real limit = (biped->control_flags & 8) ? 0.99f : definition->biped.cosine_stationary_turning_threshold + 0.0001f;
 
-				if (limit >= cosine && !(TEST_FIELD_BIT((*(dword *)(definition + 0xbc) >> 20) & 1)))
+				if (limit >= cosine && !(TEST_FIELD_BIT((definition->unit.flags >> 20) & 1)))
 				{
 					names[1] = left ? 0xa00000f : 0x900000e;
 				}
@@ -5345,7 +5351,7 @@ void __stdcall function_e3380(long arg_159e6d)
 	s_biped *vehicle = BIPED_GET(biped->parent_object_index);
 	byte *state = (byte *)biped + *(short *)((byte *)biped + 0x12a);
 
-	if ((TEST_FIELD_BIT((*(dword *)(BIPED_DEFINITION_GET(vehicle) + 0xbc) >> 6) & 1)) && biped->actor_index != NONE &&
+	if ((TEST_FIELD_BIT((UNIT_DEFINITION(vehicle)->unit.flags >> 6) & 1)) && biped->actor_index != NONE &&
 		*(long *)(state + 0x7c) != 0xe0000c3)
 	{
 		long time = g_510c54->game_time;
@@ -5405,7 +5411,7 @@ bool __stdcall function_e3c90(long arg_159e6d, long *names, s_biped_physics_outp
 {
 	s_object_header_view *header = object_header_get(arg_159e6d);
 	s_biped *biped = (s_biped *)header->object;
-	byte *definition = BIPED_DEFINITION_GET(biped);
+	s_biped_definition *definition = BIPED_DEFINITION(biped);
 	s_animation_state *state = (s_animation_state *)((byte *)biped + *(short *)((byte *)biped + 0x12a));
 	bool result = false;
 
@@ -5461,7 +5467,7 @@ bool __stdcall function_e3c90(long arg_159e6d, long *names, s_biped_physics_outp
 			}
 			names[1] = 0xc000043;
 		}
-		if (!(TEST_FIELD_BIT(((s_biped_flags_10a_view *)&biped->flags_10a)->bit2)) && (TEST_FIELD_BIT((*(dword *)(definition + 0x1f0) >> 10) & 1)) &&
+		if (!(TEST_FIELD_BIT(((s_biped_flags_10a_view *)&biped->flags_10a)->bit2)) && (TEST_FIELD_BIT((definition->biped.flags >> 10) & 1)) &&
 			BIPED_GET(arg_159e6d)->unknown39d > 0)
 		{
 			names[0] = 0x6000087;
@@ -5782,7 +5788,7 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 bool __stdcall function_e4770(long arg_159e6d)
 {
 	s_biped *biped = BIPED_GET(arg_159e6d);
-	byte *definition = BIPED_DEFINITION_GET(biped);
+	s_biped_definition *definition = BIPED_DEFINITION(biped);
 	byte *state = (byte *)biped + *(short *)((byte *)biped + 0x12a);
 	real jump;
 	vector3f ground;
@@ -5797,7 +5803,7 @@ bool __stdcall function_e4770(long arg_159e6d)
 	{
 		goto done;
 	}
-	jump = *(real *)(definition + 0x1f8);
+	jump = definition->biped.jump_velocity;
 	riding = function_109e00(arg_159e6d, &ground, false);
 	result = true;
 	if (biped->unknown13c != NONE)
@@ -5880,8 +5886,8 @@ void __stdcall function_e4a20(long arg_159e6d, long object_index, point3f const 
 			function_ba1d0(arg_159e6d, &velocity, NULL);
 			if (g_4687b0->k * velocity.k + g_4687b0->j * velocity.j + g_4687b0->i * velocity.i > 0.001f)
 			{
-				byte *definition = BIPED_DEFINITION_GET(biped);
-				real room = *(real *)(definition + 0x26c) - *(real *)(definition + 0x270) * 2.0f;
+				s_biped_definition *definition = BIPED_DEFINITION(biped);
+				real room = definition->biped.physics.height_crouching - definition->biped.physics.radius * 2.0f;
 
 				if (room > 0.0f)
 				{
@@ -6048,15 +6054,15 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marker)
 {
 	s_biped *biped = BIPED_GET(arg_159e6d);
-	byte *definition = BIPED_DEFINITION_GET(biped);
+	s_biped_definition *definition = BIPED_DEFINITION(biped);
 
-	if (biped->physics_mode == 1 && *(long *)(definition + 0x58) != NONE)
+	if (biped->physics_mode == 1 && definition->object.material_effects.tag_index != NONE)
 	{
 		point3f point;
 		s_object_marker foot;
 
-		if (marker < *(long *)(definition + 0x2f8) &&
-			function_b8d30(arg_159e6d, (*(long **)(definition + 0x2fc))[marker], &foot, 1, false))
+		if (marker < definition->biped.contact_points.count &&
+			function_b8d30(arg_159e6d, ((long *)definition->biped.contact_points.address)[marker], &foot, 1, false))
 		{
 			point = foot.matrix.position;
 		}
@@ -6077,12 +6083,12 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 			{
 				material = zone;
 			}
-			function_188180(&point, (vector3f *)((byte *)biped + 0x450), *(long *)(definition + 0x58), arg_159e6d,
-				type, *((byte *)definition + 0x1a), material, (long)g_4687bc, location, scale);
+			function_188180(&point, (vector3f *)((byte *)biped + 0x450), definition->object.material_effects.tag_index, arg_159e6d,
+				type, definition->object.sweetener_size, material, (long)g_4687bc, location, scale);
 		}
 		else if (biped->parent_object_index == NONE)
 		{
-			byte *model = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
+			byte *model = g_4e3b44[definition->object.model.tag_index & 0xffff].bytes;
 			long count = *(long *)(model + 0x78);
 
 			if (count >= 1)
@@ -6103,8 +6109,8 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 				vector3f_add_scaled((vector3f const *)&point, g_4687b0, 0.1f, (vector3f *)&point);
 				if (function_1697c0(0x84000d, &point, &down, NONE, NONE, (s_collision_result_1697c0 *)&collision))
 				{
-					function_188180(&point, g_4687b0, *(long *)(definition + 0x58), arg_159e6d, type,
-						*((byte *)definition + 0x1a), collision.unknown24, (long)g_4687bc, (s_location *)((byte *)biped + 0x28), scale);
+					function_188180(&point, g_4687b0, definition->object.material_effects.tag_index, arg_159e6d, type,
+						definition->object.sweetener_size, collision.unknown24, (long)g_4687bc, (s_location *)((byte *)biped + 0x28), scale);
 				}
 			}
 		}
@@ -6295,7 +6301,7 @@ void __stdcall function_b8600(long object_index, long unknown);
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
 	s_biped *biped = BIPED_GET(arg_159e6d);
-	byte *definition = BIPED_DEFINITION_GET(biped);
+	s_biped_definition *definition = BIPED_DEFINITION(biped);
 	s_animation_state *state = (s_animation_state *)((byte *)biped + *(short *)((byte *)biped + 0x12a));
 	word const *animation_flags = (word const *)((byte *)biped + biped->unknown33e);
 	s_biped_physics_move move;
@@ -6356,7 +6362,7 @@ bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_outp
 		state->channels[0].animation_id.index != NONE && state->unknown7c != 0xe0000c2 &&
 		(arg_159e6d == NONE || !(*((byte *)BIPED_GET(arg_159e6d) + 0xb3) > 0)))
 	{
-		if (TEST_FIELD_BIT((*(dword *)(definition + 0x264) >> 2) & 1))
+		if (TEST_FIELD_BIT((definition->biped.physics.flags >> 2) & 1))
 		{
 			vector3f velocity = move.velocity;
 			transform4x3f frame;
@@ -6432,7 +6438,7 @@ bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_outp
 	}
 	if (!(TEST_FIELD_BIT((biped->flags_348 >> 14) & 1)) && grabbing && !(TEST_FIELD_BIT((biped->flags_134 >> 23) & 1)))
 	{
-		long ticks = (long)((0.0f - (*(real *)(definition + 0x268) - *(real *)(definition + 0x26c))) /
+		long ticks = (long)((0.0f - (definition->biped.physics.height_standing - definition->biped.physics.height_crouching)) /
 			(g_510c54->rate * 0.15f) + 0.5f);
 
 		function_1c3770(arg_159e6d, 0);
@@ -6442,9 +6448,9 @@ bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_outp
 	}
 	change = function_dd7d0(arg_159e6d);
 	((byte *)names)[9] = TEST_FIELD_BIT((biped->flags_134 >> 23) & 1);
-	if (!(TEST_FIELD_BIT((*(dword *)(definition + 0x264) >> 1) & 1)) && (function_e4050(arg_159e6d) || grabbing))
+	if (!(TEST_FIELD_BIT((definition->biped.physics.flags >> 1) & 1)) && (function_e4050(arg_159e6d) || grabbing))
 	{
-		move.velocity.k += (*(real *)(definition + 0x268) - *(real *)(definition + 0x26c)) * g_510c54->field_2_3 *
+		move.velocity.k += (definition->biped.physics.height_standing - definition->biped.physics.height_crouching) * g_510c54->field_2_3 *
 			change;
 	}
 	*((byte *)&biped->flags_348 + 1) |= 8;
