@@ -230,7 +230,7 @@ struct s_packed_value
 };
 
 // @retail 0x2194c0
-dword function_2194c0(s_packed_value *value, s_animation_ref *ref)
+dword function_2194c0(s_animation_ref *ref, s_packed_value *value)
 {
 	dword result = 0;
 	if (!(TEST_FIELD_BIT(get_animation_entry(ref)->flag5)))

@@ -416,6 +416,15 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // ESI); local_13 / local_15 as planar copies 286/286 (same code); all three 310. Left: site 1's normalize keeps the
 // zero path as the fall-through and a separate result home (retail stores 0 into the magnitude's own home after
 // the scaling path), the 0x1c/0x20 entry homes and the xmm numbering.
+// Round 183 (m3 lane 4, fast; aligned/register-masked = difflib counts with addresses / also registers masked,
+// 184/131 at 286): site 1's planar normalize is retail's inlined 0x2b400 shape (scaling path falls through, 0 stored
+// into the magnitude's own arg_8 home); 0x2b400 is noinline on main in an avoid-listed file and normalize2d_fast has
+// the other branch order, so that block stays (BLOCKED-BY 0x2b400). Tried: the blend rows k, i, j (retail computes
+// the k row first) 286 (aligned 188); the planar dot as the existing dot_product2d 286 (same code); re-measured the
+// one-use +0x50 scale local before the 0x1f9e70 call 334 (1889 bytes, aligned 174, register-masked 122); that with
+// local_20 as `*(vector2f const *)&local_27` 294 (1882 bytes, aligned 161, register-masked 113; match-only, the
+// closest shape so far). No other untried natural form is left for the slot homes (names, declaration orders and
+// whole copies are all listed above).
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
