@@ -130,7 +130,7 @@ extern long g_4e64a0;
 
 long window_manager_away_from_main_menu(void);
 void function_2f600(long arg_0, long arg_1, s_grid_pair *arg_2);
-void function_2f640(long arg_0, s_grid_pair *arg_1, s_grid_pair const *arg_2,
+void function_2f640(long arg_0, s_grid_pair const *arg_1, s_grid_pair *arg_2,
 	long arg_3, long arg_4, s_grid_pair *arg_5);
 void function_2f6b0(s_2f6b0_point const *arg_0, s_2f6b0_point const *arg_1,
 	s_2f6b0_point const *arg_2, short_rect *arg_3, short_rect *arg_4);
@@ -138,9 +138,9 @@ void function_2f800(s_2f800_view *arg_3, s_2f800_source const *arg_0, s_2f800_si
 void function_2c490(long arg_0);
 void function_3f450(long arg_0);
 
-// score 2 (was 2): HELD (needs the owner's OK): 0x2f640's parameters declared (index, dimensions, extent, ...) at
-// its definition, this declaration and this call match this function in the plain check, 0x2f640 and 0x2f600
-// still matched (m3 lane 12 r103, build/r103/held-223080.patch); put back, the definition is machine 1's.
+// MATCH (was 2; APPLIED 11-10 by the m3 coordinator, full check 0 lost): 0x2f640's parameters declared (index, dimensions,
+// extent, ...) at its definition, this declaration and this call match this function, 0x2f640 and 0x2f600 still
+// matched (m3 lane 12 r103, build/r103/held-223080.patch).
 // Earlier (was 71): the 0x2f640 call sets ecx before edx, retail edx first:
 // BLOCKED-BY 0x2f640, whose parameters retail declares (index, dimensions,
 // extent, ...): that order at its definition and this call matches this
@@ -181,7 +181,7 @@ void function_223080(long arg_0, long arg_1, long arg_2, s_223080 *arg_3,
 			local_4 = &local_0;
 		}
 		function_2f600(arg_4, arg_5, &local_1);
-		function_2f640(arg_1, &local_2, &local_1, arg_4, arg_5, &local_3);
+		function_2f640(arg_1, &local_1, &local_2, arg_4, arg_5, &local_3);
 		function_2f6b0((s_2f6b0_point *)&local_3, (s_2f6b0_point *)&local_1,
 			(s_2f6b0_point *)&local_2, &arg_3->field_b0, &arg_3->field_b8);
 		function_2f800((s_2f800_view *)arg_3->field_80, (s_2f800_source *)local_4, (s_2f800_size *)&local_2, (s_2f800_size *)&local_1);

@@ -573,6 +573,7 @@ real magnitude3d(vector3f const *v);
 bool g_46fcc4 = true;
 bool g_51e9bc;
 
+// score 49 (was 49; before r98 was 118; r101 and r103 unchanged): MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
 // score 49 (was 49; before r98 was 118; r101 unchanged): MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
 // MiniMax S (11-10): no new form, no lower score (49); the reduced image lays this function out differently from retail (fast 308,
 // 1018 bytes against 1077), so the fast diff is not a faithful picture of it and no change was steered from it; the full check agrees
@@ -857,6 +858,11 @@ bool g_51e9bc;
 // code); the on/off values zero by default and set to 1.0f on their bits 179 (1058 bytes). Re-measured: `real angular` declared
 // first 49, dword bits 49, a velocity pointer before the first store 166 (1023 bytes). In the listing the projection's j and k products
 // trade registers (retail k in XMM7, j in XMM0) and the jitter's on/off values start one register on (ours XMM1, retail XMM2).
+// Round 103 (m3 lane 16, fast, 0x24590 listed; aligned 42, register-masked 16 on this body): the limits as a const aggregate
+// initializer 49, the bits as `long const` 49, the velocity rows as `limits.i * state->control.i` 49, the jitter rows as
+// `0.2f * x * limits.i` 49 (all four the same code), as `x * (0.2f * limits.i)` 105 (1086 bytes). The extra byte is the z sign:
+// retail builds it in place over the register holding -1.0 (`je; movaps xmm0, xmm3`) because that constant dies there, ours
+// copies 1.0 and selects -1.0 like the other two signs. A compile-only /Gr harness does not reproduce this body (142 SSE lines).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

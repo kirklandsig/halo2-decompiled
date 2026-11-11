@@ -924,6 +924,9 @@ struct s_tail_transfer_traits
 };
 
 // MiniMax C (11-10): the score is 153 (was 153); the traits pointer comes back from the selection loop in EBP where retail keeps it in EAX and the unit index takes the other register, and our three NONE homes sit at +0x18/+0x20/+0x28 against retail's two at +0x1c/+0x24.
+// MiniMax D (11-10): no new form, no lower score (153); the selected traits, the unit index and the NONE home are
+// still kept in different registers and at different stack offsets than retail, and the no-seat branch still
+// reuses the unit pointer where retail re-reads the object table and the unit pointer there.
 // MiniMax D (11-08): the difference starts at the selection loop's unit index - the
 // unit pointer, the chosen weapon, the age and the NONE home are kept in different registers and at different
 // stack offsets than retail.

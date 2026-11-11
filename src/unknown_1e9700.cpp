@@ -470,6 +470,10 @@ struct s_object_damage_view
 // NONE) { if (killer == reported_player) ... } else if (reported valid)` layout 358 [33]; plus the assist stores
 // re-reading the record's player index 366 (1544 B, retail's length, first difference +0x8) [39]; the predicate with
 // that killer layout alone 383 (1512 B). NOT kept: all above 353; body below unchanged.
+// M3 lane 14 r79 (fast with 0x1ea770/0x1ea5b0/0x1e9ce0, unchanged): `victim != NONE && assist_threshold > 0.0f` 353
+// (same code); `victim != NONE && killer != NONE` 354; `victim != NONE &&` ahead of the killer-team query 371 (1564
+// bytes); `reported_slot` declared before `object` 355; `hostile = true;` ahead of the hostility count increment 353
+// (same code). The three rotated scalar homes and the biased history cursor stay.
 // Round 228 (m3 lane 3, fast with 0xd9640, 0x1e9700, 0x1ea770 and the other file-mates, which keep their state;
 // aligned counts exact/stack-masked/register-masked in brackets, base 353 [179/160/56]): the assist index short 353,
 // the entry test as an enclosing `if` instead of the early return 353, the award searches as `for` loops with a
