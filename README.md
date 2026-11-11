@@ -36,18 +36,18 @@ a range, and a prompt you can paste into an AI coding agent. Then see
 
 ## What this repository does not contain
 
-- No Halo 2 game assets: no maps, textures, models, audio or cinematics.
-- No game executable (XBE) and no disc image.
-- No Microsoft Xbox SDK/XDK: no compiler, libraries or headers.
-- No Havok SDK material: no headers, documentation, samples or source. The
+- Halo 2 game assets: maps, textures, models, audio or cinematics.
+- The game executable (XBE) or a disc image.
+- Microsoft Xbox SDK/XDK files: the compiler, libraries or headers.
+- Havok SDK material: headers, documentation, samples or source. The
   Havok code here is recreated from the retail executable and named by what it
   does.
-- No original or leaked Halo 2 source code.
-- No leaked symbols, PDBs or linker maps. Names that came from such sources
+- Original or leaked Halo 2 source code.
+- Leaked symbols, PDBs or linker maps. Names that came from such sources
   through a third-party dataset have been removed from the inventory, and
   names in the source that matched such sources have been renamed; see
   [PROVENANCE.md](PROVENANCE.md).
-- No confidential or internal Microsoft, Bungie or 343 Industries material.
+- Confidential or internal Microsoft, Bungie or 343 Industries material.
 
 ## Requirements
 
