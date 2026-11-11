@@ -333,6 +333,11 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // loop bound as `send < mode + 1` 532 fast but 545 plain (1901 bytes); the send flags cleared first and every bit set or
 // cleared alike 565 (1922); the send bits read from one named input flags word 550 (1908). The file's /Op stays the
 // largest cause (flags are the user's decision).
+// M3 lane 13 r82 (fast, control 544): the four send-bit tests through an inline `bool result = false; if (bit) result =
+// true; return result;` test (the shape behind 0x19e1c0's dead byte store), tried for retail's per-bit stores to one
+// stack byte: 558 (1886 bytes, no byte store appears). Retail stores every flag-test bool to +0xe, including `direct` and
+// the `!(input->field_30 & 1)` and `!(sends.flags & 0x20)` tests. No untried natural form is left; the file's /Op
+// (rounding stores, CRT fabs/exp/sqrt/log10 calls, frame 0x22c) stays the cause.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)
