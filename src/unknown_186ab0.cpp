@@ -150,6 +150,8 @@ void __stdcall function_187510(long arg_0, real arg_1, real arg_2);
 void player_action_initialize(s_player_action *arg_0);
 
 #pragma inline_depth(0)
+// MiniMax D (11-10): no new form, no lower score (134); the first difference is the else target of
+// the selection compare, and the counted byte is still read without retail's sign extension.
 // MiniMax E (11-10): no new form, no lower score (134); the counted byte is still read without retail's sign extension and the count test still reaches the other callee, so the body stays 29 bytes short of retail's.
 // MiniMax E (11-09): no new form, no lower score; the counted word is still read through a
 // different address form than retail's and the body is still 29 bytes short of retail's.

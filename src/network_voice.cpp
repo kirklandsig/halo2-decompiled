@@ -1462,6 +1462,11 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // M400: Shared membership seeded from its active byte, bool/byte/signed-char/short/word/
 // long/dword/int storage: 94/94/94/146/146/133/133/133. NOT kept: every form
 // raises shared-user scores; original false-seeded helper and target body restored.
+// MiniMax D (11-10): no lower score (94): the group-of-four forms tried this round - a nested group loop over
+// &channels->channels[group * 4] 111, a nested group loop walking a channel pointer 111, four channel tests
+// written out per group 987 (1021 bytes, the outer loop unrolls), and the raw getter for both inner terms 122
+// with the extracted bit in a byte temp read in the condition 117 - are all worse; retail's unrolled inner blocks
+// with the identity flag in al still do not come out of a nested loop.
 // MiniMax D (11-06): no new form, no lower score.
 // Round 63 (m3 lane 15; one-file LTCG harness, code identical to the build; real = harness - 3 here): new: a
 // pointer-bounded loop 286 (not unrolled); the flag typed long or dword 131 (326 bytes, 0x54990 15); the flag typed
@@ -1882,6 +1887,10 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax D (11-10): no lower score (85): the inner query forms tried this round - the raw getter for both
+// port-flag terms 122, the raw getter's bit in a byte temp read in the condition 117, and the third term behind
+// voice_available() with the raw getter 89 - are all worse; the per-site inlining of the second query still
+// breaks the matched callers 0x54890 and 0x53a20.
 // MiniMax I (11-10): no new form, no lower score (85).
 // MiniMax R (11-09): no lower score (85): the second port-flag query marked `inline` was measured again and
 // confirms the recorded result - 0x55990 goes to 102 while the matched callers 0x54890 and 0x53a20 are lost
