@@ -93,6 +93,7 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	return result;
 }
 // score 107 (was 107): Frameless entry saves, fresh unit lookup and late prior-state carrier remain.
+// MiniMax E (11-10, run 73): no new form, no lower score (107); retail re-fetches the unit pointer and both pool globals after the two 0xbadc0 calls where we keep the entry fetch, and 0xbadc0's memory effects are unknown because that callee lives in another file.
 // MiniMax S (11-10): no new form, no lower score (107): retail pushes its saved registers first and keeps the
 // unit index in EDI, the unit in EBP and NONE in EBX, then calls 0xbadc0 twice and looks the unit up again
 // after them; ours loads the object table before the pushes, keeps them in ESI, EDI and EBP, and merges the two
