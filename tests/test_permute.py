@@ -355,6 +355,13 @@ def test_fast_rejects_a_reduced_baseline_that_disagrees():
     permute._fast_baseline_check(0x1234, 2, 2)  # agrees: no exit
 
 
+def test_fast_can_search_a_mismatched_baseline_when_asked(capsys):
+    """--allow-mismatch searches the reduced score anyway (a draft too far from
+    retail for a full search), warning that only full builds confirm gains."""
+    permute._fast_baseline_check(0x1234, 5, 2, allow_mismatch=True)
+    assert '--allow-mismatch' in capsys.readouterr().out
+
+
 def test_prepare_scratch_makes_copied_objects_current(monkeypatch, tmp_path):
     """A copied object whose working-tree header is newer must not look stale
     in the scratch tree, or every scratch build recompiles the whole program."""

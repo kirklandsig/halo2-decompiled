@@ -2740,13 +2740,18 @@ def _work(search, scorer, rng, tries, deadline):
         search.offer(candidate, score, note, n, rng)
 
 
-def _fast_baseline_check(va, fast_baseline, baseline):
+def _fast_baseline_check(va, fast_baseline, baseline, allow_mismatch=False, log=print):
     """--fast may only search when its reduced image scores the original the
-    same as the full image; otherwise it would optimise the wrong score."""
+    same as the full image; otherwise it would optimise the wrong score.
+    allow_mismatch searches anyway, for a draft too far from retail for a plain
+    full search; every improvement is still confirmed by a full build."""
     if fast_baseline != baseline:
-        raise SystemExit(
-            f'the reduced image scores the original {fast_baseline} differing instructions, the full image '
-            f'{baseline}: --fast cannot search this function. Run without --fast: python tools/permute.py {va:#x}')
+        if not allow_mismatch:
+            raise SystemExit(
+                f'the reduced image scores the original {fast_baseline} differing instructions, the full image '
+                f'{baseline}: --fast cannot search this function. Run without --fast: python tools/permute.py {va:#x}')
+        log(f'warning: the reduced image scores the original {fast_baseline}, the full image {baseline}; '
+            'searching the reduced score anyway (--allow-mismatch), each improvement confirmed by a full build')
 
 
 def context_units(context, rows, marked, depth=None):
@@ -2760,7 +2765,7 @@ def context_units(context, rows, marked, depth=None):
 
 
 def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, jobs=1, depth=None, anneal=False,
-             context=()):
+             context=(), allow_mismatch=False):
     """The --fast search with jobs workers, each scoring on its own scratch root
     with its own seed (seed, seed + 1, ...), and one more root for the full
     builds: first the original's, whose map gives the library objects the
@@ -2807,7 +2812,7 @@ def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, j
                 scorer.include = include
                 scorer.units |= pinning
         fast_baseline, fast_note = scorers[0].score_text(original)
-        _fast_baseline_check(va, fast_baseline, baseline)
+        _fast_baseline_check(va, fast_baseline, baseline, allow_mismatch, log)
         log(f'baseline: {fast_baseline} differing instructions on the reduced image ({fast_note})')
         log(f'reduced image: {len(scorers[0].units)} sources: ' + ', '.join(sorted(scorers[0].units)))
         walk = dict(strategy=Anneal(), mutations=MUTATIONS + TYPED_MUTATIONS,
@@ -2871,6 +2876,9 @@ def main():
                     help='with --fast: follow callees only this many levels (default: all)')
     ap.add_argument('--context', action='append', default=[], metavar='VA',
                     help='with --fast: another function whose units the reduced image also builds (repeatable)')
+    ap.add_argument('--allow-mismatch', action='store_true',
+                    help='with --fast: search even when the reduced image scores the original differently, '
+                         'confirming each improvement with a full build')
     ap.add_argument('--anneal', action='store_true',
                     help='with --fast: simulated annealing with restarts, and the typed mutations too')
     args = ap.parse_args()
@@ -2882,6 +2890,8 @@ def main():
         ap.error('--anneal needs --fast')
     if args.context and not args.fast:
         ap.error('--context needs --fast')
+    if args.allow_mismatch and not args.fast:
+        ap.error('--allow-mismatch needs --fast')
     va = check.parse_addresses([args.address]).pop()
     context = tuple(check.parse_addresses(args.context))
     # progress is watched while a run is in flight, so flush each line as it is
@@ -2889,7 +2899,7 @@ def main():
     log = functools.partial(print, flush=True)
     if args.fast:
         result = run_fast(va, args.tries, args.seed, args.time_limit, jobs=args.jobs, depth=args.depth,
-                          anneal=args.anneal, context=context, log=log)
+                          anneal=args.anneal, context=context, allow_mismatch=args.allow_mismatch, log=log)
     else:
         result = run(va, DEFAULT_TRIES if args.tries is None else args.tries, args.seed, args.time_limit, log=log)
     rate = result.tries / result.seconds if result.seconds else 0

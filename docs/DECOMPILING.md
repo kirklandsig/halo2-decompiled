@@ -373,6 +373,10 @@ For near misses, the fast search is usually the better choice:
   (repeatable). Some functions only build as retail beside their callers or
   siblings; without the extra units the reduced image scores them differently
   and the search refuses to start.
+- `--allow-mismatch` searches the reduced score even when it disagrees with
+  the full image, for a draft too far from retail for a plain full search.
+  Every improvement is still confirmed by a full build, but the two scores may
+  not move together, so read the confirmation line before keeping a variant.
 - `--anneal` lets the search accept some worse variants and restart, so it
   can get past a local minimum.
 - `--write-only-match` writes a variant back only when a full build finds an
