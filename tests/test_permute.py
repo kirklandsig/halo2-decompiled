@@ -391,6 +391,19 @@ MARKERS = [marker(0x100, 'src/a.cpp'), marker(0x200, 'src/b.cpp'), marker(0x300,
            marker(0x800, 'src/f.cpp')]
 
 
+def test_unmatched_callees_ignores_a_self_call(monkeypatch):
+    """A recursive function's own call is not an unmatched blocker once its
+    bytes match retail; only its other unmatched callees are."""
+    rows = {0x100: {'calls': '00000200 00000100 00000300'},
+            0x200: {'status': 'near'},
+            0x300: {'status': 'matched'}}
+    monkeypatch.setattr(permute, 'read_rows', lambda path: rows)
+    monkeypatch.setattr(permute.build, 'marked_sources',
+                        lambda root: [marker(0x100, 'src/a.cpp'), marker(0x200, 'src/b.cpp'),
+                                      marker(0x300, 'src/c.cpp')])
+    assert permute.unmatched_callees(0x100) == [0x200]
+
+
 def test_reduced_units_follow_retail_callees_to_the_given_depth():
     assert permute.reduced_units(0x100, ROWS, MARKERS, depth=0) == {'src/a.cpp'}
     assert permute.reduced_units(0x100, ROWS, MARKERS, depth=1) == {'src/a.cpp', 'src/b.cpp', 'src/stubs/s.cpp'}

@@ -2809,11 +2809,13 @@ def unmatched_callees(va, root=ROOT):
     not match retail yet. Under LTCG the registers a call passes its arguments
     in follow the callee's code, so while such a callee's differ from retail's,
     a caller can match retail's bytes and still pass it different arguments
-    (two of them swapped, say). Stubs and library code are not decompiled."""
+    (two of them swapped, say). Stubs and library code are not decompiled.
+    A recursive call to the function itself is not a blocker: once its own
+    bytes match, its self-calls are already retail's."""
     rows = read_rows(FUNCTIONS_CSV)
     decompiled = {m.retail for m in build.marked_sources(root)}
     calls = [int(c, 16) for c in rows.get(va, {}).get('calls', '').split()]
-    return [c for c in calls if c in decompiled and rows.get(c, {}).get('status') != 'matched']
+    return [c for c in calls if c != va and c in decompiled and rows.get(c, {}).get('status') != 'matched']
 
 
 def main():
