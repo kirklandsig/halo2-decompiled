@@ -614,6 +614,17 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // case 3, the 0x1201a0 fallback) 234 (996 B); with case 3 selected-first 214 (990 B, re-measures r135's 214); a case-2 `entries` base for
 // a, b and the normal 222 (986 B); `up` and `entries` 222; all three 199 (980 B); the loop's `z` reference dropped, the height field
 // read at each of its three uses 71 (974 B).
+// Lane 10 r91 (fast; aligned/masked lines in brackets, control 43 [32/26]): the first cross as contact_cross(b, a) with the two
+// selected arms' operands swapped (same result) 201 (991 B). Velocity declared first (the only register argument, set last at
+// 0x1f2250's call; definition and call changed together) 37 [18/13]: dot_a then sums i, k, j as retail; left are case 3's arm
+// order, the first cross's a.k * b.i, average.i, dot_average (ours i, j, k, retail i, k, j) and the tail's j product. Six
+// points, below the eight-point bar above 30, so not kept. On it (re-measures, new base): case 3 without the none-arm copy 192,
+// average as a + b 37, selected declared first 39, dots inside the compare 37, dot3f(x, desired) 37, average through
+// vector3f_add(b, a) 64, `0.0f - normal->k` 37, no index local 65, the first cross through cross3f or cross3f_staged 37/37, the
+// selected arms through contact_cross or cross3f 200/200; case 3 selected-first 178 in every case order (1S2, S21, 2S1, S12,
+// 21S: case 2's selected arms stop merging, 991 B), none-first orders 132/321/213 41/41/37; the loop's `z` as a normal pointer
+// read at its three uses 240 (1010 B); `selected != 0` arm first 199. No natural untried form left that I could find: the rest
+// follow the operand-order phase mapped in lane 3 r226's grid.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -691,13 +702,13 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 	return (arg_0 >> 3) & 1;
 }
 
+// score 163 (was 163; 162 with the one-use settings copy dropped, not kept): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
 // MiniMax R (11-06): no new form, no lower score (163); a compile-only probe of the same three-term float sum
 // gives retail's (k + j) + i order when the three products have fresh component nodes, so the
 // state dot's shared ground-normal loads cannot reach that order from the forms the note below records.
 // MiniMax R (11-06): the state dot written i, j, k reaches 162 (the products pair old_up->x with up->x as retail's
 // do); the parenthesized (k + j) + i form of the same dot 176, the parenthesized rotation dot 235, the parenthesized
 // final test dot 235; the one point is below this round's eight-point bar, so the original body was restored.
-// score 163 (was 163): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
 // Round 219 (lane 3, fast, 0x1e5af0 listed; the arm-order and staged-cross levers that took 0x1f2a80 to 43): `if (!(dot > 0.0f)) axis = *old_up;
 // else rotate = false;` 163; the same as `dot <= 0.0f` 164; fallback stores forward first 186 (1230); up result stored first 196; inactive
 // arm's up store first 183 (1230); all five crosses through cross3f_staged or cross3f, the first only, the two rotation crosses only, the
@@ -868,6 +879,13 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // 562, 0x1f2250 418); the helper reading through two references 174 (1231, al 133/52). Body unchanged.
 // Round 226 (lane 3, fast, 0x1e5af0 matched in each): `up` renamed ground_up, new_up or normal, `limited` renamed rotated, `axis`
 // renamed rotation_axis: 163 each, identical code (names do not move up from XMM4-6 to retail's XMM5-7).
+// Lane 10 r91 (fast, plain for the kept form; masked = aligned lines with registers masked, control 163 [85]): the one-use
+// `settings` copy of the state's settings pointer dropped (read in the bit test) 162 [82], plain-confirmed, 0x1e5af0 matched; not kept (1 point, under the keep bar).
+// Before that, on 163: the rotation dot named as `projection` and scaled by `1.0f - cosine` after the angle or after the sine
+// 184/184 (1232 B), after the cosine 163 [82]; on that, the state dot written i + j + k 162 [79] (retail's instruction order; up
+// then sits in XMM6/5/4 for k/j/i where retail has XMM7/6/5, so something else holds XMM7 across that block), with the projection
+// written i + j + k 232, with the rotation's cross reading old_up for the still-equal `limited` 247, with the settings copy dropped
+// 162, the old-forward pointer dropped 173, both 162.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result, byte const *state)
 {
@@ -1648,6 +1666,24 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // negation through vector3f_scale 421 (aligned 203/176/110, -1 still in XMM5). Diagnostic: direction by fields with a named dot
 // in the count-2 arm 435 (direction stays memory-only, so its address is not why retail's XMM6/7 hold it).
 // On the 421 form: case 1 written before case 2 421 (same code), with the fallback helper 421; `selected` declared before `minimum` 421.
+// Lane 10 r91 (fast; masked = aligned lines with registers and stack offsets masked, base 413 [118]): retail forms the selected contact
+// from the list loaded before the `*surface` store (`lea edi, [edi + edx*8]`, edi = the inner loop's preheader load or the fallback's
+// reload) and case 2 reloads the list after the stores; ours reloads it after the stores and case 2 reuses it. Plain count + switch +
+// bit helper at both flying tests re-measured 423 [124]. New: non-flying defaults first and one stepping subtraction after both arms,
+// `else if (!flying && no input)` 469 (2057 B; the flying bit stays in AL and is retested); `contact` formed before the two stores
+// 437 (2057 B [117]: retail's contact base and case-2 reload appear), on the switch form 421 (2073 [114]); on that, the inner loop's
+// candidate as `list + i * 0x48` each iteration (listed 519, new base) 400 (2089 [99]), with count declared between the two NONE
+// stores 398 [97]: a lead, but it needs the moved `contact` declaration (the same body with `contact` after the stores 507 at
+// 2084 and 0x1f19c0 103). On 398: the helper only at the fallback's flying test 436 [88] (the stepping subtraction still merges
+// into the flying copy; the if-chain instead of the switch gets retail's merge but scores 498 and 0x1f19c0 11, so the switch
+// flips it); case 2's normals read through the list at each argument, no `contacts` local, 398 [84] (both address computations in
+// retail's order, three of the six x87 products load as retail); contact_cross with every product commuted 398 (identical code in
+// all callers); counts read in the loop heads (listed, new base) 397 [78]; an if-chain testing `count == 1` first 550; the
+// fallback reading the list at each use 507 (convention flip). Left on 397: the -1 constant held across the iteration loop
+// (retail reloads it in the fallback), zero in XMM6, direction in XMM6/7, the stepping subtraction's merge and the final loop's
+// stepping byte. Then on main's body: case 2's normals read through the list at each argument 435 (2105 B [102]), the bit
+// helper only at the fallback's flying test 417 [101], the tangent through cross3f 413 (same code), the inner loop's count read
+// in its head 413 [108].
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)

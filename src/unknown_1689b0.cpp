@@ -1569,6 +1569,7 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
+// score 637 (was 640): earlier 552; frame 0xb964 agrees; sum/zero homes, axis re-read and early idiv remain.
 // b2C (11-06) retail walk, statement by statement against 0x16a8e0: every condition, field, constant, callee and argument order agrees (entry `radius > 0`, signed clamp to 8 and
 // signed `% point_count`, side/perpendicular/along/separation sums in retail's order, inside and 0.01/0.0001 tests, normal path when the length is <= 0.01, ray hits at +0x14, `0 - radius` opposite ray,
 // face sum below edge sum). Two fidelity fixes, both with retail evidence: the point reconstructions call the existing 0x120790 (retail inlines it: the two word table loads at 0x16aab5/0x16aabc and
@@ -1577,7 +1578,6 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // Still differs: retail re-reads the axis after the first point's stores (ours keeps it in a register), starts the `%` before the first reconstruction, and the sum homes (face +0x50, nearest +0x5c, edge +0x60).
 // Tried with the helper: pair struct for first/second 662, `next` index named first (+ long counts) 676.
 // MiniMax C (11-05): no new form, no lower score; retail's prism loop walks &prism->plane.j (plane.i at [esi-4], the point count at [esi+0x14]) where ours walks &prism->point_count (plane.i at [esi-0x18]), and our accumulator homes sit sixteen bytes above retail's.
-// score 637 (was 640): earlier 552; frame 0xb964 agrees; sum/zero homes, axis re-read and early idiv remain.
 // frame 0xb964 agrees; sum/zero homes, axis re-read and early idiv remain.
 // frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
 // Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
@@ -1824,6 +1824,14 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // rows as `0.5f * (negative + positive)` 640 (same code); radius_squared declared before the query call 624 (607 + 17:
 // the product moves ahead of the call where retail forms it after the count test, the zero moves to EBX; not kept);
 // the magnitude through length_sq3f 640 and the midpoint through real_point3d_set 640 (both same code). All restored.
+// Lane 10 r91 (fast; masked = aligned lines with registers and stack offsets masked, control 637 [337]): retail lays out the ray
+// part as edge-positive cast, the normal-path cast, then the edge-positive fallback (`point + ray`) and the negative cast (ours
+// keeps the edge arm whole before the normal arm). The nearest reset at the top of the prism loop 636 [336], `inside` there 637,
+// both 636; on the nearest-first body, `edge` computed before `relative` 603 (2875 B, frame 0xb958 [340]: the drop is the length
+// term, not more agreeing lines), with the side test's arms swapped 590 (2877 B [365]), the clamped point as a pointer to
+// first/second/candidate 633 (2860 B [374]). On 603: the clamped pointer 672, the endpoints declared at prism scope 603, edge
+// first alone on this body 604. On 590: the clamped pointer 673, without the nearest move 591, `inside` first too 590. All are
+// statement moves or arm swaps (kept only with a match), and the masked count rises, so the body is restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
