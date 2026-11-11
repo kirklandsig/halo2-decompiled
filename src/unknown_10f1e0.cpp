@@ -1688,6 +1688,12 @@ long function_cbd50(long unit_index, short weapon_index);
 // flag stores, stores all three zeroes to memory and reloads depleted's false from +0x12 at both joins, and re-reads
 // the pool's data in the second query); with the controlling field tested directly 351 (same code); with a byte
 // result 322 (masked 40).
+// Round 87 (m3 lane 11, fast): the two slot reads through slot_handler.h's object_get view 164 (same code, round 297's
+// accessor re-measured); result set from 0xc70b0's return with the switches under `if (!result)` 332 (re-measure). New: the
+// interruptibility test between the two queries 362 (1314 B); the second query as `if (second != NONE) depleted &= count
+// <= 0;` 343 (1299 B); the 0xc70b0 test negated, switches first, `else result = true` 325 (1295 B). On lane 9 r105's
+// entry-headers/if-form/bool-result/interruptible-first base (re-built: 351 at 1255 B): `controlling` read before the
+// overlay and name 351 (same code); the second clear as `depleted &=` under `if (second != NONE)` 350 (1256 B).
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {

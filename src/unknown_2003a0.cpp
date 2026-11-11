@@ -3697,6 +3697,17 @@ void function_2011f0(long arg_0);
 // test as `if (spawn < 0 || spawn >= row->count) continue;` with the arm un-nested 222 (same code); 0x1e9700's default-first
 // `long difficulty = 1; if (state == 1) difficulty = ...;` switched as short 227 [17]. The positional 222 is mostly the row
 // reload: ours reloads the row at the in-range arm's exit join, retail at the loop top (on the back edge only).
+// Round 87 (m3 lane 11, fast; aligned in brackets, control 222 [16]): lane 6's entry-pointer lead re-measured 238 [9]. New on it:
+// the placement block inside the range arm (entry dereferenced there) with the creation block at loop level under
+// `if (placement_entry && !flag)`, NULL at the declaration or in an else arm, 322/322 [56] (NONE moves into EBP); `if
+// (!placement_entry) continue;` 238 [9] and a NULL-returning inline range getter 238 [9] (same code as the lead); the next
+// lead's order on it 210 [45]. Not a lead despite the count (a declaration move; masked rises 16 -> 40, so 120 is a
+// positional realignment): `long actor = NONE; short seat = NONE;` ahead of the location read 120 [58]: the row is then reloaded at the loop top and seat takes +0x14 as in retail, but the row and spawn
+// slots swap (+0x1c/+0x18), the entry and placement object swap EBX/EBP, and actor's NONE sits in ESI before the location
+// test (retail sets it after). With the long difficulty switched as short 119 [57] (movsx pair fixed); with the placement
+// object declared before the entry 135 [73]; orders actor/location/seat 219 [23], seat/location/actor 262 [26]; actor and
+// seat declared early but given NONE after the location read 261/261 [25], both assigned after 221 [15]: the position of
+// the NONE assignments moves the reload, not the declarations.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

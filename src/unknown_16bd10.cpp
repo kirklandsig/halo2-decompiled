@@ -999,6 +999,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // (k + j) + i 371, (i + k) + j 371, (i + j) + k (dot3f's own body written out) 376, j + (k + i) 376, i + (j + k) 374,
 // k + (i + j) 372, all 1700 bytes (masked 26-29). A compile-only build (no /GL) loads the plane's first length operand from the other
 // base register (EDI for retail's ESI), so it is no screen for this block.
+// Round 87 (m3 lane 11, fast; aligned in brackets, control 331 [111]): the normal copied ahead of the three axis stores
+// (round 188's normal-before-basis, re-measured) 377 [173]; the plane distance named in its expression before the
+// division 384 [118] (1704 B). No plane-construction or line-projection helper exists to call here.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

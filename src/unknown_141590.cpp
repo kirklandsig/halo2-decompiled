@@ -1185,6 +1185,12 @@ void function_143250(
 // (12049 B, frame 0x32c, ret 4, masked difflib count 699 against 1063): any way below about 950 declarations gives
 // retail's convention, but each rewrites the body's allocation. Compile-only (no /GL): rotation is loaded once at entry
 // under both /Gd (EAX) and /Gr (ECX). The call deletions tried under --fast said nothing about the convention (pinned).
+// Round 87 (m3 lane 11, plain with 0x22850/0x23690/0x143250): band one's nine matrix stores read from rotation[] (its five
+// negation/copy terms dropped) 1787 (10745 B, ret 8, rotation still on the stack); with the nine leading copies after
+// band one's early return 1830 (10706 B); the 37 copies of copies in bands two and three (`term_N = workspace.term_K`,
+// `term_N = term_9`) read from rotation[] 1780 (10788 B): rotation then arrives in ESI and result in EDI, but coefficients
+// moves to the stack (still ret 8; 0x23690 401 -> 350); both 1776 (10792 B); band two's 22 only 2050 (11035 B, rotation
+// ESI). Use count alone gives rotation a register but never a third register parameter (retail EAX/ECX/ESI).
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

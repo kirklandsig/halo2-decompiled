@@ -1383,6 +1383,11 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // data reused from EDI); diagnostics re-measured on the current body: the count > 0 guard 20 (1399 bytes, aligned 8),
 // with the one-object local 44 (1390). The guard stays match-only. The no-model parent index and node read through
 // the existing object view's parent fields 87, in the render branch too 87 (same code).
+// Round 87 (m3 lane 11, fast): the no-model case first under `if (render_index == NONE) { ...; return; }` with the
+// render code un-nested after it 306 (1378 bytes). No existing node-matrix accessor other than 0xb8bd0 exists in a file
+// without /Ob1 that LTCG could inline here (headers: only slot_handler.h's object_node_matrix, already used; the
+// data_array.h datum helpers add checks retail lacks), so the no-model block is BLOCKED-BY 0xb8bd0 (inlined at this one
+// site in retail; both files /Ob1); the count > 0 guard stays match-only.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
