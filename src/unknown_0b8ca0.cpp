@@ -678,6 +678,10 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// MiniMax E (11-11): no new form, no lower score (165): the full build now self-aligns the frame like
+// retail (`and esp, -8`, 0xb4 bytes, a result byte), but the locals sit in other slots (the result byte
+// at [esp+0xf] against retail's [esp+0x13], the cluster index at [esp+0x30] against [esp+0x40]), so the
+// first difference is at +0x1a and every later offset shifts with the frame order.
 // score 165 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
 // bool result byte) while ours keeps EBP for the global base and a dword result.
 // MiniMax D (11-08): ours has an unaligned 0xac frame where retail realigns to eight
