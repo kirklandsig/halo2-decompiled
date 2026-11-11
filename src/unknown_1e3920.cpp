@@ -2185,6 +2185,21 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // Re-measured: both second-block queries through 0xcbd50 with a fresh slot lookup 280 (LTCG inlines it at that depth, giving
 // retail's `or -1` shape), with a `long` index 333. What remains is the pool and seed globals' register weights (retail holds the
 // pool in EDI and reloads the seed into EBX; ours the reverse) and the spilled 32-bit index. Body unchanged.
+// m3 lane 3 r233 (fast, base 251, aligned 135, register-masked 57). Likely contributor, not confirmed: src/unknown_0259a0.cpp
+// is built /GL-, so the first block's 0x259a0 call is opaque to the link: ours loads the random-state global for that call
+// and again after it, and with the 298 form below the pool global is reloaded after it too (retail loads the random state
+// once into EBX ahead of the call and keeps the pool in EDI across it). Diagnostic (reverted at once): that file without /GL-
+// 306, worse (the random state then rides in EDX across 0x259a0 and 0x259d0; the pool still not held). Flags are the owner's
+// call: lead only.
+// Forms: the secondary weapon through the existing 0x1e1fd0(actor_index) 272 (1195 B, it stays a call); the matched
+// siblings' idiom (0x1e1f20/0x1e1fd0: `long unit_index = actor->unknown018;` then 0xcbd50(unit_index, slot read through
+// a fresh lookup)) for the first block's two calls 361 (1171 B, the score and length of lane 12 r107's listed slot arguments
+// read from `unit`, likely the same code); for the second block's two queries through 0xcbd50 298 at
+// 1232 B but aligned 92, masked 51: actor ESI and options EBP as retail, and the pool global loaded once above 0x1e5240's
+// `je` and held through the first block (in EBX, retail EDI), then reloaded after the opaque 0x259a0 call; the same with
+// `unit_index` declared at the top of the second block 309 (aligned 155); on both blocks 315 (1216 B, aligned 155); the
+// queries' lookups through `unit_index` too 294 (1229 B, aligned 124, masked 51). Lead: the 298 form plus a transparent
+// 0x259a0. Body unchanged.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

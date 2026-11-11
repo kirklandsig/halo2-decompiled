@@ -840,6 +840,15 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // entry pointer. The 0.1-offset point as a copy of the collision point plus three `+=` 189 (1109 B, likely the listed
 // collision-offset vector). Compile-only identical: `record->count++;` split from the 32 test, the trace failure as a guard
 // `continue`, the trace or world declared in the outer scope, the entry flag set after its direction fields. Body unchanged at 90.
+// m3 lane 3 r233 (fast with the file's functions and callees; control 90 at 1085 bytes, aligned 58, register-masked 33).
+// Retail's rotation is this helper's formula term for term (rows a*along + d*cos - c*sin, the j and k cross subtrahends
+// axis.k*d.i and axis.i*d.j scheduled beside the dot); what differs is scheduling and the spill. In the rotation helper:
+// the dot named on its own line before `along` 90 (aligned 56, masked 38: other code, same count); the cross terms written
+// with their sides flipped and added (`+ (axis->j * k - axis->k * j) * sine`, exactly the same values) 86 at 1087 bytes
+// (aligned 56, masked 38: positional, and the subtraction order is retail's own); both 90 (masked 50). Re-measures of the
+// listed object-reference contracts on this base: the axis taken by `const &` 90, the vector by reference as well 90 (same
+// code each). In the entry tail: `record->count` read once into a named short for the activation pair 128 (1081 B: retail
+// reads the count again after the word store, which may alias it); the 32 test as `>=` 91. Body unchanged.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
