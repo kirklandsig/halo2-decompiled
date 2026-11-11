@@ -725,6 +725,18 @@ struct s_collision_result_buffer_1697c0
 // N390: Explicit absolute-magnitude real/immutable-real producers, success/early-failure exits,
 // 307/303/307/303; double/immutable-double producers 360/360/360/360. NOT kept:
 // no exact lifetime recovery; original normalizer and sampler restored, native scratch/axis homes remain.
+// Round 108 (m3 lane 9, fast with 0x297660/0x297d30; fast = full 303): `if (!actor_looking_normalize3d(&pitch_axis))` 307;
+// the pitch draw passed straight to the rotate call 331 (0x297660 1); `__forceinline` on the rotate-in-place helper 303 (same
+// code); the helper's dot named (`real dot = ...; real projection = dot * (1.f - cosine);`) 293 (first +0x31, the axis/result
+// homes as retail, 0x297660 MATCH, 0x297d30 23; a one-use local, match only, as round 85's versine). On it (re-measures of
+// listed forms): the dot summed k, j, i 293; the normalizer with an early `return 0.f;` 298 (masked aligned 192 -> 172);
+// `(1.f - cosine) * dot` 293; on the body, `dot3f(vector, axis) * (1.f - cosine)` 307 (0x297d30 144). New on it:
+// `real dot = dot3f(vector, axis);` 293 (same code). New on the body: the tail test as `best_fraction > 0.f && !clear` 303;
+// the ray as `3.f * candidate.i` 303 (same code); the clear path normalizing `direction` after the copy 313; the best tail
+// normalizing `direction` after the copy 338 (0x297660 4); `best_direction = candidate;` before `best_fraction = fraction;` 303.
+// Also measured elsewhere (m3 lane 1 r85, fast): `if (!test_collision) continue;` 303 (same code); the NONE store before the
+// ray 303; `result = true;` first on the clear path 303; the early-return normalizer 298 (1453 B); the fraction read at each
+// use 307 (1460 B); on the early return, cosine first 308 (0x297d30 41), named versine 298, both 308.
 // m3 lane 1 r85 (fast = full here; 0x297660 stays matched, 0x297d30 23): the loop body as `if (!test_collision) continue;`
 // 303 (same code); the collision NONE store before the ray 303; `result = true;` first on the clear path 303; the
 // normalizer's zero case as an early `return 0.f;` with the scaling after the test 298 at 1453 B (register-blind aligned
@@ -1089,6 +1101,17 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // a forceinline declaration 257 (same code); cases 3/5/6 ending in `break` with one `point_valid = true;` after the
 // switch 368 (retail's byte homes, result low and point_valid high, but the specification moves to ECX and the three
 // callers drop to 4/1/2), only cases 3 and 5 merged 354 (1404 B, same flip). Retail has the merged store and EAX.
+// Lane 14 r81 (fast with 0x297a50/0x297660/0x2980d0 and every callee, 258 against the full 257; register-masked
+// aligned count 110): the 0x1e3b00 reference argument cast to `point3f const *` 258 and the output as
+// `(point3f *)&point.x` 258 (both same code: `&point` stays one value, `mov edi, ecx`); case 1's remembered test
+// nested (`else if (state >= 1) { if (unknown00 == NONE) goto done; ...`) 258 (same code). Diagnostics, reverted:
+// case 1's remembered branch removed 364 (1396 bytes); case 1's cafc0 call removed (caf60 only) 211 at 1408 bytes
+// with the masked count 110 -> 24: the rest of the layout is then retail's (direction chain after case 2's
+// remembered block) and only the result/point_valid homes and the weapon call's setup differ. So the merged cafc0
+// tails of cases 1 and 2 set the layout. Matched 0x1b2770 calls 0x1e3b00 with the object load ahead of the pushes
+// and a separate `lea edi` output (a different local). Here retail loads the object after the third push and
+// recomputes `lea edi` for the same `&point`, which lets case 1's remembered copy join case 2's instead; ours loads
+// the object first and copies the pushed address (`mov edi, ecx` / `mov edi, eax`).
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

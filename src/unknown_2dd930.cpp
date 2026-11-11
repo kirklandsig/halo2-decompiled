@@ -31,13 +31,8 @@ struct pending_2ddbd0
 	long field_14;
 
 	pending_2ddbd0()
+		: field_0(0), field_4(0), field_8(0), field_c(0), field_10(0), field_14(0x10)
 	{
-		field_8 = 0;
-		field_c = 0;
-		field_10 = 0;
-		field_0 = 0;
-		field_4 = 0;
-		field_14 = 0x10;
 	}
 };
 
@@ -138,10 +133,10 @@ public:
 	// doubled, and their normals' magnitudes kept alongside
 	__forceinline void finish_groups(tree_2ddbd0 const *tree)
 	{
-		for (long index = group_count - 1; index >= 0; index--)
+		for (long remaining = group_count; remaining > 0; --remaining)
 		{
-			planes4_2dd930 *magnitude = &magnitudes[index];
-			planes4_2dd930 *group = &groups[index];
+			planes4_2dd930 *group = &groups[remaining-1];
+			planes4_2dd930 *magnitude = &magnitudes[remaining-1];
 			magnitude->x = _mm_and_ps(group->x, *(__m128 const *)abs_mask_2dd930);
 			magnitude->y = _mm_and_ps(group->y, *(__m128 const *)abs_mask_2dd930);
 			magnitude->z = _mm_and_ps(group->z, *(__m128 const *)abs_mask_2dd930);
@@ -157,6 +152,11 @@ public:
 	void function_2dc220(pending_2ddbd0 *pending, void const *root, fixed_point_2dc220 const *fixed_point);
 };
 
+// collects what the planes touch: the planes moved into the tree's
+// coordinates four at a time (the last group padded with the first of its
+// planes), with their normals' magnitudes alongside
+// The remaining differences are the entry register choices and the SIMD
+// load/store schedule while translating packed groups.
 // collects what the planes touch: the planes moved into the tree's
 // coordinates four at a time (the last group padded with the first of its
 // planes), with their normals' magnitudes alongside
@@ -233,6 +233,8 @@ void __cdecl function_2dd930(void *data, s_visibility_plane_query const *query,
 	walk.function_2dc220(&pending, root, &fixed_point);
 }
 
+// The remaining differences are the tree/query register lifetimes and the
+// order of the origin load, pending-state stores, and centre copy.
 // score 33 (was 33): retail reads the tree's origin before the second list,
 // takes the root with a lea before the query is read and keeps the query in
 // eax; ours reads the second list first, adds 0x30 to the tree pointer for

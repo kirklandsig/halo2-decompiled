@@ -124,9 +124,6 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 	point[2] = matrix->forward.k * *x + matrix->left.k * *y + matrix->position.z;
 	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
-// MiniMax I (11-09): no new form, no lower score; the plain check gives 46 while the fast image cannot measure this body, and the only source lever left is the corner helper's parameter order, which measures 40 but changes a declaration, so it is reported rather than applied.
-// MiniMax A (11-06, run 52): no new form, no lower score (46) - retail keeps the axis in ax and the
-// flag in cl, ours sign-extends the axis into ecx and puts the flag in al.
 
 // score 46 (was 46): retail's length and every lookup, store and the tail; left are the products' load/memory sides (retail's
 // ranks: j fields > bounds[1,2] > i fields > bounds[0,3] > k fields; ours differ and move with symbol count), the plane store base
@@ -492,6 +489,16 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // keeps `up.i * 0.0f`, so the corners are not a (x, y, 0) point through a full transform. The compile-only harness is not
 // faithful here (masked 151 against our own build). The corner lookup through a call to the existing prism_project
 // (src/unknown_245bd0.cpp, used by matched 0x245bd0) 178 plain (976 bytes; `--fast` 330, the reduced image leaves it out). All restored.
+// MiniMax I (11-09): no new form, no lower score; the plain check gives 46 while the fast image cannot measure this body, and the only source lever left is the corner helper's parameter order, which measures 40 but changes a declaration, so it is reported rather than applied.
+// MiniMax A (11-06, run 52): no new form, no lower score (46) - retail keeps the axis in ax and the
+// flag in cl, ours sign-extends the axis into ecx and puts the flag in al.
+// Lane 14 r81 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46; second number the register-masked aligned count, 37
+// for 46): the permuter (`--fast --anneal`, 600 s) scores this body 245 on its reduced image against 46 full and found
+// nothing. The corner helper taking the bounds array with two indices (`bounds, 0, 2` ...) 42 (36; corner 0 is then
+// retail's, corners 1-3 still load the i fields over bounds[1] and reload the axis early; not kept: a helper
+// signature picked by score, 4 under the bar), with the indices in y, x order 42 (same code); on it: a plane pointer
+// for the copy, dot and store 61, `quad->axis = function_120850(...)` with the side test reading it 172, the axis
+// local passed to all four corners 181 (966 bytes), axis and a `positive` local passed to all four 241 (923 bytes).
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -1140,6 +1147,12 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // DH385: Entry output-counter native memset/first-face memcpy producers, seven subsets,
 // then first-face memmove: 562/562/539/566/562/562/566/789. NOT kept: no gain or tag-home
 // recovery; original scalar counters, face publication, all helpers and complete body restored.
+// Round 108 (m3 lane 9, plain; masked = aligned with stack offsets and registers masked, baseline 496): `matrix.scale = 1.0f;`
+// before the position 535 (masked 469); `short remaining = secondary_count;` before the guard, tested there 539; the counts
+// declared face count first 535 (re-measure); `sign * decal_normal_angle_17fd20(...)` 535 (same code); the edge's min/max as two
+// ternaries 613 (re-measure of DH383's conditional producers, 614); the axis scaled `inverse * axis.i`, `axis.j * inverse`,
+// `axis.k * inverse` for the component loop 559; the edge side as `long reverse` 646 (3631 B).
+// Retail's offset rotation writes each partial sum to +0x10 and reloads it: a register-pressure spill, not a source form.
 // M3 lane 3 r225 (plain; base 535, aligned [exact, stack-masked, register-masked] [676, 501, 366]; the first ~400 instructions agree
 // once stack offsets and registers are masked, apart from the first loop's index increment and the secondary-count store): the axis
 // scale through vector3f_scale with the named inverse 559 (3631 bytes) [679, 471, 348]; with 1.0f / length written in the call 568
