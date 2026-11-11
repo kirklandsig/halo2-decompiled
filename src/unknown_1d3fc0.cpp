@@ -30,6 +30,8 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
+// score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
+// magnitude/projection schedules remain. Both axis receivers begin after normalization.
 // MiniMax R (11-08): no new form, no lower score (110); the shapes that reach 2 need an existing helper's body
 // written out by hand, so the axis block still multiplies up's i first where retail multiplies forward's i first.
 // MiniMax D (11-06): no new form, no lower score; the helper's scale order k, i, j 115 and the k product with the
@@ -47,8 +49,6 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // pointers declared apart 2; the up side or forward.i from the matrix 145/148; the normalizations swapped
 // 71; calls through the pointer variables 94. build/held/mma-1106-1d3fc0-handwritten-dot.patch
 // MiniMax B (11-04): a second forceinline normalize twin (k, j, i summed in turn, used for up and left while forward keeps 0x1d3fc1) with the dot product written out 2; NOT kept: a score-picked helper twin (no new inline twins).
-// score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
-// magnitude/projection schedules remain. Both axis receivers begin after normalization.
 // Round 34 (lane 17, fast): forward/up pointers taken first, then both normalized through them 150;
 // a const forward pointer 110; named i and j squares (real; retail's forward sum j, i, k but k still
 // preloaded) 111; all three squares named 154; the i and j squares summed j, i, k 111. Restored.
@@ -354,6 +354,10 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // M3 lane 16 r102 (fast, 0x1c4a80 stays matched): the 2-form rebuilt 2 (masked 0: only the dot's i term operands); on it the squared
 // length through the existing length_sq3f 2, `vector3f *const` pointers 2, a `real const` dot 2 (same code each); the shared
 // normalizer's scale stores ordered k, j, i 102, j, i, k 28, i, k, j 140 (925 B). Body unchanged at 110.
+// M3 lane 12 r111 (fast, 0x1c4a80 matched each time): in the normalizer, i and j read into locals first (k read at its uses)
+// 110 (forward still preloads k, j, i); only k read into a local 110; the squared length named as `i*i + j_squared + k*k` 110;
+// a block-scoped `transform4x3f *matrix = &local_1[0]` for the forward, up and left addresses 149 (first difference +0x44);
+// dot3f(&local_1[0].forward, up) with only the forward side spelled as the address 110. Body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

@@ -616,6 +616,7 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
+// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // MiniMax S (11-09): the plane-0 product with the two operands of the i term written the other way
 // round changes no code at all (115), so the coefficient's register is not chosen by the operand
 // order of that product.
@@ -625,7 +626,6 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // MiniMax I (11-06): no new form, no lower score; the view vector copied into a local for the first plane's dot product gives 463 and 452 against 115.
 // MiniMax A (11-05): no new form, no lower score; the plane-0 term still loads `vector_e4.i` after the
 // forward copy and keeps the zero in xmm3 where retail has it in xmm4.
-// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // Round 16: retail loads the three `view->vector_e4` coefficients into xmm0, xmm3 and xmm4
 // before it copies the point and then reloads the point's components from that copy, ours reloads
 // the copied normal's x into xmm4; retail keeps the near distance in xmm5 and the zero in xmm4,
@@ -931,6 +931,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // declaration order) 242 (1830 B); the far plane's `pass == 1 &&` test dropped 370; `segment_culled` zeroed by an `= {0}` initializer
 // in place of the memset 489 (1867 B); the far-plane mask as `if (!view->flag84 && !view->flag85) use_plane1 = false;` 474 (1835 B).
 // Body unchanged at 115.
+// M3 lane 12 r111 (fast, the file's 16 matched functions and 0x320b0 unchanged): plane 0's three negations read from `forward`
+// in place of the copied normal 452 (1819 bytes); plane 0's `d += near_distance` after plane 1's block 176; the 0x54 field typed
+// `vector3f vector54`, no cast 115 (same code); the 0xb4/0xe4 fields typed point3f and read as .x/.y/.z 115 (same code); `forward` as
+// a `vector3f const &` 115 (same code). Left as before: retail allocates camera i to XMM4 and hoists it above the normal copy, ours
+// loads the copied normal's i right after its store and takes camera i late into XMM3. Body restored.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

@@ -1191,6 +1191,12 @@ void function_143250(
 // (12049 B, frame 0x32c, ret 4, masked difflib count 699 against 1063): any way below about 950 declarations gives
 // retail's convention, but each rewrites the body's allocation. Compile-only (no /GL): rotation is loaded once at entry
 // under both /Gd (EAX) and /Gr (ECX). The call deletions tried under --fast said nothing about the convention (pinned).
+// M3 lane 12 r111 (plain, callers 0x22850 223 and 0x23690 401 unchanged, 0x143250 matched): workspace fields in rotation-index
+// order (r0 term_5, r1 term_1, r2 term_6, r3 term_7, r4 term_0, r5 term_2, r6 term_3, r8 term_4) 1766 (67 listing lines move);
+// fields in band two's first-use order (term_7, term_5, term_0, term_1, term_3, term_2, term_6, term_4) 1766 (57 lines move);
+// `term_10 = workspace.term_4;` right after term_8 (retail evaluates term_8, term_10, term_11, term_12, term_13) 1766 (same
+// code); the workspace as plain locals with `real matrix[49]` declared first 2113 (10412 bytes, frame 0x300 as retail, ret 8); the plain
+// terms declared in rotation-index order 2113. Body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

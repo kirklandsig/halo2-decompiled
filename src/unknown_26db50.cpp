@@ -459,6 +459,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 	vector->k = axis->k * along + k * cosine - (axis->j * i - axis->i * j) * sine;
 }
 
+// score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
+// it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
+// rotation's component spill, cross scheduling and register allocation remain.
+// The body is 1085 bytes versus retail 1089.
 // MiniMax I (11-10): no new form, no lower score (90).
 // MiniMax D (11-09): no new form, no lower score; retail keeps the ring value as a float in a
 // stack slot and reloads it as a double for the radius product where ours converts the counter
@@ -467,10 +471,6 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // distance reproduces retail's cvtsi2ss, store, fld, mulss, fmul sequence, but the extra stack
 // slot makes the frame 0xdc and copies the radius through an integer register, so it scores 234
 // against the 90 body, which is kept.
-// score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
-// it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
-// rotation's component spill, cross scheduling and register allocation remain.
-// The body is 1085 bytes versus retail 1089.
 // MiniMax G (11-04): ring block with a hoisted double scaled radius, the ring converted once
 // into a named local and its offset named, plus the rotation with cross j, k named and a
 // second name for axis (local_axis) mixed into the dot and rows: 76 (retail's cvtsi2ss ring
@@ -826,6 +826,12 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // phase 96, the angle as `phase + spoke * 0.785f` 96 (same code each); the direction copied after the sine and cosine 246 (1104 B); sine and cosine passed
 // straight to rotate_direction 230 (1094 B). The `volatile` pathfinding copy removed 204 (1056 B; retail keeps the lookup), on the
 // lead 199 (1061 B). Body unchanged at 90.
+// M3 lane 12 r111 (fast, 0x26dde0 and 0x1ecf50 matched each time): lane 16 r100's lead rebuilt (rotate_direction declared as
+// bipeds.cpp does, ring phase named in the outer loop) 96 (1090 B). On it: trace.distance read at each use (no local) 89 at retail's
+// 1089 bytes (first +0x45; the entry still reads the sector after the radius and copies the radius through EDX); with the radius
+// read as `object_get(object_index)->unknown03c` 89 (same code); the ring counters declared ahead of the radius 90; the origin
+// pointer declared beside the sector index 89 (same code); `real const &radius = (real)object_get(..)->unknown03c` 264 (1077 B: VC
+// binds the reference to the field). The named phase is a one-use value ahead of the spoke loop's calls, so none is kept. Restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
