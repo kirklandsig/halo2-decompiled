@@ -1404,6 +1404,10 @@ static inline s_players_globals *players_globals_14f2e0()
 // MiniMax E (11-11): no new form, no lower score (46): the timer-memset form reaches 43, under the
 // bar to keep, and the two NONE outputs are still written with a five-byte move where retail's
 // materialisation is three bytes long.
+// MiniMax H (11-11): the only real difference is the -1 constant's form (`or eax,0xffffffff` in retail,
+// `mov eax,0xffffffff` in ours), which MSVC only shortens where the flags are dead, and the two bytes this
+// costs shift every later address; the permuter (87 variants in 913 s) found no variant below the baseline in
+// either the reduced or the full image; no lower score.
 // score 46 (was 46): the NONE outputs are materialised with `mov eax, 0xffffffff` where retail
 // uses `or eax, 0xffffffff` (two bytes shorter, so every later stack address differs), and the
 // zero/flag store schedule differs; the success BL agrees. Round 29 (lane G): with the two
@@ -2488,6 +2492,7 @@ static __forceinline long player_round_ticks(real value)
 // MiniMax C (11-11): no new form, no lower score (701); the first 0x151b80 call is still expanded here where retail calls it, and the definitions of 0x151b80, 0x151940 and 0xccd20 are in other files that this lane may not edit.
 // MiniMax E (11-11): no new form, no lower score (701): the frame is still 0x4c against retail's
 // 0x74, and the two calls this build expands are still expanded here.
+// MiniMax H (11-11): the lengths agree (2740 bytes); only the frame and the register set differ; no new form, no lower score.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and

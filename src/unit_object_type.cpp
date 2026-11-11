@@ -5079,6 +5079,7 @@ bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking
    along the aim and its left and up, then held clear of the world from
    its center; and its root object's velocity */
 // score 2 (was 184; earlier 202, 218): the frame, convention (aim and point in registers, the other six arguments on the stack,
+// score 184 (was 202; earlier 218): the frame, convention (aim and point in registers, the other six arguments on the stack,
 // ret 0x18), branch shapes and call order agree; what differs is xmm register allocation and operand order.
 // Retail loads the dot product's seven operands first (aim.i in xmm0, the center in xmm4-6) and multiplies in a
 // register; ours folds the aim into memory operands. In each offset step retail loads the vector component and
@@ -5415,6 +5416,7 @@ struct s_unit_damage_source
    but the largest); when asked, counts a hit from an ally against the
    unit or vehicle seat responsible (betrayal, reset after four seconds) */
 // score 31 (was 31; earlier 129, 140, 313): size and structure agree (854 bytes); what is left is register allocation:
+// score 31 (was 129; earlier 140, 313): size and structure agree (854 bytes); what is left is register allocation:
 // retail keeps the largest source's index in EDX and the slot in EAX where ours has them the other
 // way round (it widens the index once, `movsx edx, dx`; ours copies it to a long, `kept`, which
 // gives that widening but in the other register), and retail holds NONE in EBP for the team, player,
@@ -7827,6 +7829,7 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
    betrayal bookkeeping, the hit animation, the actor's perception of the
    attacker, its camera shake and, when it was a killing blow, its death */
 // score 116 (was 129; earlier 383, 399): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
+// score 129 (was 383; earlier 399): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
 // block), report in ebp and the unit in esi, and spills the definition to [esp+0x10]; ours spills unit_index and the
 // definition and uses ebx and edi as temporaries, so the prologue order, the stack slots (retail: definition 0x10,
 // total 0x18, unit 0x1c, hard 0x20) and the byte re-load of flags for the sign test differ. Retail passes the bit of
