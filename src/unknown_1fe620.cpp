@@ -12,12 +12,12 @@ void function_1fe410(point3f *arg_0, real arg_1);
 
 static __forceinline long real_to_long(real value);
 
+// score 373 (was 373): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
 // MiniMax R (11-10): no new form, no lower score (373); the two flag bytes are still stored before the random
 // state is loaded, where retail loads the state pointer first and then stores the bytes.
 // MiniMax R (11-10): no new form, no lower score.
 // MiniMax A (11-04): no new form, no lower score; the third input copied into a named local scores 415 and the +0x1c value
 // named 437 (both restored), and retail re-reads the third input from its stack slot after the 0x2104b0 call.
-// score 373 (was 373): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
 // Lane 18 r37 (fast): the +0x84 scale named for its test and product 430; unary negation for the side
 // flip 373 (same code); the +0x7c0 initial value as a ternary 430 (1844 B); the target-state pointer
 // declared before the prop test 373; the two limits read before +0xc 373. Ours caches the random-state
@@ -193,6 +193,14 @@ static __forceinline long real_to_long(real value);
 // state copy and the final sums (stored vector + point; retail adds in the opposite operand order, same value).
 // Remaining differences are only register/frame allocation (0x4c vs 0x48, arg_2 reloaded from the stack instead of kept
 // in ESI, random-state pointer in ESI instead of ECX) and the per-draw seed reloads listed above.
+// Round 112 (m3 lane 9, fast, register-masked aligned counts after the slash): round 63's composite rebuilt
+// (re-measure) 266/76 at 1873 bytes; on it, the +0x3c limit read at each use 342/39 at retail's 1861; plus +0x38
+// named before the draws for its two uses 342/36; plus the `(local_11 & 0x80000000) > 0` sign test 341/31; plus
+// local_12 (+0xc) declared after the limits (retail loads +0x1c first) 342/32; plus the final sums read back through
+// a pointer to the stored offset vector 350/29 at 1852; all four 347/23 at 1855. Left on that: the failed-0x2104b0
+// copy (retail loads all three words before storing, a copy through 0x210850's `out` pointer: 0x210850 inlined, which
+// its /Ob1 file blocks; a pointer to the whole local would be reverted even with a match), a second copy's order,
+// the output rows' order and XMM numbering, and two x87 product orders. Nothing kept (match-only composite).
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

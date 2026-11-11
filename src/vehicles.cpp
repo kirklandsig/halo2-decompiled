@@ -3999,8 +3999,8 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
 
-// MiniMax C (11-10): the score is 136 (was 136); the dot product multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy moves one word and two floats where retail moves three words, and the trig block spills the sine and cosine where retail keeps the angle on the x87 stack.
 // score 136 (was 136): projection/cross input ranks and angle/trig homes remain;
+// MiniMax C (11-10): the score is 136 (was 136); the dot product multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy moves one word and two floats where retail moves three words, and the trig block spills the sine and cosine where retail keeps the angle on the x87 stack.
 // MiniMax E (11-08): no new form, no lower score (136); the dot's i term still multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy still moves one word and two floats where retail moves three words, and the trig block still spills the sine and cosine through the stack where retail keeps the angle on the x87 stack.
 // MiniMax E (11-07): no new form, no lower score (136); the projection and cross operand ranks and the
 // x87 angle and trig homes are unchanged from the earlier rounds' forms.
@@ -4202,6 +4202,14 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // case path jumps back into it, where retail keeps the case path's tail and the default arm jumps forward to it after its
 // own `cosine * up.i`). Lead: the 163 form; retail's early `cosine * up.i` in both arms looks like two cross-jumped copies
 // scheduled before the merge.
+// Round 112 (m3 lane 9, fast, base 136): the default arm's sin/cos on the unnamed product `(real)sin(fraction *
+// 6.2831855f)` / cos (no angle store there) 133 at 827 bytes (one product order changes in the final cross; three
+// points, under the bar); that with `*up = *g_4687a8` 152 at 833; the default arm's axis negation before its sin/cos
+// (retail interleaves them) 174 at 836 (the zero register moves to xmm3). No further untried natural form: retail
+// keeps the angle on the x87 stack in all three arms (one fld of the fraction above the switch), which only the listed
+// `double angle` gives; the rest is product ranks and the sine/cosine homes. Also: the default angle as
+// `6.2831855f * fraction` 136 (same code); the not-flipping path as an early `return false` 170 at 827;
+// `!function_30bf0(up)` 136 (same code).
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -5089,6 +5097,18 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // 212) with 0xf78e0 itself left out of line (53 bytes); the 0xe000583 flag test as `== 0` and as a named bool 749 each
 // (same code; retail materializes `setne cl; test cl, cl`). Left on the lead: the cross-jumped `fstp [esp]; call`
 // tails, the zero re-materialized after six f78b0 calls, and the dot products' x87 operand orders.
+// Round 112 (m3 lane 9, fast): retail re-zeroes xmm2 after exactly the five 0x24590 (magnitude3d) call paths and loads
+// 1.0 at each use, so its caller treats 0x24590 as clobbering xmm; 0x24590 uses no xmm, and retail does not re-zero
+// after f78b0 or f78e0. Ours knows 0x24590 and keeps zero in xmm4 and 1.0 in xmm5. The lever is magnitude3d's own
+// declaration (a redeclaration `inline` in this file alone 749, no effect). Kept: every `goto done` (7) as `break`, the
+// label dropped, 0x5000581 as if/else: 749, byte-identical (the constant results are threaded past the clamp). Tried:
+// `0.0f >= vehicle->unknown25c` for `!(0.0f < ...)` 771 at 2958 bytes (retail's `comiss zero, [x]; jb`, NaN-correct;
+// only that test changes, masked aligned 214 -> 199; a lead once the length agrees); f78e0 `inline` at the 15 expanded
+// limit sites with an entry definition for 0x264/0x1f0/0x20c 797 at 3029 (re-measure of round 184's form; without the
+// entry definition 937 at 3128); 0xe000583 as `!((flags & 4) || (flags & 8))` 749 (same code); existing cross3f(&up,
+// &forward, &left) for the lateral cross 749 (first row then retail's, the others flip); `inline` on 0xf78b0 887 at
+// 3097 (it stays out of line; zero moves to xmm2 and 1.0 per site as retail, but every xmm value then spills across
+// f78b0 and the frame grows to 0x1c); 0xe000583/0xf000584 as positive guards around the result 749 (same code).
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5103,9 +5123,11 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 		if (vehicle->control_flags & 0x1000)
 		{
 			result = 1.0f;
-			goto done;
 		}
-		result = function_d1210(vehicle_index);
+		else
+		{
+			result = function_d1210(vehicle_index);
+		}
 		break;
 	case 0x4000580:
 		if (function_f5d70(vehicle_index) || (vehicle->control_flags & 2) ||
@@ -5113,7 +5135,7 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 		{
 			result = 1.0f;
 		}
-		goto done;
+		break;
 	case 0x5000596:
 		result = vehicle->unknown370;
 		break;
@@ -5125,7 +5147,7 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 		{
 			result = 1.0f;
 		}
-		goto done;
+		break;
 	case 0x900000e:
 		result = function_f78b0((real)fabs(vehicle->steering_angle),
 			(real)fabs(*(real *)(tags[vehicle->definition_index & 0xffff].bytes + 0x204) * 0.017453292f));
@@ -5151,7 +5173,7 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 	case 0xb000713:
 		if (vehicle->gear == (char)0xfe || vehicle->gear == NONE)
 		{
-			goto done;
+			break;
 		}
 		result = function_f78b0((real)fabs(vehicle->turn),
 			vehicle_larger(*(real *)(tags[vehicle->definition_index & 0xffff].bytes + 0x22c), *(real *)(tags[vehicle->definition_index & 0xffff].bytes + 0x230)));
@@ -5183,7 +5205,7 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 		{
 			result = 0.0f;
 			forced = false;
-			goto done;
+			break;
 		}
 		forced = true;
 		break;
@@ -5230,7 +5252,7 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 	case 0xe000583:
 		if (!(vehicle->object_flags & 0xc))
 		{
-			goto done;
+			break;
 		}
 		result = function_f78b0(magnitude3d(&vehicle->linear_velocity),
 			vehicle_larger(*(real *)(tags[vehicle->definition_index & 0xffff].bytes + 0x1f4), *(real *)(tags[vehicle->definition_index & 0xffff].bytes + 0x1f8)));
@@ -5238,7 +5260,7 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 	case 0xf000584:
 		if (!(vehicle->unknown34f > 0))
 		{
-			goto done;
+			break;
 		}
 		result = function_f78b0(magnitude3d(&vehicle->linear_velocity),
 			vehicle_larger(*(real *)(tags[vehicle->definition_index & 0xffff].bytes + 0x1f4), *(real *)(tags[vehicle->definition_index & 0xffff].bytes + 0x1f8)));
@@ -5301,7 +5323,6 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 	}
 	result = PIN(result, 0.0f, 1.0f);
 
-done:
 	*value = result;
 	*active = result > 0.0f || forced;
 	return true;
