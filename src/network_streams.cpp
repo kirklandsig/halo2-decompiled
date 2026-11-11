@@ -827,6 +827,12 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// MiniMax A (11-11, run 58): score 60 (was 60): no lower score; retail keeps the next sequence in ESI and
+// recomputes next - oldest - 1 in EAX on every pass, ours keeps the next sequence in ECX and strength-reduces the
+// offset into a second induction variable in ESI; retail reads the newest three times (the count, the loop bound
+// and the per-step test) and the oldest once, and with the window pointer declared before the send call for the
+// count, the bound and the index (88, 235 bytes) our code reads the newest the same way but still reduces the
+// offset and keeps the next sequence in ECX.
 // score 60 (was 60): ours strength-reduces next - oldest - 1 into esi (next in
 // ecx) and compares next with the cached newest; retail keeps next in esi,
 // recomputes the offset and re-reads window->newest each step (as 0x94df0 does).
