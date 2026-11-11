@@ -216,6 +216,14 @@ static inline void sound_track_start_impulse(long index, long handle)
 // Integer arithmetic for the entry sum, the sum with the index first, the label read
 // through an integer address, the label read in a helper and the impulse parameters in
 // a named pointer all give the same bytes; the permuter produced no candidate.
+// MiniMax R (11-10): no new form, no lower score (16): ours is 165 bytes against retail's 164 and the
+// first difference is at +0x20; the three differences left are the imul's place relative to the tag
+// mask (it follows from the shared helper's argument order, which may not change), the folded member
+// load against retail's materialised entry address (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`
+// against our `mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`), and the parameter address
+// copied through edx after the call to 0x222930 where retail copies it through eax. The forms the
+// earlier rounds record (every shape of the entry address, the impulse helper's shapes, the permuter's
+// runs) all measure 16 or worse.
 // @retail 0x225ab0
 void function_225ab0(void)
 {

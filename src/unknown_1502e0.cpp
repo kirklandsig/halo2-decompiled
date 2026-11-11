@@ -1294,6 +1294,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // variable; every way found of keeping the copy real while the slot reads use the global is a copy/global mix. No
 // other untried natural form is left (the notes above cover lookups, selectors, scopes, types, flag producers and
 // walks).
+// MiniMax B (11-11): no new form, no lower score (215); retail computes the pool element address before the
+// prologue's register saves and keeps it whole in ebp, while this build splits the multiply from the base add,
+// keeps the pool pointer in a register of its own and frames 0x1c against retail's 0x18.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1488,6 +1491,10 @@ void function_150820(dword *bits, bool local_only)
 
 // score 43 (was 43):
 // MiniMax D (11-08): the saved roles are exchanged - retail keeps the player record in esi
+// MiniMax I (11-10): no new form, no lower score (43); every difference is one clean pairwise register
+// rotation (retail: player esi, hand edi, unit index edx, temp ecx; ours: player edi, hand esi, unit index
+// ecx, temp edx) and the permuter was killed at its time limit without reporting.
+// MiniMax D (11-08): score 43 (was 43): the saved roles are exchanged - retail keeps the player record in esi
 // and the hand in edi, ours keeps the player in edi and the hand in esi, and the unit index stays in ecx where
 // retail reuses esi.
 // MiniMax B (11-06): no new form, no lower score; the player pointer and the hand still swap ESI and EDI

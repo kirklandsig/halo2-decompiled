@@ -143,6 +143,22 @@ union s_185be7
     vector2f field_8;
 };
 
+// MiniMax B (11-11): no new form, no lower score (590): retail's entry block reads the control global into ECX and
+// forms the +0x14 address from it, ours reads it into EBX and keeps it there, and the NONE constant swaps registers
+// with it; I found no spelling that makes this build reload the global.
+// MiniMax C (11-10): score 590 (was 590): no lower score this round. Retail reads the control global
+// twice, into ECX both times: at the top of the entry block, where it only feeds the local_1 address, and
+// again at the flag test after the magnitude and pow calls, so the value is not carried across them and
+// EBX is free for the NONE constant that retail holds for its seven early uses. Ours carries the global
+// in EBX from entry to the flag test, because this build proves that the calls in between cannot change
+// it, and NONE then lives in ECX. The forms that would force a second read were measured before and score
+// worse (a NONE local for the first test and the unit tests 739, a volatile re-read 1020, an unknown
+// extern in place of pow 1013 or magnitude3d 1017); the only spelling seen to reproduce retail's reload
+// exposes the global's address, which this lane may not do.
+// Coordinator (m3, round 56 review): kept at 590 is the consistent part of the 516 form: the five `field_20` flags through SET_FLAG on
+// the word field (no byte casts) and the selected input as `long`. The 516 form puts PIN and SET_FLAG on a subset of call sites picked
+// by score while the rest stay on 0x185be1/0x185be4 (all clamps through PIN 860 on 589; all 22 flags through SET_FLAG 792 on 590), a
+// match-only form; it is held as build/held/lane15-r56-185be0-mixed.patch.
 // score 590 (was 590; earlier 622, the lane's mixed form 516): 3773/3777 B, masked aligned about 157 (stack offsets and registers masked; 233 at 622). Round 56 (m3 lane 15, plain): PIN on
 // yaw/pitch 608, plus settings 781, plus limit clamps 827, plus turn rates 602, turn rates alone 619, yaw/pitch + turn rates + settings 589 (kept);
 // a ternary on named yaw/pitch values 608. Flags: all 22 through a set-flag macro 614 (3760 B, masked 140: retail's threaded tests), with long selected

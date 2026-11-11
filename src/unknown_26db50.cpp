@@ -832,6 +832,12 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // phase 96, the angle as `phase + spoke * 0.785f` 96 (same code each); the direction copied after the sine and cosine 246 (1104 B); sine and cosine passed
 // straight to rotate_direction 230 (1094 B). The `volatile` pathfinding copy removed 204 (1056 B; retail keeps the lookup), on the
 // lead 199 (1061 B). Body unchanged at 90.
+// M3 lane 12 r111 (fast, 0x26dde0 and 0x1ecf50 matched each time): lane 16 r100's lead rebuilt (rotate_direction declared as
+// bipeds.cpp does, ring phase named in the outer loop) 96 (1090 B). On it: trace.distance read at each use (no local) 89 at retail's
+// 1089 bytes (first +0x45; the entry still reads the sector after the radius and copies the radius through EDX); with the radius
+// read as `object_get(object_index)->unknown03c` 89 (same code); the ring counters declared ahead of the radius 90; the origin
+// pointer declared beside the sector index 89 (same code); `real const &radius = (real)object_get(..)->unknown03c` 264 (1077 B: VC
+// binds the reference to the field). The named phase is a one-use value ahead of the spoke loop's calls, so none is kept. Restored.
 // M3 lane 8 r152 (fast, 0x1ecf50 listed): re-measured the rotate_direction + named-phase lead 96 (masked 20: the radius copied
 // through EDX with the sector read late, spoke-loop scheduling, the marker order) and it with trace.distance at each use 89
 // (1089 B). New on the lead: a `long` spoke counter 239 (1080 B); the radius as a `real const &` bound straight to the object's
@@ -840,6 +846,21 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // entry pointer. The 0.1-offset point as a copy of the collision point plus three `+=` 189 (1109 B, likely the listed
 // collision-offset vector). Compile-only identical: `record->count++;` split from the 32 test, the trace failure as a guard
 // `continue`, the trace or world declared in the outer scope, the entry flag set after its direction fields. Body unchanged at 90.
+// M3 lane 15 r75 (fast, 0x26dde0 and 0x1ecf50 stay matched): the radius through the typed object field
+// `object_get(object_index)->unknown03c` 90 (same code as the byte-offset cast). On the rotate_direction + named-phase lead
+// (re-measured 96, 1090 bytes): the volatile copy replaced by the real form, the pathfinding passed as 0x26d100's last parameter
+// (definition, this call and 0x26d0e0's) 96, the same code, but 0x26d3f0 stops matching; the spoke counter declared and zeroed
+// before the phase 94 (1090 bytes; it moves only the spoke zero's store); the sector index read in the trace call (no local) 263
+// (1066 bytes). Body unchanged at 90. I found no other untried natural form; the forms above cover the rest.
+// m3 lane 3 r233 (fast with the file's functions and callees; control 90 at 1085 bytes, aligned 58, register-masked 33).
+// Retail's rotation is this helper's formula term for term (rows a*along + d*cos - c*sin, the j and k cross subtrahends
+// axis.k*d.i and axis.i*d.j scheduled beside the dot); what differs is scheduling and the spill. In the rotation helper:
+// the dot named on its own line before `along` 90 (aligned 56, masked 38: other code, same count); the cross terms written
+// with their sides flipped and added (`+ (axis->j * k - axis->k * j) * sine`, exactly the same values) 86 at 1087 bytes
+// (aligned 56, masked 38: positional, and the subtraction order is retail's own); both 90 (masked 50). Re-measures of the
+// listed object-reference contracts on this base: the axis taken by `const &` 90, the vector by reference as well 90 (same
+// code each). In the entry tail: `record->count` read once into a named short for the activation pair 128 (1081 B: retail
+// reads the count again after the word store, which may alias it); the 32 test as `>=` 91. Body unchanged.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

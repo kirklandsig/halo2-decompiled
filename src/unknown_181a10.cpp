@@ -843,6 +843,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // there and decodes with `shr ecx, 0x10; shr eax, 0x1d; ... dec eax; je`, ours with `and eax, 0xe0000000; cmp`); the distance written
 // radius-first 239; the 1..16 classifier as `value > 16 ? 16 : (value < 1 ? 1 : value)` 239 (same code); the classifier with no value
 // local, `(long)shape->data` at each use, re-measured 239 (same code).
+// m3 lane 15 r72 (fast with 0x1829b0/0x1821d0/0x182800): the material output declared at function scope re-measured 231
+// (Y603's lead: frame 0x44 as retail, but first's home moves to +0x14 where retail has +0x10, second's to +0x18 where retail
+// has +0x20; a declaration move, match-only), the same after `valid` 231. On it: the material renamed surface_material or
+// material_index 231 each, the plane or friction/restitution at function scope too 231 each (all same code); the hit copy
+// declared at entry with it 340. On main: friction and restitution at function scope 239 (same code). The other listed
+// lever, a long plane-index parameter for 0x14a300 (retail sign-extends it at every call), needs src/unknown_17d9a0.cpp,
+// which another lane holds this round.
 // M3 lane 1 r89 (fast with 0x1829b0, 0x1821d0, 0x182800; control 239, aligned 109, masked 71): the origin through
 // real_point3d_set from a position pointer local (the two listed parts together) 252 (1260 B, aligned 105; the inlined setter
 // reads x, y, z into one 12-byte home, where retail reads z, y, x and keeps only x at +0x28); the setter with the cast written
@@ -856,6 +863,14 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // components alone 325 (1262 B); the hit as `point3f const &hit = contact->position` 335 (1243 B), with the scalar
 // origin 333 (1243 B); the component scan at the top through the existing header havok_entity_property_get 239 (same
 // code).
+// M3 lane 13 r83 (fast with 0x1829b0, 0x1821d0 and 0x182800, all MATCH; control 239, fully masked aligned 71): the decoded
+// key type named (`long type = data >> 29;` tested `!= 1`) 239 (same code: still folded to the mask compare); first->shape
+// in a local for the kind test and the radius 329 (1264 B) [85]. Retail's two classifier uses read the data field three
+// times and thread the 1 and 16 arms straight to the exits, while 0x182b90 (matched, same file family) reads it once
+// through its PIN macro, so this one looks like a different helper boundary. Otherwise no untried natural form: the origin/hit copies, scalar origin
+// orders, classifier clamp spellings, result receivers, plane-arm orders, helper boundaries and root/key forms are all listed
+// above; what remains is the frame (0x40 versus 0x44, retail's two untouched dwords below the plane), the 1..16 classifier's
+// three data reads with the constants in the result register, and the dead second walk's loop pad.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

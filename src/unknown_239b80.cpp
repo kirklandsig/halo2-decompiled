@@ -229,7 +229,7 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
-// score 169 (was 170): at 170 (was 170) native output ordinal separates iteration from produced length;
+// score 169 (was 169): earlier 169 (was 170); at 170 (was 170) native output ordinal separates iteration from produced length;
 // frame 0x18 versus 0x14, count/departure homes, equality and compaction still differ.
 // MiniMax C (11-10): score 169 (was 169): no lower score this round. The frame is still 0x18 against
 // retail's 0x14; retail's outer pass has one dword counter in EBX, stored at F-0x10, reloaded at the
@@ -526,6 +526,24 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // left_start` with the plain update and the nested exit 248. Lead: retail stores the departure byte directly (0 between the
 // coordinate tests, 1 on a difference) and its y test is `fxch; fcompi; jb` where the exit test's is `fcompi; jbe`, so the
 // two comparisons are not one expression in retail; no form here gives the fxch.
+// M3 lane 16 r108 (fast with 0x239d50, which stays matched unless noted; m = register-masked aligned count, this body m 92):
+// a retail-shaped completion-flag body (match-only: the flag is set inside tests): heading and a bool departure flag set
+// before the lowest scan, one long hull counter in `while (!done && (short)hull_count < count)` with `indices[(short)
+// hull_count] = current; hull_count++;`, the three exits setting the flag, the compaction under `if (!done)` through
+// memmove 228 (763 B, m 34: frame 0x14, the flag in the indices home, the hull count at +0x10, the top-tested head and
+// retail's compaction call; left: the count keeps EBX where retail gives EBX to the hull count, so the hull count is
+// read from memory at each use and `current = count` copies EBX where retail reloads the count's home); on it `short
+// current = count` before the classifier call 134 (784 B, m 35, points/current move to EBX/ESI), current declared first
+// in the block 227, the lowest-point state declared first 230, a long `hull_count < count` 128 (784 B, m 54, frame 0x18
+// again), a short hull count 227 (765 B, caller 80), the flag at function scope or as a long 228 (same code), a long
+// departure 239 (793 B), `for (hull_count = 0; ...)` with `indices[(short)hull_count++]` 227, current before the call
+// with the long compare 184 (792 B), `short next` outside the loop 228 (same code), the equality helper's parameters
+// declared the other way round, `(b, a)` with the calls `(&points[indices[0]], &points[next])` and the same arithmetic,
+// 217 (791 B, m 35: the departure block then has retail's registers, indices[0] in ECX and next in EAX, but the closure
+// test gains an fxch retail lacks), a positive equality helper `(b, a)` negated at the departure 208 (setcc departure).
+// The same flag alone on this body 258 (768 B, caller 80). Diagnostic (value-changing): bounding the candidate scan by a constant takes the count out
+// of the callee-saved registers (scan bound copied `mov edx, ebx` as retail) and gives the hull count ESI, so the
+// candidate scan's bound is what keeps the count in EBX here.
 // Round 171 (m3 lane 5, fast with 0x239d50): the candidate scan (j loop) as a static inline helper returning the next
 // index and writing the best angle through a pointer 519 (511 B, not inlined), as __forceinline 171; a short hull
 // count with memmove 233 (0x239d50 80); the departure flag renamed to sort before hull_count (same-size name-order
@@ -949,13 +967,13 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // the side-change test as `previous_inside ? !inside : inside` 279 (915); the epsilon side tests moved to the loop end 264 (877);
 // one `short point_count = count` copy at all six uses 129 (same code); the current side declared before the loop 129 (same
 // code, as round 294); the `*clipped = false` reset moved just before the loop 221.
-// MiniMax C (11-10): score 129 (was 129): no lower score this round. The count's 32-bit form is what
+// MiniMax C (11-10): no lower score this round (129, was 129). The count's 32-bit form is what
 // the first difference is: retail loads the whole home into ECX and narrows it (`mov ecx, dword ptr
 // [ebp + 8]; movsx edi, cx`), this build sign-extends the word home directly, and every int-typed use
 // of the count folds back into that word load: an int index 129, a long index 129, an int count used
 // for the index and the loop test 293. The zero also lands in XMM4 against retail's XMM2 and the
 // epsilon in XMM5 against XMM4, which follows from the same allocation.
-// MiniMax C (11-10): score 129 (was 129): no lower score this round. Retail's count argument is 32 bits
+// MiniMax C (11-10): no lower score this round (129, was 129). Retail's count argument is 32 bits
 // wide: it loads the whole home (`mov ecx, dword ptr [ebp + 8]`) and narrows it (`movsx edi, cx`) for the
 // previous point's address, while the copy size reads the same home as a word (`movsx ecx, word ptr
 // [ebp + 8]`); with this declaration's short count the address reads the word directly, so every
@@ -992,6 +1010,14 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // const *)memcpy(copy, ...)` 372 (975 B); re-measured: the deltas through polygon_difference_23a220 129 (round 366's shared
 // 2-D difference). No untried natural form targets the cause: the one lever is the count's ECX at the alias join, which only
 // the repeated `if (count > 0)` guard gives (match-only, best 92 with the if/else fraction).
+// M3 lane 12 r113: no unlisted natural form, no trial: retail holds count in ECX from the alias join to the loop guard
+// (`mov ecx, [ebp + 8]; movsx edi, cx ... test cx, cx`), so the previous side gets no byte register (+0xd) and the loop
+// head takes ECX for `points`; ours reads count from memory twice and keeps the previous side in CL. Body unchanged.
+// Round 80 (m3 lane 13, fast with the file; no caveat): retail's only caller 0x17dd80 pushes the short count raw
+// (`mov ecx, dword ptr [esp + 0xa0]; push ecx`, no movsx) and passes the output in EDX, so the parameter is retail's
+// short and a 32-bit count would also change that contributor's caller. The inside arm's copy written per member 129,
+// `previous = &points[i]` at the loop end 129 (same code each); the crossing point built in a point2f initializer and
+// stored whole 255 (899 bytes). Body unchanged at 129.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
