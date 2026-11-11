@@ -565,6 +565,7 @@ void function_1e6980(s_time_entry *entries, short a, byte b)
 }
 
 #include "unknown_1cafc0.h"
+#include "normalize3d.h"
 #include <math.h>
 #include <xmmintrin.h>
 
@@ -573,13 +574,14 @@ real magnitude3d(vector3f const *v);
 bool g_46fcc4 = true;
 bool g_51e9bc;
 
-// score 49 (was 49; before r98 was 118; r101 and r103 unchanged): MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
-// score 49 (was 49; before r98 was 118; r101 unchanged): MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
+// score 20 (was 49; before r98 was 118; r101 and r103 unchanged): the projection dot sums k + j where ours sums j + k and
+// loads velocity.i before its product (one byte longer), and the jitter spills y and the z on/off value to the parameter homes
+// (+0x2c/+0x30) where retail uses the limits' +0x20/+0x24.
+// MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
+// argument; the dot's term order and the jitter block's register allocation still differ.
 // MiniMax S (11-10): no new form, no lower score (49); the reduced image lays this function out differently from retail (fast 308,
 // 1018 bytes against 1077), so the fast diff is not a faithful picture of it and no change was steered from it; the full check agrees
 // with the queue (49, ours 1078 bytes against retail's 1077).
-// score 49 (was 49; before r98 was 118): MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
-// argument; the dot's term order and the jitter block's register allocation still differ.
 // Before 11-07 (118, was 132): the first 79 lines and the frame agree; projection order and x-operands, the velocity row schedule and the jitter spills (retail spills y and the z on/off value into the limits' slots, ours x and the z on/off into parameter homes) remain. Earlier: 1.0 sat in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
 // (tests al/ah) and tests the on/off bits 1, 2, 4 before the sign bits 8, 16, 32, spilling the z on/off factor and
 // y to the limits' spill slots. Plain bits 170; on/off first with `*=` 233, with the factor on the left 233 (both
@@ -863,6 +865,22 @@ bool g_51e9bc;
 // `0.2f * x * limits.i` 49 (all four the same code), as `x * (0.2f * limits.i)` 105 (1086 bytes). The extra byte is the z sign:
 // retail builds it in place over the register holding -1.0 (`je; movaps xmm0, xmm3`) because that constant dies there, ours
 // copies 1.0 and selects -1.0 like the other two signs. A compile-only /Gr harness does not reproduce this body (142 SSE lines).
+// M3 lane 10 r92 (fast, 0x24590 and 0x1cd6c0 listed; al = aligned count, masked = aligned with registers and stack offsets masked,
+// base 49, al 67, masked 20): kept 20 (plain-confirmed, al 11, masked 4): the 0.2 factor applied by the existing vector3f_scale to
+// an offset initialized {x, y, z}, then `offset.i *= limits.i` per component (retail's `(x * 0.2) * limit` products; written in one
+// product the 0.2 moves last), x, y and z reused for their on/off values, and the on/off, sign and half-scale values all ternaries.
+// Steps: the vector3f_scale step alone 58 (1084 bytes), with `velocity.c += offset.c * limits.c` 102; on it, z sign defaulting to
+// -1.0f and set to 1.0f on its bit / x, y, z reused, 000-111: 49/56/80/80/58/45/47/54 (111 gives retail's interleaved velocity
+// stores, masked 12); partial reuse masks 41 each; signs as ternaries for x and y 20, all three 20, x alone 54; all three groups
+// ternaries 20 (kept); without the reuse 30 (measured with the on/off values in if form and again all ternary: 30 both). On 20: dot3f arguments swapped 20 (same code); limits as three scalars 69; the signs
+// inline as `x = ((bits & 8) ? 1.0f : -1.0f) * x` 41; `limits` or x/y/z renamed 20 (same code); the rsqrt asm written out with
+// function-scope temporaries (diagnostic) 144 (the spills still use the parameter homes). The jitter built in place in a vector3f
+// puts the y and z spills at retail's +0x20/+0x24 (the vector packs into the dead limits home) but moves velocity.i's operand order
+// and the velocity store interleave: named/inline signs 33/33, scaled into a separate offset or an offset initialized from the
+// products 36/36, with velocity.i's or the dot's operands swapped 33/36 (the written order does not reach these).
+// Also on 20: the jitter vector with the velocity add's arguments swapped 33; the tail as an out-of-place vector3f_scale from a
+// {x, y, z} jitter, `offset.c = limits.c * offset.c`, the velocity add's arguments swapped and dot3f's swapped, 15 combinations:
+// 20 or 41 (out-of-place scale or swapped add alone 41, both 20; the product and dot spellings never change the code).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -907,28 +925,23 @@ void function_1e6360(s_biped_physics_output *output, real rate, long object_inde
  if (g_51e9bc)
  {
   long bits = g_510c54->game_time * *(long *)((byte *)state + 0x18);
-  real on_x = 1.0f;
-  if (!(bits & 1)) on_x = 0.0f;
-  real on_y = 1.0f;
-  if (!(bits & 2)) on_y = 0.0f;
-  real on_z = 1.0f;
-  if (!(bits & 4)) on_z = 0.0f;
-  real sign_x = 1.0f;
-  if (!(bits & 8)) sign_x = -1.0f;
-  real x = sign_x * on_x;
-  real sign_y = 1.0f;
-  if (!(bits & 16)) sign_y = -1.0f;
-  real y = sign_y * on_y;
-  real sign_z = 1.0f;
-  if (!(bits & 32)) sign_z = -1.0f;
-  real z = sign_z * on_z;
+  real x = (bits & 1) ? 1.0f : 0.0f;
+  real y = (bits & 2) ? 1.0f : 0.0f;
+  real z = (bits & 4) ? 1.0f : 0.0f;
+  real sign_x = (bits & 8) ? 1.0f : -1.0f;
+  x = sign_x * x;
+  real sign_y = (bits & 16) ? 1.0f : -1.0f;
+  y = sign_y * y;
+  real sign_z = (bits & 32) ? 1.0f : -1.0f;
+  z = sign_z * z;
   x = ((bits & 64) ? 1.0f : 0.5f) * x;
   y = ((bits & 128) ? 1.0f : 0.5f) * y;
   z = ((bits & 256) ? 1.0f : 0.5f) * z;
-  vector3f offset;
-  offset.i = x * 0.2f * limits.i;
-  offset.j = y * 0.2f * limits.j;
-  offset.k = z * 0.2f * limits.k;
+  vector3f offset = {x, y, z};
+  vector3f_scale(&offset, 0.2f, &offset);
+  offset.i *= limits.i;
+  offset.j *= limits.j;
+  offset.k *= limits.k;
   vector3f_add(&state->velocity, &offset, &state->velocity);
  }
 }
@@ -1302,6 +1315,13 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // 114, the animation test as an early return 114 (all 114s same code); re-measured: the side dots as (new, up) * (old, up)
 // 111 (1393, the count and length of the listed (old, up) * (new, up)), `0.5f < alignment` 114. The rotation products
 // come from rotate_direction (an Avoid file this round).
+// m3 lane 1 r92 (fast, 0x24590/0x1cd6c0/0x1ecf50 listed, control 114, register-masked aligned 55): no trial run. The first
+// difference (+0x1f3) is the inlined rotate_direction's dot and cross products (ours loads axis.j/axis.k and multiplies by the
+// vector's registers, retail copies v.j/v.k and multiplies by the axis from memory); that body sits in src/unknown_1eb8a0.cpp,
+// an Avoid file again this round, and a private copy here would be a twin of an existing helper. The rest (initial_cross's
+// schedule, the side-dot order, the moved-away flag byte, the exits) is the commutative-operand group of round 83's lead; every
+// natural form for those found here (cross helpers, cross order and declaration, dot sides, named dots, flag spellings, the
+// joined exit) is listed above. Blocked: rotate_direction's body in src/unknown_1eb8a0.cpp is held this round.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

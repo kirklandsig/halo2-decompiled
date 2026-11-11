@@ -1049,6 +1049,13 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // (slot order follows use weight, not names). Tried: the a76b0 branch passing the unit's facing straight to 0xa91c0
 // 341 (1682 bytes: retail copies it); the parent velocity declared at the top of the not-cancelled block 152; the
 // projectile subtraction as vector3f_add_scaled(-1) 152 (same code); the blend with the velocity term first 152.
+// m3 lane 2 r71 (fast with 0xe8420/0xa91c0): retail's shared block-vector slot (the a76b0 forward, center, parent
+// velocity, release point) sits at [esp+0x24] below the grenade type and projectile index, ours at [esp+0x2c] above
+// them. Tried: the a76b0 branch's forward declared first, or at its copy 152/152 (same code); the grenade type read
+// before the projectile test 191 (1708 bytes); the projectile pointer before the grenade type 170; flag17 initialised
+// at its declaration 152 (same code); the seat test as nested ifs 152 (same code); marker_name stored before attach
+// 154; the throw globals read after the up pointer 276 (1708); one 0xd0e60 call with 0xb8540 in each failing arm
+// (no flag, no goto) 337 (1716).
 // MiniMax lane A (11-04): no new form, no lower score.
 // M3 lane 14 r83 (fast, plain-confirmed 92; 0xe8420/0xa91c0 MATCH): KEPT `real aim_weight = 1.0f - ratio;` named after the
 // aim scale and used in the three blend rows 152 -> 94, then the parent add through the existing vector3f_add (the
@@ -1866,6 +1873,9 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// MiniMax C (11-10): score 11 (was 11): no lower score this round. Two new spellings of the lookup were
+// measured and dropped: a named unit header pointer 65, and a named pointer to the active bit vector 11 with
+// the entry order unchanged. A permuter run (300 s) was stopped at its time limit without a result.
 // MiniMax I (11-09): no new form, no lower score (11); the entry block keeps the same eleven instructions in
 // another order (retail reads the object pool, the pool data and the type, and only then compares the type with 8),
 // and a copy of the type parameter in a local changes nothing.
@@ -1904,6 +1914,11 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // sete cl after the tag lookup), so retail can leave the compare at the end of the entry block, while ours
 // hoists it (cmp ecx,8 and sete bl) in front of the index arithmetic and reads the item table after the
 // object index; the rest of the function matches instruction for instruction.
+// MiniMax C (11-10): no new form, no lower score (11); a copy of the type argument (a named local used
+// by both the compare and the bit test) folds away and gives the same listing, and the entry order is
+// unchanged: retail loads the pool global into ECX and the type after it, ours loads the type into ECX
+// first and puts the global in EDX, so the compare lands before the index arithmetic instead of after
+// it.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {

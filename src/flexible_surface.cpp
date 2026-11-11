@@ -660,6 +660,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // into the i row and cross j, k form early as in retail, but the global's j/k reload in the i row. Round 69's tail (`cos((real)(time
 // * 0.001))`, `(real)sin((real)(time * 0.005))`) re-measured 171 (892 B; retail's fxch pair and fst stores), with rotate_direction
 // 171 (864 B), with rotate_vector_170d70 170 (864 B); with rotate_direction on an `old` copy stored back 161 (889 B). Body unchanged.
+// m3 lane 2 r71 (fast with the file's functions and 0x30bf0): the axis as a pointer into the table (no axis copy)
+// 159. Retail copies the axis into the frame with integer moves, keeps no copy of the global (its j and k load early
+// into XMM5/XMM4, i late) and spills only cross j and k: no form that keeps cross3f/dot3f on the existing helpers
+// gives that frame, and the hand-written rotation is match-only. Body unchanged.
 // M3 lane 9 r109 (fast with 0x118140, 0x30bf0 and 0x117c80; base 117, aligned 100, masked 72; both sides end in a plain
 // `ret`): the fraction drawn through random_next with `(real)... * (1.f / 65535.f)` in place of function_x82e52f 117 (same
 // code, not kept); the clamp of g_55ecd0 through a file PIN macro (`PIN(x, lo, hi)` as other files define it) 117 (same code,

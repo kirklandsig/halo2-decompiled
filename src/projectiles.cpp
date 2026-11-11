@@ -386,6 +386,7 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 }
 
 /* the rotation a spinning projectile makes each tick */
+// MiniMax R (11-10): no new form, no lower score (3); retail completes the rotating-flag OR and store before the angle duplicate and the first axis load, ours still hoists that load above the flag store, and the sixteen source forms tried this round all compile to the same two differences.
 // MiniMax I (11-10): no new form, no lower score (3); letting the axis local's address escape puts retail's flag order back but squares the components in i, j, k order instead of retail's k, j, i (14), spelling the magnitude in i, j, k order (14) or naming the squares (14) does not change that, and the copy-in written component by component gives 63.
 // MiniMax H (11-04): no new form, no lower score; retail keeps the rotating-flag OR and store ahead of the first axis load and ours hoists that load above the flag store.
 // MiniMax A (11-03): no new form, no lower score.
@@ -913,6 +914,7 @@ real function_30bf0(vector3f *v);
 /* aims a falling projectile along an arc: the slowest speed that reaches
    the target, then the time to it at the speed used (high or low arc),
    falling back to the slowest arc when the speed can't reach it */
+// MiniMax R (11-10): no new form, no lower score (232); the forced-speed and time-scale pointers are still enregistred in EDI and EDX where retail loads each at its use, and the frame, the rounded horizontal root and the two separate divisions still differ.
 // MiniMax I (11-10): no new form, no lower score (232); the two pointer parameters are still enregistred in EDI and EDX where retail loads each at its use, and the frame, the rounded horizontal root and the two separate divisions still differ.
 // MiniMax H (11-04): no new form, no lower score; the difference the earlier rounds describe is still there.
 // MiniMax A (11-03): no new form, no lower score.
@@ -1231,6 +1233,7 @@ extern vector3f *g_4687ac;
 
 /* whether a projectile's path to a point hits anything: the line from it,
    and for projectiles with a radius the two lines either side of it */
+// MiniMax R (11-10): no new form, no lower score (163); the frame stays 0x48 against retail's 0x34 and the three ray queries still inline 0x16a040, whose defining file is not this lane's.
 // MiniMax I (11-10): no new form, no lower score (163); the frame stays 0x40 against retail's 0x34 and the three ray queries still inline 0x16a040, whose defining file is not this lane's.
 // MiniMax H (11-04): no new form, no lower score; the three ray queries have to inline 0x16a040, whose defining file is not this lane's.
 // MiniMax A (11-03): no new form, no lower score.
@@ -1384,6 +1387,7 @@ long function_189fe0(s_sound_request const *request, long tag_index);
 
 /* the effects and sounds of an effects block (a material's response) at
    a point */
+// MiniMax R (11-10): no new form, no lower score (4); only the four register arguments of the 0xfd740 call differ, and that callee's own parameter order is not this lane's to change.
 // MiniMax I (11-10): no new form, no lower score (4); only the four register arguments of the 0xfd740 call differ, and that callee's own parameter order is not this lane's to change.
 // MiniMax H (11-04): no new form, no lower score; the four register arguments of the 0xfd740 call follow that callee's own parameter order, which this lane may not change.
 // MiniMax A (11-03): no new form, no lower score.
@@ -1481,6 +1485,7 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 
 /* a projectile's detonation effects and sounds at a point, attached to an
    object's node when it stuck to one */
+// MiniMax R (11-10): no new form, no lower score (115); the frame and the extent agree, but the point's home and the selector call's registers still follow 0xfd740, which is not one of this lane's functions.
 // MiniMax I (11-10): no new form, no lower score (115); the frame and the extent agree, and the point's home and the 0xfd740 selector call's registers still follow that callee, which is not one of this lane's functions.
 // MiniMax H (11-04): no new form, no lower score; the selector call's registers and the point's lifetime follow the unmatched 0xfd740 in this file.
 // MiniMax A (11-03): no new form, no lower score.
@@ -1653,6 +1658,10 @@ PRIVATE inline long projectile_object_root(long object_index)
 /* the projectile type's new callback: its target, lifetime, range,
    attachment, starting velocity and spin, whether it starts under water,
    and the seat flags of the unit that fired it */
+// MiniMax S (11-10): no new form, no lower score (296): retail expands 0xfbfd0 after the 0xfbd40 call and holds index * 12 in EBP, a body this lane may not write out by hand, so the pool and tag homes, the speed update's schedule and the seat-bit tests stand.
+// MiniMax A (11-10): no new form, no lower score (296): retail expands 0xfbfd0 inline after the
+// 0xfbd40 call and holds index * 12 in ebp, a body the rules forbid writing out by hand, so the
+// pool and tag homes, the speed update's schedule and the seat-bit tests stand.
 // MiniMax R (11-10): no new form, no lower score (296): retail expands 0xfbfd0 inline after the 0xfbd40 call and holds index * 12 in EBP, a body the rules forbid writing out by hand, so the pool and tag homes, the speed update's schedule and the seat-bit tests stand.
 // MiniMax D (11-10): no new form, no lower score (296).
 // score 296 (was 307; 535-source image; the 4-source reduced image allocates differently and scores
@@ -1867,6 +1876,11 @@ real function_17c900(short function_type, real input);
 
 /* where a guided projectile aims: its target's point, led by the target's
    velocity, then wobbled around the line to it or wandering */
+// MiniMax S (11-10): no new form, no lower score (348): retail takes the projectile index off the stack and forms the entry address itself, keeping the projectile in ESI, where we keep the index in ESI, the projectile in EBX and save EBX on the stack, so the aim point's stack home sits four bytes higher here than in retail.
+// MiniMax A (11-10): no new form, no lower score (348): the frame of 0x30 agrees, but the aim
+// point's stack home is [esp+0x24] in retail against [esp+0x28] here, and retail's sole caller
+// passes the index on the stack and takes the aim point back in ebx while our declaration and
+// call take the index in eax and pass the point's address; a declaration may not change.
 // MiniMax R (11-10): no new form, no lower score (348): the aim point's stack home is [esp+0x24] in retail against [esp+0x28] here, and retail pushes EBP and ESI at a different point, so the rotation's register homes still differ.
 // MiniMax D (11-10): no new form, no lower score (348): the aim point's stack home is [esp+0x24] in retail against [esp+0x28] here, and retail pushes EBP/ESI after the lookup where ours pushes EBX/EBP/ESI before it.
 // score 348 (was 348): Frame 0x30 recovered; index EAX/output-stack contract and normalization/rotation scheduling remain, four bytes long.
@@ -2149,6 +2163,10 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 /* detonates a projectile: (once) its sound, contrail, direct and area
    damage, impact or airburst effects, and the effects of the material
    under it */
+// MiniMax S (11-10): no new form, no lower score (504): the flag word still goes through EAX where retail keeps it in EDI for the OR and the store, the flag test comes before the definition lookup where retail makes it after, and the frame's slots are in another arrangement.
+// MiniMax A (11-10): no new form, no lower score (504): the frame of 0x184 and the first lookup
+// agree, but the header offset's stack home and the flag reload and store differ, and the
+// 0xfcea0 index that retail loads as a word costs that callee 129 points if it is changed.
 // MiniMax R (11-10): no new form, no lower score (504): the home of the parent and owner block, the probe's material term and the order of the two damage stores still differ; every declaration order of the Booleans, the parent and the probe measured the same code as the body above.
 // MiniMax D (11-10): the parent index read from the projectile at each use instead of in a local (fast 519 -> 504, 2171 bytes);
 // the flag word is still loaded once, so the parent lookup still reloads the table pointer and the tail stays one dword copy out.

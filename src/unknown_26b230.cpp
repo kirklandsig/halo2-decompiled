@@ -1839,7 +1839,7 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
-// score 87 (was 87): retail hoists the walk's pool load into ebx and keeps the selection
+// score 87 (was 87): round 112 (m3 lane 12) note at the end. Retail hoists the walk's pool load into ebx and keeps the selection
 // only on the stack (stored from esi, best stored in a tail shared with the initialisation);
 // ours keeps the pool in memory and the selection in edi.
 // MiniMax C (11-09): score 87 (was 87): no new form and no lower score; retail still hoists the walk's pool into EBX
@@ -1861,6 +1861,7 @@ void function_269250(long clump_index, long actor_index);
 // selection's copy in edi.
 // MiniMax E (11-07): no new form, no lower score; the walk's pool load stays in memory and the
 // selection stays in edi where retail hoists the pool into ebx and keeps the selection on the stack.
+// Earlier note (87, was 87; round 103 unchanged): retail hoists the walk's pool load into ebx and keeps the selection
 // Earlier at 87 (was 87; round 103 unchanged): retail hoists the walk's pool load into ebx and keeps the selection.
 // MiniMax B (11-03): no new form, no lower score.
 // Earlier: retained frame pointer 187; depth zero 304; selected-result reuse 134; team snapshot 133;
@@ -2080,6 +2081,12 @@ void function_269250(long clump_index, long actor_index);
 // set in each arm instead 128 (480 B: pool in EDI and the selection memory-only as retail, but the not-found path threads,
 // the walk top loses `xor eax, eax`, and the homes rotate). The join copy is what stops the threading; it also ties the
 // selection to the walk's index, which then outweighs the pool.
+// Round 91 (m3 lane 1, fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched;
+// this body 87, in-arm compare with the selection stored first re-measured 126 at 480 bytes): on the in-arm form, the clump walk
+// declared at function scope 126 (same code), the post-walk test turned round (`selected == NONE` creates, then `else if
+// (selected != current)`) 130, the selection and best declared ahead of the walk 129; on this body, the walk at function scope
+// 87 and the selection stored ahead of best 87 (both the same code). The in-arm form's x87 compare (`fstp` score, `fld` best,
+// `fcompi`) and homes are retail's; the found block of the walk still sits after the score block. Body restored.
 // M3 lane 3 r231 (fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched, and 0x269040
 // listed): the in-arm compare with the selection stored first re-measured 126 (480 B). Retail's walk step also lays the
 // not-found block first and the found block after it, falling into the clump test, and its improving arm jumps into the
@@ -2095,6 +2102,15 @@ void function_269250(long clump_index, long actor_index);
 // index 128, declaration orders and scopes are listed, and the permuter has run twice on this body (m3 lanes 15 r66 and
 // 4 r168). The caller-scope naming lever that moved 0x296e60's frame temps has no counterpart here (the only temps are
 // the score's x87 store); the lever left is register priority between the walk's pool and the selection.
+// M3 lane 12 r112 (fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched; this body
+// 87, aligned 34, masked 23): the shared clump_datum_walk_next with the found test as a ternary (`clump = next ? datum :
+// NULL;`) 130, 0x268510/0x268840/0x268c90/0x26ae30 all lose their match; with an early `return NULL` when inactive 146
+// (0x268840/0x268c90/0x26ae30 lost). Both restored. Checked against this note: the file's other walk helpers call the bit scan
+// (clump_datum_walk_next_calling, through 0x16bc00) or the whole step (clump_datum_walk_step, round 160's 243) out of line,
+// where retail inlines both (0x268a50-0x268abe), so neither is retail's; the selection's cross-jump with the created index
+// (both in EDI, merged at `push edi; call 0x269250`) is what our allocation buys, retail keeps them apart (selected reloaded
+// into EDX, created in EDI). The lever left is register priority between the walk's pool field and the selection, inside
+// the shared clump_datum_walk_next, whose respellings moved its four matched users in round 75.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

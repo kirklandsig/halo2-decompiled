@@ -1635,6 +1635,18 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // requests: ours gives found_mode's dead slot (E+0x18) to iterator_mode and the +0x34 table temp found_weapon_class's
 // slot, retail gives found_mode's slot to the per-pass candidate and the table temp and keeps the outputs and result
 // contiguous below the iterator. Declaration order, scope and names do not move that choice.
+// m3 lane 15 r74 (fast; 0x1db170/0x1dc790/0x1dc8c0/0x1dd9d0 unchanged): the siblings' found-flag body re-measured 755 at
+// 2825 B (register-masked aligned 57: left are retail's EBP zero from the fifth type request of the first request, which
+// retail can form because it reloads the mode from memory for the inheritance loop where ours keeps it in EBP, the
+// inheritance counters stored from that zero into dead parameter homes, and loop-head padding jumps). On it, mode read
+// once through its own address as 0x1dc8c0 does, at the iterator store or at the first request 755/755 (same code each:
+// the plain read through the address does not keep mode out of EBP).
+// On the 755 body: the first request keyed by `iterator.mode` (the iterate helper only reads the iterator's keys) 808 at
+// 2841 B (aligned 924 -> 84, masked 57 -> 49: the registers mostly agree, but iterator_mode takes a dead parameter slot,
+// frame 0x28 against 0x2c, and still no EBP zero); all three first-request keys from the iterator 1020 (2875 B); the
+// iterator as an aggregate initializer 769; the candidate as a ternary, or the result set by that ternary with no
+// candidate, 1024/1024 (2841 B). Lane 9's record (outputs and result as one local) re-measured 732; with the
+// `iterator.mode` first request 762 (2841 B, aligned 78, masked 43).
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
