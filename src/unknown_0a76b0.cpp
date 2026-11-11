@@ -1257,6 +1257,8 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 }
 
 /* starts throwing a grenade (type 22) */
+// score 19 (was 19): the three unit lookups are data-first (retail index-first) and the success path carries its own
+// exit copy where retail's success falls into the shared exit and the notice block carries the copy.
 // MiniMax H (11-07): no new form, no lower score (19); the three unit lookups still read the
 // table with the other base and index order (`[ecx + edi + 8]` against retail's
 // `[edi + ecx + 8]`), the success block still stores the flag byte and the result in the other
@@ -1272,7 +1274,7 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 // three lookups, so they use retail's address operand order, and the result stored before the action's
 // flag store; not kept (an address-cast read stays only with a byte match). The exit block still follows
 // the notice block; retail has it before the notice block, which ends with its own copy of it.
-// score 19 (was 272): Frame, setup and width domains agree; success pop/store/result schedule and
+// Earlier (19, was 272): Frame, setup and width domains agree; success pop/store/result schedule and
 // failure-branch spans remain. The slot index masked once into a local and the macro's lookup
 // written out by hand at its three uses gave 16 (not kept: a hand copy of UNIT_ACTION_UNIT_GET).
 // Hand getter/result-first/both/split/all-ordinal setup 266/272/266/272/266/272/266/265; common
@@ -1311,6 +1313,12 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 // the animated throw before the immediate 115 (968 bytes); the two early rejections as one condition 19; the marker test as two
 // gotos 19; the active test nested under `!immediate` 19. Without the notice block (diagnostic) the exit follows the success
 // path as in retail (851 bytes); a compile-only model keeps it last for every other shape tried.
+// Round 156 (m3 lane 8, fast): the notice block after `return result`, reached and left by gotos, 19 (same code); the
+// notice as a file-local inline helper under `if (animate)` 96 (909 bytes, kept a call), with `animate` as its parameter
+// 101 (905), with a player-index local 93 (911); the same helpers forced inline 74/74/74 (989 bytes, the player-index
+// getter then inlines too); the existing player value getter for the notice 19 (same code); the pool local for the entry
+// lookup 16 (a repeat). Compile-only: retail's layout comes back only when the success path ends with the a8c10 call
+// (the bit set and `result = true` before it) or without the notice block; every other order or shape keeps ours.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
