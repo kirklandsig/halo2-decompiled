@@ -150,6 +150,11 @@ void __stdcall function_187510(long arg_0, real arg_1, real arg_2);
 void player_action_initialize(s_player_action *arg_0);
 
 #pragma inline_depth(0)
+// MiniMax S (11-10): no new form, no lower score (134): the equality test on the selected record's field 212
+// has its two operands in the other order (ours compares ax with cx, retail compares cx with ax), the counted
+// byte is read without retail's sign extension (mov al and test al against retail's movsx ax and test ax), and
+// the inlined count read keeps our operand order (edx + edi + 0x23e against retail's edi + edx + 0x23e); that
+// order is fixed by the inlined count helper 0xcbec0, which is in another file.
 // MiniMax E (11-10): no new form, no lower score (134); the counted byte is still read without retail's sign extension and the count test still reaches the other callee, so the body stays 29 bytes short of retail's.
 // MiniMax E (11-09): no new form, no lower score; the counted word is still read through a
 // different address form than retail's and the body is still 29 bytes short of retail's.

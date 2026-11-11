@@ -676,6 +676,10 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// MiniMax S (11-10): no new form, no lower score (56): the first difference is still the call's register split,
+// which follows the parameter list that 0x1883e0's declarations in src/impacts.cpp and src/projectiles.cpp fix;
+// past that call the homes of the two vectors and of the four scalar values sit at different offsets from
+// retail's and the home stores come in a different order.
 // MiniMax I (11-08): no new form, no lower score (77); the argument order still comes from the call sites in other files.
 // MiniMax R (11-07, run 38): no new form, no lower score (77); still BLOCKED-BY 0x1883e0's fourth and fifth
 // parameter types, whose declarations are in src/impacts.cpp and src/projectiles.cpp, so retail's point and

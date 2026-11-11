@@ -1281,6 +1281,11 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax S (11-10): no lower score (94): retail keeps the base of the four channels of a group and reaches
+// them with positive offsets, advancing it by 0x5c0 once per group, and takes the unknown00 flag in AL after
+// the total is set, while ours steps the cursor by 0x170 per channel (so the later channels get negative
+// offsets), takes the flag in BL and sets the total before the availability bytes are read; the grouped
+// index form reaches retail's fixed offsets but biases the base and loses the matched caller 0x54990.
 // MiniMax I (11-10): no new form, no lower score (94).
 // MiniMax R (11-09): no lower score (94): the order of the three statements in the block - the identity flag,
 // the total and the channel pointer - was measured again: the flag, the pointer and the total (93), the total,
@@ -1882,6 +1887,11 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax S (11-10): no lower score (85): retail reads the two availability bytes up front and keeps them in
+// CL and DL for the later tests, and expands both port-flag queries here (the first one reuses the byte
+// read earlier, the second one reads both bytes again after the call), while ours reloads them at every use
+// and calls 0x53bb0 out of line; the shared availability helper reads them through volatile casts that the
+// matched functions in this file need, and reading them plainly loses 0x53b40, 0x54890 and 0x53a20.
 // MiniMax I (11-10): no new form, no lower score (85).
 // MiniMax R (11-09): no lower score (85): the second port-flag query marked `inline` was measured again and
 // confirms the recorded result - 0x55990 goes to 102 while the matched callers 0x54890 and 0x53a20 are lost
