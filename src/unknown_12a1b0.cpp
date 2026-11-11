@@ -408,6 +408,9 @@ void function_11bed0(s_location *location, point3f const *point);
 // redeclaration here does not make another file's definition expandable); on the native iterator the audible test as
 // a switch with a `case 1` and an empty default 99 [63] (233 bytes), the test and call in a `do { } while (false)`
 // with a break 93 (same code). 0x11bed0 stays expanded in all six. BLOCKED-BY 0x11bed0's inline eligibility.
+// MiniMax B (11-11): no new form, no lower score (93); the call to 0x11bed0 is still expanded here while retail
+// keeps it out of line, and that callee is defined in src/unknown_11bed0.cpp; retail also packs the walk's index
+// and its value into one register, where this build keeps the iterator struct.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -2528,6 +2531,9 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // or at the state-else site (retail 0x21c77f `or byte [esi+4], 0x40`, ours caches the flags word) with the char count
 // 374 at 1929 bytes. Still open: frame 0x4bc (the two early snapshots, [esp+0x48] scale at 0x21c50e and [esp+0x28] track
 // value at 0x21c526), 0x221810 and 0x12a420 inlined by ours (retail calls both at 0x21c62b and 0x21c783/0x21ca5d).
+// MiniMax B (11-11): no new form, no lower score (339); the frame is still 0x4b4 against retail's 0x4bc and the
+// calls to 0x221810 and 0x12a420 are still expanded here while retail keeps them out of line; both callees are
+// declared in files this lane may not edit (src/unknown_221490.cpp and src/unknown_124f90.cpp).
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {

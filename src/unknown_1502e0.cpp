@@ -1294,6 +1294,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // variable; every way found of keeping the copy real while the slot reads use the global is a copy/global mix. No
 // other untried natural form is left (the notes above cover lookups, selectors, scopes, types, flag producers and
 // walks).
+// MiniMax B (11-11): no new form, no lower score (215); retail computes the pool element address before the
+// prologue's register saves and keeps it whole in ebp, while this build splits the multiply from the base add,
+// keeps the pool pointer in a register of its own and frames 0x1c against retail's 0x18.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {

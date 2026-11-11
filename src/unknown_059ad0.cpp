@@ -3689,6 +3689,10 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // session->value10 store and split member-state lea ahead of the timed-out call (retail 0x5e466-0x5e477, the 13 bytes ours
 // lacks) come only from the unread owner parameter on 0x769a0 (round 65's byte match); the forms left on this side of the
 // call are all listed above, so no trial was run.
+// MiniMax B (11-11): no new form, no lower score (101); retail's call to 0x769a0 takes the session's second field
+// in ecx and its first field in edx before the stack argument, and reaches the member state through a pointer to
+// the field, while this build's callee takes the table in ecx and the owner on the stack; the callee is declared
+// in src/unknown_075870.cpp.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -4520,6 +4524,10 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // members), it scored 305 with `remote` declared first and 306 (1265 bytes) in retail order; declaring `local`
 // before `remote` with retail order gives 305. (2) retail stores session->value10 into [esp+0x1c] at 0x5e91b before
 // the 0x769a0 call (its unread owner parameter, see the 0x5e3f0 note); not expressible until 0x769a0 takes it.
+// MiniMax B (11-11): no new form, no lower score (305); retail keeps its flag results in stack slots (the byte
+// at esp+0xb, where this build keeps it in al and frames it at esp+0xa) and stores session->value10 into a slot
+// before its 0x769a0 call, whose unread owner parameter this build's callee in src/unknown_075870.cpp does not
+// take, so the extra store in the caller cannot be written here.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
