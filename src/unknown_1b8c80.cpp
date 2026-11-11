@@ -287,6 +287,12 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // there 3 (same code); the loop-top seat pointer for every object-index read and the definition 25; the 0xc8200
 // result as `result = c8200(...) ? true : result` under the 0x1b8d80 test 3; the loop test as `count > i` 5; the
 // occupant looked up again for the team read instead of a local 67 (387 bytes).
+// Round 156 (m3 lane 8, fast): 1-8 unused initialised locals at the top or at the loop-body top all 3 (no numbering
+// tie); the seat index named at the top of the bit11 block for all three calls 78, the seat's object index there 74
+// (both repeats of round 156 lane 6), both 137 (349 bytes); the 0xc8200 test ahead of the 0x1b8d80 test 40 (383 bytes);
+// 0xc8200 nested under the 0x1b8d80 test with its own `result = true` 3 (same code); a walking seat pointer advanced
+// at the body's end for every seat read 130 (360 bytes); the two rejections as direct `return false` 118 (365 bytes);
+// `result = false;` assigned just before the loop 52 (366 bytes, round 34's code).
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
