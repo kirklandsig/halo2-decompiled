@@ -861,6 +861,12 @@ void function_1c54b0(char const *variants, long object_index)
 // flag test 18; a world local inside the discard block 18; the count test inverted with an empty then-arm 18; `while` with nested
 // tests and `entity_count <= count` 55. Retail's zero-trip jump lands on the count test, past both reloads: the world pointer and
 // the island index are both reloads on the entity loop's exit edge, world first in retail, index first here.
+// Round 152 (m3 lane 7, fast; round 137's one-file harness re-pointed at this file, exact at 4 and 18): with the flag
+// after the call, `removed++` 18, `removed |= true` 18 (harness), `removed = !removed` 18 (harness), an unsigned or signed
+// char flag 18/18 (harness), the object test nested 18 (harness), `++count` 18 (harness); a world local declared at
+// function scope and assigned at each iteration top 18 (flag first 4), assigned in the loop condition 37 (253 bytes; flag
+// after 40), assigned once before the loop 59/58 (harness); the island declared at function scope 18 (flag first 4); the
+// entity count declared at function scope 18 (flag first 4). Naming the world never moves the reload pair.
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {

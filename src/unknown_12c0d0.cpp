@@ -895,6 +895,10 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // a defaulted parameter 2, from a `long` zero local 2; a local object with a volatile member zeroed by its constructor 93 (stores
 // vanish); the result stored from eax/edx inside the asm block 129 (322 bytes). At 0x199740, 0x6a8a0 and 0x80e10 ours lifts only
 // the low store, by one or two instructions; retail keeps the source order at each.
+// Round 152 (m3 lane 7, fast): a 600 s permuter run (43 tries) best 2; start held in a LARGE_INTEGER 2; elapsed declared at
+// function scope 2; the first read named `now` and copied into start 2; every declaration direct-initialised 2. Diagnostic:
+// attempts non-volatile 90 (270 bytes): then only the low zero store rises above `push edi`, so the volatile attempts store
+// after the rdtsc is what lifts the high store as well.
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {

@@ -1167,6 +1167,11 @@ bool function_14ed80(void)
 // numbering; re-measured round 142's element through the global 53 and round 135's index zeroed first 45; the remap as one
 // nested ternary 8; a named array pointer for the element 8; the element as `representations + index` 8; the remap as two
 // separate ifs 8; the remap as a two-case switch 34 (166 bytes).
+// Round 152 (m3 lane 7, fast; a one-file harness of this file is exact at 8): a 600 s permuter run (51 tries) best 8; the
+// representation as a reference 8; the outputs tested `!= NULL` 8; the game state named before its test 8; an appearance
+// pointer for the sign test and the read 13 (167 bytes). Harness: the representation as `representations + index` with third
+// read first 9; the outputs written third first 10; the clamp as `>= count` 44; the index declared first 8. Diagnostics: a dead
+// load at any of seven points never moves globals out of EDX (not a rotation step); an extra use of first leaves it in ESI.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
