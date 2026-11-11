@@ -525,6 +525,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // red publication product as red * inverse * (1 - remaining) 607 (same code); the palette range as `g_547f80` then
 // `if (range > 0)` with the inner ternary 702 (3827); the palette byte read before the 0x130f60 call 617 (3828). No retail function holds the fog-palette lookup (global, +0x340
 // bound, +0x344 table, 0xf4 stride) out of line, so the 0x1318a0-shaped getter lead stays a new one-caller helper.
+// M3 lane 13 r82 (fast with 0x131030, 0x1317a0, 0x130f60, all MATCH; control 607, aligned 446, masked 118): the cluster entry
+// read by index at each use (no entry pointer) 609 (masked 136); re-measured on this body: the slot as `long` 706, the 0x88
+// pointer declared before the tag test 714; the three 0x131030 outputs declared at the tag arm's top 607 and the NULL-record
+// test as an early `goto` ahead of the record block 607 (same code each). No untried natural form is left: retail moves
+// the 0x130f60 result to EDX with -1 in EAX and holds 0.0 in XMM7 across the loop, and no recorded form gives either.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

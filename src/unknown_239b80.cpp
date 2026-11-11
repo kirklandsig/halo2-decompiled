@@ -949,13 +949,13 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // the side-change test as `previous_inside ? !inside : inside` 279 (915); the epsilon side tests moved to the loop end 264 (877);
 // one `short point_count = count` copy at all six uses 129 (same code); the current side declared before the loop 129 (same
 // code, as round 294); the `*clipped = false` reset moved just before the loop 221.
-// MiniMax C (11-10): score 129 (was 129): no lower score this round. The count's 32-bit form is what
+// MiniMax C (11-10): no lower score this round (129, was 129). The count's 32-bit form is what
 // the first difference is: retail loads the whole home into ECX and narrows it (`mov ecx, dword ptr
 // [ebp + 8]; movsx edi, cx`), this build sign-extends the word home directly, and every int-typed use
 // of the count folds back into that word load: an int index 129, a long index 129, an int count used
 // for the index and the loop test 293. The zero also lands in XMM4 against retail's XMM2 and the
 // epsilon in XMM5 against XMM4, which follows from the same allocation.
-// MiniMax C (11-10): score 129 (was 129): no lower score this round. Retail's count argument is 32 bits
+// MiniMax C (11-10): no lower score this round (129, was 129). Retail's count argument is 32 bits
 // wide: it loads the whole home (`mov ecx, dword ptr [ebp + 8]`) and narrows it (`movsx edi, cx`) for the
 // previous point's address, while the copy size reads the same home as a word (`movsx ecx, word ptr
 // [ebp + 8]`); with this declaration's short count the address reads the word directly, so every
@@ -995,6 +995,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // M3 lane 12 r113: no unlisted natural form, no trial: retail holds count in ECX from the alias join to the loop guard
 // (`mov ecx, [ebp + 8]; movsx edi, cx ... test cx, cx`), so the previous side gets no byte register (+0xd) and the loop
 // head takes ECX for `points`; ours reads count from memory twice and keeps the previous side in CL. Body unchanged.
+// Round 80 (m3 lane 13, fast with the file; no caveat): retail's only caller 0x17dd80 pushes the short count raw
+// (`mov ecx, dword ptr [esp + 0xa0]; push ecx`, no movsx) and passes the output in EDX, so the parameter is retail's
+// short and a 32-bit count would also change that contributor's caller. The inside arm's copy written per member 129,
+// `previous = &points[i]` at the loop end 129 (same code each); the crossing point built in a point2f initializer and
+// stored whole 255 (899 bytes). Body unchanged at 129.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

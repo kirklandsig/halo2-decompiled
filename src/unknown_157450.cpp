@@ -5757,6 +5757,16 @@ void __stdcall function_d6bc0(long object_index);
 // case 0 as an early `break` on the bits with the distance test after it 52 (same code); the countdown's removal as
 // `if (type != 1 || !a && !b) d6bc0(index); else { ...; continue; }` 52 (same code), with the type test as a nested if
 // 52 (same code); the reset distance as `reset = !(d > 100) || function_15f060(...)` 52 (same code).
+// M3 lane 13 r81 (fast, base 52; the 7 recipe rebuilt is 7 again, its field-test variant 172 at 858 bytes): with the field
+// test `entries` is loaded into EDI at the loop top's index read and kept there (reloaded after the EDI-argument calls), the timer
+// moves to EBX; retail never enregisters `entries` and keeps the timer in EDI. On the field-test form: the reset counter as one
+// conditional store `= reset ? 0 : value + 1` 182 (851 bytes); the countdown as `if (value04 > 0) { if (--value04 == 0)`,
+// the object lookup given the field with the local kept for the test, the index re-read into the same local just before
+// the schedule test: 172 each (the field test's code). On the 7 form: case 0 written before case 1 7 (same code). On the kept
+// body: the reset counter as that conditional store 225; `long type = engine ? engine->p0() : NONE` 205; the 0x12c bits
+// tested bit 1 first 116 (first difference +0x5a); the engine pointer declared before `type` 83; the countdown in place
+// 52 (same code). Kept, same code: both squared distances through the existing dot3f 52. Re-measured: true default cleared
+// by the field test 172, a named timer pointer for the zero test, delay, countdown and continue 178.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
@@ -5786,9 +5796,7 @@ void __stdcall function_15ae70(s_netgame_entry_state *entries)
                 {
                     vector3f displacement;
                     vector3d_from_points3d(&object->position, (point3f *)(placement + 0x40), &displacement);
-                    real distance_squared = displacement.k * displacement.k;
-                    distance_squared += displacement.j * displacement.j;
-                    distance_squared += displacement.i * displacement.i;
+                    real distance_squared = dot3f(&displacement, &displacement);
                     if (distance_squared > 100.0f)
                         reset = function_15f060(&object->position, *(real *)(preset + 0x28));
                     else
@@ -5814,9 +5822,7 @@ void __stdcall function_15ae70(s_netgame_entry_state *entries)
                     {
                         vector3f displacement;
                         vector3d_from_points3d((point3f *)(placement + 0x40), &object->position, &displacement);
-                        real distance_squared = displacement.k * displacement.k;
-                        distance_squared += displacement.j * displacement.j;
-                        distance_squared += displacement.i * displacement.i;
+                        real distance_squared = dot3f(&displacement, &displacement);
                         if (!(distance_squared > 1.0f)) continue;
                     }
                     break;

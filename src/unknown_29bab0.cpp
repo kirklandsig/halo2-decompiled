@@ -376,6 +376,22 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // 0x26c conditional call removed 848 (EBX still saved at entry). A retail scan finds 24 matched functions with a mid-function EBX
 // save and no path around it (0x1cbad0, 0x17c040, 0x40e90: EBX used only for a call's register argument, a byte test, or ahead
 // of tail calls); none of their shapes is a natural rewrite here.
+// Round 80 (m3 lane 13; all plain, because the fast image hides the cause below; EBX save given as the listing index
+// of push/pop, retail 45/811): the entry EBX save comes from the named `double local_27` (the radial distance). The
+// fast image already saves EBX late as retail (fast 648 differs from plain only in that save and the esp offsets it
+// moves). In the plain build that double as a `real` (diagnostic) 750 at frame 0x8c gives retail's 45/808; 0x1f9e70's
+// `double dot` as a `real` 715 (EBX still at entry; 0x1f9e70 137 -> 302); both 750. The same double pads 0x1f38c0's
+// callers when that body is enabled (#581, round 78). Leave-one-out of each kept form, EBX still at entry in each:
+// reference input 715, private normalizer 818, clamp temps for MIN 847, double root 775, by-value scale 771, the
+// 0x1f9760 flags swapped back 716; all of them together (lane 12 r91's corrected-argument step) 848 at 3464 bytes,
+// EBX still at entry, so lane 12's mid-function save was a fast result. Retail tests the radial distance once (fsqrt,
+// the gap loaded after it, one fcompi, each arm its own exits): as one test `gap > d ? mode != 2 || !flag : !flag &&
+// local_18 > local_16` with the named double (one use) 805 (EBX at entry); with the square root in the test (no named
+// double) 778 (3460 bytes, frame 0x8c, EBX 45/803 as retail); that with a named blend complement 780, with
+// local_15/local_17 as planar aggregate copies 789, with both 791; `field_50 * 0x1f9e70(...)` 715 and on the
+// square-root form 778 (same code each; retail loads field_50 before the normalize2d call and keeps it in a slot).
+// Next: the double-free forms add a slot (frame 0x8c; retail's lowest slot, shared by the steering scale, the root
+// and the ratio, moves to +0x30); find it. Body unchanged at 715.
 // M3 lane 8 r151 (plain each; fast 648 builds differently): `real perp = -local_17.j;` at its three uses on this base 775
 // (3488 bytes); the forward dot `arg_2->i * local_17.i + arg_2->j * local_17.j` 715 (same code); both 775; the last dot
 // as `local_26.i * -local_17.j + local_26.j * local_17.i` 715 (same code); the side flip as one comparison,

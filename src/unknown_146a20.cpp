@@ -394,6 +394,10 @@ bool g_47f05b;
 // the abstract's four words set through an inline member call 34 (near the listed compile-only init-method form),
 // through a word cursor 34. The store is dropped after
 // inlining whatever calls or loop shape the constructors have.
+// Round 80 (m3 lane 13, fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0/0x146bf0): `byte *block` re-measured 34 (same
+// code; listed above). No untried call-site form found: register-masked aligned 3, only the abstract vtable store and
+// the arm reload. The store comes from the shared constructors, which matched 0x146b80 and 0x22c3e0 also inline (they
+// drop it in retail); lane 4 r166's held constructor twin is the known match. Body unchanged at 34.
 // Lane 6 r167 (fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0, all unchanged; base 34, aligned 4 = the base vtable store
 // and the g_479888 reload at the join): `void *const block` 34, the pool constructed with `()` 34, `g_4798b4 += 1` 34,
 // `byte *const block` with `block + 0x30` 34 (all same code); re-measure: the fixed allocator in an abstract-typed local
