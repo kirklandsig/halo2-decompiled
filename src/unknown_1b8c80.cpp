@@ -404,6 +404,7 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// MiniMax C (11-11): 6 (was 8), NOT kept (coordinator 11-11: a guard the loop test already implies is match-only; body at 8): the seat count test around the scan keeps the count in ESI and the index in EBP as retail does and brings the native cmp/jl with it; the exclusive bound without that test still gives 11 with the count in EBP and the index in ESI, and the seat pointer's zero still lands in EAX where retail reuses the index's zero. Swapping the two declarations compiles byte-identically, the index declared in the for statement gives 11 with the count in EBP and the index in ESI, and writing the test the other way round (index against count) gives the same 11 with the count in EBP. This round also tried: the seat pointer held as a dword and as an int with the address cast at the use, the seat pointer initialised from the index, the count test written against the literal zero, the scan written as a while loop with the increment at the bottom, and the NULL store split from the declaration with the index declared first — every one of them gives the same six differences, with the count test still against a second zero in EAX; the index declared inside the count test moves the seat pointer's stack slot and scores 135. A permuter run with annealing over the function (146 tries) found nothing below the baseline.
 // MiniMax C (11-10): no lower score (8); a seat-count test around a scan whose index is declared before that test puts the count in ESI and the index in EBP and keeps the native cmp/jl, but the test compares against a second zero in EAX and the selected pointer's NULL store takes that zero too (6); the same test written with the index folds into the loop (11), the reversed spelling of it keeps a constant test (6), a count read before the flags test hoists the load (14), a last-seat local is 108 with the inclusive bound and 118 with a strict one, and the inclusive bound with the index declared before the loop is byte-identical to the kept body.
 // MiniMax C (11-10): no new form, no lower score (8); the exclusive bound gives 11 with the count in EBP and the index in ESI (the reversed comparison 12), a seats local with the exclusive bound 23 and with the inclusive bound 27, an explicit count guard 135 and a while loop with the index declared first 23 — every exclusive form moves the count to EBP and the index to ESI.
 // MiniMax I (11-08): no new form, no lower score (8); the exclusive bound with the count in a local, the index declared before the seat pointer and the reversed comparison all give 11 or 12 with the count in EBP and the index in ESI.
@@ -456,7 +457,6 @@ bool function_1b9200(long object_index, long prop_index)
 		if (!(tag->flagsbc & 1))
 		{
 			s_vehicle_seat_definition *seat = NULL;
-
 			for (short i = 0; i <= tag->seat_count - 1; i++)
 			{
 				if (TEST_FIELD_BIT(tag->seats[i].flags.bit3))

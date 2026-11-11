@@ -12,6 +12,7 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
+// MiniMax C (11-11): no new form, no lower score (180); the length (1025) and the frame 0x90 agree, but the opening still forms the components in our order, and the copy schedule it needs is set by the query helper in src/unknown_1c20f0.cpp and the inline-ness of 0x30c60, both in other files this lane may not edit.
 // score 180 (was 180): retail's length (1025) and frame agree; the opening's copy and difference schedule and the SSE
 // scheduling still differ. A 132 form and a byte-match recipe are measured but not kept (see Round 66 at the end of this note).
 // Earlier at 180: no new form and no lower score; retail still forms d3.x, local_6.x,
