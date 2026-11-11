@@ -924,6 +924,7 @@ void hkRigidBody::motion_transform_set(hkTransform const &transform)
 void function_1d1260(s_havok_component *component);
 void function_1d1540(s_havok_component *component);
 
+// MiniMax S (11-11): no new form, no lower score (65): retail hands this function its component in ebx while this build keeps it on the stack, so the frame is 0x84 against retail's 0x88 and the transform copy is a rep movsd where retail uses four movaps.
 // MiniMax I (11-10): no new form, no lower score (65); the component and the index still arrive on the
 // stack where retail passes the transform in EAX, the index in ESI and the component in EBX and returns
 // with a plain ret, and the transform copy still uses rep movsd in a 0x84 frame where retail copies with
@@ -1127,6 +1128,7 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 	frame->m_translation = position;
 }
 
+// MiniMax S (11-11): no new form, no lower score (38): every difference is the frame (0x50 against retail's 0x5c) and the callee's convention, which hands the component over in ebx where this build pushes it.
 // MiniMax H (11-10): no new form, no lower score (38): every difference is the frame and the callee's
 // convention (retail keeps the component in EBX, ours pushes it), and that choice is made by LTCG over
 // the whole 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other files:
@@ -2350,6 +2352,7 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
+// MiniMax S (11-11): no new form, no lower score (91): retail keeps the velocity's j and k in registers across the normalization branch and scales them in place, while this build reloads all three components in each arm and keeps the scale in the destination.
 // MiniMax I (11-10): no new form, no lower score (91); the speed block still converts the material count
 // into xmm4 where retail converts it into xmm1 and divides by it, retail still copies the x product into
 // xmm4 and scales the velocity's j and k in place with the values live across the branch where ours
