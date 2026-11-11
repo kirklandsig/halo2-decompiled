@@ -70,7 +70,7 @@ bool function_1b6070(long index, short unknown0, short unknown2);
 bool function_262890(long actor_index, s_reference reference);
 void *function_272a00(long actor_index);
 void *function_1e5240(long actor_index);
-short function_267a80(real *distance, point3f const *point, vector3f const *direction, point3f const *position, vector3f *unknown);
+short function_267a80(point3f const *point, vector3f const *direction, point3f const *position, real *distance, vector3f *unknown);
 void function_1b0710(long object_index, long actor_index, real *distance_squared, real *maximum_distance_squared);
 
 /* the squads (g_51e9d8, 0x98 bytes): the zone they hold and their leader */
@@ -1218,7 +1218,7 @@ void __stdcall function_25f290(
 
 				if (type == 0 || type == 1)
 				{
-					short result = function_267a80(&distance, &context->lines[j].point, &context->lines[j].direction, point, 0);
+					short result = function_267a80(&context->lines[j].point, &context->lines[j].direction, point, &distance, 0);
 
 					if (nearest > distance)
 					{
@@ -1241,7 +1241,7 @@ void __stdcall function_25f290(
 
 					if (result == 0 && context->unknown55)
 					{
-						result = function_267a80(NULL, &context->lines[j].point, &position->unknown40, point, 0);
+						result = function_267a80(&context->lines[j].point, &position->unknown40, point, NULL, 0);
 						if (moving <= result)
 						{
 							moving = result;
@@ -1797,6 +1797,31 @@ struct s_collision_result_25f7b0
 // early short result 7; entry short result 7; unsigned short result 7; early unsigned result 7;
 // early distance 7; entry distance 7; shared candidate field pointer 7; early definition pointer
 // 7.
+// MiniMax E (11-10, later 2): the parameter layout is retail's, confirmed from the compiled prologue, which
+// matches retail opcode for opcode (`mov ebx, [esp + 0x88]` and `mov ebp, [esp + 0x90]` are the first and
+// second stack arguments, the third at [E+0xc], and the callee pops twelve bytes), so nothing here is blocked
+// by the declaration; only the frame's byte group and the two product slots are.
+// MiniMax E (11-10, later): still no lower score (4). Two findings for the next round. First, the
+// product's operand order does not follow the source: with `local_13 * local_7.t` and with
+// `local_7.t * local_13` the code is the same (`movss xmm0, [esp+0x38]; mulss xmm0, [esp+0x18]`),
+// so MSVC fixes the order itself and the swap cannot be steered from the expression. Second, the
+// remaining four differing instructions are the collision flag's byte home, ours at +0x13 where
+// retail has +0x10 (the `setne` and the `mov cl` that reads it), plus the two product
+// instructions; every other frame slot agrees (the type slot at +0x14, the dwords at +0x18 to
+// +0x3c, +0x48 and the word at +0x58). The flag is the first byte local of the frame's byte area
+// and ours sits three bytes above the area's base, so retail's source must place three byte
+// locals between the flag and the second bool at +0x14; adding them as one-use bools is a
+// banned form.
+// MiniMax E (11-10): no new form, no lower score (4). The whole body is retail's instruction for
+// instruction except the collision flag's byte home, ours at +0x13 where retail has +0x10; every
+// other frame slot agrees (the type slot at +0x14, the dwords at +0x18 to +0x3c, +0x48 and the
+// word at +0x58), so the flag's byte group is the only difference. The flag's own type does not
+// move it. Moving the second bool (local_22) to the top of the function costs the whole body
+// (246), making it an int leaves the home at +0x13 and changes the argument setup (62), and
+// naming the repeated `definition->flags & 8` test in a bool used at both places spills it
+// (290). The home stays at +0x13 when the second bool is a byte group member of its own, so the
+// group holds the flag alone and MSVC gives it the group's top byte; retail's flag is the
+// group's bottom byte, which needs three more live byte locals before it.
 // @retail 0x25f7b0
 void __stdcall function_25f7b0(long arg_0, s_type_967e20 *arg_1, s_type_b36ac5 *arg_2)
 {

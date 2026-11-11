@@ -426,6 +426,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // arm) 247 (1136 bytes, the rows still sum the first point's term first); the else arm's weights as
 // `local_4 = local_5 = 1.f` 206 (same code); the orthographic dot as dot3f(&local_10, &g_4b9dac) 206 (same code); one
 // counter for both offset loops 207 (1141 bytes).
+// M3 lane 10 r90 (fast with 0x30290, MATCH; the fast image leaves six camera globals unresolved, so fast scores are a screen only): no
+// gain. The blend weights as unary negations `-local_2.k` / `-local_3.k` 206 and the width differences doubled constant-first 206 (both same
+// code). No other untried natural form found: the remaining levers (lazy depth limits, the second offset kept in the frame, the blend
+// scale's home) are all listed above.
 // Round 86 (m3 lane 1, fast; aligned/masked counts in brackets, base 206 [167/103]): the blend products written
 // weight first 206 (same code); a shared `real scale` local with the depth limits written in the condition 256
 // (1136 B [170/81]: the second offset spilled whole, both scale tests early). LEAD: the existing transform_vector of
@@ -452,6 +456,14 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // function_2477b1 304 (1084: both rotate in straight-line rows where retail keeps the loop's code); the orthographic
 // segment declared with the offsets 206 (same code); the depth limits as `4.f * (k * k)` 213 (1143, register-masked
 // aligned 107 -> 101), as `4.f * k * k` 206 (same code).
+// m3 lane 5 r169 (fast with 0x30bf0, base 206 [aligned 168, masked 103]): the transforms as calls to matched 0x142640
+// through `(transform4x3f const *)&g_4b9e14` with a `__forceinline` declaration of it here 562 (827 B: the declaration
+// does not inline it; re-measure of round 72's call); `inline` on 0x142640's definition (diagnostic) inlines it, 306 at
+// 1081 B, and loses matched 0x16c2f0; the helper's rows through include/matrix_transform.h's function_2477b1 on the
+// camera as a transform4x3f 304 (1084 B); the scale test as `1.f != arg_0` 256 (1148 B); one shared variable for the two
+// square-root arguments 209; the view outputs declared with the offsets 206 (same code). Retail's second view keeps its
+// scaled copy apart from the raw offsets ([esp+4], XMM0, [esp]), and those slots carry the blend scale and the root
+// arguments later, so the frame and the [esp]/[esp+4] order follow the uncoalesced copy.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

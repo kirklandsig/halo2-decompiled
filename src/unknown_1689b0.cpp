@@ -1827,6 +1827,14 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // rows as `0.5f * (negative + positive)` 640 (same code); radius_squared declared before the query call 624 (607 + 17:
 // the product moves ahead of the call where retail forms it after the count test, the zero moves to EBX; not kept);
 // the magnitude through length_sq3f 640 and the midpoint through real_point3d_set 640 (both same code). All restored.
+// Lane 10 r91 (fast; masked = aligned lines with registers and stack offsets masked, control 637 [337]): retail lays out the ray
+// part as edge-positive cast, the normal-path cast, then the edge-positive fallback (`point + ray`) and the negative cast (ours
+// keeps the edge arm whole before the normal arm). The nearest reset at the top of the prism loop 636 [336], `inside` there 637,
+// both 636; on the nearest-first body, `edge` computed before `relative` 603 (2875 B, frame 0xb958 [340]: the drop is the length
+// term, not more agreeing lines), with the side test's arms swapped 590 (2877 B [365]), the clamped point as a pointer to
+// first/second/candidate 633 (2860 B [374]). On 603: the clamped pointer 672, the endpoints declared at prism scope 603, edge
+// first alone on this body 604. On 590: the clamped pointer 673, without the nearest move 591, `inside` first too 590. All are
+// statement moves or arm swaps (kept only with a match), and the masked count rises, so the body is restored.
 // R229 (m3 lane 3, fast with 0x16a440/0x120790/0x2469b0): re-measure of the listed face classification from the normal
 // selection (553 then) on the current body: the separate face flag dropped and the final test made on `use_normal` (the
 // flag only ever mirrored it) 637 (2915 bytes; now a tie, kept as a clean-up, plain 637); one `ray` vector declared for

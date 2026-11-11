@@ -1688,6 +1688,12 @@ long function_cbd50(long unit_index, short weapon_index);
 // flag stores, stores all three zeroes to memory and reloads depleted's false from +0x12 at both joins, and re-reads
 // the pool's data in the second query); with the controlling field tested directly 351 (same code); with a byte
 // result 322 (masked 40).
+// Round 87 (m3 lane 11, fast): the two slot reads through slot_handler.h's object_get view 164 (same code, round 297's
+// accessor re-measured); result set from 0xc70b0's return with the switches under `if (!result)` 332 (re-measure). New: the
+// interruptibility test between the two queries 362 (1314 B); the second query as `if (second != NONE) depleted &= count
+// <= 0;` 343 (1299 B); the 0xc70b0 test negated, switches first, `else result = true` 325 (1295 B). On lane 9 r105's
+// entry-headers/if-form/bool-result/interruptible-first base (re-built: 351 at 1255 B): `controlling` read before the
+// overlay and name 351 (same code); the second clear as `depleted &=` under `if (second != NONE)` 350 (1256 B).
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1825,7 +1831,7 @@ bool __stdcall function_110ab0(long unit_index)
 // (value set then overridden) is now the ternary, 453 (1793 B, was 450 at 1789 B); the raw +0x14/+0xb0
 // flag tests use the named `channels[0].unknown14` / `channel_9c.unknown14`, same code. Tried:
 // `bool result = true;` with the default arm dropped 483 (1785 B).
-// score 453 (was 453): this round found no gain - retail keeps the result byte in the first argument's dead
+// score 445 (was 453): this round found no gain - retail keeps the result byte in the first argument's dead
 // earlier 453 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
 // slot (round 85's `bool result = true;` with no default arm is the spelling that lands it there) and holds
 // index*12 in EDX so the unit is re-derived for the query; ours keeps the unit in a register.
@@ -2005,6 +2011,19 @@ bool __stdcall function_110ab0(long unit_index)
 // control 483, the result declared first 483 (same code); an object-headers local for both weapon lookups 489 (1809 bytes,
 // 0x10ff40 154), that also for the unit 472 (1793 bytes, 0x10ff40 154, 0x111650 596); the 0x400076c and 0x700005c arms as
 // `if (requested != 0x600008c) result = interruptible;` / `if (requested == 0x400000c) result = allow;` 519 (1749 bytes).
+// Round 168 (m3 lane 5, fast, callers 0x10ff40/0x111650 checked in each): kept `interruptible = (state->channels[0].
+// unknown14 & 0x10) != 0;` in place of the false-then-if flag (round 163's listed 445; it drops a flag set inside a
+// test): 445 at 1793 bytes, callers 12/566 unchanged, state then in EDI and the index in EBP as retail; left: ours
+// gives ESI to `requested` and keeps the unit pointer, where retail keeps the pool data in ESI and index*12 in EDX
+// and reloads the unit for the seat reads (the second from g_4e0300 again). The slot lookups through the existing
+// unit_get_current_weapon/unit_weapon_view_get (include/unknown_1e1f20.h) 453 (same code: LTCG merges the unit load
+// across views). Re-measured: `bool result = true;` with the 0x400076c/0x700005c if-arms and no default 519 (1749 B;
+// retail's default reloads that byte, `jne 0x11053e`), index in EDI, 0x10ff40 217; the direct overlay flag on 445
+// 445, alone 453; a headers local for the unit and both weapon lookups on 445 445 (1789 B; data ESI and the seat
+// reload as retail, but the index arrives in ECX: 0x10ff40 154, 0x111650 596). On 445: the headers local for the
+// entry unit only 445; for the unit and both seat reads 478 (callers 154/596); for the seat reads and the weapon
+// lookups 504 (154/596); the seat bytes read through the `unit` local 445 (round 115's listed form); the flag as a
+// `? true : false` ternary 445; the flag as `(bool)((state->channels[0].unknown14 >> 4) & 1)` 452.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2023,8 +2042,7 @@ bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 		long second = function_cbd50(unit_index, *(char *)((byte *)UNIT_ANIMATION_OBJECT(unit_index) + 0x213));
 		if (second != NONE && *(short *)((byte *)UNIT_ANIMATION_OBJECT(second) + 0x17c) > 0)
 			depleted = false;
-		if (state->channels[0].unknown14 & 0x10)
-			interruptible = true;
+		interruptible = (state->channels[0].unknown14 & 0x10) != 0;
 	}
 	if (function_0c7070(unit_index))
 		result = interruptible;
@@ -2467,6 +2485,21 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // after the two aiming channel_play calls 769 at retail's 3403 bytes (length term only: differing lines 761 -> 769,
 // aligned 288 -> 296); on it: the in-place projection 838 (3409), channel pointer locals 822 (3390), the cross3f side
 // 837 (3417), the products inside the weight test 847 (3391), the forced channel test 822 (3390).
+// Round 168 (m3 lane 5, fast then plain; masked = difflib count with registers and stack offsets masked, 162 at
+// 776): the seat-weight block as two sample calls in an if/else (retail duplicates the push setup in both arms and
+// cross-jumps them) with the overlay ratio as `x * 0.5f` then `ratio += 0.5f` (retail's mulss/addss on one 0.5
+// register) 762 at 3403 bytes, length term only (`!!` lines 761 -> 762, aligned 400 -> 405, masked 150, frame 0xc8;
+// not kept); alone 809 (3404 B, masked 153) and 847 (3414 B, masked 157). The forms after "On 762:" were measured on it.
+// The overlay body in a plain inline helper 975 (3264 B, the helper stays out of line). Diagnostic: with the loop's
+// body disabled the first 0x11df30 is still a call (845), so the loop's expansion does not block it. On 762: the 0x114
+// id copied before the combined test, the test on id.index 830 (3407 B, masked 148: retail tests the copy, `mov edi,
+// [ebp+0x114]; shr; cmp; mov [esp+0x20], edi`); the 0x114 test nested (unit test outside, the id copied and tested
+// inside) 829 (3405 B, masked 145); that with the conditional `active` clear 834 (3403 B, masked 146), also with the
+// default angles as one aggregate copy 847 (3385 B, masked 135); the blend products with their operands swapped 762
+// (same code). Re-measured on 762: the `for` loop 881 (3348 B), the aggregate default angles 836 (3389 B, masked 142),
+// the in-place projection 836 (3407 B, masked 157), the conditional `active` clear 840 (3391 B, masked 145),
+// function_111651 at the four channel tests 767 (masked 154). Masked keeps falling with the retail-shaped forms while
+// the positional count rises; the loop's channel_play still expands two levels where retail calls 0x1cb490.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
