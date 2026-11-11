@@ -2091,6 +2091,7 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // type test as a mask 394 (1169 bytes, 152 / 102; 0xb8ee0 lost); plus the parent's node-matrix base read ahead of
 // the link stores (0xb8bd0's body by hand, diagnostic) 303 at 1236 bytes (158 / 115). Nothing reaches 277; body
 // unchanged. BLOCKED-BY 0xb8bd0 as before.
+// MiniMax A (11-11): no new form, no lower score (285); the body is unchanged: the parent's node matrix still needs 0xb8bd0's retail body, which this lane may not edit.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {
