@@ -2631,6 +2631,10 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// score 95 (was 95): the locals live in the other stack slots (shown count, the first
+// loop's player, the second loop's four widget indices), retail reloads players[i] after the
+// voice-state query, and the last loop keeps the screen in edi and bitmap_a in ebx where
+// ours keeps the screen in ebx and false in edi.
 // MiniMax R (11-10): no new form, no lower score (95); a 300 s permuter run over this body lowered
 // the count only by swapping a call's arguments, which changes what the widget update does, so the
 // body stands; the count copy, the item pointer and the call result keep the next stack slot round
@@ -2663,10 +2667,6 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // MiniMax A (11-04): the four widget-index shorts' declaration order (seven orders) 95 each; the players[i] address kept in a local (function scope and loop scope) 95 each; no lower score.
 // MiniMax I (11-01): no new form, no lower score.
 // MiniMax G (11-04): no new form, no lower score: the locals' homes and the players[i] reload after the voice-state query stay as they are.
-// score 95 (was 95): the locals live in the other stack slots (shown count, the first
-// loop's player, the second loop's four widget indices), retail reloads players[i] after the
-// voice-state query, and the last loop keeps the screen in edi and bitmap_a in ebx where
-// ours keeps the screen in ebx and false in edi.
 // Earlier round: the widget indices as longs (with (short) casts at the
 // find_text/find_bitmap calls) 198/227, the helper taking them by reference 95/198/227, the
 // helper's assignment order 96/98/99 and a mode local in the last loop 95 all compile to the
@@ -2815,6 +2815,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // one named flag for the team test shared by the first two loops 295 (921 bytes); `no_team = false` in the second loop's team arm 184 (912 bytes); the last loop as a
 // while with its own increment 95 (same code); the voice state defaulted to 2 re-measured 119 (932 bytes); the empty-list arm clearing shown_count first and passing it
 // 166 (918 bytes, the two list-fill calls merge); the second loop's player looked up after the local search 127 (925 bytes).
+// Round 93 (m3 lane 1, fast): diagnostic, reverted at once: players[i] read through a volatile cast at the 0x53750 call 89
+// (register-masked aligned 72 -> 45: only the voice block changes; the slot permutation and the last loop stay, so they are
+// separate causes), that with the helper's default arm chained 86. Tried: the helper's four NONE stores ahead of the switch
+// with no default arm 165 (921 bytes); the bitmap stores shared after the switch, the default arm returning 196 (937 bytes);
+// the second loop's team test as one condition (team field read at each use) 95; the voice state as a long 95; the second
+// loop's search result as an initialised local 95 (the last three the same code). BLOCKED-BY 0x53b40 (the reload).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
