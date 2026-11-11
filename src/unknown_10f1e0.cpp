@@ -1669,6 +1669,31 @@ long function_cbd50(long unit_index, short weapon_index);
 // of line, and only then is the data reloaded, after the call); the second slot read as a byte-offset expression
 // 349, the first 349, both 349 (same code as the macro). So neither a store to the flag nor another spelling of the
 // lookup stops the sharing; only a real call between the queries did. NOT kept: body below unchanged.
+// M3 lane 1 r88 (fast with 0xcbd50, 0xc70b0 and 0x1103a0, which stays 453): a headers local (the pool's data) for the
+// two weapon-object reads only, combined with the result type and depletion form: in the controlled block with a bool
+// result and the `&&` depletion 326 (1280 B); at entry with the byte result and the if-form depletion 326 (1280 B); at
+// entry with the byte result and the `&&` depletion 351 (1309 B); re-measured in the controlled block with a bool result
+// and the if-form 341 (1269 B) and at entry with a bool result and the if-form 349 (1257 B). Re-measured: the plain
+// parameter at the 0xc70b0 call (no `unit_reference`, no volatile read) 322. New: that with a bool result 372 (1236 B);
+// the interruptibility test spelled `state->channels[0].unknown14 & 0x10` as 0x1103a0 does 164 (same code).
+// M3 lane 9 r105 (fast; "masked" = aligned count with registers and stack offsets ignored, control 164 masked 49): a
+// grid of depletion (`&&` / if-form: first sets with `<= 0`, second clears on `> 0`) x an object-headers local (none /
+// in the controlling block for the two weapon-object lookups / at entry for the unit and both lookups) x byte/bool
+// result x slot reads (macro / entry unit): 24 forms 164-361, none below 164 (the bool result 194/1262, if-form 330/1292,
+// if-form with bool 361/1243, entry headers 334/1273, 339 and 325/1286 cells re-measure listed forms); best masked the `&&` depletion with the
+// block headers local and a bool result 326 (masked 23). The headers taken at entry for the weapon lookups only (unit
+// by the macro) with the if-form and bool result 349 (masked 25; round 77's form, re-measured), other cells 323-351; on it the three flags in all six declaration orders
+// 341-351, interruptible declared before depleted 351 (1255 bytes, masked 18: depleted then takes BL with retail's
+// setle and interruptible goes to memory, as retail; left: retail loads the controlling field into EBX before the
+// flag stores, stores all three zeroes to memory and reloads depleted's false from +0x12 at both joins, and re-reads
+// the pool's data in the second query); with the controlling field tested directly 351 (same code); with a byte
+// result 322 (masked 40).
+// Round 87 (m3 lane 11, fast): the two slot reads through slot_handler.h's object_get view 164 (same code, round 297's
+// accessor re-measured); result set from 0xc70b0's return with the switches under `if (!result)` 332 (re-measure). New: the
+// interruptibility test between the two queries 362 (1314 B); the second query as `if (second != NONE) depleted &= count
+// <= 0;` 343 (1299 B); the 0xc70b0 test negated, switches first, `else result = true` 325 (1295 B). On lane 9 r105's
+// entry-headers/if-form/bool-result/interruptible-first base (re-built: 351 at 1255 B): `controlling` read before the
+// overlay and name 351 (same code); the second clear as `depleted &=` under `if (second != NONE)` 350 (1256 B).
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1806,7 +1831,8 @@ bool __stdcall function_110ab0(long unit_index)
 // (value set then overridden) is now the ternary, 453 (1793 B, was 450 at 1789 B); the raw +0x14/+0xb0
 // flag tests use the named `channels[0].unknown14` / `channel_9c.unknown14`, same code. Tried:
 // `bool result = true;` with the default arm dropped 483 (1785 B).
-// score 453 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
+// score 445 (was 453): this round found no gain - retail keeps the result byte in the first argument's dead
+// earlier 453 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
 // slot (round 85's `bool result = true;` with no default arm is the spelling that lands it there) and holds
 // index*12 in EDX so the unit is re-derived for the query; ours keeps the unit in a register.
 // Earlier: this round found no gain - retail keeps the pool pointer live in ECX and the data in
@@ -1965,6 +1991,39 @@ bool __stdcall function_110ab0(long unit_index)
 // depleted 490 (1817 B); the state name read into a local at entry for the first switch 530 (1865 B); the
 // overlay identifier read into a local at entry for the second switch 464 at 1793 B, but the unit index then
 // arrives in EDI (0x10ff40 218, 0x111650 686); name and overlay at entry plus the `&&` depletion 594 (1905 B).
+// Round 163 (m3 lane 6, fast with 0x10ff40/0x111650, controls 12/621): retail keeps depleted at +0x12 and
+// interruptible's home at +0x13 (reloaded into BL around the seat lookups, which use BX), the true result in the
+// unit index's slot, `requested` never in a register, state in EDI and g_4e0300 in ECX for the second lookup's
+// reload of ->data; ours holds `requested` in EDI and state in ESI. `requested` read through a const pointer to it
+// 453 (same code); `controlling` read first with `bool result = true;` and no default arm 483 (1785 B, unit index
+// in EDI, callers 217/655), that with `requested` through the pointer 483; depleted, interruptible and the overlay
+// flag as char 448 (1801 B), interruptible alone as char 448 (the whole gain; a type picked by score, five points),
+// the overlay flag alone as char 453; the overlay identifier read into a local before its flag 461 (1789 B);
+// interruptible assigned directly (`= (... & 0x10) != 0`) 445 plain (1793 B, callers unchanged; state moves to EDI as
+// retail, but the flag becomes `mov bl, [edi + 0x14]; shr; and` where retail has `test; je; mov bl, 1`, aligned 343 ->
+// 351: not kept); the overlay flag initialized directly 453; the second depletion test as nested ifs 453; the 0x600008c
+// and 0x400000c ternaries as if/else 453 each; the interruptible test ahead of the two lookups 453. All restored.
+// Round 149 (m3 lane 8, fast; callers 0x10ff40/0x111650 in the same run): retail stores the `true` default in the unit
+// index's dead slot at entry and reloads it at the joins (0x11053a/0x11053e); the 0x400076c group's true and the 0x700005c
+// group's non-0x400000c result jump there, the 0x600008d group and the inner 0x600008c switch store an immediate 1. Every
+// form with `bool result = true;` makes our first pass load the unit index into EDI, so it becomes a register argument
+// (0x10ff40 12 -> 217). Re-measured `bool result = true;` with no default arm 483 (1785 bytes); on it: state before
+// control 483, the result declared first 483 (same code); an object-headers local for both weapon lookups 489 (1809 bytes,
+// 0x10ff40 154), that also for the unit 472 (1793 bytes, 0x10ff40 154, 0x111650 596); the 0x400076c and 0x700005c arms as
+// `if (requested != 0x600008c) result = interruptible;` / `if (requested == 0x400000c) result = allow;` 519 (1749 bytes).
+// Round 168 (m3 lane 5, fast, callers 0x10ff40/0x111650 checked in each): kept `interruptible = (state->channels[0].
+// unknown14 & 0x10) != 0;` in place of the false-then-if flag (round 163's listed 445; it drops a flag set inside a
+// test): 445 at 1793 bytes, callers 12/566 unchanged, state then in EDI and the index in EBP as retail; left: ours
+// gives ESI to `requested` and keeps the unit pointer, where retail keeps the pool data in ESI and index*12 in EDX
+// and reloads the unit for the seat reads (the second from g_4e0300 again). The slot lookups through the existing
+// unit_get_current_weapon/unit_weapon_view_get (include/unknown_1e1f20.h) 453 (same code: LTCG merges the unit load
+// across views). Re-measured: `bool result = true;` with the 0x400076c/0x700005c if-arms and no default 519 (1749 B;
+// retail's default reloads that byte, `jne 0x11053e`), index in EDI, 0x10ff40 217; the direct overlay flag on 445
+// 445, alone 453; a headers local for the unit and both weapon lookups on 445 445 (1789 B; data ESI and the seat
+// reload as retail, but the index arrives in ECX: 0x10ff40 154, 0x111650 596). On 445: the headers local for the
+// entry unit only 445; for the unit and both seat reads 478 (callers 154/596); for the seat reads and the weapon
+// lookups 504 (154/596); the seat bytes read through the `unit` local 445 (round 115's listed form); the flag as a
+// `? true : false` ternary 445; the flag as `(bool)((state->channels[0].unknown14 >> 4) & 1)` 452.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -1983,8 +2042,7 @@ bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 		long second = function_cbd50(unit_index, *(char *)((byte *)UNIT_ANIMATION_OBJECT(unit_index) + 0x213));
 		if (second != NONE && *(short *)((byte *)UNIT_ANIMATION_OBJECT(second) + 0x17c) > 0)
 			depleted = false;
-		if (state->channels[0].unknown14 & 0x10)
-			interruptible = true;
+		interruptible = (state->channels[0].unknown14 & 0x10) != 0;
 	}
 	if (function_0c7070(unit_index))
 		result = interruptible;
@@ -2401,6 +2459,47 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // b2B (11-06) walk against retail, all 849 instructions: no behaviour difference (fields, conditions, callees and
 // arguments agree). Still differing: frame 0xcc versus 0xd4; retail inlines the first 0x11df30 and calls channel_play
 // out of line; the x*0.5f+0.5f operand order. Score 776, unchanged.
+// Round 163 (m3 lane 6, fast; aligned/masked = difflib counts with addresses, or also registers and stack offsets,
+// masked: control 587/288): in the overlay loop ours inlines channel_play and channel_start (a direct set call)
+// where retail calls channel_play; retail's dead entry store of the model's graph and the loop's dead `id` store
+// share one slot (+0x20), ours stores `id` at +0x44. The overlay loop moved into a forceinline helper 776 (590/288,
+// same calls); the ratio as `x * 0.5f` then `ratio += 0.5f` 847 (3414 B, 580/281: retail's mulss/addss on one 0.5
+// register and its merged clamp store, rest shifted); `active` declared at function scope 776 (same code); the
+// direction vectors declared at function scope 776 (same code); the id copied inside the index test with that
+// ratio 856 (3385 B, 581/280; the loop still inlines both levels in the reduced build). The seat weight as an if/else
+// 770 (3414 B; six points); the two relative-angle subtractions j first 773 (a statement order, not kept); the 0x114
+// animation read from the control at both uses 843 (3425 B); the relative centred test j first 775; the final flags
+// as an if/else 788 (3388 B, masked 250, tail layout unchanged); the default overlay's play call under its own if
+// 776 (same code); the side vector through the existing cross3f 863 (3441 B); the default angles copied j first 776;
+// the 0x20 flag set before the projection 776. All restored.
+// Round 149 (m3 lane 8, fast): retail tests channels 0x9c/0xbc through the channel pointer (`lea eax, [ebp + 0x9c]`,
+// then `cmp word ptr [eax + 6]`); the file's channel test function_111651 at the four channel tests gives that 819
+// (3405 bytes; the local channel's test stays a call), with a `__forceinline` declaration of it 823 (3414 bytes), pointer
+// locals for the first two channels 823 (3414 bytes, register-masked aligned 288 -> 286); the side vector through the
+// existing cross3f 863 (3441 bytes); on round 39's `for` loop with the id inside the index test (re-measured 873:
+// 41 calls and two fpatan as retail, frame 0xc4, 3337 bytes, but channel_play still expanded two levels in the loop and
+// at the final start, where retail calls 0x1cb490 and 0x1cb410) the forced channel test 902 (3324 bytes) and retail's
+// dead render-model lookup as an unused local 873 (eliminated). Re-measured: the id inside the index test with the
+// projection reading its input in place 833 (3403 bytes, the in-place form's listed score; the loop's channel_play stays
+// expanded). The function_111651 form may repeat round 7's pointer helper (838 then). The two blend products computed
+// after the two aiming channel_play calls 769 at retail's 3403 bytes (length term only: differing lines 761 -> 769,
+// aligned 288 -> 296); on it: the in-place projection 838 (3409), channel pointer locals 822 (3390), the cross3f side
+// 837 (3417), the products inside the weight test 847 (3391), the forced channel test 822 (3390).
+// Round 168 (m3 lane 5, fast then plain; masked = difflib count with registers and stack offsets masked, 162 at
+// 776): the seat-weight block as two sample calls in an if/else (retail duplicates the push setup in both arms and
+// cross-jumps them) with the overlay ratio as `x * 0.5f` then `ratio += 0.5f` (retail's mulss/addss on one 0.5
+// register) 762 at 3403 bytes, length term only (`!!` lines 761 -> 762, aligned 400 -> 405, masked 150, frame 0xc8;
+// not kept); alone 809 (3404 B, masked 153) and 847 (3414 B, masked 157). The forms after "On 762:" were measured on it.
+// The overlay body in a plain inline helper 975 (3264 B, the helper stays out of line). Diagnostic: with the loop's
+// body disabled the first 0x11df30 is still a call (845), so the loop's expansion does not block it. On 762: the 0x114
+// id copied before the combined test, the test on id.index 830 (3407 B, masked 148: retail tests the copy, `mov edi,
+// [ebp+0x114]; shr; cmp; mov [esp+0x20], edi`); the 0x114 test nested (unit test outside, the id copied and tested
+// inside) 829 (3405 B, masked 145); that with the conditional `active` clear 834 (3403 B, masked 146), also with the
+// default angles as one aggregate copy 847 (3385 B, masked 135); the blend products with their operands swapped 762
+// (same code). Re-measured on 762: the `for` loop 881 (3348 B), the aggregate default angles 836 (3389 B, masked 142),
+// the in-place projection 836 (3407 B, masked 157), the conditional `active` clear 840 (3391 B, masked 145),
+// function_111651 at the four channel tests 767 (masked 154). Masked keeps falling with the retail-shaped forms while
+// the positional count rises; the loop's channel_play still expands two levels where retail calls 0x1cb490.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
@@ -3048,12 +3147,12 @@ bool function_10dc70(long arg_0);
 bool function_10eaf0(long arg_0);
 long g_55e70c;
 
-PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
+PRIVATE __forceinline bool function_111651(c_animation_channel const *arg_0)
 {
     return arg_0->graph_tag_index != NONE && arg_0->animation_id.index != NONE;
 }
 
-// score 511 (was 670; 713 before round 92): frame 0x7c versus native 0x80; request/control/tag homes,
+// score 566 (was 621): earlier 511 (was 670; 713 before round 92): frame 0x7c versus native 0x80; request/control/tag homes,
 // request-byte normalization and selected validity expansion remain. Both arguments stay on the stack; ret 8 agrees.
 // Earlier 666 (was 666): this round found no gain - the request pointer's three stack re-reads still need a
 // pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
@@ -3257,6 +3356,10 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
 // that ours folds into the block's own test; `mov edx, edi` for the s_bit_owner where retail re-forms `lea edx` (0x1119b5,
 // 0x1119ca); local_28 (0x111c69) is computed before the change flag in retail but moving it up costs 684-707 (slot homes
 // swap); the OR order of the tail (0x112045).
+// Round 149 (m3 lane 8, plain): `__forceinline` on function_111651's definition (retail expands it at all eight sites)
+// 621 -> 566 at retail's 2577 bytes (differing lines 609 -> 566, length term 12 -> 0; offset-masked aligned 138 -> 127,
+// register-masked 98 -> 87). Kept although the line above did not keep it: the base changed, the length now equals
+// retail's, and a forceinline declaration on an existing helper is an accepted form.
 // @retail 0x111650
 bool __stdcall function_111650(long arg_0, long *arg_1)
 {

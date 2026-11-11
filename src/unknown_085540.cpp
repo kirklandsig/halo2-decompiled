@@ -804,12 +804,19 @@ static inline long view_buffer_write(s_ring_buffer *buffer, long count, const vo
  }
  return result;
 }
+static inline void view_buffer_advance(c_simulation_view *view, long count)
+{
+ s_ring_buffer *buffer = (s_ring_buffer *)&view->unknown9c;
+ long next = buffer->start + count;
+ next %= buffer->size;
+ buffer->used -= count;
+ buffer->start = next;
+}
 static inline void view_buffer_read(c_simulation_view *view, long count, void *destination)
 {
  s_ring_buffer *buffer = (s_ring_buffer *)&view->unknown9c;
  buffer->read_wrapped(buffer->start, count, destination);
- buffer->start = (buffer->start + count) % buffer->size;
- buffer->used -= count;
+ view_buffer_advance(view, count);
 }
 bool function_1995a0(const byte *source, dword source_size, byte *destination, long *compressed_size, dword capacity, long level);
 
@@ -952,9 +959,14 @@ bool function_862e0(c_simulation_view *view)
 }
 
 
-bool function_685f0(void *block, long *size, byte *destination, long capacity);
+bool function_685f0(long capacity, byte *destination, void *block, long *size);
 
-// score 2 (was 2): the constant 0xffff is loaded before the address of the buffer; retail loads
+// score 1 (was 2): 0x685f0 is now declared (capacity, destination, block, size), the order
+// retail's loads imply (register arguments load from the last to the first, and retail sets edx
+// before ecx), so the two loads come in retail's order and only the register differs: the
+// destination goes in eax, retail's in edx. With the standard marker on 0x685f0 this function
+// matches (see its note). BLOCKED-BY 0x685f0.
+// Earlier, score 2 (was 2): the constant 0xffff is loaded before the address of the buffer; retail loads
 // the address first. The registers that carry the destination and the capacity are the
 // callee's choice, and function_685f0 in src/unknown_067e10.cpp is three instructions
 // off retail. BLOCKED-BY 0x685f0 (round 14: it takes the destination in eax, retail's
@@ -967,7 +979,7 @@ bool function_869a0(c_simulation_view *view, void *block)
  byte encoded[0xffff];
  long encoded_size;
  bool result = false;
- if (function_685f0(block, &encoded_size, encoded, sizeof(encoded)))
+ if (function_685f0(sizeof(encoded), encoded, block, &encoded_size))
  {
   struct { short kind; short size; long sequence; } header;
   memset(&header, 0, sizeof(header));
@@ -986,9 +998,18 @@ bool function_869a0(c_simulation_view *view, void *block)
 }
 
 
-bool function_68670(byte *source, long size, void *block);
+bool function_68670(void *block, byte *source, long size);
 
-// score 24 (was 24): only case 2's two 0x68670 argument loads and the first read's forwarded start differ on the match-only forms below; BLOCKED-BY 0x68670 for the loads. Lane 12 r78 reached 2 (not kept: the read helper's new offset parameter was found by measuring, with no
+// score 2 (was 2): MiniMax C (11-10): no lower score this round. The two remaining instructions are the
+// order of the argument address computations for 0x68670: this body sets up the block address before the
+// source address, retail the other way. Passing the source as `&payload[0]`, naming it in a local
+// pointer, or casting the block to a byte pointer all leave the order unchanged (2 each), so the
+// difference is the callee's declared parameter order, which lives in a contributor's file. The
+// block as a plain byte array instead of the aligned union is 2 as well, with the same two `lea`s.
+// score 2 (was 24): MiniMax C (11-10): the ring advance is now a helper of its own, so it reads the
+// ring's start from memory again after the wrapped read, as retail does, and the header size is
+// loaded after the start and used stores; only case 2's two 0x68670 argument loads differ now (ours
+// sets up the source address before the block address, retail the other way). Lane 12 r78 reached 2 (not kept: the read helper's new offset parameter was found by measuring, with no
 // retail call to show it, 10-30 rule). That 2 form is retail's code but for case 2, which sets up 0x68670's source before its block (ours after). Only the
 // declared order of that contributor function moves it: (block, source, size) or (block, size, source) gives a byte match in
 // a diagnostic, so BLOCKED-BY 0x68670. This round (fast): the read taking its offset, one `ring` local before the first read and
@@ -1250,7 +1271,9 @@ bool function_68670(byte *source, long size, void *block);
 // reads, and the advance taking the remainder first (`long next = start + count; next %= size; used -= count; start = next;`). Retail's own order there is idiv, used update, start store. The remainder in the local's initializer 2; returned from the helper and stored by it 2;
 // `buffer->start = consume(view, count)` with a returning helper 2. Same helpers, start stored before used 121 (554), with no named next 121; used first with no next 133 (559). The one read helper calling a view advance helper 2, without next 121 (554); advance on `this` or on the ring pointer, without next 24 (553), with next 133 (558);
 // next and used-first in one read helper with no advance 133 (558), start first 24; used first without next 29; a whole read member 24; forced-inline read or both helpers 121; the advance through a re-derived ring inside one helper 26 (559); direct read calls plus the advance helper 24 (556).
-// Round 73 (m3 lane 13): HELD (needs the owner's OK for 0x68670, a contributor's function). Re-measured on this tree:
+// MATCH (applied 11-10 by the m3 coordinator from lane 15 r65's held patch; full check: lost []): 0x68670 takes
+// (block, source, size) and main's ring-buffer helpers already have the read split.
+// Round 73 (m3 lane 13), held then (0x68670 is a contributor's function). Re-measured on this tree:
 // round 217's two-helper read (a position-read helper and an advance helper taking the remainder first) 24 -> 2 (fast),
 // and with 0x68670 declared (block, source, size) at its definition, declaration and this call 0x865d0 and 0x68670
 // both MATCH in the plain check of both files, nothing else in them changed. Code put back; the full diff is
@@ -1259,7 +1282,7 @@ bool function_68670(byte *source, long size, void *block);
 // helpers without it 122, with the used update first 133; one helper with the used update first 27; two helpers with
 // `long next = (start + count) % size;` as one initialiser MATCH (the patch uses this, the smallest form that
 // matches); one helper with that initialiser 133. Both the helper pair and the named remainder are needed.
-// Round 65 (m3 lane 15): HELD (needs the owner's OK), build/r65/held-865d0.patch: MATCH, fast and plain (0x68670 still
+// Round 65 (m3 lane 15), held then, build/r65/held-865d0.patch: MATCH, fast and plain (0x68670 still
 // matches and no other function of the two files changes) with round 217's read split (a position-read helper, then an
 // advance helper that names the remainder ahead of the used update) and 0x68670's parameters declared block, source,
 // size at its definition in src/unknown_067e10.cpp (a contributor body), its declaration and its one call here: retail
@@ -1303,7 +1326,7 @@ void __stdcall function_865d0(c_simulation_view *view)
    {
     union { __int64 alignment; byte bytes[0x4048]; } block;
     memset(&block, 0, sizeof(block));
-    if (!function_68670(payload, header.size, &block))
+    if (!function_68670(&block, payload, header.size))
     {
      view->fail(5);
      return;

@@ -74,11 +74,22 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
+// M3 lane 8 r150 (fast; aligned 406, register-masked 216 on this body): retail forms 1/range once and multiplies it by
+// the minimum twice with the minimum held in XMM2 (no reload, so not an aliasing effect). Tried: the third and fourth
+// offset points' scale as `0.0f - half_width` 592 (same code; re-measure of round 134's form); the point helper's products scale-first 592 (same code);
+// its sums product-first 592 (same code); both range products as `minimum / range` 697 (2822 bytes, real divisions);
+// the second product written `minimum * (1/range)` 592 (same code, still shared; re-measure of rounds 59/128/134); the
+// per-ray hit update (clamp, distance, hit flag, minimum) as a forceinline helper writing through pointers 605 (2817 bytes);
+// the arg_6 tail as `if (!arg_6) {...} else *arg_2 = local_3;` 586 (2839 bytes, aligned 439, masked 295: an arm swap
+// with the test negated, 6 under the bar, not kept); after it: the ray length read from the array at each use 689; the hit
+// distance from the ray-length local 682 (first difference +0x2); both 687 on the swapped tail; no `else` after the early
+// return 684 (2834 bytes, aligned 358, masked 183: the lowest aligned count here, a lead), with the swapped tail 675.
+// score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
+// MiniMax E (11-10): no new form, no lower score (592); the frame size agrees but the homes do not: the success byte, the float, the four-flag array and the copied vector sit at other frame offsets here, and this build has thirteen instructions fewer than retail, so the exit blocks fall differently.
 // MiniMax S (11-06): The frame size agrees but the homes do not: the success byte sits at frame+0x13 where
 // retail keeps it at frame+0x17, the float at frame+0x10 against frame+0x18, the four-flag array at
 // frame+0x24 against frame+0x1c and the copied vector at frame+0x4c against frame+0x40, and the first
 // comparison branches the other way round.
-// score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // W14L: full statement walk against retail (0x2922b0-0x292df3; args 0x120..0x134 after the pushes): fields +0x14/+0x30/+0x48,
 // tests, callees (0x1e5450, 0x30bf0 x3, 0x1697c0 with its six stack args), both cross/fallback chains, the four points,
 // ray loop, per-ray clamps and signs, both rotations and the arg_6 tails agree; no behaviour difference found. Constants
@@ -399,6 +410,36 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // M400: Complete original input/basis/origin/distance/ray/root/rotation-cross/projection defaults
 // 603/677/637/665/671/592/592/598. NOT kept: none improves; original
 // producers and all in-place snapshots restored; result/input/minimum/hit homes remain.
+// Round 181 (m3 lane 4, fast): the active test written positively with `return local_0` at the end of its block and
+// `return true` after it (or as its else) 674/674 (2841 bytes: retail's jbe to a last inactive exit, but the range
+// field is read again after the output clears); with the range local read before that test 665 (2830: retail's reuse
+// of the compared register for the range home); the range local before the current negative test 594 (2828); the cross
+// helper's products in retail's load order 592 (same code), with the positive range form 665. Diagnostic: the success
+// and minimum locals renamed to sort the other way 592 (same code: names do not order these homes). Retail's low frame is
+// success byte +0xb, ray index +0xc, minimum +0x10, hit bytes +0x14, cross result +0x18; ours success +0x7, minimum +0x8,
+// ray index +0xc, cross result +0x10, hit bytes +0x1c.
+// M3 lane 9 r105 (fast; "masked" = aligned count with registers and stack offsets ignored, control 592 masked 216): a
+// grid of the inactive exit last (`if (field_48 > 0) { ... return local_0; } return true;`) x the range read first
+// inside the body x a named inverse range for both products: 8 forms 592-684 (the inverse range alone 604, re-measured); exit last with the range first 656
+// (2830 bytes, masked 204), the inverse range adds 11-12 masked everywhere. On the 656 form: the FLT_MAX minimum
+// declared inside the body 669 (masked 209); the hit flags declared inside the body 687 (216); the origin copy taken
+// first in the body 691 (289). The ray loop as `do { ... } while (++local_17 < 4);` without the countdown 751 (2772
+// bytes, masked 250), on the 656 form 731 (239).
+// M3 lane 10 r86 (fast, control 592, aligned 484, masked 216): retail forms 1/range once and multiplies it by the minimum twice
+// (second product in place on the inverse, the output store sunk below it) and negates the half-width separately for points 3 and 4.
+// Both fractions as `minimum / range` 697 (2822 bytes, one divide shared); only the clamp input or only the output as a divide
+// 679/679 (2845); fourth width as `0.0f - width` 592 (same code); widths as `width * -1.0f` 680 (2844); a second point helper
+// negating the width at each product 678 (2844), with one named negated width 600 (2821); the half-width read once into a named
+// local 688 (2828); the point helper's width as `real const &` 676 (2829); the point helper as plain inline 592 (same code).
+// M3 lane 1 r89 (fast; control 592, aligned 273, masked 130): the view's +0x7c filler as a typed `vector3f up` member, both
+// `(vector3f const *)((byte *)local_1 + 0x7c)` casts as `&local_1->up`, 592 (same code; header restored); the single-exit form
+// (`if (local_2->field_48 > 0.0f) { ... } return local_0;`, no early `return true`) 629 (2842 B, first difference +0x1d); the
+// minimum update as `if (local_19 < local_4)` 592 (same code); the ray vector as a brace initializer 592 (same code); the ray
+// length read from `local_14[local_17]` at each product 689 (2834 B).
+// M3 lane 12 r110 (fast; aligned/masked control 337/130): `*arg_5` published before `*arg_4` 680 (2837 bytes); one named
+// `fraction = (1/range) * minimum` for both outputs 605 (2818); the arg_6 arm's side axis assigned before the forward 691;
+// the root helper's product as root * limit 592 (same code; re-measure of round 134's `sqrt * angle`); the non-arg_6 forward copied from the entry copy of the input
+// (`local_7 = local_3`) 673 (2828, first +0x1d); one named full ray length for the four array entries 604 (2820).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

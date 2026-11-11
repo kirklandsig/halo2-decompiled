@@ -573,6 +573,11 @@ real magnitude3d(vector3f const *v);
 bool g_46fcc4 = true;
 bool g_51e9bc;
 
+// score 49 (was 49; before r98 was 118; r101 and r103 unchanged): MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
+// score 49 (was 49; before r98 was 118; r101 unchanged): MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
+// MiniMax S (11-10): no new form, no lower score (49); the reduced image lays this function out differently from retail (fast 308,
+// 1018 bytes against 1077), so the fast diff is not a faithful picture of it and no change was steered from it; the full check agrees
+// with the queue (49, ours 1078 bytes against retail's 1077).
 // score 49 (was 49; before r98 was 118): MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
 // argument; the dot's term order and the jitter block's register allocation still differ.
 // Before 11-07 (118, was 132): the first 79 lines and the frame agree; projection order and x-operands, the velocity row schedule and the jitter spills (retail spills y and the z on/off value into the limits' slots, ours x and the z on/off into parameter homes) remain. Earlier: 1.0 sat in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
@@ -840,6 +845,24 @@ bool g_51e9bc;
 // first +0x21) [52]; the on/off values as ternaries 179 (1058 bytes) [73]; each half-scale select folded into its offset product
 // (x/y/z assigned once) 171 (1067 bytes) [82]; the offset declared at the top of the jitter block 49 [42] (same code); the half
 // scales named before each `x = scale_x * x` 56 (1079 bytes) [44].
+// Lane 12 r104 (fast, 0x24590 and 0x1cd6c0 listed, control 49): what differs in the jitter block is the register of on_x
+// (retail XMM2, ours XMM1); from it -1.0 takes XMM2 here (retail reuses XMM0), x is spilled where retail spills y, and the
+// spills reuse the rsqrt temporaries' slots (+0x2c/+0x30) where retail reuses limits.j/limits.k's (+0x20/+0x24). Tried:
+// `limits` renamed to sort before the rsqrt temporaries 49 (same code: names move no spill slot); the on/off factor on the
+// left of each sign product 49 (same code); the offset vector's components as the jitter's working values 74 (1079 bytes);
+// the on/off values defaulting to 0 and set on their bits 179 (1058, the ternary code); the offset as one aggregate
+// initializer 49 (same code). Spellings giving listed numbers: the on/off values as if/else 179, the signs as if/else 64
+// (1081), the half scales as named if/else selects 56 (1079).
+// Round 101 (m3 lane 16, fast, 0x24590 listed): the scaled add given `-projection` 49, the jitter offset as one aggregate
+// initializer 49, the movement scaled as `scale * movement.i` 49, the movement add given `&movement` first 49 (all four same
+// code); the on/off values zero by default and set to 1.0f on their bits 179 (1058 bytes). Re-measured: `real angular` declared
+// first 49, dword bits 49, a velocity pointer before the first store 166 (1023 bytes). In the listing the projection's j and k products
+// trade registers (retail k in XMM7, j in XMM0) and the jitter's on/off values start one register on (ours XMM1, retail XMM2).
+// Round 103 (m3 lane 16, fast, 0x24590 listed; aligned 42, register-masked 16 on this body): the limits as a const aggregate
+// initializer 49, the bits as `long const` 49, the velocity rows as `limits.i * state->control.i` 49, the jitter rows as
+// `0.2f * x * limits.i` 49 (all four the same code), as `x * (0.2f * limits.i)` 105 (1086 bytes). The extra byte is the z sign:
+// retail builds it in place over the register holding -1.0 (`je; movaps xmm0, xmm3`) because that constant dies there, ours
+// copies 1.0 and selects -1.0 like the other two signs. A compile-only /Gr harness does not reproduce this body (142 SSE lines).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -949,12 +972,16 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
+// score 114 (was 114): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // MiniMax S (11-07): no new form, no lower score; the crosses declared apart, declared at first use or
 // declared at the top of the body give 114, the two cross calls swapped give 124 and the goal copy by
 // components gives 120, so the body stays; the rotation products, the side-dot order and the exit copies differ.
 // MiniMax R (11-05): no new form, no lower score; writing the two turn-block crosses out with retail's
 // differing third terms gives 140 at retail length (the rotation block is re-generated), so the body stays.
-// score 114 (was 114): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
+// MiniMax S (11-10): no new form, no lower score (114); the reduced image lays this function out differently from retail as well (fast 409,
+// 1167 bytes against 1382), and the rotation products, the side-dot and the exit scheduling are unchanged; the full check agrees with the
+// queue (114, ours 1389 bytes against retail's 1382).
+// Earlier 114 (was 114), merged from a second score line: Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // Round 16: retail takes the animation state in EAX, the component index in EDX, the physics
 // pointer in ECX and the output pointer in EDI, then the object index, the definition, the value
 // and the flags on the stack; this file's declaration describes another order and the callers are
@@ -1252,6 +1279,29 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // either operand order) 127 (1382, al 103/66: every rotation product load-first), with the flag form 170, with the side dots too 168.
 // Left on the lead: the four rotation products and the new cross's goal.j products (retail copies the register and
 // multiplies from memory), the old cross's two forward.i products (retail loads forward.i), the side-dot order and the flag byte.
+// Lane 5 r166 (fast, 0x24590/0x1cd6c0/0x1ecf50 listed, control 114): `__forceinline` on initial_cross 114 (same code; last
+// measured on the 155 body); the angle guard as `fabs(angle) >= 0.0001f` 205 (1391 bytes); the rotation angle computed before
+// the forward copy 125 (1388); angle declared before movement 114; the side test as `0.0f >= product` 114. Body restored.
+// Lane 12 r104 (fast, 0x24590/0x1cd6c0/0x1ecf50 listed, control 114): lane 1's lead (goal copied into `rotated`, one store
+// at the end) re-measured 114; on it the flag store before the goal copy 107 (1384 bytes, lane 9's number for that order on
+// this body); that with `moved_away ||` tested first 112 (1374); both orders on this body with its early return 111 (1374);
+// `moved_away ||` first alone on this body 104 (1382; it short-circuits past the side products, which retail evaluates
+// first (its jae at 0x1e60d1, then the flag), so not retail's order and not kept); the sine and cosine named before the rotation call 150 (1382).
+// Also: both side crosses with their arguments reversed (the product's sign is unchanged) 138 (1394); the side dots' arguments
+// swapped on this body 111 (1393; lane 1's number for that swap on the lead); moved_away preset false and assigned the second
+// comparison inside the 0.99 test 117 (1391).
+// Round 148 (m3 lane 7, fast; masked = register-masked aligned count, control 114 [55]): lane 1's lead with sinf/cosf
+// re-measured 84 [60] (1384 bytes); new on this body: sinf/cosf for the rotation 101 [72] (1384; the rotation products are
+// unchanged and the turn crosses move, a positional gain, not kept), with fabsf for the guard too 131 [83] (1375), with the
+// sine and cosine named before the call 167 [129], with `angle * rate` passed to both and no rotation local 186 [91] (1365);
+// initial_cross taking references 114 (same code); the side test as `!(product > 0.0f)` 104 [61] (1390; it compares the
+// product with a zero constant where retail and this body compare a zeroed register with jae, so the gain is positional,
+// not kept). After it: the moved_away comparisons written constant first (`0.99f < alignment && dot < alignment`) 114,
+// initial_cross `__forceinline` with references 114, a selected-forward pointer (`new_forward = facing_goal;` in the snap
+// case, one `state->forward = *new_forward;`) 199 [129] (1352 bytes), the angle guard as `if (fabs(angle) < 0.0001f) return;`
+// 114, the animation test as an early return 114 (all 114s same code); re-measured: the side dots as (new, up) * (old, up)
+// 111 (1393, the count and length of the listed (old, up) * (new, up)), `0.5f < alignment` 114. The rotation products
+// come from rotate_direction (an Avoid file this round).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

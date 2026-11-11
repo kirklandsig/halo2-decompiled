@@ -616,6 +616,7 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
+// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // MiniMax S (11-09): the plane-0 product with the two operands of the i term written the other way
 // round changes no code at all (115), so the coefficient's register is not chosen by the operand
 // order of that product.
@@ -625,7 +626,6 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // MiniMax I (11-06): no new form, no lower score; the view vector copied into a local for the first plane's dot product gives 463 and 452 against 115.
 // MiniMax A (11-05): no new form, no lower score; the plane-0 term still loads `vector_e4.i` after the
 // forward copy and keeps the zero in xmm3 where retail has it in xmm4.
-// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // Round 16: retail loads the three `view->vector_e4` coefficients into xmm0, xmm3 and xmm4
 // before it copies the point and then reloads the point's components from that copy, ours reloads
 // the copied normal's x into xmm4; retail keeps the near distance in xmm5 and the zero in xmm4,
@@ -901,6 +901,47 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // after the normal copy k = 1..8 119 135 130 242 246 135 127 135; the first difference stays +0xbb (the e4.i load is not a numbering tie).
 // Store through `*(outside0 ? p1 : p0)` 368 (1867 bytes); `p1 = p0 + 1` 256 (1867); both segment loops as plain for loops 129;
 // intersection rows point-first 115 (same code); total counted per projected point 116.
+// Lane 3 r230 (fast, 0x1648d0 matched each time): the clip denominator written normal-first in all three terms 115
+// (same code); repeats of lane 16 r97's forms: the clip loop alone as a plain `for` 129, the projection loop alone 135
+// (listed at 129), the classification stored as the bare comparison (no `? 1 : 0`) 320 (1835 bytes); the outside flags
+// as `bool` with `? true : false` 320 (1835); in the projection tail `culled = false` after the cursor step 115,
+// `total += 2` after the per-point loop 214, the per-point counter as `short` 129. The head is still the late camera-i
+// load and the XMM3/XMM4 swap after it.
+// Round 65 (m3 lane 2, fast; 0x1648d0 and 0x320b0 matched each time; difflib aligned/register-masked in brackets, control
+// [73/33]): ours copies `output` (EAX) then `out` (EDX) from the cursor, one `mov` more than retail's `mov edx, edi`, so the
+// inner loop's pad is 3 bytes where retail has `jmp` + pad. Re-measured lane 6 r147's natural forms: walking `out` alone 249
+// (1867 bytes) [69/31]; with the `source` element pointer 114 [71/32]; walking out with `total` first 249 [67/29]; all three
+// 114 [69/30] (the classification's first-row j terms then match; left: e4.i, the denominator and numerator rows, the
+// intersection adds, the outer loop's `jmp` pad and `total` in ECX), on plane3f planes 114; the distance terms' operands
+// swapped on it 114 (same code). New: both outside flags named (`outside1` for the cull and the crossing test) 362 (1867
+// bytes, first +0x15); `if (denominator)` 115 (same code); a const plane pointer 115 (same code); near_sum/near_distance
+// `real const` 115 (same code); the projection cursor declared before the segment guard 115 [75/35].
+// m3 lane 14 r77: lane 6 r147's match-only recipe rebuilt (fast; not keepable below a byte match, it writes out the point and
+// scale helpers and names one delta of three): plane3f locals, `real delta_i` only, the denominator staged j, k, i from
+// `(p1->y - p0->y)` expressions, named scaled rows 25; `total` declared first in the projection block 22 (at the top of the
+// function 468, 1835 B); walking `out` plus a `source` pointer 21 (first +0x28a; saved as build/r77/1652e0-r77-21.patch in
+// worktree m3-lane14); the denominator staged i, k, j instead 37. A compile-only (no /GL) build reproduces that form's
+// clip block exactly, so screened there (SSE stream against retail, 25 at the 21 form): every subset of named deltas in
+// every staged order (48) and every named-before / expression / named-after-t choice per axis for the denominator and
+// the rows in both staged orders (250): none below the 21 form; all 48 ungrouped classification spellings give identical
+// code (grouped ones worse), so its first-row j operand order is not set by the source spelling; all 72 orders of the two
+// planes' negations (and d first or last) none better. Left at 21: the classification first-row j term (both loops), the
+// denominator's computation order (retail x, z, y with y loaded first in its product; a named delta loads first, temps
+// copy first, and the same named x must copy t in the rows), the distance's k operands, and total's register. New fast
+// checks on the 21 form (all screened first; 144 distance spellings, staged or single, none better either): the
+// distance through plane_distance_to_point 153 (1830 B), through dot3f 153 (1830 B); the classification through
+// plane_distance_to_point 39; the denominator in retail's x, z, y order with delta_j named and the rows' x named after
+// t 32 (masked 11 against the 21 form's 13: retail's denominator shape, the deltas computed z, x, y into XMM2/3/5 for
+// retail's x, z, y into XMM5/3/2, and the copied-t row is y for retail's x); the distance staged i, j, k 25.
+// M3 lane 16 r102 (fast, the file's matched functions and 0x320b0 unchanged): the two planes as two named plane locals (either
+// declaration order) 242 (1830 B); the far plane's `pass == 1 &&` test dropped 370; `segment_culled` zeroed by an `= {0}` initializer
+// in place of the memset 489 (1867 B); the far-plane mask as `if (!view->flag84 && !view->flag85) use_plane1 = false;` 474 (1835 B).
+// Body unchanged at 115.
+// M3 lane 8 r152 (fast; masked aligned 22): retail's `segment_culled` update is the `|=` (`or byte`) and its bound updates and
+// projection arithmetic are ours. Compile-only, identical code: `for (long i ...)` scope, the clip test as nested ifs, `bool`
+// outside and culled arrays. Real: `outside[segment * 2]` read at each use in place of `outside0` 249 (1867 B); the culled update
+// as `|= !(a | b)` 383, as `x = x || (...)` 284; the clip test's `&&` operands in the other order 275; the `w` clamp as an
+// if-statement on a copy of t.z 249 (all 1867 B). Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

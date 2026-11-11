@@ -108,7 +108,7 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 }
 
 #pragma inline_depth(1)
-// score 94 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
+// score 93 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
 // creation-call setup and transform scratch ranks differ.
 // MiniMax D (11-09): no new form, no lower score (94); the sixth argument is still read into ECX after the
 // prologue's pushes where retail reads it into EAX before them, and the third argument is still kept in
@@ -212,6 +212,19 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // once for the guard and both strip loops 649 (2703 bytes); the vertex source fields read at each use without the
 // element pointer 94 (same code); the luminance as one conditional expression 593 (2663 bytes); the squared distance
 // through the existing vector3d_from_points3d and length_sq3f 507 (2697 bytes). Still BLOCKED-BY 0x17cfa0.
+// Round 86 (m3 lane 11, fast; the header read 94 (was 94), the baseline full check gives 93): the short count-loop index
+// re-measured 102 (aligned 81, register-masked 46 against the body's 63/48: with 0x17cfa0 now taking both indices in
+// registers it gives retail's prologue and count loop with no pad change; left are the three field sums loading the lower
+// field first, the count/counter slots [esp+0x10]/[esp+0x14] swapped, a scratch rotation at the 0x13d370 and 0x17cfa0 call
+// setups and the transform rows). Slot pairs: both builds give the strip loop's base 0x10 and its strip length 0x14;
+// retail pairs the count with the length and the vertex counter with the base, ours the other way. New forms: the vector
+// cleared by one chained assignment (short index) 104; the index as a word 590; a named pointer to the current output
+// vertex for its seven uses 577 on both index forms (2690 bytes); the allocation size as `(short)count * 4 *
+// sizeof(vertex)` 93 / 102 (same code); the transform helper's point read as one aggregate copy 543 (2779 bytes).
+// Re-measures: the index renamed, the count renamed to sort last or first, 102 each (slots do not follow names).
+// Still BLOCKED-BY 0x17cfa0: ours passes the NONE first index in ECX and the definition in EAX, retail the other way
+// round (its declared order already matches retail's last-to-first setup, so this is the callee's own body, a
+// contributor's).
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

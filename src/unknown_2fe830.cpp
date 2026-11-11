@@ -7,6 +7,7 @@
 // the tolerance, the moves run out, or the shapes separate.
 #include <xmmintrin.h>
 #include "pair_agents_2eab70.h"
+#include "closest_hit_301a00.h"
 
 // six vectors copied one at a time (0x2e7d80): where a body sits
 struct class_2e7d80
@@ -73,7 +74,9 @@ public:
 
 	float distance() const { return position.value.m128_f32[3]; }
 	void take_point(vector_2fe830 const &value) { position = value; }
+	void take_point(__m128 const &value) { position.value = value; }
 	void set_normal(vector_2fe830 const &value) { normal = value; }
+	void set_normal(__m128 const &value) { normal.value = value; }
 	void set_distance(float value) { position.value.m128_f32[3] = value; }
 };
 
@@ -112,23 +115,16 @@ public:
 };
 
 // a collector that keeps the closest hit (0x301a00)
-class closest_collector_2fe830 : public hit_collector_2fe830
+class closest_collector_2fe830 : public class_301a00
 {
 public:
-	bool has_hit;
-	hit_2fe830 hit;
-
-	closest_collector_2fe830()
-	{
-		reset();
-	}
-
-	void reset()
-	{
-		has_hit = false;
-		hit.set_distance(3.402823466e+38f);
-		early_out = 3.402823466e+38f;
-	}
+ closest_collector_2fe830() { reset(); }
+ void reset()
+ {
+  has_hit = false;
+  hit.position.m128_f32[3] = 3.402823466e+38f;
+  early_out = 3.402823466e+38f;
+ }
 };
 
 struct query_header_2fe830;
@@ -219,7 +215,7 @@ void __cdecl function_2fe830(void const *a_, void const *b_, void const *input_,
 	{
 		second_collector->add_hit(&result);
 	}
-	float const approach = dot3_2fe830(closest.hit.normal.value, input->direction);
+	float const approach = dot3_2fe830(closest.hit.normal, input->direction);
 	float const end_distance = closest.hit.distance() + approach;
 	if (end_distance > 0.0f)
 	{
@@ -266,7 +262,7 @@ void __cdecl function_2fe830(void const *a_, void const *b_, void const *input_,
 			{
 				return;
 			}
-			float const moved_approach = dot3_2fe830(moved_closest.hit.normal.value, input->direction);
+			float const moved_approach = dot3_2fe830(moved_closest.hit.normal, input->direction);
 			if (moved_approach >= 0.0f)
 			{
 				return;
@@ -340,7 +336,7 @@ void class_2fec10::function_2fec10(void const *a_, void const *b_, void const *i
 	{
 		second_collector->add_hit(&result);
 	}
-	float const approach = dot3_2fe830(closest.hit.normal.value, input->direction);
+	float const approach = dot3_2fe830(closest.hit.normal, input->direction);
 	float const end_distance = closest.hit.distance() + approach;
 	if (end_distance > 0.0f)
 	{
@@ -382,7 +378,7 @@ void class_2fec10::function_2fec10(void const *a_, void const *b_, void const *i
 			__m128 const single = _mm_set_ss(result.hit.distance());
 			moved.rows[5] = _mm_add_ps(translation, _mm_mul_ps(_mm_shuffle_ps(single, single, 0), input->direction));
 			query->get_closest(&moved_a, b, &header, &moved_closest);
-			float const moved_approach = dot3_2fe830(moved_closest.hit.normal.value, input->direction);
+			float const moved_approach = dot3_2fe830(moved_closest.hit.normal, input->direction);
 			if (moved_approach >= 0.0f)
 			{
 				return;

@@ -181,6 +181,7 @@ static __forceinline long function_925c2()
     return local_0;
 }
 
+// MiniMax I (11-10): no new form, no lower score (14); the user flags are still loaded into eax where retail loads them into the dying user pointer register ecx, and every spelling of the two tests leaves the load in eax.
 // MiniMax D (11-10): no new form, no lower score; the flags are still loaded into eax where retail
 // loads them into the dying user pointer register ecx, and the sibling 0x92220 in this file matches
 // with the same flags loaded into ecx, because there eax still holds the result and the allocator
@@ -191,6 +192,10 @@ static __forceinline long function_925c2()
 // into two ifs, the condition written negated, the modulo form and the kind read directly with no
 // local all leave the load in eax (14 each), the mask test first gives 15, the pointer assigned
 // before the kind test with the test negated gives 115, and reading the field in the two kinds
+// separately gives 149; every one was reverted, so the body stands. The two shorter encodings
+// leave the function two bytes short, so every later field is reported as differing as well; the
+// tail of the function matches retail instruction for instruction, and the two global loads in the
+// reduced image are the check's unresolved placeholders, not differences of the code.
 // separately gives 149; every one was reverted, so the body stands.
 // MiniMax D (11-10): no new form, no lower score; retail loads the user flags into the pointer's own
 // register (mov ecx, [ecx+8]) and compares them there, this build loads them into eax, and the two

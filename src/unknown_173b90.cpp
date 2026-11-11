@@ -472,6 +472,12 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// score 42 (was 42): both in-place rotations go through the shared rotate helper (it copies the
+// input when the output is the input), which gives retail's j and k rows. Left: row i sums the up
+// product before the forward one (retail forward first, loading forward.i into a register); the
+// offset's zero store comes before the list test (retail after); the two 1.0 stores are swapped; and
+// after each property call ours reloads the particle before the emitter definition (retail the
+// other way round).
 // MiniMax C (11-09): no new form, no lower score (42); row i still sums the up product before the forward one and
 // the emitter loop still reloads its two saved registers in the other order; the shared rotation in
 // include/matrix_transform.h keeps that sum order.
@@ -480,12 +486,6 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // after each property call ours still reloads the particle before the emitter definition. The two in-place
 // rotations go through the shared forceinline helper in include/matrix_transform.h, whose product order
 // this file cannot change.
-// score 42 (was 42): both in-place rotations go through the shared rotate helper (it copies the
-// input when the output is the input), which gives retail's j and k rows. Left: row i sums the up
-// product before the forward one (retail forward first, loading forward.i into a register); the
-// offset's zero store comes before the list test (retail after); the two 1.0 stores are swapped; and
-// after each property call ours reloads the particle before the emitter definition (retail the
-// other way round).
 // Tried: combined entry decisions 53; entry decisions with shared cache 53; scale/alpha/both result
 // locals 119/56/119; saved successor 217; particle cache with scale result 119; combined
 // entry/property/cache 116; forward/left/up/all axis receivers 118/55/55/118; forward/left/up/first-pair
@@ -743,6 +743,23 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // observations, bool subsets 1/2/4/3/5/6/7 then all long: 155/217/136/234/143/236/227/173.
 // NOT kept: unmatched one-use decisions grow the extent; original complete body and all
 // shared alias-safe rotations restored. Offset/default/reload and row-i schedules remain.
+// Round 84 (m3 lane 1, fast with 0x174220, 0x1751d0, 0x174420 and 0x2477b0 listed, 42 [22] as the full check; aligned count in
+// brackets): the position's rotation and translation in one inline point-transform helper built on the shared rotate helper, with the
+// parameters (rotation, origin, point, out), (point, rotation, origin, out) or (out, point, rotation, origin) 121 (1134 bytes) [63]
+// each, with scale first 119 [62] each; one inline helper for both the position and the motion 121, with scale first 119; the point
+// helper with a thin inline vector-transform wrapper for the motion 121, with scale first 119. Every wrapper gives one state: the
+// helper's copy is made through the wrapper's parameters and all three rows of both rotations turn. Body unchanged.
+// M3 lane 2 r67 (fast): indexed definitions (`&emitters[index]`, index++ at the latch) with scale first re-measured 113
+// (1136 bytes; the zero store then follows the guard as retail's strength-reduced offset); forms listed above for other
+// bases, re-measured on it: both rotations through the existing vector3f_rotate_into_axes 102 (1136 bytes; rows j and k
+// then differ too), the position through it and
+// the motion through the shared helper 117 (1140), both through it with the motion rotated first 115 (1136), both through
+// it with the emitter mask read from the definition at both uses 237 (1130 bytes, the homes turn over); on this body both
+// rotations through vector3f_rotate_into_axes with scale first 82 (1130 bytes).
+// M3 lane 14 r80 (fast, base 42): the next particle index read right before the callback 203 (1106 bytes); the emitter
+// definition formed as the first statement inside the list block, before the 1.0 defaults, 57; both scale products written
+// multiplier first 42 (same code); the multiplier test through the existing flag getter 0x173b90 273 (1110 bytes); the next
+// particle index read between the two particle copies and the particle-cache invalidation 273 (1113 bytes).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1398,6 +1415,9 @@ bool function_17afd0(long effect_index, long value);
 // score 47 (was 47): availability clear/production and later view observation remain;
 // frame 0x14, NONE/owner and Boolean stack homes agree;
 // availability clear/result and the post-attachment view refresh remain.
+// M3 lane 13 r75 (fast; masked aligned count in brackets, base [5]): round 81's `effect_index != NONE && available && ...` re-measured 46
+// [7]; with the availability false after the view read and set by a branch 131 [56] (504 bytes); with the view global re-read for the
+// camera test 109 [7] (500 bytes); the effect index read after the second definition call 54 [18]; that with the reordered attachment 53 [19].
 // MiniMax I (11-08): no new form, no lower score (47).
 // MiniMax C (11-06): no new form, no lower score; the availability flag is still computed with neg/sbb/inc where retail clears BL before the view test and sets it with a branch, and retail still re-reads the view global after the 0x17afd0 call.
 // MiniMax S (11-09): the availability set by a branch that turns it true scores 135, the same branch with its
@@ -1674,6 +1694,44 @@ bool function_17afd0(long effect_index, long value);
 // same_view if/else 138, negated first 138, `? true : false` 138; the current body with the view at each use 110 (500
 // bytes; only the xor placement and neg/sbb/inc left), with the clear after the owner 121 (496 bytes), with a nested
 // set 138, with the early clear and the set on success 142.
+// M3 lane 8 r150 (fast; aligned count in brackets; "g base" = the view global at each use with the availability
+// false after the owner and set on success, 138 [59], NONE in EBX, owner EDI, same view BL): on the g base, dropping
+// `owner != NONE` from the same-view test (diagnostic) gives retail's homes, 96 [2], the missing compare the only
+// difference; removing the effect-index, view or attachment-availability tests instead does not (131/129/121), nor does
+// an owner store (127) or a constant store (149); an effect-index store before the availability 104 [1] (r135's
+// diagnostic). So retail ranks the effect index above the owner. Tried: an inline owner getter with a NONE default
+// (result local, early return, ternary, forceinline) 138/138/138/138 on the g base, 113 on this body; the effect record's
+// address taken ahead of the owner test 47 (same code), 138 on the g base; owner nested with an effect pointer and a NONE
+// default 138; a named effect-presence test used for the owner and the attachment 126, 157 on the g base (re-measures of round 315's
+// shared admission); the equality
+// written `owner == view` 47, 138; the camera table as `g_4ed284->entries[view].index` 47 (same code); the effect index read
+// from the record at every use (re-measure of lane 13 r27's form) 54 here, 132 on the g base, 117 with one-expression
+// availability.
+// Round 84 (m3 lane 1, fast with 0x175610, 0x1751d0 and 0x174420 listed, 47 [5] as the full check; aligned count in brackets). Base P:
+// r135's plain form (the view global read at each use, `bool available = false; if (g != NONE && !query(g)) available = true;`, same_view
+// and attached as plain `&&` expressions) re-measured 138 (510 bytes) [57]. Retail's `test bl, bl; mov same, 1; jne` is that plain
+// same_view with the true path threaded past attached's availability test. Diagnostics on P (removed): r135's effect-index store between
+// the owner and the availability re-measured 104 (501) [1]; new: a store of NONE there 120 [29, masked 4], of the owner 124 [29, masked
+// 3], of the view 133 [34, masked 4] (any store there gives retail's flag homes; the effect index gives the EDI/EBP assignment too);
+// the effect-index store between the availability and same_view 142 [61], after same_view 97 [11]; a compare-and-return on the effect
+// index there 146 [50]. Re-measured: same_view true first and cleared by one `||` test 12 (498) [1]; attached in both same_view arms
+// 17 (498) [4]; same_view in an if/else 138; the effect index tested first in attached 138 [56]; inline availability and attachment
+// helpers 138/138. New natural forms on P: same_view false with a nested set and clear 129 (506) [54]; false then `= available` under
+// the owner tests 131 (507) [55]; `effect_index != NONE &&` leading same_view 136 (509) [50]; the loop body as a force-inline helper
+// taking the index and the pass flag, nested or with early returns, or taking the system pointer too, or only the inner block 138 each
+// (same code; plain inline leaves a call); an inline owner helper, with or without the availability helper, 138/138 (same code); the
+// effect index read after the definition call 132 (504) [60], read from the field at each use 132, the owner from the field with the
+// local after it 132; the owner looked up before the definition call 128 (502) [31, masked 5: retail's flag homes, the call then
+// follows the owner load]; the definition call after the availability 126 (499) [70], after same_view 87 (498) [59]; the camera flag
+// declared before the availability 138 [58], at the block's top 102 (494) [48], between availability and same_view or after same_view
+// 138; attached or same_view declared false before the availability and assigned later 138/138, all three flags so 138. Body unchanged.
+// m3 lane 13 r79 (fast, base 47): the camera test in the idiom of src/unknown_03f2b0.cpp (`g_4b9ed8 != NONE &&
+// g_4ed284->entries[g_4b9ed8].index != NONE`) with the availability false early and set by a branch 142 (510 bytes);
+// the branchy availability with the attachment testing the effect index first 135 (504); the camera idiom with the
+// availability uninitialised and set in an if/else 113 (498: availability in AL, same view in BL); the second definition
+// lookup in its own local 47 (same code); same_view false then set by the full test 107 (498, owner in ESI, view in EBP).
+// Every branchy availability spills the flag or moves NONE out of EBP; ours keeps the flag in BL only with the early
+// `available = false` and the neg/sbb/inc set.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

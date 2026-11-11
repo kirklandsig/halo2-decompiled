@@ -398,6 +398,7 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// MiniMax C (11-10): no lower score (8); a seat-count test around a scan whose index is declared before that test puts the count in ESI and the index in EBP and keeps the native cmp/jl, but the test compares against a second zero in EAX and the selected pointer's NULL store takes that zero too (6); the same test written with the index folds into the loop (11), the reversed spelling of it keeps a constant test (6), a count read before the flags test hoists the load (14), a last-seat local is 108 with the inclusive bound and 118 with a strict one, and the inclusive bound with the index declared before the loop is byte-identical to the kept body.
 // MiniMax C (11-10): no new form, no lower score (8); the exclusive bound gives 11 with the count in EBP and the index in ESI (the reversed comparison 12), a seats local with the exclusive bound 23 and with the inclusive bound 27, an explicit count guard 135 and a while loop with the index declared first 23 — every exclusive form moves the count to EBP and the index to ESI.
 // MiniMax I (11-08): no new form, no lower score (8); the exclusive bound with the count in a local, the index declared before the seat pointer and the reversed comparison all give 11 or 12 with the count in EBP and the index in ESI.
 // MiniMax R (11-06): no lower score (8); the exclusive bound 11, the same with the count in a local 11, the index declared before the seat pointer 11, both together 11 and the inclusive bound with a local count 26 all move the count to EBP and the index to ESI; a long count local with the index declared before the seat pointer is 11 as well, and a short count makes the compiler compare in 16 bits and rewrites the loop.
@@ -433,6 +434,8 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // with the count in a local 11, the test as count != 0 6, a
 // while loop 6, a seats local 25, a pointer loop 139, the index inside the
 // loop 135, the test as i < count 11.
+// MiniMax R (11-10): no new form, no lower score (8); the body is unchanged, and the seat scan's inclusive
+// bound still needs the decremented count and the separate zero that retail does not.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
@@ -686,6 +689,12 @@ extern "C" void _ReadWriteBarrier(void);
 // Round 60 (m3 lane 2, fast): `s_slot_4c *const state` 6; the slot parameter `s_slot *const` 6, without the barrier
 // 44; the flags test as `(state->flags & 4) != 0` 6; the point copied through a const reference in the arm 6 (all 6s
 // the same code). `register` on the slot parameter does not build (the generated cast rejects it).
+// Round 145 (m3 lane 7, fast; a compile-only build of the file reproduces this function exactly): the state as
+// `slot ? (s_slot_4c *)slot : NULL` 6; the point through a const reference at the top 6; the flags test as
+// `(bool)((state->flags >> 2) & 1)` 6; the body in an inline helper called with (state, actor) and the barrier
+// before the call 44 (208 bytes); with (actor, state) parameters and the barrier at the helper's top 6. Compile-only
+// diagnostics: a second definition of the state (in an else) loads the slot at entry; a read in the join block
+// loads it after the compare; helper forms without the barrier compare in ECX like the body without it.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -1389,13 +1398,44 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
+// score 134 (was 134): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
+// F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
+// and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
+// object-header data in the prologue and reads the flags once above the slot-flag test.
+// MiniMax C (11-10): score 132 (was 132): no lower score this round. The frame is still 0x10 against
+// retail's 0x14, and the mask's home is the whole difference: retail keeps the 0x20 mask byte in the
+// stack at F-0x13 and the loop entry in EBX, this build keeps the mask in BL and spills the entry, so
+// every stack offset after it shifts by four. Fifteen forms of the mask and of the comparison were
+// tried and none of them puts the mask in memory: the else arm re-reading the flags 244, the mask as
+// a bool 241, the comparison as a ternary 228, the comparison inlined without the mask 250, a second
+// mask assignment under an if 255, the mask as a dword 248, as an int 248, as a word 253, the
+// comparison with an extra and 241, and the mask as an unsigned char, the comparison with a
+// not-equal test, the comparison as a byte, a separate copy of the flags byte and the mask computed in
+// two steps at 132 each. Four more shapes of the same value were measured since: the same value under
+// an if 240, the same value as a ternary 228, the decline test as a separate boolean local 132 and the
+// same value under an if with braces 240; the frame stays 0x10 and the mask stays in BL in all of them.
+// MiniMax C (11-10): score 132 (was 133): the joint index is held in a dword and the second test against NONE
+// compares it as a signed value, which is the pair that lowers the score (the dword alone and the cast alone
+// each score 133); the frame is still 0x10 against retail's 0x14, retail still spills the 0x20 mask byte to
+// F+3 and keeps the loop entry in EBX where ours keeps the mask in BL and the entry in memory, and retail
+// still takes the object table base in the prologue, into ESI, where ours loads it into EAX after the actor
+// index math.
+// MiniMax C (11-10): score 133 (was 134): the element index is stored before the slot flag, which pairs the
+// two stores the way retail orders them; the frame is still 0x10 against retail's 0x14, retail still spills
+// the 0x20 mask byte to F+3 and keeps the loop entry in EBX where ours keeps the mask in BL and the entry in
+// memory, and retail still takes the object table base in the prologue, into ESI, where ours loads it into
+// EAX after the actor index math.
+// MiniMax C (11-10): score 134 (was 134): the iterator loop is the for form of the matched sibling
+// 0x1b4680, which gives the same score and the exact length of 861 bytes, with the first difference at
+// +0x2 (the frame) instead of +0x4; retail still spills the 0x20 mask byte to F+3 and keeps the loop entry
+// in EBX where ours keeps the mask in BL and the entry in memory.
 // MiniMax I (11-08): no new form, no lower score (134).
 // MiniMax C (11-06): no new form, no lower score; the frame is still 0x10 against retail's 0x14,
 // retail still spills the 0x20 mask byte to F+3 and keeps the loop entry in EBX (home F+4, reloaded
 // after the root calls) where ours keeps the mask in BL and the entry in memory, and retail still
 // takes the object-header data in the prologue and reads the flags once above the slot-flag test;
 // the mask read once before the loop scores 136, so the mask is read per iteration as it was.
-// score 134 (was 134): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
+// Earlier at 134 (was 134; round 103 unchanged): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
 // object-header data in the prologue and reads the flags once above the slot-flag test.
@@ -1663,6 +1703,37 @@ void function_1f86a0(long actor_index);
 // the unit lookup nested in the actor lookup 245 (m 41), no unit local 240 (same code); a flags byte local above the slot
 // bool test in the found block 238 (862 bytes, m 27), with the slot bool named too 238, a bool `specified` there 247 (m 33);
 // with the mask local, that flags local 142, the header-table local 134. All restored.
+// Round 103 (m3 lane 16, fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70, all matched): `same` started false and set by an
+// `if (specified)` 241; the element as a pointer to const 134 and the selection as a const pointer 134 (both the same code).
+// Diagnostics (reverted): the two root calls through the matched pure reader 0x1b8c80 136 (aligned 86, register-masked 50,
+// against this body's 84/49), through 0x1b8d40 380 (973 bytes, it inlines). 0xbaf40's own memory summary stays untested:
+// its file is held this round. The slot data-block form (state through `slot->unknownc`) is round 39's 134 (same code).
+// Also: `joint_index` declared at the top of the function 134 and the entry declared in the while condition 134 (both the same code).
+// Round 103 (m3 lane 9, fast): no unit pointer (the field test on object_get directly) 134 (same code); the mask before the element
+// lookup 240 (862 bytes); the positive ternary `unknown86 ? (flags & 0x40) && same : !specified || same` with the accept call
+// inside and the decline in the else 134 (aligned 97), with `continue` after a failed accept 134; `joint_index` declared before
+// the iterator 134 (same code). Retail's loop never touches EDI (the actor stays there) and gives root 1 EBX, reloading the entry
+// from F+4 after the root calls; ours gives root 1 EDI and reloads the actor. The 0xbaf40 summary lead needs a body change in
+// src/unknown_0bad50.cpp, on this round's avoid list. Also: the state and selection pointers declared before the actor 137; the
+// decline written `unknown86 ? !same || !(flags & 0x40) : !same && specified` 231 (862 bytes); the actor fetched again after
+// the loop (diagnostic, frees EDI in the loop) 261 (878 bytes).
+// Round 69 (m3 lane 15, fast): the iterator's invitation index in a short local passed to both the decline and the
+// join call (0x1b6120's idiom) 134 (same code); the default arm's `|= 0x29` through the slot state's flags 202 (873 B);
+// positive admission with the default object index through the slot state and the default stores in retail's order
+// (object, near radius, seat, far radius, flags) 230 (861 B, loop unchanged); 0x1b6120's whole-reference copy
+// (`*(long *)&iterator.reference` in a local) for both calls 134 (same code). No other untried natural form is left for
+// the EBX choice (entry in retail, mask here).
+// MiniMax R (11-10): no new form, no lower score (134): the frame is 0x10 against retail's 0x14, and retail
+// spills the mask byte and keeps the loop entry in EBX.
+// M3 lane 3 r231 (fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70, all matched). Retail also lays the loop out differently: the
+// decline block follows the unknown86 test and falls into the next-entry call, with the unknown86-clear tests, the accept call
+// and the success block after it; ours puts the unknown86-clear tests first and the decline block jumps to the next-entry call,
+// which follows the accept call. Re-measured listed forms only: the plain break with `if (entry)` after the loop 134 (same code)
+// and the element index named for the lookup and the joint index 244 (round 20's), the decline condition negated with the
+// accept test as the then-arm 134 (same code, lane 9 r103's positive ternary), the fallback assigned straight to the joint
+// index 233 (round 39's), the loop as a `for` 134 (MiniMax C's). The slot data-block form is round 39's 134 (same code). No
+// untried natural form is left in this body: the remaining lever is 0xbaf40's memory summary, and its file
+// (src/unknown_0bad50.cpp) is on this round's avoid list again.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

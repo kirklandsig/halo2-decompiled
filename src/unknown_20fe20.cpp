@@ -2623,6 +2623,15 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // parenthesizations in every order (144, none); the outer locals ahead of the helper in every order (72, XMM0 joins); the
 // existing vector3d_from_points3d with the parenthesized sums of the matched 0x210970/0x210a30, outer locals before or after
 // (168, XMM1-3 always x, y, z); (fast) vector3d_from_points3d + length_sq3f 345 (the delta vector moves the layout).
+// Round 84 (m3 lane 11; fast): the helper's differences in x, y, z order (staged z, y, x sum) 27; the one-expression sum
+// through a square helper 11 (retail's colours, x scheduled first); no helper, x, y, z locals with a three-scalar
+// length helper (staged k, j, i) 45; no helper, x, y, z locals with an accumulated z, y, x sum 45; the same with a
+// one-expression sum 45; the same with the selector read after the locals 45. The 45 forms give retail's y-first
+// schedule and y in XMM3 but z XMM2, x XMM0, sum XMM1 (retail z XMM1, x XMM2, sum XMM0), and the selector load
+// follows the z subtract. A compile-only harness agrees with the real build for the helper form (definition order
+// sets both colours and schedule there; extra uses in the cases move neither) but not for the no-helper forms, so
+// screen those with --fast: about 1100 harness forms (outer-local placement, every definition/sum order and shape,
+// scalar and square helpers) gave nothing.
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
@@ -2940,6 +2949,16 @@ void function_20fda0(long arg_0);
 // read at the top of the block, just before the 0x20f040 call, or at function entry 44/44/46 (145/145/141 bytes; the pool is
 // held in EBX across the call, though the 0x20d570 argument order becomes retail's); the flag read into a bool ahead of the
 // owner 24; the owner as an element of the queue array indexed by the call 20.
+// Round 148 (m3 lane 7, fast): the owner offset named ahead of the node and the queue base added after it 22 (arg_1 then
+// arrives in ESI and 0x114e80 breaks); the call result narrowed implicitly (`short local_1 = function_20f040(...)`, 0x20ff50's
+// form) 19; the flag test un-negated with one queue call after the if/else 31 (round 33's code); the node offset computed at the top of the block
+// 19; the call result kept as a long and narrowed at the owner 19 (both same code). Diagnostic: the body built in
+// src/unknown_20f8b0.cpp (/O2 /Ob1 /Gr, no /arch:SSE, where retail's neighbours 0x20fd50, 0x20fda0 and 0x20ff50 sit) 19, so the
+// file flags do not set it. Compile-only (its listing equals the real one): the pool and queue pointers as two members of one
+// global, the masked index at the top of the block, a data local: same code. Retail's order is pool load, MOVSX, queue load:
+// the queue gets EAX only because the MOVSX frees it first; every form here loads both globals ahead of the MOVSX.
+// Also (round 148): the release arm as an early return 31 (round 33's code again); the 0x20d570 object index named in its
+// block 19.
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {

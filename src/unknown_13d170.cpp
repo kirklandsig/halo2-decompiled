@@ -179,6 +179,7 @@ struct s_physical_block_iterator
 	s_record_pool_iterator iterator;
 };
 
+// score 201 (was 201): earlier 201 (was 347): frame 0x1054 and entry/ring roles agree; weighted-age mask registers, detached policy cases and final linking differ.
 // MiniMax E (11-09): 209 -> 201 (1214 bytes against retail's 1213): the second age is now spelled
 // MAX(0, physical->time - best.time), which for the unsigned difference is the same value as the
 // clamped one, so our mask for it and the multiply that follows it go away. What still differs: the
@@ -193,7 +194,6 @@ struct s_physical_block_iterator
 // our body is 15 bytes longer (1228 against 1213), the first divergent branch being the jump to retail's 0x13d679.
 // MiniMax G (11-05): swapping the offset and previous declarations is the same code (347); retail keeps the offset in EBX and the current in EDI, ours the other way round, and the four-byte frame difference and the segment-arm layout stay unmatched; no new form, no lower score.
 // MiniMax S (11-01): the result/limit declaration swap reaches retail's frame but scores worse; no lower score.
-// score 201 (was 347): frame 0x1054 and entry/ring roles agree; weighted-age mask registers, detached policy cases and final linking differ.
 // Round 32: retail lays the segment arms out in source order (none, block, gap, then the scan), but
 // ours moves the else arm past the scan; retail also uses the page offset (EBX) as its zero from
 // the limit clamp on, so EBX is pushed first. Candidate stores offset before time 370; busy as
@@ -336,7 +336,7 @@ struct s_physical_block_iterator
 // Round 154 (lane 4, relink screen, exact at 347): all six policy case orders 347 (same code, bodies stay at the function's end);
 // case 0 as `better = false` plus an if 347, through a one-caller inline 383 (1178), case 0 and default inline 379 (1177), the whole
 // switch in an inline with returns or a result 343/343; offset first with previous in the if 357, offset after the page count 380,
-// after the result 380, before the if 381 (aligned 195); head and tail as struct fields 347, with offset and previous inside 376;
+// after the result 380, before the if 381 (aligned 195); head and tail as aggregate fields 347, with offset and previous inside 376;
 // hill climb of 212 forms over those plus the mask form, candidate fill order, next-offset sum, busy form and segment store order
 // 343 at best (candidate `time = pages = 0` with segment time first, 4 points, not kept). Retail's offset stays in EBX through the
 // scan with tail in memory and next spilled; no form gave offset the higher register priority.
@@ -521,6 +521,50 @@ struct s_physical_block_iterator
 // M3 lane 11 r81 (fast): the take test as `better || !have_best` 201 (same code); the walk's overlap conditions swapped 203 (+0xcc);
 // the policy as an if/else-if chain 240 (1178 bytes: cases in line but in source order, case 0 still threaded, aligned 118 -> 109);
 // case 0 as two `better = true` arms 201; default ages written inside the comparison 201. Retail's `sub eax, 0` chain is a switch.
+// M3 lane 5 r167 (fast, 0x13d320 matched each time; base 201, aligned 87, masked 57): the second age's mask restored with case 0
+// negated, `!(time > best || (time == best && pages >= best))`, 209 (1228 bytes); the two products named with the mask
+// restored 209; the best's age computed first 203 (1213 bytes, masked 59), with named products 203; the mask restored
+// with case 1 as `if (...) better = true;` 229 (1228 bytes, first difference +0x4e). Re-measured: one `dword now` with
+// both clamps as ternaries 209 (lane 16's M+N), the named products alone 201 (same code). With both masks
+// (209, masked 52) the default arm is retail's but for the first age in EAX where retail uses ECX, which folds the best
+// pages into `imul eax, [mem]` where retail loads them first; the case 0/1 blocks still sit at the end. All restored.
+// m3 lane 3 r227 (fast): our case 0 is jump-threaded into the take test (its true/false edges jump straight to the take
+// and skip blocks), which is what moves cases 0 and 1 past the end; retail materialises the result (`xor al, al; ... mov al, 1`)
+// and tests it at the join. Case 0 as `candidate->time == best.time ? pages < best.pages : time < best.time` 284 (1182 bytes:
+// no threading, cases in place, but `setl`/`setb` values and every frame slot shifted, first difference +0x2f); as `if (time !=
+// best.time) better = time < best.time; else better = pages < best.pages;` 284 (same code); negated (`!(time > best.time ||
+// (time == best.time && pages >= best.pages))`) 222 (1220); the ternary with the second age's mask restored 279; the mask
+// alone 209 (re-measure); `have_best = true` before the record copy 201 (same code).
+// Round 149 (m3 lane 8, fast; aligned = register-masked difflib count, base 86): ours folds the second age's
+// `MAX(0, ...)` away (unsigned, `0 > x` never holds) where retail computes both clamps (`cmp; sbb; and`), and our case 0
+// is threaded into the take test, which moves cases 0/1 past the loop; retail keeps default, 1, 0 in place and case 0
+// materialises `xor al, al ... mov al, 1` into the join. Case 0 as `better = candidate->time < best.time; if
+// (candidate->time == best.time) better = candidate->pages < best.pages;` 235 (1178 bytes, aligned 65: cases in place
+// as retail, but setb/setl), with the second age as `MAX(physical->time - best.time, 0)` 227 (1183 bytes, aligned 61);
+// with that clamp: case 0 as a ternary on the time test 209 (1228), as an if / else-if pair setting true 209 (1228), the
+// take test as `better || !have_best` 209 (1228), all aligned 84.
+// Round 104 (m3 lane 9, fast): case 0 as `if (time < best time) better = true; else if (times equal) better =
+// pages < best pages;` 235 (1178 bytes, aligned 118 -> 95: case 0 sits in place after case 1 as in retail, only its
+// last test is a setl where retail branches to `mov al, 1`); that with the second age as `MAX(physical->time -
+// best.time, 0)` 209 (1193, aligned 112); case 0 as a ternary on the times being unequal 284 (1182), with the clamp
+// 279; as an if/else on the times being unequal 284, with the clamp 279.
+// M3 lane 9 r109 (fast with 0x13d320, plain at the end): the default ages as `long` with no casts on the comparison 201 (same code,
+// kept). LEAD (93 plain at 1213 bytes, masked aligned 18, first difference +0x338; patch build/r109/lead-0x13d370-93.patch;
+// kept only with a match): case 0 through a forceinline helper in 0x13d320's style (`bool result = false; if (older, or as
+// old and smaller) result = true; return result;`) 237 (1178: case 0 is then retail's `xor al, al ... mov al, 1` and the
+// cases sit in place), plus both ages `MAX(x, 0)` 115 (1194), plus the before block read after the arms through a fresh
+// `physical->blocks->data` with a `next` local for its successor 105 (1213), plus the insertion in two stages (round 217's
+// repeated `best.previous == NONE`) 106, plus the scan's successor written at both uses 102, plus `entry->previous = NONE`
+// in each arm with the first block's pointer formed ahead 93. Left on it: one EBX/EDI swap from the deletion walk on
+// (high-water index and bit, then result and the NONE register, which ours also uses for the allocation test); it reads
+// as retail picking EBX first for those late webs where ours picks EDI. On 93, each the same code: the helper `static
+// inline`, the overlap test nested, the sum as `pages + best.offset`, the walk through this file's function_13d8b1, the
+// link as one forceinline helper in block_delete's style, the whole switch as one forceinline helper, `dword now`,
+// `better` declared at the loop top, copies of the oldest block's previous, the pool, the busy callback and the segment
+// end; the overlap test's operands swapped 93, both swapped 93, its two tests in the other order 68 (positional only:
+// masked 27, the outer loop's reload order flips); the walk's block as a plain local 116; the ages written inside the
+// comparison 216; the permuter (64 tries) none below 93. Diagnostic volatile loads (removed): in the walk body 73, before
+// the walk 115, neither flips the swap.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
@@ -616,9 +660,9 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 							break;
 						default:
 							{
-								dword age = MAX(physical->time - candidate->time, 0);
-								dword best_age = MAX(0, physical->time - best.time);
-								better = (long)(best.pages * age) > (long)(candidate->pages * best_age);
+								long age = MAX(physical->time - candidate->time, 0);
+								long best_age = MAX(0, physical->time - best.time);
+								better = best.pages * age > candidate->pages * best_age;
 							}
 							break;
 						}

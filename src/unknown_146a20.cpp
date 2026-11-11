@@ -376,6 +376,29 @@ bool g_47f05b;
 // through `block` 36 (146 B, `mov edx, eax; add edx, 0x30`); placement and pool through `block`, buffer through
 // g_479888 43 (139 B). 0x453760 is
 // stored in retail only here and in the abstract allocator's deleting destructor 0x1470f0.
+// M3 lane 14 r79 (fast with all 57 functions of the header's ten files): a virtual destructor declared in the fixed base
+// 34 (the store still dropped, no other function changes). Diagnostic (header, removed at once): `if (buffer) m_count = 0;
+// else m_count = 1;` in the fixed base constructor keeps the fixed base's own vtable store beside its field stores (61 at
+// 162 bytes, 0x146b80 27): a branch present when dead stores are removed, between one vtable store and the next, keeps
+// the earlier store even after the branch becomes a `sete`. So retail's kept 0x453760 store points at a branch or block
+// boundary that this construction alone had there and that later vanished; in the shared constructors it would also
+// reach 0x146b80, 0x146e30 and 0x22c3e0, which drop the store. No other untried form on this function's side is known.
+// M3 lane 2 r67 (fast with 0x146b80/0x146e30/0x22c3e0): the fixed base's three member stores in reverse order 34 (same
+// code here; matched 0x146b80 goes to 2), so not kept. Every constructor change reaches 0x146b80 too, which drops the
+// abstract vtable store in retail, so the cause has to be one this call site alone has (retail's construction here keeps
+// the store and reloads g_479888 in the arm, 0x146b80's does neither); the call-site forms above cover the placement,
+// buffer and result spellings.
+// m3 lane 10 r87 (fast with 0x146b80/0x146e30/0x22c3e0/0x1470f0/0x147110/0x22c0a0, header trials restored): an empty
+// virtual destructor in the fixed base 34, in the fixed allocator 34 (retail's vtables give both the abstract's deleting
+// destructor 0x1470f0, so neither derived allocator has its own); the fixed base's count cleared through an inline member call 34;
+// the abstract's four words set through an inline member call 34 (near the listed compile-only init-method form),
+// through a word cursor 34. The store is dropped after
+// inlining whatever calls or loop shape the constructors have.
+// Lane 6 r167 (fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0, all unchanged; base 34, aligned 4 = the base vtable store
+// and the g_479888 reload at the join): `void *const block` 34, the pool constructed with `()` 34, `g_4798b4 += 1` 34,
+// `byte *const block` with `block + 0x30` 34 (all same code); re-measure: the fixed allocator in an abstract-typed local
+// published on the next line 38 (137 bytes; the listed typed-local-published form). The lever left is the shared
+// constructors in include/unknown_146a20.h (included by include/globals.h and contributor files) or the held twin.
 // @retail 0x146a20
 void function_146a20(void)
 {

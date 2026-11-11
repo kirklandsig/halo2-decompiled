@@ -21,6 +21,7 @@
 #include <string.h>
 #include <float.h>
 #include <math.h>
+#include "matrix_transform.h"
 
 #define k_pi 3.14159274f
 #define PIN(value, lower, upper) ((lower) > (value) ? (lower) : ((value) > (upper) ? (upper) : (value)))
@@ -1261,15 +1262,19 @@ long function_2197f0(real gain);
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
 // score 94 (was 94; 177 before lane 10 round 69): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
+// MiniMax E (11-10): no new form, no lower score (94).
+// register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
+// 1.0, fade-out), and the gain value carried into the last arm.
 // MiniMax C (11-09): no new form, no lower score (94).
 // MiniMax H (11-07): no new form, no lower score (94); the fade block still holds the running
 // difference in another register (ours xmm2, retail xmm3) and still divides by the fade-in time in
 // the other form (ours multiplies by its reciprocal).
 // MiniMax R (11-06): no new form, no lower score (94).
 // MiniMax D (11-06, run 49): no new form, no lower score (94); the first arm's sum still differs (retail loads the gain into a register and adds the interpolation into it), the register rotation (inverse, elapsed, 1.0, fade-out) still differs and the gain is still carried differently into the last arm.
-// score 94 (was 177): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
+// Earlier at 94 (was 177): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
 // 1.0, fade-out), and the gain value carried into the last arm.
+// Earlier 94 (was 177): the same three differences (two stacked score lines merged in r229).
 // Round 160: the gain and ducking gains as s_decibels, the interpolation by value and the hold sum through the
 // by-value operator 127 (682 bytes); on it the raw index, `gain +=` in the first arm and divisions with a fade_out
 // local 208 (640 bytes), `t = 1.0f; if (1.0f > time) t = time;` in arms 2 and 4 177 (672 bytes), the fade table read
@@ -1466,6 +1471,26 @@ long function_2197f0(real gain);
 // 1.0f` 171 (644 bytes), as `t = time / fade_in; if (!(1.0f > time * inverse)) t = 1.0f;` 169 (644). Without the pragma pair around
 // the call to 0x221810 221 (717 bytes: that call then inlines). Left as before: the reciprocal is made after the product's first factor, and
 // elapsed keeps XMM2 where retail has XMM3.
+// Round 103 (m3 lane 9, fast): `elapsed` written out at each use 199 (715 bytes); `gain +=` in arms 3 and 4 94 (same code); the
+// ducking pointer declared before `elapsed` 94 (same code); the division form with a `fade_out` local read right after the ducking
+// pointer 144 (678: the load moves above the hold test and still takes the last XMM register); the hold arm as `gain +=
+// ducking->gain` 105 (678: drops retail's by-value copy through a stack temporary). Our five extra bytes are all at the
+// arm-3/arm-4 join: ours keeps the arm-3 sum in XMM0 and loads the gain on the bypass edge (jmp, movss, register add), retail
+// re-reads the gain from its home in arm 4's add.
+// Lane 10 r91 (fast; masked = aligned lines with registers and stack offsets masked, control 94 [17]): the listed `fade_out`
+// local for the test, sum and product re-measured 98 [15]: the product then takes the reciprocal first as retail, but
+// `fade_out + hold` loads hold first (retail copies fade_out and adds hold from memory). On it, retail's clamp shape (the value
+// before the branch, `ja` over `t = 1.0f`): `t = time / fade_in; if (!(1.0f > time * inverse)) t = 1.0f;` 169 (644 B: the branch
+// is retail's but the value is still `inverse * time`, and arms 1 and 2 then end alike and cross-jump), `if (time * inverse >=
+// 1.0f)` 171, a ternary with the test multiplied and the value divided 171; with `gain +=` in arm 1 169 (same merge); with the
+// arm-1 sum written interpolation first (retail's gain load into a register) 99 (684 B, frame changes at +0x2).
+// R229 (m3 lane 3, fast with 0x1251e0): one to eight unused-local probes at the top (diagnostic, removed) 94 each (same
+// code: the XMM colours do not follow symbol numbering here); `gain +=` in arm 4 alone, in arm 3 alone 94 each, and in
+// both (a re-measure of round 160's form, 125 then, on the current body) 94 (same code: the last arm still takes the gain
+// from XMM0 across the join where retail re-reads [esp+8]); one shared interpolation after the fade-out test's two arms
+// (t chosen in each) 218 (606 bytes; retail keeps two copies); one ducking pointer for arms 3 and 4 94 (same code); the
+// hold sum as `gain += ducking->gain` 105 (678 bytes: the ducking gain's stack copy goes); arm 3's clamp as
+// `t = time; if (0.0f > time) t = 0.0f; else if (time > 1.0f) t = 1.0f;` 119 (688).
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2533,6 +2558,8 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // MiniMax E (11-05): no new form, no lower score; merging the two set-chunk calls into one site with the
 // range and permutation indices in named locals gives 193 (short indices) and 192 (long indices) - our frame
 // drops to 8 against retail's 0xc. Reverted.
+// MiniMax E (11-10): no new form, no lower score (17); the note below already lists the named short and the
+// flags pointer, and both stay as they are.
 // score 17 (was 23): left: the range index is sign-extended (`movsx ebp, ax`, one byte) for
 // 0x219070's long set index, the 0x219070 call runs after the chunk index push, and the
 // delayed start sets flag0 before storing the start time. Earlier: the two set-chunk calls narrow their indices to char
@@ -2757,21 +2784,6 @@ static inline real sound_vector_normalize(vector3f *v)
 /* the doppler shift of a sound for a listener, in cents: from the speeds of
    the listener and the sound toward each other, the speed of sound 111.5
    world units a second, the frequency ratio between 1/8 and 4 */
-// score 92 (was 122): the two speeds through dot3f fix the direction spill (retail keeps j/k in XMM7/6, i on
-// the stack); left: the velocity rotation's scale products commute (retail reloads the scale for each) and the
-// rotated components take other XMM registers. Retail inlines 0x142640 here (src/unknown_141590.cpp is /Ob1, so
-// ours never can): with `inline` on 0x142640's declaration and the call in place of the rotation it matches
-// (0 with the dot3f speeds, 145 without), but 0x16c2f0 is lost (its calls then reload ECX); the lead is that
-// file's /Ob1 (a flags decision, not tried). Writing the rotation through a pointer to listener_velocity also
-// matches (diagnostic only: a pointer to a whole local).
-// Shared length helper 122; early source speed 143; projection order 133; cached direction 125; void normalizer 122.
-// Closest form (129, ratio 0.96): normalize written in the body (not a helper) on the struct, if-body order j, k, i,
-// and an inline copy of 0x142640's body (x/y/z copies, matrix->scale) for the velocity; only retail's j/k loads
-// hoisted above the branch (no else block) still differ. Scalar j/k copies 170; scalars before the length 161.
-// Round 63 (m3 lane 2, fast): length summed k, j, i 122 (same code); normalize3d 145; on dot3f speeds: x/y/z
-// scalar copies 92 (same code), plus the rotation read through a transform4x3f pointer 83, x/y/z declared last 83,
-// the listener dot's operands swapped 83 (same code), the velocity through a vector pointer 83; vector3f_scale +
-// matrix_transform_vector 103 (frame 0x20).
 // @retail 0x12a9d0
 real function_12a9d0(long listener_index, s_sound_position const *position)
 {
@@ -2785,18 +2797,18 @@ real function_12a9d0(long listener_index, s_sound_position const *position)
 
 	vector3d_from_points3d(&listener->position, &position->position, &direction);
 	sound_vector_normalize(&direction);
+	/* the listener's scale, axes and position form a transform4x3f, as at the 0x142700 call below */
+	transform4x3f const *matrix = (transform4x3f const *)&listener->velocity_scale;
 	velocity.i = listener->velocity.i;
 	velocity.j = listener->velocity.j;
 	velocity.k = listener->velocity.k;
-	if (listener->velocity_scale != 1.0f)
+	if (matrix->scale != 1.0f)
 	{
-		velocity.i = listener->velocity_scale * velocity.i;
-		velocity.j = listener->velocity_scale * velocity.j;
-		velocity.k = listener->velocity_scale * velocity.k;
+		velocity.i = matrix->scale * velocity.i;
+		velocity.j = matrix->scale * velocity.j;
+		velocity.k = matrix->scale * velocity.k;
 	}
-	listener_velocity.i = listener->up.i * velocity.k + listener->left.i * velocity.j + listener->forward.i * velocity.i;
-	listener_velocity.j = listener->up.j * velocity.k + listener->left.j * velocity.j + listener->forward.j * velocity.i;
-	listener_velocity.k = listener->up.k * velocity.k + listener->left.k * velocity.j + listener->forward.k * velocity.i;
+	function_2477b1(&matrix->rotation, &velocity, &listener_velocity);
 	listener_speed = 0.0f - dot3f(&listener_velocity, &direction);
 	source_speed = dot3f(&position->velocity, &direction) + 111.548553f;
 	ratio = (111.548553f - listener_speed) / (source_speed > 0.001f ? source_speed : 0.001f);
@@ -2892,6 +2904,12 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
+// through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
+// keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
+// and its channel search keeps the channel in EDI with one `or ebp, -1` shared between the channel
+// compare and the driver and buffer defaults. A `bool` result carrier on this body measures 113 at
+// retail's length and was reverted.
 // MiniMax R (11-09): no new form, no lower score; the result still lives in a stack byte where retail keeps
 // it in al, and the frame is still twelve bytes against retail's eight.
 // MiniMax D (11-08): score 96 (was 96): retail returns from two places - the failure block clears the result
@@ -2903,12 +2921,9 @@ static inline short sound_voice_find_available_channel(char type)
 // bytes.
 // MiniMax R (11-06): no new form, no lower score (96).
 // MiniMax D (11-06, run 49): no new form, no lower score (96); retail still keeps the result in al (set at the entry, cleared through bl on the failure path and set again after the commit) with an eight-byte frame, ours keeps it in a stack byte with a twelve-byte frame, and retail's failure block still follows the success path.
-// score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
-// through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
-// keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
-// and its channel search keeps the channel in EDI with one `or ebp, -1` shared between the channel
-// compare and the driver and buffer defaults. A `bool` result carrier on this body measures 113 at
-// retail's length and was reverted.
+// MiniMax E (11-10): no new form, no lower score (96); the body with two exits and no result variable, the
+// same body with a bool result and the failure path returning false directly were measured (131, 113, 134)
+// and the byte result with the shared exit stays the best.
 // The twelve-byte frame, byte result normalization, initial voice/global load order and
 // Earlier at 96 (was 96): The twelve-byte frame, byte result normalization, initial voice/global load order and
 // early failure tail remain; long search-result boundaries do not change the selected code.
@@ -3095,6 +3110,31 @@ static inline short sound_voice_find_available_channel(char type)
 // `if (!step) { result = false; ... }` 126 (435), defaults first with `(byte)~status & DSBSTATUS_PLAYING` 124 (433),
 // defaults inside with that status test 121 (430). Frame eight and the entry index load before `sub esp, 8` appear in
 // the forced forms, but the head's registers and the failure block's place still differ; none kept.
+// Round 103 (m3 lane 9, fast): the search returning `(short)i` from its loop, bool result, driver default before the channel test
+// 141 (438 bytes); with `~status & DSBSTATUS_PLAYING` and both defaults before the test 144 (440), as a failure-first if/else 144
+// (440); the while scan, bool result, complemented status, defaults first, failure-first 148 (442), with the plain status 138 (435);
+// the for/break search with that failure-first form 141 (437). N314's 64 form rebuilt for reading: its tail and failure block are
+// retail's byte for byte; left are the entry registers, the scan's post-loop bound test (retail's found path goes straight to the
+// `(short)i != NONE` test, as the for/break search does), the shared `or ebp, -1` and the complemented status.
+// Lane 10 r91 (fast; masked = aligned lines with registers and stack offsets masked, control 96 [50]): the status as
+// `(byte)~status & DSBSTATUS_PLAYING` (the idiom 0x127010's matched flags test uses) 127 [47]; with a bool result 130; with
+// `return true` after the commit 129, both 131. N314's condition-controlled scan rebuilt: byte result 134, bool result 104 [30],
+// with `return true` after the commit 109, bool with the redundant `result = true;` before the goto 64 [17] (diagnostic, the
+// form review rejected; it reproduces N314). On the scan, the result assigned from the commit test (`result = buffer_index !=
+// NONE || ...; if (result)`) 122 (bool) / 152 (byte), on the for scan 123/130; an uninitialized result assigned once on each
+// path (early `else result = true;`, before the commit's goto, in the failure block) 142 (bool) / 152 (byte). On the 64 body
+// left are the entry registers (index in ECX as retail only with the frame-8 forms), the type byte loaded then sign-extended
+// (retail `movsx ecx, byte ptr [esi + 8]`), the scan's post-loop bound test, NONE shared in EBP and the complemented status.
+// R229 (m3 lane 3, fast with 0x129100): `bool result = true;` with `result = false;` at the top of the channel block,
+// `result = true;` after the commit and the failure calls under `if (!result)` 129 (430 bytes: retail's `mov al, 1`
+// at the entry, but the false value lives in a stack byte and the failure block follows the search loop); the same
+// with a byte result 151 (450); the false assigned in `else` arms of the buffer and channel tests, failure calls under
+// `if (!result)`, 114 (430); bool result with `return true;` after the commit (re-measured 139, 415 bytes: the whole
+// result in EBX, the sound in EDI) plus the driver default declared at the top of the channel block, before the
+// search, 155 (407), at function scope 145 (442). Diagnostic re-measure: bool result on the kept goto body 113 (430:
+// `mov al, 1` stored to a stack byte for the goto path, `xor bl, bl ... mov al, bl` failure as retail). The first form is
+// a variant of round 94's (false after the search, 132) and the driver-before-search one of lane 16 r50's / round 117's
+// on another base. Also: `result = false;` after the two failure calls, byte result 96 (same code), bool result 136 (430).
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3590,6 +3630,18 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // 82; a 45-form grid of increment, entry argument, declaration order and range placement best 6 (range above the mode
 // 53/55, one global entry argument 11/31); the pool global at every use 78 (24 with the range above the mode);
 // sound_index declared in the for init 78; a 600 s permuter run on the 6 form (63 tries) best 6.
+// Round 84 (m3 lane 11, fast): retail has no pool reload at the loop top (the loop-end value in EBP feeds it),
+// which fits the loop top read through the `sounds` local; with that and the range in case 0 (29 re-measured: every body
+// register retail's but the pool in ESI, reloaded before the next-index ternary): sound_index scoped to the for
+// statement 29 (same code); the mode as if/else 29 (same code). Re-measured listed forms on it: the reload embedded in
+// the find's argument 82 (index and pool swap EBX/EBP), the sound pointer taken once before the start test 162 (561
+// bytes), 0x128020's `(s_sound_playback *)sounds->data + index` spelling at the loop top 29 (same code). On the 6 form
+// (the 29 form with the loop-end find through the global; re-measured 6, only the pool load sits between `cmp ebx, -1`
+// and its jne where retail loads it after the ternary's join): the range declared at the arm's top and assigned in
+// case 0 6 (same code); `reason` declared at function scope 6 (same code); the increment as the find through the
+// global into sound_index, then `sounds = g_4e637c`, then the datum (measured only: the name reused for the
+// absolute index) 78; re-measured, the reload embedded in the datum argument 82. Every form that puts the
+// loop-carried pool load after the ternary swaps index and pool between EBX and EBP. Original 24 body restored.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -4271,6 +4323,7 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 	arg_2->k = (rotation_i * arg_1->j - rotation_j * arg_1->i) * local_2 + rotation_k * local_1 + local_0 * arg_1->k;
 }
 
+// MiniMax D (11-10): 535 (was 554): the blend factor is read from [ebx+0x40] at each use and the state's base components are named locals, so the interpolation matches retail's instruction order; still different: the frame 0x134 against retail's 0xe8 (the fallback reverb is a 48-byte stack copy here while retail reads the existing const g_44a2a0, whose internal linkage is in another file), the loop counter in ebx against retail's edi, the state pointer masked with and against retail's cmovne, ebp anchored at +7 against retail's +0x20; the counter declared before the null test 547, the state pointer as a named local 545, the inverted test 535, the local player helpers 0x14ddc0/0x14de70 called 609/625 (they stay calls here), all restored; the permuter's best variant (the entry branch inverted, which puts the skip path first as retail has it, with a dword local and the split load) aligns 18 more instructions but is 24 bytes longer, so it scores 535 and the inversion alone 533, below the threshold, and stays restored.
 // MiniMax S (11-10): no new form, no lower score (554); the frame is 0x130 against retail's 0xe8 because the fallback reverb is a 48-byte stack copy here while retail reads the existing const g_44a2a0, which needs a declaration outside this file; a file-static copy of the same data removes the copy and the frame with it but takes 218 bytes off the length, so the differing count stays 535 and the plain score rises to 734; the two entry bytes, the rotation call's registers and the listener records still differ.
 // MiniMax R (11-01): retail's 0x11d6a0 call still sets edx, ecx, eax where ours sets edx, eax, ecx;
 // the callee's own file is not mine, so the order cannot be produced from here.
@@ -4379,12 +4432,15 @@ void function_127400(bool arg_0)
 					byte *local_16 = *(byte **)(g_4e0300->data + (local_14 & 0xffff) * 12 + 8);
 					byte *local_17 = g_4e3b44[*(long *)local_16 & 0xffff].bytes;
 					byte *local_18 = *(byte **)(local_17 + 0x1cc) + local_15 * 0xb0;
-					real local_19 = *(real *)(local_18 + 0x40);
 					point3f local_20;
 					function_caf60(local_3, &local_20);
-					local_9.x = (local_20.x - local_6->field_0.x) * local_19 + local_6->field_0.x;
-					local_9.y = (local_20.y - local_6->field_0.y) * local_19 + local_6->field_0.y;
-					local_9.z = (local_20.z - local_6->field_0.z) * local_19 + local_6->field_0.z;
+					real local_19 = *(real *)(local_18 + 0x40);
+					real local_26_x = local_6->field_0.x;
+					local_9.x = (local_20.x - local_26_x) * *(real *)(local_18 + 0x40) + local_26_x;
+					real local_26_y = local_6->field_0.y;
+					local_9.y = (local_20.y - local_26_y) * *(real *)(local_18 + 0x40) + local_26_y;
+					real local_26_z = local_6->field_0.z;
+					local_9.z = (local_20.z - local_26_z) * *(real *)(local_18 + 0x40) + local_26_z;
 					quaternionf local_21;
 					function_11d6a0(&local_21, &local_6->field_20, (vector3f *)(local_13 + 0x180));
 					function_11d950(g_4687cc, &local_21, &local_21, local_19);

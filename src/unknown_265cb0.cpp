@@ -365,6 +365,8 @@ real function_30bf0(vector3f *vector);
 
 // MiniMax G (11-04): the motion declaration hoisted beside the delta gives identical code (152);
 // no new form, no lower score.
+// MiniMax S (11-10): no new form, no lower score (84); the vector homes are still one slot off from retail's, the range's first load
+// and the two products still differ, and the range is still loaded into XMM2 for XMM0.
 // score 84 (was 84): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // (result +4 for retail's +0; amount shares with the count where retail shares it with the squared distance; range, scale, the cursor and the
@@ -667,6 +669,34 @@ real function_30bf0(vector3f *vector);
 // in-place ternary 84; facing_ pair declared first and secondary copied first 84. Diagnostics, reverted: 0x263d70 storing
 // both output pointers to scratch globals leaves the first form at 199, and so does this function defined ahead of
 // 0x263d70 and 0x263740: neither an escaping pointer nor definition order makes our link keep the thresholds in memory.
+// M3 lane 10 r90 (fast with 0x263740/0x25c9d0, both MATCH): no gain. The plane distance through dot3f 138 (1308 bytes, masked 28); the
+// intersection test as `amount >= 0.0f` 236; the vehicle index read at each use instead of the `object_index` local 84, `range * scale`
+// 84, the three threshold compares written distance-first 84 (all same code). The permuter (`--fast --anneal`, 600 s after a 1041 s
+// scratch build) tried 65 variants and found none below 82 instructions.
+// Round 86 (m3 lane 1, fast with 0x263740/0x25c9d0; aligned/masked in brackets, base 84 [19/17]): the squared
+// distance declared uninitialised at the settings-block top 84 (same code: declaration position moves no slot); the
+// occupant's forward as a vector copy 195 (1312 B [77/47]); the plane distance through dot3f 138 at 1308 B [34/24];
+// the actor's three basis vectors through one `vector3f const *basis` pointer (plane normal and the 0x263740 call) 243
+// [57/39]; the actor's +7 flag read once into a bool used by both tests 85 [20/18]. Re-measured on this body: a long seat
+// count 193 [64/41]. In the first seat-loop cross product ours loads the forward component in the up.i * forward.k and
+// up.j * forward.i products where retail loads the world-up component.
+// Round 78 (m3 lane 14, fast, masked aligned in brackets, base 84 [19]): the actor looked up after the settings 310
+// at retail's 1308 bytes [34]; the vehicle index read ahead of the first 0x263740 call 146 [24] (origin then in EBX);
+// both 315 (1308) [37]; the endpoint test with explicit `!= NULL` and `== 0` 84 (same code); the outer range test
+// inverted with the out-of-range arm first 152 (1312) [37]; re-measure of the listed long seat count on this base 193
+// (1318) [51]. A volatile float local read ahead of the range load (one --fast diagnostic in src, reverted at once)
+// leaves the range in XMM2, so its register is not a rotation step; the compile-only /Gr screen gives another
+// allocation here.
+// Round 67 (m3 lane 15, fast with 0x263740/0x25c9d0): both builds turn the seat loop into a cursor and a down-counter;
+// the down-counter (ours) or the squared distance (retail) takes the clip amount's dead home, and the clamped amount
+// itself stays in XMM0 after the call. The seat count renamed `seat_count` 84 (identical code); the squared distance
+// unnamed, `length_sq3f(&delta)` at its five uses 84 (identical code: it is a spill temp either way); the clipped point
+// through a copy of path_transitions.cpp's point_along_vector (diagnostic) 90; the 3/2 result as one ternary 84; `long
+// count` 193 (1318 bytes); the occupant's forward as a value copy 195 (1312 bytes).
+// m3 lane 5 r169 (fast with 0x263740/0x25c9d0, base 84 [aligned 55, masked 17]): the outer test as `distance_squared <
+// range * range` 84, the scaled test the same way 84, `range * scale` 84, the vehicle index read from actor->unknown26c at
+// both uses (no local) 84, the not-facing secondary as `0.7f * scaled_range` 84 (all the same code); re-measured: `use_facing
+// && !actor->unknown007` 86 [58/20].
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1164,8 +1194,11 @@ void function_267700(long actor_index, s_prop_datum *node, s_type_76cf92 *prop, 
 		view->unknown60 = value;
 }
 
+// Parameter order (point, direction, position, distance, unknown) is retail's: the callers' argument
+// setup in 0x267c50 sets the NULL distance (ecx) before the address leas only with distance fourth,
+// and with it 0x267c50 matches while this function still matches (found by MiniMax S and E, 11-10).
 // @retail 0x267a80
-short function_267a80(real *distance, point3f const *point, vector3f const *direction, point3f const *position, vector3f *unknown)
+short function_267a80(point3f const *point, vector3f const *direction, point3f const *position, real *distance, vector3f *unknown)
 {
 	long result = 0;
 	vector3f *offset = (vector3f *)unknown;
@@ -1367,6 +1400,19 @@ PRIVATE __forceinline long round_tick_count(real ticks)
 
 long function_146650(void);
 
+// MiniMax S (11-10): retail's 0x267a80 takes (point, direction, position, distance, unknown); with that order this function
+// matches and 0x267a80 still matches (its body matches under both orders, only the callers differ), but the change needs
+// src/unknown_25fc30.cpp's declaration (line 73) and its two call sites (lines 1221, 1244), which is outside this lane - reported, not applied.
+// MiniMax E (11-10): the parameter layout is retail's, confirmed from the compiled prologue of 0x267c50,
+// which matches retail opcode for opcode (`mov ebx, [esp + 0x68]`, i.e. the single stack argument
+// at [E+4], and the same `and ebp, 0xffff` / `imul ebp, 0x888` index math), so the one argument here is the
+// same in both and nothing is blocked by the declaration.
+// MiniMax E (11-10): no new form, no lower score (7). The NULL distance argument written as 0 instead
+// of NULL compiles to the same code (7). The one remaining difference is where the `xor ecx, ecx` for
+// that NULL distance is emitted: retail sets ECX before the local-address leas of EDI (and of EDX in the
+// projected call), ours sets it last. Retail's order is the reverse of the argument order with the
+// distance argument fourth, i.e. it matches 0x267a80 declared as (point, direction, position, distance,
+// unknown); that is a parameter-order change, which is a banned form, so it is not applied here.
 // score 7 (was 7): the five 12-byte homes now agree; only the argument setup at the three 0x267a80 calls
 // differs: retail sets ECX (the NULL distance, `xor ecx, ecx`) before the local-address lea of EDI (and of EDX
 // in the projected call), ours sets ECX last. Earlier note, from before the homes agreed: retail stacks
@@ -1557,8 +1603,8 @@ void function_267c50(long actor_index)
 					{
 						bool active = false;
 						vector3f offset = {0.0f, 0.0f, 0.0f};
-						short proximity = function_267a80(NULL, &state->position, &direction,
-							(point3f *)(data + 0x238), &offset);
+						short proximity = function_267a80(&state->position, &direction,
+							(point3f *)(data + 0x238), NULL, &offset);
 						if (proximity >= 1)
 						{
 							*(bool *)(data + 0x3de) = true;
@@ -1588,7 +1634,7 @@ void function_267c50(long actor_index)
 									ahead.x = movement.i * 0.4f + *(real *)(data + 0x238);
 									ahead.y = movement.j * 0.4f + *(real *)(data + 0x23c);
 									ahead.z = movement.k * 0.4f + *(real *)(data + 0x240);
-									short projected = function_267a80(NULL, &state->position, &direction, &ahead, 0);
+									short projected = function_267a80(&state->position, &direction, &ahead, NULL, 0);
 									if ((projected > proximity ? projected : proximity) >= 1)
 									{
 										real dot = movement.k * offset.k + movement.j * offset.j + movement.i * offset.i;
@@ -1602,7 +1648,7 @@ void function_267c50(long actor_index)
 							}
 						}
 					}
-					if (check_target && function_267a80(NULL, (point3f *)(data + 0x238), &target_direction, &state->position, 0) >= 2)
+					if (check_target && function_267a80((point3f *)(data + 0x238), &target_direction, &state->position, NULL, 0) >= 2)
 						*(bool *)(data + 0x3df) = true;
 				}
 			}
@@ -1916,6 +1962,8 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
+// MiniMax S (11-10): no new form, no lower score (168); the players iterator's table pointer still loads into ECX where retail
+// uses EAX, and the entry loop's index compare and the iterator's setup still differ.
 // score 168 (was 168): retail's length (2880). Left, in order: the players iterator's table pointer loads into ECX where retail
 // uses EAX and stores it at once (one extra pad line after it); the search shape; the facing and relative dots keep the
 // direction in memory where retail holds j, k, i in xmm2, xmm1, xmm3 across both dots after the last normalize; the scoring
@@ -2257,6 +2305,50 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 0x30bf0's magnitude through a one-line inline helper 168 (same code, 0x30bf0 still matches); 0x30bf0 reading its
 // parameter through its address 513 (0x30bf0 21, its convention changes). Retail's shape needs the normalize call to
 // be able to write `direction`; no form of 0x30bf0 that keeps its bytes makes our link think so.
+// M3 lane 10 r90 (fast with 0x25d810/0x26be00/0x25d740, all MATCH): no gain. The iterator's datum index stored before its index 170; visible
+// as one direct bool (`reference == NONE || ... >= 1`) 428 (frame changes); the byte alias of the actor dropped 168 (same code). Re-measured:
+// player NULL before the first search 373; the elapsed counter read at each use 168; the NONE fields chained 170. Every other natural form
+// screened this round (prop/state getters, threshold and decrease arithmetic, the close flags) is already listed above.
+// Round 86 (m3 lane 1, fast with 0x25d810; aligned/masked in brackets, base 168 [80/38]): the first scratch-rotation
+// difference is the other actor's lookup (retail reuses EAX for the object pointer, ours takes ECX, and the actor lookup
+// after it is one step on). LEAD: the object read into a pointer local and its actor index read at each use
+// (`s_slot_object_view *object = object_get(node->object_index); ... object->actor_index == NONE ? NULL :
+// actor_get(object->actor_index)`) 163 [75/38], that lookup then exactly retail's (a gain of 5, under the bar). On it:
+// lane 14 r65's search recipe (ai_player_get/ai_player_index_get, `inline` on 0x1c8180, a __forceinline object_get_forward
+// declaration) 378 [74/36], all helper users matched: the search lines are retail's, the registers on both sides of them
+// one rotation step on, as at the iterator, so retail makes one scratch allocation more than ours before the iterator;
+// on that, 0x1c8150 with an early return 367 (0x1c8150 and five callers then differ; reverted at once), the vehicle index
+// read once into a local 204 [79/40] (ours keeps it in ESI where retail reloads it; the loop-head pad realigns, not a
+// real gain), the vehicle object fetched again after the type test 378 (same code); on 163 the vehicle index local 425.
+// Round 78 (m3 lane 14, fast unless marked; masked aligned in brackets, base 168 [59]): the other actor's object as a
+// named pointer used for both reads (`other_object = object_get(node->object_index)`) 163 [59], plain 163 (aligned 80
+// -> 75: that block's EAX/ECX/EDX homes become retail's; a gain of 5, not kept); the same lookup written out at both
+// uses with no index local 168; the existing 0x1df560 called in place of team_is_enemy 679 (2797 bytes, stays a
+// call); the player pointer as a ternary 372. On 163: score declared at the loop top 374 (2884 bytes); a long player
+// slot 385 (2899, a re-measure of the listed long player slot); a short first-search counter 171; the vehicle read
+// through object_get() at both uses 622 (2902); the player pointer declared at the loop top 368; the index named again
+// beside the object pointer 168; re-measure of round 33's long second counter 164. Diagnostics, each in src for one
+// --fast check and reverted at once: one or two volatile reads through the address of the player table global, or of
+// an actor field, ahead of the players iterator move the first difference to +0x13, so they do not isolate the table
+// pointer's register in this function.
+// Round 67 (m3 lane 15, fast with 0x25d810): retail inlines 0x1df560 here (its 0xbfe60/0x15e020 calls), as the file's
+// team_is_enemy copy already does; the copy as one single-exit block (diagnostic, header restored) 168 (identical code); the
+// two player-datum unit reads through game_engine_events.h's inline event_player_get 168 (identical); the vehicle lookup
+// written out in place of object_get 168 (identical: inline calls add no scratch step here); the second search's counter
+// as long 169 (that loop then takes retail's stepped-pointer shape, `cmp eax, 2`, registers aside); with the player
+// pointer also built from a long copy of the found index 375 (both searches retail's shape but for registers and where
+// `xor edi, edi` sits; the table pointer still ECX). The table pointer's ECX is the players loop's colouring (ECX/EDX
+// for retail's EAX/ECX throughout); `mov eax, [abs]` is one byte shorter, which moves the loop-top pad. The unknown23
+// test through the `prop` local instead of a fresh prop_get 655 (2845 bytes: retail reads it afresh).
+// m3 lane 5 r169 (fast with 0x25d810; aligned/masked in brackets, base 168 [80/38]): the scoring block with the
+// established part written in both arms (`if (visible) {...; if (established) {...} else if (...) ...} else if
+// (established) {...}`, for retail's cross-jumped entry stub at 0x266f93) 392 at 3005 B [121/60]: the copies are not
+// merged. Re-measured round 78's other-object pointer 163 [75/38]; on it: the iterator's NONE fields chained 165, the
+// player pointer declared before the first search 368, `visible` initialised directly from the reference test 423,
+// `(established || visible)` in the outer test 234 (2882 B), the prop record looked up inside the unknown23 arm 499
+// (2859 B). Retail stores visible = true ahead of the 0x25d810 call
+// and treats 0x30bf0 as killing an escaped direction (round 61's diagnostics); our compile-only build does so too,
+// so that residence follows how the link sees 0x30bf0 (its file and flags), not this body.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

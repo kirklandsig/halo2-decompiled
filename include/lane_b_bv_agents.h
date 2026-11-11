@@ -18,6 +18,7 @@ struct lane_b_bv_shape
 class lane_b_flag_body_pair_collector : public lane_b_cd_body_pair_collector
 {
 public:
+	lane_b_flag_body_pair_collector() { early_out = false; }
 	virtual void add(body_2ea940 const *a, body_2ea940 const *b)
 	{
 		early_out = true;
@@ -38,6 +39,7 @@ public:
 	lane_b_closest_point_collector() : has_hit(false)
 	{
 		hit.position.m128_f32[3] = FLT_MAX;
+		early_out = FLT_MAX;
 	}
 	virtual void add(lane_b_cd_point const *point)
 	{

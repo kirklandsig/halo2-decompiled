@@ -459,6 +459,11 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 	vector->k = axis->k * along + k * cosine - (axis->j * i - axis->i * j) * sine;
 }
 
+// score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
+// it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
+// rotation's component spill, cross scheduling and register allocation remain.
+// The body is 1085 bytes versus retail 1089.
+// MiniMax I (11-10): no new form, no lower score (90).
 // MiniMax D (11-09): no new form, no lower score; retail keeps the ring value as a float in a
 // stack slot and reloads it as a double for the radius product where ours converts the counter
 // directly, and retail's two global loads use swapped registers.
@@ -466,10 +471,6 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // distance reproduces retail's cvtsi2ss, store, fld, mulss, fmul sequence, but the extra stack
 // slot makes the frame 0xdc and copies the radius through an integer register, so it scores 234
 // against the 90 body, which is kept.
-// score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
-// it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
-// rotation's component spill, cross scheduling and register allocation remain.
-// The body is 1085 bytes versus retail 1089.
 // MiniMax G (11-04): ring block with a hoisted double scaled radius, the ring converted once
 // into a named local and its offset named, plus the rotation with cross j, k named and a
 // second name for axis (local_axis) mixed into the dot and rows: 76 (retail's cvtsi2ss ring
@@ -801,6 +802,44 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // 238 (1103), with the named double 241 (1088); the distance without the (double) cast 90 (same code). Body unchanged.
 // (The named phase re-measures rounds 17 and 53's 143; the named j, k cross terms give 90 here where round 50 records 100 for "cross j, k before
 // i", so that round's form was a different one and was not rebuilt.)
+// Lane 3 r230 (base 90): the existing rotate_direction (forceinline, matched in 0x1ecf50) for the rotation, plain 100
+// (1081 bytes, frame 0xd4: the rotation no longer spills); with the ring phase named before the distance, plain 96 (1090
+// bytes, frame 0xd8, retail's cvtsi2ss/store/fld ring block and an unspilled rotation; the radius still copies through
+// EDX with the sector read after it, and the dot sums (k + j) + i); the private helper given that body with
+// dot3f(axis, vector), plus the phase, 96 (same code); on that, the direction declared at function scope 96; a 600 s
+// permuter run on it (47 tries) best 89, the listed trace.distance-at-each-use form.
+// Round 148 (m3 lane 8, fast with the file's other functions and 0x26c590, 0x26d100, 0x2104b0, 0x14a280, 0x26d3f0; base aligned 58,
+// masked 37): the rotation helper's dot through this file's record_dot3f 90; the origin as a `point3f const *` 90; the ring
+// counters declared countdown first 90; the first pathfinding lookup as an if/else assignment 217 (1086 B, the same code as
+// round 133's ternary); the trace point declared ahead of the trace distance 90; the second pathfinding lookup through its
+// own structure local 90 (all 90s the same code).
+// M3 lane 16 r100 (fast, 0x26dde0 stays matched). Lead: the existing cross-file rotate_direction (declared as bipeds.cpp does; list
+// 0x1ecf50 so --fast inlines it) for record_rotate_vector gives retail's rotation shape with no spill: cross j and k form early, cross
+// i sinks into the i row. Alone 100 (1081 B, frame 0xd4 for 0xd8); with the ring phase named in the outer loop (`real phase =
+// (real)ring * 0.39269909262657166f;`, angle `spoke * 0.785.. + phase`) 96 (1090 B, frame 0xd8, retail's cvtsi2ss/store/fld/mulss/
+// fmul ring sequence). Left at 96: the dot's terms (ours j, k, i; retail i, j, k) and an XMM3/4/5 permutation, the radius copied
+// through EDX with the sector read late, the phase stored before the spoke's zero, the direction copy based in ECX. On it: a plain
+// radius local 112, a const radius local 112, the sector read first 263, the phase after the distance 96 (same code); a named float
+// ring value without the phase 100 (same code as alone). The cross-file rotate_vector_170d70 100, with the phase 96 (same code); the
+// file helper in rotate_direction's shape (named cross terms read from the vector, dot3f(axis, vector)) 100 / 96 (same code: the dot
+// order does not follow dot3f's argument order); cross terms named from the i/j/k copies 90 (same code as the body); crosses before
+// the dot 103; crosses read from the vector with the copies kept for the rows 114 (either order; the dot then starts with i as
+// retail but adds k before j; all six declaration orders of the copies 114, same code). The dot written out i, j, k or k, j, i, or as
+// `(1.0f - cosine) * dot3f(..)`, compiles the same (VC orders the terms itself). Body unchanged.
+// M3 lane 16 r102 (fast, 0x26dde0 stays matched, 0x1ecf50 listed): round 100's rotate_direction + named-phase lead re-measured with the
+// phase after the distance and before it, 96 both (1090 B, registers masked 20 against 33; left: the radius copied through EDX where
+// retail uses XMM0, the sector field read after it, then registers). On the lead: the ring as one named float for the distance and the
+// phase 96, the angle as `phase + spoke * 0.785f` 96 (same code each); the direction copied after the sine and cosine 246 (1104 B); sine and cosine passed
+// straight to rotate_direction 230 (1094 B). The `volatile` pathfinding copy removed 204 (1056 B; retail keeps the lookup), on the
+// lead 199 (1061 B). Body unchanged at 90.
+// M3 lane 8 r152 (fast, 0x1ecf50 listed): re-measured the rotate_direction + named-phase lead 96 (masked 20: the radius copied
+// through EDX with the sector read late, spoke-loop scheduling, the marker order) and it with trace.distance at each use 89
+// (1089 B). New on the lead: a `long` spoke counter 239 (1080 B); the radius as a `real const &` bound straight to the object's
+// field 263 (1078 B); the spoke's angle term named (`spoke_angle + phase`) 220 (1083 B); an early `return NONE` after the first
+// lookup 255 (1090 B), the same on the body 255. Same code as the lead or the 89 form: the collision marker stored before the
+// entry pointer. The 0.1-offset point as a copy of the collision point plus three `+=` 189 (1109 B, likely the listed
+// collision-offset vector). Compile-only identical: `record->count++;` split from the 32 test, the trace failure as a guard
+// `continue`, the trace or world declared in the outer scope, the entry flag set after its direction fields. Body unchanged at 90.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

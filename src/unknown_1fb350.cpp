@@ -318,6 +318,9 @@ void function_f0fd0(long vehicle_index, bool set);
    unit's flags and are deleted */
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// MiniMax D (11-10): no new form, no lower score (122); retail's frame is 0x14 with the pool pointer in two
+// stack homes and the datum index in EDI, ours is 0xc with the pool forwarded into EDI and the object pool
+// hoisted into EBP.
 // MiniMax C (11-09): no new form, no lower score (122): retail's frame is 0x14 with the pool pointer in two
 // stack homes and the datum index in EDI, ours is 0xc with the pool forwarded into EDI and the object pool
 // hoisted into EBP; the fast check builds a reduced image in which g_4e0300 and g_4f5724 are unresolved, so

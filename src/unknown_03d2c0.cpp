@@ -22,6 +22,7 @@ struct s_3dd10_object_header
 void function_3dd10(long object_index, bool force);
 struct s_interface_function_context;
 void function_2c3b0(s_interface_function_context *context);
+void function_ba690(long object_index, long *state_count, byte **states, long *a, long *b);
 real __stdcall function_be8b0(long object_index, long name);
 struct s_object_list;
 extern s_object_list *g_4de2f4;
@@ -136,6 +137,34 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // Tried: return NONE (77); the NONE test after the inner if (77); no early return (161);
 // "if (result != NONE) initialize = true; else return" (83); one variable for the
 // allocation and the result (141); result = cache_index at its declaration (148).
+// Round 99 (lane 16): the region lookup through the existing 0xba690 (count and states): 77 (same code; kept).
+// After the walk: `cache_index = result;` and both later tests on cache_index 79; only the early return on
+// cache_index 77; the walk's best index in its own local 162 (524 bytes), the same copied back through
+// cache_index 128 (522); no early return, `if (result != NONE) initialize = true;` 85 (504 bytes, aligned
+// 15: retail's block structure, the walk's NONE exit jumps to the end and the alloc success joins at the
+// second test; left: the join reloads the result into EAX where retail tests ESI, and ours keeps the result
+// in ESI across 0x3dd10 so the two epilogues merge); the same with cache_index = result and the final test
+// on cache_index 141 (518 bytes, aligned 24), with only the initialize test on it 85; `initialize = result
+// != NONE;` 116 (495); the walk as a forceinline helper writing the best index through a pointer 85 (same
+// code as the 85 form), returning it 108.
+// Round 101 (lane 16, fast with 0x3dd10): ours returns the constant on the walk's NONE path (`or eax, esi`, ESI known -1); retail
+// returns the variable (`mov eax, esi`) from a second epilogue after the main one. The early return returning cache_index 77,
+// `long result = NONE;` 77, `result = cache_index = record_pool_allocate(...)` 77 (all same code); one early return after the
+// if/else in place of the `if (result != NONE)` block 152 (497 bytes); the early return as `goto done` to the only return 85
+// (504 bytes, the two NONE tests merge).
+// M3 lane 8 r151 (fast; control 77): retail's found path skips the merge test on a constant, not on the index: with the
+// merge test spelled `!initialize || result != NONE` (diagnostic, an implied test) the found path jumps straight to the
+// record block and the merge block becomes retail's `cmp esi, -1; mov cl, 1; je` (83, 508 bytes; only the walk's NONE exit
+// still differs: ours inline returning the constant, retail a second epilogue at the end returning ESI). Our build folds
+// `return result` after any direct NONE test of result to the constant (the walk exit returning cache_index, a copy of
+// result tested, `result == cache_index`, the result typed dword, the walk writing through a pointer: 83/83/83/83/83; on the
+// plain body dword 77 and the pointer 77, same code). New forms: the found test as the else arm of an alloc-first
+// `cache_index == NONE || owner != object_index` 77 (same code); `if (initialize && result == NONE) return result;` ahead of an
+// unconditional record block 138 (518 bytes, merge block as retail, the else arm laid out after the main return), with
+// `return NONE` 138; the NONE test with its return at the end of the else arm, record block unconditional, 138 (518 bytes);
+// that without the walk's own return 145. Re-measured: the listed `if (result != NONE) initialize = true; else return
+// result;` 72 now (519 bytes: the walk's NONE return moves to the end as retail, but returns `or eax, -1`), with the merge
+// test spelled as above 87; one variable for the allocation and the result 141.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
@@ -185,11 +214,11 @@ long __stdcall function_3ddd0(long object_index)
             *(long *)(record + 0x44) = object_index;
             *(long *)(record + 0x48) = (long)function_be8b0;
             *(long *)(record + 0xbc) = NONE;
-            byte *copy_object = ((s_3dd10_object_header *)g_4e0300->data)[object_index & 0xffff].object;
-            byte *data = copy_object + *(short *)(copy_object + 0x11a);
-            long bytes = *(short *)(copy_object + 0x118) / 10;
+            long state_count;
+            byte *states;
+            function_ba690(object_index, &state_count, &states, NULL, NULL);
             for (long i = 0; i < 4; ++i)
-                memcpy(record + 0xc0 + i * 16, data, bytes);
+                memcpy(record + 0xc0 + i * 16, states, state_count);
             *(long *)(object + 0xcc) = result;
             function_3dd10(object_index, true);
         }

@@ -839,6 +839,37 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // inclusive/complementary selection maxima: 34/35/34/34/34/35/34/34. NOT kept:
 // no exact count/fill/clamp allocation repair; native 0x48 frame and 190-byte extent
 // remain. Original complete body, direct input reads and scalar maximum restored.
+// M3 lane 5 r167 (fast with 0x91e30; base 34, aligned 23, masked 2: only register roles are left): the copy as a
+// `while` loop with the maximum as one ternary 34; the extra-first sum with the clamp as `excess >= 0 ? excess : 0` 34;
+// per-loop `long i` declarations with the extra-first sum 34; the maximum as one ternary with the fill bound written
+// `player_count + extra_count` 34; `long const` total and open slots with the copy as a `while` loop 34. Re-measured:
+// the clamp as `if (excess < 0) excess = 0;` 46; next_party first with open slots as the capacity then `-= total` 34;
+// an early `return false` (here with the clamp assigned back to the imbalance) 63 (203 bytes). All restored.
+// m3 lane 3 r227: both builds keep next_party at frame+0; the only difference is the entry convention (player
+// count EAX in retail, EDX here), which follows the first pass's order for the rep stosd operands: ours loads the fill value
+// before the count and destination (`mov eax, [esp + 0xc]` first), retail after them, so retail's player count can live in EAX
+// until `sub ecx, eax`. Every natural fill/maximum/clamp form is listed above at 34 or worse; only value-changing fill values
+// move the load, and the caller 0x7e210 (src/unknown_07a9a0.cpp) is outside this round's files. New (fast): next_party scoped to a
+// block holding both loops 34; next_party and the index in that block 34 (same code). No other untried natural form is left.
+// Round 149 (m3 lane 8, fast with 0x91e30/0x7e210): the copy loop forms `party + 1` once per pass (`lea edi, [edx + 1]`)
+// in retail as here, so a running largest index filled with `largest + 1` is not retail's. Combinations, all 34 with the
+// player count still in EDX: the extra-first sum with next_party declared first, with the fill as `while (i < total)
+// parties[i++] = next_party;`, with the subtraction in place (`imbalance -= open_slots;`); next_party declared first with
+// the subtraction in place; the `while` fill with the subtraction in place.
+// Round 76 (m3 lane 14, fast): the fill counted down over the extra count 70 (diagnostic: the extra count then goes
+// to the stack); the clamp assigned back to the imbalance with an extra-first sum 45 (192 bytes); next_party as a
+// dword 35 (same roles); the copy bound as `player_count > i` 34 (same code); open slots computed just before the call
+// 87 (170 bytes). A /Gd compile-only harness of this body (all-stack first pass) loads the extra count into EAX in
+// all 13 spellings screened (sums, total/open-slot placement, fill forms, signature orders), but it does not show the
+// role change the `(short)` fill gives in the real build, so it cannot screen this cause. The countdown fill, the clamp
+// assigned back, the dword next_party and the open slots before the call re-measure listed forms; new: the copy bound
+// form above and one loop over the total that copies below the player count and fills above it 83 (174 bytes). No
+// untried natural form left in this note's lists.
+// Round 184 (m3 lane 4, fast): the copy through an output cursor (`*party++ = party_indices[i]`) 78 (175 bytes);
+// through an input cursor alone 77 (172 bytes); that cursor with the fill through a walking pointer 64; the output
+// cursor continued by the fill over the extra count 86 (173 bytes); the total as `player_count` then `+= extra_count`
+// 34 (same code); re-measured: the fill through a walking pointer 63 (199 bytes). No untried natural form is left in
+// this note's lists; the player count still arrives in EDX.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
