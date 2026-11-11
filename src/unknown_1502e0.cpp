@@ -1447,6 +1447,9 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// MiniMax I (11-10): no new form, no lower score (43); every difference is one clean pairwise register
+// rotation (retail: player esi, hand edi, unit index edx, temp ecx; ours: player edi, hand esi, unit index
+// ecx, temp edx) and the permuter was killed at its time limit without reporting.
 // MiniMax D (11-08): score 43 (was 43): the saved roles are exchanged - retail keeps the player record in esi
 // and the hand in edi, ours keeps the player in edi and the hand in esi, and the unit index stays in ecx where
 // retail reuses esi.

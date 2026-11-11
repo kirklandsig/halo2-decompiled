@@ -182,6 +182,9 @@ __forceinline bool function_184448(long arg_0)
 }
 
 #pragma inline_depth(1)
+// MiniMax I (11-10): no new form, no lower score (965); the first difference is still the frame size (ours
+// 0x11d4 against retail's 0x11cc) together with the scene and surface records sitting in each other's stack
+// homes, and that rotation depends on 0x48e70 in another lane's file.
 // MiniMax S (11-10): no new form, no lower score (965); the frame is 0x11d4 against retail's 0x11cc, the definition and listener records sit in different stack slots and the falloff and bounds values are kept in separate homes.
 // MiniMax B (11-04): no new form, no lower score.
 // score 965 (s1A walk 11-06): the statement walk against retail found no behaviour difference; every condition, field,
