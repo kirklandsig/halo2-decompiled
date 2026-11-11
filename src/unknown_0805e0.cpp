@@ -335,6 +335,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // guest test spelled on the xuid_flags dword, through a byte cast of it, as two one-bit byte tests, the name
 // test through the record's `name[0]`, and the dword guest test with `name[0]`: 43 each (same code; the mask
 // stays an immediate). All restored.
+// M3 lane 16 r108: register-masked aligned 33 against retail; every candidate form checked against this note was
+// already listed (loop shapes, successor locals, result/early-return exits, the iterate helper, predicate helpers,
+// test spellings, the `(xuid != 0 || guest)` validity that hoists the mask but keeps the first guest test); no untried
+// natural form found, no trial run.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
