@@ -255,6 +255,12 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // No further untried natural form: retail's has-host form is a flag set in a test (match-only), the channel-field,
 // snapshot, NONE-first, window/threshold/tail and capacity forms are listed, and 0x75910's byte result stays
 // BLOCKED-BY 0x75910.
+// MiniMax I (11-10): no lower score (356 kept); dropping the redundant copy of the host state (a bool local that only
+// ever mirrors another local) does reach retail's 0x34 frame, but the score rises to 416 (1356 bytes) because the
+// register allocation shifts with the frame. What still differs: retail keeps `this` in EDI with four register saves
+// and none in ESI, keeps the channel index in EBP, and spills into the argument area, ours reserves 0x38 and splits
+// the saves differently; retail also keeps the NONE state in ESI and forms the channel base right after the
+// connection.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
