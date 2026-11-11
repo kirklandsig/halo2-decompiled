@@ -79,6 +79,14 @@ void cache_copy_forget(char const *map_name);
 bool map_copy_request(char const *map_name, long priority);
 void __stdcall cache_copy_record_use(char const *map_name);
 
+// MiniMax E (11-11): no new form, no lower score (29); the check's left column is ours and the right column is retail.
+// Retail's state 11 clamp is `mov eax,[total]; mov ecx,[completed]; mov edx,[limit]; sub eax,ecx; cmp edx,eax; jg L;
+// mov eax,edx;` - the chunk shares the remaining's register, the limit is the compare's left operand and the
+// assignment falls through; this round the if forms (the chunk as the difference with `limit <= chunk`, with
+// `chunk >= limit`, the limit named after the chunk, the empty-then variant and the ternary with the limit on the
+// left) all score 30 to 31 and keep the three loads rotated (ours total ecx, completed edx, limit eax against
+// retail's eax, ecx, edx), and the same clamp without the slot local scores 108 because the whole function's
+// allocation changes.
 // MiniMax R (11-10): no new form, no lower score; the state 11 chunk forms (the clamp as an in-place if, a min-clamp, a named limit and the total, completed and limit read in the other order) all keep the three loads one step rotated and score 30, the release before the slot store in state 19 scores 36, state 7 without the file local scores 327 and state 9 with a named handle scores 296.
 // MiniMax R (11-10): 30 -> 29: state 11's clamp compares the remaining against the limit so the chunk lands in the limit's register and the compare order matches retail; left: states 7 and 9 keep the file handle in another register, state 11 still swaps the completed and limit registers, state 16 sets the state ahead of the header clear, and state 19's slot store sinks.
 // MiniMax B (11-04): no new form, no lower score (the state 11 clamp as an in-place if, a min-clamp and a named-limit ternary all keep the same register rotation).

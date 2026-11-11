@@ -375,6 +375,8 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// MiniMax B (11-11): no new form, no lower score (286): the 200 of the round below comes from a flag that one test
+// sets and the next test reads, which is kept only with a byte match, so it is not available here.
 // score 286 (was 286): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
 // MiniMax C (11-10): 286 -> 200 not kept: it came from a bool started false and set by if/else for the link test, the same
 // bool reset and reused for the surface test, an origin pointer and two-arm start/end fallbacks; test-set flags are kept only
