@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 import pytest
 
@@ -479,6 +480,27 @@ def test_d3d_objects_need_the_library_and_every_member(tmp_path, monkeypatch):
     fake_lib_tool(monkeypatch, [f'obj\\i386\\{stem}.obj' for stem in build.D3D_OBJECTS if stem != 'pusher'])
     with pytest.raises(SystemExit, match='no member named pusher.obj'):
         build.d3d_objects(str(tmp_path), str(xdk))
+
+
+def test_run_tool_retries_once_after_a_timeout(tmp_path, monkeypatch):
+    """A wedged Wine tool is killed after TOOL_TIMEOUT and tried once more,
+    rather than stalling the whole build."""
+    xdk = tmp_path / 'xdk'
+    (xdk / 'bin' / 'vc71').mkdir(parents=True)
+    calls = []
+
+    class Result:
+        returncode, stdout, stderr = 0, 'ok', ''
+
+    def fake_run(command, **kwargs):
+        calls.append(kwargs)
+        if len(calls) == 1:
+            raise subprocess.TimeoutExpired(command, kwargs['timeout'])
+        return Result()
+
+    monkeypatch.setattr(build.subprocess, 'run', fake_run)
+    assert build.run_tool('CL.Exe', [], str(tmp_path), str(xdk)) == 'ok'
+    assert len(calls) == 2 and calls[0]['timeout'] == build.TOOL_TIMEOUT
 
 
 def test_build_refuses_a_source_named_like_a_d3d_member(tmp_path):
