@@ -679,6 +679,10 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // score 46 (was 56): the six NONE defaults now precede the effect point; left are the second scan's
 // index register and the stack slots of the scale and the object index, which follow the parameter
 // order that the callers in other files fix (MiniMax D, 11-10).
+// MiniMax S (11-10): no new form, no lower score (56): the first difference is still the call's register split,
+// which follows the parameter list that 0x1883e0's declarations in src/impacts.cpp and src/projectiles.cpp fix;
+// past that call the homes of the two vectors and of the four scalar values sit at different offsets from
+// retail's and the home stores come in a different order.
 // MiniMax I (11-08): no new form, no lower score (77); the argument order still comes from the call sites in other files.
 // MiniMax R (11-07, run 38): no new form, no lower score (77); still BLOCKED-BY 0x1883e0's fourth and fifth
 // parameter types, whose declarations are in src/impacts.cpp and src/projectiles.cpp, so retail's point and

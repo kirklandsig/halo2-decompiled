@@ -5370,6 +5370,7 @@ void function_161420(long player_index, real alpha);
 // MiniMax D (11-10): no new form, no lower score (2); retail stores the x87 power (fstp dword ptr
 // [esp]) before the player copy (mov edx, ebx) in front of the 0x161420 call, and every argument
 // form tried here leaves the copy first; the callee's declaration is in another file.
+// MiniMax S (11-10): matches; the power is computed into a named real local (real power = pow(intensity, 1.9f);) and passed on, so the x87 argument store (fstp dword ptr [esp]) precedes the player copy (mov edx, ebx) before the 0x161420 call, as in retail; nothing differs any more.
 // MiniMax C (11-10): no new form, no lower score (2); the player copy (mov edx, ebx) still precedes the x87 argument store (fstp dword ptr [esp]) before the 0x161420 call where retail stores the power first, and a double power expression with a cast to real measures 2; the callee's declaration in src/unknown_1600f0.cpp fixes the argument order.
 // MiniMax D (11-06): no new form, no lower score (2); the only difference is still the order of the
 // player copy (mov edx, ebx) and the x87 argument store (fstp dword ptr [esp]) in front of the
@@ -5460,7 +5461,10 @@ void function_159880(void)
             if (intensity < 0.0f) intensity = 0.0f;
             else if (intensity > 1.0f) intensity = 1.0f;
             if (intensity > 0.0f)
-                function_161420(player_index, powf(intensity, 1.9f));
+            {
+                real power = pow(intensity, 1.9f);
+                function_161420(player_index, power);
+            }
         }
     }
 }
