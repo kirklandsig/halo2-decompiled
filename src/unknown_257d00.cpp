@@ -1922,6 +1922,11 @@ void function_b7360(long object_index);
 // (0x258dc5 and 0x258e15 are reached from both the 15/16/17 and the 1/19 call sites; ours duplicates them) and ends
 // on the failure block; case 13's flag OR is load/or/store (retail `or byte ptr [ecx+0x10a]`). Tried this walk:
 // `bool success;` with `case 11: default: return 2;` 471 (1832, worse); `case 11: return 2;` with the initializer 301.
+// Lane 3 r230 (fast, base 301 at 1824 bytes): case 13 through the existing swarm-object flag5/flag6 bitfields 309 (1816;
+// retail's direct `or byte ptr`, a repeat of the listed word-flags result); arg_0 and the output renamed by role so the
+// output's name sorts first 301 (byte-identical: names do not pick ESI/EBP here); `success` declared first 301 (identical);
+// case 7's delay as a ternary 301 (identical); case 9 reading the scenario global at each use, no local, 301; case 13
+// with the object looked up in each arm, no local, 313.
 // m3 lane 8 r146 (fast; aligned/masked base 151/107): case 13's 0xb7360 call once after the if/else 301 (same code); case 4's
 // range result as a ternary 437 (1820 bytes); case 5's clamp as a ternary 304; case 7's mask as `&= ~0x18; |= 4;` 301 (same code);
 // case 13's OR value as a ternary with one store 319 (1808). Ours already cross-jumps the 0x259ec0 blocks as retail does.
@@ -2335,9 +2340,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 479 (was 610; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
+// score 479 (was 479): earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // MiniMax R (11-10): no new form, no lower score.
-// score 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
+// Earlier 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
 // (0x2594b5 `comiss xmm0, [1.0]; jbe 0x2597fa`, true for a NaN distance); `d <= 1.f` compiled to
 // `comiss 1.0, d; jae`, false for NaN. The body is now 2396 bytes like retail, but the positional
 // score rises because retail reloads the state there (`mov eax, [esp+0x38]; add eax, 8`, 0x2594a7)
@@ -2586,6 +2591,13 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // flag as `c ? true : byte` or an if/else 475; plain returns for the three goto exits 474. Left: retail's aggregate
 // copy at +0x424 (`lea ecx`), case 4's direct facing reads, case 18's held references, case 14's block after 21, case
 // 6's two flag stores and the post-switch test laid out after case 0.
+// m3 lane 2 r70 (fast with the file and 0x110ab0; control 479, aligned 199, masked 135): case 6's `|= 0x29` moved ahead of the
+// two 1000.f stores 479 (same code: ours still folds both into `or 0x69`, retail stores 0x29 and then 0x48); case 21's
+// reference in a local across 0x25ab50 (retail's ESI) 617; with case 18's two references in locals as well 612; with case 2's
+// aggregate copy and case 4's facing read from the state's fields too (retail's local forms in all four cases) 635 (2372
+// bytes, masked 188); with case 7/8's flag as `arg_1 == actor ? byte : true` 632 (2368). Each flips the actor to EDI and the
+// state to EBX. Lead: retail cross-jumps the `sete [esp+0x3c]` tails of cases 7/8, 0, 5 and 10 into one block that sits
+// right before the post-switch test (case 9/12/20 jump past it to the test); ours keeps three setes and the test after case 20.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

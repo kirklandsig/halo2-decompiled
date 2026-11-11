@@ -871,6 +871,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // keeping EAX. A `while` copy loop, the imbalance declared first and an early `return false` keep that (EBX); a
 // named party value moves it to EDX and the fill counted over the extra count to EBP (both listed, 73 and 62). Retail
 // needs the player count loaded into EAX in that pass, which only the value-changing `(short)` fill gives.
+// Round 184 (m3 lane 4, fast): the copy through an output cursor (`*party++ = party_indices[i]`) 78 (175 bytes);
+// through an input cursor alone 77 (172 bytes); that cursor with the fill through a walking pointer 64; the output
+// cursor continued by the fill over the extra count 86 (173 bytes); the total as `player_count` then `+= extra_count`
+// 34 (same code); re-measured: the fill through a walking pointer 63 (199 bytes). No untried natural form is left in
+// this note's lists; the player count still arrives in EDX.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

@@ -421,6 +421,16 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // child flag through a raw seat pointer and a dword shift as damage.cpp writes it 465 (2304 bytes: it becomes a mask
 // test). The 0x1e8d50 entry itself repeats round 54's 166. Still BLOCKED-BY 0xd0590 (held order; case 4's parent then
 // takes ESI as retail).
+// Round 86 (m3 lane 11, fast; 0x1e83c0, 0x1e8d50, 0xd0590 and 0xd05c0 matched each time): the plain body is register-masked
+// aligned 6 (aligned 59): the getter's table/result swap makes ours one byte short and case 4's child-loop `test cl, 1`
+// one byte long. On the existing 0x1e8d50 entry (166 re-measured, 2312 bytes, masked 20; retail's getter exactly), new
+// forms: `result = !blocked;` 497 (2328 bytes); `result = true` before the child loop and cleared at the break, no flag,
+// 480 (2332 bytes); the three seat-bit tests as one negated `||` 166 (same code); case 4 as `if (function_13cb40())
+// break;` 166 (same code); the flag as a long 166 (same code). Re-measure: the child test nested inside the seat and unit
+// test 166. Diagnostics: with the unit test dropped the child loop is unchanged; with one more use of the child's seat
+// after the bit test the product moves to ECX and the flags to EDX (retail: product EDX, flags EAX, ours EAX/ECX), so
+// the seat dies at the `movsx` in both and retail's scratch rotation sits one step past ours there; rounds 55 and 159 found
+// the same child-loop rotation under the held 0xd0590 order, so the missing step is not the parent's register alone.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

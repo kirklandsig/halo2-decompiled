@@ -2119,6 +2119,14 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // pushed straight from EAX (ours spills it to a byte home) and the definition kept in EDI from the loop's bottom reload
 // to the placement switch (ours reloads it into a scratch register at each use, with a `mov edi, edi` pad). Both
 // follow the system/colour/tint ranks set by 0x175a80's register contract (src/unknown_173b90.cpp, Avoid this round).
+// Round 184 (m3 lane 4, fast; aligned/masked as difflib counts with addresses / also registers masked, 76/32 at 128):
+// re-measured: the existing location_point_in_zone_inline (location_zones.h, NULL zone index) for the private zone
+// copy 165 (aligned 45, masked 28), with the spawn stores unknown, scale, location 162 (aligned 41, masked 19). New on
+// that: both colours read into locals before the type-query block 187 (572 bytes), inside it 187; `multiplied()` as
+// the call's argument 170; both queries as the call's arguments 164 at 552/552 bytes (aligned 36, masked 15: the loop
+// then holds the definition in EDI and reloads the system as retail; LEAD), on it both colours early 188 (568 bytes),
+// colour B only early 153 (aligned 35), colour A only early 153 (masked 26). Left on the lead: the system in EDI at the
+// entry (retail ESI, reloaded for the colour call), the early colour reads and frame 0x40/0x44.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
