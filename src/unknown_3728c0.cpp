@@ -69,7 +69,7 @@ void __cdecl sort_pair_range_372a80(pair_30d870 *pairs, long first, long last, p
 		while (less(pairs[left], pivot)) ++left;
 		while (less(pivot, pairs[right])) --right;
 		if (right < left) break;
-		if (left != right)
+		if (right != left)
 		{
 			pair_30d870 temporary = pairs[right];
 			pairs[right] = pairs[left];
