@@ -459,6 +459,14 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // square-root arguments 209; the view outputs declared with the offsets 206 (same code). Retail's second view keeps its
 // scaled copy apart from the raw offsets ([esp+4], XMM0, [esp]), and those slots carry the blend scale and the root
 // arguments later, so the frame and the [esp]/[esp+4] order follow the uncoalesced copy.
+// m3 lane 7 r150 (one-link LTCG harness, which reproduces fast's 206 and round 52's 218/217 exactly; brackets are aligned and
+// register-masked aligned counts, base [241/185]): the helper's cursor stores keep the second view from reusing the first view's
+// camera loads; with three row statements the scale load is shared, as in retail (one scale register, right.i held in xmm7 for
+// both views). Fast, on round 52's lead (rows in the caller, a two-call scale step): the scale step written in the caller as component
+// copies plus vector3f_scale, or by hand on the input or on the copy, 253 [183/75] (one code, 1136 bytes, frame 0x14), the same with
+// retail's offset order 1i 1j 1k 0k 0i 0j 234 [190/80]; the second view transformed in place 253 (same code), the first in place 299
+// (1178 bytes, frame 0x2c); the depth limits named again 250 (1136 bytes); rows z first with the second point's offsets first 261
+// (1146 bytes) [132/78]; both scale steps ahead of both views, offset loops 217 (1136 bytes, frame 0x20). None below 206.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

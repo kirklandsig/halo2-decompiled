@@ -335,6 +335,14 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // guest test spelled on the xuid_flags dword, through a byte cast of it, as two one-bit byte tests, the name
 // test through the record's `name[0]`, and the dword guest test with `name[0]`: 43 each (same code; the mask
 // stays an immediate). All restored.
+// m3 lane 7 r150 (fast with 0x1a303b and 0x2b393c, both stay MATCH; a one-link LTCG harness reproduces this body's code, 5 bytes
+// of end padding short): retail sets AL false before the guard, hoists the mask into AL and makes false again at the loop exit;
+// the early-return forms give retail's early ESI save but neither the hoist nor the EBX successor. New: a found-entry pointer
+// with `index != NONE && !found` and the copy after the loop 56 (131 bytes); that with `!found && index != NONE` 55 (129 bytes);
+// the iterator stored on both paths after the tests, with result and break 50, with an early return 55; the guest test ahead of
+// the machine-local test with a successor local and early returns 44. Re-measured: `*iterator = index = entry->next` with an
+// early return 52, a successor local with early returns 49, an early `return false` then a do-while 55, a found pointer with
+// break 51 (133 bytes).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
