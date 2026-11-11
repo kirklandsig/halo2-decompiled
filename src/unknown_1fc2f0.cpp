@@ -228,8 +228,8 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // copied before the subtractions 34; the deltas i, j, k 79.
 // MiniMax D (11-07): the prediction runs through the existing vector3f_add_scaled into a predicted point and
 // the ticks through the existing scaled_difference3f (the same arithmetic as the hand-written chains): 32, with
-// the tick conversion in XMM3 as retail's. Not kept: the deltas reordered to k, i, j for 30 (an order picked by
-// score; i, j, k with the helpers 79).
+// the tick conversion in XMM3 as retail's. Not kept: the deltas reordered to k, i, j for 30 (an order picked
+// by score; i, j, k with the helpers 79).
 // Earlier: the limit test is written the other way round, so the comparison matches
 // retail's operand order and its branch, but the scheduler computes the components i, j, k where
 // retail does j, i, k, so the tick conversion takes xmm4 where retail reuses xmm3, the deltas land
@@ -635,6 +635,13 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // the tick count read after the prediction helper 32 (same code); the root named before the scale 46 on this body
 // (listed as 33 on an earlier one). Re-measured as listed: the delta as an aggregate initialiser 79; limit declared
 // at its assignment 32. The squared length through reciprocal_normalize.h's k, i, j statement-sum helper 32 (same code).
+// M3 lane 1 r90 (fast with 0x1fc660, 0x1fc350, 0x1fc2f0, 0x1fc710, 0x1fc620; aligned/register-masked control 32 [29/13]):
+// a 600 s permuter run on this body (61 tries, one confirming full build) found nothing below 29, and its 29 needs the
+// rate read through a volatile cast: that cast alone gives 29 [26/15] (diagnostic, reverted at once; the limit's rate
+// is then reloaded), so the variant's other parts (the first correction add written correction first, the limit
+// declared ahead of delta, the tick count assigned after its declaration, a `(real)` on the squared length) add
+// nothing; the first add's operands swapped alone 32 (same code). No untried natural form is left (as lane 18 r17
+// found): the store/delta order and the rate-chain order stay coupled through the delta statements.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

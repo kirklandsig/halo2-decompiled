@@ -639,6 +639,15 @@ extern point2f *g_468778;
 // local for the second prediction time 422 (same code); the first prediction in i, j, k order 418 [91] (1535 B); without the
 // velocity pointer 420 [111] (1525 B); `return !f14 && !f13 && !f2d;` in the arm 411 [99] (1549 B); that with the distance zero
 // at its declaration 403 [102] (1549 B), and with the planar pair as `{i, j}` 407 [106] (1555 B).
+// M3 lane 1 r90 (fast with the file's functions and 0x265d30; aligned/register-masked counts in brackets, control 375
+// [263/104]): base B = the actor looked up first, `if (!local_1 || f13 || f14 || f2d) return false;` and `return !f14 &&
+// !f13 && !f2d;` in the arm, re-measured 393 [266/104]; B with the -0.4 facing dot read off the view (round 145's form,
+// re-measured 408 [179/99], 1556 B) = B2. New on B2: a pointer for the prop velocity's eight reads 451 [322/83] (frame
+// 0x44, 1588 B); the planar pair copied whole 402 [281/89] (1536 B); the second distance left uninitialised and zeroed in
+// its copy arm 395 [175/97] (1558 B, line count equal to retail's) = B3; on B3 the planar pair copied whole 399 [288/98]
+// (1549 B), and a late pointer to field_2d for the tail 395 (same code). Retail keeps the prop in EBX, then the velocity
+// pointer (`add ebx, 0x1c`) for magnitude3d, and the weight in memory across that call (our link keeps it in XMM4: the
+// same magnitude3d register-summary lead as 0x1d24a0's). All restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -1051,6 +1060,22 @@ static __forceinline long real_to_long(real value);
 // Round 68 (m3 lane 15, fast): the admission as an else-if chain setting the result false per flag 527 (1885 B); the
 // result as `char` returned as `!= 0` 438 (1925 B); `bool local_2 = false;` with nested flag ifs 495; the else arm as
 // `return false;` 508; the result declared before the state pointer 382 (same code).
+// M3 lane 1 r90 (fast with the file's functions and 0x265d30; aligned/register-masked counts in brackets, control 382
+// [155/82]): BLOCKED-BY 0x25d740's inlining. Lane 6's computed entry result (`bool local_2 = !f13 && !f14 && !f2d;
+// if (local_2) {...} return local_2;`, re-measured 508 [239/121], 1921 B, frame 0x54) is retail's shape except that our
+// link inlines 0x25d740 there (20 calls against retail's 21). Diagnostic, reverted at once: the same form with 0x25d740
+// kept out of line (a noinline declaration in its own file) gives retail's frame 0x58, the false exit at retail's place
+// (after the first `goto` jump), retail's 1904 bytes and the first difference at +0x147: 394 [151/88]. The call sits
+// under three tests there, and one more test (diagnostic) also keeps it out of line, so the inliner goes by the call
+// site's static frequency: the && test in the `if` (this body) keeps the site cold but leaves the false exit last, and
+// the computed result threads the exit but warms the site. Retail never inlines 0x25d740 (24 callers), and matched
+// 0x1b4560 needs `#pragma inline_depth(0)` around its call, so the getter's inline availability (its file's flags) is
+// the question for a ruling. Forms: the computed result with the facing read off the view at each use and an AI object
+// pointer for the velocity reads 577 [285/160] (frame 0x50; with 0x25d740 out of line 435 [207/118], 1956 B); with the
+// object pointer only 533 [241/116] (with 0x25d740 out of line 416 [207/72], 1924 B, frame 0x54); with the f12/f18
+// test as nested ifs 514 (still inlined); with the existing magnitude3d for the object-speed root 508 (same code: in this
+// form our link inlines magnitude3d, as retail does, and 0x25d740 too); on this body `return local_2 != false;` 438
+// [173/96] (1925 B, exit still last; the same numbers as round 68's char result).
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

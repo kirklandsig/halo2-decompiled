@@ -422,6 +422,20 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // masked 201). So the nested validity tests and the unrolled scale loops are independent structural fixes.
 // MiniMax D (11-10): no new form, no lower score: the removal path as an else arm after the body 902 (4267 bytes),
 // the entry flag word in a named local 917, the motion point copied member by member 943 (4283 bytes); all reverted.
+// M3 lane 1 r90 (fast with 0x1152e0, 0x11bce0, 0x1d2280, 0x24590; aligned/register-masked counts in brackets, control 902
+// [657/381]): BLOCKED-BY 0xbadc0 for the loop head. Diagnostic, reverted at once: an opaque library call right after the
+// attached-object lookup gives retail's head exactly (array header in EBX, element pointer formed by `shl eax, 3; add`, then
+// spilled) 979 [686/373], so retail's link treats 0xbadc0 as writing memory (the same held lead as 0xc86e0's; its file
+// src/unknown_0bad50.cpp is not ours to edit this round). Forms: the attached-object lookup moved ahead of the record
+// lookups 975 [667/399]; the one-use shape pointer local_11 folded into local_12 902 (same code); the angular pair
+// (field_58/field_5c) read from the record at each use 906 [653/375] (4250 B). On lane 14 r77's nested validity body
+// (re-measured 964 [615/378], 4267 B): the angular pair read at each use 993 [611/376] (4234 B); local_11 folded 964 (same
+// code); the attached-object lookup ahead of the record lookups 973 [634/395]. Lane 10 r73's two leads
+// from 0x247fd0 do not apply: neither listing has an `add`/`mov` pair or a two-register `lea` now, and the x87 store with its
+// split compare after 0x30bf0 is the same on both sides. The unmatched callee 0x1d2280 (26) uses XMM0-XMM7 as retail, so
+// its register use does not explain the caller's spills. The other single-point forms I found are already listed;
+// the larger causes are cross-file: the rolled scale loops (destructor blocker, include/unknown_1cec30.h) and
+// magnitude3d's `inline` (held).
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
