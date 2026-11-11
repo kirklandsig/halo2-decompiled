@@ -4557,6 +4557,12 @@ void function_c50a0(long unit_index)
 // MiniMax I (11-11): no new form, no lower score (166); retail keeps the vehicle pointer in ESI and the
 // NONE constant in EBP where ours keeps the vehicle in EBP, and the load of the old driver index sits
 // before the definition lookup in ours and after it in retail.
+// MiniMax E (11-11): no new form tried, no lower score (166): what still differs is the register
+// allocation - retail keeps the -1 and the child index in EBP, the vehicle in ESI and the object pool
+// pointer in EDX, ours keeps the pool in ESI and the vehicle in EBP - and the load of the old driver
+// index sits before the definition lookup in ours and after it in retail; the forms listed below (the
+// bool local for bit 13, the next sibling read from the held child pointer, a `none` local, the short
+// pass, the driver preset false) all score the same or worse, so the body stands.
 // score 166 (was 166; earlier 188): block layout now retail's (the rider that has a seat is the fall-through side, as an
 // `if (seat_index != NONE)` with the no-seat gunner flag in its else: 179), the driver, extra gunner and
 // partner flag tests read as field bits (172, 661 bytes), and so does the grouped-seat assignment bit (166,
@@ -5763,6 +5769,11 @@ void function_cf040(long unit_index, short type)
 // order of the header lookup inside the weapon loop - retail addresses it with the byte offset as the
 // base and the data pointer as the index, ours has them the other way round, and writing that lookup as
 // the offset plus the data pointer compiles to the same bytes here.
+// MiniMax E (11-11): no new form tried, no lower score (1): the only difference left is the base and
+// index order of the weapon loop's header read (ours [eax+edi+8], retail [edi+eax+8]); the lookup macro,
+// a data-first pointer arithmetic, a local header array, a plain integer sum and the masked-index
+// helper all compile to the same bytes here, so the swap is not reachable from the source and the body
+// stands.
 // score 1 (was 274): what is left is the header lookup of the weapon loop, whose address operands are
 // swapped (ours [eax+edi+8], retail's [edi+eax+8]). Fixes made: the team test takes the unit's team first,
 // the bit 16 and 17 tests are two separate ifs, the seat flags are read in place, the group flag is
@@ -5937,6 +5948,14 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // reload, the +0x33e offset, the creation pointer and the two vector copies) are ours EDX, EAX and ECX
 // where retail has EAX, ECX and EDX in the other roles.
 // MiniMax C (11-10): score 59 (was 202): the out-of-memory arm sets the return value before its store while the body sits in the else arm, which gives retail's three return blocks and its 1040 bytes. NOT kept (coordinator, 11-11): the header read as the pool data plus the masked index times twelve plus eight through a named offset local (57, retail's [ecx + esi + 8] amode), a hand-expanded getter with a shared local, kept only with a match.
+// MiniMax E (11-11): no new form tried, no lower score (59): the out-of-memory arm's form is retail's
+// (1040 bytes, three return blocks); what is left is the success arm's scratch registers - ours EDX, EAX
+// and ECX where retail has EAX, ECX and EDX for the g_4e0300 reload, the +0x33e offset, the creation
+// pointer and the vector copies - and the two header reads' base and index order (ours [esi+ecx+8],
+// retail [ecx+esi+8]); a 300 s permuter run over this body (21 tries) stays at 59, so it stands.
+// score 59 (was 202; 253, 282 before that): the out-of-memory arm sets the return value before its store
+// and the body sits in the else arm, which gives retail's three return blocks and its 1040 bytes; the
+// logic agrees with retail statement by statement (re-walked in round 5 of #1049).
 // score 202 (was 202; 253, 282 before that): the logic agrees with retail statement by statement (re-walked in round 5 of #1049).
 // Round 5 of #1049: the four weapon slots are cleared with memset(.., 0xff, 16), which gives retail's lea/pointer fill
 // (definition spilled first, EDX the pointer, ECX the value; 253 -> 202). What still differs: (1) retail's early
@@ -6988,6 +7007,14 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // spilled), the unit is still held in EDX, and retail still looks the unit up again after 0x110ab0 and
 // reloads the state offset and word for each of the three state-bit tests where ours reads them once.
 // MiniMax C (11-10): NOT kept (coordinator, 11-11): 232 from the trigger flags as a word in a word/dword union passed as its dword (a single local wrapped in a union) together with byte compares of the 0x113da0/0x113df0 results; retail has the 16-bit flag ops and the 0x28 frame. Try the byte compares alone, or a 16-bit flags local passed widened, before any aggregate.
+// MiniMax E (11-11): no new form kept, no lower score (253): the coordinator's byte compares of the
+// 0x113da0/0x113df0 results do reach retail's `test al, al` (251, two points, under the bar, so the body
+// is restored), the hand loop's values as chars give 267, the flags local as a dword 278 and the second
+// loop's hand index as a char 255 (253 with the byte compares); what is left is the frame, 0x24 against
+// retail's 0x28, with the changed flag at [esp+0x13] where retail has [esp+0x12] - retail keeps the
+// second loop's `first` in a stack slot, the flags word in memory and the hand index spilled, so retail
+// carries four more bytes of locals - and the unit is still held in EDX while retail looks the unit up
+// again after 0x110ab0 and reloads the state offset and word for each of the three state-bit tests.
 // score 253 (was 253): the control tests 0x8000000/0x4000 are plain mask tests (retail `test eax, imm`), flag 2 of
 // +0x10a goes through s_unit_flags_10a_view (load, shift, test), the zoom is a short compared against
 // the stored field (cmp bx; the field is then read, not the local, for the NONE tests), the zoom sound is read
@@ -7272,6 +7299,10 @@ struct s_unit_turn_state_view
 // byte, the state pointer and the aim pointer still take the other register roles, and the two divisions
 // by the stored step still share one reciprocal.
 // MiniMax C (11-10): no new form tried, no lower score (the plain build reads 395, the reduced build 453 because 0x11f0d0 is built differently there); what is left is the moved flag's stack byte, the definition and aim pointer's register roles and the two divisions by the stored step, and the forms for each of those are in the note below.
+// MiniMax E (11-11): no new form tried, no lower score (395 in the plain build, 453 in the reduced one,
+// which builds 0x11f0d0 differently): the moved flag still sits in a register where retail keeps it in a
+// stack byte, the state and aim pointers still take the other register roles, and the two divisions by
+// the stored step still share one reciprocal, so the body stands as found.
 // score 395 (was 395): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
 // retail), result as a variable, the state byte's bits through s_unit_turn_state_view, +0x10a through
 // s_unit_flags_10a_view, the unit/definition bit tests nested. Still differs: retail keeps the result `moved`

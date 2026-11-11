@@ -472,6 +472,11 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax E (11-11): no new form tried, no lower score (42): row i still sums the up product before the
+// forward one, the offset's zero store still comes before the list test and the particle is still reloaded
+// before the emitter definition after each property call; the shared rotate helper in
+// include/matrix_transform.h keeps the sum order, and the body is unchanged since round 20's permuter run
+// (58 tries, none below 42), so it stands.
 // score 42 (was 42): both in-place rotations go through the shared rotate helper (it copies the
 // input when the output is the input), which gives retail's j and k rows. Left: row i sums the up
 // product before the forward one (retail forward first, loading forward.i into a register); the
@@ -1426,7 +1431,10 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
-// score 47 (was 47): availability clear/production and later view observation remain;
+// score 12 (was 47): what still differs is the same-view flag: ours writes its true value to the stack byte
+// before the availability query, retail keeps the flag in BL and writes the true value only after the owner
+// tests, with the availability's own production after its query; frame 0x14, the owner, the view and the
+// post-attachment view refresh agree.
 // frame 0x14, NONE/owner and Boolean stack homes agree;
 // availability clear/result and the post-attachment view refresh remain.
 // M3 lane 13 r75 (fast; masked aligned count in brackets, base [5]): round 81's `effect_index != NONE && available && ...` re-measured 46
@@ -1674,6 +1682,7 @@ bool function_17afd0(long effect_index, long value);
 // moved after the view load 125, the view reloaded after the attachment query 110, the same-view result at
 // function scope 47); the availability is still cleared before the second definition call and the query
 // result still goes through a negated long where retail tests the result and branches.
+// MiniMax E (11-11): the view read once before the availability, the availability set on success and the same-view flag cleared by one owner/view/availability test reach retail's twelve (47 -> 12); the flag's true store is still early and the availability keeps its own home, so no untried form is left for them.
 // MiniMax E (11-06): no new form, no lower score.
 // The availability result moved after the view load 125, after the definition
 // call 138 and before the effect index 138: each move flips the NONE constant
@@ -1789,7 +1798,6 @@ void __stdcall function_174220(bool view_pass)
             system->unknown4c == NONE && system->location_index != NONE)
         {
             long effect_index = system->effect_index;
-            bool available = false;
             definition = system->function_1751d0();
             long owner;
             if (effect_index != NONE)
@@ -1797,15 +1805,18 @@ void __stdcall function_174220(bool view_pass)
             else
                 owner = NONE;
             long view = g_4b9ed8;
-            if (view != NONE)
-                available = !function_155760(view);
-            bool same_view = owner != NONE && view == owner && available;
+            bool same_view = true;
+            bool available = false;
+            if (view != NONE && !function_155760(view))
+                available = true;
+            if (owner == NONE || view != owner || !available)
+                same_view = false;
             bool attached = available && effect_index != NONE && function_17afd0(effect_index, view);
             bool draw = same_view == view_pass;
             bool camera_relative = false;
             if (same_view)
             {
-                if (view != NONE && *(short *)((byte *)g_4ed284 + view * 0x94 + 0x42) != NONE)
+                if (g_4b9ed8 != NONE && *(short *)((byte *)g_4ed284 + g_4b9ed8 * 0x94 + 0x42) != NONE)
                     draw = definition->flag6;
                 if (definition->unknown0c != 0) camera_relative = true;
             }

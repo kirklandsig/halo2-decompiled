@@ -343,6 +343,11 @@ void function_11bed0(s_location *location, point3f const *point);
 // the register homes that follow the call stand. BLOCKED-BY 0x11bed0.
 // MiniMax C (11-09): no new form, no lower score (93); the location query is still expanded here and the packed datum walk is still missing.
 // MiniMax S (11-06): no new form, no lower score: retail still packs the iterator handle as an index and a datum in one word and scans its bit vector in 32-bit words; ours keeps the two in separate values, and the location query's call boundary still differs (its owner is outside this lane).
+// MiniMax E (11-11): no new form tried, no lower score (93): retail calls the location query 0x11bed0
+// out of line while this build expands it, and retail packs the iterator handle as an index and a datum
+// in one word and scans its bit vector in 32-bit words where ours keeps the two in separate values; the
+// call boundary and the helper's inline eligibility are fixed in src/unknown_11bed0.cpp, which this lane
+// may not edit, so the body stands. BLOCKED-BY 0x11bed0.
 // score 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
 // MiniMax S (11-06): no new form, no lower score: retail still packs the iterator handle as an index and a datum in one word and scans its bit vector in 32-bit words; ours keeps the two in separate values, and the location query's call boundary still differs (its owner is outside this lane).
 // Round 28 (lane G): what still differs is the location call itself: retail calls 0x11bed0 out of
@@ -1870,6 +1875,11 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // once into a stack slot. The definition, index and ring homes still differ.
 // MiniMax G (11-06): no new form, no lower score; the first difference is at +0x2, where retail stores the
 // outer datum index at +0x14 and this build stores it at +0x1c, and the frame is 0x11c against retail's 0x128.
+// MiniMax E (11-11): no new form tried, no lower score (305 in the plain build, 479 in the reduced one,
+// whose frame is 0x118 against retail's 0x128): the frame is still short of retail's because the 0xa0-byte
+// sound play state is passed on, retail still keeps the playback pointer in EDI where ours keeps it in a
+// slot, and each pitch-range loop's count is still read once into a stack slot; the mask-bit and gain-copy
+// forms tried this round (467, 491) are worse and are reverted, so the body stands.
 // MiniMax E (11-05): no new form, no lower score.
 // At 307: extending the detail request to retail's 0xa0 bytes (the callee 0x125f70
 // reads it as a 0xa0-byte play state) makes the frame 0x12c, four over retail's 0x128, and the
@@ -2462,6 +2472,12 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // MiniMax R (11-05): retail's pitch has no `+ lower` term and reads the scale before the clear; the early-scale, bounds-pointer, byte-view, nested and memset forms score 450-545, the shift tests 339: no new form, no lower score.
 // MiniMax G (11-04): the pitch bounds read through a `s_short_bounds *` 339, the same bounds with a
 // named lower 339, an early `real scale` local 485 and one declared after the bounds 513: no lower score.
+// MiniMax E (11-11): no new form tried, no lower score (339): the frame is still 0x4b4 against retail's
+// 0x4bc and the two slots we use ([esp+0x44] and [esp+0x34]) sit eight bytes below retail's ([esp+0x4c]
+// and [esp+0x3c]), so retail carries two more dword locals in a different order; retail also reads the
+// track value and the source scale before the clear and calls 0x221810 and 0x12a420 out of line, and
+// those helpers live in other files, so their call boundaries cannot be moved from here and the body
+// stands.
 // score 339 (was 339): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
 // a shifted copy of each other: ours has homes at 0x74, 0x78 and 0x94 that retail does not use,
 // and retail has 0x64, 0x80, 0x84 and 0x9c that ours does not, so retail carries two more dword
