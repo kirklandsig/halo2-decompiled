@@ -1317,6 +1317,9 @@ struct s_batch_cache_4b5d0
 
 struct s_133f70;
 
+// score 93 (was 93; 175 before round 82): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
+// frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain (the 93 is the
+// round 82 baseline of this body; the scores listed below were measured on earlier bodies).
 // MiniMax R (11-10): no new form, no lower score (93 on the full image, 355 on the reduced one): every difference still sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ECX, the header's global loaded first, `success` stored before the 0x3d4f0 call, the previous level's byte and the 0x4c190 argument order) plus one object load near the end.
 // MiniMax S (11-09): no new form, no lower score (93 on the full image, 355 on the reduced one); the
 // distance staging in the 0x4bcc0 call, the nullable-entry and cache adds and the result homes remain.
@@ -1327,9 +1330,6 @@ struct s_133f70;
 // MiniMax A (11-05): no new form, no lower score; the call to 0x4bcc0 already carries its six stack
 // arguments in retail's order and with retail's values, so what is left is the frame size and the entry/result homes.
 // MiniMax h (11-04): no lower score; the 0x4bcc0 call takes the distance from the third stack slot where retail takes it from the second, and that slot layout follows the unmatched callers in src/unknown_133790.cpp.
-// score 93 (was 175): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
-// frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain (the 93 is the
-// round 82 baseline of this body; the scores listed below were measured on earlier bodies).
 // Round 22 (lane G, machine 3; no code change kept): retail's byte home and its split record base
 // (add eax, ecx; lea ebx, [eax + 0xbc]/[eax + 0x44]) are reachable in the source but our compiler folds the
 // field offset into the load or into one lea, so the instruction count and the encoded sizes change and the
@@ -1510,6 +1510,12 @@ struct s_133f70;
 // though retail's out-of-line 0x4c640 folds and this site does not); that with an inline getter for the cache
 // pointer as well 332 [46]; both with `success` declared at the loop top 330 [45]; those with an inline
 // active-entry getter (the dead lea) 312 [43]. All raise the positional count, so none is kept.
+// Round 93 (m3 lane 1, plain, register-masked aligned count in brackets, 93 is [29]): the failure test reusing the named
+// level_changed 353 [76] (1292 bytes, the frame changes); the drawn-object local reused for the 0x3d430 call 348 [46] (1319
+// bytes); the type stored in each arm instead of through a local 355 [33] (1314 bytes); an inline per-user entry getter
+// for the 0x4ed284 test together with a signed-char previous level 322 [25] at 1309 bytes (the getter folds and leaves no
+// dead lea; the byte previous gives retail's byte store, byte compare and the dword push of the byte home that 0x4c190's
+// signed-char parameter takes); the second cache record named before its +0x44 offset 93 [29] (same code: it folds).
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

@@ -2408,6 +2408,8 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// score 140 (was 140): Frame and retail extent agree; caller flag residency and native
+// fallback selection remain. Both complete coverage clamps now follow the retail upper-default stores.
 // MiniMax D (11-10): no new form, no lower score; retail's 0x2a8d0 reads a fourteenth stack
 // argument, the byte at esp+0x70, in the short arm where this source reads preserve_alpha, and
 // because that argument is a different value the second flag dies at the test, so retail loads it
@@ -2435,8 +2437,6 @@ dword __cdecl function_131fc0(real alpha);
 // into the parameter's home, ours branches over the block and leaves the parameters alone, so the
 // vertex emission that follows is one instruction out of step; retail also reloads preserve_alpha
 // after the call in the short arm where ours keeps the value in a register.
-// score 140 (was 140): Frame and retail extent agree; caller flag residency and native
-// fallback selection remain. Both complete coverage clamps now follow the retail upper-default stores.
 // Earlier 154 (was 251): frame 0x28 agrees; zero/sampler homes, bitmap transport and late fallback selection remain.
 // Earlier: 251 fast (was 252 fast): the pixel-shader RGB output mask is selected before the shift
 // ((inverse ? 8 : 0) << 8), which gives retail's and/shl pair instead of a single 0x800 mask.
@@ -2598,6 +2598,15 @@ dword __cdecl function_131fc0(real alpha);
 // as one chained store 155 (aligned 89); that with the height's reciprocal first and reciprocal-first products 161;
 // the four draws in a new inline helper 709 (LTCG keeps it out of line, 1437 bytes); `!(simple || preserve_alpha)`
 // 140; the chained zero store on the conditional source default 140.
+// Round 93 (m3 lane 1, fast; register-masked aligned count in brackets, 140 is [53]): both defaults built unconditionally,
+// source first, the parameters selected by ternaries 156 [39] (1717 bytes: retail's tail but for its two parameter-home
+// writes); that with the selection through a forceinline helper taking the pointer by reference 156 [39]; with the source
+// test read once through the parameter's own address 156 [39] (the reference and the address read both fold); the
+// combined test held in a named bool 140; the test as `simple == false && preserve_alpha == false` 140; both defaults
+// built unconditionally, destination first, with the tests in the current order 150 (1723 bytes). Diagnostic,
+// reverted: a temporary caller in the 0x289e0 stub making the three calls the disabled 0x289e0 makes 140 [53] (plain), so
+// the missing caller is not what keeps the parameters in registers. A permuter run (43 tries in 622 s) reached 105 only
+// through an `int` temporary for one texture coordinate (changes what is drawn) and two volatile casts; nothing usable.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
