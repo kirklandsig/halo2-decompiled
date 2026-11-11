@@ -51,6 +51,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
+// MiniMax H (11-11): no new form, no lower score (176); a normalizer with one exit 403 and the root taken from
+// the helper's return value instead of the pointer 263, so the root still sits at +0x10 where retail keeps it with
+// the yaw at +0xc.
 // score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax I (11-10): no new form, no lower score (176).
 // MiniMax S (11-06): no new form, no lower score; the single-exit normalizer with the XY vector read before

@@ -240,7 +240,8 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
-// score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
+// MiniMax H (11-11): the consideration flag is now a true default cleared by the test, which is retail's shape.
+// score 344 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // Round 170 (m3 lane 5, fast with the file's functions and 0xd9640; base aligned 132, masked 35): slot references counted in
 // both listings: retail killer 8, victim_team 8, damage_code 7 (killer stays in its home and is reloaded into EDX/EDI around the
 // fallback, the code is read once into ESI for both pushes); ours victim_team 8, damage_code 8, killer 6 (killer in EBP through
@@ -543,7 +544,9 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 	long recent = function_146650() - real_to_long((real)g_510c54->field_2_3 * 6.0f);
 	s_object_damage_view *object = *(s_object_damage_view **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
 	short reported_slot = NONE;
-	bool consider_team = !(reported_player != NONE && function_1df560((short)victim_team, (short)reported_team));
+	bool consider_team = true;
+	if (reported_player != NONE)
+		if (function_1df560((short)victim_team, (short)reported_team)) consider_team = false;
 	short selected = NONE;
 	real best = -FLT_MAX;
 	for (short i = 0; i < 4; ++i)
