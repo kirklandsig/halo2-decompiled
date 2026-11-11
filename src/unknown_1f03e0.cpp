@@ -988,14 +988,15 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
+// score 347 (was 347): no lower form in round 170 (m3 lane 6); see that round's line at the end of this note.
 // MiniMax C (11-06): the direct arm's magnitude and the history arm's maximum now add their three squares in
 // retail's term order and grouping (344, 3052 bytes against retail's 3047). Left: the magnitude's x87 stack still
 // shuffles differently (ours fmulp/faddp/fxch/fstp against retail's fmul/faddp/fstp), the direct arm's four
 // products and its two vector homes sit in other registers and stack slots than retail's, and the crosses' product
 // sides and the low-normal arm's homes remain as noted below.
 
-// score 347 (was 347; before r723 358): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
-// score 347 (was 347): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
+// Earlier 347 (was 347; before r723 358): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
+// Earlier 347 (was 347): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
 // bytes (retail 3047). Statement-by-statement walk against retail (b2K, 2026-11-06, fast): every
 // arm, compare direction, field offset (flags 0x14, settings 0x8, speed 0x20, normal 0x8c, damping 0x98, facing 0x9c, flag 0xa8,
 // up 0x100, basis 0x118, velocity 0x124, gravity 0x130, input 0x138, accelerations 0x144/0x148), constant (0.001, 0.234, 5.0, 1.0,
@@ -1276,6 +1277,14 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // MiniMax S (11-10): no new form, no lower score (347): the entry block still extracts the damping bit into ECX where
 // retail uses EDX and is one `mov ecx, eax` short, and retail stores the gravity byte before its `lea ebp` where ours
 // stores it after. The recorded flag-order sweep (412-500) and the flag widths recorded above never beat this body.
+// Round 170 (m3 lane 6, fast, 0x1f0450 MATCH in each): the history parameter typed as the caller's `s_shape_state *` (its +0x10
+// vector typed) 347 (same code); magnitude3d(input) with a `__forceinline` or an `inline` declaration in this file 587/587 (still
+// called out of line, as the plain call: retail's input-length block is 0x24590's own code, ours never expands that function
+// here; its file was held by another lane this round). On the 347 body: the direct arm's speed read from the field at each use
+// 437 (3053 B), the ground arm's facing read from the field (no pointer local) 415 (3047 B), the low arm's normal read from the
+// field 350, both 364, the direct arm's rotation rows through `input` 570 (3029 B). Diagnostics (not kept): 1-8 unused initialised
+// locals at the top 347/478/579/575/490/479/474/474; magnitude3d with 0-7 of them 587/584/592/599/611/603/599/588. Seen in the
+// listing: in the first cross retail makes up.k the loaded operand of both products it is in, ours the memory operand.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

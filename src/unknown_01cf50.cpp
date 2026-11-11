@@ -5521,6 +5521,8 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
     function_16b10((s_render_reset_state *)g_485b48);
     g_485a78[0] = g_485a78[1] = NONE;
 }
+// score 62 (was 62): retail takes tag/first/second in EDX/ECX/EAX (first and second moved to ESI/EDI, the tag table
+// kept in EBX, fourth loaded into EBP from the stack, ret 8); ours takes tag EDX and fourth EAX, three on the stack.
 // MiniMax R (11-09): no new form, no lower score; the second argument still arrives in eax where retail
 // takes it in ecx, and the arguments behind it still sit one stack slot lower. This round: the permuter
 // ran out of time without reporting a form, so nothing was tried from it.
@@ -5538,19 +5540,25 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
 // MiniMax D (11-05): no new form, no lower score - retail reads the second argument in ecx and keeps the
 // tag table in ebx, ours takes the fifth argument in eax and reloads the table into esi; the record
 // multiplier written as the selected tag or as the fifth argument scores 90.
-// score 62 (was 62): this round found no gain - the second argument arrives in eax where retail takes it in
+// Earlier 62 (was 62): this round found no gain - the second argument arrives in eax where retail takes it in
 // ecx, and the arguments behind it sit one stack slot lower; the callers are in other files, so the
 // calling convention cannot be changed from here.
 // MiniMax C (11-08): forms tried, none lower: the second argument through a local 62, the entry
 // pointer through the table 62, the offset named after the selected tag 91, the entry built from the
 // slot 91 (base 62).
-// score 62 (was 62): the second argument arrives in eax where retail takes it in ecx, and the
+// Earlier 62 (was 62): the second argument arrives in eax where retail takes it in ecx, and the
 // arguments behind it sit one stack slot lower than retail's; the callers of this function are
 // in other files, so the calling convention cannot be changed from here.
 // Lane 18 r37 (fast): without the `(void)&` reads (one or both) 62 (same code); `first * 10` written in
 // place, or its local named just before the entry, 91 (239 B, ret 8: first now arrives in EBX and third in
 // EAX, where retail takes first in ECX, moved to ESI, and second in EAX; retail keeps the tag-table base
 // in EBX and reloads it after the 0x137bd0 call). Restored.
+// Round 170 (m3 lane 6, fast with 0x19f680/0x244470/0x2be5d0/0x116b00): the selected tag computed just before the
+// 0x1bbf0 call 91 (238 B), the group read ahead of the selected tag 78 (251 B), each with `first * 10` in place 99/91;
+// the selected tag as `selected = tag; if (tag == NONE) ...` 77; the group read as `*(dword *)&g_4e3b44[(short)tag]`,
+// the head through a copy of 0x16b90's material_parameters inline (diagnostic), the parameters pointer as a ternary
+// and the 0xc table named 62 each (same code). Re-measured: `first * 10` in place or named just before the entry 91.
+// Retail forms the group read as `add eax, ebx; mov eax, [eax]`, unlike 0x16b90 and 0x19f680 (folded).
 // @retail 0x4b2d0
 void function_4b2d0(long tag, long first, long second, long third, long fourth)
 {
