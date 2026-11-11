@@ -472,6 +472,9 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax b (11-11): no new form, no lower score (42): the emitter loop as an explicit list test
+// with the scale declared before the multiplier was measured at 39 and restored, since it stays
+// above 30 and the gain is small; row i of both rotations still sums the up product first.
 // score 42 (was 42): both in-place rotations go through the shared rotate helper (it copies the
 // input when the output is the input), which gives retail's j and k rows. Left: row i sums the up
 // product before the forward one (retail forward first, loading forward.i into a register); the
@@ -789,8 +792,10 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 		cache->mask &= 0xfffecf7f;
 	}
 	long emitter_index = *(long *)((byte *)location + 4);
+	if (emitter_index != NONE)
+	{
 	long emitter_definition_offset = 0;
-	while (emitter_index != NONE)
+	do
 	{
 		s_particle_emitter_175610 *emitter = DATUM(g_51ec88, s_particle_emitter_175610, emitter_index);
 		long particle_index = emitter->first_particle_index;
@@ -798,8 +803,8 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 			(s_emitter_definition_175610 *)(*(byte **)((byte *)definition + 0x34) + emitter_definition_offset);
 		if (particle_index != NONE)
 		{
-			real multiplier = 1.0f;
 			real scale = 1.0f;
+			real multiplier = 1.0f;
 			if (TEST_FIELD_BIT(system->flag10))
 				multiplier = function_3eb70();
 			matrix3x3 rotation;
@@ -849,6 +854,7 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 		}
 		emitter_index = emitter->next_index;
 		emitter_definition_offset += sizeof(s_emitter_definition_175610);
+	} while (emitter_index != NONE);
 	}
 }
 
@@ -1426,6 +1432,11 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
+// MiniMax b (11-11): score 12 (was 47): the view global is read at each use, the availability is cleared with
+// `xor bl, bl` before the view test and set with a branch on success, and same_view is declared true before the
+// availability and cleared by one `owner == NONE || g != owner || !available` test; 498 bytes, as retail.
+// Left: our `same_view = 1` store is emitted ahead of the view test, retail's sits between `test bl, bl` and
+// `jne` in the availability test's block, and the availability's own test block is reached a store earlier.
 // score 47 (was 47): availability clear/production and later view observation remain;
 // frame 0x14, NONE/owner and Boolean stack homes agree;
 // availability clear/result and the post-attachment view refresh remain.
@@ -1789,23 +1800,24 @@ void __stdcall function_174220(bool view_pass)
             system->unknown4c == NONE && system->location_index != NONE)
         {
             long effect_index = system->effect_index;
-            bool available = false;
             definition = system->function_1751d0();
             long owner;
             if (effect_index != NONE)
                 owner = DATUM(g_4ea93c, s_effect_datum, effect_index)->unknown58;
             else
                 owner = NONE;
-            long view = g_4b9ed8;
-            if (view != NONE)
-                available = !function_155760(view);
-            bool same_view = owner != NONE && view == owner && available;
-            bool attached = available && effect_index != NONE && function_17afd0(effect_index, view);
+            bool same_view = true;
+            bool available = false;
+            if (g_4b9ed8 != NONE && !function_155760(g_4b9ed8))
+                available = true;
+            if (owner == NONE || g_4b9ed8 != owner || !available)
+                same_view = false;
+            bool attached = available && effect_index != NONE && function_17afd0(effect_index, g_4b9ed8);
             bool draw = same_view == view_pass;
             bool camera_relative = false;
             if (same_view)
             {
-                if (view != NONE && *(short *)((byte *)g_4ed284 + view * 0x94 + 0x42) != NONE)
+                if (g_4b9ed8 != NONE && *(short *)((byte *)g_4ed284 + g_4b9ed8 * 0x94 + 0x42) != NONE)
                     draw = definition->flag6;
                 if (definition->unknown0c != 0) camera_relative = true;
             }

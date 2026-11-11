@@ -308,6 +308,10 @@ static inline bool teams_enabled_19e1c0()
 }
 
 /* writes the text of one token for the event, returning its length */
+// MiniMax b (11-11): no new form, no lower score (390); our frame is still 0x208 against retail's 0x204, the
+// volatile result keeps our four name and team copy tails apart where retail keeps a copy of the length and
+// clamp in each case, and retail's prologue forms the first token compare with the string, the stack argument
+// and the token in the other registers.
 // score 390 (was 390): retail clamps the copy length with `cmp remaining, length` and a conditional
 // move, so the comparison written as `remaining <= result` was tried: with the volatile result 466,
 // with a plain result 652 (against 390 and 691). The plain result does match retail's frame 0x204
