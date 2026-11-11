@@ -505,6 +505,10 @@ void function_e5930(long unit_index);
 
 /* resets the biped's state: its flags, landing and melee timers, its ground
    contact and its physics mode */
+// MiniMax S (11-11): no new form, no lower score (118): the body still matches retail's first 0x10a bytes and is 70
+// bytes longer, the extra bytes all coming from the reset dispatch expanding at this call site, and the 0x1f0 bit test
+// is still folded to a byte test where retail shifts the dword first; the reset helper's own file (src/unknown_0e57e0.cpp)
+// is not this lane's: BLOCKED-BY 0xe5930.
 // MiniMax R (11-10): no new form, no lower score (118); the reset dispatch still expands at this straight-line call site and the 0x1f0 bit test is still folded to a byte test where retail shifts the dword first, and the reset helper's own file is not this lane's.
 // MiniMax I (11-10): no new form, no lower score (118); the reset dispatch still expands here and the 0x1f0 bit test is still folded to a byte test where retail shifts the dword first; the reset helper's own file is not this lane's.
 // MiniMax E (11-08): no new form, no lower score (118); the reset call still expands here instead of staying a call, and the 0x1f0 bit test is still folded to a byte test where retail shifts the dword first; the reset helper's own file is not this lane's.
@@ -2714,6 +2718,11 @@ bool function_1d5120(s_havok_component *component, long rigid_body_index, long a
 void __stdcall function_1c3770(long object_index, dword flags);
 
 /* steps a dead biped's ragdoll settling (+0x3aa) toward rest */
+// MiniMax S (11-11): no new form, no lower score (63): five spellings of the settling count - tested in
+// place without a local, a byte local, a short local, the count read again through BIPED_GET at the call and
+// a byte cast there - score 82, 82, 85, 68 and 82, because without the long local this build keeps the byte
+// in BL and adds a register save; retail's 0x1d5120 takes the count in EAX with the component pointer on
+// the stack, and that parameter list is declared in another file, so the call site cannot be steered here.
 // MiniMax E (11-11): no new form, no lower score (63): the settling count still rides in an extra EBP, the component index is still read into ECX where retail reads it into EAX, and the hoisted 0x9fff flag clears and the split or of +0x134 remain; a byte view of +0x349 beside the flags word (a plain mask 103, a byte-container bitfield 103) and the count re-read through BIPED_GET (94) are all worse.
 // score 63 (was 63): extra EBP (the Havok base loaded early), count transport and the hoisted 0x9fff flag clears differ.
 // MiniMax E (11-08): no new form, no lower score (63); the settling count still rides in an extra EBP, the component index is still read into ECX where retail reads it into EAX, the component's array base still folds into the addressing mode where retail adds it into ECX first, and the body selection still jumps straight out where retail assigns -1 and tests it.
@@ -4731,6 +4740,9 @@ void function_e4300(long arg_159e6d)
 }
 
 /* gets the biped up and puts its Havok to sleep, unless it already sleeps */
+// MiniMax S (11-11): no new form, no lower score (91): the body is still 113 bytes against retail's 61 because the
+// reset dispatch expands here instead of staying a call, and the unit index is still saved in EBX and pushed where retail
+// keeps it in ESI; the reset helper's own file (src/unknown_0e57e0.cpp) is not this lane's: BLOCKED-BY 0xe5930.
 // MiniMax R (11-10): no new form, no lower score (91); the reset dispatch still expands at this straight-line call site, so the body is 113 bytes against retail's 61, and the reset helper's own file is not this lane's.
 // MiniMax I (11-10): no new form, no lower score (91); the reset dispatch still expands at this straight-line call site (113 bytes against retail's 61), and the reset helper's own file is not this lane's.
 // MiniMax E (11-08): no new form, no lower score (91); the reset call still expands here instead of staying a call, so the body is 113 bytes against retail's 61 and the unit index rides in EAX and EBX where retail keeps it in ESI; the reset helper's own file is not this lane's.
@@ -5348,6 +5360,10 @@ real magnitude3d(vector3f const *v);
 /* an actor riding a fast vehicle that is about to leave the ground (no
    ground under it, or none along its flight) says so, at most once every
    half second: falling (0x54), flipping over (0x56) or a jump (0x55) */
+// MiniMax S (11-11): no new form tried this round, no lower score (2): the two points are still the 0x1fb7e0
+// call's argument setup - retail pushes the first NONE, moves the actor into ECX, zeroes EDX and pushes the
+// second NONE, this build pushes both NONEs before it touches the registers; the order follows the callee's
+// parameter list, which is declared in another file, so the call site cannot be steered from here.
 // MiniMax R (11-10): no new form, no lower score (2); the event call still pushes both NONEs before it moves the actor into ECX and zeroes EDX, retail pushes one NONE, moves the actor, zeroes EDX and pushes the other NONE.
 // MiniMax I (11-10): no new form, no lower score (2); the event call still pushes both NONEs before it moves the actor into ECX and zeroes EDX; the actor index in a local gives the same two differences, and the permuter's 41 tries kept 2.
 // MiniMax E (11-08): no new form, no lower score (2); the event call still pushes both NONEs before it moves the actor into ECX and zeroes EDX, retail pushes one NONE, moves the actor, zeroes EDX and pushes the other NONE; the data argument as 0 or as a cast null, the actor as a long cast or as a local, the type as an int, a comma expression and a short cast on a NONE all leave the same two differences.
@@ -6035,6 +6051,10 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 
 /* a walking biped's footstep effect: at its foot marker (or its origin),
    with the material it stands on */
+// MiniMax S (11-11): no new form, no lower score (168): the frame is still 0xec against retail's 0x94 because the foot
+// marker and the collision record do not share a home, and the material is still carried as a dword where retail keeps a
+// 16-bit value; the effect helper's parameter convention (src/unknown_187ec0.cpp) is not this lane's:
+// BLOCKED-BY 0x188180.
 // score 168 (was 154): frame 0xec versus 0x94 (marker and collision don't share a home), material carrier
 // score 168 (was 168; earlier 154): frame 0xec versus 0x94 (marker and collision don't share a home), material carrier
 // (BLOCKED-BY 0x188180).

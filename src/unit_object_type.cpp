@@ -2866,6 +2866,10 @@ void function_c5740(long unit_index, bool start)
 /* plays the sounds of a unit's impact: its weapon's (+0x58) when it holds
    a weapon that allows it (0x1012c0), else the globals' material sound
    (+0x154, 0xb4 bytes each) and the definition's +0xac */
+// MiniMax S (11-11): no new form, no lower score (90): the body is retail's length and the first difference is at
+// +0x0, where retail keeps the definition index in EBP and reads the unit index and the material from the stack at
+// each use, while ours keeps the unit index in EBX and the material in BP; the effect helper's parameter convention
+// (src/unknown_187ec0.cpp) is not this lane's: BLOCKED-BY 0x188180.
 // MiniMax I (11-11): no new form, no lower score (90); the prologue differs - retail keeps the definition
 // index in EBP and reads the unit index and the material from the stack at each use, ours keeps the unit
 // index in EBX and the material in BP, and the call to 0x188180 is unmatched in another lane's file.
@@ -3428,6 +3432,10 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 
 /* whether the object's root, simulated by Havok and not keyframed, has
    something in the way (0x168f40 from its main rigid body's position) */
+// MiniMax S (11-11): no new form, no lower score (12): the body is retail's length and the only difference is the
+// pair that tests the rigid-body index against -1, which sits at +0xe in ours and in retail's own registers, while
+// the root index and the NONE constant are kept in EBP where retail puts them in EDI; the sixteen-bit form of the
+// root index gives retail's registers but tests at 16 bits before extending, so the two cannot be had together.
 // MiniMax I (11-11): no new form, no lower score (12); the root index and the NONE constant sit in EBP
 // where retail puts them in EDI and keeps the byte offset there, and the short root index that would give
 // retail's registers breaks the sixteen-bit semantics of the index.
@@ -4392,6 +4400,13 @@ store:
    speed in a cone around the unit's aim on top of the unit's velocity
    (capped at 4 unless the unit's +0xc0 bit 1 is set), and deletes it in
    state 1 when it has nowhere to go and is not a predicted copy (0xa7670) */
+// MiniMax S (11-11): no new form, no lower score (4): the frame is retail's and every instruction agrees except the
+// four that set up the cone call - retail spills the sampled speed first and then forms the forward pointer, the
+// output pointer and the seed copy, ours forms the forward pointer before the spill and the seed before the output
+// pointer; eight source shapes of that setup (pointer locals, a float local, speed first, the seed as a global or a
+// pointer) all leave the same four instructions in a different order, and the callee's parameter list lives in
+// src/unknown_146240.cpp:
+// BLOCKED-BY 0x146320.
 // MiniMax I (11-11): no new form, no lower score (4); the cone call's argument setup is scheduled
 // differently - retail spills the sampled speed first and then forms the forward pointer, the output
 // pointer and the seed copy, ours forms the forward pointer before the spill and the seed before the
@@ -7507,6 +7522,12 @@ real function_50650(real cosine);
    a frame, when given), keeping an angular velocity: plans both angles'
    motions under a speed limit and an acceleration (0xc7300), evens them
    (0xc75d0), steps them (0xc7750), snapping when both are done */
+// MiniMax S (11-11): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80 - retail tests
+// its second pointer at the entry and leaves when it is null, while this build stores two zeroed speeds first and
+// branches afterwards, and retail reuses the current angle slots for the new speeds while ours gives them their own;
+// moving the zero stores into an else arm removes the entry stores but the frame becomes 0x88 and the accumulators
+// become xmm5 and xmm6 (614), and parenthesising the frame helper's sums gives 565, so neither is kept:
+// BLOCKED-BY 0xc7750's inlining.
 // MiniMax G (11-11): no new form, no lower score: the two 0xc7750 calls still push position and velocity on the
 // stack where retail passes them in xmm5 and xmm4 with the time in xmm3, and 0xc7750's accumulator form (28,
 // retail's convention) is inlined into both calls (1103 here) and flips the matched caller 0x1faf80 to 16.

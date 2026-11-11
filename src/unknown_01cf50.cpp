@@ -7576,6 +7576,11 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
     return value;
 }
 
+// MiniMax S (11-11): no new form, no lower score (299): the group index is still sign-extended (movsx esi, ax)
+// where retail moves the thirty-two bit index, the index slot still sits at [esp+0x3c] against retail's [esp+0x58],
+// an extra mov edi, edi still stands in the loop head and the body is still three bytes longer than retail's; the
+// thirty-two bit index forms score 507 to 514 and the permuter ran to the outer time limit and was stopped with no
+// result, so the body stands.
 // MiniMax D (11-10): NOT kept: 298, one below S's 299 already in main (under the 8-point bar): a for loop over
 // an unsigned short counter; the group counter is 16 bits wide and the early exit compares the
 // group count with one; the loop keeps a single counter and recomputes the stride with imul, the frame is
