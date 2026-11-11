@@ -384,6 +384,15 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // with EAX, ECX and EDX busy), as 0xa5a60 borrows EBP. So retail never gave EBX to a web in the main allocation here
 // and borrowed it for the +0x290 pointer; ours allocates EBX in the main pass. That is register pressure (retail
 // reloads the definition pointer into ESI per region and re-reads arg_0 from its slot), not block structure.
+// Round 93 (m3 lane 10, plain; 0x29b2e0 176, 0x29b990 MATCH and 0x1f9e70 137 unchanged; al/masked = aligned difflib
+// counts, base 583/174): the second radial test's implied `!(local_23 > local_27) &&` dropped (a failed first test with the
+// radius larger already makes `!flag` false), double kept, 805 (3471 B); with the root written in the test 776 (3464 B,
+// al 571, masked 162: EBX saved after the 0x26c test as retail, one fcompi and the flag test threaded as retail, but frame
+// 0x8c); on that form, listed forms re-measured: float squares 781 (3458 B: retail's `fld [x]; fmul [x]` squares), with
+// the distance on the left 781 (same code); `real perp = -local_17.j;` for its three uses 778 (3462 B, al 545); the
+// existing magnitude2d(&local_26) 780 (3462 B). Re-measured on the 776 form: local_15 as a planar aggregate copy 781 (3456 B), with
+// local_17's too 787 (3448 B); frame still 0x8c. There the extra slot is local_14 at +0x20 beside local_3's byte (+0x1f),
+// where retail keeps local_14 at +0x7c and local_3 at +0x27. A no-LTCG compile of the file gives frame 0x90.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

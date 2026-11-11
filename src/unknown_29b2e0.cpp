@@ -451,6 +451,12 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // The normalizer's single exit through a separate `result` initialised to zero 215 (1718 B). Left on 169: the x87
 // sqrt temporaries at +0x10 (retail +0xc with the yaw), the XMM3/5/6 rotation in the normalizers, the yaw clamp's zero
 // copy above its branch and the rotations' pitch/sine/cosine homes (retail pitch in arg_4's home, sine at +0x10).
+// Round 93 (m3 lane 10, fast with 0x29b990/0x11cc90/0x11ce20/0x1e5450, all matched): on the re-measured 169 lead
+// (single-exit normalizer, XY vector before the second copy) the rotation's projection dot named before sin/cos, the
+// cross terms before sin/cos, both, `local_11` declared at function scope and `local_4` declared before the first copy
+// all give 169 (same code). The yaw/pitch clamp block already matches retail instruction for instruction. Slot map on
+// the lead: retail packs the root and acos temporaries with the yaw at +0x00 (23 uses), ours with local_11 at +0x04
+// and the yaw alone at +0x00; the XMM numbering and the rotations' schedule follow from that.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

@@ -1178,6 +1178,11 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // addresses written in the distance calls and the two copies 664 (3631 bytes). Lead from that last form: the i term of
 // both inlined plane distances then loads the plane first (`fld [eax + 0x44]; fmul [ecx]`) as retail does; with the
 // point pointers ours loads the point first there.
+// M3 lane 10 r92 (plain, the file's other eight functions unchanged in each; fast 834 on unchanged source; base 535, aligned 672,
+// masked 355): nothing kept. The rotation's sine products named sine_i/j/k (re-measure of round 234's form) 569 (3663 bytes, masked
+// 384); `one_minus_cosine * axis.k` named once for both k pairs (retail spills that product at +0xec) 536 (3663 bytes, masked 328);
+// both 589 (3663 bytes); the sign as `-1.0f` set to 1.0f in an if 536 (masked 349); the squares computed k, i, j (retail's order)
+// 537; the rows in retail's visit order (forward i, j, left i, j, forward k, up k, i, left k, up j) 545.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
