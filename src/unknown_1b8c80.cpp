@@ -398,6 +398,11 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// MiniMax H (11-11): no new form, no lower score (8); the body is unchanged, because a seat-count test with the
+// index declared before it reaches 6 by putting the count in ESI and the index in EBP, but that test repeats the
+// loop's own bound and is not kept, and the exclusive bound (11), the count in a local (11), the index declared
+// before the seat pointer (8) and a guarded do-while (11) all either move the count to EBP and the index to ESI
+// or keep the decremented count and js/jle where retail has cmp/jle and cmp/jl.
 // MiniMax C (11-10): no lower score (8); a seat-count test around a scan whose index is declared before that test puts the count in ESI and the index in EBP and keeps the native cmp/jl, but the test compares against a second zero in EAX and the selected pointer's NULL store takes that zero too (6); the same test written with the index folds into the loop (11), the reversed spelling of it keeps a constant test (6), a count read before the flags test hoists the load (14), a last-seat local is 108 with the inclusive bound and 118 with a strict one, and the inclusive bound with the index declared before the loop is byte-identical to the kept body.
 // MiniMax C (11-10): no new form, no lower score (8); the exclusive bound gives 11 with the count in EBP and the index in ESI (the reversed comparison 12), a seats local with the exclusive bound 23 and with the inclusive bound 27, an explicit count guard 135 and a while loop with the index declared first 23 — every exclusive form moves the count to EBP and the index to ESI.
 // MiniMax I (11-08): no new form, no lower score (8); the exclusive bound with the count in a local, the index declared before the seat pointer and the reversed comparison all give 11 or 12 with the count in EBP and the index in ESI.
@@ -1725,6 +1730,10 @@ void function_1f86a0(long actor_index);
 // (object, near radius, seat, far radius, flags) 230 (861 B, loop unchanged); 0x1b6120's whole-reference copy
 // (`*(long *)&iterator.reference` in a local) for both calls 134 (same code). No other untried natural form is left for
 // the EBX choice (entry in retail, mask here).
+// MiniMax H (11-11): no new form, no lower score (134); the body is unchanged, because retail still gives EBX to
+// the loop entry and spills the mask byte where ours keeps the mask in BL and the frame is 0x10 against retail's
+// 0x14, and the remaining lever is 0xbaf40's memory summary in src/unknown_0bad50.cpp, which this lane may not
+// edit.
 // MiniMax R (11-10): no new form, no lower score (134): the frame is 0x10 against retail's 0x14, and retail
 // spills the mask byte and keeps the loop entry in EBX.
 // M3 lane 9 r110: no new form. The FORMS slot data-block form is round 39's 134 (same code); `unit->parent_index` is
