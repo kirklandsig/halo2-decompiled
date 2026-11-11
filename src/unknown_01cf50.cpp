@@ -5795,7 +5795,7 @@ dword g_4b8430;
 // 0xc2d00 scores 249 in the reduced image with either form, so the helper call is kept and the
 // coordinator's full check should confirm 0xc2d00.
 // MiniMax D (11-10): no new form, no lower score (302).
-// score 302 (was 544), Round 1 of #1066: same size as retail (2406). What changed: the rotation is one
+// score 127 (was 544), Round 1 of #1066: same size as retail (2406). What changed: the rotation is one
 // transform4x3f (forward/left/up filled by either branch, then position stored into it, so retail's
 // copy of the position after the branch appears), the angle is computed inside each branch (the sin/cos
 // one keeps it unrounded on the x87 stack), the draw count is a word tested `<= 0` and read into word
