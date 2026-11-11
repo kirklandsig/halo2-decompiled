@@ -385,7 +385,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // cosf/(real)cos 104/104/104, plain sin and cos 149; random-state local at entry 104, random_unit_vector 104;
 // dot3f(&axis, ..)/axis-first i,j,k 104/104, k,j,i/j,k,i/retail operand order 165/166/166 (864 bytes); dot3f with
 // cross i,j,k 165 (864); cross order j,k,i,P/i,P,j,k/P,i,j,k/P,k,j,i/j,k,P,i 160/168/104/161/160; cross3f
-// after/before the projection 163/163, cross3f_staged 163, the same struct body in place 163, rotate_direction 150,
+// after/before the projection 163/163, cross3f_staged 163, the same aggregate body in place 163, rotate_direction 150,
 // a same-file forceinline copy of it 150, with scalar cross terms 173 (860), rotate_vector_170d70 172 (860);
 // axis drawn before sine/cosine 104; axis-first cross/scalar-first rows/axis-first rows/split sine,cosine 104 each;
 // fraction before time 191, at the top 203, oscillation before the fraction 191, fraction inline 196, product
@@ -396,7 +396,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // Round 26: the float time product (fimul), the random fraction and a float oscillation/angle gave retail's head
 // x87 code (160 -> 139). Then: random drawn before the time product 197; double oscillation with float constants
 // 140; sinf/cosf in the tail 157 (883 bytes), three spellings 157; cos operand order compiles the same; in-place
-// rotation helper projection-first 183 (849 bytes), cross-first 188, dot3f with a struct cross 170, cross3f in the
+// rotation helper projection-first 183 (849 bytes), cross-first 188, dot3f with an aggregate cross 170, cross3f in the
 // helper 171; projection then cross3f on the global directly 181; projection before cross3f on the copy 161.
 // Earlier: frame 0x28 against 0x20 and random/time/oscillation staging remain; shared cross product reaches retail length.
 // Earlier frame 0x24 against 0x20 and the random-seed/oscillation schedule. Reading the frame
@@ -473,7 +473,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // retail, but the frame grows to 0x34), declared before the axis 163, as `{ g.i, g.j, g.k }` 159; field-wise `old` with the
 // projection before cross3f 148 (frame 0x28; retail's store/reload of the first cross product appears, but cross3f gives
 // i, j, k where retail forms j, k, i), with dot3f(&old, &axis) 148, with cross3f_staged 148, with `projection*axis` rows
-// 148; cross3f_staged alone 159; the projection before cross3f on the struct copy 161 (885 bytes). Diagnostics (scalar
+// 148; cross3f_staged alone 159; the projection before cross3f on the aggregate copy 161 (885 bytes). Diagnostics (scalar
 // cross, kept only with a match): 0x177d10's j, k, i cross on the field-wise `old` 176 (853), on the global 181 (850).
 // DH round 273: native real tail trigonometric results at first/second/third/fourth/first-pair/last-
 // pair/all producers 155/139/155/139/155/155/138; all with real double-product arguments 163.
@@ -660,6 +660,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // into the i row and cross j, k form early as in retail, but the global's j/k reload in the i row. Round 69's tail (`cos((real)(time
 // * 0.001))`, `(real)sin((real)(time * 0.005))`) re-measured 171 (892 B; retail's fxch pair and fst stores), with rotate_direction
 // 171 (864 B), with rotate_vector_170d70 170 (864 B); with rotate_direction on an `old` copy stored back 161 (889 B). Body unchanged.
+// M3 lane 9 r109 (fast with 0x118140, 0x30bf0 and 0x117c80; base 117, aligned 100, masked 72; both sides end in a plain
+// `ret`): the fraction drawn through random_next with `(real)... * (1.f / 65535.f)` in place of function_x82e52f 117 (same
+// code, not kept); the clamp of g_55ecd0 through a file PIN macro (`PIN(x, lo, hi)` as other files define it) 117 (same code,
+// not kept); the wind written through the existing scale_vector_by_double 118 plain, and matched 0x118140 drops to 50
+// (round 219's shared final double scale on this base: not kept). No other untried natural form of the opening, rotation or
+// tail. Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

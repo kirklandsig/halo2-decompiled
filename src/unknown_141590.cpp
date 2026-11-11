@@ -1163,6 +1163,12 @@ void function_143250(
 // 0x23690 467); the workspace matrix ahead of the rotation terms 1766 (fast); that with the 648 single-use terms in
 // their next statement 1775 plain (10763 bytes, ret 4, frame 0x314; 0x22850 235, 0x23690 467); only the 37 rotation
 // snapshot copies propagated 1948 (fast, 10949 bytes: the band-start copies keep the snapshots out of the workspace).
+// M3 lane 12 r108 (plain; callers 0x22850 223 and 0x23690 401 unchanged): band one's four negations and term_10 written into
+// the matrix stores 1791 (10740 B); band two's 40 pure copies propagated 1947 (10952 B, likely N376's 1947 form); band two's
+// four negations alone 1767; band one's term_10 copy alone 1766 (same code); band three's 363 copies 1802 (10813 B);
+// band two's copies and negations (44) 1947; bands one and two together (49) 1906 (10916 B). All keep rotation on the stack (ret
+// 8, frame 0x30c). Retail stores each product to two stack slots at once (the term and its copy, e.g. [esp+0x98] and [esp+0x30]),
+// so its copies are real variables too, kept in memory in source order. Restored.
 // M3 lane 3 r225 (plain; base 1766, frame 0x314, ret 8 against retail's ret 4 with rotation in EAX; fast builds it differently,
 // frame 0x30c): `result[0] = coefficients[0]` as the first statement 1766 (same score, aligned 3009 against 3005); the matrix pointer
 // declared ahead of the rotation reads 1766; rotation[7] read straight after the other eight 1766; the matrix pointer dropped for

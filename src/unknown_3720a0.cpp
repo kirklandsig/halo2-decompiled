@@ -39,34 +39,24 @@ inline members_372300 &append_group_372390(groups_372300 *groups)
 grouping_3720a0::grouping_3720a0(array_2d91d0 *parents_, array_2d91d0 *scratch_)
 	: parents(parents_), scratch(scratch_) {}
 
-inline long parent_value_3720c0(array_2d91d0 const *array, long index)
+// Walks `top` up to its group's root, then points every entry on the path
+// at that root; the second walk, from the starting entry, ends there too.
+__forceinline long grouping_3720a0::root(long top)
 {
-	return ((long const *)array->data)[index];
-}
-inline long &parent_slot_3720c0(array_2d91d0 *array, long index)
-{
-	return ((long *)array->data)[index];
-}
-__forceinline long grouping_3720a0::root(long index)
-{
-	long root = index;
-	while (parent_value_3720c0(parents, root) >= 0)
-		root = parent_value_3720c0(parents, root);
-	while (parent_value_3720c0(parents, index) >= 0)
+	long node = top;
+	while (((long *)parents->data)[top] >= 0)
+		top = ((long *)parents->data)[top];
+	while (((long *)parents->data)[node] >= 0)
 	{
-		long &entry = parent_slot_3720c0(parents, index);
-		index = entry;
-		entry = root;
+		long next = ((long *)parents->data)[node];
+		((long *)parents->data)[node] = top;
+		node = next;
 	}
-	return index;
+	return node;
 }
 
 // Preserve the lower index as the root, rather than choosing by tree size.
 // Group export relies on encountering each root before the rest of its group.
-// score 75 (first implementation): out-of-line roots 184; value-walk
-// expansion 74 (168 bytes); explicit candidates 95/79; cached parent 113.
-// Slot/value accessors and array-reference variants 75 (185 bytes); local
-// expansion leaves the same result. Root/compression lifetimes and layout differ.
 // @retail 0x3720c0
 long grouping_3720a0::join(long first, long second)
 {
@@ -74,15 +64,18 @@ long grouping_3720a0::join(long first, long second)
 	long right = root(second);
 	if (left != right)
 	{
+		// a root's entry holds minus its group's size
+		long left_entry = ((long *)parents->data)[left];
+		long right_entry = ((long *)parents->data)[right];
 		if (left < right)
 		{
-			parent_slot_3720c0(parents, left) = parent_value_3720c0(parents, left) + parent_value_3720c0(parents, right);
-			parent_slot_3720c0(parents, right) = left;
+			((long *)parents->data)[left] += right_entry;
+			((long *)parents->data)[right] = left;
 		}
 		else
 		{
-			parent_slot_3720c0(parents, right) = parent_value_3720c0(parents, right) + parent_value_3720c0(parents, left);
-			parent_slot_3720c0(parents, left) = right;
+			((long *)parents->data)[right] += left_entry;
+			((long *)parents->data)[left] = right;
 		}
 	}
 	return left < right ? left : right;

@@ -16,6 +16,7 @@
 #include "data_array.h"
 #include "object_iterator.h"
 #include "effects.h"
+#include "slot_handler.h"
 
 __declspec(noinline) long function_1366d0(short width, short height, short depth, short format, short alignment, long mipmap_count);
 
@@ -563,16 +564,16 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
-// MiniMax E (11-10): no new form, no lower score (45); the first cross product loads its two operands into the other pair of registers than retail (here xmm1/xmm2, there xmm2/xmm1), which moves the result of every later product of the second cross, and in the else arm retail keeps the three forward components on one pointer where this build stores the last two from the command pointer.
-// MiniMax C (11-09): no new form, no lower score (45); the first cross product still takes its two temporaries in the other pair of registers (ours xmm1/xmm2, retail xmm2/xmm1) and retail keeps the k term in xmm4 with a movaps where this build reloads it from memory.
-// MiniMax C (11-06): no new form, no lower score.
-// MiniMax R (11-04): no new form, no lower score.
 // score 45 (was 45): the second product through the existing staged helper of src/unknown_1f03e0.cpp
 // (function_1f087b, every component computed before the stores, i first) gives retail's previous_up
 // loads (j, i, then k into xmm0 after the distance store) and folds forward's loads in the second
 // product. Left: the first product's right.i/right.j colours (ours xmm1/xmm2, retail xmm2/xmm1), the
 // second product's schedule (retail computes k, j, i) and the else branch's forward stores (through
 // edi here, ecx in retail).
+// MiniMax E (11-10): no new form, no lower score (45); the first cross product loads its two operands into the other pair of registers than retail (here xmm1/xmm2, there xmm2/xmm1), which moves the result of every later product of the second cross, and in the else arm retail keeps the three forward components on one pointer where this build stores the last two from the command pointer.
+// MiniMax C (11-09): no new form, no lower score (45); the first cross product still takes its two temporaries in the other pair of registers (ours xmm1/xmm2, retail xmm2/xmm1) and retail keeps the k term in xmm4 with a movaps where this build reloads it from memory.
+// MiniMax C (11-06): no new form, no lower score.
+// MiniMax R (11-04): no new form, no lower score.
 // MiniMax C (11-09): no new form, no lower score (45); the first cross product still takes its two temporaries in the other pair of registers (ours xmm1/xmm2, retail xmm2/xmm1) and retail keeps the k term in xmm4 with a movaps where this build reloads it from memory.
 // MiniMax C (11-06): no new form, no lower score.
 // MiniMax R (11-04): no new form, no lower score.
@@ -743,7 +744,7 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // 47/219/219/47/47/43 (the pointer counts one), real-typed dead temps 45/49/49: the temp count has four states here
 // and none gives retail's right.i/right.j colours. function_1f087b reading forward through a second view of the
 // output 216 (1265 bytes). No existing direction-from-angles helper takes this observer through a pointer.
-// Round 50 (lane 14, fast with 0x1f0870/0x23d790): `right` in a local two-field struct or as element 0 of a
+// Round 50 (lane 14, fast with 0x1f0870/0x23d790): `right` in a local two-field aggregate or as element 0 of a
 // two-element array 45/45, element 1 216 (1265 bytes), the same with the staged second product 217/217/217; both
 // products through named component locals in all 36 row orders 228 (1272 bytes each: the order does not reach the
 // code); both products staged re-measured 221 (1272); the second product into a local vector copied to the output
@@ -899,6 +900,12 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // normalize 215, the distance in a named local stored after the facing copy 215; a const facing pointer for both products
 // (not the copy) 223 (1272 bytes), with the else-arm facing pointer 223; one up pointer ahead of the arms for the second
 // product, its normalize and the else arm's up call 255 (1264 bytes).
+// M3 lane 9 r109 (`--fast 0x23de50 0x1f0870`, 45 as the full check): no untried natural form of the products left (left: forward.k/forward.j
+// in xmm1/xmm2 where retail has xmm2/xmm1, so right.i/right.j and the second product's schedule, and the else arm's forward
+// stores through edi where retail forms the forward pointer in ecx first); diagnostic: the second product replaced by a copy of
+// right 244 (1234 bytes; it reshapes the arm, so it does not isolate the colours). Kept: the target's position through the existing
+// object_get and object_node_matrix (include/slot_handler.h) in place of the getter written out with a header type made up in the
+// body 45 (same code; the file's other functions stay matched).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
@@ -923,9 +930,7 @@ void __stdcall function_23de50(void *state, void *input, s_observer_command *out
 		byte *object = (byte *)function_badc0(observer->target_unit_index, -1);
 		if (object)
 		{
-			struct s_header { byte unknown00[8]; byte *object; };
-			byte *target = ((s_header *)g_4e0300->data)[observer->target_unit_index & 0xffff].object;
-			command->position = *(point3f *)(target + *(short *)(target + 0x116) + 0x28);
+			command->position = object_node_matrix(object_get(observer->target_unit_index), 0)->position;
 			if ((1 << object[0xaa]) & 1)
 			{
 				if ((bool)(((dword)*(word *)(object + 0x348) >> 15) & 1) || observer->reset > 0)

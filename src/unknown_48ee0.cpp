@@ -18,6 +18,9 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
+// score 174 (was 174; 178 before): the far plane's near distance goes into a named local so the three
+// point components share one load; the mode bit still loads the flags into edx where retail
+// uses eax, and the size stays in a register across the rounding calls where retail reloads it.
 // MiniMax I (11-09): no new form, no lower score (174); the permuter's best form (153) needs the height limit in a byte, which turns 128 into -128 and 512 into 0 and so changes what the limit means, and its other six changes (the aspect declared before the border, the height limit's type, a cast on the width, the second limit test as an equality, the dot helper's arguments swapped, the plane's scale written as a product and the plane's distance kept in a local) are neutral (174); a height limit read as a 32-bit value (250), a byte flag for the two limits (280), the size declared at the top of the function (174) or just before the mode (174) and the size in a local of its own (174) all score worse; the frame's slots, read off the listings, run from the lowest up as the size, the mode, the maximum, the extent, the distance, the aspect and the border in retail, and as the mode, the maximum, the extent, the size, the distance, the aspect and the border in ours, because retail keeps the aspect and the size in memory across the two rounding calls and ours keeps them in registers, which needs the xmm clobber set of 0x48e70, in another lane's file.
 // MiniMax I (11-09): no new form, no lower score (174); the height limit read as a 32-bit value matches retail's dword read of that limit (250) but moves the size and the two limits to other slots, and with the far plane's point in three scalars it keeps retail's far plane and its transport (255); the border's condition as a plain test (175), the mode's value in a byte (176) or a short (223), the mode zeroed at its branch (180), the extent folded into the size's expression (389) or split into a square of its own (287), the mode's store moved after the branch (339), a local before the mode (360) and the mode's block moved before the first stores (326) all score worse; retail keeps the size in the lowest slot, then the mode, the maximum, the extent (reused by the width limit), the distance (reused by the height limit), the aspect and the border, while ours keeps the mode, the maximum, the extent, the size, the distance, the aspect and the border in that order, and that difference follows from retail's store-back of the clamped size and its reloads after the rounding calls, which need the xmm clobber set of 0x48e70, in another lane's file.
 // MiniMax I (11-09): no new form, no lower score (174); the far plane still takes its dot product from the local normal while retail copies the direction into the plane and reads the plane's three components back, and every form that reads them back (the plane's members, a dot helper on the plane, the point as three scalars, the point's components in retail's order) moves the state out of ecx and the matrix onto the stack, 339, 343, 346, 347; the size still stays in a register across the two rounding calls where retail reloads it from its slot, the mode bit still loads the flags into edx where retail uses eax, the width limit, the height limit and the size sit in other slots than retail's, the height limit is read as a sign-extended word where retail reads a dword (a 32-bit limit moves the two limits and the size to other slots, 250), and the border's product still follows the divide where retail multiplies first (the border's product and divide in two statements, with and without a carrier of its own, score 180).
@@ -28,9 +31,6 @@ extern real g_4c9798[36];
 // uses eax; no lower score.
 // MiniMax B (11-04): no lower score; the new forms tried and dropped are the flags and mode
 // placements, the width and height limit types and the mode's own block, all worse or identical.
-// score 174 (was 174; 178 before): the far plane's near distance goes into a named local so the three
-// point components share one load; the mode bit still loads the flags into edx where retail
-// uses eax, and the size stays in a register across the rounding calls where retail reloads it.
 // Round 112: direct far-plane output 343; scaled-add far point 174, near point 169 (five-point
 // form not kept), both 222; long height limit 250; sequential border multiply/divide 180 (the
 // border order is fixed but the body regresses); early size declaration and dimension rename
@@ -253,7 +253,24 @@ extern real g_4c9798[36];
 // calls (BLOCKED-BY 0x48e70). The same two forms on this body 255 [32], on the plain switch 219 [41], with the aspect
 // after the switch 254 [32]; the first plane's dot on the local normal 202 [117]. Nothing kept: every count but 171
 // is higher. Next, once 0x48e70's definition is `inline`: start from the switch with the long limit and the direct normal.
+// MiniMax E (11-10): the parameter layout is retail's, confirmed from the compiled prologue, which matches
+// retail opcode for opcode: `fld dword ptr [ecx + 8]` for the aspect, `mov edi, [esp + 0x34]` for
+// the tag and the matrix read through EBX. So ECX is the state, EBX the matrix and [E+4] the tag in both, and
+// nothing here is blocked by the declaration. Most of the 174 is the reduced image's relocated globals (ours
+// 0x4efb28 against retail 0x4c9798).
+// MiniMax E (11-10): no lower score (174). A 20-minute permuter (107 tries) found one improving form, a
+// `volatile short` store to g_51f3c8[1][2], which is a banned form and was reverted; the same run's dot3f
+// argument swap is byte-neutral here (174 with and without) and was reverted too. What is left is the mode
+// flag's register (retail keeps g_4c1a80 in EAX and shifts it there, ours in EDX) and the mode/extent homes
+// (+0xc/+0x14 in retail, +8/+0x10 in ours); the EAX form needs the distance local declared after the switch,
+// a declaration moved by score, which the round above records as not kept. Nothing kept.
 // MiniMax R (11-10): no new form, no lower score (174): the mode flag stays in EDX in all 16 expression forms and 5 position variants tried, where retail keeps it in EAX; the reduced image also forces the global address fields, which are most of the 174.
+// Round 109 (m3 lane 12, fast; 174): the flag test through a file-local forceinline predicate returning the bool 174
+// (same code); the distance read after the tag test on this if form 333 (1488 B, the state leaves ECX); the far plane's
+// normal copied straight into the plane with the dot on the direction 339 (1459 B); the direction and origin read through
+// the matrix at each use 331 (1491 B); the border as `width / maximum * 0.75f` 174 (same code: both spellings divide
+// first, retail multiplies first). Most of the 174 is one byte of drift: retail's `mov eax, [flags]` is the 5-byte form
+// and ours `mov edx, [flags]` the 6-byte one, so every later address field sits one byte off and counts.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

@@ -1435,7 +1435,7 @@ void function_1f86a0(long actor_index);
 // after the root calls) where ours keeps the mask in BL and the entry in memory, and retail still
 // takes the object-header data in the prologue and reads the flags once above the slot-flag test;
 // the mask read once before the loop scores 136, so the mask is read per iteration as it was.
-// score 134 (was 134; round 103 unchanged): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
+// Earlier at 134 (was 134; round 103 unchanged): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
 // object-header data in the prologue and reads the flags once above the slot-flag test.
@@ -1725,6 +1725,15 @@ void function_1f86a0(long actor_index);
 // the EBX choice (entry in retail, mask here).
 // MiniMax R (11-10): no new form, no lower score (134): the frame is 0x10 against retail's 0x14, and retail
 // spills the mask byte and keeps the loop entry in EBX.
+// M3 lane 3 r231 (fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70, all matched). Retail also lays the loop out differently: the
+// decline block follows the unknown86 test and falls into the next-entry call, with the unknown86-clear tests, the accept call
+// and the success block after it; ours puts the unknown86-clear tests first and the decline block jumps to the next-entry call,
+// which follows the accept call. Re-measured listed forms only: the plain break with `if (entry)` after the loop 134 (same code)
+// and the element index named for the lookup and the joint index 244 (round 20's), the decline condition negated with the
+// accept test as the then-arm 134 (same code, lane 9 r103's positive ternary), the fallback assigned straight to the joint
+// index 233 (round 39's), the loop as a `for` 134 (MiniMax C's). The slot data-block form is round 39's 134 (same code). No
+// untried natural form is left in this body: the remaining lever is 0xbaf40's memory summary, and its file
+// (src/unknown_0bad50.cpp) is on this round's avoid list again.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
