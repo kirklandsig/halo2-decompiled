@@ -528,6 +528,7 @@ struct s_object_damage_view
 // al` / `movsx si, al` pair); with `if (killer != NONE) { if (killer == reported_player) ... } else if (reported valid)` as well
 // 353 [73]; that arm order alone 363 (1532 B); the arm order, team byte and a `&history[selected]` record pointer used three times
 // 455 (1583 B). The three slots stay rotated (killer still kept in EBP across its block). Body restored at 353.
+// MiniMax H (11-11), NOT kept (coordinator 11-11): 353 -> 344 only from consider_team set true and cleared by two nested tests in place of its one expression (a bool set by tests: match-only); body at 353.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -544,9 +545,7 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 	long recent = function_146650() - real_to_long((real)g_510c54->field_2_3 * 6.0f);
 	s_object_damage_view *object = *(s_object_damage_view **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
 	short reported_slot = NONE;
-	bool consider_team = true;
-	if (reported_player != NONE)
-		if (function_1df560((short)victim_team, (short)reported_team)) consider_team = false;
+	bool consider_team = !(reported_player != NONE && function_1df560((short)victim_team, (short)reported_team));
 	short selected = NONE;
 	real best = -FLT_MAX;
 	for (short i = 0; i < 4; ++i)
