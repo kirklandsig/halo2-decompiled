@@ -569,6 +569,8 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
+// MiniMax H (11-11): no new form, no lower score (239); the frame is still 0x40 against retail's 0x44, retail still re-reads
+// the shape's data word three times in the clamp and ours copies it once, and the plane index still goes out as a short.
 // score 239 (was 239): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // the plane); classifier clamp form, origin and hit copies, transformed-plane and output homes remain.
 // MiniMax I (11-06): the node-type guard as a named local, as a field reference, against a
