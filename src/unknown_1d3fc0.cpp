@@ -361,6 +361,15 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // M3 lane 16 r102 (fast, 0x1c4a80 stays matched): the 2-form rebuilt 2 (masked 0: only the dot's i term operands); on it the squared
 // length through the existing length_sq3f 2, `vector3f *const` pointers 2, a `real const` dot 2 (same code each); the shared
 // normalizer's scale stores ordered k, j, i 102, j, i, k 28, i, k, j 140 (925 B). Body unchanged at 110.
+// M3 lane 8 r152 (fast, 0x1c4a80 stays matched; masked aligned 4: forward's k preload and left's k-first sum only): a scan of
+// every retail function for the reciprocal-reuse idiom (`divss xmmA`, two `mulss xmmB, xmmA`, then `mulss xmmA, [mem]`) finds
+// only this function and the unmatched 0x170630, so no matched body shows the form. A compile-only screen of 300 natural
+// combinations (seven sum shapes, four scale spellings, two tests, both dot argument orders, four projection spellings, cross3f
+// or cross3f_staged, helper-return or pointers-first) never drops forward's k preload. Real: the helper's squared length as an
+// i, j, k statement sum 112; a k, j, i statement sum with both pointers taken first 156; products k, i, j with a plain
+// `i*i + j*j + k*k` sum 150, with the squared length named through dot3f 151, with an i, j, k statement sum 117. Re-measured
+// (compile-only identical to listed forms): the j, i, k statement sum 111, the k, j, i statement sum everywhere 154, the squared
+// length named through dot3f 154. Body unchanged.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

@@ -231,8 +231,8 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
-// MiniMax C (11-10): the score is 353 (was 353); the three homes sit in rotated slots (ours +0x14/+0x1c/+0x18 against retail's +0x18/+0x14/+0x1c) and our function is four bytes longer, so the first branch's jump lands elsewhere.
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
+// MiniMax C (11-10): the score is 353 (was 353); the three homes sit in rotated slots (ours +0x14/+0x1c/+0x18 against retail's +0x18/+0x14/+0x1c) and our function is four bytes longer, so the first branch's jump lands elsewhere.
 // Round 147 (m3 lane 8, fast; [aligned ours/retail, masked ours/retail], control 353 [128/132, 31/35]): the related unit's
 // player index read at each use (retail reads +0x13c again for the store) 357 (1552 B) [119/124, 29/34]; with the killer's
 // team byte passed to 0x1df560 at the call 370 (1564 B) [131/132, 32/33]; the dedupe searches as `for (j...) if (==) break;`
@@ -483,6 +483,14 @@ struct s_object_damage_view
 // leave straight for the next award); with the assist stores re-reading the record's player as well 371 (1544 B,
 // frame 0x4c) [198/141/56], plus one history pointer for both loops 371 [198/141/55]; the selection amount in a local
 // under the time test on those 441/442 (1563 B). All restored.
+// Round 148 (m3 lane 7, fast; [stack+register masked, register masked] aligned counts, control 353 [53, 78]): the reported
+// player's code written once after the fallback (`if (killer == NONE && valid(reported)) killer = reported; if (killer != NONE
+// && killer == reported) damage_code = code;`, the same behaviour with one store fewer) 355 [55, 80]; consider_team as
+// `reported_player == NONE || !function_1df560(...)` 353 (same code); victim_team set in an if/else with no NONE default 422
+// [60, 84]; the victim's team byte through a named player pointer 353 (same code); the hostile arm's flag set before the
+// counter 353 (same code); re-measured: the selection amount named once 454. Retail keeps killer in EDX across the
+// fallback merge and reloads it from its home on the paths that skip the record (0x1ea1de) and at the team block; ours
+// threads those paths into the fallback and keeps killer in EBP.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

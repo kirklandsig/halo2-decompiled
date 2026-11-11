@@ -224,6 +224,7 @@ void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
 // score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
+// gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
 // MiniMax C (11-10): the score is 334 (was 334); the gate flag keeps its dead store where retail folds the address, and the settings pointer, the effect address and the random draws still live in different homes.
 // MiniMax E (11-09): no new form, no lower score (334).
 // Earlier 334 (was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
@@ -595,6 +596,20 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // velocity defaulted to g_4687a4 and set under `if (local_0 != NONE)` without a named record 348 (the frame changes,
 // first difference +0x2); the collision result declared in the trace block 334 (stack-masked aligned 169 -> 167).
 // Body unchanged at 334.
+// Lane 6 r167 (fast with 0x247fd0, which stays matched; base 334 at 1652, aligned 246, masked 106). The child loop written
+// as matched 0x247fd0 writes it (`tag_index`/`effect_index` read into locals ahead of the 0x173fd0 call, the in-loop lookup
+// through particle_object_for_tag, the link call given the DATUM sum, the reciprocal as an if/else) 311 (1692 B, aligned
+// 185, masked 75); with 0x247fd0's cache test and store order as well 311 (masked 69). Match-only: the gain needs the two
+// one-use locals. Grid of the four loop parts (lookup, locals, sum, if/else): 1000 371, 0100 334, 0010 335, 0001 334,
+// 1001 372, 1100 333, 1010 375, 1110 321, 1101 323, 1011 376, 0111 335, 0110 335, 0101 334, 0011 335. On the 311 (masked
+// 69) form: the bit-4 test through TEST_FIELD_BIT(flag4) 387, all four samples through `last_sample` 376, the record
+// pointer as 0x247fd0's `&((s_248000 *)data)[index & 0xffff]` 311 (same code), the velocity as a g_4687a4 default
+// overridden under `if (local_0 != NONE)` 291 (frame 0xb4, masked 78: retail tests first and stores each arm into
+// local_0's slot +0x14), the velocity as an if/else 311 (same code as the ternary), the probe z as
+// `local_2->field_1c.z + 1.f` 385, the blend's x row written as the y and z rows (`40.x * (1 - a) + 34.x * a`) 311
+// (same code; on main's body 334, same code). Keepable parts alone: the velocity default 348 (frame 0xb4; a re-measure
+// of lane 14 r79's form); with the in-loop lookup and the if/else reciprocal 331 (1696 B); plus 0x247fd0's cache test
+// and store order 327.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -392,6 +392,14 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // square-root form 778 (same code each; retail loads field_50 before the normalize2d call and keeps it in a slot).
 // Next: the double-free forms add a slot (frame 0x8c; retail's lowest slot, shared by the steering scale, the root
 // and the ratio, moves to +0x30); find it. Body unchanged at 715.
+// M3 lane 8 r151 (plain each; fast 648 builds differently): `real perp = -local_17.j;` at its three uses on this base 775
+// (3488 bytes); the forward dot `arg_2->i * local_17.i + arg_2->j * local_17.j` 715 (same code); both 775; the last dot
+// as `local_26.i * -local_17.j + local_26.j * local_17.i` 715 (same code); the side flip as one comparison,
+// `local_21 = (... > 0.0f) == local_22;`, 721 (3484 bytes). Lead on the EBX save: matched 0x17c040 shows the same
+// mid-function `push ebx ... pop ebx` as a short borrow of a callee-saved register no web holds (its byte test needs BL
+// with EAX, ECX and EDX busy), as 0xa5a60 borrows EBP. So retail never gave EBX to a web in the main allocation here
+// and borrowed it for the +0x290 pointer; ours allocates EBX in the main pass. That is register pressure (retail
+// reloads the definition pointer into ESI per region and re-reads arg_0 from its slot), not block structure.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

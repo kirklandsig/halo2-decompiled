@@ -412,6 +412,13 @@ struct c_aggregate : c_child
 // slip. Re-measured listed forms: `children[i]` without the cast does not compile here (the members are the handle
 // table type), v5's count output as `long &` 31 (same code). Stack-masked aligned 7: only the produced slot. Still
 // BLOCKED by the build flag.
+// Lane 6 r167 (fast with the six file-mates, all still matched; base 31, every difference the frame: ours spills the
+// children cursor at +0x10 and the loop counts at +0x14 with `produced` alone at +0x1c, retail packs `produced` with the
+// loop-count spill at +0x10). Re-measures of listed forms only, no new form left: the dispatch bound read as
+// `j < starts[i + 1]` 121 (388 B, as listed); the cleanup item read into `object` before its null test 74 (368 B; listed
+// at 89 on an older body); the dispatch gate as nested ifs 31 (same code, listed); the dispatch inner loop as a while
+// with the bound read each pass 121 (388 B, the listed bound form); the error test ahead of the child test 37 (listed).
+// Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

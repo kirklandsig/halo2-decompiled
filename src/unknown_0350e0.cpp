@@ -192,6 +192,12 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // place with the second as kept 343 (aligned 532 against 519); squares before the trig 354 (1762); the vector by value 363 (1789);
 // the two matrices declared separately 343 (same code). Main's entry copies with only the second pass read from the rows 422
 // (1846), so both passes reading g_467104 carry the gain.
+// Round 108 (m3 lane 9, fast = plain here): the builder's cross products as `axis->i * axis->j * inverse` (i*k, j*k)
+// 343 (same code: VC reassociates them); `inverse` declared right after the cosine 344 (1786 B; masked aligned 588 -> 549),
+// with the i*j operand order too 344; diagonals as `xx + (1.0f - xx) * cosine` 343 (same code); off-diagonals as
+// `axis->k * sine + xy` 343 (same code); the angles as `0.5f * step` / `0.3f * step` 343. Ours forms j*i and k*i before the trig and multiplies by the complement after it;
+// retail keeps (inverse * j) * i in source order after the cosine and starts the second angle and axis squares inside the
+// first matrix.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1933,7 +1939,6 @@ PRIVATE inline real clamp_2e9e0(real value)
 
 real game_time_get_seconds();
 
-// MiniMax I (11-10): no new form, no lower score (492); the frame is still 0x90 against retail's 0x94, the definition and NONE homes still swap, and the output homes still differ.
 // score 492 (was 507): every D3D call here in the D3DDevice:: member form (retail inlines the vertex push-buffer
 // write, 0x2f17c-0x2f1ba; only the member form inlines it) and clamp_2e9e0 as an initialised single-exit result:
 // retail length, EBX definition and EBP NONE as retail. Frame 0x90 versus 0x94, the 12-byte output homes (ours
@@ -2082,6 +2087,12 @@ real game_time_get_seconds();
 // 219: NOT kept, the positional gain is realignment only (aligned counts rise), and retail stores both 1.0 defaults
 // before the `i == 0` branch (0x2ef25-0x2ef2b), which is the original form. On that form (diagnostic) the visibility,
 // context alpha or attenuation default in an else arm 475/467/528, the flags as a value 542.
+// MiniMax I (11-10): no new form, no lower score (492); the frame is still 0x90 against retail's 0x94, the definition and NONE homes still swap, and the output homes still differ.
+// Lane 14 r81 (fast, control 492 as the full check; second number the register-masked aligned count, 237 for 492):
+// the draw point through the existing vector3f_add_scaled 492 (same code); the point started as a copy of the
+// position and moved with `+=` 546 (2302 bytes, 248); the point declared at function scope 492 (same code: retail's
+// point keeps its own frame-top slot, ours shares the direction's); delta through the existing vector3d_from_points3d
+// 492 (229: the reflected rows then store j at retail's slot); that with `!(visibility > 0.0f)` 491 (228).
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2671,6 +2682,11 @@ real magnitude3d(vector3f const *v);
 // the fallback store as `delta + current->n[component]` (retail adds into the delta register in its first component) 170 (same
 // code); the fallback through PIN 188 (1025 bytes, the noted nested-ternary form); `first` and `second` declared at their
 // normalizations 170 (same code).
+// Round 108 (m3 lane 9, fast with 0x24590/0x30bf0, control 170): re-measured because losing 0xc2d00 is now accepted: the
+// axis through cross3f 182, cross3f_staged 182, scalar rotated components with cross3f 189 (MiniMax R's 132 form). New: the
+// rotated components staged as `= projection * axis.i; += cosine * first.i; -= cross * sine;` 170 (same code), with cross3f
+// 182; three named scalar components 170 (same code; MiniMax R's named components, re-measure); `rotated.i * size` stores
+// 170 (same code); `(1.0f - cosine) * dot` 170 (same code); the fallback loop index as `short` 250. Retail's rotated.i partial sums are written to +8 after each step and its result lands in first.i's slot.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2748,8 +2764,6 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
-// MiniMax R (11-10): no new form, no lower score (113 on the full image, 146 on the reduced one): the index, the cursor, the list and the total keep different homes here and in retail, and the reference counts do not move the object off ESI.
-// MiniMax C (11-09): no new form, no lower score (113).
 // score 113 (was 113): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop top; below).
 // r136 lane 7: the list read once into `s_masked_list *list` 132 plain (fast 136 at 538 bytes, LCS-aligned 68 -> 61);
 // entry/definition/object declared at the loop body's top 147 fast; total declared before view 159 fast; index
@@ -2913,6 +2927,15 @@ s_cached_input_list g_5234e8[4];
 // divergence is the index taking EDI (0x31590's argument register, which 0x31590 never writes) for the whole body
 // where retail keeps it in EBX and copies it to EDI for the call; that frees EBX for the cursor and EBP for the
 // list or total in ours, and retail then has nothing left for list and total, so both are spilled (frame 0xa0).
+// MiniMax R (11-10): no new form, no lower score (113 on the full image, 146 on the reduced one): the index, the cursor, the list and the total keep different homes here and in retail, and the reference counts do not move the object off ESI.
+// MiniMax C (11-09): no new form, no lower score (113).
+// Lane 14 r81 (fast with the round 64 callee chain plus 0x241620, control 113 as the full check; second number the
+// register-masked aligned count, 39 for 113): `i` declared at function scope 113 (same code); the result pointer
+// formed first in the accepted block 113 (same code); the list read once into a local declared before count 132 (as
+// the listed once-read list, 37); `short total` 156 (558 bytes, 45); diagnostic, reverted: a constant loop bound in
+// place of total 174 (518 bytes; the object is then loaded before the definition tag as in retail, but the count
+// takes EBP). In retail `total` gets no register (reloaded into EAX at the compare) and `i` shares
+// ESI with the entry; ours gives total EBP (shared with the entry) and lets `i` share ESI with the object.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3418,6 +3441,14 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // each arm 495 (2044 bytes; that block then compiles as retail's, integer copy in the else arm); with retail's visible
 // phase-block order too (phase stored before the fade, strength read at its use, copied in the else arm) 502 (2019
 // bytes: the loop pointers then start at state+0x88 and view+0xec); that order alone 494 (2024 bytes).
+// Lane 14 r81 (fast; agrees with the full 486; second number is the register-masked aligned count, 277 for 486): new:
+// the existing out-of-line normalize 0x30bf0 for the norm block 531 (stays a call, 1989 bytes). Listed forms paired with
+// J256's maximum read at each use (508 alone, re-measured): one shared old-position local for the camera's and each
+// element's old position 560 (1960 bytes, 332); the output-pointer projection 525 (frame 0x40, 323); retail's
+// phase-block order (phase stored before the fade, strength read in each arm) 501 (frame 0x5c, 272); that with the
+// output-pointer projection 530 (frame 0x40, 317). Retail's velocity add leaves no value live (xmm1 reused for all three) and both roots and
+// the normalize reload the components from memory; every form here still forwards the added values into the first
+// root (spilled to the stack for the x87) and into the normalize.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

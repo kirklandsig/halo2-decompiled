@@ -1347,6 +1347,22 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // (the bool stays in memory, no threading); the else arm as `else if (!(*flags & 1))` 296 (same code, folded); the perception
 // result as one conditional 321 [236] (1273 B). On the original loop: probability declared before the two bools 253 (same code);
 // the three query outputs declared in the enclosing block and set in the loop 253 (same code).
+// M3 lane 8 r152 (fast, the matched callees listed; masked aligned 115 at 253). The creation arm moves after case 2, as in
+// retail (and retail's 0x2902b0, which carries a copy of this body), only when the whole arm from 0xb7930 to 0x1e0160 is a
+// forced-inline body. Forced-inline creation helper (actor returned, unit through a pointer) 448 (1368 B, masked 70: the arm
+// placed as retail, but 0x11dfb0 inlines inside the helper); the same `inline` or static 694 (933 B, not inlined); with the flag
+// loop 336 (1358 B, masked 59), as `static __forceinline` 336; plus a palette getter for both weapon lookups 452; both arms in the
+// helper 448; everything after the loop as one helper 346 (1250 B, no move); a helper holding the flags test and both arms with
+// the join in the caller 399 (1331 B: arm moved, 0x11dfb0 a call with retail's argument setup, but the tail's 0xcbd50/0xb9c60
+// inline), with the flag loop 340, plus the palette count read at each use 330, plus 32-bit grenade tests (`x - 1 != NONE`) 325,
+// plus the join under a second flags test 282 (1272 B, no move), or the call and the join under the caller's flags test 249
+// (1278 B, masked 37; build/r152/1e0850-helper-249.patch in the m3-lane8 worktree), that on the rotated loop 351, that with the
+// helper returning the unit and writing the actor through a pointer 340 (1279 B, masked 30, frame 0x118).
+// No move: early `return NONE` on the perception and unit failures 345; a helper for the setup calls only 296; a helper for the
+// part after the unit exists 296. LTCG inlines by static frequency inside the function that holds the call (0x11dfb0 stays a call
+// only under two tests; the tail's calls only at the tail's current depth), and an out-pointer for unit_index or
+// perception_index stops the jump threading that sends retail's failures straight to `return NONE`. Diagnostic (reverted):
+// `__declspec(noinline)` on this file's 0x11dfb0 declaration changes nothing (LTCG goes by the definition). Body unchanged.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -2161,6 +2177,14 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // the +0x23e store through fresh lookups) 279 (1227 B); the first block's two 0xcbd50 slot arguments read from `unit` 361
 // (1171 B). Diagnostic: the first block's unit through slot_handler.h's object_get view 251 (same code: the pool data load is
 // CSE'd across views). Re-measured: the `long` counter 278 (1191 B, frame 0x10).
+// M3 lane 8 r152 (fast; masked aligned 44): the clump counter as the header type's element field (`((s_clump *)g_502420->data)
+// [index].unknown3e++`) 251 (same code; retail forms the element address before `inc word ptr [eax+0x3e]`, ours leaves a dead
+// `lea` after the `inc`); the rounds count computed and halved in a named short before it goes into the zeroed pair 255, with a
+// `long` index 288 (1181 B); the probability as one conditional including the options test 251; the rounds bounds as named shorts
+// 323. Compile-only identical: the first block's tests nested (two forms), the grenade compare's operands swapped, `!= NULL`.
+// Re-measured: both second-block queries through 0xcbd50 with a fresh slot lookup 280 (LTCG inlines it at that depth, giving
+// retail's `or -1` shape), with a `long` index 333. What remains is the pool and seed globals' register weights (retail holds the
+// pool in EDI and reloads the seed into EBX; ours the reverse) and the spilled 32-bit index. Body unchanged.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

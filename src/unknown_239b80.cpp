@@ -229,6 +229,8 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
+// score 169 (was 170): at 170 (was 170) native output ordinal separates iteration from produced length;
+// frame 0x18 versus 0x14, count/departure homes, equality and compaction still differ.
 // MiniMax C (11-10): score 169 (was 169): no lower score this round. The frame is still 0x18 against
 // retail's 0x14; retail's outer pass has one dword counter in EBX, stored at F-0x10, reloaded at the
 // loop's head and compared as a word with the count home, it copies the count into EDX for the scan
@@ -262,8 +264,6 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // MiniMax G (11-06): a bool departure flag 248, the angle zeroed before the lowest scan 207, both together 204, the
 // hull counter merged into the pass counter as a while loop with the increment at the top 272, and a 16-bit copy of
 // the count as the scan bound 170 (the same code); no lower score.
-// score 170 (was 170): native output ordinal separates iteration from produced length;
-// frame 0x18 versus 0x14, count/departure homes, equality and compaction still differ.
 // Earlier at 203: frame 0x14 agreed; count/departure homes, scan bound, equality and compaction differed.
 // Round 132 (m3 lane 5, fast): index store and increment as two statements 203; `best_distance` declared
 // after the index store 203; departure as `if (!left_start && !points2d_equal(...)) left_start = true;` 227
@@ -515,6 +515,11 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // EBP, the hull count in ESI and reloads indices from its argument home, and rotates the loop test to the bottom;
 // retail tests at the top (three back edges) and reloads the hull count from +0x10 at each join. An inline
 // duplicate-removal helper taking the count by pointer: not inlined 331 (663), forceinline 271 (same code).
+// Lane 6 r167 (fast with 0x239d50, which stays matched; base 169, aligned 174, masked 86): the compaction through memmove
+// (retail's CRT call 0x320890; the copy overlaps) 170 at 784 B but masked 65, the compaction block then as retail's; the
+// three exits as `return hull_count;` with no label 186 (768 B); points2d_differ as `>= eps || >= eps` 173 (788 B), as
+// `!(< eps) || !(< eps)` 170 (masked 85); memmove plus the heading declared ahead of the lowest scan 204 (masked 63). Our
+// pass counter sits in the dead indices home and the departure flag in the frame, retail the other way round.
 // Round 70 (m3 lane 15, fast with 0x239d50): the departure as `equal ? false : true` 171 (786 B); the if/else departure (the
 // 168 form) with the flag declared first at function scope 252, with the left-start exit nested 168 (re-measure: the 168
 // form's code), with `short next` declared first in the pass 170, with previous_angle declared beside the current index 206; `bool
@@ -963,6 +968,13 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // (893); `count ? &points[count - 1] : points` for the previous point 293 (903), with the if/else fraction 288;
 // `points + count` then a separate `previous--` statement 129 (same code). Guard with the if/else fraction and
 // the four-flag aggregate 99 (890).
+// Lane 6 r167 (fast, base 129, aligned 85, masked 20: count read from memory twice where retail loads it once into ECX
+// and tests `test cx, cx` at the loop entry, so retail's previous side has no byte register and lives at +0xd; ours
+// keeps it in CL): `short const count` in the definition 129, `real const previous_distance` 129, the previous side as
+// `>= 0.f ? true : false` 129, the crossing's mask bit through SET_FLAG(mask, result, true) 129 (all same code); the
+// `*clipped = true` store moved to the end of the crossing block 277 (856 B); the loop end's previous point as
+// `&points[i]` 129 (same code); re-measure on this body: the loop test `i != count` 130 (listed at 249 on the if/else
+// fraction).
 // Round 70 (m3 lane 15, fast): both dedupe tests nested under `if (result != 1)` 129, the alias copy size as
 // `sizeof(point2f) * count` 129, the crossing bit as `SET_FLAG(mask, result, true)` 129 (same code); `points = (point2f
 // const *)memcpy(copy, ...)` 372 (975 B); re-measured: the deltas through polygon_difference_23a220 129 (round 366's shared
