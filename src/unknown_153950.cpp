@@ -562,6 +562,7 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // 23/13/15/21/31/21/27; both planar helpers with the vector setter 27. NOT kept:
 // no byte equality or gain. Original body and includes restored; held rotation helper
 // untouched. Native j/k input-load and sum ownership remain.
+// MiniMax R (11-11): no new form, no lower score (13): the rotation's j and k rows still differ from retail's, and the shared rotation helper's text decides them while its file is held.
 // MiniMax R (11-10): no new form, no lower score (13): the rotation's j and k rows still differ from retail's,
 // and the shared rotate helper in the other file decides them.
 // @retail 0x154df0

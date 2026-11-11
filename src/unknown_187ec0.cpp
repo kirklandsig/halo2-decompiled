@@ -774,6 +774,7 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // offsets; the block is still blocked by 0x1883e0's declarations, which live in src/impacts.cpp and
 // src/projectiles.cpp and name the old parameter types, so the effect point and the velocity forms
 // that were measured (77 each) leave the body as it is.
+// MiniMax R (11-11): no new form, no lower score (46): retail's second scan keeps a dword index in EDI and the scale in EBP, ours strength-reduces the scan into a pointer walk with a countdown in EBP; a 32-bit index gives retail's index form but rotates the other homes.
 // @retail 0x188180
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
 	long entry_element_index, long effect_value, s_location const *location, real scale)

@@ -5780,14 +5780,18 @@ void __stdcall function_d6bc0(long object_index);
 // tested bit 1 first 116 (first difference +0x5a); the engine pointer declared before `type` 83; the countdown in place
 // 52 (same code). Kept, same code: both squared distances through the existing dot3f 52. Re-measured: true default cleared
 // by the field test 172, a named timer pointer for the zero test, delay, countdown and continue 178.
+// score 7 (was 9): the scenario pointer is stored before the countdown period, as retail does. Left: the switch's index test
+// compares the local with -1 where retail compares the field itself, and the case-1 bit test uses CL where retail uses AL.
+// MiniMax R (11-11): the countdown block reads entries[i].index at each use instead of a copy in a local; the switch's skip
+// paths jump to the countdown block with a label instead of continuing the loop.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
     if (g_4e6948->mode == 4) return;
     byte *globals_tag = g_4e3b44[*(long *)((byte *)g_4e034c + 0x16c) & 0xffff].bytes;
     byte *preset = *(byte **)(*(byte **)(globals_tag + 0xc) + 0x534);
-    long arg_642c39 = g_510c54->field_2_3;
     byte *scenario = (byte *)g_4e0350;
+    long arg_642c39 = g_510c54->field_2_3;
     for (short i = 0; i < *(long *)(scenario + 0x120); ++i)
     {
         byte *placement = *(byte **)(scenario + 0x124) + i * 0x90;
@@ -5827,7 +5831,7 @@ void __stdcall function_15ae70(s_netgame_entry_state *entries)
                 switch (*(short *)(placement + 0x12))
                 {
                 case 1:
-                    if (!TEST_FIELD_BIT(object->flag10a_bit2)) continue;
+                    if (!TEST_FIELD_BIT(object->flag10a_bit2)) goto countdown;
                     break;
                 case 0:
                 {
@@ -5836,11 +5840,11 @@ void __stdcall function_15ae70(s_netgame_entry_state *entries)
                         vector3f displacement;
                         vector3d_from_points3d((point3f *)(placement + 0x40), &object->position, &displacement);
                         real distance_squared = dot3f(&displacement, &displacement);
-                        if (!(distance_squared > 1.0f)) continue;
+                        if (!(distance_squared > 1.0f)) goto countdown;
                     }
                     break;
                 }
-                default: continue;
+                default: goto countdown;
                 }
             }
             long delay = function_15ac50(i);
@@ -5865,6 +5869,7 @@ void __stdcall function_15ae70(s_netgame_entry_state *entries)
             }
             entries[i].value04 = (short)delay;
         }
+    countdown:
         short countdown = entries[i].value04;
         if (countdown > 0)
         {
@@ -5872,15 +5877,14 @@ void __stdcall function_15ae70(s_netgame_entry_state *entries)
             entries[i].value04 = countdown;
             if (countdown == 0)
             {
-                index = entries[i].index;
-                if (index != NONE && (placement[0] & 2) && object->type != 2)
+                if (entries[i].index != NONE && (placement[0] & 2) && object->type != 2)
                 {
-                    if (object->type == 1 && (function_158ff0(index) || function_15f060(&object->position, *(real *)(preset + 0x28))))
+                    if (object->type == 1 && (function_158ff0(entries[i].index) || function_15f060(&object->position, *(real *)(preset + 0x28))))
                     {
                         entries[i].value04 = 1;
                         continue;
                     }
-                    function_d6bc0(index);
+                    function_d6bc0(entries[i].index);
                 }
                 function_15aad0(entries, i);
             }
