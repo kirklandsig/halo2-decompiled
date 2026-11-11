@@ -505,6 +505,8 @@ struct s_text_line_measurement
 // score 77 (was 77): retail loads the width into xmm4 before the multiply
 // chain and accumulates the four terms in xmm3; ours reloads the width into
 // xmm3 after the multiplies and accumulates in xmm0 (register allocation only).
+// MiniMax D (11-11): no lower score (77): naming the update's sum once before the test reaches 74 but computes the terms
+// twice, so it was reverted; with the sum written in the update arm the copy never appears and the allocation stays as it is.
 // M3 lane 13 r75 (fast; masked aligned count in brackets, base [16]): the end sum named and computed before the can_break block 75 [21]
 // (the width load then moves to retail's XMM4 right after the scale, but the adds move up with it; match-only); the else arm's
 // width update before `count++` 77 [16]; advance computed before offset 78 [18]; break_width stored before break_index 76 [16]; both
