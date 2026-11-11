@@ -2602,6 +2602,7 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
+// MiniMax S (11-11): no new form, no lower score (170); retail keeps the raw current length in its own slot at +0xc and the pinned value at +4, while ours reuses one slot for both, and the later homes (the dot's float, the sine at +8, the angle and the cosine at +0xc) follow from that; naming the raw length, spelling the clamp as if/else and testing the guard on the raw all measure 251-252 because a named local changes the x87 shape (fst instead of fstp) and the compare. This round traced the arccosine: retail re-reads the dot as a float (`fld dword ptr [esp+0xc]`, the shape a call of acos with a float argument takes in our own build too), while under /GL our acosf and fabsf widen to their double forms and drag the dot's double copy (and with it the angle, sine and cosine homes) along; sinf and cosf keep their float form, and no source spelling recovers the float load.
 // score 170 (was 170): r136 lane 7 (fast with 0x24590/0x30bf0 in the image): ours keeps a double copy of the dot
 // (`fst qword`) for acos where retail re-reads the float; `acos((double)dot)` 170, `fabs((double)dot)` 170,
 // `acos(dot) * step` 170, `acosf(dot) * step` with `fabsf(dot)` 170, `(real)acos(dot) * step` 170.

@@ -1831,6 +1831,7 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
+// MiniMax S (11-11): no new form, no lower score (445); retail's frame is 0xc against our 8, it keeps the pool pointer in ECX and the pool data in ESI where ours loads the global into EAX and the data into EDX, it forms the control pointer as base+offset where ours stores the bare offset, and it writes the true default at the entry where ours starts from the switch; the entry default is the known lead but it costs the matched caller 0x10ff40 its score.
 // score 445 (was 453): retail keeps the result byte in the first argument's dead slot and re-derives the unit in both seat
 // queries (rounds 85, 149 and 93 below).
 // MiniMax R (11-04): no new form, no lower score.
