@@ -556,6 +556,11 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
+// score 115 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
+// MiniMax E (11-11): no new form, no lower score (114); the three message predicates are still packed in different
+// homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and retail keeps `left` in a word at
+// -0x3c where ours spills it as a dword at -0x50; the text buffer is still pushed where retail passes it in esi,
+// which the text helper in another file decides.
 // MiniMax C (11-10): the score is 115, unchanged; the three message predicates are packed in different homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and retail keeps `left` in a word at -0x3c where ours spills it as a dword at -0x50.
 // MiniMax R (11-10): no new form, no lower score (115 in the eight-function image); the view's home is
 // still four bytes above retail's and the text buffer is still pushed where retail passes it in esi,
@@ -567,7 +572,6 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // MiniMax G (11-04): no new form, no lower score; retail keeps `left` in a word-sized local at -0x3c
 // beside `top` and homes the colour and text bounds at -0x34/-0x24, ours spills `left` as a dword at
 // -0x50 with the colour at -0x2c.
-// score 115 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
 // frame 0x264 agrees; predicate packing, left-word and color/rectangle/scalar homes differ; both text helpers match.
 // frame 0x264 agrees; predicate packing and color/rectangle/scalar homes still differ.
 // frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
@@ -724,6 +728,17 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // height, bounds, colour, top, the point, player, view, count, row height (its own home), font; ours packs the scripted
 // flag at -2, shares the row height with the total height and gives the row counter its own home; and the tutorial
 // colour's block order.
+// Round 112 (m3 lane 9, plain): 114 -> 103 with two parameter reorders, NOT kept (coordinator 11-11: helper parameter order
+// picked by score, kept only with a match); the bodies stay at main's order.
+// 0x1fa30 as (bounds, text): m3_owner prints it as ours, though this note called its file a contributor's. Retail
+// sets ECX (text) before EAX (bounds) at every call, which gives (bounds, text), 0x1fa50's own order. 114 -> 108.
+// On that, 0x24ce9d as (left, top, bounds, result, text), round 27's order: 108 -> 103; two of its three calls
+// then set up their arguments as retail does. 0x1fa30, 0x1fa50 and 0x24ce9d still match; 0x24cf66 is their only
+// retail caller. With frame offsets masked, 14 lines differ: the left word store, the timer flag as a byte, the
+// tutorial colour's block order and the third 0x24ce9d call's setup; the rest is homes. On the 103 form: bool
+// timer 180 at 1888 (re-measure); the loop's `view->fade_time` read once into a named local 290 at 1892; the
+// message-text arm with a named `message_text` for its three uses 103 (same code); the scripted test as nested ifs
+// 103 (same code); the flash fraction clamp as a ternary 103 (same code); the loop's fade clamp as if/else-if 110.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

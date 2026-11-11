@@ -923,6 +923,7 @@ struct s_tail_transfer_traits
 	byte grenades[2];
 };
 
+// score 153 (was 153):
 // MiniMax C (11-10): the score is 153 (was 153); the traits pointer comes back from the selection loop in EBP where retail keeps it in EAX and the unit index takes the other register, and our three NONE homes sit at +0x18/+0x20/+0x28 against retail's two at +0x1c/+0x24.
 // MiniMax D (11-10): no new form, no lower score (153); the selected traits, the unit index and the NONE home are
 // still kept in different registers and at different stack offsets than retail, and the no-seat branch still
@@ -941,7 +942,7 @@ struct s_tail_transfer_traits
 // not kept; retail's unrolled four slots are not reachable from the loop form.
 // MiniMax D (11-04): no new form, no lower score; the unit index masked once into a local 153 (same code),
 // the seat-index branch still splits the object table and the unit index over different registers.
-// score 153 (was 153): logic walked against retail, no behaviour difference found (loops, offsets, order of the three
+// logic walked against retail, no behaviour difference found (loops, offsets, order of the three
 // weapon slots, grenade copy and the memset path agree). Only allocation differs: retail keeps the player in ebx, the
 // unit index in ebp and NONE in edi, and re-reads g_4e0300->data and the unit pointer in the no-seat branch (0x1528af,
 // 0x1528d4) while ours reuses the unit pointer in esi. Tried: primary/secondary/other declared before the unit_index
@@ -1025,6 +1026,23 @@ struct s_tail_transfer_traits
 // slot admission/rejection predicates and conditional first-pass admission: 150/150/188/185/185/153/153/202.
 // NOT kept: no eligible match; best three points is below the gain gate. Original complete
 // body restored; selected-traits/unit/NONE homes and native no-seat reloads remain.
+// Round 172 (m3 lane 5, fast; aligned/masked counts in brackets, control [106/23]): the no-seat primary/secondary
+// through the existing 0xcbd50 with the slots read from fresh lookups 153 (816 bytes) [94/35] (same code: the main
+// lookup through a pool copy with the slots on the global, primary through unit_get_current_weapon, the slots read
+// from `unit`); with a pool copy `objects` for the main lookup and both slot reads 161 (826) [76/20]; with the copy
+// declared in the no-seat arm 162 (835); 0xcbd50 with `long primary;` left without its NONE preset (every path
+// assigns it) 150 (826, frame 0x28 as retail, 0xcbd50's `or r, -1` defaults appear) [94/27]; the copy form with
+// primary and other unpreset 148 (828) [74/20], other only 147 (838) [90/16], primary only 168 (840); 0xcbd50 with
+// other only 151 (826), both 156 (816); re-measured on these bases (round 51's listed clock-first and no-seat-first
+// forms): the 150 form plus the clock before the selection loop 162, the 147 form plus the clock 157, the 147 form
+// with the seat arms swapped 165; new on the 147 form: cbe60 first 173, `valid` stored before the grenades 147; the
+// 147 form with the primary slot on the global and the secondary through the copy 144 (833) [94/16] (a copy/global
+// mix, not keepable), the reverse 150. Same code: the preset declarations in three orders, chained NONE presets.
+// Diagnostic: the 147 form with a dummy second use of the copy 143: the first no-seat query then reloads the data and
+// shares one unit lookup between the slot read and 0xcbd50's weapon read (retail's block); the second query still
+// reuses it. Observed in these trials (a lead, not a rule): 0xcbd50's lookup shares loads with caller lookups on the
+// global, not with lookups through a pool copy that stays a real variable (used twice or more; a single-use copy is
+// propagated). Still missing: a natural form that keeps the copy real.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1138,6 +1156,7 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 
 long function_cbd50(long unit_index, short weapon_index);
 
+// score 215 (was 254):
 // MiniMax E (11-09): no new form, no lower score (254); taking the tag table straight from the global in every loop reaches retail's 1006 bytes but scores 275, and hoisting the copy to the declaration keeps the same 254 with the same code.
 // MiniMax H (11-06): the permuter's best form (246) needs a volatile cast, hand-written helper bodies and a
 // player expression that reads differently, so only its legal part was kept and it gives 284; the tag table
@@ -1161,7 +1180,7 @@ long function_cbd50(long unit_index, short weapon_index);
 // pointer is held in a register and its data is re-read at each use, as in retail; the score drops to 275 and
 // the length is retail's 1006 bytes; the player still lands in ebx instead of ebp, the pool in ebp instead of
 // edi, and g_4e3b44 is still hoisted into edi instead of being loaded into ecx inside the loop.
-// score 215 (was 254): held and pending now come from the existing slot-to-weapon function 0xcbd50 (the idiom matched
+// held and pending now come from the existing slot-to-weapon function 0xcbd50 (the idiom matched
 // 0x1e83c0 uses), which gives retail's per-slot `or r, -1; cmp si, -1; je; movsx; mov` code and the pool's data reload
 // inside each lookup, and the tag table is read from its global at each flag test (no `tags` local). Still different:
 // our build keeps the tag table in EBX for the whole function and the pool in EBP, so the player spills to the stack
@@ -1265,6 +1284,19 @@ long function_cbd50(long unit_index, short weapon_index);
 // 303/303/303; first-loop-only references 254/254; real weapon/paired-slot array references
 // 254/254; paired selected-slot field references 280. NOT kept: no native pool/player/tag
 // ownership equality; original lookups, observations and complete body restored.
+// Round 172 (m3 lane 5, fast): the pool copy declared before the player lookup 215 (identical code); the bit-3 held
+// flag test moved ahead of the pending lookup 309 (1020 bytes); the last loop's arms as `if (hand == 0) ... else if
+// (held[1] ...)` 228; the entry unit lookup moved down to the parent test 286. Diagnostics (copy/global mixes, not
+// keepable): the held slot through the pool copy and the pending slot on the global 295 (1018 bytes, aligned 72
+// against 155: the pending query then gets its own data load as retail), the reverse 293 (1022 bytes); both slots on
+// the global 295 (the copy is then propagated, round 160's form). See 0x152660's note: in these trials 0xcbd50's own
+// lookup shared loads with caller lookups on the global, not with lookups through a pool copy that stays a real
+// variable; every way found of keeping the copy real while the slot reads use the global is a copy/global mix. No
+// other untried natural form is left (the notes above cover lookups, selectors, scopes, types, flag producers and
+// walks).
+// MiniMax B (11-11): no new form, no lower score (215); retail computes the pool element address before the
+// prologue's register saves and keeps it whole in ebp, while this build splits the multiply from the base add,
+// keeps the pool pointer in a register of its own and frames 0x1c against retail's 0x18.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1362,6 +1394,7 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 	return result;
 }
 
+// score 17 (was 17):
 // MiniMax C (11-06): no new form, no lower score; the unit index still lands in ESI where retail keeps it in EDI and the object table pointer lands in EDI where retail keeps ESI.
 // MiniMax D (11-06): no new form, no lower score (17): the unit index still lands in esi where retail keeps it in
 // edi and the object table pointer lands in edi where retail keeps esi; this round a read-only player, a read-only
@@ -1376,7 +1409,6 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // MiniMax H (11-04): no new form, no lower score; the unit index and the object table still swap registers.
 // MiniMax E (11-05): no new form, no lower score; the unit index still lands in esi where retail keeps it in
 // edi, and the object table pointer lands in edi where retail keeps esi.
-// score 17 (was 17):
 // Logic and structure match; only the callee-saved registers differ: retail keeps player->unit_index in
 // edi and the object data pointer in esi, this build uses esi and edi. Tried (scores): unit_index in a local
 // (45), `hand` before the unit_index test (27), unit before hand (20), the held-weapon test through an
@@ -1401,6 +1433,16 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // player read at each use (no player local) 46 (the player index moves to EDX); the unit lookup written in place at both reads
 // 17; the slot read in place through the pool copy and the weapon read through the global 17; the player at each use plus the
 // pool copy 46.
+// Round 172 (m3 lane 5, fast): the slot-to-weapon test through the existing 0xcbd50
+// (`function_cbd50(player->unit_index, <fresh unit>->held_slots[hand]) != NONE`) 17 (identical code), with the `unit`
+// local or the result in a named weapon local 17 (identical); `result = true` before the a9030 call 59 (146 bytes);
+// `dword` hand 17 (identical); `unsigned short` hand 38 (139 bytes, movzx where the short hand has movsx); the held
+// slot read at each use (no slot local) 42 (137 bytes). Diagnostics, reverted: with no unit-index use in either arm
+// the table/slot web takes ESI (40), so in our build the unit index outranks it for ESI; one use removed from either
+// arm 30/31, an extra slot use 45, an extra unit-index use 42, integer no-op tuples at the player lookup (`* 1`, `+
+// 0`, `^ 0`, identity inline, identical code), volatile global reads at entry / after the player lookup 57/54 and the
+// player index kept to the end 60 never move the pair, so reference counts do not decide it; the integer no-op probes
+// fold before allocation, so tuple phase is untested (only one-step volatile probes, which did not flip it).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1447,6 +1489,11 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// score 43 (was 43):
+// MiniMax D (11-08): the saved roles are exchanged - retail keeps the player record in esi
+// MiniMax I (11-10): no new form, no lower score (43); every difference is one clean pairwise register
+// rotation (retail: player esi, hand edi, unit index edx, temp ecx; ours: player edi, hand esi, unit index
+// ecx, temp edx) and the permuter was killed at its time limit without reporting.
 // MiniMax D (11-08): score 43 (was 43): the saved roles are exchanged - retail keeps the player record in esi
 // and the hand in edi, ours keeps the player in edi and the hand in esi, and the unit index stays in ecx where
 // retail reuses esi.
@@ -1460,7 +1507,7 @@ void function_150820(dword *bits, bool local_only)
 // swap esi and edi, and the hand's comparison result still lands in dl where retail's lands in al.
 // MiniMax D (11-04): no new form, no lower score; retail keeps the player in ESI and the hand in EDI and this
 // build swaps them (the unit index takes ECX instead of EDX), and the permuter was killed before it reported.
-// score 43 (was 43): the walk found no difference in logic (same stores, calls, argument order, held_slots/weapons
+// the walk found no difference in logic (same stores, calls, argument order, held_slots/weapons
 // offsets, mode == 4 byte test, result kept in bl with its stack copy). Only the callee-saved pair is swapped:
 // retail keeps the player in esi and the hand in edi (edi pushed late), ours the reverse, and the unit index and the
 // `primary` temporary sit in ecx/edx and edx/al instead of edx and cl/eax. Tried: hand declared before the player
@@ -1556,6 +1603,13 @@ void function_150820(dword *bits, bool local_only)
 // T77: Live unit-index field mutable/read-only references and field pointer, entry/guarded
 // lifetimes 73/73/73/73/73; real held-slot/weapon array references and selected-weapon field
 // reference 43/43/70. NOT kept: no native saved-role equality; original body restored.
+// Round 172 (m3 lane 5, fast): the 0xcd7b0 test nested under `if (weapon_index != NONE)` with modes declared there 43
+// (identical code). Re-measured: the weapon from 0xcbd50 with the slot read from the `unit` local 43 (identical to
+// round 160's fresh-lookup form), `result = function_cd4e0(...)` 95, the initialized modes 86. Diagnostics, reverted:
+// volatile reads at entry / after the player lookup 87/84 move neither the scratch rotation nor ESI/EDI; integer
+// no-op probes at the player lookup fold away (identical code), so tuple phase is untested. No untried natural form
+// is left that compiles differently: the notes above cover declaration orders, hand/slot/result types, result graphs,
+// early exits, existing getters, pool copies, lifetimes and the permuter.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

@@ -7,6 +7,7 @@
 #include "object_queries.h"
 #include "unknown_211060.h"
 #include "vector_products.h"
+#include "normalize3d.h"
 #include <math.h>
 
 // Layouts follow the pool and tag accesses in the retail callback group.
@@ -237,6 +238,9 @@ void __stdcall function_1160c0(real dt)
 // seven local-name sets, declaration reversals and entry/loop scopes 194;
 // shared cross 207, both point differences 286, both helpers 280;
 // scaled difference 212, all vector helpers 285.
+// frame 0xa4 agrees; attachment homes now agree. Retail keeps the rest offset
+// below previous and the scalar temporaries below the axis; those still differ. The segment
+// pointer lives in edx (ours edi) and the rotation's products are scheduled in another order.
 // MiniMax D (11-08): no new form, no lower score (171); retail builds the segment address in EDX and keeps it at
 // +0x14 and the loop's previous values at +0x5c, ours borrows EDI with the segment at +0x1c and the previous values
 // at +0x50; the segment as a base pointer plus an index, as a named index and as an if/else all give the same
@@ -579,6 +583,26 @@ void __stdcall function_1160c0(real dt)
 // rotation evaluates the written expressions but schedules the y and z cross terms right after the dot, before
 // the x row, loading all six axis/offset components into registers first (and reading offset k from memory twice
 // more later); ours reads its offset k from memory at the dot and at two later products.
+// Lane 4 r186 (fast with the file and 0x73360/0x54590; control 171 [136/79]): kept, byte-identical: normalize3d for the axis, length_sq3f
+// for the delta's magnitude, dot3f for the projection and vector3d_from_points3d for the direction in place of their bodies written out
+// (round 230's 171 form; it was dropped then for losing matched 0x54590, which is near at 2 on main now; plain: 0x54590 2 and 0x73360 33
+// byte-identical). On it: `++node->ticks` at the loop's end 270; the first node's copies direction first 182 (first difference +0x17);
+// the bound as `i <= definition->segment_count` 305 (1360 B); the node velocity through vector3d_from_points3d and three `*= inverse_dt`
+// 208 (1392 B); the y and z cross terms named ahead of the rows 171 (match-only, six lines move, homes unchanged). Same code:
+// dot3f(&offset, &axis); the scale as `length / (real)sqrt(...)`; `previous = node->position`; position added first in the predicted rows.
+// Round 188 (m3 lane 4, fast with 0x116750/0x73360/0x54590): the axis through the existing cross3f(&vertical, &direction,
+// &axis) re-measured on this body 179 (masked 79 -> 76); the node velocity through vector3d_from_points3d and vector3f_scale
+// 207 (1391 B); sinf/cosf re-measured 174; same code (171): a named versine, `inverse_dt * (...)` velocity rows, `if
+// (!normalize3d(&axis))`, the guard as `0.f < dt`, `previous` stored before `node->position`. Code-changing: the rest-offset
+// copy before the axis 186; the angle call (with the vertical) before the axis 314 (1353 B); a long loop index 290 (1358 B);
+// the stiffness product declared in the branch that uses it 315 (1348 B; retail forms it at the loop top). Retail's homes
+// run length, segment, axis upward; ours exactly reversed.
+// m3 lane 15 r72 (fast with 0x116750/0x73360, both matched throughout): round 130's same-file rotation helper (0x170d70's
+// statement shape, writing an output, then `+= position`) re-measured 163 (match-only: a one-caller helper). On it: the named
+// terms in three orders, the dot axis-first, the rows projection-first, `(1.f - cosine) * dot`, sine-first products, the result
+// into a `rotated` local then added to position (either order), and the axis normalization rows all inverse-first, all
+// axis-first or all `*=`: 163 each (same code); the axis passed by value 334 (1399 bytes). 0x170d70's own helper is in a file
+// held for the sort_4byte change this round.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
@@ -609,35 +633,23 @@ void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *defin
 				if (definition->physics_index != NONE)
 					function_211060(&node->velocity, 0, g_4e3b44[definition->physics_index & 0xffff].bytes, &location, NONE, &position, 0, 0, 0, .02f, dt);
 				vector3f delta = { position.x - previous.x, position.y - previous.y, position.z - previous.z };
-				real scale = (real)(segment->length / sqrt(delta.k * delta.k + delta.j * delta.j + delta.i * delta.i));
+				real scale = (real)(segment->length / sqrt(length_sq3f(&delta)));
 				point3f target;
 				vector3f_add_scaled((vector3f *)&previous, &delta, scale, (vector3f *)&target);
 				position.x = (1.f - stiffness) * target.x + predicted.x * stiffness;
 				position.y = (1.f - stiffness) * target.y + predicted.y * stiffness;
 				position.z = (1.f - stiffness) * target.z + predicted.z * stiffness;
-				direction.i = position.x - previous.x;
-				direction.j = position.y - previous.y;
-				direction.k = position.z - previous.z;
+				vector3d_from_points3d(&previous, &position, &direction);
 			}
 			vector3f axis = { direction.k * 0.f - direction.j, direction.i - direction.k * 0.f, direction.j * 0.f - direction.i * 0.f };
-			real length = (real)sqrt(axis.k * axis.k + axis.j * axis.j + axis.i * axis.i);
-			if (.0001f > fabs(length))
-				length = 0.f;
-			else
-			{
-				real inverse = 1.f / length;
-				axis.i = inverse * axis.i;
-				axis.j = axis.j * inverse;
-				axis.k = axis.k * inverse;
-			}
-			if (length == 0.f)
+			if (normalize3d(&axis) == 0.f)
 				axis = *g_4687ac;
 			vector3f offset = segment->rest_offset;
 			vector3f vertical = { 0.f, 0.f, 1.f };
 			real angle = function_11ce20(&vertical, &direction);
 			real sine = (real)sin(angle);
 			real cosine = (real)cos(angle);
-			real along = (axis.k * offset.k + axis.j * offset.j + axis.i * offset.i) * (1.f - cosine);
+			real along = dot3f(&axis, &offset) * (1.f - cosine);
 			predicted.x = (along * axis.i + cosine * offset.i) - (axis.k * offset.j - axis.j * offset.k) * sine + position.x;
 			predicted.y = (along * axis.j + cosine * offset.j) - (axis.i * offset.k - axis.k * offset.i) * sine + position.y;
 			predicted.z = (axis.k * along + cosine * offset.k) - (axis.j * offset.i - axis.i * offset.j) * sine + position.z;

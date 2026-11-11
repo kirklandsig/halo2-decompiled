@@ -950,6 +950,25 @@ struct s_device_machine_view
 // 115 (657 B); the same taking the group index (lookup inside, no group local) 167 (630 B: the device moves to ESI
 // from entry); the pointer form as `if ((f & 1) && (f & 2)) return true; else return false;` 120; the index form with
 // the if/return body 167; the pointer form plus the 0x1200055f zero store 119 (660 B).
+// m3 lane 14 r82 (fast): the register-masked aligned diff is still three rows: the lane S mask for retail's word load sharing the
+// pointer's EAX, and case 0x1200055f's zero store (retail `movaps xmm0, xmm1` after the flags load, before the flag-8 branch; dead
+// like main's case-0xf00055e store, since every later path re-sets the value or threads past the pin). No untried natural form for
+// either row; the source is unchanged since round 107's permuter run, so it was not rerun.
+// Also r82, on the lane S body without the zero store (fast): nested type/index tests, a group-index local inside the type test, a
+// const group pointer, the machine flags read at each use, the group pointer at function scope, a dword flags local and the bits
+// test in a named bool all compile to the base code (34); a byte bits local 45 (masked 3: `mov al, [eax+2]` shares EAX, then the
+// mask); bit 2 tested first 34 (masked 6); `group_flag_bits == 3` 52 (as the listed `== 3`); the group test joined to the machine
+// test by `||`, or as its `else if`, 54 (same code, masked 10); the power test's operands swapped 34 (masked 8); a byte
+// machine-flags local 35 (masked 4); the machine flags read before the group pointer 127 (657 bytes, as listed).
+// m3 lane 15 r74: a compile-only screen (/O2 /Gr without /GL) of this body against retail leaves exactly the two
+// listed rows (the byte load with the mask for retail's `mov ax, [eax+2]`, and case 0x1200055f's zero store), so the
+// screen is exact here. No natural spelling of the group test outside the listed families was found; every listed one
+// keeps the 16-bit value ahead of the two-reference group pointer for EAX.
+// Fast: the power/0x10 test as two clearing ifs 123 (662 B); the machine flags read before the group lookup 127 (657 B);
+// the case opening as `function_value = position == 0.0f ? 1.0f : 0.0f` 133 (657 B); case 0x1200055f's velocity block
+// through a file-local `inline` fraction helper whose result starts at 0 266 (547 B: the helper stays out of line),
+// with the two ifs 258 (555 B); the helper as `PRIVATE __forceinline` 117 at 654 B (inlined, but its zero-initialised
+// result takes a stack slot, as round 81's zero-initialised local did).
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1393,11 +1412,33 @@ bool function_108530(long device_index, long name)
 // if (!(remaining > x)) x = remaining;` after `remaining` 127; `remaining` renamed cruise_time and reduced in place
 // (`cruise_time -= ramp_down_time;`) in the inner block 121 (same code), at top level right after the clamp 140
 // (callers 26/28). Diagnostic, reverted at once: a volatile ramp-down parameter 165 (546 B, callers 26/28).
+// m3 lane 14 r82: a /Gd compile-only first pass of this body fills all eight XMM registers in the clamp/pin phase (duration xmm7,
+// ramp-up xmm2, ramp-down xmm1, remaining xmm3, one xmm4, position xmm6, target xmm5, zero xmm0) and loads the initial velocity once,
+// late, into a reused xmm5, so it stays a stack argument; retail's clamp phase compares the ramp-down from a scratch xmm1 and stores
+// the zero and the minimum only to its slot, which leaves a register free from entry. A volatile ramp-down local (diagnostic,
+// reverted at once) 169 (549 bytes: it adds a frame); callers 25/34.
+// Also r82, the same /Gd screen: the pins before the clamps, the target pin first, the ramp-down zero clamp after the duration
+// clamp or after the pins, if-statement clamps, `remaining` written out at both uses, a pointer to the ramp-down time and an early
+// named velocity copy all keep the one late load into a reused xmm5 (even the pointer folds away), so none was fast-checked.
+// Also r82 (fast, callers 0x108600/0x108670 in brackets, base 31/13): both pins before the clamps 132 [19/34]; the ramp-down clamps
+// after the pins 133 [19/34]; the initial-velocity store after the cruise-velocity zero in the inner block 120 [31/13] (one point,
+// not retail's store order); the denominator test's arms swapped 121; the deceleration-distance store before the acceleration zero
+// 121; the velocity store moved with the pins first 132, with the clamps after the pins 133, with start stored before position 120.
 // Round 76 (m3 lane 13, fast with both callers): fresh locals for subsets of the clamped times (all four 110 and the down time
 // alone 144 are above): duration 129 (511 bytes; duration then passed in XMM7 with a `push ecx` frame, still five stack floats;
 // callers 26/28), ramp-up 133 (26/28), duration + ramp-up 133 (19/34), duration + ramp-up + ramp-down 133 (19/34), duration +
 // ramp-down 144 (523; 26/28), ramp-up + ramp-down 141 (508; 19/34). Each puts an unmodified time parameter in a register
 // from entry; none gives the initial velocity XMM6.
+// Round 188 (m3 lane 4, fast with both callers; ret 0x18 and callers 31/13 unless noted): the call removed from either
+// caller leaves this body at 121 (not caller-side). A /Gd compile-only screen of the first pass reproduces the LTCG
+// results (a volatile ramp-down or the target pinned first make the target the register parameter); 96 clamp-phase
+// variants all write eight XMM registers before the first fld (retail seven). Zero-clamp orders u,d,up,r 121; d,r,u,up
+// 123; u,r,d,up 123; u,d,r,up 119 (two points, a statement order); r,u,d,up 123; the duration and ramp-up zero clamps as
+// if-statements 121 (same code); `remaining` before the ramp-down zero clamp 123. On u,d,r,up: u,d,up, `remaining`, then
+// the ramp-down zero clamp 121; all four clamps as ifs, the ramp-up zero clamp as an if, the ramp-down minimum as an if
+// 119 each (its code); the target pinned first 141 (507 B, ret 0x14 with the target as the register parameter, callers
+// 26/28); the position read into its local and then pinned 142 (507 B, the same convention move). Re-measured: the
+// duration stored first among the reset fields 121.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -2056,6 +2097,29 @@ bool function_0b6760(s_index_pair const *pair);
 // copy 250 (same code). Our result stays in DL because its value never crosses a call; retail's byte shares the
 // `increasing` slot. Channel 1's test calls 0xb6760 (src/unknown_0b66c0.cpp, built /Ob1, so LTCG cannot inline it here as
 // retail does at the channel-0 sites).
+// m3 lane 15 r74 (fast, base 250, aligned 115 / register-masked 44): the tick rate read once at entry into a local used
+// by all four rate reads 316 (1477 B, masked 47). Same code as the base (spellings): the power group index in a named
+// local inside a nested else, the clamp test as `speed < fabs(v)`, `if (++device->delay_ticks == 1)`. Diagnostic only
+// (a volatile result, reverted at once, lane 14 r62's listed form): 234 at 1495 B, device_index then stays in its
+// argument slot and the callee-saved roles stay permuted. Roles by region: ours ESI = index*12 (entry, tail) and the
+// power-velocity pointer, retail EBX; retail gives the power-group pointer ESI (spilled around the `this`-in-ESI
+// channel call) where ours gives it EBX; the position-group arm already agrees (group EBX, position EDI, channel ESI).
+// Lead (fast, match-only): drop the definition pointer's `volatile` and read the rate into a local just before the
+// power 0x11eed0 call: 249 at 1495 B (first difference +0x3 -> +0x44, masked 44 -> 26) with retail's prologue (EBX, EBP,
+// ESI, EDI late), index*12 EBX, device_index ESI and the result byte at [esp+0xf]; plus `bool result = false;` after the
+// definition 247 (+0x85, masked 24); plus the 0xb3 byte `<= 0` 247 (masked 23, 'p2'); plus the 0x100 update as an
+// if/else 262 at 1487 B but masked 11 ('q2'). Left on q2: the acceleration block's float colouring (retail complement
+// xmm1, 0xcc product xmm0, zero xmm1; ours complement xmm0, zero xmm0, one `movaps xmm0, xmm1` missing) and the
+// position-group refresh (ours state ECX across the 0xb6760 call and device_index EBX; retail state EBX, device_index
+// reloaded per call). On p2/q2 the acceleration spellings (one expression, both pairs named, shared complement, operands
+// swapped, complement term first, speed first) give 247/262 (same code or masked 22/10), a rate local before the
+// position call too 247 (same code); a two-use time_step for the delay product and the call 280/276, at the inner else
+// top for the call 143 (frame 0x24, masked 28), at entry for all four reads 383, for both calls 376; `increasing`
+// before the products 143 (1478 B, masked 35). Also tried here (old base): the rate local at the inner else top 335,
+// the clamp as an if/else 361; the rate local alone re-measured 256 (masked 38).
+// On q2: a channel pointer for the position arm's two tests and calls 247 (1495 B, masked 25); the position arm's
+// `previous` read before its channel test 253 (masked 15); the power `previous` read after the clamp 273 (masked 15);
+// the position idle test as `!(value == position && velocity == 0.0f)` 262 (same code).
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

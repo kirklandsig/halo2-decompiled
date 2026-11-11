@@ -14,56 +14,43 @@ inline pair_handler_30dc80 *handler_3728c0(dispatcher_3728c0 *dispatcher, pair_3
 }
 
 // Equal keys cancel before either callback. Removal needs no admission test.
-// score 15 (was 15): first implementation: OR comparator 114; aggregate bool 122;
-// explicit key branches 22, then 15. Two-dimensional handler indexing and
-// direct index expressions leave 15. Secondary-key and handler registers differ.
-// Round 69 (m3 lane 2, compile-only harness, exact for this file): three spots differ
-// in registers only: the tie test's second keys (retail loads removed's into EBX, ours
-// EBP), the comparator's second keys (retail finishes removed's load chain before
-// added's), and the removed handler (retail reads the first kind first). Tried: the tie
-// test as added == removed in both halves 13, removed == added in both 23, removed first
-// then added second 21; the comparator as `first == second` first 17, `first != second`
-// first 17, `b > a` on the tie 7 here but 0x372a80 24 (seta), `second > first` 21, an
-// else-if tie 15, two-if form 22, named tie keys 15 (either order), a by-value pair
-// 76, `!(a >= b)` 15; the four locals in all 24 orders 15 or 39 (removed_end first);
-// no `less` local 15; the tie through `!less && !less` 76; increments swapped 16;
-// `continue` after the tie 15, nested tie ifs 15; post-increment in the removed call
-// 15; no filter local 15; a row pointer in the handler lookup 15.
 // @retail 0x3728c0
 void dispatcher_3728c0::function_3728c0(pair_30d870 const *added, long added_count,
 	pair_30d870 const *removed, long removed_count, pair_listener_315a10 *listener)
 {
+	pair_30d870 const *added_pair = added;
 	pair_30d870 const *added_end = added + added_count;
+	pair_30d870 const *removed_pair = removed;
 	pair_30d870 const *removed_end = removed + removed_count;
 	pair_filter_3728c0 *filter = (pair_filter_3728c0 *)listener;
 	pair_order_372a80 less;
-	while (added != added_end && removed != removed_end)
+	while (added_pair != added_end && removed_pair != removed_end)
 	{
-		if (((pair_handle_3728c0 *)added->first)->key == ((pair_handle_3728c0 *)removed->first)->key &&
-			((pair_handle_3728c0 *)removed->second)->key == ((pair_handle_3728c0 *)added->second)->key)
+		if (((pair_handle_3728c0 *)added_pair->first)->key == ((pair_handle_3728c0 *)removed_pair->first)->key &&
+			((pair_handle_3728c0 *)removed_pair->second)->key == ((pair_handle_3728c0 *)added_pair->second)->key)
 		{
-			++added;
-			++removed;
+			++added_pair;
+			++removed_pair;
 		}
-		else if (less(*removed, *added))
+		else if (less(*removed_pair, *added_pair))
 		{
-			handler_3728c0(this, removed)->slot_2(removed);
-			++removed;
+			handler_3728c0(this, removed_pair)->slot_2(removed_pair);
+			++removed_pair;
 		}
 		else
 		{
-			if (accept_pair_3728c0(filter, added))
-				handler_3728c0(this, added)->slot_1(added);
-			++added;
+			if (accept_pair_3728c0(filter, added_pair))
+				handler_3728c0(this, added_pair)->slot_1(added_pair);
+			++added_pair;
 		}
 	}
-	for (; added < added_end; ++added)
+	for (; added_pair < added_end; ++added_pair)
 	{
-		if (accept_pair_3728c0(filter, added))
-			handler_3728c0(this, added)->slot_1(added);
+		if (accept_pair_3728c0(filter, added_pair))
+			handler_3728c0(this, added_pair)->slot_1(added_pair);
 	}
-	for (; removed < removed_end; ++removed)
-		handler_3728c0(this, removed)->slot_2(removed);
+	for (; removed_pair < removed_end; ++removed_pair)
+		handler_3728c0(this, removed_pair)->slot_2(removed_pair);
 }
 
 // @retail 0x372a80

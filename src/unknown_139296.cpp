@@ -1281,6 +1281,17 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // Round 161 (m3 lane 5, fast): first loop as `while (count-- > 0)` 1 (same code); count in the for initialiser with the
 // colour buffer at loop scope 1 (same code); descriptive names for every local 1 (same code); those names with an
 // indexed first loop over the field 106 (379 bytes, as unnamed); the success byte declared after the definition pointer 1.
+// Round 171 (m3 lane 6; round 157's LTCG harness, revived with the build's ballast, reproduces 1). Lead: a `> 0`
+// guard around a for over a nonzero count (`if (n > 0) { long offset = 0; for (long count = n; count; --count) ...`)
+// compares with the mask zero in EBX and lets it die into the offset exactly as retail, but keeps a redundant inner
+// `test eax, eax; je`: harness 102 (aligned 2) with indexed later loops, the same with the offset in the header,
+// `count != 0`, `while (count--)`, `for (; count--; )` or `while (count)`. Indexed later loops (strength-reduced
+// offset zeroed after the guard) are exactly retail's with the for-form first loop (1). Guarded do-while first
+// loops keep the zero: `--count != 0` 106, `--count > 0` 105, decrement in the body 106, `count-- > 1` 106, count
+// before the offset 106, guarded indexed for 106, guarded index do-while 88; the offset before the guard 1 (the
+// guard tests an immediate again); offset and count before a count guard 9. Sibling loops with the draw result in a
+// named bool stored on failure 106, `success = draw(...) && success` 114, `success &= draw(...)` 103; diagnostic: no
+// success flag at all still keeps the zero (106), as retail 0x13a532 does.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

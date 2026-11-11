@@ -135,6 +135,11 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // products named before the stores 56; casts named, k stored first, then the products 49.
 // Lane 9 r99 (fast, on the kept inverted-test body): else arm z first 56 (244 bytes: scale and z split, XMM3/XMM4, the
 // zero made after the products), with `point->k * local_0` 56; arms y, x, z 9 (same code); z, y, x 56; x, z, y 56.
+// Round 171 (m3 lane 6, fast): z read at entry with a `!= 1` arm, z's product first and scale-left products 50
+// (242 bytes, masked aligned 8: zero XMM2 made after the products, scale XMM3, z XMM4, where retail has the zero in
+// XMM3 from the top, scale XMM4, z XMM2, so ours colours z last); both arms complete (z, x, y read in one, scaled in
+// the other) 55 (244 bytes); z read before the scale 51; `z = point->k * scale` in the kept form 9 (same code); the
+// test on the field with the scale local in the else arm 64 (251 bytes).
 // @retail 0x24f6b0
 real __fastcall function_24f6b0(dword index, vector3f *direction)
 {
