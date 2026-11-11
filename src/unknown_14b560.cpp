@@ -786,6 +786,9 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax E (11-11): no new form, no lower score (43): the unit-start NONE-root walk (the root preset
+// to NONE and the walk started from the unit) gives 109, and the datum and the unit still take ebx
+// and edi where retail takes edi and ebx.
 // MiniMax C (11-11): no new form, no lower score (43): the datum address is still computed in ebx
 // where retail computes it in edi, and the root walk is still the out-of-line 0xbaf80 in the other
 // file, which is what decides the carriers.
@@ -1398,6 +1401,10 @@ static inline s_players_globals *players_globals_14f2e0()
 // the 0x198 field is cleared with a memset and the flag clear follows the zero store as in retail.
 // What still differs: retail tests the mode before the outputs are materialised, ours materialises
 // them first. Round 29 (lane G): with the two
+// MiniMax E (11-11): no new form, no lower score (46): the timer-memset form reaches 43, under the
+// bar to keep, and the two NONE outputs are still written with a five-byte move where retail's
+// materialisation is three bytes long.
+// score 46 (was 46): the NONE outputs are materialised with `mov eax, 0xffffffff` where retail
 // uses `or eax, 0xffffffff` (two bytes shorter, so every later stack address differs), and the
 // zero/flag store schedule differs; the success BL agrees. Round 29 (lane G): with the two
 // outputs declared and assigned separately and the timers cleared with a memset the score is 43,
@@ -2479,6 +2486,8 @@ static __forceinline long player_round_ticks(real value)
     return result;
 }
 // MiniMax C (11-11): no new form, no lower score (701); the first 0x151b80 call is still expanded here where retail calls it, and the definitions of 0x151b80, 0x151940 and 0xccd20 are in other files that this lane may not edit.
+// MiniMax E (11-11): no new form, no lower score (701): the frame is still 0x4c against retail's
+// 0x74, and the two calls this build expands are still expanded here.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and
@@ -3003,6 +3012,13 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax E (11-11): no new form, no lower score (103 on the full build, 193 on the reduced one):
+// reading the globals pointer at each use (175 on the reduced image), keeping it for the last write
+// (173), writing the status after the countdown (181) and giving the second loop its own iterator
+// (171 on the full build) all leave it at or above the baseline. On the full build the body is
+// retail's length (611 bytes, first difference +0x8) and the whole difference is the register the
+// globals pointer takes: ours keeps g_4e8c20 in edi where retail has it in esi, and the two loops
+// swap the datum and unit registers with it.
 // MiniMax C (11-11): no new form, no lower score (103 on the full build, 193 on the reduced one):
 // the globals pointer is still carried in edi to the end of the function where retail loads it into
 // esi and reloads it after the busy check and again before the final store, and the callees that
