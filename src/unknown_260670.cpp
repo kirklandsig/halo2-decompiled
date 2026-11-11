@@ -37,7 +37,7 @@ bool function_2600a0(long actor_index, s_type_967e20 *context, s_type_b36ac5 *po
 long function_1e4a50(long index);
 long function_262a30(s_reference reference);
 
-// score 700 (was 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// score 528 (was 528): earlier 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // a bool output in a register across a later call, as retail (0x1b0540 matched with plain output locals).
 // Round 178 (m3 lane 4, plain checks; aligned = difflib count with addresses masked, 293 here): the call sequence is
 // retail's except two callees: retail calls 0x2600a0 in the sorted loop and 0x13e2d0 for the owner, ours inlines both
@@ -89,6 +89,16 @@ long function_262a30(s_reference reference);
 // standalone locals gives retail's F+8 and F+0xc but leaves the flags at F+2/F+3 and the frame at 0x8a4 against retail's
 // 0x8a0 (841), the same split with a four-byte selection scores 836, and an aggregate whose flags come first is kept
 // in registers by the compiler (836), so the aggregate stays.
+// m3 lane 2 r69 (plain checks; aligned/masked in brackets, base 528 [341/174], frame 0x8a8): the segment block is
+// the existing 0x11e000's body written out (retail's clamp `0 > t ... else if (t > 1)` joins in one register, and
+// 0x11e000 is inlined here in retail), and the length block is normalize3d's (retail's float epsilon and its
+// scale-first arm order). normalize3d for the length 576 [346/173] (frame 0x8ac: the squared length gets two homes);
+// with the squared length as dot3f(&delta, &delta) 547 [347/160]; with that and 0x11e000 for the segment 577
+// [316/144] (3097 bytes, frame 0x8a8; next round's base: the blocks then take retail's shape); 0x11e000 alone 629
+// [351/176]; 0x11e000 + normalize3d 579 [338/154]; 0x11e000 + dot3f 622 [349/171]. The lockstep score rises because
+// retail keeps count in EBX from the main loop through the random pick (`test bx, bx`, `movsx ecx, bx`) and loads
+// scratch from memory in the loop, where ours keeps scratch in EBX and reads count from memory: retail's loop head
+// then pads with a jmp and every line to 0x260e3c shifts by one.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

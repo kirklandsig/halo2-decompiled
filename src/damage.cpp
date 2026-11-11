@@ -1155,9 +1155,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 
 /* damages one object of the radius (and its children and siblings): the geometry to it, then the damage */
 // score 38 (was 38): 91 before m3 lane 1 r74. 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
-// score 38 (was 38; before r74 was 91): 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
+// Earlier 38 (was 38; before r74 was 91): 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
 // MiniMax I (11-10): no new form, no lower score (38); the near block still computes the second and third negations before it stores the destination's first row where retail finishes each row before it starts the next, and the else arm's i and k rows still add the direction to the destination where retail adds the destination to the direction.
-// score 38 (was 91): 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
+// Earlier 38 (was 91): 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
 // (`movss xmm0, [ebx + 8]; addss xmm0, [edi + 8]`, retail the other way).
 // MiniMax E (11-09): no new form, no lower score (38); the permuter tried 20 forms and found nothing below 38, and putting the normal's store before the direction's update in each near-block row gives 288.
 // MiniMax R (11-06): forms tried, none lower (38 grouped negations, 40 with the node stores first, 41 one negation per row, 286-288 negated in place, 304 inlined, 38 with the near block's and the else arm's sums the operands the other way round); the near block still folds the normal into the k row where retail folds the destination, and the else arm still folds the destination in its i and k rows.
@@ -1264,6 +1264,16 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // retail's shape, but j/k address off EBP and the i row and the cone dot flip); origin read through data at each use 40;
 // direction read through data at each use 46; node_center declared beside surface_point 38 (same code); the near test written
 // `dz * dz + dy * dy + dx * dx < 0.05f * 0.05f` 38 (same code).
+// m3 lane 2 r70 (fast, control 38, aligned 14, masked 9; the later `!!` constants and calls are misalignment only): the
+// shared vector3f_add (vector_products.h, with this file's identical cross3f dropped for the header's) in both arms with the
+// normal negated in place 288, with the negated names stored back first 288, in the else arm alone 38 (same code, re-measure);
+// the origin and direction pointer declarations swapped 42 (the else arm's i row turns node-first as retail, the cone dot
+// flips); on the swap, per-row names (`negated_i = 0 - n.i; node->i += negated_i; n.i = negated_i;`) 45, with the normal's
+// j/k stores after the rows 46. Diagnostics: swap + 1-4 or 7 dead initialised locals 36 (cone dot back; only the two k rows
+// and the near block's store order left), 5/6/8 locals 42/41/42; on that, per-row names 39 (masked 7: retail's row-by-row node
+// stores, but the normal stores interleave), normal stores after all rows 42, normal i first 40; pointer locals holding
+// g_4e6948 or g_4e3b44 36 (no change); a `(real)(x * 1.f)` chain of depth 1-3 folds away (same code). Node pointer declared
+// first 354 (re-measure of r157). Neither k row has moved in any form.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -4973,7 +4983,7 @@ struct s_damage_object_creation
 
 /* marks damage sections destroyed, and splits off the model nodes no
    longer joined to the object's root as new objects */
-// score 156 (was 156; before r69 was 174): frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
+// score 156 (was 156): 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // mask in memory). Left: the mask's zero is stored ahead of the states call (retail: at the first node loop), the piece
 // loop's guard order and bottom test, the search's entry test, and the scratch registers of the last two lookups.
 // MiniMax C (11-01): the shared loop counter and the permuter's variant reach 217, four points and under the keep bar, so nothing is kept.
@@ -4989,7 +4999,7 @@ struct s_damage_object_creation
 // the block 154 by a declaration move only.
 // MiniMax C (11-09): no new form, no lower score (156); the datum offset still spills at +0xc instead of +0x10 and
 // the definition and detached/node homes still differ, so the first 69 instructions agree and the rest do not.
-// score 156 (was 156): 174 before m3 lane 1 r69. Frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
+// Earlier 156 (was 156): 174 before m3 lane 1 r69. Frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // mask in memory). Left: the mask's zero is stored ahead of the states call (retail: at the first node loop), the piece
 // loop's guard order and bottom test, the search's entry test, and the scratch registers of the last two lookups.
 // Earlier 174 (was 188): frame 0x13e0 and 808-byte length agree; first +0xb acquires the handle/offset
@@ -5083,6 +5093,18 @@ struct s_damage_object_creation
 // `detached > 0 && tag != NONE` with a do-while on `!= 0` 187 (777 bytes, the mask leaves memory). In retail the node loop's
 // guard jumps to the block's end and the search has no entry test: node_count > 0 is known inside the piece loop. The piece
 // definition index named once after the node loop (test and 0xb7930 argument) 160.
+// m3 lane 2 r70 (fast, control 156, aligned 29, masked 20): the zero after the states call 154 (re-measure), with the piece
+// loop as `!= 0` 154, with retail's guard order 226, with `!= 0` and the piece object pointer 155, guard and pointer 227, `!= 0`
+// and pointer under `if (node_count > 0)` 157 (159 with the zero at the top; the search keeps its entry test). The mask update
+// `detached_nodes &= ~piece_nodes;` after the 0xb7930 call 151 (aligned 36, masked 23; retail does it before the call), with the
+// zero after the states call and `!= 0` 149. On that: the piece pointer 154, `!= 0` and pointer 154, zero after states `!= 0` and
+// pointer 152; retail's guard order `detached > 0 && tag != NONE` + `while (!= 0)` 128 (813 bytes, masked 15: the mask stays in
+// memory, so the guard, the pads and the search without an entry test agree), plus the piece pointer 127 (812, aligned 47, masked
+// 13; left: the zero's placement, EBX/EDI swapped for node_states/node_count in the node loop, the `and` order). On 127 the zero
+// after the states call 226/227, declared before the node loop 228/227 (230 without the moved update), at the mask block's top
+// 228/227: every later zero shrinks the frame to 0x13dc (the datum offset stays in ESI). 127 is not kept (moved statement against
+// retail's order, a guard repeating the loop test, a one-use pointer); it cannot become exact as written, since retail does the
+// `and` before that call. What it shows: under retail's guard order the mask must stay in memory across the piece loop.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
