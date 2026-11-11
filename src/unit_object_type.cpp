@@ -345,7 +345,7 @@ void function_ccf20(long unit_index);
 void function_b58c0(long index, dword mask);
 void function_c8bb0(long unit_index, long vehicle_index, long *object_index, short *seat_index, short *priority,
 	real *distance, bool *flag);
-bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data * volatile camera);
+bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera);
 void function_e69c0(long unit_index, long type);
 void function_114240(long unit_index);
 void function_a94b0(long unit_index);
@@ -3317,19 +3317,20 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // (forceinline or inline) 127; the camera's address taken (`(void)&camera`, or both copies through a const reference
 // to it) 127, all the same code: the camera keeps EBP in every form that names it twice.
 // @retail 0xd1080
-bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data * volatile camera)
+bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
 	s_unit *unit = UNIT_GET(unit_index);
-	volatile bool result = false;
+	bool result = false;
 
 	matrix->scale = 1.0f;
 	if (unit->parent_index != NONE && unit->parent_seat_index != NONE)
 	{
+		long parent_index = unit->parent_index;
 		s_unit_seat_definition *seat =
-			&UNIT_SEATS(UNIT_DEFINITION_GET(UNIT_GET(unit->parent_index)))[unit->parent_seat_index];
+			&UNIT_SEATS(UNIT_DEFINITION_GET(UNIT_GET(parent_index)))[unit->parent_seat_index];
 		s_object_marker marker;
 
-		if (function_b8d30(unit->parent_index, *(long *)((byte *)seat + 8), &marker, 1, false))
+		if (function_b8d30(parent_index, *(long *)((byte *)seat + 8), &marker, 1, false))
 		{
 			*matrix = marker.matrix;
 			function_b9dd0(unit->parent_index, &matrix->position);
