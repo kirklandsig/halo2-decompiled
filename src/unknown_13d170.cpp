@@ -179,6 +179,14 @@ struct s_physical_block_iterator
 	s_record_pool_iterator iterator;
 };
 
+// MiniMax D (11-11): no new form, no lower score (201); the first difference is still the jump to retail's
+// 0x13d679, and the code up to it matches retail instruction for instruction. What differs is the policy block
+// behind it: retail's default arm clamps both ages with `cmp; sbb; and`, multiplies the best's pages by the
+// candidate's age and the candidate's pages by the best's age, and keeps its two case blocks in place between
+// that arm and the merge, while ours folds the second clamp away (`MAX(0, ...)` never holds for an unsigned
+// difference), makes the two products in the other order and jump-threads case 0 and case 1 into the take test,
+// so they sit past the loop. The documented forms for the clamp, the case 0 shapes and the take test were
+// measured before and are worse on their own (209 to 284); the 93 form needs the policy helper, which is match-only.
 // score 201 (was 201): earlier 201 (was 347): frame 0x1054 and entry/ring roles agree; weighted-age mask registers, detached policy cases and final linking differ.
 // MiniMax E (11-09): 209 -> 201 (1214 bytes against retail's 1213): the second age is now spelled
 // MAX(0, physical->time - best.time), which for the unsigned difference is the same value as the

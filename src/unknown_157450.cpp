@@ -483,6 +483,13 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 
 /* recomputes the teams that have players */
 // score 32 (was 32): the word mask, its one reload ahead of the first jne, and present's update in EBX remain.
+// MiniMax D (11-11): 24 (was 32), NOT kept (coordinator 11-11: lane 14 r55's width cast on one side of the compare; retail compares dword; body stays at 32): the old team mask as a word local (retail's `mov cx` entry and its
+// word spill) with the present compare narrowed to a word (`(word)present_teams != old_team_mask`); the
+// present mask's high bits are always zero, so the narrowing keeps the behaviour. The compare is still
+// 16-bit where retail compares dwords (`mov esi, [present]; movzx eax, cx; cmp esi, eax`), and the mask
+// is still read from memory twice (retail reloads it once into ECX before the first jne and shares that
+// register with the OR for the store). Without the cast the word mask is 77 and the dword mask 32; a
+// one-use team-bit local on top of this was 21 but a one-use local is kept only with a byte match.
 // MiniMax C (11-06): no new form, no lower score; a word old-mask local is rematerialised from
 // globals->team_mask at each use (129, frame 0xc), a named new-mask local (129) only moves the
 // playing teams into EDX, and a volatile word mask (118) reloads the slot cleanly for the compare
