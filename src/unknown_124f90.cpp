@@ -2629,6 +2629,7 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // P346: Existing word/byte delayed-start writers with selected-permutation and delay results:
 // reduced 198/204/198/204/198/204/198/204 against control 197 (868 bytes; full 17/865).
 // NOT kept: reduced scores and byte-writer length regress; all one-use results, include and body restored.
+// MiniMax C (11-11), NOT kept (coordinator 11-11): 17 -> 15 only from 0x219070's result in a one-use short local passed to sound_playback_set_chunk (match-only form); body at 17.
 // @retail 0x126000
 long function_126000(long tag_index, long listener_index, s_sound_play_state *state, long rate_limit_stage)
 {
@@ -2709,8 +2710,7 @@ long function_126000(long tag_index, long listener_index, s_sound_play_state *st
 
 					arg_58ecd0 = function_218f50((s_looping_playback_definition *)definition, NONE, ((real)pitch_bounds[1] - lower) * state->location.scale + sound->pitch + lower);
 				}
-				short permutation = function_219070(arg_58ecd0, definition);
-				sound_playback_set_chunk(result, tag_index, (short)arg_58ecd0, permutation, (short)chunk_index);
+				sound_playback_set_chunk(result, tag_index, (short)arg_58ecd0, function_219070(arg_58ecd0, definition), (short)chunk_index);
 			}
 			sound->value_a0 = (char)rate_limit_stage;
 			sound->fade_end_time = chunk_index;
