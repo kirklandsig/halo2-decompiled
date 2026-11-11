@@ -693,6 +693,13 @@ real function_30bf0(vector3f *vector);
 // unnamed, `length_sq3f(&delta)` at its five uses 84 (identical code: it is a spill temp either way); the clipped point
 // through a copy of path_transitions.cpp's point_along_vector (diagnostic) 90; the 3/2 result as one ternary 84; `long
 // count` 193 (1318 bytes); the occupant's forward as a value copy 195 (1312 bytes).
+// Round 185 (m3 lane 4, fast with 0x25c9d0/0x263740/0x26d370): the up cross and the side cross through the existing
+// cross3f_staged 84 each (same code: the seat-loop cross products' operand forms do not follow the helper's statement
+// order), both 84 (a combination of same-code forms, a re-measure); re-measured: the squared distance as
+// `dot3f(&delta, &delta)` 84 (same code, as round 138 found); the not-facing defaults with secondary assigned first 101
+// (aligned 71); the object index as `actor->unknown26c` 84 (same code); primary and secondary as `facing ?
+// facing_primary : scaled_range` / `facing ? facing_secondary : scaled_range * 0.7f` with no else and no re-test 101.
+// No untried natural form is left for the stack homes.
 // m3 lane 5 r169 (fast with 0x263740/0x25c9d0, base 84 [aligned 55, masked 17]): the outer test as `distance_squared <
 // range * range` 84, the scaled test the same way 84, `range * scale` 84, the vehicle index read from actor->unknown26c at
 // both uses (no local) 84, the not-facing secondary as `0.7f * scaled_range` 84 (all the same code); re-measured: `use_facing
@@ -2348,6 +2355,13 @@ real function_2683f0(long actor_index, long node_index, short type)
 // `xor edi, edi` sits; the table pointer still ECX). The table pointer's ECX is the players loop's colouring (ECX/EDX
 // for retail's EAX/ECX throughout); `mov eax, [abs]` is one byte shorter, which moves the loop-top pad. The unknown23
 // test through the `prop` local instead of a fresh prop_get 655 (2845 bytes: retail reads it afresh).
+// Round 185 (m3 lane 4, fast with 0x25d810/0x26be00/0x26be30/0x25d740; fast base 168 = plain): the prop iterator
+// started before the memset 690 (first +0x13); visible as one direct value (`reference == NONE ||
+// prop_ref_get(reference)->unknown27 >= 1`) 428 (713 lines: the flag leaves its byte home); the node index read from the
+// iterator at both uses with no index local 168 (same code); the prop index as `actor->prop_index` at its three uses
+// 168 (same code); the best level stored as `actor->unknown328` 168 (same code). Re-measured on the 168 base: the
+// unknown5e test through the `state` local (the cached state test, 707 earlier) 430; positive as
+// `(established || !(distance > 3.5f && approach < 0.5f)) && score > 0.0f` (round 74's `score > 0` first, mirrored) 239.
 // m3 lane 5 r169 (fast with 0x25d810; aligned/masked in brackets, base 168 [80/38]): the scoring block with the
 // established part written in both arms (`if (visible) {...; if (established) {...} else if (...) ...} else if
 // (established) {...}`, for retail's cross-jumped entry stub at 0x266f93) 392 at 3005 B [121/60]: the copies are not

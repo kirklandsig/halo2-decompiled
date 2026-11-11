@@ -1500,6 +1500,19 @@ long function_2197f0(real gain);
 // retail; left are the XMM colours (elapsed 2 for 3, 1.0 3 for 4, reciprocal 1 for 2), the time sum taking the product as
 // its destination, the value's divss after the test product and `fade_out + hold` loading hold first); on that a `real
 // hold` local for its three uses 156, a `real fade_in` local for all its uses 191 (635). Body restored.
+// Round 185 (m3 lane 4, fast with 0x1251e0/0x221810): retail's arm-1 clamp value keeps a true divss because its
+// divisor is not the inverse's (a compile-only screen shows the reciprocal reuse keys on the divisor's spelling): the
+// inverse from a fade-in local (`real fade_in = ducking->fade_in_time; real inverse = 1.0f / fade_in;`) with the value
+// still `time / ducking->fade_in_time` 87 (684 bytes, aligned 46, masked 12: retail's divss; a one-use field copy beside
+// field reads, match-only); on it the clamp as `t = time / ducking->fade_in_time; if (!(1.0f > time * inverse)) t = 1.0f;`
+// 144 (681, masked 9: retail's division-then-test order), as a ternary 144; plus a fade_out local for the tests and the
+// product 92 (684), with the division-first clamp 148 (681, masked 8: retail's inverse-then-fade-out product), with the
+// ternary 148, with `gain +=` 148 (same code), with `interp + gain` 161; a fade_out local declared inside the arm 144 (same
+// code as without it); the fade-in local also for the value 155 (687: the value is a reciprocal product again); one
+// fade-in local for the test, the inverse, the value and arm 2 95. `return *(long *)&gain.value` 94 and
+// `gain.value += ....value` in arms 3 and 4 94 (same code each). Left on the 87 form: fade_out multiplied from memory
+// before the inverse (retail keeps the test's fade_out load in XMM1), the arm-1 sum adding the gain from memory where
+// retail loads it into a register, the arm-3/arm-4 join and the XMM colours.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2933,6 +2946,12 @@ static inline short sound_voice_find_available_channel(char type)
 // MiniMax E (11-10): no new form, no lower score (96); the body with two exits and no result variable, the
 // same body with a bool result and the failure path returning false directly were measured (131, 113, 134)
 // and the byte result with the shared exit stays the best.
+// Earlier at 96 (was 96; a second score line, merged in round 185): unchanged this round: retail keeps the result in AL (set at the entry, cleared
+// through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
+// keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
+// and its channel search keeps the channel in EDI with one `or ebp, -1` shared between the channel
+// compare and the driver and buffer defaults. A `bool` result carrier on this body measures 113 at
+// retail's length and was reverted.
 // The twelve-byte frame, byte result normalization, initial voice/global load order and
 // Earlier at 96 (was 96): The twelve-byte frame, byte result normalization, initial voice/global load order and
 // early failure tail remain; long search-result boundaries do not change the selected code.
@@ -3149,6 +3168,14 @@ static inline short sound_voice_find_available_channel(char type)
 // and the early and failure values are separate webs. New: the driver default before the channel test with `return true;`
 // after the commit and `return result;` closing the failure block, bool result 144 (407 bytes: the early path folds to a
 // constant and NONE is hoisted into EBP at the entry); the same with the byte result 144 (same code). Body restored.
+// Round 185 (m3 lane 4, fast with 0x129100/0x127320/0x12a5d0/0x21de90): the channel work inside `do { ... } while
+// (false);` with `break` for a missing channel and for a missing buffer, `return true;` after the commit and the
+// failure calls after the loop, bool result 111 (430 bytes, register-masked aligned 38 -> 23: retail's block order, the
+// failure block after the buffer tests with the entry true shared into its epilogue; left the entry registers, the sound
+// in EDI for EBX, the channel in EBP and the driver in EBX, `cmp bp, -1` for retail's shared `or ebp, -1`, the status
+// test); a steering wrapper, match-only. On it: a byte result 119 (433), byte result with the goto exit 144 (449), the
+// driver default before the channel break 133 (415), with `~status & DSBSTATUS_PLAYING` 135 (430), the complemented
+// status alone 130 (432, masked 21). Re-measured (diagnostic): bool result with `return true;` 139 (415).
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3753,6 +3780,11 @@ vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vec
 // class-gain block ahead of the field_0/c/10 stores 107; the definition and class-table lookups in one expression 101. Ours
 // expands the lookup in large callers (here, 0x128020, 0x128ca0, 0x127010, 0x189fe0) and calls it from small
 // ones (0x124fc0, 0x125010); retail never expands it, which points at its file's build (avoid list, flags).
+// Round 187 (m3 lane 4, fast with 0x221810): retail's call sits under one top-level flag test, as ours does, so call-site
+// nesting does not explain the out-of-line call; keeping it out of line needs a noinline, pragma or flags change (all
+// ruled out). Case 0's flag set after the gain store 232 (1196 bytes); case 0's gain as a ternary 206 (1177 bytes); case 0
+// written first in the switch 101 (same code); the fade test's operands swapped 102; the elapsed-time test with its arms
+// swapped 127 (1196 bytes).
 // @retail 0x129aa0
 void function_129aa0(short arg_0, long *arg_1, s_looping_channel_spatialization *arg_2)
 {
