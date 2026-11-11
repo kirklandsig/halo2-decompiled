@@ -493,6 +493,13 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // hit declared before first 34, distance1/point1 declared ahead of the iterator 34, point0/distance0 declared ahead of
 // forward 34, the target-reached exit as `goto finish` 34 (all same code); re-measured: the magnitude named at the call.
 // No unlisted natural form.
+// M3 lane 16 r106 (fast with every other function of the file, all stay matched; [register-masked aligned]): the held goto form
+// rebuilt on this body (`success = false; goto finish;` at both two-level exits, `finish:` before the final tail) 34 [24]; with the
+// line as plane2f {n, d} re-measured 304 [20] at 1612 B (slots retail's; left the cross row j, the magnitude order, the XMM1-3
+// rotation, retail d/n.j/n.i against ours n.j/n.i/d, and tail C's edge store). On the plane2f form: the line normal set by two
+// member stores 390 [41] (1593 B), the line as `{*(vector2f const *)&normal}` initializer 415 [36] (1622 B). On the goto form:
+// `last_distance` declared with the entry locals ahead of the result stores 368 [31], the FLT_MAX store first 366 [28], the FLT_MAX
+// store after the hit-flag clear 34 [24] (same code). Body unchanged at 244.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

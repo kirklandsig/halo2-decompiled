@@ -227,7 +227,7 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
 // MiniMax C (11-10): the score is 334 (was 334); the gate flag keeps its dead store where retail folds the address, and the settings pointer, the effect address and the random draws still live in different homes.
 // MiniMax E (11-09): no new form, no lower score (334).
-// score 334 (was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
+// Earlier first line: score 334 (was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
 // MiniMax E (11-09): no new form, no lower score (334).
 // gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
 // MiniMax E (11-09): no new form, no lower score (334).
@@ -605,6 +605,13 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // (same code; on main's body 334, same code). Keepable parts alone: the velocity default 348 (frame 0xb4; a re-measure
 // of lane 14 r79's form); with the in-loop lookup and the if/else reciprocal 331 (1696 B); plus 0x247fd0's cache test
 // and store order 327.
+// M3 lane 16 r106 (fast with 0x247fd0 and 0x248cc0, both stay matched; base 334, register-masked aligned 134): the cache clear
+// as `field_44 = field_44 & ~0xf80f` 334 (same code); that with matched 0x247fd0's order (`local_2 != arg_0->field_50`, field_50
+// stored first; aligned 131, the clear then load/and/store as retail) 346, and round 71's compound form in that order re-measured
+// 346; the contact normal read from the result at both uses (no pointer local) 337; the bit-4 velocity test as `((byte >> 4) & 1)
+// != 0` 334 (same code); the effect gate byte shifted and masked in one expression 334 (same code); the velocity's i row spelled as
+// the j and k rows (`i = velocity->i + i`) 334 (same code). Retail also inlines the in-loop tag lookup (the tag-group compares)
+// where ours calls it. Body unchanged at 334.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
