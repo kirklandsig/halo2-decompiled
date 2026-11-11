@@ -390,7 +390,7 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
     out->k = a->i * b->j - a->j * b->i;
 }
 
-// score 43 (was 43; before r98 was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's. Left: case 3's
+// score 43 (was 43; 43 at r76; before r98 was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's. Left: case 3's
 // arms are laid out none-first (retail selected-first, about 22 lines), the first cross's a.k * b.i and average.i load a first
 // (retail b.i first), both dots sum k, j, i (retail i, k, j) and the inlined 0x1201a0 tail loads j first (retail copies inv first).
 // Round 219 (lane 3; fast, plain for the kept form): case 3's arms swapped (`selected == NONE` first), the existing cross3f_staged
@@ -634,6 +634,17 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // re-measures: velocity first with case 3 selected-first 178 (case 2's first cross recolours: case 3's blocks come ahead of case 2's), with a
 // case-3 `up` pointer 15 [12/9] (case 3 exact; left the first cross's j-row first product, dot_average's grouping and the tail's j product).
 // No untried natural form found that changes this function's code.
+// M3 lane 15 r76 (fast with the file's functions and 0x1e5af0/0x1201a0/0x23de50/0x30bf0; aligned/masked in brackets, control 43
+// [26/26]): both dots as statement sequences in retail's (i + k) + j order on this body 31 [12/10] (dot3f's body by hand, match only).
+// Re-measured: the match-only lead (case 3 selected-first with a case-3 up pointer at its four reads, plus those dots) 9 [7/5], the
+// pointer alone 21, case 3 selected-first alone 178. On the lead: the average as an aggregate initializer or through
+// vector3f_add(b, a)/(a, b) 9/9/9, the first cross through cross3f or cross3f_staged 9/9 (all the same code), `selected` declared
+// before `lowest` 11. Left on the lead, unmoved by any of these: the first cross's j-row first product (ours a.k, retail b.i), average.i
+// (ours a.i first, retail b.i) and the inlined 0x1201a0 tail's j row (ours loads v.j, retail copies inv). Permuter (--fast --anneal,
+// 600 s): 57 tries, nothing better; its reduced image scores this body 117 against the full image's 42. On this body: the loop test
+// as `z < lowest` or `-0.999f < z` 43/43 (same code); case 2's selected normal as `selected == 0 ? a : b` 261 (983 bytes); the two
+// selected arms crossing with a and b directly (no normal lookup) 258 (980); `selected >= 0` for the case 2 test 192 (975); the
+// component index as a dword 43 (same code).
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -708,7 +719,7 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 	return (arg_0 >> 3) & 1;
 }
 
-// score 163 (was 163; 162 with the one-use settings copy dropped, not kept): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
+// score 163 (was 163; 163 at r76; 162 with the one-use settings copy dropped, not kept): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
 // MiniMax R (11-06): no new form, no lower score (163); a compile-only probe of the same three-term float sum
 // gives retail's (k + j) + i order when the three products have fresh component nodes, so the
 // state dot's shared ground-normal loads cannot reach that order from the forms the note below records.
@@ -907,6 +918,12 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // (1239 B); the rotation as axis x vector added (`contact_cross(&axis, &limited, &cross)`, `+ cross * sine`) 234 (1233 B); the acceptance
 // test as `contact_cross(&up, &limited, &cross)` with `< 0.0f` 231. Same code: the angle as `5.235987663269043f * rate`; the rotation dot as
 // `(1.0f - cosine) * (...)`.
+// M3 lane 15 r76 (fast, 0x1e5af0 listed; aligned/masked in brackets, control 163 [222/85]): the state dot reading ground->normal
+// directly instead of the up copy 304 (1236 bytes, 0x1e5af0 36); the rotation angle computed at the top of the active arm 314 (1249,
+// 0x1e5af0 36); the rotation written from old_up into an uninitialised `limited` (dot, cross and rows read old_up) 250;
+// `rotate = !(dot > 0.0f); if (rotate) axis = *old_up;` 163 and `bool rotate = true;` before the axis cross 163 (both the same
+// code). Re-measured: `angle` declared before `limited` 173. Also: the inactive arm's forward built in a local and stored once
+// with the up store after it 311 (1242 bytes, 0x1e5af0 43); the state test as `0.0f < dot` 163 (same code).
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result, byte const *state)
 {
