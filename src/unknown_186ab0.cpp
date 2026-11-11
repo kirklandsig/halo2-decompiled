@@ -327,6 +327,13 @@ void player_action_initialize(s_player_action *arg_0);
 // local 1 (same code); the type argument narrowed to a char 289 (1524 bytes); the result stored through a short pointer 1
 // (same code); the direction as a default argument of the local declaration 1 (same code); the unit index chosen by a
 // conditional on the player index 305 (1528). Body restored. BLOCKED-BY 0xcbec0 stands.
+// Round 187 (m3 lane 4, fast with 0xcbec0, 0xcdff0, 0x13cb40, 0x11df30, 0x14d040): most single-line differences after
+// the first count test are relocation offsets shifted by its two missing bytes (the symbols agree). The hold test as
+// one `&&` bool in place of the false default set in a test 208 (1482 bytes); the reset block's saved bit as
+// `(field_20 & 0x100) != 0` 134 (same code; may overlap the earlier native reset bit form); the stick test through
+// the float fabs 198 (1493 bytes); the object type test as `field_3 == 0` in place of the mask shift 181 (1480 bytes);
+// the reset value as a bool 134 (same code); the final record copy through the existing function_186ab8 160 (1477
+// bytes); the same copy as one assignment without its two one-use pointer locals 134 (same code, kept).
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {
@@ -500,9 +507,7 @@ void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_acti
     local_4->field_10 = local_1->field_18.j;
     local_4->field_14 = local_1->field_20;
     local_4->field_18 = local_1->field_24;
-    s_186ab8 const *local_11 = (s_186ab8 const *)local_1->field_6c;
-    s_186ab8 *local_12 = (s_186ab8 *)local_4->field_28;
-    *local_12 = *local_11;
+    *(s_186ab8 *)local_4->field_28 = *(s_186ab8 const *)local_1->field_6c;
     memcpy(local_4->field_34, local_1->field_44, sizeof(local_4->field_34));
 }
 #pragma inline_depth(255)

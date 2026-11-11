@@ -3766,6 +3766,11 @@ vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vec
 // class-gain block ahead of the field_0/c/10 stores 107; the definition and class-table lookups in one expression 101. Ours
 // expands the lookup in large callers (here, 0x128020, 0x128ca0, 0x127010, 0x189fe0) and calls it from small
 // ones (0x124fc0, 0x125010); retail never expands it, which points at its file's build (avoid list, flags).
+// Round 187 (m3 lane 4, fast with 0x221810): retail's call sits under one top-level flag test, as ours does, so call-site
+// nesting does not explain the out-of-line call; keeping it out of line needs a noinline, pragma or flags change (all
+// ruled out). Case 0's flag set after the gain store 232 (1196 bytes); case 0's gain as a ternary 206 (1177 bytes); case 0
+// written first in the switch 101 (same code); the fade test's operands swapped 102; the elapsed-time test with its arms
+// swapped 127 (1196 bytes).
 // @retail 0x129aa0
 void function_129aa0(short arg_0, long *arg_1, s_looping_channel_spatialization *arg_2)
 {

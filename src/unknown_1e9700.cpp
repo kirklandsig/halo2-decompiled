@@ -165,6 +165,11 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // Forms on main's body: old maximum as one nested ternary initialiser 109; the counter as long 109; the player clamp as a ternary
 // in the store 100 (427 bytes, a cmp/mov/jg clamp unlike retail's); team maximum as one nested ternary 109; the team
 // test and setter call on `consecutive` in place of the counter re-read 110.
+// Round 187 (m3 lane 4, fast with 0x1968b0, 0x196960, 0x196e60, 0x196ef0, 0x1e9ce0): the threshold test with its arms
+// swapped 105 (positional only: retail keeps the `>=` arm first), its operands swapped 106; the row offset written at
+// each use as 0x1ea770 does 110 (427 bytes); the setter guard nested under the maximum compare 106 (same code); `kind`
+// as a short 111 (428 bytes); the row as the header's player record (`&statistics->players[index]`, fields at +0x12,
+// +0x14, +0x18) 109 (428 bytes).
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
