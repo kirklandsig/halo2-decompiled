@@ -3683,7 +3683,7 @@ bool function_14600()
     return result;
 }
 
-// MiniMax S (11-10): no new form, no lower score (32): retail divides the width's quotient into xmm2 and multiplies it into xmm0 where we divide into xmm0 and multiply into xmm3, and retail tests the flag byte in memory where the XDK's SetVertexShaderConstant inline hoists it into al, so ax is taken.
+// MiniMax S (11-10): no new form, no lower score (32): retail divides the width's quotient into xmm2 and multiplies it into xmm0 where we divide into xmm0 and multiply into xmm3, and retail tests the flag byte in memory where an XDK inline helper hoists it into al, so ax is taken.
 // MiniMax A (11-10): no new form, no lower score (32): retail writes the render-state cache slots
 // and pushes the D3D push-buffer commands itself, copies the twenty constants to the shadow at
 // 0x408248 unless bit 4 of the device's flag byte at 0x404fe8 is set, and builds a draw structure
