@@ -1536,6 +1536,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// MiniMax I (11-11): no new form, no lower score (60); retail keeps the zero result in EAX from entry to the
+// capacity-failure exit and gives the player bit EBP and the entry size EBX, and every order of the result,
+// capacity, size and written locals compiles to the same code.
 // score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
 // MiniMax R (11-09): no lower score (60): what still differs is the register split - the player bit sits
@@ -3780,6 +3783,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // placement and order, arm order, bit helpers, count and size locals, record views) is already listed above, the
 // cursor forms all give 164 with the member in EBP, and no untried natural form is left that adds a channel use or
 // removes a member use.
+// R151 (m3 lane 7): no new form. The relay arm already reads channel->index three times and passes the channel once,
+// the plain arm reads it three times and the member has retail's four references (call result, NONE test, test shift,
+// clear shift), all as retail; the cursor, member, channel-index, test-split, clamp, route and count spellings left are
+// those listed above, so no natural form is left to try against the member's EBP.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

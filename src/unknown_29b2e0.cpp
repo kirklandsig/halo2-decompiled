@@ -460,6 +460,13 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // The normalizer's single exit through a separate `result` initialised to zero 215 (1718 B). Left on 169: the x87
 // sqrt temporaries at +0x10 (retail +0xc with the yaw), the XMM3/5/6 rotation in the normalizers, the yaw clamp's zero
 // copy above its branch and the rotations' pitch/sine/cosine homes (retail pitch in arg_4's home, sine at +0x10).
+// m3 lane 14 r84 (fast with 0x29b990, 0x11cc90, 0x11ce20 and 0x1e5450; masked = registers and esp offsets masked,
+// base 114): the existing rotate_direction (unknown_1eb8a0.cpp) for both rotations, sin/cos as arguments or one named
+// pair, 817/817 (not inlined here: 1309 B, 0x29b990 48); the helper taking sine/cosine with one pair named here and
+// reused 225 (1735 B; the root temps move to +0x14); four named sine/cosine locals 179 (1710 B). Re-measured on this
+// base: the first rotation reading arg_2 with no copy 265 (1706 B, 0x29b990 1). No untried natural form found: the
+// rest is the rotations' and the second axis's schedule, which every listed spelling leaves. Also new: the two angle
+// fields stored inside each arm (zeros written directly in the else arm, the result vector still shared) 251 (1743 B).
 // Round 93 (m3 lane 10, fast with 0x29b990/0x11cc90/0x11ce20/0x1e5450, all matched): on the re-measured 169 lead
 // (single-exit normalizer, XY vector before the second copy) the rotation's projection dot named before sin/cos, the
 // cross terms before sin/cos, both, `local_11` declared at function scope and `local_4` declared before the first copy

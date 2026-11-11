@@ -846,6 +846,12 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // entry pointer. The 0.1-offset point as a copy of the collision point plus three `+=` 189 (1109 B, likely the listed
 // collision-offset vector). Compile-only identical: `record->count++;` split from the 32 test, the trace failure as a guard
 // `continue`, the trace or world declared in the outer scope, the entry flag set after its direction fields. Body unchanged at 90.
+// M3 lane 15 r75 (fast, 0x26dde0 and 0x1ecf50 stay matched): the radius through the typed object field
+// `object_get(object_index)->unknown03c` 90 (same code as the byte-offset cast). On the rotate_direction + named-phase lead
+// (re-measured 96, 1090 bytes): the volatile copy replaced by the real form, the pathfinding passed as 0x26d100's last parameter
+// (definition, this call and 0x26d0e0's) 96, the same code, but 0x26d3f0 stops matching; the spoke counter declared and zeroed
+// before the phase 94 (1090 bytes; it moves only the spoke zero's store); the sector index read in the trace call (no local) 263
+// (1066 bytes). Body unchanged at 90. I found no other untried natural form; the forms above cover the rest.
 // m3 lane 3 r233 (fast with the file's functions and callees; control 90 at 1085 bytes, aligned 58, register-masked 33).
 // Retail's rotation is this helper's formula term for term (rows a*along + d*cos - c*sin, the j and k cross subtrahends
 // axis.k*d.i and axis.i*d.j scheduled beside the dot); what differs is scheduling and the spill. In the rotation helper:

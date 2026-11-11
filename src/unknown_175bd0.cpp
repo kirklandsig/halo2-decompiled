@@ -1556,7 +1556,7 @@ void function_176970(s_effect_owner const *owner, real scale_a, long tag_index, 
 }
 
 // @retail 0x176ad0
-void function_176ad0(long marker_count, s_effect_marker *markers, s_effect_owner const *owner, vector3f const *velocity, long tag_index, long unknown30, real scale_a, real scale_b, point3f const *origin, vector3f const *direction, long mode)
+void function_176ad0(s_effect_owner const *owner, vector3f const *velocity, long marker_count, s_effect_marker *markers, long tag_index, long unknown30, real scale_a, real scale_b, point3f const *origin, vector3f const *direction, long mode)
 {
 	s_effect_parameters parameters;
 
@@ -2402,6 +2402,9 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax E (11-11): no new form, no lower score (63); retail still reloads the object's index from the effect after
+// the 0xbadc0 validity call, and that reload only appears when the compiler cannot prove that call read-only, so
+// the difference cannot be produced from this side (BLOCKED-BY 0xbadc0).
 // MiniMax A (11-06): no new form, no lower score; retail reloads the object's index from the effect after
 // the 0xbadc0 validity call, and that reload appears only when the compiler cannot prove that call
 // read-only, so the difference cannot be produced from this side: the body of 0xbadc0 is in another file
