@@ -870,6 +870,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // cursor continued by the fill over the extra count 86 (173 bytes); the total as `player_count` then `+= extra_count`
 // 34 (same code); re-measured: the fill through a walking pointer 63 (199 bytes). No untried natural form is left in
 // this note's lists; the player count still arrives in EDX.
+// Round 154 (m3 lane 8): round 114's one-file LTCG harness refreshed from the current file reproduces 34 (190/190
+// bytes). Grepped this note for the remaining spellings (strict and inclusive maximum updates, the copy through
+// memcpy, fill helpers, the fill continuing the copy loop, declaration orders): all are listed, and no existing
+// dword-fill helper exists to call.
+// No untried natural form left; the cause stays the fill value loaded before the count and destination.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
