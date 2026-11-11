@@ -2217,6 +2217,12 @@ struct s_unit_motion
 
 /* advances a position and velocity along the motion for a time; whether
    time remains after its last phase */
+// MiniMax C (11-10): score 104 (was 104): no lower score this round. The accumulator form re-measured 28 with
+// 227 bytes, retail's length: every instruction then matches retail's except that the time argument arrives in
+// XMM2 and the phase step sits in XMM3, where retail has time in XMM3 and the step in XMM2. The three float
+// arguments are promoted to XMM5/XMM4/XMM2 here and to XMM5/XMM4/XMM3 in retail, so the callee's argument
+// registers follow the call site's context - and retail reaches the calls out of line, which this build does not.
+// The change was dropped: LTCG inlines the callee into 0xc7840 (563 -> 1104) and 0x1faf80 (matched) flips to 16.
 // score 104 (was 104): this body keeps position/velocity on the stack (ret 0xc); retail takes them in
 // XMM5/XMM4, time in XMM3 and returns with ret 4. #515's body (output accumulators initialised from the inputs,
 // and each step as `time > motion->field ? motion->field : time` reading the field again) gives retail's

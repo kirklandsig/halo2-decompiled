@@ -1847,6 +1847,9 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// MiniMax C (11-10): score 11 (was 11): no lower score this round. Two new spellings of the lookup were
+// measured and dropped: a named unit header pointer 65, and a named pointer to the active bit vector 11 with
+// the entry order unchanged. A permuter run (300 s) was stopped at its time limit without a result.
 // MiniMax I (11-09): no new form, no lower score (11); the entry block keeps the same eleven instructions in
 // another order (retail reads the object pool, the pool data and the type, and only then compares the type with 8),
 // and a copy of the type parameter in a local changes nothing.
@@ -1885,6 +1888,11 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // sete cl after the tag lookup), so retail can leave the compare at the end of the entry block, while ours
 // hoists it (cmp ecx,8 and sete bl) in front of the index arithmetic and reads the item table after the
 // object index; the rest of the function matches instruction for instruction.
+// MiniMax C (11-10): no new form, no lower score (11); a copy of the type argument (a named local used
+// by both the compare and the bit test) folds away and gives the same listing, and the entry order is
+// unchanged: retail loads the pool global into ECX and the type after it, ours loads the type into ECX
+// first and puts the global in EDX, so the compare lands before the index arithmetic instead of after
+// it.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {

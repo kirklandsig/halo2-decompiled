@@ -143,6 +143,15 @@ union s_185be7
     vector2f field_8;
 };
 
+// MiniMax C (11-10): score 590 (was 590): no lower score this round. Retail reads the control global
+// twice, into ECX both times: at the top of the entry block, where it only feeds the local_1 address, and
+// again at the flag test after the magnitude and pow calls, so the value is not carried across them and
+// EBX is free for the NONE constant that retail holds for its seven early uses. Ours carries the global
+// in EBX from entry to the flag test, because this build proves that the calls in between cannot change
+// it, and NONE then lives in ECX. The forms that would force a second read were measured before and score
+// worse (a NONE local for the first test and the unit tests 739, a volatile re-read 1020, an unknown
+// extern in place of pow 1013 or magnitude3d 1017); the only spelling seen to reproduce retail's reload
+// exposes the global's address, which this lane may not do.
 // Coordinator (m3, round 56 review): kept at 590 is the consistent part of the 516 form: the five `field_20` flags through SET_FLAG on
 // the word field (no byte casts) and the selected input as `long`. The 516 form puts PIN and SET_FLAG on a subset of call sites picked
 // by score while the rest stay on 0x185be1/0x185be4 (all clamps through PIN 860 on 589; all 22 flags through SET_FLAG 792 on 590), a
