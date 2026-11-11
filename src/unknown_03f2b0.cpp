@@ -1317,6 +1317,7 @@ struct s_batch_cache_4b5d0
 
 struct s_133f70;
 
+// MiniMax E (11-10, run 73): no new form, no lower score (93 on the full image, 355 on the reduced one); every difference still sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ECX, the header's global loaded first, success stored before the 0x3d4f0 call, the previous level's byte and the 0x4c190 argument order) plus one object load near the end, and the tail stays blocked by 0x23690 in another file.
 // MiniMax R (11-10): no new form, no lower score (93 on the full image, 355 on the reduced one): every difference still sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ECX, the header's global loaded first, `success` stored before the 0x3d4f0 call, the previous level's byte and the 0x4c190 argument order) plus one object load near the end.
 // MiniMax S (11-09): no new form, no lower score (93 on the full image, 355 on the reduced one); the
 // distance staging in the 0x4bcc0 call, the nullable-entry and cache adds and the result homes remain.

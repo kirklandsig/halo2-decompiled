@@ -69,6 +69,7 @@ struct s_shader_cache;
 void function_1c590(s_shader_cache *state, long tag, long index);
 void __stdcall function_1c710(void *state);
 
+// MiniMax E (11-10, run 73): no new form, no lower score (188); retail inlines only the first SetVertexData2s (3, 0, 0) and calls the other three out of line where we inline (3, 1, 0) as well, and the only lever for that (an inline_depth pair) may not be added.
 // MiniMax S (11-10): no new form, no lower score (188): retail inlines only the first SetVertexData2s (3, 0, 0) and calls the other three out of line, ours inlines (3, 1, 0) as well, and the only lever (an inline_depth pair around that call) may not be added; the permuter (61 tries, 605 s) found nothing below its own baseline.
 // MiniMax D (11-10): no new form, no lower score (188).
 // Round 2 of #1066: score 188 (was 188). Walked against retail: the sampler and render states, the
@@ -3971,6 +3972,7 @@ void __stdcall function_20bb0(long player, dword mask, long const *indices, long
 long __stdcall function_2e540(s_slot *slot, byte *data);
 extern long g_485898;
 
+// MiniMax E (11-10, run 73): no new form, no lower score (285); retail's frame is 0x34 bytes and ours 0x38 because retail reuses the position's slots for the corner coordinates and keeps the area in the dead argument's home, so every slot above the position sits four bytes higher, and the 1.0 constant still takes XMM0 where retail holds it in XMM3.
 // MiniMax S (11-10): no new form, no lower score (285): retail's frame is 0x34 bytes and ours 0x38, because retail reuses the position's slots for the corner coordinates and keeps the area in the dead argument's home, ours gives the corners slots of their own and holds the area in a local, so every slot above the position sits four bytes higher.
 // MiniMax D (11-10): no new form, no lower score (285): the 1.0 constant still takes XMM0 where retail holds it in XMM3, and naming it as a constant local compiles the same.
 // MiniMax A (11-04): the corner locals declared at function scope, before the position 285 (the same code); no lower score.
@@ -4510,6 +4512,7 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
     }
 }
 
+// MiniMax E (11-10, run 73): no new form, no lower score (125); our four products reach the same stack slots in another register order and another multiply order than retail's (ours hc, ws, wc, hs against retail's wc, hc, ws, hs), and our two early skips branch to a near block where retail branches to the end of the body.
 // MiniMax S (11-10): no new form, no lower score (125): the four screen values reach the same slots but in another register order (ours xmm1/xmm3/xmm2/xmm5, retail xmm6/xmm3/xmm2/xmm7), retail multiplies width*cosine, height*cosine, width*sine, height*sine where ours multiplies width*cosine, width*sine, height*cosine, height*sine (the two declaration orders that would match retail's order score 213 and 200), the two early skips branch to a near block here and to the end of the body in retail, our body is five bytes longer than retail's 1027, and the permuter (46 tries, 611 s) found nothing below its own baseline.
 // MiniMax D (11-10): no new form, no lower score (125): the two early skips branch to a near block here and to the end of the body in retail, and our body is five bytes longer than retail's 1027.
 // Round 2 of #1066: score 125 (was 152): LOGIC WALK against retail found no behaviour difference (slots 9/3,
@@ -4640,6 +4643,7 @@ extern dword g_4b82e8, g_4b82f4, g_4b82f8;
 dword g_4b8438, g_4b82e0, g_4b82fc, g_4b82ec;
 void function_48010(real const *color);
 
+// MiniMax E (11-10, run 73): no new form, no lower score (244); retail copies the mode parameter into ebp in the prologue and keeps the flag scratch in esi where we load the mode later, and retail keeps six of its eighteen function_0222d0 calls out of line (the default arm's four, the blend op and the alpha test off) where we inline all six; the only lever (inline_depth) may not be added.
 // MiniMax S (11-10): no new form, no lower score (244): retail copies the mode parameter into ebp in the prologue and keeps the flag scratch in esi where ours loads the mode later, and retail keeps six of its eighteen function_0222d0 calls out of line (the default arm's four, the blend op and the alpha test off) where ours inlines all six, which is most of the remaining score; the only lever (inline_depth) may not be added.
 // MiniMax D (11-10): no new form, no lower score (244).
 // MiniMax D (11-01): no new form tried, no lower score.
@@ -5592,6 +5596,7 @@ void function_141ce0(real first, real second, real third, transform4x3f *out);
 real g_5259b4;
 dword g_4b8430;
 
+// MiniMax E (11-10, run 73): no new form, no lower score (302); our sine takes a stack slot of its own ([esp+0x48]) where retail keeps it in the shared temporary ([esp+0x14]) and puts cosine in a fresh one, so every frame offset after it is four bytes out, the references base sits in esi against retail's ebx, and the cross product's xmm choice differs.
 // MiniMax S (11-10): no new form, no lower score (302): our sine takes a stack slot of its own ([esp+0x48]) where retail keeps it in the shared temporary ([esp+0x14]) and puts cosine in a fresh one, so every frame offset after it is four bytes out, the references base sits in esi against retail's ebx, and the cross product's xmm choice differs.
 // MiniMax D (11-10): no new form, no lower score (302).
 // score 302 (was 544), Round 1 of #1066: same size as retail (2406). What changed: the rotation is one
@@ -6450,6 +6455,7 @@ bool function_48b00(point3f const *point, real radius, real *screen, real *exten
 real function_30bf0(vector3f *vector);
 void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 
+// MiniMax E (11-10, run 73): no new form, no lower score (576); retail computes left/top/right/bottom on the x87 stack and copies each through a temporary where we subtract and store directly, its second group of ten stage states and the three render-state calls of that group stay out of line where we inline them, and its loop counts down in memory.
 // MiniMax S (11-10): no new form, no lower score (576): retail computes left/top/right/bottom on the x87 stack and copies each through a temporary where we subtract and store directly, its second group of ten stage states and the three render-state calls of the second group stay out of line where ours inlines them, and its loop counts down in memory.
 // MiniMax D (11-10): no new form, no lower score (576).
 // score 576 (was 695), Round 1 of #1066: 2436 bytes against retail 2507. Fixed: the 2nd quad and the
@@ -8123,6 +8129,7 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
     g_4b62a2 = (g_4b62a2 + 1) & 0x1ff;
 }
 
+// MiniMax E (11-10, run 73): no new form, no lower score (342); retail loads the font pool before its first test and keeps it in eax, keeps the character index in EBX with the -1 sentinel in EBP, and probes the stack with the __chkstk label where our probe is the same helper's __alloca_probe label; our body is 41 bytes shorter than retail's 1133.
 // MiniMax S (11-10): no new form, no lower score (342): retail loads the font pool before its first test and keeps it in eax, keeps the character index in EBX with the -1 sentinel in EBP, and probes the stack with the __chkstk label where our probe is the same helper's __alloca_probe label; our body is 41 bytes shorter than retail's 1133.
 // MiniMax D (11-10): no new form, no lower score (342): retail keeps the stack parameter in EBX with the -1 sentinel in EBP where ours uses ESI and EBX, so the two homes still differ.
 // MiniMax A (11-04): the character pointer computed before the empty-slot test 374 (worse), reverted; no lower score.
