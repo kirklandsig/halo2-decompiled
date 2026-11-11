@@ -82,11 +82,6 @@ struct s_206091
     vector3f field_1c;
 };
 
-PRIVATE __forceinline real function_206091(vector3f const *arg_0, vector3f const *arg_1)
-{
-    return arg_0->k * arg_1->k + arg_0->j * arg_1->j + arg_0->i * arg_1->i;
-}
-
 PRIVATE __forceinline void function_206092(vector3f const *arg_0, vector3f const *arg_1, vector3f *arg_2)
 {
     real second_i = arg_1->i;
@@ -143,9 +138,8 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
         arg_2->n[component] = arg_0->n[component] * arg_1;
 }
 
-#pragma inline_depth(1)
 #include "vector_products.h"
-// score 1367 (was 1379): earlier 1355; frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
+// score 1367 (was 1367): earlier 1379, 1355; frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
 // 0x2078f0 twice with unknown38 0 then 1, 0x2079f0 on both its paths, 0x227990, 0x2294a0, 0x22a4b0), loop shapes (the found
@@ -486,6 +480,34 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // but for local_98, which retail computes only after the first threshold test); the clamp's mass bounds named before
 // PIN (retail computes both before its first branch) 1378; both 1386 at 6238/6238 bytes (masked 574); the ratio arms
 // with the final loop's count in its head 1402 (6264 bytes, masked 534), with the bounds too 1406 (masked 535).
+// M3 lane 13 r81 (fast = plain 1367; aligned exact/fully masked counts, base 1108/580): retail's first loop head (0x206154)
+// has no alignment pad because it would need 12 bytes; ours needs 9 (`jmp` + filler) only because local_2's home sits at
+// [esp+0x94] (a 4-byte longer store than retail's [esp+0x54]), so the pad follows the frame and is not a separate cause.
+// Diagnostics: a bounds test in local_8's read at the loop top 1451 (not threaded); the loop as `if (...) do ... while
+// (++i < count)` 1364 (still padded; a hand-inverted loop, not kept). Kept, same code: the inline_depth pragmas around the
+// function removed 1367; the file's own k/j/i dot helper replaced by the existing dot3f at all seven calls 1367. Also:
+// local_77 through dot3f 1373 (6238 bytes); the magnitude helper as `(real)sqrt(dot3f(&copy, &copy))` 1412 (6195 bytes);
+// the sign of local_13 as a named long 1367 (same code). Retail computes local_13 as (l * l) * sign * f88 in source order;
+// ours multiplies sign * f88 first (the listed `(real)(l * l)` grouping gives retail's order). One first-loop add through
+// the existing vector3f_add 1364 (the do-while's 3-point colour flip in local_28's products); the ray direction alone
+// through the existing vector3f_scale 1334 (6211 bytes; positional only: that site then differs from retail, the other
+// inlined scale loops flip to `s * v` where retail has `v * s`, exact aligned 1108 -> 1122; not kept); the first-loop
+// contact cross through cross3f 1390 (6211 bytes); local_68 through sqrtf 1430 (6259 bytes); the impact count test as
+// `(char)x == 1` 1407 (6195 bytes); local_18 computed before local_17 1367, the found flag stored after the ratio 1367, the
+// component test before the 0x81 flag 1367 (each different code, same score); local_93 written into the call 1367 (same code).
+// M3 lane 13 r83 (fast; fully masked aligned count in brackets, control 1367 [580]): retail tests the release time's NONE
+// first and converts the 0.2 s threshold only inside the second test, reading the game time before the conversion; ours
+// converts ahead of the whole condition. The conversion written into that test (local_93/local_94 dropped) 1374 (6249 B)
+// [558: that block then has retail's order but for the game-time load]; that with the game time through the existing
+// getter 0x146650 1405 (6201 B) [558: the game time is then read before the conversion as retail, and every product's
+// operand order flips, the first-loop add included, as other added inline calls do]. Retail also reloads the timing
+// global after 0x227990 inside the countdown loop where ours hoists it (0x227990 is unmatched, in a held file). The ray
+// origin copied after the direction scale 1361 (statement order, six points, not kept); both normalizers' scale step
+// through the existing vector3f_scale 1367 [581] (only the first component turns to retail's `s * v`); the second
+// projection reading a copy of the contact normal (retail copies the normal to [esp+0xd0] there) 1489 (6313 B) [619];
+// the existing magnitude3d (0x24590) at the three direct magnitude sites 1486 (6102 B, inlined) [569]; the impact
+// position written straight by vector3f_add_scaled (no point local) 1431 (6211 B) [588]; the contact offset through the
+// existing vector3d_from_points3d 1376 [569]. All restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
@@ -544,7 +566,7 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
                 else
                     local_25 = local_23 < local_26 ? (local_26 < local_24 ? (local_24 - local_26) / local_98 : 0.0f) : 1.0f;
                 real local_27 = local_22 > 0.0f ? 1.0f - local_22 / local_18 : 1.0f;
-                real local_28 = (*(real *)g_51e9c4 * local_27 * local_27 - *(real *)(local_8 + 0x14) * function_206091(local_10, &local_19.field_1c)) *
+                real local_28 = (*(real *)g_51e9c4 * local_27 * local_27 - *(real *)(local_8 + 0x14) * dot3f(local_10, &local_19.field_1c)) *
                     *(real *)(local_7 + 0x9c) * *(real *)(local_8 + 8) * local_0->field_6c * local_25;
                 if (*(real *)(local_7 + 0xa0) > 0.0f)
                 {
@@ -599,7 +621,7 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
             if (local_0->field_b10[local_38].field_84 > 0.0001f)
             {
                 vector3f *local_46 = &local_0->field_b10[local_38].field_a0;
-                real local_47 = function_206091(&local_0->field_b10[local_38].field_4c, local_46);
+                real local_47 = dot3f(&local_0->field_b10[local_38].field_4c, local_46);
                 local_0->field_b10[local_38].field_88 = local_0->field_6c * (*(real *)g_51e9c4 / *(real *)(local_1 + 8) * local_0->field_b10[local_38].field_84 - *(real *)(local_1 + 0xc) * local_47);
                 function_206096(local_46, local_0->field_b10[local_38].field_88, &local_0->field_b10[local_38].field_94);
                 vector3f local_48 = *g_4687b0;
@@ -621,14 +643,14 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
                     }
                 }
                 vector3f local_56 = local_0->field_b10[local_38].field_4;
-                real local_57 = function_206091(&local_56, local_46);
+                real local_57 = dot3f(&local_56, local_46);
                 local_56.i -= local_46->i * local_57;
                 local_56.j -= local_46->j * local_57;
                 local_56.k -= local_46->k * local_57;
                 if (function_206094(&local_56) != 0.0f)
                 {
                     vector3f local_58 = local_0->field_b10[local_38].field_4c;
-                    real local_59 = function_206091(&local_0->field_b10[local_38].field_4c, local_46);
+                    real local_59 = dot3f(&local_0->field_b10[local_38].field_4c, local_46);
                     local_58.i -= local_46->i * local_59;
                     local_58.j -= local_46->j * local_59;
                     local_58.k -= local_46->k * local_59;
@@ -641,11 +663,11 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
                     else
                     {
                         vector3f local_61;
-                        function_206096(&local_56, function_206091(&local_58, &local_56), &local_61);
+                        function_206096(&local_56, dot3f(&local_58, &local_56), &local_61);
                         local_60.i = local_58.i - local_61.i;
                         local_60.j = local_58.j - local_61.j;
                         local_60.k = local_58.k - local_61.k;
-                        local_0->field_b10[local_38].field_8c = function_206093(&local_61) * (function_206091(&local_61, &local_56) > 0.0f ? 1.0f : -1.0f);
+                        local_0->field_b10[local_38].field_8c = function_206093(&local_61) * (dot3f(&local_61, &local_56) > 0.0f ? 1.0f : -1.0f);
                     }
                     real local_66 = function_206093(&local_60);
                     local_0->field_b10[local_38].field_90 = local_66;
@@ -726,7 +748,7 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
                 vector3f local_78;
                 function_206096(local_76, local_77, &local_78);
                 real local_95 = (real)sqrt((double)local_78.i * local_78.i + (double)local_78.k * local_78.k + (double)local_78.j * local_78.j);
-                if (function_206091(local_76, &local_42) > 0.0f)
+                if (dot3f(local_76, &local_42) > 0.0f)
                     local_0->field_70 -= local_95;
                 else
                     local_0->field_70 += local_95;
@@ -797,4 +819,3 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
         result = true;
     return result;
 }
-#pragma inline_depth(255)

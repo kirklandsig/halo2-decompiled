@@ -1636,6 +1636,19 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // call 6. Permuter (anneal, 600 s, 71 tries, 921 s full-image baseline) on the 6 form: best 6. Probes (dead volatile loads of
 // `index`, diagnostic, reverted at once): one placed before the resize call is scheduled after the handle load; one between the
 // write's wait and the byte test removes the close copy. Restored to the 33 body.
+// M3 lane 16 r108 (fast with 0x213800/0x213760; register-masked aligned 12: the size/count homes, the write's handle load
+// ahead of its pushes, our `bytes_written = 0` store on the failed-resize path that retail does not have (it jumps
+// straight to the handle test) and retail's 1 in ESI for two unmerged range compares): the range written `1 <= index
+// && index <= 1` or `index >= 1 && 1 >= index` 33 (same code, canonicalized). No other untried natural form found.
+// Round 111 (m3 lane 9, fast with the callees, control 33): on lane 11 r87's near form (const-reference resize helper,
+// by-value write and close helpers, the goto past the close and the set-in-test validity, all match-only; re-measured 114 at
+// 917 bytes, aligned 4: only the close's `mov ecx, eax` copy and the loop pads after it): the close helper taking the handle
+// by const reference 114 (aligned 6, checksum load ECX); re-measured: the close written out directly on that form 114 (round
+// 87's [6/3] form: the copy is lost through the resize/write helpers, not the close helper); same code as the near form:
+// `INVALID_HANDLE_VALUE != handle->handle`, `0x800 == bytes_written`. On the 33 body: `valid = valid_types[type] &&
+// CompareFileTime(current, stored) == 0;` 80 (934 bytes); the closing switch as an if/else-if chain 136 (936 bytes); the
+// stored file time as a pointer advanced with the type 35; same code: `!CompareFileTime(...)`, the stored time indexed as a
+// FILETIME array, `!(index == 0 || index == 1)`.
 // @retail 0x213970
 void function_213970(void)
 {

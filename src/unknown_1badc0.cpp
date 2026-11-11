@@ -17,6 +17,7 @@ real normalize2d(point2f *arg_0);
 // Earlier at 180: no new form and no lower score; retail still forms d3.x, local_6.x,
 // d1.x, d1.y, d3.y and local_6.y before the products while ours forms d1.y first and the two d3
 // components last, and the two numerator terms swapped give the same code.
+// MiniMax G (11-10): no new form, no lower score (180); round 66's 132 form is not present in this worktree, and its three order changes (the clearance moved into its use block, the result set before the output store and the centre copied before the radius) are the only known way below 180, so the opening still forms the components in our order.
 // MiniMax E (11-10): no new form, no lower score (180); the length (1025) and the frame 0x90 agree, but the opening still forms the components in our order, which the query helper in src/unknown_1c20f0.cpp fixes.
 // MiniMax D (11-09): no new form, no lower score (180); the opening still copies the point and orders the
 // components differently from retail, and the escape of the point pointer through the query helper in

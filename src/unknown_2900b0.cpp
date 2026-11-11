@@ -431,6 +431,14 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 // array + index 28 (same code); a pool pointer local with the data read at the actor computation 99; the record as a
 // typed perception element 28 (same code); the pool's data read before the NONE test 41 (hoisted to the entry); a named
 // sample pointer for the reset and the call 30.
+// Round 187 (m3 lane 4, fast with 0x1e3b60 and 0x28f890): the actor scale as a signed 0x888 in place of the size 28 (same
+// code); the averaging helper's factor by value 28 (same code); the next creature read ahead of the sum 80 (392 bytes);
+// the count increment ahead of the sum 38; the creature pointer started NULL and set in the `!flags134` arm 93.
+// Re-measured: the flag test written NULL arm first 33 (round 22's ternary form, same score); the origin pointer read
+// into a local at entry, ahead of the NONE test, 28 (same code as round 23's origin local ahead of the pool). No existing
+// helper does the sample reset (memset at 0x22c, three NONE stores, the call). Diagnostics (reverted): dead loads at
+// entry, in the arm, after the pool and after the copy 104-105 (397 bytes), the centre update cut 351, the reset cut
+// 144: the actor data keeps the pool's ECX and the origin EDX in every one, so the colouring is local to the prologue.
 // @retail 0x28f8d0
 void function_28f8d0(long arg_0)
 {
