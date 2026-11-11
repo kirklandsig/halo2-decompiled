@@ -243,6 +243,9 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // 522 at 3716 B but aligned 57 / masked 55: object / nearest pair and the second 0x2949aa site's dots as retail, record / sum and
 // position / offset pairs, the first 0x2949aa site, the walk's 1.0 load and the centroid's y/z loads still differ (lead, not kept).
 // A `vector3f const *` forward pointer for the scale, the walk dot and the k drop 614 (3708 B). Body unchanged at 252.
+// M3 lane 16 r104 (plain with 0x293b30, which stays matched): the waypoint radius as a ternary 273; the hysteresis threshold
+// as a named local 387 (3705 B); the waypoint index read once into a short local used three times 281 (3717 B); the 3.0 clamp
+// after the wander call as a ternary 252 (same code); the separation weight passed as `0.0f - local_29` 252 (same code).
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {
