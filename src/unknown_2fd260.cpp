@@ -7,9 +7,7 @@
 // four vertices: their x terms, then their y terms, then their z terms
 struct vertex_block_2fd260
 {
-	__m128 x;
-	__m128 y;
-	__m128 z;
+	__m128 coordinates[3];
 };
 
 class convex_vertices_2fd260
@@ -24,17 +22,20 @@ public:
 
 	// a vertex by index, with its index in the fourth term tagged with the
 	// bits of 0.5
-	void fetch_vertex(int index, __m128 *vertex) const
+	void fetch_vertex(int index, __m128 *const &vertex) const
 	{
 		vertex_block_2fd260 const *block = &blocks[index >> 2];
 		int const lane = index & 3;
-		vertex->m128_f32[0] = block->x.m128_f32[lane];
-		vertex->m128_f32[1] = block->y.m128_f32[lane];
-		vertex->m128_f32[2] = block->z.m128_f32[lane];
+		vertex->m128_f32[0] = block->coordinates[0].m128_f32[lane];
+		vertex->m128_f32[1] = block->coordinates[1].m128_f32[lane];
+		vertex->m128_f32[2] = block->coordinates[2].m128_f32[lane];
 		((int *)vertex)[3] = index | 0x3f000000;
 	}
 };
 
+// the vertex furthest along a direction, with its index in the fourth term
+// tagged with the bits of 0.5
+// The remaining four differences are the x/z scalar transfers for direction.
 // the vertex furthest along a direction, with its index in the fourth term
 // tagged with the bits of 0.5
 // score 7 (was 7): x/z transfers and final coordinate/tag schedule remain.
@@ -56,9 +57,9 @@ void convex_vertices_2fd260::function_2fd260(__m128 const *direction, __m128 *su
 		__m128 const direction_z = _mm_set_ps1(direction->m128_f32[2]);
 		__m128 const direction_y = _mm_set_ps1(direction->m128_f32[1]);
 		__m128 const direction_x = _mm_set_ps1(direction->m128_f32[0]);
-		__m128 const z = _mm_mul_ps(direction_z, block->z);
-		__m128 const y = _mm_mul_ps(direction_y, block->y);
-		__m128 const x = _mm_mul_ps(direction_x, block->x);
+		__m128 const z = _mm_mul_ps(direction_z, block->coordinates[2]);
+		__m128 const y = _mm_mul_ps(direction_y, block->coordinates[1]);
+		__m128 const x = _mm_mul_ps(direction_x, block->coordinates[0]);
 		__m128 dots = _mm_add_ps(_mm_add_ps(x, y), z);
 		int const better = _mm_movemask_ps(_mm_cmplt_ps(best, dots));
 		if (better != 0)
@@ -147,12 +148,14 @@ void convex_vertices_2fd260::function_2fd260(__m128 const *direction, __m128 *su
 	}
 	vertex_block_2fd260 const *found = &blocks[best_index >> 2];
 	int const lane = best_index & 3;
-	support->m128_f32[0] = found->x.m128_f32[lane];
-	support->m128_f32[1] = found->y.m128_f32[lane];
-	support->m128_f32[2] = found->z.m128_f32[lane];
+	for (int component = 0; component < 3; ++component)
+		support->m128_f32[component] = found->coordinates[component].m128_f32[lane];
 	((int *)support)[3] = best_index | 0x3f000000;
 }
 
+// the vertices for a list of indices
+// Keep the destination pointer bound through the inline helper; this preserves
+// the coordinate-store and receiver-reload order in the unrolled loop.
 // the vertices for a list of indices
 // score 2 (was 2): second unrolled z-store/receiver-reload order remains.
 // Explicit source object first/last 2/2; two-stage block cursor 2; direct lane

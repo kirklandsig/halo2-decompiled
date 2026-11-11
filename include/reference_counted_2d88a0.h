@@ -59,6 +59,9 @@ public:
 class referenced_2d88a0
 {
 public:
+	// The contact manager preserves this otherwise unused allocation word.
+	struct preserve_reference {};
+	referenced_2d88a0(preserve_reference) {}
 	unsigned short memory_size;
 	unsigned short reference_count;
 

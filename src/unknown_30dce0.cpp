@@ -137,6 +137,16 @@ public:
 	void function_30dce0(object_30dce0 *object, flag_30dce0 notify);
 };
 
+// Preserve the separate handle reads observed before the self test, for the
+// filter arguments, and after the filter callback. The pair array may change
+// during that callback, so callers select its current element each time.
+// This is a local-array-element volatile, not the caller's own parameter.
+// It gives the 667-byte 0x30dce0 match and requires the requested maintainer ruling.
+static inline handle_30dce0 *read_overlap_handle(long const &value)
+{
+	return *(handle_30dce0 *const volatile *)&value;
+}
+
 // score 161 (was 200): the flag is now a plain byte written into a local, which
 // matches retail's size, but retail keeps this in ebx and the object in esi
 // while ours keeps this in edi and the object in ebx, and retail builds the
@@ -168,19 +178,19 @@ void world_30dce0::function_30dce0(object_30dce0 *object, flag_30dce0 notify)
 	broad_phase->query(&box, &pairs);
 	collidables_30dce0 added;
 	collidables_30dce0 removed;
-	collidable_30dce0 *own = &object->collidable;
+
 	for (int i = 0; i < pairs.size; i++)
 	{
-		pair_30d870 const &pair = pairs.data[i];
-		if ((handle_30dce0 *)pair.second != own)
+		collidable_30dce0 *own = &object->collidable;
+		if (read_overlap_handle(pairs.data[i].second) != own)
 		{
-			if (filter_owner->filter.accept(own, static_cast<collidable_30dce0 *>((handle_30dce0 *)pair.second)).value)
+			if (filter_owner->filter.accept(own, static_cast<collidable_30dce0 *>(read_overlap_handle(pairs.data[i].second))).value)
 			{
-				added.append(static_cast<collidable_30dce0 *>((handle_30dce0 *)pairs.data[i].second));
+				added.append(static_cast<collidable_30dce0 *>(read_overlap_handle(pairs.data[i].second)));
 			}
 			else
 			{
-				removed.append(static_cast<collidable_30dce0 *>((handle_30dce0 *)pairs.data[i].second));
+				removed.append(static_cast<collidable_30dce0 *>(read_overlap_handle(pairs.data[i].second)));
 			}
 		}
 	}
@@ -191,7 +201,7 @@ void world_30dce0::function_30dce0(object_30dce0 *object, flag_30dce0 notify)
 			object->remove_overlap(removed[i]);
 			if (removed[i]->kind == 2)
 			{
-				removed[i]->listener->remove_overlap(own);
+				removed[i]->listener->remove_overlap(&object->collidable);
 			}
 		}
 	}
@@ -206,7 +216,7 @@ void world_30dce0::function_30dce0(object_30dce0 *object, flag_30dce0 notify)
 			object->add_overlap(added[i], true);
 			if (added[i]->kind == 2)
 			{
-				added[i]->listener->add_overlap(own, true);
+				added[i]->listener->add_overlap(&object->collidable, true);
 			}
 		}
 	}
