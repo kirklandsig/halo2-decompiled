@@ -543,6 +543,14 @@ extern "C" void _ReadWriteBarrier(void);
 // without the inline keyword 122 [35] (same code). Re-measured, not new: SET_FLAG as if/else 122. The barrier keeps both
 // the datum phi and the unit result materialized; retail materializes only the datum phi (as matched 0xbadc0 does, where
 // its `result = 0` sits between the join and the test) and threads the unit test.
+// MiniMax R (11-10): no new form, no lower score (122): both sides are 473 bytes and the first
+// difference is at +0x2, the frame. Retail opens a 0x14 frame, loads the object pool into eax, copies
+// it to two stack homes and sets the index home to -1; we open 0xc, keep the pool in edi, the global
+// iterator in ebp and write one home and the -1. Retail then reads the unit's count through the pool
+// home in ecx and keeps the datum index in edi, we read the count through edi and keep the index in
+// eax, so the whole body is a register turnover on top of the missing frame. The forms the earlier
+// rounds record (the pool local, the two pool homes, the iterator's fields in five orders, the barrier
+// in its places, the step written out, the shared step in the body) all measure 122 or worse.
 // @retail 0x1fb510
 void function_1fb510(void)
 {

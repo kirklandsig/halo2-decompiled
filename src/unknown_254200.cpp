@@ -171,6 +171,15 @@ void function_254200(void)
 // inline color helper 339; direct color products 4; color aggregate 33; color value input 218;
 // scalar color inputs 4; red-first color products 9; color home names 4; snapshot home names 4;
 // native point copy 4; point copy assignment 4; reference color input 4.
+// MiniMax R (11-10): no new form, no lower score (4): both sides are 1109 bytes and the only
+// difference is the order of two independent loads in the second and third vertex records, where
+// retail loads the 16777215 constant before it reloads the spilled y+h and we reload first; the
+// pool address of the constant is masked by the check, so only the order counts. The forms the
+// earlier rounds record (the constant through a named local, the member 4f form, the swapped y
+// operands, the y sum as a named local, the free 2s form, the point through parallel pointers) all
+// keep 4. Note that the fast check asked for several addresses at once reports 80 for this
+// function, because the reduced image then leaves a global reference unresolved and the constant's
+// pool address is no longer masked; the single-address fast check and the full build both give 4.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {

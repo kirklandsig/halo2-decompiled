@@ -1175,6 +1175,13 @@ bool __stdcall function_2399da(long controller_index)
 // 0x92-byte block with the own rank read at +0x1c as its other callers do 90 (same code). Re-measured: the copy arm nested as
 // `if (!have_member) { if (may_change) copy; else { deny; return; } }` 92 (430 B, round 10's folded arm). No other untried natural
 // form found: the rank keeps EAX over the identity while both its store and the removal call stay (round 150, r211 diagnostics).
+// MiniMax R (11-10): no new form, no lower score (90): ours is 434 bytes against retail's 432 and the
+// first difference is at +0x1d; what is left is a turnover of the xuid pointer between eax and ecx
+// with one extra mov, and behind it the shape of the tails — retail calls the shared helpers and
+// pushes its own string addresses where we call the local copies, so the blocks that follow land at
+// other offsets and every jump into them counts. The forms the earlier rounds record (the identity
+// and rank registers, the eight-byte residency subsets, the late requested producer, the removed
+// extra mov) all measure 90 or worse.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
