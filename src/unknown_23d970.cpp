@@ -564,6 +564,12 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
+// MiniMax R (11-11): no new form, no lower score (45); the reduced image the fast check builds compiles
+// this function differently from the full program (255 with 1224 bytes against the full build's 45 with
+// 1262 bytes), so the fast number no longer agrees with the full build and the plain check is the one to
+// trust when ranking variants here. A permuter run (198 tries in 2407 s, 10 sources in its reduced image)
+// confirms it: it scored the original 227 on the reduced image and 44 in the full image, and none of its
+// 198 rewrites beat 44 in the full image.
 // score 45 (was 45): the second product through the existing staged helper of src/unknown_1f03e0.cpp
 // (function_1f087b, every component computed before the stores, i first) gives retail's previous_up
 // loads (j, i, then k into xmm0 after the distance store) and folds forward's loads in the second
