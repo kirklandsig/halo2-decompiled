@@ -565,6 +565,13 @@ struct s_physical_block_iterator
 // masked 27, the outer loop's reload order flips); the walk's block as a plain local 116; the ages written inside the
 // comparison 216; the permuter (64 tries) none below 93. Diagnostic volatile loads (removed): in the walk body 73, before
 // the walk 115, neither flips the swap.
+// M3 lane 11 r89 (fast with 0x13d320; main 201): r109's 93 lead reapplied 93 (1213 bytes, masked aligned 20). On it (kept
+// only with a match): result declared after limit_index 236; the entry's offset/pages/time stored before the linking 94;
+// `best.offset + pages` named once ahead of the walk 383 (1219 bytes); result declared first 389 (1238); the allocated
+// index in its own local copied to result at the end 211 (1199); the final test as `type == limit_index && result == NONE`
+// 364 (1230). Same code on 93: the walk's block offset named, the overlap end named inside the walk, best.offset copied to a
+// local, the block end named, the block sum's operands swapped, the tail's block array renamed. The walk's EBX/EDI choice
+// (retail: high-water EDI, bit and data EBX, sum into pages' register) and the tail's result/NONE pair stay swapped.
 // M3 lane 13 r81 (fast with 0x13d320, which stays matched): lane 9 r109's 93 lead rebuilt is 93 again (1213 bytes, first
 // difference +0x338, fully masked 14). What is left on it: the walk's count and bit (ours EBX/EDI, retail EDI/EBX); the
 // overlap sum computed into best.offset's register with best.offset reloaded for the second test, where retail adds into the

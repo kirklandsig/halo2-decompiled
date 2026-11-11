@@ -229,7 +229,7 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
-// score 169 (was 170): at 170 (was 170) native output ordinal separates iteration from produced length;
+// score 169 (was 169): earlier 169 (was 170); at 170 (was 170) native output ordinal separates iteration from produced length;
 // frame 0x18 versus 0x14, count/departure homes, equality and compaction still differ.
 // MiniMax C (11-10): score 169 (was 169): no lower score this round. The frame is still 0x18 against
 // retail's 0x14; retail's outer pass has one dword counter in EBX, stored at F-0x10, reloaded at the
@@ -526,6 +526,36 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // left_start` with the plain update and the nested exit 248. Lead: retail stores the departure byte directly (0 between the
 // coordinate tests, 1 on a difference) and its y test is `fxch; fcompi; jb` where the exit test's is `fcompi; jbe`, so the
 // two comparisons are not one expression in retail; no form here gives the fxch.
+// M3 lane 16 r108 (fast with 0x239d50, which stays matched unless noted; m = register-masked aligned count, this body m 92):
+// a retail-shaped completion-flag body (match-only: the flag is set inside tests): heading and a bool departure flag set
+// before the lowest scan, one long hull counter in `while (!done && (short)hull_count < count)` with `indices[(short)
+// hull_count] = current; hull_count++;`, the three exits setting the flag, the compaction under `if (!done)` through
+// memmove 228 (763 B, m 34: frame 0x14, the flag in the indices home, the hull count at +0x10, the top-tested head and
+// retail's compaction call; left: the count keeps EBX where retail gives EBX to the hull count, so the hull count is
+// read from memory at each use and `current = count` copies EBX where retail reloads the count's home); on it `short
+// current = count` before the classifier call 134 (784 B, m 35, points/current move to EBX/ESI), current declared first
+// in the block 227, the lowest-point state declared first 230, a long `hull_count < count` 128 (784 B, m 54, frame 0x18
+// again), a short hull count 227 (765 B, caller 80), the flag at function scope or as a long 228 (same code), a long
+// departure 239 (793 B), `for (hull_count = 0; ...)` with `indices[(short)hull_count++]` 227, current before the call
+// with the long compare 184 (792 B), `short next` outside the loop 228 (same code), the equality helper's parameters
+// declared the other way round, `(b, a)` with the calls `(&points[indices[0]], &points[next])` and the same arithmetic,
+// 217 (791 B, m 35: the departure block then has retail's registers, indices[0] in ECX and next in EAX, but the closure
+// test gains an fxch retail lacks), a positive equality helper `(b, a)` negated at the departure 208 (setcc departure).
+// The same flag alone on this body 258 (768 B, caller 80). Diagnostic (value-changing): bounding the candidate scan by a constant takes the count out
+// of the callee-saved registers (scan bound copied `mov edx, ebx` as retail) and gives the hull count ESI, so the
+// candidate scan's bound is what keeps the count in EBX here.
+// Round 171 (m3 lane 5, fast with 0x239d50): the candidate scan (j loop) as a static inline helper returning the next
+// index and writing the best angle through a pointer 519 (511 B, not inlined), as __forceinline 171; a short hull
+// count with memmove 233 (0x239d50 80); the departure flag renamed to sort before hull_count (same-size name-order
+// tip) 169 (same code). NOT kept (6 points, under the 8-point bar; coordinator 11-11): the departure update as `left_start = left_start ||
+// points2d_differ(...)`, the direct form of the flag set under `if (!left_start)`, 163 (plain; 785 B; it gives retail's direct departure stores, 0
+// between the coordinate tests and 1 on a difference, as dwords). With memmove for the compaction as well 162 (784 B,
+// masked 51 -> 37, plain 162; the compaction block is then retail's apart from the hull count's home), not kept
+// (memmove alone is 170). On the 162 form: the flag bool/byte/char 264 (762 B, the function then returns `ret 8`: a
+// parameter moves to a register), a short hull count 255 (0x239d50 80), `return hull_count` for the three gotos 183
+// (763 B), a short pass counter 250, `(short)pass < count` 240, the difference predicate as `>= eps || >= eps` 169, as
+// `!(< eps) || !(< eps)` 169. Left on 162: the frame word (widened count), the rotated pass loop, the long flag's
+// dword stores and the hull count in the dead index home.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -980,6 +1010,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // const *)memcpy(copy, ...)` 372 (975 B); re-measured: the deltas through polygon_difference_23a220 129 (round 366's shared
 // 2-D difference). No untried natural form targets the cause: the one lever is the count's ECX at the alias join, which only
 // the repeated `if (count > 0)` guard gives (match-only, best 92 with the if/else fraction).
+// M3 lane 12 r113: no unlisted natural form, no trial: retail holds count in ECX from the alias join to the loop guard
+// (`mov ecx, [ebp + 8]; movsx edi, cx ... test cx, cx`), so the previous side gets no byte register (+0xd) and the loop
+// head takes ECX for `points`; ours reads count from memory twice and keeps the previous side in CL. Body unchanged.
 // Round 80 (m3 lane 13, fast with the file; no caveat): retail's only caller 0x17dd80 pushes the short count raw
 // (`mov ecx, dword ptr [esp + 0xa0]; push ecx`, no movsx) and passes the output in EDX, so the parameter is retail's
 // short and a 32-bit count would also change that contributor's caller. The inside arm's copy written per member 129,

@@ -496,6 +496,17 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // 151 -> 159); the width product after the two flip calls 423 (1932 bytes). The compile-only harness does not
 // reproduce this body (normalized difference 394 against our own build), so the blend's XMM5 residence could not be
 // screened there.
+// Round 73 (m3 lane 15, fast = plain; register-masked aligned 59, all in the post-join aspect block plus the tint/second-UV
+// homes): geometry as `real geometry[4]` with element copies, or kept as the four-real overlay copied element by element, 400
+// (1974 bytes, identical code); the complement and both inverse sums computed ahead of the first aspect test 305 (1963 bytes,
+// the frame moves); the tint clamp through the existing PIN_126660 macro 429 (1933 bytes). Re-measured: the complement written
+// at each use 338 (1972 bytes). Diagnostics (wrong code, reverted): the tint keeps the top 16-byte slot with the colour
+// modulation removed, the clamps removed, both removed, the seed block removed, the tint as a four-real overlay, uv_b's copy
+// removed, a second flip of uv_b, uv_b's defaults removed, and the final call's UV arguments swapped (211, homes unchanged),
+// so neither reference density, type nor argument order sets these homes; the compile-only frame probe gives a third order
+// (geometry on top), so it cannot screen them.
+// Round 73, continued (diagnostics): uv_b's flip call under an always-true test 245, under two nested ones 405 (1958 bytes);
+// the tint stays on top in both, so lowering uv_b's branch frequency does not move the homes either.
 // M3 lane 1 r89 (fast; control 211, aligned 89, masked 34; retail's frame from its final call, low to high: geometry
 // +0x20, first UV set +0x30, tint +0x40, second UV set +0x50; ours exchanges the tint and the second set): the second set's
 // bitmap-arm defaults as `uv_b=uv_a;` after the first set's four stores 350 (1959 B); the aspect values set in both arms of

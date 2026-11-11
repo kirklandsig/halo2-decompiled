@@ -821,6 +821,14 @@ void swarm_leader_detach(long actor_index);
 // actor_index`) 289; the slot loop with a slot pointer as the matched 0x1e23c0 writes it 236 (same code). Retail's tail
 // also keeps NONE in EDI for the definition walk and stores the definition bit into the dead index slot. Still
 // BLOCKED-BY 0x26ed40 (inlined in retail; its file's /Ob1 keeps it out of line here: a build-flag decision).
+// M3 lane 10 r94 (fast, 0x26ed40/0x1e2150/0x258600/0x1e4990 listed, all MATCH; base 236, aligned 106, masked 65): no new form.
+// The first difference (+0x3: retail loads the actor pool into ECX and the offset into EAX, and keeps the actor pointer in EBP
+// unspilled) follows the memory walk, which is joint_decline (0x26ed40, MATCH) inlined in retail: its file's /Ob1 keeps it out
+// of line (a build-flag decision; `inline` on it costs 0x1bead0 and 0x26ef70), and the bool `value` needs the declaration in
+// src/unknown_1e3920.cpp, another lane's file this round. Still BLOCKED-BY 0x26ed40. Tried in the body: the prop walk with a
+// `next_index` local in place of the `current` copy 237; the unit branch first (`if (!actor->unknown007)`) 271; the prop record
+// released before the view record 286; the counts loop index as short 236 and the stop callback read at each use 236 (both the
+// same code).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

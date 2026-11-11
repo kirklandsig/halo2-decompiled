@@ -212,7 +212,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 923 (was 923): earlier 901 (was 901), 882 (was 882); frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
+// score 920 (was 923): earlier 923 (was 923), 901 (was 901), 882 (was 882); frame 0x2cb4 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
 // frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
 // point workspace names 866; initial actor value 869; query index value 916;
 // conditional self-unit 911; wide initial predicates 1011; native location copy 911.
@@ -431,6 +431,21 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // code: the byte shift folds to `test byte`), the other actor index read at both uses 949 (3753 bytes), the other actor's offset and
 // dot through vector3d_from_points3d and dot3f 924 (3737 bytes). Retail keeps actor_index in EBX through the object loop (reloaded
 // at its top), so the type-0 arm's `push eax` reuses the zero type for 0x25d810's false; ours reads actor_index from memory.
+// M3 lane 11 r89 (plain; base 923; [aligned, register-masked]; fast misleads here, 902 at 923): kept: the grouping aggregate of
+// location and the raised point dropped for two plain locals (raised in the else block; re-measure of r35/r212/r225 on this base)
+// 920 (3718 bytes, frame 0x2cb4; [619, 455] -> [680, 528], so positional; the object count then shares location's slot as in
+// retail); same code with location in its own block ending at the query; the vehicle-actor, vehicle velocity and sphere-loop
+// velocity dots through the existing dot3f 920 (same code, kept). Tried on 920: the type-1 arm's team as a sign-extended long
+// (retail's movsx there; on 923) 926 (3737 bytes); the object offset and its squared length through vector3d_from_points3d and
+// length_sq3f alone 927 (3724 bytes); the other actor's facing dot through dot3f alone 932; the other actor's offset through
+// vector3d_from_points3d alone 927; the type local kept for the arm chain with the range test, `1 << type` and the sphere loop
+// reading the type byte (retail re-reads it at those three) 912 (3724 bytes, [658, 534]; a local/field mix, not kept); no type
+// local, the byte read at every test and use 936 (3740 bytes, a re-measure of r121's 903); the arms as a switch on the type byte
+// with the later uses reading the byte 947 (3772 bytes); `object_index != settings->unknown18` 920 (cmp operands flip only); the
+// vehicle actor through actor_get in the condition with no NULL-initialised pointer 933 ([664, 513]); the combined flags computed
+// in the call 927 (3724 bytes). Diagnostic: local_4d3867 renamed to sort before the sphere flags (retail's byte order) is the same
+// code; the byte homes do not follow names. Ours keeps skip_classification in BL (shared with enemy) and straight in its own
+// dword; retail keeps skip at [esp+0x12] beside blocking/aligned/straight, with actor_index and self_unit in EBX and EBP.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -471,13 +486,12 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
             }
         }
     }
-    struct { s_location location; point3f raised; } query;
-    s_location &location = query.location;
+    s_location location;
     if (unit_index != NONE)
         location = *(s_location *)((byte *)ai_object_get(unit_index) + 0x28);
     else
     {
-        point3f &raised = query.raised;
+        point3f raised;
         vector3f_add_scaled((vector3f const *)position, g_4687b0, 0.05f, (vector3f *)&raised);
         function_11bed0(&location, &raised);
     }
@@ -702,10 +716,8 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
                             vehicle_actor = (byte *)actor_get(vehicle_actor_index);
                         vector3f const *velocity = (vector3f const *)(object + 0x88);
                         if ((vehicle_actor_index != NONE && vehicle_actor[0x5d0] &&
-                                *(real *)(vehicle_actor + 0x5f4) * direction->k +
-                                *(real *)(vehicle_actor + 0x5f0) * direction->j +
-                                direction->i * *(real *)(vehicle_actor + 0x5ec) > 0.0f) ||
-                            velocity->k * direction->k + velocity->j * direction->j + direction->i * velocity->i > 0.0f)
+                                dot3f((vector3f const *)(vehicle_actor + 0x5ec), direction) > 0.0f) ||
+                            dot3f(velocity, direction) > 0.0f)
                         {
                             obstacle_flags |= 0x200;
                             blocking = true;
@@ -771,7 +783,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
                 if (dot > 0.0f)
                 {
                     vector3f const *velocity = (vector3f const *)(object + 0x88);
-                    if (velocity->k * direction->k + velocity->j * direction->j + velocity->i * direction->i > 2.0f)
+                    if (dot3f(velocity, direction) > 2.0f)
                         moving = 1;
                 }
             }
@@ -1711,6 +1723,13 @@ long function_1fa7f0(void);
 // call with `side = !side` in the attempt for's increment 434 (1715 bytes, frame 0x10c: the attempt loop is then retail's, other
 // side in BL and location in EDI); on it the first conversion in 0x210850's nested shape 426 (1725 bytes, masked aligned 108 against
 // 94). The scan is what is left there: retail compares count from memory and keeps edge in EBX, ours keeps count in BX.
+// M3 lane 11 r89 (fast with 0x270930 and 0x2c2a70, same code as the full check; base 400, aligned 350, stack+register masked 97):
+// other_side declared at the top of the attempt body, ahead of the center choice and the first tangent call, 435 (1746 bytes,
+// retail's length, but frame still 0x114 and aligned 388, masked 94). Same code: other_side declared at the corner block and
+// assigned in the attempt body; the trace start through the existing real_point3d_set; end declared, then assigned. Code differs,
+// 400 each: the last-candidate flag as `candidate + 1 == count`; edge stored after next/found in the candidate loop; found set
+// before next at the scan hit; type/link declared ahead of next/edge/found. Retail's second `mov ebx, 0xffff` at
+// the scan hit (0x2c219e) reads as an inlined helper's edge out-parameter; the listed helper forms (482) did not give it.
 // M3 lane 13 r81 (fast with 0x270930 and 0x2c2a70, which stay matched; aligned exact/fully masked, base 335/57): the masked
 // diff is register and slot choice only (retail: edge in EBX and a second `mov ebx, 0xffff` where the scan finds a typed
 // step, count compared from [ebp+0xc], NONE in SI; ours: count in BX, edge at a stack slot). Tried: a named

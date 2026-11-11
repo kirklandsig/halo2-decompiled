@@ -130,7 +130,21 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
-// score 378 (was 378): 378, 393 earlier; the steering block's loads and product order differ (it now loads i, j first); the left vector and the avoidance
+// score 378 (was 378): earlier 393; the extra frame word (0x5b8 against 0x5b4) is the side test's `local_9.i * local_13.i`
+// CSE'd with the 0.9 block's `local_9.i * left_i`: the left vector's store is forwarded to the side test (likely because LTCG
+// sees our 0x299460 leave its sixth parameter alone; round 148's no-LTCG probe gives retail's frame), where retail reads the
+// left vector's home (+0x84) and keeps only
+// local_25 (+0x60) for the 0.9 block. Retail stores the one negation to both left_i (+0x54) and the vector (+0x84); with the
+// temp gone the vectors would sit in retail's +0x78/+0x84 (ours +0x7c/+0x88). 0x299460 (629, src/unknown_298c30.cpp,
+// avoid-listed this round) is the likely lever: BLOCKED-BY 0x299460 (untested). Round 170 (m3 lane 5; T1 plain, the rest fast, file-mates
+// matched): local_10 through the existing magnitude3d 378 (same code; retail's block is 0x24590's); the 0.9 block's
+// `local_9.i * local_13.i` 378; `real const left_i` 378; `vector3f const local_13` 378; local_25 as `local_9.j * local_13.j`
+// 378 (same code each, aligned 107, masked 30). Left besides the frame: the second normalize's j product, the steering
+// block's left_i load, the early 0x44 load, and the tail, where retail reloads the actor offset from +0x64 at both setters
+// and pops before the last one (ours keeps it in EBX).
+// Earlier 393 (was 393): the steering block's loads and product order differ (it now loads i, j first); the left vector and the avoidance
+// 393 earlier; the steering block's loads and product order differ (it now loads i, j first); the left vector and the avoidance
+// 378, 393 earlier; the steering block's loads and product order differ (it now loads i, j first); the left vector and the avoidance
 // vector swap their 12-byte slots; the 0x5d0 flag store now matches; the early 0x44 load and the local_16 dot's x87 order differ.
 // 393 before m3 lane 13 r75. The left vector is built from the named left_i (`{left_i, local_8.i, 0.0f}`): 393 -> 378 plain at retail's 2825
 // bytes, but mostly positional: the compiler now propagates left_i into the side test and shares its product with the 0.9 block (a new
@@ -256,6 +270,13 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // this body 481; the left vector declared const on this body 378 (same code); the left vector built from the local_8 copy
 // (`{-local_11.j, local_11.i, 0.0f}`) 537 [79, 281] (2836 bytes); re-measured: the side-test sum written local_25 first on the
 // 393 form 393. No unlisted natural form left for the slot tie.
+// M3 lane 16 r106 (fast with 0x29c860/0x29cb10, both stay matched; [register-masked aligned] counts): the 393 form (the left vector
+// as matched sibling 0x29a190 writes it, `{-local_8.j, local_8.i, 0.0f}`) re-measured 393 [56] (frame 0x5b4, 2815 B; this body [120]).
+// The two 12-byte vectors there tie at five references each (left: three stores, the side-test read, the 0x299460 address;
+// avoidance: the 0x1f9760 output, the k store, three addresses). On the 393 form: the avoidance vector declared at function scope
+// ahead of the left vector 393 [56] (same code); the left vector built at the top of the main else arm 446 [60] (2825 B, its stores
+// move into the arm, slots unchanged); built just before the 0x5d1 flag read 477 [121] (2827 B); the two vectors renamed `left` and
+// `avoidance` 393 [56] (same code); left_i dropped, the left vector's i read at its three uses 573 [119] (2809 B). Body unchanged at 378.
 // M3 lane 13 r83 (fast; fully masked aligned count in brackets, control 378 [30]). Diagnostic, reverted at once: the call to
 // 0x299460 made opaque (through a volatile function pointer) stops the left vector's store forwarding into the side test,
 // which then reads the vector's home as retail does and the 4-byte product temp goes, so the frame word is BLOCKED-BY 0x299460

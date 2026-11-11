@@ -163,6 +163,9 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 #define request_weapon(player, slot, headers) \
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
+// MiniMax C (11-11): no new form, no lower score (118): the inlined lookup still hands the table to
+// eax where retail hands it to ecx, and the fourth case still holds the parent in ecx where retail
+// holds it in esi, which the callees in the other files decide.
 // score 118 (was 118): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
 // getter (retail table ECX, result EAX; ours the reverse) and runs through the later temporaries.
 // MiniMax I (11-09): no new form, no lower score (118); the aligned view (build/mm/align.py) shows that every
