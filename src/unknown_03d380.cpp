@@ -314,6 +314,7 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
+// MiniMax I (11-11): no new form, no lower score (36): the special arm still comes before the kind arm in the layout where retail puts the kind arm first, our element address is a scaled index added to the base where retail multiplies into eax and adds the base, and 0x221810 still has to stay out of line, which needs a change in src/unknown_221490.cpp.
 // MiniMax S (11-10): no new form, no lower score (36): the special arm still comes before the kind arm in the layout where retail puts the kind arm first, and our element address is a scaled index added to the base where retail keeps the scaled product in EAX and adds the base to it.
 // MiniMax A (11-10): no new form, no lower score (36): retail keeps the sound-class lookup 0x221810
 // out of line - it is a one-line wrapper in src/unknown_221490.cpp - and lays the blocks special
