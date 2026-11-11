@@ -959,9 +959,14 @@ bool function_862e0(c_simulation_view *view)
 }
 
 
-bool function_685f0(void *block, long *size, byte *destination, long capacity);
+bool function_685f0(long capacity, byte *destination, void *block, long *size);
 
-// score 2 (was 2): the constant 0xffff is loaded before the address of the buffer; retail loads
+// score 1 (was 2): 0x685f0 is now declared (capacity, destination, block, size), the order
+// retail's loads imply (register arguments load from the last to the first, and retail sets edx
+// before ecx), so the two loads come in retail's order and only the register differs: the
+// destination goes in eax, retail's in edx. With the standard marker on 0x685f0 this function
+// matches (see its note). BLOCKED-BY 0x685f0.
+// Earlier, score 2 (was 2): the constant 0xffff is loaded before the address of the buffer; retail loads
 // the address first. The registers that carry the destination and the capacity are the
 // callee's choice, and function_685f0 in src/unknown_067e10.cpp is three instructions
 // off retail. BLOCKED-BY 0x685f0 (round 14: it takes the destination in eax, retail's
@@ -974,7 +979,7 @@ bool function_869a0(c_simulation_view *view, void *block)
  byte encoded[0xffff];
  long encoded_size;
  bool result = false;
- if (function_685f0(block, &encoded_size, encoded, sizeof(encoded)))
+ if (function_685f0(sizeof(encoded), encoded, block, &encoded_size))
  {
   struct { short kind; short size; long sequence; } header;
   memset(&header, 0, sizeof(header));
