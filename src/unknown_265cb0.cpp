@@ -669,6 +669,10 @@ real function_30bf0(vector3f *vector);
 // in-place ternary 84; facing_ pair declared first and secondary copied first 84. Diagnostics, reverted: 0x263d70 storing
 // both output pointers to scratch globals leaves the first form at 199, and so does this function defined ahead of
 // 0x263d70 and 0x263740: neither an escaping pointer nor definition order makes our link keep the thresholds in memory.
+// M3 lane 10 r90 (fast with 0x263740/0x25c9d0, both MATCH): no gain. The plane distance through dot3f 138 (1308 bytes, masked 28); the
+// intersection test as `amount >= 0.0f` 236; the vehicle index read at each use instead of the `object_index` local 84, `range * scale`
+// 84, the three threshold compares written distance-first 84 (all same code). The permuter (`--fast --anneal`, 600 s after a 1041 s
+// scratch build) tried 65 variants and found none below 82 instructions.
 // Round 86 (m3 lane 1, fast with 0x263740/0x25c9d0; aligned/masked in brackets, base 84 [19/17]): the squared
 // distance declared uninitialised at the settings-block top 84 (same code: declaration position moves no slot); the
 // occupant's forward as a vector copy 195 (1312 B [77/47]); the plane distance through dot3f 138 at 1308 B [34/24];
@@ -2288,6 +2292,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 0x30bf0's magnitude through a one-line inline helper 168 (same code, 0x30bf0 still matches); 0x30bf0 reading its
 // parameter through its address 513 (0x30bf0 21, its convention changes). Retail's shape needs the normalize call to
 // be able to write `direction`; no form of 0x30bf0 that keeps its bytes makes our link think so.
+// M3 lane 10 r90 (fast with 0x25d810/0x26be00/0x25d740, all MATCH): no gain. The iterator's datum index stored before its index 170; visible
+// as one direct bool (`reference == NONE || ... >= 1`) 428 (frame changes); the byte alias of the actor dropped 168 (same code). Re-measured:
+// player NULL before the first search 373; the elapsed counter read at each use 168; the NONE fields chained 170. Every other natural form
+// screened this round (prop/state getters, threshold and decrease arithmetic, the close flags) is already listed above.
 // Round 86 (m3 lane 1, fast with 0x25d810; aligned/masked in brackets, base 168 [80/38]): the first scratch-rotation
 // difference is the other actor's lookup (retail reuses EAX for the object pointer, ours takes ECX, and the actor lookup
 // after it is one step on). LEAD: the object read into a pointer local and its actor index read at each use

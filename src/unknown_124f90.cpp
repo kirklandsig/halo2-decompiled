@@ -1261,8 +1261,8 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
-// MiniMax E (11-10): no new form, no lower score (94).
 // score 94 (was 94; 177 before lane 10 round 69): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
+// MiniMax E (11-10): no new form, no lower score (94).
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
 // 1.0, fade-out), and the gain value carried into the last arm.
 // MiniMax C (11-09): no new form, no lower score (94).
@@ -1477,6 +1477,13 @@ long function_2197f0(real gain);
 // ducking->gain` 105 (678: drops retail's by-value copy through a stack temporary). Our five extra bytes are all at the
 // arm-3/arm-4 join: ours keeps the arm-3 sum in XMM0 and loads the gain on the bypass edge (jmp, movss, register add), retail
 // re-reads the gain from its home in arm 4's add.
+// Lane 10 r91 (fast; masked = aligned lines with registers and stack offsets masked, control 94 [17]): the listed `fade_out`
+// local for the test, sum and product re-measured 98 [15]: the product then takes the reciprocal first as retail, but
+// `fade_out + hold` loads hold first (retail copies fade_out and adds hold from memory). On it, retail's clamp shape (the value
+// before the branch, `ja` over `t = 1.0f`): `t = time / fade_in; if (!(1.0f > time * inverse)) t = 1.0f;` 169 (644 B: the branch
+// is retail's but the value is still `inverse * time`, and arms 1 and 2 then end alike and cross-jump), `if (time * inverse >=
+// 1.0f)` 171, a ternary with the test multiplied and the value divided 171; with `gain +=` in arm 1 169 (same merge); with the
+// arm-1 sum written interpolation first (retail's gain load into a register) 99 (684 B, frame changes at +0x2).
 // R229 (m3 lane 3, fast with 0x1251e0): one to eight unused-local probes at the top (diagnostic, removed) 94 each (same
 // code: the XMM colours do not follow symbol numbering here); `gain +=` in arm 4 alone, in arm 3 alone 94 each, and in
 // both (a re-measure of round 160's form, 125 then, on the current body) 94 (same code: the last arm still takes the gain
@@ -2917,12 +2924,6 @@ static inline short sound_voice_find_available_channel(char type)
 // MiniMax E (11-10): no new form, no lower score (96); the body with two exits and no result variable, the
 // same body with a bool result and the failure path returning false directly were measured (131, 113, 134)
 // and the byte result with the shared exit stays the best.
-// score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
-// through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
-// keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
-// and its channel search keeps the channel in EDI with one `or ebp, -1` shared between the channel
-// compare and the driver and buffer defaults. A `bool` result carrier on this body measures 113 at
-// retail's length and was reverted.
 // The twelve-byte frame, byte result normalization, initial voice/global load order and
 // Earlier at 96 (was 96): The twelve-byte frame, byte result normalization, initial voice/global load order and
 // early failure tail remain; long search-result boundaries do not change the selected code.
@@ -3115,6 +3116,15 @@ static inline short sound_voice_find_available_channel(char type)
 // the for/break search with that failure-first form 141 (437). N314's 64 form rebuilt for reading: its tail and failure block are
 // retail's byte for byte; left are the entry registers, the scan's post-loop bound test (retail's found path goes straight to the
 // `(short)i != NONE` test, as the for/break search does), the shared `or ebp, -1` and the complemented status.
+// Lane 10 r91 (fast; masked = aligned lines with registers and stack offsets masked, control 96 [50]): the status as
+// `(byte)~status & DSBSTATUS_PLAYING` (the idiom 0x127010's matched flags test uses) 127 [47]; with a bool result 130; with
+// `return true` after the commit 129, both 131. N314's condition-controlled scan rebuilt: byte result 134, bool result 104 [30],
+// with `return true` after the commit 109, bool with the redundant `result = true;` before the goto 64 [17] (diagnostic, the
+// form review rejected; it reproduces N314). On the scan, the result assigned from the commit test (`result = buffer_index !=
+// NONE || ...; if (result)`) 122 (bool) / 152 (byte), on the for scan 123/130; an uninitialized result assigned once on each
+// path (early `else result = true;`, before the commit's goto, in the failure block) 142 (bool) / 152 (byte). On the 64 body
+// left are the entry registers (index in ECX as retail only with the frame-8 forms), the type byte loaded then sign-extended
+// (retail `movsx ecx, byte ptr [esi + 8]`), the scan's post-loop bound test, NONE shared in EBP and the complemented status.
 // R229 (m3 lane 3, fast with 0x129100): `bool result = true;` with `result = false;` at the top of the channel block,
 // `result = true;` after the commit and the failure calls under `if (!result)` 129 (430 bytes: retail's `mov al, 1`
 // at the entry, but the false value lives in a stack byte and the failure block follows the search loop); the same
