@@ -475,6 +475,11 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // MiniMax b (11-11): no new form, no lower score (42): the emitter loop as an explicit list test
 // with the scale declared before the multiplier was measured at 39 and restored, since it stays
 // above 30 and the gain is small; row i of both rotations still sums the up product first.
+// MiniMax E (11-11): no new form tried, no lower score (42): row i still sums the up product before the
+// forward one, the offset's zero store still comes before the list test and the particle is still reloaded
+// before the emitter definition after each property call; the shared rotate helper in
+// include/matrix_transform.h keeps the sum order, and the body is unchanged since round 20's permuter run
+// (58 tries, none below 42), so it stands.
 // score 42 (was 42): both in-place rotations go through the shared rotate helper (it copies the
 // input when the output is the input), which gives retail's j and k rows. Left: row i sums the up
 // product before the forward one (retail forward first, loading forward.i into a register); the
@@ -1438,6 +1443,10 @@ bool function_17afd0(long effect_index, long value);
 // Left: our `same_view = 1` store is emitted ahead of the view test, retail's sits between `test bl, bl` and
 // `jne` in the availability test's block, and the availability's own test block is reached a store earlier.
 // score 47 (was 47): availability clear/production and later view observation remain;
+// what still differs is the same-view flag: ours writes its true value to the stack byte
+// before the availability query, retail keeps the flag in BL and writes the true value only after the owner
+// tests, with the availability's own production after its query; frame 0x14, the owner, the view and the
+// post-attachment view refresh agree.
 // frame 0x14, NONE/owner and Boolean stack homes agree;
 // availability clear/result and the post-attachment view refresh remain.
 // M3 lane 13 r75 (fast; masked aligned count in brackets, base [5]): round 81's `effect_index != NONE && available && ...` re-measured 46
@@ -1685,6 +1694,7 @@ bool function_17afd0(long effect_index, long value);
 // moved after the view load 125, the view reloaded after the attachment query 110, the same-view result at
 // function scope 47); the availability is still cleared before the second definition call and the query
 // result still goes through a negated long where retail tests the result and branches.
+// MiniMax E (11-11): the view read once before the availability, the availability set on success and the same-view flag cleared by one owner/view/availability test reach retail's twelve (47 -> 12); the flag's true store is still early and the availability keeps its own home, so no untried form is left for them.
 // MiniMax E (11-06): no new form, no lower score.
 // The availability result moved after the view load 125, after the definition
 // call 138 and before the effect index 138: each move flips the NONE constant

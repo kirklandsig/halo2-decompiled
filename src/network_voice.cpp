@@ -1578,6 +1578,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // and the single mask read at the end now agree with retail. Still differs: EAX's zero is reused for
 // `written = 0` and the PIN test (retail `test edi, edi`, immediate store), so the capacity-fail exit
 // gets its own `xor eax, eax` epilogue and the code is 460 bytes against 449.
+// MiniMax E (11-11): no new form, no lower score (60): retail normalises the include_mask byte with
+// `cmp`/`setne` before the lea that forms the entry size while ours widens the bool with `movzx`;
+// writing that normalisation out (`include_mask != 0`, or through a byte local) measures 146, and
+// moving the statements (kept, written, capacity, entry size) measures 137 with a different call
+// convention (`ret 0x10` against retail's `ret 0xc`), so both are worse and the body stands.
 // MiniMax E (11-07): no new form, no lower score; the earlier round's 24 statement orders of the
 // capacity, size, written and mask statements leave the result in EAX with its own epilogue.
 // MiniMax h (11-06): no new form, no lower score: all 24 orders of the capacity, size, written and mask statements were measured and the current one is the best (134); every order with the mask first (135-171) moves the player onto the stack and breaks 0x56380, so retail's mask in EBX, its literal zero store and its single epilogue stay out of reach.
