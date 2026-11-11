@@ -557,6 +557,10 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
    the list of messages, then the timed message and the status text at the
    bottom */
 // score 115 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
+// MiniMax E (11-11): no new form, no lower score (114); the three message predicates are still packed in different
+// homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and retail keeps `left` in a word at
+// -0x3c where ours spills it as a dword at -0x50; the text buffer is still pushed where retail passes it in esi,
+// which the text helper in another file decides.
 // MiniMax C (11-10): the score is 115, unchanged; the three message predicates are packed in different homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and retail keeps `left` in a word at -0x3c where ours spills it as a dword at -0x50.
 // MiniMax R (11-10): no new form, no lower score (115 in the eight-function image); the view's home is
 // still four bytes above retail's and the text buffer is still pushed where retail passes it in esi,
