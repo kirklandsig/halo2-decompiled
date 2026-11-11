@@ -2849,6 +2849,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // EBP); that with the getter into a long 91 (265 bytes, masked aligned 26 -> 21, body select retail's); the short form
 // with 0x1d5120's count before its result pointer 80 (same code at the call); the short form with the +0x134 flag
 // through bit_vector_set 70 (253 bytes, memory OR as retail). Both sides return with a plain `ret` now.
+// M3 lane 9 r110 (fast, control 63): the success arm's first flag clear before the settled store 63 (same code: the
+// stores keep our schedule); the failure arm's clear before the +0x134 flag 64; both 64. Permuter (600 s, 5 tries on
+// this busy machine): best 62 only by swapping 0x1d5120's and 0x1c3770's arguments (a behaviour change), rejected.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -5879,7 +5882,7 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 
 /* a walking biped's footstep effect: at its foot marker (or its origin),
    with the material it stands on */
-// score 154 (was 154): frame 0xec versus 0x94 (marker and collision don't share a home), material carrier
+// score 168 (was 168; earlier 154): frame 0xec versus 0x94 (marker and collision don't share a home), material carrier
 // (BLOCKED-BY 0x188180).
 // MiniMax E (11-08): no new form, no lower score (154); 0x188180 (src/unknown_187ec0.cpp, not this lane's file) is still unmatched, so its argument order and the material homes stay as they are.
 // MiniMax D (11-06, run 49): no new form, no lower score (154); 0x188180 (src/unknown_187ec0.cpp, not this lane's file) is still unmatched, so its argument order and the material homes stay as they are.
@@ -5928,6 +5931,13 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 // marker before the point 154, the scan counter declared in its `for` 154 (same code); the location pointer with
 // the material and zone 158 (671 bytes); the zone declared just before its query 195. Retail stores the zone as a
 // word as well (ours a dword).
+// M3 lane 9 r110 (fast, control 168 = the plain baseline): the physics-mode/effect test as an early return 168 (same code); the
+// point offset through the existing vector3f_add_scaled 168 (same code); the material read after the probe 168 (its load moves
+// past the call); the model count tested as `if (count)` 169. Diagnostic, not kept (only this file's declaration changed, so the
+// reduced image leaves the call unresolved): the material as c_type_47f957 163, with the marker in its own block and `down`
+// componentwise after the offset 170. Lane 5 r169's measured patch (that parameter as c_type_47f957 at the definition, every
+// declaration and call) gave 168 -> 163 plain but needs src/unit_object_type.cpp's declaration and raises 0xceee0 90 -> 97 there,
+// so BLOCKED-BY 0x188180 (and 0xceee0's own material parameter).
 // @retail 0xe4d90
 void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marker)
 {
