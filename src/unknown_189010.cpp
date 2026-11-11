@@ -158,6 +158,12 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // object and platform bits 148 (486 bytes), object only 131 (478), platform only 134 (481), both with the
 // priority from the request's audible field 147 (485). Retail's full header order
 // (priority from the request byte, set-or-clear bits, then the location copy) is listed below with its scores.
+// MiniMax D (11-10): the priority read from the request and stored before the location copy scores
+// 106, the same form with the flags computed before the copy 139, with the source in a local after the
+// sound lookup 134, with the object index in a local 136 and with the object and platform bits as
+// or/and complement selects 163; none of the gains is enough to keep, so the body stands. The fast
+// permuter found nothing better than 103 differing instructions against its 104 baseline, and the
+// variant it preferred spells the state fields with volatile casts and one-use temporaries.
 // MiniMax E (11-10): no new form, no lower score (110); the first difference is at +0x15, where retail reloads the state flags after the call that our link still expands, so the flags are still forwarded across it.
 // MiniMax E (11-09): no new form, no lower score (110); the priority and the flag word are
 // still formed after the location copy, and the first 0x221810 call is still expanded by our link.

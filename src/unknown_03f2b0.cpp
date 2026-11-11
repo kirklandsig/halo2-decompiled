@@ -1320,6 +1320,12 @@ struct s_133f70;
 // score 93 (was 93; 175 before round 82): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
 // frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain (the 93 is the
 // round 82 baseline of this body; the scores listed below were measured on earlier bodies).
+// MiniMax E (11-10, run 73): no new form, no lower score (93 on the full image, 355 on the reduced one); every difference still sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ECX, the header's global loaded first, success stored before the 0x3d4f0 call, the previous level's byte and the 0x4c190 argument order) plus one object load near the end, and the tail stays blocked by 0x23690 in another file.
+// MiniMax S (11-10): no new form, no lower score (93 on the full image, 355 on the reduced one): our frame is
+// 0x3400 bytes against retail's 0x33f8, so the stack homes sit four bytes higher than retail's, and the
+// differences still sit before the 0x4c190 call - the 0x4bcc0 argument load, the entries in ECX, the header's
+// global loaded first, the success byte stored before the 0x3d4f0 call and the previous level's byte - plus the
+// 0x4c190 argument order and one object load near the end.
 // MiniMax R (11-10): no new form, no lower score (93 on the full image, 355 on the reduced one): every difference still sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ECX, the header's global loaded first, `success` stored before the 0x3d4f0 call, the previous level's byte and the 0x4c190 argument order) plus one object load near the end.
 // MiniMax S (11-09): no new form, no lower score (93 on the full image, 355 on the reduced one); the
 // distance staging in the 0x4bcc0 call, the nullable-entry and cache adds and the result homes remain.

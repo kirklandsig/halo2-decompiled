@@ -1362,6 +1362,7 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
+// MiniMax G (11-10): no new form, no lower score (83): retail's fill is a rep stosd of 16 - index_count dwords and the two scalar homes are swapped against ours (retail keeps item_count at -0xc and index_count at -8, ours keeps them the other way round). The fill written as an index loop (with its own counter, or with the loop counter reused) gives 172, the mode spilling to its stack slot and the code losing 16 bytes; the counted fill written from zero gives 155; declaring item_count before index_count changes nothing, because the homes follow the first definition and not the declaration; initialising item_count at the top gives 121 (432 bytes, frame 0x58) and dropping the in-branch zeroing as well gives 142. The pointer walk is kept.
 // MiniMax C (11-10): the score is 83 (was 83); the two counts sit in exchanged homes (item_count at ebp-8 where retail has index_count) and the tail rows are filled by a pointer walk where retail fills them with a guarded word store.
 // MiniMax R (11-10): no new form, no lower score (83); the two counts keep the next stack slot round
 // from retail's whatever order the locals are declared in, and the tail fill stays a pointer walk
@@ -2635,6 +2636,7 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // loop's player, the second loop's four widget indices), retail reloads players[i] after the
 // voice-state query, and the last loop keeps the screen in edi and bitmap_a in ebx where
 // ours keeps the screen in ebx and false in edi.
+// MiniMax G (11-10): no new form, no lower score (95).
 // MiniMax R (11-10): no new form, no lower score (95); a 300 s permuter run over this body lowered
 // the count only by swapping a call's arguments, which changes what the widget update does, so the
 // body stands; the count copy, the item pointer and the call result keep the next stack slot round
