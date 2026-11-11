@@ -228,8 +228,8 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // copied before the subtractions 34; the deltas i, j, k 79.
 // MiniMax D (11-07): the prediction runs through the existing vector3f_add_scaled into a predicted point and
 // the ticks through the existing scaled_difference3f (the same arithmetic as the hand-written chains): 32, with
-// the tick conversion in XMM3 as retail's. Not kept: the deltas reordered to k, i, j for 30 (an order picked by
-// score; i, j, k with the helpers 79).
+// the tick conversion in XMM3 as retail's. Not kept: the deltas reordered to k, i, j for 30 (an order picked
+// by score; i, j, k with the helpers 79).
 // Earlier: the limit test is written the other way round, so the comparison matches
 // retail's operand order and its branch, but the scheduler computes the components i, j, k where
 // retail does j, i, k, so the tick conversion takes xmm4 where retail reuses xmm3, the deltas land
@@ -619,6 +619,17 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // (first +0x2f); that with the deltas through scaled_difference3f at 1.0f 82, with deltas i, j, k and the existing in-place scale helper plus
 // vector3f_add for the correction 77, with both helpers and the 1.0f delta 80; the in-place scale helper and vector3f_add alone 57 (369 bytes).
 // All restored.
+// Round 78 (m3 lane 13): the compile-only /Gr harness reproduces this float block exactly (only the parameter registers
+// differ). Scored against retail's 54-instruction block from the tick conversion to the correction stores (aligned misses,
+// base 36): deltas i,j,k 33, i,k,j 33, j,k,i 35, k,i,j 32, k,j,i 36; delta copied then subtracted i,j,k / j,i,k 46/46;
+// vector3d_from_points3d delta 36. All are listed families (none new); the chain order still follows the delta order.
+// Idiom scan of every matched retail function for retail's `mulss a, t; mulss b, t; movss [m], b; subss b, ...` (the
+// second product stored and subtracted first): no hit outside this function, so no matched source shows the form.
+// Harness, with normalize3d.h added: the correction through vector3f_scale + vector3f_add with deltas i,j,k / j,i,k
+// 36/37, vector3d_from_points3d delta with them 36. Fast, on this body (those forms were listed on the 39/43/47 bodies
+// only): correction through the existing vector3f_scale with the three adds 32 (same code); vector3f_scale +
+// vector3f_add 57 (369 bytes); local_scale3d + vector3f_add 57; the delta scaled in place by vector3f_scale then
+// vector3f_add 57; the adds written correction first 32 (same code).
 // Round 165 (m3 lane 6, fast with 0x1fc660): the output rows written j, i, k 32 (masked 13 -> 18) and k, j, i 32 (masked
 // 21); the correction added through vector3f_add(&state->velocity, &correction, ...) 57 (369 bytes, listed) and with the
 // operands swapped 57 (same code); the delta scaled straight into the output, then `+= state->velocity` per component
@@ -635,6 +646,13 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // the tick count read after the prediction helper 32 (same code); the root named before the scale 46 on this body
 // (listed as 33 on an earlier one). Re-measured as listed: the delta as an aggregate initialiser 79; limit declared
 // at its assignment 32. The squared length through reciprocal_normalize.h's k, i, j statement-sum helper 32 (same code).
+// M3 lane 1 r90 (fast with 0x1fc660, 0x1fc350, 0x1fc2f0, 0x1fc710, 0x1fc620; aligned/register-masked control 32 [29/13]):
+// a 600 s permuter run on this body (61 tries, one confirming full build) found nothing below 29, and its 29 needs the
+// rate read through a volatile cast: that cast alone gives 29 [26/15] (diagnostic, reverted at once; the limit's rate
+// is then reloaded), so the variant's other parts (the first correction add written correction first, the limit
+// declared ahead of delta, the tick count assigned after its declaration, a `(real)` on the squared length) add
+// nothing; the first add's operands swapped alone 32 (same code). No untried natural form is left (as lane 18 r17
+// found): the store/delta order and the rate-chain order stay coupled through the delta statements.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

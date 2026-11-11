@@ -1585,7 +1585,7 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax H (11-04): the logon-status test written as (status - 1 == 0) reaches retail's
 // `dec eax` and its exact 2862 bytes but scores 729; not kept, the original body is restored.
-// score 703 (was 703): 709 before that; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
+// Earlier (703, was 703): 709 before that; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // w14D (fast, callers 0x641a0/0x8df50 and the file's matched functions stay MATCH): walked statement by
 // statement against retail: no logic difference found (fields, conditions, callees, arguments, loop and
 // poll shapes all agree). Retail inlines the existing getter 0x192e60 (pointer range check at 0x74be0,
@@ -1864,6 +1864,17 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // getters called with only 0x647d0 inline 749; the 720 form with online_logon_connected() 759 (2878 B, aligned 309).
 // In the 720 form the identity-change clear loop gains a jmp + pad (its head lands at another offset mod 16: retail's cmovne is one
 // byte shorter than our je/mov), so the positional count runs off from there; the loop-head pads follow byte offsets, not the source.
+// M3 lane 1 r90 (fast with the file's functions, 0x641a0, 0x8df50, 0x192e60; aligned/register-masked counts in brackets,
+// control 703 [506/328]): the request builder's free space named (`record_space = 80 - records_used`, `property_space =
+// 480 - properties_used`, tested `> 0` and passed to 0x80940) 711 [484/313] (2894 B; retail's `mov eax, 0x50; mov ecx,
+// 0x1e0; sub; sub; cmp; jle` test); plus `j < record->count` with `properties_used += record->count` 736 [404/277] (2830 B,
+// retail's rolled loop with the count in ESI); plus the type-5 identity copied into a local XUID, scanned by index with
+// `if (k < records_used) continue;` and the other arm copying the owner directly 739 [514/273] (frame 0xc8); one
+// function-scope identity for both loops 739 (same code); the identity assigned in both arms and copied into the record
+// once after the join 738 [438/256] (2894 B, frame 0xc0: retail's join, both arms load the identity into EAX/ECX/EDX and
+// one store follows); plus online_logon_connected() 778 [434/259]. Each step lowers the masked count but shifts the
+// positional one; the slot test's cmovne (one byte shorter) still needs /arch:SSE, a file-flag decision, so the function
+// cannot match under the file's flags. All restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

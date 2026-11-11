@@ -2365,6 +2365,15 @@ void function_cfec0(long unit_index)
 // merged into the final one 39 (246 B); the parent-level return merged into the final one 12 (252 B: the shared exit
 // returns `mov eax, ebx` as retail, but VC then pushes EDI before the first test); the seat-level return merged into
 // the parent-level one 32. So retail's NONE exit is a separate epilogue without the edge constant.
+// m3 lane 16 r104 (fast, callers 0x1a4900/0x1a4c00 checked): the parent index through a ternary on the NONE test with the
+// seat read through a second lookup 12 (252 B: every exit returns `mov eax, ebx` as retail, but EDI is pushed before the
+// first test); `unit_index != NONE && UNIT_GET(unit_index)->parent_index != NONE` 99 (the argument moves to the stack and
+// both callers lose their match); the unit as `unit_index != NONE ? UNIT_GET(unit_index) : NULL` 97 (same loss); one early
+// return for `unit_index == NONE || parent == NONE` 99 (same loss); parent and seat tested together with && 33.
+// Compile-only probes: VC puts the constant into every NONE exit that is its own block, for a parameter, a call result or a
+// load alike; the 11 matched functions whose NONE edge returns the register all reach a return shared with another path.
+// Hypothesis (inferred from that scan, not measured): retail's NONE exit was a shared return split again before the pushes
+// were placed.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
@@ -5732,6 +5741,13 @@ void function_cf040(long unit_index, short type)
 // holder kept for its slot argument 1; the first unit lookup through unit_at_masked_index 1, both lookups through it 1;
 // the unit looked up before the vehicle 139. Diagnostic: 1-32 initialised unused locals at the top or before the loop
 // leave the order unchanged (not symbol numbering here).
+// m3 lane 16 r104 (fast, callers unchanged): the root walk's lookup through unit_at_masked_index 1; the rider lookup
+// through it 1; both 1; the rider read through a named child index (also stored as the occupant) 1; the weapon loop's
+// slot and weapon reads through the existing unit_weapon_view_get 1; the slot through unit_weapon_view_get with the
+// weapon through 0xcbd50 1 (a variant of round 82's 0xcbd50 form). Lead: matched 0xe9370 shows both orders in one body,
+// its lookups by the parameter as [data + offset] and its loop lookups by child_index as [offset + data], whether the
+// offset is fresh or reused, so the order seems to follow the index variable the offset came from.
+// Permuter (r104, 10 minutes, 53 variants): nothing below 1.
 // @retail 0xc92c0
 bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_index, long *blocker_index, bool *grouped)
 {

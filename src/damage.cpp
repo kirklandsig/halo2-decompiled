@@ -2688,6 +2688,7 @@ struct s_unit_event
 /* destroys a permutation of a region: hides it, starts its effects and
    area damage, and applies its side effects to the object (depletes the
    body, drops weapons, ejects riders, destroys attached children) */
+// score 472 (was 472): frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // score 472 (was 472; r101 unchanged): frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // with register homes/call setup and 1884/1868-byte length still differing.
 // MiniMax D (11-10): no new form, no lower score (472): the second lookup still reloads the table pointer where retail derives the array base from the pointer it kept in ECX into EDX.
@@ -2764,6 +2765,13 @@ struct s_unit_event
 // subsets 1/2/4/3/5/6/7, then all with info-record identity:
 // 472/472/472/472/472/472/472/472 (fast control 472).
 // NOT kept: no exact identity-form match; original complete body restored.
+// Lane 3 r230 (plain 472 at 1884 bytes; ours `ret 0x18`, all six on the stack under the explicit __stdcall, retail
+// `ret 0x14` with the permutation in EAX): the whole function moved to the end of this file, plain 472 with `ret 0x18`
+// unchanged (0xd9d60 69, 0xdae60 82), so its order inside this file does not choose the cycle entry; still BLOCKED-BY
+// 0xb8540. The destroy block written in each arm (`if (flags & 1) { if (!db110(..)) destroy } else if (flags & 0x10000)
+// { if (state != 1 || !db110(..)) destroy }`) gives retail's one shared 0xdb110 call (`push 0; push 0; jmp` into
+// `push; call; test al, al; jne`) and keeps the constant 1 in a register as retail does, but 545 (1848 bytes); that
+// without `__stdcall` 588 (`ret 0x10`); with long drop values 533; with the second arm as one condition 545.
 // Round 101 (m3 lane 16): the walk. With function_d9d60's prototype moved ahead of function_dae60's and function_da110's (no
 // `__stdcall`), 0xda110 gets a custom convention, region index in EAX and permutation in ECX, `ret 0x10`, frame 0x40: 528 (plain,
 // 1868 bytes; dae60 83, daaa0 141, d5de0 394, db760 35). On that walk: no `region` local 555 (1852 bytes, still two register

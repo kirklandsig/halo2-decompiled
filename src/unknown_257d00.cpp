@@ -1922,6 +1922,11 @@ void function_b7360(long object_index);
 // (0x258dc5 and 0x258e15 are reached from both the 15/16/17 and the 1/19 call sites; ours duplicates them) and ends
 // on the failure block; case 13's flag OR is load/or/store (retail `or byte ptr [ecx+0x10a]`). Tried this walk:
 // `bool success;` with `case 11: default: return 2;` 471 (1832, worse); `case 11: return 2;` with the initializer 301.
+// Lane 3 r230 (fast, base 301 at 1824 bytes): case 13 through the existing swarm-object flag5/flag6 bitfields 309 (1816;
+// retail's direct `or byte ptr`, a repeat of the listed word-flags result); arg_0 and the output renamed by role so the
+// output's name sorts first 301 (byte-identical: names do not pick ESI/EBP here); `success` declared first 301 (identical);
+// case 7's delay as a ternary 301 (identical); case 9 reading the scenario global at each use, no local, 301; case 13
+// with the object looked up in each arm, no local, 313.
 // m3 lane 8 r146 (fast; aligned/masked base 151/107): case 13's 0xb7360 call once after the if/else 301 (same code); case 4's
 // range result as a ternary 437 (1820 bytes); case 5's clamp as a ternary 304; case 7's mask as `&= ~0x18; |= 4;` 301 (same code);
 // case 13's OR value as a ternary with one store 319 (1808). Ours already cross-jumps the 0x259ec0 blocks as retail does.

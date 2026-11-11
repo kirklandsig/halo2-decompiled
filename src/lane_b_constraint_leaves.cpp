@@ -1,5 +1,6 @@
 // @flags /O2 /GL-
 #include "lane_b_constraint_leaves.h"
+#include "contact_constraint_315510.h"
 
 // @retail 0x31bc60
 lane_b_constraint_aggregate::lane_b_constraint_aggregate()
@@ -8,13 +9,14 @@ lane_b_constraint_aggregate::lane_b_constraint_aggregate()
 }
 
 // @retail 0x31bd90
-void lane_b_contact_constraint_prefix::get_sizes(lane_b_constraint_sizes *sizes)
+void contact_default_31c000::info(lane_a_constraint_info *output) const
 {
+	lane_b_constraint_sizes *sizes = (lane_b_constraint_sizes *)output;
 	sizes->total = 0;
 	sizes->term_bytes = 0;
 	sizes->results = 0;
 	sizes->op_bytes = 0x18;
-	long count = property_count;
+	long count = properties.size;
 	sizes->total = 0x80 + count * 0x30;
 	sizes->term_bytes = (count + 2) * 0x30;
 	sizes->op_bytes = 0x2c + count * 4;

@@ -308,8 +308,6 @@ static inline bool teams_enabled_19e1c0()
 }
 
 /* writes the text of one token for the event, returning its length */
-// MiniMax E (11-05): no new form, no lower score.
-// MiniMax h (11-04): no new form, no lower score; the volatile result keeps our case tails apart and our frame is 0x208 against retail's 0x204.
 // score 390 (was 390): retail clamps the copy length with `cmp remaining, length` and a conditional
 // move, so the comparison written as `remaining <= result` was tried: with the volatile result 466,
 // with a plain result 652 (against 390 and 691). The plain result does match retail's frame 0x204
@@ -592,6 +590,23 @@ static inline bool teams_enabled_19e1c0()
 // lives cases 387 (1443 B, retail's length), in the spawn-time case only 389 (1439 B; retail's spawn-time case has the pointer's dead
 // `add eax, ebx`, its lives case does not); the cause-team score read into a named local before 0x159130 390 (same code). Body
 // unchanged (gains under 4 are not kept).
+// MiniMax E (11-05): no new form, no lower score.
+// MiniMax h (11-04): no new form, no lower score; the volatile result keeps our case tails apart and our frame is 0x208 against retail's 0x204.
+// M3 lane 1 r89 (fast with 0x19e0f0, which stays matched; control 390, aligned 197, masked 125; the two MiniMax lines above
+// moved down so the score line leads): in the opponent scan the team-index test before the eligibility call 395; the score
+// test nested inside the eligibility test 390 (same code); the local-player index as `g_4b9ed8 != NONE ? entries[...] : NONE`
+// with one test 390 (same code); the opponent score read once per team into a `score` local 403 (1432 B); `best_score <=`
+// with the long local-team value (two listed parts together) 391. Re-measured listed forms: long opponent team 421, mode read
+// at each use 390, long local-team value 393, team test first in both team admissions 401, clamps as `remaining < result`
+// 390, `best_score <= function_1587f0(team)` 388 (two points, under the bar).
+// M3 lane 12 r110 (fast, 0x19e0f0 kept): const-qualified parameters on the plain result (control 691, 1170 bytes):
+// `long const remaining` 691, `word const *const token` 691, `long const token_length` 691, every parameter const 691;
+// every parameter const on the volatile result 390 (same code each: qualifiers do not move `remaining` into a register).
+// The five `%s` format tails through one inline helper (vsnprintf, failure gives `remaining`; five callers): volatile
+// result 465 (1487 bytes), plain result 594 (1269 bytes, aligned 202 against the volatile body's 214, masked 139);
+// with the four name copies through a second inline helper (length, clamp, wcsncpy) plain 594 (same code), volatile 511.
+// Constraint left: the remaining levers are the plain result (merges the name tails while `remaining` stays on the
+// stack) and a natural entry reference to `remaining` (lane 4 r167); no untried natural form reaches either.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

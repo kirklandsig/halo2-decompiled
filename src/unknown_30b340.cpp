@@ -34,7 +34,7 @@
 // constructors in all four combinations 12
 // @retail 0x30b340
 class_30b340::class_30b340(referenced_2d88a0 *object_, long value)
-	: field_8(0), object(object_), field_10(-1), field_14(0), field_18(0), field_1c(0), field_20(0), field_24(value)
+	: field_8(0), body(object_), handle(value)
 {
 	list.owner = this;
 	if (object_)
