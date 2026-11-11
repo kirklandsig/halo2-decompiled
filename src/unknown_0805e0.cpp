@@ -360,6 +360,7 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the machine-local test with a successor local and early returns 44. Re-measured: `*iterator = index = entry->next` with an
 // early return 52, a successor local with early returns 49, an early `return false` then a do-while 55, a found pointer with
 // break 51 (133 bytes).
+// MiniMax A (11-11): no new form, no lower score (43); this round's new forms measured 43 or 71: the exclusion mask as a variable of its own, declared before or inside the loop (43), and the three loop forms that read the iterator in the loop (71).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
