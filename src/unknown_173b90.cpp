@@ -760,6 +760,11 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // definition formed as the first statement inside the list block, before the 1.0 defaults, 57; both scale products written
 // multiplier first 42 (same code); the multiplier test through the existing flag getter 0x173b90 273 (1110 bytes); the next
 // particle index read between the two particle copies and the particle-cache invalidation 273 (1113 bytes).
+// m3 lane 15 r74: the listed indexed-definition form (fixes the zero store and the three reload pairs)
+// turns both rotations through the shared rotate helper, whose product phase this file cannot change. Fast: indexed
+// definitions with scale first re-measured 113 (1136 B, masked 55); the index as a for counter 113 (same code); on it
+// the motion copied first 121, the motion rotated first 116, the emitter definition formed inside the list block 128,
+// scale declared just before its emitter-level test 251 (1138 B), the particle copies after the cache invalidation 193.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1732,6 +1737,21 @@ bool function_17afd0(long effect_index, long value);
 // lookup in its own local 47 (same code); same_view false then set by the full test 107 (498, owner in ESI, view in EBP).
 // Every branchy availability spills the flag or moves NONE out of EBP; ours keeps the flag in BL only with the early
 // `available = false` and the neg/sbb/inc set.
+// m3 lane 15 r74: a compile-only screen (/O2 /Gr, no /GL; it reproduces this body's allocation, window rows against
+// retail with the two call-argument rows the screen cannot model: this body 10, retail-like 3) of 120 forms: view as a
+// local, the global at each use, or a local with the global at the camera test; availability as the guarded value, a
+// branch, a nested branch or `== 0`; its clear early or late; owner as if/else, NONE default or ternary; owner before or
+// after the second definition call; same-view equality either way round. Best is this body (10); the branchy forms 20-34
+// (NONE in EBX or ESI, the availability or the owner spilled). Fast re-measures: the plain form P (view global at each
+// use, branchy availability) 142 with the clear early, 138 with it late (masked 19/18). Retail's code after the view
+// load is P's exactly (same-view materialised in the availability test's block, its true path threaded past attached's
+// availability test); only the allocation differs (retail NONE coalesced with the owner in EBP, availability BL).
+// Fast: the systems pointer reloaded before the next index 54; on P (clear late) same_view as `available && owner !=
+// NONE && g_4b9ed8 == owner` 118 (499 B, masked 8: availability in BL as retail), with the owner defaulted to NONE first
+// 59 (498 B, masked 8: effect index EDI and availability BL as retail; left: NONE in EBX and the owner in ESI where retail
+// coalesces them in EBP, and the availability tested first where retail tests the owner first); that order on this body
+// 107 (492 B); the availability declared at the loop-body top 134 (500 B). Same code: the outer test as nested ifs, the
+// cluster read at each use.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

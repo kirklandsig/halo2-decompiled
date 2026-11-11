@@ -354,6 +354,15 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // Round 71 (m3 lane 15, fast; caller 0x1d5bf0 matched throughout): round 60's 24 form re-measured 24 at 256 bytes
 // (register-masked aligned 8); on it the main switch's four cases in all 23 other source orders: best 42 (11,0,1,7 and
 // 1,11,0,7), the rest 45-67, all 256 bytes. Retail lays the case bodies out 11, 1, 0, 7, the order already used.
+// m3 lane 15 r74 (fast, caller 0x1d5bf0 in brackets): both bodies return with `ret 8` (owner and level on the stack,
+// component EAX, rigid index ECX, kind EDI); the MiniMax I line above that says ours returns `ret 4` is wrong. A long
+// type read once at entry with `if (type == 1)` for kind 7 141 at 212 B [213] (kind arrives in ESI and the level in EDI,
+// `ret 4`); with the one-case switch for kind 7 136 [213] (re-measure of round 10's form). Retail computes the absolute
+// index twice (`and eax, 0xffff` for the type, `and ecx, 0xffff` again in case 0) and keeps the object index in ECX for
+// both, so its case 0 is not CSE'd with the type read the way every one-read form here is.
+// One type read with no rigid-body local (both flag tests through the owner chain), kind 7 as the one-case switch: byte
+// type, case 0 through object_index 113 at 240 B [210]; long type 117 at 236 B [210]; byte or long type with case 0
+// re-reading the component 97/97 at 260 B [122].
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

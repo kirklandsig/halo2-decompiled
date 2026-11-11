@@ -950,6 +950,15 @@ struct s_device_machine_view
 // 115 (657 B); the same taking the group index (lookup inside, no group local) 167 (630 B: the device moves to ESI
 // from entry); the pointer form as `if ((f & 1) && (f & 2)) return true; else return false;` 120; the index form with
 // the if/return body 167; the pointer form plus the 0x1200055f zero store 119 (660 B).
+// m3 lane 15 r74: a compile-only screen (/O2 /Gr without /GL) of this body against retail leaves exactly the two
+// listed rows (the byte load with the mask for retail's `mov ax, [eax+2]`, and case 0x1200055f's zero store), so the
+// screen is exact here. No natural spelling of the group test outside the listed families was found; every listed one
+// keeps the 16-bit value ahead of the two-reference group pointer for EAX.
+// Fast: the power/0x10 test as two clearing ifs 123 (662 B); the machine flags read before the group lookup 127 (657 B);
+// the case opening as `function_value = position == 0.0f ? 1.0f : 0.0f` 133 (657 B); case 0x1200055f's velocity block
+// through a file-local `inline` fraction helper whose result starts at 0 266 (547 B: the helper stays out of line),
+// with the two ifs 258 (555 B); the helper as `PRIVATE __forceinline` 117 at 654 B (inlined, but its zero-initialised
+// result takes a stack slot, as round 81's zero-initialised local did).
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -2056,6 +2065,29 @@ bool function_0b6760(s_index_pair const *pair);
 // copy 250 (same code). Our result stays in DL because its value never crosses a call; retail's byte shares the
 // `increasing` slot. Channel 1's test calls 0xb6760 (src/unknown_0b66c0.cpp, built /Ob1, so LTCG cannot inline it here as
 // retail does at the channel-0 sites).
+// m3 lane 15 r74 (fast, base 250, aligned 115 / register-masked 44): the tick rate read once at entry into a local used
+// by all four rate reads 316 (1477 B, masked 47). Same code as the base (spellings): the power group index in a named
+// local inside a nested else, the clamp test as `speed < fabs(v)`, `if (++device->delay_ticks == 1)`. Diagnostic only
+// (a volatile result, reverted at once, lane 14 r62's listed form): 234 at 1495 B, device_index then stays in its
+// argument slot and the callee-saved roles stay permuted. Roles by region: ours ESI = index*12 (entry, tail) and the
+// power-velocity pointer, retail EBX; retail gives the power-group pointer ESI (spilled around the `this`-in-ESI
+// channel call) where ours gives it EBX; the position-group arm already agrees (group EBX, position EDI, channel ESI).
+// Lead (fast, match-only): drop the definition pointer's `volatile` and read the rate into a local just before the
+// power 0x11eed0 call: 249 at 1495 B (first difference +0x3 -> +0x44, masked 44 -> 26) with retail's prologue (EBX, EBP,
+// ESI, EDI late), index*12 EBX, device_index ESI and the result byte at [esp+0xf]; plus `bool result = false;` after the
+// definition 247 (+0x85, masked 24); plus the 0xb3 byte `<= 0` 247 (masked 23, 'p2'); plus the 0x100 update as an
+// if/else 262 at 1487 B but masked 11 ('q2'). Left on q2: the acceleration block's float colouring (retail complement
+// xmm1, 0xcc product xmm0, zero xmm1; ours complement xmm0, zero xmm0, one `movaps xmm0, xmm1` missing) and the
+// position-group refresh (ours state ECX across the 0xb6760 call and device_index EBX; retail state EBX, device_index
+// reloaded per call). On p2/q2 the acceleration spellings (one expression, both pairs named, shared complement, operands
+// swapped, complement term first, speed first) give 247/262 (same code or masked 22/10), a rate local before the
+// position call too 247 (same code); a two-use time_step for the delay product and the call 280/276, at the inner else
+// top for the call 143 (frame 0x24, masked 28), at entry for all four reads 383, for both calls 376; `increasing`
+// before the products 143 (1478 B, masked 35). Also tried here (old base): the rate local at the inner else top 335,
+// the clamp as an if/else 361; the rate local alone re-measured 256 (masked 38).
+// On q2: a channel pointer for the position arm's two tests and calls 247 (1495 B, masked 25); the position arm's
+// `previous` read before its channel test 253 (masked 15); the power `previous` read after the clamp 273 (masked 15);
+// the position idle test as `!(value == position && velocity == 0.0f)` 262 (same code).
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {
