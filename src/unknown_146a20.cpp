@@ -64,6 +64,8 @@ bool g_47f05b;
 // include/unknown_146a20.h, which this lane may not edit (BLOCKED-BY), and the pool placement still reloads
 // g_479888 at the join where retail reloads it on the constructed arm; the no-local form puts that reload in
 // retail's place but loses the 1 in EDX (36), and seven source forms all score 34 or more.
+// MiniMax E (11-11): no new form, no lower score (34); the base vtable store retail keeps comes from the inlined
+// constructors in include/unknown_146a20.h, which this lane may not edit, so the gap stands (BLOCKED-BY that header).
 // MiniMax C (11-09): no new form, no lower score (34); the abstract allocator's base vtable store is still elided (BLOCKED-BY include/unknown_146a20.h).
 // MiniMax D (11-06): no new form, no lower score (34); retail's base vtable store (0x453760) and its
 // derived vtable (0x4576a4) come from the shared constructors in include/unknown_146a20.h, which this lane may
