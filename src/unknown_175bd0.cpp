@@ -2848,7 +2848,7 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 	}
 }
 
-// score 23 (2 held; was 30): with the held change below only the decal call's two register arguments remain,
+// score 23 (2 held; was 23; 30 before): with the held change below only the decal call's two register arguments remain,
 // BLOCKED-BY 0x17e670 (contributor): its
 // body takes the source in ECX and the point in EDX in retail, ours the other way round. Round 80 (m3 lane 1): the
 // round 117 lead applied, 0x189060 as (object, value, position, direction, scale, tag) at its definition, every
@@ -2980,6 +2980,8 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // 63; the sound record declared at function scope 23 (same code), with retail's order 40. The attached call's scale
 // takes EDI because the position and direction temporaries are defined before it (arguments are evaluated last to
 // first), so the cause stays 0x189060's order: BLOCKED-BY 0xbf600 (its call) and 0x17e670 (the decal call).
+// M3 lane 15 r76: no trial. The first difference (+0x24f) is still the decal call's two register arguments into 0x17e670
+// (contributor, unmatched at 429), and the sound arms still need the held 0x189060 order (aligned 25, register-masked 14).
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
