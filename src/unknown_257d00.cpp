@@ -1590,8 +1590,12 @@ bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
 #pragma inline_depth(2)
+// score 270 (was 301; 301 before): 1848 bytes as retail, with retail's success-test layout (return 0 after the test, the failure block
+// last). Left: arg_0 in ESI and the output in EBP where retail has EBP and ESI (ours holds the point reference across 0x25ab50 at the
+// 1/19 site and case 5, retail reloads it), the prologue's pool order, the table-first lookups in cases 7 and 13, case 10's +0x8c
+// clear after the selector load and case 5's store order.
+// Earlier 301 (was 301): the object index stays in ESI and the output pointer in EBP (retail EBP and ESI), the first exit test falls into the failure return, and some bodies are 24 bytes short.
 // MiniMax E (11-10): no new form, no lower score (301); retail reads the actor pool global before the datum pool and takes the actor index into ebp among the pushes, this build reads the datum pool first and takes the actor index into esi after the four pushes, and retail puts both return tails (the zero result and the shared 2) at the end of the function where this build leaves the 2 inline in the middle.
-// score 301 (was 301): the object index stays in ESI and the output pointer in EBP (retail EBP and ESI), the first exit test falls into the failure return, and some bodies are 24 bytes short.
 // Lead (round 91, m3 lane 9): at the 1/19 site, the `field_3 |= 0x40` store written before the point copy (a store through the
 // output ahead of the reference re-read) gives retail's arg_0 EBP and output ESI and the reload `mov edi, [edi + 0x28]`, 297
 // (fast, 1824 bytes, aligned 112); the store then sits ahead of the copy where retail has it after, and the join
@@ -1945,6 +1949,17 @@ void function_b7360(long object_index);
 // entry) and case 7's dot sides. On 100: `if (success) return 0; return 2;` 169 (1816), `if (!success) return 2;` 179
 // (1812), with a failure label 179, failures back to `return 2` 174 (with those tails 169/179), dot3f arguments swapped
 // 102, the second pointer declared before the datum/before the actor 104/132, a plain copy of the datum pointer 244.
+// m3 lane 11 r88 (fast, 270 plain-confirmed): on 301 the post-switch `return 0` and the empty cases jump into case 20's tail,
+// so the success test falls into `mov ax, 2` mid-function and the jumps to it are short (the 24 missing bytes). Case 20
+// ending `success = true; break;` 301 (they jump into case 13's tail instead), with case 13 too 305 (case 8's tail). Kept:
+// every `return 0` in the main switch as `success = true; break;` and every `return 2` there as `break;`, with the guard's
+// `return 2` and the `if (success) return 0; return 2;` tail, 290 (1860 bytes, masked 73; the guard as a goto to that tail
+// gives the same code), then case 13 through s_swarm_object's flag6/flag5 bits with one 0xb7360 call (0x28e2b0's form,
+// retail's `or byte ptr`) 270 (1848, masked 68). On it: actor local first 504; the lookups through object_header_get 270,
+// the 1/19 point arm as an explicit else 270, case 13 with a call in each arm 270 (all the same code); case 9 reading
+// g_4e0350 at each use 270 (masked 66); the guard as a goto to one `return success ? 0 : 2;` 651 (1684 bytes), to a
+// `short result` if/else 465 (1840), to `short result = 2; if (success) result = 0;` 651 (1684); the tail as
+// `if (!success) return 2; return 0;` 319 (1812).
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -1971,17 +1986,18 @@ short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long 
 	{
 	case 0:
 		local_2->field_0 = (short)local_1->unknown08;
-		return 0;
+		success = true;
+		break;
 	case 17:
 		if (!function_25ab50(local_1->unknown2c))
 		{
-			return 2;
+			break;
 		}
 	case 15:
 	case 16:
 		if (!function_25ab50(local_1->unknown28))
 		{
-			return 2;
+			break;
 		}
 		{
 			success = function_259ec0(arg_0, arg_3);
@@ -1992,7 +2008,7 @@ short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			else if (local_1->unknown76)
 			{
 				local_1->unknown77 = false;
-				return 0;
+				success = true;
 			}
 			break;
 		}
@@ -2001,13 +2017,13 @@ short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long 
 	case 2:
 		if (!function_25ab50(local_1->unknown2c))
 		{
-			return 2;
+			break;
 		}
 	case 1:
 	case 19:
 		if (!function_25ab50(local_1->unknown28))
 		{
-			return 2;
+			break;
 		}
 		if (local_0->unknown018 != NONE)
 		{
@@ -2019,13 +2035,14 @@ short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			else if (local_1->unknown76)
 			{
 				local_1->unknown77 = false;
-				return 0;
+				success = true;
 			}
 			break;
 		}
 		*(s_type_c3b527 *)((byte *)local_2 + 8) = cs_point_get(local_1->unknown28)->point;
 		local_2->field_3 |= 0x40;
-		return 0;
+		success = true;
+		break;
 	case 4:
 		{
 			function_b9dd0(arg_1, &local_2->field_18);
@@ -2047,13 +2064,14 @@ short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long 
 				function_1f86a0(arg_0);
 			}
 			local_2->field_3 = (local_2->field_3 & ~2) | 1;
-			return 0;
+			success = true;
+			break;
 		}
 	case 7:
 		{
 			if (arg_1 == local_0->unknown018 && local_0->unknown26c != NONE)
 			{
-				return 2;
+				break;
 			}
 			local_2->field_3 = (local_2->field_3 & ~0x18) | 4;
 			bool local_7;
@@ -2079,20 +2097,22 @@ short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			local_2->field_0 = (short)real_to_long(g_510c54->field_2_3 * 2.f);
 			local_2->field_c.i = (real)cos(local_1->unknown08 * 0.01745329238474369f) * *(real *)local_1->unknown0c;
 			local_2->field_c.j = (real)sin(local_1->unknown08 * 0.01745329238474369f) * *(real *)local_1->unknown0c;
-			return 0;
+			success = true;
+			break;
 		}
 	case 8:
 		{
 			if (arg_1 == local_0->unknown018 && local_0->unknown26c != NONE)
 			{
-				return 2;
+				break;
 			}
 			local_2->field_3 = (local_2->field_3 & ~8) | 0x14;
 			local_2->field_8 = 0;
 			local_2->field_c.i = local_1->unknown08;
 			local_2->field_c.j = *(real *)local_1->unknown0c;
 			local_2->field_0 = (short)real_to_long(g_510c54->field_2_3 * 2.f);
-			return 0;
+			success = true;
+			break;
 		}
 	case 10:
 		local_1->unknown8c = false;
@@ -2116,7 +2136,7 @@ short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			byte *local_14 = (byte *)function_1e5380(arg_0);
 			if (!local_14 || !function_25ab50(local_1->unknown28))
 			{
-				return 2;
+				break;
 			}
 			s_cs_point *local_15 = cs_point_get(local_1->unknown28);
 			function_cccd0(local_0->unknown018, *(short *)(local_14 + 4), 1);
@@ -2129,7 +2149,8 @@ short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long 
 				local_1->unknown9a = local_16;
 			}
 			local_2->field_0 = (short)real_to_long(g_510c54->field_2_3 * 2.f);
-			return 0;
+			success = true;
+			break;
 		}
 	case 9:
 		{
@@ -2137,13 +2158,13 @@ short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			byte *local_20 = (byte *)g_4e0350;
 			if (local_19 < 0 || local_19 >= *(long *)(local_20 + 0x198))
 			{
-				return 2;
+				break;
 			}
 			short local_21 = named_entry_find((s_named_entry_owner *)local_20,
 				*(char **)(local_20 + 0x19c) + local_19 * 0x28);
 			if (local_21 == NONE)
 			{
-				return 2;
+				break;
 			}
 			success = function_1fb360(arg_1, local_21, 0);
 			break;
@@ -2153,15 +2174,15 @@ short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			s_slot_object_view *local_object = object_get(arg_1);
 			if (*(short *)local_1->unknown06 == 1)
 			{
-				*((byte *)local_object + 0x10a) |= 0x40;
-				function_b7360(arg_1);
+				((s_swarm_object *)local_object)->flag6 = true;
 			}
 			else
 			{
-				*((byte *)local_object + 0x10a) |= 0x20;
-				function_b7360(arg_1);
+				((s_swarm_object *)local_object)->flag5 = true;
 			}
-			return 0;
+			function_b7360(arg_1);
+			success = true;
+			break;
 		}
 	case 20:
 		function_26c180(arg_0);
@@ -2169,12 +2190,23 @@ short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long 
 		((s_25a380 *)local_1)->field_c0 = local_0->unknown27c.point;
 		local_1->unknownac = true;
 		function_1f86a0(arg_0);
-		return 0;
-	case 6: return 0;
-	case 12: return 0;
-	case 14: return 0;
-	case 18: return 0;
-	case 21: return 0;
+		success = true;
+		break;
+	case 6:
+		success = true;
+		break;
+	case 12:
+		success = true;
+		break;
+	case 14:
+		success = true;
+		break;
+	case 18:
+		success = true;
+		break;
+	case 21:
+		success = true;
+		break;
 	}
 	if (success)
 	{
