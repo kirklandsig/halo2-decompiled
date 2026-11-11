@@ -1326,6 +1326,8 @@ done:
 	return result;
 }
 
+// MiniMax B (11-11): no new form, no lower score (9): the getter is shared with sixteen matched callers, so no
+// spelling of it can be changed on its own account, and none of the subscript forms reaches retail's prologue.
 // MiniMax E (11-10, run 73): no new form, no lower score (9); retail builds the actor offset in EAX and forms the actor with lea esi,[eax+edx] where we build the offset in ESI and add the base, and the shared getter's spelling cannot change because sixteen matched functions depend on it.
 // MiniMax E (11-10): no new form, no lower score (9): four more spellings of the actor address (a byte base
 // local with an offset local, the offset local alone, the typed subscript and the base after the offset) all
@@ -1787,6 +1789,12 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax A (11-11): no new form, no lower score (442 plain, 548 on the reduced image); retail calls 0x1fdd90
+// out of line with the slot offset spilled to [esp+0x30] and the actor index in ESI, ours expands the call inline
+// and keeps the index in EDI, so the entry block and the frame (0xcc against retail's 0xc8) differ; the helper is
+// defined in another file, so its inline decision cannot be moved from here. The statement walk the earlier rounds
+// recorded agrees with the source on every block, condition, callee and constant, so what is left is that call and
+// the register and frame layout. BLOCKED-BY 0x1fdd90.
 // MiniMax D (11-10): no new form, no lower score (442): retail calls 0x1fdd90 out of line with the slot offset spilled to [esp+0x30] and the actor index in ESI where ours expands the call inline and keeps the index in EDI; 0x1fdd90 is defined in another file.
 // b2J (11-06) statement walk against retail 0x298370..0x298b3e (align.py 548 fast, 442 full): every block, offset,
 // condition direction, callee, argument order (0x2980d0 looking/bounds flags, 0x2967b0 type pointers +0x420/+0x434/+0x688 and the movement temp, 0x10f630 first=ESI,
