@@ -165,6 +165,16 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // that without the walk's own return 145. Re-measured: the listed `if (result != NONE) initialize = true; else return
 // result;` 72 now (519 bytes: the walk's NONE return moves to the end as retail, but returns `or eax, -1`), with the merge
 // test spelled as above 87; one variable for the allocation and the result 141.
+// m3 lane 14 r84 (fast with 0x3dd10 and 0x13ddd0, both matched; aligned rows in brackets, base 11): re-measured the
+// `initialize = true` in both arms of the allocation test 9 [6] (match-only: a flag set inside two tests). New: the
+// allocation arm first (`cache_index == NONE || owner != object_index`) closed by `initialize = true; if (result ==
+// NONE) return result;` with the record block unconditional 138 (518 B [125]: the record block becomes the found arm's
+// fall-through and the allocation arm moves after the return); `long result = NONE;`, the found test only setting
+// `result = cache_index`, then `if (result == NONE) { allocation and walk; initialize = true; }` and main's outer test 83
+// (508 B [16]: the found path now skips the merge test and enters the record lookup as retail; left only the walk's NONE
+// return, inline and folded to `or eax, esi` where retail has an unfolded `mov eax, esi` epilogue after the main one, and
+// one alignment pad); on that the 9 form's arms 86 (506 B), no walk return 101 (491 B, the two NONE tests merge), the
+// found test as a ternary initialiser 147 (524 B).
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

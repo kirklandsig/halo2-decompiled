@@ -504,7 +504,7 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
-// score 303 (was 303): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
+// score 303 (was 303; 322 before that): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
 // integer and the sine) at the frame bottom where ours puts it above the result byte, so the axis/result
 // homes sit 4 lower; the two rotations keep the candidate in registers in retail (ours spills it between them).
 // Walk b4H (11-06, fast 303): statement-by-statement against retail 0x296e60-0x2973ec found no behaviour difference. Checked: pitch axis
@@ -518,7 +518,7 @@ struct s_collision_result_buffer_1697c0
 // temporary (the length, the integer and the sine) at the frame bottom where ours puts it above the
 // result byte, so the axis and result homes sit four lower, and ours is twelve bytes longer than
 // retail (1435 against 1423).
-// score 303 (was 303; 322 before that): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
+// Earlier note (303, was 303; 322 before that): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
 // integer and the sine) at the frame bottom where ours puts it above the result byte, so the axis/result
 // homes sit 4 lower; the two rotations keep the candidate in registers in retail (ours spills it between them).
 // Round 85 (m3 lane 12): `real versine = 1.f - cosine;` named in the rotate-in-place helper 293 (NOT kept (review):
@@ -754,6 +754,28 @@ struct s_collision_result_buffer_1697c0
 // best-direction tail 303, in both success paths 303, before the candidate's normalize 303 (all the same code); the
 // result byte renamed `success` 303 (same home); `return true` in the tail with the collision flag read once through
 // its address 359 at 1442 B.
+// m3 lane 14 r84 (fast with 0x297660 and 0x297d30; masked = aligned rows with registers and esp offsets masked, base 153):
+// `clear = true` after both rotations 345 (1437 B). The lead: sine and cosine evaluated into this function's own named
+// locals (not inside the angle wrapper, not as call arguments) put the x87 temps at retail's frame bottom: all four as
+// locals before the rotations 263 (frame 0xb0, masked 68); in retail's order (pitch pair, rotation, yaw pair, rotation)
+// 210 (frame 0xa8, 1423 B, masked 82: every home through the draws is retail's, the pitch pair's two slots swapped, the
+// random integers in the other slot); one pair reused for both rotations 214 (1428 B, masked 68: the integers and the
+// pitch pair in retail's slots, the yaw pair's swapped). All match-only (call results read once, and the angle wrapper's
+// body written out). On the reused pair: the single-exit normalizer 208 (1423 B, masked 52), the early-return normalizer
+// 208 (1424 B), the yaw cosine before its sine 207 (x87 order then not retail's), the best vector declared before
+// best_fraction 205 (masked 50, retail's entry stores), with the NONE store before the ray 207 (masked 47, retail's
+// collision block order), on that the header normalize3d 214, sinf/cosf 208, the rotation rows k, j, i 277 (0x297d30
+// 172), each cross term next to its row 301 (0x297d30 167); axis-first products, an axis-first dot and projection-first
+// rows compile to the same code; the four locals with the single-exit normalizer 234; the pair at function scope or
+// ahead of the copy: same code. Same code as the base: the draws with __FILE__/__LINE__; the existing rotate_direction
+// (unknown_1eb8a0.cpp) with sin/cos arguments (with the named pair, the pair's code); the wrapper merged into one helper
+// (0x297d30 23 -> 146). Diagnostics: the named pair for one rotation only 286/223; the pitch pair named with the yaw
+// sin/cos as arguments 309; four locals renamed, same code; 0x297d30 with sin/cos arguments 146, with named
+// angle/sine/cosine 23. Left on the best lead: the pitch normalize's j preload, the first rotation's allocation (retail
+// keeps the candidate's j in a register for the crosses), the exit's dl/ecx load order, the normalizer's product
+// orientation (clear path j and k, tail i). Later on the 205 form: the pitch axis set member by member with j first 240
+// (1423 B); the tail tested as `!result && best_fraction > 0.f` with `clear` kept in the loop 343 (0x297660 10); the hit
+// and clear arms as one if/else (hit first) and the ray set member by member: same code.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

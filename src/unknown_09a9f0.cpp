@@ -233,11 +233,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // reaches retail's shape but scores 77, and reading the header through the entity changes nothing;
 // retail keeps the result in bl and looks the header up twice.
 
-// At 49 (was 49): unchanged this round: the head's register roles still differ - retail saves
+// score 49 (was 49): unchanged this round: the head's register roles still differ - retail saves
 // MiniMax D (run 46): the early-return body 77, the bool result 69, the bool result with the header
 // pointer in a named local 77 (the header lookups still merge into one ECX entry and EBP becomes a
 // scratch register); no lower score.
-// At 49 (was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
+// Earlier note (49, was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
 // EBX and keeps a false result in BL from before the creation call, pushes EBP only around the header
 // test and leaves the table global in EDX, reloading its data and recomputing the index for the
 // object; ours keeps the validity result in EBP and shares one header address between the flag test
@@ -696,6 +696,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // takes EBP and the head through the creation call is retail's, but the header test then puts the data in EDX (dropping
 // the global) and needs no EBP borrow; retail keeps the global in EDX for the object read because the data is reloaded,
 // which agrees with the store-between lead above.
+// m3 lane 14 r84 (fast with 0xa5b10, 0xbb780 and 0x108e10, matched throughout): a bool result taken from the flag
+// test inside the NONE test (`result = !(flags & 0x10); if (result) {...} else entity->object_index = NONE;`) 69 (176 B),
+// the same with the arms swapped 73, as a long 76 (190 B). The other natural spellings are listed above (early returns,
+// getters, 0xbb780/v23, result widths, deleted-arm orders); the matched siblings 0x9ba90/0xa4880/0x9aeb0 clear a slot to
+// NONE before storing, a dead store that is not keepable here.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
