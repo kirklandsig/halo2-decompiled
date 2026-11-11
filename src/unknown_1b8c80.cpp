@@ -434,6 +434,7 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // with the count in a local 11, the test as count != 0 6, a
 // while loop 6, a seats local 25, a pointer loop 139, the index inside the
 // loop 135, the test as i < count 11.
+// MiniMax G (11-10): no new form, no lower score (8); ten loop spellings (the bound exclusive or inclusive, the count in a local or read again, the seats array in a local, a while form, the index widened or narrowed) all give 11, 23 or 27, because every exclusive bound moves the count to EBP and the index to ESI where retail keeps the count in ESI and the index in EBP, and the inclusive bound keeps them but needs the decremented count and js/jle instead of retail's cmp/jle and cmp/jl.
 // MiniMax R (11-10): no new form, no lower score (8); the body is unchanged, and the seat scan's inclusive
 // bound still needs the decremented count and the separate zero that retail does not.
 // @retail 0x1b9200
