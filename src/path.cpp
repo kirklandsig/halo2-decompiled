@@ -745,6 +745,13 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // body below (286): `break;` after the count update 312 (1391 B); the traversal as a `for` with `node` declared before
 // it 286 (same code); the margin computed inside the scan loop 300; one `short j` for an indexed fill and the scan
 // 380 (1400 B).
+// M3 lane 12 r110 (fast; 0x270930 kept unless noted): lane 11 r71's flag form rebuilt from the r63 held patch with both
+// conversions nested, 2 (the same `mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]` pair). On it: the scan's previous
+// point as `&input->start` then `if (j > 0)` 280 (1396 bytes, 0x270930 lost at 260); the link memcpy as an aggregate
+// assignment 2 (same code; re-measure of round 66's aggregate-assignment link copy on this base); the previous-node test positive with the arms swapped 281; `special = false` after the count
+// test 366 (1374 bytes); count declared at the top with the other locals 349; the link copy moved out of the capacity
+// block (usable declared before it) 2 (same code); one pathfinding-data local for the link and surface tests 353 (re-measure of round 62's node-loop data local,
+// same number).
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -1106,9 +1113,9 @@ bool function_2715a0(byte *buffer)
 	return result;
 }
 
+// score 486 (was 486): State/node/link registers, scalar homes and heap-helper expansion differ.
 // MiniMax D (11-10): no new form, no lower score (486).
 // MiniMax R (11-06): no new form, no lower score (486); the frame agrees and EBP is pushed here where retail keeps it as the state pointer.
-// score 486 (was 486): State/node/link registers, scalar homes and heap-helper expansion differ.
 // Earlier field-bit mask forms 501 (from 533).
 // State EBX/EBP, node/link cursors and scalar homes remain. Force-inline insertion 577 (loses matched caller);
 // scalar role names 501; early inherited result 503; squared-length helpers 500; point setter 501; plain
@@ -1311,6 +1318,13 @@ bool function_2715a0(byte *buffer)
 // 191: that arm as retail, 0x271fd0 still a call; with 0x271fd0 forced inline aligned 168 but 0x2713f0 108), on it a found
 // flag set at both breaks 546 (2008), `!(d > 0.09f)` 557 (2004); the quantized reject as two tests 486 (same code); the
 // found arm first (`if (next != NONE)`) 590 (2148). Re-measured: `inline` on 0x271fd0 488 (frame 0xc58, still a call).
+// Round 71 (m3 lane 15, fast; control 486): the `next == NONE` re-test removed 501 (2060 bytes; retail has that test at
+// the join of the allocate and found arms, `cmp bx, -1` at 0x271bc2); the probe loop's two break tests as one condition
+// 487; the link loop as a pointer loop 544 (2104); the quantized cost stored right after the entry point (retail's store
+// order) 486 and the index field before the type field 486 (both same code). Re-measured combinations of listed forms:
+// per-case depth stores with the entry_distance copy dropped 481 (masked 162 -> 145); with the node pointer after the
+// NONE break as well 480; on that, the 0x3c0 mask as `> 0` 480 and the location compare with the link fields first 482.
+// Retail's outer loop is top-tested (not rotated); only a pop-or-NONE helper in the loop condition has given that.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

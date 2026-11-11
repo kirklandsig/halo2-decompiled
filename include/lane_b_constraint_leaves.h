@@ -82,8 +82,6 @@ struct lane_b_contact_constraint_prefix
 	lane_b_contact_property *properties;
 	long property_count;
 	long property_capacity;
-	void get_sizes(lane_b_constraint_sizes *sizes);
-	void build(const void *input, void *output);
 	void remove(unsigned short id);
 	long add(lane_b_contact_point **point, lane_b_contact_property **property);
 };

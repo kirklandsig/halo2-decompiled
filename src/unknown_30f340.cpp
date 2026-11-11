@@ -127,8 +127,10 @@ public:
 	__forceinline void append_pair(member_30c8e0 *first, member_30c8e0 *second)
 	{
 		pairs.resize(pairs.size + 1);
-		pairs.data[pairs.size - 1].first = first;
-		pairs.data[pairs.size - 1].second = second;
+		long first_count = pairs.size;
+		pairs.data[first_count - 1].first = first;
+		long second_count = pairs.size;
+		pairs.data[second_count - 1].second = second;
 	}
 
 };
@@ -143,6 +145,9 @@ void owner_30c8e0::function_30f340(member_30c8e0 *member)
 	flag_12c = flag;
 }
 
+// adds the member, gives its island the constraints added with it, and notes
+// each member its constraints and actions tie it to that is not fixed; an
+// action the fixed island held moves to the member's island
 // adds the member, gives its island the constraints added with it, and notes
 // each member its constraints and actions tie it to that is not fixed; an
 // action the fixed island held moves to the member's island
@@ -168,7 +173,8 @@ void owner_30c8e0::function_30f380(member_30c8e0 *member, constraints_30f380 con
 		info_30f380 info;
 		added->data[i]->get_info(&info);
 		island->add_constraint(added->data[i], &info);
-		added->data[i]->owner = island;
+		constraint_30f380 *last = added->data[i];
+		last->owner = island;
 	}
 	for (int j = 0; j < member->link_total; j++)
 	{
@@ -197,7 +203,8 @@ void owner_30c8e0::function_30f380(member_30c8e0 *member, constraints_30f380 con
 			{
 				((class_316c50 *)island)->function_316d60((member_316d60 *)member->actions[k]);
 				((list_owner_3169c0 *)fixed_island)->function_3169c0((entry_3169c0 *)owned->data[m]);
-				member->actions[k]->owner = island;
+				action_30f380 *last = member->actions[k];
+				last->owner = island;
 				break;
 			}
 		}

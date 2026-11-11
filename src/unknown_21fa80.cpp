@@ -323,6 +323,16 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // re-measured 562 plain at 1884 bytes [masked 225 against 235], with the voice read at its use 563 plain (1921 bytes). In every form the
 // stream stays in EBP and gain_bits in EBX (retail: EBX and EBP). Retail also inlines exp, sqrt and log10 as x87 code (f2xm1/fscale,
 // fsqrt, fldlg2/fyl2x) where this /Op file calls the CRT, and copies the four levels and the send fields through integer registers.
+// M3 lane 8 r151 (fast = plain here, 544; masked aligned 170): the XDK stream entry points that matched 0x221490 calls,
+// in place of the inline methods: the stream mix-bins call 544, the pitch call 544, both volume calls 544,
+// the voice-properties call 544 (same code each); `bool direct=input->field_30&1;` 544 (same code). Retail also zero-extends the
+// channel byte as `xor reg, reg; mov reg8, [ebp+1]` where ours has movzx (three sites); with the subtractions and rounding
+// stores, that is another /Op-or-flags lead for the user.
+// M3 lane 12 r110 (fast control 536 at 1906 bytes, full 544 at 1901; fast carries the global-reference CAVEAT): `direct`
+// read before the gain with mode after it 540 (1902 bytes); mode before the gain with direct after it 609 (1962); the mixbin
+// loop bound as `send < mode + 1` 532 fast but 545 plain (1901 bytes); the send flags cleared first and every bit set or
+// cleared alike 565 (1922); the send bits read from one named input flags word 550 (1908). The file's /Op stays the
+// largest cause (flags are the user's decision).
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)
