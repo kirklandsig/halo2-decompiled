@@ -149,6 +149,23 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax E (11-11): no new form, no lower score (110): the request is still copied field by field
+// into the play state, where retail copies the whole request and patches the flags after.
+// score 110 (was 110): BLOCKED-BY 0x221810 and 0x21d110 (callee side): LTCG inlines the first
+// 0x221810 call (retail calls both; its file is not this function's) and 0x21d110 (unmatched) takes the
+// tag in EAX and the state on the stack where retail passes the state in EAX; the forms that give 0x21d110
+// retail's convention move this function's request to EDX and cost its eight matched callers. Round 71:
+// the end test as `((flags >> 8) & 1) || ((flags >> 11) & 1)` 110 (VC merges both into `test ch, 9`; retail
+// tests the byte bit 8, then shifts out bit 11). In the current header order (plain checks): set-or-clear
+// object and platform bits 148 (486 bytes), object only 131 (478), platform only 134 (481), both with the
+// priority from the request's audible field 147 (485). Retail's full header order
+// (priority from the request byte, set-or-clear bits, then the location copy) is listed below with its scores.
+// MiniMax D (11-10): the priority read from the request and stored before the location copy scores
+// 106, the same form with the flags computed before the copy 139, with the source in a local after the
+// sound lookup 134, with the object index in a local 136 and with the object and platform bits as
+// or/and complement selects 163; none of the gains is enough to keep, so the body stands. The fast
+// permuter found nothing better than 103 differing instructions against its 104 baseline, and the
+// variant it preferred spells the state fields with volatile casts and one-use temporaries.
 // MiniMax E (11-10): no new form, no lower score (110); the first difference is at +0x15, where retail reloads the state flags after the call that our link still expands, so the flags are still forwarded across it.
 // MiniMax E (11-09): no new form, no lower score (110); the priority and the flag word are
 // still formed after the location copy, and the first 0x221810 call is still expanded by our link.
@@ -182,15 +199,6 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // MiniMax S (11-01): no new form, no lower score; the priority and the flags are still formed after the location copy, and our link still expands the first 0x221810 call, so the state flags are forwarded across it where retail reloads them.
 // MiniMax S (11-09): no new form, no lower score (110); the priority and the flags still form after the location
 // copy, and the first 0x221810 call is still expanded by our link.
-// score 110 (was 110): BLOCKED-BY 0x221810 and 0x21d110 (callee side): LTCG inlines the first
-// 0x221810 call (retail calls both; its file is not this function's) and 0x21d110 (unmatched) takes the
-// tag in EAX and the state on the stack where retail passes the state in EAX; the forms that give 0x21d110
-// retail's convention move this function's request to EDX and cost its eight matched callers. Round 71:
-// the end test as `((flags >> 8) & 1) || ((flags >> 11) & 1)` 110 (VC merges both into `test ch, 9`; retail
-// tests the byte bit 8, then shifts out bit 11). In the current header order (plain checks): set-or-clear
-// object and platform bits 148 (486 bytes), object only 131 (478), platform only 134 (481), both with the
-// priority from the request's audible field 147 (485). Retail's full header order
-// (priority from the request byte, set-or-clear bits, then the location copy) is listed below with its scores.
 // Earlier score 110 (was 110): this round: the fast check reads 110 at 473 bytes against retail's 470 again
 // frame 0xa8 and request EAX agree; first query expansion, header/result homes and playback convention differ.
 // Earlier 110 (was 110): this round: the fast check reads 110 at 473 bytes against retail's 470 again
@@ -346,6 +354,13 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // the end test split into bit 8, bit 11 and the audible test 190 (518); the state.flags form with both 193 (516, callers
 // differ). Retail calls 0x221810 out of line at every site (see its comment in src/unknown_221490.cpp); giving it a file of
 // its own is a build-flag decision this lane does not make. Body unchanged.
+// Round 93 (m3 lane 1, plain with the eight matched callers; --fast builds this body differently): an early return
+// when the start fails 143 (478 bytes); the start result assigned inside its test 110 (same code); the result declared
+// at the start call, returned inside the tag block with `return NONE` after it, 134 (488 bytes); the object bit as
+// `(dword)(object_index != NONE) << 3` 141 (476 bytes, all eight callers lost: the request convention moves); the
+// priority as `(audible ? 2 : 0) + 1` 110 (same code). Re-measured, not new: the variant pointer read from the
+// request at each use 110. Still BLOCKED-BY 0x221810 (inlined at the first site here, called in retail) and
+// 0x21d110 (whose note names this function as its blocker: the two conventions have to move together).
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

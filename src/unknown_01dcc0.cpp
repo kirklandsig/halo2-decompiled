@@ -267,6 +267,11 @@ long g_55e6c0;
 // the block splits at the clamp). Re-measured: the level-count local set by if / else-if at the store 166 (497).
 // Diagnostic: the packing without its height term 131 (479), the height still in EDX, so the clamp value holds EAX
 // whether or not the height outlives its store. A 600 s permuter run on the lead (57 tries) found none better.
+// Round 95 (m3 lane 10, fast, on the round-51 signed pitch/packed lead, re-measured 29 at 484 bytes): the clamp
+// through a named copy and two independent ifs 166 (497 bytes); the element count stored between the height and
+// data stores 41; the resource's first word stored ahead of the packing 31; the linear select as an if/else 148 (471);
+// the busy test as two separate else-if arms 137 (476). Diagnostic, not retail's code: a constant third argument to
+// 0x1d6f0 176 (503: LTCG then passes the count in EAX, held in EBX, and the index in ECX, so the call's raw count use sets the convention).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

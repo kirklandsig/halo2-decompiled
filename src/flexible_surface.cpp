@@ -365,6 +365,13 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// MiniMax D (11-11): no new form, no lower score (117); the frame is still 0x28 against retail's 0x20, and the
+// eight extra bytes are still the copy of the old direction that has to live in memory because its address is
+// handed to the cross and dot helpers; dropping that copy and reading the global at each use gives 173. Retail
+// keeps the rotation scalar, so the cross terms are the shared helper's body written out, which is kept only
+// with a match; with the helper in place the rotation stays in the vector form.
+// MiniMax E (11-11): no new form, no lower score (117); retail's frame is 0x28 bytes where ours is 0x20 and the
+// seed global is read later in ours than in retail.
 // score 117 (was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
 // MiniMax I (11-10): no new form, no lower score (117); the draw before the time product (193) and the oscillation
 // before the draw (197) move the seed update up but split the float chain, so both are worse.
@@ -660,12 +667,22 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // into the i row and cross j, k form early as in retail, but the global's j/k reload in the i row. Round 69's tail (`cos((real)(time
 // * 0.001))`, `(real)sin((real)(time * 0.005))`) re-measured 171 (892 B; retail's fxch pair and fst stores), with rotate_direction
 // 171 (864 B), with rotate_vector_170d70 170 (864 B); with rotate_direction on an `old` copy stored back 161 (889 B). Body unchanged.
+// m3 lane 2 r71 (fast with the file's functions and 0x30bf0): the axis as a pointer into the table (no axis copy)
+// 159. Retail copies the axis into the frame with integer moves, keeps no copy of the global (its j and k load early
+// into XMM5/XMM4, i late) and spills only cross j and k: no form that keeps cross3f/dot3f on the existing helpers
+// gives that frame, and the hand-written rotation is match-only. Body unchanged.
 // M3 lane 9 r109 (fast with 0x118140, 0x30bf0 and 0x117c80; base 117, aligned 100, masked 72; both sides end in a plain
 // `ret`): the fraction drawn through random_next with `(real)... * (1.f / 65535.f)` in place of function_x82e52f 117 (same
 // code, not kept); the clamp of g_55ecd0 through a file PIN macro (`PIN(x, lo, hi)` as other files define it) 117 (same code,
 // not kept); the wind written through the existing scale_vector_by_double 118 plain, and matched 0x118140 drops to 50
 // (round 219's shared final double scale on this base: not kept). No other untried natural form of the opening, rotation or
 // tail. Body unchanged.
+// M3 lane 14 r83 (fast with the file and 0x30bf0; both sides end in a plain `ret`, index in EAX): cross3f(&axis, &old) with
+// `+ cross * sine` in the rows 134 (881 B); rows j and k written old-first 158 (882 B); the projection's dot on the global
+// with cross3f on `old` 141 (890 B), that dot before cross3f 143 (894 B); the dot then cross3f, both on the global, with
+// `old` for the rows only 162 (890 B). Same code: scalar-first products, the projection staged as `*= 1 - cosine`,
+// parenthesised row sums, dot3f(&g_55ecd4, &axis). Retail keeps no `old` or `cross` copy in memory (the global's j/k in
+// XMM5/XMM4, cross j/k spilled early, cross i formed inside the i row); only scalar code gives that.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

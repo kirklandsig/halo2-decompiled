@@ -491,6 +491,20 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1);
 
 s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 
+// MiniMax G (11-11), NOT kept (coordinator 11-11: 87 -> 20 by the unit index assigned inside the guard plus local_1 declared ahead of local_3, both match-only; a plain one-use local before the guard 68, the local at all four reads 241; body at 87): the guard's unit index travels in a named local and the object lookup comes
+// before the two vector copies, so the whole prologue and the guard now match retail's bytes.
+// score 20 (was 87): the frame is 0x54 and the length matches retail's, and the prologue, the
+// guard and the two vector copies all agree. Still differs in the scalar stack homes: the radius
+// sum, the first length, the adjusted projection and the location index sit one slot lower than
+// retail's, which writes the adjusted projection into the length's slot, and the side maximum
+// uses XMM3 where retail uses XMM2.
+// the object-plus-radius sum is written at both of its uses, the timing
+// default is a ternary, and the heading vector is declared ahead of the object index; the frame is
+// 0x54 and the length matches retail's. Still differs in the 0x110ab0 argument register (ECX where
+// retail uses EAX) and the scratch-register rotation after it, the sum's operand order (retail
+// adds the field first), the length and projection stack slots (retail's are four bytes higher),
+// the object lookup against the vector copies, and the timing call's argument loads and the
+// request stores.
 // MiniMax C (11-09): no new form, no lower score (89): compared with retail instruction by instruction,
 // the frame homes of both vectors and of the two lengths agree, and what is left is the schedule:
 // retail loads the object table global into ecx before the three pushes and does the object lookup
@@ -506,14 +520,8 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // MiniMax G (11-05): a split guard with the unit index in a one-use local reaches 19 (the object lookup first and the short request store first), but a one-use local is match-only, so it and the forms without it (guard split 89, guard reorder 296, nested heading length 1263) are reverted; moving the object lookup ahead of the two vector copies reproduces retail's prologue (the global load at +0x15 and the lookup before the copies) but gives 94, because the register rotation (retail EAX/ECX/EDX against ours ECX/EDX/EAX) and the tail homes still differ; no new form, no lower score.
 // MiniMax G (11-06): the object-plus-radius sum named as a local 222, the two addends of that sum in the
 // other order 89, and the object lookup moved before the two vector copies 94; no lower score.
-// score 87 (was 89): the object-plus-radius sum is written at both of its uses, the timing
-// default is a ternary, and the heading vector is declared ahead of the object index; the frame is
-// 0x54 and the length matches retail's. Still differs in the 0x110ab0 argument register (ECX where
-// retail uses EAX) and the scratch-register rotation after it, the sum's operand order (retail
-// adds the field first), the length and projection stack slots (retail's are four bytes higher),
-// the object lookup against the vector copies, and the timing call's argument loads and the
-// request stores.
 // Earlier score 141 (was 141): frame 0x58 versus 0x54, first-length/radius homes and unit-call scratch allocation remain.
+// Earlier 141 (was 141): frame 0x58 versus 0x54, first-length/radius homes and unit-call scratch allocation remain.
 // Earlier: frame 0x58 versus 0x54 and first-length/radius homes remain; retail keeps
 // the radius in the argument home and adds the object size only after the projection test.
 // Fallback timing initialized before query 200; later heading vector 219; later object lookup 223;
@@ -762,6 +770,23 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // the target object looked up at each use (no object pointer) 195; the animation id chosen by a ternary 136 (950 B), by an
 // if/else 178 (931 B) in place of the switch; re-measured: the target index initialised at its declaration
 // 89 (same code). Body unchanged at 89.
+// M3 lane 12 r113 (fast with the file's nine other functions, kept; caveat on 0x110ab0): lane 17's match-only 17 form
+// rebuilt 17; its 17 lines are the slot groups (ours {sum, side0} 0x10, {length, side1} 0x14, index 0x18, adjusted 0x1c;
+// retail side0 0x10, {sum, side1} 0x14, {length, adjusted} 0x18, index 0x1c) and the lateral/maximum XMM3/XMM2 swap.
+// No unlisted form; body unchanged.
+// Round 80 (m3 lane 13; plain, since the fast check carries a builds-differently caveat for 0x110ab0): lane 17's
+// match-only 17 form re-measured plain 17 (register-masked aligned 10: only the four scalar slots 0x10-0x1c and the
+// XMM2/XMM3 swap at the side maximum are left). On the 87 body: the two length guards joined (no heading_length) 87;
+// the request arguments through a named argument member of the request (short side at +4, long target at +8, in the
+// header) 87; the projection tests joined into one test 87 (same code each). No other untried natural form found:
+// retail's EAX argument at 0x110ab0 still needs the one-use unit local, so only a full match keeps it, and the 17
+// form's slot spellings are all listed above. Body unchanged at 87.
+// M3 lane 16 r106 (fast; caveat: 0x110ab0 builds differently in the reduced image): lane 17's match-only 17 form rebuilt 17
+// (left as listed: sum 0x10/length 0x14/index 0x18/adjusted 0x1c against retail 0x14/0x18/0x1c/0x18, lateral XMM3 and maximum XMM2
+// against XMM2/XMM3); on it the two side outputs in one declaration 17 (same code), the reversed probe direction built ahead of the
+// side outputs and the location query 170 (951 B), the lateral test as `(size + radius) * 0.6f > fabs(lateral)` 162 (965 B), the
+// timing test as `projection < (...)` 17 (same code), the unit-index local read right after actor_get (ahead of the guard) 46 (964 B).
+// Body unchanged at 87.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

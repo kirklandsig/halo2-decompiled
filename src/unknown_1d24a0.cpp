@@ -105,6 +105,8 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
+// MiniMax E (11-11): no new form, no lower score (902): the frame, the entry/second activity and the record/vector homes remain; the loop head's shape is decided by the callee 0xbadc0, which lives in another file: BLOCKED-BY 0xbadc0.
+// MiniMax S (11-11): no new form, no lower score (902): the frame is 0x1f0 against retail's 0x1d4, and retail walks the element array through a computed pointer kept at [esp+0x64] where this build uses indexed addressing.
 // score 902 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // Walked against retail block by block (b2A, 11-06): conditions, fields, callees, argument order and loop/removal shape agree. One precision
 // difference fixed: the angular block's x87 dot product (0x1d31a6-0x1d31f2) adds (i + k) + j, where the helper's other two sites (0x1d289c, 0x1d2c6d) add
@@ -428,6 +430,13 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // masked 201). So the nested validity tests and the unrolled scale loops are independent structural fixes.
 // MiniMax D (11-10): no new form, no lower score: the removal path as an else arm after the body 902 (4267 bytes),
 // the entry flag word in a named local 917, the motion point copied member by member 943 (4283 bytes); all reverted.
+// Round 169 (m3 lane 6, fast; control 902): retail reads the record's option word twice (bits 2 and 1, then 25 and 26
+// after the two simulating calls), keeps the element pointer in ESI (`shl 3; add`) with the array in EBX, and keeps the
+// element's object index in EDI across the 0x0badc0 call. Re-measured on this body: the option word read at each of the
+// four flags 971 (4232 bytes; frame unchanged); the attached object index in a three-use local 917 (4283 bytes). New: the
+// clamp folded into the removal test 902 (same code); the element's field_1 read at each use with local_15 defined at
+// its later assignment 956 (4244 bytes); `local_1 = local_0` cleared by the bit-13 test 941; the element array as a
+// named typed local for the element and the removal copy 917 (4283 bytes).
 // M3 lane 1 r90 (fast with 0x1152e0, 0x11bce0, 0x1d2280, 0x24590; aligned/register-masked counts in brackets, control 902
 // [657/381]): BLOCKED-BY 0xbadc0 for the loop head. Diagnostic, reverted at once: an opaque library call right after the
 // attached-object lookup gives retail's head exactly (array header in EBX, element pointer formed by `shl eax, 3; add`, then

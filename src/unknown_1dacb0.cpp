@@ -1083,11 +1083,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 	return result;
 }
 
+// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,
 // iterator_weapon_class at frame+0x00 and iterator_mode at frame+0x08, while ours keeps iterator_weapon_type
 // at frame+0x00, iterator_mode at frame+0x04 and iterator_weapon_class in the reused argument slot; our
 // result shorts therefore land at frame+0x08 instead of frame+0x0c and the tail compares out of step.
-// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // result/output homes and initial ECX/EDX differ;
 // frame 0x2c agrees; class/NONE registers, result/output/candidate homes and later zero carrier remain.
 // original selectors via iterator 1016; failed-result exit 1012; zero
@@ -1323,6 +1323,24 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // the post-loop test 1060 (2873), `found` declared first in the block 755 (same code); both twins' bodies as one shared forceinline
 // helper (overlay bool) 828 (same code); the search as `while (result.index == NONE)` 828 (same code, the first test folds; close to
 // the listed result-driven while). No other untried natural loop, return or declaration form is left on either base.
+// Round 188 (m3 lane 4, fast with the twin, the siblings, 0x1dd9d0/0x1ddd00/0x2963f0/0x1dd560; aligned/masked control 321/141):
+// re-measured the siblings' flag form 755 (aligned 174) and the single exit around the do-while 1040 (2857 B, aligned 125: closest
+// in content; its excess is retail's EBP zero, our jumps over loop padding and `this` in EBP where retail has EBX). New: that single
+// exit with the siblings' store order 1040; with no per-iteration candidate 1018 (2845 B), with both 1018; no bare block after
+// the early return 828 (same code); the named lookup as a shared inline helper on the 755 form 755 (same code); the iterator by
+// an aggregate initializer 826 (two points); on that, the single exit 1038, no candidate 1020 (2791 B), `named` first 994, the
+// flag loop 769, the found outputs stored type, class, mode 827. Re-measured: `named` before the candidate 996.
+// m3 lane 14 r82 (fast; masked = register- and esp-masked aligned rows, base 76): `result = named ? named->animation_id :
+// result;` with no candidate 848 (2791 bytes, masked 96); the found mode copied into a named local before the outputs and used for
+// the found_mode store and the second request 828 (identical code: the copy coalesces even across the output stores); a do-while
+// on the entry with the lookup inside `if (entry)` and a found `break` 828 (identical code); the second request's graph read from
+// the iterator 962 (2791 bytes, masked 101). Retail's loop is this do-while: the NULL exit reloads the result into ECX and the
+// found exit already has it there (`jne join; jmp iterate`), then the index test reads memory (`cmp word [esp+0x1e], si`).
+// Also r82: the requests' `false` as a `bool other = false;` local 927 (2775 bytes), in the first request only 927 (other code), in the
+// second only 826 (2807, masked 75: the same code as `urgent` there); `bool urgent = true;` for both or the first request 801 (2791
+// bytes, masked 83: only loop-alignment padding moves, retail's `jmp` over padding in the first request is lost; a constant-only
+// local, not kept), for the second only 826, `bool const urgent` 828 (the base code), both locals in both requests 1050 (2724 bytes);
+// 0x1dd9d0 after the requests 1030 (2853); the requests in reverse order 980 (diagnostics).
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1624,6 +1642,22 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // requests: ours gives found_mode's dead slot (E+0x18) to iterator_mode and the +0x34 table temp found_weapon_class's
 // slot, retail gives found_mode's slot to the per-pass candidate and the table temp and keeps the outputs and result
 // contiguous below the iterator. Declaration order, scope and names do not move that choice.
+// m3 lane 15 r74 (fast; 0x1db170/0x1dc790/0x1dc8c0/0x1dd9d0 unchanged): the siblings' found-flag body re-measured 755 at
+// 2825 B (register-masked aligned 57: left are retail's EBP zero from the fifth type request of the first request, which
+// retail can form because it reloads the mode from memory for the inheritance loop where ours keeps it in EBP, the
+// inheritance counters stored from that zero into dead parameter homes, and loop-head padding jumps). On it, mode read
+// once through its own address as 0x1dc8c0 does, at the iterator store or at the first request 755/755 (same code each:
+// the plain read through the address does not keep mode out of EBP).
+// On the 755 body: the first request keyed by `iterator.mode` (the iterate helper only reads the iterator's keys) 808 at
+// 2841 B (aligned 924 -> 84, masked 57 -> 49: the registers mostly agree, but iterator_mode takes a dead parameter slot,
+// frame 0x28 against 0x2c, and still no EBP zero); all three first-request keys from the iterator 1020 (2875 B); the
+// iterator as an aggregate initializer 769; the candidate as a ternary, or the result set by that ternary with no
+// candidate, 1024/1024 (2841 B). Lane 9's record (outputs and result as one local) re-measured 732; with the
+// `iterator.mode` first request 762 (2841 B, aligned 78, masked 43).
+// MiniMax D (11-11): no new form, no lower score (828): the third iterator output still takes the dead `found_mode`
+// argument slot instead of a frame slot, so retail's result shorts sit at +0xc/+0xe and ours at +0x8/+0xa, and retail's
+// EBP zero carrier in the second resource request is still missing; declaring the three NONE locals ahead of the early
+// return gives retail's sentinel register but reorders the prologue and scores 979.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

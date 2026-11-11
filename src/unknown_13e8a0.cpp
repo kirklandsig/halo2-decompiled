@@ -505,6 +505,8 @@ struct s_text_line_measurement
 // score 77 (was 77): retail loads the width into xmm4 before the multiply
 // chain and accumulates the four terms in xmm3; ours reloads the width into
 // xmm3 after the multiplies and accumulates in xmm0 (register allocation only).
+// MiniMax D (11-11): no lower score (77): naming the update's sum once before the test reaches 74 but computes the terms
+// twice, so it was reverted; with the sum written in the update arm the copy never appears and the allocation stays as it is.
 // M3 lane 13 r75 (fast; masked aligned count in brackets, base [16]): the end sum named and computed before the can_break block 75 [21]
 // (the width load then moves to retail's XMM4 right after the scale, but the adds move up with it; match-only); the else arm's
 // width update before `count++` 77 [16]; advance computed before offset 78 [18]; break_width stored before break_index 76 [16]; both
@@ -531,6 +533,11 @@ struct s_text_line_measurement
 // the copy runs the other way and the adds move ahead of the test; one-use local, not kept); the same
 // started from the advance and completed before the test 74; a copy of the advance at its definition,
 // accumulated in the else arm (as `+` or `+=`) 77 (copy propagated away).
+// Round 172 (m3 lane 5, fast): the bound test positive with the arms in natural order (`x1 > sum || !count`, or
+// `count == 0`) 77 and the products written scale first 77 (identical code); width and index accumulated in the
+// returned measurement aggregate 96 (400 bytes, XMM pattern unchanged); `advance + offset + kerning` named once for
+// both the test and the update 84; the token test negated with the done arm first 104. Diagnostic: `(real)(scale *
+// 1.f)` chains 1-3 deep in the kerning product fold away (identical code).
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

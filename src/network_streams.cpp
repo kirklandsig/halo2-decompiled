@@ -827,6 +827,12 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// MiniMax A (11-11, run 58): score 60 (was 60): no lower score; retail keeps the next sequence in ESI and
+// recomputes next - oldest - 1 in EAX on every pass, ours keeps the next sequence in ECX and strength-reduces the
+// offset into a second induction variable in ESI; retail reads the newest three times (the count, the loop bound
+// and the per-step test) and the oldest once, and with the window pointer declared before the send call for the
+// count, the bound and the index (88, 235 bytes) our code reads the newest the same way but still reduces the
+// offset and keeps the next sequence in ECX.
 // score 60 (was 60): ours strength-reduces next - oldest - 1 into esi (next in
 // ecx) and compares next with the cached newest; retail keeps next in esi,
 // recomputes the offset and re-reads window->newest each step (as 0x94df0 does).
@@ -870,11 +876,25 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // (221 bytes; the same code as the member-window forms: retail's loop body, but `next` sits in ECX, which frees EBP for the `time`
 // pointer across get_next_send, and the count's oldest is reloaded; retail keeps `next` in ESI and the bound in EBP); on the member
 // form the flags read from the field at each test 89, `type = 4` before the stores 104 (209 bytes), the cursor declared before the loop 89.
+// m3 lane 11 r88 (fast): on the 63 form (window pointer for the count and the index, `m_message_window.newest` in the loop test)
+// ours has retail's hoisted bound in EBP and its per-step newest re-read; the strength-reduced `next - oldest - 1` is all
+// that is left. The shared index helper's offset as `sequence - (window->oldest + 1)` 60 on this body, as `(sequence - 1) -
+// window->oldest` 63 on the 63 form; on the 63 form `s_sequence_window *const window` 63 and `message` declared before the
+// loop 63. All compile to the same code as before (the reduction does not depend on these spellings); 0x94bf0 stays at 2.
+// Permuter on the 63 form (600 s, 68 variants): best 62, its baseline. On the 63 form: `return 4` in the loop 107 (195 bytes);
+// the flags read at each test 63 (same code); `message` as `index != NONE ? &m_messages[index] : 0` 60 (masked 20, the
+// reduction stays); the found test as `(flags & 3) == 1` 77 (223 bytes); the count as `newest != oldest` 78 (223); `long
+// flags` 63 (masked 18).
 // m3 lane 2 r70 (fast; control 60, masked 24): re-measured the member window everywhere 89 (221 bytes, masked 17: retail's loop
 // body, next ECX, oldest reloaded into ESI, bound EBX, `time` cached in EBP) and `window->newest` in the loop test 60 (same code).
 // On the member form: the found path's `*time` through `long *const *time_reference = &time;` 89, that read at the get_next_send
 // argument 89, `message` declared before the loop 89, `next` at function scope 89, both 89 (all the same code). Retail keeps all
 // four callee-saved registers on loop values (next ESI, the count's oldest EBX, bound EBP), so nothing caches `time`.
+// M3 lane 10 r94 (fast, 0x96510/0x94df0 listed; base 60, aligned 42, masked 23): get_next_send's success as an early
+// `return type` 79 (213 bytes), on the 63 form 78; the message pointer as a ternary 66 (224 bytes); `message` initialized to 0
+// at its declaration ahead of the index 75 (222 bytes); the flags tested through the field at each test 60, `index` declared
+// ahead of the loop 60 (both the same code); re-measured the 63 form 63 (with the flags through the field 63, same code). Still
+// only the second induction variable differs on the 63 form (next - oldest - 1 kept in ESI with next in ECX).
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

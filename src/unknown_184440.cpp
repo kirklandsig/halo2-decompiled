@@ -181,6 +181,10 @@ __forceinline bool function_184448(long arg_0)
     return true;
 }
 
+// MiniMax I (11-10): no new form, no lower score (965); the first difference is still the frame size (ours
+// 0x11d4 against retail's 0x11cc) together with the scene and surface records sitting in each other's stack
+// homes, and that rotation depends on 0x48e70 in another lane's file.
+// MiniMax G (11-11): no new form, no lower score (965): the first difference is at +0x7 - ours loads 0x11d4 where retail loads 0x11cc and keeps the argument in esi where retail moves it into edi; the body length agrees (4590 bytes both).
 // score 965 (s1A walk 11-06): the statement walk against retail found no behaviour difference; every condition, field,
 // callee and argument order agrees. Not kept, since together they score 976: two type changes retail's bytes show (1) no cached axis locals - retail
 // reloads g_440b94[idx][0/1] in the cell loop (0x185171/0x185178) and keeps the pre-scaled offsets only as loop-invariants in
@@ -346,6 +350,9 @@ __forceinline bool function_184448(long arg_0)
 // (4593 B); the first record as an element pointer before its field read 965 (same code); the bounds compare written
 // count first (retail loads the count into EBX before the compare) 966. The file-scope
 // inline_depth pragma pair around this function removed: identical code (kept as a cleanup).
+// MiniMax D (11-11): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc and the
+// initial surface pointer is still held in ESI where retail holds it in EDI; the remaining difference is set by the
+// 0x48e70 call, whose definition is in another machine's file.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

@@ -6,6 +6,8 @@
 #include "globals.h"
 #include "slot_handler.h"
 #include "unknown_0259a0.h"
+#include "unknown_0259d0.h"
+#include "normalize3d.h"
 #include "unknown_2626b0.h"
 #include <float.h>
 #include "unknown_25fc30.h"
@@ -36,8 +38,15 @@ void function_260060(long actor_index, short count, s_type_967e20 *context, s_ty
 bool function_2600a0(long actor_index, s_type_967e20 *context, s_type_b36ac5 *position);
 long function_1e4a50(long index);
 long function_262a30(s_reference reference);
+real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 
-// score 528 (was 528): earlier 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// score 440 (was 528): earlier 611, 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// Earlier 528 (was 528, 611, 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// earlier 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// (the merged second note line: was 528, 611, 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// frame 0x8a8 against 0x8a0, 3097 bytes against 3077; site 2 inlines 0x2600a0 where retail calls it, and 0x262a30 is
+// called where retail inlines it around a call to 0x13e2d0 (see the r111 lines below the notes).
+// Earlier 700 (was 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // score 528 (was 528, 611, 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // a bool output in a register across a later call, as retail (0x1b0540 matched with plain output locals).
 // Round 178 (m3 lane 4, plain checks; aligned = difflib count with addresses masked, 293 here): the call sequence is
@@ -90,6 +99,18 @@ long function_262a30(s_reference reference);
 // standalone locals gives retail's F+8 and F+0xc but leaves the flags at F+2/F+3 and the frame at 0x8a4 against retail's
 // 0x8a0 (841), the same split with a four-byte selection scores 836, and an aggregate whose flags come first is kept
 // in registers by the compiler (836), so the aggregate stays.
+// M3 lane 12 r111 (plain; 0x2605d0, 0x2613d0, 0x2600a0, 0x262a30, 0x13e2d0 and the other users of 0x11e000/0x2600a0 stay matched;
+// aligned = difflib count, then with registers masked, base 278/106). The perpendicular block is 0x11e000's body: calling
+// `function_11e000(target, actor position, &delta)` inside the sqrt 629 (3097 B, 284/108; it inlines, but with the contributor's
+// unmatched statement order and a spill); with the first evaluator pass as `function_2600a0(actor_index, context, NULL)` as well 529
+// (3072 B, frame 0x8b0, 246/100: site 1 then compiles to retail's inline `call edx` loop); plus the random pick through the existing
+// random_index 529 (246/99); site-1 call and random_index without 0x11e000 543 (3056 B, frame 0x8a4, 240/101); on the base, the
+// delta's length block (normalize3d's body with its arms swapped) as `position->unknown18 = normalize3d(&delta)` 576 (frame 0x8ac,
+// 277/103: the block itself becomes retail's, float constant, `ja` and the zero store). Diagnostic, not kept: /Ob1 on this file
+// 624 (site 2 still inlined: LTCG inlines by the callee's file, so retail's site-2 call needs 0x2600a0's file built without
+// auto-inlining, a flags decision). Next: the helper calls together (0x2600a0, random_index, normalize3d, and 0x11e000 once
+// 0x11e000 matches, BLOCKED-BY 0x11e000) on one base; most of the positional count is the frame size moving every parameter
+// offset. Body restored.
 // m3 lane 2 r69 (plain checks; aligned/masked in brackets, base 528 [341/174], frame 0x8a8): the segment block is
 // the existing 0x11e000's body written out (retail's clamp `0 > t ... else if (t > 1)` joins in one register, and
 // 0x11e000 is inlined here in retail), and the length block is normalize3d's (retail's float epsilon and its
@@ -107,6 +128,30 @@ long function_262a30(s_reference reference);
 // the sorted-loop site stays inlined, so that site is not an inline-budget effect of the owner lookup; reverted). New: the
 // path-data select as an if-assignment through a NULL-initialised local 528 (masked 104: retail's `xor` before the test), on
 // round 77's form 606; the owner store as if/else with two stores 638 (3102 B), with the if-assignment select 638. Body unchanged.
+// m3 lane 11 r90 (plain; callers 0x2605d0/0x2613d0 matched throughout): kept 528 -> 440 by calls to existing functions in place of
+// their bodies written out: the random pick through random_index (alone 624: same pick code, but the inline call flips two
+// normalize_inline products and drops a loop-head jmp), plus 0x11e000 for the perpendicular block (inlined, as retail), normalize3d
+// for the length and dot3f for the squared length 515, plus dot3f for the target squared length 440 (aligned 341 -> 292, masked 298
+// -> 256; both squared lengths now sum in retail's order, the first line for line, the second but for register names). On 440: the tail's path-state setup as the existing 0x271300 (retail inlines it: its `xor ecx, ecx` pathfinding select
+// and store order) 576 (aligned 288; the normalize products flip again); with normalize3d in the unknown40 loop 566; the first pass
+// as 0x2600a0 (re-measured) 605 at 3072 bytes (aligned 249, masked 216); that with the 0x271300 tail 528 (3072, aligned 240, masked
+// 208); plus the sort scratch in its block 519 (3056 bytes, frame 0x8a0, first difference +0x3b, aligned 195, masked 161). Left on
+// that last form: retail calls 0x2600a0 at the sorted-loop site and inlines 0x262a30 (0x13e2d0 called; its `&reference` key read
+// keeps the result in memory, loaded once at a shared exit), ours the reverse, so it is 21 bytes short and the lockstep score stays
+// above 440. Diagnostic (flags, not kept): `inline` on 0x262a30 with 0x13e2d0's file /Ob1 inlines 0x262a30 as retail but the
+// sorted-loop site stays inlined (564 on the 528 base). On 440, the two history resets through the actor view's typed fields
+// (`unknown3fe`, `unknown400[i].reference` in a counted loop, 0x262800's view) 773 at 3098 bytes.
+// M3 lane 2 r72 (fast with 0x2605d0/0x261280/0x2600a0/0x262a30/0x260060/0x2613d0, all matched throughout; aligned/masked in
+// brackets, base 528 [343/179]): retail's main loop keeps count in EBX (dword load, `test bx, bx`) through the random pick and
+// reads scratch from its stack slot at the 0x270750 call; ours keeps scratch in EBX there and compares count in memory. The
+// main loop index as `long` 555 [360/193]; the two flags declared bare and cleared by one chained `= false` after the
+// declarations 581 [346/184]; result declared after the four state values 528 (same code: frame slots do not follow
+// declaration order); the length test with a float epsilon (`fabs(length) < 0.0001f` or `0.0001f > fabs(length)`) 632
+// [347/182] (retail's `fld dword` constant, one instruction shorter), that with the arms swapped as in normalize3d (`if
+// (!(fabs(length) < 0.0001f))` scale, else zero) 624 [345/179]. Diagnostics (not kept): scratch read once through
+// `byte *const *` to it at the loop call 528 (same code); a global in place of scratch at that call 555 (the global takes
+// EBX instead: count never gets a register in our main loop). Compile-only (no /GL) packs the two flags at adjacent bytes
+// as retail does; our LTCG build gives each its own dword.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)
@@ -227,11 +272,11 @@ s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *
 		{
 			vector3f delta;
 			vector3d_from_points3d((point3f *)(parameters + 0x620), &position->position, &delta);
-			position->unknown30 = delta.i * delta.i + delta.k * delta.k + delta.j * delta.j;
+			position->unknown30 = dot3f(&delta, &delta);
 		}
 		vector3f delta;
 		vector3d_from_points3d((point3f *)(actor + 0x238), &position->position, &delta);
-		real distance_squared = delta.i * delta.i + delta.k * delta.k + delta.j * delta.j;
+		real distance_squared = dot3f(&delta, &delta);
 		real range = *(real *)(parameters + 0x1c);
 		if (range * range > distance_squared)
 		{
@@ -240,36 +285,8 @@ s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *
 					&position->unknown18, (long)&position->unknown2c, parameters[0x51] ? (long)&position->unknown1c : 0);
 			else
 			{
-				real perpendicular_squared;
-				if (distance_squared > 0.0001f)
-				{
-					vector3f target_delta;
-					vector3d_from_points3d((point3f *)(actor + 0x238), (point3f *)(parameters + 0x620), &target_delta);
-					real t = (target_delta.k * delta.k + target_delta.j * delta.j + target_delta.i * delta.i) / distance_squared;
-					t = t < 0.0f ? 0.0f : t > 1.0f ? 1.0f : t;
-					t = 0.0f - t;
-					target_delta.i = t * delta.i + target_delta.i;
-					target_delta.j = t * delta.j + target_delta.j;
-					target_delta.k = t * delta.k + target_delta.k;
-					perpendicular_squared = target_delta.k * target_delta.k + target_delta.j * target_delta.j + target_delta.i * target_delta.i;
-				}
-				else
-				{
-					vector3f target_delta;
-					vector3d_from_points3d((point3f *)(parameters + 0x620), (point3f *)(actor + 0x238), &target_delta);
-					perpendicular_squared = target_delta.k * target_delta.k + target_delta.j * target_delta.j + target_delta.i * target_delta.i;
-				}
-				position->unknown2c = (real)sqrt((double)perpendicular_squared);
-				real length = (real)sqrt((double)distance_squared);
-				if ((double)0.0001f > fabs((double)length))
-					length = 0.0f;
-				else
-				{
-					real scale = 1.0f / length;
-					delta.i *= scale;
-					delta.j *= scale;
-					delta.k *= scale;
-				}
+				position->unknown2c = (real)sqrt((double)function_11e000((point3f *)(parameters + 0x620), (point3f *)(actor + 0x238), &delta));
+				real length = normalize3d(&delta);
 				position->unknown18 = length;
 				if (parameters[0x51])
 					position->unknown1c = delta;
@@ -291,9 +308,7 @@ s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *
 		*(short *)(actor + 0x5e8) = 0;
 	if (parameters[0x15] && !within_limit)
 	{
-		dword *seed = (dword *)g_4e7408;
-		*seed = *seed * 0x19660d + 0x3c6ef35f;
-		selected = (short)(((*seed >> 16) * count) >> 16);
+		selected = random_index((dword *)g_4e7408, count);
 		*has_path = false;
 		byte *history_actor = (byte *)actor_get(actor_index);
 		*(short *)(history_actor + 0x3fe) = 3;

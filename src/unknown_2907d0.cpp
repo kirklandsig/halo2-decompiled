@@ -54,6 +54,7 @@ __forceinline void function_290852(transform4x3f const *arg_0, vector3f const *a
 vector2f *function_11df30(vector2f *angles, vector3f const *v);
 transform4x3f *function_b8c00(long object_index, long *node_count);
 
+// MiniMax E (11-11): no new form, no lower score (19): the else arm's two reads swapped 68, the position stored field by field 141, the transform read directly in one call 19; the transform still takes EBX and the point's y EBP, and the constant 1 stays shared between the result and field2e.
 // score 19 (was 19): earlier start 21. Ours keeps the transform pointer in EBX and the point's y component in
 // EBP, retail keeps them the other way round; retail also stores the last field with a
 // direct word store where ours moves it through EAX. Tried: the last field through the
@@ -81,6 +82,13 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // base: local_1 declared first 19 (same code), the no-entity copies swapped 68, one exit with
 // a `placed` flag 136; no steering locals re-measured 33 (the transform arrives in ECX and
 // goes to EBX: in the stack first pass it must load into EBP to stay a stack argument).
+// Round 71 (m3 lane 2, fast): the transform read once through local_4 into a pointer local 113 (453
+// bytes); the if/else inverted (`arg_0 == NONE` first) 137 (451), with no steering local 128 (462); no
+// steering local with the node indexed in both calls (`&local_3[arg_1]`) 63 (464); the bounds test as a
+// positive block with the false return in its else 19 (same code); placement new for the record 51 (474
+// bytes: a NULL test); the transform in a pointer local declared after the point and vector, read
+// once through local_4 113 (453), copied from the parameter with no steering local 33 (464; either
+// place). Permuter (600 s, annealing): reduced image 144 for this body, nothing better in 47 tries.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

@@ -406,6 +406,13 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 	slot->flags |= 1;
 }
 
+// MiniMax S (11-11): no new form, no lower score (13): only the rotation's j and k rows differ, and the shared rotate helper that produces them lives in src/unknown_170d70.cpp.
+// MiniMax D (11-10): no new form, no lower score (13); the whole-image check still reads 13, and the
+// rows that are left are the shared rotation's j and k terms, whose helper is in another file.
+// MiniMax S (11-10): no new form, no lower score (13 on the full image, 339 on the reduced one): the only
+// difference left is in the rotation's j and k rows, which still add the cosine term where retail adds the
+// projection term; the shared rotate helper that produces those rows lives in src/unknown_170d70.cpp, so the
+// rows cannot be ordered here, and the frame and the copies around them already agree.
 // MiniMax E (11-09, second part): the reduced image of the fast check scores 339 (the body
 // comes out 219 bytes short) because the shared rotation helper is not inlined there; the plain
 // check over the whole image scores 13, and the j and k rows of the shared rotation still add
@@ -556,6 +563,7 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // 23/13/15/21/31/21/27; both planar helpers with the vector setter 27. NOT kept:
 // no byte equality or gain. Original body and includes restored; held rotation helper
 // untouched. Native j/k input-load and sum ownership remain.
+// MiniMax R (11-11): no new form, no lower score (13): the rotation's j and k rows still differ from retail's, and the shared rotation helper's text decides them while its file is held.
 // MiniMax R (11-10): no new form, no lower score (13): the rotation's j and k rows still differ from retail's,
 // and the shared rotate helper in the other file decides them.
 // @retail 0x154df0
@@ -730,6 +738,11 @@ struct s_player_axes_153d10
 // its screens are no model here. The i and j rows read partly through forward/up (the closest form of a compile-only
 // screen) 14; mixed reads with every product swapped 25; this product's up.k through the up pointer 16 (the
 // up.k-against-forward.j product flips with it); its forward.i through the forward pointer 2 (same code); both 16.
+// Round 74 (m3 lane 2, plain): up.k named once for both products that flip together 112 (1296 bytes); delta from three
+// named components 2 (as round 134's three-statement delta); cross declared before delta 2; cross and relative in one
+// declaration 2 (all three the same code); the slot's direction written through a real pointer as an array 18 (re-measured,
+// as round 41). Forms earlier measured only in a harness, now plain: the axes, forward and up pointers declared at the top
+// of the block 2; forward and up declared after delta 2 (both the same code).
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

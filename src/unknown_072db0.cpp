@@ -1255,6 +1255,11 @@ long function_1931a0(long count, s_surface_description *variant);
 // Round 226 (m3 lane 3, fast, still BLOCKED-BY 0x7e210): 0x7e210's player loop written as 0x63220's body with its calls
 // (0x192e60, 0x631f0, a two-evaluation max of 0x1931a0) gives this function its match (the top 0x192e60 call stays out of line
 // and the session arrives in EAX) but raises 0x7e210 766 -> 1032; with its capacity helper forceinline 8 here, 998 there.
+// Round 109 (m3 lane 16, fast control 8 / plain 6, still BLOCKED-BY 0x7e210): the matched caller 0x6fa60's ratings buffer without
+// its `__declspec(align(8))` 8 (0x7e210 766; aligned caller locals are not what keeps the session on the stack); in 0x7e210, the
+// write-only machine-id copy dropped 8 (0x7e210 937, 2700 bytes: retail has the copy); the capacity test through the existing
+// 0x193300 (our link already folds this file's twin into it) 8 (766, same code), with a forceinline redeclaration of it 8 (766);
+// that call with the top lookup after the capacity read 1 (942, 2732 bytes, as the private-helper form). All restored.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {
@@ -1581,6 +1586,7 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// MiniMax H (11-11): no new form, no lower score (703); the users cursor still rides in EBX where retail keeps it in a stack slot at +0x18, and the logon-status test still lacks retail's decrement/branch.
 // score 703 (was 703; 709 before; 2910 bytes): Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax H (11-04): the logon-status test written as (status - 1 == 0) reaches retail's
@@ -1875,6 +1881,22 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // one store follows); plus online_logon_connected() 778 [434/259]. Each step lowers the masked count but shifts the
 // positional one; the slot test's cmovne (one byte shorter) still needs /arch:SSE, a file-flag decision, so the function
 // cannot match under the file's flags. All restored.
+// Round 171 (m3 lane 5, fast with the file's functions, 0x641a0, 0x8df50; control 703, aligned 330, masked 204): each
+// clock read in ours stores the global in both arms of the inlined ternary, retail joins first and stores once; the
+// matched 0x75870 is `if (g_510548) return g_51054c; return GetTickCount();`. query_time_now() in that form 712 (2878
+// B, aligned 323, masked 202; with a `now` local in an if/else, 0x75890's form, the same code); that plus
+// online_logon_connected() (with the online tasks header) 784 (2894 B, 323/201); plus the property loop bounded by
+// record->count with `properties_used += record->count` 778 (2798 B, 356/185); plus the free space named and tested `>
+// 0` 715 (2878 B, 309/195); all three 779 (2798 B, 294/180, the closest structure measured, but 64 bytes short).
+// M3 lane 13 r83 (fast with 0x641a0 and 0x8df50, both MATCH; control 703, fully masked aligned 203 in brackets): the
+// completion loop as nested ifs with no `continue` (state 2/5 test, variant arm, missing-variant arm last) 766 (2926 B) [197];
+// the completion identity computed once before the record loop 737 (2894 B) [201]; `failed |= received != 6;` 736 (2894 B)
+// [205]; the write-stats poll in the read poll's shape (cleanup in both arms, no early return) 791 (2958 B) [207]; the delay
+// as one nested ternary 703 (same code). Read against retail again: the
+// delay's `setle dl ... add edx, 0x7d0` is the `g_50c460 > 3 ? 300000 : 2000` spelling (listed: 709/702/703, never lower);
+// retail re-reads g_47d8f4's count word at every users-loop iteration inside the inlined variant getter and counts that
+// loop down in EBX, where ours hoists the count into EBX and ends on the variant pointer; the request loop's state==1 flag
+// byte and the identity copy are the listed match-only flag/local forms. The slot test's cmovne still needs /arch:SSE.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
@@ -2151,6 +2173,7 @@ void function_73ca0(byte *results)
 bool online_task_service_unavailable(long task_index);
 long online_round_extend(XNKID const *session_id, ULONGLONG const *round_key, word seconds);
 
+/* the logon task's poll result: an unknown state still drops the pending task */
 // @retail 0x755d0
 void function_755d0(void)
 {
@@ -2178,6 +2201,8 @@ void function_755d0(void)
                     case 1:
                         g_510518 = 2;
                         g_510534 = function_75870();
+                    default:
+                        /* an unknown state still drops the pending task */
                         function_6b640(g_510530);
                         g_510530 = NONE;
                         break;

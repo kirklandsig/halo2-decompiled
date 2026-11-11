@@ -30,6 +30,13 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
+// score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
+// magnitude/projection schedules remain. Both axis receivers begin after normalization.
+// MiniMax R (11-11): no new form, no lower score (110); the axis block's dot product still multiplies up's i
+// first where retail multiplies forward's i first, and the only shapes that flip it need the existing dot3f
+// body written out by hand and a second access path to one field, so they stay dropped; swapping the dot's
+// two arguments (dot3f(up, forward)) compiles to the same code, and the normalizer's square order, the
+// reciprocal carriers and the projection schedule are unchanged.
 // MiniMax R (11-08): no new form, no lower score (110); the shapes that reach 2 need an existing helper's body
 // written out by hand, so the axis block still multiplies up's i first where retail multiplies forward's i first.
 // MiniMax D (11-06): no new form, no lower score; the helper's scale order k, i, j 115 and the k product with the
@@ -47,8 +54,6 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // pointers declared apart 2; the up side or forward.i from the matrix 145/148; the normalizations swapped
 // 71; calls through the pointer variables 94. build/held/mma-1106-1d3fc0-handwritten-dot.patch
 // MiniMax B (11-04): a second forceinline normalize twin (k, j, i summed in turn, used for up and left while forward keeps 0x1d3fc1) with the dot product written out 2; NOT kept: a score-picked helper twin (no new inline twins).
-// score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
-// magnitude/projection schedules remain. Both axis receivers begin after normalization.
 // Round 34 (lane 17, fast): forward/up pointers taken first, then both normalized through them 150;
 // a const forward pointer 110; named i and j squares (real; retail's forward sum j, i, k but k still
 // preloaded) 111; all three squares named 154; the i and j squares summed j, i, k 111. Restored.
@@ -361,6 +366,10 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // M3 lane 16 r102 (fast, 0x1c4a80 stays matched): the 2-form rebuilt 2 (masked 0: only the dot's i term operands); on it the squared
 // length through the existing length_sq3f 2, `vector3f *const` pointers 2, a `real const` dot 2 (same code each); the shared
 // normalizer's scale stores ordered k, j, i 102, j, i, k 28, i, k, j 140 (925 B). Body unchanged at 110.
+// M3 lane 12 r111 (fast, 0x1c4a80 matched each time): in the normalizer, i and j read into locals first (k read at its uses)
+// 110 (forward still preloads k, j, i); only k read into a local 110; the squared length named as `i*i + j_squared + k*k` 110;
+// a block-scoped `transform4x3f *matrix = &local_1[0]` for the forward, up and left addresses 149 (first difference +0x44);
+// dot3f(&local_1[0].forward, up) with only the forward side spelled as the address 110. Body restored.
 // M3 lane 8 r152 (fast, 0x1c4a80 stays matched; masked aligned 4: forward's k preload and left's k-first sum only): a scan of
 // every retail function for the reciprocal-reuse idiom (`divss xmmA`, two `mulss xmmB, xmmA`, then `mulss xmmA, [mem]`) finds
 // only this function and the unmatched 0x170630, so no matched body shows the form. A compile-only screen of 300 natural
@@ -370,6 +379,24 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // `i*i + j*j + k*k` sum 150, with the squared length named through dot3f 151, with an i, j, k statement sum 117. Re-measured
 // (compile-only identical to listed forms): the j, i, k statement sum 111, the k, j, i statement sum everywhere 154, the squared
 // length named through dot3f 154. Body unchanged.
+// M3 lane 15 r75 (fast, 0x1c4a80 and 0x30bf0 stay matched): the existing out-of-line normalizer function_30bf0 (its definition
+// already `inline`) stays a call in this /Ob1 file, also with a `__forceinline` redeclaration here: all four normalizations 449
+// (624 bytes), forward only 236 (836 bytes, plain 236), the other three 350 (722 bytes). Body unchanged. I found no other
+// untried natural normalizer, dot, projection or cross form; the forms above cover the rest.
+// m3 lane 3 r233 (fast, 0x1c4a80 matched each time; control 110, aligned 38, register-masked 21). Forms: forward through the
+// existing header normalize3d (a __forceinline redeclaration so it expands under /Ob1) with the private helper's sum written
+// plain `i*i + j*j + k*k` for the other three 153 (925 B, masked 21: up, up and left then sum k, j, i as retail, forward sums
+// i, j, k and preloads all three); forward through the existing normalize_inline with that plain helper 153 (masked 22);
+// normalize3d for forward and left, the plain helper for both up normalizations 154 (masked 20); normalize3d for forward with
+// the plain helper's squared length named through dot3f 154 (masked 20); normalize3d run on the matrix field
+// (`normalize3d(&local_1[0].forward);`) and the forward pointer taken after it, plain helper for the rest, 148 at 926 B,
+// aligned 30, masked 12 (forward then preloads only two components and scales one from memory into the reciprocal's register
+// with a reload on the short path, retail's shape, but the one from memory is i, first and through a copied reciprocal, where
+// retail's is k, last, and forward sums k, j, i for retail's j, i, k); the same with normalize_inline on the field 152 (masked
+// 14); with the private helper unchanged 150 (929 B, masked 23). The 148 form reproduces round 78's listed "forward
+// normalize3d, the rest normalize_inline 148 (926 bytes, ...the reciprocal then copied)" (same score, length and shape; the
+// masked counts come from a different script). Still open: a forward normalizer that sums j, i, k and scales k last into the
+// reciprocal's register. Body unchanged.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

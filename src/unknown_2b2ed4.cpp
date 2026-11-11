@@ -74,6 +74,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
+// MiniMax S (11-11): no new form, no lower score (316); the four buffer homes can only be changed by moving the declarations, which review rejects, so the body stands as found.
 // score 316 (was 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
 // MiniMax I (11-05): no new form, no lower score. Retail's null-datum `je` jumps to the function's
 // end (offset 0x920 of 2345) where ours jumps to a near block, and the child, text and layout stack
@@ -246,6 +247,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // switch's form) 396 (2349 B); the dispatch as `if (text == NONE) set_text else 253b1a` 488 (2323 B); the item
 // loop as a pointer walk 536 (2347 B). Retail's homes: display_name -0x8cc, title -0x6cc, layout -0x4cc, suffix
 // -0x458, message -0x258; ours title, display_name, suffix, layout, message (two adjacent pairs swapped).
+// MiniMax R (11-11): no new form, no lower score (316): the five string buffers' stack homes stay a rotation apart from retail's, the state switch's shift arm stays out of line and the join order differs.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

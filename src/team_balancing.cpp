@@ -568,6 +568,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 /* whether the players and the extra players joining them can be balanced
    into the teams within the given imbalance; each extra player is a party
    of its own */
+// MiniMax R (11-11): no new form, no lower score (34); the player count still arrives in EDX where retail's
+// only caller 0x7e210 (src/unknown_07a9a0.cpp, out of this lane) loads it into EAX, and the copy loop, the
+// `rep stosd` fill, the call setup and the final clamp all follow from that one exchange; the body, not the
+// parameter order or the declarations, decides which register carries the count.
 // MiniMax S (11-10): no new form, no lower score (34); the `(short)` fill still moves the player count
 // into EAX (7) and with the extra count read first in the sum it still measures 7, so the operand
 // order of the sum is not what decides the base register: what is left there is the lea's operand
@@ -865,11 +869,26 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // assigned back, the dword next_party and the open slots before the call re-measure listed forms; new: the copy bound
 // form above and one loop over the total that copies below the player count and fills above it 83 (174 bytes). No
 // untried natural form left in this note's lists.
+// Round 105 (m3 lane 16, compile-only `/O2 /Ob1 /arch:SSE /Gd` first pass, the all-stack pass LTCG takes register
+// arguments from): next_party takes EAX there because the `rep stosd` fill wants its value in EAX, so the player count
+// goes to callee-saved EBX and LTCG then gives it the leftover EDX, with the extra count (loaded into EAX first)
+// keeping EAX. A `while` copy loop, the imbalance declared first and an early `return false` keep that (EBX); a
+// named party value moves it to EDX and the fill counted over the extra count to EBP (both listed, 73 and 62). Retail
+// needs the player count loaded into EAX in that pass, which only the value-changing `(short)` fill gives.
 // Round 184 (m3 lane 4, fast): the copy through an output cursor (`*party++ = party_indices[i]`) 78 (175 bytes);
 // through an input cursor alone 77 (172 bytes); that cursor with the fill through a walking pointer 64; the output
 // cursor continued by the fill over the extra count 86 (173 bytes); the total as `player_count` then `+= extra_count`
 // 34 (same code); re-measured: the fill through a walking pointer 63 (199 bytes). No untried natural form is left in
 // this note's lists; the player count still arrives in EDX.
+// M3 lane 16 r108 (fast with 0x91e30; register-masked aligned 4: the copy loop's store/counter-reload order and the
+// fill value's load, both from the player count's EDX/EAX role): the party array declared first 34 (same code; the
+// listed "array and index declared first"). Every other candidate checked against this note was already listed; no
+// untried natural form found.
+// Round 154 (m3 lane 8): round 114's one-file LTCG harness refreshed from the current file reproduces 34 (190/190
+// bytes). Grepped this note for the remaining spellings (strict and inclusive maximum updates, the copy through
+// memcpy, fill helpers, the fill continuing the copy loop, declaration orders): all are listed, and no existing
+// dword-fill helper exists to call.
+// No untried natural form left; the cause stays the fill value loaded before the count and destination.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

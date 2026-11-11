@@ -179,6 +179,14 @@ struct s_physical_block_iterator
 	s_record_pool_iterator iterator;
 };
 
+// MiniMax D (11-11): no new form, no lower score (201); the first difference is still the jump to retail's
+// 0x13d679, and the code up to it matches retail instruction for instruction. What differs is the policy block
+// behind it: retail's default arm clamps both ages with `cmp; sbb; and`, multiplies the best's pages by the
+// candidate's age and the candidate's pages by the best's age, and keeps its two case blocks in place between
+// that arm and the merge, while ours folds the second clamp away (`MAX(0, ...)` never holds for an unsigned
+// difference), makes the two products in the other order and jump-threads case 0 and case 1 into the take test,
+// so they sit past the loop. The documented forms for the clamp, the case 0 shapes and the take test were
+// measured before and are worse on their own (209 to 284); the 93 form needs the policy helper, which is match-only.
 // score 201 (was 201): earlier 201 (was 347): frame 0x1054 and entry/ring roles agree; weighted-age mask registers, detached policy cases and final linking differ.
 // MiniMax E (11-09): 209 -> 201 (1214 bytes against retail's 1213): the second age is now spelled
 // MAX(0, physical->time - best.time), which for the unsigned difference is the same value as the
@@ -565,6 +573,24 @@ struct s_physical_block_iterator
 // masked 27, the outer loop's reload order flips); the walk's block as a plain local 116; the ages written inside the
 // comparison 216; the permuter (64 tries) none below 93. Diagnostic volatile loads (removed): in the walk body 73, before
 // the walk 115, neither flips the swap.
+// M3 lane 11 r89 (fast with 0x13d320; main 201): r109's 93 lead reapplied 93 (1213 bytes, masked aligned 20). On it (kept
+// only with a match): result declared after limit_index 236; the entry's offset/pages/time stored before the linking 94;
+// `best.offset + pages` named once ahead of the walk 383 (1219 bytes); result declared first 389 (1238); the allocated
+// index in its own local copied to result at the end 211 (1199); the final test as `type == limit_index && result == NONE`
+// 364 (1230). Same code on 93: the walk's block offset named, the overlap end named inside the walk, best.offset copied to a
+// local, the block end named, the block sum's operands swapped, the tail's block array renamed. The walk's EBX/EDI choice
+// (retail: high-water EDI, bit and data EBX, sum into pages' register) and the tail's result/NONE pair stay swapped.
+// M3 lane 13 r81 (fast with 0x13d320, which stays matched): lane 9 r109's 93 lead rebuilt is 93 again (1213 bytes, first
+// difference +0x338, fully masked 14). What is left on it: the walk's count and bit (ours EBX/EDI, retail EDI/EBX); the
+// overlap sum computed into best.offset's register with best.offset reloaded for the second test, where retail adds into the
+// pages register and compares a copy (`mov edx, edi; cmp eax, edx`); the NONE register materialized before the allocation
+// test (`or edi, -1; cmp eax, edi`), where retail tests the immediate and sets EBX to -1 inside the success arm; result in
+// EBX at the return (retail EDI). On the lead: the oldest-block test with `oldest != NONE` first 91 (positional only: retail
+// tests the count first); result declared in the candidate block with a separate `return NONE` 391 (1225 bytes, first
+// difference +0x2f); same code (93): the deletion iterator at function scope, named `start`/`end` bounds for the overlap test,
+// `end` alone, a named block offset, the iterator's fields initialized index first. On the kept body: the oldest test with
+// `oldest != NONE` first 201 (different code); the default age clamped by `if (age < 0) age = 0;` 273 (first difference
+// +0x1); the new candidate's pages cleared before its time 203; the lead's two-stage insertion alone 213 (1227 bytes).
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

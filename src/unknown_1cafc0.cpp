@@ -519,6 +519,11 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // its time on the first build and never reached a search, and the forms of the earlier rounds leave
 // the body at 348, the graph reload and the request expansion's register use still differ from
 // retail's.
+// MiniMax E (11-11): no new form tried, no lower score (348): from +0x1de retail loads the graph into EBX
+// for `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure
+// join) where ours keeps the graph in EBX and graph+0x34 in EBP, and the inheritance loop then keeps the
+// graph in EBP where ours reloads it per use; the graph and the mode-count pointer come from the inlined
+// graph helpers, so their register roles are not ours to make, and the body stands.
 // score 348 (was 348): frame (12) and both query temporaries' homes agree since the request expansion became the
 // existing graph_resources_request (retail's 0x1ddd00 inlined). From +0x1de retail loads the graph into EBX for
 // `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure join), where ours keeps
@@ -532,6 +537,12 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // retail holds &graph->mode_count in EBX and reloads the graph from its home (EBP), ours keeps the graph in EBP.
 // frame eight versus twelve; primary/fallback result homes entry +16/+16 versus retail +4/-4.
 
+// MiniMax B (11-11): no new form, no lower score (348): retail forms the +0x34 pointer with an add and keeps it in
+// EBX with the base in EBP, ours uses a lea into EBP with the base in EBX, and the two pointers pushed for the calls
+// that follow differ with them.
+// MiniMax H (11-10): no new form, no lower score (348): through +0x1de the bytes are retail's; the graph
+// pointer and the mode-count pointer still change register between the two loops, and retail's final
+// success byte stays unnormalised there while ours is normalised.
 // Earlier 399 (was 399): frame 8 versus 12 and hidden-result homes still differ.
 // Earlier: frame eight versus twelve and hidden query-result homes still differ.
 // Earlier: frame 8 versus 12 and hidden-result homes still differ.

@@ -1061,6 +1061,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // histogram[16]` with a memset for each clear recovers retail's frame 0xb4 (machine_ids and the histogram share slots) but
 // scores 844 (2772 bytes). The histogram is never read, so it is not kept without a match. Tried: the add-loop minimum as a
 // three-way type 5/4/other (no effect).
+// Earlier note (766, was 766; round 103 unchanged): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
 // Earlier 766 (was 766; round 103 unchanged): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
 // where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
 // expanded here while retail calls the matched 0x192e60 out of line.
@@ -1319,6 +1320,14 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // code has no float instruction, so its build's /arch cannot be read from it. Lead for the flags owner (not tried): this
 // file is /arch:SSE like 0x192e60's, 0x63220's file is not; a non-SSE build of this body may keep the top call out of line
 // as 0x741f0's does and let 0x63220 inline.
+// Round 91 (m3 lane 1, fast with 0x72db0, 0x71730 and 0x192e60): the top lookup through a file-local inline wrapper of
+// 0x192e60 766 (the wrapper and 0x192e60 both inline: call depth is not what keeps retail's call out of line); with the
+// capacity helper's case labels grouped (re-measured 876, 2852 bytes, the switch then inlines as retail's table), the top
+// lookup after the capacity read 850 (2836), after the summary read 869 (2844), that after-capacity form with the loop's
+// variant through 0x192e60 844 (2788: the top call inlines and the loop call stays out of line, retail's reverse), and
+// (diagnostic, not keepable) an `__assume` on the index ahead of the lookup 876 (no effect on the inline choice); this
+// function with its helpers and records moved up to just after the identity records, ahead of 0x7ed20, 766 (same code,
+// the file's 21 other functions unchanged). Body restored.
 // m3 lane 2 r70: no new form run. The register-masked aligned diff (142 blocks, masked 348) is the session's stack ingress, the
 // capacity switch kept as a call (retail inlines it as a jump table) and the register homes that follow; every natural spelling
 // of the top lookup, the player loop, 0x63220 and the capacity helper is listed above. Retail inlines 0x192e60 here only inside
@@ -1331,6 +1340,22 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // copies as the accessors' switch-with-result form too 908 (2744, masked 494); that with `long histogram[16]` 903 (2712); the
 // switch forms alone 903 (2764); the party forms with `long histogram[16]` 830 (2760 bytes, masked 313, frame 0xb4 as retail;
 // first difference +0x7). 0x73530 stays 8 and every matched caller and callee stays matched in all five.
+// M3 lane 12 r114 (fast with the file's 22 functions, 0x73530 (8 throughout), 0x63220, 0x192e60, 0x1934f0 and 0x1931a0, control
+// 766 [masked aligned 486, register-masked 267]): `excess` as a zero default raised by an if 778 (2812 B); the rated-count tail
+// with the division arm first 774 [491, 272]; the add loop's minimum as a 1 default replaced by an if 774 (2816 B); the imbalance
+// zeroed before the team block instead of in its else 779 (2812 B) [555, 351]; the inner add-mask test without its `type == 3 ||`
+// (never true inside `type == 2 || type == 4`) 902 (2764 B: the smaller body moves the link's inline choices, so the test stays).
+// Re-measured: the type-5 machine scan returning false from inside the loop 893 (2764 B, the listed `break` form's numbers).
+// m3 lane 3 r233 (fast, control 766 = full; register-masked aligned 343). Diagnostic (compiler setting, reverted at once):
+// this file without /arch:SSE plus the player loop through a call to 0x63220 1097 at 2524 bytes, the same as with /arch:SSE:
+// 0x63220 still stays a call, so the SSE mismatch between this file and 0x63220's is not what keeps it out of line (lane 14
+// r55 already found /arch:SSE on 0x63220's file changes nothing). Forms: the balance call's party flag passed as the
+// expression, no `use_parties` local, 858 (2812 B); the two identical team-type tests merged into one block 909 (2756 B);
+// the rated extrema as `if (rating > max) max = rating;` statements 818 (2812 B); the party spread and team tests joined
+// into one `||` test 907 (2764 B); `available` computed just ahead of its first use 821. Body unchanged.
+// m3 lane 16 r109 (fast, 0x73530 8 throughout unless noted): the write-only machine-id copy dropped 937 (2700 B); the capacity
+// test through the existing 0x193300 766 (same code), with a forceinline redeclaration 766; that with the top lookup after
+// the capacity read 942 (2732 B, 0x73530 1); 0x6fa60's ratings buffer without `__declspec(align(8))` 766. Body unchanged.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
