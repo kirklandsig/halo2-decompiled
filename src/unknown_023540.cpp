@@ -2630,8 +2630,8 @@ void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     if (strength > 1.0f) strength = 1.0f;
     else if (!(strength > 0.0f)) return;
     if (!g_4b99b0[1] && alternate_target) return;
-    real default_source[4];
     real default_destination[4];
+    real default_source[4];
     real width = 1.0f;
     real height = 1.0f;
     byte *definition = tag != NONE ? g_4e3b44[tag & 0xffff].bytes : NULL;
@@ -2720,40 +2720,38 @@ void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     function_1ccf0(&g_484f68);
     function_1cc30(12);
     function_1c710(g_51f0f0);
-    if (!destination)
-    {
-        default_destination[0] = 320.0f - width * 0.5f;
-        default_destination[1] = 320.0f + width * 0.5f;
-        default_destination[2] = 240.0f - height * 0.5f + arg_af5a49;
-        default_destination[3] = arg_af5a49 + height * 0.5f + 240.0f;
-        destination = default_destination;
-    }
-    if (!source)
-    {
-        default_source[0] = 0.0f;
-        default_source[1] = width;
-        default_source[2] = 0.0f;
-        default_source[3] = height;
-        source = default_source;
-    }
+    default_source[0] = 0.0f;
+    default_source[2] = 0.0f;
+    default_source[1] = width;
+    default_source[3] = height;
+    default_destination[0] = 320.0f - width * 0.5f;
+    default_destination[2] = 240.0f - height * 0.5f + arg_af5a49;
+    default_destination[1] = 320.0f + width * 0.5f;
+    default_destination[3] = arg_af5a49 + height * 0.5f + 240.0f;
+    real const * volatile *psource = &source;
+    real const * volatile *pdestination = &destination;
+    real const *src = source;
+    real const *dst = destination;
+    if (!src) { *psource = default_source; src = default_source; }
+    if (!dst) { *pdestination = default_destination; dst = default_destination; }
     D3DDevice_Begin(D3DPT_TRIANGLEFAN);
     real inverse_width = 1.0f / width;
     real inverse_height = 1.0f / height;
-    D3DDevice_SetVertexData2f(1, source[0] * inverse_width, source[2] * inverse_height);
+    D3DDevice_SetVertexData2f(1, src[0] * inverse_width, src[2] * inverse_height);
 #pragma inline_depth(0)
-    D3DDevice_SetVertexData4f(0, destination[0], destination[2], 16777215.0f, 16777215.0f);
+    D3DDevice_SetVertexData4f(0, dst[0], dst[2], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
-    D3DDevice_SetVertexData2f(1, source[1] * inverse_width, source[2] * inverse_height);
+    D3DDevice_SetVertexData2f(1, src[1] * inverse_width, src[2] * inverse_height);
 #pragma inline_depth(0)
-    D3DDevice_SetVertexData4f(0, destination[1], destination[2], 16777215.0f, 16777215.0f);
+    D3DDevice_SetVertexData4f(0, dst[1], dst[2], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
-    D3DDevice_SetVertexData2f(1, source[1] * inverse_width, source[3] * inverse_height);
+    D3DDevice_SetVertexData2f(1, src[1] * inverse_width, src[3] * inverse_height);
 #pragma inline_depth(0)
-    D3DDevice_SetVertexData4f(0, destination[1], destination[3], 16777215.0f, 16777215.0f);
+    D3DDevice_SetVertexData4f(0, dst[1], dst[3], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
-    D3DDevice_SetVertexData2f(1, source[0] * inverse_width, source[3] * inverse_height);
+    D3DDevice_SetVertexData2f(1, src[0] * inverse_width, src[3] * inverse_height);
 #pragma inline_depth(0)
-    D3DDevice_SetVertexData4f(0, destination[0], destination[3], 16777215.0f, 16777215.0f);
+    D3DDevice_SetVertexData4f(0, dst[0], dst[3], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
     D3DDevice_End();
 }
