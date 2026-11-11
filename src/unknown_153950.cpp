@@ -736,6 +736,11 @@ struct s_player_axes_153d10
 // its screens are no model here. The i and j rows read partly through forward/up (the closest form of a compile-only
 // screen) 14; mixed reads with every product swapped 25; this product's up.k through the up pointer 16 (the
 // up.k-against-forward.j product flips with it); its forward.i through the forward pointer 2 (same code); both 16.
+// Round 74 (m3 lane 2, plain): up.k named once for both products that flip together 112 (1296 bytes); delta from three
+// named components 2 (as round 134's three-statement delta); cross declared before delta 2; cross and relative in one
+// declaration 2 (all three the same code); the slot's direction written through a real pointer as an array 18 (re-measured,
+// as round 41). Forms earlier measured only in a harness, now plain: the axes, forward and up pointers declared at the top
+// of the block 2; forward and up declared after delta 2 (both the same code).
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {
