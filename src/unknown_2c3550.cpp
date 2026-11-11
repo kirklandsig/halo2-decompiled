@@ -772,6 +772,13 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // needs path.cpp's declaration and caller local changed; state->source.unknown04 reaches avoidance_search as a raw
 // zero-extended byte (0x2c4741 xor ecx,ecx; mov cl,[eax+4]) where ours emits test/setne, so the field is a bool in retail
 // (path.h declares byte); the (byte) cast on flags is codegen-neutral (dropped = 675).
+// M3 lane 12 r108 (fast, caller 0x270930 MATCH throughout): `real radius = state->source.radius; if (radius < 0.2f) radius =
+// 0.2f;` 754; every `goto done` as its own return (`return false;` on failure) 776 (frame changes: `result` folds away, retail
+// keeps it as the stack byte [esp+0x13]); every `goto done` as a `break` out of the step loop 745 (2971 B); that with `bool
+// result` 754 (2986 B); the copy-out loop on a `short output_count = *out_count;` local written back after the loop 714 (2974
+// B, frame 0x1f8c: the local spills). Retail's three epilogues: the loop end and the truncation share `return result` (the
+// byte reloaded), the `*out_count >= 4` test has its own `*complete = false;` epilogue, and the failure path returns 0 (`xor
+// al, al`) after the flag loop; retail keeps the out count in AX through the copy-out loop and stores it once after it. Restored.
 // score 675 (was 675): retail's result is a stack byte, NONE sits in EBX and the step loop computes start and start_node
 // before the input pointer; register homes and the transform loops' short indices differ.
 // M3 lane 3 r225 (fast agrees with plain at 675; aligned [exact, stack-masked, register-masked] base [602, 524, 471]): bool result
