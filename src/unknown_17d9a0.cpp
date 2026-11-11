@@ -499,6 +499,11 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // signature picked by score, 4 under the bar), with the indices in y, x order 42 (same code); on it: a plane pointer
 // for the copy, dot and store 61, `quad->axis = function_120850(...)` with the side test reading it 172, the axis
 // local passed to all four corners 181 (966 bytes), axis and a `positive` local passed to all four 241 (923 bytes).
+// m3 lane 1 r92 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46, register-masked aligned 37): new: the table row as
+// `axis * 2 + (side != 0)` (0x173910's spelling) 192 (999 bytes). Re-measured: `quad->axis = function_120850(...)` with the
+// side test through quad->axis 174 (masked 43; AX store as retail, the flag still in EAX and the first corner's two
+// extensions merged). Every other natural form found (axis/side types, plane pointer or helper, dot sides, edge helpers,
+// helper signatures, value locals) is listed above; no untried natural form left. Body unchanged.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

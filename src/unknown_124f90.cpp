@@ -1261,10 +1261,10 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
-// score 94 (was 94; 177 before lane 10 round 69): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
-// MiniMax E (11-10): no new form, no lower score (94).
+// score 94 (was 94): 177 before lane 10 round 69. Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
 // 1.0, fade-out), and the gain value carried into the last arm.
+// MiniMax E (11-10): no new form, no lower score (94).
 // MiniMax C (11-09): no new form, no lower score (94).
 // MiniMax H (11-07): no new form, no lower score (94); the fade block still holds the running
 // difference in another register (ours xmm2, retail xmm3) and still divides by the fade-in time in
@@ -1491,6 +1491,15 @@ long function_2197f0(real gain);
 // (t chosen in each) 218 (606 bytes; retail keeps two copies); one ducking pointer for arms 3 and 4 94 (same code); the
 // hold sum as `gain += ducking->gain` 105 (678 bytes: the ducking gain's stack copy goes); arm 3's clamp as
 // `t = time; if (0.0f > time) t = 0.0f; else if (time > 1.0f) t = 1.0f;` 119 (688).
+// m3 lane 1 r92 (fast with 0x1295e0/0x129100, control 94, register-masked aligned 17): retail keeps fade_out in XMM1 from
+// its test to the product and makes the reciprocal before `elapsed - hold`. New: the reciprocal written inline in the
+// product, `(elapsed - hold) * (1.0f / fade_in) * fade_out`, with the clamps as divisions 145 (681 bytes: fade_out is then
+// multiplied from memory before the reciprocal); that with a `real fade_out` local for the test, sum and product 149 (681,
+// masked 16: the product is then retail's order, reciprocal then fade_out from the register); that with the clamp as the
+// division ternary `1.0f > time / fade_in ? time / fade_in : 1.0f` 128 (678, masked 14: the reciprocal is made first as
+// retail; left are the XMM colours (elapsed 2 for 3, 1.0 3 for 4, reciprocal 1 for 2), the time sum taking the product as
+// its destination, the value's divss after the test product and `fade_out + hold` loading hold first); on that a `real
+// hold` local for its three uses 156, a `real fade_in` local for all its uses 191 (635). Body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3135,6 +3144,11 @@ static inline short sound_voice_find_available_channel(char type)
 // `mov al, 1` stored to a stack byte for the goto path, `xor bl, bl ... mov al, bl` failure as retail). The first form is
 // a variant of round 94's (false after the search, 132) and the driver-before-search one of lane 16 r50's / round 117's
 // on another base. Also: `result = false;` after the two failure calls, byte result 96 (same code), bool result 136 (430).
+// m3 lane 1 r92 (fast with 0x129100, control 96, aligned 73, registers masked 55): retail's exits are three blocks (early
+// path returning the entry AL, failure `xor bl, bl ... mov al, bl`, commit `mov al, 1`), so its commit path has its own true
+// and the early and failure values are separate webs. New: the driver default before the channel test with `return true;`
+// after the commit and `return result;` closing the failure block, bool result 144 (407 bytes: the early path folds to a
+// constant and NONE is hoisted into EBP at the entry); the same with the byte result 144 (same code). Body restored.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
