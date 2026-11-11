@@ -489,6 +489,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 }
 
 // MiniMax E (11-10, run 73): no new form, no lower score (172); retail pushes ebx first and keeps the BSP global in ebx where we keep it in ebp, and the promoted clone of 0x11e800 hands its four pointers over in another register order (retail ecx, edx, eax, esi; ours ecx, edx, esi, eax); that callee lives in another file.
+// MiniMax D (11-11): no new form, no lower score (172): the BSP pointer still lands in EBP where retail keeps it in EBX, and the body is still seven bytes longer than retail's 726.
 // MiniMax D (11-06, run 49): no new form, no lower score (172); the promoted clone of function_11e800 still hands the four pointers to different registers (retail ecx, edx, eax, esi; ours ecx, edx, esi, eax); that callee lives in src/unknown_11cb00.cpp, not this lane's file.
 // MiniMax A (11-04): no new form, no lower score (172). What still differs: the promoted clone of
 // function_11e800 hands the four pointers to different registers. Retail calls it with
@@ -658,6 +659,9 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // and callers 0xd47d0/0x14af40 lose their match: the convention moves); both reference/surface selections
 // tested on `definition == NULL` 228 (719 bytes); the strip indices indexed from the section at each fetch
 // (no pointer local) 221 (747 bytes).
+// MiniMax D (11-10): no new form, no lower score (172): the BSP pointer still lands in EBP where retail
+// keeps it in EBX, so the cluster pointer takes EDX here and EBP there, and the section, BSP and instance
+// slots sit one word apart; a const BSP pointer compiles the same code.
 // MiniMax D (11-09): no new form, no lower score: the body is unchanged at 172 (726 bytes against retail's 726); the difference is the frame's shape (our slots sit one word lower than retail's and we do not push ebx first) and the 0x11e800 callee's registers, which are outside this file.
 // MiniMax S (11-10): no new form, no lower score (172): retail pushes ebx first and keeps the BSP global in ebx, we keep it in ebp and defer the ebp and esi pushes, so the prologue order differs although the frame slots agree; our zero constant takes ebx where retail gives it to edi.
 // MiniMax R (11-10): no new form, no lower score (172): the result as a bool (182), the result declared first (212/197) and four orders of the prologue reads (172/172/223/172) all leave retail's push-ebx-first prologue and its BSP in EBX unreproduced.
