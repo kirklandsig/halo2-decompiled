@@ -1372,6 +1372,13 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // switch; caller 0x7afd0 3); the late pair as two separate ifs 155 plain (the listed if/else-if chain's count). Ours
 // inlines 0x94420 at case 18 because the late switch compiles to a compare chain (one test deep); retail calls it. No
 // unlisted natural form gives the address a use across a call, which our build needs for retail's convention.
+// Round 188 (m3 lane 4, all plain with 0x7afd0/0x93aa0/0x92ef0/0x92d10/0x94420/0x94270): retail's one jump table covers
+// 0-24 with `ja` straight to a two-pop exit and the ESI save after it; ours inlines 0x94420 in the late compare chain.
+// The late switch with 11 ahead of 18 153 (same code); the late pair as a switch ahead of the main one 224 (480 B); as two
+// ifs with returns ahead of it 222; cases 5, 6, 7 moved after 18 and 11 in the late switch 222 (470 B, 0x7afd0 3); no
+// `default: break;` 153 (same code); the late switch inside `if (message_type == 18 || message_type == 11)` 166 (472 B);
+// the late pair as an if/else-if chain with 11 first 155. Plain re-measures of listed orders: cases 5, 6, 7 in numeric
+// place 220 (476 B), case 0 last 199 (468 B).
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

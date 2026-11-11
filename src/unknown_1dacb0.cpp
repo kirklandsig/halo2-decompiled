@@ -1083,11 +1083,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 	return result;
 }
 
+// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,
 // iterator_weapon_class at frame+0x00 and iterator_mode at frame+0x08, while ours keeps iterator_weapon_type
 // at frame+0x00, iterator_mode at frame+0x04 and iterator_weapon_class in the reused argument slot; our
 // result shorts therefore land at frame+0x08 instead of frame+0x0c and the tail compares out of step.
-// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // result/output homes and initial ECX/EDX differ;
 // frame 0x2c agrees; class/NONE registers, result/output/candidate homes and later zero carrier remain.
 // original selectors via iterator 1016; failed-result exit 1012; zero
@@ -1323,6 +1323,13 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // the post-loop test 1060 (2873), `found` declared first in the block 755 (same code); both twins' bodies as one shared forceinline
 // helper (overlay bool) 828 (same code); the search as `while (result.index == NONE)` 828 (same code, the first test folds; close to
 // the listed result-driven while). No other untried natural loop, return or declaration form is left on either base.
+// Round 188 (m3 lane 4, fast with the twin, the siblings, 0x1dd9d0/0x1ddd00/0x2963f0/0x1dd560; aligned/masked control 321/141):
+// re-measured the siblings' flag form 755 (aligned 174) and the single exit around the do-while 1040 (2857 B, aligned 125: closest
+// in content; its excess is retail's EBP zero, our jumps over loop padding and `this` in EBP where retail has EBX). New: that single
+// exit with the siblings' store order 1040; with no per-iteration candidate 1018 (2845 B), with both 1018; no bare block after
+// the early return 828 (same code); the named lookup as a shared inline helper on the 755 form 755 (same code); the iterator by
+// an aggregate initializer 826 (two points); on that, the single exit 1038, no candidate 1020 (2791 B), `named` first 994, the
+// flag loop 769, the found outputs stored type, class, mode 827. Re-measured: `named` before the candidate 996.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

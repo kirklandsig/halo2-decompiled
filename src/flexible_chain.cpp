@@ -587,6 +587,13 @@ void __stdcall function_1160c0(real dt)
 // the bound as `i <= definition->segment_count` 305 (1360 B); the node velocity through vector3d_from_points3d and three `*= inverse_dt`
 // 208 (1392 B); the y and z cross terms named ahead of the rows 171 (match-only, six lines move, homes unchanged). Same code:
 // dot3f(&offset, &axis); the scale as `length / (real)sqrt(...)`; `previous = node->position`; position added first in the predicted rows.
+// Round 188 (m3 lane 4, fast with 0x116750/0x73360/0x54590): the axis through the existing cross3f(&vertical, &direction,
+// &axis) re-measured on this body 179 (masked 79 -> 76); the node velocity through vector3d_from_points3d and vector3f_scale
+// 207 (1391 B); sinf/cosf re-measured 174; same code (171): a named versine, `inverse_dt * (...)` velocity rows, `if
+// (!normalize3d(&axis))`, the guard as `0.f < dt`, `previous` stored before `node->position`. Code-changing: the rest-offset
+// copy before the axis 186; the angle call (with the vertical) before the axis 314 (1353 B); a long loop index 290 (1358 B);
+// the stiffness product declared in the branch that uses it 315 (1348 B; retail forms it at the loop top). Retail's homes
+// run length, segment, axis upward; ours exactly reversed.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

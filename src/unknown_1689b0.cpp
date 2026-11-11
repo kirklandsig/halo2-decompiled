@@ -1571,7 +1571,7 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
-// score 610 (was 637): earlier 640 and 552; frame 0xb964 agrees and the prism cursor now has retail's plane.j anchor; sum/zero homes, axis re-read and early idiv remain.
+// score 610 (was 610): earlier 637, 640 and 552; frame 0xb964 agrees and the prism cursor now has retail's plane.j anchor; sum/zero homes, axis re-read and early idiv remain.
 // b2C (11-06) retail walk, statement by statement against 0x16a8e0: every condition, field, constant, callee and argument order agrees (entry `radius > 0`, signed clamp to 8 and
 // signed `% point_count`, side/perpendicular/along/separation sums in retail's order, inside and 0.01/0.0001 tests, normal path when the length is <= 0.01, ray hits at +0x14, `0 - radius` opposite ray,
 // face sum below edge sum). Two fidelity fixes, both with retail evidence: the point reconstructions call the existing 0x120790 (retail inlines it: the two word table loads at 0x16aab5/0x16aabc and
@@ -1861,6 +1861,33 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // both one-use values moved ahead of a call; `negative = *point;` ahead of the normal arm's ray 606 (2887, aligned 398, a
 // statement order). Left: the early remainder, the face/edge sum and count homes, the zero in EBX for ESI and the
 // scheduling around the two ray arms.
+// Round 188 (m3 lane 4, fast with 0xc2d00/0x17a380/0x16a440/0x2469b0/0x120790; aligned/masked = difflib counts, control
+// 409/253): the ray arms as `if (use_normal) { normal } else { edge }` 608 (2872 B, 380/219: retail's block order exactly,
+// edge-positive cast, normal arm, edge-positive fallback, negative cast, because the threaded flag test pulls the first
+// edge cast up and the rest follows the IL order; an arm swap, so match-only). On it, re-measured: the next index named at
+// the loop top 595 (2903 B, 325/213: retail's loop head exactly, the clamp select, `xor eax, eax`, early inc/idiv, the
+// zero in ESI; frame 0xb968), and with that no outer guard plus `radius * radius` at its use 547 (2888 B, 304/205; the
+// last alone 612, with the swap only 603, with the next index only 595). On that 547 composite the frame's extra 4 bytes
+// are one XMM spill in the side cross (relative.i and relative.j take each other's registers); there scalar sum locals
+// 618 (0xc2d00 and 0x17a380 break), `relative` through vector3d_from_points3d 591, `edge` through it 600. On the kept
+// body: `edge` alone through vector3d_from_points3d 628 (2907); `relative` alone 591 (2885, positional only: frame 0xb94c,
+// 463/287, and one of two parallel vectors, not kept); the side cross as `cross3f(&relative, &edge, &side)` tested `>
+// 0.0f` 609 (same 420/253); `direction` through vector3d_from_points3d 627; the arm swap with relative and edge through
+// it 612. On the kept body (fast): `separation` zeroed in the `inside` arm 610 (code differs); `half` as positive - middle
+// 599 at 2882 B (positional: 3 fewer differing lines, aligned 405/masked 256, and retail computes middle - positive);
+// `magnitude > 0.01f` tested after the normalize block 630; `amount = dot3f(...)` with rows `projected.x -
+// perpendicular.i * amount` 644; projected rows `point->x - distance * prism->plane.i` 602 (2887 B, positional: 420/267,
+// and retail forms 0 - distance); same code as the body (610): candidate rows projected first, the radius minimums as
+// ternaries, fallback z rows `point->z + ray.k`, midpoint rows positive first, `separation < nearest_squared_local`,
+// the magnitude through dot3f, projected as an aggregate initializer. Code-changing on the body: a separate opposite_ray
+// 651 (2919 B); face_hit for the negative cast 610; hit for the normal arm 629; `closest = projected` before the edge
+// loop with `separation = inside ? 0.0f : nearest_squared_local` 603 (2887 B, 598 differing lines; retail copies only
+// when inside); the distance as `dot3f(&prism->plane.n, (vector3f const *)point) - prism->plane.d` 623; length_sq3f(&edge)
+// named before the clamp chain 623; the nearest update's statements swapped 610; the edge-positive fallback through
+// point_along_vector_1696d0 689; the counts incremented before the radius updates 627. Same code: dot3f arguments
+// swapped in the side test and the amount, the two hit records swapped. Left: the composite needs two match-only forms
+// (the arm swap and the early next index); no untried natural form found for the side-cross register choice or the
+// sum homes.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
