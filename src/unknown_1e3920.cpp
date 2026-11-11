@@ -537,6 +537,11 @@ real normalize2d(point2f *vector);
 real function_267370(long object_index);
 
 
+// MiniMax H (11-10): no new form, no lower score (14): `cross3f` for both crosses gives 46 (plain, against the
+// 14 baseline), a named forward pointer 417, a value local for the copied direction 419 and `left` declared
+// before the copy 416, all against the 416 fast control; the two cross products and the inlined zone product
+// still differ in operand order, and both helpers live in headers this lane may not edit
+// (include/location_zones.h, include/vector_products.h).
 // MiniMax S (11-10): no new form, no lower score (14): the plane x product and the two cross products still differ in operand order, and both helpers live in headers this lane may not edit (include/location_zones.h, include/vector_products.h).
 // MiniMax C (11-09): no new form, no lower score (14); the axis global is still loaded after the copy instead of
 // between the j and k copies, and the plane x product and both cross products still differ in operand order
