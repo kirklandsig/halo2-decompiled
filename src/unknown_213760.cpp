@@ -1612,6 +1612,30 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // store through `g_557c90[index]` 7 (same code); the stored checksum through `g_557c90[index]` 114 (frame moves); one handle
 // copy after the resize wait for both the write and the close 127 (915 B); matched 0x2151f0's pattern (a handle copy, then a
 // named flags local, just before the write) 114 (917 B, the close copy dropped as with the write-local form).
+// Round 87 (m3 lane 11, fast; aligned/masked in brackets): lane 12's 6 form rebuilt 6 [6/0]. New on it: the resize
+// helper's handle taken as `s_file_handle const &` 114 [6/3] at 917 bytes (resize handle ECX and header lea EDX become
+// retail's); with a by-value close helper (call and wait) as well 114 [4/3]: the checksum compare then takes EAX as in
+// retail and only the close's `mov ecx, eax` copy is missing (917 against 930 bytes; the two loop pads follow). On that:
+// the write helper returning the count or `== 0x800` 114/114 [4]; a close helper by pointer owning the INVALID test and
+// store 114 [6]; by value returning false on INVALID 114 [4]; by const pointer 114 [6]; the close written in both arms
+// of `if (resized)` (no goto) 145 (962 B), on the reference form alone 184 (995 B). The write helper taking the flags
+// by value 120 [12]; the write helper's handle by const reference 122 [14]. Diagnostic dead loads after the write,
+// before the close test or inside the close block 103/100/97 (none restores the copy). Permuter on the 114 [4] form
+// (600 s, 47 tries): best 64 from casts and a split range test only. All of these need match-only forms (new
+// one-caller helpers, the goto, the set-in-test validity).
+// M3 lane 12 r108 (fast; all on round 53's 7 form, whose goto past the close and set-in-test `else if` validity are match-only,
+// so none of this is keepable short of a match): an inline write helper taking the handle by value 114 (917 B, as round 149's
+// DDHD); with a matching resize helper, `(s_file_handle file, dword size, bool *success, bool volatile *done)`, 6 at 930 B (as
+// round 149's DHHD): the checksum compare is then EAX, and each of the last three spots is one register step off: the resize's
+// handle (ours EAX, retail ECX), the write's header lea (ECX/EDX) and the close copy (EDX/ECX). On that 6: a query helper 6; a
+// close helper 118 (917 B, the copy coalesces); value-returning write (bool or count) and resize (bool) helpers 6 each; helpers
+// taking the handle pointer: resize 114, write 122, both 7; one resize-and-write helper returning success (early return or
+// single exit, handle by value or pointer) 429 (770 B, `inline` not expanded), 134/111 as `__forceinline`; a write helper that
+// owns the empty header 6 (`__forceinline`; plain `inline` is not expanded, 349 at 850 B); a blocking open helper 494 (696 B); a
+// handle-valid predicate, by value or pointer, at the close test and at the open test 6; a forwarding helper for the remove-later
+// call 6. Permuter (anneal, 600 s, 71 tries, 921 s full-image baseline) on the 6 form: best 6. Probes (dead volatile loads of
+// `index`, diagnostic, reverted at once): one placed before the resize call is scheduled after the handle load; one between the
+// write's wait and the byte test removes the close copy. Restored to the 33 body.
 // @retail 0x213970
 void function_213970(void)
 {

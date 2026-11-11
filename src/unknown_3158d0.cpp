@@ -35,7 +35,7 @@ void overlapped_312800::function_315a10(bounds_312800 const *bounds)
 	{
 		pairs_30d870 added(((world_312590 *)field_8)->pair_capacity);
 		pairs_30d870 removed(((world_312590 *)field_8)->pair_capacity);
-		handle_315a10 *handle = (collidable_315a10 *)&object;
+		handle_315a10 *handle = (collidable_315a10 *)&body.shape;
 		((world_312590 *)field_8)->pair_finder->update_bounds((void **)&handle, bounds, 1, &added, &removed);
 		if (added.size != 0 || removed.size != 0)
 		{

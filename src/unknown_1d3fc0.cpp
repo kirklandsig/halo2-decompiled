@@ -340,6 +340,13 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // plain dead locals move nothing, not even the term order); the projection rows written k, j, i. Worse: a `transform4x3f &` name for the working
 // matrix 155; the dot, or the cross, taking `&local_1[0].forward` in place of the k row's field read (either dot argument order) 154 each (forward
 // preloads k again). Body unchanged at 110: the 2-form needs the mixed field read, which is kept only with a match.
+// Round 78 (m3 lane 13, fast; register-masked aligned 23 at 922 bytes): mixes of the two existing header normalizers in
+// place of the private helper (normalize3d through a __forceinline redeclaration, axis pointers taken after the first two
+// normalizations): forward normalize_inline, the rest normalize3d 154 (925 bytes, masked 39); forward normalize3d, the rest
+// normalize_inline 148 (926, masked 20; forward's sum and reciprocal become retail's, the reciprocal then copied); that with
+// dot3f(up, forward) 148; forward and left normalize3d, both up normalizations normalize_inline 147 (925, masked 18, the
+// lowest yet without a mixed read); the private helper with normalize3d for left only 152. All move the first difference
+// to the +0x44 exit through the length gap.
 // Round 148 (m3 lane 8, fast with 0x1c4a80, matched each time): the projection rows as `+= forward->x * -local_10` 110; `up` as a
 // reference bound to the helper's result 110; the helper declared `inline` 110; the dot's local declared ahead of the axis
 // pointers 110; both axis pointers `vector3f *const` 110 (perhaps round 34's const forward pointer again); the dot as a

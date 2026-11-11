@@ -329,6 +329,13 @@ public:
 // its contacts are collected at that step's time, and the search moves on a
 // step while one is too close, or back a step when every contact is clear of
 // the earlier step's time too; the contacts then go to the agent's handler
+// Capture callback arguments in retail order, and snapshot the pair count only
+// after the temporary array has been allocated. Allocation may invoke a callback.
+// the narrow phase that searches for each pair's time of contact: a pair's
+// result counts the steps it has advanced (negative once it has given up);
+// its contacts are collected at that step's time, and the search moves on a
+// step while one is too close, or back a step when every contact is clear of
+// the earlier step's time too; the contacts then go to the agent's handler
 // score 160 (was 184): retail's frame is 0x20 bytes and it keeps the pair
 // count in a stack slot; ours holds the count in ebp, so the frame is 0x1c
 // and one more register is pushed. In-place step-time update 160 (from 169);
@@ -358,10 +365,10 @@ void narrow_phase_317c00::function_317950(void const *input)
 		mark->time = time;
 		g_480154 = (char *)(mark + 1);
 	}
-	int const count = pair_count;
 	{
 		output_316460 output;
 		stack_array_317060 results(0x40);
+		int const count = pair_count;
 		pair_316460 *pair = pairs;
 		output.contacts = (contacts_316460 *)&results;
 		for (int index = count - 1; index >= 0; index--, pair++)
@@ -375,7 +382,13 @@ void narrow_phase_317c00::function_317950(void const *input)
 					float step_time = steps * world->step_length + world->first_step_time;
 					world->state->mode = 2;
 					world->state->tolerance = step_time;
-					pair->collector->collect((char *)pair->first - 0x10, (char *)pair->second - 0x10, (input_316460 *)input, &output);
+					{
+						void *body_b = (char *)pair->second - 0x10;
+						void *body_a = (char *)pair->first - 0x10;
+						input_316460 *query = (input_316460 *)input;
+						output_316460 *out = &output;
+						pair->collector->collect(body_a, body_b, query, out);
+					}
 					if (classify(&output, step_time) != 0)
 					{
 						if (pair->result > 0)
@@ -399,13 +412,26 @@ void narrow_phase_317c00::function_317950(void const *input)
 				{
 					world->state->mode = 2;
 					world->state->tolerance = -1000.0f;
-					pair->collector->collect((char *)pair->first - 0x10, (char *)pair->second - 0x10, (input_316460 *)input, &output);
+					{
+						void *body_b = (char *)pair->second - 0x10;
+						void *body_a = (char *)pair->first - 0x10;
+						input_316460 *query = (input_316460 *)input;
+						output_316460 *out = &output;
+						pair->collector->collect(body_a, body_b, query, out);
+					}
 					if (pair->result == -2 && classify(&output, 0.0f) != 0)
 					{
 						pair->result = 0;
 					}
 				}
-				pair->collector->handler->handle((char *)pair->first - 0x10, (char *)pair->second - 0x10, (input_316460 *)input, &output);
+				{
+					handler_317950 *handler = pair->collector->handler;
+					void *body_b = (char *)pair->second - 0x10;
+					void *body_a = (char *)pair->first - 0x10;
+					input_316460 *query = (input_316460 *)input;
+					output_316460 *out = &output;
+					handler->handle(body_a, body_b, query, out);
+				}
 			}
 		}
 	}

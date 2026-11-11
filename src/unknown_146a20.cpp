@@ -394,6 +394,11 @@ bool g_47f05b;
 // the abstract's four words set through an inline member call 34 (near the listed compile-only init-method form),
 // through a word cursor 34. The store is dropped after
 // inlining whatever calls or loop shape the constructors have.
+// Lane 6 r167 (fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0, all unchanged; base 34, aligned 4 = the base vtable store
+// and the g_479888 reload at the join): `void *const block` 34, the pool constructed with `()` 34, `g_4798b4 += 1` 34,
+// `byte *const block` with `block + 0x30` 34 (all same code); re-measure: the fixed allocator in an abstract-typed local
+// published on the next line 38 (137 bytes; the listed typed-local-published form). The lever left is the shared
+// constructors in include/unknown_146a20.h (included by include/globals.h and contributor files) or the held twin.
 // @retail 0x146a20
 void function_146a20(void)
 {

@@ -876,6 +876,15 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // assigned b, a, c, d 219 (identical: declaration order moves nothing, code order does); the surface fields read
 // through pathfinding->surfaces[surface_index] at each use 461 (1364 bytes); `1.f - margin` named for the test and
 // the assignment 218 (masked 15).
+// m3 lane 13 r79 (fast, 0x270d90 286 throughout; brackets: difflib count aligned / with registers masked, base 219
+// [52/13]): a `vertices` local for case 1/6's corners inside the corner block 219 (same code); the radius read into
+// a named local for the test and the margin with `1.f - margin` named 214 (1284 bytes) [93/26]; the radius local
+// declared ahead of the projections 224; a 0.5 default with the fraction computed inside the radius branch 358
+// (1284); the radius local with the corner-block `vertices` local 211 (1280 bytes) [96/29], not kept: the count
+// falls only by re-alignment, the first/second length homes swap and retail reads the radius from memory twice
+// (no radius local). Re-measured: the vertex table read at case 1/6's top 169 [90/22] (round 145's form: the actor
+// load goes first and pathfinding arrives in EDX; 0x270d90 1390 bytes); the reciprocal before the projections 219.
+// Both builds share the dead `out` slot (E+0x18) between the result byte and first_length.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

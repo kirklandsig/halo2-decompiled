@@ -60,10 +60,10 @@ inline __m128 cross_303540(__m128 const &a, __m128 const &b)
 	return _mm_sub_ps(_mm_mul_ps(a_yzx, b_zxy), second);
 }
 
-// The real local caller preserves the helper's register convention. This
-// larger routine remains a near reconstruction, not an additional solve.
+// Shared tetrahedron reduction used by the convex-search callers. Exporting
+// it gives those callers the same actual implementation; it remains unmatched.
 // @retail 0x303540
-static int __cdecl function_303540(__m128 const *vertices, __m128 const *point, float orientation)
+int __cdecl function_303540(__m128 const *vertices, __m128 const *point, float orientation)
 {
 	__m128 const a = vertices[0];
 	__m128 const b = vertices[1];

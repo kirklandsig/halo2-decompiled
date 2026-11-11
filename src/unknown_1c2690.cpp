@@ -22,9 +22,9 @@ public:
  virtual void function_1c2692(void *arg_0) {}
  virtual void function_a9ef0(void *arg_0);
 };
-void __cdecl function_2d8780();
+int __cdecl function_2d8780();
 int __cdecl function_2d7f00();
-void (__cdecl *g_461df0)() = function_2d8780;
+int (__cdecl *g_461df0)() = function_2d8780;
 int (__cdecl *g_461df4)() = function_2d7f00;
 byte g_510c58;
 extern long g_47f04c;
