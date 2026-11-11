@@ -491,6 +491,13 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1);
 
 s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 
+// score 87 (was 87): earlier 89; the object-plus-radius sum is written at both of its uses, the timing
+// default is a ternary, and the heading vector is declared ahead of the object index; the frame is
+// 0x54 and the length matches retail's. Still differs in the 0x110ab0 argument register (ECX where
+// retail uses EAX) and the scratch-register rotation after it, the sum's operand order (retail
+// adds the field first), the length and projection stack slots (retail's are four bytes higher),
+// the object lookup against the vector copies, and the timing call's argument loads and the
+// request stores.
 // MiniMax C (11-09): no new form, no lower score (89): compared with retail instruction by instruction,
 // the frame homes of both vectors and of the two lengths agree, and what is left is the schedule:
 // retail loads the object table global into ecx before the three pushes and does the object lookup
@@ -506,13 +513,6 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // MiniMax G (11-05): a split guard with the unit index in a one-use local reaches 19 (the object lookup first and the short request store first), but a one-use local is match-only, so it and the forms without it (guard split 89, guard reorder 296, nested heading length 1263) are reverted; moving the object lookup ahead of the two vector copies reproduces retail's prologue (the global load at +0x15 and the lookup before the copies) but gives 94, because the register rotation (retail EAX/ECX/EDX against ours ECX/EDX/EAX) and the tail homes still differ; no new form, no lower score.
 // MiniMax G (11-06): the object-plus-radius sum named as a local 222, the two addends of that sum in the
 // other order 89, and the object lookup moved before the two vector copies 94; no lower score.
-// score 87 (was 89): the object-plus-radius sum is written at both of its uses, the timing
-// default is a ternary, and the heading vector is declared ahead of the object index; the frame is
-// 0x54 and the length matches retail's. Still differs in the 0x110ab0 argument register (ECX where
-// retail uses EAX) and the scratch-register rotation after it, the sum's operand order (retail
-// adds the field first), the length and projection stack slots (retail's are four bytes higher),
-// the object lookup against the vector copies, and the timing call's argument loads and the
-// request stores.
 // Earlier score 141 (was 141): frame 0x58 versus 0x54, first-length/radius homes and unit-call scratch allocation remain.
 // Earlier: frame 0x58 versus 0x54 and first-length/radius homes remain; retail keeps
 // the radius in the argument home and adds the object size only after the projection test.
@@ -762,6 +762,10 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // the target object looked up at each use (no object pointer) 195; the animation id chosen by a ternary 136 (950 B), by an
 // if/else 178 (931 B) in place of the switch; re-measured: the target index initialised at its declaration
 // 89 (same code). Body unchanged at 89.
+// M3 lane 12 r113 (fast with the file's nine other functions, kept; caveat on 0x110ab0): lane 17's match-only 17 form
+// rebuilt 17; its 17 lines are the slot groups (ours {sum, side0} 0x10, {length, side1} 0x14, index 0x18, adjusted 0x1c;
+// retail side0 0x10, {sum, side1} 0x14, {length, adjusted} 0x18, index 0x1c) and the lateral/maximum XMM3/XMM2 swap.
+// No unlisted form; body unchanged.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
