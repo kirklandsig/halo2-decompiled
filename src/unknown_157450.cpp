@@ -767,6 +767,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // Round 69 (m3 lane 15, fast): the globals through the getter at each use with no local (0x1584c0's idiom) on this dword-mask,
 // volatile-present body 32 (identical code); the real record-pool step function in place of the header iterator copy is ruled
 // out (its file is /Ob1, so the link would keep a call where retail has the loop inline).
+// m3 lane 15 r72 (fast): the player loop through the file's datum iterator (`while (data_datum_iterator_next_inlined(&iterator))`,
+// player from `iterator.datum`, 0x158c00's form) 32, on the word mask 77, present not volatile 102, both 63 (same code as each
+// base). Re-measured: a const player pointer 32, on the word mask 77 (N351's immutable player); present not volatile with the dword mask 102
+// (378 B: the loop is retail's, the compare folds present from memory) and with the word mask 63 (384 B: present takes EDI,
+// globals reloaded). No untried natural source form is left in this list; the remaining causes are register choices.
+// A 600 s permuter run (annealing, 53 variants) on the one-use present-bit carrier (29, match-only) found none below 29.
 // @retail 0x158140
 void function_158140(void)
 {

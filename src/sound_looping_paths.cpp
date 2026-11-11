@@ -166,7 +166,6 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // MiniMax E (11-05): no new form, no lower score; the entry zero, the target, primary and query-array homes
 // and the choice carriers are as the earlier rounds left them.
 // s1F walk (11-06), at 866: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
-// score 866 (s1F walk 11-06): walked against retail block by block, no behaviour difference. Retail accesses the query and choice
 // counts as dwords (0x18aeef, 0x18af10, 0x18af84, 0x18af81); the `short` copies here narrow them (no observable difference:
 // counts <= 64). As `long` it scores 942, so it is not kept without a match. Frame 0x4e0 agrees; on the long form the choice count
 // and first-loop index stay in memory (retail: ESI/EDI), 3297 bytes (retail 3327). s1F also tried, on that base: grouping
@@ -429,6 +428,16 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // pointer 940 (3327 B, masked 580); `muted = false` stored ahead of the flag-8 test instead of an else 869 (509).
 // Retail's gains array shares +0xec with the later existing list and its count (stack packing), so the
 // four query-array homes follow lifetimes and use weights, not names.
+// m3 lane 15 r72 (fast with 0x18bb80): re-measured the query count read directly with a long choice count 942 (3297 bytes):
+// the choice address is strength-reduced into a pointer stepped by 0x28 ahead of the loop (`lea esi, [esp + 0x44]`) with
+// the counts in memory, where retail keeps the choice count in ESI, the query index in EDI, and forms each choice address
+// from the incremented count. The stacked second score line is merged. No new form was run: each remaining axis is listed or
+// ruled out. Counter widths and domains (query, choice, target, existing, ordinals: short/long/byte/word/unsigned) 866-1025;
+// the query count copied or read directly 919/942; the choice address (indexed, post-increment pointer, count-first) is
+// strength-reduced on any long count (953-969); loop shapes (continue or nested ifs, cap test placement, duplicate-search
+// forms) 866-1001; store orders and the 1.0f defaults (same code); array names, order and scope (same code: homes follow
+// lifetimes); helper routes for the pin/log/linear conversions and getters; grouping a count with its array would only move
+// homes (an aggregate made up to steer), so it is not a candidate.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

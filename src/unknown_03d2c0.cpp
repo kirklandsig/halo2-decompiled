@@ -152,6 +152,26 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // `long result = NONE;` 77, `result = cache_index = record_pool_allocate(...)` 77 (all same code); one early return after the
 // if/else in place of the `if (result != NONE)` block 152 (497 bytes); the early return as `goto done` to the only return 85
 // (504 bytes, the two NONE tests merge).
+// m3 lane 15 r72 (fast with 0x3db00/0x3dd10): re-measured round 99's single-return form (`if (result != NONE) initialize = true;`
+// after the walk, no early return) 85 (504 bytes): its walk exit reaches an unfolded copy of the final return as retail's does.
+// New: on that form, `long result = cache_index;` with one inverted test 168 (491 bytes); one variable for lookup, allocation,
+// walk and return 129 (504) (on main it re-measures the listed one-variable form, 141 then, 151 now, 508); `initialize = true;` then `if (result == NONE) return result;` at the end of the
+// else arm without the outer test 145 (508), with the walk's early return kept too 138 (518 bytes: the else arm moves to the end
+// and both returns fold to `or eax, -1`); the found test inverted with the found arm as the else 77 (same code), on round 99's
+// form 157; the outer `if (result != NONE)` dropped (it is redundant after main's else arm) 86 (506), with round 99's inner
+// test 98. Finding: with no test between the found arm and the record lookup (the last two forms), the found path jumps
+// straight to the lookup and the lookup, the 0x3dd10 call setup and the reload after it are retail's exactly; retail keeps
+// its NONE test after `initialize = true` on the allocation and walk paths only. VC threads a join only from a test of the
+// same variable just before it (diagnostic: the found test written NONE-last on `result` threads the found arm, 172; written
+// NONE-last on cache_index it does not, 96): a copy of the tested index (`result = cache_index`) does not carry the knowledge.
+// Goto forms to the one final `return result;` (match-only): the walk's early return kept, `initialize = true;` then
+// `if (result == NONE) goto done;` closing the else arm, outer test dropped 83 (508 bytes: from the walk's exit on, the C
+// test, the record lookup, the 0x3dd10 call and the main epilogue are retail's; left: the walk's NONE return, inline and
+// folded to `or eax, esi` where retail jumps to an unfolded second epilogue after the main one, `mov eax, esi`); both NONE
+// exits as that goto 85 (504: the epilogues merge and the join loads result into EAX); the same with result declared first 85;
+// the second NONE test ahead of `initialize = true;` 99 (491), with no walk test 99; round 99's inner test then the goto 99;
+// the inner test in the walk arm with an else 100; re-measured round 101's early return as `goto done` 85. Matched 0x23600 shows
+// the second epilogue is VC's copy of a single return for a path that holds the value in a register.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

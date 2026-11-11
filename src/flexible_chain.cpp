@@ -233,6 +233,13 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
+// score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
+// seven local-name sets, declaration reversals and entry/loop scopes 194;
+// shared cross 207, both point differences 286, both helpers 280;
+// scaled difference 212, all vector helpers 285.
+// frame 0xa4 agrees; attachment homes now agree. Retail keeps the rest offset
+// below previous and the scalar temporaries below the axis; those still differ. The segment
+// pointer lives in edx (ours edi) and the rotation's products are scheduled in another order.
 // MiniMax D (11-08): no new form, no lower score (171); retail builds the segment address in EDX and keeps it at
 // +0x14 and the loop's previous values at +0x5c, ours borrows EDI with the segment at +0x1c and the previous values
 // at +0x50; the segment as a base pointer plus an index, as a named index and as an if/else all give the same
@@ -243,13 +250,6 @@ void __stdcall function_1160c0(real dt)
 // node-position copy uses EDX where retail uses ECX, and the physics index is masked in EAX before the
 // pushes where retail masks ECX after them.
 // MiniMax S (11-01): the segments and segment-index locals leave the first difference at +0x37; no lower score.
-// score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
-// seven local-name sets, declaration reversals and entry/loop scopes 194;
-// shared cross 207, both point differences 286, both helpers 280;
-// scaled difference 212, all vector helpers 285.
-// frame 0xa4 agrees; attachment homes now agree. Retail keeps the rest offset
-// below previous and the scalar temporaries below the axis; those still differ. The segment
-// pointer lives in edx (ours edi) and the rotation's products are scheduled in another order.
 // Round 62: the existing normalize3d for the axis and dot3f for the projection give the same code (194)
 // but cost 0x73360 its match (this file links ahead of unknown_058dd0.cpp), so not kept; forward
 // declared before origin 194; the three rotation cross terms as one vector 275; previous/predicted at
@@ -571,6 +571,12 @@ void __stdcall function_1160c0(real dt)
 // rotation evaluates the written expressions but schedules the y and z cross terms right after the dot, before
 // the x row, loading all six axis/offset components into registers first (and reading offset k from memory twice
 // more later); ours reads its offset k from memory at the dot and at two later products.
+// m3 lane 15 r72 (fast with 0x116750/0x73360, both matched throughout): round 130's same-file rotation helper (0x170d70's
+// statement shape, writing an output, then `+= position`) re-measured 163 (match-only: a one-caller helper). On it: the named
+// terms in three orders, the dot axis-first, the rows projection-first, `(1.f - cosine) * dot`, sine-first products, the result
+// into a `rotated` local then added to position (either order), and the axis normalization rows all inverse-first, all
+// axis-first or all `*=`: 163 each (same code); the axis passed by value 334 (1399 bytes). 0x170d70's own helper is in a file
+// held for the sort_4byte change this round.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
