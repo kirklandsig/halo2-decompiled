@@ -446,6 +446,11 @@ struct s_24e9c7_bounds
 // Diagnostic: `back` renamed to sort last 125 (same code). In every form the compiler folds the negation out of the
 // product (`0 - fj * size`) and sinks it into the side products; retail computes `size * (0 - fj)` right after size
 // and spills across j at -8. Body restored.
+// M3 lane 3 r231 (fast with 0x24e59f and 0x22a664, both matched each time; control 125): the scale read before size 125 (same
+// code); the across j product before across i 125 (same code); the half width halved as a second statement (`half_width /=
+// 2;`) 125 (same code); the four marker stores to the view globals before the corner points 131 (retail interleaves them with
+// the last corner sums); `up.y` as `-(result * forward_j)` 125 (same code). Close to round 147's half width before the height:
+// the result conversion after the half width 131.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

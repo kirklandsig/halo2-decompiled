@@ -619,6 +619,17 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // (first +0x2f); that with the deltas through scaled_difference3f at 1.0f 82, with deltas i, j, k and the existing in-place scale helper plus
 // vector3f_add for the correction 77, with both helpers and the 1.0f delta 80; the in-place scale helper and vector3f_add alone 57 (369 bytes).
 // All restored.
+// Round 78 (m3 lane 13): the compile-only /Gr harness reproduces this float block exactly (only the parameter registers
+// differ). Scored against retail's 54-instruction block from the tick conversion to the correction stores (aligned misses,
+// base 36): deltas i,j,k 33, i,k,j 33, j,k,i 35, k,i,j 32, k,j,i 36; delta copied then subtracted i,j,k / j,i,k 46/46;
+// vector3d_from_points3d delta 36. All are listed families (none new); the chain order still follows the delta order.
+// Idiom scan of every matched retail function for retail's `mulss a, t; mulss b, t; movss [m], b; subss b, ...` (the
+// second product stored and subtracted first): no hit outside this function, so no matched source shows the form.
+// Harness, with normalize3d.h added: the correction through vector3f_scale + vector3f_add with deltas i,j,k / j,i,k
+// 36/37, vector3d_from_points3d delta with them 36. Fast, on this body (those forms were listed on the 39/43/47 bodies
+// only): correction through the existing vector3f_scale with the three adds 32 (same code); vector3f_scale +
+// vector3f_add 57 (369 bytes); local_scale3d + vector3f_add 57; the delta scaled in place by vector3f_scale then
+// vector3f_add 57; the adds written correction first 32 (same code).
 // Round 165 (m3 lane 6, fast with 0x1fc660): the output rows written j, i, k 32 (masked 13 -> 18) and k, j, i 32 (masked
 // 21); the correction added through vector3f_add(&state->velocity, &correction, ...) 57 (369 bytes, listed) and with the
 // operands swapped 57 (same code); the delta scaled straight into the output, then `+= state->velocity` per component

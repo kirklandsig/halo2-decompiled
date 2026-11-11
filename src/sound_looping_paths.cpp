@@ -156,7 +156,8 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
-// score 866 (was 866): frame layout and register homes remain (earlier starts 919 and 886 below).
+// score 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// frame layout and register homes remain (earlier starts 919 and 886 below).
 // MiniMax S (11-10): no new form, no lower score (866): retail reads the query count as a dword at the loop head and
 // keeps the choice count and the two loop indices in ESI/EDI/EAX, while ours narrows the count to a word and holds the
 // outer index in EBP; taking the long count directly instead moves the frame offsets and scores 919. Retail's four
@@ -399,6 +400,13 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // M402: Native dword query/choice counts and duplicate-failure-first search,
 // direct count/repeated flags/repeated tag subsets 0..7: 966/966/966/966/966/966/965/965.
 // NOT kept: earlier entry mismatch and 3301/3327 extent; original counters/search/body restored.
+// Lane 3 r230 (fast, base 866): the four query arrays renamed with a common prefix, and renamed so their names sort in
+// retail's address order (gains, indices, portals, clusters), 866 both, byte-identical: names do not order these slots.
+// The choices as a {short count, items[2]} list 1072 (3448 bytes); `inside` tested right after the query call 933 (the
+// matched caller 0x18bb80 then differs on the reduced image); the second pool scan as a `for` like the first 933 (3375
+// bytes). Re-measured listed groupings: targets as a {count, items[3]} list 940 (frame 0x4e4); the existing sounds as a
+// {count, items[64]} list 856 (3329 bytes; round 153's 875 form, a new type that only moves homes, so not kept), with
+// long query and choice counts on it 935 (3297 bytes).
 // Round 165 (m3 lane 6, fast): on the listed nested-if first loop (924 at 3327 bytes: retail's ESI zero register):
 // `s_loop_path_choice *choice = &choices[choice_count++]` with every store through it 966 (3268 bytes); the query count
 // used directly as the bound 928; the duplicate search as a `for` with `duplicate = true; break;` 953 (3287 bytes); the

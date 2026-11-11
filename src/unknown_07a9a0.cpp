@@ -1062,6 +1062,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // scores 844 (2772 bytes). The histogram is never read, so it is not kept without a match. Tried: the add-loop minimum as a
 // three-way type 5/4/other (no effect).
 // Earlier note (766, was 766; round 103 unchanged): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
+// Earlier 766 (was 766; round 103 unchanged): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
 // where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
 // expanded here while retail calls the matched 0x192e60 out of line.
 // Earlier: Frame 0xd4/0xb4, stacked session and protected opening lookup expansion remain.
@@ -1327,6 +1328,18 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // (diagnostic, not keepable) an `__assume` on the index ahead of the lookup 876 (no effect on the inline choice); this
 // function with its helpers and records moved up to just after the identity records, ahead of 0x7ed20, 766 (same code,
 // the file's 21 other functions unchanged). Body restored.
+// m3 lane 2 r70: no new form run. The register-masked aligned diff (142 blocks, masked 348) is the session's stack ingress, the
+// capacity switch kept as a call (retail inlines it as a jump table) and the register homes that follow; every natural spelling
+// of the top lookup, the player loop, 0x63220 and the capacity helper is listed above. Retail inlines 0x192e60 here only inside
+// its inlined copy of 0x63220, whose file (network_session_membership.cpp) is not /arch:SSE, while this file is; every file that
+// keeps a 0x192e60 call out of line in retail (0x741f0, 0x66050, 0x705f0) is non-SSE too. BLOCKED on build flags (the user's
+// decision; not tried, no flags diagnostic run).
+// Then five local forms (fast, control 766, aligned 750, masked 348): this file's party minimum/maximum/spread copies written as
+// the matched accessors 0x1933d0/0x1933a0 are (`long result = 0;` then if/else-if, one return) 820 at 2792 bytes (aligned 601,
+// masked 343: every inlined copy now has retail's `xor` first and `cmp byte [ebp+0x604], 0`); with the teams and imbalance
+// copies as the accessors' switch-with-result form too 908 (2744, masked 494); that with `long histogram[16]` 903 (2712); the
+// switch forms alone 903 (2764); the party forms with `long histogram[16]` 830 (2760 bytes, masked 313, frame 0xb4 as retail;
+// first difference +0x7). 0x73530 stays 8 and every matched caller and callee stays matched in all five.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

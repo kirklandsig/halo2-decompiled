@@ -1862,6 +1862,7 @@ void function_269250(long clump_index, long actor_index);
 // MiniMax E (11-07): no new form, no lower score; the walk's pool load stays in memory and the
 // selection stays in edi where retail hoists the pool into ebx and keeps the selection on the stack.
 // Earlier note (87, was 87; round 103 unchanged): retail hoists the walk's pool load into ebx and keeps the selection
+// Earlier at 87 (was 87; round 103 unchanged): retail hoists the walk's pool load into ebx and keeps the selection.
 // MiniMax B (11-03): no new form, no lower score.
 // Earlier: retained frame pointer 187; depth zero 304; selected-result reuse 134; team snapshot 133;
 // size preference 338; double candidate/both scores 157/158; activity while 160; role-based scalar
@@ -2086,6 +2087,16 @@ void function_269250(long clump_index, long actor_index);
 // (selected != current)`) 130, the selection and best declared ahead of the walk 129; on this body, the walk at function scope
 // 87 and the selection stored ahead of best 87 (both the same code). The in-arm form's x87 compare (`fstp` score, `fld` best,
 // `fcompi`) and homes are retail's; the found block of the walk still sits after the score block. Body restored.
+// M3 lane 3 r231 (fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched, and 0x269040
+// listed): the in-arm compare with the selection stored first re-measured 126 (480 B). Retail's walk step also lays the
+// not-found block first and the found block after it, falling into the clump test, and its improving arm jumps into the
+// initialisation's `best` store; ours places the found block after the loop body and keeps the selection in EDI. New, on the
+// in-arm form: `selected != NONE && selected != current` with `else if (selected == NONE)` for the creation 126. Re-measured
+// listed forms: on the in-arm form the post-walk test turned round 130 (the creation arm first), best stored before the
+// selection 126, the activity snapshot before the walk's init 126, the selection and best initialised before the snapshot 126;
+// on this body the selection stored before the best 87 (round 129's, same code). No other untried natural form is left: the
+// lever is register priority (the walk pool against the selection), the declaration, statement-order, type, helper and
+// loop-shape forms listed here leave it, and the walk step helpers are shared headers used by matched functions.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

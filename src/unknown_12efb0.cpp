@@ -518,6 +518,13 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // weight and remaining stores last (that helper alone) 718 (3838 B); both together 736 (3853 B); a char palette slot with the
 // colour helper's alpha term and weight first 702 (3828 B); a char slot with the three-scalar weight/remaining last 707 (3834 B).
 // Re-measured listed forms: four scalar colour arguments 774 (3863 B), the alpha term and weight first alone 609 (3832 B).
+// M3 lane 12 r110 (fast with 0x130f60, 0x131030, 0x1317a0, all MATCH; aligned/masked control 354/118): the fog
+// globals read once into a byte pointer local for the palette lookup 607 (same code; re-measure on this body of lane 8
+// r150's global-in-a-local form); the cluster loop over a cluster
+// pointer with an end pointer 794 (3861 bytes); the no-tag fallback weight through the file's clamp 725 (3850); the
+// red publication product as red * inverse * (1 - remaining) 607 (same code); the palette range as `g_547f80` then
+// `if (range > 0)` with the inner ternary 702 (3827); the palette byte read before the 0x130f60 call 617 (3828). No retail function holds the fog-palette lookup (global, +0x340
+// bound, +0x344 table, 0xf4 stride) out of line, so the 0x1318a0-shaped getter lead stays a new one-caller helper.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

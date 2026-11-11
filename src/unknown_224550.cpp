@@ -502,6 +502,14 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // the `ax>ay` test instead of 1.0f defaults 253 (1953 B); the width product written at its two uses 423 (1932 B); the two
 // frame bounds copied before the blend 244 (1950 B); the alpha product moved down to the colour modulation 491 (1950 B);
 // one flip local for both arms, re-measured (round's "shared flip flags") 458 (1921 B).
+// M3 lane 12 r110 (fast; aligned/masked = line diff after address masking / with registers and stack offsets also
+// masked, control 211 at 136/34): diagnostics (helper bodies written out, not keepable forms): the flip written in the
+// body at both sites (no sprite_flip) 211; the UV encoding written in the body at all three sites (no function_x0ec080)
+// 211; both 211 (same code each: the two helpers are not the cause). Forms: the unit bounds as one initialized box copied to both sets 507 (1974 bytes); the aspect pair set in both arms
+// of the `ax>ay` test 253 (masked 40); the frame index clamped through a PIN macro 211 (same code); the sequence count
+// defaulted by `if (count < 1) count = 1;` 427 (1933 bytes); the frame position as `(real)intervals * f()` 211 (same
+// code). Diagnostics (reverted): blend passed as 0 to the last call 196 (masked 35, the
+// blend still leaves XMM5); blend zeroed per arm instead of at entry 469.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

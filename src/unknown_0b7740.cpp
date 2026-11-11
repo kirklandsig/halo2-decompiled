@@ -943,6 +943,18 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // `(void)&result;` 240 (both the same code). In the 0xbfe20 + `header->object` form (194) our build keeps the first
 // `header->object` read alive in EAX to the bit-29 test, where retail reloads it from the header (a second and a third
 // read); retail also reads bit 30 into EDX ahead of the mask copy. Body restored.
+// Round 168 (m3 lane 5, fast; masked = difflib count with registers and stack offsets masked, kept body 240 [46]):
+// re-measured round 78's lead (bit-29/+0x34b through header->object, bit 30 cleared through 0xbfe20) 194 [39] at 814
+// bytes; on it, the early returns as separate ifs 298 (820 B: ours lays each return inline, retail jumps forward to
+// its four tail epilogues); a single exit (nested ifs, one `return result;`) 295 (825 B) [26], result then in EDI as
+// retail, three epilogues; that with the header as pointer addition 295 (same code); with final_matrices declared at
+// the top 287 [25] (g_4e0300 loaded first and object_index in ESI as retail; left: the scratch roles, ours data/object
+// EDX, header ECX, input EAX against retail's ECX/EAX/EDX, so the +0xb3 byte takes AL where retail pushes EBX for BL;
+// node_count loaded late; ours keeps the early tests' object in EDX across the mask copy where retail reloads it
+// through the saved header; the bit-30 clear's flags load; one epilogue short); with result/final declared before the
+// header 293 [29] (repeats round 78's 293). On the kept body: a single exit with final_matrices at the top 282 (839 B)
+// [41]; the render-node count read in the loop test at each pass, no local, 240 [45]. All but the last are
+// match-only (the mix, declaration moves); the 287 form (single exit + final at the top on the 194 lead) is the lead.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
@@ -1390,6 +1402,11 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // data reused from EDI); diagnostics re-measured on the current body: the count > 0 guard 20 (1399 bytes, aligned 8),
 // with the one-object local 44 (1390). The guard stays match-only. The no-model parent index and node read through
 // the existing object view's parent fields 87, in the render branch too 87 (same code).
+// Round 87 (m3 lane 11, fast): the no-model case first under `if (render_index == NONE) { ...; return; }` with the
+// render code un-nested after it 306 (1378 bytes). No existing node-matrix accessor other than 0xb8bd0 exists in a file
+// without /Ob1 that LTCG could inline here (headers: only slot_handler.h's object_node_matrix, already used; the
+// data_array.h datum helpers add checks retail lacks), so the no-model block is BLOCKED-BY 0xb8bd0 (inlined at this one
+// site in retail; both files /Ob1); the count > 0 guard stays match-only.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
