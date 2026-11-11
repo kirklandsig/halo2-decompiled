@@ -387,6 +387,11 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 
 /* the rotation a spinning projectile makes each tick */
 // MiniMax R (11-10): no new form, no lower score (3); retail completes the rotating-flag OR and store before the angle duplicate and the first axis load, ours still hoists that load above the flag store, and the sixteen source forms tried this round all compile to the same two differences.
+// MiniMax A (11-11): no new form, no lower score (3); the three differences are all one schedule: retail completes the
+// rotating-flag OR and its store before the angle duplicate (`fld st(0)`) and before the rate load, ours loads the
+// rate first and sinks the store below the duplicate. The rate read at each use, the angle written at each use and
+// the flag store as a bitfield all keep our order (3), and the forms that put the store first (the flag before the
+// angle, 22) cost more. The original body is kept.
 // MiniMax I (11-10): no new form, no lower score (3); letting the axis local's address escape puts retail's flag order back but squares the components in i, j, k order instead of retail's k, j, i (14), spelling the magnitude in i, j, k order (14) or naming the squares (14) does not change that, and the copy-in written component by component gives 63.
 // MiniMax H (11-04): no new form, no lower score; retail keeps the rotating-flag OR and store ahead of the first axis load and ours hoists that load above the flag store.
 // MiniMax A (11-03): no new form, no lower score.
@@ -915,6 +920,11 @@ real function_30bf0(vector3f *v);
    the target, then the time to it at the speed used (high or low arc),
    falling back to the slowest arc when the speed can't reach it */
 // MiniMax R (11-10): no new form, no lower score (232); the forced-speed and time-scale pointers are still enregistred in EDI and EDX where retail loads each at its use, and the frame, the rounded horizontal root and the two separate divisions still differ.
+// MiniMax A (11-11): no new form, no lower score (232); the frame is still 0x28 against retail's 0x30 and the
+// entry block still keeps the two pointer parameters in EDI and EDX where retail loads each at its use, so the
+// whole register schedule (the gravity pointer, the distance output, the rounded horizontal root and the two
+// separate divisions) differs; the forms that move the pointers to their uses, the reciprocal written as its own
+// expression and the rounded root in a local all keep the same 232 differences. The original body is kept.
 // MiniMax I (11-10): no new form, no lower score (232); the two pointer parameters are still enregistred in EDI and EDX where retail loads each at its use, and the frame, the rounded horizontal root and the two separate divisions still differ.
 // MiniMax H (11-04): no new form, no lower score; the difference the earlier rounds describe is still there.
 // MiniMax A (11-03): no new form, no lower score.
@@ -1234,6 +1244,13 @@ extern vector3f *g_4687ac;
 /* whether a projectile's path to a point hits anything: the line from it,
    and for projectiles with a radius the two lines either side of it */
 // MiniMax R (11-10): no new form, no lower score (163); the frame stays 0x48 against retail's 0x34 and the three ray queries still inline 0x16a040, whose defining file is not this lane's.
+// MiniMax A (11-11): no new form, no lower score (163); the frame is 0x48 against retail's 0x34 and the prologue
+// order differs with it: retail reads the tag table's base, the projectile's radius and the object pool before the
+// four endpoint pairs are formed, ours keeps the radius and the vector in the frame. The endpoint pairs computed
+// together, the radius read at each use and the collision pointer read through its own address all leave the frame
+// at 0x48 and the same 163 differences, and the forms with fewer live values (a shared offset vector, a side vector
+// in the frame) score no lower; the three ray queries still inline 0x16a040, whose defining file is not this lane's.
+// The original body is kept.
 // MiniMax I (11-10): no new form, no lower score (163); the frame stays 0x40 against retail's 0x34 and the three ray queries still inline 0x16a040, whose defining file is not this lane's.
 // MiniMax H (11-04): no new form, no lower score; the three ray queries have to inline 0x16a040, whose defining file is not this lane's.
 // MiniMax A (11-03): no new form, no lower score.
@@ -1388,6 +1405,11 @@ long function_189fe0(s_sound_request const *request, long tag_index);
 /* the effects and sounds of an effects block (a material's response) at
    a point */
 // MiniMax R (11-10): no new form, no lower score (4); only the four register arguments of the 0xfd740 call differ, and that callee's own parameter order is not this lane's to change.
+// MiniMax A (11-11): no new form, no lower score (4); the only four differing instructions are the register
+// arguments of the 0xfd740 call: retail passes the effect index 1 in ecx, the effect index 2 in edx, the sound 0 in
+// esi and the sound 1 in edi, ours passes the same four addresses in ebx, edi, esi and edx. That choice is 0xfd740's
+// own convention (it null-tests its outputs in the order eax, ecx, edx, esi, edi, ebp), so it cannot be moved from
+// this file. BLOCKED-BY 0xfd740.
 // MiniMax I (11-10): no new form, no lower score (4); only the four register arguments of the 0xfd740 call differ, and that callee's own parameter order is not this lane's to change.
 // MiniMax H (11-04): no new form, no lower score; the four register arguments of the 0xfd740 call follow that callee's own parameter order, which this lane may not change.
 // MiniMax A (11-03): no new form, no lower score.
