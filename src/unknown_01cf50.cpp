@@ -7563,6 +7563,13 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // The call to 0x4f7e0 matches retail's register setup (tag in ecx, eight stack words).
 // Permuter, 30 minutes (11-06, on the source before the facing-sum change): 291 only with call arguments swapped (pow's
 // two, function_13bb90's last two, function_4ff50's last two), which changes behaviour. Not kept.
+// MiniMax G (11-11): no new form, no lower score: the early exit as `<= 0` 313 (2003 bytes) - the load and the
+// test now match retail's, but the group index is still sixteen bits wide (movzx esi, ax against retail's
+// mov esi, eax), so everything after the loop head stays out of step; a thirty-two bit group index 514 (2011
+// bytes) and with the index copied into a named local 507 - the index is then strength-reduced into a second
+// counter at [esp+0x40] instead of retail's imul; a thirty-two bit index with the step at the end of the
+// body 513 (2000 bytes) - the loop's zero register moves to ebp and the frame pointer is pushed in the
+// prologue. The body was restored.
 // @retail 0x4f010
 void __stdcall function_4f010(void *payload)
 {

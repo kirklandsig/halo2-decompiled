@@ -2993,6 +2993,8 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// MiniMax G (11-11): no new form, no lower score: the corner helper's two statements swapped 214 (2022 bytes, the
+// same code as an earlier round); the helper keeps one expression per coordinate.
 // MiniMax C (11-10): score 94 (was 211): the four bounds are now written corner by corner in the
 // order 0, 2, 1, 3 and the second angle's cosine and sine have their own locals, which reproduces
 // retail's bounds block (0.5 first, the first zero compare after bounds[1]'s store, 240 in xmm7 and

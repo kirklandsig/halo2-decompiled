@@ -2259,6 +2259,10 @@ struct s_unit_motion
 // A `start_velocity` copy in the first phase (velocity updated before position) puts step in XMM2 as retail (24 out of
 // line, time XMM1 / velocity XMM3, still inlined); in both accelerating phases 58 (233 bytes, out of line, same losses);
 // on this stack form 103. BLOCKED-BY 0xc7840 (call-site frequency and its convention).
+// MiniMax G (11-11): no new form, no lower score kept: output accumulators with the ternary steps give 70
+// (218 bytes) in retail's XMM5/XMM4 convention, but LTCG then inlines the callee into 0xc7840 (563 -> 1095)
+// and 0x1faf80 (matched -> 16); the ternary clamp alone leaves the body on the stack (104), and in that
+// form the third phase keeps the change alone where retail adds the old velocity. The body was restored.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -2358,6 +2362,10 @@ void function_cfec0(long unit_index)
    has bit 0 or 3, or a rider of that vehicle with bit 27 of its
    definition's +0xbc and its object flag 26; else the unit */
 // MiniMax S (11-11): no new form, no lower score (2); the copy propagation from the compared value into the returned one cannot be broken without a form review rejects, so the body stands as found.
+// MiniMax G (11-11): no new form, no lower score: a result variable returned at each level 47 (the copy in ebx is
+// dropped, so the prologue changes) and one final return 113 (the exits merge into one epilogue); a probe shows VC7
+// folds the -1 into every separate exit, for a parameter, a copy or a cast alike, and keeps the register copy only
+// when one return is reached from two paths, which merges the exits and moves the EDI push.
 // score 2 (was 113): a return after each closing brace gives retail's per-level epilogues, lazy pushes and
 // exit order. Left: the last exit (unit_index == NONE) returns the constant (or eax, -1); retail moves ebx
 // (mov eax, ebx), so it did not fold the value there. Tried: a result variable returning at each level 47;
@@ -7491,6 +7499,9 @@ real function_50650(real cosine);
    a frame, when given), keeping an angular velocity: plans both angles'
    motions under a speed limit and an acceleration (0xc7300), evens them
    (0xc75d0), steps them (0xc7750), snapping when both are done */
+// MiniMax G (11-11): no new form, no lower score: the two 0xc7750 calls still push position and velocity on the
+// stack where retail passes them in xmm5 and xmm4 with the time in xmm3, and 0xc7750's accumulator form (28,
+// retail's convention) is inlined into both calls (1103 here) and flips the matched caller 0x1faf80 to 16.
 // score 563 (was 563): frame 0x8c versus retail 0x80; input/vector homes and prediction/call scheduling remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.

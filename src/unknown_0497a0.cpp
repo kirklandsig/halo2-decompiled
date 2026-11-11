@@ -15,6 +15,7 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
+// MiniMax G (11-11): no new form, no lower score: the permuter over this file's wave spellings produced no variant that matches retail's bytes; retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y are what keep those three on the x87 stack until after the product, and no plain spelling of the wave expression gives them a second use.
 // score 536 (was 594): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
 // against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
