@@ -2779,6 +2779,8 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // admission chain, 1 at 0x23745 after it, read at 0x238ad and 0x23b62), the level clamp is `>=` (retail's cmovge),
 // the coefficient pointer starts at layout->data and reaches the level entry through pointer arithmetic (retail
 // loads the entry address and then the entry), and the sample count is a long. 0x73360 still matches.
+// MiniMax S (11-11): score 371 (was 401): the sample flag is stored false before the admission chain and
+// set true after it, as retail does at 0x23716; 0x22850 keeps 223.
 // score 401 (was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
@@ -2993,6 +2995,9 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // once as a memory operand); left: the inlined corner rotation's x87/SSE schedule and result homes.
 // The helper's two products given their own named locals (u = x*cosine - y*sine, v = x*sine + y*cosine)
 // score 320 (1914 bytes), so that form is not kept and the helper keeps its single expression.
+// MiniMax S (11-11): score 94 (was 211): the bounds are written corner by corner (0, 2, 1, 3),
+// which reproduces retail's block (0.5 loaded first, the first zero compare right after bounds[1]'s
+// store, 240 in xmm7 and once as a memory operand); the corner sets' x87/SSE schedule remains.
 // MiniMax S (11-09): no new form, no lower score (211); bounds/trig scheduling and the second
 // cosine home remain.
 // MiniMax E (11-09): no new form, no lower score (211); the first difference is the two early exits, whose targets are one byte apart - retail's reaches one byte further into the function than ours.
