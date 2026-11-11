@@ -143,6 +143,9 @@ union s_185be7
     vector2f field_8;
 };
 
+// MiniMax B (11-11): no new form, no lower score (590): retail's entry block reads the control global into ECX and
+// forms the +0x14 address from it, ours reads it into EBX and keeps it there, and the NONE constant swaps registers
+// with it; I found no spelling that makes this build reload the global.
 // MiniMax C (11-10): score 590 (was 590): no lower score this round. Retail reads the control global
 // twice, into ECX both times: at the top of the entry block, where it only feeds the local_1 address, and
 // again at the flag test after the magnitude and pow calls, so the value is not carried across them and

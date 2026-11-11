@@ -786,6 +786,10 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // the 0xba1d0 call through a named object index 183 (1020 B), case 3's failure test with the clear first 218. Same code:
 // a char failure flag, `marker` or case 3's forward vector at function scope, braces on the last else, case 0 as an
 // early break, case 0's 0x10 flag as a word or.
+// MiniMax B (11-11): score 184 (was 246): the location's second dword now takes the owner's value instead of
+// the address of the owner field, which keeps the address out of the load; still different: the frame is 0x84
+// against retail's 0x80, the literal 1 is still pooled in EBX (retail tests with immediates and materialises it
+// only for the shift), and the audibility byte and the flag stores still take other registers.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

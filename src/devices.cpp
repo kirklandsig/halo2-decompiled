@@ -1429,6 +1429,16 @@ bool function_108530(long device_index, long name)
 // callers 26/28), ramp-up 133 (26/28), duration + ramp-up 133 (19/34), duration + ramp-up + ramp-down 133 (19/34), duration +
 // ramp-down 144 (523; 26/28), ramp-up + ramp-down 141 (508; 19/34). Each puts an unmodified time parameter in a register
 // from entry; none gives the initial velocity XMM6.
+// Round 188 (m3 lane 4, fast with both callers; ret 0x18 and callers 31/13 unless noted): the call removed from either
+// caller leaves this body at 121 (not caller-side). A /Gd compile-only screen of the first pass reproduces the LTCG
+// results (a volatile ramp-down or the target pinned first make the target the register parameter); 96 clamp-phase
+// variants all write eight XMM registers before the first fld (retail seven). Zero-clamp orders u,d,up,r 121; d,r,u,up
+// 123; u,r,d,up 123; u,d,r,up 119 (two points, a statement order); r,u,d,up 123; the duration and ramp-up zero clamps as
+// if-statements 121 (same code); `remaining` before the ramp-down zero clamp 123. On u,d,r,up: u,d,up, `remaining`, then
+// the ramp-down zero clamp 121; all four clamps as ifs, the ramp-up zero clamp as an if, the ramp-down minimum as an if
+// 119 each (its code); the target pinned first 141 (507 B, ret 0x14 with the target as the register parameter, callers
+// 26/28); the position read into its local and then pinned 142 (507 B, the same convention move). Re-measured: the
+// duration stored first among the reset fields 121.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
