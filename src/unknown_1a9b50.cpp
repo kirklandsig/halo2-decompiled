@@ -648,6 +648,15 @@ extern point2f *g_468778;
 // (1549 B), and a late pointer to field_2d for the tail 395 (same code). Retail keeps the prop in EBX, then the velocity
 // pointer (`add ebx, 0x1c`) for magnitude3d, and the weight in memory across that call (our link keeps it in XMM4: the
 // same magnitude3d register-summary lead as 0x1d24a0's). All restored.
+// M3 lane 14 r80 (fast; masked = aligned count with registers masked, 106 at 375): retail keeps the view pointer in EDI across the
+// second 0x110ab0 call and turns it into the facing pointer in place (`add edi, 0x2c`) in the middle of the first dot, reading
+// facing.k/j off the view (+0x34/+0x30); ours forms the facing pointer in ESI straight after the view call, and so does every
+// facing form tried. Retail likewise turns local_6 into its field_1c pointer in place (`add R, 0x1c`) for the magnitude call.
+// New: the facing read through the view at each use plus a velocity pointer for the magnitude and all nine field_1c reads 450
+// (1601 bytes, masked 163); that with the actor first 457 (1593, 264); the facing through the view with the actor first 389 (1556,
+// 129); that with the result returned in the arm (`return !f14 && !f13 && !f2d;`, `return false;` last) 386 (1549, 154); the facing
+// through the view with that return on the original order 408 (1549, 153). Re-measured: actor first 413 (1555, masked 134); the
+// velocity pointer alone 397 (1576, masked 136).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -807,12 +816,12 @@ struct s_1aab50
 
 static __forceinline long real_to_long(real value);
 
+// score 382 (was 382): the frame and the length agree, and the early false exit's place, the
+// object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
 // b2G walk (r719): every block, field offset, constant and call argument (including 0xfa1a0's 3 register + 11 stack arguments, whose
 // first output is the reused speed local) checked against retail 0x1aab50-0x1ab2bd; no logic or precision difference found. The written-out
 // object-speed root now uses length_sq3f (same code, 382); magnitude3d would be a call (481, 1887 bytes) where retail inlines the x87 body;
 // dot3f sums i,j,k where retail sums k,j,i, so it is not used. What remains is allocation and scheduling only.
-// score 382 (was 382): the frame and the length agree, and the early false exit's place, the
-// object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
 // Round 53 (lane 11, fast): value fix kept: the trajectory call's origin is the actor's position and its
 // target the prop's position (retail passes the prop's point in EAX and the actor's in ECX, the registers the
 // matched 0x2900b0 uses for target and origin) 384 -> 382. Tried: the entry flags through a forceinline
@@ -1076,6 +1085,16 @@ static __forceinline long real_to_long(real value);
 // test as nested ifs 514 (still inlined); with the existing magnitude3d for the object-speed root 508 (same code: in this
 // form our link inlines magnitude3d, as retail does, and 0x25d740 too); on this body `return local_2 != false;` 438
 // [173/96] (1925 B, exit still last; the same numbers as round 68's char result).
+// M3 lane 14 r80 (fast; masked = aligned count with registers masked, 111 at 382): register-blind, ours differs from retail in the
+// early false exit's place and in the velocity block, where retail keeps the view pointer in EAX (facing read as [view+0x34], the
+// facing pointer formed late with `lea esi, [eax+0x2c]`) and the actor in ESI, ours the facing pointer in ESI from the view call with
+// the actor spilled. The first dot written facing first 382 (same code); `bool local_10 = 0.8f > unknown28` with the copy arm only
+// 481 (masked 186); the distance local_17's zero declared at the top of the far arm 466 (112); the weight local_14's zero declared
+// before the magnitude 382 (112); the 0.8 test negated with its arms swapped 468 (129). Re-measured: the facing field read through
+// the view at each use, no pointer, 517 (1945 bytes, masked 154): it gives retail's view-in-EAX reads and late `lea` for the
+// facing pointer, but local_8 and the actor swap ESI/EDI and the object velocity pointer is still formed (+0x88). On it, the
+// object read through an `s_ai_object *` local (as this file's 0x1aa9f0, 0x1a9ec0 and 0x1aa750 do) 531 (1960 bytes, masked 152); that
+// object pointer alone on the original body 486 (1924 bytes, masked 169).
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
