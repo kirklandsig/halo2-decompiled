@@ -2410,6 +2410,12 @@ dword __cdecl function_131fc0(real alpha);
 
 // score 140 (was 140): Frame and retail extent agree; caller flag residency and native
 // fallback selection remain. Both complete coverage clamps now follow the retail upper-default stores.
+// MiniMax S (11-11): no new form, no lower score (140): the frame and the extent agree with retail, and what is
+// left is the byte at esp+0x6c, which retail reads in AL after the store into the global while ours keeps it in CL
+// across the branch, and the two default rectangles, which retail builds unconditionally and writes back into the
+// parameters' argument slots while ours branches over the block; retail's short arm reads a fourteenth stack argument
+// that this function's own declaration does not carry, and the declaration may not change in this lane:
+// BLOCKED-BY this function's parameter list.
 // MiniMax D (11-10): no new form, no lower score; retail's 0x2a8d0 reads a fourteenth stack
 // argument, the byte at esp+0x70, in the short arm where this source reads preserve_alpha, and
 // because that argument is a different value the second flag dies at the test, so retail loads it
