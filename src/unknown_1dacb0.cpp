@@ -1083,11 +1083,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 	return result;
 }
 
+// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,
 // iterator_weapon_class at frame+0x00 and iterator_mode at frame+0x08, while ours keeps iterator_weapon_type
 // at frame+0x00, iterator_mode at frame+0x04 and iterator_weapon_class in the reused argument slot; our
 // result shorts therefore land at frame+0x08 instead of frame+0x0c and the tail compares out of step.
-// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // result/output homes and initial ECX/EDX differ;
 // frame 0x2c agrees; class/NONE registers, result/output/candidate homes and later zero carrier remain.
 // original selectors via iterator 1016; failed-result exit 1012; zero
@@ -1323,6 +1323,17 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // the post-loop test 1060 (2873), `found` declared first in the block 755 (same code); both twins' bodies as one shared forceinline
 // helper (overlay bool) 828 (same code); the search as `while (result.index == NONE)` 828 (same code, the first test folds; close to
 // the listed result-driven while). No other untried natural loop, return or declaration form is left on either base.
+// m3 lane 14 r82 (fast; masked = register- and esp-masked aligned rows, base 76): `result = named ? named->animation_id :
+// result;` with no candidate 848 (2791 bytes, masked 96); the found mode copied into a named local before the outputs and used for
+// the found_mode store and the second request 828 (identical code: the copy coalesces even across the output stores); a do-while
+// on the entry with the lookup inside `if (entry)` and a found `break` 828 (identical code); the second request's graph read from
+// the iterator 962 (2791 bytes, masked 101). Retail's loop is this do-while: the NULL exit reloads the result into ECX and the
+// found exit already has it there (`jne join; jmp iterate`), then the index test reads memory (`cmp word [esp+0x1e], si`).
+// Also r82: the requests' `false` as a `bool other = false;` local 927 (2775 bytes), in the first request only 927 (other code), in the
+// second only 826 (2807, masked 75: the same code as `urgent` there); `bool urgent = true;` for both or the first request 801 (2791
+// bytes, masked 83: only loop-alignment padding moves, retail's `jmp` over padding in the first request is lost; a constant-only
+// local, not kept), for the second only 826, `bool const urgent` 828 (the base code), both locals in both requests 1050 (2724 bytes);
+// 0x1dd9d0 after the requests 1030 (2853); the requests in reverse order 980 (diagnostics).
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

@@ -181,6 +181,9 @@ __forceinline bool function_184448(long arg_0)
     return true;
 }
 
+// MiniMax I (11-10): no new form, no lower score (965); the first difference is still the frame size (ours
+// 0x11d4 against retail's 0x11cc) together with the scene and surface records sitting in each other's stack
+// homes, and that rotation depends on 0x48e70 in another lane's file.
 // score 965 (s1A walk 11-06): the statement walk against retail found no behaviour difference; every condition, field,
 // callee and argument order agrees. Not kept, since together they score 976: two type changes retail's bytes show (1) no cached axis locals - retail
 // reloads g_440b94[idx][0/1] in the cell loop (0x185171/0x185178) and keeps the pre-scaled offsets only as loop-invariants in

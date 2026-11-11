@@ -521,6 +521,15 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // defaulted by `if (count < 1) count = 1;` 427 (1933 bytes); the frame position as `(real)intervals * f()` 211 (same
 // code). Diagnostics (reverted): blend passed as 0 to the last call 196 (masked 35, the
 // blend still leaves XMM5); blend zeroed per arm instead of at entry 469.
+// M3 lane 13 r82 (fast; control 211, aligned 213, register-masked 34): only the second set's reciprocals moved after the
+// first aspect test 239 (1957 bytes, masked 27: the join after the frame block becomes retail's, context reloaded in the arm
+// and the blend reloaded into XMM5 on the other paths, so the blend's XMM5 home is register pressure in the extents block);
+// the second set's extents and reciprocals after the first aspect test 278 (frame 0x5c, masked 28), between the flip and that
+// test 260, after `remaining_blend` 278; retail's order ax, ay, by, inv_ax, inv_ay, bx with the late second reciprocals 317;
+// the aspect pair as a `vector2f` 205 (1942 bytes, aligned 217: positional only, the packed colour's home moves), with the
+// inverse sums as a `vector2f` too 205 (same code), with the late second reciprocals 231; the extents as two `vector2f` 219,
+// with the aspect pair too 210 (aligned 223); the reciprocals as two `vector2f` 216; the geometry corners as two `point2f`
+// 221; the centre as a `point2f` 211 (same code).
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

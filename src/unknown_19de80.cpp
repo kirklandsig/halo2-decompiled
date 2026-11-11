@@ -610,6 +610,12 @@ static inline bool teams_enabled_19e1c0()
 // with the four name copies through a second inline helper (length, clamp, wcsncpy) plain 594 (same code), volatile 511.
 // Constraint left: the remaining levers are the plain result (merges the name tails while `remaining` stays on the
 // stack) and a natural entry reference to `remaining` (lane 4 r167); no untried natural form reaches either.
+// M3 lane 13 r82 (fast with 0x19e0f0, which stays matched; control 390, aligned 371, masked 125): the named player pointer
+// in the spawn-time and lives cases (listed 387) with `best_score <= function_1587f0(team)` (listed 388) together 385 at
+// retail's 1443 bytes (aligned 309, masked 116; not kept: 5 points, one-use pointer); with a named player pointer in the
+// local-team case too 385 (same code); with a `long` opponent counter 415; with both event teams at each use 387; those
+// two on the plain result 697/667; the team admissions with the subtype in a named local 390 -> 397. Retail's opponent
+// loop counts up (`inc edi; cmp edi, 8`); ours counts down in the free EBP, which retail gives to `remaining`.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

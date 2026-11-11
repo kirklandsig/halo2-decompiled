@@ -717,6 +717,14 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // takes EBP and the head through the creation call is retail's, but the header test then puts the data in EDX (dropping
 // the global) and needs no EBP borrow; retail keeps the global in EDX for the object read because the data is reloaded,
 // which agrees with the store-between lead above.
+// Round 171 (m3 lane 5, fast with 0xa5b10, 0xa5b40, 0xa5b80, 0x108e10; control 49): the cleared index published at a
+// join and re-tested, written as one `&&` chain, re-measured (bool 64, no first store 68, long 41, byte 38: the listed
+// nested scores; with the entity reset as well 64/41). On the chain: the data reload and the recomputed index come
+// from the join store (the unflagged path is threaded past it), the flagged path is not threaded (`or eax, -1; cmp;
+// mov; je`, where retail stores the constant at the end), and the byte result needs `setne` at the return. New: the
+// value call on the local index 65; the flagged arm `{ entity->object_index = NONE; return result; }` with the join
+// store kept, byte 53, bool 49 (184 B: the flagged store is then retail's, but inline and its return folds to `xor al,
+// al`), long 57, nested 49 (same code); that without the join store 75 (160 B, the header address shared again).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

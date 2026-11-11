@@ -924,6 +924,10 @@ void hkRigidBody::motion_transform_set(hkTransform const &transform)
 void function_1d1260(s_havok_component *component);
 void function_1d1540(s_havok_component *component);
 
+// MiniMax I (11-10): no new form, no lower score (65); the component and the index still arrive on the
+// stack where retail passes the transform in EAX, the index in ESI and the component in EBX and returns
+// with a plain ret, and the transform copy still uses rep movsd in a 0x84 frame where retail copies with
+// four movaps in 0x88; the component's EBX home is decided across the call cycle in other files.
 // score 65 (was 65): frame 0x84 versus 0x88; the index/component still arrive on the stack rather
 // than ECX/EBX, and the constructor copy uses rep movsd rather than aligned SIMD. The two-use body
 // slot receiver recovers the fixed-first guard and ordinary-path body lifetime; the post-reset
@@ -1123,6 +1127,10 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 	frame->m_translation = position;
 }
 
+// MiniMax H (11-10): no new form, no lower score (38): every difference is the frame and the callee's
+// convention (retail keeps the component in EBX, ours pushes it), and that choice is made by LTCG over
+// the whole 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other files:
+// BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
 // score 38 (was 38): BLOCKED-BY 0x1d0cf0: retail passes it the component in EBX (loaded here from the
 // stack after `push ebx`); ours pushes the component, so the frame and every store offset differ. The
 // body is otherwise retail's instruction for instruction. Tried here: zero transform/translation/both
@@ -2342,6 +2350,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
+// MiniMax I (11-10): no new form, no lower score (91); the speed block still converts the material count
+// into xmm4 where retail converts it into xmm1 and divides by it, retail still copies the x product into
+// xmm4 and scales the velocity's j and k in place with the values live across the branch where ours
+// reloads all three components per arm and keeps the scale in the destination.
 // MiniMax R (11-10): no lower score; retail multiplies the velocity's j and k in place with the raw values live in
 // registers across the branch, ours keeps the scale in the destination and reloads the components; forms: the components
 // as scalars assigned in both arms 90, the j and k read before the branch and scaled in place 154, the same read before the

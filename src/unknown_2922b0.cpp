@@ -3,6 +3,8 @@
 #include "globals.h"
 #include "slot_handler.h"
 #include <math.h>
+#include "normalize3d.h"
+#include "vector_products.h"
 
 struct s_2922b0
 {
@@ -85,6 +87,7 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // with the test negated, 6 under the bar, not kept); after it: the ray length read from the array at each use 689; the hit
 // distance from the ray-length local 682 (first difference +0x2); both 687 on the swapped tail; no `else` after the early
 // return 684 (2834 bytes, aligned 358, masked 183: the lowest aligned count here, a lead), with the swapped tail 675.
+// score 576 (was 592): earlier 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // MiniMax E (11-10): no new form, no lower score (592); the frame size agrees but the homes do not: the success byte, the float, the four-flag array and the copied vector sit at other frame offsets here, and this build has thirteen instructions fewer than retail, so the exit blocks fall differently.
 // MiniMax S (11-06): The frame size agrees but the homes do not: the success byte sits at frame+0x13 where
 // retail keeps it at frame+0x17, the float at frame+0x10 against frame+0x18, the four-flag array at
@@ -447,6 +450,14 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // `fraction = (1/range) * minimum` for both outputs 605 (2818); the arg_6 arm's side axis assigned before the forward 691;
 // the root helper's product as root * limit 592 (same code; re-measure of round 134's `sqrt * angle`); the non-arg_6 forward copied from the entry copy of the input
 // (`local_7 = local_3`) 673 (2828, first +0x1d); one named full ray length for the four array entries 604 (2820).
+// M3 lane 13 r82 (fast, kept form confirmed plain): kept 576: the tail's first transform through the existing
+// vector3f_scale/vector3f_add_scaled (forward*i, + left*j, + up*k; register-masked 130 -> 116, retail's i-first column
+// loads). Before it: the tail's input read into i/j/k locals first 612. On 576: the back-rotation dots through dot3f 582;
+// the three results in named locals, then stored 568; into a local vector copied to the output 547 (2879 bytes, but
+// aligned 444 -> 449 and masked 116 -> 123: positional, one-use values ahead of stores); cross3f at all four crosses 660
+// (masked 108), at the tail's cross only 570, at the arg_6 cross only 664; the tail's cross before the column transform
+// 562; the up pointer declared at the tail's top 576; the ray loop as a plain `for` 718; the offset points through
+// vector3f_add_scaled 576 (same code). Retail stores all three back-rotation outputs after their last loads.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
@@ -566,9 +577,9 @@ bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 		else
 		{
 			vector3f local_17;
-			local_17.i = local_9.i * arg_3->j + local_10->i * arg_3->i + local_11->i * arg_3->k;
-			local_17.j = local_9.j * arg_3->j + local_10->j * arg_3->i + local_11->j * arg_3->k;
-			local_17.k = local_9.k * arg_3->j + local_10->k * arg_3->i + local_11->k * arg_3->k;
+			vector3f_scale(local_10, arg_3->i, &local_17);
+			vector3f_add_scaled(&local_17, &local_9, arg_3->j, &local_17);
+			vector3f_add_scaled(&local_17, local_11, arg_3->k, &local_17);
 			vector3f local_18;
 			vector3f const *local_19 = (vector3f const *)((byte *)local_1 + 0x7c);
 			function_2922b1(local_19, &local_1->forward, &local_18);

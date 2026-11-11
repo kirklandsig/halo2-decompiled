@@ -351,6 +351,16 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // kind-7 route as `return type == 1 ? 0xc : 1;` 136 at 216 B [213]; with the rigid body declared first 132 [213]; with
 // the type read before the rigid body 117 at 236 B [213]; the current body with a `headers` local for its two type
 // reads 117 at 272 B [160].
+// m3 lane 14 r82 (fast, caller 0x1d5bf0 in brackets): round 60's 24 form re-measured 24 at 256 B [0], aligned 21: retail loads the
+// header data first into EDX, copies the incoming index to ESI and reuses ECX for the object index, where ours gives the object
+// index EDX, the headers ESI and computes the rigid body in place in ECX; and ours loads the type as `mov al` plus a `movzx` at the
+// uses for retail's one `movzx` (not kept: the object_index local is used once). A /Gd first pass of the current body loads the
+// component into EAX and the index into ECX, retail's pair.
+// Also r82: permuter on the 24 form (600 s, 13 tries): best 24; its reduced image holds only this file, scores the form 101
+// (the caller's convention is missing), so it is no guide here.
+// Also r82 on the 24 form (fast, caller in brackets): the kind-7 route as `return type == 1 ? 0xc : 1;` 94 [0]; per-case returns 24
+// (same code); no `__assume(0)` default 125 at 228 B [213]; the kind test inverted (main switch first) 94 [0]; `signed char` type 24
+// (the listed char); case 11's level test with its arms the other way round 35 [0].
 // Round 71 (m3 lane 15, fast; caller 0x1d5bf0 matched throughout): round 60's 24 form re-measured 24 at 256 bytes
 // (register-masked aligned 8); on it the main switch's four cases in all 23 other source orders: best 42 (11,0,1,7 and
 // 1,11,0,7), the rest 45-67, all 256 bytes. Retail lays the case bodies out 11, 1, 0, 7, the order already used.
