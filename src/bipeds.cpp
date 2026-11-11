@@ -3271,6 +3271,8 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // parameter to the matched 0xe16b0, fed from a named local holding the flags bit 9, reaches 342 at a 0x4c frame and keeps
 // 0xe16b0 matched, but it changes a matched function's signature and needs the owner's ruling.
 // score 362 (was 490): round 101 (m3 lane 12), round 104 (m3 lane 16) and round 112 (m3 lane 12) notes are at the end of this note. Earlier at 490 (was 517). Earlier at 517 (was 539). Earlier at 539 (was 520): two value fixes this round raise it: case 1 passes g_4687a4 as 0xb77d0's angular velocity too
+// MiniMax S (11-11): the definition pointer (BIPED_DEFINITION_GET(biped)) is now a local of the hit block, as retail computes it at 0xe11cc, and the direction scale goes through vector3f_scale; our entry spill of the biped is gone and the score falls to 361. Still differs: the frame is 0x48 here against 0x4c in retail, so every stack reference sits four bytes low, and retail keeps the centre sums in xmm4-xmm6 across the mass call with the total and the hit in memory.
+// score 362 (was 490; 361 with the biped's unknown34b typed char, not kept by the coordinator 11-11: 0xe18d0 is contributor code): round 101 (m3 lane 12), round 104 (m3 lane 16) and round 112 (m3 lane 12) notes are at the end of this note. Earlier at 490 (was 517). Earlier at 517 (was 539). Earlier at 539 (was 520): two value fixes this round raise it: case 1 passes g_4687a4 as 0xb77d0's angular velocity too
 // (retail 0xe0f75: `mov eax, [0x4687a4]; push eax` with EAX still holding it, which matched 0xb77d0 takes as its third
 // argument; ours passed NULL), and the single-body fallback push runs when the component's flag 11 is clear (retail
 // 0xe118f jumps to the fallback at 0xe15b7; ours skipped it). Frame 0x44 versus 0x4c; result byte, scalar homes and
@@ -3572,6 +3574,7 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 									(hit_body = function_183c60(arg_159e6d, value)) != NONE)
 								{
 									byte *definition = BIPED_DEFINITION_GET(biped);
+
 									real strength = function_259d0(&g_4e7408->unknown0, NULL, 0, 1.5f, 3.25f);
 									real lift = function_259d0(&g_4e7408->unknown0, NULL, 0, 0.75f, 1.5f);
 									point3f center = *g_468788;
