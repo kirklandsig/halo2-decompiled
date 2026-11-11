@@ -59,6 +59,11 @@ bool g_47f05a;
 bool g_47f05b;
 
 // score 34 (was 34): frameless entry agrees; intermediate vtable store and successful-arm backing reload remain.
+// MiniMax R (11-11): no new form, no lower score (34); the abstract allocator's base vtable store
+// (`mov [eax], 0x453760`) is still dropped, because it comes from the shared constructors in
+// include/unknown_146a20.h, which this lane may not edit (BLOCKED-BY), and the pool placement still reloads
+// g_479888 at the join where retail reloads it on the constructed arm; the no-local form puts that reload in
+// retail's place but loses the 1 in EDX (36), and seven source forms all score 34 or more.
 // MiniMax C (11-09): no new form, no lower score (34); the abstract allocator's base vtable store is still elided (BLOCKED-BY include/unknown_146a20.h).
 // MiniMax D (11-06): no new form, no lower score (34); retail's base vtable store (0x453760) and its
 // derived vtable (0x4576a4) come from the shared constructors in include/unknown_146a20.h, which this lane may
