@@ -18,6 +18,9 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
+// MiniMax I (11-11): no new form, no lower score (174); the mode flag still loads the flags into EDX where retail
+// uses EAX, the size still stays in a register across the two rounding calls where retail reloads it from its
+// slot, and the frame's slots still run from the mode up where retail's start with the size.
 // score 174 (was 174; 178 before): the far plane's near distance goes into a named local so the three
 // point components share one load; the mode bit still loads the flags into edx where retail
 // uses eax, and the size stays in a register across the rounding calls where retail reloads it.

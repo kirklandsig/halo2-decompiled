@@ -1337,6 +1337,13 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // 114, the animation test as an early return 114 (all 114s same code); re-measured: the side dots as (new, up) * (old, up)
 // 111 (1393, the count and length of the listed (old, up) * (new, up)), `0.5f < alignment` 114. The rotation products
 // come from rotate_direction (an Avoid file this round).
+// m3 lane 1 r92 (fast, 0x24590/0x1cd6c0/0x1ecf50 listed, control 114, register-masked aligned 55): no trial run. The first
+// difference (+0x1f3) is the inlined rotate_direction's dot and cross products (ours loads axis.j/axis.k and multiplies by the
+// vector's registers, retail copies v.j/v.k and multiplies by the axis from memory); that body sits in src/unknown_1eb8a0.cpp,
+// an Avoid file again this round, and a private copy here would be a twin of an existing helper. The rest (initial_cross's
+// schedule, the side-dot order, the moved-away flag byte, the exits) is the commutative-operand group of round 83's lead; every
+// natural form for those found here (cross helpers, cross order and declaration, dot sides, named dots, flag spellings, the
+// joined exit) is listed above. Blocked: rotate_direction's body in src/unknown_1eb8a0.cpp is held this round.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

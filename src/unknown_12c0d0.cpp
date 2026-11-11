@@ -1002,6 +1002,7 @@ struct s_bitmap_texture_view
 	dword level_addresses[3];
 };
 
+// MiniMax G (11-10): no new form, no lower score (3); ten spellings of the last statement (the whole expression cast, the masked value in a named local, the raw address in a named local, the array through a pointer local, the element reached by pointer arithmetic, the texture through a local pointer, the mask first, the mask as a complement, the store and the mask split, and the mask with an assign) all compile to the same three instructions, so the masked level address is still loaded into EDX where retail reuses the dead base register.
 // MiniMax E (11-10): no new form, no lower score (3); a permuter run over the function (34 tries in 304s, full
 // image and reduced image) found nothing below the baseline.
 // MiniMax D (11-10): no new form, no lower score (3); the masked level address is still loaded into EDX where

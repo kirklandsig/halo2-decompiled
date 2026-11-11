@@ -444,6 +444,15 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // inverse for all three components 384 (1715 bytes) [162], 0x29b990 then 6; the else arm's angle zeros chained 179
 // [126]; the result vector stored before the two angle fields 182 [128]; the second normalization's failure test as
 // `!` 203 (1718 bytes); the XY normalization's result tested as a bool 176 (same code).
+// Round 105 (m3 lane 16, fast with 0x29b990, which stayed matched): the entry convention (ECX/EAX indices) agrees and
+// 0x11cc90 is already called. From +0x6e the differences are homes: retail's first root sits at +0xc (ours +0x10), and
+// the rotated result's spill homes use the first input copy's slot (+0x20, as retail's `mov ecx, [esp+0x20]` at the
+// join shows) where ours uses the second's (+0x2c), which moves every load order in the two rotations. New forms: the
+// rotation helper in 0x1f6090's actor_path_rotate spelling (cross with the axis first, aggregate result copy) 289 at
+// 1757; the actor fields and `*arg_5` stored in each arm with no shared result local 246 at 1741; the XY pair read
+// from the `local_5` copy instead of `arg_2` 430 at 1744; the second rotation's axis computed before the first rotation
+// 220 at 1731 (masked 95 -> 89). Re-measured: 0x11d3b0's rotation spelling (k, j, i dot, rows stored in place) 189 at
+// 1706 (the listed direct rows; masked 95 -> 68); the result local declared first 176 (same code).
 // m3 lane 5 r169 (fast with 0x29b990, which stays matched; aligned/masked in brackets): re-measured the r83 lead
 // (single-exit normalizer + the XY vector before the second copy) 169 [147/68]. On it, new: the second axis computed
 // before the first rotation's input copy 213 (1731 B); yaw_limit declared before the yaw delta 169 (same code); the
@@ -451,6 +460,13 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // The normalizer's single exit through a separate `result` initialised to zero 215 (1718 B). Left on 169: the x87
 // sqrt temporaries at +0x10 (retail +0xc with the yaw), the XMM3/5/6 rotation in the normalizers, the yaw clamp's zero
 // copy above its branch and the rotations' pitch/sine/cosine homes (retail pitch in arg_4's home, sine at +0x10).
+// m3 lane 14 r84 (fast with 0x29b990, 0x11cc90, 0x11ce20 and 0x1e5450; masked = registers and esp offsets masked,
+// base 114): the existing rotate_direction (unknown_1eb8a0.cpp) for both rotations, sin/cos as arguments or one named
+// pair, 817/817 (not inlined here: 1309 B, 0x29b990 48); the helper taking sine/cosine with one pair named here and
+// reused 225 (1735 B; the root temps move to +0x14); four named sine/cosine locals 179 (1710 B). Re-measured on this
+// base: the first rotation reading arg_2 with no copy 265 (1706 B, 0x29b990 1). No untried natural form found: the
+// rest is the rotations' and the second axis's schedule, which every listed spelling leaves. Also new: the two angle
+// fields stored inside each arm (zeros written directly in the else arm, the result vector still shared) 251 (1743 B).
 // Round 93 (m3 lane 10, fast with 0x29b990/0x11cc90/0x11ce20/0x1e5450, all matched): on the re-measured 169 lead
 // (single-exit normalizer, XY vector before the second copy) the rotation's projection dot named before sin/cos, the
 // cross terms before sin/cos, both, `local_11` declared at function scope and `local_4` declared before the first copy

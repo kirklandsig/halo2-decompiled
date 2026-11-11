@@ -406,6 +406,12 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 	slot->flags |= 1;
 }
 
+// MiniMax D (11-10): no new form, no lower score (13); the whole-image check still reads 13, and the
+// rows that are left are the shared rotation's j and k terms, whose helper is in another file.
+// MiniMax S (11-10): no new form, no lower score (13 on the full image, 339 on the reduced one): the only
+// difference left is in the rotation's j and k rows, which still add the cosine term where retail adds the
+// projection term; the shared rotate helper that produces those rows lives in src/unknown_170d70.cpp, so the
+// rows cannot be ordered here, and the frame and the copies around them already agree.
 // MiniMax E (11-09, second part): the reduced image of the fast check scores 339 (the body
 // comes out 219 bytes short) because the shared rotation helper is not inlined there; the plain
 // check over the whole image scores 13, and the j and k rows of the shared rotation still add

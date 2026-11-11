@@ -975,6 +975,7 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // the switch's cases still take their arguments in registers other than retail's (it pushes edi where ours
 // pushes esi), so the callee conventions decide this one.
 // MiniMax C (11-08): no new form, no lower score.
+// Earlier note (153, was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // Earlier 153 (was 153), merged from a second score line: native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // Round 147 (m3 lane 8): no unlisted form. Retail's convention needs the address live across a call, but retail calls
 // 0x94420 and 0x94270 out of line and has no such use. Its connection handlers take no address (retail passes them the
@@ -1365,6 +1366,12 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // 153; the late switch's cases returning, with `default: return;` 153; the connection index declared inside the first
 // switch's body 153 (same code each); the three connection cases moved into the late switch ahead of 18 and 11 225
 // (470 bytes, 0x7afd0 3: the convention moves). All restored.
+// Round 91 (m3 lane 1, all plain with 0x7afd0, 0x93aa0, 0x94420, 0x94270; control 153 at 464 bytes): the late switch as
+// `if (type == 18) ... else if (type == 11)` 155; the late switch with case 11 ahead of 18 153 (same code); the late switch
+// nested in the first switch's `default` 153 (same code); `case 11: case 18: break; default: return;` in the first switch
+// with an if/else dispatch after it 216 (420 bytes, 0x7afd0 3: the compiler threads both labels into the jump table, so this
+// is the unified switch and its convention); `case 11: case 18:` added over the first switch's `default: break;` 153 (same
+// code). Body restored.
 // Round 148 (m3 lane 7, fast; this function builds differently in --fast, control 196 against plain 153): re-measured the
 // one retail-order switch 218 (420 bytes; type ECX, address EAX, message on the stack) and the late pair nested in the first
 // switch's default 196 (same code as the control). New: 18 and 11 admitted as `break` cases of the first switch with
@@ -1372,6 +1379,22 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // switch; caller 0x7afd0 3); the late pair as two separate ifs 155 plain (the listed if/else-if chain's count). Ours
 // inlines 0x94420 at case 18 because the late switch compiles to a compare chain (one test deep); retail calls it. No
 // unlisted natural form gives the address a use across a call, which our build needs for retail's convention.
+// Round 188 (m3 lane 4, all plain with 0x7afd0/0x93aa0/0x92ef0/0x92d10/0x94420/0x94270): retail's one jump table covers
+// 0-24 with `ja` straight to a two-pop exit and the ESI save after it; ours inlines 0x94420 in the late compare chain.
+// The late switch with 11 ahead of 18 153 (same code); the late pair as a switch ahead of the main one 224 (480 B); as two
+// ifs with returns ahead of it 222; cases 5, 6, 7 moved after 18 and 11 in the late switch 222 (470 B, 0x7afd0 3); no
+// `default: break;` 153 (same code); the late switch inside `if (message_type == 18 || message_type == 11)` 166 (472 B);
+// the late pair as an if/else-if chain with 11 first 155. Plain re-measures of listed orders: cases 5, 6, 7 in numeric
+// place 220 (476 B), case 0 last 199 (468 B).
+// m3 lane 3 r233 (all plain with the file's functions, 0x7afd0, 0x93aa0, 0x92ef0 and the case callees; control 153 at
+// 464 bytes, aligned 55, register-masked 34; --fast reads 196 at 444 bytes here with 0x94220 and 0x942d0 differing, so it is
+// no judge). A second switch holding 18, 11, 5, 6, 7 in retail's layout order behind the first switch's other cases 222 (470 B,
+// 0x7afd0 3); explicit `return` cases for the in-band types 1, 15, 16, 17, 19, 20, 21 in the first switch 146 (464 B, masked
+// 34 -> 38: only the jump table's data moves, so positional); the same cases on the one retail-order switch 217 (420 B,
+// 0x7afd0 3); a free function declared (type, message, handler, address), retail's EAX/ECX/EDX/stack order, on the one
+// switch with 0x7afd0's call updated 217 (same convention: type ECX, address EAX kept there, message loaded into EBX from the
+// stack); the late switch with 11 ahead of 18 153 (same code). On the one switch the address stays in EAX because no use
+// crosses a call and the three lookups want it there; retail homes it in EDI and the message in EBX. Body unchanged.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
