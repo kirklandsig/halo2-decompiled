@@ -1484,6 +1484,19 @@ long function_2197f0(real gain);
 // (t chosen in each) 218 (606 bytes; retail keeps two copies); one ducking pointer for arms 3 and 4 94 (same code); the
 // hold sum as `gain += ducking->gain` 105 (678 bytes: the ducking gain's stack copy goes); arm 3's clamp as
 // `t = time; if (0.0f > time) t = 0.0f; else if (time > 1.0f) t = 1.0f;` 119 (688).
+// Round 185 (m3 lane 4, fast with 0x1251e0/0x221810): retail's arm-1 clamp value keeps a true divss because its
+// divisor is not the inverse's (a compile-only screen shows the reciprocal reuse keys on the divisor's spelling): the
+// inverse from a fade-in local (`real fade_in = ducking->fade_in_time; real inverse = 1.0f / fade_in;`) with the value
+// still `time / ducking->fade_in_time` 87 (684 bytes, aligned 46, masked 12: retail's divss; a one-use field copy beside
+// field reads, match-only); on it the clamp as `t = time / ducking->fade_in_time; if (!(1.0f > time * inverse)) t = 1.0f;`
+// 144 (681, masked 9: retail's division-then-test order), as a ternary 144; plus a fade_out local for the tests and the
+// product 92 (684), with the division-first clamp 148 (681, masked 8: retail's inverse-then-fade-out product), with the
+// ternary 148, with `gain +=` 148 (same code), with `interp + gain` 161; a fade_out local declared inside the arm 144 (same
+// code as without it); the fade-in local also for the value 155 (687: the value is a reciprocal product again); one
+// fade-in local for the test, the inverse, the value and arm 2 95. `return *(long *)&gain.value` 94 and
+// `gain.value += ....value` in arms 3 and 4 94 (same code each). Left on the 87 form: fade_out multiplied from memory
+// before the inverse (retail keeps the test's fade_out load in XMM1), the arm-1 sum adding the gain from memory where
+// retail loads it into a register, the arm-3/arm-4 join and the XMM colours.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2917,7 +2930,7 @@ static inline short sound_voice_find_available_channel(char type)
 // MiniMax E (11-10): no new form, no lower score (96); the body with two exits and no result variable, the
 // same body with a bool result and the failure path returning false directly were measured (131, 113, 134)
 // and the byte result with the shared exit stays the best.
-// score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
+// Earlier at 96 (was 96; a second score line, merged in round 185): unchanged this round: retail keeps the result in AL (set at the entry, cleared
 // through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
 // keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
 // and its channel search keeps the channel in EDI with one `or ebp, -1` shared between the channel
@@ -3125,6 +3138,14 @@ static inline short sound_voice_find_available_channel(char type)
 // `mov al, 1` stored to a stack byte for the goto path, `xor bl, bl ... mov al, bl` failure as retail). The first form is
 // a variant of round 94's (false after the search, 132) and the driver-before-search one of lane 16 r50's / round 117's
 // on another base. Also: `result = false;` after the two failure calls, byte result 96 (same code), bool result 136 (430).
+// Round 185 (m3 lane 4, fast with 0x129100/0x127320/0x12a5d0/0x21de90): the channel work inside `do { ... } while
+// (false);` with `break` for a missing channel and for a missing buffer, `return true;` after the commit and the
+// failure calls after the loop, bool result 111 (430 bytes, register-masked aligned 38 -> 23: retail's block order, the
+// failure block after the buffer tests with the entry true shared into its epilogue; left the entry registers, the sound
+// in EDI for EBX, the channel in EBP and the driver in EBX, `cmp bp, -1` for retail's shared `or ebp, -1`, the status
+// test); a steering wrapper, match-only. On it: a byte result 119 (433), byte result with the goto exit 144 (449), the
+// driver default before the channel break 133 (415), with `~status & DSBSTATUS_PLAYING` 135 (430), the complemented
+// status alone 130 (432, masked 21). Re-measured (diagnostic): bool result with `return true;` 139 (415).
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {

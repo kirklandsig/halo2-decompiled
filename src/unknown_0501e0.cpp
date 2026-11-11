@@ -30,11 +30,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
         ++output;
     }
 }
-// MiniMax S (11-10): no new form, no lower score (206); our frame is still 0x20 against retail's 0x14 and the two view
-// coefficients are still folded into the products.
 // score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products.
+// MiniMax S (11-10): no new form, no lower score (206); our frame is still 0x20 against retail's 0x14 and the two view
+// coefficients are still folded into the products.
 // MiniMax D (11-08): no new form, no lower score (206); our frame is 0x20 against retail's 0x14, the transform helper
 // folds the coefficients into the products and keeps the second view's width in a register where retail keeps the
 // first view's coefficients in registers and the second view's offsets in the frame, and the sum tree is still
@@ -447,6 +447,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // the blend divisor declared at the function's top 206 (all the same code). Retail loads the scale once into XMM6
 // and tests it for both views where ours reloads it; the natural forms aimed at that are listed above (a caller scale
 // local 253, the helper reading the global 318, rows indexed into the output 226), so none was left to try.
+// Round 185 (m3 lane 4, fast with 0x30bf0; fast base 206): the helper's rows through the existing
+// vector3f_rotate_into_axes on the camera's right/up/forward axes 309 (1078 bytes), through matrix_transform.h's
+// function_2477b1 304 (1084: both rotate in straight-line rows where retail keeps the loop's code); the orthographic
+// segment declared with the offsets 206 (same code); the depth limits as `4.f * (k * k)` 213 (1143, register-masked
+// aligned 107 -> 101), as `4.f * k * k` 206 (same code).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
