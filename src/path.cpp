@@ -745,6 +745,13 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // body below (286): `break;` after the count update 312 (1391 B); the traversal as a `for` with `node` declared before
 // it 286 (same code); the margin computed inside the scan loop 300; one `short j` for an indexed fill and the scan
 // 380 (1400 B).
+// M3 lane 12 r110 (fast; 0x270930 kept unless noted): lane 11 r71's flag form rebuilt from the r63 held patch with both
+// conversions nested, 2 (the same `mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]` pair). On it: the scan's previous
+// point as `&input->start` then `if (j > 0)` 280 (1396 bytes, 0x270930 lost at 260); the link memcpy as an aggregate
+// assignment 2 (same code; re-measure of round 66's aggregate-assignment link copy on this base); the previous-node test positive with the arms swapped 281; `special = false` after the count
+// test 366 (1374 bytes); count declared at the top with the other locals 349; the link copy moved out of the capacity
+// block (usable declared before it) 2 (same code); one pathfinding-data local for the link and surface tests 353 (re-measure of round 62's node-loop data local,
+// same number).
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

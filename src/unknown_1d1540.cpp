@@ -13,8 +13,8 @@ public:
 	long field_60;
 	long field_64;
 	c_1d19d0(hkEntity *arg_0, long arg_1);
-	virtual s_1d1870 function_1d1870(void *arg_0);
-	virtual s_1d1870 function_1d18c0(void *arg_0);
+	virtual s_1d1870 function_3144b0(void *arg_0);
+	virtual s_1d1870 function_314580(void *arg_0);
 	static void operator delete(void *arg_0)
 	{
 		g_480118->allocate((long)arg_0, ((c_1d19d0 *)arg_0)->flags, 0x26);
@@ -63,7 +63,7 @@ void function_1d1540(s_havok_component *arg_0)
   havok_component_rigid_body_angular_velocity_set(local_1, arg_0, (vector3f *)(local_0 + 0x94));
   c_1d19d0 *local_3 = (c_1d19d0 *)((c_1d7390 *)g_480118)->function_1d7390(0x70, 0x26);
   local_3->flags = 0x70;
-  local_3 = new(local_3) c_1d19d0((hkEntity *)local_2, arg_0->object_index);
+  local_3 = ::new(local_3) c_1d19d0((hkEntity *)local_2, arg_0->object_index);
   if ((bool)((arg_0->unknown04 >> 11) & 1))
   {
    byte *local_4 = (byte *)havok_object_get(arg_0->object_index);

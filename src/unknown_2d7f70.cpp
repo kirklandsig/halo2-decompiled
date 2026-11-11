@@ -19,15 +19,10 @@ public:
 	virtual stream_holder_2d8e70 *slot_2() = 0;
 };
 
-class path_2d7f70
-{
-public:
-	char const *function_2d7f70(char const *path) const;
-	void function_2d7fb0(char const *text) const;
-};
+#include "service_streams_2d8780.h"
 
 // @retail 0x2d7f70
-char const *path_2d7f70::function_2d7f70(char const *path) const
+char const *error_handler_2d8030::file_name(char const *path) const
 {
 	for (int i = 0; i < 2; i++)
 	{

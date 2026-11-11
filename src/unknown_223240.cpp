@@ -303,6 +303,16 @@ void function_2232a0(void)
 // the found arm as a default-last conditional 118; with the counter declared first 160; with the source declared before
 // the loop and cleared at its top 123; the source looked up after the scan with the in-place `index != NONE &&
 // g_4686c4 != NONE` test 179. g_4e9c8c[i] is the same memory as `&g_4e9bd4[i].state` (globals.h). Still BLOCKED-BY 0x2b5d0.
+// Round 86 (m3 lane 11, fast; 0x223240 and 0x2232a0 match each time; aligned / register-masked counts 64 / 32 for this
+// body): retail's found arm (`xor eax, eax; cmp g_4686c4, -1; je; imul 0x358; add 0x4e9c8c`) is the existing 0x16f3a0
+// (`result = 0; if (index != NONE && g_4686c4 != NONE) result = &g_4e9bd4[index].state;`, the same memory) inlined, and
+// main declares 0x16f3a0 noinline. New forms: the source cleared at the loop top with the found arm as a default-first
+// conditional 119 (masked 31); the found arm calling 0x16f3a0 144 (550 bytes, masked 28: it stays a call), with a
+// forceinline declaration here 144 (still a call: the defining file's noinline wins); the scan as `while (++index < 4)`
+// with the break inside 264 (428 bytes); the end-of-scan test as `== 4` 125. Re-measures: a pretested for with the view
+// count after the loop 170 (aligned 108, as round 106's while); the loop-top clear plus default-first conditional in
+// that for 118 (masked 30, round 62's default-last form: retail's pretest, counter/count/record in EBP/EBX/EDI and the
+// source in ECX). BLOCKED-BY 0x2b5d0 and 0x16f3a0's noinline declaration.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

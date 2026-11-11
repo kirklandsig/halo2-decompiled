@@ -1743,6 +1743,12 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // Round 73, continued: the clamp test through the existing voice_packet_clamp_count (`voice_packet_clamp_count((byte)player,
 // 0, 15) != player`, the same result for every player) 157 (0x56380 55).
 // Round 73, continued: voice_channel_has_player as `static __forceinline` 60 (same code, 0x56380 and 0x564c0 still matched).
+// M3 lane 8 r151 (fast, control 60; both builds return with ret 0xc): what still differs is register allocation (retail
+// keeps the zero result in EAX as a variable from entry to the capacity-fail exit, as matched 0x56380 keeps its zero in
+// ESI, and gives the bit EBP and the size EBX). New forms: the written count typed byte 140 (462 bytes), with the size as
+// `include_mask ? 13 : 11` 149; written declared inside the capacity block with that size 197 (488 bytes); `capacity -=
+// entry_size` before `written++` 64. Re-measured: the ternary size in the current order 147. No other untried natural
+// form is left in the note's list (orders, size spellings, result, clamp, bit and mask forms).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

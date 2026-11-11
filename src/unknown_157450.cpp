@@ -5750,6 +5750,11 @@ void __stdcall function_d6bc0(long object_index);
 // parameter into `entries`, which again takes EDI); that helper taking a const entry pointer 172; the field test with the
 // arms the other way round 172; the field test with 0x15aad0's `*const *entries_reference = &entries` read once at the
 // 0x15aad0 call 172 (same code). Left as before: only the index test on the local keeps `entries` out of a register.
+// Lane 6 r167 (fast, base 52, aligned 14, masked 6: the scenario/rate store order, the schedule index test on the
+// local where retail reads the field, case 1 in CL, 0xd6bc0 on the local): case 1 as `if (bit) break; continue;` 53;
+// case 0 as an early `break` on the bits with the distance test after it 52 (same code); the countdown's removal as
+// `if (type != 1 || !a && !b) d6bc0(index); else { ...; continue; }` 52 (same code), with the type test as a nested if
+// 52 (same code); the reset distance as `reset = !(d > 100) || function_15f060(...)` 52 (same code).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

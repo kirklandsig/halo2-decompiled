@@ -330,6 +330,16 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // stack byte at +0xe (the volatile-bool shape of matched 0x21ec00), which this round may not add.
 // Round 73, continued: the two-if voice sends drop our send-loop counter slot (frame 0x228 against retail's 0x224; our 0x22c
 // holds the counter at +0x14), masked aligned 238 -> 251.
+// M3 lane 8 r151 (fast = plain here, 544; masked aligned 170): the XDK stream entry points that matched 0x221490 calls,
+// in place of the inline methods: the stream mix-bins call 544, the pitch call 544, both volume calls 544,
+// the voice-properties call 544 (same code each); `bool direct=input->field_30&1;` 544 (same code). Retail also zero-extends the
+// channel byte as `xor reg, reg; mov reg8, [ebp+1]` where ours has movzx (three sites); with the subtractions and rounding
+// stores, that is another /Op-or-flags lead for the user.
+// M3 lane 12 r110 (fast control 536 at 1906 bytes, full 544 at 1901; fast carries the global-reference CAVEAT): `direct`
+// read before the gain with mode after it 540 (1902 bytes); mode before the gain with direct after it 609 (1962); the mixbin
+// loop bound as `send < mode + 1` 532 fast but 545 plain (1901 bytes); the send flags cleared first and every bit set or
+// cleared alike 565 (1922); the send bits read from one named input flags word 550 (1908). The file's /Op stays the
+// largest cause (flags are the user's decision).
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

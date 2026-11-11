@@ -250,6 +250,9 @@ void __stdcall function_1160c0(real dt)
 // node-position copy uses EDX where retail uses ECX, and the physics index is masked in EAX before the
 // pushes where retail masks ECX after them.
 // MiniMax S (11-01): the segments and segment-index locals leave the first difference at +0x37; no lower score.
+// frame 0xa4 agrees; attachment homes now agree. Retail keeps the rest offset
+// below previous and the scalar temporaries below the axis; those still differ. The segment
+// pointer lives in edx (ours edi) and the rotation's products are scheduled in another order.
 // Round 62: the existing normalize3d for the axis and dot3f for the projection give the same code (194)
 // but cost 0x73360 its match (this file links ahead of unknown_058dd0.cpp), so not kept; forward
 // declared before origin 194; the three rotation cross terms as one vector 275; previous/predicted at
@@ -555,6 +558,14 @@ void __stdcall function_1160c0(real dt)
 // New segment spellings (fast, 0x116750 matched): the segments base hoisted above the loop 301 (1370 bytes); `&segments[i]` then
 // `segment--` for the last node 292 (1357); the base, `segment += i`, then `segment--` 292; the index as `i < count ? i : count - 1`
 // 172; as `i < count - 1 ? i : count - 1` 179. None gives the EDX base after the index.
+// Lane 3 r230 (plain 171, 1368 bytes, 0x73360 unchanged at 33): the existing helpers in place of their bodies written
+// out, each byte-identical here: normalize3d for the axis (no length local), length_sq3f for the delta's magnitude, dot3f
+// for the projection, vector3d_from_points3d for the direction (171 each and together). Not kept: with all four (and the
+// normalize3d.h include) the full check lost matched 0x54590 (network_voice.cpp, then 2 at +0xff), as round 62 lost
+// 0x73360: this file links ahead of both. The delta through vector3d_from_points3d as well 272 (1357 bytes; the
+// listed both-differences form). New: `previous = node->position = position;` 171, the z row as `along * axis.k` like
+// the others 171, `node->ticks++` 171 (all same score); re-measured listed forms: delta as three statements 171,
+// location declared first 171.
 // Round 104 (m3 lane 9, fast): names do not order these homes: `offset` renamed `rest_offset` 171, with `segment`
 // renamed `current_segment` too 171, `length` renamed `axis_length` 171 (same code; the compile-only harness's frame
 // offsets do not move either); the normalization with `*=` in all three rows 171; `fabs(length) < .0001f` 171. Lead:

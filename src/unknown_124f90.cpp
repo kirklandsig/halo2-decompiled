@@ -1261,8 +1261,8 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
-// MiniMax E (11-10): no new form, no lower score (94).
 // score 94 (was 94; 177 before lane 10 round 69): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
+// MiniMax E (11-10): no new form, no lower score (94).
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
 // 1.0, fade-out), and the gain value carried into the last arm.
 // MiniMax C (11-09): no new form, no lower score (94).
@@ -1477,6 +1477,13 @@ long function_2197f0(real gain);
 // ducking->gain` 105 (678: drops retail's by-value copy through a stack temporary). Our five extra bytes are all at the
 // arm-3/arm-4 join: ours keeps the arm-3 sum in XMM0 and loads the gain on the bypass edge (jmp, movss, register add), retail
 // re-reads the gain from its home in arm 4's add.
+// Lane 10 r91 (fast; masked = aligned lines with registers and stack offsets masked, control 94 [17]): the listed `fade_out`
+// local for the test, sum and product re-measured 98 [15]: the product then takes the reciprocal first as retail, but
+// `fade_out + hold` loads hold first (retail copies fade_out and adds hold from memory). On it, retail's clamp shape (the value
+// before the branch, `ja` over `t = 1.0f`): `t = time / fade_in; if (!(1.0f > time * inverse)) t = 1.0f;` 169 (644 B: the branch
+// is retail's but the value is still `inverse * time`, and arms 1 and 2 then end alike and cross-jump), `if (time * inverse >=
+// 1.0f)` 171, a ternary with the test multiplied and the value divided 171; with `gain +=` in arm 1 169 (same merge); with the
+// arm-1 sum written interpolation first (retail's gain load into a register) 99 (684 B, frame changes at +0x2).
 // R229 (m3 lane 3, fast with 0x1251e0): one to eight unused-local probes at the top (diagnostic, removed) 94 each (same
 // code: the XMM colours do not follow symbol numbering here); `gain +=` in arm 4 alone, in arm 3 alone 94 each, and in
 // both (a re-measure of round 160's form, 125 then, on the current body) 94 (same code: the last arm still takes the gain
@@ -2917,12 +2924,6 @@ static inline short sound_voice_find_available_channel(char type)
 // MiniMax E (11-10): no new form, no lower score (96); the body with two exits and no result variable, the
 // same body with a bool result and the failure path returning false directly were measured (131, 113, 134)
 // and the byte result with the shared exit stays the best.
-// score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
-// through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
-// keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
-// and its channel search keeps the channel in EDI with one `or ebp, -1` shared between the channel
-// compare and the driver and buffer defaults. A `bool` result carrier on this body measures 113 at
-// retail's length and was reverted.
 // The twelve-byte frame, byte result normalization, initial voice/global load order and
 // Earlier at 96 (was 96): The twelve-byte frame, byte result normalization, initial voice/global load order and
 // early failure tail remain; long search-result boundaries do not change the selected code.
@@ -3115,6 +3116,15 @@ static inline short sound_voice_find_available_channel(char type)
 // the for/break search with that failure-first form 141 (437). N314's 64 form rebuilt for reading: its tail and failure block are
 // retail's byte for byte; left are the entry registers, the scan's post-loop bound test (retail's found path goes straight to the
 // `(short)i != NONE` test, as the for/break search does), the shared `or ebp, -1` and the complemented status.
+// Lane 10 r91 (fast; masked = aligned lines with registers and stack offsets masked, control 96 [50]): the status as
+// `(byte)~status & DSBSTATUS_PLAYING` (the idiom 0x127010's matched flags test uses) 127 [47]; with a bool result 130; with
+// `return true` after the commit 129, both 131. N314's condition-controlled scan rebuilt: byte result 134, bool result 104 [30],
+// with `return true` after the commit 109, bool with the redundant `result = true;` before the goto 64 [17] (diagnostic, the
+// form review rejected; it reproduces N314). On the scan, the result assigned from the commit test (`result = buffer_index !=
+// NONE || ...; if (result)`) 122 (bool) / 152 (byte), on the for scan 123/130; an uninitialized result assigned once on each
+// path (early `else result = true;`, before the commit's goto, in the failure block) 142 (bool) / 152 (byte). On the 64 body
+// left are the entry registers (index in ECX as retail only with the frame-8 forms), the type byte loaded then sign-extended
+// (retail `movsx ecx, byte ptr [esi + 8]`), the scan's post-loop bound test, NONE shared in EBP and the complemented status.
 // R229 (m3 lane 3, fast with 0x129100): `bool result = true;` with `result = false;` at the top of the channel block,
 // `result = true;` after the commit and the failure calls under `if (!result)` 129 (430 bytes: retail's `mov al, 1`
 // at the entry, but the false value lives in a stack byte and the failure block follows the search loop); the same
@@ -4313,6 +4323,7 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 	arg_2->k = (rotation_i * arg_1->j - rotation_j * arg_1->i) * local_2 + rotation_k * local_1 + local_0 * arg_1->k;
 }
 
+// MiniMax D (11-10): 535 (was 554): the blend factor is read from [ebx+0x40] at each use and the state's base components are named locals, so the interpolation matches retail's instruction order; still different: the frame 0x134 against retail's 0xe8 (the fallback reverb is a 48-byte stack copy here while retail reads the existing const g_44a2a0, whose internal linkage is in another file), the loop counter in ebx against retail's edi, the state pointer masked with and against retail's cmovne, ebp anchored at +7 against retail's +0x20; the counter declared before the null test 547, the state pointer as a named local 545, the inverted test 535, the local player helpers 0x14ddc0/0x14de70 called 609/625 (they stay calls here), all restored; the permuter's best variant (the entry branch inverted, which puts the skip path first as retail has it, with a dword local and the split load) aligns 18 more instructions but is 24 bytes longer, so it scores 535 and the inversion alone 533, below the threshold, and stays restored.
 // MiniMax S (11-10): no new form, no lower score (554); the frame is 0x130 against retail's 0xe8 because the fallback reverb is a 48-byte stack copy here while retail reads the existing const g_44a2a0, which needs a declaration outside this file; a file-static copy of the same data removes the copy and the frame with it but takes 218 bytes off the length, so the differing count stays 535 and the plain score rises to 734; the two entry bytes, the rotation call's registers and the listener records still differ.
 // MiniMax R (11-01): retail's 0x11d6a0 call still sets edx, ecx, eax where ours sets edx, eax, ecx;
 // the callee's own file is not mine, so the order cannot be produced from here.
@@ -4421,12 +4432,15 @@ void function_127400(bool arg_0)
 					byte *local_16 = *(byte **)(g_4e0300->data + (local_14 & 0xffff) * 12 + 8);
 					byte *local_17 = g_4e3b44[*(long *)local_16 & 0xffff].bytes;
 					byte *local_18 = *(byte **)(local_17 + 0x1cc) + local_15 * 0xb0;
-					real local_19 = *(real *)(local_18 + 0x40);
 					point3f local_20;
 					function_caf60(local_3, &local_20);
-					local_9.x = (local_20.x - local_6->field_0.x) * local_19 + local_6->field_0.x;
-					local_9.y = (local_20.y - local_6->field_0.y) * local_19 + local_6->field_0.y;
-					local_9.z = (local_20.z - local_6->field_0.z) * local_19 + local_6->field_0.z;
+					real local_19 = *(real *)(local_18 + 0x40);
+					real local_26_x = local_6->field_0.x;
+					local_9.x = (local_20.x - local_26_x) * *(real *)(local_18 + 0x40) + local_26_x;
+					real local_26_y = local_6->field_0.y;
+					local_9.y = (local_20.y - local_26_y) * *(real *)(local_18 + 0x40) + local_26_y;
+					real local_26_z = local_6->field_0.z;
+					local_9.z = (local_20.z - local_26_z) * *(real *)(local_18 + 0x40) + local_26_z;
 					quaternionf local_21;
 					function_11d6a0(&local_21, &local_6->field_20, (vector3f *)(local_13 + 0x180));
 					function_11d950(g_4687cc, &local_21, &local_21, local_19);

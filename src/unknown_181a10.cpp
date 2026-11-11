@@ -850,6 +850,14 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // declared at entry with it 340. On main: friction and restitution at function scope 239 (same code). The other listed
 // lever, a long plane-index parameter for 0x14a300 (retail sign-extends it at every call), needs src/unknown_17d9a0.cpp,
 // which another lane holds this round.
+// M3 lane 1 r89 (fast with 0x1829b0, 0x1821d0, 0x182800; control 239, aligned 109, masked 71): the origin through
+// real_point3d_set from a position pointer local (the two listed parts together) 252 (1260 B, aligned 105; the inlined setter
+// reads x, y, z into one 12-byte home, where retail reads z, y, x and keeps only x at +0x28); the setter with the cast written
+// at each argument (the listed setter form, re-measured) 318; the node's transform as a typed record with a point3f member at
+// +0x50, origin copied from it, 239 (same code); origin and hit both through real_point3d_set 348 (1273 B); origin as a brace
+// initializer from the position pointer 312 (1248 B, aligned 99, origin still one home in x, y, z order), with the hit as a
+// brace initializer too 362 (1261 B); the final test as `valid && scale < contact->normal.k` 239 (same code). Diagnostic,
+// not kept: the dead second walk as an empty-body `next` chase 239 (the loop-head pad stays).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

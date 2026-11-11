@@ -172,6 +172,19 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // the second NONE test ahead of `initialize = true;` 99 (491), with no walk test 99; round 99's inner test then the goto 99;
 // the inner test in the walk arm with an else 100; re-measured round 101's early return as `goto done` 85. Matched 0x23600 shows
 // the second epilogue is VC's copy of a single return for a path that holds the value in a register.
+// M3 lane 8 r151 (fast; control 77): retail's found path skips the merge test on a constant, not on the index: with the
+// merge test spelled `!initialize || result != NONE` (diagnostic, an implied test) the found path jumps straight to the
+// record block and the merge block becomes retail's `cmp esi, -1; mov cl, 1; je` (83, 508 bytes; only the walk's NONE exit
+// still differs: ours inline returning the constant, retail a second epilogue at the end returning ESI). Our build folds
+// `return result` after any direct NONE test of result to the constant (the walk exit returning cache_index, a copy of
+// result tested, `result == cache_index`, the result typed dword, the walk writing through a pointer: 83/83/83/83/83; on the
+// plain body dword 77 and the pointer 77, same code). New forms: the found test as the else arm of an alloc-first
+// `cache_index == NONE || owner != object_index` 77 (same code); `if (initialize && result == NONE) return result;` ahead of an
+// unconditional record block 138 (518 bytes, merge block as retail, the else arm laid out after the main return), with
+// `return NONE` 138; the NONE test with its return at the end of the else arm, record block unconditional, 138 (518 bytes);
+// that without the walk's own return 145. Re-measured: the listed `if (result != NONE) initialize = true; else return
+// result;` 72 now (519 bytes: the walk's NONE return moves to the end as retail, but returns `or eax, -1`), with the merge
+// test spelled as above 87; one variable for the allocation and the result 141.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
