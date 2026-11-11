@@ -2749,7 +2749,18 @@ def _fast_baseline_check(va, fast_baseline, baseline):
             f'{baseline}: --fast cannot search this function. Run without --fast: python tools/permute.py {va:#x}')
 
 
-def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, jobs=1, depth=None, anneal=False):
+def context_units(context, rows, marked, depth=None):
+    """The sources a reduced image adds for each context function: its own
+    units (reduced_units), so a search can reproduce a function that only
+    builds as retail does beside its callers or siblings."""
+    units = set()
+    for va in context:
+        units |= reduced_units(va, rows, marked, depth)
+    return units
+
+
+def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, jobs=1, depth=None, anneal=False,
+             context=()):
     """The --fast search with jobs workers, each scoring on its own scratch root
     with its own seed (seed, seed + 1, ...), and one more root for the full
     builds: first the original's, whose map gives the library objects the
@@ -2757,7 +2768,9 @@ def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, j
     limit with a time limit, which starts after that first build. The images
     are linked in build/permute/<va>/ of the repository, one folder per root,
     as .img files (see build.build). anneal: the Anneal walk, with
-    TYPED_MUTATIONS besides MUTATIONS."""
+    TYPED_MUTATIONS besides MUTATIONS. context: other functions whose units
+    each reduced image also builds, for a function whose own units build
+    differently from the full image."""
     if tries is None:
         tries = DEFAULT_TRIES if time_limit is None else float('inf')
     own = scratch is None
@@ -2772,6 +2785,11 @@ def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, j
         full = Scorer(va, roots[0], image=os.path.join(images, 'full', 'halo2.img'))
         scorers = [FastScorer(va, root, os.path.join(images, name, 'reduced.img'), depth=depth)
                    for name, root in zip(names[1:], roots[1:])]
+        if context:
+            marked = build.marked_sources(full.root) + build.stub_sources(full.root)
+            extra = context_units(context, full.rows, marked, depth)
+            for scorer in scorers:
+                scorer.units |= extra
         with open(os.path.join(ROOT, full.marked.path), encoding='utf-8', newline='') as f:
             original = f.read()
         start, end = find_body(original, va)
@@ -2851,6 +2869,8 @@ def main():
     ap.add_argument('--jobs', type=int, default=1, help='with --fast: scorers working in parallel')
     ap.add_argument('--depth', type=int, default=None,
                     help='with --fast: follow callees only this many levels (default: all)')
+    ap.add_argument('--context', action='append', default=[], metavar='VA',
+                    help='with --fast: another function whose units the reduced image also builds (repeatable)')
     ap.add_argument('--anneal', action='store_true',
                     help='with --fast: simulated annealing with restarts, and the typed mutations too')
     args = ap.parse_args()
@@ -2860,13 +2880,16 @@ def main():
         ap.error('--depth takes a count of levels, and needs --fast')
     if args.anneal and not args.fast:
         ap.error('--anneal needs --fast')
+    if args.context and not args.fast:
+        ap.error('--context needs --fast')
     va = check.parse_addresses([args.address]).pop()
+    context = tuple(check.parse_addresses(args.context))
     # progress is watched while a run is in flight, so flush each line as it is
     # printed: redirected output would otherwise arrive only when the run ends
     log = functools.partial(print, flush=True)
     if args.fast:
         result = run_fast(va, args.tries, args.seed, args.time_limit, jobs=args.jobs, depth=args.depth,
-                          anneal=args.anneal, log=log)
+                          anneal=args.anneal, context=context, log=log)
     else:
         result = run(va, DEFAULT_TRIES if args.tries is None else args.tries, args.seed, args.time_limit, log=log)
     rate = result.tries / result.seconds if result.seconds else 0

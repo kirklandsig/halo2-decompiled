@@ -369,6 +369,10 @@ For near misses, the fast search is usually the better choice:
   as one, since a worker's link overlaps the others' compiles. A prepared
   scratch compiles no sources (its copied objects and generated units are
   already current), so the first build is a link.
+- `--context <va>` adds another function's units to every reduced image
+  (repeatable). Some functions only build as retail beside their callers or
+  siblings; without the extra units the reduced image scores them differently
+  and the search refuses to start.
 - `--anneal` lets the search accept some worse variants and restart, so it
   can get past a local minimum.
 - `--write-only-match` writes a variant back only when a full build finds an

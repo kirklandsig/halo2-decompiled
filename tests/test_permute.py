@@ -435,6 +435,16 @@ def test_reduced_units_stop_at_stubs_and_leave_out_callers():
     assert 'src/e.cpp' not in units and 'src/f.cpp' not in units
 
 
+def test_context_units_add_each_context_functions_units():
+    """--context widens the reduced image with the units of other functions, so
+    one that only builds as retail beside its siblings can be searched."""
+    assert permute.context_units([], ROWS, MARKERS) == set()
+    assert permute.context_units([0x200], ROWS, MARKERS) == permute.reduced_units(0x200, ROWS, MARKERS)
+    assert permute.context_units([0x200, 0x800], ROWS, MARKERS, depth=1) == (
+        permute.reduced_units(0x200, ROWS, MARKERS, depth=1)
+        | permute.reduced_units(0x800, ROWS, MARKERS, depth=1))
+
+
 def test_reduced_units_survive_call_cycles():
     rows = {0x100: {'calls': '00000200'}, 0x200: {'calls': '00000100'}}
     markers = [marker(0x100, 'src/a.cpp'), marker(0x200, 'src/b.cpp')]
