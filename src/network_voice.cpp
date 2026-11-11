@@ -1536,6 +1536,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// MiniMax I (11-11): no new form, no lower score (60); retail keeps the zero result in EAX from entry to the
+// capacity-failure exit and gives the player bit EBP and the entry size EBX, and every order of the result,
+// capacity, size and written locals compiles to the same code.
 // score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
 // MiniMax R (11-09): no lower score (60): what still differs is the register split - the player bit sits
