@@ -374,6 +374,20 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // `i*i + j*j + k*k` sum 150, with the squared length named through dot3f 151, with an i, j, k statement sum 117. Re-measured
 // (compile-only identical to listed forms): the j, i, k statement sum 111, the k, j, i statement sum everywhere 154, the squared
 // length named through dot3f 154. Body unchanged.
+// m3 lane 3 r233 (fast, 0x1c4a80 matched each time; control 110, aligned 38, register-masked 21). Forms: forward through the
+// existing header normalize3d (a __forceinline redeclaration so it expands under /Ob1) with the private helper's sum written
+// plain `i*i + j*j + k*k` for the other three 153 (925 B, masked 21: up, up and left then sum k, j, i as retail, forward sums
+// i, j, k and preloads all three); forward through the existing normalize_inline with that plain helper 153 (masked 22);
+// normalize3d for forward and left, the plain helper for both up normalizations 154 (masked 20); normalize3d for forward with
+// the plain helper's squared length named through dot3f 154 (masked 20); normalize3d run on the matrix field
+// (`normalize3d(&local_1[0].forward);`) and the forward pointer taken after it, plain helper for the rest, 148 at 926 B,
+// aligned 30, masked 12 (forward then preloads only two components and scales one from memory into the reciprocal's register
+// with a reload on the short path, retail's shape, but the one from memory is i, first and through a copied reciprocal, where
+// retail's is k, last, and forward sums k, j, i for retail's j, i, k); the same with normalize_inline on the field 152 (masked
+// 14); with the private helper unchanged 150 (929 B, masked 23). The 148 form reproduces round 78's listed "forward
+// normalize3d, the rest normalize_inline 148 (926 bytes, ...the reciprocal then copied)" (same score, length and shape; the
+// masked counts come from a different script). Still open: a forward normalizer that sums j, i, k and scales k last into the
+// reciprocal's register. Body unchanged.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

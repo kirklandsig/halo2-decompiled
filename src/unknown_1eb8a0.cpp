@@ -183,7 +183,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
-// score 636 (was 642): retail keeps q (the fourth stack argument) in EBX from entry and reads d from its stack
+// score 636 (was 636): earlier 642; retail keeps q (the fourth stack argument) in EBX from entry and reads d from its stack
 // slot at each use; ours keeps d in EBX. Frame 0x24 and clock EDI agree; xmm homes and coefficient schedules remain.
 // retail keeps q in EBX from entry (reloading it after the activation copies, where EBX serves
 // a copy) and reads d from its stack slot at each use; ours keeps d in EBX. Frame 0x24 and clock EDI agree; the
@@ -194,8 +194,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // MiniMax A (11-04): no new form, no lower score; retail branches on the fast flag before the rate multiply and loads the
 // constant there, ours multiplies first (642, same code).
 // Earlier 646 (was 642; the settling-ratio fix took 642 to 646): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
-// score 636 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
-// score 646 (was 642; the settling-ratio fix took 642 to 646): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// Earlier 636 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// Earlier 646 (was 642; the settling-ratio fix took 642 to 646): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// Earlier at 636 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// Earlier at 646 (was 642; the settling-ratio fix took 642 to 646): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
 // Earlier at 642: retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
 // Earlier (642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
 // activation copies) and reads d from its stack slot at each use; ours keeps d in EBX from entry. Frame 0x24
@@ -471,6 +473,26 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // form); the settle length from nq 628, the 0.866 test with its sides swapped 628, `lo = MAX(0.f, lo)` 628, `rem =
 // MAX(0.f, rem)` 628 (same code each; the last repeats round 74's ternary clamp). On the 636 body: the output flag
 // through the existing setter `function_0bfe20(&out->flags, 2, fail || ...)` 636 (different code, same score).
+// Round 170 (m3 lane 5; plain unless marked fast, caller 0x1eb6f0 MATCH in each; base 636, `!!` 635, aligned 478,
+// masked 173): `dist` through the existing inline distance3d(pos, &s->target) 637 (aligned 485; ours already computes
+// dist on x87 as retail, and distance3d sums (i2 + j2) + k2 with an fxch, its out-of-line 0x3ea30's order, where
+// retail keeps (k2 + j2) + i2); the e3 test as `0.001f < e3` 636 (fast, same code); diagnostic, arms swapped (not
+// keepable): `if (0.001f >= e3)` with the settled block first, retail's constant-first compare and fall-through,
+// 643 (fast, 2883 B; aligned 465, masked 170); the two activation lengths through the existing magnitude3d 672
+// (2883 B; aligned 440, masked 157; the zero's xorps moves to the entry), all three lengths so 671 (2882 B; aligned
+// 458, masked 175). d keeps EBX in every one.
+// Round 154 (m3 lane 8, fast with the file's 17 matched functions; base 636, difflib aligned 478, register-masked
+// 173): the two stacked `// score` lines below the first were relabelled "Earlier at" (text and numbers kept). Read
+// again against retail: the first clamp selects the 12/8 factor into xmm1 before t and keeps e in the 0.001 register
+// (xmm3); ours computes t first. Every natural form for that (factor first, PIN, the impulse pointer that kills the
+// fast-flag CSE) and for the q/d EBX weight (aggregate and field copies of q, per-use reads, dot helpers, the fallback
+// spellings) is listed above. Combinations of listed forms (fast, aligned/masked in brackets): the time globals read
+// at each use (no globals local) re-measured 634 [489/173]; that with the 12/8 factor selected first at all three
+// clamps and the impulse through vector3f_scale 703 (caller 0x1eb6f0 lost, 22) [432/135], plus `s->limit` read at
+// each use 720 (caller lost) [424/133]; factor first + vector3f_scale alone re-measured 666 [405/137] (caller kept),
+// with `s->limit` at each use 705 [403/139]. In the output arm retail expands the nested MIN/MAX for the step
+// fraction without CSE, as ours does, but builds each zero with its own xorps (ours shares a function-wide zero in
+// xmm6) and stores one intermediate (e3 - MAX(0, w)) to the stack. Body unchanged.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

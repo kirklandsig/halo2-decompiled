@@ -37,7 +37,9 @@ bool function_2600a0(long actor_index, s_type_967e20 *context, s_type_b36ac5 *po
 long function_1e4a50(long index);
 long function_262a30(s_reference reference);
 
-// score 528 (was 528): frame 0x8a8 against 0x8a0, 3097 bytes against 3077; site 2 inlines 0x2600a0 where retail calls it, and 0x262a30 is
+// score 528 (was 528): earlier 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// (the merged second note line: was 528, 611, 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// frame 0x8a8 against 0x8a0, 3097 bytes against 3077; site 2 inlines 0x2600a0 where retail calls it, and 0x262a30 is
 // called where retail inlines it around a call to 0x13e2d0 (see the r111 lines below the notes).
 // Earlier 700 (was 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // earlier 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
@@ -122,6 +124,17 @@ long function_262a30(s_reference reference);
 // the sorted-loop site stays inlined, so that site is not an inline-budget effect of the owner lookup; reverted). New: the
 // path-data select as an if-assignment through a NULL-initialised local 528 (masked 104: retail's `xor` before the test), on
 // round 77's form 606; the owner store as if/else with two stores 638 (3102 B), with the if-assignment select 638. Body unchanged.
+// M3 lane 2 r72 (fast with 0x2605d0/0x261280/0x2600a0/0x262a30/0x260060/0x2613d0, all matched throughout; aligned/masked in
+// brackets, base 528 [343/179]): retail's main loop keeps count in EBX (dword load, `test bx, bx`) through the random pick and
+// reads scratch from its stack slot at the 0x270750 call; ours keeps scratch in EBX there and compares count in memory. The
+// main loop index as `long` 555 [360/193]; the two flags declared bare and cleared by one chained `= false` after the
+// declarations 581 [346/184]; result declared after the four state values 528 (same code: frame slots do not follow
+// declaration order); the length test with a float epsilon (`fabs(length) < 0.0001f` or `0.0001f > fabs(length)`) 632
+// [347/182] (retail's `fld dword` constant, one instruction shorter), that with the arms swapped as in normalize3d (`if
+// (!(fabs(length) < 0.0001f))` scale, else zero) 624 [345/179]. Diagnostics (not kept): scratch read once through
+// `byte *const *` to it at the loop call 528 (same code); a global in place of scratch at that call 555 (the global takes
+// EBX instead: count never gets a register in our main loop). Compile-only (no /GL) packs the two flags at adjacent bytes
+// as retail does; our LTCG build gives each its own dword.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

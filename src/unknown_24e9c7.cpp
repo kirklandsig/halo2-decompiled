@@ -403,6 +403,13 @@ struct s_24e9c7_points
 // spills across j to -8), so result keeps -8 and side y spills at -0x14 below the scalars. Retail's -8 slot has five
 // references (across j stored and reloaded, side y stored, reloaded for back and for the corners), which puts it above
 // result by weight.
+// Round 91 (m3 lane 1, fast with 0x24e59f and 0x22a664, both matched each time; control 125): the forward pair copied
+// into a planar point local (the vector's first two members) for the across products and up 147 (752 bytes), for the
+// across products only 151 (755); the negated forward j named (`real perpendicular_i = -forward_j;`) after size 138 (739),
+// before size 138; an unscaled perpendicular point `{ -forward_j, forward_i }` scaled by size in place 139 (742).
+// Diagnostic: `back` renamed to sort last 125 (same code). In every form the compiler folds the negation out of the
+// product (`0 - fj * size`) and sinks it into the side products; retail computes `size * (0 - fj)` right after size
+// and spills across j at -8. Body restored.
 // M3 lane 3 r231 (fast with 0x24e59f and 0x22a664, both matched each time; control 125): the scale read before size 125 (same
 // code); the across j product before across i 125 (same code); the half width halved as a second statement (`half_width /=
 // 2;`) 125 (same code); the four marker stores to the view globals before the corner points 131 (retail interleaves them with
