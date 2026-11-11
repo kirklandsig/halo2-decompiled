@@ -5894,6 +5894,7 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
    otherwise), takes its team from the creation data (in campaign, the
    definition's when unset), starts its animation and finds its two
    animation graph entries */
+// MiniMax C (11-10): score 57 (was 202): the header is read as the pool data plus the masked index times twelve plus eight through a named offset local, which gives retail's [ecx + esi + 8] amode, and the out-of-memory arm sets the return value before its store while the body sits in the else arm, which gives retail's three return blocks and its 1040 bytes; what still differs is the success arm's register roles (retail reads the pool global into EAX and the data into ECX where ours uses EDX and EAX, retail sign-extends the +0x33e offset into ECX where ours uses EDX, and retail copies the five forward vectors through ECX and EDX in the other roles).
 // score 202 (was 202; 253, 282 before that): the logic agrees with retail statement by statement (re-walked in round 5 of #1049).
 // Round 5 of #1049: the four weapon slots are cleared with memset(.., 0xff, 16), which gives retail's lea/pointer fill
 // (definition spilled first, EDX the pointer, ECX the value; 253 -> 202). What still differs: (1) retail's early
@@ -5930,7 +5931,8 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {
 	byte const *data = (byte const *)creation;
-	s_unit *unit = UNIT_GET(unit_index);
+	long header_offset = (unit_index & 0xffff) * 12;
+	s_unit *unit = *(s_unit **)((byte *)g_4e0300->data + header_offset + 8);
 	byte *definition = UNIT_DEFINITION_GET(unit);
 
 	unit->unknown238 = NONE;
@@ -5983,78 +5985,83 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 		UNIT_DAMAGE_SOURCES(unit)[i].player_index = NONE;
 		unit->unknown330[i] = 0;
 	}
-	if (UNIT_GET(unit_index)->animation_offset == NONE)
+	if ((*(s_unit **)((byte *)g_4e0300->data + header_offset + 8))->animation_offset == NONE)
 	{
 		return false;
 	}
+	bool result;
 	bool failed = !function_bc380(unit_index, 0x33c, 0x124, 0) || !function_bc380(unit_index, 0x340, 0x58, 0) ||
 		!function_bc380(unit_index, 0x344, 0x44, 0);
 	if (failed)
 	{
+		result = false;
 		*out_of_memory = true;
-		return false;
 	}
-	unit = UNIT_GET(unit_index);
-	byte *state = (byte *)unit + unit->unknown346;
-	*(long *)(state + 0x10) = NONE;
-	*(short *)(state + 0x14) = NONE;
-	*(long *)(state + 0x18) = NONE;
-	*(long *)(state + 0x2c) = NONE;
-	*(long *)((byte *)unit + unit->unknown33e + 0x2c) = NONE;
-	function_10f260(unit_index);
-	byte *weapon_state = (byte *)unit + unit->unknown342;
-	*(long *)weapon_state = NONE;
-	*(long *)(weapon_state + 0x44) = NONE;
-	function_114ec0(unit_index, *(long *)(data + 0xc));
-	*(vector3f *)&unit->unknown18c = unit->forward;
-	unit->unknown180 = unit->forward;
-	unit->unknown168 = unit->forward;
-	unit->unknown15c = unit->forward;
-	unit->unknown150 = unit->forward;
-	unit->unknown14c = 0x6000086;
-	short grenade_type = *(short *)(definition + 0x1b4);
-	if (grenade_type >= 0 && grenade_type < 2 && *(short *)(definition + 0x1b6) >= 0)
+	else
 	{
-		unit->grenade_counts[grenade_type] = (char)definition[0x1b6];
-	}
-	unit->object_flags |= 0x1000;
-	unit->unknown138 = *(short *)(data + 0x64);
-	if (g_4e6948->state == 1 && (unit->unknown138 == 0 || unit->unknown138 == NONE))
-	{
-		unit->unknown138 = *(short *)(definition + 0xc0);
-	}
-	function_10f430(unit_index, 0x7000001, 0x7000101, 0x7000101, 0x7000001, 0.0f, false, 2);
-	long first_index = NONE;
-	if (*(long *)(definition + 0x38) != NONE)
-	{
-		byte *graph = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
-
-		for (long i = 0; i < *(long *)(graph + 0x78); i++)
+		unit = *(s_unit **)((byte *)g_4e0300->data + header_offset + 8);
+		byte *state = (byte *)unit + unit->unknown346;
+		*(long *)(state + 0x10) = NONE;
+		*(short *)(state + 0x14) = NONE;
+		*(long *)(state + 0x18) = NONE;
+		*(long *)(state + 0x2c) = NONE;
+		*(long *)((byte *)unit + unit->unknown33e + 0x2c) = NONE;
+		function_10f260(unit_index);
+		byte *weapon_state = (byte *)unit + unit->unknown342;
+		*(long *)weapon_state = NONE;
+		*(long *)(weapon_state + 0x44) = NONE;
+		function_114ec0(unit_index, *(long *)(data + 0xc));
+		*(vector3f *)&unit->unknown18c = unit->forward;
+		unit->unknown180 = unit->forward;
+		unit->unknown168 = unit->forward;
+		unit->unknown15c = unit->forward;
+		unit->unknown150 = unit->forward;
+		unit->unknown14c = 0x6000086;
+		short grenade_type = *(short *)(definition + 0x1b4);
+		if (grenade_type >= 0 && grenade_type < 2 && *(short *)(definition + 0x1b6) >= 0)
 		{
-			if (*(long *)(*(byte **)(graph + 0x7c) + i * 0x5c) == 0x80001a2)
+			unit->grenade_counts[grenade_type] = (char)definition[0x1b6];
+		}
+		unit->object_flags |= 0x1000;
+		unit->unknown138 = *(short *)(data + 0x64);
+		if (g_4e6948->state == 1 && (unit->unknown138 == 0 || unit->unknown138 == NONE))
+		{
+			unit->unknown138 = *(short *)(definition + 0xc0);
+		}
+		function_10f430(unit_index, 0x7000001, 0x7000101, 0x7000101, 0x7000001, 0.0f, false, 2);
+		long first_index = NONE;
+		if (*(long *)(definition + 0x38) != NONE)
+		{
+			byte *graph = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
+
+			for (long i = 0; i < *(long *)(graph + 0x78); i++)
 			{
-				first_index = i;
-				break;
+				if (*(long *)(*(byte **)(graph + 0x7c) + i * 0x5c) == 0x80001a2)
+				{
+					first_index = i;
+					break;
+				}
 			}
 		}
-	}
-	unit->unknown1f6 = (char)first_index;
-	long second_index = NONE;
-	if (*(long *)(definition + 0x38) != NONE)
-	{
-		byte *graph = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
-
-		for (long i = 0; i < *(long *)(graph + 0x78); i++)
+		unit->unknown1f6 = (char)first_index;
+		long second_index = NONE;
+		if (*(long *)(definition + 0x38) != NONE)
 		{
-			if (*(long *)(*(byte **)(graph + 0x7c) + i * 0x5c) == 0x90001a3)
+			byte *graph = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
+
+			for (long i = 0; i < *(long *)(graph + 0x78); i++)
 			{
-				second_index = i;
-				break;
+				if (*(long *)(*(byte **)(graph + 0x7c) + i * 0x5c) == 0x90001a3)
+				{
+					second_index = i;
+					break;
+				}
 			}
 		}
+		unit->unknown1f7 = (char)second_index;
+		result = true;
 	}
-	unit->unknown1f7 = (char)second_index;
-	return true;
+	return result;
 }
 
 /* gives the unit a weapon (unless it is held or flagged, or the unit may
@@ -6935,6 +6942,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
    and grenade choices, zoom (with the weapon's or the globals' zoom
    sounds), and passes each hand's trigger state to its weapon; whether
    anything changed */
+// MiniMax C (11-10): score 232 (was 253): the trigger flags are a word in a two-field aggregate whose dword member is passed to 0x100430 (retail's 16-bit flag ops and its 0x28 frame now agree), the last trigger bit is a dword shift, and the two action tests compare the call's result as a byte, as retail does; what still differs starts at the changed byte, ours at [esp+0x13] against retail's [esp+0x12] because retail also keeps the second loop's first-hand flag in a stack byte, and then at the flags block, where retail keeps the control word in EDX with EBX as the shift temp (the first-hand flag is in memory there) and ours keeps it in EDI with EDX (the first-hand flag is in BL), plus retail's 16-bit shift of the first flag bit where ours shifts 32 bits.
 // score 253 (was 253): the control tests 0x8000000/0x4000 are plain mask tests (retail `test eax, imm`), flag 2 of
 // +0x10a goes through s_unit_flags_10a_view (load, shift, test), the zoom is a short compared against
 // the stored field (cmp bx; the field is then read, not the local, for the NONE tests), the zoom sound is read
@@ -7006,13 +7014,13 @@ bool __stdcall function_c58f0(long unit_index)
 
 			if (!(control & 0x8000000) && !((1 << unit->type) & 1 && control & 0x4000))
 			{
-				if (!function_113da0(unit_index))
+				if (!(byte)function_113da0(unit_index))
 				{
 					function_113d20(unit_index, 0.5f);
 					changed = true;
 				}
 			}
-			else if (!function_113df0(unit_index))
+			else if (!(byte)function_113df0(unit_index))
 			{
 				function_113d60(unit_index, 0.5f);
 				changed = true;
@@ -7151,33 +7159,37 @@ bool __stdcall function_c58f0(long unit_index)
 				held = true;
 			}
 			dword control = unit->unknown148;
-			word flags;
-			bool last;
+			union s_control_flags
+			{
+				word bits;
+				dword value;
+			} flags;
+			dword last;
 
 			if (first)
 			{
-				flags = (word)((TEST_FIELD_BIT((control >> 16) & 1)) << 1);
-				flags = TEST_FIELD_BIT((control >> 17) & 1) ? flags | 4 : flags & ~4;
-				flags = TEST_FIELD_BIT((control >> 18) & 1) ? flags | 8 : flags & ~8;
-				flags = TEST_FIELD_BIT((control >> 19) & 1) ? flags | 0x10 : flags & ~0x10;
-				flags = TEST_FIELD_BIT((control >> 20) & 1) ? flags | 1 : flags & ~1;
-				last = TEST_FIELD_BIT((control >> 30) & 1);
+				flags.bits = (word)((TEST_FIELD_BIT((control >> 16) & 1)) << 1);
+				flags.bits = TEST_FIELD_BIT((control >> 17) & 1) ? flags.bits | 4 : flags.bits & ~4;
+				flags.bits = TEST_FIELD_BIT((control >> 18) & 1) ? flags.bits | 8 : flags.bits & ~8;
+				flags.bits = TEST_FIELD_BIT((control >> 19) & 1) ? flags.bits | 0x10 : flags.bits & ~0x10;
+				flags.bits = TEST_FIELD_BIT((control >> 20) & 1) ? flags.bits | 1 : flags.bits & ~1;
+				last = (control >> 30) & 1;
 			}
 			else
 			{
-				flags = (word)((TEST_FIELD_BIT((control >> 21) & 1)) << 1);
-				flags = TEST_FIELD_BIT((control >> 22) & 1) ? flags | 4 : flags & ~4;
-				flags = TEST_FIELD_BIT((control >> 23) & 1) ? flags | 8 : flags & ~8;
-				flags = TEST_FIELD_BIT((control >> 24) & 1) ? flags | 0x10 : flags & ~0x10;
-				flags = TEST_FIELD_BIT((control >> 25) & 1) ? flags | 1 : flags & ~1;
-				last = TEST_FIELD_BIT((control >> 31) & 1);
+				flags.bits = (word)((TEST_FIELD_BIT((control >> 21) & 1)) << 1);
+				flags.bits = TEST_FIELD_BIT((control >> 22) & 1) ? flags.bits | 4 : flags.bits & ~4;
+				flags.bits = TEST_FIELD_BIT((control >> 23) & 1) ? flags.bits | 8 : flags.bits & ~8;
+				flags.bits = TEST_FIELD_BIT((control >> 24) & 1) ? flags.bits | 0x10 : flags.bits & ~0x10;
+				flags.bits = TEST_FIELD_BIT((control >> 25) & 1) ? flags.bits | 1 : flags.bits & ~1;
+				last = (control >> 31) & 1;
 			}
-			flags = last ? flags | 0x80 : flags & ~0x80;
-			flags = TEST_FIELD_BIT((control >> 29) & 1) ? flags | 0x100 : flags & ~0x100;
-			flags = held ? flags | 0x20 : flags & ~0x20;
-			flags = unit->unknown240 != NONE ? flags | 0x40 : flags & ~0x40;
+			flags.bits = last ? flags.bits | 0x80 : flags.bits & ~0x80;
+			flags.bits = TEST_FIELD_BIT((control >> 29) & 1) ? flags.bits | 0x100 : flags.bits & ~0x100;
+			flags.bits = held ? flags.bits | 0x20 : flags.bits & ~0x20;
+			flags.bits = unit->unknown240 != NONE ? flags.bits | 0x40 : flags.bits & ~0x40;
 			real rate = first ? *(real *)&unit->unknown1c0 : *(real *)&unit->unknown1c4;
-			function_100430(weapon_index, flags, rate);
+			function_100430(weapon_index, flags.value, rate);
 		}
 		function_d1540(unit_index);
 	}
@@ -7214,6 +7226,7 @@ struct s_unit_turn_state_view
    is in state 1 at +0x1bc), within its aim and look limits when they are
    on (0xc7840); records the aim's turn speeds (+0x243, +0x1f8); whether
    either moved */
+// MiniMax C (11-10): no new form tried, no lower score (the plain build reads 395, the reduced build 453 because 0x11f0d0 is built differently there); what is left is the moved flag's stack byte, the definition and aim pointer's register roles and the two divisions by the stored step, and the forms for each of those are in the note below.
 // score 395 (was 395): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
 // retail), result as a variable, the state byte's bits through s_unit_turn_state_view, +0x10a through
 // s_unit_flags_10a_view, the unit/definition bit tests nested. Still differs: retail keeps the result `moved`
