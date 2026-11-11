@@ -3291,6 +3291,13 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 
 /* where the unit's camera sits and its camera data: its seat's marker on
    the parent (when the parent has it), else the unit itself */
+// MiniMax G (11-11): no new form, no lower score (113); retail keeps the false result as a stack byte and loads the camera
+// argument only inside each branch with the seat in ebp, while this build folds the result to xor al,al, hoists the camera into
+// ebp at entry and spills the seat; every form that names the camera twice keeps the camera in ebp.
+// MiniMax G (11-11): later in the same round, still no lower score (113); the one-return forms (the result set on both
+// paths with a single return at the end) score 116 to 131 depending on where the result byte is written, and a second
+// view of the unit pointer (the seat read through it) scores 113 like the standing body, so the camera's home and the
+// seat's home still cannot both match.
 // score 113 (was 113; earlier 116): retail keeps the false result as a stack byte (loaded for the failed-marker return) and
 // loads the camera argument only inside each branch, with the seat in ebp; ours folds the result to xor al,al,
 // hoists the camera into ebp at entry and spills the seat. Block order (seat, plain, failure tail) now agrees.
@@ -4934,6 +4941,13 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 /* clamps a direction to the unit's yaw and pitch limits for aiming (or,
    when asked, for looking, relative to its aim) in its own frame; whether
    it changed */
+// MiniMax G (11-11): no new form, no lower score (169); the argument orders that reach 127 (the second cross product, the
+// frame call and the two angle readings with their operands exchanged) compute other values than retail - retail's bytes
+// give the up vector as forward x (up x forward), the frame's forward as the forward vector and its up as the up vector,
+// and the angles as atan2(left, forward) and atan2(up, sqrt) - so the body stands as found. What still differs: retail
+// loads up.k and up.j before up.i while this build preloads all three, the forward scale's x87 term is scheduled
+// differently, retail keeps the clamped yaw and pitch in the frame (+0xc and +0x10) where this build reuses the two
+// incoming argument slots, and the local vector sits at +0xc where retail's is at +0x18.
 // score 169 (was 169; earlier 179): the logic agrees with retail statement by statement (re-walked in round 4 of #1049).
 // Round 4 of #1049: the two cross products through the repo's cross3f_staged / cross3f (retail's left vector is
 // never stored and all three components are formed before the up stores) give 169 here, but including

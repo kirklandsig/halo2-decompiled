@@ -386,6 +386,10 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 }
 
 /* the rotation a spinning projectile makes each tick */
+// MiniMax G (11-11): no new form, no lower score (3); the three differences are one schedule: retail completes the rotating-flag
+// OR and its store before the angle duplicate and the first axis load, while this build hoists that load above the flag store and
+// sinks the store below the duplicate; the axis stored through a pointer local, the three components copied in the other orders,
+// the flag set through the bit-vector setter and the angle declared after the flag store all score 3 or higher.
 // MiniMax R (11-10): no new form, no lower score (3); retail completes the rotating-flag OR and store before the angle duplicate and the first axis load, ours still hoists that load above the flag store, and the sixteen source forms tried this round all compile to the same two differences.
 // MiniMax A (11-11): no new form, no lower score (3); the three differences are all one schedule: retail completes the
 // rotating-flag OR and its store before the angle duplicate (`fld st(0)`) and before the rate load, ours loads the
@@ -919,6 +923,9 @@ real function_30bf0(vector3f *v);
 /* aims a falling projectile along an arc: the slowest speed that reaches
    the target, then the time to it at the speed used (high or low arc),
    falling back to the slowest arc when the speed can't reach it */
+// MiniMax G (11-11): no new form, no lower score (232); the frame is 0x28 against retail's 0x30, the two pointer parameters stay
+// in EDI and EDX where retail loads each at its use, and the rounded horizontal root and the two separate divisions still differ;
+// the two-element array reference and the horizontal length as an unsigned long both fold back to the same code or score higher.
 // MiniMax R (11-10): no new form, no lower score (232); the forced-speed and time-scale pointers are still enregistred in EDI and EDX where retail loads each at its use, and the frame, the rounded horizontal root and the two separate divisions still differ.
 // MiniMax A (11-11): no new form, no lower score (232); the frame is still 0x28 against retail's 0x30 and the
 // entry block still keeps the two pointer parameters in EDI and EDX where retail loads each at its use, so the
@@ -1243,6 +1250,9 @@ extern vector3f *g_4687ac;
 
 /* whether a projectile's path to a point hits anything: the line from it,
    and for projectiles with a radius the two lines either side of it */
+// MiniMax G (11-11): no new form, no lower score (163); the frame is 0x48 against retail's 0x34 and the three ray queries still
+// inline 0x16a040, whose defining file this lane may not edit; the radius at each use, the collision pointer read through its
+// own address, the side queries joined as one expression and an early return for the radius test all score 163 or higher.
 // MiniMax R (11-10): no new form, no lower score (163); the frame stays 0x48 against retail's 0x34 and the three ray queries still inline 0x16a040, whose defining file is not this lane's.
 // MiniMax A (11-11): no new form, no lower score (163); the frame is 0x48 against retail's 0x34 and the prologue
 // order differs with it: retail reads the tag table's base, the projectile's radius and the object pool before the
@@ -1404,6 +1414,8 @@ long function_189fe0(s_sound_request const *request, long tag_index);
 
 /* the effects and sounds of an effects block (a material's response) at
    a point */
+// MiniMax G (11-11): no new form, no lower score (4); only the four register arguments of the 0xfd740 call differ, and that
+// callee's own parameter order belongs to another file, so the four instructions cannot be moved from this body.
 // MiniMax R (11-10): no new form, no lower score (4); only the four register arguments of the 0xfd740 call differ, and that callee's own parameter order is not this lane's to change.
 // MiniMax A (11-11): no new form, no lower score (4); the only four differing instructions are the register
 // arguments of the 0xfd740 call: retail passes the effect index 1 in ecx, the effect index 2 in edx, the sound 0 in
