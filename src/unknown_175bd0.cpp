@@ -2402,6 +2402,7 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax C (11-11): no new form, no lower score (63); the object index stays cached across 0xbadc0 where retail keeps NONE in ESI and reads the object index into EAX, and the head's load is folded into the datum address where retail forms the pointer; 0xbadc0 and 0xbaf80 live in another file.
 // MiniMax E (11-11): no new form, no lower score (63); retail still reloads the object's index from the effect after
 // the 0xbadc0 validity call, and that reload only appears when the compiler cannot prove that call read-only, so
 // the difference cannot be produced from this side (BLOCKED-BY 0xbadc0).
