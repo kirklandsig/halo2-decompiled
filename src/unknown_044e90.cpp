@@ -376,6 +376,15 @@ struct s_visibility_bound_record
 // then assigned 443 (same code each); the views and view-range pointers computed ahead of the tag test 452 (1763 B)
 // [336/313/147]. Re-measured: the flags read in each arm 465 [367/296/138]; the six-plane `do`/`while` as a plain
 // `for` 2639 (3504 B, fully unrolled; retail keeps it rolled). All restored.
+// MiniMax R (11-10): no new form, no lower score (443): ours is 1760 bytes against retail's 1742 and
+// the first difference is at +0x10, where retail forms the entry address as a scaled index added to
+// the entry table (`movsx eax, word [ebp + 8]`, `shl eax, 5`, `lea ebx, [eax + 0x4ba138]`) and we
+// form it as a shifted copy added to the same table (`shl edi, 5`, `add edi, ...`); retail then
+// loads the tag table into esi and spills the entry at [esp+0x30], we keep the entry in a register.
+// What stands between the two is the allocator's choice of live ranges, not a source shape: the forms
+// the earlier rounds record (the tag table local, the entry and the two views declared in five
+// orders, the release masks, the chained counts and capacities, the query data read in the arms, the
+// plane loop rolled as a plain `for`) all measure 443 or worse.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

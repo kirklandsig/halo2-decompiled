@@ -625,6 +625,15 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // 21S: case 2's selected arms stop merging, 991 B), none-first orders 132/321/213 41/41/37; the loop's `z` as a normal pointer
 // read at its three uses 240 (1010 B); `selected != 0` arm first 199. No natural untried form left that I could find: the rest
 // follow the operand-order phase mapped in lane 3 r226's grid.
+// Lane 4 r186 (fast with the file's 13 functions and 0x1e5af0/0x1201a0/0x23de50; aligned/masked lines in brackets, control 43 [20/15]):
+// kept: case 3's rows as the existing vector3f_add_scaled(g_4687b0, normal, -normal->k, out) (re-measure of round 219/226's form, byte-identical;
+// the rows were that helper's body written out). Velocity declared first re-measured 37 [15/12] (six points, under the bar); on it,
+// byte-identical to it: dot_average first, the k row as `normal->k * scale`, `average` at case scope, case 3 through vector3f_add_scaled,
+// dot_average alone as dot3f(&average, desired), a and b as `vector3f const &` references (identical on main's body too), the average as
+// an aggregate initializer. The switch as an if/else-if chain on count 186 (979 B), with velocity first 186 (code differs). Diagnostic
+// re-measures: velocity first with case 3 selected-first 178 (case 2's first cross recolours: case 3's blocks come ahead of case 2's), with a
+// case-3 `up` pointer 15 [12/9] (case 3 exact; left the first cross's j-row first product, dot_average's grouping and the tail's j product).
+// No untried natural form found that changes this function's code.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -687,10 +696,7 @@ void function_1f2a80(byte const *request, bool moving,
         else
         {
             vector3f const *normal = (vector3f *)(*(byte **)(component + 0x88) + indices[selected] * 0x48 + 0x28);
-            real scale = -normal->k;
-            out->i = normal->i * scale + g_4687b0->i;
-            out->j = normal->j * scale + g_4687b0->j;
-            out->k = scale * normal->k + g_4687b0->k;
+            vector3f_add_scaled(g_4687b0, normal, -normal->k, out);
         }
         break;
     }
@@ -896,6 +902,11 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // computed straight into `forward_result` (no `forward` local) 315 (0x1e5af0 20). Diagnostic, removed: 1-16 unused locals
 // before `old_forward`'s initialisation change the code only at 3 and 11 (174) and never turn the forward cross's folded
 // [edi+0xf4..0xfc] operands into retail's separate loads.
+// Lane 4 r186 (fast, 0x1e5af0 matched in each; control 163 [134/55]): `double angle` 163 (the rotation schedule moves, same count); the
+// rotation dot scaled in a second statement `dot *= 1.0f - cosine` 176 (1233 B); the rotation cross computed before the rotation dot 237
+// (1239 B); the rotation as axis x vector added (`contact_cross(&axis, &limited, &cross)`, `+ cross * sine`) 234 (1233 B); the acceptance
+// test as `contact_cross(&up, &limited, &cross)` with `< 0.0f` 231. Same code: the angle as `5.235987663269043f * rate`; the rotation dot as
+// `(1.0f - cosine) * (...)`.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result, byte const *state)
 {
@@ -988,7 +999,16 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
-// score 347 (was 347): no lower form in round 170 (m3 lane 6); see that round's line at the end of this note.
+// score 347 (was 347): before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
+// 33 bytes equal retail's input-length block, and `magnitude3d(&change) + g_47ffb0` alone makes the history block
+// (0x1f0fd0-0x1f10ab) byte-exact, registers included: 573 (3038 B; aligned 152 -> 165, masked 64 -> 73), the product operand
+// orders in the crosses and the low arm flipping instead. With the input length as `magnitude3d(&state->input)` too, the input
+// block is exact as well, 583 (3027 B; aligned 177, masked 80; the low arm 18 B short); through the `input` pointer local the
+// inlined sum moves the offset-0 term last, (j2 + k2) + i2, 585 (3027 B). On that both-sites form (r170, plain): the flags
+// declared flying, direct, damping, gravity 579 (3027 B, first difference +0x31); no `input` local, every read through
+// state->input, 573 (3033 B). Lead: keep both magnitude3d calls in any rewrite; the product operand order moves with each
+// added inlined call, so look for what else retail inlines here.
+// no lower form in round 170 (m3 lane 6); see that round's line at the end of this note.
 // MiniMax C (11-06): the direct arm's magnitude and the history arm's maximum now add their three squares in
 // retail's term order and grouping (344, 3052 bytes against retail's 3047). Left: the magnitude's x87 stack still
 // shuffles differently (ours fmulp/faddp/fxch/fstp against retail's fmul/faddp/fstp), the direct arm's four
@@ -1715,6 +1735,12 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // stepping byte. Then on main's body: case 2's normals read through the list at each argument 435 (2105 B [102]), the bit
 // helper only at the fallback's flying test 417 [101], the tangent through cross3f 413 (same code), the inner loop's count read
 // in its head 413 [108].
+// Lane 4 r186 (fast, 0x1f19c0 matched in each; control 413 [185/117]; variants of the listed `candidate from the list each iteration`
+// 519 with the selected contact formed from the same base): one `list` base local for the inner loop's candidates (`list + i * 0x48`, no
+// cursor) and the selected contact 556 (2019 B: the base stays in a register and the frame shrinks), the fallback's first contact through
+// it too (same code), case 2's normals through it as well 557; plain count + switch + the bit helper at both flying tests re-measured 423
+// (case 1 or case 2 first, same code), the list base on it 551 (2035 B); the first loop's negation through a named normal pointer 413
+// (six lines move; the fallback's negation the same way is identical); the selected contact as a normal pointer for the one-contact arm 419.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)

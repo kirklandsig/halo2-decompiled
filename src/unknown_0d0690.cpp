@@ -1679,6 +1679,12 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax D (11-10): no new form, no lower score (378); the frame is 0x4c where retail's is 0x40, and the
+// 0xd37f0 call hands over its block and query in the other order, which the callee's own file fixes.
+// MiniMax S (11-10): no new form, no lower score (378): our frame is 0x4c against retail's 0x40, so the
+// normal copy and the limited rotation and colour homes sit at different offsets; the four query components
+// are loaded onto the x87 stack in the other order, retail leaves one more value on the stack after the square
+// root, and the three components are stored in the other order (retail stores the x and the y before the z).
 // MiniMax D (11-01): no new form tried, no lower score.
 // score 378 (was 378): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
 // Earlier, score 363 (was 364).
@@ -2198,6 +2204,12 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
+// MiniMax D (11-10): no new form, no lower score (542); the second arm's 0x13da30 lookup expands here where
+// retail calls it, and that helper lives in another file.
+// MiniMax S (11-10): no new form, no lower score (542): the frame is the same 0x90, but the status, mesh,
+// colour and sample homes sit 0xc bytes lower than retail's (the status at 0x24 against retail's 0x30 and the
+// sample pointer at 0x20 against retail's 0x2c), so the stores and the loads that name them differ throughout
+// the body; the calls and their arguments are in retail's order.
 // MiniMax C (11-06): no new form, no lower score.
 // score 542 (was 542): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
 // score 542 (was 542; earlier 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.

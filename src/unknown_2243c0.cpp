@@ -217,16 +217,19 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
-// score 117 (was 117): retail masks the fallback tag index in place in EDX where ours zero-extends it into EAX;
-// the stage/pass homes and the unfused element loads still differ (main's body unchanged in round 168).
+// score 117 (was 117): earlier first line 117 (was 117). The tag index masked as a 32-bit value inside the
+// subscript reproduces retail's `and edx, 0xffff` but moves the base global from EDI into ECX and raises the score
+// to 152, so the original is kept; the tag lookup still masks the index with a word load where
+// retail masks the 32-bit value, and the fallback EDX, the stage/pass homes and the unfused element
+// loads remain.
 // MiniMax D (11-10): no new form, no lower score (117); retail masks the fallback tag index in place in
 // EDX (`and edx, 0xffff` then `shl edx, 4`), ours zero-extends the index into EAX (`movzx eax, dx`) and
 // keeps the scaled index in EAX.
+// retail masks the fallback tag index in place in EDX where ours zero-extends it into EAX;
+// the stage/pass homes and the unfused element loads still differ (main's body unchanged in round 168).
 // Earlier: the tag index masked as a 32-bit value inside the subscript
 // reproduces retail's `and edx, 0xffff` but moves the base global from EDI into ECX and raises the
 // score to 152, so the original is kept; the tag lookup still masks the index with a word load where
-// retail masks the 32-bit value, and the fallback EDX, the stage/pass homes and the unfused element
-// loads remain.
 // MiniMax I (11-09): no new form, no lower score (117); the fallback index masked in place (`local_tag & 0xffff`)
 // gives retail's `and edx, 0xffff` but moves the tag table from EDI into ECX (152). The round 59 chain rebuilt
 // (by-value tag accessor, head/stage/pass elements bound, grouped zeros, material index bound) measures 86 with
@@ -549,6 +552,12 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // block 8; the pass definition named 8; the material accessor also inside the material lookup 8; the material index bound once and used for
 // the lookup and 0x1c590 76; main's split zeros (field_44 after the pass element) 59; the four zeros at entry 165; the element helper
 // returning a named result with no caller bindings 153 (only a reference bound to the pointer temporary gives the unfused loads).
+// Round 171 (m3 lane 5): the stream setup (`function_1c620(g_51f0f0, ...)` from the record at +0x9c) is the body of
+// the existing matched 0x1cda0 (function_1cda0, src/unknown_01cf50.cpp); calling it 188 (plain, 508 B: called, its
+// file is /Ob1); with `inline` on its definition 117 plain, identical code (0x1cda0 and its other caller 0x3c3c0
+// unchanged; not kept: no code change, and it needs `inline` on another file's function). Same code, 117: local_6, local_10
+// and local_11 read as element 0 through block_element_224db0; local_7 and local_8 written into the subscripts; the
+// fallback through the instance pointer 168 (listed, re-measured).
 // Round 168 (m3 lane 6, fast with 0x224d90 and 0x2243c0, both matched each time; match-only screens on the round 59
 // chain, main's body unchanged): the chain rebuilt 8, and on it the pass and material lookups through the accessor 8,
 // the pass definition bound 36, the material index named for both uses 76 (all re-measured). New on the chain: the

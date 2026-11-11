@@ -73,6 +73,7 @@ extern byte *g_51eca8;
 extern short g_51ecb0;
 c_2d8ab0 *g_47f044;
 
+// MiniMax G (11-10): no new form, no lower score (7); four group-loop splits (the entity list, the index, the group entry and the element read each in their own local) all score 63, so the group loop still loads the entity list into EAX and the index into ECX where retail uses ECX and EDX, and the release loop's entry test still uses EDX and EAX where retail uses EAX and ECX.
 // MiniMax I (11-09): no new form, no lower score; this round's permuter (900 s, then 1800 s with annealing, the second spending 843 s on the reduced image's build) produced no candidate; the element read through a named entity local, an entity-list local, an index local and all three together compile to the same 507 bytes and the same seven differences; the group loop still keeps the entity list in ECX and the index in EDX where retail keeps them in EAX and ECX, and the release loop's entry test still uses EAX and ECX where retail uses EDX and EAX.
 // score 7 (was 7): this round: the entity list bound to a const pointer local leaves the same seven
 // differences; the group loop still loads the entity list into EAX and the index into ECX where retail

@@ -1281,6 +1281,11 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax S (11-10): no lower score (94): retail keeps the base of the four channels of a group and reaches
+// them with positive offsets, advancing it by 0x5c0 once per group, and takes the unknown00 flag in AL after
+// the total is set, while ours steps the cursor by 0x170 per channel (so the later channels get negative
+// offsets), takes the flag in BL and sets the total before the availability bytes are read; the grouped
+// index form reaches retail's fixed offsets but biases the base and loses the matched caller 0x54990.
 // MiniMax I (11-10): no new form, no lower score (94).
 // MiniMax R (11-09): no lower score (94): the order of the three statements in the block - the identity flag,
 // the total and the channel pointer - was measured again: the flag, the pointer and the total (93), the total,
@@ -1462,6 +1467,11 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // M400: Shared membership seeded from its active byte, bool/byte/signed-char/short/word/
 // long/dword/int storage: 94/94/94/146/146/133/133/133. NOT kept: every form
 // raises shared-user scores; original false-seeded helper and target body restored.
+// MiniMax D (11-10): no lower score (94): the group-of-four forms tried this round - a nested group loop over
+// &channels->channels[group * 4] 111, a nested group loop walking a channel pointer 111, four channel tests
+// written out per group 987 (1021 bytes, the outer loop unrolls), and the raw getter for both inner terms 122
+// with the extracted bit in a byte temp read in the condition 117 - are all worse; retail's unrolled inner blocks
+// with the identity flag in al still do not come out of a nested loop.
 // MiniMax D (11-06): no new form, no lower score.
 // Round 63 (m3 lane 15; one-file LTCG harness, code identical to the build; real = harness - 3 here): new: a
 // pointer-bounded loop 286 (not unrolled); the flag typed long or dword 131 (326 bytes, 0x54990 15); the flag typed
@@ -1733,6 +1743,16 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // ternary 134 (aligned 19: retail's EBP bit, EBX size and setne; the zero result in EAX is then reused for `cmp edi, eax` and the
 // written store, and kept takes EAX), retail's visible kwce order with the ternary 137 (player passed on the stack, 0x56380 13).
 // Body unchanged.
+// Round 73 (m3 lane 15; one-file LTCG harness, exact: base 60 at 460 bytes, 0x56380/0x564c0 matched): `result` itself counting
+// the written entries (no `written` local; `output[1] = (byte)result; result = result * entry_size + 2;`) 153 (458 bytes,
+// 0x56380 55), the same on the ternary cewk base 151 (0x56380 13); `capacity -= 2` inside the capacity test 60 (same code);
+// the writer after the active test as a forced-inline helper with early returns (NONE, NONE, `return 0` on capacity, the
+// length) 166 (queue moves to EAX, 0x56380 133), with one result variable 187 (477 bytes, 0x56380 66); as plain `inline` it
+// stays out of line (diagnostic, 553). Re-measured: the length local with `return length;` ending the capacity block 216 (494
+// bytes, 0x56380 73; round 90's 220 form): the zero result then becomes a stack variable and queue/player arrive in EAX/ECX.
+// Round 73, continued: the clamp test through the existing voice_packet_clamp_count (`voice_packet_clamp_count((byte)player,
+// 0, 15) != player`, the same result for every player) 157 (0x56380 55).
+// Round 73, continued: voice_channel_has_player as `static __forceinline` 60 (same code, 0x56380 and 0x564c0 still matched).
 // M3 lane 8 r151 (fast, control 60; both builds return with ret 0xc): what still differs is register allocation (retail
 // keeps the zero result in EAX as a variable from entry to the capacity-fail exit, as matched 0x56380 keeps its zero in
 // ESI, and gives the bit EBP and the size EBX). New forms: the written count typed byte 140 (462 bytes), with the size as
@@ -1882,6 +1902,15 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax D (11-10): no lower score (85): the inner query forms tried this round - the raw getter for both
+// port-flag terms 122, the raw getter's bit in a byte temp read in the condition 117, and the third term behind
+// voice_available() with the raw getter 89 - are all worse; the per-site inlining of the second query still
+// breaks the matched callers 0x54890 and 0x53a20.
+// MiniMax S (11-10): no lower score (85): retail reads the two availability bytes up front and keeps them in
+// CL and DL for the later tests, and expands both port-flag queries here (the first one reuses the byte
+// read earlier, the second one reads both bytes again after the call), while ours reloads them at every use
+// and calls 0x53bb0 out of line; the shared availability helper reads them through volatile casts that the
+// matched functions in this file need, and reading them plainly loses 0x53b40, 0x54890 and 0x53a20.
 // MiniMax I (11-10): no new form, no lower score (85).
 // MiniMax R (11-09): no lower score (85): the second port-flag query marked `inline` was measured again and
 // confirms the recorded result - 0x55990 goes to 102 while the matched callers 0x54890 and 0x53a20 are lost

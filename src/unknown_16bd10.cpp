@@ -727,7 +727,7 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
-// score 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
+// score 331 (was 331): round 112 (m3 lane 12) note at the end. Earlier at 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
 // MiniMax C (11-05): no new form, no lower score; the plane's three normal copies are reloaded in the same order in both (i, k, j), but retail gives them XMM3/4/5 for i/j/k where ours gives XMM5/3/4; the squared length in field order scores 389, in k,i,j order 243, with the first two addends swapped 238, written from the direction alone 465, and with the multiply operands swapped it is byte-identical at 236.
 // b5K 11-06 statement walk against retail found no wrong field, offset, condition, callee or loop; the one
 // behaviour fix is the point-mode timer, which retail computes as (ticks * rate) / scale (cvtsi2ss, mulss [ebx+4], divss at
@@ -1007,9 +1007,22 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // (k + j) + i 371, (i + k) + j 371, (i + j) + k (dot3f's own body written out) 376, j + (k + i) 376, i + (j + k) 374,
 // k + (i + j) 372, all 1700 bytes (masked 26-29). A compile-only build (no /GL) loads the plane's first length operand from the other
 // base register (EDI for retail's ESI), so it is no screen for this block.
+// Round 153 (m3 lane 8, fast; control 331; aligned 111): the inner switch's case 2 already matches; the plane length's hoisted load
+// (retail left.j, ours left.k) still decides the XMM0/XMM1 zero for the rest. Tried: the pan position stored through a
+// `point3f *` local to command->position 391; plane.n copied before the three matrix stores 377; plane.d as
+// dot3f(&plane.n, position) 331 (same code); a `vector3f const *` direction for the copy and the length 361 (first difference
+// +0x5c); the inner switch's default arm first, case 1 then ending in its own flag update and break 331 (same code).
 // Round 87 (m3 lane 11, fast; aligned in brackets, control 331 [111]): the normal copied ahead of the three axis stores
 // (round 188's normal-before-basis, re-measured) 377 [173]; the plane distance named in its expression before the
 // division 384 [118] (1704 B). No plane-construction or line-projection helper exists to call here.
+// M3 lane 12 r112 (fast with 0x16c6f0/0x13cb40, both matched; 331, aligned 94, masked 27): no trial run. Of the 27 masked
+// lines, two blocks are read-modify-writes of command->flags: the default arm, where retail splits `flags |= 0x40` into
+// load/or/store around its own `xorps xmm0, xmm0` and jumps over the NONE path's xorps (ours keeps the memory `or` and
+// falls into that shared xorps: once the scheduler splits the store the two tails differ and are not cross-jumped), and the
+// pan arm, where retail keeps the memory `or [ebp], 1` after the position stores and ours hoists the flags load among them.
+// The forms that reach those (case 1's own `|= 0x40; break;`, the 0x40 set once before the switch, the pan position through
+// real_point3d_set, a pointer or the moved lerp helper) are listed above; the rest is the length's hoisted left.j load that
+// puts retail's zero in xmm0, the distance dot's operand loads and the shared quaternion helper's sum order.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
