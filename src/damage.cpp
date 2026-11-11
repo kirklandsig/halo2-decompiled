@@ -2,6 +2,7 @@
 /* DAMAGE.CPP: object damage */
 
 #include "unknown_11c920.h"
+#include "bit_vector.h"
 #include "globals.h"
 #include "data_array.h"
 #include "unknown_0259d0.h"
@@ -9,6 +10,7 @@
 #include "object_markers.h"
 #include "object_queries.h"
 #include "unknown_1dee50.h"
+#include "bit_vector.h"
 #include <math.h>
 #include <string.h>
 
@@ -63,6 +65,20 @@ struct s_damage_object_flags
 	word unknown14 : 1;
 };
 
+/* the bit numbers of those flags in the word that holds them */
+enum e_damage_object_flag
+{
+	_damage_object_flag_shield_damaged_bit = 1,
+	_damage_object_flag_shield_depleted_bit = 3,
+	_damage_object_flag_shield_double_charged_bit = 4,
+	_damage_object_flag_unknown5_bit = 5,
+	_damage_object_flag_unknown6_bit = 6,
+	_damage_object_flag_body_recharging_bit = 8,
+	_damage_object_flag_shield_recharging_bit = 9,
+	_damage_object_flag_unknown10_bit = 10,
+	_damage_object_flag_unknown13_bit = 13
+};
+
 struct s_damage_object
 {
 	long tag_index;
@@ -108,7 +124,11 @@ struct s_damage_object
 	short body_stun_ticks;
 	byte unknown108;
 	byte unknown109;
-	s_damage_object_flags damage_flags;
+	union
+	{
+		s_damage_object_flags damage_flags;
+		word damage_flags_word;
+	};
 	byte unknown10c[0x120 - 0x10c];
 	short region_states_size;
 	short region_states_offset;
@@ -404,18 +424,20 @@ void function_d0620(s_object_child_iterator *iterator, long object_index);
 void function_b7360(long object_index);
 void __stdcall function_b8540(long a);
 void function_b8b70(long object_index);
+void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool b, bool c);
 void __stdcall function_dae60(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	s_damage_region_accumulator *accumulator);
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator);
-void function_d9d60(long marker_name, long object_index, bool at_marker, long effect_index,
+void function_d9d60(long object_index, long marker_name, bool at_marker, long effect_index,
 	s_damage_owner const *owner);
 void function_ba690(long object_index, long *state_count, byte **states, long *a, long *b);
 void function_a8360(long object_index, long region_index, long permutation_index, long a);
-void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool b, bool c);
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14);
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b);
+struct s_damage_report;
+void function_d9640(s_damage_report const *report, long object_index);
 void __stdcall function_e6460(long object_index);
 long function_176780(long object_index, s_effect_owner const *owner, real scale_a, long tag_index, real scale_b, point3f const *origin, vector3f const *direction);
 void __stdcall function_ba7f0(long object_index, long a, long b, long c);
@@ -656,27 +678,8 @@ void __stdcall object_get_damage_owner(long object_index, s_damage_owner *owner)
 	}
 }
 
-// MiniMax C (11-09): MATCH, held: word_flags_set((word *)&object->damage_flags, 3, true) with bit_vector.h included
-// matches 0xd6a70 (124 bytes), but on main 2ac7766d6 it costs 0x54590 (network_voice.cpp, 582 bytes, ours) its match at
-// link time (score 2, retested 11-09); not kept, as one match for one is no gain. Retry it when 0x54590's neighbours change.
-// MiniMax D (11-06, run 49): no new form, no lower score (6); the two stores still keep our order around the three pushes of the ba7f0 call.
-// MiniMax A (11-04, run 41): no new form, no lower score (6); the two stores keep our order around the three
-// pushes of the ba7f0 call, and joining them into one comma statement gives the same bytes.
-// MiniMax B (11-06, run 42): no new form and no lower score (6); retail keeps the 0.0f store at +0xf4 and the
-// shield-depleted byte store at +0x10a together between the last argument push of the ba7f0 call and `push edi`,
-// ours sets the byte before the pushes and stores the float after `push edi`.
-// score 6 (was 6): retail pushes -1, 2, -1, then stores unknownf4 and sets shield_depleted, then pushes the
-// object; ours sets the flag first and stores unknownf4 after the last push. Tried: flag before unknownf4 (6),
-// early return instead of the nested if (6). Setting the flag after function_ba7f0 scores 4 but moves the
-// flag store past the call (retail sets it before), so it is a false improvement and was dropped.
-// Also tried: the d5b60 result typed as s_damage_info with a named +0xb0 effect (6), the flag set through a fresh
-// DAMAGE_OBJECT lookup (62, reloads the pool), the two stores as side effects of ba7f0's first argument (6, the
-// same bytes: the order is the scheduler's), `maximum > 0 && info` (14), a nested `if (info)` (6).
-// Round 339: byte/word setters and native byte/word masks 31/0/28/6; CRT clear 28/11/28/11.
-// Word setter matches at 124 bytes but loses an outside reload pair (2); include positions
-// and field-pointer forms keep that loss. Original body and includes restored.
-// Round 67 (m3 lane 15, plain, on main 52e02b51a): the word_flags_set form still matches and still costs 0x54590 (2);
-// bit_vector.h included without the call keeps 0x54590, so the setter's own code moves it. Not kept.
+// MATCH (coordinator 11-11 on r754): MiniMax C's held word_flags_set form (11-09), kept now that 0x54590 (network_voice.cpp),
+// which it cost at link time, is an accepted loss on main (r753); full check: gained 0xd6a70, lost none.
 // @retail 0xd6a70
 void function_d6a70(long object_index)
 {
@@ -689,7 +692,7 @@ void function_d6a70(long object_index)
 		if (field_4_2 && object->maximum_shield_vitality > 0.0f)
 			function_176780(object_index, (s_effect_owner const *)g_467420, 0.0f, *(long *)(field_4_2 + 0xb0), 0.0f, NULL, NULL);
 		object->unknownf4 = 0.0f;
-		object->damage_flags.shield_depleted = true;
+		word_flags_set((word *)&object->damage_flags, 3, true);
 		function_ba7f0(object_index, NONE, 2, NONE);
 	}
 }
@@ -849,6 +852,15 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 
 /* whether any entry of the block at +0x70 (0x60 byte entries) has the flag
    at +0x40 of the structure it points to */
+// MiniMax I (11-10): no lower score (2 kept); the only difference left is that retail increments the index before it
+// advances the entry pointer, and every form that puts the increment in the body before the advance (a `++i` statement
+// before `entry += 0x60`, a comma statement `++i, entry += 0x60`, or the index-based address `entries + 0x40 + i * 0x60`)
+// makes LTCG treat the index as an induction variable, which swaps the owner into edx and the index into ecx (8 in all
+// three spellings); declaring the index inside the count guard keeps the index out of the induction-variable treatment
+// and restores retail's order, but the index's zeroing then lands after the base load (6 with the index declared after
+// the entry pointer, 6 with it declared inside the guard and assigned there, 5 with it declared before the entry pointer);
+// the while-loop and for-loop spellings and a goto out of the loop each duplicate the count guard (31, 31, 31) and a
+// `&&`-fused condition rotates the loop body (28).
 // MiniMax I (11-10): the index's zeroing moves into the entry block when the increment is fused into the loop
 // condition (`while (++i < count)`), which keeps the owner in ecx and the index in edx like retail: score 2.
 // Left: retail increments the index before it advances the entry pointer, ours advances it first and increments
@@ -857,6 +869,19 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 // the swap again (8). A for loop with the increment in its own clause (31) and a post-test increment (18) are worse.
 // A permuter run (5 tries) found nothing below 2.
 // the swap again (8).
+// MiniMax A (11-11): the two remaining instructions cannot both be satisfied by the source alone: retail increments
+// the index before it advances the entry pointer, ours advances first. The increment as a statement of the loop body
+// gives retail's order but the owner moves to edx and the index takes ecx (8), and a comma expression that fuses the
+// increment with the comparison (`while ((++i, entry += 0x60, i) < count)`) gives the same order and the same swap (8),
+// and so does an entry the compiler strength-reduces from the index (`base + 0x40 + i * 0x60`, 8).
+// The fused condition keeps retail's registers and pays with the swapped pair (2); the original body is kept.
+// MiniMax A (11-11): the register pair follows the index's definition site, not the increment's spelling: with the
+// increment as a separate statement before the entry advance, `++i` and `i = i + 1` both score 8 (owner in edx, index
+// in ecx), and moving the index's zeroing into the guarded block scores 5 (index declared before the entry pointer) or
+// 6 (after) with retail's register pair and retail's order but our `xor edx, edx` after the base load. A for-header
+// over the entries keeps retail's registers but lifts the entry load above the guard (30); an early `return` on an
+// empty count rebuilds the exits (28). The original body (2) is kept: the increment, the zeroing site and the register
+// pair cannot all be satisfied at once.
 // MiniMax C (11-09): hoisting the index above the guard scores 8 in three declaration orders, a base-pointer split 8, `count - count` 8, an int index 8, a while-loop form 7 and a local pointing at the element 9; no lower score (5).
 // MiniMax E (11-09): no new form, no lower score (5); retail zeroes the index before the count guard and adds 0x40 to the base before `push edi`, ours does both inside the guarded block; every form that hoists the zeroing to function scope swaps the owner and index registers (8), a for-loop over the entries lifts the entry load above the guard (9), and an early `return true` in the loop rebuilds the exits (26).
 // MiniMax D (11-06, run 49): no new form, no lower score (5); the index is still zeroed inside the guarded block, so our `xor edx, edx` lands after the base load where retail zeroes it before the guard.
@@ -864,6 +889,17 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 // retail does `xor edx,edx` in the entry block before the count test, ours does it inside the guarded block after
 // `push ebx`; every placement that moves the zeroing into the entry block takes the index register away from the
 // owner parameter and renames it to edx.
+// MiniMax I (11-11): no new form, no lower score (2); the index incremented before the advance in the body (8), the
+// entry declared before the index with the index incremented first (7), a for loop whose step is `++i, entry += 0x60`
+// (7: retail's latch, but the base load stays above the guard), the same for loop inside a count guard (30) and a
+// comma in the do/while condition (8) all fail. The register pair follows the order in which the values are defined,
+// so the base load has to come after the guard and the index has to be defined after it, which puts the zeroing
+// inside the guard. Also tried: the index incremented in the body with the index declared inside the guard (6: the
+// latch and the registers agree, only the zeroing is late), the index declared first (9), the count declared first
+// (9), the entry assigned inside the guard with the index at function scope (8), the advance in the condition
+// (`++i < (entry += 0x60, count)`, 2: the fused increment goes back next to the compare) and a for loop with the
+// index inside the guard (30: the guard's test is repeated). The index takes edx only when the increment is fused
+// with the compare, and a fused increment is always emitted immediately before the compare.
 // score 2 (was 5): the count guard, the base load and the entry walk now sit in retail's order and the registers
 // agree (owner in ecx, the index in edx). Left: the index is zeroed before the guard like retail, but retail
 // increments the index before it advances the entry pointer and ours advances it first.
@@ -997,6 +1033,11 @@ PRIVATE inline long damage_object_root(long object_index)
 
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
+// score 206 (was 206): left is 0xbadc0 and register allocation. The link-time inliner inlines 0xbadc0 at the first
+// MiniMax A (11-11): no new form, no lower score (206); the frame is still 0x1a4 against retail's 0x1b4 and the
+// entry block still pushes before it reads the flags word and negates it, where retail reads the flags first. The
+// first 0xbadc0 use is expanded in this build while retail calls it, and the out-of-line form that makes the body
+// byte exact lives in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
 // MiniMax D (11-10): no new form, no lower score (206); the first 0xbadc0 use is still expanded in this build, so
 // the frame stays 0x1a4 against retail's 0x1b4; the out-of-line form of that site that makes the body byte exact
 // is in a file this lane may not edit.
@@ -1016,7 +1057,6 @@ PRIVATE inline long damage_object_root(long object_index)
 // MiniMax C (11-09): no new form, no lower score (206); the frame is still 0x1a4 against retail's 0x1b4 and the
 // first 0xbadc0 use is still expanded here while retail calls it (BLOCKED-BY 0xbadc0).
 // MiniMax E (11-10): no new form, no lower score (206).
-// score 206 (was 206): left is 0xbadc0 and register allocation. The link-time inliner inlines 0xbadc0 at the first
 // use (the flags & 2 unit test) but calls it at the other two; retail calls all three. Retail keeps data in edi,
 // the definition in esi and &data->position in ebx (the distances are [ebx], [ebx+4], [ebx+8]) and spills the
 // player index to the frame; it also recomputes the squared distance for the second test (ours shares it).
@@ -1069,6 +1109,14 @@ PRIVATE inline long damage_object_root(long object_index)
 // bodies, no /Ob1 246, memory argument 246, bit-test and == spellings 246-249, null test above it 259, getter at the
 // first site 356 (942), one helper at sites 1 and 3 356, admission helper 376, while 309/356, guard + do-while 250.
 // Partial with the site inlining: iterator 207 (787), + mask and declaration order 200, shared distance 200: below the bar.
+// m3 lane 1 r94 (plain full checks, on the walk kept for 0xd9d60; 206 there too): the unit-only flag named once and used for
+// the query mask and the loop test 216 (785 bytes); the object loop's counter declared with the function's locals 206, one
+// `unit` variable for the first two lookups 206, and that variable reused for the third lookup 206 (same code each); `objects[i]`
+// read at each use instead of the `object_index` local 225 (798 bytes). The first 0xbadc0 site is still inlined.
+// MiniMax I (11-10): no lower score (206 kept); an `if (object_count > 0)` guard around the object loop gives 248 (782
+// bytes, a second test retail lacks, the same extra test the out-of-line site needs) and a for-form player scan gives
+// 396; the frame stays 0x1a4 against retail's 0x1b4 and the first verifier call is still expanded in ours, and the
+// sixteen frame bytes retail leaves unused have no spelling that recovers them.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -1282,6 +1330,12 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // stores, but the normal stores interleave), normal stores after all rows 42, normal i first 40; pointer locals holding
 // g_4e6948 or g_4e3b44 36 (no change); a `(real)(x * 1.f)` chain of depth 1-3 folds away (same code). Node pointer declared
 // first 354 (re-measure of r157). Neither k row has moved in any form.
+// m3 lane 1 r94 (fast, control 38, masked 10): the negation as an aggregate-initialised vector copied back whole 332 (likely
+// the listed separate-vector form again); the node direction pointer renamed 38 and as a reference 38 (same code: names do
+// not set the operand order); the rows negated in place (re-measure of round 81) 286, masked 12; the near rows through
+// `data->node_direction` with the else arm on the pointer 42 (the i row then folds its memory operand instead of the k row;
+// retail folds none); the origin/direction pointers declared above the point and normal 42, or between the normal and the
+// flag 42 (masked 20 each).
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -1661,6 +1715,15 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 
 /* damages an object with the globals' default damage (from +0x144), credited
    to an owner if one is given */
+// MiniMax A (11-11): no new form, no lower score (10); the aggregate copy of *owner still goes through ecx, edx, eax
+// where retail has eax, ecx, edx, and the finished flags are still stored after the `lea eax, [data]` where retail
+// stores them before; the copy written as four field reads (the owner's three longs and its two shorts) splits into
+// more stores and worse, and a memcpy of the owner compiles to the same three loads (10).
+// MiniMax I (11-11): no new form, no lower score (10); the copy of the owner's three dwords still goes through
+// ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after the whole
+// argument setup where retail stores them before the `push edi`; reading and writing the flags through a
+// pointer local leaves the same code (10), and a permuter run over this body was killed by its outer time limit
+// before it printed anything.
 // MiniMax I (11-10): no new form, no lower score (10); a memcpy of the owner (10) and reading the flags through the union member instead of the byte array (10) compile to the same code, and copying the owner's four fields one by one splits the copy into three dwords and two words (52); the owner copy before the unknown54 store (17) and after the flags read (17) both move the first difference earlier, so the copy stays where it is.
 // MiniMax C (11-09): no new form, no lower score (10).
 // MiniMax E (11-09): no new form, no lower score (10); the copy of *owner still goes through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after `push edi` where retail stores them before; reading and writing the flags through the overlapping dword instead of the byte-array alias changes nothing (10), and so does putting the store in the first argument of the call (10).
@@ -1846,7 +1909,7 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 // callee's own convention. BLOCKED-BY 0xda110.
 // MiniMax C (11-09): no new form, no lower score (82); the call setups of 0xda110 and 0xd9d60 still follow the
 // conventions their own unmatched bodies decide (BLOCKED-BY 0xd9d60's walk).
-// score 82 (was 96): the body's instructions agree except the call setup of the two unmatched callees (0xda110 takes
+// score 57 (was 96): 82 before m3 lane 1 r94's walk, kept for 0xd9d60's match; the body's instructions agree except the call setup of the two unmatched callees (0xda110 takes
 // its index in EAX, 0xd9d60 its flag in AL); both are back-edge targets of the link-time walk. BLOCKED-BY 0xd9d60.
 // Earlier at 96: what was left was register choice and the two unmatched callees' conventions. Retail keeps the
 // accumulator pointer in ecx (reusing it for the 0xda110 call's last argument) and the exclusive-flag value in eax, ours
@@ -1924,7 +1987,7 @@ void __stdcall function_dae60(s_damage_info *info, long object_index, s_damage_o
 
 			if (permutation->effect_index != NONE)
 			{
-				function_d9d60(permutation->unknown38, object_index, (permutation->flags >> 20) & 1,
+				function_d9d60(object_index, permutation->unknown38, (permutation->flags >> 20) & 1,
 					permutation->effect_index, owner);
 				function_a8360(object_index, region_index, i, true);
 			}
@@ -2128,7 +2191,7 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 // MiniMax C (11-09): no new form, no lower score (100); the two call setups of 0xda110 and 0xd9d60 still follow
 // the conventions their own unmatched bodies decide, and the delay block's register rotation stays with them.
 // MiniMax E (11-10): no new form, no lower score (100); the callees' parameter order is not mine to change.
-// score 100 (was 110): the pending field is a real bitfield, 3 bits of permutation and 13 of ticks, which gives
+// score 73 (was 110): 100 before m3 lane 1 r94's walk, kept for 0xd9d60's match; the pending field is a real bitfield, 3 bits of permutation and 13 of ticks, which gives
 // retail's byte xor and `or` forms in the delay block. Left: the setup of the 0xda110 and 0xd9d60 calls (their
 // conventions, BLOCKED-BY 0xd9d60's walk, see 0xdae60; one instruction more at each call, so every later line is off)
 // and an eax/ecx/edx rotation in the delay block and the destroyed-flag store. Round 44 (lane 15, fast): `i !=
@@ -2307,7 +2370,7 @@ void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const
 
 						if (permutation->effect_index != NONE)
 						{
-							function_d9d60(permutation->unknown38, object_index, (permutation->flags >> 20) & 1,
+							function_d9d60(object_index, permutation->unknown38, (permutation->flags >> 20) & 1,
 								permutation->effect_index, owner);
 							function_a8360(object_index, region_index, i, true);
 						}
@@ -2353,6 +2416,16 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 /* damages an object's body: scales the damage by the body's material,
    applies region damage, takes it off the body and depletes the body when
    it runs out */
+// MiniMax A (11-11): no lower score (3); retail's region entry is loaded before the branch that tests the info
+// pointer (the `je` at 0xd8d46 belongs to the `test ebx, ebx`) and its flags are addressed as [eax + edx + 4] where
+// ours uses [edx + eax + 4] - the same address with the base and index registers the other way round. The address
+// shapes the earlier rounds tried (the struct field, a byte pointer addition, an integer address) all keep our order,
+// and an entry local read before the branch moves the load up but rebuilds the prologue (228). The original body is kept.
+// MiniMax A (11-11): no lower score (3); a test-only local for the region entry and an integer address for the entry give
+// retail's code exactly (3), while an entry local that the region index reads puts the load above the info branch like
+// retail but swaps the info and object registers and rebuilds the prologue (228). The region flags address stays
+// [edx + eax + 4] for every source form tried: the struct field, a byte pointer addition, an integer address with the
+// regions pointer cast to dword and a dword base all give the same code (3).
 // MiniMax I (11-10): no new form, no lower score (3); a local for the region block loaded before the info test is spilled and changes the whole prologue (228), so the load of the block still stays behind the branch.
 // MiniMax C (11-09): no new form, no lower score (3); an entry local before the info test moves the load above the
 // branch but costs the register allocation (228), the two null tests nested (228) and the && operands swapped (3, the
@@ -2519,70 +2592,15 @@ void function_d8cb0(long object_index, s_damage_effect_definition const *definit
 }
 
 void function_176870(s_effect_owner const *owner, long object_index, long marker_name, real scale_a, long tag_index, short unknown18, real scale_b, point3f const *origin, vector3f const *direction);
-void function_176ad0(long marker_count, s_effect_marker *markers, s_effect_owner const *owner,
-	vector3f const *velocity, long tag_index, long unknown30, real scale_a, real scale_b, point3f const *origin,
+void function_176ad0(s_effect_owner const *owner, vector3f const *velocity, long marker_count,
+	s_effect_marker *markers, long tag_index, long unknown30, real scale_a, real scale_b, point3f const *origin,
 	vector3f const *direction, long mode);
 void function_176330(point3f const *point, s_effect_marker *markers);
 
 /* starts a destroyed permutation's effect: attached to the object, or at
    the marker with the object's velocity */
-// MiniMax I (11-10): no new form, no lower score (69).
-// MiniMax C (11-09): no new form, no lower score (69); the convention is set by the stubbed callees, which live in other files.
-// MiniMax E (11-09): no new form, no lower score (69); the flag still comes from the stack (`mov al, [esp + 4]`) where retail takes it in al, and that convention is settled by the call cycle through the stubbed bodies outside this file, so only work outside this file can move it.
-// MiniMax G (11-04): no new form, no lower score; the flag's register is still fixed by the call cycle that
-// runs through the stubbed functions outside this file.
-// MiniMax E (11-06): no new form, no lower score; the flag stays on the stack because the call cycle
-// through 0xdae60, 0xda110 and 0xdaaa0 gives this body the plain convention, and retail's AL form
-// needs the four stub bodies enabled, which cost two matched callers.
-// MiniMax G (11-06): no new form, no lower score; the flag is read from the stack (`mov al, [esp + 4]`)
-// where retail takes it in AL, and that register is this function's own convention, which the call cycle
-// through the stubbed bodies outside this file settles. BLOCKED-BY 0xb8540.
-// score 69 (was 69): retail takes the flag in al, the marker name in ecx and the object index in edx, with two stack
-// arguments (`ret 8`); the parameter order marker, object, flag, effect, owner is the one that gives that assignment
-// (the other orders put the flag in cl or dl, 81), but only while fewer callers pass it. With the calls of 0xdaaa0
-// and 0xda110 both present (with 0xdb760's), the flag stays on the stack (`mov al, [esp + 4]`, `ret 0xc`, 69); with
-// either of them left out, or with 0xdae60's and one of them, this function is 8 away: marker and object swap
-// between esi and edi, and the 0x176ad0 argument loads are ordered differently. Which of those two callers breaks
-// it is not understood (it follows their own, still unmatched, code); the bodies are statement for statement retail's.
-// Tried (all 69): the flag as long or byte, the owner cast hoisted to a local, the flag computed into a local bool or
-// as `!= 0` at the call sites, the marker branch first, the function moved before 0xdae60, the flag last or second.
-// @coldspear's permuter (#104, 2026-10-30): 66 -> 52 needs a volatile local pointer; its reorders alone gain nothing.
-// Round 268: entry output declarations / attached-path early return / persistent selected
-// marker, all seven subsets 69; native output role names 69. Original body restored.
-// Round 128 (m3 lane 5): the cause is the object/effect call cycle (0xd9d60 -> 0x176870 -> 0x175fa0 -> ... ->
-// 0xd6c80 -> 0xd7b80 -> 0xd6800 -> 0xdae60 -> 0xd9d60): ours keeps plain /Gr fastcall (ECX, EDX, rest on the
-// stack), as LTCG gives a function its walk reaches through a back edge, and so does 0xda110; the disabled
-// 0xb8540, 0xb7430, 0xb7b40 and 0x2902b0 (stubs cut their cycle edges) change the walk. Diagnostic, reverted:
-// with those four bodies enabled this function takes retail's AL/ECX/EDX convention, 8 at 260 bytes (0xdae60
-// 57, 0xda110 513, but matched 0xd6bc0 63 and 0x11a320 10 lost); there, the marker and object parameters
-// swapped (definition, declaration and the four calls) 6 (registers as retail), with `markers[2].name` stored
-// before the position and forward copies as well 4: only the 0x176ad0 register-argument setup is left
-// (retail ECX, EDX, EDI, ESI; its only caller, so 0x176ad0's own parameter order). In the real build: both
-// forms 70 (0xdae60 75, 0xdaaa0 231), the name first alone 69. BLOCKED-BY 0xb8540.
-// Round 157 (m3 lane 5), full checks now that 0xd6800 carries `standard`: the four disabled bodies enabled 8 (28
-// matched lost, 0xd6bc0/0x11a320 kept), 0xb7430 + 0xb7b40 + 0x2902b0 8 (240 lost), 0xb7b40 alone 69 (6 lost),
-// 0x2902b0 alone 8 (22 lost), 0xb7b40 + 0x2902b0 8 (240 lost), lane 17's 0xd6a70 prototype above 0xc98a0's in
-// unit_object_type.cpp 8 (9 lost, 0xd6800 among them: 0xd6a70 inlines once it leaves the walk's stack). Still
-// BLOCKED-BY 0xb8540.
-// m3 lane 16 r107 (plain checks; LTCG's walk enters this cycle at 0xd6800 from 0xc42e0 in unit_object_type.cpp under 0xdc4a0
-// in bipeds.cpp, both outside this file, so only the callee mention order inside this file can move it; all restored):
-// function_dbfb0 and function_d9640 declared first: this 8 (retail's AL/ECX/EDX, 260 bytes), 0xdae60 57, 0xdaaa0 103,
-// 0xda110 474 (custom: region EAX, permutation ECX, 1852 bytes), 0xdb760 42, 0xd5de0 394, matched 0x1c39c0 lost (its
-// parameter moves from EBX to ESI); with function_1d1540 declared first in unknown_1c25a0.cpp too 0x1c39c0 matches again
-// but 0x1c37f0, 0x1c4260, 0x1cf9f0 and 0x278f00 are lost; function_10d4e0 declared first: this 8, 0xdae60 67, 0xdaaa0 80,
-// 0xd8cb0 3 -> 299 (0x176780 inlined), 0x10d4e0 2 -> 61; function_d9e70 declared first: this 8, 0xdae60 67, 0xdaaa0 80,
-// 0xda110 534 (1868 bytes, all stack), 0xdb760 44, nothing listed lost; that with the marker and object parameters swapped
-// (definition, declaration, the four calls) 6, 0xdae60 67, 0xdaaa0 96, 0xda110 534, 0xdb760 44 (all five below their
-// baseline aligned counts); function_dbfb0 declared ahead of function_dae60 and function_d9640 after function_dbc80 (0x1c39c0
-// keeps its walk): this 8, 0xdae60 57, 0xdaaa0 103, 0xda110 474, 0xdb760 42, 0xd5de0 394, nothing listed lost; with the swap
-// 6, 0xdae60 57, 0xdaaa0 73, 0xda110 476, 0xdb760 42 (0xdb760's mode-1 flag named first: same code). Not kept: 0xda110 and
-// 0xdb760 rise, because in the walks that free this function 0xda110 either stays all-stack or takes two register arguments
-// where retail passes only the permutation (EAX); our first pass gives the region index EBX and the permutation pointer EBP,
-// retail the reverse. BLOCKED-BY 0xda110 (its register-argument set once the walk is retail's).
-// That walk with every function checked (full check) loses nothing; five 0xda110 forms on it (see its note: 568, 570, 476,
-// 572, 562) all keep the region index a register argument.
 // @retail 0xd9d60
-void function_d9d60(long marker_name, long object_index, bool at_marker, long effect_index,
+void function_d9d60(long object_index, long marker_name, bool at_marker, long effect_index,
 	s_damage_owner const *owner)
 {
 	if (!at_marker)
@@ -2600,10 +2618,10 @@ void function_d9d60(long marker_name, long object_index, bool at_marker, long ef
 		function_b8d30(object_index, marker_name, &marker, 1, false);
 		function_ba1d0(object_index, &velocity, NULL);
 		function_176330(&marker.matrix.position, markers);
+		markers[2].name = marker_name;
 		markers[2].position = marker.matrix.position;
 		markers[2].forward = marker.matrix.forward;
-		markers[2].name = marker_name;
-		function_176ad0(3, markers, (s_effect_owner const *)owner, &velocity, effect_index, marker_name, 1.0f, 1.0f,
+		function_176ad0((s_effect_owner const *)owner, &velocity, 3, markers, effect_index, marker_name, 1.0f, 1.0f,
 			NULL, NULL, 1);
 	}
 }
@@ -2725,7 +2743,8 @@ struct s_unit_event
 /* destroys a permutation of a region: hides it, starts its effects and
    area damage, and applies its side effects to the object (depletes the
    body, drops weapons, ejects riders, destroys attached children) */
-// score 472 (was 472): frame 0x38 agrees; permutation remains on the stack instead of EAX,
+// score 476 (was 472): 472 before r94's walk; frame 0x38 agrees; permutation remains on the stack instead of EAX,
+// frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // r101: unchanged at 472; frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // with register homes/call setup and 1884/1868-byte length still differing.
 // MiniMax D (11-10): no new form, no lower score (472): the second lookup still reloads the table pointer where retail derives the array base from the pointer it kept in ECX into EDX.
@@ -2818,6 +2837,16 @@ struct s_unit_event
 // argument, and keeps the permutation pointer in EBX; ours has them the other way. Retail also stores a constant 1 into the
 // region argument's dead stack home and reloads it for `1 << permutation`, and holds 1 in ESI for the vehicle word and the
 // state compare: a value 1 kept across the body (perhaps an inlined helper's parameter).
+// m3 lane 1 r94: with lane 16 r107's t7 walk kept (0xd9d60 now matches) this function takes the region index in EAX and the
+// permutation in ECX (`ret 0x10`, frame 0x40), 472 -> 476 by the walk alone; retail takes only the permutation in EAX and loads
+// the region index once into EBP (so it stays a stack argument), with the permutation pointer in EBX, where this build gives the
+// permutation pointer EBP. This build now keeps the constant 1 in EBX as retail keeps it in ESI. Plain full checks on that base
+// (476): no region local with the permutation pointer declared first 571 (region still EAX); the effect flag passed to 0xd9d60
+// without the `at_marker` local 476 (same code); the damage source passed to 0xd9e70 without its local 528; the seat-eject bit
+// tested without `seat_ejects` 538; the child bit tested without `is_child` 513; the destroy block written in each arm (round
+// 230's form, re-measured on this base) 553. Compile-only /Gd screen: the region-state update through word_flags_set gives the
+// same code. BLOCKED-BY its own register allocation: the register-argument set follows the first pass's homes for the region
+// index and the permutation pointer.
 // m3 lane 11 r88 (plain unless marked fast): ours is now `ret 0x18`, all six on the stack under the kept `__stdcall`. A
 // compile-only /Gd pass without it loads region_index and permutation_index once each (both become register arguments)
 // and info, object_index, owner and accumulator several times; retail holds region in EBP. The at-marker bit passed
@@ -2883,7 +2912,7 @@ void __stdcall function_da110(long permutation_index, s_damage_info *info, long 
 	{
 		bool at_marker = (permutation->flags >> 20) & 1;
 
-		function_d9d60(permutation->unknown24, object_index, at_marker, permutation->unknown10, owner);
+		function_d9d60(object_index, permutation->unknown24, at_marker, permutation->unknown10, owner);
 	}
 	if (g_4e6948->mode != 4 && permutation->unknown18 != NONE)
 	{
@@ -3149,7 +3178,15 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 /* the damage a damage event does to an object before armor: a random
    amount between the definition's bounds, scaled by the event, the owner's
    AI and the game engine; sets *friendly when the team scale applies */
+// MiniMax A (11-11): no new form, no lower score (5); the two final `return damage` blocks keep our order, retail
+// puts the xmm1 copy before the stack reload. Inverting the outer test (`if (team == NONE || state != 1) return
+// damage;` with the enemy logic in a bare block) leaves the two blocks in the same order and the same score (5), and
+// so do the team test as an early return and the damage product written in two statements (5). The original body is
+// kept.
 // MiniMax I (11-10): no new form, no lower score (5); an early return for the no-team case with the enemy test
+// flattened into it keeps the same two blocks but pushes ecx in the prologue (59), so the frame changes. The two cold
+// return blocks are still in the wrong order: retail's no-team block at 0xd9d42 copies xmm1 into xmm0 and the not-enemy
+// block at 0xd9d4c reloads the damage from [esp+8], ours has the two the other way round.
 // flattened into it keeps the same two blocks but pushes ecx in the prologue (59), so the frame changes.
 // MiniMax C (11-09): an explicit else scores 5 and splitting the two returns into separate exits scores 28; an early return for the team test keeps the same block order (5), a single final return 24, an inverted enemy test 16 and a function-scope enemy flag 24; no lower score (5).
 // MiniMax E (11-09): no new form, no lower score (5); the two final return blocks keep our order, retail puts the xmm1 copy before the stack reload; an early `return damage` for the not-enemy case moves the blocks the other way and costs 11 (16).
@@ -3160,6 +3197,10 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // MiniMax B (11-06, run 42): no new form and no lower score (5); the two final `return damage` blocks keep our order:
 // retail puts the no-team return (the xmm1 copy) before the not-enemy one (the stack reload), ours the reverse, and
 // writing the team test as an early return compiles to the same bytes.
+// MiniMax I (11-11): no new form, no lower score (5); an early-return restructure (5), two separate early
+// returns (28: the two blocks are tail-merged) and a single return (28) all fail, and `if (!enemy) return
+// damage;` leaves the layout unchanged and only flips the branch polarity; a permuter run over this body was
+// killed by its outer time limit before it printed anything.
 // score 5 (was 108): only the order of the two final "return damage" blocks differs (retail
 // puts the no-team return before the not-enemy one, ours the reverse). Tried: three early returns
 // (16), a goto to one shared return (24), a flat team/state test (5, same order), separate team and
@@ -4395,7 +4436,7 @@ void function_db670(long object_index, long vehicle_index)
 // MiniMax G (11-06): no new form, no lower score; the effect flag is computed in EDX and passed on the
 // stack, retail computes it in AL and passes it in a register, and the permutation base stays in EDX
 // where retail keeps it in EDI. BLOCKED-BY 0xd9d60.
-// score 28 (was 38): frame 0x40 and ingress agree; late EDI save and callee transport remain.
+// score 42 (was 38): 28 before m3 lane 1 r94's walk (kept for 0xd9d60's match), which raises it; frame 0x40 and ingress agree; late EDI save and callee transport remain.
 // The effect flag stays on the stack rather than AL; the destruction permutation stays on the stack
 // rather than EAX. The info argument is now on the stack as retail.
 // Earlier at 34: this function's own convention is now retail's (region in EAX, permutation in EBX, object
@@ -4432,7 +4473,7 @@ void function_db760(long region_index, long object_index, long permutation_index
 		{
 			s_damage_info_permutation *permutation = &info->regions[region_index].permutations[permutation_index];
 
-			function_d9d60(permutation->unknown38, object_index, (permutation->flags >> 20) & 1, permutation->effect_index,
+			function_d9d60(object_index, permutation->unknown38, (permutation->flags >> 20) & 1, permutation->effect_index,
 				&owner);
 		}
 		else
@@ -4452,7 +4493,7 @@ bool function_138880();
 /* an object's damage per tick: delayed permutations, stun timers, shield
    and body recharge, the regions' damage levels and the recent damage;
    returns whether anything changed */
-// score 400 (was 402, 607 before that): 2148 bytes against 2170, frame 0x70. Round 75 (b4E) walked every block against retail 0xd5de0-0xd6657:
+// score 229 (was 400): 402, 607 before that; at r94's start 2148 bytes against 2170, frame 0x70. Round 75 (b4E) walked every block against retail 0xd5de0-0xd6657:
 // one behaviour fix (the region decay else arm also runs when `info->region_count <= i`, retail 0xd6518 jle -> 0xd6571); every other test,
 // field, callee, argument order and float op agrees. `if (shield > max) {clamp} else {changed}` arm order: no change (393 alone, 400 with the callers, the same as without it). Left: flag pairs that cross the word's bytes merge into one `and word` (three
 // sites, each a line short, which shifts what follows), retail takes the 0xda110 permutation in EAX (`mov eax, esi`, BLOCKED-BY 0xda110's
@@ -4468,11 +4509,21 @@ bool function_138880();
 // the slots (bounds renamed 290). Recharge spellings 299 each; ternary arms 299; `dword pending` 496; permutation `&= 7` 281; second
 // 0x138880 nested, arms swapped: still inlined. --fast leaves src/juggernaut.cpp out, and 0x1588b0 only leaves xmm3 alone with it in:
 // add 0x192950 to a fast check of this function.
+// m3 lane 1 r94 (plain full checks): 400 -> 394 with the walk kept for 0xd9d60; every flag write through the existing
+// word_flags_set on a word view of the damage flags declared beside them in the object (round 74's 284 form, whose one loss,
+// 0xc2d00, no longer happens) 278 at 2170 bytes (kept; bits named after the members, same code); the 0x80 notify written once
+// after the recharge/stun if/else instead of in its three arms 229 (kept: retail calls it in each arm through tail
+// duplication, without our hoist of its arguments over the clamp test); only the two clamp arms merged 373. On 229: the clamp
+// test positive with the clamp arm first 285 (2159 bytes, masked 38 -> 27: the notify block then agrees, the shortfall is
+// the two 0xd8b50 flags); that with bool locals for those flags 278 at 2170, masked 23 (retail's byte temp; one-use, not
+// kept); the body maximum and rate as ternaries 229, the stun count declared with them 229, the shield rate as an if/else
+// 229, the two 0xd8b50 flags read through the word view 229 (all same code). Left (masked 38): 0xda110's convention at its
+// call (ours region EAX + permutation ECX, retail permutation EAX), `xor ecx, ecx` before both team calls, the clamp arm
+// order, the second 0x138880 inlined (retail calls it, so its stun count sits in SI), the 0xd8b50 flag temps.
 // @retail 0xd5de0
 bool function_d5de0(long object_index)
 {
 	s_damage_object *object = DAMAGE_OBJECT(object_index);
-	s_damage_object_flags *flags = &object->damage_flags;
 	s_damage_info *info = (s_damage_info *)function_d5b60(object_index);
 	bool changed = false;
 
@@ -4532,7 +4583,7 @@ bool function_d5de0(long object_index)
 
 			object_get_damage_owner(object_index, &owner);
 			function_d6800(object_index, &owner, true, false);
-			flags->unknown13 = false;
+			word_flags_set(&object->damage_flags_word, _damage_object_flag_unknown13_bit, false);
 		}
 		if (TEST_FIELD_BIT(object->damage_flags.unknown5) || TEST_FIELD_BIT(object->damage_flags.unknown6) ||
 			TEST_FIELD_BIT(object->damage_flags.unknown10))
@@ -4542,9 +4593,9 @@ bool function_d5de0(long object_index)
 				function_dbfb0(object_index, NULL, TEST_FIELD_BIT(object->damage_flags.unknown6),
 					TEST_FIELD_BIT(object->damage_flags.unknown10), false);
 			}
-			flags->unknown5 = false;
-			flags->unknown6 = false;
-			flags->unknown10 = false;
+			word_flags_set(&object->damage_flags_word, _damage_object_flag_unknown5_bit, false);
+			word_flags_set(&object->damage_flags_word, _damage_object_flag_unknown6_bit, false);
+			word_flags_set(&object->damage_flags_word, _damage_object_flag_unknown10_bit, false);
 		}
 
 		long state = g_4e6948->state;
@@ -4561,12 +4612,12 @@ bool function_d5de0(long object_index)
 				if (object->shield_vitality >= 3.0f)
 				{
 					object->shield_vitality = 3.0f;
-					flags->shield_double_charged = false;
-					flags->shield_recharging = false;
+					word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_double_charged_bit, false);
+					word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_recharging_bit, false);
 				}
 				else
 				{
-					flags->shield_recharging = true;
+					word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_recharging_bit, true);
 					changed = true;
 				}
 			}
@@ -4577,7 +4628,7 @@ bool function_d5de0(long object_index)
 				real excess;
 
 				excess = object->shield_vitality - 1.0f;
-				flags->shield_recharging = false;
+				word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_recharging_bit, false);
 				if (drain > excess)
 				{
 					object->shield_vitality = maximum_shield;
@@ -4606,7 +4657,7 @@ bool function_d5de0(long object_index)
 						recharge = function_1e9720(3, object->team) * recharge;
 					if (TEST_FIELD_BIT(object->damage_flags.shield_depleted))
 					{
-						flags->shield_depleted = false;
+						word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_depleted_bit, false);
 						function_ba7f0(object_index, NONE, 2, 0);
 					}
 					if (!TEST_FIELD_BIT(object->damage_flags.shield_recharging))
@@ -4617,19 +4668,17 @@ bool function_d5de0(long object_index)
 						function_176780(object_index, (s_effect_owner const *)&owner, 0.0f, *(long *)((byte *)info + 0xb8), 0.0f,
 							NULL, NULL);
 					}
-					flags->shield_recharging = true;
+					word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_recharging_bit, true);
 					object->shield_vitality += recharge;
 					if (!(object->shield_vitality > maximum_shield))
 					{
 						changed = true;
-						function_a7a30(object_index, 0x80);
 					}
 					else
 					{
 						object->shield_vitality = maximum_shield;
-						flags->shield_recharging = false;
-						flags->shield_damaged = false;
-						function_a7a30(object_index, 0x80);
+						word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_recharging_bit, false);
+						word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_damaged_bit, false);
 					}
 				}
 				else
@@ -4639,13 +4688,13 @@ bool function_d5de0(long object_index)
 						object->shield_stun_ticks = stun_ticks - 1;
 						changed = true;
 					}
-					flags->shield_recharging = false;
-					function_a7a30(object_index, 0x80);
+					word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_recharging_bit, false);
 				}
+				function_a7a30(object_index, 0x80);
 			}
 			else
 			{
-				flags->shield_recharging = false;
+				word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_recharging_bit, false);
 			}
 		}
 
@@ -4674,12 +4723,12 @@ bool function_d5de0(long object_index)
 
 					if ((1 << object->type) & 3)
 						recharge = function_1e9720(3, object->team) * recharge;
-					flags->body_recharging = true;
+					word_flags_set(&object->damage_flags_word, _damage_object_flag_body_recharging_bit, true);
 					object->body_vitality += recharge;
 					if (object->body_vitality > maximum_body)
 					{
 						object->body_vitality = maximum_body;
-						flags->body_recharging = false;
+						word_flags_set(&object->damage_flags_word, _damage_object_flag_body_recharging_bit, false);
 					}
 					else
 					{
@@ -4922,6 +4971,13 @@ dword function_db810(long object_index, long node_index)
 }
 
 /* the model node of the object's lowest ranked physics node */
+// MiniMax A (11-11): no new form, no lower score (4); retail masks the tag index before it pushes EBP and reuses
+// EAX for the tag entry (`mov eax, [eax + esi + 8]; mov eax, [eax + 0x38]`), ours masks it after the push and takes
+// the entry in EDX. A local for the masked tag index, a local for the definition bytes and the tag table read through
+// its own address all leave the same four instructions (4), and the model index read first only moves the first
+// difference (7). The original body is kept.
+// MiniMax I (11-11): no new form, no lower score (4); naming the masked tag index in its own local leaves the same
+// four instructions (the mask after `push ebp`, and the tag entry in edx where retail uses eax).
 // MiniMax I (11-10): no new form, no lower score (4); a local for the model bytes and one for the masked tag index compile to the same four instructions, so the entry load still lands in edx; naming the masked tag index in its own local (4) leaves the same four instructions.
 // MiniMax C (11-09): no new form, no lower score (4).
 // MiniMax E (11-09): no new form, no lower score (4); the tag index is still masked after `push ebp` where retail masks it before, and the tag entry is still loaded into edx where retail reuses eax; a tag-entry local and a masked-index local both leave the same four instructions.
@@ -5175,6 +5231,10 @@ struct s_damage_object_creation
 // 228/227: every later zero shrinks the frame to 0x13dc (the datum offset stays in ESI). 127 is not kept (moved statement against
 // retail's order, a guard repeating the loop test, a one-use pointer); it cannot become exact as written, since retail does the
 // `and` before that call. What it shows: under retail's guard order the mask must stay in memory across the piece loop.
+// m3 lane 1 r94 (fast, control 156, masked 20): the mask's zero declared at function scope above the attached mask 174;
+// the node states declared before the zeroed mask 156 (same code); the zeroed mask declared before the component pointer
+// 157; the state test as `if (node_states[i] == 0xff) continue;` 156 (same code); node_bit named above the state test 190
+// (likely round 101's merged form again); `creation.node_mask = ~piece_nodes;` right after the mask update 191 (779 bytes).
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
