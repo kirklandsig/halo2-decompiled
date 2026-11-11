@@ -526,6 +526,18 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // left_start` with the plain update and the nested exit 248. Lead: retail stores the departure byte directly (0 between the
 // coordinate tests, 1 on a difference) and its y test is `fxch; fcompi; jb` where the exit test's is `fcompi; jbe`, so the
 // two comparisons are not one expression in retail; no form here gives the fxch.
+// Round 171 (m3 lane 5, fast with 0x239d50): the candidate scan (j loop) as a static inline helper returning the next
+// index and writing the best angle through a pointer 519 (511 B, not inlined), as __forceinline 171; a short hull
+// count with memmove 233 (0x239d50 80); the departure flag renamed to sort before hull_count (same-size name-order
+// tip) 169 (same code). NOT kept (6 points, under the 8-point bar; coordinator 11-11): the departure update as `left_start = left_start ||
+// points2d_differ(...)`, the direct form of the flag set under `if (!left_start)`, 163 (plain; 785 B; it gives retail's direct departure stores, 0
+// between the coordinate tests and 1 on a difference, as dwords). With memmove for the compaction as well 162 (784 B,
+// masked 51 -> 37, plain 162; the compaction block is then retail's apart from the hull count's home), not kept
+// (memmove alone is 170). On the 162 form: the flag bool/byte/char 264 (762 B, the function then returns `ret 8`: a
+// parameter moves to a register), a short hull count 255 (0x239d50 80), `return hull_count` for the three gotos 183
+// (763 B), a short pass counter 250, `(short)pass < count` 240, the difference predicate as `>= eps || >= eps` 169, as
+// `!(< eps) || !(< eps)` 169. Left on 162: the frame word (widened count), the rotated pass loop, the long flag's
+// dword stores and the hull count in the dead index home.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

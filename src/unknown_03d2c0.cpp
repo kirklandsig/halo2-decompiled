@@ -165,6 +165,30 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // that without the walk's own return 145. Re-measured: the listed `if (result != NONE) initialize = true; else return
 // result;` 72 now (519 bytes: the walk's NONE return moves to the end as retail, but returns `or eax, -1`), with the merge
 // test spelled as above 87; one variable for the allocation and the result 141.
+// Round 171 (m3 lane 5, fast; control 77). Lead 9, match-only (plain 9, 519 B, aligned 3): `initialize = true` set in
+// both arms of the allocation test, `if (cache_index != NONE) initialize = true; else { walk; if (result != NONE)
+// initialize = true; else return result; }`, the outer test unchanged. Not kept: the flag is set inside two tests and
+// tested later, and main's direct form (one `initialize = true;` after the early return) is this 77 body. Left on 9:
+// the found path jumps to the result reload ahead of the merge test where retail's jumps past the test to the record
+// lookup (so retail compares ESI before reloading it), and the walk's NONE return at the end folds to `or eax, -1`
+// (retail `mov eax, esi`). On 9: `long result = NONE;`, `return NONE;`, `return cache_index;`, the merge test as `if
+// (result == NONE) return result;` before an unconditional block, the else-first found test, a dword cache index, a
+// dword result, both: 9 each (same code); one variable for the cached and allocated index 155 (the found path then
+// skips the test as retail, but the index is stored at its read and the allocation arm is laid out first); no walk
+// return 85 (round 99's code); `!initialize || result != NONE` (implied test) 87; the allocation stored into result
+// 138; the walk test as `if (result == NONE) return result; initialize = true;` 83; `return index` 117; result
+// assigned only in the allocation success arm 131; `long result = cache_index;` with no found arm 153; the merge test
+// on cache_index with `cache_index = result` in the walk arm 36 (the found path still enters the test); `cache_index =
+// result = index` in the walk with that test 159; one variable with initialize assigned in each arm 155. The NONE test
+// closing the else arm with an unconditional record block: with no walk return 86 (the walk's NONE return is then `mov
+// eax, esi` as retail, but inline, and the merge test goes for every path), with the walk return 87; main with that
+// test 138 (518 B, aligned 67, else arm laid out after the main return); the 72 form with it 86. Other forms: the
+// early return after the inner if 77 (same code as main); initialize assigned in every arm on the 72 form 142, on main
+// 143; the 72 form with the allocation stored into result 131; the single-return form with `!initialize || result !=
+// NONE` 98; the 72 form returning cache_index 72 (same code); the found arm's store through a pointer to result 72
+// (same code). Reading: VC drops the merge test only when every incoming path knows the result; a copy into result
+// between the cached-index test and the merge test hides it on the found path; a NONE return reached only through a
+// threaded jump stays unfolded.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
