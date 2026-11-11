@@ -75,7 +75,9 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
-// MiniMax C (11-11): no lower score (79): the terminal stores still fold the record base into the
+// MiniMax C (11-11): NOT kept (coordinator, 11-11): 0x2b5d0 called as (3, view_count, ...) 79 (was 90); both
+// parameters are long, so the swap passes different values: a possible fix to 0x2b5d0's parameter order, kept only
+// with a match. On that swapped form: no lower score (79): the terminal stores still fold the record base into the
 // displacement in retail where our build adds the base to the index register, and giving the shared
 // helper the record index instead of the record pointer gives 106 (578 bytes) with that fold still
 // missing, so the pointer form stays. The outer pretest and the slot scan's registers are unchanged.
@@ -376,7 +378,7 @@ void function_2234e0(void)
 		++local_0;
 	} while (local_0 < local_2);
 	function_2232a1(&g_47f0f8[view_count]);
-	function_2b5d0(3, view_count, local_2, local_3, &g_47f0f8[1]);
+	function_2b5d0(view_count, 3, local_2, local_3, &g_47f0f8[1]);
 }
 
 // @retail 0x223240
