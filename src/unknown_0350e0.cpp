@@ -2606,6 +2606,13 @@ real magnitude3d(vector3f const *v);
 // (`fst qword`) for acos where retail re-reads the float; `acos((double)dot)` 170, `fabs((double)dot)` 170,
 // `acos(dot) * step` 170, `acosf(dot) * step` with `fabsf(dot)` 170, `(real)acos(dot) * step` 170.
 // MiniMax E (11-09): no new form, no lower score (170); the float trigonometry (fabsf, acosf, sinf, cosf) compiles to the same bytes as the double calls, so the trigonometry is not what differs.
+// MiniMax B (11-11): no new form, no lower score (170). Retail keeps the step in the angle only: the acos result is
+// multiplied by the step argument in x87 (fmul dword ptr [esp + 0x3c]) right after the arccosine call, and the axis is
+// the plain cross product, so the step must not move into the axis. Retail re-reads the dot as a float for the arccosine
+// (fld dword ptr, then the call) and keeps the dot and the angle in one slot; a named float copy of the dot removes our
+// double copy (fst qword) and reproduces that shape, but the frame stays 0x34 against retail's 0x38: retail gives the
+// raw length its own home and leaves a hole at 0x8, while we coalesce the raw length with the pinned one, so every
+// later slot sits four bytes lower. Named raws, hand-written clamps and expanded PIN forms all score worse (251/262).
 // MiniMax H (11-06): no new form, no lower score.
 // Retail computes the angle through a single-precision arccosine wrapper (0x322bd8) that loads the dot
 // product as a float from [esp+0xc]; we keep a double-precision copy of the dot at [esp+0xc] and call the

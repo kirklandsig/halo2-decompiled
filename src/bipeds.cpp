@@ -3253,7 +3253,15 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
    one settles and goes to sleep (2); one that gets up again stands */
 // MiniMax R (11-09): no new form, no lower score (539); the state byte read as a signed byte gives 538, under the keep bar, and the frame stays 0x44 here against 0x4c in retail.
 // MiniMax R (11-06): no new form, no lower score (520); the frame is 0x44 here and 0x4c in retail, so the local area is two words short.
-// score 490 (was 490): round 101 (m3 lane 12), round 104 (m3 lane 16) and round 112 (m3 lane 12) notes are at the end of this note. Earlier at 490 (was 517). Earlier at 517 (was 539). Earlier at 539 (was 520): two value fixes this round raise it: case 1 passes g_4687a4 as 0xb77d0's angular velocity too
+// MiniMax B (11-11): score 362 (was 490): the definition pointer read once at the top of the hit block (retail computes
+// it at 0xe11cc and keeps it in a stack slot) and the push scale through vector3f_scale. Still differs: retail's frame is
+// 0x4c and ours 0x48, retail sign-extends the ragdoll state byte at +0x34b where ours zero-extends it, and retail keeps
+// the flags bit 9 in a stack slot before the 0xe16b0 call, which we do not.
+// MiniMax B (11-11): no lower score (362 kept); a signed cast on the ragdoll state byte in the switch reproduces retail's
+// sign-extending load but measures 361, under the keep bar, so it was reverted. The held form that adds an unread bool
+// parameter to the matched 0xe16b0, fed from a named local holding the flags bit 9, reaches 342 at a 0x4c frame and keeps
+// 0xe16b0 matched, but it changes a matched function's signature and needs the owner's ruling.
+// score 362 (was 490): round 101 (m3 lane 12), round 104 (m3 lane 16) and round 112 (m3 lane 12) notes are at the end of this note. Earlier at 490 (was 517). Earlier at 517 (was 539). Earlier at 539 (was 520): two value fixes this round raise it: case 1 passes g_4687a4 as 0xb77d0's angular velocity too
 // (retail 0xe0f75: `mov eax, [0x4687a4]; push eax` with EAX still holding it, which matched 0xb77d0 takes as its third
 // argument; ours passed NULL), and the single-body fallback push runs when the component's flag 11 is clear (retail
 // 0xe118f jumps to the fallback at 0xe15b7; ours skipped it). Frame 0x44 versus 0x4c; result byte, scalar homes and
@@ -3554,6 +3562,7 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 								if (TEST_FIELD_BIT((component->unknown04 >> 11) & 1) && function_1ed430(ragdoll, &direction, &value) &&
 									(hit_body = function_183c60(arg_159e6d, value)) != NONE)
 								{
+									byte *definition = BIPED_DEFINITION_GET(biped);
 									real strength = function_259d0(&g_4e7408->unknown0, NULL, 0, 1.5f, 3.25f);
 									real lift = function_259d0(&g_4e7408->unknown0, NULL, 0, 0.75f, 1.5f);
 									point3f center = *g_468788;
@@ -3587,13 +3596,11 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 										vector3f_add_scaled(&direction, &along, 0.0f - dot, &direction);
 										if (function_30bf0(&direction) != 0.0f)
 										{
-											real push = *(real *)(BIPED_DEFINITION_GET(biped) + 0x258) > 0.7f ? 0.7f : *(real *)(BIPED_DEFINITION_GET(biped) + 0x258);
+											real push = *(real *)(definition + 0x258) > 0.7f ? 0.7f : *(real *)(definition + 0x258);
 											real farthest = 0.0f;
 
 											push *= strength;
-											direction.i *= push;
-											direction.j *= push;
-											direction.k *= push;
+											vector3f_scale(&direction, push, &direction);
 											for (i = 0; i < count; i++)
 											{
 												point3f const *position = biped_rigid_body_position(component, i);
