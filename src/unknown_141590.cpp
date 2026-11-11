@@ -1197,6 +1197,9 @@ void function_143250(
 // `term_N = term_9`) read from rotation[] 1780 (10788 B): rotation then arrives in ESI and result in EDI, but coefficients
 // moves to the stack (still ret 8; 0x23690 401 -> 350); both 1776 (10792 B); band two's 22 only 2050 (11035 B, rotation
 // ESI). Use count alone gives rotation a register but never a third register parameter (retail EAX/ECX/ESI).
+// m3 lane 11 r90: no trial run. The lever this note records (fewer than about 950 declared locals for retail's EAX rotation and
+// ret 4) has a dozen measured families above; each reaches the convention only by rewriting the allocation (1775-3684), and a new
+// attempt needs the 1341 term declarations re-expressed per band rather than another one-step form.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

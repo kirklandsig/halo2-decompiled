@@ -373,12 +373,12 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
+// score 182 (was 182): earlier 188; Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
 // MiniMax E (11-09): no new form, no lower score (188).
-// MiniMax E (11-06): score 188 (was 188): no new form lowered it. The byte locals sit two bytes lower
+// MiniMax E (11-06): 188 then (was 188): no new form lowered it. The byte locals sit two bytes lower
 // than retail's (ours at esp+0x10 where retail has esp+0x12), retail switches on the word at
 // esp+0x14 with a jump table where ours tests the mode with branches, and ours is twenty bytes
 // shorter than retail (1632 against 1652).
-// score 182 (was 182): earlier 188; Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
 // Earlier at 228: Frame 0x84 versus 0x80; pool/data entry order and unit-output/route/result homes differ.
 // MiniMax S (10-31): no new form, no lower score. Deferring the result's initializer reproduces retail's
 // 0x80 frame and prologue exactly (the first difference moves from +0x0 to +0x33), but the aligned body
@@ -710,6 +710,13 @@ struct s_1f8a70_actor
 // leaves case 7 only when a block that survives threading follows case 7 in source. Retail's zero test, failure store and
 // failure call after case 7 fit that if the failure block (its false store and the memory reload after 0x1f8750) is that
 // block; ours folds the false, so the block vanishes. A compile-only /Gr harness keeps this layout rule.
+// m3 lane 11 r90 (fast with the file and the eight callers, control 182): re-measured lane 3 r231's success arm returning route_found,
+// written with the success test nested in the route block and `failed:` just before the shared 0x1f8750 tail, 310 (the first exit folds
+// to `xor al, al`). Retail's tail stores false, calls 0x1f8750 and reloads the result from its frame byte, so the result's value is
+// unknown there in retail. Diagnostics: route_found cleared through memset (address taken) 326 at 1680 bytes (store and reload survive,
+// the route test still follows case 7); the failure block as the mode switch's default with `failed:`/`release:` labels and the end's
+// `!route_found` jumping to `release:` 438 at 1640 bytes (first exit folds). No existing helper covers the three-field reset
+// (actor_reset_state and 0x1f86a0 also clear 0x5b4/0x5b6/0x4ac); a scan of include/ found no other helper this body writes out.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

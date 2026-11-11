@@ -246,6 +246,13 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // M3 lane 16 r104 (plain with 0x293b30, which stays matched): the waypoint radius as a ternary 273; the hysteresis threshold
 // as a named local 387 (3705 B); the waypoint index read once into a short local used three times 281 (3717 B); the 3.0 clamp
 // after the wander call as a ternary 252 (same code); the separation weight passed as `0.0f - local_29` 252 (same code).
+// m3 lane 11 r90 (plain with 0x293b30, which stays matched; masked = registers and stack slots masked, aligned, 25 on 252): both 0x2949aa
+// dots with their operands swapped (`dot3f(arg_1, &...current)` and previous) 455 at 3712 bytes, masked 22: the first site's previous-dot
+// i term folds its load (`mulss xmm3, [ebx+0x28]`) as retail, the second site's still loads first; only the previous dot swapped 455
+// (same code, the current dot's order is free); that plus the four reused strengths as named locals (wander, volume, path, waypoint) 280
+// (3716 bytes, masked 41); 0x294669's i term vector-first like j and k 252 (same code). Diagnostic: two of the walk position's reads
+// dropped 643 at 3693 bytes (the position moves to 0x9c, not to retail's 0x20). Left with slots masked: the walk's alignment i term,
+// the second 0x2949aa site's fold, the scaled centre's early y/z loads and the nearest fallback's i product.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {
