@@ -201,6 +201,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax G (11-11): no new form, no lower score (32); retail takes the scaled difference in the order j, i, k but its
+// deltas in the order i, j, k, and one source order cannot give both: writing the deltas i, j, k (79) moves the scaled
+// difference to i, j, k with them, so the difference stays inside the inlined helper and its component order.
 // score 32 (was 32): frame 0x10 and the prediction prefix agree; first difference at +0x65: the velocity stores
 // and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
 // MiniMax D (11-09): no new form, no lower score (32); the permuter run was killed with no candidate.
