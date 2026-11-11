@@ -936,6 +936,18 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // from header->object without 0xbfe20 276 (= round 76's header->object form). The existing object_get() at every use
 // with no `object` local 298 (818 bytes), with 0xbfe20 298; header->object at every use 315 (807), with 0xbfe20 317.
 // On 0xbfe20 alone: result first 262, early returns of input_matrices 262, both 262. Entry roles still swapped in all.
+// Round 168 (m3 lane 5, fast; masked = difflib count with registers and stack offsets masked, kept body 240 [46]):
+// re-measured round 78's lead (bit-29/+0x34b through header->object, bit 30 cleared through 0xbfe20) 194 [39] at 814
+// bytes; on it, the early returns as separate ifs 298 (820 B: ours lays each return inline, retail jumps forward to
+// its four tail epilogues); a single exit (nested ifs, one `return result;`) 295 (825 B) [26], result then in EDI as
+// retail, three epilogues; that with the header as pointer addition 295 (same code); with final_matrices declared at
+// the top 287 [25] (g_4e0300 loaded first and object_index in ESI as retail; left: the scratch roles, ours data/object
+// EDX, header ECX, input EAX against retail's ECX/EAX/EDX, so the +0xb3 byte takes AL where retail pushes EBX for BL;
+// node_count loaded late; ours keeps the early tests' object in EDX across the mask copy where retail reloads it
+// through the saved header; the bit-30 clear's flags load; one epilogue short); with result/final declared before the
+// header 293 [29] (repeats round 78's 293). On the kept body: a single exit with final_matrices at the top 282 (839 B)
+// [41]; the render-node count read in the loop test at each pass, no local, 240 [45]. All but the last are
+// match-only (the mix, declaration moves); the 287 form (single exit + final at the top on the 194 lead) is the lead.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

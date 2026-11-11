@@ -689,6 +689,10 @@ real function_30bf0(vector3f *vector);
 // unnamed, `length_sq3f(&delta)` at its five uses 84 (identical code: it is a spill temp either way); the clipped point
 // through a copy of path_transitions.cpp's point_along_vector (diagnostic) 90; the 3/2 result as one ternary 84; `long
 // count` 193 (1318 bytes); the occupant's forward as a value copy 195 (1312 bytes).
+// m3 lane 5 r169 (fast with 0x263740/0x25c9d0, base 84 [aligned 55, masked 17]): the outer test as `distance_squared <
+// range * range` 84, the scaled test the same way 84, `range * scale` 84, the vehicle index read from actor->unknown26c at
+// both uses (no local) 84, the not-facing secondary as `0.7f * scaled_range` 84 (all the same code); re-measured: `use_facing
+// && !actor->unknown007` 86 [58/20].
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2315,6 +2319,15 @@ real function_2683f0(long actor_index, long node_index, short type)
 // `xor edi, edi` sits; the table pointer still ECX). The table pointer's ECX is the players loop's colouring (ECX/EDX
 // for retail's EAX/ECX throughout); `mov eax, [abs]` is one byte shorter, which moves the loop-top pad. The unknown23
 // test through the `prop` local instead of a fresh prop_get 655 (2845 bytes: retail reads it afresh).
+// m3 lane 5 r169 (fast with 0x25d810; aligned/masked in brackets, base 168 [80/38]): the scoring block with the
+// established part written in both arms (`if (visible) {...; if (established) {...} else if (...) ...} else if
+// (established) {...}`, for retail's cross-jumped entry stub at 0x266f93) 392 at 3005 B [121/60]: the copies are not
+// merged. Re-measured round 78's other-object pointer 163 [75/38]; on it: the iterator's NONE fields chained 165, the
+// player pointer declared before the first search 368, `visible` initialised directly from the reference test 423,
+// `(established || visible)` in the outer test 234 (2882 B), the prop record looked up inside the unknown23 arm 499
+// (2859 B). Retail stores visible = true ahead of the 0x25d810 call
+// and treats 0x30bf0 as killing an escaped direction (round 61's diagnostics); our compile-only build does so too,
+// so that residence follows how the link sees 0x30bf0 (its file and flags), not this body.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

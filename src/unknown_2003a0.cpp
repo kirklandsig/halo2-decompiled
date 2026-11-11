@@ -1980,11 +1980,11 @@ void function_204450(long definition_index, long squad_index)
 bool function_1e11b0(long actor_index, bool active);
 
 #pragma inline_depth(0)
-// MiniMax S (11-10): no new form, no lower score (64); the squad address still stays in EBX where retail keeps it in ESI and the
-// parameter in EBP, the loop is still rotated, and the returned flag is still narrowed to a byte.
 // score 64 (was 64): frame 0xc agrees; the squad address stays in EBX instead of
 // retail's spilled ESI pointer and EBP handle. The common loop head and
 // full-width return mask still differ.
+// MiniMax S (11-10): no new form, no lower score (64); the squad address still stays in EBX where retail keeps it in ESI and the
+// parameter in EBP, the loop is still rotated, and the returned flag is still narrowed to a byte.
 // Earlier (64, was 64): EBP handle/receiver spill, common loop head and return width remain;
 // Earlier (64): EBP handle/receiver spill, common loop head and return width remain;
 // MiniMax H (11-07): no new form, no lower score (64); the squad address is still kept in EBX
@@ -2208,6 +2208,12 @@ bool function_1e11b0(long actor_index, bool active);
 // EBP. On it: the index read through its address into a loop-local copy each pass (ahead of the 0x1e11b0 call) 13; a
 // local copy `long index = *index_reference;` at the top used for both lookups, the call and the store 13; that copy
 // made just before the iterator call 13; the address read in both lookups with the plain parameter at the call 13.
+// Round 168 (m3 lane 5, fast with 0x203d70 and 0x201ea0, both matched in each; masked = difflib count with registers and
+// stack offsets masked, 23 at 64): the return as `(bool)(((byte *)squad)[2] >> 7)` 64; the actor lookup as
+// `&((s_actor_datum *)g_4f55f0->data)[actor_index & 0xffff]` 64; the flag test as `(... & 0x80) == 0` 64; the return as
+// `(... & 0x80) == 0x80` 76 (209 B); the flag store as `((byte *)squad)[2] = (byte)(((byte *)squad)[2] | 0x80)` 64. The
+// 13 form needs an inline_depth pair inside the body, which is never kept, and without the function-level pragma the
+// three callees inline, so only spellings under that pragma are open here.
 // Round 70 (m3 lane 15, fast; current body, function-level pragma kept): `long actor_index;` beside the iterator 64 (same
 // code); the tick comparison's operands swapped 64; the word flag store with the iterator at function scope 62 (same code as
 // the word store alone). Re-measured, same numbers as round 51/54: the word flag store (here after the game-time store) 62,
@@ -3145,6 +3151,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // named short for its test and the call 50; `short local_2;` set NONE just before the pending test 50; the trigger
 // definition pointer by if/else with NULL in its own arm 50; the 0x290cd0 definition argument through squad_get(arg_1)
 // 182 at 578 B (the index and the squad pointer swap EBP/ESI from entry). 0x290e20 differs in scheduling only.
+// Round 168 (m3 lane 5, fast; aligned = difflib count, 2 at 50): the lock test in its De Morgan form `arg_0 != NONE &&
+// !(flag && index != NONE && lock)` 50; the else-if written as `else { if (...) {...} }` 50; `short local_3 = 0;` 163
+// (594 B); the first 0x202e90 call given arg_0 without the short cast 50 (same code each); the first test's index
+// compare ahead of its flag bit 54 (an order probe). The first follow-up still reloads the index from its home.
 // Round 70 (m3 lane 15, fast): the lock test as `!(flag40 && group != NONE && (definition[0x24] & 1))` 50 and the lock bit
 // as `(definition[0x24] & 1) == 0` 50 (same code); permuter (anneal, 600 s, 35 tries): its best needs a volatile store,
 // swapped arguments at the matched 0x1fb8a0 and a steering cast. The second half's count loop has matched 0x290d90's shape

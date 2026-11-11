@@ -2549,6 +2549,12 @@ __forceinline char unit_action_round(real value)
 // (1202); permuter 600 s, 12 tries, best 105. Left on 105: retail's NONE register is first_person_name's EBX and also
 // serves the hand getter's `cmp ax, bx` and the weapon default store (ours EBP, immediates), type EBX vs EBP,
 // pool/offset EDI/EBX vs EBP/EDI, the result/is_biped bytes, current in EAX vs ESI and the divide from memory.
+// m3 lane 5 r169 (fast): the six `goto play` and the label are gone at the same code (234): mode 1's two by a NONE
+// name default with `name == NONE` tests, the combo cases' four by switching on `active ? melee_name : NONE` with the
+// mode selection inside the NONE/0xe000607-0xe00060a case. Tried: the whole choice without gotos under an
+// `if (name == NONE)` after the switch 264 (1189 B); on the kept body, the default and mode-else exits folded into
+// `if (name != NONE)` round the play block 351 (1228 B); the channel declared with the top locals 300. Retail has one
+// exit reading the result byte, which every goto-free spelling tried here leaves as separate returns.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -2557,109 +2563,104 @@ bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byt
 	long weapon_index = unit_action_weapon_get(unit, false);
 	bool is_biped = (byte)(1 << unit->object_type) & 1;
 	bool result = false;
-	long name;
+	long name = NONE;
 	long type;
 	long first_person_name = NONE;
 
-	if (UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index)), 0x1b))
-	{
-		long current = actions->melee_name;
+	long current = UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index)), 0x1b) ? actions->melee_name : NONE;
 
-		switch (current)
-		{
-		case 0xc000073:
-			if (mode == 1)
-			{
-				name = 0xc000075;
-				type = 0x1e;
-				first_person_name = name;
-			}
-			else
-			{
-				name = 0x11000074;
-				type = 0x1d;
-			}
-			goto play;
-		case 0xa0005bb:
-			name = 0xb0005b2;
-			type = 0x26;
-			first_person_name = name;
-			goto play;
-		case 0xc000075:
-			if (mode == 1)
-			{
-				name = 0xc000077;
-				type = 0x20;
-				first_person_name = name;
-			}
-			else
-			{
-				name = 0x11000076;
-				type = 0x1f;
-			}
-			goto play;
-		case 0x130005bc:
-			name = 0x140005b3;
-			type = 0x28;
-			first_person_name = name;
-			goto play;
-		case NONE:
-		case 0xe000607:
-		case 0xe000608:
-		case 0xe000609:
-		case 0xe00060a:
-			break;
-		default:
-			return result;
-		}
-	}
-
-	if (mode == 2)
+	switch (current)
 	{
-		if (is_biped && function_e4050(unit_index))
+	case 0xc000073:
+		if (mode == 1)
 		{
-			name = 0x130005bc;
-			type = 0x27;
+			name = 0xc000075;
+			type = 0x1e;
+			first_person_name = name;
 		}
 		else
 		{
-			name = 0xa0005bb;
-			type = 0x25;
+			name = 0x11000074;
+			type = 0x1d;
 		}
+		break;
+	case 0xa0005bb:
+		name = 0xb0005b2;
+		type = 0x26;
 		first_person_name = name;
-	}
-	else if (mode == 1)
-	{
-		if (weapon_index != NONE)
+		break;
+	case 0xc000075:
+		if (mode == 1)
 		{
-			s_unit_action_melee_animation const *animation = function_e99a0(weapon_index);
-
-			if (animation)
+			name = 0xc000077;
+			type = 0x20;
+			first_person_name = name;
+		}
+		else
+		{
+			name = 0x11000076;
+			type = 0x1f;
+		}
+		break;
+	case 0x130005bc:
+		name = 0x140005b3;
+		type = 0x28;
+		first_person_name = name;
+		break;
+	case NONE:
+	case 0xe000607:
+	case 0xe000608:
+	case 0xe000609:
+	case 0xe00060a:
+		if (mode == 2)
+		{
+			if (is_biped && function_e4050(unit_index))
 			{
-				name = animation->name;
-				type = animation->index;
-				first_person_name = animation->first_person_name;
-				if (name != NONE)
-					goto play;
+				name = 0x130005bc;
+				type = 0x27;
 			}
-			if (first_person_weapon_animation_get(weapon_index, 0xc000073, NULL))
+			else
 			{
-				name = 0xc000073;
-				type = 0x1c;
+				name = 0xa0005bb;
+				type = 0x25;
+			}
+			first_person_name = name;
+		}
+		else if (mode == 1)
+		{
+			if (weapon_index != NONE)
+			{
+				s_unit_action_melee_animation const *animation = function_e99a0(weapon_index);
+
+				if (animation)
+				{
+					name = animation->name;
+					type = animation->index;
+					first_person_name = animation->first_person_name;
+				}
+				if (name == NONE && first_person_weapon_animation_get(weapon_index, 0xc000073, NULL))
+				{
+					name = 0xc000073;
+					type = 0x1c;
+					first_person_name = name;
+				}
+			}
+			if (name == NONE)
+			{
+				name = 0x500000a;
+				type = 0x11;
 				first_person_name = name;
-				goto play;
 			}
 		}
-		name = 0x500000a;
-		type = 0x11;
-		first_person_name = name;
-	}
-	else
-	{
+		else
+		{
+			return result;
+		}
+		break;
+	default:
 		return result;
 	}
 
-play:
 	c_animation_channel *channel = NULL;
 
 	if (!function_e9780(unit_index, name, false, NULL, &channel))
@@ -4241,7 +4242,7 @@ extern vector3f *g_4687bc;
 // offset at +0x5c, where our block is longer, and the 0x188180 call setup after it is blocked by
 // that callee's parameter order in another file.
 // MiniMax R (11-06): no new form, no lower score (45); the g_54e898 copy is a dword load here and a word load in retail, which also moves the exit block two bytes; retail's 0x1eb020 writes a dword into the material slot and it is read back as a dword, ours takes a short * and reads it back sign-extended, and that width is set in another file.
-// score 31 (was 31): 45 before round 220's material local as the global material type (c_type_47f957, constructed from g_54e898
+// score 23 (was 23): 31 before 0x1883e0 matched with c_type_47f957 parameters; 45 before round 220's material local as the global material type (c_type_47f957, constructed from g_54e898
 // as 0x277b80 does) gives retail's word copy, so every branch target now agrees; left are the copy's schedule (retail
 // loads into CX early and stores it just before the 0x0b67a0 call, ours stores at once from DX), the rigid body's
 // data/offset registers in its address add, and the 0x188180 call setup (BLOCKED-BY 0x188180: retail pushes the
@@ -4277,6 +4278,17 @@ extern vector3f *g_4687bc;
 // read before the 0x1eb020 call 98 (1107 B). Re-measured: `&component->rigid_bodies.data[index]` 31, the material
 // copy-initialised from a temporary 31, default-constructed then `m_index = g_54e898` 31, node_count and nodes[0]
 // through `rigid_bodies.data[index]` at each use (0x1d1a20's spelling) 35.
+// m3 lane 5 r169 (plain; base 23: the one extra byte is the movsx of the material for 0x188180's long parameter, the rest
+// is the g_54e898 word in DX stored at once where retail loads CX and stores it just before the 0x0b67a0 call, and the
+// rigid body's data/offset registers): re-measured with 0x1883e0 matched, 0x188180's seventh parameter as c_type_47f957 by
+// value (definition, five declarations, six calls, and s_item_impact's material declared as c_type_47f957 in items.cpp) 8 at
+// 1098 B (0x10c880 69 -> 39, 0x247070 30 -> 6, 0xe4d90 168 -> 163, 0xceee0 90 -> 97 (its own material parameter is
+// c_type_47f957 in retail too), 0x1883e0/0xcf040 still MATCH): HELD (needs lane 16's src/bipeds.cpp and src/unit_object_type.cpp
+// and the reviewer's OK; patch in m3-lane5 build/r169/held-188180.patch). On that patch: material built after the
+// component lookup 10; rigid body as `rigid_bodies.data + index` 8. On main (fast): the rigid body as a const reference to
+// the element 23, the component as `s_havok_component const *` 23, 0x0b67a0 given `&component->identifier` 23, the
+// strength clamp as a ternary 23 (all the same code); the impulse as `-shove.i` (unary minus) 76 (1084 B: the -1.0f
+// multiplies become sign flips). No untried natural form is left for the two register choices.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
