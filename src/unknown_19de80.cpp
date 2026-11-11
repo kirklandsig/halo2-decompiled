@@ -592,6 +592,14 @@ static inline bool teams_enabled_19e1c0()
 // lives cases 387 (1443 B, retail's length), in the spawn-time case only 389 (1439 B; retail's spawn-time case has the pointer's dead
 // `add eax, ebx`, its lives case does not); the cause-team score read into a named local before 0x159130 390 (same code). Body
 // unchanged (gains under 4 are not kept).
+// M3 lane 12 r110 (fast, 0x19e0f0 kept): const-qualified parameters on the plain result (control 691, 1170 bytes):
+// `long const remaining` 691, `word const *const token` 691, `long const token_length` 691, every parameter const 691;
+// every parameter const on the volatile result 390 (same code each: qualifiers do not move `remaining` into a register).
+// The five `%s` format tails through one inline helper (vsnprintf, failure gives `remaining`; five callers): volatile
+// result 465 (1487 bytes), plain result 594 (1269 bytes, aligned 202 against the volatile body's 214, masked 139);
+// with the four name copies through a second inline helper (length, clamp, wcsncpy) plain 594 (same code), volatile 511.
+// Constraint left: the remaining levers are the plain result (merges the name tails while `remaining` stays on the
+// stack) and a natural entry reference to `remaining` (lane 4 r167); no untried natural form reaches either.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
