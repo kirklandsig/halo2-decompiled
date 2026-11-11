@@ -4427,6 +4427,15 @@ void function_db670(long object_index, long vehicle_index)
 
 /* a permutation destroyed elsewhere (over the network): starts its delayed
    effect, or destroys it here */
+// MiniMax R (11-11): no new form, no lower score (42); the mode-1 arm still keeps the permutation base in
+// EAX where retail holds it in EDI, so retail loads the flags word first (`mov eax, [ecx+edi+4]`) and ours
+// loads the effect index first (`mov edx, [ecx+eax+0x34]`); the &owner argument lands at [esp+8] instead of
+// retail's [esp+0xc] because EDI is never pushed. That load order is the order MSVC evaluates 0xd9d60's
+// arguments in, which follows that callee's declared parameter order, so it cannot be changed from this file
+// (report item: retail reads the flags word before the effect index, ours after). The else arm stays blocked
+// by 0xda110, which retail calls with the permutation index in EAX and five stack arguments (ret 0x14) where
+// ours takes the region in EAX and the permutation in ECX. The permuter on this function was starved by other
+// lanes' runs and produced no result.
 // @coldspear's permuter (#104, 2026-10-30): 38 -> 29 only by swapping arguments at a call and adding volatiles (not kept).
 // MiniMax A (11-04, run 41): no new form, no lower score (28); the call to 0xd9d60 still takes the flag in a
 // register other than AL and the permutation other than EAX, and that callee's convention may not change.
