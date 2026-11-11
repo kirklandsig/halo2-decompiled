@@ -170,17 +170,6 @@ struct s_block_candidate
 	long pages;
 };
 
-/* whether the candidate was used longer ago than the best one, or at the same
-   time is smaller */
-static inline bool candidate_is_older(s_block_candidate const *candidate, s_block_candidate const *best)
-{
-	bool result = false;
-
-	if (candidate->time < best->time || (candidate->time == best->time && candidate->pages < best->pages))
-		result = true;
-	return result;
-}
-
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 /* a walk over the blocks, the current one ahead of the iterator */
@@ -607,6 +596,7 @@ struct s_physical_block_iterator
 // `end` alone, a named block offset, the iterator's fields initialized index first. On the kept body: the oldest test with
 // `oldest != NONE` first 201 (different code); the default age clamped by `if (age < 0) age = 0;` 273 (first difference
 // +0x1); the new candidate's pages cleared before its time 203; the lead's two-stage insertion alone 213 (1227 bytes).
+// MiniMax E (11-11), NOT kept (coordinator 11-11): 201 -> 93 came from a new one-caller helper for the candidate test, `entry->previous = NONE` copied into both arms, a one-use pointer to the first block and the best.previous test split in two with the block data reloaded (forms kept only with a byte match; a one-caller helper never); body at 201. The split link order is the lead to explain in plain code.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
@@ -682,7 +672,8 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 			for (long i = head; i != tail; )
 			{
 				s_block_candidate *candidate = &candidates[i];
-				_mm_prefetch((char *)&candidates[(i + 1) % 256], _MM_HINT_T0);
+				long next = (i + 1) % 256;
+				_mm_prefetch((char *)&candidates[next], _MM_HINT_T0);
 				if (segment_time > candidate->time)
 					candidate->time = segment_time;
 				candidate->pages += segment_pages;
@@ -694,7 +685,7 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 						switch (physical->state)
 						{
 						case 0:
-							better = candidate_is_older(candidate, &best);
+							better = candidate->time < best.time || (candidate->time == best.time && candidate->pages < best.pages);
 							break;
 						case 1:
 							better = physical_memory_candidate_is_better(physical, (s_physical_block_view *)candidate, (s_physical_block_view *)&best);
@@ -702,7 +693,7 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 						default:
 							{
 								long age = MAX(physical->time - candidate->time, 0);
-								long best_age = MAX(physical->time - best.time, 0);
+								long best_age = MAX(0, physical->time - best.time);
 								better = best.pages * age > candidate->pages * best_age;
 							}
 							break;
@@ -715,7 +706,7 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 					}
 					head = (head + 1) % 256;
 				}
-				i = (i + 1) % 256;
+				i = next;
 			}
 		}
 		if (have_best)
@@ -742,42 +733,28 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 				s_physical_block *entry = &blocks[result & 0xffff];
 				if (best.previous == NONE)
 				{
+					entry->previous = NONE;
 					if (physical->first == NONE)
-					{
-						entry->previous = NONE;
 						physical->last = result;
-					}
 					else
-					{
-						s_physical_block *first = &blocks[physical->first & 0xffff];
-						entry->previous = NONE;
-						first->previous = result;
-					}
+						blocks[physical->first & 0xffff].previous = result;
+					entry->next = physical->first;
+					physical->first = result;
 				}
 				else
 				{
-					long next = ((s_physical_block *)physical->blocks->data)[best.previous & 0xffff].next;
-
-					if (next == NONE)
+					s_physical_block *before = &blocks[best.previous & 0xffff];
+					if (before->next == NONE)
 					{
 						entry->previous = physical->last;
 						physical->last = result;
 					}
 					else
 					{
-						s_physical_block *after = &((s_physical_block *)physical->blocks->data)[next & 0xffff];
+						s_physical_block *after = &blocks[before->next & 0xffff];
 						entry->previous = after->previous;
 						after->previous = result;
 					}
-				}
-				if (best.previous == NONE)
-				{
-					entry->next = physical->first;
-					physical->first = result;
-				}
-				else
-				{
-					s_physical_block *before = &((s_physical_block *)physical->blocks->data)[best.previous & 0xffff];
 					entry->next = before->next;
 					before->next = result;
 				}
