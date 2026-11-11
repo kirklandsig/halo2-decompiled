@@ -358,22 +358,6 @@ evaluate:
 	return 0;
 }
 
-// MiniMax I (11-08): no new form, no lower score (73); still BLOCKED-BY function_25d740's inline-ness.
-// MiniMax R (11-07, run 38): no new form, no lower score (73); still BLOCKED-BY function_25d740's inline-ness,
-// which is set in src/unknown_25d690.cpp: retail calls it out of line and sinks the ESI/EDI saves, while our
-// build inlines it at this site, so the prologue differs at +0x13.
-// MiniMax C (11-06): no new form, no lower score; still BLOCKED-BY function_25d740's inline-ness,
-// which is set in src/unknown_25d690.cpp: retail calls it out of line and sinks the ESI/EDI saves,
-// while our build inlines it at this site, so the prologue differs at +0x13.
-// MiniMax H (11-05): no new form, no lower score; retail calls function_25d740 out of line and sinks
-// the ESI/EDI saves, while our build inlines it at this site only, and the inline-ness of that
-// helper is set in src/unknown_25d690.cpp.
-// MiniMax B (11-04): no new form, no lower score.
-// MiniMax R (11-01): no lower score; reading the slot's expected index into a local before the actor lookup
-// and the file's /Ob1 setting both leave it at 73 (0x25d740 is still inlined here); calling the view getter
-// twice (76) does not hold it out of line either.
-// MiniMax S (11-09): no new form, no lower score (73); the call to function_25d740 is still expanded at this
-// site, so the prologue still differs from retail's sunk ESI/EDI saves.
 // score 73 (was 73): retail calls function_25d740 out of line and sinks the ESI/EDI saves; our
 // build inlines it, so the prologue differs at +0x13. This round: reading the slot's expected
 // index into a local before the actor lookup, the reversed compare, a named actor local and the
@@ -550,6 +534,28 @@ evaluate:
 // this site, so the prologue still differs from retail's sunk ESI/EDI saves; the inline-ness is set
 // in src/unknown_25d690.cpp, which this lane may not edit, and the forms that hold the call out of
 // line (a noinline declaration or the file's own /Ob1 setting) all compile to the same bytes.
+// MiniMax I (11-08): no new form, no lower score (73); still BLOCKED-BY function_25d740's inline-ness.
+// MiniMax R (11-07, run 38): no new form, no lower score (73); still BLOCKED-BY function_25d740's inline-ness,
+// which is set in src/unknown_25d690.cpp: retail calls it out of line and sinks the ESI/EDI saves, while our
+// build inlines it at this site, so the prologue differs at +0x13.
+// MiniMax C (11-06): no new form, no lower score; still BLOCKED-BY function_25d740's inline-ness,
+// which is set in src/unknown_25d690.cpp: retail calls it out of line and sinks the ESI/EDI saves,
+// while our build inlines it at this site, so the prologue differs at +0x13.
+// MiniMax H (11-05): no new form, no lower score; retail calls function_25d740 out of line and sinks
+// the ESI/EDI saves, while our build inlines it at this site only, and the inline-ness of that
+// helper is set in src/unknown_25d690.cpp.
+// MiniMax B (11-04): no new form, no lower score.
+// MiniMax R (11-01): no lower score; reading the slot's expected index into a local before the actor lookup
+// and the file's /Ob1 setting both leave it at 73 (0x25d740 is still inlined here); calling the view getter
+// twice (76) does not hold it out of line either.
+// MiniMax S (11-09): no new form, no lower score (73); the call to function_25d740 is still expanded at this
+// site, so the prologue still differs from retail's sunk ESI/EDI saves.
+// M3 lane 14 r83 (fast with the file, 0x25d740 and 0x261510; 0x25d740 still inlined in every form): the far tests with the
+// distance first 73 (different code); the view's distance field test before the speed test 73 (different code); the
+// velocity query before the view lookup on this early-return body 88 (252 B), with the distance first too 91 (252 B); a
+// `state->unknown20 <= 0` guard return with the prop compare kept nested 79 (265 B); the view test as its own nested if 73
+// (same code). The slot-data-block form was measured in round 13 (73, same code). src/unknown_25d690.cpp is open this
+// round, but every recorded 0x25d740 spelling that keeps it out of line changes its own bytes: still BLOCKED-BY 0x25d740.
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

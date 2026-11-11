@@ -666,6 +666,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // not kept); the wind written through the existing scale_vector_by_double 118 plain, and matched 0x118140 drops to 50
 // (round 219's shared final double scale on this base: not kept). No other untried natural form of the opening, rotation or
 // tail. Body unchanged.
+// M3 lane 14 r83 (fast with the file and 0x30bf0; both sides end in a plain `ret`, index in EAX): cross3f(&axis, &old) with
+// `+ cross * sine` in the rows 134 (881 B); rows j and k written old-first 158 (882 B); the projection's dot on the global
+// with cross3f on `old` 141 (890 B), that dot before cross3f 143 (894 B); the dot then cross3f, both on the global, with
+// `old` for the rows only 162 (890 B). Same code: scalar-first products, the projection staged as `*= 1 - cosine`,
+// parenthesised row sums, dot3f(&g_55ecd4, &axis). Retail keeps no `old` or `cross` copy in memory (the global's j/k in
+// XMM5/XMM4, cross j/k spilled early, cross i formed inside the i row); only scalar code gives that.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
