@@ -1737,6 +1737,7 @@ struct s_collision_result_25f7b0
 	byte unknown26[0x5c - 0x26];
 };
 
+// MiniMax G (11-10): no new form, no lower score (4): the hit fraction held in a named local scores 2 (the product becomes distance times fraction), but that local holds a value used once and the form is recorded above as not kept, so the original body stays. The collision flag's byte home is still +0x13: declaring it in the outer scope, and three named bool comparisons in the else branch (each used once in a condition), do not move it, because those bools are dropped before the frame is laid out; inlining the flag's expression at its use drops the slot and the code (256).
 // MiniMax C (11-09): no new form, no lower score (4): the full build's diff is only the collision
 // flag's byte home, ours at +0x13 where retail has +0x10; the rest of the frame agrees slot for
 // slot (the type slot at +0x14, the dwords at +0x18 to +0x3c, +0x48 and the word at +0x58), and the

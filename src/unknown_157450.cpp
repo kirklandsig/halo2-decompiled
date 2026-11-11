@@ -775,6 +775,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // one-line pad shift), the team-bit carrier on it 83 (383 bytes; retail shifts twice). No other untried natural form is left:
 // widths, declaration and statement orders, pointer/getter/direct field paths, early exits, carriers and helper boundaries
 // are all listed above.
+// m3 lane 15 r72 (fast): the player loop through the file's datum iterator (`while (data_datum_iterator_next_inlined(&iterator))`,
+// player from `iterator.datum`, 0x158c00's form) 32, on the word mask 77, present not volatile 102, both 63 (same code as each
+// base). Re-measured: a const player pointer 32, on the word mask 77 (N351's immutable player); present not volatile with the dword mask 102
+// (378 B: the loop is retail's, the compare folds present from memory) and with the word mask 63 (384 B: present takes EDI,
+// globals reloaded). No untried natural source form is left in this list; the remaining causes are register choices.
+// A 600 s permuter run (annealing, 53 variants) on the one-use present-bit carrier (29, match-only) found none below 29.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -5361,6 +5367,10 @@ void function_36580(void);
 void function_36880(s_short_rectangle const *rectangle, color4f const *color);
 void function_161420(long player_index, real alpha);
 
+// MiniMax D (11-10): no new form, no lower score (2); retail stores the x87 power (fstp dword ptr
+// [esp]) before the player copy (mov edx, ebx) in front of the 0x161420 call, and every argument
+// form tried here leaves the copy first; the callee's declaration is in another file.
+// MiniMax S (11-10): matches; the power is computed into a named real local (real power = pow(intensity, 1.9f);) and passed on, so the x87 argument store (fstp dword ptr [esp]) precedes the player copy (mov edx, ebx) before the 0x161420 call, as in retail; nothing differs any more.
 // MiniMax C (11-10): no new form, no lower score (2); the player copy (mov edx, ebx) still precedes the x87 argument store (fstp dword ptr [esp]) before the 0x161420 call where retail stores the power first, and a double power expression with a cast to real measures 2; the callee's declaration in src/unknown_1600f0.cpp fixes the argument order.
 // MiniMax D (11-06): no new form, no lower score (2); the only difference is still the order of the
 // player copy (mov edx, ebx) and the x87 argument store (fstp dword ptr [esp]) in front of the
@@ -5451,7 +5461,10 @@ void function_159880(void)
             if (intensity < 0.0f) intensity = 0.0f;
             else if (intensity > 1.0f) intensity = 1.0f;
             if (intensity > 0.0f)
-                function_161420(player_index, powf(intensity, 1.9f));
+            {
+                real power = pow(intensity, 1.9f);
+                function_161420(player_index, power);
+            }
         }
     }
 }
@@ -5757,6 +5770,16 @@ void __stdcall function_d6bc0(long object_index);
 // case 0 as an early `break` on the bits with the distance test after it 52 (same code); the countdown's removal as
 // `if (type != 1 || !a && !b) d6bc0(index); else { ...; continue; }` 52 (same code), with the type test as a nested if
 // 52 (same code); the reset distance as `reset = !(d > 100) || function_15f060(...)` 52 (same code).
+// M3 lane 13 r81 (fast, base 52; the 7 recipe rebuilt is 7 again, its field-test variant 172 at 858 bytes): with the field
+// test `entries` is loaded into EDI at the loop top's index read and kept there (reloaded after the EDI-argument calls), the timer
+// moves to EBX; retail never enregisters `entries` and keeps the timer in EDI. On the field-test form: the reset counter as one
+// conditional store `= reset ? 0 : value + 1` 182 (851 bytes); the countdown as `if (value04 > 0) { if (--value04 == 0)`,
+// the object lookup given the field with the local kept for the test, the index re-read into the same local just before
+// the schedule test: 172 each (the field test's code). On the 7 form: case 0 written before case 1 7 (same code). On the kept
+// body: the reset counter as that conditional store 225; `long type = engine ? engine->p0() : NONE` 205; the 0x12c bits
+// tested bit 1 first 116 (first difference +0x5a); the engine pointer declared before `type` 83; the countdown in place
+// 52 (same code). Kept, same code: both squared distances through the existing dot3f 52. Re-measured: true default cleared
+// by the field test 172, a named timer pointer for the zero test, delay, countdown and continue 178.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
@@ -5786,9 +5809,7 @@ void __stdcall function_15ae70(s_netgame_entry_state *entries)
                 {
                     vector3f displacement;
                     vector3d_from_points3d(&object->position, (point3f *)(placement + 0x40), &displacement);
-                    real distance_squared = displacement.k * displacement.k;
-                    distance_squared += displacement.j * displacement.j;
-                    distance_squared += displacement.i * displacement.i;
+                    real distance_squared = dot3f(&displacement, &displacement);
                     if (distance_squared > 100.0f)
                         reset = function_15f060(&object->position, *(real *)(preset + 0x28));
                     else
@@ -5814,9 +5835,7 @@ void __stdcall function_15ae70(s_netgame_entry_state *entries)
                     {
                         vector3f displacement;
                         vector3d_from_points3d((point3f *)(placement + 0x40), &object->position, &displacement);
-                        real distance_squared = displacement.k * displacement.k;
-                        distance_squared += displacement.j * displacement.j;
-                        distance_squared += displacement.i * displacement.i;
+                        real distance_squared = dot3f(&displacement, &displacement);
                         if (!(distance_squared > 1.0f)) continue;
                     }
                     break;

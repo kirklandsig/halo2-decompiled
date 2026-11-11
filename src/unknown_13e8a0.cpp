@@ -531,6 +531,11 @@ struct s_text_line_measurement
 // the copy runs the other way and the adds move ahead of the test; one-use local, not kept); the same
 // started from the advance and completed before the test 74; a copy of the advance at its definition,
 // accumulated in the else arm (as `+` or `+=`) 77 (copy propagated away).
+// Round 172 (m3 lane 5, fast): the bound test positive with the arms in natural order (`x1 > sum || !count`, or
+// `count == 0`) 77 and the products written scale first 77 (identical code); width and index accumulated in the
+// returned measurement aggregate 96 (400 bytes, XMM pattern unchanged); `advance + offset + kerning` named once for
+// both the test and the update 84; the token test negated with the done arm first 104. Diagnostic: `(real)(scale *
+// 1.f)` chains 1-3 deep in the kerning product fold away (identical code).
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

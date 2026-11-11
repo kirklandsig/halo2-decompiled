@@ -374,6 +374,7 @@ struct s_1f8a70_actor
 	s_1f8a70_frame frame;
 };
 // score 182 (was 182): earlier 188; Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
+// MiniMax S (11-10): no new form, no lower score (182): the route dispatch still follows case 7 where retail puts it after case 5 with cases 6 and 7 behind it, and the final result still goes through BL where retail returns its frame byte.
 // MiniMax E (11-09): no new form, no lower score (188).
 // MiniMax E (11-06): 188 then (was 188): no new form lowered it. The byte locals sit two bytes lower
 // than retail's (ours at esp+0x10 where retail has esp+0x12), retail switches on the word at
@@ -699,6 +700,13 @@ struct s_1f8a70_actor
 // Round 143 (m3 lane 7, fast): the mode cases in source order 672345 382, 234675 372, 234576 334,
 // 567234 388, the default label first 182 (block layout follows source order); `result = route_found;`
 // once after the final if/else 326, first with the test on it 317, the failing arm first 369.
+// M3 lane 9 r110 (fast with 0x1f86a0, 0x1f8750, 0x1f8780, 0x1f8940, 0x1f90f0, 0x1f8510, 0x1f9580, 0x1f9490, 0xe70b0, all
+// matched; control 182): the mode switch on the actor view's unknown4ac instead of the frame view's mode 182, the route
+// case's mode tests through unknown4ac 182, both 182, `long route = route_mode;` as one declaration 182 (all the same
+// code). Retail's order: cases 2-5, then the route test head, its range checks and the route dispatch (with its false
+// default), then cases 6 and 7 (both jumping back to the head), the zero-route test, the failure block (false stored,
+// 0x1f8750, the result reloaded), route cases 2, 1, 0 and the final block, whose not-found branch enters the failure
+// block after its store.
 // M3 lane 3 r231 (fast, control 182). Re-measured on this body: the failure block as the mode switch's default (round 129's
 // form; here `default: failed: route_found = false; goto finish;` with `finish:` before the final test) 182 (same code: the
 // block is threaded away). New: the success arm returning `route_found` itself 310 (the first exit folds); the route admission
@@ -717,6 +725,13 @@ struct s_1f8a70_actor
 // the route test still follows case 7); the failure block as the mode switch's default with `failed:`/`release:` labels and the end's
 // `!route_found` jumping to `release:` 438 at 1640 bytes (first exit folds). No existing helper covers the three-field reset
 // (actor_reset_state and 0x1f86a0 also clear 0x5b4/0x5b6/0x4ac); a scan of include/ found no other helper this body writes out.
+// M3 lane 2 r72 (fast with the file's ten matched functions, all matched throughout; aligned/masked in brackets, base
+// [49/47]): `long route = route_mode;` as one declaration 182 (same code); the failure block (false store, 0x1f8750 call,
+// `return route_found;`) as the mode switch's default with the route test's else as `goto failed;` 453 (1668 bytes)
+// [109/89], that with the join's failing arm also `return route_found;` after its own call 435 (1644 bytes) [99/79] (the
+// two calls are not cross-jumped and the default's false still folds); case 6's `route_mode = 1` arm last together with
+// case 7's node stored before its radius 366 (1624 bytes) [54/52]. Diagnostic: `(void)&route_found;` 182 (same code:
+// taking the address alone does not keep the false store or the reload after 0x1f8750).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

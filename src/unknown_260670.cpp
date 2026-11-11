@@ -42,6 +42,12 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 
 // score 440 (was 528): earlier 611, 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // Earlier 528 (was 528, 611, 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// earlier 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// (the merged second note line: was 528, 611, 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// frame 0x8a8 against 0x8a0, 3097 bytes against 3077; site 2 inlines 0x2600a0 where retail calls it, and 0x262a30 is
+// called where retail inlines it around a call to 0x13e2d0 (see the r111 lines below the notes).
+// Earlier 700 (was 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// score 528 (was 528, 611, 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // a bool output in a register across a later call, as retail (0x1b0540 matched with plain output locals).
 // Round 178 (m3 lane 4, plain checks; aligned = difflib count with addresses masked, 293 here): the call sequence is
 // retail's except two callees: retail calls 0x2600a0 in the sorted loop and 0x13e2d0 for the owner, ours inlines both
@@ -93,6 +99,18 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // standalone locals gives retail's F+8 and F+0xc but leaves the flags at F+2/F+3 and the frame at 0x8a4 against retail's
 // 0x8a0 (841), the same split with a four-byte selection scores 836, and an aggregate whose flags come first is kept
 // in registers by the compiler (836), so the aggregate stays.
+// M3 lane 12 r111 (plain; 0x2605d0, 0x2613d0, 0x2600a0, 0x262a30, 0x13e2d0 and the other users of 0x11e000/0x2600a0 stay matched;
+// aligned = difflib count, then with registers masked, base 278/106). The perpendicular block is 0x11e000's body: calling
+// `function_11e000(target, actor position, &delta)` inside the sqrt 629 (3097 B, 284/108; it inlines, but with the contributor's
+// unmatched statement order and a spill); with the first evaluator pass as `function_2600a0(actor_index, context, NULL)` as well 529
+// (3072 B, frame 0x8b0, 246/100: site 1 then compiles to retail's inline `call edx` loop); plus the random pick through the existing
+// random_index 529 (246/99); site-1 call and random_index without 0x11e000 543 (3056 B, frame 0x8a4, 240/101); on the base, the
+// delta's length block (normalize3d's body with its arms swapped) as `position->unknown18 = normalize3d(&delta)` 576 (frame 0x8ac,
+// 277/103: the block itself becomes retail's, float constant, `ja` and the zero store). Diagnostic, not kept: /Ob1 on this file
+// 624 (site 2 still inlined: LTCG inlines by the callee's file, so retail's site-2 call needs 0x2600a0's file built without
+// auto-inlining, a flags decision). Next: the helper calls together (0x2600a0, random_index, normalize3d, and 0x11e000 once
+// 0x11e000 matches, BLOCKED-BY 0x11e000) on one base; most of the positional count is the frame size moving every parameter
+// offset. Body restored.
 // m3 lane 2 r69 (plain checks; aligned/masked in brackets, base 528 [341/174], frame 0x8a8): the segment block is
 // the existing 0x11e000's body written out (retail's clamp `0 > t ... else if (t > 1)` joins in one register, and
 // 0x11e000 is inlined here in retail), and the length block is normalize3d's (retail's float epsilon and its
@@ -123,6 +141,17 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // above 440. Diagnostic (flags, not kept): `inline` on 0x262a30 with 0x13e2d0's file /Ob1 inlines 0x262a30 as retail but the
 // sorted-loop site stays inlined (564 on the 528 base). On 440, the two history resets through the actor view's typed fields
 // (`unknown3fe`, `unknown400[i].reference` in a counted loop, 0x262800's view) 773 at 3098 bytes.
+// M3 lane 2 r72 (fast with 0x2605d0/0x261280/0x2600a0/0x262a30/0x260060/0x2613d0, all matched throughout; aligned/masked in
+// brackets, base 528 [343/179]): retail's main loop keeps count in EBX (dword load, `test bx, bx`) through the random pick and
+// reads scratch from its stack slot at the 0x270750 call; ours keeps scratch in EBX there and compares count in memory. The
+// main loop index as `long` 555 [360/193]; the two flags declared bare and cleared by one chained `= false` after the
+// declarations 581 [346/184]; result declared after the four state values 528 (same code: frame slots do not follow
+// declaration order); the length test with a float epsilon (`fabs(length) < 0.0001f` or `0.0001f > fabs(length)`) 632
+// [347/182] (retail's `fld dword` constant, one instruction shorter), that with the arms swapped as in normalize3d (`if
+// (!(fabs(length) < 0.0001f))` scale, else zero) 624 [345/179]. Diagnostics (not kept): scratch read once through
+// `byte *const *` to it at the loop call 528 (same code); a global in place of scratch at that call 555 (the global takes
+// EBX instead: count never gets a register in our main loop). Compile-only (no /GL) packs the two flags at adjacent bytes
+// as retail does; our LTCG build gives each its own dword.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

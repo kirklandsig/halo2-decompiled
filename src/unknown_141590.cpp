@@ -1191,6 +1191,12 @@ void function_143250(
 // (12049 B, frame 0x32c, ret 4, masked difflib count 699 against 1063): any way below about 950 declarations gives
 // retail's convention, but each rewrites the body's allocation. Compile-only (no /GL): rotation is loaded once at entry
 // under both /Gd (EAX) and /Gr (ECX). The call deletions tried under --fast said nothing about the convention (pinned).
+// M3 lane 12 r111 (plain, callers 0x22850 223 and 0x23690 401 unchanged, 0x143250 matched): workspace fields in rotation-index
+// order (r0 term_5, r1 term_1, r2 term_6, r3 term_7, r4 term_0, r5 term_2, r6 term_3, r8 term_4) 1766 (67 listing lines move);
+// fields in band two's first-use order (term_7, term_5, term_0, term_1, term_3, term_2, term_6, term_4) 1766 (57 lines move);
+// `term_10 = workspace.term_4;` right after term_8 (retail evaluates term_8, term_10, term_11, term_12, term_13) 1766 (same
+// code); the workspace as plain locals with `real matrix[49]` declared first 2113 (10412 bytes, frame 0x300 as retail, ret 8); the plain
+// terms declared in rotation-index order 2113. Body restored.
 // Round 87 (m3 lane 11, plain with 0x22850/0x23690/0x143250): band one's nine matrix stores read from rotation[] (its five
 // negation/copy terms dropped) 1787 (10745 B, ret 8, rotation still on the stack); with the nine leading copies after
 // band one's early return 1830 (10706 B); the 37 copies of copies in bands two and three (`term_N = workspace.term_K`,
@@ -1200,6 +1206,14 @@ void function_143250(
 // m3 lane 11 r90: no trial run. The lever this note records (fewer than about 950 declared locals for retail's EAX rotation and
 // ret 4) has a dozen measured families above; each reaches the convention only by rewriting the allocation (1775-3684), and a new
 // attempt needs the 1341 term declarations re-expressed per band rather than another one-step form.
+// M3 lane 2 r72 (plain checks with 0x22850/0x23690/0x143250; base 1766, aligned 2934, callers 223/401 unchanged in each,
+// 0x143250 matched): retail ends `ret 4` (rotation EAX) and ours `ret 8` as the prompt says (both listings' last lines).
+// Bands two and three nested under `if (order > 2)` / `if (order > 3)` with one `return result;` 1766 (same code); rotation
+// read through one `real const *` local copy at the nine reads 1766 (same code); every term declared at its first
+// assignment instead of at the top 1766 (same code); the workspace declared after the 1341 terms (plain; earlier rounds
+// measured it fast only, where the convention is pinned) 1766 (same code); the two root products term_41/term_221 stored as
+// real 1766 (aligned 2952). Diagnostic (not kept): `#pragma optimize("p", on)` around the body 3960 (12712 bytes), so
+// retail's source-order schedule is not the float-consistency setting.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

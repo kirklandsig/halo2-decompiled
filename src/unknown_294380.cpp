@@ -243,6 +243,14 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // 522 at 3716 B but aligned 57 / masked 55: object / nearest pair and the second 0x2949aa site's dots as retail, record / sum and
 // position / offset pairs, the first 0x2949aa site, the walk's 1.0 load and the centroid's y/z loads still differ (lead, not kept).
 // A `vector3f const *` forward pointer for the scale, the walk dot and the k drop 614 (3708 B). Body unchanged at 252.
+// M3 lane 9 r110 (plain with 0x293b30, which stays matched; `--fast` still builds it differently, 280): the speed vector
+// declared without its copy of the default vector 797 (3683 B: retail keeps that copy). Re-measured on this 252 body: the
+// request's speed vector stored before its forward vector 248 (the four tail stores then are retail's; a statement order,
+// kept only with a match). Frame slots read from the spills (frame offsets): retail object 0x5c, count 0x60, nearest
+// distance 0x64, centroid sum 0x68-0x70, pool record 0x74; ours nearest 0x5c, count 0x60, object 0x64, record 0x68, sum
+// 0x6c-0x74. On that 248 form (plain): the waypoint radius as a ternary initializer 269; the hysteresis as one compare
+// against a ternary threshold 369 (3704 B); the wander/steer sum written steer first 248 (same code); the speed zeros
+// through vector3f_assign re-measured 452 (3712 B).
 // M3 lane 16 r104 (plain with 0x293b30, which stays matched): the waypoint radius as a ternary 273; the hysteresis threshold
 // as a named local 387 (3705 B); the waypoint index read once into a short local used three times 281 (3717 B); the 3.0 clamp
 // after the wander call as a ternary 252 (same code); the separation weight passed as `0.0f - local_29` 252 (same code).
@@ -253,6 +261,12 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // (3716 bytes, masked 41); 0x294669's i term vector-first like j and k 252 (same code). Diagnostic: two of the walk position's reads
 // dropped 643 at 3693 bytes (the position moves to 0x9c, not to retail's 0x20). Left with slots masked: the walk's alignment i term,
 // the second 0x2949aa site's fold, the scaled centre's early y/z loads and the nearest fallback's i product.
+// M3 lane 2 r72 (plain with 0x293b30/0x293d30/0x294050/0x295600, all matched throughout; aligned/masked in brackets, base
+// [90/25]): the walk's position and offset declared at the top of the walk's if-block (outside the loop) 252 (same code);
+// the post-walk vector declared at the top of the function 252 (same code): neither scope moves the shared slot (retail's
+// position shares the post-walk vector's slot, ours the offset); the neighbour test as `local_26 > 0.0f && field_34 >
+// local_26` 256 [95/30]; the squared distance named once and used for the reciprocal and the separation test 281 (3717
+// bytes) [106/38]; the nearest point copied before its distance 255 [91/27].
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

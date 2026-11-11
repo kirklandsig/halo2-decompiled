@@ -532,6 +532,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // retail holds &graph->mode_count in EBX and reloads the graph from its home (EBP), ours keeps the graph in EBP.
 // frame eight versus twelve; primary/fallback result homes entry +16/+16 versus retail +4/-4.
 
+// MiniMax H (11-10): no new form, no lower score (348): through +0x1de the bytes are retail's; the graph
+// pointer and the mode-count pointer still change register between the two loops, and retail's final
+// success byte stays unnormalised there while ours is normalised.
 // Earlier 399 (was 399): frame 8 versus 12 and hidden-result homes still differ.
 // Earlier: frame eight versus twelve and hidden query-result homes still differ.
 // Earlier: frame 8 versus 12 and hidden-result homes still differ.

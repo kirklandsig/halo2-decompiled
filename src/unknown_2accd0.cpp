@@ -610,6 +610,7 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
+// score 34 (was 34; round 103 unchanged): the scratch buffer is one address-taken record (storage, owner, buffer,
 // score 34 (was 34): the scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
 // and size through pointers; with the `void *` parameters view and one function-scope byte count the
@@ -999,6 +1000,13 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 69 (m3 lane 15): no new form; three of the 34 lines are the same float constants on both sides, flagged only where
 // the code is a byte out of line; the rest is the one rotation above (entry total EAX/EDX, hoisted body_size ESI/ECX,
 // size/position ESI/EDI).
+// M3 lane 9 r110 (fast with 0x2adb10 and 0x2ada70, both matched; control 34): retail's body case computes `body_size -
+// body_offset` in ECX (the hoisted body_size) and copies it to EDI, a copy the direct arm shares with the scratch arm's
+// clamp by a cross-jump; ours coalesces body_size, the remaining count and size into ESI, so no copy is left to share
+// (retail gives the position ESI and the size EDI; ours the reverse). The direct arm's size before its buffer 34 (only
+// the buffer's lea moves); the signature update given the requested size instead of the transfer count 136; the buffer
+// arms swapped on `!parameters->body` 41. The explicit if clamp re-measured 34 (same code). The compile-only harness
+// gives 30 aligned lines for this body.
 // M3 lane 3 r231 (fast with 0x2adb10 and 0x2ada70, both matched in each; base 34, round 103 also unchanged at 34; a compile-only
 // /Gr harness with retail-normalized operands gives 28 aligned lines on this body, all register rotation). New: the buffer arms
 // reduced to the buffer and one shared `if (parameters->body || size > remaining-expression) size = remaining-expression;` 177
@@ -1016,6 +1024,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // note is listed: getter references, size/position spellings, total local and orders, clamp forms, case/test orders, field
 // types, the signature file-handle local, the existing MIN and remaining helpers, the body early-out. A scan of include/ for
 // helpers this body writes out found none.
+// M3 lane 2 r72 (fast with 0x2adb10 and 0x2ada70, both matched throughout; masked = registers/slots-masked aligned count, base 2):
+// the task's state store first, then the total and its conversion 232 (masked 33); the total, then the state store, then the
+// conversion 42 (masked 6); the body case's `bytes == size` as `size == bytes` 34 (same code); the direct arm's size before
+// its buffer on this base 34 (masked 4); the scratch clamp as `MIN(body_size - body_offset, size)` 35 (masked 3).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
