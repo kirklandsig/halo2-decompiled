@@ -1387,6 +1387,14 @@ bool function_2dba0(long tag, bool alternate, long c, long d, long e, point3f co
 extern bool g_4ba019;
 long function_baf80(long object_index);
 
+// MiniMax I (11-11): no new form, no lower score (12); reading the definition and the model through a `long *`
+// and an index (`definition[14]`) compiles to the same four instructions, the parent mask written inline in the
+// subscript (22: the function grows to 459 bytes) and the mask in a `long` local (22: the pool is still loaded
+// before the mask) both fail; retail's order (the mask, then the pool load) is not reachable from the source, since
+// the pool load is hoisted above the mask in every spelling tried.
+// MiniMax I (11-10): no new form, no lower score (12); a dword-masked parent index (`long parent_slot = parent & 0xffff;`,
+// 22 — the mask reaches EAX but g_4e0300 still loads first and the function grows to 459 bytes) and a dword-indexed
+// model read (`dword *definition ... definition[14]`, 12 — no change).
 // MiniMax R (11-10): no new form, no lower score (12): retail reuses the dying definition's eax for the pool's mask before the pool is acquired, ours acquires the pool first; the forms the earlier rounds tried all left the score where it is.
 // MiniMax C (11-09): no new form, no lower score (12).
 // MiniMax R (11-06): no lower score (12); the dword-masked parent index 22, an inline parent mask 22, an inlined parent model 22 and an inlined first-chain definition 12 score no better; the parent mask written inline in the subscript gives 22 as well, so retail's order (mask, scale, then reload g_4e0300) is not reachable from the source.

@@ -730,6 +730,11 @@ struct s_biped_flags_10a_view
 // 222/222/222 (same code); the early exit returning `changed` 222 (same code). Ours still caches flags_348 in CX and 0
 // in DL for the counter clears where retail tests memory and stores immediates (the constant hoisting of 0xe0c70's
 // 0x9fff).
+// MiniMax I (11-10): no lower score (222 kept); a state local computed at the top of the function scores 322 and a
+// single-exit goto form 301, so both are worse than the base. What still differs: retail computes the state pointer
+// (the `movsx`/`add` pair) up front and spills it at [esp+0x20] with the biped index at [esp+0x24], ours spills the
+// index at [esp+0x20] and reads the parent through the parent-object helper where retail reads the parent's index
+// field directly; retail also pushes EBX after its early-exit test and shares one epilogue, ours has its own.
 // @retail 0xdd360
 bool __stdcall function_dd360(long arg_159e6d)
 {

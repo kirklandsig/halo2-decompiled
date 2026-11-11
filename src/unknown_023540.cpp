@@ -2775,6 +2775,10 @@ bool spherical_harmonics_evaluate_directional_light(vector3f const *direction, d
     real red, real green, real blue, real *red_result, real *green_result, real *blue_result);
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green,
     real *blue, byte order, vector3f *direction, point3f const *position);
+// MiniMax I (11-10): 364 (was 401): the sample flag is written the way retail writes it (0 at 0x23716 before the
+// admission chain, 1 at 0x23745 after it, read at 0x238ad and 0x23b62), the level clamp is `>=` (retail's cmovge),
+// the coefficient pointer starts at layout->data and reaches the level entry through pointer arithmetic (retail
+// loads the entry address and then the entry), and the sample count is a long. 0x73360 still matches.
 // score 401 (was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
@@ -2877,7 +2881,8 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, long order, lo
         if (found || g_5093e8 >= 24) goto done;
         g_4b89b0[g_5093e8].key = object_index;
         *(short *)&g_4b89b0[g_5093e8].unknown4 = order;
-        bool use_samples = structure_has_matching_samples();
+        bool use_samples = false;
+        if (structure_has_matching_samples()) use_samples = true;
         real red[16], green[16], blue[16];
         if (!use_samples)
         {
@@ -2885,9 +2890,10 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, long order, lo
             spherical_harmonics_evaluate_directional_light(&direction, layout->order,
                 1.0f, 1.0f, 1.0f, red, green, blue);
         }
+        real const *coefficients = layout->data;
         long level = 5 - order;
-        if (level > layout->level_count - 1) level = layout->level_count - 1;
-        real const *coefficients = layout->data + layout->levels[level].offset;
+        if (level >= layout->level_count - 1) level = layout->level_count - 1;
+        coefficients += (layout->levels + level)->offset;
         long stride = layout->groups * (layout->columns * 3 + 4);
         s_bucket_source const *buckets = (s_bucket_source const *)vertices;
         long total = function_023540(count, buckets, &g_4b89b0[g_5093e8], stride);
@@ -2903,7 +2909,7 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, long order, lo
             for (long bucket = 0; bucket < count; ++bucket)
             {
                 byte const *pair = (byte const *)vertices + 4 + bucket * 4;
-                word available_samples = *(word const *)(pair + 2);
+                long available_samples = *(word const *)(pair + 2);
                 if (!available_samples) continue;
                 real const *source = (real const *)((byte const *)vertices + 0x44 + *(short const *)pair * 0x30);
                 transform4x3f matrix;

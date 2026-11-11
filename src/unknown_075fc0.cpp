@@ -248,6 +248,12 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // threshold 396 (1356) 155/96. Left on the 368 form: retail keeps NONE in ESI and the index in EBP (ours the reverse), forms the channel base right
 // after the connection, zeroes the has-host byte before its call, keeps the reliable payload in EBP ahead of the quotient test with local_6 in memory,
 // and tests 0x75910's result as a byte (`test al, al`; BLOCKED-BY 0x75910: its definition returns long and sits in a held file).
+// MiniMax I (11-10): no lower score (356 kept); dropping the redundant copy of the host state (a bool local that only
+// ever mirrors another local) does reach retail's 0x34 frame, but the score rises to 416 (1356 bytes) because the
+// register allocation shifts with the frame. What still differs: retail keeps `this` in EDI with four register saves
+// and none in ESI, keeps the channel index in EBP, and spills into the argument area, ours reserves 0x38 and splits
+// the saves differently; retail also keeps the NONE state in ESI and forms the channel base right after the
+// connection.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
