@@ -1690,6 +1690,9 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax B (11-11): no new form, no lower score (378); retail opens with the input length computed in x87 as
+// the matched magnitude3d helper's own body, while ours calls that helper from another file, so the length's
+// home and the frame (0x4c against retail's 0x40) stay as they are.
 // MiniMax D (11-10): no new form, no lower score (378); the frame is 0x4c where retail's is 0x40, and the
 // 0xd37f0 call hands over its block and query in the other order, which the callee's own file fixes.
 // MiniMax S (11-10): no new form, no lower score (378): our frame is 0x4c against retail's 0x40, so the

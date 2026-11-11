@@ -1445,6 +1445,7 @@ long function_baf80(long object_index);
 // P362: Parent narrowed in place 22; shared definition receiver 12; initial/parent/both
 // load-chain scopes 12/12/12; single void exit 12; explicit limit tests 12; both model
 // handles immutable 12. NOT kept: no byte equality or gain; original body restored.
+// MiniMax A (11-11): no new form, no lower score (12); the definition and model reads written inline (the model twice) and the parent chain written inline all compile to the same code, and the permuter's fifty tries kept the baseline.
 // @retail 0x4baf0
 void function_4baf0(long object_index, real distance, byte *first, byte *second)
 {
@@ -1770,6 +1771,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
     perpendicular->j = direction->i * cross.k - direction->k * cross.i;
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
 }
+// MiniMax I (11-11): no new form, no lower score (193): the body is 20 bytes shorter than retail's 812; the known form that reaches 177 raises 0x2e9e0 to 573, and 0x2e9e0's 492 body is tuned against the callee this one calls, so the two cannot be moved apart.
 
 // score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
 // MiniMax B (11-11): no new form, no lower score (193): the helper forms that reach 177 and 182 still raise the
@@ -2003,6 +2005,7 @@ PRIVATE inline real clamp_2e9e0(real value)
 real game_time_get_seconds();
 void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 
+// MiniMax I (11-11): no new form, no lower score (492): the body is retail's length (2285) and the first difference is at +0x2; the body is tuned against the callee 0x2f2d0 calls, and the form that would take 0x2f2d0 to 177 raises this one to 573.
 // score 492 (was 492): earlier 492 (was 507): every D3D call here in the D3DDevice:: member form (retail inlines the vertex push-buffer
 // write, 0x2f17c-0x2f1ba; only the member form inlines it) and clamp_2e9e0 as an initialised single-exit result:
 // retail length, EBX definition and EBP NONE as retail. Frame 0x90 versus 0x94, the 12-byte output homes (ours
@@ -2896,6 +2899,7 @@ extern s_record_pool *g_4e030c;
 void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, long count);
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
+// MiniMax I (11-11): no new form, no lower score (147 in the reduced image, 113 in the full build): the body is 16 bytes shorter than retail's 548 and the first difference is at +0x2; the reduced image's score is inflated because the globals it leaves out are not masked.
 
 // score 113 (was 113): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop top; below).
 // r136 lane 7: the list read once into `s_masked_list *list` 132 plain (fast 136 at 538 bytes, LCS-aligned 68 -> 61);
@@ -3487,6 +3491,7 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
+// MiniMax D (11-11): no new form, no lower score (486).
 // score 486 (was 486): frame 0x60 versus 0x38; retail keeps one 12-byte home for the previous camera position and
 // each element's old position, reads the delta from the stored view position, and copies the scaled projection
 // inputs into fresh registers in both arms; those forms lower the aligned count but shorten the body (below).
