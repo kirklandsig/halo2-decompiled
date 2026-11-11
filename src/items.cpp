@@ -1628,6 +1628,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // impulse paths apart with the flag clear at a different point in each, so splitting ours that way
 // (223) and giving the clear a byte-unit bit field (206) both score worse.
 
+// MiniMax G (11-11): no new form, no lower score (140); the return byte sits at esp+0xe where retail puts it at esp+0xf, the
+// release flag is cleared by a load, an and and a store where retail masks the byte in place, and retail expands the transform
+// helper into the call site while this build calls it out of line from a file this lane may not edit.
 // MiniMax S (11-10): no new form, no lower score (140): the return byte sits at esp+0xe where retail puts it at esp+0xf, the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write, our frame carries an extra byte local at 0x12, and the damage data block sits twelve bytes below retail's.
 // MiniMax I (11-10): no new form, no lower score (140); the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write, and the return byte still sits at esp+0xe where retail puts it at esp+0xf.
 // MiniMax D (11-05): no new form, no lower score.
