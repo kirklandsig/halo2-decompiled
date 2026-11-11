@@ -393,6 +393,8 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // score 43 (was 43; 43 at r76; before r98 was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's. Left: case 3's
 // arms are laid out none-first (retail selected-first, about 22 lines), the first cross's a.k * b.i and average.i load a first
 // (retail b.i first), both dots sum k, j, i (retail i, k, j) and the inlined 0x1201a0 tail loads j first (retail copies inv first).
+// MiniMax D (11-11): no lower score (43): the permuter over the case arms and the dot products found nothing better in its
+// time; re-laying the arms the way retail has them breaks the tail that the two selected arms share, so the body stands.
 // Round 219 (lane 3; fast, plain for the kept form): case 3's arms swapped (`selected == NONE` first), the existing cross3f_staged
 // in both selected arms and direct `*out = *a` / `*out = average` copies 43 (kept; each alone or in pairs 58-199). On that body:
 // case 3 selected-first again with a `break` 178; `if (selected == NONE) { copy; break; }` 43; case 3 through the existing
