@@ -496,6 +496,17 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // 151 -> 159); the width product after the two flip calls 423 (1932 bytes). The compile-only harness does not
 // reproduce this body (normalized difference 394 against our own build), so the blend's XMM5 residence could not be
 // screened there.
+// Round 73 (m3 lane 15, fast = plain; register-masked aligned 59, all in the post-join aspect block plus the tint/second-UV
+// homes): geometry as `real geometry[4]` with element copies, or kept as the four-real overlay copied element by element, 400
+// (1974 bytes, identical code); the complement and both inverse sums computed ahead of the first aspect test 305 (1963 bytes,
+// the frame moves); the tint clamp through the existing PIN_126660 macro 429 (1933 bytes). Re-measured: the complement written
+// at each use 338 (1972 bytes). Diagnostics (wrong code, reverted): the tint keeps the top 16-byte slot with the colour
+// modulation removed, the clamps removed, both removed, the seed block removed, the tint as a four-real overlay, uv_b's copy
+// removed, a second flip of uv_b, uv_b's defaults removed, and the final call's UV arguments swapped (211, homes unchanged),
+// so neither reference density, type nor argument order sets these homes; the compile-only frame probe gives a third order
+// (geometry on top), so it cannot screen them.
+// Round 73, continued (diagnostics): uv_b's flip call under an always-true test 245, under two nested ones 405 (1958 bytes);
+// the tint stays on top in both, so lowering uv_b's branch frequency does not move the homes either.
 // M3 lane 1 r89 (fast; control 211, aligned 89, masked 34; retail's frame from its final call, low to high: geometry
 // +0x20, first UV set +0x30, tint +0x40, second UV set +0x50; ours exchanges the tint and the second set): the second set's
 // bitmap-arm defaults as `uv_b=uv_a;` after the first set's four stores 350 (1959 B); the aspect values set in both arms of
@@ -510,6 +521,15 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // defaulted by `if (count < 1) count = 1;` 427 (1933 bytes); the frame position as `(real)intervals * f()` 211 (same
 // code). Diagnostics (reverted): blend passed as 0 to the last call 196 (masked 35, the
 // blend still leaves XMM5); blend zeroed per arm instead of at entry 469.
+// M3 lane 13 r82 (fast; control 211, aligned 213, register-masked 34): only the second set's reciprocals moved after the
+// first aspect test 239 (1957 bytes, masked 27: the join after the frame block becomes retail's, context reloaded in the arm
+// and the blend reloaded into XMM5 on the other paths, so the blend's XMM5 home is register pressure in the extents block);
+// the second set's extents and reciprocals after the first aspect test 278 (frame 0x5c, masked 28), between the flip and that
+// test 260, after `remaining_blend` 278; retail's order ax, ay, by, inv_ax, inv_ay, bx with the late second reciprocals 317;
+// the aspect pair as a `vector2f` 205 (1942 bytes, aligned 217: positional only, the packed colour's home moves), with the
+// inverse sums as a `vector2f` too 205 (same code), with the late second reciprocals 231; the extents as two `vector2f` 219,
+// with the aspect pair too 210 (aligned 223); the reciprocals as two `vector2f` 216; the geometry corners as two `point2f`
+// 221; the centre as a `point2f` 211 (same code).
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

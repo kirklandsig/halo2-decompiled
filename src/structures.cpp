@@ -488,6 +488,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 	return false;
 }
 
+// MiniMax E (11-10, run 73): no new form, no lower score (172); retail pushes ebx first and keeps the BSP global in ebx where we keep it in ebp, and the promoted clone of 0x11e800 hands its four pointers over in another register order (retail ecx, edx, eax, esi; ours ecx, edx, esi, eax); that callee lives in another file.
 // MiniMax D (11-06, run 49): no new form, no lower score (172); the promoted clone of function_11e800 still hands the four pointers to different registers (retail ecx, edx, eax, esi; ours ecx, edx, esi, eax); that callee lives in src/unknown_11cb00.cpp, not this lane's file.
 // MiniMax A (11-04): no new form, no lower score (172). What still differs: the promoted clone of
 // function_11e800 hands the four pointers to different registers. Retail calls it with

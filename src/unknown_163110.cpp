@@ -937,11 +937,22 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // declaration order) 242 (1830 B); the far plane's `pass == 1 &&` test dropped 370; `segment_culled` zeroed by an `= {0}` initializer
 // in place of the memset 489 (1867 B); the far-plane mask as `if (!view->flag84 && !view->flag85) use_plane1 = false;` 474 (1835 B).
 // Body unchanged at 115.
+// M3 lane 12 r111 (fast, the file's 16 matched functions and 0x320b0 unchanged): plane 0's three negations read from `forward`
+// in place of the copied normal 452 (1819 bytes); plane 0's `d += near_distance` after plane 1's block 176; the 0x54 field typed
+// `vector3f vector54`, no cast 115 (same code); the 0xb4/0xe4 fields typed point3f and read as .x/.y/.z 115 (same code); `forward` as
+// a `vector3f const &` 115 (same code). Left as before: retail allocates camera i to XMM4 and hoists it above the normal copy, ours
+// loads the copied normal's i right after its store and takes camera i late into XMM3. Body restored.
 // M3 lane 8 r152 (fast; masked aligned 22): retail's `segment_culled` update is the `|=` (`or byte`) and its bound updates and
 // projection arithmetic are ours. Compile-only, identical code: `for (long i ...)` scope, the clip test as nested ifs, `bool`
 // outside and culled arrays. Real: `outside[segment * 2]` read at each use in place of `outside0` 249 (1867 B); the culled update
 // as `|= !(a | b)` 383, as `x = x || (...)` 284; the clip test's `&&` operands in the other order 275; the `w` clamp as an
 // if-statement on a copy of t.z 249 (all 1867 B). Body unchanged.
+// m3 lane 3 r233 (fast, 0x1648d0 and 0x320b0 matched each time; control 115, aligned 64, register-masked 23). The head's
+// e4.i load still follows the normal copy: ours loads the copy's i into XMM4 straight after its store and e4.i late into
+// XMM3, retail the reverse, and the zero inherits the swap. Forms: plane 0's normal negated straight from `forward` (not its
+// own copy) 452 (1819 B: the copy folds away); each plane's normal negated first and d taken as e4 (b4) times the negated
+// normal with no separate d negation (the same values) 479 (1803 B); that for plane 0 only 276, for plane 1 only 258 (first
+// difference +0x60 each); with d through dot3f 479 (1803 B). Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

@@ -1102,6 +1102,10 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax I (11-10): no new form, no lower score (92); the copy's destination is still reached with a
+// separate add where retail folds the index into the base load, and the 0x119bc0 result still travels in
+// al where retail keeps it in a stack byte; the latter needs 0x1c4b00's last parameter to be a bool in a
+// file this lane may not edit.
 // MiniMax D (11-10): no new form, no lower score; the 0x119bc0 result still travels in al where retail
 // stores it to a stack byte and pushes the containing dword, and that shape comes from 0x1c4b00's last
 // parameter being a bool, whose declarations sit in files this lane may not edit; the squared length is

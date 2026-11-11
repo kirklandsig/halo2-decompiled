@@ -364,6 +364,10 @@ bool function_26d370(point3f const *point, vector3f const *direction, plane3f co
 real function_30bf0(vector3f *vector);
 
 // score 84 (was 84): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
+// MiniMax G (11-04): the motion declaration hoisted beside the delta gives identical code (152);
+// no new form, no lower score.
+// MiniMax S (11-10): no new form, no lower score (84); the vector homes are still one slot off from retail's, the range's first load
+// and the two products still differ, and the range is still loaded into XMM2 for XMM0.
 // retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // (result +4 for retail's +0; amount shares with the count where retail shares it with the squared distance; range, scale, the cursor and the
 // two facing values one slot off), x-operand forms in the two seat-loop cross products, the range loaded into XMM2 for XMM0. Round 65 (m3
@@ -689,6 +693,13 @@ real function_30bf0(vector3f *vector);
 // unnamed, `length_sq3f(&delta)` at its five uses 84 (identical code: it is a spill temp either way); the clipped point
 // through a copy of path_transitions.cpp's point_along_vector (diagnostic) 90; the 3/2 result as one ternary 84; `long
 // count` 193 (1318 bytes); the occupant's forward as a value copy 195 (1312 bytes).
+// Round 185 (m3 lane 4, fast with 0x25c9d0/0x263740/0x26d370): the up cross and the side cross through the existing
+// cross3f_staged 84 each (same code: the seat-loop cross products' operand forms do not follow the helper's statement
+// order), both 84 (a combination of same-code forms, a re-measure); re-measured: the squared distance as
+// `dot3f(&delta, &delta)` 84 (same code, as round 138 found); the not-facing defaults with secondary assigned first 101
+// (aligned 71); the object index as `actor->unknown26c` 84 (same code); primary and secondary as `facing ?
+// facing_primary : scaled_range` / `facing ? facing_secondary : scaled_range * 0.7f` with no else and no re-test 101.
+// No untried natural form is left for the stack homes.
 // m3 lane 5 r169 (fast with 0x263740/0x25c9d0, base 84 [aligned 55, masked 17]): the outer test as `distance_squared <
 // range * range` 84, the scaled test the same way 84, `range * scale` 84, the vehicle index read from actor->unknown26c at
 // both uses (no local) 84, the not-facing secondary as `0.7f * scaled_range` 84 (all the same code); re-measured: `use_facing
@@ -704,6 +715,14 @@ real function_30bf0(vector3f *vector);
 // index 173, seats indexed 142, a seat pointer per iteration 90, the maxima as ternaries 84, the squared distance at each
 // use 84, the vehicle index at each use 84, the forward cast at each use 147, a world-up pointer 149/90. What is left is
 // stack-slot packing (amount with the loop's down-counter here, with the squared distance in retail) and two operand orders.
+// m3 lane 1 r92 (fast with 0x263740/0x25c9d0, control 84; aligned 57, registers masked 54, registers and stack offsets
+// masked 20): no trial run. Frame from `sub esp, 0x350` (ours/retail): amount+seat down-counter 0/-, result 4/0, range 8/20,
+// scale c/10, facing secondary 10/8, motion and side 14/14, facing primary 20/4, cursor 24/38, plane and up 28/28, delta
+// 38/3c, a/b 48,44/4c,48, squared distance 4c/c (retail: amount + squared distance share c, counter alone at 24). So the
+// spill slots take the clip amount's dead slot in another order (ours the counter, retail the squared distance). With
+// registers and offsets masked, the rest is the two seat-loop cross products' operand sides. Every natural form found that
+// changes those reference counts (range or facing reads, seat pointer or index, maxima, facing copies, result forms, one
+// amount/distance scalar) is listed above.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1983,6 +2002,8 @@ real function_2683f0(long actor_index, long node_index, short type)
 // chained 377-379; iterator stores reordered 378/379; pool local 377; a NULL datum store 236 at 2888 bytes (extra store, not
 // retail's). Diagnostics, reverted: a dead read beside the vehicle lookup puts the table pointer in EAX at 2880 bytes (247
 // [43]); two beside the iterator also do; one gives EDX: the iterator's register is a rotation step, not its statements.
+// MiniMax S (11-10): no new form, no lower score (168); the players iterator's table pointer still loads into ECX where retail
+// uses EAX, and the entry loop's index compare and the iterator's setup still differ.
 // Earlier first line: score 194 (was 194): frame 0x80 and the forward/relative blocks now agree; the established and
 // visible flags take each other's stack bytes, the facing/scoring block keeps the direction in memory
 // where retail keeps it in xmm1-3, and the entry's second actor lookup indexes [eax+ecx] for [ecx+eax].
@@ -2345,6 +2366,13 @@ real function_2683f0(long actor_index, long node_index, short type)
 // `xor edi, edi` sits; the table pointer still ECX). The table pointer's ECX is the players loop's colouring (ECX/EDX
 // for retail's EAX/ECX throughout); `mov eax, [abs]` is one byte shorter, which moves the loop-top pad. The unknown23
 // test through the `prop` local instead of a fresh prop_get 655 (2845 bytes: retail reads it afresh).
+// Round 185 (m3 lane 4, fast with 0x25d810/0x26be00/0x26be30/0x25d740; fast base 168 = plain): the prop iterator
+// started before the memset 690 (first +0x13); visible as one direct value (`reference == NONE ||
+// prop_ref_get(reference)->unknown27 >= 1`) 428 (713 lines: the flag leaves its byte home); the node index read from the
+// iterator at both uses with no index local 168 (same code); the prop index as `actor->prop_index` at its three uses
+// 168 (same code); the best level stored as `actor->unknown328` 168 (same code). Re-measured on the 168 base: the
+// unknown5e test through the `state` local (the cached state test, 707 earlier) 430; positive as
+// `(established || !(distance > 3.5f && approach < 0.5f)) && score > 0.0f` (round 74's `score > 0` first, mirrored) 239.
 // m3 lane 5 r169 (fast with 0x25d810; aligned/masked in brackets, base 168 [80/38]): the scoring block with the
 // established part written in both arms (`if (visible) {...; if (established) {...} else if (...) ...} else if
 // (established) {...}`, for retail's cross-jumped entry stub at 0x266f93) 392 at 3005 B [121/60]: the copies are not
@@ -2361,6 +2389,15 @@ real function_2683f0(long actor_index, long node_index, short type)
 // (masked 64). Re-measured on this base (earlier at 500-560 and 194): very_close as one direct bool 619 (frame 0x7c; also
 // with its declaration left in place, 619), close as one direct bool 620 (frame 0x7c), positive as one test after the
 // scoring block (score stays 0 when the block is skipped) 265 (2898 B). Retail keeps both close flags as stack bytes.
+// m3 lane 1 r92 (fast with 0x25d810/0x26be00/0x25d740, control 168; aligned 107, registers masked 67): the first difference
+// is the inlined 0x26be00 lookup's address operands (`[eax + ecx + 0x58]` for retail's `[ecx + eax + 0x58]`), then the
+// listed rotation steps (other object, other actor, players iterator), the first search's NULL player (retail `xor edi,
+// edi` before the scan), the second scan's stepped pointer, the direction residence and the scoring block. New finding: in
+// the positive arm retail keeps the decay arm's `[0x320] = ax; [0x31c] = slot` tail and the NONE-slot reset jumps back
+// into it, where ours keeps the reset arm's copy and the decay arm jumps forward (same block order, other merge direction).
+// A `short cooldown` local for the decay test and store 168 (same code); re-measured on this base: the reset chained as
+// `actor->unknown31e = *(short *)(data + 0x320) = 0;` 168 (same code); diagnostic: the two reset stores in the other order
+// 168 (same code). No other untried natural form found. Body unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
