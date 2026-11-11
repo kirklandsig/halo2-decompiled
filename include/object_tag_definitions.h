@@ -85,7 +85,7 @@ typedef char assert_object_definition_predicted_resources[(offsetof(s_object_def
 /* ---- unit ('unit', 0x1ec bytes) ---- */
 
 /* a unit's (or a seat's) camera */
-struct s_unit_camera
+struct s_unit_definition_camera
 {
 	long camera_marker_name;                            /* +0x00 */
 	long camera_submerged_marker_name;                  /* +0x04 */
@@ -93,7 +93,7 @@ struct s_unit_camera
 	real_bounds pitch_range;                            /* +0x0c */
 	s_tag_block camera_tracks;                          /* +0x14, tag references */
 };
-typedef char assert_unit_camera_size[(sizeof(s_unit_camera) == 0x1c) ? 1 : -1];
+typedef char assert_unit_camera_size[(sizeof(s_unit_definition_camera) == 0x1c) ? 1 : -1];
 
 /* how much acceleration a unit (or a seat's rider) takes before its actions
    fail */
@@ -126,12 +126,12 @@ struct s_unit_boost
 };
 typedef char assert_unit_boost_size[(sizeof(s_unit_boost) == 0x14) ? 1 : -1];
 
-struct s_unit_lipsync_scales
+struct s_unit_definition_lipsync
 {
 	real attack_weight;                                 /* +0x00 */
 	real decay_weight;                                  /* +0x04 */
 };
-typedef char assert_unit_lipsync_scales_size[(sizeof(s_unit_lipsync_scales) == 0x8) ? 1 : -1];
+typedef char assert_unit_lipsync_scales_size[(sizeof(s_unit_definition_lipsync) == 0x8) ? 1 : -1];
 
 /* the unit tag's own fields, after the object's */
 struct s_unit_struct_definition
@@ -142,7 +142,7 @@ struct s_unit_struct_definition
 	s_tag_reference integrated_light_toggle;            /* 0xc4 */
 	real camera_field_of_view;                          /* 0xcc */
 	real camera_stiffness;                              /* 0xd0 */
-	s_unit_camera unit_camera;                          /* 0xd4 */
+	s_unit_definition_camera unit_camera;                          /* 0xd4 */
 	s_unit_seat_acceleration acceleration;              /* 0xf0 */
 	real soft_ping_threshold;                           /* 0x104 */
 	real soft_ping_interrupt_time;                      /* 0x108 */
@@ -181,7 +181,7 @@ struct s_unit_struct_definition
 	s_tag_block weapons;                                /* 0x1c0, tag references */
 	s_tag_block seats;                                  /* 0x1c8, s_unit_seat_definition (units.h) */
 	s_unit_boost boost;                                 /* 0x1d0 */
-	s_unit_lipsync_scales lipsync;                      /* 0x1e4 */
+	s_unit_definition_lipsync lipsync;                      /* 0x1e4 */
 };
 
 /* the unit tag ('unit'); vehicle and biped tags start with it */
@@ -195,15 +195,15 @@ typedef char assert_unit_definition_size[(sizeof(s_unit_definition) == 0x1ec) ? 
 
 /* ---- biped ('bipd', 0x314 bytes) ---- */
 
-struct s_biped_lock_on_data
+struct s_biped_definition_lock_on
 {
 	dword flags;                                        /* +0x00 */
 	real lock_on_distance;                              /* +0x04 */
 };
-typedef char assert_biped_lock_on_data_size[(sizeof(s_biped_lock_on_data) == 0x8) ? 1 : -1];
+typedef char assert_biped_lock_on_data_size[(sizeof(s_biped_definition_lock_on) == 0x8) ? 1 : -1];
 
 /* how a character walks: the slopes it can climb */
-struct s_character_physics_ground_definition
+struct s_biped_physics_ground
 {
 	real maximum_slope_angle;                           /* +0x00 */
 	real downhill_falloff_angle;                        /* +0x04 */
@@ -218,10 +218,10 @@ struct s_character_physics_ground_definition
 	real sine_uphill_falloff_angle;                     /* +0x28 */
 	real sine_uphill_cutoff_angle;                      /* +0x2c */
 };
-typedef char assert_character_physics_ground_definition_size[(sizeof(s_character_physics_ground_definition) == 0x30) ? 1 : -1];
+typedef char assert_character_physics_ground_definition_size[(sizeof(s_biped_physics_ground) == 0x30) ? 1 : -1];
 
 /* how a character flies */
-struct s_character_physics_flying_definition
+struct s_biped_physics_flying
 {
 	real bank_angle;                                    /* +0x00 */
 	real bank_apply_time;                               /* +0x04 */
@@ -235,10 +235,10 @@ struct s_character_physics_flying_definition
 	real angular_acceleration_maximum;                  /* +0x24 */
 	real crouch_velocity_modifier;                      /* +0x28 */
 };
-typedef char assert_character_physics_flying_definition_size[(sizeof(s_character_physics_flying_definition) == 0x2c) ? 1 : -1];
+typedef char assert_character_physics_flying_definition_size[(sizeof(s_biped_physics_flying) == 0x2c) ? 1 : -1];
 
 /* a character's shape and movement (the biped tag's at 0x264) */
-struct s_character_physics_definition
+struct s_biped_physics
 {
 	dword flags;                                        /* +0x00 */
 	real height_standing;                               /* +0x04 */
@@ -252,10 +252,10 @@ struct s_character_physics_definition
 	s_tag_block dead_sphere_shapes;                     /* +0x20, 0x70-byte elements */
 	s_tag_block pill_shapes;                            /* +0x28, 0x50-byte elements */
 	s_tag_block sphere_shapes;                          /* +0x30, 0x70-byte elements */
-	s_character_physics_ground_definition ground_physics;  /* +0x38 */
-	s_character_physics_flying_definition flying_physics;  /* +0x68 */
+	s_biped_physics_ground ground_physics;  /* +0x38 */
+	s_biped_physics_flying flying_physics;  /* +0x68 */
 };
-typedef char assert_character_physics_definition_size[(sizeof(s_character_physics_definition) == 0x94) ? 1 : -1];
+typedef char assert_character_physics_definition_size[(sizeof(s_biped_physics) == 0x94) ? 1 : -1];
 
 /* the biped tag's own fields, after the unit's */
 struct s_biped_struct_definition
@@ -281,7 +281,7 @@ struct s_biped_struct_definition
 	real camera_vertical_movement_scale;                /* 0x234 */
 	real camera_exclusion_distance;                     /* 0x238 */
 	real autoaim_width;                                 /* 0x23c */
-	s_biped_lock_on_data lock_on_data;                  /* 0x240 */
+	s_biped_definition_lock_on lock_on_data;                  /* 0x240 */
 	short physics_control_node_index;                   /* 0x248 */
 	byte pad_24a[2];
 	real cosine_stationary_turning_threshold;           /* 0x24c */
@@ -290,7 +290,7 @@ struct s_biped_struct_definition
 	short head_node_index;                              /* 0x256 */
 	real headshot_acceleration_scale;                   /* 0x258 */
 	s_tag_reference area_damage_effect;                 /* 0x25c */
-	s_character_physics_definition physics;             /* 0x264 */
+	s_biped_physics physics;             /* 0x264 */
 	s_tag_block contact_points;                         /* 0x2f8, marker names (longs) */
 	s_tag_reference reanimation_character;              /* 0x300 */
 	s_tag_reference death_spawn_character;              /* 0x308 */
