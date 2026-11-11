@@ -708,6 +708,8 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 	return (arg_0 >> 3) & 1;
 }
 
+// MiniMax H (11-11): no new form, no lower score (163); the state dot still takes its registers from XMM4-6 where retail uses
+// XMM5-7, and the rotation block still schedules its products differently.
 // score 163 (was 163; 162 with the one-use settings copy dropped, not kept): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
 // MiniMax R (11-06): no new form, no lower score (163); a compile-only probe of the same three-term float sum
 // gives retail's (k + j) + i order when the three products have fresh component nodes, so the
@@ -1589,6 +1591,8 @@ PRIVATE inline real contact_normalize(vector3f *vector)
     return length;
 }
 
+// MiniMax H (11-11): no new form, no lower score (413); retail keeps the entry zero in a persistent XMM6 and puts the accepted
+// count in the dead incoming request slot while ours does the opposite, and the direction components stay in different homes.
 // score 413 (was 413; earlier 418): Frame 0x64 agrees; persistent zero, count/component homes and direction residency remain.
 // Statement walk against retail (r721, b3B): every statement, offset, condition direction, callee, argument, loop and
 // switch shape agrees; the only behaviour differences were float sum groupings, which compile differently for an
