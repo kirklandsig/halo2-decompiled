@@ -620,7 +620,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
     return pixel;
 }
 
-// score 233 (was 250): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// score 233 (was 233): earlier 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
@@ -1012,6 +1012,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // case 1/2's points through real_point3d_set 443 (2580); the cursor as `vertex = outer + 1` 656 (2556); the vertex positions through
 // real_point3d_set 233 (same code); case 1/2's normal copy before its points 241; case 1/2's z as `first.z = second.z = ...` 331
 // (2600); case 0's normal set through vector3f_assign in each arm 499 (2620); the side's scale through vector3f_scale 233 (same code).
+// Round 168 (m3 lane 6, fast; 0x42c50, 0x42b20 and 0x43740 matched each time; control 233, aligned 149, register-
+// masked 73): re-measured on this base `u += -u_step` 611 (2596 bytes: the negation moves into the loop, it is not
+// hoisted), with the V sum at the outer store 610, the V sum alone 235. New: the negated step as a single-assignment
+// local 233 (same code); with a single-assignment V end as well 233 (same code); case 4's direction through the
+// existing vector3d_from_points3d in both arms 483 (2584 bytes); case 4's view through it 233 (aligned 164, masked 88:
+// the else arm's view moves after the neighbour lookup and the cross operands swap; not kept); a named pointer for
+// every use of the point's position 612 (2620 bytes). Body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
