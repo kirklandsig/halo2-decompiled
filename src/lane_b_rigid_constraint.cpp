@@ -52,6 +52,7 @@ void lane_a_constraint::event_2(hkEntity *entity)
 {
 	if (owner) ((lane_b_constraint_owner *)owner)->slot1(this);
 }
+// Entity unlinking precedes the shared registry-reference teardown.
 // score 1 (was 1): base call target differs; per-body void, entity,
 // reference and base pointer captures 35 each; if-declarations 35 each.
 // base destructor call target differs; field references 1/1, const field
@@ -79,7 +80,7 @@ lane_a_constraint::~lane_a_constraint()
 // placement-new stand-in cannot instantiate this genuinely abstract base.
 lane_a_constraint::lane_a_constraint(const lane_a_constraint_description *description)
 {
-	unknown06 = 1;
+	reference_count = 1;
 	owner = 0;
 	body_a = 0;
 	body_b = 0;
