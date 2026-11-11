@@ -310,6 +310,10 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // frame 0x48 and the entry registers agree, 0xb7060 matches; what remains: the definition spilled at its load (retail EAX, ours ECX, then the
 // default body and index registers), the search's bodies/offset load order, transform kept in EBP where retail has `lea ecx` and left in EBP, the dot's first two
 // products (retail k then j, up first), one cross product side, and the failure stores (retail after the pops).
+// MiniMax R (11-10): score 8 (was 14): the projection's dot, the scale's input and the cross now take the transform's fields
+// directly, so the dot's term order (retail k, j, i) and the cross's products agree; left: the dot's i product (ours
+// up.i*forward.i, retail forward.i*up.i), the not-valid exit's jump (ours into the failure block's pops, retail to the
+// shared epilogue) and the failure block's order (ours stores then pops, retail pops then stores).
 // MiniMax C (11-09): no new form, no lower score (56); the definition's early spill, the axis base and the failure tail still differ.
 // MiniMax B (11-06): no new form, no lower score (56); a named physics slot index 58, the swapped count comparison 56, both 58 and the widened default body 251.
 // MiniMax I (11-05, run 37): no new form, no lower score (56); the transform-base lea, the dot's product order and the failure stores' placement still differ.
@@ -696,12 +700,12 @@ void function_109660(long object_index, long entry_index)
 					vector3f *up = &entry->transform.up;
 					function_30bf0(up);
 					vector3f scaled;
-					vector3f_scale(forward, dot3f(up, forward), &scaled);
+					vector3f_scale(&entry->transform.forward, dot3f(&entry->transform.up, &entry->transform.forward), &scaled);
 					up->i -= scaled.i;
 					up->j -= scaled.j;
 					up->k -= scaled.k;
 					function_30bf0(up);
-					cross3f_staged(up, forward, left);
+					cross3f_staged(&entry->transform.up, &entry->transform.forward, &entry->transform.left);
 					function_30bf0(left);
 				}
 				return;

@@ -70,6 +70,10 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
     return local_0;
 }
 
+// MiniMax R (11-10): no new form, no lower score (356); the frame is still 0x38 here against retail's 0x34, this
+// still takes a frame pointer where retail keeps the connection in EDI, the packet-availability result still lands
+// in bl where retail keeps the host state there, and the helper whose result retail tests as a byte is still declared
+// to return a long in a file this lane may not edit; the body stands.
 // MiniMax D (11-10): no new form, no lower score (356); the frame is still 0x38 here against retail's 0x34, this
 // still takes a frame pointer where retail keeps the connection in EDI, the packet-availability result still lands
 // in bl where retail keeps the host state there and publishes the packet state in a separate byte, and the helper

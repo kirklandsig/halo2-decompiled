@@ -1571,6 +1571,10 @@ struct s_camera_clip_reference_16ebf0
 // forward.j is still swapped against retail's, while the three products, their results and the store slots
 // (matrix+0x10/+0x14/+0x18, contiguous once the caller's push is counted) agree; the cross lives in a shared
 // header this lane may not edit, and a permuter run over this function found nothing in 26 tries (best 87).
+// MiniMax R (11-10): no new form, no lower score (87); the plane's three products in retail's order (i*x, k*z, j*y)
+// give retail's multiply and add sequence instruction for instruction, but the score stays 87 because the clip block
+// above it keeps the reference in cl with a folded address where retail keeps it in al with the address materialised,
+// so every row after it stays shifted; the false-first narrow default with the else chain removed still scores 105.
 // MiniMax R (11-09): no new form, no lower score (87); the cross block gives retail's up.k to xmm0 and forward.j to xmm1 where ours gives them the other way round, though the three products agree; the cross written out as three component assignments scores 186 and was restored.
 // MiniMax A (11-06, run 52), not kept (87, same score): the clip plane's three products summed in
 // retail's order, the i term first and the j term last, give retail's multiply and add sequence
