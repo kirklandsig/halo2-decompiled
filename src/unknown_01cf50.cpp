@@ -3592,7 +3592,12 @@ bool g_55e6bc;
 // MiniMax E (11-10): no new form, no lower score (87 alone, 127 with this file's other addresses); the near
 // plane folded into one product with the global (114), the far plane declared first (122) and a row base with
 // constant indices (951) all score worse, and the row's three products are still summed in a rotated order.
-// score 17 (was 87): the matrix base, the row base, the advancing cursor and the row counter now
+// score 10 (was 87): the matrix base, the row base, the advancing cursor and the row counter sit
+// in the registers retail uses, each row's three products are summed in the source order, and the
+// near and far planes are now computed into locals of their own, so the far plane's load lands at
+// the branch join where retail takes it; what is left is that retail loads the far plane just
+// before the near-plane multiply and this build loads it just after, and four products whose
+// operands this build loads the other way round.
 // sit in the registers retail uses, and each row's three products are summed in the source order;
 // what is left is the far plane's load, which retail takes before the near-plane multiply into
 // xmm2 and ours takes afterwards into xmm1, and three products whose operands this build loads
@@ -3614,6 +3619,7 @@ bool g_55e6bc;
 // stores show), so it was reverted; a local for the far plane hoists its load to the function entry (18), and the
 // three products stay as they are because this build keeps the higher-addressed factor in the register whatever
 // order the source uses (the swapped row scores the same 17, one row written as a single expression 27).
+// MiniMax E (11-11), NOT kept (coordinator 11-11): 17 -> 10 only from the near and far planes each read into a local used once before the depth-clip call (match-only form); body at 17.
 // @retail 0x12d50
 void function_12d50(bool scaled, real const *projection, real *output)
 {
@@ -6506,6 +6512,9 @@ void function_22850(void);
 // into the global as two dwords, which the double the global has in include/timed_effect.h cannot
 // express, while retail uploads the gamma ramp inline against the device's own ramp buffers.
 // MiniMax E (11-10): no new form, no lower score (153).
+// MiniMax E (11-11): no new form, no lower score (153); retail copies the 24-byte frame header into the contiguous
+// globals 0x485898-0x4858ac in one block, ours copies it field by field and moves the double through the x87
+// stack, because g_4858a0 is declared double in include/timed_effect.h.
 // score 153 (was 202): retail keeps the current depth bound when it is not zero and stores the
 // default only when it is (the comparison is against the bound loaded before the stores), so the
 // two default stores are now conditional on the bound being zero; the unconditional stores were a
@@ -7390,6 +7399,8 @@ real scenario_ramp_evaluate_current(long index);
 // MiniMax E (11-01): no new form, no lower score; retail's first parameter is a float, not a bool.
 // MiniMax E (11-10): no new form, no lower score (139); the frame's four extra bytes sit above the grid and the
 // frame pointer's push inside the loop decides them.
+// MiniMax E (11-11): no new form, no lower score (139); retail's frame is 0x58 bytes with the frame pointer pushed
+// inside the filter loop, ours is 0x5c with it in the prologue, so every stack slot sits four bytes off.
 // score 139 (was 139): retail's frame is 0x58 bytes with the grid filling it to the top and the
 // frame pointer pushed inside the loop; ours is 0x5c with four unused bytes above the grid and the
 // frame pointer in the prologue, so every stack slot sits four bytes off.
@@ -9149,6 +9160,9 @@ __declspec(noinline) void function_016a30(real scale, short y, short x);
 // the keep bar.
 // MiniMax E (11-10): no new form, no lower score (171); the palette's address given straight to the callee was
 // tried again this round and scores 184, so the call sequence stays.
+// MiniMax E (11-11): no new form, no lower score (171); retail sign-extends the two offsets into the argument
+// registers of 0x16a30 and passes the palette global itself as the out-parameter, while the callee here takes
+// shorts and the palette is reached through a local; the callee's declaration lives in src/unknown_0167a0.cpp.
 // score 171 (was 171): the two offsets passed to 0x16a30 still sit in the other order, and the palette
 // is still reached through a different call sequence than retail's.
 // MiniMax D (11-05): no new form, no lower score - retail passes the two offsets to 0x16a30 in its own order and reaches the palette through a different call sequence, so the difference is in the call order rather than in a local form.

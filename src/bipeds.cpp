@@ -687,6 +687,10 @@ struct s_biped_flags_10a_view
 };
 
 // MiniMax C (11-11): no new form, no lower score (222); retail computes the state pointer up front and spills it at [esp+0x20] with the biped index at [esp+0x24], ours spills the index there and reads the parent through the parent-object helper, and retail pushes EBX after its early-exit test and shares one epilogue where ours has its own.
+// MiniMax E (11-11): no new form, no lower score (222); retail loads the biped's havok index into a register and
+// compares it there, computes the biped-plus-short-offset pointer early and spills it at [esp+0x20], and jumps to
+// the shared exit for its early return, where ours compares the field in memory, spills the object index at
+// [esp+0x20] where retail uses [esp+0x24] and returns inline.
 // score 222 (was 224; 241; 280 before round 48): frame 0x16c agrees; retail computes the state pointer at the top and spills it (ours reads it at
 // its one use, so the head is 25 bytes short), the 0x111650 call takes names in EAX where retail pushes both
 // arguments (BLOCKED-BY 0x111650, unmatched, ret 8 in retail), and the type-0 bit is read as `and al, 4` (retail
@@ -4166,6 +4170,8 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // up agrees. The homes only move when the declaration order of the locals moves, which the earlier rounds
 // measured as a placement trick and reverted; the pivot ternaries and the materialized travel test that would
 // take the other homes are the same match-only forms.
+// MiniMax E (11-11): no new form, no lower score (371); the frame's locals sit at [esp+0xc8] and [esp+0xd4] where
+// retail uses [esp+0xd4] and [esp+0xc8], and the two tails cross-jump at the z store and the call.
 // score 371 (was 371): round 112 (m3 lane 12) note at the end. Earlier at 354 (was 354): origin, distance, matrix, limit and
 // placed homes in another order; the pivot select and the materialized travel test differ.
 // MiniMax B (11-07): no new form, no lower score (354); our origin, distance and matrix homes are 0x44, 0x34 and
@@ -5042,6 +5048,8 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // from there on cannot be moved from here. What is left in this file is the first rotation's cross terms,
 // which read the forward x before the axis copy where retail copies the axis register first, and the
 // normalization's SIMD numbering; both are the operand-order forms the earlier rounds already measured.
+// MiniMax E (11-11): no new form, no lower score (79); the difference is inside the shared rotation helper
+// rotate_direction, which is defined in src/unknown_1eb8a0.cpp, a file this lane may not edit.
 // score 79 (was 79): first rotation and staged cross product operands (load-first where retail copies the axis
 // register), 894 against 887 bytes. Round 112 (m3 lane 12) note at the end.
 // MiniMax S (11-10): no new form, no lower score (79); the reduced build of this function is not the
