@@ -408,6 +408,9 @@ void function_11bed0(s_location *location, point3f const *point);
 // redeclaration here does not make another file's definition expandable); on the native iterator the audible test as
 // a switch with a `case 1` and an empty default 99 [63] (233 bytes), the test and call in a `do { } while (false)`
 // with a break 93 (same code). 0x11bed0 stays expanded in all six. BLOCKED-BY 0x11bed0's inline eligibility.
+// MiniMax B (11-11): no new form, no lower score (93); the call to 0x11bed0 is still expanded here while retail
+// keeps it out of line, and that callee is defined in src/unknown_11bed0.cpp; retail also packs the walk's index
+// and its value into one register, where this build keeps the iterator struct.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -1582,6 +1585,12 @@ struct s_looping_detail_request
 // (same code); the same helper returning the player or NONE, the caller testing `!= NONE`: forced 159 (518 B, the NONE
 // test is emitted, query still inlined), `inline` 276 (382 B); draw, query and skip loop in a helper taking the count
 // (the count test stays in the caller): `inline` or `static` 219 (397 B), forced 110 (same code).
+// R151 (m3 lane 7, fast with 0x21b0e0, 0x14dde0, 0x14de10 and the query's ten matched callers): callee-side spellings of
+// 0x14dde0 to change its inline cost: the scan without the globals local 110, as a while loop 110, through a const
+// globals pointer 110, with `i` declared before the loop 110 (each the same bytes there, the query still inlined here);
+// an early `return i` in the loop 108 but
+// 0x14dde0 then differs (34 bytes) and 0x219ed0, 0x13c250, 0x15c150, 0x225730 lose; the scan tested on `result == NONE`
+// 129 with the same losses (37 bytes). The site-frequency lever left is the ruled-out always-true test above the call.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -2522,6 +2531,9 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // or at the state-else site (retail 0x21c77f `or byte [esi+4], 0x40`, ours caches the flags word) with the char count
 // 374 at 1929 bytes. Still open: frame 0x4bc (the two early snapshots, [esp+0x48] scale at 0x21c50e and [esp+0x28] track
 // value at 0x21c526), 0x221810 and 0x12a420 inlined by ours (retail calls both at 0x21c62b and 0x21c783/0x21ca5d).
+// MiniMax B (11-11): no new form, no lower score (339); the frame is still 0x4b4 against retail's 0x4bc and the
+// calls to 0x221810 and 0x12a420 are still expanded here while retail keeps them out of line; both callees are
+// declared in files this lane may not edit (src/unknown_221490.cpp and src/unknown_124f90.cpp).
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {

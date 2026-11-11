@@ -2402,6 +2402,9 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax E (11-11): no new form, no lower score (63); retail still reloads the object's index from the effect after
+// the 0xbadc0 validity call, and that reload only appears when the compiler cannot prove that call read-only, so
+// the difference cannot be produced from this side (BLOCKED-BY 0xbadc0).
 // MiniMax A (11-06): no new form, no lower score; retail reloads the object's index from the effect after
 // the 0xbadc0 validity call, and that reload appears only when the compiler cannot prove that call
 // read-only, so the difference cannot be produced from this side: the body of 0xbadc0 is in another file

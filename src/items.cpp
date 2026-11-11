@@ -1905,6 +1905,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // expression, two-use spin, release helper and full body restored. Return byte and release/contact/event homes
 // remain.
 // MiniMax R (11-10): no new form, no lower score; the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write (a byte pointer cast, a masked assignment and a narrowed mask all leave the code as it was), the return byte still sits at esp+0xe where retail puts it at esp+0xf, and the callee 0xba300's parameter order is fixed in a file this lane may not edit.
+// MiniMax B (11-11): no new form, no lower score (140); the return flag still lands on esp+0xe where retail keeps
+// it on esp+0xf, the release byte is still cleared with a load, an and and a store where retail masks the byte
+// in place, and retail expands the transform helper into the call site while this build calls it out of line
+// (its declaration is in src/unknown_09b910.cpp).
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

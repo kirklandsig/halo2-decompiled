@@ -78,10 +78,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
-// score 382 (was 391; 390 before): frame 0x64 and the node-pointer/group-table roles (EBX/EBP) agree; the selected defaults' homes,
+// score 382 (was 382): earlier 391, 390; frame 0x64 and the node-pointer/group-table roles (EBX/EBP) agree; the selected defaults' homes,
 // point bitmap, endpoint homes and x87 scheduling differ.
 // Earlier 391 (was 391; 390 before): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
-// score 391 (was 391): 390 before; frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// Earlier 391 (was 391): 390 before; frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // MiniMax C (11-05): no new form, no lower score; retail's three selected-index homes are at [esp+0x44], [esp+0x28] and [esp+0x24] where ours are at [esp+0x40], [esp+0xc] and [esp+0x20]; retail holds the node pointer in ebx and the group table in ebp where we hold them the other way round, and loading the group table before the node pointer scores 397.
 // MiniMax E (11-10): no new form, no lower score (391); the frame size agrees (0x64), but retail holds the node pointer in ebx and the group table in ebp where this build holds them the other way round, and the three selected-index homes sit at other frame offsets.
 // Earlier 391 (was 390): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
@@ -424,6 +424,14 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // ESI before the index scaling (the call's ESI argument) and reloads arg_3. Also on the recipe: a named group count read once
 // for the search loop and the range test 426 (1612 bytes; on this body 447 at 1576), the pair point's pointer formed before the
 // range test 160 (arg_3 then reloaded from +0x88), the two pair distances named 155 (same code). No untried natural form is left.
+// m3 lane 11 r90 (fast with 0x29e730, control 382, aligned 403, masked 199): `if (local_19 == NONE) continue;` as an if-block
+// around the rest of the group body 382 (same code); the group-skip `continue` as an if-block 382 (same code); the link array named
+// once for its four reads 415; re-measured on the 382 base, round 68's indexed output with the selected record named before the loop
+// 388. Diagnostic: the search result written through a pointer (to see whether an escaping result stops the pass latch's strength
+// reduction; retail recomputes the record index with `add eax, ebp`, ours steps it in a second register) 382, same latch. No untried
+// natural form left beyond these: the remaining levers (retail's 32-bit group with a separate test and set, short terminal and
+// candidate) are listed above and change the length or need the field read beside a local copy. A scan of include/ for helpers this
+// body writes out found none unlisted (bit_vector, dot3f/length_sq3f, vector3d_from_points3d and distance3d are all above).
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

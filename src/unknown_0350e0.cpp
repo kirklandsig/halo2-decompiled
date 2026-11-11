@@ -206,6 +206,18 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // `axis->k * sine + xy` 343 (same code); the angles as `0.5f * step` / `0.3f * step` 343. Ours forms j*i and k*i before the trig and multiplies by the complement after it;
 // retail keeps (inverse * j) * i in source order after the cosine and starts the second angle and axis squares inside the
 // first matrix.
+// R151 (m3 lane 7, fast, control 343): the reassociation comes from the `inverse` local: the cross products with
+// `(1.0f - cosine)` written in each (no `inverse`) keep (1 - cos) * j * i in source order after the cosine as retail, 350
+// (1792 bytes); `axis->j * inverse * axis->i` (and k) 343 (no change); the inline complement with both angles as named
+// real locals 360 (the 0.3 angle goes to SSE); with named sine products 390 (frame 0x94); the inline complement with both
+// angles as double locals and a double angle parameter 342: retail's exact x87 angle sequence (both products on the stack
+// before the first fsin), but the matched caller 0x137ed0 gains a `push ecx` stack-alignment word (42, 147/145 bytes), as
+// J238's double forms; the double parameter alone 351 and without the inline complement 344, both losing 0x137ed0; the
+// builder in retail's computation order (diagonal, cross term, its pair, per row) 371 (1743 bytes, frame 0x84); squares
+// before the trig with the inline complement 349; every cross term written in its two entries 371; the inline complement
+// with the second pass storing each rotated row straight to g_467104 350 (as the complement alone), with both passes so
+// 362 (1756 bytes). The double parameter alone (344) re-measures J238/B446's double-angle forms on this base.
+// Diagnostic: `#pragma optimize("p", on)` around the function 380 (1815 bytes; float consistency is not the cause).
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -3252,6 +3264,14 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // 4 form: 0x4b160's parameters as (entries, first, mode, last) 4 (same code, 0x4b160 still matched); the growth loop's
 // count declared before its pointer 4 (same code).
 // A 600 s fast annealing permuter run on the 4 form: 45 tries, none below 4.
+// R151 (m3 lane 7, fast with 0x4b160): the fourth pass comparing with `entry[-1]` for the previous entry 367 (1335 bytes);
+// the fourth pass without its entry pointer (every access through state->entries[i]) 375 (1342 bytes). Pass 2's start
+// cannot be spelled 0 even though `first` is 0 there (retail reads it: `mov eax, edx`), and the other natural spellings
+// of passes 1-4 are listed above; the EBP choice still needs the ruled-out repeated loop test. The clamp helper reading
+// the maximum field at each use (no pointer local) 316 (as round 308's direct maximum clamp), the same clamp written at
+// both call sites 316 (same code); the growth step as `elapsed = elapsed + step; initial += elapsed` 317 and the fourth
+// pass's `-step` 317 (same code each). Retail's growth loop re-reads the stored elapsed (`initial + [elapsed]`) where its
+// decay loop and ours forward it. Diagnostic: `#pragma optimize("p", on)` around the function 317 (no change).
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3525,6 +3545,18 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // output-pointer projection 530 (frame 0x40, 317). Retail's velocity add leaves no value live (xmm1 reused for all three) and both roots and
 // the normalize reload the components from memory; every form here still forwards the added values into the first
 // root (spilled to the stack for the x87) and into the normalize.
+// R151 (m3 lane 7, fast): retail computes the distance inside both phase arms (after the phase store), copies the
+// strength field to the fade with integer moves in the else arm, and reads flag bit 0 as a byte and bits 1-2 from one
+// dword read (the field read at each use). Distance at the end of both arms 485 (the tails cross-jump back into one);
+// retail's visible arm order (phase store, distance, fade with the strength read at its use, field copy in the else arm)
+// 488 (2032 bytes; loop pointers then start at state+0x88/view+0xec); cycle arm fade, phase store, distance with the else
+// arm copying both fields and taking the distance from the times field 482 (2035 bytes; statement order, under the bar);
+// the strength read before the test on retail's order 498; output-pointer projection (514 re-measured) with the 482 form
+// 499, with retail's order 523; flags read from the field at each use 491 (re-measured on this base), with the 482 form
+// 495, plus output pointer 506, plus divisor and maximum read at each use 587 (1926 bytes); 482 form + flags + divisor and
+// maximum at each use 485 (frame 0x5c); 482 form + divisor and maximum at each use 505 (frame 0x5c); 482 form with the
+// else arm keeping a phase local for the store and the distance 492. Diagnostic: `#pragma optimize("p", on)` around the
+// function 754 (2285 bytes), so float consistency is not what keeps retail's velocity reloads.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

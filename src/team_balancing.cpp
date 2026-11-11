@@ -876,6 +876,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // cursor continued by the fill over the extra count 86 (173 bytes); the total as `player_count` then `+= extra_count`
 // 34 (same code); re-measured: the fill through a walking pointer 63 (199 bytes). No untried natural form is left in
 // this note's lists; the player count still arrives in EDX.
+// M3 lane 16 r108 (fast with 0x91e30; register-masked aligned 4: the copy loop's store/counter-reload order and the
+// fill value's load, both from the player count's EDX/EAX role): the party array declared first 34 (same code; the
+// listed "array and index declared first"). Every other candidate checked against this note was already listed; no
+// untried natural form found.
 // Round 154 (m3 lane 8): round 114's one-file LTCG harness refreshed from the current file reproduces 34 (190/190
 // bytes). Grepped this note for the remaining spellings (strict and inclusive maximum updates, the copy through
 // memcpy, fill helpers, the fill continuing the copy loop, declaration orders): all are listed, and no existing

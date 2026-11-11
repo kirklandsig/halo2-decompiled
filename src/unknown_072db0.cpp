@@ -1882,6 +1882,15 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // online_logon_connected() (with the online tasks header) 784 (2894 B, 323/201); plus the property loop bounded by
 // record->count with `properties_used += record->count` 778 (2798 B, 356/185); plus the free space named and tested `>
 // 0` 715 (2878 B, 309/195); all three 779 (2798 B, 294/180, the closest structure measured, but 64 bytes short).
+// M3 lane 13 r83 (fast with 0x641a0 and 0x8df50, both MATCH; control 703, fully masked aligned 203 in brackets): the
+// completion loop as nested ifs with no `continue` (state 2/5 test, variant arm, missing-variant arm last) 766 (2926 B) [197];
+// the completion identity computed once before the record loop 737 (2894 B) [201]; `failed |= received != 6;` 736 (2894 B)
+// [205]; the write-stats poll in the read poll's shape (cleanup in both arms, no early return) 791 (2958 B) [207]; the delay
+// as one nested ternary 703 (same code). Read against retail again: the
+// delay's `setle dl ... add edx, 0x7d0` is the `g_50c460 > 3 ? 300000 : 2000` spelling (listed: 709/702/703, never lower);
+// retail re-reads g_47d8f4's count word at every users-loop iteration inside the inlined variant getter and counts that
+// loop down in EBX, where ours hoists the count into EBX and ends on the variant pointer; the request loop's state==1 flag
+// byte and the identity copy are the listed match-only flag/local forms. The slot test's cmovne still needs /arch:SSE.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
