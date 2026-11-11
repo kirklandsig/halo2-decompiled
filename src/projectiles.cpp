@@ -2890,6 +2890,7 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 /* a projectile's collision: damage to what it hit, the response of the
    material hit (detonating, bouncing, reflecting, attaching), the impact
    effects and sounds, then the projectile's action */
+// MiniMax S (11-11): no new form, no lower score (1220); retail's frame is eight bytes smaller and it keeps the biped in ebp where ours keeps it in ebx, and no form tried this round matches both, so the body stands as found.
 // MiniMax S (11-10): no new form, no lower score (1190); the frame is 0x220 against retail's 0x218, the velocity argument arrives on the stack where retail takes it in eax and keeps it in a callee-saved register, and the collision, effect and sound homes still differ. The sound and effect records start at the same address as retail's, so the eight extra frame bytes sit in the small scalar homes; the velocity pointer is kept in esi on both sides, but only retail's callers hand it over in eax.
 // score 1190: Frame 0x220 versus 0x218, stacked velocity and normalization/effect scheduling remain.
 // Round 1 of #1061 (logic walk against retail, all blocks): no statement-level behaviour difference found except the

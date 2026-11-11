@@ -9,6 +9,7 @@
 #include "object_markers.h"
 #include "object_queries.h"
 #include "unknown_1dee50.h"
+#include "bit_vector.h"
 #include <math.h>
 #include <string.h>
 
@@ -656,6 +657,8 @@ void __stdcall object_get_damage_owner(long object_index, s_damage_owner *owner)
 	}
 }
 
+// MATCH (coordinator 11-11 on r754): MiniMax C's held word_flags_set form (11-09), kept now that 0x54590 (network_voice.cpp),
+// which it cost at link time, is an accepted loss on main (r753); full check: gained 0xd6a70, lost none.
 // MiniMax C (11-09): MATCH, held: word_flags_set((word *)&object->damage_flags, 3, true) with bit_vector.h included
 // matches 0xd6a70 (124 bytes), but on main 2ac7766d6 it costs 0x54590 (network_voice.cpp, 582 bytes, ours) its match at
 // link time (score 2, retested 11-09); not kept, as one match for one is no gain. Retry it when 0x54590's neighbours change.
@@ -689,7 +692,7 @@ void function_d6a70(long object_index)
 		if (field_4_2 && object->maximum_shield_vitality > 0.0f)
 			function_176780(object_index, (s_effect_owner const *)g_467420, 0.0f, *(long *)(field_4_2 + 0xb0), 0.0f, NULL, NULL);
 		object->unknownf4 = 0.0f;
-		object->damage_flags.shield_depleted = true;
+		word_flags_set((word *)&object->damage_flags, 3, true);
 		function_ba7f0(object_index, NONE, 2, NONE);
 	}
 }

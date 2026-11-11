@@ -2223,6 +2223,7 @@ struct s_unit_motion
 // arguments are promoted to XMM5/XMM4/XMM2 here and to XMM5/XMM4/XMM3 in retail, so the callee's argument
 // registers follow the call site's context - and retail reaches the calls out of line, which this build does not.
 // The change was dropped: LTCG inlines the callee into 0xc7840 (563 -> 1104) and 0x1faf80 (matched) flips to 16.
+// MiniMax S (11-11): no new form, no lower score (104); retail's register convention still needs the body out of line, which only a pragma or a new noinline twin can do, so the body stands as found.
 // score 104 (was 104): this body keeps position/velocity on the stack (ret 0xc); retail takes them in
 // XMM5/XMM4, time in XMM3 and returns with ret 4. #515's body (output accumulators initialised from the inputs,
 // and each step as `time > motion->field ? motion->field : time` reading the field again) gives retail's
@@ -2356,6 +2357,7 @@ void function_cfec0(long unit_index)
 /* the object that answers for the unit: the vehicle when the unit's seat
    has bit 0 or 3, or a rider of that vehicle with bit 27 of its
    definition's +0xbc and its object flag 26; else the unit */
+// MiniMax S (11-11): no new form, no lower score (2); the copy propagation from the compared value into the returned one cannot be broken without a form review rejects, so the body stands as found.
 // score 2 (was 113): a return after each closing brace gives retail's per-level epilogues, lazy pushes and
 // exit order. Left: the last exit (unit_index == NONE) returns the constant (or eax, -1); retail moves ebx
 // (mov eax, ebx), so it did not fold the value there. Tried: a result variable returning at each level 47;
