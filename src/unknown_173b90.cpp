@@ -1798,6 +1798,7 @@ void __stdcall function_174220(bool view_pass)
             system->unknown4c == NONE && system->location_index != NONE)
         {
             long effect_index = system->effect_index;
+            bool available = false;
             definition = system->function_1751d0();
             long owner;
             if (effect_index != NONE)
@@ -1805,18 +1806,15 @@ void __stdcall function_174220(bool view_pass)
             else
                 owner = NONE;
             long view = g_4b9ed8;
-            bool same_view = true;
-            bool available = false;
-            if (view != NONE && !function_155760(view))
-                available = true;
-            if (owner == NONE || view != owner || !available)
-                same_view = false;
+            if (view != NONE)
+                available = !function_155760(view);
+            bool same_view = owner != NONE && view == owner && available;
             bool attached = available && effect_index != NONE && function_17afd0(effect_index, view);
             bool draw = same_view == view_pass;
             bool camera_relative = false;
             if (same_view)
             {
-                if (g_4b9ed8 != NONE && *(short *)((byte *)g_4ed284 + g_4b9ed8 * 0x94 + 0x42) != NONE)
+                if (view != NONE && *(short *)((byte *)g_4ed284 + view * 0x94 + 0x42) != NONE)
                     draw = definition->flag6;
                 if (definition->unknown0c != 0) camera_relative = true;
             }
