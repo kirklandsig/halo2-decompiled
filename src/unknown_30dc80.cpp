@@ -3,4 +3,5 @@
 // notes the groups its pairs reach.
 #include "holder_30dc80.h"
 
-// @retail 0x30dc80 destructor holder_30dc80
+// @retail 0x30dc80
+holder_storage_30dc80::~holder_storage_30dc80() {}

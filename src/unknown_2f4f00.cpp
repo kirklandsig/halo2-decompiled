@@ -7,6 +7,7 @@
 // takes back when it no longer does) gets up to three: when the segment lies
 // outside an edge at both ends, the edges are taken as segments of a capsule.
 // The queries are marked in the timing stream.
+// The cached and uncached queries share the same endpoint and edge tests.
 #include "pair_agents_2eab70.h"
 #include "timer_mark_2ebc80.h"
 #include "growable_array_2d91d0.h"
@@ -333,7 +334,9 @@ __forceinline void capsule_triangle_2f4f00(void const *a, void const *b, void co
 				float scale = change.m128_f32[3];
 				float slope = change.m128_f32[edge];
 				float const inverse = 1.0f / (slope * slope + rise_squared);
-				float const offset = height * slope - change.m128_f32[3] * heights[0].m128_f32[edge];
+				// Keep the height load before the slope multiplication.
+				float const volatile &height_for_offset = heights[0].m128_f32[3];
+				float const offset = height_for_offset * slope - change.m128_f32[3] * heights[0].m128_f32[edge];
 				float const distance_squared = offset * offset * inverse;
 				if (distance_squared < (contact->point(3) + radius) * (contact->point(3) + radius))
 				{
@@ -383,10 +386,11 @@ __forceinline void capsule_triangle_2f4f00(void const *a, void const *b, void co
 				contacts[2].point(3) = tolerance;
 				__m128 segment[2];
 				vector_constructor_iterator(segment, sizeof(__m128), 2, function_31bc70);
+				int mask = signs[0] | signs[1];
 				int bit = 1;
 				for (int edge = 0; edge < 3; bit <<= 1, edge++)
 				{
-					if ((signs[0] | signs[1]) & bit)
+					if (mask & bit)
 					{
 						continue;
 					}
@@ -532,6 +536,7 @@ struct agent_2f4440
 	weights_308c20 weights;
 };
 
+// Contacts within the tolerance are added with their persistent owner IDs.
 // One instruction pair still differs: the inside case loads the slope
 // first in `height * slope`, retail the height; and the edges-as-segments
 // loop tests `bit` against the mask with the operands the other way round.
@@ -612,12 +617,14 @@ __forceinline bool closest_contact_2f4f00(void const *a, void const *b, void con
 // the pair passed to the collector when either contact overlaps
 __forceinline void report_pair_2f4f00(candidate_2f4f00 const *contacts, void const *a, void const *b, void *collector)
 {
+	// Either contact can admit the pair.
 	if (contacts[0].point(3) < 0.0f || contacts[1].point(3) < 0.0f)
 	{
 		((pair_collector_2f4f00 *)collector)->add_pair(a, b);
 	}
 }
 
+// The closer contact, using the triangle weights cached in the agent.
 // One instruction pair still differs: the inside case loads the slope
 // first in `height * slope`, retail the height (the operand order is the
 // compiler's own; no spelling tried moves it).
@@ -641,6 +648,7 @@ void class_2f4f00::function_2f4f00(void const *a, void const *b, void const *inp
 	timer_add_2ebc80("Et");
 }
 
+// The closer contact, computing the triangle weights for this query.
 // One instruction pair still differs: the inside case loads the slope
 // first in `height * slope`, retail the height (the operand order is the
 // compiler's own; no spelling tried moves it).
@@ -670,11 +678,11 @@ void __cdecl function_2f5960(void const *a, void const *b, void const *input, vo
 	timer_add_2ebc80("Et");
 }
 
-// Retail places the ends' code after the return and tests both contacts'
-// separations on every path; ours folds those tests where the separations
-// are still the largest float and keeps the ends' code before the report.
+// The first transformed-end store still exchanges its address registers
+// in the SIB encoding; the effective address and all other instructions agree.
 // The pair passed to the collector when the capsule and the triangle overlap,
 // with the triangle's weights kept in the object
+// Review cleanup score 299: removed the unmatched pair-distance volatile reads.
 // @retail 0x2f63d0
 void class_2f63d0::function_2f63d0(void const *a, void const *b, void const *input, void *collector)
 {
@@ -685,11 +693,11 @@ void class_2f63d0::function_2f63d0(void const *a, void const *b, void const *inp
 	timer_add_2ebc80("Et");
 }
 
-// Retail places the ends' code after the return and tests both contacts'
-// separations on every path; ours folds those tests where the separations
-// are still the largest float and keeps the ends' code before the report.
+// The first transformed-end store still exchanges its address registers
+// in the SIB encoding; the effective address and all other instructions agree.
 // The pair passed to the collector when the capsule and the triangle overlap,
 // with the triangle's weights worked out here
+// Review cleanup score 293: removed the unmatched pair-distance volatile reads.
 // @retail 0x2f6db0
 void __cdecl function_2f6db0(void const *a, void const *b, void const *input, void *collector)
 {

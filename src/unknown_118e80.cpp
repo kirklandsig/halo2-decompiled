@@ -1223,6 +1223,12 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // `0.0f < sum` 92. Still BLOCKED-BY 0x1c4b00's `long force` parameter (src/unknown_1c25a0.cpp and its declarations,
 // held by other lanes this round).
 // MiniMax R (11-10): no new form, no lower score; the squared length still sums the three components in the order the compiler picks (i, j, k) where retail sums them from k down to i, and three component locals that follow retail's order score 90, under the bar; the 0x119bc0 result still travels in al where retail stores it to a stack byte and pushes the containing dword, which needs 0x1c4b00's last parameter declared as a bool in a file this lane may not edit.
+// Round 86 (m3 lane 11, fast; aligned / register-masked 17 / 16 at 92, so the score is mostly the one-row shift from the
+// `movzx` of the force argument): `if (load) result = true;` for the 0x119380 `|=` 110 (masked 21); the frozen test as
+// `result = (flags & 1) != 0; if (!result)` 272; the definition's physics bit read once into a named bool for both tests
+// 271 (1019 bytes); a named pointer to the countdown word at 0x206 for its three uses 92 (same code); an early `return
+// false` for the 0xb4 test 276 (1039 bytes). Still BLOCKED-BY 0x1c4b00's `long force` parameter (the bool form, 44,
+// needs declarations in src/bipeds.cpp, a contributor's, and in four files other lanes hold this round).
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

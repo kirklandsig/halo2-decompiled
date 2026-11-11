@@ -1572,6 +1572,19 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // query reads move ahead of the scan; aligned 333 -> 326), with the mask at the top too 566, with early `return true`/`return
 // false` instead 567 (frame 0x28 and block EAX -> EBX as retail, masked+stack aligned 319, the lowest seen; count and mask stay
 // EAX/EDI). (The result placement and the early normal copy are round 39's forms, measured here on the current base.)
+// M3 lane 1 r90 (fast with the file's functions, 0x3db00 and 0x3dfe0; aligned/register-masked counts in brackets,
+// control 529 [527/281]; 0xd4080 378, 0x3db00 MATCH): base R = lane 10 r87's `bool result = false;` first with
+// `return true;` at the end of the found block (re-measured 563 [505/259], frame 0x28). R without the `count > 0`
+// wrapper (one count test, as retail) 567 [490/270] (2167 B): the loop's homes become retail's exactly (mask EAX,
+// count EDX, block then the flags in EBX, query EDI), but block arrives in EDX and query in EAX. On that body the
+// declared parameter order picks the incoming registers: (type, query, block) gives retail's convention (block
+// EAX -> EBX, query EDX -> EDI) and retail's call setup in 0xd4080 (`mov edx, edi; mov ecx, ebx`, the order the
+// last-to-first rule implies) 566 [491/272] (0xd4080 380, 0x3db00 kept); (query, type, block) 566 with the setup
+// reversed (0xd4080 379); (type, block, query) 567 (unchanged convention). (type, query, block) on this body 529
+// (same code; 0xd4080 455). On the one-test body with the old order, the normal and the lightmap copied whole with the
+// bias added in place 578 (0x3db00 lost, 0xd4080 508); with (type, query, block) 576 (0x3db00 lost; record leaves EBP,
+// frame 0x2c). Lead: the one-test result form with (type, query, block) has retail's entry, convention and loop;
+// what is left is the body's copy/clamp schedule, whose retail forms move record off EBP and lose 0x3db00. All restored.
 // M3 lane 14 r80 (fast with 0xd4080 378 and 0x3db00; masked = aligned count with registers and esp offsets masked, 275 at 529):
 // retail's body order (the square right after the direction1 negate, the lightmap pin before the base pin) brings the body closest
 // but its homes cascade. New: `if (parameters) { ... return true; } return false;` with a single-test scan (mask in the test, no

@@ -1746,6 +1746,13 @@ bool function_17afd0(long effect_index, long value);
 // owner` 46 (masked 14, test order only, not kept); on that, the location-mode swap 51, the attached test effect-index first 46;
 // `view == owner && available && owner != NONE` 46, `available && view == owner && owner != NONE` 106 (492), the equality first
 // with the location-mode swap 52.
+// m3 lane 13 r79 (fast, base 47): the camera test in the idiom of src/unknown_03f2b0.cpp (`g_4b9ed8 != NONE &&
+// g_4ed284->entries[g_4b9ed8].index != NONE`) with the availability false early and set by a branch 142 (510 bytes);
+// the branchy availability with the attachment testing the effect index first 135 (504); the camera idiom with the
+// availability uninitialised and set in an if/else 113 (498: availability in AL, same view in BL); the second definition
+// lookup in its own local 47 (same code); same_view false then set by the full test 107 (498, owner in ESI, view in EBP).
+// Every branchy availability spills the flag or moves NONE out of EBP; ours keeps the flag in BL only with the early
+// `available = false` and the neg/sbb/inc set.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
