@@ -2230,6 +2230,15 @@ bool function_1e11b0(long actor_index, bool active);
 // `(bool)(squad[2] >> 7)` 64 (same code); 0x203d70's word flag test, game time first, word flag store and short-view return
 // together 65 (206 B); the return as `(squad[2] & 0x80) == 0x80` 76 (209 B); one byte pointer to the flags for the test, the
 // store and the return 64 (same code).
+// Round 155 (m3 lane 8, fast with 0x203f60's callers): the callee side. Retail keeps 0x203f60 out of line in this loop and
+// in 0x203d70's but inlines it in 0x1c7bb0's double loop. With no function-level pragma and the body on existing helpers
+// (squad_get, the forceinline step, iterator.actor_index) 161 (284 B, 0x203f60 inlined; re-measure of round 153's 161).
+// On that base: 0x275380's hand copy of 0x203f60 replaced by a call 161 (0x275380 still matches); 0x203f60 reading the
+// stamp through the existing getter 0x146650 161 (0x203f60 still matches); 0x203f60 with g_4f55d0 in a local 161 (0x203f60
+// 9); with an early return when inactive 161 (same code); with the time in a named local 161 (same code); with the list
+// head read into a local and stored after the head update 154 (279 B; 0x203f60 4, 0x1c7bb0 55). Diagnostic: 0x203f60 with
+// an actor lookup at each store (84 B) stays out of line here, 78 at 184 B (masked 17 against 23). So LTCG's choice
+// follows 0x203f60's optimised size, and no same-code spelling of it moves the choice.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -3174,6 +3183,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // 0x290cd0 argument 91 (580 B); the lock test through the file's typed definition-table view (as 0x203330 reads it) 50, with
 // the second half's definition pointer through it too 50; every +0x2a read through the squad definition view 50; both
 // 0x202e90 calls passed the unnarrowed values (implicit conversion) 50 (all same code but the first).
+// Round 155 (m3 lane 8, fast): 0x202e90's third parameter as `bool` (its body reads it only as a byte; definition and the
+// two outside declarations, calls unchanged) 50 (same code; 0x202e90, 0x203120, 0x2011f0, 0x275cb0 still match); re-measured
+// round 73's follow-up in both pending arms (with its task test in each) 74 at 578 B. No call cycle runs through this function,
+// 0x202e90 or 0x1fb8a0, so file order is no lever. No untried natural form is left.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

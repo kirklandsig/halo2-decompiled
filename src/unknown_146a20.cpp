@@ -399,6 +399,9 @@ bool g_47f05b;
 // `byte *const block` with `block + 0x30` 34 (all same code); re-measure: the fixed allocator in an abstract-typed local
 // published on the next line 38 (137 bytes; the listed typed-local-published form). The lever left is the shared
 // constructors in include/unknown_146a20.h (included by include/globals.h and contributor files) or the held twin.
+// Round 155 (m3 lane 8): retail 0x146b80 (same constructor, base store dropped) stores the fixed base's count before
+// its buffer and size; retail here keeps declaration order and keeps the store, so the two inlined copies differ in
+// scheduling, not in source. No untried form on either side; body unchanged.
 // @retail 0x146a20
 void function_146a20(void)
 {

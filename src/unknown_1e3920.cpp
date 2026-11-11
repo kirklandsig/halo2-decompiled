@@ -1363,6 +1363,13 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // only under two tests; the tail's calls only at the tail's current depth), and an out-pointer for unit_index or
 // perception_index stops the jump threading that sends retail's failures straight to `return NONE`. Diagnostic (reverted):
 // `__declspec(noinline)` on this file's 0x11dfb0 declaration changes nothing (LTCG goes by the definition). Body unchanged.
+// Round 155 (m3 lane 8, fast; masked = register-masked aligned count, 115 at 253): re-measured on this base, lane 5 r77's
+// palette count read at each use 257 (1273 B, masked 111: the count reads then match retail), int grenade tests 352 (1283 B),
+// both 276 (masked 116). On round 78's loop shape (420 re-measured): character_definition_get for both definition reads plus
+// file-local inline squad-entry and palette getters 431 (diagnostic: 0x1e4990 still inlined in the loop, so this function's
+// inline budget is not what keeps retail's call); 0x1e4990 respelled as a `while` with an early return 421 (0x1e4990's own
+// code changes, still inlined). Retail inlines 0x1e4990 at 0x1e1a00's top-level call, so call frequency is not the reason
+// either.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
