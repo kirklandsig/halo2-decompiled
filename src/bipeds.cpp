@@ -5260,6 +5260,16 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // reg, [esi]; mulss reg, axis`) and of the forward.j products in the staged cross, plus where the (1 - cos) spill is
 // scheduled. They come from inside rotate_direction (src/unknown_1eb8a0.cpp, on this round's Avoid list) and the shared
 // cross3f_staged (include/vector_products.h, used by matched functions), so no helper-side form was tried.
+// M3 lane 12 r115 (fast with 0x1ecf50/0x30bf0), helper side: rotate_direction as 0x2551f0's helper (a named vector_k, the
+// projection in one expression) 134 (895 bytes, 0x1ecf50 lost); as 0x1055b0's spelling (`(1 - cos) * dot3f`, rows
+// axis-first) 144 (905, 0x1ecf50 lost); its dot as dot3f(axis, vector) 79 (same code); with named axis_i/j/k 130 (904,
+// 0x1ecf50 lost; close to M364's captures). Body: a snapshot of forward taken after the normalize and read by the side
+// cross 162 (913), by the final cross 164 (913). Re-measured: up and side declared at their first use (Round 70) with the
+// side through cross3f_staged 79 (same code); the final cross into the up copy, then stored (P378) 252 (937). Compile-only screens (the helper pasted into a copy of this file reproduces this listing): 48 dot/cross statement
+// orders, 250 helper spellings (operand orders, the dot in each order, row term orders, indexed access) and named
+// components in every order never beat this body; 300 caller mixes of the field and the pointer per use, declaration
+// points and an up pointer beat it only with the field in the first rotation (the 63 mix above). A copy of forward read by
+// the side cross gives retail's final-cross operand sides, so retail's final cross reads forward apart from the side cross.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
