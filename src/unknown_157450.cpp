@@ -767,6 +767,14 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // Round 69 (m3 lane 15, fast): the globals through the getter at each use with no local (0x1584c0's idiom) on this dword-mask,
 // volatile-present body 32 (identical code); the real record-pool step function in place of the header iterator copy is ruled
 // out (its file is /Ob1, so the link would keep a call where retail has the loop inline).
+// M3 lane 11 r89 (fast; same code as the full check here; base 32, aligned 21, masked 16): the old team mask read through
+// globals with the store still through the mask pointer 130 (374 bytes); the playing test held in a named bool 47 (396 bytes).
+// Same code: the volatile present declared after the iterator and player; the old playing mask read and stored through its own
+// field pointer. Re-measured as diagnostics: the word mask 77 (aligned 19: entry and loop exact; the post-loop block, where
+// retail reloads the spilled word into ECX ahead of the jne, keeps playing in EDX and reads the engine index first, plus a
+// one-line pad shift), the team-bit carrier on it 83 (383 bytes; retail shifts twice). No other untried natural form is left:
+// widths, declaration and statement orders, pointer/getter/direct field paths, early exits, carriers and helper boundaries
+// are all listed above.
 // @retail 0x158140
 void function_158140(void)
 {
