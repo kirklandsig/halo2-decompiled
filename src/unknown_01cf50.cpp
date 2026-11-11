@@ -3618,13 +3618,12 @@ bool g_55e6bc;
 // stores show), so it was reverted; a local for the far plane hoists its load to the function entry (18), and the
 // three products stay as they are because this build keeps the higher-addressed factor in the register whatever
 // order the source uses (the swapped row scores the same 17, one row written as a single expression 27).
+// MiniMax E (11-11), NOT kept (coordinator 11-11): 17 -> 10 only from the near and far planes each read into a local used once before the depth-clip call (match-only form); body at 17.
 // @retail 0x12d50
 void function_12d50(bool scaled, real const *projection, real *output)
 {
     real constants[16];
-    real near_plane = (scaled ? 0.15f : 1.0f) * g_485adc;
-    real far_plane = g_485ae0;
-    D3DDevice_SetDepthClipPlanes(near_plane, far_plane,
+    D3DDevice_SetDepthClipPlanes((scaled ? 0.15f : 1.0f) * g_485adc, g_485ae0,
         D3DSDCP_SET_VERTEXPROGRAM_PLANES);
     real const *matrix = projection ? projection : g_48568c;
     if (!output)
