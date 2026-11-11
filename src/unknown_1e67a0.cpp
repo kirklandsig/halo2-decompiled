@@ -1344,6 +1344,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // schedule, the side-dot order, the moved-away flag byte, the exits) is the commutative-operand group of round 83's lead; every
 // natural form for those found here (cross helpers, cross order and declaration, dot sides, named dots, flag spellings, the
 // joined exit) is listed above. Blocked: rotate_direction's body in src/unknown_1eb8a0.cpp is held this round.
+// MiniMax D (11-11): no new form, no lower score (114): the first difference is still inside the inlined
+// `rotate_direction`, whose definition is in another file, and the moved-away flag spelling that the notes above record
+// at 92 needs a flag set in a test, so it is not keepable.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
