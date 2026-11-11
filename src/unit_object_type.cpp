@@ -5894,7 +5894,7 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
    otherwise), takes its team from the creation data (in campaign, the
    definition's when unset), starts its animation and finds its two
    animation graph entries */
-// MiniMax C (11-10): score 57 (was 202): the header is read as the pool data plus the masked index times twelve plus eight through a named offset local, which gives retail's [ecx + esi + 8] amode, and the out-of-memory arm sets the return value before its store while the body sits in the else arm, which gives retail's three return blocks and its 1040 bytes; what still differs is the success arm's register roles (retail reads the pool global into EAX and the data into ECX where ours uses EDX and EAX, retail sign-extends the +0x33e offset into ECX where ours uses EDX, and retail copies the five forward vectors through ECX and EDX in the other roles).
+// MiniMax C (11-10): score 59 (was 202): the out-of-memory arm sets the return value before its store while the body sits in the else arm, which gives retail's three return blocks and its 1040 bytes. NOT kept (coordinator, 11-11): the header read as the pool data plus the masked index times twelve plus eight through a named offset local (57, retail's [ecx + esi + 8] amode), a hand-expanded getter with a shared local, kept only with a match.
 // score 202 (was 202; 253, 282 before that): the logic agrees with retail statement by statement (re-walked in round 5 of #1049).
 // Round 5 of #1049: the four weapon slots are cleared with memset(.., 0xff, 16), which gives retail's lea/pointer fill
 // (definition spilled first, EDX the pointer, ECX the value; 253 -> 202). What still differs: (1) retail's early
@@ -5931,8 +5931,7 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {
 	byte const *data = (byte const *)creation;
-	long header_offset = (unit_index & 0xffff) * 12;
-	s_unit *unit = *(s_unit **)((byte *)g_4e0300->data + header_offset + 8);
+	s_unit *unit = UNIT_GET(unit_index);
 	byte *definition = UNIT_DEFINITION_GET(unit);
 
 	unit->unknown238 = NONE;
@@ -5985,7 +5984,7 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 		UNIT_DAMAGE_SOURCES(unit)[i].player_index = NONE;
 		unit->unknown330[i] = 0;
 	}
-	if ((*(s_unit **)((byte *)g_4e0300->data + header_offset + 8))->animation_offset == NONE)
+	if (UNIT_GET(unit_index)->animation_offset == NONE)
 	{
 		return false;
 	}
@@ -5999,7 +5998,7 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 	}
 	else
 	{
-		unit = *(s_unit **)((byte *)g_4e0300->data + header_offset + 8);
+		unit = UNIT_GET(unit_index);
 		byte *state = (byte *)unit + unit->unknown346;
 		*(long *)(state + 0x10) = NONE;
 		*(short *)(state + 0x14) = NONE;
@@ -6942,7 +6941,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
    and grenade choices, zoom (with the weapon's or the globals' zoom
    sounds), and passes each hand's trigger state to its weapon; whether
    anything changed */
-// MiniMax C (11-10): score 232 (was 253): the trigger flags are a word in a two-field aggregate whose dword member is passed to 0x100430 (retail's 16-bit flag ops and its 0x28 frame now agree), the last trigger bit is a dword shift, and the two action tests compare the call's result as a byte, as retail does; what still differs starts at the changed byte, ours at [esp+0x13] against retail's [esp+0x12] because retail also keeps the second loop's first-hand flag in a stack byte, and then at the flags block, where retail keeps the control word in EDX with EBX as the shift temp (the first-hand flag is in memory there) and ours keeps it in EDI with EDX (the first-hand flag is in BL), plus retail's 16-bit shift of the first flag bit where ours shifts 32 bits.
+// MiniMax C (11-10): NOT kept (coordinator, 11-11): 232 from the trigger flags as a word in a word/dword union passed as its dword (a single local wrapped in a union) together with byte compares of the 0x113da0/0x113df0 results; retail has the 16-bit flag ops and the 0x28 frame. Try the byte compares alone, or a 16-bit flags local passed widened, before any aggregate.
 // score 253 (was 253): the control tests 0x8000000/0x4000 are plain mask tests (retail `test eax, imm`), flag 2 of
 // +0x10a goes through s_unit_flags_10a_view (load, shift, test), the zoom is a short compared against
 // the stored field (cmp bx; the field is then read, not the local, for the NONE tests), the zoom sound is read
@@ -7014,13 +7013,13 @@ bool __stdcall function_c58f0(long unit_index)
 
 			if (!(control & 0x8000000) && !((1 << unit->type) & 1 && control & 0x4000))
 			{
-				if (!(byte)function_113da0(unit_index))
+				if (!function_113da0(unit_index))
 				{
 					function_113d20(unit_index, 0.5f);
 					changed = true;
 				}
 			}
-			else if (!(byte)function_113df0(unit_index))
+			else if (!function_113df0(unit_index))
 			{
 				function_113d60(unit_index, 0.5f);
 				changed = true;
@@ -7159,37 +7158,33 @@ bool __stdcall function_c58f0(long unit_index)
 				held = true;
 			}
 			dword control = unit->unknown148;
-			union s_control_flags
-			{
-				word bits;
-				dword value;
-			} flags;
-			dword last;
+			word flags;
+			bool last;
 
 			if (first)
 			{
-				flags.bits = (word)((TEST_FIELD_BIT((control >> 16) & 1)) << 1);
-				flags.bits = TEST_FIELD_BIT((control >> 17) & 1) ? flags.bits | 4 : flags.bits & ~4;
-				flags.bits = TEST_FIELD_BIT((control >> 18) & 1) ? flags.bits | 8 : flags.bits & ~8;
-				flags.bits = TEST_FIELD_BIT((control >> 19) & 1) ? flags.bits | 0x10 : flags.bits & ~0x10;
-				flags.bits = TEST_FIELD_BIT((control >> 20) & 1) ? flags.bits | 1 : flags.bits & ~1;
-				last = (control >> 30) & 1;
+				flags = (word)((TEST_FIELD_BIT((control >> 16) & 1)) << 1);
+				flags = TEST_FIELD_BIT((control >> 17) & 1) ? flags | 4 : flags & ~4;
+				flags = TEST_FIELD_BIT((control >> 18) & 1) ? flags | 8 : flags & ~8;
+				flags = TEST_FIELD_BIT((control >> 19) & 1) ? flags | 0x10 : flags & ~0x10;
+				flags = TEST_FIELD_BIT((control >> 20) & 1) ? flags | 1 : flags & ~1;
+				last = TEST_FIELD_BIT((control >> 30) & 1);
 			}
 			else
 			{
-				flags.bits = (word)((TEST_FIELD_BIT((control >> 21) & 1)) << 1);
-				flags.bits = TEST_FIELD_BIT((control >> 22) & 1) ? flags.bits | 4 : flags.bits & ~4;
-				flags.bits = TEST_FIELD_BIT((control >> 23) & 1) ? flags.bits | 8 : flags.bits & ~8;
-				flags.bits = TEST_FIELD_BIT((control >> 24) & 1) ? flags.bits | 0x10 : flags.bits & ~0x10;
-				flags.bits = TEST_FIELD_BIT((control >> 25) & 1) ? flags.bits | 1 : flags.bits & ~1;
-				last = (control >> 31) & 1;
+				flags = (word)((TEST_FIELD_BIT((control >> 21) & 1)) << 1);
+				flags = TEST_FIELD_BIT((control >> 22) & 1) ? flags | 4 : flags & ~4;
+				flags = TEST_FIELD_BIT((control >> 23) & 1) ? flags | 8 : flags & ~8;
+				flags = TEST_FIELD_BIT((control >> 24) & 1) ? flags | 0x10 : flags & ~0x10;
+				flags = TEST_FIELD_BIT((control >> 25) & 1) ? flags | 1 : flags & ~1;
+				last = TEST_FIELD_BIT((control >> 31) & 1);
 			}
-			flags.bits = last ? flags.bits | 0x80 : flags.bits & ~0x80;
-			flags.bits = TEST_FIELD_BIT((control >> 29) & 1) ? flags.bits | 0x100 : flags.bits & ~0x100;
-			flags.bits = held ? flags.bits | 0x20 : flags.bits & ~0x20;
-			flags.bits = unit->unknown240 != NONE ? flags.bits | 0x40 : flags.bits & ~0x40;
+			flags = last ? flags | 0x80 : flags & ~0x80;
+			flags = TEST_FIELD_BIT((control >> 29) & 1) ? flags | 0x100 : flags & ~0x100;
+			flags = held ? flags | 0x20 : flags & ~0x20;
+			flags = unit->unknown240 != NONE ? flags | 0x40 : flags & ~0x40;
 			real rate = first ? *(real *)&unit->unknown1c0 : *(real *)&unit->unknown1c4;
-			function_100430(weapon_index, flags.value, rate);
+			function_100430(weapon_index, flags, rate);
 		}
 		function_d1540(unit_index);
 	}
