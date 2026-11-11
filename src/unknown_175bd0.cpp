@@ -3201,6 +3201,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 
 // MiniMax E (11-11): no new form, no lower score (93): the frame is still 0x4c against retail's 0x54,
 // and the per-call mode and the particle system still take the opposite registers.
+// MiniMax C (11-11): no new form, no lower score (93): retail keeps the particle system in ESI and
+// colour B in EDI and reads the location mode at each call, but that per-call read flips the LTCG
+// convention and breaks the matched caller 0x176f60, and 0x175a80's register contract (colour A in
+// ECX, colour B in EDI, the tint in AL) is decided in src/unknown_173b90.cpp, another lane's file.
 // score 93 (was 93): frame 0x4c versus 0x54, the particle system in EDI (retail ESI) and the location mode cached
 // where retail spills the definition and reads the mode at each call.
 // MiniMax A (11-06): no new form, no lower score; the same cause as 0x178c80: retail reads both colours
