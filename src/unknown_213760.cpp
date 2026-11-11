@@ -1606,6 +1606,17 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // passed into the wait helper 7 (all the same code), the stored checksum read through `handle` 7 (same code), a named
 // `s_file_write_flags flags(0)` at the top of the size-mismatch block 141 (917 bytes). Restored: the 7 needs the goto and
 // the set-in-test validity.
+// Round 87 (m3 lane 11, fast; aligned/masked in brackets): lane 12's 6 form rebuilt 6 [6/0]. New on it: the resize
+// helper's handle taken as `s_file_handle const &` 114 [6/3] at 917 bytes (resize handle ECX and header lea EDX become
+// retail's); with a by-value close helper (call and wait) as well 114 [4/3]: the checksum compare then takes EAX as in
+// retail and only the close's `mov ecx, eax` copy is missing (917 against 930 bytes; the two loop pads follow). On that:
+// the write helper returning the count or `== 0x800` 114/114 [4]; a close helper by pointer owning the INVALID test and
+// store 114 [6]; by value returning false on INVALID 114 [4]; by const pointer 114 [6]; the close written in both arms
+// of `if (resized)` (no goto) 145 (962 B), on the reference form alone 184 (995 B). The write helper taking the flags
+// by value 120 [12]; the write helper's handle by const reference 122 [14]. Diagnostic dead loads after the write,
+// before the close test or inside the close block 103/100/97 (none restores the copy). Permuter on the 114 [4] form
+// (600 s, 47 tries): best 64 from casts and a split range test only. All of these need match-only forms (new
+// one-caller helpers, the goto, the set-in-test validity).
 // M3 lane 12 r108 (fast; all on round 53's 7 form, whose goto past the close and set-in-test `else if` validity are match-only,
 // so none of this is keepable short of a match): an inline write helper taking the handle by value 114 (917 B, as round 149's
 // DDHD); with a matching resize helper, `(s_file_handle file, dword size, bool *success, bool volatile *done)`, 6 at 930 B (as

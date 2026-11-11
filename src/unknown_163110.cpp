@@ -901,6 +901,12 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // after the normal copy k = 1..8 119 135 130 242 246 135 127 135; the first difference stays +0xbb (the e4.i load is not a numbering tie).
 // Store through `*(outside0 ? p1 : p0)` 368 (1867 bytes); `p1 = p0 + 1` 256 (1867); both segment loops as plain for loops 129;
 // intersection rows point-first 115 (same code); total counted per projected point 116.
+// Lane 3 r230 (fast, 0x1648d0 matched each time): the clip denominator written normal-first in all three terms 115
+// (same code); repeats of lane 16 r97's forms: the clip loop alone as a plain `for` 129, the projection loop alone 135
+// (listed at 129), the classification stored as the bare comparison (no `? 1 : 0`) 320 (1835 bytes); the outside flags
+// as `bool` with `? true : false` 320 (1835); in the projection tail `culled = false` after the cursor step 115,
+// `total += 2` after the per-point loop 214, the per-point counter as `short` 129. The head is still the late camera-i
+// load and the XMM3/XMM4 swap after it.
 // Round 65 (m3 lane 2, fast; 0x1648d0 and 0x320b0 matched each time; difflib aligned/register-masked in brackets, control
 // [73/33]): ours copies `output` (EAX) then `out` (EDX) from the cursor, one `mov` more than retail's `mov edx, edi`, so the
 // inner loop's pad is 3 bytes where retail has `jmp` + pad. Re-measured lane 6 r147's natural forms: walking `out` alone 249
@@ -936,6 +942,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // `vector3f vector54`, no cast 115 (same code); the 0xb4/0xe4 fields typed point3f and read as .x/.y/.z 115 (same code); `forward` as
 // a `vector3f const &` 115 (same code). Left as before: retail allocates camera i to XMM4 and hoists it above the normal copy, ours
 // loads the copied normal's i right after its store and takes camera i late into XMM3. Body restored.
+// M3 lane 8 r152 (fast; masked aligned 22): retail's `segment_culled` update is the `|=` (`or byte`) and its bound updates and
+// projection arithmetic are ours. Compile-only, identical code: `for (long i ...)` scope, the clip test as nested ifs, `bool`
+// outside and culled arrays. Real: `outside[segment * 2]` read at each use in place of `outside0` 249 (1867 B); the culled update
+// as `|= !(a | b)` 383, as `x = x || (...)` 284; the clip test's `&&` operands in the other order 275; the `w` clamp as an
+// if-statement on a copy of t.z 249 (all 1867 B). Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

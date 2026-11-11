@@ -306,7 +306,7 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 	}
 }
 
-// score 14 (was 14; 56 before round 101, 112 before that): frame 0x48, the entry registers, the definition spill, the search and the axis bases agree (round 101); earlier at 56,
+// score 14 (was 14): 56 before round 101, 112 before that; frame 0x48, the entry registers, the definition spill, the search and the axis bases agree (round 101); earlier at 56,
 // frame 0x48 and the entry registers agree, 0xb7060 matches; what remains: the definition spilled at its load (retail EAX, ours ECX, then the
 // default body and index registers), the search's bodies/offset load order, transform kept in EBP where retail has `lea ecx` and left in EBP, the dot's first two
 // products (retail k then j, up first), one cross product side, and the failure stores (retail after the pops).
@@ -317,7 +317,7 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // object in eax, entry in ecx) and the physics pointer is still spilled early.
 // MiniMax S (11-10): no new form, no lower score (56); the definition still spills to ECX where retail spills it to EAX (which also swaps the count and default-body
 // registers), the transform pointer still moves before the 0x141590 call, and the failure stores still precede the pops where retail's follow them.
-// score 56 (was 112): frame 0x48 and the entry registers agree, 0xb7060 matches; what remains: the definition spilled at its load (retail EAX, ours ECX, then the
+// Earlier at 56 (was 112): frame 0x48 and the entry registers agree, 0xb7060 matches; what remains: the definition spilled at its load (retail EAX, ours ECX, then the
 // default body and index registers), the search's bodies/offset load order, transform kept in EBP where retail has `lea ecx` and left in EBP, the dot's first two
 // products (retail k then j, up first), one cross product side, and the failure stores (retail after the pops).
 // Earlier at 112: object/entry registers, early physics-pointer spill and center/projection scheduling.
@@ -629,6 +629,18 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // active store written at the head or the tail of both arms of the valid test 17 SSE lines (the tail moves but not to retail's).
 // Fast as well: the empty else arm 14 and the early return on !valid 14 (both the same code); the field-spelled dot, scale and cross
 // with the subtraction through the field too 143 (940 bytes, the head flips, 0xb7060 11).
+// M3 lane 3 r231 (fast with 0xb7060, which matched in each; the compile-only /Gr harness screened the tails first). New: the
+// body index declared NONE beside the component index, the failure stores as the then-arm of `if (body_index == NONE)` and the
+// update in its else (update last in source) 171: the not-valid exit then shares the success epilogue and the failure block
+// pops before its stores as retail, but the block moves up behind the body test (the head flips at +0x35); the whole update
+// block as a new forced-inline helper 18 (harness: our tail). Re-measured listed forms (round 103's guard gotos, round 101's
+// `body_index = NONE` exit): the failure block under a label at the top with gotos and the update last 171, the same block as
+// the body test's then-arm 171, the label block with the update in the body test's then-arm and `else goto failed;` 14 (same
+// code), a closing `if (body_index == NONE)` for the stores 14 (same code). So retail's epilogue sharing comes with the update
+// last in source, and retail keeps it with the failure block laid out last; no form found that does both. No other untried
+// natural form is left: the tail forms (early returns, flags, else arms, gotos, helpers, the active store's place) and the SSE
+// forms (all dot orders, field spellings, projection and cross helpers) are listed above, and the field-spelled SSE fix (8) is
+// a mix that needs a match, which the tail blocks.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

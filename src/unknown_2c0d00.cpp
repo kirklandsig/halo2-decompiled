@@ -7,6 +7,7 @@
 #include "unknown_2c0d00.h"
 #include "unknown_11cc90.h"
 #include "vector2f_products.h"
+#include "vector_products.h"
 #include <math.h>
 #include <string.h>
 
@@ -211,7 +212,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 901 (was 901): earlier 882 (was 882); frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
+// score 923 (was 923): earlier 901 (was 901), 882 (was 882); frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
 // frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
 // point workspace names 866; initial actor value 869; query index value 916;
 // conditional self-unit 911; wide initial predicates 1011; native location copy 911.
@@ -269,7 +270,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // Round 27 (m3 lane 15, plain): retail reads `settings` once into ECX, keeps `unit_index` in EDI and reads
 // the actor's fields from the computed actor address (none of the three volatiles is retail's), and EBP is
 // self_unit (its NULL is the entry's zero, so the priority/range zeros come from it). The settings
-// volatile dropped 882 (kept, 3705 bytes); on 899: the location/raised grouping struct as plain locals
+// volatile dropped 882 (kept, 3705 bytes); on 899: the location/raised grouping aggregate as plain locals
 // 906 (3718 bytes), no unit_index volatile 917, no actor volatile 959 (3680 bytes); on 882: no unit_index
 // volatile 938, plain locals 925 (3702 bytes), no actor volatile 996 (3648 bytes), both 998 (3646 bytes),
 // self_unit declared first 882 (same code); the previous-direction dot and the other-actor offset and dot
@@ -372,7 +373,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // Round 212 (m3 lane 3, fast control 931, plain 882; aligned 460 at control): marker arrays at the top of the function 931; object matrix at
 // the loop-body top 931; object offset at the loop-body top 931; sphere centre and difference at the loop-body top 931 (identical code each);
 // unit volatile dropped 918; actor volatile dropped 991 (3648); both 1014 (3632, frame 0x2cb4); both plus location and raised as separate
-// locals 1005 (3643, frame 0x2cb0, aligned 419); the query struct alone dropped 904 fast (3702, frame 0x2cb4).
+// locals 1005 (3643, frame 0x2cb0, aligned 419); the query aggregate alone dropped 904 fast (3702, frame 0x2cb4).
 // Y591: Positive complete classification in bool/byte/short/long, entry/admitted defaults:
 // 939/939/919/933/936/936/919/933 reduced (control 931, full 882). NOT kept:
 // no byte match or native frame repair; original decisions, qualifiers and body restored.
@@ -423,6 +424,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // MiniMax D (11-10): no new form, no lower score: retail and this build agree on the arguments (the previous
 // direction arrives in ECX and ten arguments are pushed), so only the frame (0x2cb8 against 0x2cac) and the local
 // homes still differ.
+// M3 lane 9 r109 (plain; start 923: the call to 0x26fbf0 now passes `word flags` as retail does, which moved homes since 901):
+// the raised point through the existing vector3f_add_scaled 923 (same code, kept); the definition no-obstacle bit in a word
+// bitfield 916 (retail's `mov cl, byte; shr cl, 3; test cl, 1`; aligned 619 -> 620; a 7-point gain, not kept); on that: the unit
+// bit in a word bitfield too 929 (both bit tests then retail's, aligned 603), the unit bit as `(object[0x10a] >> 2) & 1` 916 (same
+// code: the byte shift folds to `test byte`), the other actor index read at both uses 949 (3753 bytes), the other actor's offset and
+// dot through vector3d_from_points3d and dot3f 924 (3737 bytes). Retail keeps actor_index in EBX through the object loop (reloaded
+// at its top), so the type-0 arm's `push eax` reuses the zero type for 0x25d810's false; ours reads actor_index from memory.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -470,9 +478,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     else
     {
         point3f &raised = query.raised;
-        raised.x = g_4687b0->i * 0.05f + position->x;
-        raised.y = g_4687b0->j * 0.05f + position->y;
-        raised.z = g_4687b0->k * 0.05f + position->z;
+        vector3f_add_scaled((vector3f const *)position, g_4687b0, 0.05f, (vector3f *)&raised);
         function_11bed0(&location, &raised);
     }
     long object_indices[128];
@@ -1284,6 +1290,7 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
     s_path_location const *location, s_avoidance_trace *trace);
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
+long function_1fa7f0(void);
 // score 400 (was 400): earlier 418; the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // MiniMax E (11-10): no new form, no lower score (400); the frame is 0x114 here and 0x10c there, because the edge value and the other-side flag are kept in stack slots here and in ebx and bl there, which moves every other home by eight bytes.
@@ -1695,14 +1702,22 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // the loop bottom and keeps it through the scan. The emit's type and link stored unconditionally from the locals 415 (1751 bytes); as
 // two conditional expressions 521 (1795); the else arm as `out->type = out->link_index = NONE;` 400 (same code); the corner block's
 // tests joined (`edge != 0xffff && next_step->type == NONE`) 399; the delta test's operands swapped 400 (same code).
+// M3 lane 9 r109 (fast with 0x270930 and 0x2c2a70, base 400): the data fetched through the existing getter 0x1fa7f0 in place of its
+// body written out 400 (same code, kept). Retail stores a query+4 pointer it never reads (the trace an inlined helper's parameter
+// leaves), so helper boundaries (forceinline, one caller, kept only with a match): the forward scan and reverse candidate search as one helper returning found with next/edge
+// out-parameters 482 (1769 bytes; `static inline` stays a call, 718 at 1492), returning edge with next/found out-parameters 482
+// (edge's 0xffff moves into the scan, index to BX); the corner block (both corner queries, side, both attempts) as a helper with
+// origin/sector in-out pointers 400 (same code); the emit as a helper 400 (same code). Re-measured: `!side` to the second tangent
+// call with `side = !side` in the attempt for's increment 434 (1715 bytes, frame 0x10c: the attempt loop is then retail's, other
+// side in BL and location in EDI); on it the first conversion in 0x210850's nested shape 426 (1725 bytes, masked aligned 108 against
+// 94). The scan is what is left there: retail compares count from memory and keeps edge in EBX, ours keeps count in BX.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
 {
     real source_radius = query->source.radius;
     real radius = (real)(source_radius + 0.05);
-    s_pathfinding_data *data = *(long *)((byte *)g_4e0348 + 0xc4) > 0 ?
-        *(s_pathfinding_data **)((byte *)g_4e0348 + 0xc8) : 0;
+    s_pathfinding_data *data = (s_pathfinding_data *)function_1fa7f0();
     if (data)
     {
         if (count > 1)

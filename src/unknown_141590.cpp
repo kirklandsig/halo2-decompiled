@@ -1197,6 +1197,12 @@ void function_143250(
 // `term_10 = workspace.term_4;` right after term_8 (retail evaluates term_8, term_10, term_11, term_12, term_13) 1766 (same
 // code); the workspace as plain locals with `real matrix[49]` declared first 2113 (10412 bytes, frame 0x300 as retail, ret 8); the plain
 // terms declared in rotation-index order 2113. Body restored.
+// Round 87 (m3 lane 11, plain with 0x22850/0x23690/0x143250): band one's nine matrix stores read from rotation[] (its five
+// negation/copy terms dropped) 1787 (10745 B, ret 8, rotation still on the stack); with the nine leading copies after
+// band one's early return 1830 (10706 B); the 37 copies of copies in bands two and three (`term_N = workspace.term_K`,
+// `term_N = term_9`) read from rotation[] 1780 (10788 B): rotation then arrives in ESI and result in EDI, but coefficients
+// moves to the stack (still ret 8; 0x23690 401 -> 350); both 1776 (10792 B); band two's 22 only 2050 (11035 B, rotation
+// ESI). Use count alone gives rotation a register but never a third register parameter (retail EAX/ECX/ESI).
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

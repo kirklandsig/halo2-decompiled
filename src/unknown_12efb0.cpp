@@ -511,6 +511,13 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // NONE in ECX, reads the slot as a word and is one instruction short from there on, so every later line is off by one.
 // The char-slot and re-read forms recorded above (683-756) and the statement orders in the three-scalar helper all score
 // worse than this body.
+// M3 lane 1 r89 (fast with 0x131030, 0x1317a0, 0x130f60, all still MATCH; control 607, 3832 B, aligned 348, masked 118): retail's
+// colour accumulation (function_12efb5's body) loads alpha, blue, green, red (+0xec..+0xe0) before the weight clamp and
+// stores the alpha term and the weight before the colour, like four by-value arguments evaluated right to left. The helper
+// reading all four fields into locals first, retail's store order, 757 (3855 B, frame changed); the three-scalar helper with its
+// weight and remaining stores last (that helper alone) 718 (3838 B); both together 736 (3853 B); a char palette slot with the
+// colour helper's alpha term and weight first 702 (3828 B); a char slot with the three-scalar weight/remaining last 707 (3834 B).
+// Re-measured listed forms: four scalar colour arguments 774 (3863 B), the alpha term and weight first alone 609 (3832 B).
 // M3 lane 12 r110 (fast with 0x130f60, 0x131030, 0x1317a0, all MATCH; aligned/masked control 354/118): the fog
 // globals read once into a byte pointer local for the palette lookup 607 (same code; re-measure on this body of lane 8
 // r150's global-in-a-local form); the cluster loop over a cluster
