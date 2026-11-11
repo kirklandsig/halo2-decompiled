@@ -1839,7 +1839,7 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
-// score 87 (was 87): retail hoists the walk's pool load into ebx and keeps the selection
+// score 87 (was 87): round 112 (m3 lane 12) note at the end. Retail hoists the walk's pool load into ebx and keeps the selection
 // only on the stack (stored from esi, best stored in a tail shared with the initialisation);
 // ours keeps the pool in memory and the selection in edi.
 // MiniMax C (11-09): score 87 (was 87): no new form and no lower score; retail still hoists the walk's pool into EBX
@@ -2090,6 +2090,15 @@ void function_269250(long clump_index, long actor_index);
 // on this body the selection stored before the best 87 (round 129's, same code). No other untried natural form is left: the
 // lever is register priority (the walk pool against the selection), the declaration, statement-order, type, helper and
 // loop-shape forms listed here leave it, and the walk step helpers are shared headers used by matched functions.
+// M3 lane 12 r112 (fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched; this body
+// 87, aligned 34, masked 23): the shared clump_datum_walk_next with the found test as a ternary (`clump = next ? datum :
+// NULL;`) 130, 0x268510/0x268840/0x268c90/0x26ae30 all lose their match; with an early `return NULL` when inactive 146
+// (0x268840/0x268c90/0x26ae30 lost). Both restored. Checked against this note: the file's other walk helpers call the bit scan
+// (clump_datum_walk_next_calling, through 0x16bc00) or the whole step (clump_datum_walk_step, round 160's 243) out of line,
+// where retail inlines both (0x268a50-0x268abe), so neither is retail's; the selection's cross-jump with the created index
+// (both in EDI, merged at `push edi; call 0x269250`) is what our allocation buys, retail keeps them apart (selected reloaded
+// into EDX, created in EDI). The lever left is register priority between the walk's pool field and the selection, inside
+// the shared clump_datum_walk_next, whose respellings moved its four matched users in round 75.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
