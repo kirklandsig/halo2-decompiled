@@ -354,18 +354,26 @@ matches by accident still has to read like Bungie's code.
 
 For near misses, the fast search is usually the better choice:
 
-    python tools/permute.py <va> --fast --anneal --jobs 1 --time-limit 600 --write-only-match
+    python tools/permute.py <va> --fast --anneal --jobs 4 --time-limit 600 --write-only-match
 
 - `--fast` scores each variant on a reduced image (the function, its callees
   and what it needs), which takes seconds instead of a full build. Every
   improvement is confirmed by a full build. If the reduced image scores the
   original differently from the full image, the search stops at once and says
   to run it without `--fast`, because it would optimise the wrong score.
+- `--jobs N` scores variants in N workers, each on its own scratch root; in a
+  local run four workers covered about six times as many variants per second
+  as one, since a worker's link overlaps the others' compiles. A prepared
+  scratch compiles no sources (its copied objects and generated units are
+  already current), so the first build is a link.
 - `--anneal` lets the search accept some worse variants and restart, so it
   can get past a local minimum.
 - `--write-only-match` writes a variant back only when a full build finds an
   exact match and every decompiled function it calls matches too. Any other
   match is reported for you to check by hand.
+- `HALO2_TOOL_TIMEOUT` (seconds, default 600) bounds one compiler or linker
+  call. Wine occasionally wedges a tool at 0% CPU; the call's whole process
+  group is then killed and tried once more, so one wedge cannot stall a run.
 
 **False matches.** Under LTCG a function that doesn't match yet takes its
 argument registers from its own body. So swapping the arguments at a call to
