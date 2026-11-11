@@ -483,7 +483,7 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 
 /* recomputes the teams that have players */
 // score 32 (was 32): the word mask, its one reload ahead of the first jne, and present's update in EBX remain.
-// MiniMax D (11-11): 24 (was 32): the old team mask as a word local (retail's `mov cx` entry and its
+// MiniMax D (11-11): 24 (was 32), NOT kept (coordinator 11-11: lane 14 r55's width cast on one side of the compare; retail compares dword; body stays at 32): the old team mask as a word local (retail's `mov cx` entry and its
 // word spill) with the present compare narrowed to a word (`(word)present_teams != old_team_mask`); the
 // present mask's high bits are always zero, so the narrowing keeps the behaviour. The compare is still
 // 16-bit where retail compares dwords (`mov esi, [present]; movzx eax, cx; cmp esi, eax`), and the mask
@@ -794,7 +794,7 @@ void function_158140(void)
 	s_game_engine_globals *globals = function_xaee93d();
 	dword old_playing_teams = globals->playing_teams;
 	word *team_mask = &globals->team_mask;
-	word old_team_mask = *team_mask;
+	dword old_team_mask = *team_mask;
 	dword playing_teams = 0;
 	volatile dword present_teams = 0;
 	s_record_pool_iterator iterator;
@@ -815,7 +815,7 @@ void function_158140(void)
 			}
 		}
 	}
-	if (playing_teams != old_playing_teams || (word)present_teams != old_team_mask)
+	if (playing_teams != old_playing_teams || present_teams != old_team_mask)
 	{
 		dword added_teams = ~old_playing_teams & playing_teams;
 		long team;
