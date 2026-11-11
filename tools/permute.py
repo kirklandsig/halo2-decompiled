@@ -63,6 +63,7 @@ variant is scored twice.
 import argparse
 import bisect
 import difflib
+import functools
 import os
 import random
 import re
@@ -2845,11 +2846,14 @@ def main():
     if args.anneal and not args.fast:
         ap.error('--anneal needs --fast')
     va = check.parse_addresses([args.address]).pop()
+    # progress is watched while a run is in flight, so flush each line as it is
+    # printed: redirected output would otherwise arrive only when the run ends
+    log = functools.partial(print, flush=True)
     if args.fast:
         result = run_fast(va, args.tries, args.seed, args.time_limit, jobs=args.jobs, depth=args.depth,
-                          anneal=args.anneal)
+                          anneal=args.anneal, log=log)
     else:
-        result = run(va, DEFAULT_TRIES if args.tries is None else args.tries, args.seed, args.time_limit)
+        result = run(va, DEFAULT_TRIES if args.tries is None else args.tries, args.seed, args.time_limit, log=log)
     rate = result.tries / result.seconds if result.seconds else 0
     if args.fast:
         print(f'{result.tries} tries in {result.seconds:.1f}s ({rate:.2f} tries/s); reduced image: best '
