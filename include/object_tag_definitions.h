@@ -1,7 +1,8 @@
 /* OBJECT_TAG_DEFINITIONS.H: the object, unit and biped definition tags as the
    Xbox map lays them out (g_4e3b44[definition_index & 0xffff].bytes)
 
-   Field names follow the Halo 2 Editing Kit's (H2EK) tag fields. The layout
+   Field names mostly follow the Halo 2 Editing Kit's (H2EK) tag fields; a few
+   are this project's own descriptive names. The layout
    agrees with Project Cartographer's documented Halo 2 Vista layouts at every
    offset our code reads. A unit tag starts with the object's fields and a
    biped tag with the unit's, so a definition is the object part, then the
@@ -36,11 +37,11 @@ struct s_object_definition
 			word : 9;
 		};
 	};
-	real bounding_radius;                               /* 0x04 */
+	real cull_radius;                               /* 0x04 */
 	point3f bounding_offset;                            /* 0x08 */
 	real acceleration_scale;                            /* 0x14 */
 	short lightmap_shadow_mode;                         /* 0x18 */
-	byte sweetener_size;                                /* 0x1a, read unsigned */
+	byte impact_sound_size;                                /* 0x1a, read unsigned */
 	byte pad_1b[1];
 	dword runtime_flags;                                /* 0x1c */
 	real dynamic_light_sphere_radius;                   /* 0x20 */
@@ -58,7 +59,7 @@ struct s_object_definition
 	s_tag_reference crate_object;                       /* 0x3c */
 	s_tag_reference modifier_shader;                    /* 0x44 */
 	s_tag_reference creation_effect;                    /* 0x4c */
-	s_tag_reference material_effects;                   /* 0x54, 'foot' */
+	s_tag_reference footstep_effects;                   /* 0x54, 'foot' */
 	s_tag_array ai_properties;                          /* 0x5c, 0x10-byte elements */
 	s_tag_array functions;                              /* 0x64, 0x20-byte elements */
 	real apply_collision_damage_scale;                  /* 0x6c */
@@ -71,16 +72,16 @@ struct s_object_definition
 	s_tag_array attachments;                            /* 0x94, 0x18-byte elements */
 	s_tag_array widgets;                                /* 0x9c, tag references */
 	s_tag_array old_functions;                          /* 0xa4, 0x50-byte elements */
-	s_tag_array change_colors;                          /* 0xac, 0x10-byte elements */
-	s_tag_array predicted_resources;                    /* 0xb4 */
+	s_tag_array tint_sets;                          /* 0xac, 0x10-byte elements */
+	s_tag_array preload_list;                    /* 0xb4 */
 };
 typedef char assert_object_definition_size[(sizeof(s_object_definition) == 0xbc) ? 1 : -1];
 typedef char assert_object_definition_flags[(offsetof(s_object_definition, flags) == 0x2) ? 1 : -1];
-typedef char assert_object_definition_sweetener_size[(offsetof(s_object_definition, sweetener_size) == 0x1a) ? 1 : -1];
+typedef char assert_object_definition_impact_sound_size[(offsetof(s_object_definition, impact_sound_size) == 0x1a) ? 1 : -1];
 typedef char assert_object_definition_model[(offsetof(s_object_definition, model.tag_index) == 0x38) ? 1 : -1];
 typedef char assert_object_definition_model_tag_index[(offsetof(s_object_definition, model_tag_index) == 0x38) ? 1 : -1];
-typedef char assert_object_definition_material_effects[(offsetof(s_object_definition, material_effects.tag_index) == 0x58) ? 1 : -1];
-typedef char assert_object_definition_predicted_resources[(offsetof(s_object_definition, predicted_resources) == 0xb4) ? 1 : -1];
+typedef char assert_object_definition_footstep_effects[(offsetof(s_object_definition, footstep_effects.tag_index) == 0x58) ? 1 : -1];
+typedef char assert_object_definition_preload_list[(offsetof(s_object_definition, preload_list) == 0xb4) ? 1 : -1];
 
 /* ---- unit ('unit', 0x1ec bytes) ---- */
 
@@ -90,7 +91,7 @@ struct s_unit_definition_camera
 	long camera_marker_name;                            /* +0x00 */
 	long camera_submerged_marker_name;                  /* +0x04 */
 	real pitch_auto_level;                              /* +0x08 */
-	real_bounds pitch_range;                            /* +0x0c */
+	real_bounds vertical_aim_bounds;                            /* +0x0c */
 	s_tag_array camera_tracks;                          /* +0x14, tag references */
 };
 typedef char assert_unit_definition_camera_size[(sizeof(s_unit_definition_camera) == 0x1c) ? 1 : -1];
@@ -140,9 +141,9 @@ struct s_unit_struct_definition
 	short default_team;                                 /* 0xc0 */
 	short constant_sound_volume;                        /* 0xc2 */
 	s_tag_reference integrated_light_toggle;            /* 0xc4 */
-	real camera_field_of_view;                          /* 0xcc */
+	real camera_view_angle;                          /* 0xcc */
 	real camera_stiffness;                              /* 0xd0 */
-	s_unit_definition_camera unit_camera;                          /* 0xd4 */
+	s_unit_definition_camera camera_settings;                          /* 0xd4 */
 	s_unit_seat_acceleration acceleration;              /* 0xf0 */
 	real soft_ping_threshold;                           /* 0x104 */
 	real soft_ping_interrupt_time;                      /* 0x108 */
@@ -270,7 +271,7 @@ struct s_biped_struct_definition
 	real minimum_hard_landing_velocity;                 /* 0x208 */
 	real maximum_hard_landing_velocity;                 /* 0x20c */
 	real death_hard_landing_velocity;                   /* 0x210 */
-	real stun_duration;                                 /* 0x214 */
+	real stun_recovery_time;                                 /* 0x214 */
 	real standing_camera_height;                        /* 0x218 */
 	real crouching_camera_height;                       /* 0x21c */
 	real crouch_transition_time;                        /* 0x220 */
@@ -318,7 +319,7 @@ typedef char assert_biped_definition_flags[(offsetof(s_biped_definition, biped.f
 typedef char assert_biped_definition_jump_velocity[(offsetof(s_biped_definition, biped.jump_velocity) == 0x1f8) ? 1 : -1];
 typedef char assert_biped_definition_soft_landing_velocity[(offsetof(s_biped_definition, biped.minimum_soft_landing_velocity) == 0x204) ? 1 : -1];
 typedef char assert_biped_definition_hard_landing_velocity[(offsetof(s_biped_definition, biped.maximum_hard_landing_velocity) == 0x20c) ? 1 : -1];
-typedef char assert_biped_definition_stun_duration[(offsetof(s_biped_definition, biped.stun_duration) == 0x214) ? 1 : -1];
+typedef char assert_biped_definition_stun_recovery_time[(offsetof(s_biped_definition, biped.stun_recovery_time) == 0x214) ? 1 : -1];
 typedef char assert_biped_definition_standing_camera_height[(offsetof(s_biped_definition, biped.standing_camera_height) == 0x218) ? 1 : -1];
 typedef char assert_biped_definition_crouching_camera_height[(offsetof(s_biped_definition, biped.crouching_camera_height) == 0x21c) ? 1 : -1];
 typedef char assert_biped_definition_cosine_turning[(offsetof(s_biped_definition, biped.cosine_stationary_turning_threshold) == 0x24c) ? 1 : -1];

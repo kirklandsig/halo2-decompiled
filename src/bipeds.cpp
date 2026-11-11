@@ -1839,7 +1839,7 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 	{
 	case 1:
 		function_1e6120(output, &biped->physics_mode,
-			g_510c54->rate / definition->biped.stun_duration * (real)biped->unknown39d, airborne,
+			g_510c54->rate / definition->biped.stun_recovery_time * (real)biped->unknown39d, airborne,
 			*(long *)(state + 0x70) == 0x6000085, TEST_FIELD_BIT((biped->flags_348 >> 7) & 1), biped->crouch);
 		break;
 	case 2:
@@ -6104,7 +6104,7 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 	s_biped *biped = BIPED_GET(arg_159e6d);
 	s_biped_definition *definition = BIPED_DEFINITION(biped);
 
-	if (biped->physics_mode == 1 && definition->object.material_effects.tag_index != NONE)
+	if (biped->physics_mode == 1 && definition->object.footstep_effects.tag_index != NONE)
 	{
 		point3f point;
 		s_object_marker foot;
@@ -6131,8 +6131,8 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 			{
 				material = zone;
 			}
-			function_188180(&point, (vector3f *)((byte *)biped + 0x450), definition->object.material_effects.tag_index, arg_159e6d,
-				type, definition->object.sweetener_size, material, (long)g_4687bc, location, scale);
+			function_188180(&point, (vector3f *)((byte *)biped + 0x450), definition->object.footstep_effects.tag_index, arg_159e6d,
+				type, definition->object.impact_sound_size, material, (long)g_4687bc, location, scale);
 		}
 		else if (biped->parent_object_index == NONE)
 		{
@@ -6157,8 +6157,8 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 				vector3f_add_scaled((vector3f const *)&point, g_4687b0, 0.1f, (vector3f *)&point);
 				if (function_1697c0(0x84000d, &point, &down, NONE, NONE, (s_collision_result_1697c0 *)&collision))
 				{
-					function_188180(&point, g_4687b0, definition->object.material_effects.tag_index, arg_159e6d, type,
-						definition->object.sweetener_size, collision.unknown24, (long)g_4687bc, (s_location *)((byte *)biped + 0x28), scale);
+					function_188180(&point, g_4687b0, definition->object.footstep_effects.tag_index, arg_159e6d, type,
+						definition->object.impact_sound_size, collision.unknown24, (long)g_4687bc, (s_location *)((byte *)biped + 0x28), scale);
 				}
 			}
 		}
