@@ -2598,6 +2598,15 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // bytes, masked 188); with case 7/8's flag as `arg_1 == actor ? byte : true` 632 (2368). Each flips the actor to EDI and the
 // state to EBX. Lead: retail cross-jumps the `sete [esp+0x3c]` tails of cases 7/8, 0, 5 and 10 into one block that sits
 // right before the post-switch test (case 9/12/20 jump past it to the test); ours keeps three setes and the test after case 20.
+// m3 lane 16 r107 (fast with the file, 0x110ab0 and 0x25a130; control 479, aligned 146, masked 90; all restored): case 7/8
+// ending with `break` when bit 4 is clear and falling into case 0's result 479 (same code); case 2's copy as an aggregate
+// assignment through a named destination pointer 610 (retail's `lea ecx, [ebx+0x424]` copy, actor/state flip); case 5's
+// result written in each arm 634 (2416 bytes); case 20's iterator set up as data, index, datum_index (the order of ai.cpp,
+// game_loop.cpp and teleporters.cpp) 479 (retail's store order, aligned 145, masked 89; may repeat the listed "iterator
+// initializer"); with the distance limit read after it 479 (aligned 146); cases 9 and 11 as `local_0->unknown018 == arg_1`
+// 479 (retail's `cmp [ebx+0x18], reg` in both, aligned 144, masked 88). The last two leads are retail's forms but move no
+// positional line while the body is 8 bytes long. Case 6's two flag stores (compile-only): `|= 0x29; |= 0x48`, bitfield
+// sets and inline set-up helpers all fold to `or 0x69`; only a branch between the two sets keeps retail's second store.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
