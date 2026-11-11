@@ -1,4 +1,5 @@
 import os
+import signal
 import subprocess
 
 import pytest
@@ -489,18 +490,41 @@ def test_run_tool_retries_once_after_a_timeout(tmp_path, monkeypatch):
     (xdk / 'bin' / 'vc71').mkdir(parents=True)
     calls = []
 
-    class Result:
-        returncode, stdout, stderr = 0, 'ok', ''
-
-    def fake_run(command, **kwargs):
-        calls.append(kwargs)
+    def fake_once(command, cwd, env):
+        calls.append(command)
         if len(calls) == 1:
-            raise subprocess.TimeoutExpired(command, kwargs['timeout'])
-        return Result()
+            raise subprocess.TimeoutExpired(command, build.TOOL_TIMEOUT)
+        return 0, 'ok', ''
 
-    monkeypatch.setattr(build.subprocess, 'run', fake_run)
+    monkeypatch.setattr(build, '_run_tool_once', fake_once)
     assert build.run_tool('CL.Exe', [], str(tmp_path), str(xdk)) == 'ok'
-    assert len(calls) == 2 and calls[0]['timeout'] == build.TOOL_TIMEOUT
+    assert len(calls) == 2
+
+
+def test_running_a_tool_times_out_its_whole_process_group(tmp_path, monkeypatch):
+    """The tool is started in its own session and a timeout kills the group,
+    so a wedged wineserver cannot survive into the retry."""
+    started = {}
+
+    class Hung:
+        pid = 4242
+
+        def communicate(self, timeout=None):
+            if timeout is not None:
+                raise subprocess.TimeoutExpired('CL.Exe', timeout)
+            return '', ''
+
+    def fake_popen(command, **kwargs):
+        started.update(kwargs)
+        return Hung()
+
+    killed = []
+    monkeypatch.setattr(build.subprocess, 'Popen', fake_popen)
+    monkeypatch.setattr(build.os, 'killpg', lambda pid, sig: killed.append((pid, sig)))
+    with pytest.raises(subprocess.TimeoutExpired):
+        build._run_tool_once(['CL.Exe'], str(tmp_path), {})
+    assert started['start_new_session'] is True
+    assert killed == [(4242, signal.SIGKILL)]
 
 
 def test_build_refuses_a_source_named_like_a_d3d_member(tmp_path):

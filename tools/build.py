@@ -35,6 +35,7 @@ import json
 import os
 import pickle
 import re
+import signal
 import subprocess
 import sys
 import time
@@ -459,6 +460,26 @@ def tool_arg(arg):
     return arg
 
 
+def _run_tool_once(command, cwd, env):
+    """Runs command in its own process group, so a timeout can kill the whole
+    tree. The SDK's tools are launched through a wrapper that execs Wine, and
+    Wine leaves a wineserver behind; killing only the wrapper would leave that
+    server wedged for the next attempt."""
+    posix = os.name == 'posix'
+    p = subprocess.Popen(command, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                         text=True, start_new_session=posix)
+    try:
+        stdout, stderr = p.communicate(timeout=TOOL_TIMEOUT)
+    except subprocess.TimeoutExpired:
+        if posix:
+            os.killpg(p.pid, signal.SIGKILL)
+        else:
+            p.kill()
+        p.communicate()
+        raise
+    return p.returncode, stdout, stderr
+
+
 def run_tool(tool, args, cwd, xdk):
     """Runs one of the SDK's tools and returns what it printed. A tool that
     produces nothing for TOOL_TIMEOUT seconds is killed and tried once more:
@@ -468,15 +489,15 @@ def run_tool(tool, args, cwd, xdk):
     command = [os.path.join(xdk, 'bin', 'vc71', tool), '/nologo', *(tool_arg(a) for a in args)]
     for attempt in (1, 2):
         try:
-            p = subprocess.run(command, cwd=cwd, env=env, capture_output=True, text=True, timeout=TOOL_TIMEOUT)
+            returncode, stdout, stderr = _run_tool_once(command, cwd, env)
             break
         except subprocess.TimeoutExpired:
             if attempt == 2:
                 raise SystemExit(f'{tool} timed out after {TOOL_TIMEOUT}s; set HALO2_TOOL_TIMEOUT to change it')
             print(f'{tool} timed out after {TOOL_TIMEOUT}s; retrying once', file=sys.stderr)
-    if p.returncode:
-        raise SystemExit(f'{tool} failed:\n{p.stdout}{p.stderr}')
-    return p.stdout
+    if returncode:
+        raise SystemExit(f'{tool} failed:\n{stdout}{stderr}')
+    return stdout
 
 
 def d3d_objects(root, xdk):
