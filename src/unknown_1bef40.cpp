@@ -70,6 +70,7 @@ long function_1469f0(real seconds);
 
 #pragma intrinsic(_ReadWriteBarrier)
 // MiniMax G (11-10): no new form, no lower score (13); the two load regions are unchanged - the slot's reference is still loaded into EDX after the actor's index arithmetic where retail loads it into ECX before it, and the inlined action lookup still scales the index into ECX where retail scales it into EDX and reads the unit table late; that order comes from the macro in a file this lane may not edit, so the function cannot match from here.
+// MiniMax C (11-11): no new form, no lower score (13); the slot's reference is still loaded into EDX after the actor's index arithmetic where retail loads it into ECX before it, and the inlined action lookup still scales the index into ECX where retail scales it into EDX; that order comes from the action-lookup macro in src/unknown_0a76b0.cpp, a file this lane may not edit.
 // MiniMax D (11-10): no new form, no lower score (13); the slot's reference is still loaded into EDX after the
 // actor's index arithmetic where retail loads it into ECX before it, and the inlined action lookup still scales
 // the index into ECX where retail scales it into EDX and reads the unit table late - that order comes from the
