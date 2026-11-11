@@ -1345,7 +1345,7 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
 // MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
 // and its query in edx while ours swaps them, and the parameter order is not ours to change.
-// score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (m3 lane 13 r77 too).
+// Earlier (529, was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (m3 lane 13 r77 too).
 // w14B (11-06): walked against retail statement by statement: no logic difference (field offsets, constants,
 // condition directions, call arguments and the result path all agree). Early return (`if (parameters) {...
 // return true;} return false;`) 566: frame 0x28 and the stack-argument load agree, block still in EDX and query in
@@ -1581,6 +1581,28 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // = false;` with `result = true;` first in the block 573 (2172 bytes, masked lower), constant exits (`if (!parameters)
 // return false; ... return true;`) 568 (2168 bytes), `real bias = parameters->bias;` read once 559 (loses 0x3db00 again,
 // 8; 0xd4080 508), the selection loop without the outer count test 579 (2172 bytes).
+// M3 lane 1 r90 (fast with the file's functions, 0x3db00 and 0x3dfe0; aligned/register-masked counts in brackets,
+// control 529 [527/281]; 0xd4080 378, 0x3db00 MATCH): base R = lane 10 r87's `bool result = false;` first with
+// `return true;` at the end of the found block (re-measured 563 [505/259], frame 0x28). R without the `count > 0`
+// wrapper (one count test, as retail) 567 [490/270] (2167 B): the loop's homes become retail's exactly (mask EAX,
+// count EDX, block then the flags in EBX, query EDI), but block arrives in EDX and query in EAX. On that body the
+// declared parameter order picks the incoming registers: (type, query, block) gives retail's convention (block
+// EAX -> EBX, query EDX -> EDI) and retail's call setup in 0xd4080 (`mov edx, edi; mov ecx, ebx`, the order the
+// last-to-first rule implies) 566 [491/272] (0xd4080 380, 0x3db00 kept); (query, type, block) 566 with the setup
+// reversed (0xd4080 379); (type, block, query) 567 (unchanged convention). (type, query, block) on this body 529
+// (same code; 0xd4080 455). On the one-test body with the old order, the normal and the lightmap copied whole with the
+// bias added in place 578 (0x3db00 lost, 0xd4080 508); with (type, query, block) 576 (0x3db00 lost; record leaves EBP,
+// frame 0x2c). Lead: the one-test result form with (type, query, block) has retail's entry, convention and loop;
+// what is left is the body's copy/clamp schedule, whose retail forms move record off EBP and lose 0x3db00. All restored.
+// M3 lane 14 r80 (fast with 0xd4080 378 and 0x3db00; masked = aligned count with registers and esp offsets masked, 275 at 529):
+// retail's body order (the square right after the direction1 negate, the lightmap pin before the base pin) brings the body closest
+// but its homes cascade. New: `if (parameters) { ... return true; } return false;` with a single-test scan (mask in the test, no
+// outer count test) 579 (2162 bytes, masked 272); that return with retail's square and pin order 535 (masked 202, callers kept);
+// that with the single-test scan 575 (2167, 226); the 535 form with `color3f adjusted = *lightmap;` after the length and the bias
+// added in place 573 (2204, masked 194, but record becomes a register argument: `ret 8`, 0xd4080 508, 0x3db00 lost); `bool result = false;` first
+// and `result = true;` last with retail's square and pin order 568 (masked 206, 0x3db00 lost). Re-measured: the early return 566
+// (masked 263); `bool result = false;` first with `result = true;` last 573 (block EBX and query EDI as retail, record ESI,
+// 0x3db00 lost).
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

@@ -1163,6 +1163,12 @@ void function_143250(
 // 0x23690 467); the workspace matrix ahead of the rotation terms 1766 (fast); that with the 648 single-use terms in
 // their next statement 1775 plain (10763 bytes, ret 4, frame 0x314; 0x22850 235, 0x23690 467); only the 37 rotation
 // snapshot copies propagated 1948 (fast, 10949 bytes: the band-start copies keep the snapshots out of the workspace).
+// M3 lane 12 r108 (plain; callers 0x22850 223 and 0x23690 401 unchanged): band one's four negations and term_10 written into
+// the matrix stores 1791 (10740 B); band two's 40 pure copies propagated 1947 (10952 B, likely N376's 1947 form); band two's
+// four negations alone 1767; band one's term_10 copy alone 1766 (same code); band three's 363 copies 1802 (10813 B);
+// band two's copies and negations (44) 1947; bands one and two together (49) 1906 (10916 B). All keep rotation on the stack (ret
+// 8, frame 0x30c). Retail stores each product to two stack slots at once (the term and its copy, e.g. [esp+0x98] and [esp+0x30]),
+// so its copies are real variables too, kept in memory in source order. Restored.
 // M3 lane 3 r225 (plain; base 1766, frame 0x314, ret 8 against retail's ret 4 with rotation in EAX; fast builds it differently,
 // frame 0x30c): `result[0] = coefficients[0]` as the first statement 1766 (same score, aligned 3009 against 3005); the matrix pointer
 // declared ahead of the rotation reads 1766; rotation[7] read straight after the other eight 1766; the matrix pointer dropped for
@@ -1185,6 +1191,12 @@ void function_143250(
 // (12049 B, frame 0x32c, ret 4, masked difflib count 699 against 1063): any way below about 950 declarations gives
 // retail's convention, but each rewrites the body's allocation. Compile-only (no /GL): rotation is loaded once at entry
 // under both /Gd (EAX) and /Gr (ECX). The call deletions tried under --fast said nothing about the convention (pinned).
+// Round 87 (m3 lane 11, plain with 0x22850/0x23690/0x143250): band one's nine matrix stores read from rotation[] (its five
+// negation/copy terms dropped) 1787 (10745 B, ret 8, rotation still on the stack); with the nine leading copies after
+// band one's early return 1830 (10706 B); the 37 copies of copies in bands two and three (`term_N = workspace.term_K`,
+// `term_N = term_9`) read from rotation[] 1780 (10788 B): rotation then arrives in ESI and result in EDI, but coefficients
+// moves to the stack (still ret 8; 0x23690 401 -> 350); both 1776 (10792 B); band two's 22 only 2050 (11035 B, rotation
+// ESI). Use count alone gives rotation a register but never a third register parameter (retail EAX/ECX/ESI).
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

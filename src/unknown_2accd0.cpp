@@ -610,7 +610,6 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
-// score 34 (was 34; round 103 unchanged): the scratch buffer is one address-taken record (storage, owner, buffer,
 // score 34 (was 34): the scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
 // and size through pointers; with the `void *` parameters view and one function-scope byte count the
@@ -1000,6 +999,19 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 69 (m3 lane 15): no new form; three of the 34 lines are the same float constants on both sides, flagged only where
 // the code is a byte out of line; the rest is the one rotation above (entry total EAX/EDX, hoisted body_size ESI/ECX,
 // size/position ESI/EDI).
+// M3 lane 3 r231 (fast with 0x2adb10 and 0x2ada70, both matched in each; base 34, round 103 also unchanged at 34; a compile-only
+// /Gr harness with retail-normalized operands gives 28 aligned lines on this body, all register rotation). New: the buffer arms
+// reduced to the buffer and one shared `if (parameters->body || size > remaining-expression) size = remaining-expression;` 177
+// (702 bytes); the signature position assigned inside the seek call (`SetFilePointer(file, position = ..., ...) == position`)
+// 34 (same code; harness 58 lines on the folded total). Re-measured listed forms: the total folded into its conversion 88
+// (harness 58: the head is retail's, then the hoisted body_size coalesces into the signature position's ESI and the signature
+// case's scratch registers fall one step behind retail's ECX/EDX/EAX); a `remaining` count set in each arm with an if-clamp 161
+// (689 bytes, round 112's); on the folded total the body test as `body_size > body_offset` 178 (688), the two-statement
+// signature position 88 and the direct arm's size before its buffer 88 (both same code). Harness only, on the folded total:
+// `position == SetFilePointer(...)` 61 lines, the sum in the seek and its compare 67 lines. No other untried natural form is
+// left for the rotation: the levers are the hoisted body_size's register and the total's coalescing, and every form listed here
+// leaves both or moves only one (the one-use HANDLE local that fixes the folded form's signature case is reverted unless the
+// function matches).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

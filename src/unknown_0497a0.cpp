@@ -15,6 +15,8 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
+// score 536 (was 594): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
+// against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail holds the secondary shape in EDI, the primary shape at [esp+0x14]
 // and the inverse at [esp+0x10], ours holds the secondary shape at [esp+0x10] and the inverse at
@@ -283,14 +285,12 @@
 // inline taking them, unread aggregate members 620; `if (!special)` same pops, frame 0x64. An inline helper filling a local wave
 // vector from the global point (first sine, then the named factors, the unused third component written through a copy of the
 // result pointer) gives the same sequence (659 at 2584 B): retail's direct global reads may come from such a helper.
-// score 661 (was 661): behaviour and helper fixes from the b2E walk, each raising the score: the sixth input product is
-// score 661 (was 661; 537 before that): behaviour and helper fixes from the b2E walk, each raising the score: the sixth input product is
 // MiniMax D (11-10): 594 (was 661): the wave sines read the global point and each wave scale is written at its
 // use; the frame is still 0x54 against retail's 0x60 and the sines are still not evaluated in retail's order.
 // Retail's two crosses share their products, so its cross result is scalarized while its second cross is a
 // vector; forms tried: the two wave values as an array 604, the cross with shared products written out 677,
 // the cross moved after the two sines 655, all worse than 594 and reverted.
-// score 661 (was 537): behaviour and helper fixes from the b2E walk, each raising the score: the sixth input product is
+// At 661 (was 537): behaviour and helper fixes from the b2E walk, each raising the score: the sixth input product is
 // a plain mulss as at 0x49f0d (the integer truncation was +78: 537 -> 615); the camera shifts and the vector scales
 // call vector3f_add_scaled / vector3f_scale (+10, 2622 bytes); the wave's first add calls vector3f_add_scaled (+11);
 // the sine of x * 5.6 + y keeps the sum on the x87 stack as at 0x498a7-0x498d7 (+25, then the sine is stored as a
@@ -321,6 +321,15 @@
 // arguments (654, listed): s1 before the first cross and cross3f_staged for c 654 (frame 0x58, same code as without
 // the reorder); plus cross3f_staged for w 655; w staged with c plain 654; c staged with s1 after the cross 654; both
 // staged with s1 after the cross 655.
+// M3 lane 8 r151 (fast; control 594 = plain): kept `real h = 0.5f * ((shape1->f2c - shape1->f28) * 0.025f);` 536 plain (2622
+// bytes, retail's length). The earlier `(shape1->f2c - shape1->f28) * 0.025f * 0.5f` was folded into one multiply by 0.0125;
+// retail multiplies by 0.025 and then by 0.5 held in a register, as this form does (masked aligned count unchanged at 104;
+// the rest is the frame). Also: s0's four sine/cosine arguments as doubles (no float overloads; retail rounds none of
+// them) 685 (2564 bytes, frame 0x58, the factors still pop), with 0.5 as a double 685; h as `* 0.025f / 2.0f` 594 (same
+// code); the two shift fields read in the calls, no locals, 596. On 536: the shift fields in the calls 537; `0.5f * inv`
+// in the default arm or in the perspective rows 536/536 (same code); sy computed after the v20 rows 550; the six input
+// products all `scale * x` or all `x * scale` 536/536 (same code). Retail reads the four wave constants (8.2, 7.8,
+// 7.75, 5.6) only here, so no shared retail helper accounts for the dead second uses of sin x, cos 7.8y and cos 7.75y.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -439,7 +448,7 @@ void function_0497a0(
 			}
 			else
 			{
-				real h = (shape1->f2c - shape1->f28) * 0.025f * 0.5f;
+				real h = 0.5f * ((shape1->f2c - shape1->f28) * 0.025f);
 				vector3f_scale(&result->v40, h, &result->v50);
 				result->f5c = (source->f28 + 0.0078125f) * h * inv + 0.5f;
 			}

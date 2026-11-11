@@ -193,6 +193,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // MiniMax h (11-05): the argument order is right (d in the third stack slot, q in the fourth, position in the fifth); retail copies the q slot into EBX and reads d from its own slot at each use, ours copies the d slot, and assigning the fallback pointer with a ternary instead of an if gives 642 with the same code, so no new form is kept.
 // MiniMax A (11-04): no new form, no lower score; retail branches on the fast flag before the rate multiply and loads the
 // constant there, ours multiplies first (642, same code).
+// Earlier 646 (was 642; the settling-ratio fix took 642 to 646): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
 // score 636 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
 // score 646 (was 642; the settling-ratio fix took 642 to 646): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
 // Earlier at 642: retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
@@ -455,6 +456,21 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // (2867 B, frame 0x20, caller 22); the time globals read at each use (no globals local; retail reloads g_510c54 in
 // the non-update part) 634 (2883 B, caller matched; gain 2, not kept); on that, the third clamp's factor before t3
 // 651, the counter conversion without `volatile` 703, the counter-stage dot with q first in the j and k products 634.
+// Round 168 (m3 lane 5, fast, caller 0x1eb6f0 checked in each): the output stage's three `goto done` and the label
+// written as nested if/else with `fail = true; s->ticks_left = 0;` in each failing path 636 (byte-identical code, kept
+// as a goto removal); qr computed as `q->i * globals->rate` at its scaling statements with no separate copy 694 (2851
+// B). Retail loads d from its slot at five sites (alignment dot, activation fallback, active fallback, the 0.866 test,
+// settle align) and q into EBX at entry; diagnostics: the settle align without d 753 (frame 0x1c), the post-0.866
+// fallback from `a` 689 (b then takes EBX, caller 2), the alignment without d 757 (d keeps EBX). Already listed (not
+// re-run): factor-first clamps, the impulse through vector3f_scale, the void return with the read-back,
+// the counter conversion, qr copies, dot operand orders, the distance from len3 and the limited flag first.
+// Later the same round: the settle copy `nq` written field by field 628 at 2886 B, positional only (`!!` lines 635 ->
+// 623 with the length 5 bytes long, aligned 478 -> 479, masked 173 -> 174; retail copies nq with integer moves; not
+// kept); the target fallback `s->target = *pos` field by field 692 (2878 B), `*position = qr` field by field 687 (2866
+// B). On that 628: `s->start` field by field 669 (2881 B); the output copy from q field by field 653 (2882 B, the listed
+// form); the settle length from nq 628, the 0.866 test with its sides swapped 628, `lo = MAX(0.f, lo)` 628, `rem =
+// MAX(0.f, rem)` 628 (same code each; the last repeats round 74's ternary clamp). On the 636 body: the output flag
+// through the existing setter `function_0bfe20(&out->flags, 2, fail || ...)` 636 (different code, same score).
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
@@ -660,9 +676,8 @@ long function_1eb8a0(
 					position->k = position->k * ticks;
 					s->ticks_left = (long)((dist - hi) / e3 + 3.f - 0.5f);
 				}
-				goto done;
 			}
-
+			else
 			{
 				real v = PIN((double)s->alignment * 1.5, 0.75, 3.5);
 				real step = (real)(globals->rate * v);
@@ -692,7 +707,11 @@ long function_1eb8a0(
 						position->j = position->j * ticks;
 						position->k = position->k * ticks;
 						s->ticks_left = (long)ratio;
-						goto done;
+					}
+					else
+					{
+						fail = true;
+						s->ticks_left = 0;
 					}
 				}
 				else
@@ -703,20 +722,22 @@ long function_1eb8a0(
 					position->i = back * nq.i + qr.i;
 					position->j = nq.j * back + qr.j;
 					position->k = nq.k * back + qr.k;
-					if (!(step > len - m + 0.001f))
-						goto done;
+					if (step > len - m + 0.001f)
+					{
+						fail = true;
+						s->ticks_left = 0;
+					}
 				}
 			}
 		}
 		else
 		{
 			s->settled = true;
+			fail = true;
+			s->ticks_left = 0;
 		}
-		fail = true;
-		s->ticks_left = 0;
 	}
 
-done:
 	long new_counter = s->counter + 1;
 	s->counter = new_counter;
 	if (!fail && s->ticks_left > 0 && new_counter < s->duration + 6)

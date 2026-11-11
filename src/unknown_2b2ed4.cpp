@@ -74,11 +74,11 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
+// score 316 (was 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
 // MiniMax I (11-05): no new form, no lower score. Retail's null-datum `je` jumps to the function's
 // end (offset 0x920 of 2345) where ours jumps to a near block, and the child, text and layout stack
 // homes still differ (retail's suffix at -0x258 and its message at -0x458, ours at -0x2cc and -0x4cc).
 // MiniMax H (11-04): declaration-order and scope moves compile identically; no lower score.
-// score 316 (was 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
 // Lane 18 r37 (fast): received text preset then overridden 662 (2347 B); the text id as dword 330;
 // text set to NONE only at the top of the online block 330 (same code); set_text inside the online block
 // under `if (text == NONE)` 539 (2350 B); the invitation bit chosen by if/else after a `continue` 330
@@ -240,6 +240,12 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // join order. Not kept: `other = entry ? entry : NULL` in the item loop 618 (2338 B; retail's cmovne is
 // matched by the plain `other = NULL; if (entry) other = entry;` form). Score-only forms left as found:
 // `value6e = (...) ? true : false` (plain `!empty && !self` 442). No shared helper, include or double local added.
+// Round 109 (m3 lane 12, fast; 316): `inline` on 0x230134's definition (so callers get no register summary)
+// 1211 (2789 B: LTCG then expands 0x230134 into this caller; retail never does); the title buffer as the same
+// string-buffer record as the other three 316 (same code); the value04 default as `if (can_join)` (the value08
+// switch's form) 396 (2349 B); the dispatch as `if (text == NONE) set_text else 253b1a` 488 (2323 B); the item
+// loop as a pointer walk 536 (2347 B). Retail's homes: display_name -0x8cc, title -0x6cc, layout -0x4cc, suffix
+// -0x458, message -0x258; ours title, display_name, suffix, layout, message (two adjacent pairs swapped).
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

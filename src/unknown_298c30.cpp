@@ -94,7 +94,7 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 	g_5047f8[arg_0].field_18 = arg_0;
 }
 
-// score 393 (was 408; 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
+// score 393 (was 393; 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
 // frame 0x60 against retail's 0x64.
 // MiniMax S (11-06): The first arg_7 plus arg_8 sum lands in xmm3 where retail keeps it in xmm0, so the
 // two byte streams part company at the third instruction and the rest of the function is compared out of
@@ -354,6 +354,17 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // with the short count 502 (aligned 267). Retail's far arm stores the rotated point to its own temporaries (0x44/0x48, not the
 // difference's 0x3c/0x40) and keeps its x bits in EBX across the emitter, so the outer counter's EBX is spilled and arg_3's EDI is
 // reloaded after the emitter; with a short count ours gives arg_3 EBX for the whole body and LTCG then passes it in EBX.
+// M3 lane 10 r90 (fast with 0x299460, 0x29a190, 0x298c30; 0x29a190 MATCH throughout): nothing kept. Lead, 382 (plain-confirmed; frame 0x64 as
+// retail, first difference +0x2 -> +0x57, aligned 373 -> 239, masked 144 -> 140): a separate rotated point for the far arm (the difference
+// vector no longer reused) together with the sine argument as `-(double)a : (double)a` (retail's `fld [angle]; fchs` on x87 frees the negated
+// angle's slot). Not kept: the casts change no value (a float negation and its promotion are exact), so they only steer; without them the
+// separate point alone is 399 (re-measured), a rise, and the casts alone were 432 on an earlier body. With the pair, homes agree except
+// one: retail keeps the wrapped angle at +0x14 and the clamp/normalizer/loop-cursor group at +0x18, ours the other way round. On 382:
+// the angle element read at each use instead of local_21 (retail reads `[eax]` at every use) 381 (aligned 278; 400 on the old body); the
+// wrapped angle as if/else 382, the near arm's or the far arm's sine/cosine without the `(real)` casts 382 each, the side selection as one
+// nested ternary 382 (all same code); the root's differences as `(double)(a - b)` 417; descriptive names for the wrapped angle and the
+// rotated point 382 (same code: names do not order the pair). Re-measured: the short candidate count 520 (0x29a190 684: its own entry
+// convention changes).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -511,7 +522,7 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
-// score 629 (was 733, 633 and 719 before that; the rise to 733 was the unrounded sine/cosine below): frame 0x114 as retail, 49 bytes short; radius and trace/pivot homes differ.
+// score 621 (was 629; 733, 633 and 719 before that; the rise to 733 was the unrounded sine/cosine below): frame 0x114 as retail, 55 bytes short; radius and trace/pivot homes differ.
 // MiniMax S (11-06): Our frame is 0x120 against retail's 0x114, so every esp-relative home is four bytes
 // off; retail loads the scale factor into xmm1 after the first branch where ours loads xmm5 before it,
 // and the four scale locals and the two trace results still sit at other offsets.
@@ -800,6 +811,20 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // sweep order as well 797 (masked 147), with the sweep order alone 794; diagnostics, not kept.
 // On 569: the first side's selection written `!local_47 ? angle + pi : pi - angle` 569 (masked 196), the clearance ternary as
 // `!(arg_6 > distance) ? ... : ...` 569 (masked 194); the owner actor pointer again 743.
+// M3 lane 10 r90 (fast; base 629, aligned 267, masked 182; 0x29a190 MATCH throughout): kept 621 (aligned 243, masked 175): the rotation's sine
+// and cosine as named reals, sine first as in this function's sweep loop, each used twice, which gives retail's `fld st(0); fsin; fxch;
+// fcos` (both stay on x87, no rounding); the same pair cosine first 623 (aligned 259, masked 182); `(real)` on the pair 621 (same code).
+// Leads, not kept: the first arm's angle as the float sum `(double)(field_4 + pi)` (retail's `fadd dword [pi]`; main's `(double)field_4 + pi`
+// gives `fadd qword`) with the named pair 570 (plain-confirmed), alone 572; both arms `(double)(field_4 + pi) : (double)-field_4` 629 alone and
+// 621 with the pair (retail's hoisted `fld; je; fadd dword; ... fchs` block exactly, masked 174, but the tail then sits one instruction off).
+// The 570 form keeps an `fld` in each arm, unlike retail, and only gains by offsetting a shift elsewhere; the casts only move the sum to x87.
+// Also: the whole ternary cast 604; the angle as a local adjusted per arm (`+= pi` / negated) 770 (SSE); the rows operand-first or the casts
+// on the sine/cosine 570 (same code, on the 570 form); double sine/cosine locals 635 (0x29a190 45); one endpoint call per site with
+// `field_0 ? radius : -radius` 918; local_7 and local_25 names exchanged 629 (same code: names do not order these homes). Re-measured on 570:
+// sweep scales each before their products 775 (masked 135); the body under `if (local_11 != NONE) { ... return local_0; } return true;`
+// 805 (masked 163); both 788 (masked 122: every block after the radius region then sits four or five instructions behind, so the XMM5
+// radius is what blocks those two). Left: retail's products `fld st(0); fmul dword [esi]` where ours loads the component first
+// (`fld dword [esi]; fld st(1); fmulp`).
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
@@ -964,8 +989,10 @@ bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 				real local_52 = arg_1->field_0 ? (double)arg_1->field_4 + 3.1415927410125732f : -(double)arg_1->field_4;
 				// retail multiplies the unrounded sine and cosine in x87 (0x29a04c-0x29a085)
 				point2f local_55;
-				local_55.x = cos(local_52) * (double)arg_5->i - sin(local_52) * (double)arg_5->j;
-				local_55.y = cos(local_52) * (double)arg_5->j + sin(local_52) * (double)arg_5->i;
+				real rotation_sine = (real)sin(local_52);
+				real rotation_cosine = (real)cos(local_52);
+				local_55.x = rotation_cosine * (double)arg_5->i - rotation_sine * (double)arg_5->j;
+				local_55.y = rotation_cosine * (double)arg_5->j + rotation_sine * (double)arg_5->i;
 				point2f local_56;
 				function_2994a1(&local_2, arg_6, &local_55, &local_56);
 				point2f local_57;
