@@ -825,6 +825,7 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // P382: Positive terminal balance result in char/signed-char/byte/short/word/int/long/
 // dword: 47/47/47/64/64/61/61/61. NOT kept: all lengthen to 195-205 versus 190,
 // count-register exchange and first +0x14 remain; original Boolean result and full body restored.
+// MiniMax H (11-11): no new form, no lower score (34); the player count is tested in EDX here and in EAX in retail, and the register it arrives in is fixed by the caller's parameter order: retail's caller 0x7e210 hands over the player count in EAX, the extra count in EDX and the groups pointer in ECX, so retail's parameter order is (player count, extra count, parties pointer) and the call site is in another file.
 // MiniMax E (11-08): no new form, no lower score: the player count is tested in edx here and in eax in retail, and which register holds it is fixed by the caller's parameter order.
 // P391: Limit-based acceptance (nonnegative maximum and excess within it), both test
 // priorities with bool/byte/short/long results: 53/69/82/78/53/69/82/78. NOT kept:
