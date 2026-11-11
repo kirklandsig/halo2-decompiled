@@ -503,6 +503,14 @@ struct s_object_damage_view
 // counter 353 (same code); re-measured: the selection amount named once 454. Retail keeps killer in EDX across the
 // fallback merge and reloads it from its home on the paths that skip the record (0x1ea1de) and at the team block; ours
 // threads those paths into the fallback and keeps killer in EBP.
+// M3 lane 16 r106 (fast with the file's functions and unknown_196d20.cpp's, all matched ones stay matched; [register-masked
+// aligned], base [78]): lead: retail pushes the damage code to 0x197160 straight from its byte home (`mov esi, [esp+0x1c]; push
+// esi`, reused for 0x1ea5b0), so 0x197160's code parameter is a byte (its own body reads only the low byte); typed so at its
+// definition and declaration 354 [78] (0x197160 stays matched; ours then pushes as retail and the damage code has one reference
+// fewer, retail's count per round 53). On it: the killer's team byte passed to 0x1df560 at the call 354 [79] (retail's `movsx edx,
+// al` / `movsx si, al` pair); with `if (killer != NONE) { if (killer == reported_player) ... } else if (reported valid)` as well
+// 353 [73]; that arm order alone 363 (1532 B); the arm order, team byte and a `&history[selected]` record pointer used three times
+// 455 (1583 B). The three slots stay rotated (killer still kept in EBP across its block). Body restored at 353.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

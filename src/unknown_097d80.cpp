@@ -421,6 +421,10 @@ struct c_aggregate : c_child
 // Still BLOCKED by the build flag.
 // M3 lane 12 r113: no unlisted form; still only the frame (0x8024 against 0x8020, `produced` unpacked under /GL).
 // Still BLOCKED by the build flag.
+// M3 lane 16 r106 (fast with the six file-mates, all still matched; base 31): the cleanup's item count in the inner loop's
+// for-init (`j = 0, count = block->count`) 74; the source read as `source[0]` 31 (same code); `produced` at function scope,
+// zeroed after its add (`total += produced; produced = 0;`) 147 (389 B); v5's request parameter typed `s_request *` 31 (same
+// code); the query test as `get_info(...) == false` 31 (same code). Frame 0x8024 in each; still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

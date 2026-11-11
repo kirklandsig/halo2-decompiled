@@ -269,6 +269,13 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // this body 481; the left vector declared const on this body 378 (same code); the left vector built from the local_8 copy
 // (`{-local_11.j, local_11.i, 0.0f}`) 537 [79, 281] (2836 bytes); re-measured: the side-test sum written local_25 first on the
 // 393 form 393. No unlisted natural form left for the slot tie.
+// M3 lane 16 r106 (fast with 0x29c860/0x29cb10, both stay matched; [register-masked aligned] counts): the 393 form (the left vector
+// as matched sibling 0x29a190 writes it, `{-local_8.j, local_8.i, 0.0f}`) re-measured 393 [56] (frame 0x5b4, 2815 B; this body [120]).
+// The two 12-byte vectors there tie at five references each (left: three stores, the side-test read, the 0x299460 address;
+// avoidance: the 0x1f9760 output, the k store, three addresses). On the 393 form: the avoidance vector declared at function scope
+// ahead of the left vector 393 [56] (same code); the left vector built at the top of the main else arm 446 [60] (2825 B, its stores
+// move into the arm, slots unchanged); built just before the 0x5d1 flag read 477 [121] (2827 B); the two vectors renamed `left` and
+// `avoidance` 393 [56] (same code); left_i dropped, the left vector's i read at its three uses 573 [119] (2809 B). Body unchanged at 378.
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -775,6 +775,12 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // header) 87; the projection tests joined into one test 87 (same code each). No other untried natural form found:
 // retail's EAX argument at 0x110ab0 still needs the one-use unit local, so only a full match keeps it, and the 17
 // form's slot spellings are all listed above. Body unchanged at 87.
+// M3 lane 16 r106 (fast; caveat: 0x110ab0 builds differently in the reduced image): lane 17's match-only 17 form rebuilt 17
+// (left as listed: sum 0x10/length 0x14/index 0x18/adjusted 0x1c against retail 0x14/0x18/0x1c/0x18, lateral XMM3 and maximum XMM2
+// against XMM2/XMM3); on it the two side outputs in one declaration 17 (same code), the reversed probe direction built ahead of the
+// side outputs and the location query 170 (951 B), the lateral test as `(size + radius) * 0.6f > fabs(lateral)` 162 (965 B), the
+// timing test as `projection < (...)` 17 (same code), the unit-index local read right after actor_get (ahead of the guard) 46 (964 B).
+// Body unchanged at 87.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

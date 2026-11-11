@@ -3158,6 +3158,18 @@ real g_47ff30 = 2.5f;
 // 676 (same code), `boost * vehicle->speed` 676 (same code), `boost * field` for the maximum speed 676 (same code).
 // Retail's frame order (angular velocity, acceleration scale, maximum speed, linear velocity from the bottom) differs
 // from ours (acceleration scale, angular, linear, maximum speed).
+// Round 105 (m3 lane 16, fast), on the mass-field-per-use form (P369's, re-measured 676 at 3248; aligned 500,
+// register-masked 327, slot-masked 245): vehicle_friction taking the friction field as `real const *` and reading it
+// at each use 686 at 3248 (aligned 493, masked 284, slot-masked 200: retail's friction magnitude re-reads the field in
+// its negation, and the approach rates then sit in EDX with state in EBX, as retail); that with the reciprocal
+// declared after the first clamp 692 at 3244 (masked 275, slot-masked 192). Both are exact-only (a helper parameter
+// type, a moved declaration). Also: the elevation product written `(select) * climb` as 0xeec90 does 676 (same code);
+// a named `rates` pointer for definition+0x1f4 (maximum speed and the elevation bound), with or without its reuse for
+// the approach rates, 732 at 3268; normalize3d(&up) for the up normalization 738 at 3275; the acceleration field read
+// at each use 769 at 3206; vehicle_magnitude() inside vehicle_friction for either or both ternaries 676 (same code);
+// the speed staged as `speed = vehicle->speed; speed *= boost;` 715 at 3220.
+// Lead: the pointer friction form; left on it are the entry XMM numbering (retail keeps 1.0 in XMM7), the maximum
+// speed product's operand form, the reciprocal's placement and the force/torque scheduling.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4227,6 +4239,18 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // case path jumps back into it, where retail keeps the case path's tail and the default arm jumps forward to it after its
 // own `cosine * up.i`). Lead: the 163 form; retail's early `cosine * up.i` in both arms looks like two cross-jumped copies
 // scheduled before the merge.
+// Round 105 (m3 lane 16, fast), on the listed 163 form (in-place up rows + `double angle`, re-measured 163 at 792,
+// aligned 23): the first cross through `&facing->up` 165 at 792 (aligned 19, masked 14: then only the dot's i term,
+// the fallback setter's float copy, one product of the first cross and both arms' early `cosine * up.i` differ); that
+// with `*up = *g_4687a8` or `facing->up = *g_4687a8` 130 at 786 (aligned 49); vehicle_cross at the roll axis and the
+// final cross 162, at the first cross 165; `cosine * up.i` named in each arm before the join 122 at 808 (aligned 50:
+// the default arm then computes it on x87). On the 148 form (both paths, re-measured 148 at 806): the `default:` label
+// first 148 (same code); the roll through bipeds.cpp's rotate body (v, axis, sine, cosine) 274 at 913 and the default
+// arm in 0xf4800's pitch spelling (member forward rows, vector3f_scale + vector3f_add_scaled) 246 at 891 (neither
+// tail-merges); per-arm sine/cosine/axis locals 286 at 924. Real angle: three complete switch arms, each with its own
+// angle, trig, cross and up rows, 185 at 843 (the fraction load and the x87 angle are then retail's, but the cases
+// interleave the cross with the angle, so retail's case angle does cross a join). Lead: the facing->up cross on the
+// 163 form; retail's early `cosine * up.i` needs the up rows scheduled inside both arms.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

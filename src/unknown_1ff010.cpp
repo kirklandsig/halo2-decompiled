@@ -680,6 +680,23 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // `(real)0` or `sine - sine` for the rotation's cosine 77 each (same code); a double zero in the turned pair's length test
 // 138 (855), in the magnitude test alone 170 (874); `magnitude != 0.0f` 128 (850, as round 46); double zeros in the three
 // tests plus the cosine 199, plus the turned length test 215 (896). All restored.
+// m3 lane 16 r107 (compile-only screen, build/r107/h1ff*.py: this block with rotate_direction's body inlined reproduces
+// ours, XMM6 zeroed above the divide; with the rotation a call it gives retail's XMM0 zero after the scale products).
+// Caller-side forms, none of which moves the zero (all still XMM6 above the divide): the axis in a pointer local or a
+// local copy, the sine as `left ? 0.5f : -0.5f`, nested tests, `magnitude != 0.0f`, the horizontal pair as an aggregate
+// copy, the pair stored back without the fallback, speed read first, the turned copy after the sine, the cross and dot
+// operands reversed, `0.0f < magnitude`, a named moving test, `!= 0.0f` on the turned pair, k copied first, double zeros.
+// Rotation-body forms (diagnostic copies of the helper, not keepable here): axis-first dot, cosine-first products, an
+// input copy, a temporary result, cross3f / cross3f_staged of vector x axis all hoist the zero too; only the cross term
+// written as axis x vector and added (`+ cross * sine`, the same values; also through cross3f(axis, vector)) puts the
+// test zero in XMM0 after the divide as retail does, though its turned loads stay k/j/i where retail loads i, j, k into
+// XMM4/XMM6/XMM5 and reloads j twice. The lead belongs to rotate_direction in src/unknown_1eb8a0.cpp (its other callers
+// in bipeds.cpp, unit_object_type.cpp and unknown_1e67a0.cpp would have to be measured).
+// Fast with 0x1ecf50 and 0x2b400 (control 77): that axis x vector form as a local forceinline twin of rotate_direction
+// (diagnostic, restored) 101 (847 bytes, aligned 52 -> 45, masked 30 -> 28): the magnitude, facing and side tests then
+// take retail's XMM0 zero and registers; left are the scale products (retail `scale * x` but `y * scale`, from
+// normalize2d_fast in include/unknown_11cc90.h) and the rotation's own order. BLOCKED-BY 0x1ecf50 (the inline
+// rotate_direction beside it in src/unknown_1eb8a0.cpp).
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {

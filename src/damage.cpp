@@ -1870,6 +1870,10 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 // and 0x146bf0 first in the 0xb8ca0 file: 57 with 27 lost. 0xd6800 first with __stdcall: 82, none lost, 0xca0b0 rises.
 // Round 44 (lane 15, fast): the pending field's bitfield form (see 0xdaaa0) here gives identical code, 82; with
 // 0xda110's 0xd9d60 call removed (diagnostic, reverted) 67 at 550 bytes.
+// m3 lane 16 r107 (plain, damage.cpp callee mention orders, see 0xd9d60's note; all restored): function_dbfb0 and function_d9640
+// first 57 (0x1c39c0 lost); function_10d4e0 first 67 (0xd8cb0 299); function_d9e70 first 67; with 0xd9d60's marker/object
+// swap 67; function_dbfb0 ahead of this and function_d9640 after function_dbc80 57, with the swap 57 (aligned 15 -> 28: 0xd9d60's
+// setup now agrees, 0xda110's takes two registers where retail passes one). BLOCKED-BY 0xda110 in that walk.
 // @retail 0xdae60
 void __stdcall function_dae60(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	s_damage_region_accumulator *accumulator)
@@ -2159,6 +2163,10 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 // Round 157 (m3 lane 5): 103 in every walk that frees 0xd9d60; aligned 45: the 0xda110/0xd9d60 call setups and a
 // one-step eax/ecx/edx rotation in the delay block and the destroyed-mask store that follows the extra push at each
 // 0xda110 call; the two asm roundings through real_to_long 100.
+// m3 lane 16 r107 (plain, damage.cpp callee mention orders, see 0xd9d60's note; all restored): function_dbfb0 and function_d9640
+// first 103 (0x1c39c0 lost); function_10d4e0 first 80 (0xd8cb0 299); function_d9e70 first 80 (aligned 38 -> 31); with 0xd9d60's
+// marker/object swap 96 (aligned 29); function_dbfb0 ahead of 0xdae60 and function_d9640 after function_dbc80 103, with the swap
+// 73 (aligned 48: 0xda110's call takes two registers where retail passes one). BLOCKED-BY 0xda110 in that walk.
 // @retail 0xdaaa0
 void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	real damage, s_damage_region_accumulator *accumulator)
@@ -2552,6 +2560,23 @@ void function_176330(point3f const *point, s_effect_marker *markers);
 // 0x2902b0 alone 8 (22 lost), 0xb7b40 + 0x2902b0 8 (240 lost), lane 17's 0xd6a70 prototype above 0xc98a0's in
 // unit_object_type.cpp 8 (9 lost, 0xd6800 among them: 0xd6a70 inlines once it leaves the walk's stack). Still
 // BLOCKED-BY 0xb8540.
+// m3 lane 16 r107 (plain checks; LTCG's walk enters this cycle at 0xd6800 from 0xc42e0 in unit_object_type.cpp under 0xdc4a0
+// in bipeds.cpp, both outside this file, so only the callee mention order inside this file can move it; all restored):
+// function_dbfb0 and function_d9640 declared first: this 8 (retail's AL/ECX/EDX, 260 bytes), 0xdae60 57, 0xdaaa0 103,
+// 0xda110 474 (custom: region EAX, permutation ECX, 1852 bytes), 0xdb760 42, 0xd5de0 394, matched 0x1c39c0 lost (its
+// parameter moves from EBX to ESI); with function_1d1540 declared first in unknown_1c25a0.cpp too 0x1c39c0 matches again
+// but 0x1c37f0, 0x1c4260, 0x1cf9f0 and 0x278f00 are lost; function_10d4e0 declared first: this 8, 0xdae60 67, 0xdaaa0 80,
+// 0xd8cb0 3 -> 299 (0x176780 inlined), 0x10d4e0 2 -> 61; function_d9e70 declared first: this 8, 0xdae60 67, 0xdaaa0 80,
+// 0xda110 534 (1868 bytes, all stack), 0xdb760 44, nothing listed lost; that with the marker and object parameters swapped
+// (definition, declaration, the four calls) 6, 0xdae60 67, 0xdaaa0 96, 0xda110 534, 0xdb760 44 (all five below their
+// baseline aligned counts); function_dbfb0 declared ahead of function_dae60 and function_d9640 after function_dbc80 (0x1c39c0
+// keeps its walk): this 8, 0xdae60 57, 0xdaaa0 103, 0xda110 474, 0xdb760 42, 0xd5de0 394, nothing listed lost; with the swap
+// 6, 0xdae60 57, 0xdaaa0 73, 0xda110 476, 0xdb760 42 (0xdb760's mode-1 flag named first: same code). Not kept: 0xda110 and
+// 0xdb760 rise, because in the walks that free this function 0xda110 either stays all-stack or takes two register arguments
+// where retail passes only the permutation (EAX); our first pass gives the region index EBX and the permutation pointer EBP,
+// retail the reverse. BLOCKED-BY 0xda110 (its register-argument set once the walk is retail's).
+// That walk with every function checked (full check) loses nothing; five 0xda110 forms on it (see its note: 568, 570, 476,
+// 572, 562) all keep the region index a register argument.
 // @retail 0xd9d60
 void function_d9d60(long marker_name, long object_index, bool at_marker, long effect_index,
 	s_damage_owner const *owner)
@@ -2697,7 +2722,7 @@ struct s_unit_event
    area damage, and applies its side effects to the object (depletes the
    body, drops weapons, ejects riders, destroys attached children) */
 // score 472 (was 472): frame 0x38 agrees; permutation remains on the stack instead of EAX,
-// score 472 (was 472; r101 unchanged): frame 0x38 agrees; permutation remains on the stack instead of EAX,
+// r101: unchanged at 472; frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // with register homes/call setup and 1884/1868-byte length still differing.
 // MiniMax D (11-10): no new form, no lower score (472): the second lookup still reloads the table pointer where retail derives the array base from the pointer it kept in ECX into EDX.
 // MiniMax R (11-06): no new form, no lower score (472); the frame agrees, and the entry takes the argument first here and the global first in retail.
@@ -2798,6 +2823,13 @@ struct s_unit_event
 // but 20 bytes short); that without `__stdcall` 588 (`ret 0x10`, still two register arguments); that with the drop
 // blocks reading the datum through the pool at each use 546 (1900 bytes; 466 fast, where the reduced image keeps
 // g_4e0300 in a register across the drop calls as retail does); with both drops as `long barrel_index` 543 fast (1900).
+// m3 lane 16 r107: the t7 walk of 0xd9d60's note (function_dbfb0 ahead of function_dae60, function_d9640 after
+// function_dbc80, 0xd9d60's marker/object swapped; a full check there loses nothing, 10563 matched) gives this function a
+// custom convention, region in EAX and permutation in ECX, 476 at 1852 bytes (retail: permutation alone in EAX). Plain, on
+// that walk, all restored: no region local 568 (1848 bytes); region and permutation declared before the object 570; no
+// `__stdcall` 476 (same code); the region state pointer named at entry as in 0xdae60 572 (the permutation then arrives in
+// EAX as retail, the region in ECX; 0xdae60 42, 0xdaaa0 126); that without the region local 562. The region index stays a
+// register argument in every form.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
