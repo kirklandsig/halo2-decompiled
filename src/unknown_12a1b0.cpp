@@ -1879,6 +1879,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // itself, as every caller passed `0 - maximum, maximum` (0x1269f0 matched with it): the gain
 // step's call 307 -> 305 (plain).
 
+// MiniMax B (11-11): no new form, no lower score (305): retail folds the pair's +8 into the lea that forms its
+// address and reads the two words at +0 and +2, ours forms the element base and reads them at +8 and +0xa; the frame
+// stays 0x11c against retail's 0x128.
 // Earlier: frame 0x128 matched with the stop helper out of line;
 // index homes, definition register and ring traversal still differ.
 // Separate noinline declaration 501; wide selection full 502 (reduced 315);
