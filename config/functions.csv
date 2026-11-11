@@ -3052,7 +3052,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 000d66d0,190,game,speed,a16 pad,,,,src/damage.cpp,matched
 000d6790,98,game,speed,a16 pad,,,000b58c0,src/damage.cpp,matched
 000d6800,610,game,speed,a16 pad,,,000b58c0 000b7360 000b8540 000b8b70 000d0620 000d0690 000d5b60 000d6a70 000dae60 000dbc80 000dbfb0,src/damage.cpp,matched
-000d6a70,124,game,speed,a16 pad,,,000ba7f0 000d5b60 00176780,src/damage.cpp,todo
+000d6a70,124,game,speed,a16 pad,,,000ba7f0 000d5b60 00176780,src/damage.cpp,matched
 000d6af0,99,game,speed,a16 pad,,,,src/damage.cpp,matched
 000d6b60,89,game,speed,a16 pad,,,000d6b60 00108fd0,src/damage.cpp,matched
 000d6bc0,185,game,speed,a16 pad,,,000b8540 000d5b60 000d6800 000d6b60 000dae60 000e6460,src/damage.cpp,matched
