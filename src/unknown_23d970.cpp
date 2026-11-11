@@ -906,6 +906,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // right 244 (1234 bytes; it reshapes the arm, so it does not isolate the colours). Kept: the target's position through the existing
 // object_get and object_node_matrix (include/slot_handler.h) in place of the getter written out with a header type made up in the
 // body 45 (same code; the file's other functions stay matched).
+// M3 lane 11 r89 (`--fast 0x23de50 0x1f0870`, 45 as the full check): the first product through the existing contact_cross
+// (src/unknown_1f03e0.cpp, cross3f's formula as an external inline) 45 (same code). No other untried natural form found: the
+// product rows, staging, helper choice, pointers, copies, declaration orders and dead-temp periods are all listed above.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
