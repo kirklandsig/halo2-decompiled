@@ -370,6 +370,10 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // `i*i + j*j + k*k` sum 150, with the squared length named through dot3f 151, with an i, j, k statement sum 117. Re-measured
 // (compile-only identical to listed forms): the j, i, k statement sum 111, the k, j, i statement sum everywhere 154, the squared
 // length named through dot3f 154. Body unchanged.
+// M3 lane 15 r75 (fast, 0x1c4a80 and 0x30bf0 stay matched): the existing out-of-line normalizer function_30bf0 (its definition
+// already `inline`) stays a call in this /Ob1 file, also with a `__forceinline` redeclaration here: all four normalizations 449
+// (624 bytes), forward only 236 (836 bytes, plain 236), the other three 350 (722 bytes). Body unchanged. I found no other
+// untried natural normalizer, dot, projection or cross form; the forms above cover the rest.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

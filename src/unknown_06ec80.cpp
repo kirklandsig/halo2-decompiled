@@ -96,6 +96,11 @@ union s_6ec80
 // setup and the frame's second_id/name and short/data slots swap): the block pointer, mask and counter named
 // machines/player_mask/player_index 225; the block pointers set in an if/else (no zero ahead of the test) 227;
 // the guard tested players first 225, with the if/else pointers 227; a typed player-record pointer for the loop 225.
+// Round 75 (m3 lane 15, fast; masked = register-masked aligned count): the scoped mask re-measured 225 (masked 19). On it the
+// 0x4da8 value as a ternary 269 (981 bytes, masked 7: NONE goes back to ECX, but the ternary adds a jmp and the two block
+// pointers swap EBX/EDI); the data pointer as a ternary 256 (masked 26); the 0x4dac value as a ternary 242 (974 bytes, masked
+// 21); all three 254 (masked 13), the same unscoped 254; first/second id NONE chained 225, unscoped 7. Same code as the plain
+// reads: inline result-default getters for the 0x4da8/0x4dac/data/short values (225 scoped, 5 unscoped).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

@@ -451,6 +451,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // the first quad's inline-depth pragma pair dropped 422 (2356 bytes); the bitmap locals typed as the stage-texture
 // argument (casts moved to the 0x12360 tests) 2. Diagnostic: this function moved above 0x254490 in the file, both
 // unchanged (2 and 4), so the reload order is not the source order of the file. The two reloads stay swapped.
+// Round 75 (m3 lane 15, fast): the second quad's colour as a named `color3f const` aggregate 2; the quads' 64.f
+// positions through one `real const size` 2; both 2; the alpha getter's result named before the product 2; the last
+// quad's texture calls through `D3DDevice::SetVertexData2s` 2 (re-measure of round 134's form); every pixel-shader
+// definition write and the commit through one `D3DPIXELSHADERDEF *shader` pointer 2 (all the same code: named
+// constants fold before the reload order is set). The two reloads stay swapped. I found no other untried natural form;
+// the forms above cover the rest.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
