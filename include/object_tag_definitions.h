@@ -93,7 +93,7 @@ struct s_unit_definition_camera
 	real_bounds pitch_range;                            /* +0x0c */
 	s_tag_block camera_tracks;                          /* +0x14, tag references */
 };
-typedef char assert_unit_camera_size[(sizeof(s_unit_definition_camera) == 0x1c) ? 1 : -1];
+typedef char assert_unit_definition_camera_size[(sizeof(s_unit_definition_camera) == 0x1c) ? 1 : -1];
 
 /* how much acceleration a unit (or a seat's rider) takes before its actions
    fail */
@@ -131,7 +131,7 @@ struct s_unit_definition_lipsync
 	real attack_weight;                                 /* +0x00 */
 	real decay_weight;                                  /* +0x04 */
 };
-typedef char assert_unit_lipsync_scales_size[(sizeof(s_unit_definition_lipsync) == 0x8) ? 1 : -1];
+typedef char assert_unit_definition_lipsync_size[(sizeof(s_unit_definition_lipsync) == 0x8) ? 1 : -1];
 
 /* the unit tag's own fields, after the object's */
 struct s_unit_struct_definition
@@ -200,7 +200,7 @@ struct s_biped_definition_lock_on
 	dword flags;                                        /* +0x00 */
 	real lock_on_distance;                              /* +0x04 */
 };
-typedef char assert_biped_lock_on_data_size[(sizeof(s_biped_definition_lock_on) == 0x8) ? 1 : -1];
+typedef char assert_biped_definition_lock_on_size[(sizeof(s_biped_definition_lock_on) == 0x8) ? 1 : -1];
 
 /* how a character walks: the slopes it can climb */
 struct s_biped_physics_ground
@@ -218,7 +218,7 @@ struct s_biped_physics_ground
 	real sine_uphill_falloff_angle;                     /* +0x28 */
 	real sine_uphill_cutoff_angle;                      /* +0x2c */
 };
-typedef char assert_character_physics_ground_definition_size[(sizeof(s_biped_physics_ground) == 0x30) ? 1 : -1];
+typedef char assert_biped_physics_ground_size[(sizeof(s_biped_physics_ground) == 0x30) ? 1 : -1];
 
 /* how a character flies */
 struct s_biped_physics_flying
@@ -235,7 +235,7 @@ struct s_biped_physics_flying
 	real angular_acceleration_maximum;                  /* +0x24 */
 	real crouch_velocity_modifier;                      /* +0x28 */
 };
-typedef char assert_character_physics_flying_definition_size[(sizeof(s_biped_physics_flying) == 0x2c) ? 1 : -1];
+typedef char assert_biped_physics_flying_size[(sizeof(s_biped_physics_flying) == 0x2c) ? 1 : -1];
 
 /* a character's shape and movement (the biped tag's at 0x264) */
 struct s_biped_physics
@@ -255,7 +255,7 @@ struct s_biped_physics
 	s_biped_physics_ground ground_physics;  /* +0x38 */
 	s_biped_physics_flying flying_physics;  /* +0x68 */
 };
-typedef char assert_character_physics_definition_size[(sizeof(s_biped_physics) == 0x94) ? 1 : -1];
+typedef char assert_biped_physics_size[(sizeof(s_biped_physics) == 0x94) ? 1 : -1];
 
 /* the biped tag's own fields, after the unit's */
 struct s_biped_struct_definition
