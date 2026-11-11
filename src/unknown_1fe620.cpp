@@ -12,6 +12,9 @@ void function_1fe410(point3f *arg_0, real arg_1);
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax E (11-11): no new form, no lower score (373); the frame is still 0x4c against retail's 0x48, retail keeps
+// the third settings pointer in esi from the entry where ours caches the random state there, and the two flag bytes
+// are still stored before the random state is loaded where retail loads the state pointer first.
 // MiniMax R (11-10): no new form, no lower score (373); the two flag bytes are still stored before the random
 // state is loaded, where retail loads the state pointer first and then stores the bytes.
 // MiniMax R (11-10): no new form, no lower score.
