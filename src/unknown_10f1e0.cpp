@@ -1459,6 +1459,8 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// score 164 (was 164): retail keeps index*12 as a value, re-reads the unit (and the pool's data for the second query)
+// for both depletion queries, writes the first depletion with setle and returns the result byte unnormalised.
 // MiniMax S (11-09): no new form, no lower score (164); retail keeps index*12 as a value and re-reads
 // the unit through that offset for both depletion queries, and writes the first depletion with setle.
 // MiniMax H (11-06): the index masked in a local of its own gives 322, the unit pointer dropped in favour of
@@ -1475,7 +1477,7 @@ long function_cbd50(long unit_index, short weapon_index);
 // MiniMax I (11-08): no new form, no lower score (164): retail keeps the pool pointer in EAX and its data
 // in EBP, re-reads the unit pointer for both depletion queries and writes the first depletion with setle;
 // ours keeps the unit in EAX and builds the result with a branch.
-// score 164 (was 164): this round found no gain - retail keeps index*12 as a value (lea/shl) and re-reads
+// Earlier (164, was 164): this round found no gain - retail keeps index*12 as a value (lea/shl) and re-reads
 // the unit through that offset for both depletion queries, and it writes the first depletion with setle;
 // the byte-offset entry with re-derived queries gives 325 and the if-form depletion gives 330.
 // this round found no gain - retail keeps the pool pointer in EAX and the data in
@@ -1688,6 +1690,12 @@ long function_cbd50(long unit_index, short weapon_index);
 // flag stores, stores all three zeroes to memory and reloads depleted's false from +0x12 at both joins, and re-reads
 // the pool's data in the second query); with the controlling field tested directly 351 (same code); with a byte
 // result 322 (masked 40).
+// Round 153 (m3 lane 8, fast with 0xcbd50 and 0xc70b0): the controlling block as a forceinline helper writing the two
+// flags through `bool *` out-parameters 164 (same code: the pointers resolve before allocation, no memory kill between the
+// queries); the 0xc70b0 test negated with the switch in its then-arm and `result = true` in the else 325 (1295 B); a bool
+// result with byte depletion/interruptibility 194 (1262 B, as the bool result alone); the overlay field read at its switch
+// (no overlay local) 172 (1287 B); the controlling field tested directly 164 (same code). The helper and the direct test were
+// measured before only on other bases (the one-flag pointer helper 334, the direct test 351); both re-measured on this body.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {

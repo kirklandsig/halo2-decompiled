@@ -999,6 +999,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // (k + j) + i 371, (i + k) + j 371, (i + j) + k (dot3f's own body written out) 376, j + (k + i) 376, i + (j + k) 374,
 // k + (i + j) 372, all 1700 bytes (masked 26-29). A compile-only build (no /GL) loads the plane's first length operand from the other
 // base register (EDI for retail's ESI), so it is no screen for this block.
+// Round 153 (m3 lane 8, fast; control 331; aligned 111): the inner switch's case 2 already matches; the plane length's hoisted load
+// (retail left.j, ours left.k) still decides the XMM0/XMM1 zero for the rest. Tried: the pan position stored through a
+// `point3f *` local to command->position 391; plane.n copied before the three matrix stores 377; plane.d as
+// dot3f(&plane.n, position) 331 (same code); a `vector3f const *` direction for the copy and the length 361 (first difference
+// +0x5c); the inner switch's default arm first, case 1 then ending in its own flag update and break 331 (same code).
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
