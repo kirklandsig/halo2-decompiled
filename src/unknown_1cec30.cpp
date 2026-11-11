@@ -1127,6 +1127,10 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 	frame->m_translation = position;
 }
 
+// MiniMax H (11-10): no new form, no lower score (38): every difference is the frame and the callee's
+// convention (retail keeps the component in EBX, ours pushes it), and that choice is made by LTCG over
+// the whole 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other files:
+// BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
 // score 38 (was 38): BLOCKED-BY 0x1d0cf0: retail passes it the component in EBX (loaded here from the
 // stack after `push ebx`); ours pushes the component, so the frame and every store offset differ. The
 // body is otherwise retail's instruction for instruction. Tried here: zero transform/translation/both

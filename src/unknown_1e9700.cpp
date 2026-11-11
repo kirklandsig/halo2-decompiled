@@ -74,6 +74,10 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax H (11-10): no new form, no lower score (106): retail keeps the old maximum in ECX with the
+// enable byte in AL and reads the 15-bit counter with the 16-bit idiom, ours keeps them in EAX and DL;
+// the permuter (--fast, 10 and 25 minutes) never reached a search, and the enable reload needs one
+// object for g_510ca0 and the counters: BLOCKED-BY include/globals.h and src/unknown_1967d0.cpp.
 // MiniMax D (11-10): no new form, no lower score (106); retail keeps the old maximum in ECX with the enable
 // byte in AL and reads the 15-bit counter with the 16-bit idiom (`xor eax, eax` then a word load), ours keeps
 // the maximum in EAX, the enable byte in DL and zero-extends the counter; the enable reloads and the two
