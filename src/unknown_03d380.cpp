@@ -314,6 +314,7 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
+// MiniMax S (11-10): no new form, no lower score (36): the special arm still comes before the kind arm in the layout where retail puts the kind arm first, and our element address is a scaled index added to the base where retail keeps the scaled product in EAX and adds the base to it.
 // MiniMax R (11-10): no new form, no lower score (36): the special arm and the kind arm still swap their block, and the layout needs 0x221810 kept out of line, so it stays BLOCKED-BY 0x221810 in src/unknown_221490.cpp.
 // MiniMax R (11-09): no new form, no lower score; the special arm and the kind arm still swap their block
 // order, and the record address still goes to esi where retail multiplies into eax and lea's it.
