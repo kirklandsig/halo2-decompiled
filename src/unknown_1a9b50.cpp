@@ -664,6 +664,12 @@ extern point2f *g_468778;
 // 129); that with the result returned in the arm (`return !f14 && !f13 && !f2d;`, `return false;` last) 386 (1549, 154); the facing
 // through the view with that return on the original order 408 (1549, 153). Re-measured: actor first 413 (1555, masked 134); the
 // velocity pointer alone 397 (1576, masked 136).
+// M3 lane 2 r73 (plain with the file's 17 functions and 0x265d30; aligned 263, masked 102 at 375): the 0.866 planar test
+// through vector2f_products.h's dot_product2d 375 (masked 103: the -0.4 dot's j product takes the actor field first).
+// Census of the other natural forms, all listed above with scores: dot3f at the three facing dots 407/398/398 (all 407),
+// the one-use clock read at its use 391, the facing pointer straight from the 0x25d740 call 375, the actor first 413,
+// constant exits 440, the prediction pipelines through the point helpers 375-377, a separate second prediction time 375,
+// the slot pointer declared first 375, the prop lookup before the clock 380.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -823,6 +829,8 @@ struct s_1aab50
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax E (11-11): no new form, no lower score (382): the frame and the length agree and the early false exit's place is right, but the object/magnitude and query scalar homes still differ, and the helper retail keeps out of line is expanded here (0x25d740, in another file): BLOCKED-BY 0x25d740.
+// MiniMax S (11-11): no new form, no lower score (382): the frame and the length agree, but the early false exit's place, the object/magnitude homes and the query scalar homes still differ.
 // score 382 (was 382): the frame and the length agree, and the early false exit's place, the
 // object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
 // b2G walk (r719): every block, field offset, constant and call argument (including 0xfa1a0's 3 register + 11 stack arguments, whose

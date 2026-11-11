@@ -1171,9 +1171,16 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
+// MiniMax D (11-11): no new form, no lower score (824); the frame is still 0x154 against retail's 0x12c from the
+// first instruction, so every stack home sits 0x28 further out, and retail still extracts the flag bits in place
+// through a byte field view and folds the 0x20000000 bit into the field in memory where ours copies the word
+// out first. The open behaviour differences stand as they were: the node handed to 0xb8bd0 as a raw dword and the
+// type chain's compare at 0x10bd1c.
 // MiniMax A (11-10): no new form, no lower score (824): our frame is 0x154 against retail's 0x12c
 // from the first instruction, so every stack home sits 0x28 further out and the two open behaviour
 // differences - the node handed to 0xb8bd0 as a raw dword and the type chain's compare - stay.
+// MiniMax E (11-11): no new form, no lower score (824); our frame is 0x154 bytes where retail's is 0x12c, so every
+// stack slot sits 0x28 higher, and the entry flag test reads the definition's byte in the other order.
 // score 824 (was 813): statement-by-statement walk against retail (s1B, 11-06). Behaviour fixes, all kept even though
 // the score rose 11: (1) the byte at [esp+0x12] is ONE flag: the definition's +0xbc bit 2 (skips gravity), set to true
 // before the ray query (0x10ba18) and cleared only by the settle branch (0x10bcf8); the draft's separate
@@ -1621,6 +1628,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // impulse paths apart with the flag clear at a different point in each, so splitting ours that way
 // (223) and giving the clear a byte-unit bit field (206) both score worse.
 
+// MiniMax G (11-11): no new form, no lower score (140); the return byte sits at esp+0xe where retail puts it at esp+0xf, the
+// release flag is cleared by a load, an and and a store where retail masks the byte in place, and retail expands the transform
+// helper into the call site while this build calls it out of line from a file this lane may not edit.
 // MiniMax S (11-10): no new form, no lower score (140): the return byte sits at esp+0xe where retail puts it at esp+0xf, the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write, our frame carries an extra byte local at 0x12, and the damage data block sits twelve bytes below retail's.
 // MiniMax I (11-10): no new form, no lower score (140); the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write, and the return byte still sits at esp+0xe where retail puts it at esp+0xf.
 // MiniMax D (11-05): no new form, no lower score.
@@ -1897,6 +1907,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // submission in the existing producer or its returned output: 169/140/140/140/140/171/171/171.
 // NOT kept: ties/regressions; original private producer and full body restored. Return byte,
 // release-byte RMW/tail and contact/event homes remain.
+// MiniMax A (11-11): no new form, no lower score (140); the return byte still sits at esp+0xe where retail puts it at esp+0xf, and the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write (the flag is a bitfield in a header-owned struct); the callee 0xba300's parameter order is fixed in src/unknown_0b8bd0.cpp, which this lane may not edit.
 // MiniMax E (11-08): no new form, no lower score: the return byte sits at esp+0xe here and at esp+0xf in retail, and retail clears the release flag with a read-modify-write that we split into a load and a store.
 // MiniMax E (11-09): no new form, no lower score: the return byte sits at esp+0xe here and at esp+0xf in retail, and retail clears the release flag with a read-modify-write that we split into a load and a store.
 // P402: Complete definition-flag input at original gate, dword/long/unsigned-int/int/word/short/byte/signed-
@@ -1905,6 +1916,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // expression, two-use spin, release helper and full body restored. Return byte and release/contact/event homes
 // remain.
 // MiniMax R (11-10): no new form, no lower score; the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write (a byte pointer cast, a masked assignment and a narrowed mask all leave the code as it was), the return byte still sits at esp+0xe where retail puts it at esp+0xf, and the callee 0xba300's parameter order is fixed in a file this lane may not edit.
+// MiniMax B (11-11): no new form, no lower score (140); the return flag still lands on esp+0xe where retail keeps
+// it on esp+0xf, the release byte is still cleared with a load, an and and a store where retail masks the byte
+// in place, and retail expands the transform helper into the call site while this build calls it out of line
+// (its declaration is in src/unknown_09b910.cpp).
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

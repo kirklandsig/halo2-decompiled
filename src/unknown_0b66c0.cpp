@@ -790,6 +790,11 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // the restore 10; the same with the sentinel arm first 10; with `while (!done && position != total)` and the
 // completion under `if (!done)` after the loop 10; with the 0xb6320 success arm first 10; `while (true)` with
 // nested ifs, `continue` while short of the total and one return at the loop's end 10. All the same code.
+// Round 156 (m3 lane 8, fast): on the would-block `return true` form (44, 208 bytes, re-measured: the success value
+// then shares BL and its exit cross-jumps with the false one) the success result as `sent >= 0` 48, the send count as
+// a ternary 66 (204 bytes); the would-block test with its `return true` ahead of `if (sent < 0) goto` 57 (208 bytes);
+// no success assignment with the completion returning true before the label 64; `short sent` declared at function
+// scope 10; `long written` declared at function scope 10 (both the same code).
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {

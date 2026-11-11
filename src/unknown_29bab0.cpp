@@ -68,6 +68,12 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // (0x29c068 fsubr dword), the signed-root helper reading the scale from the definition at the product (0x29c595).
 // Tried: complement local for 1 - field_64 (771, no change), vector2f struct copies for local_15 / local_17 (717 / 723),
 // double root (775). Left: early input/heading and normalizer memory-product homes, stack slot order, per-region re-reads.
+// MiniMax C (11-11): no new form, no lower score (715 in the full build; the fast check gives 648 or 715 depending on
+// how the reduced image links); the calls that show up as different in the listing are the
+// same normalize2d (retail 0x2b400) reached at our own address, so they are not real differences; what is left is
+// the early input/heading homes, the normalizer memory-product homes, the stack slot order and retail's per-region
+// re-reads of its arguments, with retail saving EBX around the middle for the +0x290 pointer where this build holds
+// the input in EBX from the prologue.
 // MiniMax H (11-05): no new form, no lower score; retail saves EBX around the middle for the +0x290
 // pointer and re-reads its arguments from their stack homes per region, where ours holds the input in
 // EBX from the prologue, and the 748 form is a held lead under the keep bar.
@@ -400,6 +406,20 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // with EAX, ECX and EDX busy), as 0xa5a60 borrows EBP. So retail never gave EBX to a web in the main allocation here
 // and borrowed it for the +0x290 pointer; ours allocates EBX in the main pass. That is register pressure (retail
 // reloads the definition pointer into ESI per region and re-reads arg_0 from its slot), not block structure.
+// m3 lane 14 r84 (plain each, with 0x29b990, 0x1f8510, 0x1f3e40, 0xba1d0, 0x1e4290, 0xb9dd0, 0x1f5f30, 0x1f9e70,
+// 0x29b2e0 and 0x29ab90, all unchanged; aligned/register-masked/register+esp-masked rows, base 583/341/174): re-measured
+// lane 10 r93's trial 2 (the implied `!(local_23 > local_27) &&` dropped, the root written in its test) 776 (3464 B). On
+// it: local_14 computed in the arm that uses it, just before local_25, 770 (3446 B, 531/310/178; frame 0x88 again and
+// EBX pushed where retail pushes it); local_14 folded into local_26's two components 770 (3453 B). On the 715 body:
+// local_14 computed in its arm 694 (3458 B, 510/323/261, EBX still saved at entry; match-only, a declaration moved, and
+// retail computes local_14 early, so the gain is slot packing, not retail's order); local_14 folded into local_26 746
+// (3467 B); with local_14 in its arm, local_19 computed at its one use 786 (3508 B). Retail copies local_15 with integer
+// moves and lays the local_21 chain out differently; those forms are listed.
+// Later, on the 694 form (local_14 in its arm): local_14 after local_25 760 (3464 B); local_20 declared just before the
+// side-test result's `local_5 = *arg_2;` 708 (3455 B); local_25 folded into local_26 655 (3464 B, 588/327/268; match-only:
+// both the moved declaration and the folded point). On 655: local_24 folded too 785, with local_20 declared late 669, with
+// the root in its test (lane 10's base) 771 (3450 B, frame 0x88, 535/314/175), local_23 read before the side test 790.
+// local_25 folded alone on the 715 body 718 (3499 B, retail's length, 548/352/184).
 // Round 93 (m3 lane 10, plain; 0x29b2e0 176, 0x29b990 MATCH and 0x1f9e70 137 unchanged; al/masked = aligned difflib
 // counts, base 583/174): the second radial test's implied `!(local_23 > local_27) &&` dropped (a failed first test with the
 // radius larger already makes `!flag` false), double kept, 805 (3471 B); with the root written in the test 776 (3464 B,

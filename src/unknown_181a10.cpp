@@ -569,6 +569,8 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
+// MiniMax H (11-11): no new form, no lower score (239); the frame is still 0x40 against retail's 0x44, retail still re-reads
+// the shape's data word three times in the clamp and ours copies it once, and the plane index still goes out as a short.
 // score 239 (was 239): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // the plane); classifier clamp form, origin and hit copies, transformed-plane and output homes remain.
 // MiniMax I (11-06): the node-type guard as a named local, as a field reference, against a
@@ -863,6 +865,14 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // components alone 325 (1262 B); the hit as `point3f const &hit = contact->position` 335 (1243 B), with the scalar
 // origin 333 (1243 B); the component scan at the top through the existing header havok_entity_property_get 239 (same
 // code).
+// M3 lane 13 r83 (fast with 0x1829b0, 0x1821d0 and 0x182800, all MATCH; control 239, fully masked aligned 71): the decoded
+// key type named (`long type = data >> 29;` tested `!= 1`) 239 (same code: still folded to the mask compare); first->shape
+// in a local for the kind test and the radius 329 (1264 B) [85]. Retail's two classifier uses read the data field three
+// times and thread the 1 and 16 arms straight to the exits, while 0x182b90 (matched, same file family) reads it once
+// through its PIN macro, so this one looks like a different helper boundary. Otherwise no untried natural form: the origin/hit copies, scalar origin
+// orders, classifier clamp spellings, result receivers, plane-arm orders, helper boundaries and root/key forms are all listed
+// above; what remains is the frame (0x40 versus 0x44, retail's two untouched dwords below the plane), the 1..16 classifier's
+// three data reads with the constants in the result register, and the dead second walk's loop pad.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

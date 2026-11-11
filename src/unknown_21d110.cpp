@@ -313,7 +313,9 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 struct s_looping_detail_request;
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
 
-// MiniMax E (11-10): score 166 (was 181): the effect path starts the sound through the sound
+// score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
+// opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
+// MiniMax E (11-10), not kept: 166 (was 181): the effect path starts the sound through the sound
 // module's request entry and the fallback path through this file's start helper, so the start and
 // the availability checks are inlined into the effect path as retail has them; retail still takes
 // the state pointer in EAX, which needs the callers in another file to follow.
@@ -323,8 +325,6 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // eight matched callers in other lanes' files.
 // not kept (coordinator, 11-10): the swapped start calls (166) unmatch 9 functions in
 // 189010.cpp/189a50.cpp at link time (batch 250 gate 1); main's order restored.
-// score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
-// opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // this round: no new form and no lower score; retail still takes the first
 // argument in EAX and keeps it in EBX with a four-byte frame, while ours reserves eight bytes and
 // pushes ESI and EDI, and the request convention cannot change here without the eight matched callers
@@ -503,6 +503,15 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 181; the category flag bit through TEST_BIT 181; the sound index stored through a fresh sound_effect_get as
 // 0x21d2c0 does for its scale 193 (468 bytes); (re-measured: the rate test negated without the NONE arm
 // 181). Still BLOCKED-BY 0x189fe0.
+// M3 lane 10 r94 (fast with 0x189fe0 at 110 and its eight matched callers; base 181, aligned 127, masked 92): no new form. The
+// first difference is the convention (retail state in EAX, tag on the stack) and the opposite start/delete expansion; the only
+// caller, 0x189fe0, is in src/unknown_189010.cpp, another lane's file this round, and every listed form that gives the state
+// EAX moves 0x189fe0's request register and loses its callers. Still BLOCKED-BY 0x189fe0. Tried in the body: the effect
+// attached before the class query 156 at retail's 427 bytes (positional only: masked 92 -> 104; the state then arrives in ECX
+// with the tag in EAX, 0x189fe0 110 -> 132, its eight callers still match in the fast image; retail queries the class first, so
+// not its order and not kept); the effect pointer fetched before sound_start 179 (465 bytes, masked 87; two points and a moved
+// declaration, not kept); the priority stored without the `(short)` cast, the allocation tested inside the condition, the
+// sound index declared at the top: 181 each (same code).
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {
@@ -1050,6 +1059,11 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // the loop-state test with the type compared first 132 (831 bytes); `loop_alternate != false` in the alternate ternary 158
 // (832 bytes). No existing record type with a long and a bool was found in include/ or the sound files, so the pair still
 // waits on a ruling about a two-member record for it (rounds 39 and 9 measured that form at 0).
+// Round 91 (m3 lane 11): no counted trial. The whole 30 is the flag's byte slot, and only an aggregate moves a
+// lone byte (rounds 29, 43, 73, 124), so statement, order, name and width forms cannot reach it. The looping pool's
+// users and record types (the g_4ed28c readers, the looping-sound datum and effect looping-sound views) expose no
+// existing interface that returns the state and the flag together, so the {long, bool} record (0 in rounds 9 and
+// 39) still has no real type behind it and waits on the ruling.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {

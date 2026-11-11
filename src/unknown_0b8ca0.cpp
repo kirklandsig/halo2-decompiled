@@ -678,6 +678,10 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// MiniMax E (11-11): no new form, no lower score (165): the full build now self-aligns the frame like
+// retail (`and esp, -8`, 0xb4 bytes, a result byte), but the locals sit in other slots (the result byte
+// at [esp+0xf] against retail's [esp+0x13], the cluster index at [esp+0x30] against [esp+0x40]), so the
+// first difference is at +0x1a and every later offset shifts with the frame order.
 // score 165 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
 // bool result byte) while ours keeps EBP for the global base and a dword result.
 // MiniMax D (11-08): ours has an unaligned 0xac frame where retail realigns to eight
@@ -1882,7 +1886,13 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax H (11-11): no new form, no lower score (285); retail still reaches one shared epilogue at 0xb987a from the ancestry-loop match, the !allowed test and the later branch where ours duplicates it, so the first difference is still the jump target at +0x76, and retail still inlines the marker pointer's helper, which needs that other file's /Ob1 flag. BLOCKED-BY 0xb8bd0.
 // MiniMax E (11-10, run 73): no new form, no lower score (285); retail reaches one shared epilogue at 0xb987a from the ancestry-loop match, the !allowed test and the later branch where we duplicate it, so the first difference is still the jump target at +0x76, and retail inlines function_b8bd0's marker pointer, which needs that other file's /Ob1 flag.
+// MiniMax D (11-11): no new form, no lower score (285): the ancestry loop's match jump still targets our own epilogue where retail jumps to its shared one at 0xb987a, and retail still inlines the marker pointer's helper from a file this lane may not edit.
+// MiniMax D (11-10): no new form, no lower score (285): the header's activity bit as a byte test gives 281
+// (four under the gate, so the body stands) and the ancestry match as a flag with a break gives 295; retail's
+// one shared epilogue at 0xb987a and the marker pointer it inlines still need the other file's /Ob1 flag.
+// MiniMax G (11-11): no new form, no lower score (285): the first difference is at +0x76, in the branch that reads the object's field at +0x44 - retail keeps the object base in ebx and the index in ebp where ours holds them the other way round; our body is three bytes longer than retail's 1236.
 // MiniMax S (11-10): no new form, no lower score (285): retail reaches one shared epilogue at 0xb987a from the ancestry-loop match, the !allowed test and the later branch where ours duplicates it, so the first difference is still the jump target at +0x76, and retail inlines function_b8bd0's marker pointer, which needs that other file's /Ob1 flag.
 // MiniMax E (11-10): no new form, no lower score (285): dropping the volatile from the activity flag reproduces
 // retail's eight-bit shift of the header's flags byte, but the pool pointer then moves out of ebx and the score

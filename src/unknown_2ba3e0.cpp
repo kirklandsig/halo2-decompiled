@@ -488,6 +488,13 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // reversing the name order of definition, first and next (one, two or all three) 10; renames of particle, nearest,
 // properties, cache and requested 10; requested declared beside the cache 10; change at function scope 10. The
 // back-edge reloads never move.
+// Round 74 (m3 lane 2, fast): the velocity normalizer in the maximum branch too 34 (1521 bytes; re-measured, as round 94:
+// the maximum branch is then exact, but the minimum branch's j/k inverse products turn sequential where retail pairs them,
+// so that pairing follows a numbering tie like the reloads); on that, vector3f_scale / scale_particle_vector_2b /
+// chained normalizer returns per branch 34/37; a 48-form random screen (comparison orientation, change and
+// maximum-change scales through the file scale helper, a separate speed-squared local, the center inline, chained
+// returns) 34 in all; the direction normalizer in the maximum branch 17 (re-measured, as round 7); the previous blend
+// through vector3f_scale on the shared-normalizer form 34.
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {

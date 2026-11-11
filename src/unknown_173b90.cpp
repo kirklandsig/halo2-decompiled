@@ -472,6 +472,14 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax b (11-11): no new form, no lower score (42): the emitter loop as an explicit list test
+// with the scale declared before the multiplier was measured at 39 and restored, since it stays
+// above 30 and the gain is small; row i of both rotations still sums the up product first.
+// MiniMax E (11-11): no new form tried, no lower score (42): row i still sums the up product before the
+// forward one, the offset's zero store still comes before the list test and the particle is still reloaded
+// before the emitter definition after each property call; the shared rotate helper in
+// include/matrix_transform.h keeps the sum order, and the body is unchanged since round 20's permuter run
+// (58 tries, none below 42), so it stands.
 // score 42 (was 42): both in-place rotations go through the shared rotate helper (it copies the
 // input when the output is the input), which gives retail's j and k rows. Left: row i sums the up
 // product before the forward one (retail forward first, loading forward.i into a register); the
@@ -774,6 +782,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // definitions with scale first re-measured 113 (1136 B, masked 55); the index as a for counter 113 (same code); on it
 // the motion copied first 121, the motion rotated first 116, the emitter definition formed inside the list block 128,
 // scale declared just before its emitter-level test 251 (1138 B), the particle copies after the cache invalidation 193.
+// M3 lane 12 r115 (fast with 0x173c10/0x2477b0): the definitions indexed by a short counter 271 (1130 bytes); the
+// defaults as one chained `multiplier = scale = 1.0f` 120 (1136), on the long-indexed form 115 (1138); a named flags
+// value for the six emitter-definition flag tests 292 (1157), on the long-indexed form 297 (1159).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1426,7 +1437,16 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
+// MiniMax b (11-11): 12 (was 47), NOT kept (coordinator 11-11: a bool set true then cleared by a test and a bool set by an if are match-only; the direct expressions with the global re-read score 113; body at 47): the view global is read at each use, the availability is cleared with
+// `xor bl, bl` before the view test and set with a branch on success, and same_view is declared true before the
+// availability and cleared by one `owner == NONE || g != owner || !available` test; 498 bytes, as retail.
+// Left: our `same_view = 1` store is emitted ahead of the view test, retail's sits between `test bl, bl` and
+// `jne` in the availability test's block, and the availability's own test block is reached a store earlier.
 // score 47 (was 47): availability clear/production and later view observation remain;
+// what still differs is the same-view flag: ours writes its true value to the stack byte
+// before the availability query, retail keeps the flag in BL and writes the true value only after the owner
+// tests, with the availability's own production after its query; frame 0x14, the owner, the view and the
+// post-attachment view refresh agree.
 // frame 0x14, NONE/owner and Boolean stack homes agree;
 // availability clear/result and the post-attachment view refresh remain.
 // M3 lane 13 r75 (fast; masked aligned count in brackets, base [5]): round 81's `effect_index != NONE && available && ...` re-measured 46
@@ -1674,6 +1694,7 @@ bool function_17afd0(long effect_index, long value);
 // moved after the view load 125, the view reloaded after the attachment query 110, the same-view result at
 // function scope 47); the availability is still cleared before the second definition call and the query
 // result still goes through a negated long where retail tests the result and branches.
+// MiniMax E (11-11): the view read once before the availability, the availability set on success and the same-view flag cleared by one owner/view/availability test reach retail's twelve (47 -> 12); the flag's true store is still early and the availability keeps its own home, so no untried form is left for them.
 // MiniMax E (11-06): no new form, no lower score.
 // The availability result moved after the view load 125, after the definition
 // call 138 and before the effect index 138: each move flips the NONE constant
@@ -1773,6 +1794,18 @@ bool function_17afd0(long effect_index, long value);
 // coalesces them in EBP, and the availability tested first where retail tests the owner first); that order on this body
 // 107 (492 B); the availability declared at the loop-body top 134 (500 B). Same code: the outer test as nested ifs, the
 // cluster read at each use.
+// M3 lane 12 r115 (fast; matched siblings 0x3e9c0 and flexible_surface.cpp read the view global at each use in this same
+// test): the view global at each use with a nested branchy availability, a NONE-default owner, the second definition call
+// after the owner and same_view true then cleared 124 (500 B); the view local with the global in the attachment call and
+// the camera test, nested branchy availability, NONE default, call after the owner 124 (500 B); that with the plain
+// branchy availability, a ternary owner and the call after the availability 128 (500 B); the view local with the branchy
+// availability after the view read and a NONE-default owner 132 (502 B); the view global at each use with this body's
+// availability, the call after the owner and the true-then-clear same_view 134 (506 B); the view local with the global at
+// the camera test, nested branchy availability, NONE default, true-then-clear 141 (511 B); that with the availability as
+// one expression, the call after the availability and plain same_view 136 (504 B); the view local, one-expression
+// availability, ternary owner, true-then-clear 122 (495 B). Re-measured: the branchy availability after the view read 131
+// (504 B: NONE moves to EBX, the effect index to EBP, the owner to EDI, the flag to a stack byte, same_view to BL).
+// Diagnostic (not kept): on that, same_view and the camera flag written through pointers 158 (513 B, the flag still spills).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

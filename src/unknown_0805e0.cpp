@@ -52,6 +52,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 
 /* the next recent player after the iterator's: a valid, online, known player
    with a name; iterator starts at the first entry and ends at NONE */
+// MiniMax S (11-11): no new form, no lower score (43); retail's shape read off the disassembly - the index
+// scaled in place in ESI, the successor in EBX and the & 3 mask hoisted into AL before the loop - is not reached
+// by giving the successor its own local (51 as a while loop and as a guarded do/while, because the successor then
+// lands in ECX) nor by returning from the loop directly (52, which also drops the top zeroing of the result).
 // score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
 // retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
 // successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
@@ -335,6 +339,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // guest test spelled on the xuid_flags dword, through a byte cast of it, as two one-bit byte tests, the name
 // test through the record's `name[0]`, and the dword guest test with `name[0]`: 43 each (same code; the mask
 // stays an immediate). All restored.
+// M3 lane 16 r108: register-masked aligned 33 against retail; every candidate form checked against this note was
+// already listed (loop shapes, successor locals, result/early-return exits, the iterate helper, predicate helpers,
+// test spellings, the `(xuid != 0 || guest)` validity that hoists the mask but keeps the first guest test); no untried
+// natural form found, no trial run.
 // Round 91 (m3 lane 1, fast with 0x1a303b/0x2b393c): an entry-pointer loop with `index != NONE ? &g_4cf98c[index] : NULL`
 // lookups before the loop and at its end 58 (137 bytes, the NULL test stays); a guarded `while (!result)` with the per-pass
 // result and `else if (next == NONE) break; else index = next;` 59 (135: mask hoisted into AL and false remade at the exit

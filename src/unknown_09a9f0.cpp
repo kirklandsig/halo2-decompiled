@@ -226,6 +226,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
+// MiniMax A (11-11, run 58): no lower score (49) - taking the result from the entity's published index after
+// the arm scores 66 and the bool result set after the attach scores 80; retail keeps the false result in BL from
+// before the creation call, saves EBP only around the header test and looks the header up twice, while ours
+// keeps the validity result in EBP and shares one header address between the flag test and the object lookup.
 // score 49 (was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
 // earlier first lines 49 (was 49), 49 (was 49); retail's bool result in BL, the EBP borrow around the
 // header test and the data reload remain; round 151's entry is the last one above the marker.
@@ -234,11 +238,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // reaches retail's shape but scores 77, and reading the header through the entity changes nothing;
 // retail keeps the result in bl and looks the header up twice.
 
-// At 49 (was 49): unchanged this round: the head's register roles still differ - retail saves
+// score 49 (was 49): unchanged this round: the head's register roles still differ - retail saves
 // MiniMax D (run 46): the early-return body 77, the bool result 69, the bool result with the header
 // pointer in a named local 77 (the header lookups still merge into one ECX entry and EBP becomes a
 // scratch register); no lower score.
-// At 49 (was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
+// Earlier note (49, was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
 // EBX and keeps a false result in BL from before the creation call, pushes EBP only around the header
 // test and leaves the table global in EDX, reloading its data and recomputing the index for the
 // object; ours keeps the validity result in EBP and shares one header address between the flag test
@@ -717,6 +721,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // takes EBP and the head through the creation call is retail's, but the header test then puts the data in EDX (dropping
 // the global) and needs no EBP borrow; retail keeps the global in EDX for the object read because the data is reloaded,
 // which agrees with the store-between lead above.
+// m3 lane 14 r84 (fast with 0xa5b10, 0xbb780 and 0x108e10, matched throughout): a bool result taken from the flag
+// test inside the NONE test (`result = !(flags & 0x10); if (result) {...} else entity->object_index = NONE;`) 69 (176 B),
+// the same with the arms swapped 73, as a long 76 (190 B). The other natural spellings are listed above (early returns,
+// getters, 0xbb780/v23, result widths, deleted-arm orders); the matched siblings 0x9ba90/0xa4880/0x9aeb0 clear a slot to
+// NONE before storing, a dead store that is not keepable here.
 // Round 171 (m3 lane 5, fast with 0xa5b10, 0xa5b40, 0xa5b80, 0x108e10; control 49): the cleared index published at a
 // join and re-tested, written as one `&&` chain, re-measured (bool 64, no first store 68, long 41, byte 38: the listed
 // nested scores; with the entity reset as well 64/41). On the chain: the data reload and the recomputed index come

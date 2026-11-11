@@ -32,6 +32,11 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 
 // score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
+// MiniMax R (11-11): no new form, no lower score (110); the axis block's dot product still multiplies up's i
+// first where retail multiplies forward's i first, and the only shapes that flip it need the existing dot3f
+// body written out by hand and a second access path to one field, so they stay dropped; swapping the dot's
+// two arguments (dot3f(up, forward)) compiles to the same code, and the normalizer's square order, the
+// reciprocal carriers and the projection schedule are unchanged.
 // MiniMax R (11-08): no new form, no lower score (110); the shapes that reach 2 need an existing helper's body
 // written out by hand, so the axis block still multiplies up's i first where retail multiplies forward's i first.
 // MiniMax D (11-06): no new form, no lower score; the helper's scale order k, i, j 115 and the k product with the
@@ -374,6 +379,10 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // `i*i + j*j + k*k` sum 150, with the squared length named through dot3f 151, with an i, j, k statement sum 117. Re-measured
 // (compile-only identical to listed forms): the j, i, k statement sum 111, the k, j, i statement sum everywhere 154, the squared
 // length named through dot3f 154. Body unchanged.
+// M3 lane 15 r75 (fast, 0x1c4a80 and 0x30bf0 stay matched): the existing out-of-line normalizer function_30bf0 (its definition
+// already `inline`) stays a call in this /Ob1 file, also with a `__forceinline` redeclaration here: all four normalizations 449
+// (624 bytes), forward only 236 (836 bytes, plain 236), the other three 350 (722 bytes). Body unchanged. I found no other
+// untried natural normalizer, dot, projection or cross form; the forms above cover the rest.
 // m3 lane 3 r233 (fast, 0x1c4a80 matched each time; control 110, aligned 38, register-masked 21). Forms: forward through the
 // existing header normalize3d (a __forceinline redeclaration so it expands under /Ob1) with the private helper's sum written
 // plain `i*i + j*j + k*k` for the other three 153 (925 B, masked 21: up, up and left then sum k, j, i as retail, forward sums

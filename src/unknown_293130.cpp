@@ -316,6 +316,12 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // every use instead of its pointer local 412 (1459 bytes). Re-measured (listed): the z draw as a ternary 30 and
 // the z arms inverted 56 (round 31's compile-only screen); a vector pointer local for the copy and the call 60
 // (round 108's form, 118 then). Diagnostic: +0x1a stored from the +0x10 field just written 113 (not a source form).
+// Round 91 (m3 lane 11, fast): explicit parentheses are honoured by VC (they gave 0x297d30 its retail score and dot
+// order), but every grouping of this dot is listed above. Forms outside the rotation, as rank perturbations: the count
+// increment before the weight add 35; the +0xb6 record store before +0xb4 32; the set-entry count as long 290; the
+// block count held in a local for the gate and the three loops 405 (1386 bytes). Same code: the position counter
+// declared before the drawn index, the z flag through a named tag-flags dword, the helper as plain inline
+// (re-measure, listed at 52 on an older base).
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

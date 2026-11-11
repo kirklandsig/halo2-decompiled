@@ -827,6 +827,12 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// MiniMax A (11-11, run 58): score 60 (was 60): no lower score; retail keeps the next sequence in ESI and
+// recomputes next - oldest - 1 in EAX on every pass, ours keeps the next sequence in ECX and strength-reduces the
+// offset into a second induction variable in ESI; retail reads the newest three times (the count, the loop bound
+// and the per-step test) and the oldest once, and with the window pointer declared before the send call for the
+// count, the bound and the index (88, 235 bytes) our code reads the newest the same way but still reduces the
+// offset and keeps the next sequence in ECX.
 // score 60 (was 60): ours strength-reduces next - oldest - 1 into esi (next in
 // ecx) and compares next with the cached newest; retail keeps next in esi,
 // recomputes the offset and re-reads window->newest each step (as 0x94df0 does).
@@ -884,6 +890,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // On the member form: the found path's `*time` through `long *const *time_reference = &time;` 89, that read at the get_next_send
 // argument 89, `message` declared before the loop 89, `next` at function scope 89, both 89 (all the same code). Retail keeps all
 // four callee-saved registers on loop values (next ESI, the count's oldest EBX, bound EBP), so nothing caches `time`.
+// M3 lane 10 r94 (fast, 0x96510/0x94df0 listed; base 60, aligned 42, masked 23): get_next_send's success as an early
+// `return type` 79 (213 bytes), on the 63 form 78; the message pointer as a ternary 66 (224 bytes); `message` initialized to 0
+// at its declaration ahead of the index 75 (222 bytes); the flags tested through the field at each test 60, `index` declared
+// ahead of the loop 60 (both the same code); re-measured the 63 form 63 (with the flags through the field 63, same code). Still
+// only the second induction variable differs on the 63 form (next - oldest - 1 kept in ESI with next in ECX).
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

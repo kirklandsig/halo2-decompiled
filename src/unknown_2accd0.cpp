@@ -617,6 +617,8 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // length, both sums' order, the dispatch hoist and the reloads after the claim are retail's. Left:
 // the entry total in EAX (retail EDX) and size/position in ESI/EDI (retail EDI/ESI; the hoisted
 // body_size in ESI, retail ECX): retail computes each sum into a fresh register.
+// MiniMax D (11-11): no lower score (34): the total converted without its own local puts the entry sum in EDX as retail but
+// reorders the signature case's file-handle load (88); declaring the position before the size changes nothing (34).
 // MiniMax C (11-09): NOT kept: 28 (was 34), I's form again (a one-use local is kept only with a match): the entry total
 // folded into its float conversion (no total local) and the signature case naming the file handle once, which puts the entry sum in EDX with the task pointer in EAX and the
 // signature case's header size in EDX with the handle in EAX, as retail has them. Left: the dispatch still hoists
@@ -1020,6 +1022,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // left for the rotation: the levers are the hoisted body_size's register and the total's coalescing, and every form listed here
 // leaves both or moves only one (the one-use HANDLE local that fixes the folded form's signature case is reverted unless the
 // function matches).
+// m3 lane 11 r90: no new form run (baseline 34, masked aligned 2: register rotation only). Each candidate checked against this
+// note is listed: getter references, size/position spellings, total local and orders, clamp forms, case/test orders, field
+// types, the signature file-handle local, the existing MIN and remaining helpers, the body early-out. A scan of include/ for
+// helpers this body writes out found none.
 // M3 lane 2 r72 (fast with 0x2adb10 and 0x2ada70, both matched throughout; masked = registers/slots-masked aligned count, base 2):
 // the task's state store first, then the total and its conversion 232 (masked 33); the total, then the state store, then the
 // conversion 42 (masked 6); the body case's `bytes == size` as `size == bytes` 34 (same code); the direct arm's size before

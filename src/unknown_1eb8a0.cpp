@@ -183,7 +183,12 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
-// score 636 (was 636): earlier 642; retail keeps q (the fourth stack argument) in EBX from entry and reads d from its stack
+// MiniMax G (11-11): no new form, no lower score (636); retail keeps q (the fourth stack argument) in EBX from entry and reads d
+// from its stack slot at each use while this build keeps d in EBX; the frame size 0x24 and the clock register agree, but the xmm
+// homes and the coefficient schedules still differ, and retail builds each zero with its own xorps where this build shares one
+// function-wide zero.
+// score 636 (was 636): earlier 636 (was 642); retail keeps q (the fourth stack argument) in EBX from entry and reads d from its stack
+// earlier 642; retail keeps q (the fourth stack argument) in EBX from entry and reads d from its stack
 // slot at each use; ours keeps d in EBX. Frame 0x24 and clock EDI agree; xmm homes and coefficient schedules remain.
 // retail keeps q in EBX from entry (reloading it after the activation copies, where EBX serves
 // a copy) and reads d from its stack slot at each use; ours keeps d in EBX. Frame 0x24 and clock EDI agree; the
@@ -473,6 +478,13 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // form); the settle length from nq 628, the 0.866 test with its sides swapped 628, `lo = MAX(0.f, lo)` 628, `rem =
 // MAX(0.f, rem)` 628 (same code each; the last repeats round 74's ternary clamp). On the 636 body: the output flag
 // through the existing setter `function_0bfe20(&out->flags, 2, fail || ...)` 636 (different code, same score).
+// M3 lane 16 r108 (fast, caller 0x1eb6f0 checked; m = register-masked aligned count, this body m 296): on the time
+// globals read at each use (no globals local, round 68's 634 re-measured: retail reloads g_510c54 in the output stage):
+// `vector3f qr = *q;` as one aggregate copy (retail copies q with integer moves) 642 (2878 B, m 306); the 12/8 factor
+// selected before t at all three clamps 712 (2861 B, caller 22); that with the impulse through the existing
+// vector3f_scale 703 (2883 B, m 272, caller 22); the same with the first clamp back to t first 722 (2881 B, caller 22);
+// the impulse through vector3f_scale alone 680 (2899 B, m 261, caller kept). With the globals read at each use, the
+// impulse helper no longer keeps the caller with factor-first clamps (it did on round 166's globals-local base).
 // Round 170 (m3 lane 5; plain unless marked fast, caller 0x1eb6f0 MATCH in each; base 636, `!!` 635, aligned 478,
 // masked 173): `dist` through the existing inline distance3d(pos, &s->target) 637 (aligned 485; ours already computes
 // dist on x87 as retail, and distance3d sums (i2 + j2) + k2 with an fxch, its out-of-line 0x3ea30's order, where

@@ -359,7 +359,7 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // in the add's destination, at 7 or 8.
 // Earlier 2 (was 7): sample-base and offset registers plus object call setup remain; readonly data
 // Earlier (7, was 7): sample-base and offset registers plus object call setup remain; readonly data
-// score 2 (was 7): sample-base and offset registers plus object call setup remain; readonly data
+// Earlier (2, was 7): sample-base and offset registers plus object call setup remain; readonly data
 // input 7; readonly entry input 7; native count identity 7; output count lifetime 52; existing
 // scale storage lifetime 7; input pointer home names 7; existing scale home names 7; inline matched
 // output callee 7; final object address read 7; split construction around count 9; split
@@ -386,6 +386,12 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // the count stored before the address 4; on the memcpy body the offset in a named local before or after the copy 2/2,
 // the sum as an integer sum either way round 2/2, the offset written first 2 (all the same code); `samples_address +=
 // offset` then the cast 8; the copy made straight into the curve set's address field, then `+=` 8.
+// Round 156 (m3 lane 8, fast): 1-16 unused initialised locals at the top, 1-8 between data and entry, 1-8
+// before the copy all 2 (no numbering tie: VC ranks the add's operands by tree depth); a promotion pointer
+// with `promotion->data->samples + offset` 22 (the samples become the add's destination, as retail, but
+// the plain-sum schedule returns), with the copy from that read 23; the samples through the full promotion
+// expression 25; the count stored first on this body 4, on the plain sum 10; an inline helper filling the
+// set through a pointer 8 (count first 10), returning it by value 10/10; both reads copied with memcpy 9/9.
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {
@@ -786,6 +792,10 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // the 0xba1d0 call through a named object index 183 (1020 B), case 3's failure test with the clear first 218. Same code:
 // a char failure flag, `marker` or case 3's forward vector at function scope, braces on the last else, case 0 as an
 // early break, case 0's 0x10 flag as a word or.
+// MiniMax B (11-11): score 184 (was 246): the location's second dword now takes the owner's value instead of
+// the address of the owner field, which keeps the address out of the load; still different: the frame is 0x84
+// against retail's 0x80, the literal 1 is still pooled in EBX (retail tests with immediates and materialises it
+// only for the shift), and the audibility byte and the flag stores still take other registers.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

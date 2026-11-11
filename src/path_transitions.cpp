@@ -512,6 +512,12 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 
 // score 218 (was 219): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
+// MiniMax C (11-11): no new form, no lower score (218); retail copies the pathfinding argument into EBX at the entry
+// and reads the actor index (the first stack argument) into EAX there, while this build keeps the pathfinding in EAX
+// and reloads the actor index at its case-5 use, so every case is seven bytes out of step; the actor test hoisted
+// ahead of case 5's direction (286) and the direction built inside the actor test (336) both score worse and were
+// reverted; swapping case 5's position and direction statements so the position comes first scores 265 and was
+// reverted, so the case-5 statements stay in their retail order.
 // MiniMax D (11-08): no new form, no lower score (219); retail keeps the first argument in EBX and reads the stack
 // argument into EAX at the entry, ours uses EAX for the actor and ECX for the stack argument, and the switch's case
 // bodies and the counter's register home still differ.
@@ -891,6 +897,13 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // (no radius local). Re-measured: the vertex table read at case 1/6's top 169 [90/22] (round 145's form: the actor
 // load goes first and pathfinding arrives in EDX; 0x270d90 1390 bytes); the reciprocal before the projections 219.
 // Both builds share the dead `out` slot (E+0x18) between the result byte and first_length.
+// M3 lane 10 r94 (fast with 0x270d90 at 286 and 0x270400 MATCH; base 218, aligned 70, masked 23): nothing kept. Case 5's
+// position copied by value 345 (1316 bytes); case 1/6's two distances inline in the point_along_vector calls 300 (1284); both edge
+// vectors formed before the first length 347; case 1/6's missing parent as an early return 218 (same code); re-measured: the
+// surface as a const pointer 218, the entry parameter declared mutable (no start_out alias, the declaration in path.cpp
+// too) 220, a case-5 vertices pointer 218. The entry is still the cause: retail loads actor_index into EAX first and moves
+// pathfinding to EBX; no spelling of the cases changes it. Also: both lengths computed before either test 349 (1284 bytes, a
+// variant of the edges-first form); case 5's fallback copying the parent point and output index by member 353 (1292 bytes).
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
