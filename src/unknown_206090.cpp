@@ -139,7 +139,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 }
 
 #include "vector_products.h"
-// score 1367 (was 1379): earlier 1355; frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
+// score 1367 (was 1367): earlier 1379, 1355; frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
 // 0x2078f0 twice with unknown38 0 then 1, 0x2079f0 on both its paths, 0x227990, 0x2294a0, 0x22a4b0), loop shapes (the found
@@ -495,6 +495,19 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // contact cross through cross3f 1390 (6211 bytes); local_68 through sqrtf 1430 (6259 bytes); the impact count test as
 // `(char)x == 1` 1407 (6195 bytes); local_18 computed before local_17 1367, the found flag stored after the ratio 1367, the
 // component test before the 0x81 flag 1367 (each different code, same score); local_93 written into the call 1367 (same code).
+// M3 lane 13 r83 (fast; fully masked aligned count in brackets, control 1367 [580]): retail tests the release time's NONE
+// first and converts the 0.2 s threshold only inside the second test, reading the game time before the conversion; ours
+// converts ahead of the whole condition. The conversion written into that test (local_93/local_94 dropped) 1374 (6249 B)
+// [558: that block then has retail's order but for the game-time load]; that with the game time through the existing
+// getter 0x146650 1405 (6201 B) [558: the game time is then read before the conversion as retail, and every product's
+// operand order flips, the first-loop add included, as other added inline calls do]. Retail also reloads the timing
+// global after 0x227990 inside the countdown loop where ours hoists it (0x227990 is unmatched, in a held file). The ray
+// origin copied after the direction scale 1361 (statement order, six points, not kept); both normalizers' scale step
+// through the existing vector3f_scale 1367 [581] (only the first component turns to retail's `s * v`); the second
+// projection reading a copy of the contact normal (retail copies the normal to [esp+0xd0] there) 1489 (6313 B) [619];
+// the existing magnitude3d (0x24590) at the three direct magnitude sites 1486 (6102 B, inlined) [569]; the impact
+// position written straight by vector3f_add_scaled (no point local) 1431 (6211 B) [588]; the contact offset through the
+// existing vector3d_from_points3d 1376 [569]. All restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
