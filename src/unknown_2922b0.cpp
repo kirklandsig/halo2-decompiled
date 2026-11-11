@@ -74,6 +74,7 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
+// score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // M3 lane 8 r150 (fast; aligned 406, register-masked 216 on this body): retail forms 1/range once and multiplies it by
 // the minimum twice with the minimum held in XMM2 (no reload, so not an aliasing effect). Tried: the third and fourth
 // offset points' scale as `0.0f - half_width` 592 (same code; re-measure of round 134's form); the point helper's products scale-first 592 (same code);
@@ -84,7 +85,6 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // with the test negated, 6 under the bar, not kept); after it: the ray length read from the array at each use 689; the hit
 // distance from the ray-length local 682 (first difference +0x2); both 687 on the swapped tail; no `else` after the early
 // return 684 (2834 bytes, aligned 358, masked 183: the lowest aligned count here, a lead), with the swapped tail 675.
-// score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // MiniMax E (11-10): no new form, no lower score (592); the frame size agrees but the homes do not: the success byte, the float, the four-flag array and the copied vector sit at other frame offsets here, and this build has thirteen instructions fewer than retail, so the exit blocks fall differently.
 // MiniMax S (11-06): The frame size agrees but the homes do not: the success byte sits at frame+0x13 where
 // retail keeps it at frame+0x17, the float at frame+0x10 against frame+0x18, the four-flag array at
@@ -431,6 +431,13 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // 679/679 (2845); fourth width as `0.0f - width` 592 (same code); widths as `width * -1.0f` 680 (2844); a second point helper
 // negating the width at each product 678 (2844), with one named negated width 600 (2821); the half-width read once into a named
 // local 688 (2828); the point helper's width as `real const &` 676 (2829); the point helper as plain inline 592 (same code).
+// Round 73 (m3 lane 15, fast with 0x29ab90): the four offset points written through a point cursor (`point3f *point =
+// local_13; ... point++`) 603 (2821 bytes); the final projection rows through the existing dot3f 597 (2828 bytes); the basis
+// product rows written forward term first 592 (identical code); the output clear as one chained assignment 639 (2835 bytes).
+// Diagnostic: the point helper as an out-of-line function in another file, inlined by LTCG, gives identical code (592), so
+// retail's per-point half-width reloads are not an inlining or alias effect.
+// Round 73, continued: the side-vector cross computed ahead of the basis product 594 (2831 bytes). Re-measured: the rotation
+// helper's dot through dot3f (round 128's i, j, k order) 604 (2819 bytes).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

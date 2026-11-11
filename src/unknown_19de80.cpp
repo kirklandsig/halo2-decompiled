@@ -308,13 +308,13 @@ static inline bool teams_enabled_19e1c0()
 }
 
 /* writes the text of one token for the event, returning its length */
-// MiniMax E (11-05): no new form, no lower score.
-// MiniMax h (11-04): no new form, no lower score; the volatile result keeps our case tails apart and our frame is 0x208 against retail's 0x204.
 // score 390 (was 390): retail clamps the copy length with `cmp remaining, length` and a conditional
 // move, so the comparison written as `remaining <= result` was tried: with the volatile result 466,
 // with a plain result 652 (against 390 and 691). The plain result does match retail's frame 0x204
 // and its ESI result register, but it merges the four name/team copy tails into one block, where
 // retail keeps a copy of the length and clamp in each case and shares only the copy itself.
+// MiniMax E (11-05): no new form, no lower score.
+// MiniMax h (11-04): no new form, no lower score; the volatile result keeps our case tails apart and our frame is 0x208 against retail's 0x204.
 // Earlier: this round confirmed the blocker is the frame: the `volatile` result keeps the
 // frame at 0x208 where retail has 0x204, and a plain result merges the four name/team copy tails
 // (701); the team loops and the token/remaining register homes still differ.
@@ -540,7 +540,6 @@ static inline bool teams_enabled_19e1c0()
 // AC548: Shared event-presence lifetime, bool/byte/short/long with inherited/ordinary result
 // 454/454/446/441/671/671/630/626. NOT kept: no qualifying supported gain or byte match.
 // Native frame/result/capacity/token homes and independent copy tails remain. Original complete body restored.
-// MiniMax h (11-04): no new form, no lower score; the volatile result keeps our case tails apart and our frame is 0x208 against retail's 0x204.
 // M3 lane 16 r91 (fast; aligned unmatched in brackets, control 390 [214]): the teams test as one `&&` expression (no byte
 // local) with the volatile result 454 (1394 B, frame 0x204 and text at retail's 0x14, but the code shortens) [192], with the
 // plain result 736 (1128 B) [231]; the teams test as an early `return false` 390 (same code); switch-side-time failure as
@@ -592,6 +591,8 @@ static inline bool teams_enabled_19e1c0()
 // lives cases 387 (1443 B, retail's length), in the spawn-time case only 389 (1439 B; retail's spawn-time case has the pointer's dead
 // `add eax, ebx`, its lives case does not); the cause-team score read into a named local before 0x159130 390 (same code). Body
 // unchanged (gains under 4 are not kept).
+// Round 73 (m3 lane 15, fast with 0x19e0f0): `long const capacity = remaining;` at entry used for every later read, with the
+// plain/volatile result 691/390 (both fold to the existing code).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

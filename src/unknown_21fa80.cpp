@@ -73,7 +73,7 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 	return (c_channel_effects_view *)SOUND_DRIVER_GLOBALS->effects;
 }
 
-// score 544 (was 545, full build): b2D 11-06 statement walk against retail found no logic difference
+// score 544 (was 545): full build; b2D 11-06 statement walk against retail found no logic difference
 // (every branch, field offset, callee and argument agrees). Precision fix kept: log10 taken of a double (fyl2x then fmul 20 unrounded, 0x21fe2f-0x21fe37).
 // Found, not kept: retail also sums the level energy unrounded on the x87 stack (faddp at 0x21fde3, fsqrt at 0x21fde9). A double `energy`
 // scores 530 here, but in the full build it loses the matched 0x21f8a0, 0x120d50, 0x120d80, 0x121350, 0x121a40, 0x121fc0, 0x125b40 and
@@ -323,6 +323,13 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // re-measured 562 plain at 1884 bytes [masked 225 against 235], with the voice read at its use 563 plain (1921 bytes). In every form the
 // stream stays in EBP and gain_bits in EBX (retail: EBX and EBP). Retail also inlines exp, sqrt and log10 as x87 code (f2xm1/fscale,
 // fsqrt, fldlg2/fyl2x) where this /Op file calls the CRT, and copies the four levels and the send fields through integer registers.
+// Round 73 (m3 lane 15, plain; fast builds this function differently): the voice sends as `if (mode == 0 || mode == 1) { add;
+// if (mode == 1) add; }` 546 (1904 bytes). Diagnostic (the one compiler-setting probe): the file without /Op 723 fast (1728
+// bytes; re-measure of the listed result): the x87 intrinsics (fsqrt, fyl2x, f2xm1) appear, but the pushed byte arguments stay
+// `movzx` where retail zero-extends with `xor reg, reg; mov reg8, [mem]`. Retail also stores every flag test's bool in the one
+// stack byte at +0xe (the volatile-bool shape of matched 0x21ec00), which this round may not add.
+// Round 73, continued: the two-if voice sends drop our send-loop counter slot (frame 0x228 against retail's 0x224; our 0x22c
+// holds the counter at +0x14), masked aligned 238 -> 251.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

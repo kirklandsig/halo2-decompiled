@@ -511,6 +511,25 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // NONE in ECX, reads the slot as a word and is one instruction short from there on, so every later line is off by one.
 // The char-slot and re-read forms recorded above (683-756) and the statement orders in the three-scalar helper all score
 // worse than this body.
+// Round 73 (m3 lane 15, fast with 0x131030/0x1317a0/0x130f60; masked = register-masked aligned count, control 222): the merge
+// helper's clamp written in it 607 (same code). Re-measured on this base: the clamp written in the three-scalar helper 663
+// (3817 bytes, masked 184), with weight and remaining last 695 (masked 150), the clamp written in both helpers 663 (same code
+// as the three-scalar one alone). Diagnostics (a body in another file cannot be kept): the three-scalar helper as an
+// out-of-line function in another file, inlined by LTCG, with its clamp written in 663 (3817 bytes, masked 177: the preloaded
+// scalars and in-place `mulss scalar, t` products appear, as they do with the clamp written in the front-end helper, so the
+// clamp is the lever and LTCG inlining adds little); the normalization helper moved the same way 607 (same code).
+// Round 73, continued (lead): the three-scalar accumulations through the existing fog_accumulate of src/unknown_130f60.cpp
+// (ternary clamp, fog_color_add_scaled for the colour, then intensity, distance, height, weight, remaining; copied in for the
+// test, the colour passed as `(color3f const *)(local_19 + 1)` etc.) 703 (3807 bytes) but masked 222 -> 140, aligned 491 ->
+// 410: the three accumulation blocks then match retail apart from registers. With the palette byte read at each use 696 (3802
+// bytes, masked 139), with a char slot 705 (masked 140), with a long slot 703 (masked 146). What keeps the positional count up
+// is one instruction right after the 0x130f60 call: retail moves the result to EDX (`mov edx, eax`) and keeps NONE in EAX
+// through the slot compare (`cmp cl, al`), the source-index store and the deep tag test, where ours leaves the result in EAX
+// and NONE in EDX, so every later line is one off. To keep the helper it must move to a header shared with
+// src/unknown_130f60.cpp (0x131030 must stay matched).
+// Round 73, continued (re-measures on the fog_accumulate base with the byte read at each use): the 0x130f60 result declared at
+// function scope, declared ahead of the out value, and the NONE tests written `NONE != x` 696 each (same code: the result
+// stays in EAX and NONE in EDX).
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
