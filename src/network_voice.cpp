@@ -3561,6 +3561,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
+// MiniMax D (11-11): no new form, no lower score (139).
 // score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
 // homes differ.
 // MiniMax R (11-09): no lower score (139): the base and the offset kept apart, with the packet pointer never

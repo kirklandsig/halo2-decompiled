@@ -4968,6 +4968,7 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // loads up.k and up.j before up.i while this build preloads all three, the forward scale's x87 term is scheduled
 // differently, retail keeps the clamped yaw and pitch in the frame (+0xc and +0x10) where this build reuses the two
 // incoming argument slots, and the local vector sits at +0xc where retail's is at +0x18.
+// MiniMax D (11-11): no new form, no lower score (169).
 // score 169 (was 169; earlier 179): the logic agrees with retail statement by statement (re-walked in round 4 of #1049).
 // Round 4 of #1049: the two cross products through the repo's cross3f_staged / cross3f (retail's left vector is
 // never stored and all three components are formed before the up stores) give 169 here, but including
