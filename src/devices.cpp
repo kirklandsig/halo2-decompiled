@@ -1829,6 +1829,13 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
+// MiniMax b (11-11): 58 (was 250), NOT kept (coordinator 11-11: needs the one-use `rate` local, match-only; without it 380; body at 250): the acceleration and the speed are each one product added into the
+// running value (the 0xcc term opens the acceleration, the 0xc4 term opens the speed, and the 0xd4 and 0xd0
+// terms are added into them), so both sums keep retail's operand order and its registers; the definition
+// pointer's `volatile` is dropped and the rate is read into a local just before the power 0x11eed0 call;
+// 1495 bytes, as retail. Left: the position arm's channel pointer (ours in ECX with a copy into ESI, retail's
+// in ESI), the state slot read into EAX where retail reads it into ECX, and the order in which the position
+// 0x11eed0 and 0x1c6920 calls set their arguments up.
 // score 250 (was 250): the same body measured 248 at lane 14 round 62 and 250 in round 79's baseline. Earlier (248, was 285):
 // frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // where retail has ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads.
