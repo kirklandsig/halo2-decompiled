@@ -75,6 +75,8 @@ public:
 	void function_30df80(member_30c8e0 *member);
 };
 
+// Install the recorder on the current dispatcher, then reload the dispatcher
+// after callbacks before restoring its normal handler.
 // score 17 (was 29): the collidable's address is now a local of its own, so
 // retail's ebx and edi hold the member and the collidable as retail has them;
 // the dispatcher and the pair's data still swap registers, and the motion is
@@ -101,6 +103,8 @@ public:
 // second receiver use 15, two multiple-use receivers 63, restore-only receiver 15;
 // scaled float local 133; inline factor or combined outer scope 68;
 // 1/3 forms require one-use field pointers and remain rejected
+// Review cleanup score 19: removed unsupported volatile/one-use tuning;
+// the prior scored trials above remain available for future matching work.
 // @retail 0x30df80
 void owner_30c8e0::function_30df80(member_30c8e0 *member)
 {
@@ -127,8 +131,7 @@ void owner_30c8e0::function_30df80(member_30c8e0 *member)
 			{
 				group_30dc80 *group = recorder.values.data[i];
 				pairs_30df80 *pending = &group->pending;
-				long const pending_count = pending->size;
-				((collector_3173f0 *)group)->function_3173f0((pair_30d870 *)pending->data, pending_count, 0, 0);
+				((collector_3173f0 *)group)->function_3173f0((pair_30d870 *)group->pending.data, group->pending.size, 0, 0);
 				pending->resize(0);
 			}
 		}
