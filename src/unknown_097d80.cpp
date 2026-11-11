@@ -407,6 +407,11 @@ struct c_aggregate : c_child
 // 31, the early `continue` guard 42. Still BLOCKED by the build flag.
 // Round 147 (m3 lane 8, fast): one function-scope index for the collection and dispatch loops 31 (same code, as
 // rounds 42 and 66 found); no unlisted form left. Still BLOCKED by the build flag.
+// Round 80 (m3 lane 13, fast with the file's six other functions): retail's cleanup ignores the get_info output too
+// (it stores -1 on failure and the release pushes the constant -1), so the dead output is retail's, not a behaviour
+// slip. Re-measured listed forms: `children[i]` without the cast does not compile here (the members are the handle
+// table type), v5's count output as `long &` 31 (same code). Stack-masked aligned 7: only the produced slot. Still
+// BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

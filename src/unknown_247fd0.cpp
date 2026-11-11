@@ -226,7 +226,7 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
 // MiniMax C (11-10): the score is 334 (was 334); the gate flag keeps its dead store where retail folds the address, and the settings pointer, the effect address and the random draws still live in different homes.
 // MiniMax E (11-09): no new form, no lower score (334).
-// score 334 (was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
+// Earlier 334 (was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
 // MiniMax E (11-09): no new form, no lower score (334).
 // gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
 // MiniMax E (11-09): no new form, no lower score (334).
@@ -590,6 +590,11 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // helper's pointer reads are not forwarded. Scaling through vector3f_scale 354 [272/246/113]. On main: a named
 // `point3f *position` for the record's position at every use 335 [269/236/116], with the point-typed helper at both
 // point sites 335 (same code); the else arm's scale folded into the call 334 (same code). All restored.
+// Round 80 (m3 lane 13, fast with 0x247fd0/0x248cc0, both stay matched): the flag byte's shift and mask as one
+// statement 334, in its initializer 334 (same code each); the velocity lookup through `local_0` 358 (1634 bytes); the
+// velocity defaulted to g_4687a4 and set under `if (local_0 != NONE)` without a named record 348 (the frame changes,
+// first difference +0x2); the collision result declared in the trace block 334 (stack-masked aligned 169 -> 167).
+// Body unchanged at 334.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
