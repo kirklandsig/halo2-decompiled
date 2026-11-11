@@ -1261,6 +1261,11 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax G (11-11): no new form, no lower score (94): the arm-1 clamp's divisor re-spelled through the class 99 and a
+// fade-in local for the test and the inverse 101; retail's division-first clamp and its fade-out-last product stay out of
+// reach. This round: the reciprocal from a fade-in local copy of the field 87 (684 bytes: a gain of seven and a one-use
+// copy, so the body stays), the product with the division written inline 145, a fade-out local for the product 94 and
+// the sum's addends swapped 87 (both the same code). The permuter (907 s, 201 tries) found no better form at all.
 // score 94 (was 94): 177 before lane 10 round 69. Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
 // 1.0, fade-out), and the gain value carried into the last arm.
@@ -2949,6 +2954,13 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax G (11-11): no new form, no lower score (96): retail's three returns (true at the entry, false in the failure
+// block, true at the commit) measure 131, and the index still lands in eax where retail keeps it in ecx. This round:
+// the failure block reached by a goto after the channel search, so that it follows the buffer tests as retail's
+// does, measures 144 (449 bytes); the failure block after the shared exit 147, the failure label moved out of the
+// work block 139, the early return as an explicit else 131, the same test negated as an early return 131 and a bool
+// result 113. The permuter (608 s, 100 tries) ends at 89, and only by declaring the sound pointer volatile and
+// swapping two declarations, so the body stays.
 // score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
 // through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
 // keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
