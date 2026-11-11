@@ -892,6 +892,9 @@ byte g_55e708;
 // Round 160 (m3 lane 5, fast with the same list), each on the current form: no absolute-index local (the mask at the lookup and both
 // calls) 38; the opacity clamp as if/else-if in place of PIN 45; the first-person count as a ternary initialiser 38; the fallback as
 // `count = count ? count : ...` 38; the single-marker arm first 107.
+// m3 lane 2 r71 (fast with the same list): the loop index declared at the top of the function, before or after the
+// absolute index, 38/38; the marker array declared at the top of the function 38 (all three the same code: the loop's
+// load order does not follow declaration order here).
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
@@ -1226,6 +1229,11 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // a `short` loop index 659 (2809 bytes); the forward cross through the plain shared cross3f 579 (2801 bytes); in the cone arm
 // the up negate before the two copied axes 356 at 2840 bytes (masked 160); the bounds declared once outside the loop 290
 // (same code); the cone plane point from the shape's origin instead of the matrix position 600 (2777 bytes). Body unchanged.
+// m3 lane 2 r71 (fast with the same list): light_projection_point_ab with `transformed` declared first 290 (same
+// code), with the rows as three named scalars 539 (2801 bytes), with the point copied as a vector3f 623 (2891); the
+// point read in each arm of the scale test (if/else) 554 (2756); the face table declared first, then vertices and
+// directions 424, then directions and vertices 442 (both at retail's 2840 bytes; the bounds copy and memset then
+// misalign). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
