@@ -2097,6 +2097,11 @@ void function_269250(long clump_index, long actor_index);
 // on this body the selection stored before the best 87 (round 129's, same code). No other untried natural form is left: the
 // lever is register priority (the walk pool against the selection), the declaration, statement-order, type, helper and
 // loop-shape forms listed here leave it, and the walk step helpers are shared headers used by matched functions.
+// m3 lane 14 r84: no trial run. Checked against this note and the round reports: the in-arm compare (retail's form,
+// 126), the zero-default score path 92, inline/forceinline walk helpers (same code), the selection from the walk's datum
+// index 128, declaration orders and scopes are listed, and the permuter has run twice on this body (m3 lanes 15 r66 and
+// 4 r168). The caller-scope naming lever that moved 0x296e60's frame temps has no counterpart here (the only temps are
+// the score's x87 store); the lever left is register priority between the walk's pool and the selection.
 // M3 lane 12 r112 (fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched; this body
 // 87, aligned 34, masked 23): the shared clump_datum_walk_next with the found test as a ternary (`clump = next ? datum :
 // NULL;`) 130, 0x268510/0x268840/0x268c90/0x26ae30 all lose their match; with an early `return NULL` when inactive 146

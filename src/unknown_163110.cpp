@@ -947,6 +947,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // outside and culled arrays. Real: `outside[segment * 2]` read at each use in place of `outside0` 249 (1867 B); the culled update
 // as `|= !(a | b)` 383, as `x = x || (...)` 284; the clip test's `&&` operands in the other order 275; the `w` clamp as an
 // if-statement on a copy of t.z 249 (all 1867 B). Body unchanged.
+// Round 188 (m3 lane 4, fast with 0x1648d0/0x320b0; aligned/masked 64/23): the `w` clamp as `-1.52588e-5f < t.z ? ...` 115
+// (same code); intersection rows `p0->x + delta.i` 115 (same code); the intersection distance as one expression 251 (1867 B),
+// staged i, k, j 251; the classification through a three-use `point3f const *point` 265 (1867 B); the clip store's arms
+// as `if (outside0) *p1 = ...; else *p0 = ...;` 115 (code differs in 7 places); the projected point as a copy of t scaled
+// in place 402 (1875 B). Re-measured: plane 0's d as `near_distance - d` 423.
 // m3 lane 3 r233 (fast, 0x1648d0 and 0x320b0 matched each time; control 115, aligned 64, register-masked 23). The head's
 // e4.i load still follows the normal copy: ours loads the copy's i into XMM4 straight after its store and e4.i late into
 // XMM3, retail the reverse, and the zero inherits the swap. Forms: plane 0's normal negated straight from `forward` (not its

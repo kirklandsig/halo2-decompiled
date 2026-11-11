@@ -786,6 +786,9 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax C (11-11): no new form, no lower score (43): the datum address is still computed in ebx
+// where retail computes it in edi, and the root walk is still the out-of-line 0xbaf80 in the other
+// file, which is what decides the carriers.
 // score 43 (was 43): frame 0x10 agrees; player/unit carrier roles and the root-walk entry differ.
 // MiniMax D (11-09): no new form, no lower score (43); reading the unit index before the player pointer gives 43 (was 44) but leaves the carriers as they were - retail holds the datum address in EDI and the unit index in EBX, we hold them the other way round - so it is not kept.
 // MiniMax C (11-09): no new form, no lower score (43); retail's walk presets its root to NONE and
@@ -2975,6 +2978,10 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax C (11-11): no new form, no lower score (103 on the full build, 193 on the reduced one):
+// the globals pointer is still carried in edi to the end of the function where retail loads it into
+// esi and reloads it after the busy check and again before the final store, and the callees that
+// could show the store to that global are in other lanes' files.
 // score 103 (was 103): reading g_4e8c20 directly at every use instead of through the named
 // `globals` local builds to the same bytes in the full build (611 = 611, first difference
 // +0x8) and scores 175 against 193 in the reduced image, so the local is not what holds the

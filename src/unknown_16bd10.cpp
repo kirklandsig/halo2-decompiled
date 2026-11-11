@@ -728,6 +728,7 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 
 /* the camera director of scripted cameras: fills the observer's command */
 // score 331 (was 331): round 112 (m3 lane 12) note at the end. Earlier at 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
+// score 331 (was 331; 385 earlier, 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
 // MiniMax C (11-05): no new form, no lower score; the plane's three normal copies are reloaded in the same order in both (i, k, j), but retail gives them XMM3/4/5 for i/j/k where ours gives XMM5/3/4; the squared length in field order scores 389, in k,i,j order 243, with the first two addends swapped 238, written from the direction alone 465, and with the multiply operands swapped it is byte-identical at 236.
 // b5K 11-06 statement walk against retail found no wrong field, offset, condition, callee or loop; the one
 // behaviour fix is the point-mode timer, which retail computes as (ticks * rate) / scale (cvtsi2ss, mulss [ebx+4], divss at
@@ -1023,6 +1024,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // The forms that reach those (case 1's own `|= 0x40; break;`, the 0x40 set once before the switch, the pan position through
 // real_point3d_set, a pointer or the moved lerp helper) are listed above; the rest is the length's hoisted left.j load that
 // puts retail's zero in xmm0, the distance dot's operand loads and the shared quaternion helper's sum order.
+// M3 lane 13 r83 (fast, control 331, fully masked aligned 27): the point-mode timer preset to 0.0f and set under
+// `if (time_scale != 0.0f)` before one store 383 [33]; the point-type switch as `if (type == 2) {...} else { if (type == 1)
+// {axes} flags |= 0x40; }` 401 [32]. No other untried natural form found: the length's hoisted load
+// (left.j in retail, left.k here) still sets the function-wide zero register (retail XMM0, ours XMM1), and the term
+// orders, dot operand orders, ternary/if forms for t and the timer, lerp loops and helpers that move it are listed above.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

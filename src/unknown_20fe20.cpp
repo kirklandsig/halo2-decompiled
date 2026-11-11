@@ -1181,6 +1181,9 @@ void function_2118c0(void)
 // Round 83 (m3 lane 10, fast): a 600 s permuter run (seed 8384, 54 tries, 822 s full baseline) none below 10; the output
 // vector as `p1 + m` 194 (804 bytes); the second pass's band loop as a `for` 10 (same code); p1 from the row local
 // (`noise[row + k]`) 163 (786 bytes); a `dword` band row stepped by 8 beside b 150 (every row reduced to a pointer).
+// Round 75 (m3 lane 15, fast): t as `(real)k + (real)m * 0.125f` 10; the third as `0.333333343f` 10; the four
+// component values declared outside the component loop 10; the m loop as a `for` 10 (all the same code); the forward
+// differences as named d1/d2/d3 values 194 (830 bytes).
 // @retail 0x211cc0
 void function_211cc0(void)
 {

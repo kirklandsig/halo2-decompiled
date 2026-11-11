@@ -1876,6 +1876,11 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // MiniMax C (11-10): score 11 (was 11): no lower score this round. Two new spellings of the lookup were
 // measured and dropped: a named unit header pointer 65, and a named pointer to the active bit vector 11 with
 // the entry order unchanged. A permuter run (300 s) was stopped at its time limit without a result.
+// MiniMax A (11-11): no new form, no lower score (11); the entry block still holds the same eleven instructions in
+// another order: retail reads the object pool global, the pool data and the type argument, computes the unit and the
+// actions pointer and only then does `cmp ecx, 8; sete bl`, ours loads the type first and compares it before the pool
+// data is read. The primary computed inside the test's block (82), the primary declared before the lookup (11) and a
+// copy of the type parameter in a local (11) all keep the same order, so the body stands.
 // MiniMax I (11-09): no new form, no lower score (11); the entry block keeps the same eleven instructions in
 // another order (retail reads the object pool, the pool data and the type, and only then compares the type with 8),
 // and a copy of the type parameter in a local changes nothing.

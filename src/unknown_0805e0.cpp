@@ -335,6 +335,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // guest test spelled on the xuid_flags dword, through a byte cast of it, as two one-bit byte tests, the name
 // test through the record's `name[0]`, and the dword guest test with `name[0]`: 43 each (same code; the mask
 // stays an immediate). All restored.
+// M3 lane 16 r108: register-masked aligned 33 against retail; every candidate form checked against this note was
+// already listed (loop shapes, successor locals, result/early-return exits, the iterate helper, predicate helpers,
+// test spellings, the `(xuid != 0 || guest)` validity that hoists the mask but keeps the first guest test); no untried
+// natural form found, no trial run.
 // Round 91 (m3 lane 1, fast with 0x1a303b/0x2b393c): an entry-pointer loop with `index != NONE ? &g_4cf98c[index] : NULL`
 // lookups before the loop and at its end 58 (137 bytes, the NULL test stays); a guarded `while (!result)` with the per-pass
 // result and `else if (next == NONE) break; else index = next;` 59 (135: mask hoisted into AL and false remade at the exit
