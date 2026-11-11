@@ -955,6 +955,22 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // header 293 [29] (repeats round 78's 293). On the kept body: a single exit with final_matrices at the top 282 (839 B)
 // [41]; the render-node count read in the loop test at each pass, no local, 240 [45]. All but the last are
 // match-only (the mix, declaration moves); the 287 form (single exit + final at the top on the 194 lead) is the lead.
+// m3 lane 7 r150 (fast with 0xbfe60, 0xbfe20, 0xbdb60, all MATCH; masked = aligned count with registers and stack offsets masked):
+// retail loads the input matrices into EDX at entry and keeps that copy live until final_matrices is set, with the result as a
+// separate EDI copy stored to its home at once, so object_index takes ESI and the +0xb3 byte takes BL (EBX pushed before that
+// test); every early exit then jumps to one of four end epilogues. Re-measured: round 78's lead (bit 30 cleared through 0xbfe20,
+// bit-29/+0x34b tests through header->object) 194 (814 bytes, masked 56). On it: final_matrices declared after result at the top,
+// before it, or result initialised from it (plain or chained) 194 (one code, masked 59); the early tests as two ifs 298 (820 bytes,
+// masked 66), with final at the top either order 299 (masked 70); only the model test nested (`if (model_index != NONE) { ... }
+// return result;`) 304 (813 bytes, masked 52). On the kept body: the model test nested that way 292 (masked 70); the header
+// through the existing object_header_get with `header->type` 240 (same code; also 194 on the lead); on the lead the render-node count
+// read in the sample loop's test 194 (masked 55).
+// (The two-if early tests on the lead repeat round 168's 298.) On the kept body: the sample arm's three assignments final-first 241; the
+// second block's two predicates swapped 240 (other code); the final call's two tests swapped 236 (operand order by score, not kept);
+// matrices/orientations declared after final_matrices 239 (a declaration move, not kept); result = matrices ahead of the node loop
+// 271; the two copies into the scratch buffers swapped 243; the second block's assignments orientations-first 242; the sample flag
+// declared after final_matrices 240; node_count read ahead of the animation state 240; the second block's two pointers as one
+// chained assignment 240 (each other code).
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

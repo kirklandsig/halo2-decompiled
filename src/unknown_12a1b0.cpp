@@ -1330,13 +1330,13 @@ struct s_looping_detail_request
 	short tracking_data_size;
 };
 
+// score 110 (was 110): frame 0xc and entry copy agree; audible offset uses request storage
+// instead of retail's temporary/copy, and the first-player query still expands.
 // MiniMax I (11-09): no new form, no lower score (110); retail calls the first-player query out of line where our
 // build expands it, and retail's audible arm keeps the offset in a stack temporary that is copied into the request
 // after the 0x21bfb0 call (that form scores 127-130, worse than the kept 110).
 // MiniMax S (11-06): no new form, no lower score: the source copy is still scheduled differently from retail's and the first-player query is still expanded instead of called; the frame and the entry copy agree.
-// score 110 (was 110): frame 0xc and entry copy agree; audible offset uses request storage
 // MiniMax S (11-06): no new form, no lower score: the source copy is still scheduled differently from retail's and the first-player query is still expanded instead of called; the frame and the entry copy agree.
-// instead of retail's temporary/copy, and the first-player query still expands.
 // Lane 14 r57 (plain): the audible arm through a local offset copied into the request after the 0x21bfb0 call
 // (retail's [esp+0x10] temporary; the arm is then retail's but for detail held in EDI) 130 at 534 bytes, with the
 // copy after the callbacks 127, the offset declared once at the top for both arms 127, `result = true` last 132,
@@ -1576,6 +1576,12 @@ struct s_looping_detail_request
 // is the call site's static frequency as LTCG estimates it.
 // MiniMax D (11-10): no new form, no lower score: the first-player query is still expanded here where retail
 // calls it, and every way to make the call is outside this file or a forbidden form.
+// R149 (m3 lane 7, fast with 0x21b0e0): new helper shapes for the random-player pick, all leaving the query inlined or
+// the helper out of line: count test, draw, query and skip loop in a helper returning whether a player was picked (the
+// caller's test then threads away) as `inline` or `static` 268 (390 B: the helper stays a call), as `__forceinline` 110
+// (same code); the same helper returning the player or NONE, the caller testing `!= NONE`: forced 159 (518 B, the NONE
+// test is emitted, query still inlined), `inline` 276 (382 B); draw, query and skip loop in a helper taking the count
+// (the count test stays in the caller): `inline` or `static` 219 (397 B), forced 110 (same code).
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -2111,6 +2117,14 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // offsets); that with lane 18's match-only (c) mask bit at each use and (d) gains[i] copied into a long 246 at 1923
 // (lane 18's count). Left at 246: frame 0x11c, the first loop's mask update loads/ors/stores where retail ORs into
 // memory, and the second loop holds index and track index in EBX/EBP where retail holds NONE and track_definition.
+// R149 (m3 lane 7, plain; register-and-stack-masked aligned counts in brackets, control 305 [80]): retail reads the pitch
+// bounds through a pointer (`lea ..+8`), keeps NONE out of a register from the controller test to the 0x2000 block
+// (ours CSEs it into EBP there; memset breaks that) and in the second loop keeps index and track index in memory (pushed
+// from their homes) so NONE gets EBX. Re-measure (with the new reason of reading the residue): memset + 0x21b940's bounds
+// spelling + a count in each for init 371 at 1907 B [61] (left: lower bound added first, the mask OR loaded/stored, the
+// second loop's index/track index in EBX/EBP, gains[i] copied as a dword); the one-use track_definition pointer replaced
+// by `definition->tracks[track_index].value08` on the body 369 [83], on that form 493 (1907 B) [63]; on that form
+// `bool active` 369 [60]; the count local in the second loop only 366 [63].
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
