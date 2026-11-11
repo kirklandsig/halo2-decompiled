@@ -365,6 +365,20 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // nested ternary 382 (all same code); the root's differences as `(double)(a - b)` 417; descriptive names for the wrapped angle and the
 // rotated point 382 (same code: names do not order the pair). Re-measured: the short candidate count 520 (0x29a190 684: its own entry
 // convention changes).
+// M3 lane 10 r92 (fast with 0x29a190, 0x299460, 0x298c30; base 393, aligned 373, masked 145; 0x29a190 MATCH throughout): nothing
+// kept. Retail spills the near arm's cosine to +0x28 before the sine argument's branch, forms `y * cos` in SSE ahead of that branch,
+// stores the sine to +0x1c (the distance's slot) and takes the x row on x87 from the two float slots; ours keeps both values on the
+// x87 stack across the branch (one frame slot fewer). Near x rows as `(double)local_11 * x - (double)local_12 * y` 391, only the
+// cosine term cast 391, the y rows cast `(real)(...)` 393 (same code); field_4 stored between the cosine and the sine (retail's
+// store position) or first 393 (masked 130, the same code as each other); all four near-arm trig values computed before the two
+// emissions 365 (1743 bytes, masked 163: only the first pair then spills to float slots; hoisted declarations, not kept).
+// Variants of that (re-measured 365): both cosines first, each sine at its emission 397 (masked 144); both sines first 372 (1713
+// bytes, masked 148); the second pair before the first 365 (masked 155); cosines then sines 365 (masked 163). The positional drops
+// (372/365/365/365) come with masked 148/155/163/163 against the base's 145 (shifted alignment, not retail's float-slot cosine).
+// Other blocks: the wrapped angle as
+// `local_21 >= 0.0f ? local_21 - 2pi : local_21 + 2pi` (retail's `comiss x, 0; jb` to the add) 393 (masked 140), the same as an
+// if/else 393 (same code); the far arm's facing dot written x term first 393 (same code); both 393 (masked 140); the ratio clamp
+// written `1.0 < local_13` 393 (same code).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -825,6 +839,14 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // 805 (masked 163); both 788 (masked 122: every block after the radius region then sits four or five instructions behind, so the XMM5
 // radius is what blocks those two). Left: retail's products `fld st(0); fmul dword [esi]` where ours loads the component first
 // (`fld dword [esi]; fld st(1); fmulp`).
+// M3 lane 10 r92 (fast with 0x29a190, 0x298d90, 0x298c30; base 621, aligned 243, masked 181; 0x29a190 MATCH throughout): nothing
+// kept. The sweep's direction i and j read once into named locals (eight uses each) 825 (masked 153); with each scale declared
+// right before its two products 571 (3332 bytes, masked 142; a moved declaration, 825 without it, so not kept); one `scale` local
+// reassigned before each pair of products 774 (3372 bytes, retail's length, masked 130), with the direction locals 732 (3333 bytes,
+// masked 131); one `scale` with the body under `if (local_11 != NONE) { ... return local_0; } return true;` 703 (3372 bytes, masked
+// 121), with the direction locals too 807 (masked 116); the per-scale order with that nesting, with/without the direction locals
+// 812/791; local_7 renamed local_07 621 (same code: names do not order the local_7/local_24 homes). At retail's length with masked
+// 121 the positional count stays high: registers differ in every block from the XMM5 radius hoist at entry onward.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

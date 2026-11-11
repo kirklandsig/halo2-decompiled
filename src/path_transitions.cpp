@@ -510,7 +510,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
-// score 219 (was 219): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// score 218 (was 219): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
 // MiniMax D (11-08): no new form, no lower score (219); retail keeps the first argument in EBX and reads the stack
 // argument into EAX at the entry, ours uses EAX for the actor and ECX for the stack argument, and the switch's case
@@ -876,6 +876,12 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // assigned b, a, c, d 219 (identical: declaration order moves nothing, code order does); the surface fields read
 // through pathfinding->surfaces[surface_index] at each use 461 (1364 bytes); `1.f - margin` named for the test and
 // the assignment 218 (masked 15).
+// M3 lane 10 r92 (fast with 0x270d90 at 286 and 0x270400 MATCH; base 219, aligned 70, masked 22): nothing kept. Case 5's arms joined
+// (the failure arm sets only start_out and the parent node, the out stores shared) 400 (1224 bytes; 0x270d90 286 -> 372); its
+// negation through the existing vector3f_scale(&direction, -1.f, &direction) 218 (one point), with `state->source.radius *
+// inverse` 218; the direction scaled straight from the vertex 379 (1256 bytes); position declared first with vector3f_scale 265;
+// `inverse * (projected - origin)` 219 and `state->source.radius * inverse` 219 (same code). Kept: the negation through
+// vector3f_scale (main wrote its body out by hand), 218 plain, the file's other functions and 0x270d90 unchanged.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
@@ -943,9 +949,7 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
         {
             vector3f direction = *(vector3f const *)&pathfinding->vertices[surface->vertices[3]];
             point3f const *position = &pathfinding->vertices[surface->vertices[2]];
-            direction.i = direction.i * -1.f;
-            direction.j = direction.j * -1.f;
-            direction.k = direction.k * -1.f;
+            vector3f_scale(&direction, -1.f, &direction);
             if (actor_index != NONE && function_270400(actor_index, 0x05000534, 0x05000049,
                 position, &direction, NULL, (long *)start_out, NULL, parent_node_index_out))
             {

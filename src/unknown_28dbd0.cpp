@@ -412,6 +412,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // 277 (1223 bytes); the owner as a ternary 175 (masked 71), as if/else with the positive test first 175; success returning
 // at once instead of the goto 289 (1210 bytes); the handler view passed straight to the ai-data getter 173 (same code).
 // Body unchanged.
+// M3 lane 10 r92 (fast with the matched callers 0x256bd0 and 0x28dab0; base 173, aligned 183, masked 66): nothing kept. In
+// function_28dbd2: sine first, then cosine, dot, cross 182; sine, cross, cosine, dot 238 (1198 bytes); the cross taken v x axis and
+// subtracted in the rows, current order 187 (masked 60), with sine, cross, cosine, dot 238; dot3f arguments swapped 173 (same code).
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
