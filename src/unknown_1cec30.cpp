@@ -928,6 +928,7 @@ void function_1d1540(s_havok_component *component);
 // stack where retail passes the transform in EAX, the index in ESI and the component in EBX and returns
 // with a plain ret, and the transform copy still uses rep movsd in a 0x84 frame where retail copies with
 // four movaps in 0x88; the component's EBX home is decided across the call cycle in other files.
+// MiniMax E (11-11): no new form, no lower score (65): frame 0x84 against 0x88, the component still arrives on the stack where retail has it in EBX, and the entry copy is rep movsd where retail uses four movaps; every form that makes the component a register argument puts it in EDI and costs matched 0x1d1b60: BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
 // score 65 (was 65): frame 0x84 versus 0x88; the index/component still arrive on the stack rather
 // than ECX/EBX, and the constructor copy uses rep movsd rather than aligned SIMD. The two-use body
 // slot receiver recovers the fixed-first guard and ordinary-path body lifetime; the post-reset
@@ -1131,6 +1132,7 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // convention (retail keeps the component in EBX, ours pushes it), and that choice is made by LTCG over
 // the whole 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other files:
 // BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
+// MiniMax E (11-11): no new form, no lower score (38): the frame and the callee's convention are the only differences (retail keeps the component in EBX, ours pushes it); that choice is made by LTCG over the whole 0x1d0cf0 -> 0x1d1260 -> 0x278f00 cycle, whose bodies are in other files: BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
 // score 38 (was 38): BLOCKED-BY 0x1d0cf0: retail passes it the component in EBX (loaded here from the
 // stack after `push ebx`); ours pushes the component, so the frame and every store offset differ. The
 // body is otherwise retail's instruction for instruction. Tried here: zero transform/translation/both
@@ -2360,6 +2362,7 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // length 128, the scale in a named local 128, the i scaled in the vector with the j and k as scalars 90, the length reused
 // 137, the components in a separate vector 136, the shared scaler with the components read before the branch 91.
 // MiniMax C (11-01): no lower score; the hoisted speed products and the velocity scaled with the mixed order give the same code.
+// MiniMax E (11-11): no new form, no lower score (91): the aligned frame agrees and the contact loop and the normal block are retail's; what is left is the normal's hoisting around the x87 length computation, inside the inlined header helper component_surface_length, whose header is not mine.
 // score 91 (was 91): aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
 // Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the
 // branch and scales them in place, i through a copy of the inverse; ours copies the inverse for all
