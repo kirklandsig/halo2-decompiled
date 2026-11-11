@@ -601,6 +601,7 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// MiniMax G (11-10): no new form, no lower score (675).
 // score 675 (was 675): the 675 differing lines are 541 real ones (the rest are the unmatched
 // MiniMax I (11-06): retail's prologue interleaves the compare with the pushes and keeps the
 // pathfinding read after the radius block; no new form, no lower score.

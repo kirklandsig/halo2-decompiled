@@ -431,6 +431,7 @@ void *function_1e5240(long actor_index);
 real function_2683f0(long actor_index, long node_index, short type);
 void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *sample, s_2640c0 *motion);
 
+// MiniMax G (11-10): no new form, no lower score (412).
 // MiniMax S (11-10): no lower score (412): a plain long for the maximum gives 428 (worse) and is reverted; retail still takes the actor index in EAX where ours loads it from the stack, and the frame is 0xa4 against retail's 0xa0.
 // MiniMax R (11-05): no new form, no lower score; retail takes the actor index in EAX and pushes ebx/ebp/esi
 // before the actor lookup, ours reads the argument from the stack and pushes after it.
@@ -993,6 +994,7 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 void function_26bfa0(long object_index, long *location_index, s_location_view *location);
 real function_296600(long actor_index, long prop_ref_index);
 
+// MiniMax G (11-10): no new form, no lower score (91).
 // MiniMax I (11-10): no new form, no lower score (163).
 // MiniMax B (11-04): no new form, no lower score.
 // score 163 (was 257): retail's length, frame 0x20, actor EBX. Left: the object and table registers (ours EAX/ECX, retail ECX/EAX, time read after the table pointer), the

@@ -499,6 +499,17 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // signature picked by score, 4 under the bar), with the indices in y, x order 42 (same code); on it: a plane pointer
 // for the copy, dot and store 61, `quad->axis = function_120850(...)` with the side test reading it 172, the axis
 // local passed to all four corners 181 (966 bytes), axis and a `positive` local passed to all four 241 (923 bytes).
+// M3 lane 12 r114 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46 = the full check; [masked aligned, register-masked], control
+// [39, 28]): a `point2f *corners = quad->corners` local for the four outputs and both edges 46 (first difference +0x67) [42, 30];
+// the normal copied from the quad's own matrix copy (position still from the parameter) 49 [41, 30]; the distance's position
+// from the quad's copy (normal as now) 65 [58, 49]; the corners transformed through the quad's matrix copy 220 [125, 98]; the
+// corners from the quad's bounds copy 228 (976 B) [145, 118]. Retail reads both parameters (EBX matrix, ESI bounds) for every
+// corner. The residue is still the products' load/memory sides, the plane store base and the first corner's AX/CL roles.
+// m3 lane 1 r92 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46, register-masked aligned 37): new: the table row as
+// `axis * 2 + (side != 0)` (0x173910's spelling) 192 (999 bytes). Re-measured: `quad->axis = function_120850(...)` with the
+// side test through quad->axis 174 (masked 43; AX store as retail, the flag still in EAX and the first corner's two
+// extensions merged). Every other natural form found (axis/side types, plane pointer or helper, dot sides, edge helpers,
+// helper signatures, value locals) is listed above; no untried natural form left. Body unchanged.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -1173,6 +1184,11 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // addresses written in the distance calls and the two copies 664 (3631 bytes). Lead from that last form: the i term of
 // both inlined plane distances then loads the plane first (`fld [eax + 0x44]; fmul [ecx]`) as retail does; with the
 // point pointers ours loads the point first there.
+// M3 lane 10 r92 (plain, the file's other eight functions unchanged in each; fast 834 on unchanged source; base 535, aligned 672,
+// masked 355): nothing kept. The rotation's sine products named sine_i/j/k (re-measure of round 234's form) 569 (3663 bytes, masked
+// 384); `one_minus_cosine * axis.k` named once for both k pairs (retail spills that product at +0xec) 536 (3663 bytes, masked 328);
+// both 589 (3663 bytes); the sign as `-1.0f` set to 1.0f in an if 536 (masked 349); the squares computed k, i, j (retail's order)
+// 537; the rows in retail's visit order (forward i, j, left i, j, forward k, up k, i, left k, up j) 545.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

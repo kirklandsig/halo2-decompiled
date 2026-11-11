@@ -79,12 +79,20 @@ void cache_copy_forget(char const *map_name);
 bool map_copy_request(char const *map_name, long priority);
 void __stdcall cache_copy_record_use(char const *map_name);
 
+// MiniMax E (11-11): no new form, no lower score (29); the check's left column is ours and the right column is retail.
+// Retail's state 11 clamp is `mov eax,[total]; mov ecx,[completed]; mov edx,[limit]; sub eax,ecx; cmp edx,eax; jg L;
+// mov eax,edx;` - the chunk shares the remaining's register, the limit is the compare's left operand and the
+// assignment falls through; this round the if forms (the chunk as the difference with `limit <= chunk`, with
+// `chunk >= limit`, the limit named after the chunk, the empty-then variant and the ternary with the limit on the
+// left) all score 30 to 31 and keep the three loads rotated (ours total ecx, completed edx, limit eax against
+// retail's eax, ecx, edx), and the same clamp without the slot local scores 108 because the whole function's
+// allocation changes.
 // MiniMax R (11-10): no new form, no lower score; the state 11 chunk forms (the clamp as an in-place if, a min-clamp, a named limit and the total, completed and limit read in the other order) all keep the three loads one step rotated and score 30, the release before the slot store in state 19 scores 36, state 7 without the file local scores 327 and state 9 with a named handle scores 296.
-// MiniMax R (11-10): score 29 (was 30): state 11's clamp compares the remaining against the limit so the chunk lands in the limit's register and the compare order matches retail; left: states 7 and 9 keep the file handle in another register, state 11 still swaps the completed and limit registers, state 16 sets the state ahead of the header clear, and state 19's slot store sinks.
+// MiniMax R (11-10): 30 -> 29: state 11's clamp compares the remaining against the limit so the chunk lands in the limit's register and the compare order matches retail; left: states 7 and 9 keep the file handle in another register, state 11 still swaps the completed and limit registers, state 16 sets the state ahead of the header clear, and state 19's slot store sinks.
 // MiniMax B (11-04): no new form, no lower score (the state 11 clamp as an in-place if, a min-clamp and a named-limit ternary all keep the same register rotation).
 // MiniMax B (11-03): no new form, no lower score.
 // MiniMax S (11-01): the state 11 clamp keeps the completed value in EDX and the limit in ECX; no lower score.
-// score 30 (was 37): state 0 is byte-exact. Left: states 7 and 9 are one rotation step of the scratch registers off (a probe load in state 7 fixes state 7's handle
+// score 29 (was 30): earlier 37. State 0 is byte-exact. Left: states 7 and 9 are one rotation step of the scratch registers off (a probe load in state 7 fixes state 7's handle
 // and shifts state 9; a second in state 8 or ahead of state 9's file pointer fixes state 9), state 11's clamp registers rotate the same way, state 16 sets the state
 // ahead of the header clear, and state 19's slot store sinks (the one-struct lead below, still BLOCKED-BY g_55bd04/g_55bd08 in src/unknown_12be90.cpp).
 // Earlier (37, was 37): Frame 0x110 and retail length agree; request-copy order, file-handle
@@ -304,6 +312,12 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // into a local ahead of the handle store 36; state 11 with the chunk as the difference and a named limit local `if (limit <=
 // chunk)` 30, a named completed local 30, total, completed and limit all named in retail's load order 30, a dword chunk 30
 // (the three loads stay rotated in each); state 16 with the state set before the result code 30 (same code).
+// m3 lane 16 r107 (fast with 0x214db0, 0x214030 and 0x213fe0; control 29, aligned 23, register-masked 7): the permuter
+// (anneal, 600 s, 59 variants after a 990 s full-image baseline) found nothing below 29; state 7 as `if (slot == NONE)
+// break;` ahead of the write 29 (same code). Every other natural form I could name for states 7, 9, 11, 16 and 19 is
+// listed above. Reading of the listing: from state 7 on our scratch choice of ECX and EDX is the reverse of retail's
+// (state 7 handle, state 9 handle, state 11 completed/limit), which the probe loads above locate as one IL temporary more
+// or less before state 7's handle load, in code whose bytes already agree.
 // @retail 0x2141f0
 bool function_2141f0(void)
 {

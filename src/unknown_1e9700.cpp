@@ -74,6 +74,10 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax H (11-10): no new form, no lower score (106): retail keeps the old maximum in ECX with the
+// enable byte in AL and reads the 15-bit counter with the 16-bit idiom, ours keeps them in EAX and DL;
+// the permuter (--fast, 10 and 25 minutes) never reached a search, and the enable reload needs one
+// object for g_510ca0 and the counters: BLOCKED-BY include/globals.h and src/unknown_1967d0.cpp.
 // MiniMax D (11-10): no new form, no lower score (106); retail keeps the old maximum in ECX with the enable
 // byte in AL and reads the 15-bit counter with the 16-bit idiom (`xor eax, eax` then a word load), ours keeps
 // the maximum in EAX, the enable byte in DL and zero-extends the counter; the enable reloads and the two
@@ -237,6 +241,13 @@ struct s_object_damage_view
 };
 
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
+// Round 170 (m3 lane 5, fast with the file's functions and 0xd9640; base aligned 132, masked 35): slot references counted in
+// both listings: retail killer 8, victim_team 8, damage_code 7 (killer stays in its home and is reloaded into EDX/EDI around the
+// fallback, the code is read once into ESI for both pushes); ours victim_team 8, damage_code 8, killer 6 (killer in EBP through
+// the killer block). Tried: the related-assist limit as `assist_count < 5` (no cast) 353 (aligned 133, masked 36); `self` as
+// `victim == reported_player` 353 (133/36); the selection fallback as `selected = selected != NONE ? selected : reported_slot`
+// 353 (same code); `byte damage_code = code;` declared just before the selected block 470 (1578 B, first difference +0x8);
+// `long killer = NONE;` declared there 409 (1564 B; aligned 137, masked 37).
 // MiniMax C (11-10): the score is 353 (was 353); the three homes sit in rotated slots (ours +0x14/+0x1c/+0x18 against retail's +0x18/+0x14/+0x1c) and our function is four bytes longer, so the first branch's jump lands elsewhere.
 // Round 147 (m3 lane 8, fast; [aligned ours/retail, masked ours/retail], control 353 [128/132, 31/35]): the related unit's
 // player index read at each use (retail reads +0x13c again for the store) 357 (1552 B) [119/124, 29/34]; with the killer's
@@ -496,6 +507,26 @@ struct s_object_damage_view
 // counter 353 (same code); re-measured: the selection amount named once 454. Retail keeps killer in EDX across the
 // fallback merge and reloads it from its home on the paths that skip the record (0x1ea1de) and at the team block; ours
 // threads those paths into the fallback and keeps killer in EBP.
+// M3 lane 12 r114 (fast with the file's 19 functions and 0xd9640; [masked aligned, register-masked], control 353 [112, 36]):
+// the selection loop as a file-local helper returning the chosen slot, plain inline 686 (1308 B: it stays out of line and
+// 0xd9640 then reads 61), forced inline 509 (1484 B) [155, 98]; assist_threshold set before killer in the selected block 353
+// (one store moves) [112, 37]; the killer choice (selected record, then the reported fallback) as a forced-inline helper
+// returning the killer and setting the damage code and threshold through pointers 366 (1548 B, 450 instructions as retail)
+// [115, 39]: the caller then reloads the killer from a home at the killer block as retail does, but the helper's killer takes
+// a parameter home and the caller's copy EBP; on that helper, consider_team as a true default cleared by the test 366 [113, 37]
+// and the assist stores re-reading the record's player 432 [110, 48]; the object, root header and related unit through the
+// existing object_get/object_header_get 353 (same code). Re-measured (listed): one history pointer for both loops, the amount
+// read once under the time test and the assist stores re-reading the player 451 (1578 B) [170, 54]: the selection base stays
+// +0x2f4 and selected moves to a home, so the amount's read count does not set the cursor. Also seen: ours loads the object
+// pool's data ahead of the 0xbaf80 call in the related block, retail after it.
+// M3 lane 16 r106 (fast with the file's functions and unknown_196d20.cpp's, all matched ones stay matched; [register-masked
+// aligned], base [78]): lead: retail pushes the damage code to 0x197160 straight from its byte home (`mov esi, [esp+0x1c]; push
+// esi`, reused for 0x1ea5b0), so 0x197160's code parameter is a byte (its own body reads only the low byte); typed so at its
+// definition and declaration 354 [78] (0x197160 stays matched; ours then pushes as retail and the damage code has one reference
+// fewer, retail's count per round 53). On it: the killer's team byte passed to 0x1df560 at the call 354 [79] (retail's `movsx edx,
+// al` / `movsx si, al` pair); with `if (killer != NONE) { if (killer == reported_player) ... } else if (reported valid)` as well
+// 353 [73]; that arm order alone 363 (1532 B); the arm order, team byte and a `&history[selected]` record pointer used three times
+// 455 (1583 B). The three slots stay rotated (killer still kept in EBP across its block). Body restored at 353.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

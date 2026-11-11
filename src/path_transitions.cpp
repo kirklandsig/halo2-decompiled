@@ -510,7 +510,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
-// score 219 (was 219): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// score 218 (was 219): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
 // MiniMax D (11-08): no new form, no lower score (219); retail keeps the first argument in EBX and reads the stack
 // argument into EAX at the entry, ours uses EAX for the actor and ECX for the stack argument, and the switch's case
@@ -876,6 +876,12 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // assigned b, a, c, d 219 (identical: declaration order moves nothing, code order does); the surface fields read
 // through pathfinding->surfaces[surface_index] at each use 461 (1364 bytes); `1.f - margin` named for the test and
 // the assignment 218 (masked 15).
+// M3 lane 10 r92 (fast with 0x270d90 at 286 and 0x270400 MATCH; base 219, aligned 70, masked 22): nothing kept. Case 5's arms joined
+// (the failure arm sets only start_out and the parent node, the out stores shared) 400 (1224 bytes; 0x270d90 286 -> 372); its
+// negation through the existing vector3f_scale(&direction, -1.f, &direction) 218 (one point), with `state->source.radius *
+// inverse` 218; the direction scaled straight from the vertex 379 (1256 bytes); position declared first with vector3f_scale 265;
+// `inverse * (projected - origin)` 219 and `state->source.radius * inverse` 219 (same code). Kept: the negation through
+// vector3f_scale (main wrote its body out by hand), 218 plain, the file's other functions and 0x270d90 unchanged.
 // m3 lane 13 r79 (fast, 0x270d90 286 throughout; brackets: difflib count aligned / with registers masked, base 219
 // [52/13]): a `vertices` local for case 1/6's corners inside the corner block 219 (same code); the radius read into
 // a named local for the test and the margin with `1.f - margin` named 214 (1284 bytes) [93/26]; the radius local
@@ -885,6 +891,13 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // (no radius local). Re-measured: the vertex table read at case 1/6's top 169 [90/22] (round 145's form: the actor
 // load goes first and pathfinding arrives in EDX; 0x270d90 1390 bytes); the reciprocal before the projections 219.
 // Both builds share the dead `out` slot (E+0x18) between the result byte and first_length.
+// M3 lane 10 r94 (fast with 0x270d90 at 286 and 0x270400 MATCH; base 218, aligned 70, masked 23): nothing kept. Case 5's
+// position copied by value 345 (1316 bytes); case 1/6's two distances inline in the point_along_vector calls 300 (1284); both edge
+// vectors formed before the first length 347; case 1/6's missing parent as an early return 218 (same code); re-measured: the
+// surface as a const pointer 218, the entry parameter declared mutable (no start_out alias, the declaration in path.cpp
+// too) 220, a case-5 vertices pointer 218. The entry is still the cause: retail loads actor_index into EAX first and moves
+// pathfinding to EBX; no spelling of the cases changes it. Also: both lengths computed before either test 349 (1284 bytes, a
+// variant of the edges-first form); case 5's fallback copying the parent point and output index by member 353 (1292 bytes).
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
@@ -952,9 +965,7 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
         {
             vector3f direction = *(vector3f const *)&pathfinding->vertices[surface->vertices[3]];
             point3f const *position = &pathfinding->vertices[surface->vertices[2]];
-            direction.i = direction.i * -1.f;
-            direction.j = direction.j * -1.f;
-            direction.k = direction.k * -1.f;
+            vector3f_scale(&direction, -1.f, &direction);
             if (actor_index != NONE && function_270400(actor_index, 0x05000534, 0x05000049,
                 position, &direction, NULL, (long *)start_out, NULL, parent_node_index_out))
             {

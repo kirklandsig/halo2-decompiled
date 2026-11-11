@@ -684,6 +684,7 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 
 real g_55e618;
 
+// MiniMax G (11-10): no new form, no lower score (102): the sweep vector and the collision record both sit twelve bytes lower here than in retail (sweep +0x38 against +0x44, record +0xa4 against +0xb0), so retail's frame holds twelve bytes more before the sweep; the aggregates this body declares do not account for that gap.
 // MiniMax S (11-09): no new form, no lower score (102); retail's sweep and collision homes
 // sit twelve bytes higher in the frame than ours (F+0x44 against F+0x38), the local handed to
 // the projection call sits at F+0xb0 against our F+0xa4 and retail's body is twelve bytes
