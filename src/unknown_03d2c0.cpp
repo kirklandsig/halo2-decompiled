@@ -130,6 +130,11 @@ s_lighting_record *function_3db00(long object_index, real priority)
     function_d4080(*(short *)definition, &query, special, &g_55ee60);
     return &g_55ee60;
 }
+// MiniMax A (11-11, run 58): score 77 (was 77): no lower score; retail's cache-hit path stores the index and
+// jumps past the merge test straight to the record lookup, ours jumps into the merge test and reloads the index
+// into EAX there; the copy of the cached index into the result between the two tests hides the known condition
+// from the compiler, and every spelling that keeps one variable for the cached and the allocated index or moves
+// the merge test onto the cached index scores worse (155 and 36).
 // score 77 (was 77): retail keeps the result in esi and tests it before the
 // reload, ours copies it into eax at the merge point and puts the cold "no
 // result" return block ahead of the initialization instead of after it
