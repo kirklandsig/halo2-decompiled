@@ -109,7 +109,7 @@ struct s_biped
 		s_biped_flags_348 flags_348_bits;
 	};
 	byte unknown34a;
-	char unknown34b;
+	byte unknown34b;
 	short unknown34c;
 	byte unknown34e;
 	byte unknown34f;
@@ -3180,7 +3180,7 @@ bool __stdcall function_10f430(long unit_index, long field_7c, long state_name, 
 void __stdcall function_e18d0(long arg_159e6d, bool place)
 {
 	s_biped *biped = BIPED_GET(arg_159e6d);
-	char *ragdoll_state = &biped->unknown34b;
+	byte *ragdoll_state = &biped->unknown34b;
 	bool fallen = *ragdoll_state == 1;
 	bool flagged = (biped->object_flags >> 29) & 1;
 
@@ -3254,7 +3254,7 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // MiniMax R (11-09): no new form, no lower score (539); the state byte read as a signed byte gives 538, under the keep bar, and the frame stays 0x44 here against 0x4c in retail.
 // MiniMax R (11-06): no new form, no lower score (520); the frame is 0x44 here and 0x4c in retail, so the local area is two words short.
 // MiniMax S (11-11): the definition pointer (BIPED_DEFINITION_GET(biped)) is now a local of the hit block, as retail computes it at 0xe11cc, and the direction scale goes through vector3f_scale; our entry spill of the biped is gone and the score falls to 361. Still differs: the frame is 0x48 here against 0x4c in retail, so every stack reference sits four bytes low, and retail keeps the centre sums in xmm4-xmm6 across the mass call with the total and the hit in memory.
-// score 361 (was 490): round 101 (m3 lane 12), round 104 (m3 lane 16) and round 112 (m3 lane 12) notes are at the end of this note. Earlier at 490 (was 517). Earlier at 517 (was 539). Earlier at 539 (was 520): two value fixes this round raise it: case 1 passes g_4687a4 as 0xb77d0's angular velocity too
+// score 362 (was 490; 361 with the biped's unknown34b typed char, not kept by the coordinator 11-11: 0xe18d0 is contributor code): round 101 (m3 lane 12), round 104 (m3 lane 16) and round 112 (m3 lane 12) notes are at the end of this note. Earlier at 490 (was 517). Earlier at 517 (was 539). Earlier at 539 (was 520): two value fixes this round raise it: case 1 passes g_4687a4 as 0xb77d0's angular velocity too
 // (retail 0xe0f75: `mov eax, [0x4687a4]; push eax` with EAX still holding it, which matched 0xb77d0 takes as its third
 // argument; ours passed NULL), and the single-body fallback push runs when the component's flag 11 is clear (retail
 // 0xe118f jumps to the fallback at 0xe15b7; ours skipped it). Frame 0x44 versus 0x4c; result byte, scalar homes and
