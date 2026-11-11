@@ -639,6 +639,16 @@ struct s_device_machine_view
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
 // retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
 // retail's shifted by one. Plain masks plus the zero store leave only the group pointer's register.
+// MiniMax D (11-11): no new form, no lower score (34); the group's flags have to reach retail's shape (a word
+// load into AX with the element address still in EAX, tested twice on AL) but VC splits the two: a computed
+// flags value frees the address into EAX and narrows the load to a byte with a mask (115), while a plain word
+// copy keeps retail's word load and pushes the address into ESI (122). The address alone never gives the lea
+// plus the word load together - as an index variable with the pool base in a local (53), as a word pointer to
+// the element (120), as an integer address (120) or read through the macro twice (122). Reading the flags
+// after the machine test gives retail's delayed load but the address still lands in ESI, and reading them
+// before it gives the combined address (117); the zero store of case 0x1200055f on top of the committed body
+// is 117, not a gain. A byte cast widened back to a dword to keep the whole word is 120, so it is no better
+// than the byte load with its mask.
 // MiniMax E (11-10): no new form, no lower score (34); retail loads the group's flags as a word into AX with the
 // group pointer still in EAX and tests bits 1 and 2, ours loads a byte and masks it with 3 - every word form moves
 // the pointer into ESI (120) or folds the index into the load's address (117), and the nested and compared tests

@@ -4152,6 +4152,12 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 /* places one of the ragdoll's bodies: hanging from its constraint's pivot on
    the body placed before it (kept within reach of the ragdoll's center and
    out of the world, turned to follow), or the first body at the point */
+// MiniMax D (11-11): no new form, no lower score (371); the frame still agrees at 0x12c and the length still
+// matches retail's 1937, but the stack homes are still ours: the origin sits at esp+0x44 against retail's 0x40,
+// the matrix at 0x60 against 0x50 and the 16-byte placed object at 0x88 against 0x84, and every home from 0x94
+// up agrees. The homes only move when the declaration order of the locals moves, which the earlier rounds
+// measured as a placement trick and reverted; the pivot ternaries and the materialized travel test that would
+// take the other homes are the same match-only forms.
 // score 371 (was 371): round 112 (m3 lane 12) note at the end. Earlier at 354 (was 354): origin, distance, matrix, limit and
 // placed homes in another order; the pivot select and the materialized travel test differ.
 // MiniMax B (11-07): no new form, no lower score (354); our origin, distance and matrix homes are 0x44, 0x34 and
@@ -5023,6 +5029,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// MiniMax D (11-11): no new form, no lower score (79); the first difference is still at +0x107, inside the
+// inlined rotation helper, whose body lives in another file and is not this lane's to change, so the bytes
+// from there on cannot be moved from here. What is left in this file is the first rotation's cross terms,
+// which read the forward x before the axis copy where retail copies the axis register first, and the
+// normalization's SIMD numbering; both are the operand-order forms the earlier rounds already measured.
 // score 79 (was 79): first rotation and staged cross product operands (load-first where retail copies the axis
 // register), 894 against 887 bytes. Round 112 (m3 lane 12) note at the end.
 // MiniMax S (11-10): no new form, no lower score (79); the reduced build of this function is not the
