@@ -875,6 +875,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // On the member form: the found path's `*time` through `long *const *time_reference = &time;` 89, that read at the get_next_send
 // argument 89, `message` declared before the loop 89, `next` at function scope 89, both 89 (all the same code). Retail keeps all
 // four callee-saved registers on loop values (next ESI, the count's oldest EBX, bound EBP), so nothing caches `time`.
+// M3 lane 10 r94 (fast, 0x96510/0x94df0 listed; base 60, aligned 42, masked 23): get_next_send's success as an early
+// `return type` 79 (213 bytes), on the 63 form 78; the message pointer as a ternary 66 (224 bytes); `message` initialized to 0
+// at its declaration ahead of the index 75 (222 bytes); the flags tested through the field at each test 60, `index` declared
+// ahead of the loop 60 (both the same code); re-measured the 63 form 63 (with the flags through the field 63, same code). Still
+// only the second induction variable differs on the 63 form (next - oldest - 1 kept in ESI with next in ECX).
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

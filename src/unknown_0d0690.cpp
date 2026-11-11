@@ -1283,6 +1283,7 @@ struct s_lighting_parameter_block
 };
 
 void function_117c80(vector3f const *input, vector3f *output, real angle);
+real magnitude3d(vector3f const *vector);
 real function_13b390(void const *function, real input, real range);
 
 #define lighting_pin(value, lower, upper) ((value) < (lower) ? (lower) : (value) > (upper) ? (upper) : (value))
@@ -1670,8 +1671,8 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
-// MiniMax D (11-01): no new form tried, no lower score.
 // score 378 (was 378): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
+// MiniMax D (11-01): no new form tried, no lower score.
 // Earlier, score 363 (was 364).
 // Round 52 (lane 13, fast; structural = LCS count with registers and offsets masked, base 212): in-place
 // rotation 435 (structural 143) as the base for: kij square with j/k normalize products as `*=` 429, all
@@ -1787,6 +1788,17 @@ real function_30bf0(vector3f *vector);
 // matched, 0xd37f0 530); with direction2 copied, negated and rotated in place 464 (masked alignment 185
 // against the control's 204, the closest shape so far); plus the axis read through the global pointer 498
 // (0x3db00 lost).
+// M3 lane 10 r94 (fast and plain, 0x3db00/0x3dfe0/0xd37f0/0x24590 listed; aligned 320, masked 200 at 378): kept two
+// cleanups with the same code (plain 378, listing identical): the length through the existing magnitude3d (the sqrt line was
+// its body written out) and the limited colour through the file's lighting_pin. Tried: direction0 as a copy of the normal
+// negated by lighting_negate 502 (1906 bytes), through a negated local copy 541 (1938); re-measured: direction2 copied, negated
+// and rotated in place 460 (1870 bytes, aligned 293, masked 180), the axis read live through g_4687b0 in lighting_rotate 515,
+// both 496 (masked 143, the closest shape). With the live axis LTCG moves this function's arguments (0x3db00 then sets the
+// record in EAX, the query in ECX and the type in EDX where retail uses ESI, EAX and ECX), so 0x3db00 drops to 8 and 0xd37f0
+// to 610: the axis read is the lever, but it needs the convention to stay. Also: the mobile factor inline in scale0 (no `k`
+// local) 379 (aligned 297, masked 186: closer in shape, one point up), the two colours unpacked lightmap first 378 (aligned
+// 325, different code), color0 formed as `lightmap.red * scale0` with no copy 470 (0x3db00 drops to 12), `value1c` stored
+// first in the fallback 475 (1891 bytes).
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -1795,7 +1807,7 @@ void function_d4080(long type, s_effect_color_query const *query, long flag, s_l
 	(void)flag_value;
 	byte *context = (byte *)g_4e0350;
 	vector3f const *input_normal = (vector3f const *)query;
-	real length = (real)sqrt(input_normal->i * input_normal->i + input_normal->j * input_normal->j + input_normal->k * input_normal->k);
+	real length = magnitude3d(input_normal);
 	bool mobile = type == 0 || type == 1 || type == 2;
 	vector3f normal = *input_normal;
 	record->length = lighting_normalize_ordered(&normal, (normal.i * normal.i + normal.k * normal.k) + normal.j * normal.j);
@@ -1812,9 +1824,9 @@ void function_d4080(long type, s_effect_color_query const *query, long flag, s_l
 		function_117c80(&normal, &record->direction1, g_467484);
 		lighting_negate(&record->direction1);
 		color3f limited = base;
-		limited.red = limited.red < 0.25 ? 0.25 : limited.red > 0.75 ? 0.75 : limited.red;
-		limited.green = limited.green < 0.25 ? 0.25 : limited.green > 0.75 ? 0.75 : limited.green;
-		limited.blue = limited.blue < 0.25 ? 0.25 : limited.blue > 0.75 ? 0.75 : limited.blue;
+		limited.red = lighting_pin(limited.red, 0.25, 0.75);
+		limited.green = lighting_pin(limited.green, 0.25, 0.75);
+		limited.blue = lighting_pin(limited.blue, 0.25, 0.75);
 		record->color2.red = lighting_pin((lightmap.red * limited.red) * 2.0f, 0.0f, 1.0f);
 		record->color2.green = lighting_pin((lightmap.green * limited.green) * 2.0f, 0.0f, 1.0f);
 		record->color2.blue = lighting_pin((lightmap.blue * limited.blue) * 2.0f, 0.0f, 1.0f);

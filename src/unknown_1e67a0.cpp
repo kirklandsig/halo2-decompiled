@@ -574,9 +574,11 @@ real magnitude3d(vector3f const *v);
 bool g_46fcc4 = true;
 bool g_51e9bc;
 
-// score 20 (was 49; before r98 was 118; r101 and r103 unchanged): the projection dot sums k + j where ours sums j + k and
-// loads velocity.i before its product (one byte longer), and the jitter spills y and the z on/off value to the parameter homes
-// (+0x2c/+0x30) where retail uses the limits' +0x20/+0x24.
+// score 20 (was 49; NOT kept 12 below; before r98 was 118; r101 and r103 unchanged): at retail's 1077 bytes; the projection dot sums j + k
+// where retail sums k + j, its i term loads velocity.i first (retail copies direction.i and multiplies from memory), and
+// velocity.i before the movement call multiplies limits.i by the control field from memory (retail loads the field first).
+// Earlier (20): the jitter spilled y and the z on/off value to the parameter homes (+0x2c/+0x30) where retail uses the limits'
+// +0x20/+0x24, and the dot's i term made the body one byte longer.
 // MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
 // argument; the dot's term order and the jitter block's register allocation still differ.
 // MiniMax S (11-10): no new form, no lower score (49); the reduced image lays this function out differently from retail (fast 308,
@@ -881,6 +883,26 @@ bool g_51e9bc;
 // Also on 20: the jitter vector with the velocity add's arguments swapped 33; the tail as an out-of-place vector3f_scale from a
 // {x, y, z} jitter, `offset.c = limits.c * offset.c`, the velocity add's arguments swapped and dot3f's swapped, 15 combinations:
 // 20 or 41 (out-of-place scale or swapped add alone 41, both 20; the product and dot spellings never change the code).
+// M3 lane 10 r94 (fast, 0x24590/0x1cd6c0 listed; plain-confirmed 12): NOT kept (coordinator 11-11: the gain needs both parts, each alone regresses = a steering combination; match only) the jitter accumulated in a vector3f filled in place
+// (on/off values into offset.i/j/k, then the named sign and named half-scale values multiplied in, the existing 0.2 vector3f_scale,
+// `*= limits`, vector3f_add) 20 -> 12: retail's spill homes (the offset packs into the dead limits home) and its tail adds; with
+// inline signs 33, with the half scales inline 33 (round 92's form), with the scales named in one block before the products 96,
+// named scales on the scalar x/y/z jitter 30. On 12: the on/off values through vector3f_assign 65, as the vector's aggregate
+// initializer 12 (same code), a named animation pointer for the call 33, `*=` for the products 12 (same code); re-measured on
+// the vector (listed on the scalar jitter): the on/off values zero by default and set on their bits 24 (velocity.i before the
+// call then retail's, the spills go back to the parameter homes), the signs in if form 59; re-measured: projection direct in the scaled add 105 (velocity.i before the call then
+// retail's), the negated projection named 109, the 0.2 scale out of place 33, vector3f_add's arguments swapped 33, both 12 (same
+// code), movement through vector3f_scale 33. Before (on 20): a private dot helper in any of the six term orders 20 (same code:
+// the optimizer orders the sum), the dot written out in five orders 139 (1093 bytes), direction from movement's components
+// (aggregate initializer 198, vector3f_assign 204). Diagnostics (not kept): dead locals shift the commutative operand choices
+// with period 8 wherever they are declared (type and position do not matter): three on 12 give the dot's i term but lose the
+// tail adds (36), and one more with the projection direct in the call gives every line but the dot's (17, 1078 bytes); an
+// extra read of direction.j before the dot gives retail's k + j order but moves the direction registers (135). The permuter's
+// reduced image scores this body 263 (full 12), so it found nothing.
+// Phase map (diagnostic, dead locals 0-7 on the projection-direct form, which gives velocity.i before the call): the dot's
+// i term is retail's only at one count and the tail adds only at another, three apart (tail 1, i 4); swapping dot3f's
+// arguments moves the i count by 2, swapping vector3f_add's moves the tail count by -2, the out-of-place 0.2 scale moves both
+// by 2 and inline signs both by 3, so no combination of these lines them up (and the dot's j/k order never changes).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
