@@ -1947,6 +1947,12 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // once before the guard 508 (2043 bytes: VC computes it eagerly, no sinking into the arm); both lookups indexed by
 // `(word)vehicle_index` 178 (2011 bytes); vehicle_speed_fraction plain `inline` 581 (1803 bytes, out of line under
 // /Ob1); the update test written `vehicle->unknown400 != state->graph_tag_index` 10.
+// Round 173 (m3 lane 5, fast), at 9: by-value copies for the forward speed (the copies are materialised, not
+// scalar-replaced): the forward vector 317 (2055 bytes), the velocity 321 (2059), both 357 (2087), the forward copy with
+// i, j, k terms 317; one named absolute index for both lookups 13 (SIB unchanged, the cross flips); a velocity pointer for
+// the forward-speed terms 13 (one-use; only the cross flips); the arm-1 dot through
+// dot3f re-measured 376 (2007). Diagnostic: a vehicle-index copy declared after `state` for every callback 13 (the reload
+// order stays, so it does not follow symbol order; the cross flips).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
