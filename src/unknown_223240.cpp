@@ -75,6 +75,14 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
+// MiniMax C (11-11): no lower score (79): the terminal stores still fold the record base into the
+// displacement in retail where our build adds the base to the index register, and giving the shared
+// helper the record index instead of the record pointer gives 106 (578 bytes) with that fold still
+// missing, so the pointer form stays. The outer pretest and the slot scan's registers are unchanged.
+// MiniMax C (11-10): the tail call now passes the mode first (3, the view count, ...), which is how
+// retail calls 0x2b5d0; the fast check gives 79 (575 bytes against retail's 575, was 90). Still differs:
+// retail's outer loop carries a pretest our do-while lacks, the slot scan keeps the pointer in EDX and
+// the predicate in CL, and the terminal stores fold the base into the displacement where ours adds it.
 // MiniMax I (11-09): no new form, no lower score; the fast check gives 90 (575 bytes against retail's 575)
 // and the listing confirms what the earlier rounds recorded: retail's outer loop carries a pretest
 // (`cmp ebp, edi; jle` at the loop's head, with the bottom test `cmp edi, ebp; jl` jumping back into the
@@ -86,6 +94,10 @@ void function_2232a0(void)
 // MiniMax H (11-05): no new form, no lower score; the tail still needs 0x2b5d0's own body (a stub in
 // src/stubs/lane_k.cpp, another file), and the count clamp and the slot test still differ.
 // MiniMax H (11-04): no new form, no lower score; the tail still needs 0x2b5d0's own body.
+// score 79 (was 90; 109 before the shared view count): one shared view count now feeds terminal indexing and the
+// tail, whose call now passes the mode first as retail does; the outer pretest, loop-entry source zero and
+// terminal registers still differ. The tail call still needs 0x2b5d0's own body, which is disabled here and
+// stubbed in src/stubs/lane_k.cpp, a file this lane may not edit: BLOCKED-BY 0x2b5d0.
 // score 90 (was 90; 109 before the shared view count): one shared view count now feeds terminal indexing and the tail; the outer
 // pretest, loop-entry source zero and terminal registers still differ. The tail call still needs 0x2b5d0's
 // own body (it takes the mode in EAX and the count on the stack), which is disabled here and stubbed in
@@ -364,7 +376,7 @@ void function_2234e0(void)
 		++local_0;
 	} while (local_0 < local_2);
 	function_2232a1(&g_47f0f8[view_count]);
-	function_2b5d0(view_count, 3, local_2, local_3, &g_47f0f8[1]);
+	function_2b5d0(3, view_count, local_2, local_3, &g_47f0f8[1]);
 }
 
 // @retail 0x223240
