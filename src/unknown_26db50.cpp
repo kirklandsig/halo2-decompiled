@@ -459,6 +459,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 	vector->k = axis->k * along + k * cosine - (axis->j * i - axis->i * j) * sine;
 }
 
+// score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
+// it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
+// rotation's component spill, cross scheduling and register allocation remain.
+// The body is 1085 bytes versus retail 1089.
 // MiniMax I (11-10): no new form, no lower score (90).
 // MiniMax D (11-09): no new form, no lower score; retail keeps the ring value as a float in a
 // stack slot and reloads it as a double for the radius product where ours converts the counter
@@ -467,10 +471,6 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // distance reproduces retail's cvtsi2ss, store, fld, mulss, fmul sequence, but the extra stack
 // slot makes the frame 0xdc and copies the radius through an integer register, so it scores 234
 // against the 90 body, which is kept.
-// score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
-// it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
-// rotation's component spill, cross scheduling and register allocation remain.
-// The body is 1085 bytes versus retail 1089.
 // MiniMax G (11-04): ring block with a hoisted double scaled radius, the ring converted once
 // into a named local and its offset named, plus the rotation with cross j, k named and a
 // second name for axis (local_axis) mixed into the dot and rows: 76 (retail's cvtsi2ss ring
@@ -802,6 +802,12 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // 238 (1103), with the named double 241 (1088); the distance without the (double) cast 90 (same code). Body unchanged.
 // (The named phase re-measures rounds 17 and 53's 143; the named j, k cross terms give 90 here where round 50 records 100 for "cross j, k before
 // i", so that round's form was a different one and was not rebuilt.)
+// Lane 3 r230 (base 90): the existing rotate_direction (forceinline, matched in 0x1ecf50) for the rotation, plain 100
+// (1081 bytes, frame 0xd4: the rotation no longer spills); with the ring phase named before the distance, plain 96 (1090
+// bytes, frame 0xd8, retail's cvtsi2ss/store/fld ring block and an unspilled rotation; the radius still copies through
+// EDX with the sector read after it, and the dot sums (k + j) + i); the private helper given that body with
+// dot3f(axis, vector), plus the phase, 96 (same code); on that, the direction declared at function scope 96; a 600 s
+// permuter run on it (47 tries) best 89, the listed trace.distance-at-each-use form.
 // Round 148 (m3 lane 8, fast with the file's other functions and 0x26c590, 0x26d100, 0x2104b0, 0x14a280, 0x26d3f0; base aligned 58,
 // masked 37): the rotation helper's dot through this file's record_dot3f 90; the origin as a `point3f const *` 90; the ring
 // counters declared countdown first 90; the first pathfinding lookup as an if/else assignment 217 (1086 B, the same code as
