@@ -1659,6 +1659,9 @@ PRIVATE inline long projectile_object_root(long object_index)
    attachment, starting velocity and spin, whether it starts under water,
    and the seat flags of the unit that fired it */
 // MiniMax S (11-10): no new form, no lower score (296): retail expands 0xfbfd0 after the 0xfbd40 call and holds index * 12 in EBP, a body this lane may not write out by hand, so the pool and tag homes, the speed update's schedule and the seat-bit tests stand.
+// MiniMax A (11-10): no new form, no lower score (296): retail expands 0xfbfd0 inline after the
+// 0xfbd40 call and holds index * 12 in ebp, a body the rules forbid writing out by hand, so the
+// pool and tag homes, the speed update's schedule and the seat-bit tests stand.
 // MiniMax R (11-10): no new form, no lower score (296): retail expands 0xfbfd0 inline after the 0xfbd40 call and holds index * 12 in EBP, a body the rules forbid writing out by hand, so the pool and tag homes, the speed update's schedule and the seat-bit tests stand.
 // MiniMax D (11-10): no new form, no lower score (296).
 // score 296 (was 307; 535-source image; the 4-source reduced image allocates differently and scores
@@ -1874,6 +1877,10 @@ real function_17c900(short function_type, real input);
 /* where a guided projectile aims: its target's point, led by the target's
    velocity, then wobbled around the line to it or wandering */
 // MiniMax S (11-10): no new form, no lower score (348): retail takes the projectile index off the stack and forms the entry address itself, keeping the projectile in ESI, where we keep the index in ESI, the projectile in EBX and save EBX on the stack, so the aim point's stack home sits four bytes higher here than in retail.
+// MiniMax A (11-10): no new form, no lower score (348): the frame of 0x30 agrees, but the aim
+// point's stack home is [esp+0x24] in retail against [esp+0x28] here, and retail's sole caller
+// passes the index on the stack and takes the aim point back in ebx while our declaration and
+// call take the index in eax and pass the point's address; a declaration may not change.
 // MiniMax R (11-10): no new form, no lower score (348): the aim point's stack home is [esp+0x24] in retail against [esp+0x28] here, and retail pushes EBP and ESI at a different point, so the rotation's register homes still differ.
 // MiniMax D (11-10): no new form, no lower score (348): the aim point's stack home is [esp+0x24] in retail against [esp+0x28] here, and retail pushes EBP/ESI after the lookup where ours pushes EBX/EBP/ESI before it.
 // score 348 (was 348): Frame 0x30 recovered; index EAX/output-stack contract and normalization/rotation scheduling remain, four bytes long.
@@ -2157,6 +2164,9 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
    damage, impact or airburst effects, and the effects of the material
    under it */
 // MiniMax S (11-10): no new form, no lower score (504): the flag word still goes through EAX where retail keeps it in EDI for the OR and the store, the flag test comes before the definition lookup where retail makes it after, and the frame's slots are in another arrangement.
+// MiniMax A (11-10): no new form, no lower score (504): the frame of 0x184 and the first lookup
+// agree, but the header offset's stack home and the flag reload and store differ, and the
+// 0xfcea0 index that retail loads as a word costs that callee 129 points if it is changed.
 // MiniMax R (11-10): no new form, no lower score (504): the home of the parent and owner block, the probe's material term and the order of the two damage stores still differ; every declaration order of the Booleans, the parent and the probe measured the same code as the body above.
 // MiniMax D (11-10): the parent index read from the projectile at each use instead of in a local (fast 519 -> 504, 2171 bytes);
 // the flag word is still loaded once, so the parent lookup still reloads the table pointer and the tail stays one dword copy out.

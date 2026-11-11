@@ -2118,6 +2118,9 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
    its next permutation's threshold, and when the level fills, destroys the
    permutations at that threshold */
 // MiniMax S (11-10): no new form, no lower score (100): our frame is four bytes shorter than retail's, so the two arguments' stack homes sit four bytes lower, and the 0xda110 call setup pushes the arguments in another order with retail's xorps after that call where ours zeroes xmm2 before it.
+// MiniMax A (11-10): no new form, no lower score (100): the instructions agree with retail's and the
+// differing lines are only the branch targets, because the two early exits land five bytes past
+// retail's; the call setups of 0xda110 and 0xd9d60, both in this file, decide that tail.
 // MiniMax S (11-10): no new form, no lower score (100): the two early exits still branch to targets five bytes after retail's, because the tail is five bytes longer (the 0xda110 index in eax and the 0xd9d60 flag in al are theirs to give), and the delay block's register rotation goes with them.
 // MiniMax D (11-09): no new form, no lower score; the first difference (+0x39) is only the two early exits, whose
 // branch targets land five bytes after retail's because the tail is five bytes longer (retail passes 0xda110's index

@@ -284,6 +284,9 @@ static __forceinline long floor_to_long_inline(real value)
 // seven subsets then reversed initial field stores: 14/14/10/79/83/83/79/14.
 // NOT kept: no equality; the real declaration does not recover native OR/shift/pool
 // scheduling. Original record declaration, packed expressions and body restored.
+// MiniMax A (11-10): no new form, no lower score (10): swapping the first word's three OR terms and
+// the kind's shift term (the shift first) both give byte-identical code, so the OR chain's order and
+// the shift's copy to esi are decided by MSVC, and the pool's `mov edx, esi` stays above the `jbe`.
 // MiniMax E (11-10): no new form, no lower score: the kind's shift still comes after the copy to
 // esi where retail shifts before it, and the two loads that feed the record's OR chain come in the
 // other order; six fresh forms (the kind as a dword, the kind's shift written inline, the pool

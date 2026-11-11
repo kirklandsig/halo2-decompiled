@@ -1171,6 +1171,9 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
+// MiniMax A (11-10): no new form, no lower score (824): our frame is 0x154 against retail's 0x12c
+// from the first instruction, so every stack home sits 0x28 further out and the two open behaviour
+// differences - the node handed to 0xb8bd0 as a raw dword and the type chain's compare - stay.
 // score 824 (was 813): statement-by-statement walk against retail (s1B, 11-06). Behaviour fixes, all kept even though
 // the score rose 11: (1) the byte at [esp+0x12] is ONE flag: the definition's +0xbc bit 2 (skips gravity), set to true
 // before the ray query (0x10ba18) and cleared only by the settle branch (0x10bcf8); the draft's separate
