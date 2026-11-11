@@ -18,7 +18,7 @@
 #include "data_array.h"
 #include "unknown_0259d0.h"
 #include "unknown_19d220.h"
-#include "tag_groups.h"
+#include "tag_links.h"
 
 class __single_inheritance c_class_1473c9;
 struct s_screen_parameters;

@@ -15,7 +15,7 @@
 
 #include "unknown_11c920.h"
 #include "unknown_0259d0.h"
-#include "tag_groups.h"
+#include "tag_links.h"
 #include <stddef.h>
 
 /* ---- object ('obje', 0xbc bytes) ---- */
@@ -59,8 +59,8 @@ struct s_object_definition
 	s_tag_reference modifier_shader;                    /* 0x44 */
 	s_tag_reference creation_effect;                    /* 0x4c */
 	s_tag_reference material_effects;                   /* 0x54, 'foot' */
-	s_tag_block ai_properties;                          /* 0x5c, 0x10-byte elements */
-	s_tag_block functions;                              /* 0x64, 0x20-byte elements */
+	s_tag_array ai_properties;                          /* 0x5c, 0x10-byte elements */
+	s_tag_array functions;                              /* 0x64, 0x20-byte elements */
 	real apply_collision_damage_scale;                  /* 0x6c */
 	real_bounds game_acceleration;                      /* 0x70 */
 	real_bounds game_scale;                             /* 0x78 */
@@ -68,11 +68,11 @@ struct s_object_definition
 	real_bounds abs_scale;                              /* 0x88 */
 	short hud_text_message_index;                       /* 0x90 */
 	byte pad_92[2];
-	s_tag_block attachments;                            /* 0x94, 0x18-byte elements */
-	s_tag_block widgets;                                /* 0x9c, tag references */
-	s_tag_block old_functions;                          /* 0xa4, 0x50-byte elements */
-	s_tag_block change_colors;                          /* 0xac, 0x10-byte elements */
-	s_tag_block predicted_resources;                    /* 0xb4 */
+	s_tag_array attachments;                            /* 0x94, 0x18-byte elements */
+	s_tag_array widgets;                                /* 0x9c, tag references */
+	s_tag_array old_functions;                          /* 0xa4, 0x50-byte elements */
+	s_tag_array change_colors;                          /* 0xac, 0x10-byte elements */
+	s_tag_array predicted_resources;                    /* 0xb4 */
 };
 typedef char assert_object_definition_size[(sizeof(s_object_definition) == 0xbc) ? 1 : -1];
 typedef char assert_object_definition_flags[(offsetof(s_object_definition, flags) == 0x2) ? 1 : -1];
@@ -91,7 +91,7 @@ struct s_unit_definition_camera
 	long camera_submerged_marker_name;                  /* +0x04 */
 	real pitch_auto_level;                              /* +0x08 */
 	real_bounds pitch_range;                            /* +0x0c */
-	s_tag_block camera_tracks;                          /* +0x14, tag references */
+	s_tag_array camera_tracks;                          /* +0x14, tag references */
 };
 typedef char assert_unit_definition_camera_size[(sizeof(s_unit_definition_camera) == 0x1c) ? 1 : -1];
 
@@ -171,15 +171,15 @@ struct s_unit_struct_definition
 	s_unit_boarding_melee boarding_melee;               /* 0x16c */
 	short motion_sensor_blip_size;                      /* 0x194 */
 	byte pad_196[2];
-	s_tag_block postures;                               /* 0x198 */
-	s_tag_block new_hud_interfaces;                     /* 0x1a0, tag references */
-	s_tag_block dialogue_variants;                      /* 0x1a8 */
+	s_tag_array postures;                               /* 0x198 */
+	s_tag_array new_hud_interfaces;                     /* 0x1a0, tag references */
+	s_tag_array dialogue_variants;                      /* 0x1a8 */
 	real grenade_velocity;                              /* 0x1b0 */
 	short grenade_type;                                 /* 0x1b4 */
 	short grenade_count;                                /* 0x1b6 */
-	s_tag_block powered_seats;                          /* 0x1b8 */
-	s_tag_block weapons;                                /* 0x1c0, tag references */
-	s_tag_block seats;                                  /* 0x1c8, s_unit_seat_definition (units.h) */
+	s_tag_array powered_seats;                          /* 0x1b8 */
+	s_tag_array weapons;                                /* 0x1c0, tag references */
+	s_tag_array seats;                                  /* 0x1c8, s_unit_seat_definition (units.h) */
 	s_unit_boost boost;                                 /* 0x1d0 */
 	s_unit_definition_lipsync lipsync;                      /* 0x1e4 */
 };
@@ -203,7 +203,7 @@ struct s_biped_definition_lock_on
 typedef char assert_biped_definition_lock_on_size[(sizeof(s_biped_definition_lock_on) == 0x8) ? 1 : -1];
 
 /* how a character walks: the slopes it can climb */
-struct s_biped_physics_ground
+struct s_biped_movement_ground
 {
 	real maximum_slope_angle;                           /* +0x00 */
 	real downhill_falloff_angle;                        /* +0x04 */
@@ -218,10 +218,10 @@ struct s_biped_physics_ground
 	real sine_uphill_falloff_angle;                     /* +0x28 */
 	real sine_uphill_cutoff_angle;                      /* +0x2c */
 };
-typedef char assert_biped_physics_ground_size[(sizeof(s_biped_physics_ground) == 0x30) ? 1 : -1];
+typedef char assert_biped_movement_ground_size[(sizeof(s_biped_movement_ground) == 0x30) ? 1 : -1];
 
 /* how a character flies */
-struct s_biped_physics_flying
+struct s_biped_movement_flying
 {
 	real bank_angle;                                    /* +0x00 */
 	real bank_apply_time;                               /* +0x04 */
@@ -235,10 +235,10 @@ struct s_biped_physics_flying
 	real angular_acceleration_maximum;                  /* +0x24 */
 	real crouch_velocity_modifier;                      /* +0x28 */
 };
-typedef char assert_biped_physics_flying_size[(sizeof(s_biped_physics_flying) == 0x2c) ? 1 : -1];
+typedef char assert_biped_movement_flying_size[(sizeof(s_biped_movement_flying) == 0x2c) ? 1 : -1];
 
 /* a character's shape and movement (the biped tag's at 0x264) */
-struct s_biped_physics
+struct s_biped_movement
 {
 	dword flags;                                        /* +0x00 */
 	real height_standing;                               /* +0x04 */
@@ -249,13 +249,13 @@ struct s_biped_physics
 	long dead_material_name;                            /* +0x18 */
 	short living_global_material_index;                 /* +0x1c */
 	short dead_global_material_index;                   /* +0x1e */
-	s_tag_block dead_sphere_shapes;                     /* +0x20, 0x70-byte elements */
-	s_tag_block pill_shapes;                            /* +0x28, 0x50-byte elements */
-	s_tag_block sphere_shapes;                          /* +0x30, 0x70-byte elements */
-	s_biped_physics_ground ground_physics;  /* +0x38 */
-	s_biped_physics_flying flying_physics;  /* +0x68 */
+	s_tag_array dead_sphere_shapes;                     /* +0x20, 0x70-byte elements */
+	s_tag_array pill_shapes;                            /* +0x28, 0x50-byte elements */
+	s_tag_array sphere_shapes;                          /* +0x30, 0x70-byte elements */
+	s_biped_movement_ground ground_physics;  /* +0x38 */
+	s_biped_movement_flying flying_physics;  /* +0x68 */
 };
-typedef char assert_biped_physics_size[(sizeof(s_biped_physics) == 0x94) ? 1 : -1];
+typedef char assert_biped_movement_size[(sizeof(s_biped_movement) == 0x94) ? 1 : -1];
 
 /* the biped tag's own fields, after the unit's */
 struct s_biped_struct_definition
@@ -290,8 +290,8 @@ struct s_biped_struct_definition
 	short head_node_index;                              /* 0x256 */
 	real headshot_acceleration_scale;                   /* 0x258 */
 	s_tag_reference area_damage_effect;                 /* 0x25c */
-	s_biped_physics physics;             /* 0x264 */
-	s_tag_block contact_points;                         /* 0x2f8, marker names (longs) */
+	s_biped_movement physics;             /* 0x264 */
+	s_tag_array contact_points;                         /* 0x2f8, marker names (longs) */
 	s_tag_reference reanimation_character;              /* 0x300 */
 	s_tag_reference death_spawn_character;              /* 0x308 */
 	short death_spawn_count;                            /* 0x310 */
