@@ -1372,6 +1372,15 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // switch; caller 0x7afd0 3); the late pair as two separate ifs 155 plain (the listed if/else-if chain's count). Ours
 // inlines 0x94420 at case 18 because the late switch compiles to a compare chain (one test deep); retail calls it. No
 // unlisted natural form gives the address a use across a call, which our build needs for retail's convention.
+// m3 lane 3 r233 (all plain with the file's functions, 0x7afd0, 0x93aa0, 0x92ef0 and the case callees; control 153 at
+// 464 bytes, aligned 55, register-masked 34; --fast reads 196 at 444 bytes here with 0x94220 and 0x942d0 differing, so it is
+// no judge). A second switch holding 18, 11, 5, 6, 7 in retail's layout order behind the first switch's other cases 222 (470 B,
+// 0x7afd0 3); explicit `return` cases for the in-band types 1, 15, 16, 17, 19, 20, 21 in the first switch 146 (464 B, masked
+// 34 -> 38: only the jump table's data moves, so positional); the same cases on the one retail-order switch 217 (420 B,
+// 0x7afd0 3); a free function declared (type, message, handler, address), retail's EAX/ECX/EDX/stack order, on the one
+// switch with 0x7afd0's call updated 217 (same convention: type ECX, address EAX kept there, message loaded into EBX from the
+// stack); the late switch with 11 ahead of 18 153 (same code). On the one switch the address stays in EAX because no use
+// crosses a call and the three lookups want it there; retail homes it in EDI and the message in EBX. Body unchanged.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

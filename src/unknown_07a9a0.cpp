@@ -1331,6 +1331,13 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // copies as the accessors' switch-with-result form too 908 (2744, masked 494); that with `long histogram[16]` 903 (2712); the
 // switch forms alone 903 (2764); the party forms with `long histogram[16]` 830 (2760 bytes, masked 313, frame 0xb4 as retail;
 // first difference +0x7). 0x73530 stays 8 and every matched caller and callee stays matched in all five.
+// m3 lane 3 r233 (fast, control 766 = full; register-masked aligned 343). Diagnostic (compiler setting, reverted at once):
+// this file without /arch:SSE plus the player loop through a call to 0x63220 1097 at 2524 bytes, the same as with /arch:SSE:
+// 0x63220 still stays a call, so the SSE mismatch between this file and 0x63220's is not what keeps it out of line (lane 14
+// r55 already found /arch:SSE on 0x63220's file changes nothing). Forms: the balance call's party flag passed as the
+// expression, no `use_parties` local, 858 (2812 B); the two identical team-type tests merged into one block 909 (2756 B);
+// the rated extrema as `if (rating > max) max = rating;` statements 818 (2812 B); the party spread and team tests joined
+// into one `||` test 907 (2764 B); `available` computed just ahead of its first use 821. Body unchanged.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
