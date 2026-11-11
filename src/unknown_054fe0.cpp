@@ -1702,6 +1702,9 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// MiniMax S (11-11): no new form, no lower score (339); retail holds the session pointer in ecx and the state
+// word in edx, ours holds the pointer in ebx and the state in ecx, and the frames differ by twelve bytes
+// (0xa9c against 0xaa8), so every local home after the prologue differs.
 // MiniMax A (11-10): no new form, no lower score (339): retail's conditional move for
 // output->state needs the SSE architecture flag that this file's flags do not set, and the frame is
 // 0xa9c against retail's 0xaa8 with the type, membership and member-index homes still different.

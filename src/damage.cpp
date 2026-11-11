@@ -1905,6 +1905,9 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 /* destroys a damage region: picks the permutations whose chance and body
    threshold allow it, and destroys each now or schedules it after its
    delay */
+// MiniMax S (11-11): no new form, no lower score (57); every retail caller of 0xda110 (0xd5de0, 0xdaaa0 and
+// 0xdb760, all in this file) hands the permutation over in eax, so the calling convention is one decision for the
+// whole file and not this call site's.
 // MiniMax I (11-10): no new form, no lower score (82).
 // MiniMax D (11-09): no new form, no lower score; the first difference (+0x4d) is only the `jle` target, five bytes
 // past retail's, because the tail is five bytes longer from the 0xd9d60/0xda110 call setup (retail passes the index
@@ -2188,6 +2191,8 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 /* damages a region: raises its damage level by the damage over the span to
    its next permutation's threshold, and when the level fills, destroys the
    permutations at that threshold */
+// MiniMax S (11-11): no new form, no lower score (73); retail passes 0xda110's permutation in eax at all six of
+// its call sites in this file (0xd5de0, four here and 0xdb760), so the transport is one decision for the whole file.
 // MiniMax S (11-10): no new form, no lower score (100): our frame is four bytes shorter than retail's, so the two arguments' stack homes sit four bytes lower, and the 0xda110 call setup pushes the arguments in another order with retail's xorps after that call where ours zeroes xmm2 before it.
 // MiniMax A (11-10): no new form, no lower score (100): the instructions agree with retail's and the
 // differing lines are only the branch targets, because the two early exits land five bytes past

@@ -2382,6 +2382,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// MiniMax S (11-11): no new form, no lower score (479; 474 when only this function's own units are in the
+// reduced image); our body is longer than retail's (eight bytes in that image), so the jump table lands later
+// and every branch after it differs.
 // score 479 (was 479): earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // MiniMax R (11-10): no new form, no lower score.
 // Earlier 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
