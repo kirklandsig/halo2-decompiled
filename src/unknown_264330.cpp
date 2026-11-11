@@ -654,6 +654,11 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // 0x25c230 and 0x265680 stay matched: the lead narrows to keeping it out of 0x264210 alone. On that inlined form: update
 // as long 495, sample/update at function scope 497, maximum a plain word 497, sampled_one as long 496; the actor stays a
 // stack argument (0x1e34e0 26) in all of them. All restored.
+// Round 78 (m3 lane 13, fast with 0x1e34e0): retail's case-2 and completion view lookups have 0x25d740's shape (NONE test,
+// NULL test, +0x70); both through the existing 0x25d740 413 (inlined at both, masked aligned 219 -> 221; 0x1e34e0 26).
+// Case 2's distance through the existing vector2d_from_points2d and dot_product2d (from `&state->position`) gives retail's
+// block instruction for instruction (y first, the dead `add eax, 4`), 425 at 1624 bytes (masked aligned 218); with the
+// 0x25d740 lookups 417 (masked 219). Not kept: positional rise.
 // Round 66 (m3 lane 15, fast with 0x1e34e0 26, 0x263210 231, 0x264330/0x264210/0x2641c0 matched throughout): retail's inlined 0x2641c0 copies its 0x38 bytes with
 // `rep movsd`, which takes ESI and EDI inside the loop, and 0x2640c0 takes its output in EDI, so retail keeps the node index and the next index in stack slots
 // (0x14/0x18, reloaded before each use), the three flags in stack bytes (0x11/0x12/0x13), the prior state as a word at 0x2c, the actor pointer at 0x20 and the actor's
