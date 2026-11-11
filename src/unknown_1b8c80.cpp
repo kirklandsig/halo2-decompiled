@@ -1435,6 +1435,7 @@ void function_1f86a0(long actor_index);
 // after the root calls) where ours keeps the mask in BL and the entry in memory, and retail still
 // takes the object-header data in the prologue and reads the flags once above the slot-flag test;
 // the mask read once before the loop scores 136, so the mask is read per iteration as it was.
+// Earlier first line (round 103 unchanged): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
 // Earlier at 134 (was 134; round 103 unchanged): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
@@ -1725,6 +1726,11 @@ void function_1f86a0(long actor_index);
 // the EBX choice (entry in retail, mask here).
 // MiniMax R (11-10): no new form, no lower score (134): the frame is 0x10 against retail's 0x14, and retail
 // spills the mask byte and keeps the loop entry in EBX.
+// M3 lane 9 r110: no new form. The FORMS slot data-block form is round 39's 134 (same code); `unit->parent_index` is
+// listed (same code). 0xbaf40's memory summary is still untested (src/unknown_0bad50.cpp is on this round's avoid list
+// again), and the opaque-callee diagnostic above (root calls to an unresolved stand-in, 135, mask still in BL) speaks
+// against it. The open cause is the callee-saved choice: retail gives EBX to the loop entry and spills the mask; the
+// note lists the mask types, mask placements, entry/index locals, loop spellings, decline spellings and names.
 // M3 lane 3 r231 (fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70, all matched). Retail also lays the loop out differently: the
 // decline block follows the unknown86 test and falls into the next-entry call, with the unknown86-clear tests, the accept call
 // and the success block after it; ours puts the unknown86-clear tests first and the decline block jumps to the next-entry call,

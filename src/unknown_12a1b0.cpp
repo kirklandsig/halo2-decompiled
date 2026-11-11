@@ -2915,6 +2915,15 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // (still `lea` plus a stack copy, not retail's direct stores). Retail reads the
 // track flags twice (a byte for `& 1`, a dword for the shifted bits) and tests each truth twice without threading;
 // every form here threads the second test into the first.
+// Round 111 (m3 lane 9, fast with callers, callees and the file's other availability users, control 597): the availability
+// test through the real sound_system_available() (0x125a60, which retail inlines here) 597 (same code); re-measured on this
+// base (lane 13 r24's bounds pointer): the replacement pitch through matched sibling 0x21b940's `s_short_bounds *bounds` with a
+// named lower 597, without it 597 (register-masked aligned 199 -> 198); the four impulse updates as conditional assignments 597
+// (same code); both gain loops as
+// plain for loops 769 (2596 bytes); the maximum or the minimum as a default with an `if` override 620 each; same code: the
+// minimum clamp as `if (!(minimum > 0.001f)) minimum = 0.001f;`, the maximum as an if/else. Diagnostic only (the private availability copy is shared with contributor code): that copy
+// reshaped to 0x125a60's `if (...) return 1; return 0;` gives the same code. Left: the track loop's registers (retail state EBX,
+// NONE ESI, track EBP, index and track definition in memory; ours NONE EBX, index ESI, track definition EBP).
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
