@@ -3747,6 +3747,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // the stride before the cursor 162 (479 bytes). In every cursor form our EBP serves the member and the consumed update in turn and
 // the channel gets no register; retail's cursor starts with `add edi, 2` (an immediate, outside the constant 2 that `size -= 2` and
 // `consumed` share in ECX) and its zero-trip exit returns that ECX. No untried natural form left that adds a channel reference.
+// R151 (m3 lane 7): no new form. The relay arm already reads channel->index three times and passes the channel once,
+// the plain arm reads it three times and the member has retail's four references (call result, NONE test, test shift,
+// clear shift), all as retail; the cursor, member, channel-index, test-split, clamp, route and count spellings left are
+// those listed above, so no natural form is left to try against the member's EBP.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

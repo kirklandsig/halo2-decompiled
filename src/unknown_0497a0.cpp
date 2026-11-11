@@ -1021,6 +1021,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // case 1/2's points through real_point3d_set 443 (2580); the cursor as `vertex = outer + 1` 656 (2556); the vertex positions through
 // real_point3d_set 233 (same code); case 1/2's normal copy before its points 241; case 1/2's z as `first.z = second.z = ...` 331
 // (2600); case 0's normal set through vector3f_assign in each arm 499 (2620); the side's scale through vector3f_scale 233 (same code).
+// R151 (m3 lane 7, fast; 0x42c50, 0x42b20, 0x43740 matched): the pixel through the existing pack_color4f 598 (2448 bytes:
+// its declaration is noinline, so it stays a call where retail expands it at link time). The frame word needs the u step and
+// the V end as compiler temporaries (retail's 8-byte homes), which only the ruled-out two-member grouping gave; case 1/2's
+// early point x load and case 4's per-arm position pointer are schedules of forms listed above. Case 4's direction alone
+// through the existing vector3d_from_points3d in both arms 483 (2584 bytes), the view alone through it 233 (same code);
+// case 1/2's first.x before second.x 233 (same code); both case 1/2 pairs and z first-row first 394 (2600 bytes).
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
