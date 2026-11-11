@@ -727,7 +727,7 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
-// score 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
+// score 331 (was 331): round 112 (m3 lane 12) note at the end. Earlier at 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
 // MiniMax C (11-05): no new form, no lower score; the plane's three normal copies are reloaded in the same order in both (i, k, j), but retail gives them XMM3/4/5 for i/j/k where ours gives XMM5/3/4; the squared length in field order scores 389, in k,i,j order 243, with the first two addends swapped 238, written from the direction alone 465, and with the multiply operands swapped it is byte-identical at 236.
 // b5K 11-06 statement walk against retail found no wrong field, offset, condition, callee or loop; the one
 // behaviour fix is the point-mode timer, which retail computes as (ticks * rate) / scale (cvtsi2ss, mulss [ebx+4], divss at
@@ -1015,6 +1015,14 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Round 87 (m3 lane 11, fast; aligned in brackets, control 331 [111]): the normal copied ahead of the three axis stores
 // (round 188's normal-before-basis, re-measured) 377 [173]; the plane distance named in its expression before the
 // division 384 [118] (1704 B). No plane-construction or line-projection helper exists to call here.
+// M3 lane 12 r112 (fast with 0x16c6f0/0x13cb40, both matched; 331, aligned 94, masked 27): no trial run. Of the 27 masked
+// lines, two blocks are read-modify-writes of command->flags: the default arm, where retail splits `flags |= 0x40` into
+// load/or/store around its own `xorps xmm0, xmm0` and jumps over the NONE path's xorps (ours keeps the memory `or` and
+// falls into that shared xorps: once the scheduler splits the store the two tails differ and are not cross-jumped), and the
+// pan arm, where retail keeps the memory `or [ebp], 1` after the position stores and ours hoists the flags load among them.
+// The forms that reach those (case 1's own `|= 0x40; break;`, the 0x40 set once before the switch, the pan position through
+// real_point3d_set, a pointer or the moved lerp helper) are listed above; the rest is the length's hoisted left.j load that
+// puts retail's zero in xmm0, the distance dot's operand loads and the shared quaternion helper's sum order.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

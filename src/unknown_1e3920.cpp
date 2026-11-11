@@ -1102,9 +1102,9 @@ void __stdcall swarm_delete(long perception_index);
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
 
-// MiniMax E (11-10): no new form, no lower score (253); the fields, conditions, callees and argument order all agree with retail, but the sentinel is held in edi here and in esi there, and the successor and query homes sit at other frame offsets, so the blocks after the first call are laid out differently.
 // score 253 (was 253): Frame 0x118 and length agree; persistent sentinel EDI/ESI, squad/substitution homes, the unrotated
 // substitution loop and the unit arm's placement (retail puts it after the mode-2 case) remain.
+// MiniMax E (11-10): no new form, no lower score (253); the fields, conditions, callees and argument order all agree with retail, but the sentinel is held in edi here and in esi there, and the successor and query homes sit at other frame offsets, so the blocks after the first call are laid out differently.
 // b5C (fast, 253): statement-by-statement walk against retail 0x1e0850 found no logic difference: every field, offset,
 // condition direction, callee/argument order (1e04a0's primary tag in EAX, grenade `(ebx - 1)` sign-extended on the
 // data path and `(word)cx - 1` on the squad path), the cos/sin products (fstp dword at 0x1e0a2c/0x1e0a37/0x1e0a42, same
@@ -1347,6 +1347,17 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // (the bool stays in memory, no threading); the else arm as `else if (!(*flags & 1))` 296 (same code, folded); the perception
 // result as one conditional 321 [236] (1273 B). On the original loop: probability declared before the two bools 253 (same code);
 // the three query outputs declared in the enclosing block and set in the loop 253 (same code).
+// M3 lane 12 r111 (fast, 0x1e4990/0x2036c0/0x203900/0x1e02f0/0x1e0160/0x1e04a0/0x1e06b0/0x1e4a50 matched each time; aligned =
+// difflib count, then registers masked, base 142/115). Lane 9's flag loop rebuilt 296 (119/102). Its unit arm: retail lets the
+// perception arm fall into the actor test and parks the unit arm (it ends in a jump back to that test) after the first
+// unconditional jump that follows, case 2's break; ours lets the unit arm fall into the actor test. Retail also shares one slot
+// between the squad pointer, the squad bit and the actor index, reads the count at +0x98 and the table at +0x9c at each use with
+// the scenario pointer in EDX, sign-extends each index before its `>= 0` test, and compares `grenade - 1` with NONE as an int
+// (the data path re-extends the short, `movsx edx, bx; dec edx`, and recomputes `lea eax, [ebx - 1]` for the value). Trials:
+// the two grenade tests without the (short) casts 352 (1283 B, frame 0x11c; the compare becomes retail's but the value reuses it);
+// the count read at each use 257 (1273 B, 151/111); on the flag loop the count at each use 346 (1263 B, 155/108); on the flag
+// loop the bit dispatched as `switch (*flags & 1)` with `case 1` perception and `case 0` unit 356 (1281 B, 163/116); a two-call
+// inline helper taking the index as `long` and reading the block at its use 379 (1231 B, 179/121). Body restored.
 // M3 lane 8 r152 (fast, the matched callees listed; masked aligned 115 at 253). The creation arm moves after case 2, as in
 // retail (and retail's 0x2902b0, which carries a copy of this body), only when the whole arm from 0xb7930 to 0x1e0160 is a
 // forced-inline body. Forced-inline creation helper (actor returned, unit through a pointer) 448 (1368 B, masked 70: the arm

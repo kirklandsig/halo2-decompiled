@@ -227,7 +227,7 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
 // MiniMax C (11-10): the score is 334 (was 334); the gate flag keeps its dead store where retail folds the address, and the settings pointer, the effect address and the random draws still live in different homes.
 // MiniMax E (11-09): no new form, no lower score (334).
-// score 334 (was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
+// Earlier (334, was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
 // MiniMax E (11-09): no new form, no lower score (334).
 // gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
 // MiniMax E (11-09): no new form, no lower score (334).
@@ -605,6 +605,13 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // (same code; on main's body 334, same code). Keepable parts alone: the velocity default 348 (frame 0xb4; a re-measure
 // of lane 14 r79's form); with the in-loop lookup and the if/else reciprocal 331 (1696 B); plus 0x247fd0's cache test
 // and store order 327.
+// M3 lane 12 r113 (fast with 0x247fd0 and 0x248cc0, both kept; aligned 169, register-masked 71, ours 420 instructions
+// against retail's 430 at 1652 bytes: retail folds no base+index or memory operand here). Lane 6 r167's keepable parts
+// (V the velocity default, L the in-loop particle_object_for_tag, R the if/else reciprocal) with C, the cache test as
+// `local_2 != arg_0->field_50` without 0x247fd0's store order: C 333, V+C 347, V+L+R+C 330 (1696 B), L+R+C 371 (1696),
+// V+L+C 342 (1696); without L: V+R 348, V+R+C 347, R+C 333 (1652 each); on V+L+R+C: all four draws through one plain real
+// (the record's draw member dropped) 385, the gate without the volatile or the assignment in its test 441 (1696 each).
+// None reaches the 8-point bar; body unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -500,6 +500,8 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // hit declared before first 34, distance1/point1 declared ahead of the iterator 34, point0/distance0 declared ahead of
 // forward 34, the target-reached exit as `goto finish` 34 (all same code); re-measured: the magnitude named at the call.
 // No unlisted natural form.
+// M3 lane 12 r113 (fast with the file's eight other functions, all kept): re-measured on this body, the two two-level
+// exits through a bool stop flag tested by the outer loop 356 (1607 bytes; listed 345 on an older base). Body unchanged.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

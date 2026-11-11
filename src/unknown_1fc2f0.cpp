@@ -663,6 +663,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // declared ahead of delta, the tick count assigned after its declaration, a `(real)` on the squared length) add
 // nothing; the first add's operands swapped alone 32 (same code). No untried natural form is left (as lane 18 r17
 // found): the store/delta order and the rate-chain order stay coupled through the delta statements.
+// M3 lane 12 r113 (fast with the file's five other functions, all kept): re-measured on this body, the call without the
+// parameter reference 99 (frame 0x14; tracked no longer arrives in EAX), so it stays; the deltas assigned i, j, k 79 (stores,
+// early dj square and (k + j) + i sum then retail's; left the tick products i, j for retail's j, i and the delta homes
+// di/dj/dk XMM3/XMM4/XMM2 for retail's XMM4/XMM2/XMM3). No unlisted form; body unchanged.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

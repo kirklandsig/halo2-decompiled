@@ -2,6 +2,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "view_context_storage.h"
+#include "bitmap_sequences.h"
 
 struct s_float_rect;
 struct s_widget_quad_2b11;
@@ -41,38 +42,6 @@ struct s_24e9c7_kinds_view
 	s_24e9c7_kind *entries;
 };
 
-struct s_24e9c7_sprite
-{
-	byte unknown00[8];
-	real bounds[4];
-};
-
-struct s_24e9c7_sequence
-{
-	byte unknown00[0x20];
-	short first_bitmap_index;
-	byte unknown22[0x34 - 0x22];
-	long sprite_count;
-	s_24e9c7_sprite *sprites;
-};
-
-struct s_24e9c7_bitmap
-{
-	byte unknown00[4];
-	short width;
-	short height;
-	byte unknown08[0x74 - 8];
-};
-
-struct s_24e9c7_bitmap_group
-{
-	byte unknown00[0x3c];
-	long sequence_count;
-	s_24e9c7_sequence *sequences;
-	long bitmap_count;
-	s_24e9c7_bitmap *bitmaps;
-};
-
 struct s_24e9c7_marker
 {
 	bool use_full_alpha;
@@ -109,13 +78,8 @@ struct s_24e9c7_points
 	s_24e9c7_point n[4];
 };
 
-struct s_24e9c7_bounds
-{
-	real x0, x1, y0, y1;
-};
-
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
-// score 125 (was 125): the frame size, the bounds stores and the marker copy agree; what is
+// score 125 (was 125): round 112 (m3 lane 12) note at the end. The frame size, the bounds stores and the marker copy agree; what is
 // MiniMax C (11-09): no new form, no lower score (125): the full build's diff shows the group of
 // the result, kind and bitmap homes eight bytes above retail's, with retail's spill at -8 and its
 // unused slot at -0xc above them, and the 1.0 constant in xmm4 where retail uses xmm5; the bounds
@@ -451,6 +415,14 @@ struct s_24e9c7_bounds
 // 2;`) 125 (same code); the four marker stores to the view globals before the corner points 131 (retail interleaves them with
 // the last corner sums); `up.y` as `-(result * forward_j)` 125 (same code). Close to round 147's half width before the height:
 // the result conversion after the half width 131.
+// M3 lane 12 r112 (fast with 0x24e59f/0x22a664, both matched; 125, aligned 87, masked 61). Kept (same code, 125, plain
+// confirmed): the shared bitmap types from bitmap_sequences.h (tag, sequence, sprite, dimensions) and box2f for the bounds,
+// in place of this file's private views and the cast of the sprite's bounds through a private four-real record. Checked:
+// our unary minus already compiles to retail's `0 - x` (xorps, subss) for the up and back offsets.
+// No other untried natural form: the note covers the across/side/up/back products as points, scalars, arrays and the
+// shared point types, in place and through helpers, every corner copy placement, the bounds and opacity spellings, the
+// domains of the conversions and the declaration orders; what is left is the early across spill to -8 and its pair's home
+// above the result, the 1.0 register and the sprite pointer's `mov eax` / `lea esi` staging.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
@@ -461,9 +433,9 @@ real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *pl
 		long bitmap_index = kind->bitmap_index;
 		if (bitmap_index != NONE && kind->shader_index != NONE)
 		{
-			s_24e9c7_bitmap_group *group = (s_24e9c7_bitmap_group *)g_4e3b44[bitmap_index & 0xffff].bytes;
+			s_bitmap_tag_22ae21 *group = (s_bitmap_tag_22ae21 *)g_4e3b44[bitmap_index & 0xffff].bytes;
 			short sequence_index = kind->sequence_index;
-			s_24e9c7_bounds bounds;
+			box2f bounds;
 			long first_bitmap = NONE;
 			bounds.x0 = 0.0f;
 			bounds.x1 = 1.0f;
@@ -471,10 +443,10 @@ real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *pl
 			bounds.y1 = 1.0f;
 			if (sequence_index >= 0 && sequence_index < group->sequence_count)
 			{
-				s_24e9c7_sequence *sequence = &group->sequences[sequence_index];
-				first_bitmap = sequence->first_bitmap_index;
+				s_bitmap_sequence_22ae21 *sequence = &group->sequences[sequence_index];
+				first_bitmap = sequence->first_bitmap;
 				if (sequence->sprite_count)
-					bounds = *(s_24e9c7_bounds *)sequence->sprites->bounds;
+					bounds = sequence->sprites->bounds;
 			}
 			else if (sequence_index == 0 && group->sequence_count == 0 && group->bitmap_count > 0)
 			{
@@ -482,7 +454,7 @@ real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *pl
 			}
 			if (first_bitmap != NONE)
 			{
-				s_24e9c7_bitmap *bitmap = &group->bitmaps[first_bitmap];
+				s_bitmap_dimensions_22ae21 *bitmap = &group->bitmaps[first_bitmap];
 				real size = placement->size + 1.0f;
 				real across_i = size * -placement->forward_j;
 				real across_j = size * placement->forward_i;

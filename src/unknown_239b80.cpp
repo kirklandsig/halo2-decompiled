@@ -992,6 +992,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // const *)memcpy(copy, ...)` 372 (975 B); re-measured: the deltas through polygon_difference_23a220 129 (round 366's shared
 // 2-D difference). No untried natural form targets the cause: the one lever is the count's ECX at the alias join, which only
 // the repeated `if (count > 0)` guard gives (match-only, best 92 with the if/else fraction).
+// M3 lane 12 r113: no unlisted natural form, no trial: retail holds count in ECX from the alias join to the loop guard
+// (`mov ecx, [ebp + 8]; movsx edi, cx ... test cx, cx`), so the previous side gets no byte register (+0xd) and the loop
+// head takes ECX for `points`; ours reads count from memory twice and keeps the previous side in CL. Body unchanged.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
