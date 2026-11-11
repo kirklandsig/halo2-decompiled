@@ -906,6 +906,18 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // right 244 (1234 bytes; it reshapes the arm, so it does not isolate the colours). Kept: the target's position through the existing
 // object_get and object_node_matrix (include/slot_handler.h) in place of the getter written out with a header type made up in the
 // body 45 (same code; the file's other functions stay matched).
+// M3 lane 13 r81 (fast with 0x1f0870, 45 as the full check; aligned exact/fully masked 88/8): of the 45, about 24 lines
+// are calls and global loads after the products flagged only by the 1-byte shift; the masked diff is the first product's
+// two temporaries (ours f.k -> xmm1 = right.i and f.j -> xmm2, retail xmm2/xmm1; right.k xmm0 in both), the second
+// product's resulting reload of forward.k (`movss xmm4, [ecx+8]`, 5 bytes, where retail copies right.i with a 3-byte
+// `movaps xmm4, xmm2`), and the else arm's j/k stores through edi. Retail's second product is cross3f_staged's k, j, i
+// order; re-measured cross3f_staged there 217 (1270 bytes: previous_up.k then loads into xmm2 and every colour rotates).
+// Retail reads input[2] three times and recomputes the reset bound three times, as this source does, so no form outside
+// the products and the else arm keeps the rest of the body; every product and else-arm form found is listed above. Camera
+// arm statement orders: the field of view copied before the products 216 (1265 bytes), after the offset/velocity copies 67;
+// the timer cleared before the flags 47; velocity copied before offset 47; after the arms, modes[0] before value94 47, and in
+// the timer-3 block valuea0 before the distance 47. Same code: velocity copied from command->offset 45; up through the
+// existing normalize3d 44 (same instructions; it calls a local copy instead of 0x30bf0, so not kept).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

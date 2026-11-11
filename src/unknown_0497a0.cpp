@@ -330,6 +330,12 @@
 // in the default arm or in the perspective rows 536/536 (same code); sy computed after the v20 rows 550; the six input
 // products all `scale * x` or all `x * scale` 536/536 (same code). Retail reads the four wave constants (8.2, 7.8,
 // 7.75, 5.6) only here, so no shared retail helper accounts for the dead second uses of sin x, cos 7.8y and cos 7.75y.
+// M3 lane 13 r81 (fast = plain 536; aligned exact/fully masked counts, base 519/104): perspective rows in place with each
+// reciprocal just before its rows, k after both, then two vector3f_scale 612 (2622 bytes, aligned 452, masked 107: the later
+// code then aligns with retail apart from inv in xmm3 for retail's xmm5, but the rows store and reload r and s, 8 extra
+// instructions); the same through vector3f_add_scaled(&v2, &r, sx, &r) 637 (2604 bytes); six named row sums in that order 536
+// (forward-substituted); the 8.2 argument as a named double on this base 585; s0 as `0.5f * (...)` 536 (same code); the
+// second cross w computed first, ahead of c, 685 (2596 bytes).
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

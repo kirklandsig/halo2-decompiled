@@ -1711,6 +1711,13 @@ long function_1fa7f0(void);
 // call with `side = !side` in the attempt for's increment 434 (1715 bytes, frame 0x10c: the attempt loop is then retail's, other
 // side in BL and location in EDI); on it the first conversion in 0x210850's nested shape 426 (1725 bytes, masked aligned 108 against
 // 94). The scan is what is left there: retail compares count from memory and keeps edge in EBX, ours keeps count in BX.
+// M3 lane 13 r81 (fast with 0x270930 and 0x2c2a70, which stay matched; aligned exact/fully masked, base 335/57): the masked
+// diff is register and slot choice only (retail: edge in EBX and a second `mov ebx, 0xffff` where the scan finds a typed
+// step, count compared from [ebp+0xc], NONE in SI; ours: count in BX, edge at a stack slot). Tried: a named
+// `short last = count - 1` for the last-candidate test and the copy of the last step 469 (1765 bytes); the corner test as
+// `left && right` 401; type and link without initializers, set to NONE in the untyped arm 476 (1762 bytes); the corner as
+// `side ? corners[0] : corners[1]` 473 (1710 bytes); the other side passed as `!side` with `side = !side` at the end of the
+// attempt body 434 (1715 bytes, frame 0x10c; the listed for-increment form's code), plus the named last index 455 (1743 bytes).
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

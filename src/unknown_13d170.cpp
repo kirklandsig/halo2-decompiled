@@ -565,6 +565,17 @@ struct s_physical_block_iterator
 // masked 27, the outer loop's reload order flips); the walk's block as a plain local 116; the ages written inside the
 // comparison 216; the permuter (64 tries) none below 93. Diagnostic volatile loads (removed): in the walk body 73, before
 // the walk 115, neither flips the swap.
+// M3 lane 13 r81 (fast with 0x13d320, which stays matched): lane 9 r109's 93 lead rebuilt is 93 again (1213 bytes, first
+// difference +0x338, fully masked 14). What is left on it: the walk's count and bit (ours EBX/EDI, retail EDI/EBX); the
+// overlap sum computed into best.offset's register with best.offset reloaded for the second test, where retail adds into the
+// pages register and compares a copy (`mov edx, edi; cmp eax, edx`); the NONE register materialized before the allocation
+// test (`or edi, -1; cmp eax, edi`), where retail tests the immediate and sets EBX to -1 inside the success arm; result in
+// EBX at the return (retail EDI). On the lead: the oldest-block test with `oldest != NONE` first 91 (positional only: retail
+// tests the count first); result declared in the candidate block with a separate `return NONE` 391 (1225 bytes, first
+// difference +0x2f); same code (93): the deletion iterator at function scope, named `start`/`end` bounds for the overlap test,
+// `end` alone, a named block offset, the iterator's fields initialized index first. On the kept body: the oldest test with
+// `oldest != NONE` first 201 (different code); the default age clamped by `if (age < 0) age = 0;` 273 (first difference
+// +0x1); the new candidate's pages cleared before its time 203; the lead's two-stage insertion alone 213 (1227 bytes).
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
