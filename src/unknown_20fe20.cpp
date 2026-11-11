@@ -2949,6 +2949,16 @@ void function_20fda0(long arg_0);
 // read at the top of the block, just before the 0x20f040 call, or at function entry 44/44/46 (145/145/141 bytes; the pool is
 // held in EBX across the call, though the 0x20d570 argument order becomes retail's); the flag read into a bool ahead of the
 // owner 24; the owner as an element of the queue array indexed by the call 20.
+// Round 148 (m3 lane 7, fast): the owner offset named ahead of the node and the queue base added after it 22 (arg_1 then
+// arrives in ESI and 0x114e80 breaks); the call result narrowed implicitly (`short local_1 = function_20f040(...)`, 0x20ff50's
+// form) 19; the flag test un-negated with one queue call after the if/else 31 (round 33's code); the node offset computed at the top of the block
+// 19; the call result kept as a long and narrowed at the owner 19 (both same code). Diagnostic: the body built in
+// src/unknown_20f8b0.cpp (/O2 /Ob1 /Gr, no /arch:SSE, where retail's neighbours 0x20fd50, 0x20fda0 and 0x20ff50 sit) 19, so the
+// file flags do not set it. Compile-only (its listing equals the real one): the pool and queue pointers as two members of one
+// global, the masked index at the top of the block, a data local: same code. Retail's order is pool load, MOVSX, queue load:
+// the queue gets EAX only because the MOVSX frees it first; every form here loads both globals ahead of the MOVSX.
+// Also (round 148): the release arm as an early return 31 (round 33's code again); the 0x20d570 object index named in its
+// block 19.
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {

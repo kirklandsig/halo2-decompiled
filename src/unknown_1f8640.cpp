@@ -378,7 +378,7 @@ struct s_1f8a70_actor
 // than retail's (ours at esp+0x10 where retail has esp+0x12), retail switches on the word at
 // esp+0x14 with a jump table where ours tests the mode with branches, and ours is twenty bytes
 // shorter than retail (1632 against 1652).
-// score 182 (was 182; earlier 188): Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
+// score 182 (was 182): earlier 188; Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
 // Earlier at 228: Frame 0x84 versus 0x80; pool/data entry order and unit-output/route/result homes differ.
 // MiniMax S (10-31): no new form, no lower score. Deferring the result's initializer reproduces retail's
 // 0x80 frame and prologue exactly (the first difference moves from +0x0 to +0x33), but the aligned body
@@ -706,6 +706,17 @@ struct s_1f8a70_actor
 // default), then cases 6 and 7 (both jumping back to the head), the zero-route test, the failure block (false stored,
 // 0x1f8750, the result reloaded), route cases 2, 1, 0 and the final block, whose not-found branch enters the failure
 // block after its store.
+// M3 lane 3 r231 (fast, control 182). Re-measured on this body: the failure block as the mode switch's default (round 129's
+// form; here `default: failed: route_found = false; goto finish;` with `finish:` before the final test) 182 (same code: the
+// block is threaded away). New: the success arm returning `route_found` itself 310 (the first exit folds); the route admission
+// as its own switch setting a bool (case 0 the zero test, cases 1-2 true, default false) 182 (same code as the nonzero-first
+// ternary); the zero test as `!(radius == 0.0f && node == NONE)` 182 (same code); the unit action state in a named local 199
+// (homed at +0x10, compared from the frame); the route initializer as `actor->unknown229 ? 1 : 0` 182 (same code). Layout lead
+// (diagnostic on a listed form): with the default as its own 0x1f8750 call and `return false;` (453, a duplicated failure
+// block) the route test moves behind case 5's shared `route_mode = 1` tail with cases 6 and 7 after it, as retail; so the join
+// leaves case 7 only when a block that survives threading follows case 7 in source. Retail's zero test, failure store and
+// failure call after case 7 fit that if the failure block (its false store and the memory reload after 0x1f8750) is that
+// block; ours folds the false, so the block vanishes. A compile-only /Gr harness keeps this layout rule.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

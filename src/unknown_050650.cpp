@@ -1089,6 +1089,17 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // a forceinline declaration 257 (same code); cases 3/5/6 ending in `break` with one `point_valid = true;` after the
 // switch 368 (retail's byte homes, result low and point_valid high, but the specification moves to ECX and the three
 // callers drop to 4/1/2), only cases 3 and 5 merged 354 (1404 B, same flip). Retail has the merged store and EAX.
+// Lane 14 r81 (fast with 0x297a50/0x297660/0x2980d0 and every callee, 258 against the full 257; register-masked
+// aligned count 110): the 0x1e3b00 reference argument cast to `point3f const *` 258 and the output as
+// `(point3f *)&point.x` 258 (both same code: `&point` stays one value, `mov edi, ecx`); case 1's remembered test
+// nested (`else if (state >= 1) { if (unknown00 == NONE) goto done; ...`) 258 (same code). Diagnostics, reverted:
+// case 1's remembered branch removed 364 (1396 bytes); case 1's cafc0 call removed (caf60 only) 211 at 1408 bytes
+// with the masked count 110 -> 24: the rest of the layout is then retail's (direction chain after case 2's
+// remembered block) and only the result/point_valid homes and the weapon call's setup differ. So the merged cafc0
+// tails of cases 1 and 2 set the layout. Matched 0x1b2770 calls 0x1e3b00 with the object load ahead of the pushes
+// and a separate `lea edi` output (a different local). Here retail loads the object after the third push and
+// recomputes `lea edi` for the same `&point`, which lets case 1's remembered copy join case 2's instead; ours loads
+// the object first and copies the pushed address (`mov edi, ecx` / `mov edi, eax`).
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

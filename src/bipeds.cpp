@@ -1718,6 +1718,12 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // ordinary function in src/unknown_1eb550.cpp (linked after network_voice.cpp), which LTCG inlines, 459 and 0x54590 2
 // again: any new function in this call graph flips 0x54590 wherever it is defined (diff in build/r74 of m3-lane13).
 // Fast: boost as one conditional expression 585 (same code), facing as one conditional expression 661 (2796 bytes).
+// M3 lane 16 r104 (fast; fast agrees with the full build here, 585): `turning` through a named animation id read once and
+// compared twice 585; case 1's flags_348 bit 7 through field_bit_test 585; the rigid body's motion pointer as a local used three
+// times 585; the fallback's `biped->unknown434 = distance = 0.3f;` 585; the facing source chosen as a pointer 661 (2796 B).
+// No existing function returns the gravity block or its field (grep), so the frame dword still has no keepable route. Retail
+// puts the biped's component in EAX for 0x183670 (as 0xe5d50's first argument), ours the root's: a parameter-order lead whose
+// definition sits in src/unknown_181a10.cpp (another lane's file this round) and is unmatched.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3233,7 +3239,7 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
    one settles and goes to sleep (2); one that gets up again stands */
 // MiniMax R (11-09): no new form, no lower score (539); the state byte read as a signed byte gives 538, under the keep bar, and the frame stays 0x44 here against 0x4c in retail.
 // MiniMax R (11-06): no new form, no lower score (520); the frame is 0x44 here and 0x4c in retail, so the local area is two words short.
-// score 517 (was 539): round 101 (m3 lane 12) notes are at the end of this note. Earlier at 539 (was 520): two value fixes this round raise it: case 1 passes g_4687a4 as 0xb77d0's angular velocity too
+// score 490 (was 517): round 101 (m3 lane 12) and round 104 (m3 lane 16) notes are at the end of this note. Earlier at 517 (was 539). Earlier at 539 (was 520): two value fixes this round raise it: case 1 passes g_4687a4 as 0xb77d0's angular velocity too
 // (retail 0xe0f75: `mov eax, [0x4687a4]; push eax` with EAX still holding it, which matched 0xb77d0 takes as its third
 // argument; ours passed NULL), and the single-body fallback push runs when the component's flag 11 is clear (retail
 // 0xe118f jumps to the fallback at 0xe15b7; ours skipped it). Frame 0x44 versus 0x4c; result byte, scalar homes and
@@ -3443,6 +3449,27 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // summed first 352 fast (masked 125); a definition pointer at the hit block's top 350 (frame 0x4c as retail, but the index goes
 // to EAX and 0xdd360 to 224), that with the hit setter 416, with the nested hit-body if 350, with a case-0 definition local as
 // well 352; the hit setter alone 519.
+// Round 104 (m3 lane 16, fast with 0xdd360 (222 throughout) and 0xe16b0; kept change confirmed plain): kept 517 -> 490 (1892 B),
+// the push block through existing helpers: the projection dot through dot3f, the projection through vector3f_add_scaled (scale
+// `0.0f - dot`; retail subtracts with subss, so that site is not retail's yet, and no subtract-scaled helper exists), both scans'
+// distances through a per-body offset vector (vector3d_from_points3d, then dot3f). Singly: dot3f 517, scans 515, add_scaled 514;
+// scans + add_scaled 498; with the along vector through vector3d_from_points3d 498. On 490: the push change through vector3f_scale
+// 490; `direction *= push` through vector3f_scale 497; the fallback change through vector3f_scale 490; along through
+// vector3d_from_points3d 490; the push limit as a two-use local 490; the hit setter re-measured 515; the size field at each loop test
+// re-measured 518. The biped's +0x34b declared `char` (retail's movsx; needs 0xe18d0's pointer local retyped, contributor code)
+// 517 -> 516 on the old body, 497 on scans + add_scaled; 0xe18d0 and the other users stay matched, 0xdd360 222.
+// NEEDS A RULING (mix; diff against main in build/r104/held-e0ef0.patch): a definition pointer local at the top of the hit block
+// (before the two random scales, where retail computes it at 0xe11eb) used for both +0x258 reads, beside the macro reads at the
+// model lookup and the 0x1f0 test: 490 -> 368 fast; with `direction *= push` through vector3f_scale 362. It removes our entry spill
+// of the biped (`mov [esp+0x10], ebx`): ours gives the third scan's counter EBX and reloads the biped after the loop, retail keeps
+// that counter in memory and the biped in EBX, so the whole body realigns. On 362 with the held 0xe16b0 form (unread bool second
+// parameter fed from a named local, see round 164) 342 at 1924 B, frame 0x4c, and with the `char` field too 341 (first difference
+// +0x43: the hit point's movss copy and the mass loop's load order remain). Uniform forms of the pointer: declared at the top of
+// case 0 for all four uses 496; declared at the model lookup 493 (frame 0x4c, masked aligned 90 against 155, but the entry spill
+// stays); declared at the function top 490; on the model-lookup form `direction *= push` through vector3f_scale 486, the hit setter
+// 528, the limit local 493, the change and fallback scales 493, the size field at each loop test 519 (521 with the push scale).
+// Without the scans' offset vectors (dot3f + vector3f_add_scaled only) 501, so the offset vectors add 11. The 0x1f0 test and
+// flags_348 bit 10 through field_bit_test: 490 on the kept body, 486 on the model-lookup pointer form (same code).
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3528,11 +3555,9 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 									along.k = hit.z - center.z;
 									if (function_30bf0(&along) > 0.001f)
 									{
-										real dot = along.i * direction.i + along.k * direction.k + along.j * direction.j;
+										real dot = dot3f(&along, &direction);
 
-										direction.i -= along.i * dot;
-										direction.j -= along.j * dot;
-										direction.k -= along.k * dot;
+										vector3f_add_scaled(&direction, &along, 0.0f - dot, &direction);
 										if (function_30bf0(&direction) != 0.0f)
 										{
 											real push = *(real *)(BIPED_DEFINITION_GET(biped) + 0x258) > 0.7f ? 0.7f : *(real *)(BIPED_DEFINITION_GET(biped) + 0x258);
@@ -3545,8 +3570,11 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 											for (i = 0; i < count; i++)
 											{
 												point3f const *position = biped_rigid_body_position(component, i);
-												real distance = (position->x - center.x) * along.i + (position->z - center.z) * along.k +
-													(position->y - center.y) * along.j;
+												vector3f offset;
+												real distance;
+
+												vector3d_from_points3d(&center, position, &offset);
+												distance = dot3f(&offset, &along);
 
 												if (!(farthest > distance))
 												{
@@ -3556,8 +3584,11 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 											for (i = 0; i < count; i++)
 											{
 												point3f const *position = biped_rigid_body_position(component, i);
-												real distance = (position->x - center.x) * along.i + (position->z - center.z) * along.k +
-													(position->y - center.y) * along.j;
+												vector3f offset;
+												real distance;
+
+												vector3d_from_points3d(&center, position, &offset);
+												distance = dot3f(&offset, &along);
 												real scale = (0.0f > distance ? 0.65f : 1.0f) * (1.0f / farthest) * distance;
 												vector3f change;
 
@@ -3830,6 +3861,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // test in a nested block 573 (masked 231); both 576 (masked 215); the wall turn through the existing rotate_direction (the same
 // formula) 634 (2757 bytes, masked 214), with both 631; the pitch rows with double sine and cosine (retail computes them on the
 // x87 stack with unrounded fsin/fcos and loads the pitch twice) 587 (masked 256). Body unchanged.
+// M3 lane 16 r104 (plain, 0xdd360/0xe0ef0/0xdc5c0 unchanged): the mode-6 first weapon through the existing
+// unit_get_current_weapon at its current place 594 (2743 B); the wall cosine through dot3f 563 (2742 B, masked aligned 154 ->
+// 140); the wall turn's axial term through dot3f 610; both 573; the pitch rows through vector3f_scale then vector3f_add_scaled 571.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

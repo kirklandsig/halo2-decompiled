@@ -82,7 +82,7 @@ void cast_volume_30b810::function_30b810(__m128 const *start, cast_30b810 const 
 {
 	transform.translation = *start;
 	bounds_312800 bounds;
-	((shape_312800 *)object)->get_bounds(transform, ((world_312590 *)field_8)->tolerance->value + cast->tolerance,
+	((shape_312800 *)body.shape)->get_bounds(transform, ((world_312590 *)field_8)->tolerance->value + cast->tolerance,
 		&bounds);
 	__m128 path = _mm_sub_ps(cast->end, *start);
 	__m128 zero = _mm_setzero_ps();
@@ -104,6 +104,6 @@ void cast_volume_30b810::function_30b810(__m128 const *start, cast_30b810 const 
 	{
 		collidable_30b810 **other = &bodies[i];
 		long kind = (long)(*other)->shape->slot_5();
-		dispatcher->functions[((long)field_54 << 5) + kind](&object, *other, &input, collector, start_collector);
+		dispatcher->functions[((long)field_54 << 5) + kind](&body.shape, *other, &input, collector, start_collector);
 	}
 }

@@ -251,6 +251,9 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // 0x6c-0x74. On that 248 form (plain): the waypoint radius as a ternary initializer 269; the hysteresis as one compare
 // against a ternary threshold 369 (3704 B); the wander/steer sum written steer first 248 (same code); the speed zeros
 // through vector3f_assign re-measured 452 (3712 B).
+// M3 lane 16 r104 (plain with 0x293b30, which stays matched): the waypoint radius as a ternary 273; the hysteresis threshold
+// as a named local 387 (3705 B); the waypoint index read once into a short local used three times 281 (3717 B); the 3.0 clamp
+// after the wander call as a ternary 252 (same code); the separation weight passed as `0.0f - local_29` 252 (same code).
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

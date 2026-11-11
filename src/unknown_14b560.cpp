@@ -786,6 +786,7 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// score 43 (was 43): frame 0x10 agrees; player/unit carrier roles and the root-walk entry differ.
 // MiniMax D (11-09): no new form, no lower score (43); reading the unit index before the player pointer gives 43 (was 44) but leaves the carriers as they were - retail holds the datum address in EDI and the unit index in EBX, we hold them the other way round - so it is not kept.
 // MiniMax C (11-09): no new form, no lower score (43); retail's walk presets its root to NONE and
 // starts the walk at the unit, so the unit carrier takes EBX and the datum address EDI, the other
@@ -793,7 +794,6 @@ bool function_e4050(long object_index);
 // MiniMax H (11-07): no new form, no lower score (43); the datum address is still computed in EBX
 // where retail computes it in EDI and the two are used the other way round, and the root walk is
 // still the out-of-line 0xbaf80, whose source sits in src/unknown_0bad50.cpp.
-// score 43 (was 43): frame 0x10 agrees; player/unit carrier roles and the root-walk entry differ.
 // MiniMax E (11-06): no new form, no lower score; retail inlines the 0xbaf80 root walk with its entry
 // test, while our build keeps that walk out of line because another file pins it, so the player and
 // unit carriers stay the other way round.
@@ -887,6 +887,15 @@ bool function_e4050(long object_index);
 // EAX); the unit declared at function scope 171. On the kept body: the unit declared at function scope 44 (same code).
 // MiniMax R (11-10): no new form, no lower score (43): the walk's unit and parent still take the opposite
 // registers from retail, and the iterator step in the other file decides that colouring.
+// Round 71 (m3 lane 15, fast; control 44, plain 43): the NONE test on the field with the unit local read after it and
+// the NONE-root walk from that local 109 (431 bytes, entry test threaded away again); the `dword current = unit` walk
+// (405 family, 171) on matched 0x14deb0's record-pool iterator 171; the current body on that iterator 57; the root
+// declared at function scope 44 (same code); the walk reading the next parent into a local before `root_index =
+// parent` 44 (same code). Re-measured on the 405 family (listed forms on a listed base): the unknownaa byte named once
+// 171/171 (field-start and dword walks), the body nested under `if (unit != NONE)` 171. Matched 0x1e12b0/0x1e13f0 keep the same NONE-root entry test (`or ecx, -1;
+// cmp eax, -1; je`) because their walk starts from a copy of a value whose tested variable is reassigned before the
+// walk. In the 405 family the unit keeps EAX (0xe4050's argument) and the walk's step object reuses ECX; retail's step
+// object takes EAX, so its unit goes to EBX and the iterator index to the frame.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -1377,6 +1386,13 @@ static inline s_players_globals *players_globals_14f2e0()
 
 /* gives a player its unit (the unit kept for it, the unit waiting to be
    reused, or a new unit at a starting location) and resets its spawn state */
+// score 46 (was 46): the NONE outputs are materialised with `mov eax, 0xffffffff` where retail
+// uses `or eax, 0xffffffff` (two bytes shorter, so every later stack address differs), and the
+// zero/flag store schedule differs; the success BL agrees. Round 29 (lane G): with the two
+// outputs declared and assigned separately and the timers cleared with a memset the score is 43,
+// but the constant stays a mov in every form tried (a struct of the two outputs, one and two
+// declarations, chained and separate assignments, ~0 and -1 spellings), so the gain is under the
+// keep threshold and the original body is restored.
 // MiniMax R (11-10): no new form, no lower score (46); the sentinel is still materialised with the five-byte
 // `mov eax, 0xffffffff`, the two outputs take the opposite stack slots and their stores the opposite order; the
 // outputs declared in the other order give 48, a named sentinel local and the second output copied from the first 46.
@@ -1390,13 +1406,6 @@ static inline s_players_globals *players_globals_14f2e0()
 // length difference), and one-file models show that both are this context's scheduler choice: in
 // isolation the sentinel comes out as `or eax, 0xffffffff` and the byte clear comes first whatever order
 // the statements are written in. Fixing one site alone is a three-point gain, under the keep threshold.
-// score 46 (was 46): the NONE outputs are materialised with `mov eax, 0xffffffff` where retail
-// uses `or eax, 0xffffffff` (two bytes shorter, so every later stack address differs), and the
-// zero/flag store schedule differs; the success BL agrees. Round 29 (lane G): with the two
-// outputs declared and assigned separately and the timers cleared with a memset the score is 43,
-// but the constant stays a mov in every form tried (a struct of the two outputs, one and two
-// declarations, chained and separate assignments, ~0 and -1 spellings), so the gain is under the
-// keep threshold and the original body is restored.
 // MiniMax C (11-04): no new form, no lower score; 0xffffffff literals, int outputs, a chained second output and reordered or chained tail clears all stay at 46 (the outputs declared outside the branch give 268).
 // Earlier: NONE materialization and the zero/flag store schedule differ; success BL agrees.
 // Round 39: joint/dependent output initialization 75/75; chained word/flag clears 75/75;
@@ -1510,6 +1519,16 @@ static inline s_players_globals *players_globals_14f2e0()
 // flags 46; the words first, then the 0x198 field and the flags 48; the two flags exchanged 46; the flags ahead of
 // the 0x198 field 46; flag 10 after the words 46. Our build emits the flags' `and` ahead of the zero register in
 // every order (retail: zero, the 0x198 store, then the `and`), so the order of the plain stores is not the cause.
+// Round 71 (m3 lane 15, fast on the effect-timers base: the 0x198 field as `short effect_timers[2]` cleared by memset,
+// re-measured 43 with only the `mov eax, -1` left): the bit-2 test's arms the other way round 122 (1035 bytes); one
+// options pointer local for the state-1 and mode tests 278 (1033; it gives `or eax, -1`, because the pointer is kept on
+// the stack and reloaded into EAX for the compare, where retail loads it fresh into EDX); `if (unit != NONE && bit2)
+// 0xb8540 else if (unit != NONE) {...}` 43 (same code); `result == false` 43 (same code; its first fast measurement,
+// earlier only compile-only); an options pointer for the mode
+// test and the later state-2 test 284 (1061). Diagnostics (reverted): an opaque store, or a direct write of g_4e8c20, in
+// the 0xb8540 stub leaves this at 46. Compile-only (/GL-) gives `mov` for every form that keeps the byte compare, even
+// with the state-1 block compiled out, so it cannot screen this. Hypothesis: the choice follows the byte temp's
+// register (matched 0xc5eb0 has `mov` after the same folded compare though its last EAX write is a full `shr eax`).
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -2432,8 +2451,8 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
-// MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
+// MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and
 // its first 0x151b80 stays a call, while ours has one request home and LTCG expands that call into the body;
 // two separate request locals score 804 and 792.
@@ -2551,6 +2570,15 @@ static __forceinline long player_round_ticks(real value)
 // and LTCG expands those calls). Untouched this round.
 // MiniMax R (11-10): no new form, no lower score (701): our link-time inlining still expands the two callees
 // that retail calls, and the frame is 0x4c against retail's 0x74.
+// Round 71 (m3 lane 15, fast; control 701): the animation progress through the existing 0x10f690(unit, NULL) 704
+// (2743 bytes; it inlines, both blocker calls still expand); re-measured on the current body: the 0xccd20 site as
+// two nested tests 701 (still expands; round 53's 686 was on its own base); the six player flag sets through the file's player bitfield view 701 (same code). Retail evaluates the primary weapon
+// twice after the lunge block (a test, then a fresh unit lookup for the definition bit): that form 734 (2767 bytes;
+// register-masked aligned 267 -> 240); the primary-hand reads through the existing header getter
+// unit_get_current_weapon 708 (2726; masked 261); both 713 (2752; masked 231, the closest structure so far). Retail
+// reloads the header data and the unit for every weapon read (two in a row at the target latch); ours shares one
+// lookup. The two expansions retail does not have still decide the frame and length: BLOCKED-BY 0x151b80 (Avoid file)
+// and 0xccd20 (contributor).
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -2947,6 +2975,12 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// score 103 (was 103): reading g_4e8c20 directly at every use instead of through the named
+// `globals` local builds to the same bytes in the full build (611 = 611, first difference
+// +0x8) and scores 175 against 193 in the reduced image, so the local is not what holds the
+// pointer in EDI; what still differs is the register itself: ours keeps g_4e8c20 in EDI where
+// retail has it in ESI, and retail's iterator holds the pool's index array in ECX where ours
+// has ESI, so the two roles are swapped.
 // MiniMax S (11-10): no new form, no lower score (193): retail keeps g_4e8c20 in esi and reloads it after the busy check and again before the final store, ours carries it in edi to the end of the function, so the pointer's role and the iterator's index array still swap registers.
 // MiniMax C (11-09): no new form, no lower score (103); the busy block is instruction for
 // instruction retail's, and the second loop's failure test already has retail's shape (the first
@@ -2959,12 +2993,6 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // MiniMax H (11-07): no new form, no lower score; the globals pointer and the iterator's index
 // array still swap registers, and the two globals are still read in the other order, so the
 // reduced image still scores 193.
-// score 103 (was 103): reading g_4e8c20 directly at every use instead of through the named
-// `globals` local builds to the same bytes in the full build (611 = 611, first difference
-// +0x8) and scores 175 against 193 in the reduced image, so the local is not what holds the
-// pointer in EDI; what still differs is the register itself: ours keeps g_4e8c20 in EDI where
-// retail has it in ESI, and retail's iterator holds the pool's index array in ECX where ours
-// has ESI, so the two roles are swapped.
 // MiniMax H (11-04, run 33): the two stores through the named `globals` local again lower the
 // reduced image (193 -> 180), but the full build measured that form at 180 against the 103
 // baseline, so it is reverted; no lower score.
@@ -3100,6 +3128,16 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // MiniMax R (11-10): no new form, no lower score (193 on the reduced image, 103 on the full one): the two
 // loops' datum and unit still take the opposite registers from retail, and the callee's inline rounding in
 // the other file decides the globals pointer.
+// Round 71 (m3 lane 15, fast with round 34's widened image; control 103): cause of the globals web, by diagnostics
+// (reverted): a direct write of g_4e8c20 in the 0xb8540 or 0xb7b40 stub (both reached from 0x14f2e0 in loop 2) gives
+// 91 at 608 bytes with retail's ESI prologue and the final store's own reload, while an opaque store through a pointer
+// in that stub leaves 103: our link sees nothing on loop 2's call tree write that global because those two are stubs.
+// BLOCKED-BY 0xb8540 (its real body is disabled: enabling it loses 23 matches) and 0xb7b40 (its draft does not match).
+// Left at 91: loop 1's datum/unit ESI/EDI (retail EDI/ESI), the iterator.data store before loop 1, immediate NONEs.
+// Trials: status codes in a byte local stored once at the join 163 (576 bytes), in a short 191 (592; both as in the
+// reduced image); loop 2's set-up without re-storing iterator.data 117 (608); loop 1's NONE test on the field with the
+// unit read after it 103 (same code); `busy` declared at the loop-body top 103 (same code; round 117 measured it only
+// in the reduced image).
 // Round 107 (m3 lane 9, fast with round 34's widened image, 103; first measurements in this reproducing image of
 // families listed only at the 193 image): busy and failed as `byte` 103 (same code), as `long` 104 (607 B); the
 // status published at the join as a `byte` local 163 (576 B; the prologue then keeps g_4e8c20 in ESI as retail, first

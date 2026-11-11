@@ -9,25 +9,7 @@
 #include "tagged_objects_2e4ff0.h"
 #include "motion_description_3115a0.h"
 
-// the part objects not decompiled yet, each built from two of the
-// description's vectors
-class class_31ad80
-{
-public:
-	class_31ad80(void const *first, void const *second);
-	OBJECT_NEW_3114B0
-
-	char storage[0x110];
-};
-
-class class_31a870
-{
-public:
-	class_31a870(void const *first, void const *second);
-	OBJECT_NEW_3114B0
-
-	char storage[0x110];
-};
+#include "motion_31ad80.h"
 
 #include "lane_a_motion_leaves.h"
 
