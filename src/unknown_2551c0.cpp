@@ -491,7 +491,13 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1);
 
 s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 
-// score 87 (was 87): earlier 89; the object-plus-radius sum is written at both of its uses, the timing
+// MiniMax G (11-11), NOT kept (coordinator 11-11: 87 -> 20 by the unit index assigned inside the guard plus local_1 declared ahead of local_3, both match-only; a plain one-use local before the guard 68, the local at all four reads 241; body at 87): the guard's unit index travels in a named local and the object lookup comes
+// before the two vector copies, so the whole prologue and the guard now match retail's bytes.
+// score 20 (was 87): the frame is 0x54 and the length matches retail's, and the prologue, the
+// guard and the two vector copies all agree. Still differs in the scalar stack homes: the radius
+// sum, the first length, the adjusted projection and the location index sit one slot lower than
+// retail's, which writes the adjusted projection into the length's slot, and the side maximum
+// uses XMM3 where retail uses XMM2.
 // the object-plus-radius sum is written at both of its uses, the timing
 // default is a ternary, and the heading vector is declared ahead of the object index; the frame is
 // 0x54 and the length matches retail's. Still differs in the 0x110ab0 argument register (ECX where

@@ -7,6 +7,7 @@
 #include "unknown_11c920.h"
 #include "unknown_0259d0.h"
 #include "vector_products.h"
+#include "normalize3d.h"
 #include "globals.h"
 #include "unknown_0d0690.h"
 #include "geometry_cache.h"
@@ -252,6 +253,15 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // Round 143 (m3 lane 7, fast): colour first re-measured 121; the blend through a forced-inline in-place
 // wrapper (colour, other colour, ratio) 254, with colour first 299; the constant colour0 store ahead of the
 // loop 214, with colour first 207 (the store stays at the top); colour first with a library copy 121.
+// Round 91 (m3 lane 11, fast; colour first re-measured 121 at 828 bytes, only the post-call add and the ECX/EDI
+// pair differ): retail's latch is `inc ebx` as ours, so the add's only cause is its operand order (ours loads the
+// power as the destination and moves the sum to XMM7). Real trials (the round 85 screen of these was compile-only,
+// which does not model this add): {count, address} block views of the lights and the entries, singly or both,
+// same code on either arm order; the light count in a local 34, colour first 125; the lights array in a local 39,
+// colour first 130; an entry-colour pointer for the copy and the blend call 168, colour first 166; the no-lights
+// fill through vector3f_assign 32, colour first 120; the clamps through pinned_real 66 at 821 bytes (the clamp
+// joins change), colour first 121. Kept: the ray through the existing vector3f_scale (same code on both arm orders;
+// the hand-written ray was its body).
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -295,9 +305,7 @@ long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_
                 }
                 function_30bf0(&direction);
                 vector3f ray;
-                ray.i = direction.i * 100.0f;
-                ray.j = direction.j * 100.0f;
-                ray.k = direction.k * 100.0f;
+                vector3f_scale(&direction, 100.0f, &ray);
                 bool hit = function_1697c0(0x10000001, point, &ray, ignore_object_index, NONE,
                     (s_collision_result_1697c0 *)collision);
                 bool open = hit ? *(short *)(collision + 0x5a) == NONE : false;
@@ -1343,6 +1351,7 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// MiniMax S (11-11): no new form, no lower score (529): retail hands this function its block in eax and its query in edx while this build swaps them, and its frame is 0x2c against retail's 0x28.
 // score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
 // MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
 // and its query in edx while ours swaps them, and the parameter order is not ours to change.
@@ -1604,6 +1613,7 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // and `result = true;` last with retail's square and pin order 568 (masked 206, 0x3db00 lost). Re-measured: the early return 566
 // (masked 263); `bool result = false;` first with `result = true;` last 573 (block EBX and query EDI as retail, record ESI,
 // 0x3db00 lost).
+// MiniMax R (11-11): no new form, no lower score (529): the entry convention and the loop's homes stay rotated against retail's, and the parameter order that would fix the entry is not ours to change.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2217,6 +2227,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
+// MiniMax S (11-11): no new form, no lower score (542): the frame is the same 0x90, but the status, mesh, colour and sample homes sit 0xc bytes lower than retail's, and the second arm's 0x13da30 lookup expands here where retail calls it (that helper lives in another file).
 // MiniMax D (11-10): no new form, no lower score (542); the second arm's 0x13da30 lookup expands here where
 // retail calls it, and that helper lives in another file.
 // MiniMax S (11-10): no new form, no lower score (542): the frame is the same 0x90, but the status, mesh,
@@ -2491,6 +2502,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // registers through the first arm and the sample setup (difflib with registers 287 against 974, registers
 // and offsets masked 110 against 302): left there are the frame homes and the two inlined helpers (13
 // extra instructions shift the tail).
+// MiniMax R (11-11): no new form, no lower score (542): the argument split and the body's block schedule still differ from retail's, and the two inlined helpers live in files this lane may not edit.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

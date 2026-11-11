@@ -344,6 +344,11 @@ void c_window_channel::v9()
 // (`return load(this);`): all five MATCH; with a two-use pointer local there, MATCH; with base-type storage there, 3.
 // The inline load member with the free builder: 3 here and 0x2358c3 lost. Not applied: the builder has about 110 calls
 // in 28 files (some held), and every caller that uses its request right after the call needs the member load form.
+// Round 156 (m3 lane 8, fast): the builder given the first member's address 3 and the id as the decayed array 3
+// (repeats), the address through the second member minus one 22 (81 bytes); the callback through the local's own
+// load 4; an inline constructor taking the builder's arguments and building on `this` 30 (71 bytes: the field_c store
+// becomes dead before the builder and the pushes reorder); the builder's type argument as the just-cleared
+// `request.type` 3; the type test through a `word` local 3 (both the same code).
 // @retail 0x23531c
 void c_window_channel::v10()
 {

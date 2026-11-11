@@ -159,6 +159,12 @@ union s_185be7
 // the word field (no byte casts) and the selected input as `long`. The 516 form puts PIN and SET_FLAG on a subset of call sites picked
 // by score while the rest stay on 0x185be1/0x185be4 (all clamps through PIN 860 on 589; all 22 flags through SET_FLAG 792 on 590), a
 // match-only form; it is held as build/held/lane15-r56-185be0-mixed.patch.
+// MiniMax E (11-11): no new form tried, no lower score (590): retail reads the control global twice into
+// ECX - once at the top of the entry block, where it only feeds the local_1 address, and again at the flag
+// test after the magnitude and pow calls - while this build carries it in EBX from entry to the flag test
+// and keeps NONE in ECX; the forms that would force the second read score worse (a NONE local for the first
+// test and the unit tests 739, a volatile re-read 1020), and the only spelling seen to reproduce the reload
+// exposes the global's address, which this lane may not do, so the body stands.
 // score 590 (was 590; earlier 622, the lane's mixed form 516): 3773/3777 B, masked aligned about 157 (stack offsets and registers masked; 233 at 622). Round 56 (m3 lane 15, plain): PIN on
 // yaw/pitch 608, plus settings 781, plus limit clamps 827, plus turn rates 602, turn rates alone 619, yaw/pitch + turn rates + settings 589 (kept);
 // a ternary on named yaw/pitch values 608. Flags: all 22 through a set-flag macro 614 (3760 B, masked 140: retail's threaded tests), with long selected

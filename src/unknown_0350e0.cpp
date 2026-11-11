@@ -218,6 +218,18 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // with the second pass storing each rotated row straight to g_467104 350 (as the complement alone), with both passes so
 // 362 (1756 bytes). The double parameter alone (344) re-measures J238/B446's double-angle forms on this base.
 // Diagnostic: `#pragma optimize("p", on)` around the function 380 (1815 bytes; float consistency is not the cause).
+// Round 84 (m3 lane 13, fast with 0x137ed0, control 343): diagnostic, both builder bodies written out in the function
+// (measured only) 339 (1784 bytes, first difference +0x2, aligned count up); the rows rotated through the existing
+// vector3f_rotate_into_axes (its term order is not retail's) 347 (1766 bytes); the builder's squares written in place 385
+// (1728 bytes); the builder taking the axis by value 384 (1815 bytes); only the second angle named ahead of the first
+// builder 353 (its product goes to SSE); the builder's parameters as (angle, axis, matrix) 343 (same code); the second
+// pass storing each rotated row straight to g_467104 343 (different code). 0x137ed0 matched throughout. The builder
+// taking (axis, step, factor, matrix) and forming the angle itself, with `step, 0.5f` / `step, 0.3f` at the calls: 332 at
+// retail's length (1779 bytes, register-masked 285 -> 271), 0x137ed0 still matched; NOT kept, an inline helper's parameter
+// list picked by score (the start is unchanged: the second angle is still not computed ahead of the first sine). Same code
+// as 332: the angle named inside the builder, `factor * step`, the parameters as (axis, factor, step, matrix). On 332:
+// the squares before the trig 354, the second pass storing rows straight to g_467104 332 (different code), the rows
+// through vector3f_rotate_into_axes 347, the squares written in place 385, `(1.0f - cosine)` in each cross product 350.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1399,6 +1411,7 @@ bool function_2dba0(long tag, bool alternate, long c, long d, long e, point3f co
 extern bool g_4ba019;
 long function_baf80(long object_index);
 
+// MiniMax H (11-11): no new form, no lower score (12); retail still masks the parent index with `and eax,0xffff` before it reloads g_4e0300, while ours loads the pool first and truncates with movzx, and the pool load is hoisted above the mask in every spelling tried, so retail's order stays out of reach; the body stands.
 // MiniMax B (11-11): no lower score (12): the dword-masked parent index 22 (the earlier round's form, re-measured),
 // the byte-pointer parent lookup 22 and the inline model read for both chains 12 with the same code; retail's dying
 // EAX reuse in the definition chain stays out of reach.
@@ -1758,9 +1771,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
 }
 
+// score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
 // MiniMax B (11-11): no new form, no lower score (193): the helper forms that reach 177 and 182 still raise the
 // caller to 573, so the body stays as it is.
-// score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
 // MiniMax R (11-10): no new form, no lower score (193): the three cross terms' order and the place of the case 1 reference copy still differ, and the forms tried before (each index ahead of the helper, the term orders and the copy ahead of the helper) all measured at or above the body above.
 // MiniMax C (11-09): no new form, no lower score (193).
 // MiniMax C (11-09): no new form, no lower score (193).
@@ -1906,6 +1919,19 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // call and keeps 0.0/1.0 in XMM5/XMM6 as retail does), so 0x2e9e0's 492 body was tuned to the wrong callee. Reworked
 // against this callee with retail-evidence forms, 0x2e9e0 reaches 521 (see its note); the pair is not kept until 0x2e9e0
 // is at or below 492.
+// Round 84 (m3 lane 13, fast with 0x2e9e0; plain where marked): R229's shared forced-inline mode 1/3 projection helper
+// re-measured 182 (0x2e9e0 573); case 3's offsets ahead of the perpendicular 177 (same 0x2e9e0 counts). On that callee
+// 0x2e9e0 gets to 442 (448 plain, the file otherwise unchanged) only with its x/y scale held as one point2f, a
+// match-only form (without it 517); see 0x2e9e0's note. Left here: the cross terms' schedule and the case 1 copy's place.
+// The pair is a lead, not kept. New on the shared helper (0x2e9e0 573 unless noted): its dots through the existing dot3f
+// 179 (aligned 95 -> 91), the same with cases 2 and 4 through dot3f, with either argument order, or with case 3's offset
+// through vector3d_from_points3d 179 (same code); case 1 passing g_4b9dac itself 212 (with dot3f 204); x before y 185 (with
+// dot3f 184); x before the perpendicular 189. On the dot3f helper: the reference by value 240 (0x2e9e0 stays 492), the
+// perpendicular through two cross3f calls 182, through cross3f then cross3f_staged 182; with 0x2e9e0's 448 form 179/449.
+// Those two 182s compile to the plain helper's code (the cross3f calls undo the dot3f effect). Also on the dot3f helper: x
+// before y 184 is frame 0x18 (not R229's 0x20 by-value 184); the helper returning y with x computed by each case 186;
+// x before the perpendicular 189 (800 bytes); same code as 179: `return 0.0f` in case 0 and default, `(real)atan2(y, x)
+// * scale * ...`, only the first or only the second cross through cross3f, an unused caller-scope vector.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -1956,7 +1982,6 @@ real function_2f2d0(vector3f const *direction, point3f const *position, long mod
 
 extern real g_5234c8;
 byte g_4c19c0, g_55e6c6;
-extern dword g_4b8438;
 struct s_2e9e0_saved { long tag; point3f position; };
 s_2e9e0_saved g_4c19c4[4];
 dword g_4c1a04;
@@ -1976,6 +2001,7 @@ PRIVATE inline real clamp_2e9e0(real value)
 }
 
 real game_time_get_seconds();
+void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 
 // score 492 (was 492): earlier 492 (was 507): every D3D call here in the D3DDevice:: member form (retail inlines the vertex push-buffer
 // write, 0x2f17c-0x2f1ba; only the member form inlines it) and clamp_2e9e0 as an initialised single-exit result:
@@ -2157,6 +2183,23 @@ real game_time_get_seconds();
 // factor first (`attenuation = clamp_2e9e0(alpha) * attenuation` ...) 466 each, same code. Renaming direction moves no slot.
 // Left: the locals' frame order (alpha, tag, visibility, position, direction in retail; ours alpha, direction, tag,
 // visibility, position), the loop's 0.0/1.0/amount registers.
+// Round 84 (m3 lane 13, fast unless marked plain; a/m = LCS-aligned / register-masked unmatched lines, control a279
+// m179): both depth-state sites call the existing 0x222d0 (g_4b8438 is its cache entry g_4b81fc[D3DRS_ZENABLE]) in
+// place of its body written out: 492, the cache store now follows the push-buffer load as in retail (a278; kept, plain
+// 492, 0x222d0 and its 16 callers unchanged). With 0x2f2d0 on R229's shared mode 1/3 projection helper (XMM7 in use as
+// in retail), re-measured: R149's stack (sampled colour copied field by field, entry colour copied from `animated` and
+// then multiplied, context alpha through PIN, `!(visibility > 0.0f)`, entry colour first in its block) 523 (a220 m146);
+// plus lane 9's point2f x/y scale pair 499 (frame 0x94 as retail, first difference +0x44, a167 m82); plus the far distance
+// read from the definition at each use (retail reads +0x1c three times) 442 (a166 m78); without the entry-colour move
+// 448 (plain 448, callee 182); without the point2f pair 517, so the gain is match-only and nothing of it is kept. On the
+// 448 form: delta through vector3d_from_points3d 453; the camera sums' j term global-first 448 (same code); with the
+// 0x222d0 calls 449; the attenuation default beside `animated` (point2f base, without the far reads; a moved
+// declaration, measured only) 521 (2298 bytes). Without the pair: with the 0x222d0 calls 517; x_scale/y_scale declared
+// ahead of the loop 517 (same code). Left on 448: the scale output's home (ours +0x68, retail +0x84), the delta, forward
+// and reflected schedule (retail computes delta i, j, k, then reflected j, i, k), the attenuation default reloaded in the
+// else path, and the camera sums' operand order. On 448: the distance attenuation through PIN 563 (2330 bytes), the
+// angular attenuation through PIN 531 (2314 bytes); with 0x2f2d0's dots through dot3f 449. Without the pair, ours keeps
+// x_scale and y_scale in unrelated slots (+0x28/+0x5c) where retail has them side by side in the dead direction slot.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2269,15 +2312,13 @@ long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
                     {
                         if (!g_4c19c0)
                         {
-                            g_4b8438 = 2;
-                            D3DDevice::SetRenderState(D3DRS_ZENABLE, 2);
+                            function_0222d0(D3DRS_ZENABLE, 2);
                             g_4c19c0 = true;
                         }
                     }
                     else if (g_4c19c0)
                     {
-                        g_4b8438 = 0;
-                        D3DDevice::SetRenderState(D3DRS_ZENABLE, 0);
+                        function_0222d0(D3DRS_ZENABLE, 0);
                         g_4c19c0 = false;
                     }
                     D3DDevice::SetVertexData2f(8, clamp_2e9e0(1.0f - *(real *)(entry + 0x20)), 0.0f);
@@ -2602,10 +2643,18 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
+// MiniMax S (11-11): no new form, no lower score (170); retail keeps the raw current length in its own slot at +0xc and the pinned value at +4, while ours reuses one slot for both, and the later homes (the dot's float, the sine at +8, the angle and the cosine at +0xc) follow from that; naming the raw length, spelling the clamp as if/else and testing the guard on the raw all measure 251-252 because a named local changes the x87 shape (fst instead of fstp) and the compare. This round traced the arccosine: retail re-reads the dot as a float (`fld dword ptr [esp+0xc]`, the shape a call of acos with a float argument takes in our own build too), while under /GL our acosf and fabsf widen to their double forms and drag the dot's double copy (and with it the angle, sine and cosine homes) along; sinf and cosf keep their float form, and no source spelling recovers the float load.
 // score 170 (was 170): r136 lane 7 (fast with 0x24590/0x30bf0 in the image): ours keeps a double copy of the dot
 // (`fst qword`) for acos where retail re-reads the float; `acos((double)dot)` 170, `fabs((double)dot)` 170,
 // `acos(dot) * step` 170, `acosf(dot) * step` with `fabsf(dot)` 170, `(real)acos(dot) * step` 170.
 // MiniMax E (11-09): no new form, no lower score (170); the float trigonometry (fabsf, acosf, sinf, cosf) compiles to the same bytes as the double calls, so the trigonometry is not what differs.
+// MiniMax B (11-11): no new form, no lower score (170). Retail keeps the step in the angle only: the acos result is
+// multiplied by the step argument in x87 (fmul dword ptr [esp + 0x3c]) right after the arccosine call, and the axis is
+// the plain cross product, so the step must not move into the axis. Retail re-reads the dot as a float for the arccosine
+// (fld dword ptr, then the call) and keeps the dot and the angle in one slot; a named float copy of the dot removes our
+// double copy (fst qword) and reproduces that shape, but the frame stays 0x34 against retail's 0x38: retail gives the
+// raw length its own home and leaves a hole at 0x8, while we coalesce the raw length with the pinned one, so every
+// later slot sits four bytes lower. Named raws, hand-written clamps and expanded PIN forms all score worse (251/262).
 // MiniMax H (11-06): no new form, no lower score.
 // Retail computes the angle through a single-precision arccosine wrapper (0x322bd8) that loads the dot
 // product as a float from [esp+0xc]; we keep a double-precision copy of the dot at [esp+0xc] and call the
@@ -2760,6 +2809,17 @@ real magnitude3d(vector3f const *v);
 // 181. Renaming a/b/dot/angle leaves the code byte-identical (170). Re-measured on this base: the fallback as three scoped or
 // separately named per-axis blocks 166 each (1039 bytes, frame 0x34; round 524's 163 does not reproduce), with the cosine
 // computed first 167, with the in-place rotation 178 (1028 bytes).
+// Round 84 (m3 lane 13, fast with 0x24590/0x30bf0, control 170): retail's rotation is the game's rotate-about-axis idiom
+// on `first` in place (matched 0x1ecf50 does it through a helper given sine and cosine). A private in-place helper (i, j, k
+// copied, then written back; one caller, so match-only) 168; called with `(real)sin(angle), (real)cos(angle)` 168 (same
+// code); with a result temporary copied back 208 (1077 bytes). Diagnostics, reverted at once: the dot volatile 189, the dot
+// and angle volatile 191. The helper with round 221's acos-input copy 165 at 1045 bytes; on it: an angle copy for the sine
+// 162, the copies taken before the projection 157 (first difference back at +0x30), cosine terms first 165, the size
+// before the rotation 171. On 157: an angle copy for the sine 155; the axis through cross3f or cross3f_staged 157. On 155:
+// cross3f 155 (same code), cross3f_staged 155, a copy for the cosine too 157, the raw current length named 259, a separate
+// target reciprocal 155 (same code), the angle product in SSE 155, the fallback as three blocks 155 (same code), the cross
+// term added with its sign flipped 184 (1019 bytes). Left on 155: the raw length and the dot share retail's +0xc; ours
+// keeps the length in a's slot, which permutes the first/axis/second homes.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3017,6 +3077,16 @@ s_cached_input_list g_5234e8[4];
 // follows from the index being coalesced into 0x31590's EDI argument (our build treats EDI as preserved across that call;
 // retail keeps the index in EBX and copies it to EDI), so EBX/EBP go to the cursor and total and retail's spilled list and
 // total never appear.
+// Round 84 (m3 lane 13, fast with round 64's callee chain plus 0x241620 and 0x4ac30, control 113; a/m = LCS-aligned /
+// register-masked unmatched lines, control a68 m31): probe, the 0x31590 call removed: 128 (a95 m37); the index then
+// takes EBX and the cursor EBP as in retail (object and entry ESI/EDI, swapped against retail), so the call's EDI argument
+// preference is what wins the index. Probe, the index read again from the list after the call: 168 (570 bytes; the load
+// is not merged across the call, and the second value takes EBX). With the once-read list (re-measured 132, a61 m25,
+// the closest masked form): the call removed 139; the index read again through it 159 (563 bytes). The shape buffer as a
+// dword array 113 and, with the list, 132 (same code each); the shape result named before the capacity test 113 (same
+// code). 0x31590's whole callee tree is matched, so this is not a clobber difference. Diagnostics: an extra use of the index
+// after the call (`(index >> 31)` added to the stored word) 149 (558 bytes, the index still in EDI), `&& index != NONE` in
+// the object test 113 (folded), so the index's own priority does not decide its register; the call's preference does.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3285,6 +3355,15 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // both call sites 316 (same code); the growth step as `elapsed = elapsed + step; initial += elapsed` 317 and the fourth
 // pass's `-step` 317 (same code each). Retail's growth loop re-reads the stored elapsed (`initial + [elapsed]`) where its
 // decay loop and ours forward it. Diagnostic: `#pragma optimize("p", on)` around the function 317 (no change).
+// Round 84 (m3 lane 13, fast with 0x4b160, control 317; a/m = LCS-aligned / register-masked unmatched lines, control a81
+// m59): a true `__assume(last >= i)` at loop 3's top 367 (1335 bytes; it is not threaded away as the repeated test is);
+// loop 3's flag test through a `byte *flags` local as loop 1 does 375 (1342 bytes), with every access through
+// state->entries[i] 318; probes on main's base, match-only: R149's decay-loop form 364 (1335 bytes, a60 m36), with its
+// growth-loop form 387 (1353 bytes, a60 m33). The `__assume` form compiles exactly as R151's `entry[-1]` fourth pass and the
+// flags-pointer form without the entry local exactly as loop 3 without its entry local (built and compared), so both are
+// confirmations. Also: R149's decay form keeping clamp_cached_input(&state->entries[i]) 317 (different code, a84); the
+// decay loop through state->entries[i] with no `initial` pointer and the clamp as PIN 418 (1255 bytes); R149's growth
+// form alone 390 (1353 bytes).
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

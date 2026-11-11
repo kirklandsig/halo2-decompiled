@@ -483,6 +483,13 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 
 /* recomputes the teams that have players */
 // score 32 (was 32): the word mask, its one reload ahead of the first jne, and present's update in EBX remain.
+// MiniMax D (11-11): 24 (was 32), NOT kept (coordinator 11-11: lane 14 r55's width cast on one side of the compare; retail compares dword; body stays at 32): the old team mask as a word local (retail's `mov cx` entry and its
+// word spill) with the present compare narrowed to a word (`(word)present_teams != old_team_mask`); the
+// present mask's high bits are always zero, so the narrowing keeps the behaviour. The compare is still
+// 16-bit where retail compares dwords (`mov esi, [present]; movzx eax, cx; cmp esi, eax`), and the mask
+// is still read from memory twice (retail reloads it once into ECX before the first jne and shares that
+// register with the OR for the store). Without the cast the word mask is 77 and the dword mask 32; a
+// one-use team-bit local on top of this was 21 but a one-use local is kept only with a byte match.
 // MiniMax C (11-06): no new form, no lower score; a word old-mask local is rematerialised from
 // globals->team_mask at each use (129, frame 0xc), a named new-mask local (129) only moves the
 // playing teams into EDX, and a volatile word mask (118) reloads the slot cleanly for the compare
@@ -781,6 +788,14 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // (378 B: the loop is retail's, the compare folds present from memory) and with the word mask 63 (384 B: present takes EDI,
 // globals reloaded). No untried natural source form is left in this list; the remaining causes are register choices.
 // A 600 s permuter run (annealing, 53 variants) on the one-use present-bit carrier (29, match-only) found none below 29.
+// Round 173 (m3 lane 5, fast; main 32, word mask 77, word mask with plain present 63 at 384 bytes, dword with plain 102 at
+// 378 bytes, re-measured): with the word mask and plain present the pool takes EBP, present EDI and globals is
+// rematerialised after the loop (frame 0xc); retail keeps globals in EBP and present in memory. New: the added mask
+// declared after the two stores 32; the iterator by aggregate initializer 32; the playing update under its own `team !=
+// NONE && !(flags & 2)` test 32 (threaded to the same code); the change test as `!(playing == old && present == old_mask)`
+// 32; globals read straight from g_4e9ae8 with the cast 32. Re-measured listed forms: the getter at each use with no
+// globals local on the word mask 77, on word and plain 63; the mask store as `(word)(old_team_mask | present_teams)` (the
+// uncast OR's code) on main 32, word 77, word and plain 63; the playing bit from the team local on main 45 (383 bytes).
 // @retail 0x158140
 void function_158140(void)
 {
@@ -2355,6 +2370,11 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // 8, with the old index in a local inside it 8, taking the equipment pointer 8, taking the old index as an argument 8,
 // taking `&entries[index]` 8; the release's index argument as the re-read `local.object->netgame_entry` 8; an entry
 // pointer for the test, the call and both tail stores 8 (re-measured). Diagnostic: the release's lookup through engine_object_get 9.
+// Round 173 (m3 lane 5, fast): the bounds test in a named bool 8; the grouped object member typed as the iterator's own
+// object type 8; a typed equipment receiver local for the call 8; entries read through its address (0x15aad0's form) 43
+// (193 bytes); the count through a byte offset 8; an entry pointer for the two tail stores only 8. Diagnostics: 1-8 unused constant locals at the top or before the
+// old-index test 8 each (no rotation step); the dead volatile load before the old-index test re-confirmed (lookup and
+// tail then retail's).
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {
@@ -4817,6 +4837,10 @@ bool function_158eb0()
 // both 5; the rank call through a forwarding helper taking (mode, index) 5, (bool flag, index) 5, (mode, index,
 // value) 5, (index, flag) with the halving inside 5; the whole test in an inline predicate taking the index 5
 // (the same code in all eight). Original body restored.
+// Round 173 (m3 lane 5, fast): `result &&` in the loop condition in place of the break 67 (120 bytes); result declared
+// after the iterator setup 9; `0 < rank / 2` 5; `return count != 1 ? result : false;` 47 (161 bytes); `return result &&
+// count != 1;` 63 (128 bytes). Re-measured: `++count` after the flag read 5; the flag through TEST_FIELD_BIT (the same
+// bool) 5; the iterator's index stored before its absolute index 7. Original body restored.
 // @retail 0x158f50
 bool function_158f50()
 {
@@ -5780,14 +5804,19 @@ void __stdcall function_d6bc0(long object_index);
 // tested bit 1 first 116 (first difference +0x5a); the engine pointer declared before `type` 83; the countdown in place
 // 52 (same code). Kept, same code: both squared distances through the existing dot3f 52. Re-measured: true default cleared
 // by the field test 172, a named timer pointer for the zero test, delay, countdown and continue 178.
+// score 29 (was 52): MiniMax R (11-11): the countdown block reads entries[i].index at each use instead of a copy in a
+// local (kept). With the switch's skip paths also jumping to the countdown block through a label (a goto; no behaviour
+// change, value04 is 0 there) it scores 7: that form is match-only and not kept (coordinator 11-11). R on the 7 form: the
+// scenario pointer is stored before the countdown period as retail does; left: the switch's index test compares the local
+// with -1 where retail compares the field itself, and the case-1 bit test uses CL where retail uses AL.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
     if (g_4e6948->mode == 4) return;
     byte *globals_tag = g_4e3b44[*(long *)((byte *)g_4e034c + 0x16c) & 0xffff].bytes;
     byte *preset = *(byte **)(*(byte **)(globals_tag + 0xc) + 0x534);
-    long arg_642c39 = g_510c54->field_2_3;
     byte *scenario = (byte *)g_4e0350;
+    long arg_642c39 = g_510c54->field_2_3;
     for (short i = 0; i < *(long *)(scenario + 0x120); ++i)
     {
         byte *placement = *(byte **)(scenario + 0x124) + i * 0x90;
@@ -5872,15 +5901,14 @@ void __stdcall function_15ae70(s_netgame_entry_state *entries)
             entries[i].value04 = countdown;
             if (countdown == 0)
             {
-                index = entries[i].index;
-                if (index != NONE && (placement[0] & 2) && object->type != 2)
+                if (entries[i].index != NONE && (placement[0] & 2) && object->type != 2)
                 {
-                    if (object->type == 1 && (function_158ff0(index) || function_15f060(&object->position, *(real *)(preset + 0x28))))
+                    if (object->type == 1 && (function_158ff0(entries[i].index) || function_15f060(&object->position, *(real *)(preset + 0x28))))
                     {
                         entries[i].value04 = 1;
                         continue;
                     }
-                    function_d6bc0(index);
+                    function_d6bc0(entries[i].index);
                 }
                 function_15aad0(entries, i);
             }

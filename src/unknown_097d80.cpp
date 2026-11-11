@@ -52,6 +52,8 @@ struct c_aggregate : c_child
 };
 
 
+// MiniMax G (11-11): no new form, no lower score (31); under /GL the address-taken produced count keeps a slot
+// of its own, so the frame stays 0x8024 against retail's 0x8020 and every slot below it shifts by four.
 // score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
 // reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
 // loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its
@@ -425,6 +427,10 @@ struct c_aggregate : c_child
 // for-init (`j = 0, count = block->count`) 74; the source read as `source[0]` 31 (same code); `produced` at function scope,
 // zeroed after its add (`total += produced; produced = 0;`) 147 (389 B); v5's request parameter typed `s_request *` 31 (same
 // code); the query test as `get_info(...) == false` 31 (same code). Frame 0x8024 in each; still BLOCKED by the build flag.
+// M3 lane 12 r115 (fast with the six file-mates, all still matched): `starts` declared before `blocks` 31 (new).
+// Re-measured listed forms: the count `dword` with v5's output `dword *` 31 (Round 137's int); the count named `added`
+// 31; the collection result stored to error after the total 32 (Round 135); the cleanup query output as `dword` 31
+// (Round 218); the item cleared before its release 45 (listed at 59). Frame 0x8024 in each; still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
