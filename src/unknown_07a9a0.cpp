@@ -1340,6 +1340,12 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // copies as the accessors' switch-with-result form too 908 (2744, masked 494); that with `long histogram[16]` 903 (2712); the
 // switch forms alone 903 (2764); the party forms with `long histogram[16]` 830 (2760 bytes, masked 313, frame 0xb4 as retail;
 // first difference +0x7). 0x73530 stays 8 and every matched caller and callee stays matched in all five.
+// M3 lane 12 r114 (fast with the file's 22 functions, 0x73530 (8 throughout), 0x63220, 0x192e60, 0x1934f0 and 0x1931a0, control
+// 766 [masked aligned 486, register-masked 267]): `excess` as a zero default raised by an if 778 (2812 B); the rated-count tail
+// with the division arm first 774 [491, 272]; the add loop's minimum as a 1 default replaced by an if 774 (2816 B); the imbalance
+// zeroed before the team block instead of in its else 779 (2812 B) [555, 351]; the inner add-mask test without its `type == 3 ||`
+// (never true inside `type == 2 || type == 4`) 902 (2764 B: the smaller body moves the link's inline choices, so the test stays).
+// Re-measured: the type-5 machine scan returning false from inside the loop 893 (2764 B, the listed `break` form's numbers).
 // m3 lane 3 r233 (fast, control 766 = full; register-masked aligned 343). Diagnostic (compiler setting, reverted at once):
 // this file without /arch:SSE plus the player loop through a call to 0x63220 1097 at 2524 bytes, the same as with /arch:SSE:
 // 0x63220 still stays a call, so the SSE mismatch between this file and 0x63220's is not what keeps it out of line (lane 14
