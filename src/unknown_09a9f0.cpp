@@ -226,16 +226,18 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
+// score 49 (was 49): earlier first lines 49 (was 49), 49 (was 49); retail's bool result in BL, the EBP borrow around the
+// header test and the data reload remain; round 151's entry is the last one above the marker.
 // MiniMax R (11-09): no new form, no lower score; retail keeps the false result in BL, xors BL before the creation call and sets BL after it, while ours returns the result in EAX and holds the last argument in EBP, so our frame is four bytes wider (77 against the baseline's 49); the result bool declared before the creation call (77), the object lookup written as an array element (77) and the creation call's output taken through the parameter's own address (87) all score worse.
 // MiniMax A (11-06, run 52): no new form, no lower score (49) - a byte result set after the attach
 // reaches retail's shape but scores 77, and reading the header through the entity changes nothing;
 // retail keeps the result in bl and looks the header up twice.
 
-// score 49 (was 49): unchanged this round: the head's register roles still differ - retail saves
+// At 49 (was 49): unchanged this round: the head's register roles still differ - retail saves
 // MiniMax D (run 46): the early-return body 77, the bool result 69, the bool result with the header
 // pointer in a named local 77 (the header lookups still merge into one ECX entry and EBP becomes a
 // scratch register); no lower score.
-// score 49 (was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
+// At 49 (was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
 // EBX and keeps a false result in BL from before the creation call, pushes EBP only around the header
 // test and leaves the table global in EDX, reloading its data and recomputing the index for the
 // object; ours keeps the validity result in EBP and shares one header address between the flag test
@@ -686,6 +688,14 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // the store 72, the dword cast without it 77. So retail needs one value-preserving kill between the test and the object read
 // that leaves no instruction, and a second index computation that is not CSE'd with the first. Matched v22 siblings of other
 // entity definitions (0x9ba90, 0xa4880, 0x9aeb0) clear a slot to NONE and then store the new value.
+// M3 lane 8 r151 (fast, 0xa5b10 and the file's other functions matched throughout): on the bool result set after the
+// attach (77, re-measured; EBP caches f): the creation result stored into the entity and read back into the local 77; the
+// attach call given `entity->object_index` 82 (157 bytes); `result = true` after the value call 79 (158); both first two 82.
+// On the long result: the attach given `entity->object_index` 52; the creation result stored and read back 49 (same code).
+// Diagnostic, not kept: the bool form with constants for the value call's last two arguments 64 (155 bytes): f no longer
+// takes EBP and the head through the creation call is retail's, but the header test then puts the data in EDX (dropping
+// the global) and needs no EBP borrow; retail keeps the global in EDX for the object read because the data is reloaded,
+// which agrees with the store-between lead above.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

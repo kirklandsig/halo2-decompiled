@@ -38,6 +38,7 @@ long function_1e4a50(long index);
 long function_262a30(s_reference reference);
 
 // score 528 (was 528): earlier 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// score 528 (was 528, 611, 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // a bool output in a register across a later call, as retail (0x1b0540 matched with plain output locals).
 // Round 178 (m3 lane 4, plain checks; aligned = difflib count with addresses masked, 293 here): the call sequence is
 // retail's except two callees: retail calls 0x2600a0 in the sorted loop and 0x13e2d0 for the owner, ours inlines both
@@ -99,6 +100,13 @@ long function_262a30(s_reference reference);
 // retail keeps count in EBX from the main loop through the random pick (`test bx, bx`, `movsx ecx, bx`) and loads
 // scratch from memory in the loop, where ours keeps scratch in EBX and reads count from memory: retail's loop head
 // then pads with a jmp and every line to 0x260e3c shifts by one.
+// M3 lane 8 r152 (fast, base 528, masked aligned 105): retail's first evaluator pass is 0x2600a0's body inlined with a NULL
+// position, its sorted-loop site calls 0x2600a0, and its owner lookup is 0x262a30 inlined (0x13e2d0 called, an inlined NULL test
+// of the output pointer, `rep movsd`). Re-measured: round 77's first pass through 0x2600a0 with the sort scratch in its block 605
+// (3041 B, frame 0x8a0). Diagnostic on it: `inline` on 0x262a30's definition 611 (3155 B: 0x262a30 and 0x13e2d0 both inline and
+// the sorted-loop site stays inlined, so that site is not an inline-budget effect of the owner lookup; reverted). New: the
+// path-data select as an if-assignment through a NULL-initialised local 528 (masked 104: retail's `xor` before the test), on
+// round 77's form 606; the owner store as if/else with two stores 638 (3102 B), with the if-assignment select 638. Body unchanged.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)
