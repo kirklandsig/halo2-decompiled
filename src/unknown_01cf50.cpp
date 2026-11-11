@@ -2340,6 +2340,7 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 	return comparison > 0;
 }
 
+// MiniMax S (11-10): no new form, no lower score (4): retail takes the count's subtraction before the sorter's last push and ours after it, and retail adds the stipple stride after the second rep movsd where ours adds it before; the count as a local, at the call and at function scope, all compile to the same code.
 // MiniMax R (11-10): no new form, no lower score (4): retail takes the count's subtraction before the sorter's last push of the 0x13df80 call and adds 0x84 inside the XDK D3DDevice_SetStipple inline, while ours adds it after the block; the sorter's argument order is fixed by its own declaration.
 // MiniMax G (11-05): no new form, no lower score; the count as an unsigned local, as an unsigned cast and read from the global all keep the subtraction after the sorter's last push.
 // MiniMax D (11-01): a local that holds the count once does not move the subtraction before the
@@ -2398,6 +2399,7 @@ void function_1e370(void)
 	}
 }
 
+// MiniMax S (11-10): no new form, no lower score (8): retail holds the record pool's base in ebp and pushes it around the payload copy where ours keeps it in edi; the base comes from the shared one-caller helper cache_record_new, whose body the rules forbid writing out by hand.
 // MiniMax E (11-10): no new form, no lower score: the record pool's base is held in edi here and in
 // ebp in retail, and the copy's count then needs a register of its own.
 // MiniMax R (11-10): no new form, no lower score (8): retail holds the record pool's base in ebp and pushes and pops it around the payload copy, ours keeps it in edi; the base comes from the shared one-caller helper cache_record_new, whose body the rules forbid writing out by hand.
@@ -2687,6 +2689,7 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
     return result;
 }
 
+// MiniMax S (11-10): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the divisor still makes a round trip through the stack where retail multiplies by g_4b9ff8 with an explicit mulss, and the two branches still share one call setup; the maximum and the reciprocal as locals, the enabled branch first and the plain maximum all score 47 or worse, and the permuter's run reached its time limit without a measured variant.
 // MiniMax E (11-10): no new form, no lower score: the maximum's compare has its operands swapped
 // and lands in the other register, the divisor makes a round trip through the stack where retail
 // keeps it in a register and multiplies by g_4b9ff8 with an explicit mulss, and the two branches
@@ -2783,6 +2786,7 @@ struct s_queued_material_payload
 	byte data[1];
 };
 
+// MiniMax S (11-10): no new form, no lower score (2): the payload's count reaches the 0x4b220 call in eax here and in ecx in retail, so the two call setups differ; the register home is the callee's own declaration, which this lane may not change.
 // MiniMax E (11-10): no new form, no lower score: the count of the payload reaches the 0x4b220
 // call in eax here and in ecx in retail, and the callee's own declaration picks that register home.
 // MiniMax R (11-10): no new form, no lower score (2): the payload's count reaches the 0x4b220 call in eax here and in ecx in retail; that home belongs to the callee's own declaration, which is not one of this round's functions.
@@ -2959,6 +2963,7 @@ struct s_429a0_payload
     vector3f first, second;
 };
 
+// MiniMax S (11-10): no new form, no lower score (16): retail folds the record's address into EAX before the dword store at +0x28 where ours stores through [eax+ebx+0x28] and adds EBX afterwards; the permuter was stopped at its 600 s time limit without a measured variant.
 // MiniMax E (11-10): no new form, no lower score: retail folds the record base into the payload
 // pointer one store earlier than we do, and the callback's address is a build address the
 // comparison cannot map.
@@ -3385,6 +3390,7 @@ void function_13d80()
 
 extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 
+// MiniMax S (11-10): no new form, no lower score (2): the whole difference is the 0x15a60 call's setup, where retail loads 9 into eax before zeroing ecx and we zero ecx first; that callee's parameter home is fixed in src/unknown_0158f0.cpp, which this lane may not edit.
 // MiniMax E (11-10): no new form, no lower score: the 0x15a60 call's registers are set ecx then
 // eax here and eax then ecx in retail, and the callee's parameter home lives in another file.
 // MiniMax R (11-10): no new form, no lower score (2): the whole difference is the 0x15a60 call's setup, which retail does eax then ecx and we do ecx then eax; the callee's declaration lives in src/unknown_0158f0.cpp, so its parameter order is reported here rather than changed.
@@ -3651,6 +3657,7 @@ bool function_14600()
     return result;
 }
 
+// MiniMax S (11-10): no new form, no lower score (32): retail divides the width's quotient into xmm2 and multiplies it into xmm0 where we divide into xmm0 and multiply into xmm3, and retail tests the flag byte in memory where the XDK's SetVertexShaderConstant inline hoists it into al, so ax is taken.
 // MiniMax E (11-10): no new form, no lower score: retail keeps the width quotient in xmm2 and the
 // scaled value in xmm3, ours uses xmm4 and xmm0 for the same two, so the constants land in other
 // stack slots.
@@ -5214,6 +5221,7 @@ void __stdcall function_352e0(long target, bool multiple);
 long function_35510(long format);
 void function_1bd50(void *state);
 
+// MiniMax S (11-10): no new form, no lower score (13): retail loads the fallback index as a word and widens it with an xor while ours loads the long global g_4858b8 and masks it, and retail pushes the element argument after the branch where we push it before; the global's declared type may not change and reading it as a word needs a cast of its own address.
 // MiniMax E (11-10): no new form, no lower score: retail loads the fallback index as a word and
 // widens it with an xor while ours loads the long global g_4858b8 and masks it, and the branch
 // sits after the element argument's push in retail and before it here.

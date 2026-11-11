@@ -49,6 +49,7 @@ static __forceinline long floor_to_long_inline(real value)
 	}
 }
 
+// MiniMax S (11-10): no new form, no lower score (10): the first word's OR chain keeps the entry's own load before the parameter's where retail loads the parameter first, retail shifts the kind in the call result's register and copies it where we copy first and shift in ESI, and retail copies the pool argument above the bit-count test where ours copies it inside the branch.
 // MiniMax R (11-10): no new form, no lower score (10): retail builds the first word's OR chain in the opposite source order (the category's shift, then the flags' mask, then the entry's own word) and MSVC canonicalizes the chain here, so the two loads that feed it come in the other order and every spelling of the chain measures the same.
 // MiniMax S (11-09): no new form, no lower score (10); the six orders of the first word's OR terms are
 // canonicalised by the compiler into one schedule, so the order cannot be steered from the source; the

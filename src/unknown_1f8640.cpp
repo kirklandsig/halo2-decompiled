@@ -373,6 +373,7 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
+// MiniMax S (11-10): no new form, no lower score (182): the route dispatch still follows case 7 where retail puts it after case 5 with cases 6 and 7 behind it, and the final result still goes through BL where retail returns its frame byte.
 // MiniMax E (11-09): no new form, no lower score (188).
 // MiniMax E (11-06): score 188 (was 188): no new form lowered it. The byte locals sit two bytes lower
 // than retail's (ours at esp+0x10 where retail has esp+0x12), retail switches on the word at

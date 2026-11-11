@@ -314,6 +314,22 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
+// MiniMax S (11-10): no new form, no lower score (36): the special arm still comes before the kind arm in the layout where retail puts the kind arm first, and our element address is a scaled index added to the base where retail keeps the scaled product in EAX and adds the base to it.
+// MiniMax R (11-10): no new form, no lower score (36): the special arm and the kind arm still swap their block, and the layout needs 0x221810 kept out of line, so it stays BLOCKED-BY 0x221810 in src/unknown_221490.cpp.
+// MiniMax R (11-09): no new form, no lower score; the special arm and the kind arm still swap their block
+// order, and the record address still goes to esi where retail multiplies into eax and lea's it.
+// This round: the element as an array subscript 36, the type test inverted 36, the special arm nested with
+// an explicit else 89, the re-test without the short cast 46 (it gives retail's shared jump target and
+// `cmp eax, 0x26`), the kind arm written as a branch 87; the block order still decides the score.
+// MiniMax lane G (11-04): no new form, no lower score; two separate type cases give retail's chain
+// (je to the special arm, jne to the kind arm) with 0x221810 out of line, but the pool pointer moves
+// to edi and the score is 83; the named `||` gives the same chain and the a/b slots but inlines 0x221810.
+// MiniMax H (11-04): no new form, no lower score; retail multiplies the element index in eax and lea's the address, ours multiplies in esi, and 0x221810 stays out of line.
+// MiniMax A (11-03): no new form, no lower score: the element address is still formed after the policy
+// byte is read, and the special, remove, ordinary and keep blocks stay in our order.
+// MiniMax lane E (11-01): no new form, no lower score; the named-condition form that gives retail's
+// block order still needs 0x221810 kept out of line.
+// MiniMax C (11-08): no new form, no lower score.
 // score 36 (was 36): the address of the record is built here with an imul
 // into ESI and an add; retail multiplies into EAX and forms the address with a
 // lea, so the type byte that is tested afterwards is compared in another value.
