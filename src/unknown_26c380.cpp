@@ -126,6 +126,7 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 	return success;
 }
 
+// score 244 (was 244): the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
 // MiniMax C (11-05): no new form, no lower score; retail's cross product multiplies the direction's component first (direction.k*up.j where ours does up.j*direction.k) and adds the magnitude's squares in the other order, both from the shared cross3f and magnitude helpers; retail also keeps the first-edge flag at [esp+0xf] and the success flag at [esp+0xe] where ours keeps them the other way round, and hoisting or reordering those two declarations does not move them.
 // MiniMax S (11-06): 106, not kept: the two sector-loop exits jump to a finish label before the closing stores
 // (retail's common tail) instead of breaking out of the edge loop; the held 34 form's gotos again (a goto main's
@@ -134,7 +135,6 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // MiniMax D (11-09): no new form, no lower score; the count test branches the other way
 // (retail jumps to the far block when the count is positive) and the body is twelve bytes
 // shorter than retail's 1605.
-// score 244 (was 244): the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
 // Earlier: frame 0x60 versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // Earlier: frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // pathfinding pointer in EBP and the -1 edge seed in EDX where ours keeps them in EBX
@@ -471,6 +471,15 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // false;` ahead of the point call 244 (same count, no merge), the same in tail A too 347 (1488 bytes, tails merge); the
 // line offset taken from the full normal before the planar copy 382, on the held form 361; the held form with plane2f
 // and that tail C 304 (masked 8).
+// Round 148 (m3 lane 7, fast; [stack+register masked] aligned count): the held goto form re-measured 34 [4] (left: the cross's
+// row j product loads up.k where retail loads direction.i, and the tail C edge/distance store order). On this body the cross's
+// rows i, j and k all load the other operand first; on the goto form only row j does, so those operand orders follow the
+// function's numbering (the label and the two exits), not the helper. Retail does not store 0x270600's result, so its
+// `success = false` at the two exits is not explained by a non-constant success. On the goto form: the full normal declared at
+// function scope 34 (same code; listed for an older body), the next-sector index declared ahead of the planar line 406 [13],
+// hit declared before first 34, distance1/point1 declared ahead of the iterator 34, point0/distance0 declared ahead of
+// forward 34, the target-reached exit as `goto finish` 34 (all same code); re-measured: the magnitude named at the call.
+// No unlisted natural form.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
