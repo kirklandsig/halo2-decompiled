@@ -416,6 +416,13 @@ struct s_24e9c7_points
 // shared point types, in place and through helpers, every corner copy placement, the bounds and opacity spellings, the
 // domains of the conversions and the declaration orders; what is left is the early across spill to -8 and its pair's home
 // above the result, the 1.0 register and the sprite pointer's `mov eax` / `lea esi` staging.
+// M3 lane 12 r114 (fast with 0x24e59f/0x22a664, control 125 [masked aligned 85, register-masked 60]): the sprite's bounds as
+// `sequence->sprites[0].bounds` 125 (same code); through a named `box2f const *` to the sprite's bounds 155 (745 B: the staging
+// becomes `mov eax, [eax+0x38]; add eax, 8; mov esi, eax`, still not retail's `lea esi, [eax+8]`); `sequence->sprite_count > 0`
+// 126 (`jle` for `je`); the named bounds pointer with `size * (0.0f - forward_j)` 155 (741 B); the bounds by memcpy 194 (760 B,
+// 0x24e59f then 294, so it is out).
+// Also: the alpha's hidden arm first (`else if (placement->hidden) alpha = 0.0f; else ...`) 125 (same code); back as a copy of side
+// negated in place 175 (767 B); each corner's x sums before its y sums 137 (749 B).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

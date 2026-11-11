@@ -499,6 +499,12 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // signature picked by score, 4 under the bar), with the indices in y, x order 42 (same code); on it: a plane pointer
 // for the copy, dot and store 61, `quad->axis = function_120850(...)` with the side test reading it 172, the axis
 // local passed to all four corners 181 (966 bytes), axis and a `positive` local passed to all four 241 (923 bytes).
+// M3 lane 12 r114 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46 = the full check; [masked aligned, register-masked], control
+// [39, 28]): a `point2f *corners = quad->corners` local for the four outputs and both edges 46 (first difference +0x67) [42, 30];
+// the normal copied from the quad's own matrix copy (position still from the parameter) 49 [41, 30]; the distance's position
+// from the quad's copy (normal as now) 65 [58, 49]; the corners transformed through the quad's matrix copy 220 [125, 98]; the
+// corners from the quad's bounds copy 228 (976 B) [145, 118]. Retail reads both parameters (EBX matrix, ESI bounds) for every
+// corner. The residue is still the products' load/memory sides, the plane store base and the first corner's AX/CL roles.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

@@ -491,6 +491,18 @@ struct s_object_damage_view
 // counter 353 (same code); re-measured: the selection amount named once 454. Retail keeps killer in EDX across the
 // fallback merge and reloads it from its home on the paths that skip the record (0x1ea1de) and at the team block; ours
 // threads those paths into the fallback and keeps killer in EBP.
+// M3 lane 12 r114 (fast with the file's 19 functions and 0xd9640; [masked aligned, register-masked], control 353 [112, 36]):
+// the selection loop as a file-local helper returning the chosen slot, plain inline 686 (1308 B: it stays out of line and
+// 0xd9640 then reads 61), forced inline 509 (1484 B) [155, 98]; assist_threshold set before killer in the selected block 353
+// (one store moves) [112, 37]; the killer choice (selected record, then the reported fallback) as a forced-inline helper
+// returning the killer and setting the damage code and threshold through pointers 366 (1548 B, 450 instructions as retail)
+// [115, 39]: the caller then reloads the killer from a home at the killer block as retail does, but the helper's killer takes
+// a parameter home and the caller's copy EBP; on that helper, consider_team as a true default cleared by the test 366 [113, 37]
+// and the assist stores re-reading the record's player 432 [110, 48]; the object, root header and related unit through the
+// existing object_get/object_header_get 353 (same code). Re-measured (listed): one history pointer for both loops, the amount
+// read once under the time test and the assist stores re-reading the player 451 (1578 B) [170, 54]: the selection base stays
+// +0x2f4 and selected moves to a home, so the amount's read count does not set the cursor. Also seen: ours loads the object
+// pool's data ahead of the 0xbaf80 call in the related block, retail after it.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
