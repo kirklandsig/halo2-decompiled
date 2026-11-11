@@ -431,6 +431,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // 679/679 (2845); fourth width as `0.0f - width` 592 (same code); widths as `width * -1.0f` 680 (2844); a second point helper
 // negating the width at each product 678 (2844), with one named negated width 600 (2821); the half-width read once into a named
 // local 688 (2828); the point helper's width as `real const &` 676 (2829); the point helper as plain inline 592 (same code).
+// M3 lane 1 r89 (fast; control 592, aligned 273, masked 130): the view's +0x7c filler as a typed `vector3f up` member, both
+// `(vector3f const *)((byte *)local_1 + 0x7c)` casts as `&local_1->up`, 592 (same code; header restored); the single-exit form
+// (`if (local_2->field_48 > 0.0f) { ... } return local_0;`, no early `return true`) 629 (2842 B, first difference +0x1d); the
+// minimum update as `if (local_19 < local_4)` 592 (same code); the ray vector as a brace initializer 592 (same code); the ray
+// length read from `local_14[local_17]` at each product 689 (2834 B).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

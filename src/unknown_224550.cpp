@@ -496,6 +496,12 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // 151 -> 159); the width product after the two flip calls 423 (1932 bytes). The compile-only harness does not
 // reproduce this body (normalized difference 394 against our own build), so the blend's XMM5 residence could not be
 // screened there.
+// M3 lane 1 r89 (fast; control 211, aligned 89, masked 34; retail's frame from its final call, low to high: geometry
+// +0x20, first UV set +0x30, tint +0x40, second UV set +0x50; ours exchanges the tint and the second set): the second set's
+// bitmap-arm defaults as `uv_b=uv_a;` after the first set's four stores 350 (1959 B); the aspect values set in both arms of
+// the `ax>ay` test instead of 1.0f defaults 253 (1953 B); the width product written at its two uses 423 (1932 B); the two
+// frame bounds copied before the blend 244 (1950 B); the alpha product moved down to the colour modulation 491 (1950 B);
+// one flip local for both arms, re-measured (round's "shared flip flags") 458 (1921 B).
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
