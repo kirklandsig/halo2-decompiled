@@ -1050,6 +1050,13 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // (slot order follows use weight, not names). Tried: the a76b0 branch passing the unit's facing straight to 0xa91c0
 // 341 (1682 bytes: retail copies it); the parent velocity declared at the top of the not-cancelled block 152; the
 // projectile subtraction as vector3f_add_scaled(-1) 152 (same code); the blend with the velocity term first 152.
+// m3 lane 2 r71 (fast with 0xe8420/0xa91c0): retail's shared block-vector slot (the a76b0 forward, center, parent
+// velocity, release point) sits at [esp+0x24] below the grenade type and projectile index, ours at [esp+0x2c] above
+// them. Tried: the a76b0 branch's forward declared first, or at its copy 152/152 (same code); the grenade type read
+// before the projectile test 191 (1708 bytes); the projectile pointer before the grenade type 170; flag17 initialised
+// at its declaration 152 (same code); the seat test as nested ifs 152 (same code); marker_name stored before attach
+// 154; the throw globals read after the up pointer 276 (1708); one 0xd0e60 call with 0xb8540 in each failing arm
+// (no flag, no goto) 337 (1716).
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)

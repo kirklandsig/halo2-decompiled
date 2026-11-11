@@ -246,6 +246,12 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // M3 lane 16 r104 (plain with 0x293b30, which stays matched): the waypoint radius as a ternary 273; the hysteresis threshold
 // as a named local 387 (3705 B); the waypoint index read once into a short local used three times 281 (3717 B); the 3.0 clamp
 // after the wander call as a ternary 252 (same code); the separation weight passed as `0.0f - local_29` 252 (same code).
+// M3 lane 2 r72 (plain with 0x293b30/0x293d30/0x294050/0x295600, all matched throughout; aligned/masked in brackets, base
+// [90/25]): the walk's position and offset declared at the top of the walk's if-block (outside the loop) 252 (same code);
+// the post-walk vector declared at the top of the function 252 (same code): neither scope moves the shared slot (retail's
+// position shares the post-walk vector's slot, ours the offset); the neighbour test as `local_26 > 0.0f && field_34 >
+// local_26` 256 [95/30]; the squared distance named once and used for the reciprocal and the separation test 281 (3717
+// bytes) [106/38]; the nearest point copied before its distance 255 [91/27].
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

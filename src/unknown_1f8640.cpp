@@ -710,6 +710,13 @@ struct s_1f8a70_actor
 // leaves case 7 only when a block that survives threading follows case 7 in source. Retail's zero test, failure store and
 // failure call after case 7 fit that if the failure block (its false store and the memory reload after 0x1f8750) is that
 // block; ours folds the false, so the block vanishes. A compile-only /Gr harness keeps this layout rule.
+// M3 lane 2 r72 (fast with the file's ten matched functions, all matched throughout; aligned/masked in brackets, base
+// [49/47]): `long route = route_mode;` as one declaration 182 (same code); the failure block (false store, 0x1f8750 call,
+// `return route_found;`) as the mode switch's default with the route test's else as `goto failed;` 453 (1668 bytes)
+// [109/89], that with the join's failing arm also `return route_found;` after its own call 435 (1644 bytes) [99/79] (the
+// two calls are not cross-jumped and the default's false still folds); case 6's `route_mode = 1` arm last together with
+// case 7's node stored before its radius 366 (1624 bytes) [54/52]. Diagnostic: `(void)&route_found;` 182 (same code:
+// taking the address alone does not keep the false store or the reload after 0x1f8750).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
