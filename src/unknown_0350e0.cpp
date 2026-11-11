@@ -192,6 +192,12 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // place with the second as kept 343 (aligned 532 against 519); squares before the trig 354 (1762); the vector by value 363 (1789);
 // the two matrices declared separately 343 (same code). Main's entry copies with only the second pass read from the rows 422
 // (1846), so both passes reading g_467104 carry the gain.
+// Round 108 (m3 lane 9, fast = plain here): the builder's cross products as `axis->i * axis->j * inverse` (i*k, j*k)
+// 343 (same code: VC reassociates them); `inverse` declared right after the cosine 344 (1786 B; masked aligned 588 -> 549),
+// with the i*j operand order too 344; diagonals as `xx + (1.0f - xx) * cosine` 343 (same code); off-diagonals as
+// `axis->k * sine + xy` 343 (same code); the angles as `0.5f * step` / `0.3f * step` 343. Ours forms j*i and k*i before the trig and multiplies by the complement after it;
+// retail keeps (inverse * j) * i in source order after the cosine and starts the second angle and axis squares inside the
+// first matrix.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2671,6 +2677,11 @@ real magnitude3d(vector3f const *v);
 // the fallback store as `delta + current->n[component]` (retail adds into the delta register in its first component) 170 (same
 // code); the fallback through PIN 188 (1025 bytes, the noted nested-ternary form); `first` and `second` declared at their
 // normalizations 170 (same code).
+// Round 108 (m3 lane 9, fast with 0x24590/0x30bf0, control 170): re-measured because losing 0xc2d00 is now accepted: the
+// axis through cross3f 182, cross3f_staged 182, scalar rotated components with cross3f 189 (MiniMax R's 132 form). New: the
+// rotated components staged as `= projection * axis.i; += cosine * first.i; -= cross * sine;` 170 (same code), with cross3f
+// 182; three named scalar components 170 (same code; MiniMax R's named components, re-measure); `rotated.i * size` stores
+// 170 (same code); `(1.0f - cosine) * dot` 170 (same code); the fallback loop index as `short` 250. Retail's rotated.i partial sums are written to +8 after each step and its result lands in first.i's slot.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {

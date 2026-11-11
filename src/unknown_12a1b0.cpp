@@ -1564,6 +1564,10 @@ struct s_looping_detail_request
 // assignment is the same code; the assignment first, second or third 19/18/17, after the size 31, with the result
 // first 24/23/22/20/35); the 7 left are the player arm's flag byte in DL for CL and the listener base loaded before
 // the index is scaled. Without the query's call that form reads 132, so nothing is kept.
+// Round 108 (m3 lane 9, fast with 0x21b0e0, control 110): the definition read in place (no `definition` local) 154; the
+// player arm's `source->audible = 1;` before the draw 112; the camera read at each use 122; `request->type = 0x10;` before the
+// mode 114; the player arm's `request->flags = 7; result = true;` before the camera lookup 139; `definition[4] == 0 ? 2 : 0`
+// 110 (same code). The query stays inlined in all six.
 // M3 lane 10 r89 (fast with 0x21b0e0, 0x14dde0, 0x219ed0): the definition moved after its caller 0x21b0e0 (with a
 // declaration) 110; `--skip` before the step in the skip loop 110; `0 < player_count` 110; a const sound pointer 110;
 // `inline` on this definition 110 (0x21b0e0 still calls it). The query stays inlined in all five. Sites seen: 0x11b350
@@ -2075,6 +2079,13 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // (0x21b940's spelling) 418 (lower bound first, approach flipped too). The helper written `*value = PIN_126660(...) +
 // *value;` 418 (identical code; its three matched users unchanged). Lead: a form with retail's pitch order that leaves
 // the approach's memory-operand add alone.
+// Round 108 (m3 lane 9, plain): the request given its full 0xa0 bytes 305 (re-measure, frame 0x12c); the gain levels as the
+// existing s_decibels type where they are declared (gains[9], the track definition's and the track sound's level, the sum
+// `track_definition->value08 + gains[i]`, which copies gains[i] through a stack slot as retail does) 388 (frame 0x118, masked
+// aligned 80 -> 69); that with the 0xa0 request 384 (frame 0x128 as retail, first +0x39, masked 67, 1925 B; 0x21b940 stays
+// matched; lead: NONE then sits in EBP from the controller test on, where retail compares with -1 and loads NONE into EDX for
+// the sounds fill); `long current;` before the iterator 305 (same code); `bool active = (active_mask & (1 << i)) != 0;` 388;
+// `if (sound->state != 2) { ... }` without the `continue` 305 (same code).
 // M3 lane 10 r89 (plain; positional, then stack-masked/register-masked aligned counts, baseline 305/192/80). The gain
 // store as the existing level type, `s_decibels gain = *(s_decibels const *)&track_definition->value08 + *(s_decibels
 // const *)&gains[i];` (0x21e330's and 0x124f90's spelling; operator+ takes its operand by value, so gains[i] is copied

@@ -1100,7 +1100,7 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // projections 481 (plain); a const matrix pointer for them 486, both 483; up / left vector pointers in
 // the sphere arm 620/630 (with the face and/or matrix pointer 619-636); a plane pointer for the normal
 // and distance 543; depth from the radius local 607; the projections as a corner loop 529 (plain),
-// with depth from the radius 610; the projection's vector as one struct copy 624 (2892 bytes); one scale
+// with depth from the radius 610; the projection's vector as one aggregate copy 624 (2892 bytes); one scale
 // local for both projection scales 500; the inner scale named `inverse` 482 (identical); the scale as
 // three divides 599. Diagnostic: dead initialised locals change it by count alone (+1..+12:
 // 479/479/539/315/483/480/480/480/479/479/483/483, any position); +4 gives 2826 bytes and fixes most of
@@ -1226,6 +1226,11 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // a `short` loop index 659 (2809 bytes); the forward cross through the plain shared cross3f 579 (2801 bytes); in the cone arm
 // the up negate before the two copied axes 356 at 2840 bytes (masked 160); the bounds declared once outside the loop 290
 // (same code); the cone plane point from the shape's origin instead of the matrix position 600 (2777 bytes). Body unchanged.
+// M3 lane 9 r109 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, base 290, aligned 273, masked 148): what differs is
+// unchanged (the entry pointer formed before the bounds' last stores, the projection rows' sum orders per instance, the left
+// normalize's sum, the cone plane distance stored through [esi + 0x80] where retail stores through the plane's own pointer, the
+// cone scale divided before the centre projection, the loop-end cursor registers); no untried natural form left and no
+// existing plane setter in include/. Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

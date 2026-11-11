@@ -3110,6 +3110,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // keeps the iterator's data and index in EBX/EBP and stores only datum and datum index into the iterator loop 2 uses;
 // ours also stores `iterator.data` before loop 1. BLOCKED-BY 0xe4050 stands; the status-block lead shows the globals
 // web also depends on how the status codes are stored.
+// MiniMax R (11-10): no new form, no lower score (193 on the reduced image, 103 on the full one): the two
+// loops' datum and unit still take the opposite registers from retail, and the callee's inline rounding in
+// the other file decides the globals pointer.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

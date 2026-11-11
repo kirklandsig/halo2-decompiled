@@ -925,6 +925,11 @@ struct s_device_machine_view
 // group pointer, the word read through the macro after the machine test 53 (index in EAX, table base in a pushed ESI, `mov ax,
 // [esi + eax*4 + 2]`); the word local zero-initialised at its declaration 120; the power group index in a case-scoped local
 // with word masks 121; the mask form plus the 0x1200055f zero store 117 (657 bytes); the word local at function scope 120.
+// Round 107 (m3 lane 9, fast; compile-only screen exact at 34): the permuter (600 s, 53 variants) best 34. A
+// file-local inline locked-group test taking the group pointer, `if (!(f & 1)) return false; return (f & 2) != 0;`,
+// 115 (657 B); the same taking the group index (lookup inside, no group local) 167 (630 B: the device moves to ESI
+// from entry); the pointer form as `if ((f & 1) && (f & 2)) return true; else return false;` 120; the index form with
+// the if/return body 167; the pointer form plus the 0x1200055f zero store 119 (660 B).
 // Round 76 (m3 lane 13, fast): the power/0x10 test without its inner `break` 34 (same code); the group pointer as a
 // NULL-default ternary on the index, tested `if (group)` inside the type test, word masks + zero store 127 (662 bytes; the
 // screened NULL-first pointer, measured): the pointer takes EAX and the load is retail's `lea eax, [eax + edx*4]` / `mov ax,
@@ -1373,6 +1378,11 @@ bool function_108530(long device_index, long name)
 // if (!(remaining > x)) x = remaining;` after `remaining` 127; `remaining` renamed cruise_time and reduced in place
 // (`cruise_time -= ramp_down_time;`) in the inner block 121 (same code), at top level right after the clamp 140
 // (callers 26/28). Diagnostic, reverted at once: a volatile ramp-down parameter 165 (546 B, callers 26/28).
+// Round 76 (m3 lane 13, fast with both callers): fresh locals for subsets of the clamped times (all four 110 and the down time
+// alone 144 are above): duration 129 (511 bytes; duration then passed in XMM7 with a `push ecx` frame, still five stack floats;
+// callers 26/28), ramp-up 133 (26/28), duration + ramp-up 133 (19/34), duration + ramp-up + ramp-down 133 (19/34), duration +
+// ramp-down 144 (523; 26/28), ramp-up + ramp-down 141 (508; 19/34). Each puts an unmodified time parameter in a register
+// from entry; none gives the initial velocity XMM6.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1782,7 +1792,9 @@ bool function_0b6760(s_index_pair const *pair);
 // in EBX), the result as a stack byte at [esp+0xf] (ours DL), and one dead store retail makes before the power 0x11eed0
 // call (rate into the speed's slot, 0x106aa3). Tried: the rate read once into a local `time_step` for the delay product
 // and the call 334 (frame 0x24).
-// score 248 (was 248): 285 before lane 14 round 62. Frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
+// score 248 (was 248): earlier 285; frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
+// 285 before lane 14 round 62. Frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
+// 285 before lane 14 round 62. Frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // earlier 285; frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // where retail has ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads.
 // Earlier (285, was 285): our frame is 0x1c and retail's 0x20, and the index, header, state and result
@@ -1993,6 +2005,13 @@ bool function_0b6760(s_index_pair const *pair);
 // 1495 bytes, 231: the stack byte is most of the length gap; it crosses no call on any path.
 // J259: Activity from manual/group power and position tests, separate/paired/all with logical/bitwise joins: 396/417/404/329/359/380/470/424.
 // NOT kept: no eligible native repair; opening executable source restored. Native index/header and result residency remain; group-result forms grow the frame to 0x24.
+// Round 107 (m3 lane 9, fast; the compile-only screen does not reproduce this body, 396 at 1512 B): retail calls
+// 0xb6760 at both channel-1 sites and inlines only the channel-0 tests, as this body does. The 0x20 completion flag
+// as a ternary like the 0x100 update 345 (1480 B), with the 0x40 flag too 345; the one-use `reached` result dropped
+// (the call in the `if`) 248 (same code); the 0x100 update as an if/else 366 (1474 B); `result` renamed 248 (same
+// code); `local_c01284_2` renamed previous_velocity 248 (same code, a re-measure of the previous-velocity name).
+// Retail's result byte shares its stack slot with the `increasing` byte ([esp+0x13] after the late push), so retail
+// keeps the result in memory and its false value is dead through the acceleration block.
 // m3 lane 11 r83 (fast; aligned/masked against this body's 113/46): `result = true;` before the power manual arm's
 // 0x107520 call 386 (the result goes to a stack byte as in retail, but device_index loses its callee-saved register;
 // aligned 138); the same in the position manual arm too 386; the rate read into a local just before the power-group
