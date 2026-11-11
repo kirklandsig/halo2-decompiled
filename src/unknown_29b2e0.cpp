@@ -444,6 +444,13 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // inverse for all three components 384 (1715 bytes) [162], 0x29b990 then 6; the else arm's angle zeros chained 179
 // [126]; the result vector stored before the two angle fields 182 [128]; the second normalization's failure test as
 // `!` 203 (1718 bytes); the XY normalization's result tested as a bool 176 (same code).
+// m3 lane 5 r169 (fast with 0x29b990, which stays matched; aligned/masked in brackets): re-measured the r83 lead
+// (single-exit normalizer + the XY vector before the second copy) 169 [147/68]. On it, new: the second axis computed
+// before the first rotation's input copy 213 (1731 B); yaw_limit declared before the yaw delta 169 (same code); the
+// else arm's zeros before its vector copy 169 (same code); the half-pi limit computed before the yaw call 339 (1730 B).
+// The normalizer's single exit through a separate `result` initialised to zero 215 (1718 B). Left on 169: the x87
+// sqrt temporaries at +0x10 (retail +0xc with the yaw), the XMM3/5/6 rotation in the normalizers, the yaw clamp's zero
+// copy above its branch and the rotations' pitch/sine/cosine homes (retail pitch in arg_4's home, sine at +0x10).
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

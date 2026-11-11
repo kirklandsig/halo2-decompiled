@@ -994,7 +994,7 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // MiniMax S (11-10): no new form, no lower score (114); the reduced image lays this function out differently from retail as well (fast 409,
 // 1167 bytes against 1382), and the rotation products, the side-dot and the exit scheduling are unchanged; the full check agrees with the
 // queue (114, ours 1389 bytes against retail's 1382).
-// score 114 (was 114): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
+// Earlier 114 (was 114), merged from a second score line: Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // Round 16: retail takes the animation state in EAX, the component index in EDX, the physics
 // pointer in ECX and the output pointer in EDI, then the object index, the definition, the value
 // and the flags on the stack; this file's declaration describes another order and the callers are
@@ -1303,6 +1303,18 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // Also: both side crosses with their arguments reversed (the product's sign is unchanged) 138 (1394); the side dots' arguments
 // swapped on this body 111 (1393; lane 1's number for that swap on the lead); moved_away preset false and assigned the second
 // comparison inside the 0.99 test 117 (1391).
+// Round 148 (m3 lane 7, fast; masked = register-masked aligned count, control 114 [55]): lane 1's lead with sinf/cosf
+// re-measured 84 [60] (1384 bytes); new on this body: sinf/cosf for the rotation 101 [72] (1384; the rotation products are
+// unchanged and the turn crosses move, a positional gain, not kept), with fabsf for the guard too 131 [83] (1375), with the
+// sine and cosine named before the call 167 [129], with `angle * rate` passed to both and no rotation local 186 [91] (1365);
+// initial_cross taking references 114 (same code); the side test as `!(product > 0.0f)` 104 [61] (1390; it compares the
+// product with a zero constant where retail and this body compare a zeroed register with jae, so the gain is positional,
+// not kept). After it: the moved_away comparisons written constant first (`0.99f < alignment && dot < alignment`) 114,
+// initial_cross `__forceinline` with references 114, a selected-forward pointer (`new_forward = facing_goal;` in the snap
+// case, one `state->forward = *new_forward;`) 199 [129] (1352 bytes), the angle guard as `if (fabs(angle) < 0.0001f) return;`
+// 114, the animation test as an early return 114 (all 114s same code); re-measured: the side dots as (new, up) * (old, up)
+// 111 (1393, the count and length of the listed (old, up) * (new, up)), `0.5f < alignment` 114. The rotation products
+// come from rotate_direction (an Avoid file this round).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

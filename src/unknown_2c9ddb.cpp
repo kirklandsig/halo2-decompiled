@@ -236,6 +236,15 @@ extern long g_55c154;
 // 60 [30] (one point, not kept); `long saved = NONE;` set under the name test with the saved test after it 61 [25] (same code);
 // no bool or index local, `selected == NONE ? saved : selected` in the load call and `selected == NONE` at the arms 77 (574
 // bytes) [25]; the same on entry->variant with no selected re-read 154 (577 bytes) [25].
+// Round 86 (m3 lane 11, fast; two load arms 174 as control). New forms: the game-type local (160, re-measured) read
+// after the g_55c154 store 160 (same code); that local declared inside the 0x215f40 success block for its two later
+// uses 161; the first half's bit test on `selected` instead of a second entry read 61 on the one-load body, 174 on two
+// arms (same code each); the default flag cleared as `g_54e4a0.flags &= ~1` 61 / 174 (the same byte `and`, so the
+// field name could replace the raw byte array once the body matches); two arms as `selected == NONE && load(saved)` /
+// `else if (selected != NONE && load(selected))` 174. Re-measures: the failure call at each of the four failure points
+// 174, with the game-type local 161. Diagnostic: `flag_c = true;` after the saved test now 153 (605 bytes) with `this`
+// still in EDI, so round 55's probe no longer reproduces. In every two-arm form EBX is shared by non-overlapping values
+// (the type or constant 1, then saved, then the &g_54e4a0 constant) and `this` takes EDI.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

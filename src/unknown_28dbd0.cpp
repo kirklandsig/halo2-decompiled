@@ -73,12 +73,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
-// MiniMax E (11-10): no new form, no lower score (173); both sides run the same operations, but the frame is 0x11c here and 0x118 there, and the products are held in different registers, so the same work is scheduled differently and lands at other frame offsets.
-// MiniMax S (11-06): the permuter's 42 rewrites all score 173 or worse on the reduced image; no new form, no lower score.
-// MiniMax D (11-09), not kept by the coordinator: the struct's trailing bytes cut to 0xc0 gives a 0x118 frame and 161, but local_0 is the 0xc4-byte creation data function_b7930 fills (s_damage_object_creation in damage.cpp ends with unknownc0), so a shorter local lets b7930 write past it.
 // score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
 // where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
 // first, stored after the dot) and colours the cross terms differently.
+// MiniMax E (11-10): no new form, no lower score (173); both sides run the same operations, but the frame is 0x11c here and 0x118 there, and the products are held in different registers, so the same work is scheduled differently and lands at other frame offsets.
+// MiniMax S (11-06): the permuter's 42 rewrites all score 173 or worse on the reduced image; no new form, no lower score.
+// MiniMax D (11-09), not kept by the coordinator: the struct's trailing bytes cut to 0xc0 gives a 0x118 frame and 161, but local_0 is the 0xc4-byte creation data function_b7930 fills (s_damage_object_creation in damage.cpp ends with unknownc0), so a shorter local lets b7930 write past it.
 // MiniMax S (11-06): the permuter's 42 rewrites all score 173 or worse on the reduced image; no new form, no lower score.
 // MiniMax D (11-09), not kept by the coordinator: the struct's trailing bytes cut to 0xc0 gives a 0x118 frame and 161, but local_0 is the 0xc4-byte creation data function_b7930 fills (s_damage_object_creation in damage.cpp ends with unknownc0), so a shorter local lets b7930 write past it.
 // Earlier 185: Frame 0x11c versus retail 0x118; the request is four bytes
@@ -415,6 +415,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // M3 lane 10 r92 (fast with the matched callers 0x256bd0 and 0x28dab0; base 173, aligned 183, masked 66): nothing kept. In
 // function_28dbd2: sine first, then cosine, dot, cross 182; sine, cross, cosine, dot 238 (1198 bytes); the cross taken v x axis and
 // subtracted in the rows, current order 187 (masked 60), with sine, cross, cosine, dot 238; dot3f arguments swapped 173 (same code).
+// m3 lane 13 r79 (fast with 0x28dab0, matched throughout; brackets: difflib aligned / register-masked, base 173
+// [91/38]): the forward copy moved after the outer cross 190 [100/50]; the rotation's cross vector left unscaled and
+// multiplied by the sine inside the three row sums 193 (1225 bytes, frame 0x128) [82/38]; the projection factor
+// written `(1.0f - cosine) * dot3f(...)` 173 (same code); the heading aggregate-initialised 173 (same code); the
+// sine taken between the projection and the cross 183 (frame 0x120). The ninth scalar dword stays.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

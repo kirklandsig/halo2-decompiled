@@ -532,12 +532,12 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
-// MiniMax C (11-10): the score is 126 (was 126); the entry magnitude is added after the velocity copy where retail adds the two squares before the square root, so the 1.0 constant lands in xmm2 instead of xmm3 and the x87 operand order of the sums differs.
-// MiniMax R (11-09): the input rotation before the forward copy with the entry magnitude after the velocity copy is 122 (four points, under the bar) and the permuter's thirty tries found no variant, so the original body is kept at 126.
-// MiniMax R (11-06): no new form, no lower score (126); the frame agrees and only the SSE colouring and x87 operand orders of the note below are left.
 // score 126 (was 126): frame, length and layout now retail's; left: SSE register colouring (the 1.0 constant in
 // xmm2 against retail's xmm3, the normalized forward/heading in other registers), the velocity copy's eax/ecx, two
 // x87 operand orders in the atan2 sums and the reversing compare's operand order (`fxch`, jb).
+// MiniMax C (11-10): the score is 126 (was 126); the entry magnitude is added after the velocity copy where retail adds the two squares before the square root, so the 1.0 constant lands in xmm2 instead of xmm3 and the x87 operand order of the sums differs.
+// MiniMax R (11-09): the input rotation before the forward copy with the entry magnitude after the velocity copy is 122 (four points, under the bar) and the permuter's thirty tries found no variant, so the original body is kept at 126.
+// MiniMax R (11-06): no new form, no lower score (126); the frame agrees and only the SSE colouring and x87 operand orders of the note below are left.
 // MiniMax R (11-09): the input rotation before the forward copy with the entry magnitude after the velocity copy is 122 (four points, under the bar) and the permuter's thirty tries found no variant, so the original body is kept at 126.
 // MiniMax R (11-06): no new form, no lower score (126); the frame agrees and only the SSE colouring and x87 operand orders of the note below are left.
 // Earlier: frame 0x20 versus 0x28, initial magnitude and vector homes differ.
@@ -690,6 +690,24 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // `fabs(...) >= 1.9198622f` 214 (1145 bytes, masked 55), that with the forward copy 222. Left: the entry magnitude's
 // add order (retail adds i*i + j*j before squaring k, so 1.0 lands in XMM3), each normalize's y loaded ahead of the
 // divide, and the blend rows stored y first. Also: both perpendicular x terms as a unary minus 126 (same code).
+// Round 184 (m3 lane 4, fast; aligned/masked as difflib counts with addresses / also registers masked, 74/26 at 126):
+// the controls read through a `vector3f controls` member over throttle/steering/unknown1b8 (no cast at either
+// length_sq3f site) 126 (same code); re-measured: the planar velocity copy with y-first squares 122. A compile-only
+// screen of vehicles.cpp (/O2 /Ob1 /arch:SSE /Gr, no /GL) reproduces our ef070 exactly but the entry convention, so 84
+// statement-order/planar/compare/blend combinations ran there first: the x87 operand order of the angle's atan2 sums
+// follows the order in which input and forward are first written, not the products' spelling, and retail's order
+// comes from input.x, forward.x, input.y, forward.y written interleaved: in the build 120 (masked 22), with the planar
+// copy 116 (both statement orders picked by score, not kept); that with `fabs(...) >= 1.9198622f` and blend.x
+// written first 216 at 1145 bytes (aligned 59, masked 15: the best structure, LEAD); blend.x first alone 126
+// (aligned 69), with the planar copy 122 (aligned 65); the interleave, planar copy and blend.x first 116 (aligned 61,
+// masked 17). The normalizer's `*=`/operand spellings, the input products' operand order and the entry magnitude's
+// placement give identical code in the screen. Left on the lead: the entry magnitude's schedule (retail adds i*i +
+// j*j before squaring k, so 1.0 lands in XMM3), input.y's products (the interleave reorders them), each normalize's y
+// loaded ahead of the divide, and the reversing atan2's first product (retail loads input.y first).
+// Then on the interleave + planar copy (+ blend.x first, e6 116; + `>=` compare, e3 216): heading as a planar copy on
+// e3 222 (1145 bytes); the reversing sum written from blend directly (`input.y * blend.x - blend.y * input.x`) with
+// `>=` on e6 216 (1144 bytes, aligned 64); blend_left.y written first on e6 116 (same code); the entry magnitude
+// after the direction block on e6 154; left computed just before the angle on e3 237 (1132 bytes).
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -5060,6 +5078,17 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // order picked by score: match-only). Left on it: the zero/result SSE numbering (ours xmm3/xmm2, retail xmm2/xmm1),
 // retail's `xorps xmm2, xmm2` after six f78b0 calls, the cross-jumped `fstp [esp]; call` tails (0x900000e into
 // 0xa00000f's tail) and the 0xe000583 flag test materialized as a bool (`setne cl; test cl, cl`).
+// Round 184 (m3 lane 4, fast): retail's nine out-of-line 0xf78e0 calls are exactly the nine our source writes as calls;
+// its other 15 limit sites are 0xf78e0's case code expanded, re-deriving the definition from the tag table in EAX and
+// staging the limit through [esp+0x2c] before the push. Re-measured: 0xf78e0 `inline` with every limit site calling
+// it 797 (3029 bytes); with the four cases moved after 0x1300057e 736 (3011 bytes, aligned 105, masked 52; retail's
+// layout keeps 0xb000587 in place, so that order is not retail's source order). New: that lead with 0xf78e0
+// `__forceinline` 1183 (3338 bytes: every site expands); the lead with 0x6000595 after 0x800061e (retail's block
+// order there) 797, the same swap alone 749 (same code); 0xf78e0's switch moved into an inline
+// `vehicle_definition_limit(definition, limit)` that 0xf78e0 and the 15 expanded sites call 846 (3069 bytes, aligned
+// 212) with 0xf78e0 itself left out of line (53 bytes); the 0xe000583 flag test as `== 0` and as a named bool 749 each
+// (same code; retail materializes `setne cl; test cl, cl`). Left on the lead: the cross-jumped `fstp [esp]; call`
+// tails, the zero re-materialized after six f78b0 calls, and the dot products' x87 operand orders.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5534,7 +5563,7 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    start, thrust toward the speed along the facing (faster diving, with
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
-// score 1052 (was 1087; 1095 before): Frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
+// score 990 (was 1052): earlier 1087, 1095; frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
 // V1A: statement-by-statement walk against all of retail's 1180 instructions found no logic difference (fields,
 // conditions, constants, callees, argument orders, clamp and bank cases all agree). Two source shapes that retail
 // shows and ours lacks, both measured by opcode alignment with offsets and registers ignored (0.757 -> 0.793):
@@ -5718,6 +5747,18 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // 767, masked 764 -> 720: the best structure, LEAD); without the lift 1138 (5043). Left on the lead: the unrolled
 // reversal loop (+12 instructions; retail keeps a 3-pass byte-offset loop), the vehicle index in EDI for the
 // whole body, and the rotation/torque tail's homes.
+// Round 184 (m3 lane 4, fast): kept the quaternion's axis copied as one aggregate, `axis = rotation.vector;` (a vector
+// member added to quaternionf; retail copies i/j/k with three integer moves) 1052 -> 990 at 5094/5094 bytes (aligned 810
+// -> 728, register-masked 464 -> 415). On 990: target as `vector3f_scale(&vehicle->forward, vehicle->speed * boost *
+// climb, &target)` (before the copy 1079; the speed product then follows 0xba1d0 as in retail, but ours multiplies
+// `movaps; mulss [forward]`, retail loads forward first) 1074 (aligned 706, masked 407); every hand-written magnitude
+// as vehicle_magnitude() (before the copy) 1085; the lift as `MAX(vehicle_magnitude(speed), MAX(vehicle_magnitude(turn),
+// horizontal))` and `MIN(MAX(0.0f, fastest - g_4678c8), g_4678c4)` 1124 (5155 bytes); the strafe target and strafe
+// velocity through vector3f_scale 1061 (5075 bytes, masked 394), the force through it 1061 (5075, masked 395), both
+// 1061 (masked 393); both brakes through vector3f_add_scaled 990 (same code). Re-measured on 990: the `difference`
+// block 1030 (5046 bytes), bool boosting 1089, both 1134 (frame 0xd8). Left: the vehicle index (retail ESI until
+// 0xf44a0, then stack reloads; ours EDI to 0xf4250), the unrolled reversal loop (only a short/byte counter or a
+// do/while keeps it a loop in a compile-only screen), the frame and the SSE homes.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -6025,7 +6066,7 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 	real angle;
 
 	function_141f60(function_142eb0(&desired, &current, &desired), &rotation);
-	vector3f_assign(&axis, rotation.i, rotation.j, rotation.k);
+	axis = rotation.vector;
 	length = (real)sqrt(axis.k * axis.k + axis.j * axis.j + axis.i * axis.i);
 	if (0.0001f > (real)fabs(length))
 	{

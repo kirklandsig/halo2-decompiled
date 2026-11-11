@@ -39,11 +39,6 @@ public:
 	int refill();
 };
 
-// Stateless factory operation only; do not replace the accepted writer's
-// readonly factory declaration or assert a new factory table.
-class reader_factory_2d7750
-{
-public:
-	c_sized_reference_a9ef0 *open_reader(const char *name);
-};
+#include "service_streams_2d8780.h"
+typedef debug_stream_factory_2d76f0 reader_factory_2d7750;
 #endif
