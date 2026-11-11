@@ -908,6 +908,7 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 
 /* samples and overlays an object's node orientations and rebuilds its matrices, when it has any */
 // score 240 (was 240): earlier 240 (was 291); 829 bytes against 856, first difference +0x2. Earlier at 291 (was 309): 830 bytes against 856, first
+// 829 bytes against 856, first difference +0x2. Earlier at 291 (was 309): 830 bytes against 856, first
 // difference +0x2. Walked statement by statement against retail on 2026-11-06: no behaviour
 // difference found (every field offset, test direction, callee, argument order and the two loops agree). Still differs: retail reads the object through the
 // header at each early test and again at the bit-29 test (it does not reuse its object register there), keeps the matrices result and the matrices passed on
@@ -936,6 +937,13 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // from header->object without 0xbfe20 276 (= round 76's header->object form). The existing object_get() at every use
 // with no `object` local 298 (818 bytes), with 0xbfe20 298; header->object at every use 315 (807), with 0xbfe20 317.
 // On 0xbfe20 alone: result first 262, early returns of input_matrices 262, both 262. Entry roles still swapped in all.
+// Round 91 (m3 lane 1, fast): the two early tests as two `if`s 294 (823 bytes); final_matrices set from result 240 (same
+// code); the first test inverted into a block around the rest (single exit for it only) 249 (820); with the existing 0xbfe20
+// clear (re-measured 262, 813 bytes): the bit-29/+0x34b tests through slot_handler.h's object_header_get 262 (merged with
+// `object`, no reload), final_matrices set after the mask copy 312 (804). Diagnostics: the matrices parameter renamed 240,
+// `(void)&result;` 240 (both the same code). In the 0xbfe20 + `header->object` form (194) our build keeps the first
+// `header->object` read alive in EAX to the bit-29 test, where retail reloads it from the header (a second and a third
+// read); retail also reads bit 30 into EDX ahead of the mask copy. Body restored.
 // Round 168 (m3 lane 5, fast; masked = difflib count with registers and stack offsets masked, kept body 240 [46]):
 // re-measured round 78's lead (bit-29/+0x34b through header->object, bit 30 cleared through 0xbfe20) 194 [39] at 814
 // bytes; on it, the early returns as separate ifs 298 (820 B: ours lays each return inline, retail jumps forward to
@@ -959,6 +967,22 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // input_matrices until the final_matrices store); on it final_matrices declared before result 287 (m 53), the header
 // computed after result and final 293 (823 B, m 56). The matched 0xe3c90 has the same fresh object read for its
 // bit-29 test beside a header-derived object local.
+// m3 lane 7 r150 (fast with 0xbfe60, 0xbfe20, 0xbdb60, all MATCH; masked = aligned count with registers and stack offsets masked):
+// retail loads the input matrices into EDX at entry and keeps that copy live until final_matrices is set, with the result as a
+// separate EDI copy stored to its home at once, so object_index takes ESI and the +0xb3 byte takes BL (EBX pushed before that
+// test); every early exit then jumps to one of four end epilogues. Re-measured: round 78's lead (bit 30 cleared through 0xbfe20,
+// bit-29/+0x34b tests through header->object) 194 (814 bytes, masked 56). On it: final_matrices declared after result at the top,
+// before it, or result initialised from it (plain or chained) 194 (one code, masked 59); the early tests as two ifs 298 (820 bytes,
+// masked 66), with final at the top either order 299 (masked 70); only the model test nested (`if (model_index != NONE) { ... }
+// return result;`) 304 (813 bytes, masked 52). On the kept body: the model test nested that way 292 (masked 70); the header
+// through the existing object_header_get with `header->type` 240 (same code; also 194 on the lead); on the lead the render-node count
+// read in the sample loop's test 194 (masked 55).
+// (The two-if early tests on the lead repeat round 168's 298.) On the kept body: the sample arm's three assignments final-first 241; the
+// second block's two predicates swapped 240 (other code); the final call's two tests swapped 236 (operand order by score, not kept);
+// matrices/orientations declared after final_matrices 239 (a declaration move, not kept); result = matrices ahead of the node loop
+// 271; the two copies into the scratch buffers swapped 243; the second block's assignments orientations-first 242; the sample flag
+// declared after final_matrices 240; node_count read ahead of the animation state 240; the second block's two pointers as one
+// chained assignment 240 (each other code).
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

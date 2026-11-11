@@ -227,6 +227,8 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
 // MiniMax C (11-10): the score is 334 (was 334); the gate flag keeps its dead store where retail folds the address, and the settings pointer, the effect address and the random draws still live in different homes.
 // MiniMax E (11-09): no new form, no lower score (334).
+// Earlier (334, was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
+// Earlier 334 (was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
 // Earlier first line: score 334 (was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
 // MiniMax E (11-09): no new form, no lower score (334).
 // gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
@@ -591,6 +593,11 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // helper's pointer reads are not forwarded. Scaling through vector3f_scale 354 [272/246/113]. On main: a named
 // `point3f *position` for the record's position at every use 335 [269/236/116], with the point-typed helper at both
 // point sites 335 (same code); the else arm's scale folded into the call 334 (same code). All restored.
+// Round 80 (m3 lane 13, fast with 0x247fd0/0x248cc0, both stay matched): the flag byte's shift and mask as one
+// statement 334, in its initializer 334 (same code each); the velocity lookup through `local_0` 358 (1634 bytes); the
+// velocity defaulted to g_4687a4 and set under `if (local_0 != NONE)` without a named record 348 (the frame changes,
+// first difference +0x2); the collision result declared in the trace block 334 (stack-masked aligned 169 -> 167).
+// Body unchanged at 334.
 // Lane 6 r167 (fast with 0x247fd0, which stays matched; base 334 at 1652, aligned 246, masked 106). The child loop written
 // as matched 0x247fd0 writes it (`tag_index`/`effect_index` read into locals ahead of the 0x173fd0 call, the in-loop lookup
 // through particle_object_for_tag, the link call given the DATUM sum, the reciprocal as an if/else) 311 (1692 B, aligned
@@ -605,6 +612,13 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // (same code; on main's body 334, same code). Keepable parts alone: the velocity default 348 (frame 0xb4; a re-measure
 // of lane 14 r79's form); with the in-loop lookup and the if/else reciprocal 331 (1696 B); plus 0x247fd0's cache test
 // and store order 327.
+// M3 lane 12 r113 (fast with 0x247fd0 and 0x248cc0, both kept; aligned 169, register-masked 71, ours 420 instructions
+// against retail's 430 at 1652 bytes: retail folds no base+index or memory operand here). Lane 6 r167's keepable parts
+// (V the velocity default, L the in-loop particle_object_for_tag, R the if/else reciprocal) with C, the cache test as
+// `local_2 != arg_0->field_50` without 0x247fd0's store order: C 333, V+C 347, V+L+R+C 330 (1696 B), L+R+C 371 (1696),
+// V+L+C 342 (1696); without L: V+R 348, V+R+C 347, R+C 333 (1652 each); on V+L+R+C: all four draws through one plain real
+// (the record's draw member dropped) 385, the gate without the volatile or the assignment in its test 441 (1696 each).
+// None reaches the 8-point bar; body unchanged.
 // M3 lane 16 r106 (fast with 0x247fd0 and 0x248cc0, both stay matched; base 334, register-masked aligned 134): the cache clear
 // as `field_44 = field_44 & ~0xf80f` 334 (same code); that with matched 0x247fd0's order (`local_2 != arg_0->field_50`, field_50
 // stored first; aligned 131, the clear then load/and/store as retail) 346, and round 71's compound form in that order re-measured

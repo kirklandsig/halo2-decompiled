@@ -407,12 +407,19 @@ struct c_aggregate : c_child
 // 31, the early `continue` guard 42. Still BLOCKED by the build flag.
 // Round 147 (m3 lane 8, fast): one function-scope index for the collection and dispatch loops 31 (same code, as
 // rounds 42 and 66 found); no unlisted form left. Still BLOCKED by the build flag.
+// Round 80 (m3 lane 13, fast with the file's six other functions): retail's cleanup ignores the get_info output too
+// (it stores -1 on failure and the release pushes the constant -1), so the dead output is retail's, not a behaviour
+// slip. Re-measured listed forms: `children[i]` without the cast does not compile here (the members are the handle
+// table type), v5's count output as `long &` 31 (same code). Stack-masked aligned 7: only the produced slot. Still
+// BLOCKED by the build flag.
 // Lane 6 r167 (fast with the six file-mates, all still matched; base 31, every difference the frame: ours spills the
 // children cursor at +0x10 and the loop counts at +0x14 with `produced` alone at +0x1c, retail packs `produced` with the
 // loop-count spill at +0x10). Re-measures of listed forms only, no new form left: the dispatch bound read as
 // `j < starts[i + 1]` 121 (388 B, as listed); the cleanup item read into `object` before its null test 74 (368 B; listed
 // at 89 on an older body); the dispatch gate as nested ifs 31 (same code, listed); the dispatch inner loop as a while
 // with the bound read each pass 121 (388 B, the listed bound form); the error test ahead of the child test 37 (listed).
+// Still BLOCKED by the build flag.
+// M3 lane 12 r113: no unlisted form; still only the frame (0x8024 against 0x8020, `produced` unpacked under /GL).
 // Still BLOCKED by the build flag.
 // M3 lane 16 r106 (fast with the six file-mates, all still matched; base 31): the cleanup's item count in the inner loop's
 // for-init (`j = 0, count = block->count`) 74; the source read as `source[0]` 31 (same code); `produced` at function scope,

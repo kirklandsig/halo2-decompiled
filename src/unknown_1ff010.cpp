@@ -697,6 +697,15 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // take retail's XMM0 zero and registers; left are the scale products (retail `scale * x` but `y * scale`, from
 // normalize2d_fast in include/unknown_11cc90.h) and the rotation's own order. BLOCKED-BY 0x1ecf50 (the inline
 // rotate_direction beside it in src/unknown_1eb8a0.cpp).
+// MiniMax R (11-10): no new form, no lower score (77): ours is 846 bytes against retail's 850 and the
+// first difference is at +0xeb, where the two arms of the direction test branch to blocks that retail
+// lays out at other offsets; behind them the difference is that retail expands the rotation where we
+// call rotate_direction, which lives in src/unknown_1eb8a0.cpp and is not this round's file, so the
+// expansion cannot be written here, and the sine is turned into a float by an integer conversion in
+// our build (`setne dl`, `lea edx, [edx + edx - 1]`, `cvtsi2ss`) where retail keeps the sign test
+// inside the expansion. The forms the earlier rounds record ((real)0 and sine - sine for the
+// rotation's cosine, magnitude != 0.0f, the double zeros, rotate_vector_170d70 in place of the call,
+// the axis-first copy of the helper's body) all measure 77 or worse.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {

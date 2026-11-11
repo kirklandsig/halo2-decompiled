@@ -78,6 +78,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
+// score 382 (was 391; 390 before): frame 0x64 and the node-pointer/group-table roles (EBX/EBP) agree; the selected defaults' homes,
+// point bitmap, endpoint homes and x87 scheduling differ.
+// Earlier 391 (was 391; 390 before): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // score 391 (was 391): 390 before; frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // MiniMax C (11-05): no new form, no lower score; retail's three selected-index homes are at [esp+0x44], [esp+0x28] and [esp+0x24] where ours are at [esp+0x40], [esp+0xc] and [esp+0x20]; retail holds the node pointer in ebx and the group table in ebp where we hold them the other way round, and loading the group table before the node pointer scores 397.
 // MiniMax E (11-10): no new form, no lower score (391); the frame size agrees (0x64), but retail holds the node pointer in ebx and the group table in ebp where this build holds them the other way round, and the three selected-index homes sit at other frame offsets.
@@ -406,6 +409,14 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // existing bit_vector_test/bit_vector_set 425/425 (1567 bytes); the group bitmap cleared by memset 388 (aligned 382, masked 176; three
 // points, not kept), both bitmaps by memset 388 (same code); the output as `&arg_4->field_30[local_37]` with no cursor 396 (masked 164);
 // the found flag declared first 393; memset + indexed output 393 (aligned 356, masked 162), with the flag first 395.
+// m3 lane 11 r88 (fast, 382 plain-confirmed): the scenario global read at its two uses in place of the local_7 view pointer
+// 391 -> 382 (aligned 420 -> 403, masked 203 -> 199: the node pointer takes EBX and the table EBP as retail; kept). The
+// group record read at each use in place of local_11 443 (1579 bytes). On 382: the structure global read at its two uses
+// 382 (same code); local_9's fields at each use 387; the three defaults named best_group/best_point/best_end_point 382
+// (same code, homes unchanged); `short local_2` 383 (masked 269); the group bitmap cleared by memset 379 (aligned 365,
+// masked 197; three lower, not kept). On the memset 379: `short local_2` 380; `short local_29` 411 (1563 bytes); the group
+// bits through bit_vector_test/set 412 (1567); the output written by index (no cursor) 384 (aligned 347, masked 186);
+// that with `short local_2` 402 (1577); the found flag declared first 379 (same code).
 // m3 lane 2 r70 (fast with 0x29e730 and the three callees; control 391, masked 178): the round-64 recipe as saved by m3 lane 7
 // r146 re-measures 155 (1596 bytes, aligned 22, masked 11; 0x29e730 still matches). On it, for the one named cause (retail keeps
 // arg_3 in ESI from the range test to the 0x29de20 call and loads arg_0 into EDX for the third distance): a table local for arg_3
@@ -427,13 +438,12 @@ bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg
     if (local_5->field_c4 > 0) local_6 = local_5->field_c8;
     if (local_6 && local_6->field_6c > 0 && !(arg_2.unknown2 & 0x8000) && arg_2.unknown2 >= 0)
     {
-        s_29e0f7 *local_7 = (s_29e0f7 *)g_4e0350;
-        if (arg_2.unknown2 < local_7->field_168)
+        if (arg_2.unknown2 < ((s_29e0f7 *)g_4e0350)->field_168)
         {
             s_262b40_result *local_8 = function_262b40(arg_2);
             if (local_8)
             {
-                s_29e0f6 *local_9 = &local_7->field_16c[(word)arg_2.unknown2];
+                s_29e0f6 *local_9 = &((s_29e0f7 *)g_4e0350)->field_16c[(word)arg_2.unknown2];
                 if (local_8->unknown10 >= 0 && local_8->unknown10 < local_9->field_30 && local_9->field_24 == g_4686c4)
                 {
                     s_29e0f5 *local_10 = &local_9->field_34[local_8->unknown10];

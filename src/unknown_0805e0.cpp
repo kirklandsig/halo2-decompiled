@@ -339,6 +339,23 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // already listed (loop shapes, successor locals, result/early-return exits, the iterate helper, predicate helpers,
 // test spellings, the `(xuid != 0 || guest)` validity that hoists the mask but keeps the first guest test); no untried
 // natural form found, no trial run.
+// Round 91 (m3 lane 1, fast with 0x1a303b/0x2b393c): an entry-pointer loop with `index != NONE ? &g_4cf98c[index] : NULL`
+// lookups before the loop and at its end 58 (137 bytes, the NULL test stays); a guarded `while (!result)` with the per-pass
+// result and `else if (next == NONE) break; else index = next;` 59 (135: mask hoisted into AL and false remade at the exit
+// as retail, but index and successor share ECX behind a padded head); the priming lookup under the guard with that loop
+// 39 (129: early ESI save and in-place `imul esi, esi` as retail; no hoist, successor in EDX, the back-edge lookup computed
+// in EDX and copied, not cross-jumped into the priming one, the head padded); on it `index = next` before the back-edge
+// lookup 39, the result set only in the found arm 39, the iterator read in the guard with a do-while on `!result` 39 (all
+// the same code), `return true` in the found arm 52 (133: AL free but no hoist, flags in EAX), a `short` successor 63
+// (136, both callers lose). Original body restored.
+// m3 lane 7 r150 (fast with 0x1a303b and 0x2b393c, both stay MATCH; a one-link LTCG harness reproduces this body's code, 5 bytes
+// of end padding short): retail sets AL false before the guard, hoists the mask into AL and makes false again at the loop exit;
+// the early-return forms give retail's early ESI save but neither the hoist nor the EBX successor. New: a found-entry pointer
+// with `index != NONE && !found` and the copy after the loop 56 (131 bytes); that with `!found && index != NONE` 55 (129 bytes);
+// the iterator stored on both paths after the tests, with result and break 50, with an early return 55; the guest test ahead of
+// the machine-local test with a successor local and early returns 44. Re-measured: `*iterator = index = entry->next` with an
+// early return 52, a successor local with early returns 49, an early `return false` then a do-while 55, a found pointer with
+// break 51 (133 bytes).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

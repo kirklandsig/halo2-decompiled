@@ -412,11 +412,22 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // 277 (1223 bytes); the owner as a ternary 175 (masked 71), as if/else with the positive test first 175; success returning
 // at once instead of the goto 289 (1210 bytes); the handler view passed straight to the ai-data getter 173 (same code).
 // Body unchanged.
+// M3 lane 10 r92 (fast with the matched callers 0x256bd0 and 0x28dab0; base 173, aligned 183, masked 66): nothing kept. In
+// function_28dbd2: sine first, then cosine, dot, cross 182; sine, cross, cosine, dot 238 (1198 bytes); the cross taken v x axis and
+// subtracted in the rows, current order 187 (masked 60), with sine, cross, cosine, dot 238; dot3f arguments swapped 173 (same code).
 // m3 lane 13 r79 (fast with 0x28dab0, matched throughout; brackets: difflib aligned / register-masked, base 173
 // [91/38]): the forward copy moved after the outer cross 190 [100/50]; the rotation's cross vector left unscaled and
 // multiplied by the sine inside the three row sums 193 (1225 bytes, frame 0x128) [82/38]; the projection factor
 // written `(1.0f - cosine) * dot3f(...)` 173 (same code); the heading aggregate-initialised 173 (same code); the
 // sine taken between the projection and the cross 183 (frame 0x120). The ninth scalar dword stays.
+// m3 lane 7 r150 (fast with 0x28dab0 and 0x256bd0, both stay MATCH): the in-place rotation saving the old v.i and v.j in two locals
+// (v.k read at each use), sine, dot3f, cosine, `projection *= 1 - cosine`, retail's scalar X.j/X.k (cross(v, axis)) with X.i
+// written in row i, rows `axis * projection + v * cosine - X * sine` 227 (1210 bytes, frame 0x11c); all three old components in
+// locals 227 (same frame); cosine first with the projection in one statement 230 (0x11c); the projection named after the cosine
+// in one statement 227; an aggregate copy of the old vector with the same scalar cross terms 253 (1224 bytes, frame 0x114).
+// (The all-three-locals form is close to round 84's 227/1211; its code here is 1210 bytes.) Also new: the two old components saved
+// after the dot 227 (frame 0x11c, other code); X.j/X.k computed before the cosine 227 (other code). Five codes, all 227-253.
+// A one-link LTCG harness does not reproduce this body (function_259d0 stays out of line there), so screens need fast.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

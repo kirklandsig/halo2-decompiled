@@ -1154,6 +1154,7 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 }
 
 /* damages one object of the radius (and its children and siblings): the geometry to it, then the damage */
+// score 38 (was 38; 91 before m3 lane 1 r74): 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
 // score 38 (was 38): 91 before m3 lane 1 r74. 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
 // Earlier 38 (was 38; before r74 was 91): 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
 // MiniMax I (11-10): no new form, no lower score (38); the near block still computes the second and third negations before it stores the destination's first row where retail finishes each row before it starts the next, and the else arm's i and k rows still add the direction to the destination where retail adds the destination to the direction.
@@ -1264,6 +1265,13 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // retail's shape, but j/k address off EBP and the i row and the cone dot flip); origin read through data at each use 40;
 // direction read through data at each use 46; node_center declared beside surface_point 38 (same code); the near test written
 // `dz * dz + dy * dy + dx * dx < 0.05f * 0.05f` 38 (same code).
+// m3 lane 11 r88 (fast; a compile-only harness reproduces the near block, the else arm and the cone dot): the `direction`
+// pointer declared first in the block, or before `outside`, 36 (aligned 12, masked 10: the else arm's i row and the cone dot
+// both retail's, only the near block's store order and the two k rows left; a declaration move two lower, not kept). In
+// the harness 49 single moves of the block's declarations, the dx/dy/dz and negation orders, node_center before node and
+// the else arm through vector3f_add either way: no k row moves. On the 36: one negation per row 39, node adds then the
+// normal's stores 38, the normal's store before each add 288, origin declared second 39, a named squared distance 42. The
+// near test's arms swapped (the far arm first) 357 (1537 bytes).
 // m3 lane 2 r70 (fast, control 38, aligned 14, masked 9; the later `!!` constants and calls are misalignment only): the
 // shared vector3f_add (vector_products.h, with this file's identical cross3f dropped for the header's) in both arms with the
 // normal negated in place 288, with the negated names stored back first 288, in the else arm alone 38 (same code, re-measure);
@@ -2109,6 +2117,10 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 /* damages a region: raises its damage level by the damage over the span to
    its next permutation's threshold, and when the level fills, destroys the
    permutations at that threshold */
+// MiniMax S (11-10): no new form, no lower score (100): our frame is four bytes shorter than retail's, so the two arguments' stack homes sit four bytes lower, and the 0xda110 call setup pushes the arguments in another order with retail's xorps after that call where ours zeroes xmm2 before it.
+// MiniMax A (11-10): no new form, no lower score (100): the instructions agree with retail's and the
+// differing lines are only the branch targets, because the two early exits land five bytes past
+// retail's; the call setups of 0xda110 and 0xd9d60, both in this file, decide that tail.
 // MiniMax S (11-10): no new form, no lower score (100): the two early exits still branch to targets five bytes after retail's, because the tail is five bytes longer (the 0xda110 index in eax and the 0xd9d60 flag in al are theirs to give), and the delay block's register rotation goes with them.
 // MiniMax D (11-09): no new form, no lower score; the first difference (+0x39) is only the two early exits, whose
 // branch targets land five bytes after retail's because the tail is five bytes longer (retail passes 0xda110's index
@@ -2806,6 +2818,15 @@ struct s_unit_event
 // argument, and keeps the permutation pointer in EBX; ours has them the other way. Retail also stores a constant 1 into the
 // region argument's dead stack home and reloads it for `1 << permutation`, and holds 1 in ESI for the vehicle word and the
 // state compare: a value 1 kept across the body (perhaps an inlined helper's parameter).
+// m3 lane 11 r88 (plain unless marked fast): ours is now `ret 0x18`, all six on the stack under the kept `__stdcall`. A
+// compile-only /Gd pass without it loads region_index and permutation_index once each (both become register arguments)
+// and info, object_index, owner and accumulator several times; retail holds region in EBP. The at-marker bit passed
+// straight to 0xd9d60 538 fast (1880 bytes); the destroy test as nested arms, `if (flags & 1) { if (!db110(o, false,
+// false)) destroy } else if (flags & 0x10000) { if (state != 1 || !db110(o, true, false)) destroy }`, 545 (1848 bytes,
+// masked 143 -> 130: retail's single cross-jumped 0xdb110 call, its 1 in a register and `or word ptr [x + 0x352], reg`,
+// but 20 bytes short); that without `__stdcall` 588 (`ret 0x10`, still two register arguments); that with the drop
+// blocks reading the datum through the pool at each use 546 (1900 bytes; 466 fast, where the reduced image keeps
+// g_4e0300 in a register across the drop calls as retail does); with both drops as `long barrel_index` 543 fast (1900).
 // m3 lane 16 r107: the t7 walk of 0xd9d60's note (function_dbfb0 ahead of function_dae60, function_d9640 after
 // function_dbc80, 0xd9d60's marker/object swapped; a full check there loses nothing, 10563 matched) gives this function a
 // custom convention, region in EAX and permutation in ECX, 476 at 1852 bytes (retail: permutation alone in EAX). Plain, on
@@ -5133,6 +5154,15 @@ struct s_damage_object_creation
 // `detached > 0 && tag != NONE` with a do-while on `!= 0` 187 (777 bytes, the mask leaves memory). In retail the node loop's
 // guard jumps to the block's end and the search has no entry test: node_count > 0 is known inside the piece loop. The piece
 // definition index named once after the node loop (test and 0xb7930 argument) 160.
+// m3 lane 11 r88 (fast): retail's mask and the datum offset share [esp + 0x10] (the mask's zero is stored after the offset's
+// last use, with node_count's store, and the node loop's guard then jumps to the block's end); ours zeroes it early in its
+// own slot. On retail's guard order (`detached > 0 && tag != NONE`, `while (!= 0)`, 187 at 777 bytes): `creation` or
+// `first_node` declared at the guard's scope, the piece test as nested ifs, `~piece_nodes` named once for the mask update
+// and the node mask, the piece's node index named 187 each (same code); with the piece pointer 188. On this body: the node
+// mask stored right after 0xb7930 146 (790 bytes, but aligned 29 -> 66, masked 20 -> 40: the mask moves into ESI, xor-zeroed),
+// with the section masks after it too 152 (791), with retail's guard 185 (779); the section masks before the node mask
+// 154 (aligned 31); unknownb8 stored before unknownbc/c0 155; forward copied before up 156 (aligned 37); the piece test as
+// nested ifs alone 156 (same code).
 // m3 lane 2 r70 (fast, control 156, aligned 29, masked 20): the zero after the states call 154 (re-measure), with the piece
 // loop as `!= 0` 154, with retail's guard order 226, with `!= 0` and the piece object pointer 155, guard and pointer 227, `!= 0`
 // and pointer under `if (node_count > 0)` 157 (159 with the zero at the top; the search keeps its entry test). The mask update

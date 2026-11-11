@@ -492,6 +492,7 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1);
 s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 
 // score 87 (was 87): earlier 89; the object-plus-radius sum is written at both of its uses, the timing
+// the object-plus-radius sum is written at both of its uses, the timing
 // default is a ternary, and the heading vector is declared ahead of the object index; the frame is
 // 0x54 and the length matches retail's. Still differs in the 0x110ab0 argument register (ECX where
 // retail uses EAX) and the scratch-register rotation after it, the sum's operand order (retail
@@ -514,6 +515,7 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // MiniMax G (11-06): the object-plus-radius sum named as a local 222, the two addends of that sum in the
 // other order 89, and the object lookup moved before the two vector copies 94; no lower score.
 // Earlier score 141 (was 141): frame 0x58 versus 0x54, first-length/radius homes and unit-call scratch allocation remain.
+// Earlier 141 (was 141): frame 0x58 versus 0x54, first-length/radius homes and unit-call scratch allocation remain.
 // Earlier: frame 0x58 versus 0x54 and first-length/radius homes remain; retail keeps
 // the radius in the argument home and adds the object size only after the projection test.
 // Fallback timing initialized before query 200; later heading vector 219; later object lookup 223;
@@ -762,6 +764,17 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // the target object looked up at each use (no object pointer) 195; the animation id chosen by a ternary 136 (950 B), by an
 // if/else 178 (931 B) in place of the switch; re-measured: the target index initialised at its declaration
 // 89 (same code). Body unchanged at 89.
+// M3 lane 12 r113 (fast with the file's nine other functions, kept; caveat on 0x110ab0): lane 17's match-only 17 form
+// rebuilt 17; its 17 lines are the slot groups (ours {sum, side0} 0x10, {length, side1} 0x14, index 0x18, adjusted 0x1c;
+// retail side0 0x10, {sum, side1} 0x14, {length, adjusted} 0x18, index 0x1c) and the lateral/maximum XMM3/XMM2 swap.
+// No unlisted form; body unchanged.
+// Round 80 (m3 lane 13; plain, since the fast check carries a builds-differently caveat for 0x110ab0): lane 17's
+// match-only 17 form re-measured plain 17 (register-masked aligned 10: only the four scalar slots 0x10-0x1c and the
+// XMM2/XMM3 swap at the side maximum are left). On the 87 body: the two length guards joined (no heading_length) 87;
+// the request arguments through a named argument member of the request (short side at +4, long target at +8, in the
+// header) 87; the projection tests joined into one test 87 (same code each). No other untried natural form found:
+// retail's EAX argument at 0x110ab0 still needs the one-use unit local, so only a full match keeps it, and the 17
+// form's slot spellings are all listed above. Body unchanged at 87.
 // M3 lane 16 r106 (fast; caveat: 0x110ab0 builds differently in the reduced image): lane 17's match-only 17 form rebuilt 17
 // (left as listed: sum 0x10/length 0x14/index 0x18/adjusted 0x1c against retail 0x14/0x18/0x1c/0x18, lateral XMM3 and maximum XMM2
 // against XMM2/XMM3); on it the two side outputs in one declaration 17 (same code), the reversed probe direction built ahead of the
