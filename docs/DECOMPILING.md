@@ -129,7 +129,10 @@ machine about 8 seconds for one function, 12 to 40 for twenty, and about
   full `python tools/check.py` before you finish.
 - It takes what it needs from the last full build in `build/` (any plain
   check makes one). Without one it says so, and leaves out the library objects
-  and the sources that take addresses.
+  and the sources that take addresses. After a branch switch or a header edit,
+  run a plain check of the function first: the reduced image otherwise
+  describes the tree of the last full build, and either scores the function
+  differently (and refuses to search) or describes its callees wrongly.
 - A function whose callees go a few hundred sources deep takes about as long
   as a full link (25 to 30 seconds). Several functions from one file or area
   share most of their image, so check them together.
