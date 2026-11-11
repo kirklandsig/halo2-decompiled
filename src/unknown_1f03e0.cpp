@@ -1316,6 +1316,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // desired reused as the bounded copy (diagnostic) 514 (general delta takes 0x2c but every other slot moves);
 // vector3f_scale into delta, then `delta.i -= current->i` per row 351 (3053); on the first-arm form, the general
 // arm's k row as `limited.k + current->k` 346 (same code: the sum still commutes into xmm2).
+// MiniMax S (11-11): no new form, no lower score (347): the entry block still extracts the damping bit into ECX
+// where retail uses EDX and is one `mov ecx, eax` short, retail stores the gravity byte before its `lea ebp` where
+// ours stores it after, and the two cross products that take their operands the other way round belong to the
+// shared contact_cross helper, which nine matched functions in this file use.
 // MiniMax S (11-10): no new form, no lower score (347): the entry block still extracts the damping bit into ECX where
 // retail uses EDX and is one `mov ecx, eax` short, and retail stores the gravity byte before its `lea ebp` where ours
 // stores it after. The recorded flag-order sweep (412-500) and the flag widths recorded above never beat this body.
