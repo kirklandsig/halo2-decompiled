@@ -298,6 +298,12 @@ Want to be on this list? See [How to help](#how-to-help).
   leads: the subsystem lifecycle table, the data-array layout and some
   register conventions. We verified each one against the retail code
   ourselves; none of its code or text is used here.
+- [Project Cartographer](https://github.com/pnill/cartographer) and
+  [H2Codez](https://github.com/Project-Cartographer/H2Codez) (GPL-3.0): their
+  documented Halo 2 Vista tag definitions gave us tag layouts and field names,
+  which come from the publicly released Halo 2 Vista Editing Kit. We verify
+  each layout against the retail Xbox code and write our own declarations;
+  none of their code or text is copied.
 
 This project is not affiliated with, endorsed by or sponsored by Microsoft,
 Bungie, 343 Industries or Activision. Halo, Halo 2 and Xbox are trademarks of
