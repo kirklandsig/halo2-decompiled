@@ -365,6 +365,8 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// MiniMax E (11-11): no new form, no lower score (117); retail's frame is 0x28 bytes where ours is 0x20 and the
+// seed global is read later in ours than in retail.
 // score 117 (was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
 // MiniMax I (11-10): no new form, no lower score (117); the draw before the time product (193) and the oscillation
 // before the draw (197) move the seed update up but split the float chain, so both are worse.

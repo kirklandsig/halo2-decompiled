@@ -1831,6 +1831,8 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
+// MiniMax E (11-11): no new form, no lower score (445); the frame's slots sit at retail's offsets one dword off
+// and retail keeps its frame pointer and the early pointer where ours does not.
 // score 445 (was 453): retail keeps the result byte in the first argument's dead slot and re-derives the unit in both seat
 // queries (rounds 85, 149 and 93 below).
 // MiniMax R (11-04): no new form, no lower score.
@@ -2269,6 +2271,8 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 	result->k = up->k * input_direction.k + up->j * input_direction.j + up->i * input_direction.i;
 }
 
+// MiniMax E (11-11): no new form, no lower score (776); retail's frame is 0xcc bytes where ours is 0xd4 and its
+// first angle is expanded out of line, so every stack slot sits eight bytes off.
 // score 776 (was 776): frame 0xcc versus 0xd4 and first angle expansion remain; retail calls channel_play
 // (0x1cb490) out of line at five sites and expands only the final animation_10c start, ours expands the
 // overlay loop's call. At entry retail also loads an otherwise unused render-model tag into a stack slot.

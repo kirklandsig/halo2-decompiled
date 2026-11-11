@@ -2781,6 +2781,8 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // loads the entry address and then the entry), and the sample count is a long. 0x73360 still matches.
 // MiniMax S (11-11): score 371 (was 401): the sample flag is stored false before the admission chain and
 // set true after it, as retail does at 0x23716; 0x22850 keeps 223.
+// MiniMax E (11-11): no new form, no lower score (364); the entry block matches retail's, but our body is 54 bytes
+// longer than retail's (1597 against 1543), which moves every later jump target, and the extra code is not located.
 // score 401 (was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here

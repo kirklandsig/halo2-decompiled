@@ -634,6 +634,10 @@ struct s_device_machine_view
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
+// MiniMax E (11-11): no new form, no lower score (34); retail loads the group's flags as a word sharing the group
+// pointer's EAX (mov ax, [eax+2]) and tests bit 1 then bit 2, ours loads a byte and masks it with 3, and dropping
+// the mask gives retail's word load but moves the group pointer into a pushed ESI; case 0x1200055f's zero store is
+// still missing.
 // score 34 (was 34): group-word load/EAX sharing and velocity-zero join remain;
 // the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and

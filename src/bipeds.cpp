@@ -686,6 +686,10 @@ struct s_biped_flags_10a_view
 	word bit7 : 1;
 };
 
+// MiniMax E (11-11): no new form, no lower score (222); retail loads the biped's havok index into a register and
+// compares it there, computes the biped-plus-short-offset pointer early and spills it at [esp+0x20], and jumps to
+// the shared exit for its early return, where ours compares the field in memory, spills the object index at
+// [esp+0x20] where retail uses [esp+0x24] and returns inline.
 // score 222 (was 224; 241; 280 before round 48): frame 0x16c agrees; retail computes the state pointer at the top and spills it (ours reads it at
 // its one use, so the head is 25 bytes short), the 0x111650 call takes names in EAX where retail pushes both
 // arguments (BLOCKED-BY 0x111650, unmatched, ret 8 in retail), and the type-0 bit is read as `and al, 4` (retail
@@ -4152,6 +4156,8 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 /* places one of the ragdoll's bodies: hanging from its constraint's pivot on
    the body placed before it (kept within reach of the ragdoll's center and
    out of the world, turned to follow), or the first body at the point */
+// MiniMax E (11-11): no new form, no lower score (371); the frame's locals sit at [esp+0xc8] and [esp+0xd4] where
+// retail uses [esp+0xd4] and [esp+0xc8], and the two tails cross-jump at the z store and the call.
 // score 371 (was 371): round 112 (m3 lane 12) note at the end. Earlier at 354 (was 354): origin, distance, matrix, limit and
 // placed homes in another order; the pivot select and the materialized travel test differ.
 // MiniMax B (11-07): no new form, no lower score (354); our origin, distance and matrix homes are 0x44, 0x34 and
@@ -5023,6 +5029,8 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// MiniMax E (11-11): no new form, no lower score (79); the difference is inside the shared rotation helper
+// rotate_direction, which is defined in src/unknown_1eb8a0.cpp, a file this lane may not edit.
 // score 79 (was 79): first rotation and staged cross product operands (load-first where retail copies the axis
 // register), 894 against 887 bytes. Round 112 (m3 lane 12) note at the end.
 // MiniMax S (11-10): no new form, no lower score (79); the reduced build of this function is not the
