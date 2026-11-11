@@ -1612,6 +1612,7 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // and `result = true;` last with retail's square and pin order 568 (masked 206, 0x3db00 lost). Re-measured: the early return 566
 // (masked 263); `bool result = false;` first with `result = true;` last 573 (block EBX and query EDI as retail, record ESI,
 // 0x3db00 lost).
+// MiniMax R (11-11): no new form, no lower score (529): the entry convention and the loop's homes stay rotated against retail's, and the parameter order that would fix the entry is not ours to change.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2499,6 +2500,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // registers through the first arm and the sample setup (difflib with registers 287 against 974, registers
 // and offsets masked 110 against 302): left there are the frame homes and the two inlined helpers (13
 // extra instructions shift the tail).
+// MiniMax R (11-11): no new form, no lower score (542): the argument split and the body's block schedule still differ from retail's, and the two inlined helpers live in files this lane may not edit.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
