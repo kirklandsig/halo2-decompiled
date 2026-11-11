@@ -5901,6 +5901,7 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
    otherwise), takes its team from the creation data (in campaign, the
    definition's when unset), starts its animation and finds its two
    animation graph entries */
+// MiniMax C (11-10): score 59 (was 202): the out-of-memory arm sets the return value before its store while the body sits in the else arm, which gives retail's three return blocks and its 1040 bytes. NOT kept (coordinator, 11-11): the header read as the pool data plus the masked index times twelve plus eight through a named offset local (57, retail's [ecx + esi + 8] amode), a hand-expanded getter with a shared local, kept only with a match.
 // score 202 (was 202; 253, 282 before that): the logic agrees with retail statement by statement (re-walked in round 5 of #1049).
 // Round 5 of #1049: the four weapon slots are cleared with memset(.., 0xff, 16), which gives retail's lea/pointer fill
 // (definition spilled first, EDX the pointer, ECX the value; 253 -> 202). What still differs: (1) retail's early
@@ -5994,74 +5995,79 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 	{
 		return false;
 	}
+	bool result;
 	bool failed = !function_bc380(unit_index, 0x33c, 0x124, 0) || !function_bc380(unit_index, 0x340, 0x58, 0) ||
 		!function_bc380(unit_index, 0x344, 0x44, 0);
 	if (failed)
 	{
+		result = false;
 		*out_of_memory = true;
-		return false;
 	}
-	unit = UNIT_GET(unit_index);
-	byte *state = (byte *)unit + unit->unknown346;
-	*(long *)(state + 0x10) = NONE;
-	*(short *)(state + 0x14) = NONE;
-	*(long *)(state + 0x18) = NONE;
-	*(long *)(state + 0x2c) = NONE;
-	*(long *)((byte *)unit + unit->unknown33e + 0x2c) = NONE;
-	function_10f260(unit_index);
-	byte *weapon_state = (byte *)unit + unit->unknown342;
-	*(long *)weapon_state = NONE;
-	*(long *)(weapon_state + 0x44) = NONE;
-	function_114ec0(unit_index, *(long *)(data + 0xc));
-	*(vector3f *)&unit->unknown18c = unit->forward;
-	unit->unknown180 = unit->forward;
-	unit->unknown168 = unit->forward;
-	unit->unknown15c = unit->forward;
-	unit->unknown150 = unit->forward;
-	unit->unknown14c = 0x6000086;
-	short grenade_type = *(short *)(definition + 0x1b4);
-	if (grenade_type >= 0 && grenade_type < 2 && *(short *)(definition + 0x1b6) >= 0)
+	else
 	{
-		unit->grenade_counts[grenade_type] = (char)definition[0x1b6];
-	}
-	unit->object_flags |= 0x1000;
-	unit->unknown138 = *(short *)(data + 0x64);
-	if (g_4e6948->state == 1 && (unit->unknown138 == 0 || unit->unknown138 == NONE))
-	{
-		unit->unknown138 = *(short *)(definition + 0xc0);
-	}
-	function_10f430(unit_index, 0x7000001, 0x7000101, 0x7000101, 0x7000001, 0.0f, false, 2);
-	long first_index = NONE;
-	if (*(long *)(definition + 0x38) != NONE)
-	{
-		byte *graph = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
-
-		for (long i = 0; i < *(long *)(graph + 0x78); i++)
+		unit = UNIT_GET(unit_index);
+		byte *state = (byte *)unit + unit->unknown346;
+		*(long *)(state + 0x10) = NONE;
+		*(short *)(state + 0x14) = NONE;
+		*(long *)(state + 0x18) = NONE;
+		*(long *)(state + 0x2c) = NONE;
+		*(long *)((byte *)unit + unit->unknown33e + 0x2c) = NONE;
+		function_10f260(unit_index);
+		byte *weapon_state = (byte *)unit + unit->unknown342;
+		*(long *)weapon_state = NONE;
+		*(long *)(weapon_state + 0x44) = NONE;
+		function_114ec0(unit_index, *(long *)(data + 0xc));
+		*(vector3f *)&unit->unknown18c = unit->forward;
+		unit->unknown180 = unit->forward;
+		unit->unknown168 = unit->forward;
+		unit->unknown15c = unit->forward;
+		unit->unknown150 = unit->forward;
+		unit->unknown14c = 0x6000086;
+		short grenade_type = *(short *)(definition + 0x1b4);
+		if (grenade_type >= 0 && grenade_type < 2 && *(short *)(definition + 0x1b6) >= 0)
 		{
-			if (*(long *)(*(byte **)(graph + 0x7c) + i * 0x5c) == 0x80001a2)
+			unit->grenade_counts[grenade_type] = (char)definition[0x1b6];
+		}
+		unit->object_flags |= 0x1000;
+		unit->unknown138 = *(short *)(data + 0x64);
+		if (g_4e6948->state == 1 && (unit->unknown138 == 0 || unit->unknown138 == NONE))
+		{
+			unit->unknown138 = *(short *)(definition + 0xc0);
+		}
+		function_10f430(unit_index, 0x7000001, 0x7000101, 0x7000101, 0x7000001, 0.0f, false, 2);
+		long first_index = NONE;
+		if (*(long *)(definition + 0x38) != NONE)
+		{
+			byte *graph = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
+
+			for (long i = 0; i < *(long *)(graph + 0x78); i++)
 			{
-				first_index = i;
-				break;
+				if (*(long *)(*(byte **)(graph + 0x7c) + i * 0x5c) == 0x80001a2)
+				{
+					first_index = i;
+					break;
+				}
 			}
 		}
-	}
-	unit->unknown1f6 = (char)first_index;
-	long second_index = NONE;
-	if (*(long *)(definition + 0x38) != NONE)
-	{
-		byte *graph = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
-
-		for (long i = 0; i < *(long *)(graph + 0x78); i++)
+		unit->unknown1f6 = (char)first_index;
+		long second_index = NONE;
+		if (*(long *)(definition + 0x38) != NONE)
 		{
-			if (*(long *)(*(byte **)(graph + 0x7c) + i * 0x5c) == 0x90001a3)
+			byte *graph = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
+
+			for (long i = 0; i < *(long *)(graph + 0x78); i++)
 			{
-				second_index = i;
-				break;
+				if (*(long *)(*(byte **)(graph + 0x7c) + i * 0x5c) == 0x90001a3)
+				{
+					second_index = i;
+					break;
+				}
 			}
 		}
+		unit->unknown1f7 = (char)second_index;
+		result = true;
 	}
-	unit->unknown1f7 = (char)second_index;
-	return true;
+	return result;
 }
 
 /* gives the unit a weapon (unless it is held or flagged, or the unit may
@@ -6942,6 +6948,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
    and grenade choices, zoom (with the weapon's or the globals' zoom
    sounds), and passes each hand's trigger state to its weapon; whether
    anything changed */
+// MiniMax C (11-10): NOT kept (coordinator, 11-11): 232 from the trigger flags as a word in a word/dword union passed as its dword (a single local wrapped in a union) together with byte compares of the 0x113da0/0x113df0 results; retail has the 16-bit flag ops and the 0x28 frame. Try the byte compares alone, or a 16-bit flags local passed widened, before any aggregate.
 // score 253 (was 253): the control tests 0x8000000/0x4000 are plain mask tests (retail `test eax, imm`), flag 2 of
 // +0x10a goes through s_unit_flags_10a_view (load, shift, test), the zoom is a short compared against
 // the stored field (cmp bx; the field is then read, not the local, for the NONE tests), the zoom sound is read
@@ -7221,6 +7228,7 @@ struct s_unit_turn_state_view
    is in state 1 at +0x1bc), within its aim and look limits when they are
    on (0xc7840); records the aim's turn speeds (+0x243, +0x1f8); whether
    either moved */
+// MiniMax C (11-10): no new form tried, no lower score (the plain build reads 395, the reduced build 453 because 0x11f0d0 is built differently there); what is left is the moved flag's stack byte, the definition and aim pointer's register roles and the two divisions by the stored step, and the forms for each of those are in the note below.
 // score 395 (was 395): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
 // retail), result as a variable, the state byte's bits through s_unit_turn_state_view, +0x10a through
 // s_unit_flags_10a_view, the unit/definition bit tests nested. Still differs: retail keeps the result `moved`
