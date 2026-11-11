@@ -52,6 +52,8 @@ struct c_aggregate : c_child
 };
 
 
+// MiniMax G (11-11): no new form, no lower score (31); under /GL the address-taken produced count keeps a slot
+// of its own, so the frame stays 0x8024 against retail's 0x8020 and every slot below it shifts by four.
 // score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
 // reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
 // loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its
