@@ -47,6 +47,9 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
+// MiniMax H (11-10): no new form, no lower score (298): the optional-state homes still sit four bytes
+// low and our LTCG inlines 0x11bed0 where retail calls it, so the webs that follow cannot be recovered
+// here: BLOCKED-BY 0x11bed0's own file (src/unknown_11cc90.cpp).
 // Statement walk (b4L, 11-06) against retail 0x1d48f0-0x1d5110: every field, offset, condition direction, callee,
 // argument order and add order agrees (bounds 0x1d4948-0x1d4a8c, local_1/local_2 0x1d4a9f-0x1d4b26, rigid body and
 // shape 0x1d4b4b-0x1d4c09, release of the info objects 0x1d4c10-0x1d4c39, ray 0x1d4e61-0x1d4ee7 with `&& !local_0`

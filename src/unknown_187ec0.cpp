@@ -676,6 +676,13 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// score 46 (was 56): the six NONE defaults now precede the effect point; left are the second scan's
+// index register and the stack slots of the scale and the object index, which follow the parameter
+// order that the callers in other files fix (MiniMax D, 11-10).
+// MiniMax S (11-10): no new form, no lower score (56): the first difference is still the call's register split,
+// which follows the parameter list that 0x1883e0's declarations in src/impacts.cpp and src/projectiles.cpp fix;
+// past that call the homes of the two vectors and of the four scalar values sit at different offsets from
+// retail's and the home stores come in a different order.
 // MiniMax I (11-08): no new form, no lower score (77); the argument order still comes from the call sites in other files.
 // MiniMax R (11-07, run 38): no new form, no lower score (77); still BLOCKED-BY 0x1883e0's fourth and fifth
 // parameter types, whose declarations are in src/impacts.cpp and src/projectiles.cpp, so retail's point and
@@ -776,15 +783,15 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 	point3f effect_point;
 	s_sound_position position;
 
-	effect_point.x = forward->i * 0.01f + point->x;
-	effect_point.y = forward->j * 0.01f + point->y;
-	effect_point.z = forward->k * 0.01f + point->z;
 	second_values[0] = NONE;
 	second_values[1] = NONE;
 	second_values[2] = NONE;
 	first_values[0] = NONE;
 	first_values[1] = NONE;
 	first_values[2] = NONE;
+	effect_point.x = forward->i * 0.01f + point->x;
+	effect_point.y = forward->j * 0.01f + point->y;
+	effect_point.z = forward->k * 0.01f + point->z;
 	function_1883e0(tag_index, false, point, c_type_47f957(g_47d8e0), c_type_47f957((short)entry_element_index), index, variant,
 		&first_values[0], &second_values[0], &first_values[1], &second_values[1], &first_values[2], &second_values[2]);
 

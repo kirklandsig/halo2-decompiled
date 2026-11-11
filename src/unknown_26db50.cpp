@@ -832,6 +832,12 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // phase 96, the angle as `phase + spoke * 0.785f` 96 (same code each); the direction copied after the sine and cosine 246 (1104 B); sine and cosine passed
 // straight to rotate_direction 230 (1094 B). The `volatile` pathfinding copy removed 204 (1056 B; retail keeps the lookup), on the
 // lead 199 (1061 B). Body unchanged at 90.
+// M3 lane 12 r111 (fast, 0x26dde0 and 0x1ecf50 matched each time): lane 16 r100's lead rebuilt (rotate_direction declared as
+// bipeds.cpp does, ring phase named in the outer loop) 96 (1090 B). On it: trace.distance read at each use (no local) 89 at retail's
+// 1089 bytes (first +0x45; the entry still reads the sector after the radius and copies the radius through EDX); with the radius
+// read as `object_get(object_index)->unknown03c` 89 (same code); the ring counters declared ahead of the radius 90; the origin
+// pointer declared beside the sector index 89 (same code); `real const &radius = (real)object_get(..)->unknown03c` 264 (1077 B: VC
+// binds the reference to the field). The named phase is a one-use value ahead of the spoke loop's calls, so none is kept. Restored.
 // M3 lane 8 r152 (fast, 0x1ecf50 listed): re-measured the rotate_direction + named-phase lead 96 (masked 20: the radius copied
 // through EDX with the sector read late, spoke-loop scheduling, the marker order) and it with trace.distance at each use 89
 // (1089 B). New on the lead: a `long` spoke counter 239 (1080 B); the radius as a `real const &` bound straight to the object's

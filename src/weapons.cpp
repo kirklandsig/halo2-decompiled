@@ -1946,6 +1946,7 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 }
 /* takes rounds from a weapon's reserve for a magazine: first its own, then
    the reserves of the holder's other weapons of the same kind */
+// MiniMax G (11-10): no new form, no lower score (83).
 // score 83 (was 107, fast): the slot test reads `weapon->definition_index == other->definition_index`, the slot take
 // reads `magazine->rounds_unloaded` at each use (no short local), and the first block's `unloaded` is a long. Found
 // from a permuter run (11-05) whose best form (81) also needed a volatile read, and kept without it; the operand order
@@ -2897,6 +2898,7 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 	return result;
 }
 
+// MiniMax G (11-10): no new form, no lower score (389).
 // MiniMax R (11-10): no new form, no lower score; retail's frame is four bytes and keeps the weapon pointer in ebp with only the definition spilled, ours is eight bytes and spills both.
 // MiniMax C (11-01): no new form, no lower score.
 // score 389 (was 398): the active flag is published as `*active = result > 0.0f;`, which gives retail's two-exit
@@ -3216,6 +3218,7 @@ struct s_ammo_conversion_entry
     long definition_index;
 };
 
+// MiniMax G (11-10): no new form, no lower score (190).
 // MiniMax A (11-04): no new form, no lower score; the acquisition flag with retail's polarity 202, the
 // conversion path's flag before its minimum 205, the transfer's second minimum as a long 191.
 // MiniMax H (11-03): no new form, no lower score; retail saves ebx and ebp and keeps the weapon in ebp where ours saves ebx, esi and edi and keeps it in edi, so the stack slots and the loop's registers differ.
@@ -3472,6 +3475,7 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return unit ? unit->player_index : NONE;
 }
 
+// MiniMax G (11-10): no new form, no lower score (607).
 // MiniMax R (11-10): no new form, no lower score; the unit index without the volatile scores 657, with the volatile and the NONE at the declaration 637 and without the volatile and the NONE at the declaration 640, so the kept form stays the best.
 // MiniMax G (11-04): no new form, no lower score; the barrel pointer before the definition gives fast 638 (was 640), below the retention threshold.
 // MiniMax C (11-01): no new form, no lower score.
