@@ -633,6 +633,11 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // same `if` at the loop's end moves both reloads into its head block in retail's order (122), so the order is not
 // a fixed rank of the two values. Retail's order is the order the loop head uses them. A 600 s permuter run on the
 // new form: 63 tries, best 2 (its baseline build took 1024 s).
+// Round 114 (m3 lane 9, fast = plain 2): the unit and definition lookups folded into the model read 2 (same code); re-measured on this
+// base, the target marker declared first 2 and the visited words declared before the markers 2 (same code). In 0x263210 the same kind of
+// difference (a preheader reload pair in the other order) went away when a local copy of a pool global with a re-read after a call was
+// replaced by the global read at each use; here the matching change, `iterator->b` read at each use with no re-read, is listed at 42/46.
+// Levers left outside this body: 0xb8d30's side-effect summary (its file, src/unknown_0b8ca0.cpp, was another lane's this round).
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -1459,6 +1464,7 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax B (11-11): no new form, no lower score (164); the body is unchanged, and the forms listed above are exhausted.
 // MiniMax H (11-11): no new form, no lower score (164); retail keeps index*12 as a value and re-reads the unit and
 // the pool's data for the second depletion query, and writes the first depletion with setle; the permuter (600 s) found nothing.
 // score 164 (was 164):

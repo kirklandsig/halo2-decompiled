@@ -5,6 +5,7 @@
 #include "unknown_1428b0.h"
 #include "vector_products.h"
 #include "normalize3d.h"
+#include "object_tag_definitions.h"
 
 // @flags /O2 /arch:SSE /Gr
 
@@ -307,11 +308,12 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 }
 
 // MiniMax C (11-11): no new form, no lower score (8); the failure block as a label with the two outer paths jumping into it, and the goto tail, both give the same listing, so the dot's i term still loads up first and the failure block still stores before its pops.
-// score 14 (was 14): 56 before round 101, 112 before that; frame 0x48, the entry registers, the definition spill, the search and the axis bases agree (round 101); earlier at 56,
+// score 8 (was 14): frame 0x48 and 925-byte length agree; the i product loads up first, and
+// the not-valid edge and failure pops/stores differ. Earlier at 14: 56 before round 101, 112 before that; frame 0x48, the entry registers, the definition spill, the search and the axis bases agree (round 101); earlier at 56,
 // frame 0x48 and the entry registers agree, 0xb7060 matches; what remains: the definition spilled at its load (retail EAX, ours ECX, then the
 // default body and index registers), the search's bodies/offset load order, transform kept in EBP where retail has `lea ecx` and left in EBP, the dot's first two
 // products (retail k then j, up first), one cross product side, and the failure stores (retail after the pops).
-// MiniMax R (11-10): score 8 (was 14): the projection's dot, the scale's input and the cross now take the transform's fields
+// MiniMax R (11-10), earlier at 8 (was 14): the projection's dot, the scale's input and the cross now take the transform's fields
 // directly, so the dot's term order (retail k, j, i) and the cross's products agree; left: the dot's i product (ours
 // up.i*forward.i, retail forward.i*up.i), the not-valid exit's jump (ours into the failure block's pops, retail to the
 // shared epilogue) and the failure block's order (ours stores then pops, retail pops then stores).
@@ -646,6 +648,17 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // natural form is left: the tail forms (early returns, flags, else arms, gotos, helpers, the active store's place) and the SSE
 // forms (all dot orders, field spellings, projection and cross helpers) are listed above, and the field-spelled SSE fix (8) is
 // a mix that needs a match, which the tail blocks.
+// Round 88: required typed model field 8; existing scalar vector builder for subtraction/scaling/
+// both 16/119/119; these with the shared direct cross 26/128/128; validity from both prior flags 244.
+// NOT kept: arithmetic/control forms regress, and scaling builders lose the matched caller (0 to 11).
+// Original arithmetic, transfers, search, calls and control restored; typed field confirmed plain 8.
+// m3 lane 1 r95 (fast with 0xb7060; base 8: the not-valid exit's target, the dot's i product and the failure block's
+// pops): guard clauses that clear the entry and return at each failed lookup (three copies of the two stores, the update
+// last with no return) 311 (960 B; 0xb7060 lost, 11); the body index defaulting to NONE with the component lookup and
+// search nested and one `if (body_index != NONE)` update / `else` clear 8 (same code); on that, the valid block as
+// `if (!entry->valid) return;` 8 (same code); the valid flag read into a local before the active store 14; the failure
+// stores chained `entry->active = entry->valid = false;` 8 (the two stores then run valid first, the other way round).
+// Also: the model's physics index named and used at its test and its lookup 117 (928 B; 0xb7060 lost, 11).
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
@@ -655,7 +668,7 @@ void function_109660(long object_index, long entry_index)
 	if (component_index != NONE)
 	{
 		s_carrier_component *component = (s_carrier_component *)(g_51e9b8->data + (component_index & 0xffff) * 0xa0);
-		long model_index = *(long *)(g_4e3b44[object->definition_index & 0xffff].bytes + 0x38);
+		long model_index = ((s_object_definition const *)g_4e3b44[object->definition_index & 0xffff].bytes)->model_tag_index;
 		byte *model = g_4e3b44[model_index & 0xffff].bytes;
 		if (*(long *)(model + 0x24) != NONE)
 		{

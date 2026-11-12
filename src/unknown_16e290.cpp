@@ -1567,6 +1567,7 @@ struct s_camera_clip_reference_16ebf0
 	plane3f plane;
 	byte field_14[4];
 };
+// MiniMax H (11-11): no new form, no lower score (87); retail materialises the cluster address (mov edi,[esi+0xa0]; add eax,edi; mov al,[eax+0x70]) and keeps the reference in al, ours folds the address into the load and keeps it in cl, so the block is one instruction short; the false-first narrow default with the plane terms in retail's order matches retail's clip block instruction for instruction but still scores 105 because of that one missing instruction, and no source form of the cluster access (a pointer local, a pointer-arithmetic local, an explicit 0xb0 multiply, the existing prediction_cluster_get helper, the index in a local) changes the folding.
 // MiniMax C (11-11): no new form, no lower score (87); retail computes the two interpolated values into the other pair of registers (it multiplies the value from [esp+0x18] into xmm0 and the one from [esp+0x20] into xmm1, ours the other way round) and loads [esp+0x20] before it stores the new value to [esp+0x24].
 // MiniMax I (11-10): no new form, no lower score (87); the cross block's xmm0/xmm1 colouring of up.k and
 // forward.j is still swapped against retail's, while the three products, their results and the store slots

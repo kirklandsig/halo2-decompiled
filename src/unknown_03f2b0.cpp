@@ -1318,6 +1318,11 @@ struct s_batch_cache_4b5d0
 struct s_133f70;
 // MiniMax I (11-11): no new form, no lower score (355 in the reduced image, 93 in the full build): the first difference is at +0x1 and the reduced image's score is inflated because the globals it leaves out are not masked; the tail is BLOCKED-BY 0x23690.
 
+// MiniMax E (11-11, run 80): no new form, no lower score (93 on the full image, 355 on the reduced one); a byte
+// previous level with the 0xbc offset folded into the levels base measured 328 and the same offset with a dword
+// previous measured 326, so both forms were restored; what still differs is that the previous level is a dword
+// against retail's byte, the distance argument travels in ECX against retail's EAX, success is stored after the
+// esi spill against retail's before it, and the header's global is loaded last against retail's first.
 // score 93 (was 93; 175 before round 82): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
 // frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain (the 93 is the
 // round 82 baseline of this body; the scores listed below were measured on earlier bodies).

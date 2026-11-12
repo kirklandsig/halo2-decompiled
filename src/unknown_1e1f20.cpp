@@ -592,6 +592,17 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// MiniMax B (11-11), NOT kept (coordinator): 236 to 216 (plain, 966 bytes) holds the definition bit in a byte flag set
+// by tests (`definition_counted`), a match-only form. The lead as written: the definition bit is now shifted and kept in
+// the dead parameter slot as retail does, and the counts loop and the tail follow it; still differs:
+// ours loads the actor pool into EAX and keeps the scaled index in EBX (retail: ECX and EAX) and
+// spills the actor pointer to a stack slot retail has not; the slot loop is rotated with an extra
+// jump and its slot displacement is in ECX (retail: EDX); the memory-entry walk keeps its countdown
+// in EBX and folds the entry pointer into the offset (retail: an entry pointer in EBX, the byte
+// offset in EDX and the countdown in a stack slot); the prop entry address is folded into the loads
+// instead of being materialised and re-derived after the callback; the iterator compare reloads the
+// actor pointer instead of comparing against the cached one; and the second parameter becomes a
+// Boolean before the 0x203ed0 call where retail pushes the raw value.
 // score 236 (was 281): frame 0x1c versus 0x20 (earlier body), entry actor displacement and cleanup stack homes remain;
 // at 236 the prologue registers, the memory walk (retail's inlined joint_decline: offset in EDX, count in a stack
 // slot) and the iterator compare against the cached actor differ.

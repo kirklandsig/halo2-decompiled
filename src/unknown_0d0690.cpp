@@ -2009,6 +2009,8 @@ dword function_015cd0(long index, dword entry);
 // retail callers set EBX after the pushes, as ours do with `out` last); the bsp entry through an inline
 // (globals, index, size) element getter 4; flags as dword 4; the bitmap held as the lookup's return type with casts
 // at the texture calls 4. The two leas never moved.
+// Round 114 (m3 lane 9, fast = plain 4): the conversion buffer passed as `&temporary[0]` 4; `(void)` on the ignored 0xd1630, 0x1cfb0
+// and 0x12360 results 4/4/4 (all four the same code: an unused call result does not move the two leas).
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {

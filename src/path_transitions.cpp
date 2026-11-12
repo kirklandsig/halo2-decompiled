@@ -215,40 +215,6 @@ bool function_270130(s_object_marker const *marker, point3f const *position, rea
     return true;
 }
 
-// score 20 (was 20): Flags promotion and marker-query/loop-entry scheduling remain; protected helper interface unchanged.
-// Alignment pointer snapshot 55; actor point snapshot 131; direct marker indexing 20;
-// selected marker memcpy 20; unsigned-word ordinal 111; long best index 76;
-// entry best sentinel 46; both vector observations 114.
-// retail passes the marker flags to 0x26fbf0 as a 16-bit argument
-// (`xor edx, edx; mov dx, [eax + 0x1c]`); declaring that parameter `word` gives 4 and keeps
-// 0x26fbf0 matched, but 0x26fbf0 is contributor code: BLOCKED-BY 0x26fbf0. The squared distance
-// through vector3d_from_points3d/length_sq3f 30; difference orders xzy/yzx/zxy/zyx 24/26/26/24;
-// best before best_distance 20; the marker query before both 99; dot3f alignment 26; sum
-// x + y + z 20; nested point test 20; flags through a word local 22; alignment k + i + j 20;
-// the markers array after best 20; long count 111; const character 20.
-// A direct word cast 20; the existing orientation predicate forced inline 22; count declared before
-// best_distance and assigned in place 20; const count 20; the loop ordinal declared outside 20;
-// const actor 20; success result assigned before the point query 106; const marker 20.
-// Round 16: dot3f alignment 26; a forward-vector pointer 26; a short cast at the call 20; the
-// flags field typed short 20; a long loop ordinal 827. With 0x26fbf0's flags as word (diagnostic,
-// restored) this is 4, and with dot3f for the alignment too 2 (only the j product's operands).
-// Round 138 (m3 lane 7, fast with 0x26fbf0/0x1be410/0x270130): ours already returns with `ret 0xc` as retail
-// (point in EBX, actor in EAX); the first difference is still the flags argument (`movzx` for retail's
-// `xor edx, edx; mov dx`), still BLOCKED-BY 0x26fbf0. Diagnostics, restored: 0x26fbf0's flags `word` 4 again
-// (0x26fbf0 and 0x1be410 still match; left: the alignment's i and k products computed in the other order);
-// on that, the k product written first 4 (same code). The other caller, 0x2c0d60, passes `(word)` flags too.
-// score 4 (was 20; APPLIED 11-10 by the m3 coordinator from lane 10 r89's held patch, full check 0 lost): 0x26fbf0's
-// flags declared `word` at its definition and in src/unknown_2c0d00.cpp; 0x26fbf0 and 0x1be410 still match.
-// m3 lane 10 r89 (held then, applied above): 0x26fbf0's flags declared `word` (its siblings 0x26f930 and
-// 0x26fe20 already take `word flags`; patch build/r89/held-26fc80.patch, the definition plus the declaration in
-// src/unknown_2c0d00.cpp) gives this function 4 plain, 0x2c0d60 901 -> 888, 0x26fbf0/0x1be410/0x270130 still
-// matched. On that held form (fast): the alignment through dot3f, either argument order, 2 (round 16's 2,
-// re-measured; left: retail loads the global's j first, `movss xmm1, [edi + 4]; mulss xmm1, [ecx]`, ours the
-// marker's); a const forward-vector pointer
-// with the i, k, j sum 2, with i, j, k 2, with the global's operands first 2; with a const marker 2; best before
-// best_distance 4; hand-written sums i/k/j with the i operands swapped 4, i + (k + j) 6, j/i/k 4, i/k/j unswapped 4,
-// k/i/j 4 (round 138's, re-measured), i/j/k 4, k/j/i 4; dot3f with direct `markers[i]` indexing as in 0x26fe90 6. Every hand-written sum
-// computes k first under the word form (i first under `long`), every pointer form loads the marker's j first.
 // @retail 0x26fc80
 bool function_26fc80(long actor_index, long object_index, real distance, void *path, point3f *point)
 {
@@ -264,14 +230,12 @@ bool function_26fc80(long actor_index, long object_index, real distance, void *p
         for (short i = 0; i < count; i++)
         {
             s_object_marker *marker = &markers[i];
-            real alignment = marker->matrix.forward.i * g_4687b0->i +
-                marker->matrix.forward.k * g_4687b0->k + g_4687b0->j * marker->matrix.forward.j;
+            real alignment = dot3f(&marker->matrix.forward, g_4687b0);
             if (alignment > 0.95f)
             {
-                real x = actor->position.x - marker->matrix.position.x;
-                real y = actor->position.y - marker->matrix.position.y;
-                real z = actor->position.z - marker->matrix.position.z;
-                real squared = z * z + y * y + x * x;
+                vector3f delta;
+                vector3d_from_points3d(&marker->matrix.position, &actor->position, &delta);
+                real squared = length_sq3f(&delta);
                 if (best_distance > squared) { best_distance = squared; best = i; }
             }
         }
@@ -510,6 +474,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
+// MiniMax A (11-12): no new form, no lower score (218); retail copies the pathfinding argument into ebx at the entry and reloads the vertices pointer from that copy before ebx takes the first vertex index, and taking the case-2 vertices and the trace from the pathfinding argument instead of from state->pathfinding scores 265 and 294, so the root cannot be kept alive by the case-2 use.
 // score 218 (was 219): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
 // MiniMax C (11-11): no new form, no lower score (218); retail copies the pathfinding argument into EBX at the entry
@@ -904,6 +869,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // too) 220, a case-5 vertices pointer 218. The entry is still the cause: retail loads actor_index into EAX first and moves
 // pathfinding to EBX; no spelling of the cases changes it. Also: both lengths computed before either test 349 (1284 bytes, a
 // variant of the edges-first form); case 5's fallback copying the parent point and output index by member 353 (1292 bytes).
+// MiniMax R (11-11): no new form, no lower score (218): the entry still differs - retail moves the pathfinding
+// pointer into ebx and loads the actor index into eax before the switch, ours keeps the pathfinding pointer in eax
+// and reads the actor index in the cases that use it; the frame (0x40) and case 2 agree, so the whole difference is
+// that entry.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

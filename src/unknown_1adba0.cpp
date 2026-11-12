@@ -532,6 +532,10 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // is left in this note.
 // Diagnostic: 0x110ab0 as an opaque stub leaves 15 (masked 0), so its unmatched body is not the tie. Matched 0xeb270
 // shows the same retail shape (NONE in EBP from entry, EBX pushed later) with early returns and a field value in EBX.
+// Round 174 (m3 lane 5): no untried natural form found. Read as webs: retail gives EBP to both the NONE constant and the
+// later game-time pointer (they never overlap) and EBX to the 0x1e5380 result, which overlaps both; ours gives that shared
+// register EBX and the result EBP, so the result is coloured after the constant here and before it in retail. Every lever
+// on the two webs' weights (uses, declaration point, typing, the -2 compares) is listed above.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

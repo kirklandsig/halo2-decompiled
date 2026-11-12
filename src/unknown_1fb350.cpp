@@ -321,6 +321,11 @@ extern "C" void _ReadWriteBarrier(void);
 // score 122 (was 122): frame 0xc against retail's 0x14; retail reads the pool from the iterator's home for
 // the scan (high water snapshot in ESI) and from a second stack copy for the element, and keeps the datum
 // index in EDI; ours forwards the pool into EDI for both.
+// MiniMax H (11-12) lead 99, NOT kept (coordinator): it needs a new `_ReadWriteBarrier()` (barriers are reverted) and
+// the iterator step's body written out by hand. With it the frame is retail's 0x14 and the body retail's 473 bytes, with the
+// prologue stores, the shared next-index scan and the element computation in retail's order; what is left is the
+// register colouring around the object-pool lookup, where retail keeps the datum index in EDI, the pool's
+// data in EBP and the object pool in EBX and ours keeps them in EBX, EDI and EBP.
 // MiniMax D (11-10): no new form, no lower score (122); retail's frame is 0x14 with the pool pointer in two
 // stack homes and the datum index in EDI, ours is 0xc with the pool forwarded into EDI and the object pool
 // hoisted into EBP.
@@ -551,6 +556,13 @@ extern "C" void _ReadWriteBarrier(void);
 // eax, so the whole body is a register turnover on top of the missing frame. The forms the earlier
 // rounds record (the pool local, the two pool homes, the iterator's fields in five orders, the barrier
 // in its places, the step written out, the shared step in the body) all measure 122 or worse.
+// MiniMax H (11-12): the iterator step is now written out in the body over the shared header helpers (a
+// four-field datum iterator, the shared data_find_index scan, the element and the datum index by hand from a
+// second pool home and the prologue stores in retail's order): that reproduces retail's frame (0x14), retail's
+// length (473 bytes) and retail's prologue and scan byte for byte and lowers the score to 99; the shared
+// data_datum_index form (100), the result declared inside the loop (99), the object index in a local (99), the
+// object pool in a local (99) and the unit lookup written out in the body (99) all measure the same or worse,
+// and computing the datum index after the unit lookup gives 166.
 // @retail 0x1fb510
 void function_1fb510(void)
 {
