@@ -652,6 +652,13 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // both 16/119/119; these with the shared direct cross 26/128/128; validity from both prior flags 244.
 // NOT kept: arithmetic/control forms regress, and scaling builders lose the matched caller (0 to 11).
 // Original arithmetic, transfers, search, calls and control restored; typed field confirmed plain 8.
+// m3 lane 1 r95 (fast with 0xb7060; base 8: the not-valid exit's target, the dot's i product and the failure block's
+// pops): guard clauses that clear the entry and return at each failed lookup (three copies of the two stores, the update
+// last with no return) 311 (960 B; 0xb7060 lost, 11); the body index defaulting to NONE with the component lookup and
+// search nested and one `if (body_index != NONE)` update / `else` clear 8 (same code); on that, the valid block as
+// `if (!entry->valid) return;` 8 (same code); the valid flag read into a local before the active store 14; the failure
+// stores chained `entry->active = entry->valid = false;` 8 (the two stores then run valid first, the other way round).
+// Also: the model's physics index named and used at its test and its lookup 117 (928 B; 0xb7060 lost, 11).
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
