@@ -173,6 +173,13 @@ static inline long bungienet_user_voice_setting(short kind)
 // kind through the selector 32 (95 bytes); the selector on the field with the index after 30 (a repeat, re-measured); a
 // switch with `case 1` falling into `default` 19 (95 bytes, `movsx; dec`); that switch with the index read after it 28 (95
 // bytes: retail's ECX request and EAX kind, but the switch keeps `movsx; dec` for the 16-bit compare).
+// Round 171 (m3 lane 6, round 157's harness): 1-8 initialised unused locals at the top 4 each (diagnostic); the
+// volatile read with a seeded default (`long setting = 1; if (kind == 1 && available) ...`) 12; the request's fields
+// read through a const source pointer local 4; index first with the volatile read as the selector's argument 5; the
+// kind held as a long 4; the kind arm's choice as a ternary 4.
+// Round 86 (m3 lane 14, fast, plain reads, no volatile): a top-level const request parameter 32 (95 bytes); the kind
+// held as a long 32; the selection as one ternary in place of the helper call 32; `old_setting != setting` 32; the
+// controller index read after the selector 30 (95 bytes). The compare folds in every plain-read form.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

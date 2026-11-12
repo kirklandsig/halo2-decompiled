@@ -1578,6 +1578,16 @@ void function_2422d0(long slot)
 // not the cause; one store of the index through a target pointer chosen per arm 100 (300 bytes); a `long const`
 // index 7; the second slot read named and used for the test and the store, with `continue` 7; index and object
 // at function scope with the index reused for the second loop's element 7.
+// Round 156 (m3 lane 8, fast): a function-scope team walker advanced in the for increment 82, advanced at the body's
+// end 81; the 0x243a80 rejection and the taken-slot rejection as separate arms 79; the accept nested under the
+// 0x243a80 test with `continue` and the reject code after it 7; a team entry pointer at the loop top 7 (same code);
+// the two arrays declared the other way round 7; the third loop's test as a `continue` 7; the first loop as `while`
+// with the increment at the body's end 7 (all the same code).
+// Round 86 (m3 lane 14, fast): loop 2 over a stepped `long *` element pointer 70; loop 3's test with the table read
+// before the 0x243a80 call 12; the team count through an inline reader 7 and the team entry through an inline
+// accessor 7 (both the same code); loop 2 as `while` with the increment at the body's end 7 (same code); no slot
+// local re-measured 79 (a repeat of round 42's form). Diagnostics: without loop 3 the swap stays (71); without loop 2
+// the whole allocation moves (108).
 // @retail 0x2423f0
 bool function_2423f0()
 {

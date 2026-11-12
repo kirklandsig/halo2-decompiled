@@ -6,6 +6,7 @@
 #include "unknown_2551c0.h"
 #include "unknown_0259a0.h"
 #include "unknown_1dacb0.h"
+#include "object_tag_definitions.h"
 
 /* the slot state of handler 0xc */
 struct s_slot_0c_state
@@ -491,14 +492,26 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1);
 
 s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 
-PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const *arg_1)
-{
-	real local_0 = arg_0->i * arg_1->i;
-	local_0 += arg_0->j * arg_1->j;
-	local_0 += arg_0->k * arg_1->k;
-	return local_0;
-}
-
+// MiniMax G (11-12): no new form, no lower score (87); the unit index in a local read at the guard, the object lookup and
+// the location query, with the lookup ahead of the two vector copies, gives 237 at 958 bytes, so the field is read again
+// where retail reads it; left: the 0x110ab0 argument register (ECX where retail uses EAX), the sum's operand order and the
+// sum, length and projection homes.
+// MiniMax G (11-11), NOT kept (coordinator 11-11: 87 -> 20 by the unit index assigned inside the guard plus local_1 declared ahead of local_3, both match-only; a plain one-use local before the guard 68, the local at all four reads 241; body at 87): the guard's unit index travels in a named local and the object lookup comes
+// before the two vector copies, so the whole prologue and the guard now match retail's bytes.
+// score 87 (was 87): frame 0x54 and length 963 agree; the unit argument uses ECX
+// instead of EAX, followed by target/vector scheduling and sum/length/projection/query homes.
+// Earlier 20: the frame is 0x54 and the length matches retail's, and the prologue, the
+// guard and the two vector copies all agree. Still differs in the scalar stack homes: the radius
+// sum, the first length, the adjusted projection and the location index sit one slot lower than
+// retail's, which writes the adjusted projection into the length's slot, and the side maximum
+// uses XMM3 where retail uses XMM2.
+// the object-plus-radius sum is written at both of its uses, the timing
+// default is a ternary, and the heading vector is declared ahead of the object index; the frame is
+// 0x54 and the length matches retail's. Still differs in the 0x110ab0 argument register (ECX where
+// retail uses EAX) and the scratch-register rotation after it, the sum's operand order (retail
+// adds the field first), the length and projection stack slots (retail's are four bytes higher),
+// the object lookup against the vector copies, and the timing call's argument loads and the
+// request stores.
 // MiniMax C (11-09): no new form, no lower score (89): compared with retail instruction by instruction,
 // the frame homes of both vectors and of the two lengths agree, and what is left is the schedule:
 // retail loads the object table global into ecx before the three pushes and does the object lookup
@@ -514,14 +527,8 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // MiniMax G (11-05): a split guard with the unit index in a one-use local reaches 19 (the object lookup first and the short request store first), but a one-use local is match-only, so it and the forms without it (guard split 89, guard reorder 296, nested heading length 1263) are reverted; moving the object lookup ahead of the two vector copies reproduces retail's prologue (the global load at +0x15 and the lookup before the copies) but gives 94, because the register rotation (retail EAX/ECX/EDX against ours ECX/EDX/EAX) and the tail homes still differ; no new form, no lower score.
 // MiniMax G (11-06): the object-plus-radius sum named as a local 222, the two addends of that sum in the
 // other order 89, and the object lookup moved before the two vector copies 94; no lower score.
-// score 89 (was 89): the object-plus-radius sum is written at both of its uses, the timing
-// default is a ternary, and the heading vector is declared ahead of the object index; the frame is
-// 0x54 and the length matches retail's. Still differs in the 0x110ab0 argument register (ECX where
-// retail uses EAX) and the scratch-register rotation after it, the sum's operand order (retail
-// adds the field first), the length and projection stack slots (retail's are four bytes higher),
-// the object lookup against the vector copies, and the timing call's argument loads and the
-// request stores.
 // Earlier score 141 (was 141): frame 0x58 versus 0x54, first-length/radius homes and unit-call scratch allocation remain.
+// Earlier 141 (was 141): frame 0x58 versus 0x54, first-length/radius homes and unit-call scratch allocation remain.
 // Earlier: frame 0x58 versus 0x54 and first-length/radius homes remain; retail keeps
 // the radius in the argument home and adds the object size only after the projection test.
 // Fallback timing initialized before query 200; later heading vector 219; later object lookup 223;
@@ -730,6 +737,12 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // subtraction written into it 17 (same code), the length variable declared at the function's top 17, the sides zeroed by
 // one chained assignment 18, the lateral first in the final side comparison 17; the permuter on that form (anneal, 600 s,
 // 53 tries) best 17. Body unchanged at 89.
+// Round 141 (m3 lane 7, fast): lane 17's 17 form rebuilt 17; on it the adjusted projection written into the length local by the last
+// subtraction 17 (groups retail's, the two groups at 0x14/0x18 the wrong way round), with the sides declared swapped 18; the sides
+// swapped alone 19; the size local in the adjusted subtraction 185 (970 B). Diagnostics (one more read of the length, the second side
+// or the sum) grow the frame (979-985 B) and leave the length at 0x14. On the current body: the lateral dot through the file's private
+// dot helper 97, the 0.95 test through it 89 (same code), both 97; the target index initialized at its declaration 89 (same code);
+// the heading length as a ternary 89 (same code). Body unchanged at 89.
 // M3 lane 14 r74 (fast): no existing inline getter or forwarder fits the 0x110ab0 call (include/ has none for the actor's unit), so the EAX
 // argument still needs the one-use unit local. Lane 17's match-only 17 form rebuilt 17 (aligned 17, registers masked 10; left: sum at 0x10 for
 // retail's 0x14, length 0x14 for 0x18, adjusted 0x1c for 0x18, index 0x18 for 0x1c, lateral XMM3 and maximum XMM2 for retail's XMM2, XMM3). On it the
@@ -742,6 +755,48 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // and tests the target against memory). Diagnostics, reverted at once (a volatile local read, never kept): one dead read before the guard, or
 // inside it just ahead of the call, 240 (975 bytes, aligned 61), two ahead of the call 245 (979, aligned 35): the rotation there is one step
 // from retail's, and no plain spelling of the guard supplies it.
+// Round 78 (m3 lane 13; plain 87, register-masked aligned 23 -> 21): kept: the projection, the 0.95 heading test and the
+// lateral dot through the existing dot3f (the projection's private accumulating helper dropped, the two hand-written dots
+// replaced). Measured alone (fast): projection 87, 0.95 test 89 and lateral 89 (same code each). Left as before: the
+// 0x110ab0 argument's scratch register, the target lookup against the copies, XMM2/XMM3 at the side maximum and the
+// timing-call loads and request stores (the radius sum now loads the field first, as retail). On 87 (fast): the three
+// dot3f calls with their arguments swapped 87/87/87 (same code); the side vector and the reversed probe direction as
+// initializers 87/87 (same code).
+// Round 148 (m3 lane 8, fast with the file's other functions, 0x30bf0, 0x110ab0, 0x26bfa0 and 0x1e4a50; base aligned 65, masked
+// 16): the guard split with a unit-index local used at 0x110ab0 and at one later use, the unit's object lookup 225 (965 B,
+// aligned 47), the 0x10fa80 timing call 228 (968 B), the 0xe6900 request 229 (968 B); the unit-index local read at the top
+// (after actor_get) for the guard and the object lookup 234 (966 B); the side vector as an aggregate initializer 89 (same code).
+// M3 lane 16 r100 (fast; caveat: 0x110ab0 builds differently in the reduced image): lane 17's match-only 17 form rebuilt 17; on it
+// the side result typed long 128 (931 B), the reverse probe through the existing vector3f_scale (normalize3d.h) 17 (same code), the
+// second object lookup taking the named unit 227 (965 B; round 27's 227 re-measured), the side choice as an if/else 17 (same code),
+// the projection through dot3f(&local_7, &local_3) in place of the private dot 27, a named `point3f *location` for both probe calls
+// 17 (same code). Body unchanged at 89.
+// M3 lane 16 r102 (fast, the file's matched functions unchanged): the request's target argument from the named target index
+// instead of the actor field 109 (957 B; retail re-reads the field there); the target index and its object lookup ahead of the
+// heading copy (round 31's 94 form) with that request argument 106 (958 B, registers masked 19, the request then takes EBP);
+// the target object looked up at each use (no object pointer) 195; the animation id chosen by a ternary 136 (950 B), by an
+// if/else 178 (931 B) in place of the switch; re-measured: the target index initialised at its declaration
+// 89 (same code). Body unchanged at 89.
+// M3 lane 12 r113 (fast with the file's nine other functions, kept; caveat on 0x110ab0): lane 17's match-only 17 form
+// rebuilt 17; its 17 lines are the slot groups (ours {sum, side0} 0x10, {length, side1} 0x14, index 0x18, adjusted 0x1c;
+// retail side0 0x10, {sum, side1} 0x14, {length, adjusted} 0x18, index 0x1c) and the lateral/maximum XMM3/XMM2 swap.
+// No unlisted form; body unchanged.
+// Round 80 (m3 lane 13; plain, since the fast check carries a builds-differently caveat for 0x110ab0): lane 17's
+// match-only 17 form re-measured plain 17 (register-masked aligned 10: only the four scalar slots 0x10-0x1c and the
+// XMM2/XMM3 swap at the side maximum are left). On the 87 body: the two length guards joined (no heading_length) 87;
+// the request arguments through a named argument member of the request (short side at +4, long target at +8, in the
+// header) 87; the projection tests joined into one test 87 (same code each). No other untried natural form found:
+// retail's EAX argument at 0x110ab0 still needs the one-use unit local, so only a full match keeps it, and the 17
+// form's slot spellings are all listed above. Body unchanged at 87.
+// M3 lane 16 r106 (fast; caveat: 0x110ab0 builds differently in the reduced image): lane 17's match-only 17 form rebuilt 17
+// (left as listed: sum 0x10/length 0x14/index 0x18/adjusted 0x1c against retail 0x14/0x18/0x1c/0x18, lateral XMM3 and maximum XMM2
+// against XMM2/XMM3); on it the two side outputs in one declaration 17 (same code), the reversed probe direction built ahead of the
+// side outputs and the location query 170 (951 B), the lateral test as `(size + radius) * 0.6f > fabs(lateral)` 162 (965 B), the
+// timing test as `projection < (...)` 17 (same code), the unit-index local read right after actor_get (ahead of the guard) 46 (964 B).
+// Body unchanged at 87.
+// Typed biped radius 87; complete constant scalars 87; readonly receivers 87; fabsf 87;
+// shared scaled difference 91; double-factor reversal 170; complete first-probe/timing admissions 87/87.
+// NOT kept: no gain; original body retained apart from the required typed radius field.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
@@ -765,7 +820,7 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1)
 			real local_6 = *(real *)((byte *)function_1e4a50(local_0->unknown054) + 4);
 			vector3f local_7;
 			vector3d_from_points3d(&local_0->position, &local_2->unknown030, &local_7);
-			real local_8 = function_255741(&local_7, &local_3);
+			real local_8 = dot3f(&local_7, &local_3);
 			if (local_8 > 0.f)
 			{
 				if (local_2->unknown03c + local_6 + local_5 > local_8)
@@ -774,14 +829,14 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1)
 					local_10.i = 0.f - local_3.j;
 					local_10.j = local_3.i;
 					local_10.k = 0.f;
-					real local_11 = local_7.j * local_10.j + local_7.i * local_10.i + local_7.k * local_10.k;
+					real local_11 = dot3f(&local_7, &local_10);
 					if (fabs(local_11) < (local_2->unknown03c + local_6) * 0.6f)
 					{
 						s_slot_object_view *local_12 = object_get(local_0->unknown018);
 						if (local_12->type == 0)
-							local_8 -= *(real *)(g_4e3b44[local_12->tag_index & 0xffff].bytes + 0x270);
+							local_8 -= ((s_biped_definition *)g_4e3b44[local_12->tag_index & 0xffff].bytes)->biped.physics.radius;
 						local_8 -= local_2->unknown03c;
-						if (local_4.i * local_3.i + local_4.j * local_3.j + local_4.k * local_3.k > 0.95f)
+						if (dot3f(&local_4, &local_3) > 0.95f)
 						{
 							short local_17;
 							{

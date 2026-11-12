@@ -526,6 +526,16 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // tries) none below 15. Diagnostics: comparing the 0x3c state or field_6 with -2 instead of NONE 103/103; the ticks from
 // another global (no game-time pointer kept) 79 with NONE still EBX and the result moved to EDI, so NONE is coloured
 // ahead of the result whether or not the game-time pointer exists (retail colours the result first: EBX, NONE EBP).
+// Round 106 (lane 9, fast with 0x110ab0; diagnostics): one later NONE compare written against -2 (`unknown07c` or
+// `local_5`) 16 each, the swap unchanged, so the -1 constant's use count is not the tie. As in 0x1414d0, retail gives
+// the value live from entry EBP and pushes EBX later for the later value; ours the reverse. No untried natural form
+// is left in this note.
+// Diagnostic: 0x110ab0 as an opaque stub leaves 15 (masked 0), so its unmatched body is not the tie. Matched 0xeb270
+// shows the same retail shape (NONE in EBP from entry, EBX pushed later) with early returns and a field value in EBX.
+// Round 174 (m3 lane 5): no untried natural form found. Read as webs: retail gives EBP to both the NONE constant and the
+// later game-time pointer (they never overlap) and EBX to the 0x1e5380 result, which overlaps both; ours gives that shared
+// register EBX and the result EBP, so the result is coloured after the constant here and before it in retail. Every lever
+// on the two webs' weights (uses, declaration point, typing, the -2 compares) is listed above.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

@@ -201,6 +201,22 @@ static __forceinline long real_to_long(real value);
 // end); with the countdown expiry and node failure assigning g_46fbe4, count failure returning it, 134 (frame 0x10),
 // the outer else assigning too 148, the pause returning the default 134; countdown expiry returning and count failure
 // assigning g_46fbe4 129 (457 bytes, frame 0x10). A default with a second definition is spilled here.
+// Round 64 (m3 lane 2, fast): the count test alone in a __forceinline (joint, accepted) helper returning both values
+// 90 (461 bytes, the helper's two returns fold into a cmov); the expiry falling to the node-level g_46fbe4 with both
+// continuing paths jumping to one g_46fbe8 return after the missing-prop return 87 (457 bytes: the node-level return
+// merges into the count failure's block and g_46fbe8 sits after the countdown as its fall-through); the participant
+// counter declared in its `for` 24; the node test, view test and countdown expiry as one condition returning g_46fbe4,
+// the loop under a countdown re-test, 98 (457 bytes, the re-test is not threaded); explicit expiry and count-failure
+// returns with both continuing paths jumping to a final g_46fbe8 24 (same code).
+// Round 85 (m3 lane 14, fast): `continue` for an empty participant 24 (same code); the countdown as a named flag set in the
+// eligibility test, `(!(counting_down = ...) || --state->unknown1c > 0)`, then `if (counting_down) return g_46fbe8;` 105 (461
+// bytes: the flag is materialised with setg, the count failure keeps its own g_46fbe4 block as the first one in source,
+// and the node failures and the expiry branch to it); a switch on the participant status 52; `declined` declared at the
+// top 62; the view through the existing prop_node_view helper with the +0x2a flag declared in that view's own type 24
+// (same code). Re-measured, not counted: round 118's 87 form (countdown returning g_46fbe8, both failures falling to the
+// node-level g_46fbe4) 87: there the expiry is `jle` to the count failure's block and g_46fbe8 is the countdown's
+// fall-through. Retail instead has a second copy of that g_46fbe4 block after the countdown, the node failures branching
+// to it, as when a jump to a return block is replaced by a copy; ours folds the jump into the conditional branch.
 // @retail 0x1beb70
 short __stdcall function_1beb70(long actor_index, s_slot *slot, bool active)
 {

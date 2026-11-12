@@ -100,6 +100,14 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
+// score 96 (was 96): no local frame; retail reads the type once before the kind test (one type read shared by
+// both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
+// component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must
+// preserve that incoming convention; every prior one-read type form flips the component/index pair (the caller
+// 0x1d5bf0 then differs). Type read after the rigid body 94 at 256 bytes (caller 13), first
+// 117, after headers/body/index 94 (caller 13), body then type 136, kind 7 as a ternary 104;
+// case 0 through the object_index local 91 at 256 bytes (caller 146), with the one-read type
+// 132-133; parameters reordered (rigid index first, component last) 96 / 94 (caller 13).
 // MiniMax I (11-09): no new form, no lower score; retail takes the owner and the level on the stack and returns with `ret 8`, ours keeps the owner in ECX and returns with `ret 4`, so the body cannot match while the caller keeps its matched form: BLOCKED-BY the caller 0x1d5bf0 (src/unknown_1d5bf0.cpp).
 // MiniMax R (11-09): no new form, no lower score (96); retail reads the object type once at the entry and dispatches it through a byte-indexed table, ours reads the type again in each branch, and the one-read forms move the caller's argument setup.
 // MiniMax A (11-06): no new form, no lower score; retail loads the object-header pool and its data at the
@@ -121,14 +129,6 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // unchanged, the object index read again for case 0 91 with the caller at 146, and the flags read through the
 // owner chain without a pointer local 117 with the caller at 122.
 // MiniMax E (11-05): no new form, no lower score: the 24 form needs the object index and the absolute index, each used once (recorded not kept); the header array local with the type hoisted and case 0 through the object index 96 with the caller 0x1d5bf0 at 13.
-// score 96 (was 96): no local frame; retail reads the type once before the kind test (one type read shared by
-// both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
-// component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must
-// preserve that incoming convention; every prior one-read type form flips the component/index pair (the caller
-// 0x1d5bf0 then differs). Type read after the rigid body 94 at 256 bytes (caller 13), first
-// 117, after headers/body/index 94 (caller 13), body then type 136, kind 7 as a ternary 104;
-// case 0 through the object_index local 91 at 256 bytes (caller 146), with the one-read type
-// 132-133; parameters reordered (rigid index first, component last) 96 / 94 (caller 13).
 // Earlier 96 (was 89): retail pushes ebp and holds the base pointer there, ours keeps the record in esi and ecx;
 // the whole register allocation differs.
 // Round 183: shared header getter at both dispatches 96; shared byte/long type after body 94/96; early byte 106; direct-component long 105; header/typed object lookup 136/136; shared multi-use handle 105. Single-type forms lose 1d5bf0; all restored.
@@ -309,6 +309,16 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // const 24 (same code). The 21 form re-measured 21 [13]: it has the 24 form's colouring (headers ESI, object index EDX, rigid body ECX against
 // retail's EDX, ECX, ESI) and only flips the incoming pair. The fast check shows 0x1d5940 at 221 for every body, the current one included
 // (a reduced-image artifact; 9 in the full build).
+// Round 141 (m3 lane 7; one-file LTCG harness with 0x1d5bf0 and its callee files, harness counts, the caller's aligned count in
+// brackets, [2] = matched): round 60's 24 form 34 [2], the 21 form 31 [15]; the rigid body through a forceinline (model, index) or
+// (owner, index) helper in nine statement orders, same code as without it (31-96); the type as long/int/dword/unsigned long on the
+// 24 form 97 (retail's `movzx` load, scheduled after the kind test), short/word 44 at 260; rigid body first 96 (component on the
+// stack); 96 random forms (orders, long/dword/no object index, absolute local or not, byte/long type, case 0 through the component,
+// the object index or the absolute index, kind-7 switch with or without a default, `&[]` or `+` rigid body): best 31 [15], best
+// with the caller kept 75 [2]. Fast, caller in brackets: the 24 form with the rigid body through an (owner, index) helper 24 [0] (same
+// code), with `+` for the rigid body and a default in the kind-7 switch 24 [0]; no object index local, absolute index, headers,
+// `+` rigid body, byte type, case 0 through the component, kind-7 default 68 [0]; object index, absolute, headers, rigid body, long
+// type, case 0 through headers[absolute] 68 [0]; the same with a dword object index, long type, case 0 through the absolute index 67 [9].
 // M3 lane 14 r74 (fast, caller 0x1d5bf0 in brackets, 0 = still matched): round 60's 24 form rebuilt 24 [0], with a long type 89 [0]. A grid of
 // declaration orders (o object_index, a absolute_index, r rigid body, h headers, t type through absolute_index, T type through `object_index & 0xffff`
 // with no absolute_index), type long or byte, and case 0 through hc `headers[component->object_index & 0xffff]`, ho `headers[object_index & 0xffff]`,
@@ -329,6 +339,40 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // Nothing beats 21 [13] / 24 [0]; no form without a one-use local keeps the caller and gains (ohart ho byte 68 [0] is the best with every local
 // used twice: object index EDX, case 0 CSE'd with the type read, 0x7 first difference). Left on 24: retail loads the header data first into EDX, copies
 // the incoming index to ESI for the rigid body and reuses ECX for the object index, and loads the type with one movzx. Body unchanged at 96.
+// Round 68 (m3 lane 2, fast; caller 0x1d5bf0 in brackets): round 60's 24 form rebuilt 24 [0] (left: object index EDX, headers ESI,
+// rigid body ECX in place, and `mov al` + `movzx` for the type); on it a model local for the rigid body 24 [0] (same code), the type
+// through a header element pointer 121 [194] (272 bytes). On the current body: the main switch's type in a byte local 96 [0] (same
+// code); case 11 as `level <= 1 ? 4 : (level >= 5 ? 5 : 3)` 96 [0] (same code); the rigid body computed after the kind-7 block 100 [0].
+// m3 lane 1 r85 (fast, caller 0x1d5bf0 in brackets): round 60's 24 form rebuilt 24 [0]; on it a top-level const header
+// pointer, a const rigid-body pointer, the type declared after `result`, the rigid body as `bodies + index`, a const type
+// 24 each (same code); with no type local and both switches on `headers[absolute_index].type` 86 at 264 B [13] (flip).
+// m3 lane 12 r106 (fast, caller 0x1d5bf0 in brackets, control 96 [0]): one byte `type` read at entry shared by both kind
+// routes with case 0 through havok_object_get(object_index) (every local used twice) 133 at 220 B [213]; that with the
+// kind-7 route as `return type == 1 ? 0xc : 1;` 136 at 216 B [213]; with the rigid body declared first 132 [213]; with
+// the type read before the rigid body 117 at 236 B [213]; the current body with a `headers` local for its two type
+// reads 117 at 272 B [160].
+// m3 lane 14 r82 (fast, caller 0x1d5bf0 in brackets): round 60's 24 form re-measured 24 at 256 B [0], aligned 21: retail loads the
+// header data first into EDX, copies the incoming index to ESI and reuses ECX for the object index, where ours gives the object
+// index EDX, the headers ESI and computes the rigid body in place in ECX; and ours loads the type as `mov al` plus a `movzx` at the
+// uses for retail's one `movzx` (not kept: the object_index local is used once). A /Gd first pass of the current body loads the
+// component into EAX and the index into ECX, retail's pair.
+// Also r82: permuter on the 24 form (600 s, 13 tries): best 24; its reduced image holds only this file, scores the form 101
+// (the caller's convention is missing), so it is no guide here.
+// Also r82 on the 24 form (fast, caller in brackets): the kind-7 route as `return type == 1 ? 0xc : 1;` 94 [0]; per-case returns 24
+// (same code); no `__assume(0)` default 125 at 228 B [213]; the kind test inverted (main switch first) 94 [0]; `signed char` type 24
+// (the listed char); case 11's level test with its arms the other way round 35 [0].
+// Round 71 (m3 lane 15, fast; caller 0x1d5bf0 matched throughout): round 60's 24 form re-measured 24 at 256 bytes
+// (register-masked aligned 8); on it the main switch's four cases in all 23 other source orders: best 42 (11,0,1,7 and
+// 1,11,0,7), the rest 45-67, all 256 bytes. Retail lays the case bodies out 11, 1, 0, 7, the order already used.
+// m3 lane 15 r74 (fast, caller 0x1d5bf0 in brackets): both bodies return with `ret 8` (owner and level on the stack,
+// component EAX, rigid index ECX, kind EDI); the MiniMax I line above that says ours returns `ret 4` is wrong. A long
+// type read once at entry with `if (type == 1)` for kind 7 141 at 212 B [213] (kind arrives in ESI and the level in EDI,
+// `ret 4`); with the one-case switch for kind 7 136 [213] (re-measure of round 10's form). Retail computes the absolute
+// index twice (`and eax, 0xffff` for the type, `and ecx, 0xffff` again in case 0) and keeps the object index in ECX for
+// both, so its case 0 is not CSE'd with the type read the way every one-read form here is.
+// One type read with no rigid-body local (both flag tests through the owner chain), kind 7 as the one-case switch: byte
+// type, case 0 through object_index 113 at 240 B [210]; long type 117 at 236 B [210]; byte or long type with case 0
+// re-reading the component 97/97 at 260 B [122].
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

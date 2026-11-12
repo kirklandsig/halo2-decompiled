@@ -364,7 +364,17 @@ extern real g_4b8940[9], g_4b8964[9], g_4b8988[9];
 void function_022750(real const *a, long size, real const *b, real *out, real t);
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result);
 
-// score 252 (was 237): b5J walk against retail (2026-11-06). Behaviour: the period test is `> 0` with the
+/* whether the structure's lighting sample set exists and belongs to the
+   current bsp */
+static inline bool structure_has_matching_samples(void)
+{
+    byte const *structure = (byte const *)g_4e0344;
+    return structure && *(long const *)(structure + 0x80) > 0 && g_4e0348 &&
+        *(long const *)(*(byte const **)(structure + 0x84) + 0x1c) != NONE &&
+        *(long const *)(*(byte const **)(structure + 0x84) + 4) == *(long const *)((byte *)g_4e0348 + 8);
+}
+
+// score 223 (was 252; earlier 252, was 237): b5J walk against retail (2026-11-06). Behaviour: the period test is `> 0` with the
 // false path last (0x22adc comiss, 0x22ae0 jbe 0x22c1d), so a NaN period clears g_5093f4 (was: ran the update);
 // rotation[5] and [7] use j*(k*complement) with k*complement shared with [2]/[6] (0x22a0e, 0x22a36), was (j*k)*complement.
 // Structure (retail shape): reset loop indexed with a signed bound, stores in retail order (0x22860-0x22888);
@@ -397,6 +407,9 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 // selective mixed ji/ki/jk 248/248/231; sine-j with mixed ji/ki/jk 229/250/245.
 // (sine-j and mixed-ji written out at their matrix uses gave 229; not kept: two of six parallel locals inlined.)
 // Direct axis/angle/both on this product context 274/252/274 fast (callee caveat).
+// Round 102 (m3 lane 9): retail reads the sample set pointer (+0x84) twice, once inside the admission test chain and
+// again after it, the shape of an inlined test; the admission through the shared structure_has_matching_samples (also
+// used by 0x23690) 252 -> 223 plain, kept. Left: frame 0x64 against 0x68 and 18 bytes short (969/987).
 // @retail 0x22850
 void function_22850(void)
 {
@@ -410,9 +423,8 @@ void function_22850(void)
         memset(entry->data_count, 0, sizeof(entry->data_count));
     }
     g_5093e8 = 0;
-    if (!g_4e0344 || *(long const *)((byte *)g_4e0344 + 0x80) <= 0 || !g_4e0348) return;
+    if (!structure_has_matching_samples()) return;
     byte *source = *(byte **)((byte *)g_4e0344 + 0x84);
-    if (*(long *)(source + 0x1c) == NONE || *(long *)(source + 4) != *(long *)((byte *)g_4e0348 + 8)) return;
     long count = *(long *)(source + 0x38);
     if (count <= 0) return;
     for (long i = 0, remaining = count; remaining > 0; ++i)
@@ -2396,6 +2408,17 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax I (11-11): no new form, no lower score (140): retail tests the `simple` byte, stores the texture-mode global and only then loads and tests the `preserve_alpha` byte, where our build hoists that load above the store and keeps it in cl; retail's else arm tests a byte one slot past the last argument (the stack slot the caller leaves behind) where ours reuses the earlier load.
+// MiniMax G (11-12): no new form tried this round, no lower score (140): the byte at esp+0x6c is still read in a
+// different register and retail's short arm still reads a stack argument this function's declaration does not carry.
+// score 140 (was 140): Frame and retail extent agree; caller flag residency and native
+// fallback selection remain. Both complete coverage clamps now follow the retail upper-default stores.
+// MiniMax S (11-11): no new form, no lower score (140): the frame and the extent agree with retail, and what is
+// left is the byte at esp+0x6c, which retail reads in AL after the store into the global while ours keeps it in CL
+// across the branch, and the two default rectangles, which retail builds unconditionally and writes back into the
+// parameters' argument slots while ours branches over the block; retail's short arm reads a fourteenth stack argument
+// that this function's own declaration does not carry, and the declaration may not change in this lane:
+// BLOCKED-BY this function's parameter list.
 // MiniMax D (11-10): no new form, no lower score; retail's 0x2a8d0 reads a fourteenth stack
 // argument, the byte at esp+0x70, in the short arm where this source reads preserve_alpha, and
 // because that argument is a different value the second flag dies at the test, so retail loads it
@@ -2423,6 +2446,17 @@ dword __cdecl function_131fc0(real alpha);
 // into the parameter's home, ours branches over the block and leaves the parameters alone, so the
 // vertex emission that follows is one instruction out of step; retail also reloads preserve_alpha
 // after the call in the short arm where ours keeps the value in a register.
+// MiniMax C (11-10): score 140 (was 140): no lower score this round. Retail builds both default
+// rectangles unconditionally (source {0,width,0,height} at esp+0x18, destination {320-w*0.5,
+// 320+w*0.5, 240-h*0.5+arg, arg+h*0.5+240} at esp+0x28), tests the source first and the destination
+// second, and writes the chosen default pointer back into the two parameters' own argument slots
+// (six bytes each). That form matches retail's arithmetic and register roles instruction for
+// instruction, but our build keeps the chosen pointer in a register, so the two writes are missing and
+// the body is 12 bytes short (1717 against 1729), scoring 156; a named local copy of the two
+// parameters folds to the same register-only form, as do the plain, pointer-to-parameter and
+// reference-to-parameter spellings. Retail also reads a fourteenth byte argument (esp+0x70) in the
+// short arm where this source reads preserve_alpha (esp+0x6c), so the declaration would have to
+// change, which this lane may not do; the call sites live in another lane's file.
 // score 140 (was 140): Frame and retail extent agree; caller flag residency and native
 // fallback selection remain. Both complete coverage clamps now follow the retail upper-default stores.
 // Earlier 154 (was 251): frame 0x28 agrees; zero/sampler homes, bitmap transport and late fallback selection remain.
@@ -2568,6 +2602,34 @@ dword __cdecl function_131fc0(real alpha);
 // in BL from before the call, and 0x3a5c0 goes 9 -> 226); unconditional defaults selected into two new pointer locals, each
 // after its copy or both copies first, 160/158 (1713). None kept.
 // MiniMax R (11-09): no new form, no lower score; the store to the shader global still comes after the second flag test where retail's comes before, and retail keeps that flag in al where ours keeps it in cl; the halves and the pixel-shader fields are still written in our own order.
+// Round 102 (m3 lane 9, fast, base 140): the long arm equals retail; what differs is the preserve_alpha load our
+// build hoists above the `simple` branch (CL, kept across 0x131fc0) where retail loads it after the branch and again
+// (BL) after the short arm's call, and the tail. `(void)&preserve_alpha` 140 (no effect); the y offset named once
+// 140; the half extents named once 140; const pointers to source/destination read back before Begin 140 (no home
+// writes); source tested before destination 140 (source then in EBX, destination in ESI, as retail); reciprocal-first
+// UV products 140; the short arm's clamped strength named 140; source first with the named offset 140; on that both
+// defaults built unconditionally and then selected 154 at 1717 bytes, which is retail's tail but for its two writes
+// of the chosen default into the parameter's home (`lea ecx; mov [home], ecx; mov ebx, ecx`, 6 bytes each); each
+// default array declared at its own null test 140. The short arm's `mov bl, [esp+0x70]` comes right after the cdecl
+// `push edx` for 0x131fc0, so it is preserve_alpha (the thirteenth argument, ret 0x34), not a fourteenth argument.
+// Round 104 (m3 lane 9, fast): retail's write of each chosen default into the parameter's home occurs at only three
+// sites in the image (these two and one in unmatched 0x14b120), so no matched function shows its source form. The
+// compile-only harness (no LTCG) gives retail's flag loads, so our CL hoist of preserve_alpha follows from LTCG's
+// summary of 0x131fc0 (retail has that summary too: inverse stays in CL across 0x131f40/0x131fc0 in the long arm).
+// Both defaults built unconditionally, source first 156 (1717 bytes, aligned 117 -> 95); with the two zero coordinates
+// as one chained store 155 (aligned 89); that with the height's reciprocal first and reciprocal-first products 161;
+// the four draws in a new inline helper 709 (LTCG keeps it out of line, 1437 bytes); `!(simple || preserve_alpha)`
+// 140; the chained zero store on the conditional source default 140.
+// Round 93 (m3 lane 1, fast; register-masked aligned count in brackets, 140 is [53]): both defaults built unconditionally,
+// source first, the parameters selected by ternaries 156 [39] (1717 bytes: retail's tail but for its two parameter-home
+// writes); that with the selection through a forceinline helper taking the pointer by reference 156 [39]; with the source
+// test read once through the parameter's own address 156 [39] (the reference and the address read both fold); the
+// combined test held in a named bool 140; the test as `simple == false && preserve_alpha == false` 140; both defaults
+// built unconditionally, destination first, with the tests in the current order 150 (1723 bytes). Diagnostic,
+// reverted: a temporary caller in the 0x289e0 stub making the three calls the disabled 0x289e0 makes 140 [53] (plain), so
+// the missing caller is not what keeps the parameters in registers. A permuter run (43 tries in 622 s) reached 105 only
+// through an `int` temporary for one texture coordinate (changes what is drawn) and two volatile casts; nothing usable.
+// MiniMax A (11-11), NOT kept (coordinator 11-11): 140 -> 54 with both default-rectangle fallbacks written through volatile pointers to the parameters; volatile is reverted, body at 140.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2723,6 +2785,15 @@ bool spherical_harmonics_evaluate_directional_light(vector3f const *direction, d
     real red, real green, real blue, real *red_result, real *green_result, real *blue_result);
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green,
     real *blue, byte order, vector3f *direction, point3f const *position);
+// MiniMax C (11-11): no new form, no lower score (364); retail keeps the second copy of 0x235a0 out of line because of its call-site frequency (the call appears 17 times in retail), and the sample block's second test and the allocator still differ; the forms tried here score 401 and above.
+// MiniMax I (11-10): 364 (was 401): the sample flag is written the way retail writes it (0 at 0x23716 before the
+// admission chain, 1 at 0x23745 after it, read at 0x238ad and 0x23b62), the level clamp is `>=` (retail's cmovge),
+// the coefficient pointer starts at layout->data and reaches the level entry through pointer arithmetic (retail
+// loads the entry address and then the entry), and the sample count is a long. 0x73360 still matches.
+// MiniMax S (11-11): score 371 (was 401): the sample flag is stored false before the admission chain and
+// set true after it, as retail does at 0x23716; 0x22850 keeps 223.
+// MiniMax E (11-11): no new form, no lower score (364); the entry block matches retail's, but our body is 54 bytes
+// longer than retail's (1597 against 1543), which moves every later jump target, and the extra code is not located.
 // score 401 (was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
@@ -2790,6 +2861,41 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // body restored; frame 0x20c/0x200 and separate-sample boundaries remain.
 // Direct cache-hit completion and found-byte break, each with long/bool success and original/positive
 // eligibility results, 554/549/554/549 each. Original exhaustive scan and body restored.
+// Round 102 (m3 lane 9, fast unless marked): the allocation through render_memory.h's render_memory_allocate with the
+// sign-tested handle pointer 478 (1660 bytes, both 0x235a0 copies still inlined); the per-bucket sample count as long
+// (retail's movzx, spill and signed jle) 400; the level clamp as `>=` (retail's cmovge) 401; the coefficient pointer
+// started from layout->data before the level arithmetic (retail loads +0x20 first) 395; that with the limit named
+// 399; data-first + long count + `>=` 394 (plain 394, seven points). Diagnostic only, not kept: inline_depth(0)
+// around the second 0x235a0 call 399 at 1486 bytes, and with the allocator helper 295 at 1547/1543: retail's shape is
+// the allocator inlined and the second 0x235a0 copy called; no source form found that keeps that call out of line.
+// Retail stores the sample flag false (0x23716) before the admission chain and true after it, as 0x22850's test is
+// shaped: the admission through the shared structure_has_matching_samples written with a result variable (false,
+// set true by the test) 371 plain, but the direct `return` form gives 401, so that gain is a flag form (match-only);
+// the direct form is kept (same 401, 0x22850 gains). On it: the inlined allocator as well 478 (1660 bytes, the second
+// 0x235a0 copy still inlined); the data handle stored after the output pointer 401; the sample count declared before
+// the bucket loop 401; the sample block under `if (available_samples)` instead of `continue` 401.
+// Round 104 (m3 lane 9, fast): retail keeps the second 0x235a0 copy out of line because of its call-site frequency,
+// not an inline budget: the first copy repeated 6 or 24 times and five more sample blocks all stay inlined (401; 51
+// calls), while one more test on the second site (`available_samples > 1 && layout->order > 0`, diagnostic only)
+// calls it (384 at 1499 bytes, 17 calls as retail). Forms that leave it inlined: the second test as `== 2` 401; the
+// allocation through render_memory.h with the sign-tested output pointer and the handle stored after it 478 (1660
+// bytes, aligned 421 -> 223); that with the bucket body under `if (available_samples)` 478, as a while loop 478,
+// with a long sample count 462 (aligned 220); the early exits as nested positive tests with one return 478; both
+// determinants through one new inline helper 401 (same code), with the allocator too 478; the second test as
+// `available_samples >= 2` 401 (same code). Lead: the test retail has on the second sample's path that the optimizer
+// later removes.
+// MiniMax B (11-11), NOT kept (coordinator): 364 -> 284 needs a new goto after the masked-handle compare with minus one
+// (a new goto is match-only; the rounding alone gives 405, fast). The lead as written: the byte count is rounded up to a multiple of four before it is
+// tested for zero, the masked handle is compared with minus one the way retail does before the size is stored,
+// and the output pointer is taken from the handle masked a second time, which is where retail's second mask
+// comes from; what still differs is that our rounding computes four minus the remainder where retail subtracts
+// the remainder and then adds four, our first matrix copy loads its four values into registers before it stores
+// them where retail stores each value as it loads it, and the three rotation calls still pass the rotation on
+// the stack instead of in eax because that callee lives in another file.
+// MiniMax A (11-12): no new form, no lower score (364); the first difference is at +0x52, where this build's early
+// exit jumps to a block that sits 0x36 bytes further from the function's start than retail's, and the body after that
+// pairs against the wrong instruction all the way down; the frame agrees (0x200) and the two length checks on the
+// count are the same, so what is left is the layout of the blocks and the order of the reads.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -2802,10 +2908,8 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, long order, lo
         if (found || g_5093e8 >= 24) goto done;
         g_4b89b0[g_5093e8].key = object_index;
         *(short *)&g_4b89b0[g_5093e8].unknown4 = order;
-        byte const *structure = (byte *)g_4e0344;
-        bool use_samples = structure && *(long const *)(structure + 0x80) > 0 && g_4e0348 &&
-            *(long const *)(*(byte const **)(structure + 0x84) + 0x1c) != NONE &&
-            *(long const *)(*(byte const **)(structure + 0x84) + 4) == *(long const *)((byte *)g_4e0348 + 8);
+        bool use_samples = false;
+        if (structure_has_matching_samples()) use_samples = true;
         real red[16], green[16], blue[16];
         if (!use_samples)
         {
@@ -2813,9 +2917,10 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, long order, lo
             spherical_harmonics_evaluate_directional_light(&direction, layout->order,
                 1.0f, 1.0f, 1.0f, red, green, blue);
         }
+        real const *coefficients = layout->data;
         long level = 5 - order;
-        if (level > layout->level_count - 1) level = layout->level_count - 1;
-        real const *coefficients = layout->data + layout->levels[level].offset;
+        if (level >= layout->level_count - 1) level = layout->level_count - 1;
+        coefficients += (layout->levels + level)->offset;
         long stride = layout->groups * (layout->columns * 3 + 4);
         s_bucket_source const *buckets = (s_bucket_source const *)vertices;
         long total = function_023540(count, buckets, &g_4b89b0[g_5093e8], stride);
@@ -2831,7 +2936,7 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, long order, lo
             for (long bucket = 0; bucket < count; ++bucket)
             {
                 byte const *pair = (byte const *)vertices + 4 + bucket * 4;
-                word available_samples = *(word const *)(pair + 2);
+                long available_samples = *(word const *)(pair + 2);
                 if (!available_samples) continue;
                 real const *source = (real const *)((byte const *)vertices + 0x44 + *(short const *)pair * 0x30);
                 transform4x3f matrix;
@@ -2909,6 +3014,17 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// MiniMax G (11-11): no new form, no lower score: the corner helper's two statements swapped 214 (2022 bytes, the
+// same code as an earlier round); the helper keeps one expression per coordinate.
+// MiniMax C (11-10): score 94 (was 211): the four bounds are now written corner by corner in the
+// order 0, 2, 1, 3 and the second angle's cosine and sine have their own locals, which reproduces
+// retail's bounds block (0.5 first, the first zero compare after bounds[1]'s store, 240 in xmm7 and
+// once as a memory operand); left: the inlined corner rotation's x87/SSE schedule and result homes.
+// The helper's two products given their own named locals (u = x*cosine - y*sine, v = x*sine + y*cosine)
+// score 320 (1914 bytes), so that form is not kept and the helper keeps its single expression.
+// MiniMax S (11-11): score 94 (was 211): the bounds are written corner by corner (0, 2, 1, 3),
+// which reproduces retail's block (0.5 loaded first, the first zero compare right after bounds[1]'s
+// store, 240 in xmm7 and once as a memory operand); the corner sets' x87/SSE schedule remains.
 // MiniMax S (11-09): no new form, no lower score (211); bounds/trig scheduling and the second
 // cosine home remain.
 // MiniMax E (11-09): no new form, no lower score (211); the first difference is the two early exits, whose targets are one byte apart - retail's reaches one byte further into the function than ours.
@@ -2917,7 +3033,9 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // ours keeps it in a register, so the result homes and the x87 rows differ.
 // MiniMax D (11-01): no new form tried, no lower score.
 // MiniMax G (11-04): no new form, no lower score.
-// score 211 (was 211): Frame 0x58; 2022/2022 bytes. Bounds/trig scheduling and
+// MiniMax G (11-12): no new form tried this round, no lower score (94): the corner sets' x87/SSE schedule and
+// the second cosine's home still differ from retail's, and the length already agrees.
+// score 94 (was 211): Frame 0x58; 2022/2022 bytes. Bounds/trig scheduling and
 // the second cosine home remain; paired half extents recover native maximum/reciprocal registers.
 // Earlier 247 (was 279): Frame 0x58; 2027/2022 bytes. Maximum/reciprocal and
 // trigonometric scheduling remain; both normalized scales now use their native parameter results.
@@ -3076,6 +3194,23 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // first zero comparison right after bounds[1]'s store, so its zero holds xmm1, 240 is loaded into xmm7 and subtracted in place and the second 240 is a memory
 // operand (ours copies it, one instruction more); in the first corner set retail schedules coordinate 7 ahead of 1, 6 and 2 where ours runs 1, 2, 6, 7.
 // MiniMax R (11-10): no new form, no lower score; the vertical bounds still keep 240 in one register for both of them, where retail loads it into xmm7 after the horizontal bound's store and adds the second 240 from memory, because retail's zero for the scale tests already holds xmm1 with the first test hoisted into the bounds; moving that test between the horizontal and the vertical bounds (217), before both bounds (239), swapping the vertical pair (211) and swapping the halves (221, 225) all score worse, and the best lead, the second cosine in retail's home, is 210.
+// Round 102 (m3 lane 9, fast, base 211): bounds declared before the half extents 211; the bounds as one initializer
+// 211; the two zero tests in the other order 223; bounds declared with the entry locals 211; the half extents before
+// the scale normalization 246 (2024 bytes); the maximum as `scale = first; if (second >= first) scale = second;` 221;
+// both corner buffers as one two-row array 211. A 1800 s permuter run was cut off by its 2400 s cap before reporting.
+// Round 104 (m3 lane 9): LEAD, match-only (a statement order): the compile-only harness reproduces the bounds block,
+// and of all 560 orders of its eight statements only the bounds written corner by corner, 0, 2, 1, 3, give retail's
+// block (0.5 loaded first, the first zero compare right after bounds[1]'s store, 240 in xmm7 and once as a memory
+// operand): 211 -> 94 fast at 2022 bytes, first difference +0x17 -> +0x524 (build/r104/lead-29b00.patch in the
+// m3-lane9 worktree); with the second trig pair in its own named locals the second cosine also takes retail's +0x7c
+// home, 94 (aligned 73). Left there: only the two corner sets' x87/SSE schedule. On that base: the helper's two
+// statements swapped 214; products written cosine/sine first 94; the second sum y-first 94; ordinary inline 94; the
+// first trig pair as two statements 94; four helper parameter orders 94; named rotated u/v 320 (1914 bytes); the four
+// corner calls of both sets in all 24 orders, main's order best (94), then 96. A 600 s permuter run found nothing:
+// its full build took 972 s and its reduced image scores 529 against the full image's 211. The compile-only harness
+// reproduces the corner region of that base exactly; the helper's spellings (four u sums, three v sums, scale/bias/half
+// operand sides, statement order: 192 forms, 6 distinct codes) give nothing closer to retail than main's spelling.
+// MiniMax R (11-11): no new form tried this round, no lower score (94): the body is retail's length and the first difference is at +0x524, where the address of a global that is not matched yet differs, so most of the score here is the unmatched globals and not the statements.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -3147,8 +3282,8 @@ void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real half_height = (scale * height) * 0.5f;
     real bounds[4];
     bounds[0] = 320.0f - half_width;
-    bounds[1] = 320.0f + half_width;
     bounds[2] = 240.0f - half_height;
+    bounds[1] = 320.0f + half_width;
     bounds[3] = 240.0f + half_height;
     if (first_scale == 0.0f) first_scale = 1.0f;
     if (second_scale == 0.0f) second_scale = 1.0f;
@@ -3158,11 +3293,11 @@ void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     texture_corner_rotate(1.0f, -1.0f, cosine, sine, first_scale, &first_coordinates[2]);
     texture_corner_rotate(1.0f, 1.0f, cosine, sine, first_scale, &first_coordinates[4]);
     texture_corner_rotate(-1.0f, 1.0f, cosine, sine, first_scale, &first_coordinates[6]);
-    cosine = (real)cos(second_angle); sine = (real)sin(second_angle);
-    texture_corner_rotate(-1.0f, -1.0f, cosine, sine, second_scale, &second_coordinates[0]);
-    texture_corner_rotate(1.0f, -1.0f, cosine, sine, second_scale, &second_coordinates[2]);
-    texture_corner_rotate(1.0f, 1.0f, cosine, sine, second_scale, &second_coordinates[4]);
-    texture_corner_rotate(-1.0f, 1.0f, cosine, sine, second_scale, &second_coordinates[6]);
+    real second_cosine = (real)cos(second_angle), second_sine = (real)sin(second_angle);
+    texture_corner_rotate(-1.0f, -1.0f, second_cosine, second_sine, second_scale, &second_coordinates[0]);
+    texture_corner_rotate(1.0f, -1.0f, second_cosine, second_sine, second_scale, &second_coordinates[2]);
+    texture_corner_rotate(1.0f, 1.0f, second_cosine, second_sine, second_scale, &second_coordinates[4]);
+    texture_corner_rotate(-1.0f, 1.0f, second_cosine, second_sine, second_scale, &second_coordinates[6]);
 #pragma inline_depth(0)
     D3DDevice_Begin(D3DPT_TRIANGLEFAN);
     D3DDevice_SetVertexData2f(1, first_coordinates[0], first_coordinates[1]);
@@ -3385,7 +3520,7 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 }
 #pragma inline_depth(255)
 
-// score 9 (was 19): retail length; the blend sites now call 0x222d0 as retail. Left: the input
+// score 9 (was 9): retail length (19 before round 134); the blend sites now call 0x222d0 as retail. Left: the input
 // word's shift, folded into EBX before the clear where retail copies EBX to EAX and shifts it
 // after the clear; the two gain sites, where ours loads the 1.0f constant before the reload; the two small
 // selectors (retail loads small into CL first and computes input before the alpha selector) and the
@@ -3637,6 +3772,24 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // clamp through FILTER_PIN 1072; both selectors from one if/else on small 952. The reloads after the depth-bias call stay
 // constant first: in 0x2548f0's file, moving that function above 0x254490 (whose reload order is swapped the other way)
 // changed neither, so the order does not follow source order within the file.
+// Round 171 (m3 lane 6, fast; all restored at 9): 1-8 initialised unused locals at the top, 1-5 before the
+// inverse span or before the input word (diagnostic) 9 each, so neither the reload pairs nor the shift follow
+// symbol numbering; the input word without the cast 9, as a long 9, from a dword input 9, `(dword)(input << 24)` 9;
+// no shifted local 939 (aligned 15: the shift is then retail's, `mov eax, ebx; shl eax, 0x18` after the clear, but
+// small is reloaded into AL after fraction's move to EBP) and on that base the other 23 whole/fraction/input/alpha
+// declaration orders, best wafi 18 (alpha computed in EBX), wfai 19, awfi 19, the rest 23..976; mode zero's
+// depth-bias write as the matched siblings write it (global store, then D3DDevice_SetRenderState) 9, in the
+// skip-state arm 9, both 9.
+// Permuter (600 s, 46 tries on the reduced image): best 9.
+// Round 96 (m3 lane 10; fast, and a compile-only /FAs harness of the file, which reproduces the reload pairs but
+// not the shift): one function-scope gain and one function-scope upper/lower pair shared by the modes 9; the two
+// colours declared at function scope 9; exponent declared at function scope 9; the inverse span declared at function
+// scope 9 (round 132's form, re-measured); `gain = gain / (...)` 9; `exponent <= 3 ? 0 : 0x20` 9; `1L << exponent` 9;
+// `exponent < 1 ? 1.0f : 2.0f` 178. Harness only (both pairs still constant first): the shift selector macro instead
+// of the force-inline helper, `offset * gain`, `256.0f * inverse_span`, `0.5f * inverse_span`, `(real)1 /`, the
+// selected gain alone shared. FILTER_PIN as a
+// force-inline function flips both pairs to span first, but only because mode one's colour clamps then read each
+// field once (other code); on the two gain clamps alone the pairs stay constant first in other registers.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

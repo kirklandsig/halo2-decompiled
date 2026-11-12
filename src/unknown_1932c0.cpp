@@ -986,6 +986,14 @@ bool __stdcall game_variants_received(s_pending_message_header *header)
 // declared bare and set false after the allocation (into a register, frame 0x10, a 72-line listing); the allocator's
 // start read before its null result 3; a volatile LARGE_INTEGER zeroed through QuadPart 3; (fast) the allocator returning
 // the allocation from inside a `while (true)` 105 (232 bytes; 0x194260 120), the low zero store still hoisted.
+// Round 165 (m3 lane 5, fast, 0x194260 kept each time): the allocator's start tick as a LARGE_INTEGER set through
+// QuadPart 3; (re-measured) the write result assigned directly 53 (240 bytes). The cause is the shared tick reader's
+// volatile zero pair (the same lift at the reader's other sites, src/unknown_12c0d0.cpp, include/unknown_080e10.h);
+// the only lever found there is an address-taking asm reference, which the asm ruling bars.
+// Round 189 (m3 lane 4, fast, 0x194260 checked): the result as `char` returned as `result != 0` 101 (233 bytes);
+// the allocator's retry count incremented after the pump call 74 (0x194260 73); its retry loop head-tested
+// `while (!result)` 3 (same code); the retry cap as `retries <= 89` 5 (0x194260 2); the timeout test as
+// `(real)seconds >= 1.0f` 51 (0x194260 49).
 // @retail 0x194160
 bool __stdcall game_variants_retry(s_pending_message_header *header)
 {

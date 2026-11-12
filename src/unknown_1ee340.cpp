@@ -103,6 +103,14 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 	result->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
 }
 
+// MiniMax G (11-12): no new form, no lower score (6); the entry still loads the index before the radius constant where retail loads the constant first, and the x store still uses the formed vertex address where retail folds the address into the store's operands; the helper called with the array element scores 25 and with the array element for the w store as well 38.
+// MiniMax E (11-11): no new form, no lower score (6); the check's left column is ours and the right column is retail.
+// The entry still loads the index before the radius constant where retail loads the constant first, and the loop
+// still forms the vertex address before its x store where retail folds the address into the store's operands; an
+// address folds into a store only when its value is used once, so the x store needs an address of its own, but then
+// the y and z stores have to share the multi-use pointer and stay separate float copies, which only the inlined
+// point helper produces; this round the surface index store moved to the top of the body scores 6 (no change) and is
+// reverted.
 // MiniMax I (11-09): no new form, no lower score; the x store split from the helper as its own array element, through a union view, through an int pun and with the components written through the union's array members score 110 to 140, the helper called with the array address scores 38, and the permuter (2400 s) found no candidate; this round the surface index as a member initializer scores 6, the value store before the surface pointer 33 and the surface index stored last 123, the helper called with the array address 25, a point3f pointer local 6, no vertex local 38 and the tag through the vertex 58; the entry loads the radius constant before the index where retail loads the index first, and the x store folds the vertex address into the store's operands where retail forms the address first.
 // score 6 (was 6): this round: no new form and no lower score; the entry still loads the index before
 // the radius constant where retail loads the constant first, and the loop still forms the vertex address
@@ -225,6 +233,10 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
+// MiniMax G (11-12): no new form, no lower score (192); the frame is still 0x84 against retail's 0x90 with the origin's x and y and the edge vectors in stack homes, and the point-in-polygon query still needs the points before the point, which only the definition in another lane's file fixes.
+// MiniMax E (11-11): no new form, no lower score (192); the frame is still 0x84 against retail's 0x90 with the
+// origin's x and y and the edge vectors in stack homes, and the point-in-polygon query still needs the points before
+// the point, which only the definition in another lane's file fixes (BLOCKED-BY 0x23a220).
 // score 192 (was 192): this round: no new form and no lower score; the frame is still 0x84 against
 // retail's 0x90 with the origin's x and y and the edge vectors in stack homes, and the point-in-polygon
 // query still needs the points before the point, which only the definition in another lane's file fixes.
@@ -254,7 +266,7 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // MiniMax S (10-31): no new form, no lower score. Retail keeps the shape's edges and the ray direction
 // in xmm1-xmm7 and computes the three edge vectors in registers, storing only four floats; ours spills
 // every component of every difference to the stack and re-reads them, so the frame is 0x84 against 0x90.
-// score 192 (was 192): frame 0x84 versus 0x90: retail keeps origin.x/y in xmm6/xmm7 until the
+// Earlier at 192: frame 0x84 versus 0x90: retail keeps origin.x/y in xmm6/xmm7 until the
 // offset (ours re-reads all three from the shape), so it spills first.i/second.i into homes and puts
 // the found byte at +0x38 and the plane at +4; every later stack offset differs by that. Retail also
 // computes the direction from its start loads (ours from memory operands) and has a dead second
@@ -450,6 +462,11 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // written start-first in all three rows 192 (same code). All restored; still BLOCKED-BY 0x23a220.
 // J260: Direction dot/fraction/bounded comparison double storage singles 268/293/278; pairs 300/307/293; all 280; immutable all 280; frames 0x84/0x88 versus 0x90. No exact match; original SSE scalar widths restored.
 // NOT kept: no eligible native repair; opening executable source restored. Retained origin x/y, edge i spills and plane/ray/polygon homes remain.
+// Round 66 (m3 lane 15, fast; 0x23a220, 0x1eded0, 0x1ee350, 0x120850 matched throughout): 0x23a220 still takes the point before the points and its definition is
+// still in another lane's file, so the chain stays BLOCKED-BY 0x23a220. Re-measured on today's tree without the swap, all 31 combinations of: the second and third
+// vertices copied into named points through real_point3d_set (P), the ray end copied too with the direction from both copies (E), the clamp as if / else-if (I), a
+// literal 0.0f for field_c (Z), a dword count for the loop and the call (N). I and Z alone or together 192 (same code); N 195 (1020 bytes); E 196, EN 199; P 214,
+// PN 210 (1020), PE 212, PEN 220; I and Z change none of these. Nothing below 192.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

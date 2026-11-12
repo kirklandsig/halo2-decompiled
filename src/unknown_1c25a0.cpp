@@ -764,14 +764,6 @@ PRIVATE inline char model_permutation_region_get(s_model_region_view const *regi
 	return permutation == NONE ? NONE : region->permutations[permutation].region;
 }
 
-// score 6 (was 64): only the two loaded bytes swap registers: retail loads the
-// variant from [edi] into al and the current one into cl, ours the other way round.
-// The loop strength-reduces to retail's shape once both arrays are indexed by i;
-// whichever byte is read second becomes the edi base. Tried: the variants++
-// pointer with an offset local (64, the old form), variant read first (83, the
-// variants argument moves to the stack), variants++ with current[i] (91), a count
-// local (7), the NONE tests in the other order (87), model_permutation_region_get
-// (65), variants[current - variants + i] (83).
 // @retail 0x1c54b0
 void function_1c54b0(char const *variants, long object_index)
 {
@@ -788,17 +780,15 @@ void function_1c54b0(char const *variants, long object_index)
 		for (i = 0; i < model->region_count; i++)
 		{
 			s_model_region_view const *region = &model->regions[i];
-			char current_variant = current[i];
-			char variant = variants[i];
 
-			if (current_variant == variant)
+			if (variants[i] == current[i])
 				continue;
-			if (variant == NONE || current_variant == NONE)
+			if (variants[i] == NONE || current[i] == NONE)
 			{
-				if (region->permutations[variant == NONE ? current_variant : variant].region == NONE)
+				if (region->permutations[variants[i] == NONE ? current[i] : variants[i]].region == NONE)
 					continue;
 			}
-			else if (region->permutations[current_variant].region == region->permutations[variant].region)
+			else if (region->permutations[variants[i]].region == region->permutations[current[i]].region)
 				continue;
 			function_1c3770(object_index, 0);
 			break;
@@ -871,6 +861,12 @@ void function_1c54b0(char const *variants, long object_index)
 // flag test 18; a world local inside the discard block 18; the count test inverted with an empty then-arm 18; `while` with nested
 // tests and `entity_count <= count` 55. Retail's zero-trip jump lands on the count test, past both reloads: the world pointer and
 // the island index are both reloads on the entity loop's exit edge, world first in retail, index first here.
+// Round 152 (m3 lane 7, fast; round 137's one-file harness re-pointed at this file, exact at 4 and 18): with the flag
+// after the call, `removed++` 18, `removed |= true` 18 (harness), `removed = !removed` 18 (harness), an unsigned or signed
+// char flag 18/18 (harness), the object test nested 18 (harness), `++count` 18 (harness); a world local declared at
+// function scope and assigned at each iteration top 18 (flag first 4), assigned in the loop condition 37 (253 bytes; flag
+// after 40), assigned once before the loop 59/58 (harness); the island declared at function scope 18 (flag first 4); the
+// entity count declared at function scope 18 (flag first 4). Naming the world never moves the reload pair.
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {
@@ -994,6 +990,7 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // lost 185); both 1; 0x1c2a10 declared first in src/unknown_1c2690.cpp no change. BLOCKED-BY 0x1c4040 (its convention).
 // Round 137 (lane 7, fast): `0x34e < g_47f050` 1; the call's result compared `== false` 1; attempt reset before the force
 // flag is set 3; `g_47f050 >= 0x34f` 5; the force step nested in a plain else 1.
+// m3 lane 11 r83 (fast): the walk forms in 0x1c4040's note re-measured 1/1/1/1/1 (the two 34 forms lose eight matched).
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
@@ -1220,6 +1217,19 @@ struct s_1c4040
 // Round 137 (lane 7, fast): `long i` declared first 8; the result byte cleared before the island-array store 101 (538 bytes);
 // the selected-object store before the priority store 10; a `* const` world pointer 8; the array choice as an inverted
 // ternary 9.
+// m3 lane 11 r83: retail's 0x1c51c0 is custom too (its parameter in EDI, as ours). On the walk this function custom needs
+// 0x146bf0 and 0x1c51c0 as its ancestors, and 0x1d1540 default needs one of its callers as its descendant. A rough walk
+// model (retail call edges, our file order, first-mention callee order; it reproduces today's conventions) puts the
+// cycle entry at 0x1d0cf0 -> 0x1d1260 -> 0x278f00 (src/unknown_1cec30.cpp); over every single callee-order move and pair
+// of moves in 26 cycle callers (46 moves), none makes this function custom without flipping a matched function: the
+// best, 0xdbc80 visiting 0x1c3770 first (round 127's src/damage.cpp lever), flips 0x1c39c0. Re-measured (fast): the array
+// store without its cast and the fixed island through g_51e9a4 17; that with 0x146bf0 before 0x1c3770 in
+// src/unknown_278f00.cpp 34 (0x1d1540 custom 215, eight matched lost); with 0x278f00 before 0x1c51c0 in
+// src/unknown_1c39c0.cpp 17; both 34; with 0x1c2690 first in src/unknown_146a20.cpp 17.
+// Round 172 (m3 lane 6, fast with 0x1c51c0, which stays 1): the priority tests as `local_0.field_4 < priority` in both
+// scans 12; the effect read through the globals at its test and the call 106; the island index a plain for-scoped local
+// in place of field_10 35; the mode test inverted with its arms swapped 73 (541 bytes); the fixed island's entity count
+// read once before its loop 185 (555 bytes). The convention stays the only cause (BLOCKED-BY 0xb7b40, as above).
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {
@@ -1667,6 +1677,12 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // Round 137 (lane 7, fast): the selected index stored before the count 5; the mirror declared then assigned 0 3; the index
 // declared at the top of the component block 3; the rigid-body count initialised at its declaration 3; the mirror stored in the
 // for statement's increment clause (`++i` at the end of the body) 3.
+// Round 75 (m3 lane 14, fast): re-measured the while loop 3, a positive guard around a do/while 3 and the mirror set from i 3;
+// an early `return result` for no rigid bodies 281 (902 bytes); the node index stored in the selection's condition 6; no mirror
+// with i at function scope 125 (858 bytes, round 127's no-mirror code); the component flag in a named bool for both tests 240
+// (894 bytes); the main-body comparison as `index == main index` 4; one rigid-body fetch shared by the linear and angular reads
+// 67 (861 bytes). Retail's 0x1d1160 (ends at +0xc5) never touches EBX; its only direct call, 0x1d1010, saves it, so the index
+// spill is no callee clobber in the bytes.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

@@ -58,6 +58,16 @@ public:
 // head exactly: the decl/assign, two-long array, LARGE_INTEGER QuadPart and ULARGE halves readers, result first, const
 // helper parameters, a user_data local, a result local, an early size return and one combined size/page test all keep the hoist; only a non-volatile local named in an
 // asm block (diagnostic, not keepable) gives retail's store order, at a 0x1c frame. So the volatile chain is the cause.
+// Round 182 (m3 lane 4, fast; a compile-only screen reproduces the head): with the key arguments 0, one key
+// argument or swapped, the low-half store still follows `xor esi, esi` and the high half stays last, so the hoist
+// is the volatile chain's own (diagnostic). The reader as two volatile dword halves 13; `method0` with the `const`
+// method qualifier 4; the key as a two-long array member 4; the helper's loop as `while (result == 0)` 4; the reader
+// and helper as non-static `__forceinline` 4; re-measure: a const reference to the key 4. Original restored.
+// Round 92 (m3 lane 11, fast; header trials measured on all nine reader users, header restored): the reader returning
+// `unsigned __int64` 4 (same code; every user unchanged); the elapsed clamp as a conditional expression 4 (same code; every
+// user unchanged); the pump test's arms the other way round 50 (0x6a8a0 64, 0x80e10 75, 0x8c790 73, 0x1241b0 91, 0x199740
+// 94); the timeout test written `>= timeout` 29 (0x6a8a0 38, 0x8c790 49, 0x1241b0 70); this call with implicit `this` and
+// NULL user data 4 (same code).
 // @retail 0x18f260
 long c_resource_lock::method0(long handle)
 {

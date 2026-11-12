@@ -61,6 +61,9 @@ extern long g_55c154;
 // classification spill and the expanded string copy remain.
 // MiniMax G (11-04): no new form, no lower score; the creation classification spill and the
 // expanded string copy remain.
+// MiniMax C (11-11): no new form, no lower score (61): the link still expands the name copy in
+// place where retail calls 0x13fac0 out of line, and the default/existing choice is still spilled
+// to a byte slot where retail branches on the selected index itself.
 // score 61 (was 61): Round 32: retail splits the block into two 0x212bc0 call sites (the default arm inline with
 // `saved` in EDX, the selected arm out of line at 0x2ca467), each with its own g_54e49c store, its own copy into
 // g_54e4a0 and its own 0x238c69 call (mode 5 / mode 7); ours keeps one call site and materialises the choice in a
@@ -236,6 +239,23 @@ extern long g_55c154;
 // 60 [30] (one point, not kept); `long saved = NONE;` set under the name test with the saved test after it 61 [25] (same code);
 // no bool or index local, `selected == NONE ? saved : selected` in the load call and `selected == NONE` at the arms 77 (574
 // bytes) [25]; the same on entry->variant with no selected re-read 154 (577 bytes) [25].
+// Round 86 (m3 lane 11, fast; two load arms 174 as control). New forms: the game-type local (160, re-measured) read
+// after the g_55c154 store 160 (same code); that local declared inside the 0x215f40 success block for its two later
+// uses 161; the first half's bit test on `selected` instead of a second entry read 61 on the one-load body, 174 on two
+// arms (same code each); the default flag cleared as `g_54e4a0.flags &= ~1` 61 / 174 (the same byte `and`, so the
+// field name could replace the raw byte array once the body matches); two arms as `selected == NONE && load(saved)` /
+// `else if (selected != NONE && load(selected))` 174. Re-measures: the failure call at each of the four failure points
+// 174, with the game-type local 161. Diagnostic: `flag_c = true;` after the saved test now 153 (605 bytes) with `this`
+// still in EDI, so round 55's probe no longer reproduces. In every two-arm form EBX is shared by non-overlapping values
+// (the type or constant 1, then saved, then the &g_54e4a0 constant) and `this` takes EDI.
+// MiniMax A (11-12, run 63): no new form, no lower score (61); the body already has retail's two load call sites
+// (the default one out of line, the selected one inline) and retail's frame, so what is left here is the copy's
+// destination hoisted into EAX before `pop ecx` where retail uses the immediate, and our link's inlined copy.
+// MiniMax A (11-12, run 62): no new form, no lower score (61); the second half's call split into the two arms
+// retail has 174 (595 bytes) and the default choice tested without the byte local 77 (574 bytes), so the spill
+// stays; the first half still agrees to the second half's entry, where ours spills the default/existing choice to
+// a byte slot and retail branches on the selected index, and our link still inlines the 0x13fac0 name copy where
+// retail calls it out of line (BLOCKED-BY the copy's own file).
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

@@ -482,6 +482,19 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // Round 60 (m3 lane 2, fast): the system block storing the validity before the system 12; the three cache
 // pointers cleared by one chained assignment 12; first as `long const` 10; definition as a const pointer 10; the
 // attraction test as `0.0f < attraction_radius` 10 (the 10s the same code).
+// Round 145 (m3 lane 7, fast): one redundant pair of parentheses each: the attraction quotient, the change's first
+// squared product and the maximum test's square 59 each (1517 bytes), the minimum test's square 42 (1521); the
+// masks, the particle index, the center pointer, the chained zeroing and the tests 10 (same code). Renames
+// reversing the name order of definition, first and next (one, two or all three) 10; renames of particle, nearest,
+// properties, cache and requested 10; requested declared beside the cache 10; change at function scope 10. The
+// back-edge reloads never move.
+// Round 74 (m3 lane 2, fast): the velocity normalizer in the maximum branch too 34 (1521 bytes; re-measured, as round 94:
+// the maximum branch is then exact, but the minimum branch's j/k inverse products turn sequential where retail pairs them,
+// so that pairing follows a numbering tie like the reloads); on that, vector3f_scale / scale_particle_vector_2b /
+// chained normalizer returns per branch 34/37; a 48-form random screen (comparison orientation, change and
+// maximum-change scales through the file scale helper, a separate speed-squared local, the center inline, chained
+// returns) 34 in all; the direction normalizer in the maximum branch 17 (re-measured, as round 7); the previous blend
+// through vector3f_scale on the shared-normalizer form 34.
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {
@@ -678,6 +691,7 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 
 real g_55e618;
 
+// MiniMax G (11-10): no new form, no lower score (102): the sweep vector and the collision record both sit twelve bytes lower here than in retail (sweep +0x38 against +0x44, record +0xa4 against +0xb0), so retail's frame holds twelve bytes more before the sweep; the aggregates this body declares do not account for that gap.
 // MiniMax S (11-09): no new form, no lower score (102); retail's sweep and collision homes
 // sit twelve bytes higher in the frame than ours (F+0x44 against F+0x38), the local handed to
 // the projection call sits at F+0xb0 against our F+0xa4 and retail's body is twelve bytes
@@ -946,6 +960,20 @@ real g_55e618;
 // (aligned 16, same code); velocity.i named once ahead of the normal locals 170 (1542 bytes, aligned 33); the velocity pointer
 // and keep declared ahead of the normal locals 41 (aligned 31). Retail hoists the record's word above the particle stores,
 // which ours cannot while the record escapes: BLOCKED-BY 0x1697c0 (unmatched) and 0x169510 (contributor).
+// Round 107 (m3 lane 9, fast; the file's other scores unchanged throughout): the particle record typed (identifier
+// and flags words, reals at +8 and +0x34, no flags pointer) re-measured 99; with the final rows scaled in place
+// through vector3f_scale 103; with dot3f 99; the perpendicular as a copy of the normal scaled by the in-file
+// scale_particle_vector_2b 265 (1591 B); the final rows through scale_particle_vector_2b 101 (one point, not kept);
+// both 264; the typed record with the perpendicular helper 265, with both helpers 264, with the rows helper 103; only
+// the tangent through the helper 102, only the perpendicular 198 (1552 B). 0x1697c0's own 25 are dot-product operand
+// orders and its result byte, not the record capture.
+// MiniMax A (11-12, run 63): no new form, no lower score (102); the prologue and the loop match instruction for
+// instruction, but retail's locals sit twelve bytes higher and its body is twelve bytes shorter, so its epilogue
+// starts at +0x5f4 where ours starts at +0x600 and the loop's exit jump differs.
+// MiniMax A (11-12, run 62): no new form, no lower score (102); the frame is 0x124 in both, but retail's sweep
+// vector sits at +0x44 and its collision record at +0xb0 where ours keeps the sweep at +0x38 and the record at
+// +0xa4, so every home from there up (and the twelve-byte length gap that follows) differs; that is the frame's
+// allocation order, which the rules bar me from reshaping.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

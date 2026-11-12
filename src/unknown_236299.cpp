@@ -705,6 +705,25 @@ void __stdcall function_52040(void const *request, void const *vertices);
 // 89 (279 bytes), corner 3's x from corner 0's 86 (280), both 93 (274), corner 3 from corners 0 and 2 88 (279),
 // corner 2's x from corner 1's 87 (281); retail reloads the bounds after every corner store, so each read-back
 // shortens the body.
+// Round 165 (m3 lane 5, fast with both callers, which keep their matches): diagnostic (reverted at once): on
+// the extents-first form (re-measured 86), two float loads stored to globals ahead of the width, or between
+// the width and the height, give retail's colours through the whole corner block (x0 xmm1, width xmm2, height
+// xmm0, the bottom sum added into height); one such load, after the height, or before corner 1 does not; stores
+// of `width` itself and dead float locals do not. So retail is the extents-first form with two more float webs
+// allocated before the block and no code left for them. Forms tried for them: corners from an inline helper taking
+// (corners, x, y, width, height) by value 92 (275 bytes: x0/y0 loaded once); inline width/height getters 86; an
+// inline corners helper taking (corners, bounds, width, height) 133 (235 bytes), also with named extents 133;
+// named far edges feeding the extents (right, bottom) on the extents-first form 86, interleaved 86, on the kept
+// form 8; an inline (lower, upper) length helper for both extents 86, (upper, lower) 86, on the kept form 8; the
+// extents as a point2f, by stores 86 or initialiser 86; the loop's texture choices as if/else for x 86, for both 88
+// (both callers lose), for y 86, as named u/v values 79, if/else for both on the kept form 62 (callers lose);
+// corner 2's x read back from corner 1 21 (284 bytes), corner 3's y from corner 2 23 (284), both 86 (280);
+// const extents on the extents-first form 86.
+// Round 189 (m3 lane 4, fast with both callers): the texture coordinates read into named locals at the top 88 (289
+// bytes, both callers lose); the corners through the existing cross-file point2f_set with the extents first 86 (288
+// bytes, x0/width/height in xmm0/1/2), corner 0 set before the extents 85, height defined before width 85 (width in
+// retail's xmm2; the bottom sum copies y0), with the bottom sums written height-first 85 (same code), with named right
+// and bottom 85 (282 bytes).
 // @retail 0x23675a
 void function_23675a(s_bitmap_view *bitmap, s_texture_rect const *texture, dword color, short mode, s_float_rect const *bounds)
 {

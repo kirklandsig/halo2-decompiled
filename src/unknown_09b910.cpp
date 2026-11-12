@@ -977,7 +977,7 @@ void function_fcbc0(long definition_index, point3f const *point, vector3f const 
  s_effect_owner const *owner, bool attached, bool airburst);
 void function_fcdd0(long definition_index, point3f const *point, vector3f const *forward);
 void function_fcea0(long effects_index, point3f const *point, vector3f const *direction,
- s_effect_owner const *owner, long index, vector3f const *normal);
+ s_effect_owner const *owner, short index, vector3f const *normal);
 
 // score 20 (was 20): only the 0xfcea0 call differs: retail passes the word field as a 16-bit argument
 // (`xor edx, edx; mov dx, [ebp + 0x2c]`, then its own argument order), ours zero-extends it with movzx for
@@ -1002,6 +1002,21 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // 0xfcea0 133 (579 B) and 0xfc330 540; short with the parameter's slot read as long at that call 0 here, 0xfcea0 4,
 // 0xfc330 540 (aligned 395 -> 360, 2143 B): not kept, a cast that reads 4 bytes of a 2-byte parameter. Retail's 0xfc330
 // also pushes its spilled dword unextended. Still BLOCKED-BY 0xfd740.
+// Round 182 (m3 lane 4): no untried natural form left at this call: the field is loaded `xor edx, edx; mov dx` only for a
+// 16-bit parameter, and the value then stays 16-bit through 0xfd740 (contributor, held for its owner) into 0x1883e0's
+// fifth parameter, whose declarations include held src/impacts.cpp (this round's Avoid list), so the whole chain cannot
+// be retyped together. Still BLOCKED-BY 0xfd740 and 0x1883e0.
+// Round 153 (m3 lane 7, fast, plain-confirmed): HELD (needs the owner's OK for 0xfd740, finished contributor code):
+// 0x1883e0 now takes its element indices as the 16-bit wrapper type, so the chain ends at 0xfd740. With 0xfcea0's index
+// and 0xfd740's element index both typed `short` (0xfd740's `(short)` cast at its 0x1883e0 call dropped; definition,
+// this file's declaration, no call line changes) this function matches byte for byte, 0xfcea0, 0xfd740, 0xa1a80 and
+// 0xa1df0 stay matched, 0xfd0e0 goes 25 -> 11 and 0xfc330 504 -> 498 (0xfd7d0, 0xfaa60, 0xda110, 0xf8eb0 unchanged).
+// Patch: build/r153/held-a17d0.patch; code left as on main. The same with `word` gives the same counts; with 0xfd7d0's
+// element index short as well, the same (0xfd7d0 stays 69); 0xfcea0's index alone short matches this function but
+// takes 0xfcea0 to 129 (579 bytes); 0xfd740's alone short leaves this at 20 (0xfd0e0 11).
+// Matches (Fable lane 7 r153; applied on main by machine 3, 11-12): 0xfcea0's index and 0xfd740's element_index are `short`,
+// so retail's `xor edx, edx; mov dx, [ebp + 0x2c]` word load comes out and the value stays 16-bit into 0x1883e0's fifth
+// argument (0xfd740 drops its `(short)` cast there). Full check: lost [], 0xfd740 and 0xfcea0 still match, 0xfd0e0 25 -> 11.
 // @retail 0xa17d0
 bool c_projectile_effect_event::v11(long a, long const *entities, long c, void const *data)
 {

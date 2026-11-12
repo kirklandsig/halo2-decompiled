@@ -23,6 +23,7 @@ The handlers of the unit request table at 0x467564
 #include "local_players.h"
 #include "game_engine_events.h"
 #include "impacts.h"
+#include "object_tag_definitions.h"
 #include <math.h>
 #include <string.h>
 
@@ -854,10 +855,23 @@ void function_fd560(long projectile_index, long object_index, short node_index, 
 	vector3f const *forward);
 extern vector3f *g_4687b0;
 
+/* a unit's vehicle seat definition */
+PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
+{
+	byte *parent_definition = g_4e3b44[UNIT_ACTION_UNIT_GET(unit->parent_object_index)->definition_index & 0xffff].bytes;
+
+	return *(byte **)(parent_definition + 0x1cc) + unit->seat_index * 0xb0;
+}
+
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
-// MiniMax lane A (11-04): no new form, no lower score.
-// score 288 (was 298): the throw velocity through vector3f_scale (this round); earlier, flag 17 cleared and restored through bit_vector_set (retail reads the flags word
+// MiniMax G (11-12): no new form, no lower score (92): the seat index and the direction sit 0xc below retail's slots and the
+// shared block-vector slot 0xc above them, so the whole frame is a permutation of retail's; the permuter (killed at its time
+// limit) produced no form.
+// score 92 (was 152): earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
+// and throw-globals homes, the release point (retail its own local in center's slot), the velocity scale's first
+// product and the spread blend's schedule. Before this round 288, 298 before lane 15 round 61's throw velocity through
+// vector3f_scale; earlier, flag 17 cleared and restored through bit_vector_set (retail reads the flags word
 // twice and keeps the unit in esi from entry), the empty grenade slot as an early return (retail's late
 // `push edi`) and the 0x400 flag set through bit_vector_set (retail's load/add/or/store). Left: the frame
 // slots (direction, origin, center, projectile index and the definition sit elsewhere), retail's second
@@ -1008,13 +1022,77 @@ extern vector3f *g_4687b0;
 // point, direction at [esp+0x48]) and SSE schedule. Retail copies the direction once after the branches (both leave
 // eax at the source, dword loads at 0xe7b44-0xe7b50): a `vector3f const *source` chosen per branch and
 // `vector3f direction = *source` after them gives 323 (1652 bytes), the compiler copies per branch again (diagnostic).
+// m3 lane 11 r83 (fast, plain-confirmed; aligned/masked counts, 288's were 240/94): KEPT 152 (1705 B, frame 0xcc,
+// aligned 90, masked 24): a throw-block copy `vector3f forward = direction;` (retail's 0x38 copy is a promoted variable:
+// its integer-register spills before each first float use now agree instruction for instruction), the offset sum as
+// three vector3f_add_scaled phases on the point (the cast idiom of matched 0x117790) and both crosses through cross3f.
+// Steps: the copy alone 280 (frame 0xd8, aligned 248/86); the three offsets read once into named locals 296 (223/88);
+// both 260 (frame 0xd8, 178/63); those with the sum in three phases by hand 243 (frame 0xcc, 150/59; a helper's body
+// written out, not kept); the three vector3f_add_scaled phases without the copy 303 (frame 0xc0), with it 243;
+// offset-first products, the position declared at the sum, one function-scope origin 260/260/260 (same code); on 243
+// the normal through cross3f 238, the left 247, both 152. On 152: the parent velocity through vector3f_add 153 (masked
+// 20); the blend as vector3f_scale(&velocity, ratio) + vector3f_add_scaled(aim, 1 - ratio) 162 (aligned 77), as
+// vector3f_scale(&aim, 1 - ratio) + vector3f_add_scaled(velocity, ratio) 164 (82). Match-only, not kept (a `placed`
+// result, the parent velocity and the release point in bare blocks, one function-scope origin): on 152 131 (aligned
+// 61); with the first blend 140 (50/26); with the parent add too 128 (38/16); the blend as aim*(1-ratio), velocity*ratio,
+// vector3f_add 128 (43/13); velocity*ratio first 129 (54/6: left are the origin/direction homes, the velocity scale's
+// folded first product and the blend's ratio register); on that: direction or origin renamed 129/129 (the homes do not
+// follow names), direction declared at function scope before/after origin 128/128, at the not-attached block 129, the
+// override copies swapped 285, a source pointer per branch with one `vector3f direction = *aim` 222 (1699 B, every slot
+// shifts), the left cross on direction 208, the velocity scale by hand 123 (homes still swapped); with the scale by
+// hand (a helper body, match-only): the blend as aim*(1-ratio), velocity*ratio, vector3f_add 65 (1699 B, aligned 46,
+// masked 16), as vector3f_scale(&aim, 1 - ratio) + vector3f_add_scaled(velocity, ratio) 61 (1700 B, 43/17; best this
+// round: left are the origin/direction homes, the velocity scale's folded first product and the blend's registers), the
+// a76b0 forward at function scope 123, velocity declared after origin 123/65, without the parent add 123/65/61, the
+// speed read at each use 148, direction-first products 65, separate origins 246. On 288 earlier: the
+// release point as its own local with a `placed` result 313 (frame 0xd8), with the parent velocity in a block 313, with
+// the release point in a block 309 (frame 0xcc), with one origin 287, with the copy 279 (frame 0xd8); one origin 295.
+// m3 lane 2 r69 (fast, plain-confirmed 152): the seat test through the existing unit_action_seat_get (its body was
+// written out here; the helper now sits above this function) 152, the same code: kept. Retail's frame puts the block
+// vectors (the a76b0 forward copy, center, ...) below the grenade type and projectile index slots, ours above
+// (slot order follows use weight, not names). Tried: the a76b0 branch passing the unit's facing straight to 0xa91c0
+// 341 (1682 bytes: retail copies it); the parent velocity declared at the top of the not-cancelled block 152; the
+// projectile subtraction as vector3f_add_scaled(-1) 152 (same code); the blend with the velocity term first 152.
+// m3 lane 2 r71 (fast with 0xe8420/0xa91c0): retail's shared block-vector slot (the a76b0 forward, center, parent
+// velocity, release point) sits at [esp+0x24] below the grenade type and projectile index, ours at [esp+0x2c] above
+// them. Tried: the a76b0 branch's forward declared first, or at its copy 152/152 (same code); the grenade type read
+// before the projectile test 191 (1708 bytes); the projectile pointer before the grenade type 170; flag17 initialised
+// at its declaration 152 (same code); the seat test as nested ifs 152 (same code); marker_name stored before attach
+// 154; the throw globals read after the up pointer 276 (1708); one 0xd0e60 call with 0xb8540 in each failing arm
+// (no flag, no goto) 337 (1716).
+// MiniMax lane A (11-04): no new form, no lower score.
+// M3 lane 14 r83 (fast, plain-confirmed 92; 0xe8420/0xa91c0 MATCH): KEPT `real aim_weight = 1.0f - ratio;` named after the
+// aim scale and used in the three blend rows 152 -> 94, then the parent add through the existing vector3f_add (the
+// written-out sum it replaces) 94 -> 92 (1703 B, masked 60). Not kept (one-use weight): on 92 the blend as
+// vector3f_scale(&aim, aim_weight), vector3f_scale(&velocity, ratio), vector3f_add(&aim, &velocity) 75 (1700 B, masked 49),
+// with `1.0f - ratio` written in the call 149 (masked 50), velocity scaled first 75 (masked 51), velocity first with the
+// weight in the call 150; without the vector3f_add parent add that blend is 148 (1673 B). Tried: the weight declared before
+// the aim scale 172 (the frame grows), with the helper blend 172, with velocity first too 172; the throw globals read after
+// the crosses 265 (1699 B); one function-scope origin alone 153; `real speed` / `real aim_speed` named for the two scale
+// calls 143/142; on 94 the blend as vector3f_scale + vector3f_add_scaled 159; on 92 that blend 92 (different code), the
+// named aim_speed or speed 142. Same code: parent_velocity, velocity, center or aim at wider scopes, flag17 declared at its
+// producer, the a76b0 or throw-block declarations reordered, `ratio < 1.0f`, the projectile subtraction through
+// vector3f_add_scaled(-1), the vector3f_add operands swapped. Match-only lead on the 75 form: one function-scope origin,
+// `bool placed = true;` set from function_bc1d0, the release point and the parent velocity in bare blocks 41 (1699 B, first
+// difference +0x146); left there are the origin/direction homes (0x48/0x54 swapped), the velocity scale's first product
+// (retail folds dir.i) and the blend's 1.0/ratio registers; on it a separate a76b0 origin 44, `1.0f - ratio` in the call
+// 128, that with velocity first 129, velocity first 41.
+// m3 lane 1 r95 (fast; kept: the throw speed read as the typed unit definition's grenade velocity, same code 92). Rebuilt
+// lane 14 r83's match-only lead (one function-scope origin, `placed` from function_bc1d0, release point and parent
+// velocity in bare blocks, the helper blend) at 41 (1699 B, register-masked aligned 22); on it: direction declared at
+// function scope beside the origin 41 (same code); origin renamed to sort before direction 41 (same code: names do not
+// order these slots); the permuter (928 s, 28 tries) best 41; the aim copied from the field and scaled in place 168
+// (1720 B); the random aim scale named before its scale call 46 (1700 B, masked aligned 19: the aim products then load
+// all three components as in retail, and the one extra byte is the velocity scale's unfolded first product, which shifts
+// every later call and jump); that with the throw speed named at its scale call 41 (the aim fold comes back: the two
+// fold choices move together); that with the blend weight computed before the aim scale 53.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
 {
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
 	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
-	byte *local_98b918 = g_4e3b44[unit->definition_index & 0xffff].bytes;
+	s_unit_definition *local_98b918 = (s_unit_definition *)g_4e3b44[unit->definition_index & 0xffff].bytes;
 	long projectile_index = actions->grenade_projectile_index;
 
 	if (projectile_index == NONE)
@@ -1040,8 +1118,7 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 
 	if (unit->parent_object_index != NONE && unit->seat_index != NONE)
 	{
-		byte *parent_definition = g_4e3b44[UNIT_ACTION_UNIT_GET(unit->parent_object_index)->definition_index & 0xffff].bytes;
-		byte *seat = *(byte **)(parent_definition + 0x1cc) + unit->seat_index * 0xb0;
+		byte *seat = unit_action_seat_get(unit);
 
 		if (TEST_FIELD_BIT((*(dword *)seat >> 11) & 1))
 		{
@@ -1090,30 +1167,24 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 				{
 					s_unit_action_grenade_throw *throw_globals = *(s_unit_action_grenade_throw **)((byte *)g_4e034c + 0x134);
 					vector3f const *up = g_4687b0;
+					vector3f forward = direction;
 					vector3f left;
 					vector3f normal;
 					point3f position;
 
-					left.i = up->j * direction.k - up->k * direction.j;
-					left.j = up->k * direction.i - up->i * direction.k;
-					left.k = up->i * direction.j - up->j * direction.i;
+					cross3f(up, &forward, &left);
 					if (function_30bf0(&left) == 0.0f)
 						left = *up;
-					normal.i = left.k * direction.j - left.j * direction.k;
-					normal.j = direction.k * left.i - left.k * direction.i;
-					normal.k = left.j * direction.i - direction.j * left.i;
+					cross3f(&forward, &left, &normal);
 					function_30bf0(&normal);
-					position.x = normal.i * throw_globals->up_offset +
-						(left.i * throw_globals->left_offset + (direction.i * throw_globals->forward_offset + origin.x));
-					position.y = normal.j * throw_globals->up_offset +
-						(left.j * throw_globals->left_offset + (direction.j * throw_globals->forward_offset + origin.y));
-					position.z = normal.k * throw_globals->up_offset +
-						(left.k * throw_globals->left_offset + (direction.k * throw_globals->forward_offset + origin.z));
+					vector3f_add_scaled((vector3f const *)&origin, &forward, throw_globals->forward_offset, (vector3f *)&position);
+					vector3f_add_scaled((vector3f const *)&position, &left, throw_globals->left_offset, (vector3f *)&position);
+					vector3f_add_scaled((vector3f const *)&position, &normal, throw_globals->up_offset, (vector3f *)&position);
 					function_b75a0(projectile_index, &position, NULL, NULL, NULL, false);
 					spread = false;
 				}
 
-				vector3f_scale(&direction, *(real *)(local_98b918 + 0x1b0), &velocity);
+				vector3f_scale(&direction, local_98b918->unit.grenade_velocity, &velocity);
 			}
 
 			if (spread && actions->grenade_throw_maximum > 0)
@@ -1125,20 +1196,18 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 					vector3f aim;
 
 					vector3f_scale(&unit->field_xe66477, function_259d0(&g_4e7408->unknown0, __FILE__, __LINE__, 0.6f, 1.4f), &aim);
-					velocity.i = aim.i * (1.0f - ratio) + velocity.i * ratio;
-					velocity.j = aim.j * (1.0f - ratio) + velocity.j * ratio;
-					velocity.k = aim.k * (1.0f - ratio) + velocity.k * ratio;
+					real aim_weight = 1.0f - ratio;
+
+					velocity.i = aim.i * aim_weight + velocity.i * ratio;
+					velocity.j = aim.j * aim_weight + velocity.j * ratio;
+					velocity.k = aim.k * aim_weight + velocity.k * ratio;
 				}
 			}
 
 			vector3f parent_velocity;
 
 			if (function_109e00(unit_index, &parent_velocity, true))
-			{
-				velocity.i += parent_velocity.i;
-				velocity.j += parent_velocity.j;
-				velocity.k += parent_velocity.k;
-			}
+				vector3f_add(&velocity, &parent_velocity, &velocity);
 			velocity.i -= projectile->linear_velocity.i;
 			velocity.j -= projectile->linear_velocity.j;
 			velocity.k -= projectile->linear_velocity.k;
@@ -1200,15 +1269,9 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 		&(*(s_unit_action_grenade **)(globals + 0x104))[unit->current_grenade_index] : NULL;
 }
 
-/* a unit's vehicle seat definition */
-PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
-{
-	byte *parent_definition = g_4e3b44[UNIT_ACTION_UNIT_GET(unit->parent_object_index)->definition_index & 0xffff].bytes;
-
-	return *(byte **)(parent_definition + 0x1cc) + unit->seat_index * 0xb0;
-}
-
 /* starts throwing a grenade (type 22) */
+// score 19 (was 19): the three unit lookups are data-first (retail index-first) and the success path carries its own
+// exit copy where retail's success falls into the shared exit and the notice block carries the copy.
 // MiniMax H (11-07): no new form, no lower score (19); the three unit lookups still read the
 // table with the other base and index order (`[ecx + edi + 8]` against retail's
 // `[edi + ecx + 8]`), the success block still stores the flag byte and the result in the other
@@ -1224,7 +1287,7 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // three lookups, so they use retail's address operand order, and the result stored before the action's
 // flag store; not kept (an address-cast read stays only with a byte match). The exit block still follows
 // the notice block; retail has it before the notice block, which ends with its own copy of it.
-// score 19 (was 272): Frame, setup and width domains agree; success pop/store/result schedule and
+// Earlier (19, was 272): Frame, setup and width domains agree; success pop/store/result schedule and
 // failure-branch spans remain. The slot index masked once into a local and the macro's lookup
 // written out by hand at its three uses gave 16 (not kept: a hand copy of UNIT_ACTION_UNIT_GET).
 // Hand getter/result-first/both/split/all-ordinal setup 266/272/266/272/266/272/266/265; common
@@ -1257,6 +1320,30 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // copy per lookup 16; the later two through the copy 17; on the 16 form `result = true` before the active-bit store 16, before
 // function_a8c10 18, the notice block ending in `return result` 42 (958 bytes). Left: retail's success path falls into the
 // shared exit and the notice block carries its own copy; ours pops edi/esi inside the success path, which then carries it.
+// Round 75 (m3 lane 14, fast): re-measured: every goto as `return result` 264 (948 bytes, round 144's code: constants folded);
+// the notice block ending in `return false` 45 (958 bytes, round 21's code; the exit then follows the immediate path); round
+// 21's structured forms combined with `immediate || !active` 19. New: the notice in the then-arm with the rest in its else 19;
+// the animated throw before the immediate 115 (968 bytes); the two early rejections as one condition 19; the marker test as two
+// gotos 19; the active test nested under `!immediate` 19. Without the notice block (diagnostic) the exit follows the success
+// path as in retail (851 bytes); a compile-only model keeps it last for every other shape tried.
+// Round 156 (m3 lane 8, fast): the notice block after `return result`, reached and left by gotos, 19 (same code); the
+// notice as a file-local inline helper under `if (animate)` 96 (909 bytes, kept a call), with `animate` as its parameter
+// 101 (905), with a player-index local 93 (911); the same helpers forced inline 74/74/74 (989 bytes, the player-index
+// getter then inlines too); the existing player value getter for the notice 19 (same code); the pool local for the entry
+// lookup 16 (a repeat). Compile-only: retail's layout comes back only when the success path ends with the a8c10 call
+// (the bit set and `result = true` before it) or without the notice block; every other order or shape keeps ours.
+// Round 153 (m3 lane 7, fast): both builds lay the blocks out alike (success path, an exit, the notice block, an exit);
+// retail's ten failure jumps and the notice block's three go to the first exit and the notice block ends in the copy,
+// ours send them to the last one and merge the first into the success path (hence its early pops). `result = true`
+// ahead of the active-bit store 19 (same code); the notice block ending in `return result` 45 (958 bytes, its result
+// folded to `xor al, al`), with the result set first 45; the immediate throw ending in `return result` 43; both ending
+// in `return result` 74 (956 bytes); the exit label in the function's own scope (no inner braces) 19 (same code), with
+// the three later declarations hoisted without initialisers 19 (same code); the active bit and the result set ahead
+// of the 0xa8c10 call 26 (965 bytes: the copy after the call is then left unmerged, but the jumps still go to the
+// last exit); the notice block after `return result`, entered and left by gotos, 19 (same code; re-measured).
+// The grenade condition as `!(grenade && count > 0)` 19 (same code), as `grenade == NULL || count < 1` 48 (965 bytes,
+// `cmp ax, 1`), as two nested tests jumping over the notice block 19 (same code), held in a named bool 176, as an
+// empty then-arm with the notice in the else 19 (same code).
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
@@ -1819,6 +1906,16 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// MiniMax H (11-11): no new form, no lower score (11); retail still loads the object-pool global into ECX and the unit header into EDX before it loads the type argument, while ours loads the type into ECX first and puts the global in EDX, so the type compare lands before the index arithmetic instead of after it; the rest of the function matches instruction for instruction.
+// MiniMax C (11-11): no new form, no lower score (11); the entry block still compares the type with 8 before the index arithmetic where retail loads the pool global and the unit header first and compares afterwards.
+// MiniMax C (11-10): score 11 (was 11): no lower score this round. Two new spellings of the lookup were
+// measured and dropped: a named unit header pointer 65, and a named pointer to the active bit vector 11 with
+// the entry order unchanged. A permuter run (300 s) was stopped at its time limit without a result.
+// MiniMax A (11-11): no new form, no lower score (11); the entry block still holds the same eleven instructions in
+// another order: retail reads the object pool global, the pool data and the type argument, computes the unit and the
+// actions pointer and only then does `cmp ecx, 8; sete bl`, ours loads the type first and compares it before the pool
+// data is read. The primary computed inside the test's block (82), the primary declared before the lookup (11) and a
+// copy of the type parameter in a local (11) all keep the same order, so the body stands.
 // MiniMax I (11-09): no new form, no lower score (11); the entry block keeps the same eleven instructions in
 // another order (retail reads the object pool, the pool data and the type, and only then compares the type with 8),
 // and a copy of the type parameter in a local changes nothing.
@@ -1857,6 +1954,11 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // sete cl after the tag lookup), so retail can leave the compare at the end of the entry block, while ours
 // hoists it (cmp ecx,8 and sete bl) in front of the index arithmetic and reads the item table after the
 // object index; the rest of the function matches instruction for instruction.
+// MiniMax C (11-10): no new form, no lower score (11); a copy of the type argument (a named local used
+// by both the compare and the bit test) folds away and gives the same listing, and the entry order is
+// unchanged: retail loads the pool global into ECX and the type after it, ours loads the type into ECX
+// first and puts the global in EDX, so the compare lands before the index arithmetic instead of after
+// it.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {
@@ -2395,8 +2497,11 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
-// MiniMax R (11-06): no new form, no lower score (235); the frame agrees and the pool, index, type, name and completion-byte homes of the note below are unchanged.
-// score 234 (was 235): Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
+// MiniMax I (11-11): no new form, no lower score (234): the pool's and the offset's register homes are still ebp and edi where retail has edi and ebx, the NONE sentinel still rides in ebp where retail keeps it in ebx, and the lunge's divide still comes from memory.
+// MiniMax B (11-11): no new form, no lower score (234); the frame is retail's 0x14 but the pool, index, type and name
+// homes and the completion byte's home still differ, and the total-tick expression is still one product order away
+// from retail's, so the body stays at retail's 1188 bytes.
+// score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
 // single exit and the layout switch: not kept at review (match-only forms); without the gotos 305.
 // Numeric hand 297; Boolean active bit 251; both 302; first result 235; all 302;
@@ -2507,6 +2612,40 @@ __forceinline char unit_action_round(real value)
 // the total ticks are (frame_count * 0.033333335f) rounded to float, then * the field (retail 0xe9d61-0xe9d6d: cvtsi2ss,
 // mulss k, cvtsi2ss field, mulss); the single expression compiled as (field * frames) * k (235 -> 234). Left (no
 // behaviour difference): register homes, the result byte at [esp+0x12] vs duplicated returns, the divide from memory.
+// m3 lane 11 r83 (fast): re-measured round 187's form (first_person_name = NONE first, the short-slot hand getter,
+// TEST_FIELD_BIT on the 0x1b test, the fallback switch, four `goto done`) 107 (1188 B, aligned 68, masked 12) and lane 14
+// r68's nested lunge-target read on it 105 (masked 10); on 105, re-measured: first_person_name after the weapon getter
+// 317, is_biped renamed to sort after result 105; new: result renamed to sort before is_biped 105 (the bytes do not follow
+// names), the existing unit_action_pool_hand_weapon_get(g_4e0300, unit_index, 0) 320 (1193), `current` declared at
+// function scope 105, the weapon getter before the actions lookup 360 (1144); on this body the pool hand getter 306
+// (1202); permuter 600 s, 12 tries, best 105. Left on 105: retail's NONE register is first_person_name's EBX and also
+// serves the hand getter's `cmp ax, bx` and the weapon default store (ours EBP, immediates), type EBX vs EBP,
+// pool/offset EDI/EBX vs EBP/EDI, the result/is_biped bytes, current in EAX vs ESI and the divide from memory.
+// m3 lane 5 r169 (fast): the six `goto play` and the label are gone at the same code (234): mode 1's two by a NONE
+// name default with `name == NONE` tests, the combo cases' four by switching on `active ? melee_name : NONE` with the
+// mode selection inside the NONE/0xe000607-0xe00060a case. Tried: the whole choice without gotos under an
+// `if (name == NONE)` after the switch 264 (1189 B); on the kept body, the default and mode-else exits folded into
+// `if (name != NONE)` round the play block 351 (1228 B); the channel declared with the top locals 300. Retail has one
+// exit reading the result byte, which every goto-free spelling tried here leaves as separate returns.
+// MiniMax R (11-06): no new form, no lower score (235); the frame agrees and the pool, index, type, name and completion-byte homes of the note below are unchanged.
+// M3 lane 14 r83 (fast; same code: `result = true;` after the lunge-speed read, the arms swapped with the lunge arm first,
+// `if (!animation && channel)` then one `if (!animation) return`, `current` as NONE plus an if): the default and mode-else
+// exits as `break` with `if (name == NONE) return result;` after the switch 324 (1224 B: the 0xe9780 fallback block is
+// duplicated), the same without the type initialiser 324; goto-free single exit (`if (name != NONE)` round the play block,
+// a `play` flag cleared when no animation is found, the tail under `if (play)`; a flag form) 329 (1224 B); the 0xe9780
+// fallback as a switch re-measured 237 (1192 B, masked 35 against 51); the lunge target defaulting to target_index with
+// the 0x1c8 read nested in the `>= 1.0f` test 254 (1201 B); the short-slot hand getter with the fallback switch 267 (1191 B).
+// m3 lane 1 r95 (plain; the fast check carries a CAVEAT for callee 0x168470; register-masked aligned counts in brackets,
+// base 48): re-measured the existing short-slot unit_action_hand_weapon_get(unit, 0) alone 297 (1196 B) [46] and the lunge
+// speed read at its compare and at the divide (here through one `byte *` melee-globals local) 234 (1197 B) [47] (the
+// whole tail block, from the speed load to the 0x399 test, is then retail's code but for retail's `mov byte [esp+0x12], 1`
+// result store); new: with that, the 0xe9780 fallback as a switch (retail's sub/je and range-tree code) 237 (1192 B) [34];
+// with both and the short-slot getter 252 (1191 B) [32]; those with first_person_name = NONE declared first 311 (1191 B)
+// [24]: left at that masking are the prologue's pool load (retail loads it before `push esi`), the getter's NONE compare
+// and default store (retail `cmp ax, bx` and a register store from first_person_name's EBX, ours an immediate), the 0x1b
+// bit (retail `shr eax, 0x1b; test al, 1`), and retail's single exit through the result byte at [esp+0x12]; the switch
+// and per-use speed with TEST_FIELD_BIT on the 0x1b test 311 (1188 B, retail's length) [32], that with the short-slot
+// getter 241 (1188 B) [31].
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -2515,109 +2654,104 @@ bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byt
 	long weapon_index = unit_action_weapon_get(unit, false);
 	bool is_biped = (byte)(1 << unit->object_type) & 1;
 	bool result = false;
-	long name;
+	long name = NONE;
 	long type;
 	long first_person_name = NONE;
 
-	if (UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index)), 0x1b))
-	{
-		long current = actions->melee_name;
+	long current = UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index)), 0x1b) ? actions->melee_name : NONE;
 
-		switch (current)
-		{
-		case 0xc000073:
-			if (mode == 1)
-			{
-				name = 0xc000075;
-				type = 0x1e;
-				first_person_name = name;
-			}
-			else
-			{
-				name = 0x11000074;
-				type = 0x1d;
-			}
-			goto play;
-		case 0xa0005bb:
-			name = 0xb0005b2;
-			type = 0x26;
-			first_person_name = name;
-			goto play;
-		case 0xc000075:
-			if (mode == 1)
-			{
-				name = 0xc000077;
-				type = 0x20;
-				first_person_name = name;
-			}
-			else
-			{
-				name = 0x11000076;
-				type = 0x1f;
-			}
-			goto play;
-		case 0x130005bc:
-			name = 0x140005b3;
-			type = 0x28;
-			first_person_name = name;
-			goto play;
-		case NONE:
-		case 0xe000607:
-		case 0xe000608:
-		case 0xe000609:
-		case 0xe00060a:
-			break;
-		default:
-			return result;
-		}
-	}
-
-	if (mode == 2)
+	switch (current)
 	{
-		if (is_biped && function_e4050(unit_index))
+	case 0xc000073:
+		if (mode == 1)
 		{
-			name = 0x130005bc;
-			type = 0x27;
+			name = 0xc000075;
+			type = 0x1e;
+			first_person_name = name;
 		}
 		else
 		{
-			name = 0xa0005bb;
-			type = 0x25;
+			name = 0x11000074;
+			type = 0x1d;
 		}
+		break;
+	case 0xa0005bb:
+		name = 0xb0005b2;
+		type = 0x26;
 		first_person_name = name;
-	}
-	else if (mode == 1)
-	{
-		if (weapon_index != NONE)
+		break;
+	case 0xc000075:
+		if (mode == 1)
 		{
-			s_unit_action_melee_animation const *animation = function_e99a0(weapon_index);
-
-			if (animation)
+			name = 0xc000077;
+			type = 0x20;
+			first_person_name = name;
+		}
+		else
+		{
+			name = 0x11000076;
+			type = 0x1f;
+		}
+		break;
+	case 0x130005bc:
+		name = 0x140005b3;
+		type = 0x28;
+		first_person_name = name;
+		break;
+	case NONE:
+	case 0xe000607:
+	case 0xe000608:
+	case 0xe000609:
+	case 0xe00060a:
+		if (mode == 2)
+		{
+			if (is_biped && function_e4050(unit_index))
 			{
-				name = animation->name;
-				type = animation->index;
-				first_person_name = animation->first_person_name;
-				if (name != NONE)
-					goto play;
+				name = 0x130005bc;
+				type = 0x27;
 			}
-			if (first_person_weapon_animation_get(weapon_index, 0xc000073, NULL))
+			else
 			{
-				name = 0xc000073;
-				type = 0x1c;
+				name = 0xa0005bb;
+				type = 0x25;
+			}
+			first_person_name = name;
+		}
+		else if (mode == 1)
+		{
+			if (weapon_index != NONE)
+			{
+				s_unit_action_melee_animation const *animation = function_e99a0(weapon_index);
+
+				if (animation)
+				{
+					name = animation->name;
+					type = animation->index;
+					first_person_name = animation->first_person_name;
+				}
+				if (name == NONE && first_person_weapon_animation_get(weapon_index, 0xc000073, NULL))
+				{
+					name = 0xc000073;
+					type = 0x1c;
+					first_person_name = name;
+				}
+			}
+			if (name == NONE)
+			{
+				name = 0x500000a;
+				type = 0x11;
 				first_person_name = name;
-				goto play;
 			}
 		}
-		name = 0x500000a;
-		type = 0x11;
-		first_person_name = name;
-	}
-	else
-	{
+		else
+		{
+			return result;
+		}
+		break;
+	default:
 		return result;
 	}
 
-play:
 	c_animation_channel *channel = NULL;
 
 	if (!function_e9780(unit_index, name, false, NULL, &channel))
@@ -4188,7 +4322,7 @@ long function_baf80(long object_index);
 short function_0b67a0(const s_small_index *data);
 long function_1eb020(long tag_index, long body_index, short *material_index);
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index,
-	long variant, long unused, long effect_value, s_location const *location, real scale);
+	long variant, c_type_47f957 material, long effect_value, s_location const *location, real scale);
 extern short g_54e898;
 extern vector3f *g_4687bc;
 
@@ -4199,7 +4333,7 @@ extern vector3f *g_4687bc;
 // offset at +0x5c, where our block is longer, and the 0x188180 call setup after it is blocked by
 // that callee's parameter order in another file.
 // MiniMax R (11-06): no new form, no lower score (45); the g_54e898 copy is a dword load here and a word load in retail, which also moves the exit block two bytes; retail's 0x1eb020 writes a dword into the material slot and it is read back as a dword, ours takes a short * and reads it back sign-extended, and that width is set in another file.
-// score 31 (was 45): the material local as the global material type (c_type_47f957, constructed from g_54e898
+// score 23 (was 23): 31 before 0x1883e0 matched with c_type_47f957 parameters; 45 before round 220's material local as the global material type (c_type_47f957, constructed from g_54e898
 // as 0x277b80 does) gives retail's word copy, so every branch target now agrees; left are the copy's schedule (retail
 // loads into CX early and stores it just before the 0x0b67a0 call, ours stores at once from DX), the rigid body's
 // data/offset registers in its address add, and the 0x188180 call setup (BLOCKED-BY 0x188180: retail pushes the
@@ -4230,12 +4364,38 @@ extern vector3f *g_4687bc;
 // restored): retail's 0x188180 takes its tag from the stack into EBX for 0x1883e0, so its inputs follow that callee
 // (BLOCKED-BY 0x1883e0, whose declaration in src/impacts.cpp is held); the rigid body through a const reference to the
 // array 31 (same code); the node count and first node read through the array at each use 35.
+// m3 lane 11 r83 (fast): the impulse through vector3f_scale 31 (same code); the material built before the effect-tag
+// test 36 (aligned 17); the definition re-lookup before the havok test 116; the strength as a `long` 49; the strength
+// read before the 0x1eb020 call 98 (1107 B). Re-measured: `&component->rigid_bodies.data[index]` 31, the material
+// copy-initialised from a temporary 31, default-constructed then `m_index = g_54e898` 31, node_count and nodes[0]
+// through `rigid_bodies.data[index]` at each use (0x1d1a20's spelling) 35.
+// m3 lane 5 r169 (plain; base 23: the one extra byte is the movsx of the material for 0x188180's long parameter, the rest
+// is the g_54e898 word in DX stored at once where retail loads CX and stores it just before the 0x0b67a0 call, and the
+// rigid body's data/offset registers): re-measured with 0x1883e0 matched, 0x188180's seventh parameter as c_type_47f957 by
+// value (definition, five declarations, six calls, and s_item_impact's material declared as c_type_47f957 in items.cpp) 8 at
+// 1098 B (0x10c880 69 -> 39, 0x247070 30 -> 6, 0xe4d90 168 -> 163, 0xceee0 90 -> 97 (its own material parameter is
+// c_type_47f957 in retail too), 0x1883e0/0xcf040 still MATCH): HELD (needs lane 16's src/bipeds.cpp and src/unit_object_type.cpp
+// and the reviewer's OK; patch in m3-lane5 build/r169/held-188180.patch). On that patch: material built after the
+// component lookup 10; rigid body as `rigid_bodies.data + index` 8. On main (fast): the rigid body as a const reference to
+// the element 23, the component as `s_havok_component const *` 23, 0x0b67a0 given `&component->identifier` 23, the
+// strength clamp as a ternary 23 (all the same code); the impulse as `-shove.i` (unary minus) 76 (1084 B: the -1.0f
+// multiplies become sign flips). No untried natural form is left for the two register choices.
+// m3 lane 1 r95 (fast; base 23: eleven of the lines are branch offsets one byte off from the material's movsx for
+// 0x188180's `long` parameter, BLOCKED-BY 0x188180 as above; the rest is the material in DX stored at once where retail
+// holds it in CX and stores it before `mov ecx, esi`, and the rigid body's data/offset registers). Kept: the definitions
+// read through the typed object/unit definition fields (same code, 23). Tried: the node index as `char` (the nodes'
+// element type) 106 (1102 B); the material default-constructed with the block's locals and given a constructed value
+// at the effect block 23 (same code); 0x1eb020's out parameter as `c_type_47f957 *` (definition and declaration, the
+// call passing `&material_index`; 0x1eb020 still MATCH) 23 (same code); the material built first in the Havok block
+// 45 (1100 B); the node-count test folded into the index test with the element read at each use 27; re-measured the
+// material built after the component lookup 25 (the global load is not hoisted: retail's early CX load is a material
+// built ahead of the lookup, as here; only its register differs).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
 	bool result = true;
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	byte *local_98b918 = g_4e3b44[unit->definition_index & 0xffff].bytes;
+	s_unit_definition *local_98b918 = (s_unit_definition *)g_4e3b44[unit->definition_index & 0xffff].bytes;
 	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
 	long target_index = actions->point_target;
 
@@ -4250,7 +4410,7 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 
 		if (target)
 		{
-			byte *target_definition = g_4e3b44[*(long *)target & 0xffff].bytes;
+			s_object_definition *target_definition = (s_object_definition *)g_4e3b44[*(long *)target & 0xffff].bytes;
 			s_unit_action_unit *root = UNIT_ACTION_UNIT_GET(function_baf80(target_index));
 			vector3f direction = unit->forward;
 			point3f target_center;
@@ -4300,7 +4460,7 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 
 					if (function_30bf0(&shove) != 0.0f)
 					{
-						if (*(long *)(local_98b918 + 0x190) != NONE)
+						if (local_98b918->unit.boarding_melee.obstacle_smash_damage.tag_index != NONE)
 						{
 							s_type_1e6529 damage;
 
@@ -4309,7 +4469,7 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 							damage.unknown84 = 3;
 							damage.scale = 1.0f;
 							object_get_damage_owner(unit_index, &damage.owner);
-							damage.definition_index = *(long *)(local_98b918 + 0x190);
+							damage.definition_index = local_98b918->unit.boarding_melee.obstacle_smash_damage.tag_index;
 							damage.unknown14 = unit_index;
 							damage.position = unit_center;
 							damage.origin = unit_center;
@@ -4319,10 +4479,10 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 							function_d7b80(&damage, actions->point_target, NONE, NONE, NONE, NULL);
 						}
 
-						if (((1 << *local_98b918) & 1) && root->havok_component_index != NONE)
+						if (((1 << *(byte *)local_98b918) & 1) && root->havok_component_index != NONE)
 						{
-							byte *definition = g_4e3b44[unit->definition_index & 0xffff].bytes;
-							long effect_tag_index = *(long *)(g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes + 0x24);
+							s_object_definition *definition = (s_object_definition *)g_4e3b44[unit->definition_index & 0xffff].bytes;
+							long effect_tag_index = *(long *)(g_4e3b44[definition->model_tag_index & 0xffff].bytes + 0x24);
 
 							if (effect_tag_index != NONE)
 							{
@@ -4347,11 +4507,11 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 											impulse.j = shove.j * -1.0f;
 											impulse.k = shove.k * -1.0f;
 											function_1eb020(effect_tag_index, node_index, &material_index.m_index);
-											strength = target_definition[0x1a];
-											if (strength > definition[0x1a])
-												strength = definition[0x1a];
-											function_188180(&unit_center, &impulse, *(long *)(definition + 0x58), unit_index, 0xb, strength,
-												material_index.m_index, (long)g_4687bc, (s_location const *)((byte *)unit + 0x28), 1.0f);
+											strength = target_definition->impact_sound_size;
+											if (strength > definition->impact_sound_size)
+												strength = definition->impact_sound_size;
+											function_188180(&unit_center, &impulse, definition->footstep_effects.tag_index, unit_index, 0xb, strength,
+												material_index, (long)g_4687bc, (s_location const *)((byte *)unit + 0x28), 1.0f);
 										}
 									}
 								}

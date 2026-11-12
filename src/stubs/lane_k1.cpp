@@ -38,11 +38,6 @@ public:
 };
 
 
-// @stub 0x3048a0
-int class_3048a0::function_3048a0(convex_2fefd0 const *first, convex_2fefd0 const *second, c_query_transform const *transform, pair_state_2fefd0 *state, closest_3048a0 *closest)
-{
-	return 0;
-}
 
 
 
@@ -104,10 +99,6 @@ struct class_2df670
 
 
 // (class_2e1090 is declared in axis_sweep_2e1090.h, through sweep_batches_2e50d0.h)
-// @stub 0x2e0020
-void class_2e1090::function_2e0020(element_2e1090 const *element, bounds_2e0020 *bounds)
-{
-}
 
 
 
@@ -208,25 +199,10 @@ public:
 };
 
 
-// motion objects 0x311940 builds
-class class_31ad80 { public: class_31ad80(void const *position, void const *orientation); };
-
-
-// @stub 0x31ad80
-class_31ad80::class_31ad80(void const *position, void const *orientation)
-{
-}
 
 
 
 // Havok round 23: callees of the functions this round writes
-
-// the islands' step handed on (925 bytes, not decompiled)
-// @stub 0x31c100
-void __cdecl function_31c100(void *step_10, void *step_20, void *step_50, void *world_info,
-	void *simulation, void *islands, long island_count, long field_58, long field_5c)
-{
-}
 
 // frees a block too large for Havok's pool (library code, called through g_461ddc)
 // @stub 0x2d6fb0

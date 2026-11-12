@@ -181,8 +181,13 @@ __forceinline bool function_184448(long arg_0)
     return true;
 }
 
-#pragma inline_depth(1)
-// MiniMax B (11-04): no new form, no lower score.
+// MiniMax E (11-11): no new form, no lower score (965); the frame is 0x11d4 against retail's 0x11cc and the two
+// cached short axis locals are what costs the eight bytes - the form that drops them matches retail's frame and
+// length but scores 976 because the first difference moves earlier, so the 965 body stays.
+// MiniMax I (11-10): no new form, no lower score (965); the first difference is still the frame size (ours
+// 0x11d4 against retail's 0x11cc) together with the scene and surface records sitting in each other's stack
+// homes, and that rotation depends on 0x48e70 in another lane's file.
+// MiniMax G (11-11): no new form, no lower score (965): the first difference is at +0x7 - ours loads 0x11d4 where retail loads 0x11cc and keeps the argument in esi where retail moves it into edi; the body length agrees (4590 bytes both).
 // score 965 (s1A walk 11-06): the statement walk against retail found no behaviour difference; every condition, field,
 // callee and argument order agrees. Not kept, since together they score 976: two type changes retail's bytes show (1) no cached axis locals - retail
 // reloads g_440b94[idx][0/1] in the cell loop (0x185171/0x185178) and keeps the pre-scaled offsets only as loop-invariants in
@@ -197,6 +202,8 @@ __forceinline bool function_184448(long arg_0)
 // 967 (4567 bytes, frame 0x11c4); plus point scalars too 1007 (frame 0x11bc); point scalars alone 1028; test as `< 0` 1003;
 // long loop counters for the cells 993; cell bounds as a short rectangle 984/994; surface lookup as one && test 976;
 // record/list declarations swapped 976.
+// MiniMax S (11-10): no new form, no lower score (965); the frame is 0x11d4 against retail's 0x11cc, the definition and listener records sit in different stack slots and the falloff and bounds values are kept in separate homes.
+// MiniMax B (11-04): no new form, no lower score.
 // Earlier (965, was 977): the same frame and homes.
 // Round 419: scene field observations 983; effect record reference 977; scene field observations/effect
 // record reference 983; surface record reference 977; scene field observations/surface record reference
@@ -340,6 +347,15 @@ __forceinline bool function_184448(long arg_0)
 // after every 0x48e70 call, the pattern of a caller that does not see the callee's register usage (the 0x22750
 // effect on 0x22cf0, reproduced there by `inline` on that definition); ours keeps it in XMM2. 0x48e70's definition
 // is in machine 1's src/unknown_02b400.cpp.
+// Round 109 (m3 lane 12, fast; 965): the plane flip test as `field_0 < 0` 984 (4573 B, `test cx, cx; jge`); the flag
+// word read once into a long local for the index and the flip test 974 (gives retail's `movsx` load, registers move);
+// the recorded axes-at-each-use and long counters form re-measured 976 (frame 0x11cc), with that long flag word 992
+// (4593 B); the first record as an element pointer before its field read 965 (same code); the bounds compare written
+// count first (retail loads the count into EBX before the compare) 966. The file-scope
+// inline_depth pragma pair around this function removed: identical code (kept as a cleanup).
+// MiniMax D (11-11): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc and the
+// initial surface pointer is still held in ESI where retail holds it in EDI; the remaining difference is set by the
+// 0x48e70 call, whose definition is in another machine's file.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
@@ -550,4 +566,3 @@ void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, lo
         function_1895f0(&local_14, 1.0f, local_11->field_10);
     }
 }
-#pragma inline_depth(255)

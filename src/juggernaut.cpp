@@ -201,6 +201,17 @@ void juggernaut_set(long player_index, bool juggernaut)
 // but wrong: the modulo becomes an unsigned div and the count test jbe where retail has
 // cdq/idiv and jle). The argument arrives as in retail (on the stack, ret 4) and the caller
 // 0x192530 calls it as retail does (push -1), so the caller does not decide this.
+// Round 99 (lane 16): the existing juggernaut_is((short)player_index) for the bit test 74 (233 bytes); a
+// named absolute index as in 0x192530 20; one named bool for the whole candidate test 20; the bit test as
+// a `continue` guard 20; the players word in a local 20; iterator.player read at each use 20; the waiting
+// test as nested ifs with `continue` 77 (251 bytes); `if (count <= 0) return;` 20. All the 20s are the
+// same code.
+// Round 173 (m3 lane 5, fast): 1-7 unused locals copied from the parameter at the top 20 each (no symbol-count effect);
+// a function-scope copy of g_510c9c read before the loop 36 (the pointer then lives from entry); the random choice in a
+// named local 20; `player_index != excluded_player_index` 21; count assigned after the iterator setup 22; waiting as
+// `waiting = function_15d770(i); if (!waiting) waiting = function_15db30(i);` 20; the player pointer read after waiting 20.
+// A 600 s permuter run (47 tries) found 19 only with `(dword)` on the random value (an unsigned modulo, wrong) and the
+// bit and exclusion tests nested.
 // @retail 0x192a30
 void function_192a30(long excluded_player_index)
 {

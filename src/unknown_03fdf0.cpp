@@ -521,6 +521,17 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // Round 222 (m3 lane 3, fast with 0x404b0): `current = first + count` 157 (492 bytes); `long first; current = first =
 // previous;` 158 (492 bytes); `dword first` 2; first and current each reading previous 2; the copy size as
 // `sizeof(s_44940_entry) * count` 2 (same code each).
+// Round 65 (m3 lane 2, fast): the mode parameter renamed draw_mode / selection_mode 2/2 (parameter names do not move
+// the spill either); shape as a short 128 (490 bytes); the part context declared once outside the part loop 2 (same code);
+// `if (chosen == NONE) continue;` 2 (same code); `entry->unknown10[0xa] != 0` 3. Re-spellings of listed forms: the count
+// guard as an early return 2; chosen as if/else 52 and material as if/else 76 (the listed ternaries' code); entry and index
+// at block scope before the `for` 2; the geometry result as `long const *part_count` 2.
+// Round 173 (m3 lane 5, fast): `NONE != material` 2; chosen declared at the part-context scope and assigned 2; chosen
+// started from material with `if (chosen == NONE) chosen = context.material;` 21; material declared before the material
+// index 2; the geometry pointer declared at the block top 2; shape read after the material lookup 104. Re-measured:
+// `current = previous;` then first from previous 2; on this base the listed selection in the loop body 171 (484 bytes)
+// and written into the entry test 171 (VC does not hoist it). Retail shares first's slot with material (frame +4) and gives the
+// cursor the mode home; ours gives first the mode home with the cursor and material frame +4 alone.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

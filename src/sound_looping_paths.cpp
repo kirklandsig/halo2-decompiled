@@ -156,15 +156,43 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
+// MiniMax E (11-11, run 80): no new form, no lower score (866): retail reads the shared global g_44a0b4 from
+// memory fourteen times and keeps it in xmm4 again after the pointer stores, while ours (a plain real declared
+// in another file) stays in xmm5 for the whole function; a reload would need a volatile qualifier or the
+// address of the global, both ruled out, and the global's definition and second declaration are outside this
+// file; the two pool scans' iterator walks, the gains array sharing a slot with the later existing list and
+// the zeroed count's home remain the other differences.
+// MiniMax H (11-11): no new form, no lower score (866); the prologue still zeroes a different register than retail (ours ebp, retail esi, which retail also pushes before the zeroing), and the zeroed count's home differs (esp+0x24 here, esp+0x88 in retail), so every frame offset after it differs.
+// MiniMax S (11-11): no new form, no lower score (866); the prologue still zeroes a different register than
+// retail (ours ebp, retail esi, which retail also pushes before the zeroing), and the zeroed count's home differs
+// (esp+0x24 here, esp+0x88 in retail), so every frame offset after it differs.
+// MiniMax G (11-12): no new form tried this round, no lower score (866): the prologue still zeroes ebp where retail
+// zeroes esi, and the zeroed count still sits at esp+0x24 instead of esp+0x88, so the later frame offsets differ.
+// score 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// frame layout and register homes remain (earlier starts 919 and 886 below).
+// MiniMax S (11-10): no new form, no lower score (866): retail reads the query count as a dword at the loop head and
+// keeps the choice count and the two loop indices in ESI/EDI/EAX, while ours narrows the count to a word and holds the
+// outer index in EBP; taking the long count directly instead moves the frame offsets and scores 919. Retail's four
+// 64-entry arrays sit at F+0xdc (gains), F+0x1e0 (indices), F+0x2e0 (portals) and F+0x3e0 (clusters) with the choice
+// and target records at F+0x28 and F+0x7c; ours place them at F+0xe0/F+0x1e0/F+0x2e0/F+0x3e0, and reordering the
+// declarations does not move them.
 // MiniMax E (11-05): no new form, no lower score; the entry zero, the target, primary and query-array homes
 // and the choice carriers are as the earlier rounds left them.
-// score 866 (s1F walk 11-06): walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// s1F walk (11-06), at 866: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// Earlier at 866 (s1F walk 11-06): walked against retail block by block, no behaviour difference. Retail accesses the query and choice
 // counts as dwords (0x18aeef, 0x18af10, 0x18af84, 0x18af81); the `short` copies here narrow them (no observable difference:
 // counts <= 64). As `long` it scores 942, so it is not kept without a match. Frame 0x4e0 agrees; on the long form the choice count
 // and first-loop index stay in memory (retail: ESI/EDI), 3297 bytes (retail 3327). s1F also tried, on that base: grouping
 // {count, items[]} structs for targets+existing 933 (3327 B, frame 0x4e4), existing only 938, plus choices 1024-1025 (3413 B);
 // the three 1.0f defaults as separate statements (retail's store order) 942. Retail evidence for grouped lists: counts at
 // 0x34/0x88/0xec directly below arrays at 0x38/0x8c/0xf0, and the query gains share the existing list's slot at 0xec.
+// MiniMax E (11-05): no new form, no lower score; the entry zero, the target, primary and query-array homes
+// and the choice carriers are as the earlier rounds left them.
+// M3 lane 10 r86 (fast with 0x18bb80, 0x18ab70 MATCH; control 866, aligned 1116, masked 503): retail scales the three gains by a copy
+// of the hoisted global (`movaps xmm0, xmm7`, then two field-first products and the last in place on the copy). The scale named once
+// as a local in that arm 918 (masked 502); the existing in-place vector scale on the three gains, diagnostic only (needs a cast)
+// 917; the 1.0f defaults chained the other way round (retail's store order) 866 (same code), with the named scale 918; that with
+// long query/choice counts and the count read directly 941 (3297 bytes, masked 490), with the vector scale 953 (3281 bytes).
 // Earlier 919 (was 919): count/array homes and choice registers differ in the 0x4e0 frame;
 // count/array homes and choice registers differ in the 0x4e0 frame;
 // Frame 0x4e0 agrees; entry zero, target/primary/query-array homes and choice registers remain.
@@ -384,6 +412,70 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // M402: Native dword query/choice counts and duplicate-failure-first search,
 // direct count/repeated flags/repeated tag subsets 0..7: 966/966/966/966/966/966/965/965.
 // NOT kept: earlier entry mismatch and 3301/3327 extent; original counters/search/body restored.
+// Lane 3 r230 (fast, base 866): the four query arrays renamed with a common prefix, and renamed so their names sort in
+// retail's address order (gains, indices, portals, clusters), 866 both, byte-identical: names do not order these slots.
+// The choices as a {short count, items[2]} list 1072 (3448 bytes); `inside` tested right after the query call 933 (the
+// matched caller 0x18bb80 then differs on the reduced image); the second pool scan as a `for` like the first 933 (3375
+// bytes). Re-measured listed groupings: targets as a {count, items[3]} list 940 (frame 0x4e4); the existing sounds as a
+// {count, items[64]} list 856 (3329 bytes; round 153's 875 form, a new type that only moves homes, so not kept), with
+// long query and choice counts on it 935 (3297 bytes).
+// Round 165 (m3 lane 6, fast): on the listed nested-if first loop (924 at 3327 bytes: retail's ESI zero register):
+// `s_loop_path_choice *choice = &choices[choice_count++]` with every store through it 966 (3268 bytes); the query count
+// used directly as the bound 928; the duplicate search as a `for` with `duplicate = true; break;` 953 (3287 bytes); the
+// 1.0f defaults as three statements 924 (same code); diagnostic only, the existing list grouped with its count in one
+// object 918 (masked 528). Names and declaration order of the four query arrays re-measured 866 (same code: listed).
+// On this body: the choice distance's ternary as if/else 865 (3333 bytes; on the nested-if loop 919); with it, the
+// detail tag as `long detail = NONE; if (primary != NONE) detail = ...;` 863 (3332 bytes; three points, under the
+// keep bar, restored: a lead). On that 863 form: the second scan's ternaries as if/else 941 (3349 bytes); `muted` as one
+// value expression 880; the gain choice through a named near gain 863 (same code); `audible` cleared then set by an
+// `if` 904; the fraction's outer ternary as if/else 863 (same code); the override gain computed once above its loop 980
+// (3396 bytes); the final listener test nested 863 (same code); the fade time named with an `if` in the fade scan 864
+// (3334 bytes, aligned 1101 -> 897: the frame shifts by one slot), in the target loop 889 (the listed shared step),
+// both 891.
+// M3 lane 9 r105 (fast; "masked" = aligned count with registers and stack offsets ignored, control 866 masked 503):
+// re-measured the query count short / long / read directly x the choice count short / long, 866-956 as listed
+// (masked 495-503). New: `bool inside = clusters[0] == cluster;` 866 (same code); the fade table read from the
+// global at each use in the third loop only 924 (3327 bytes, masked 549: a mix, diagnostic), in both loops 929
+// (3305 B, 528); `inside` computed right after the query 933 (512); the four choice stores in retail's order (tag,
+// source, decibels, cluster) with the indexed choice 866 (masked 502); the portal distance as an if/else 865 (3333 B,
+// masked 493); on that: the second loop's match test through a named `other` sound pointer under nested ifs 947
+// (3297 B, masked 536); the store order with the if/else distance 865 (492); `muted = !g_509420` 866 (same code);
+// the 1.0f chain reversed so it stores inside, portal, outside 866 (same code); that chain with the store order and
+// the if/else distance 865 (492); on the body below: the reversed chain with the store order 866 (502); the second
+// loop's test as nested ifs 866 (same code); `muted` stored before the three products in its arm 865 (masked 501);
+// `if (choice_count && inside)` for the primary 866 (505); the source range read at each use 908 (504); `target->audible
+// = !i && ...` 866 (same code); the flag-2 portal override before the flag-4 outside one 866 (502); the duplicate
+// test as `sound->tag == choices[j].tag` 866 (504); the tag tested through `bsp->sounds[index]` before the sound
+// pointer 940 (3327 B, masked 580); `muted = false` stored ahead of the flag-8 test instead of an else 869 (509).
+// Retail's gains array shares +0xec with the later existing list and its count (stack packing), so the
+// four query-array homes follow lifetimes and use weights, not names.
+// Lane 4 r186 (fast with 0x18bb80/0x18d730; aligned/masked lines in brackets, control 866 [703/537]): the portal read once into a two-use
+// local 866 (three lines move); the fade scan's silent flag set through `sound` 876 (3311 B); the listener's detail sound through one
+// `current` pointer 872 (3333 B); the target loop's `existing[j]` in a three-use local 870 at retail's length (3327 B) [710/404: the
+// closest shape so far]; that with the first loop's stores through `&choices[choice_count++]` 970 (3272 B) [706/396]; the listener slot
+// read at each use 874 (3335 B). Same code: the target loop's `delta` folded into the pin call.
+// Round 155 (m3 lane 8, fast; masked = register-masked aligned count, 305 at 866): retail's two pool scans are record-pool
+// iterator walks (the found path computes the datum, then `(salt << 16) | index`, then saves the index; the not-found path
+// is threaded straight to the exit and each body is placed remotely). Re-measured on this base through the existing
+// data_iterator_next_inlined (round 224's idea): the fade scan 877 (3309 B, masked 296: retail's threaded exit into the
+// tail), the first scan 893 (3281 B, masked 293), both 910 (3264 B, masked 287). `loop_path_start` without
+// `__forceinline`, plain or `inline`, 866 each (same code: LTCG still inlines it and still folds `flags = 0; flags |=
+// 0x100`, where retail stores the word and then ors byte +5). Retail's g_44a0b4 sits in .rdata (a const global) and is
+// read from memory 14 times, into xmm4 again after pointer stores; ours (a plain `real` in unknown_2197f0.cpp) stays in
+// xmm5 for the whole function. Diagnostic: read through its address in this file 938 (3405 B, masked 318), reverted.
+// Lead: the iterator walk (both scans, masked 287) is 63 bytes short, about retail's nine extra 8-byte xmm4 reloads of
+// g_44a0b4 (5 reads here against 14). They need g_44a0b4 const, and its declaration in src/sound_portal_paths.cpp sits
+// in the held sort_4byte change's files.
+// m3 lane 15 r72 (fast with 0x18bb80): re-measured the query count read directly with a long choice count 942 (3297 bytes):
+// the choice address is strength-reduced into a pointer stepped by 0x28 ahead of the loop (`lea esi, [esp + 0x44]`) with
+// the counts in memory, where retail keeps the choice count in ESI, the query index in EDI, and forms each choice address
+// from the incremented count. The stacked second score line is merged. No new form was run: each remaining axis is listed or
+// ruled out. Counter widths and domains (query, choice, target, existing, ordinals: short/long/byte/word/unsigned) 866-1025;
+// the query count copied or read directly 919/942; the choice address (indexed, post-increment pointer, count-first) is
+// strength-reduced on any long count (953-969); loop shapes (continue or nested ifs, cap test placement, duplicate-search
+// forms) 866-1001; store orders and the 1.0f defaults (same code); array names, order and scope (same code: homes follow
+// lifetimes); helper routes for the pin/log/linear conversions and getters; grouping a count with its array would only move
+// homes (an aggregate made up to steer), so it is not a candidate.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

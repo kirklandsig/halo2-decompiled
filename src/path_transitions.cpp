@@ -157,7 +157,7 @@ short function_26f930(long object_index, s_object_marker *markers, short capacit
 }
 
 // @retail 0x26fbf0
-short function_26fbf0(long object_index, s_object_marker *markers, short capacity, long flags)
+short function_26fbf0(long object_index, s_object_marker *markers, short capacity, word flags)
 {
     short count = 0;
     if (flags & 0x20)
@@ -215,28 +215,6 @@ bool function_270130(s_object_marker const *marker, point3f const *position, rea
     return true;
 }
 
-// score 20 (was 20): Flags promotion and marker-query/loop-entry scheduling remain; protected helper interface unchanged.
-// Alignment pointer snapshot 55; actor point snapshot 131; direct marker indexing 20;
-// selected marker memcpy 20; unsigned-word ordinal 111; long best index 76;
-// entry best sentinel 46; both vector observations 114.
-// retail passes the marker flags to 0x26fbf0 as a 16-bit argument
-// (`xor edx, edx; mov dx, [eax + 0x1c]`); declaring that parameter `word` gives 4 and keeps
-// 0x26fbf0 matched, but 0x26fbf0 is contributor code: BLOCKED-BY 0x26fbf0. The squared distance
-// through vector3d_from_points3d/length_sq3f 30; difference orders xzy/yzx/zxy/zyx 24/26/26/24;
-// best before best_distance 20; the marker query before both 99; dot3f alignment 26; sum
-// x + y + z 20; nested point test 20; flags through a word local 22; alignment k + i + j 20;
-// the markers array after best 20; long count 111; const character 20.
-// A direct word cast 20; the existing orientation predicate forced inline 22; count declared before
-// best_distance and assigned in place 20; const count 20; the loop ordinal declared outside 20;
-// const actor 20; success result assigned before the point query 106; const marker 20.
-// Round 16: dot3f alignment 26; a forward-vector pointer 26; a short cast at the call 20; the
-// flags field typed short 20; a long loop ordinal 827. With 0x26fbf0's flags as word (diagnostic,
-// restored) this is 4, and with dot3f for the alignment too 2 (only the j product's operands).
-// Round 138 (m3 lane 7, fast with 0x26fbf0/0x1be410/0x270130): ours already returns with `ret 0xc` as retail
-// (point in EBX, actor in EAX); the first difference is still the flags argument (`movzx` for retail's
-// `xor edx, edx; mov dx`), still BLOCKED-BY 0x26fbf0. Diagnostics, restored: 0x26fbf0's flags `word` 4 again
-// (0x26fbf0 and 0x1be410 still match; left: the alignment's i and k products computed in the other order);
-// on that, the k product written first 4 (same code). The other caller, 0x2c0d60, passes `(word)` flags too.
 // @retail 0x26fc80
 bool function_26fc80(long actor_index, long object_index, real distance, void *path, point3f *point)
 {
@@ -252,14 +230,12 @@ bool function_26fc80(long actor_index, long object_index, real distance, void *p
         for (short i = 0; i < count; i++)
         {
             s_object_marker *marker = &markers[i];
-            real alignment = marker->matrix.forward.i * g_4687b0->i +
-                marker->matrix.forward.k * g_4687b0->k + g_4687b0->j * marker->matrix.forward.j;
+            real alignment = dot3f(&marker->matrix.forward, g_4687b0);
             if (alignment > 0.95f)
             {
-                real x = actor->position.x - marker->matrix.position.x;
-                real y = actor->position.y - marker->matrix.position.y;
-                real z = actor->position.z - marker->matrix.position.z;
-                real squared = z * z + y * y + x * x;
+                vector3f delta;
+                vector3d_from_points3d(&marker->matrix.position, &actor->position, &delta);
+                real squared = length_sq3f(&delta);
                 if (best_distance > squared) { best_distance = squared; best = i; }
             }
         }
@@ -498,6 +474,16 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
+// MiniMax H (11-12): no new form, no lower score (218): the entry still differs - retail moves the pathfinding pointer into ebx and loads the actor index into eax before the switch, ours keeps the pathfinding pointer in eax and reads the actor index in the cases that use it; the frame and case 2 agree.
+// MiniMax A (11-12): no new form, no lower score (218); retail copies the pathfinding argument into ebx at the entry and reloads the vertices pointer from that copy before ebx takes the first vertex index, and taking the case-2 vertices and the trace from the pathfinding argument instead of from state->pathfinding scores 265 and 294, so the root cannot be kept alive by the case-2 use.
+// score 218 (was 219): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// colours and the projection sum's order differ.
+// MiniMax C (11-11): no new form, no lower score (218); retail copies the pathfinding argument into EBX at the entry
+// and reads the actor index (the first stack argument) into EAX there, while this build keeps the pathfinding in EAX
+// and reloads the actor index at its case-5 use, so every case is seven bytes out of step; the actor test hoisted
+// ahead of case 5's direction (286) and the direction built inside the actor test (336) both score worse and were
+// reverted; swapping case 5's position and direction statements so the position comes first scores 265 and was
+// reverted, so the case-5 statements stay in their retail order.
 // MiniMax D (11-08): no new form, no lower score (219); retail keeps the first argument in EBX and reads the stack
 // argument into EAX at the entry, ours uses EAX for the actor and ECX for the stack argument, and the switch's case
 // bodies and the counter's register home still differ.
@@ -505,8 +491,6 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // MiniMax H (11-05): no new form, no lower score; the projection sum's order ((j + k) + i in retail,
 // (k + j) + i here) comes from the shared dot3f in include/unknown_0259d0.h, and the entry still loads
 // the actor in case 5 where retail loads it at entry and moves pathfinding into EBX.
-// score 219 (was 219): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
-// colours and the projection sum's order differ.
 // Earlier (270, was 278): Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling differ.
 // Round 132 (m3 lane 5, fast): case 5's success stores with the output index first 341; case 5's direction
 // negated field by field from a vertex pointer 382 (1252 B); case 2's node-index store before the point copies
@@ -843,6 +827,53 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // loads it after the corner tests; the lower positional count comes from the entry being one line shorter, which only
 // re-aligns the later lines (masked 22 -> 37); plain 169 too, with 0x270d90 still 286 but 1390 bytes for 1389. Left as before: every form that loads the actor at entry loads it ahead of
 // `push ebx`, so link-time code generation hands pathfinding over in EDX; retail's load follows `mov ebx, eax`.
+// Round 166 (m3 lane 6, fast; 0x270d90 286 throughout; masked = register-masked aligned count, base 22): the actor parameter
+// renamed to sort after pathfinding 219 (same code); the pathfinding parameter renamed 219 (same code); case 5's position
+// first with the radius in a named local for the test and the margin 261 (1284 bytes, masked 46); case 5's and case 2's
+// positions both first 272 (masked 28); the radius read at the top of case 1/6, ahead of the normalizes, 322 (1292 bytes).
+// The only caller, 0x270d90, is in a file other lanes hold this round, so its effect on the entry was not measured.
+// Round 148 (m3 lane 8, fast with the file's 15 other functions, 0x270d90 and 0x30bf0; aligned/masked = difflib counts on
+// the listing, masked ignores registers and stack offsets, base 54/13). Re-measured: case 5's position declared before its
+// direction 266 (as round 153); with corners a, b, c, d 290 (1284 B, aligned 37, masked 11, as rounds 151/82); on that the
+// function-scope actor bool 364 (1292 B, as lane 17 round 6) and the surface ahead of the start-out alias 290 (same code).
+// New: on that a, b, c, d graph the result as a plain bool 281 (1280 B, aligned 80). On the 219 body, each the same code
+// (219, aligned 54, masked 13): both projections in one expression with no projected/origin locals; the edge vectors
+// declared at function scope; the trace result declared at function scope; case 5's direction declared at function scope;
+// case 1/6 leaving through `break` to the final `return result`.
+// Round 67 (m3 lane 15, fast with 0x270d90/0x270400; aligned/masked = difflib counts with targets / registers masked,
+// base 219 aligned 54 masked 14): retail reloads actor_index from its stack slot in case 2 and uses the entry EAX only
+// in case 5 (compare and 0x270400's register argument); EBX is overwritten inside case 1/6 before any call, so the
+// pathfinding copy only frees EAX. The start_out alias dropped (const_cast at each use) 220 (masked 17); the radius in
+// a named local 214 at 1284 bytes (aligned 103, masked 33: positional only); the corners declared a, b, c, d but
+// assigned b, a, c, d 219 (identical: declaration order moves nothing, code order does); the surface fields read
+// through pathfinding->surfaces[surface_index] at each use 461 (1364 bytes); `1.f - margin` named for the test and
+// the assignment 218 (masked 15).
+// M3 lane 10 r92 (fast with 0x270d90 at 286 and 0x270400 MATCH; base 219, aligned 70, masked 22): nothing kept. Case 5's arms joined
+// (the failure arm sets only start_out and the parent node, the out stores shared) 400 (1224 bytes; 0x270d90 286 -> 372); its
+// negation through the existing vector3f_scale(&direction, -1.f, &direction) 218 (one point), with `state->source.radius *
+// inverse` 218; the direction scaled straight from the vertex 379 (1256 bytes); position declared first with vector3f_scale 265;
+// `inverse * (projected - origin)` 219 and `state->source.radius * inverse` 219 (same code). Kept: the negation through
+// vector3f_scale (main wrote its body out by hand), 218 plain, the file's other functions and 0x270d90 unchanged.
+// m3 lane 13 r79 (fast, 0x270d90 286 throughout; brackets: difflib count aligned / with registers masked, base 219
+// [52/13]): a `vertices` local for case 1/6's corners inside the corner block 219 (same code); the radius read into
+// a named local for the test and the margin with `1.f - margin` named 214 (1284 bytes) [93/26]; the radius local
+// declared ahead of the projections 224; a 0.5 default with the fraction computed inside the radius branch 358
+// (1284); the radius local with the corner-block `vertices` local 211 (1280 bytes) [96/29], not kept: the count
+// falls only by re-alignment, the first/second length homes swap and retail reads the radius from memory twice
+// (no radius local). Re-measured: the vertex table read at case 1/6's top 169 [90/22] (round 145's form: the actor
+// load goes first and pathfinding arrives in EDX; 0x270d90 1390 bytes); the reciprocal before the projections 219.
+// Both builds share the dead `out` slot (E+0x18) between the result byte and first_length.
+// M3 lane 10 r94 (fast with 0x270d90 at 286 and 0x270400 MATCH; base 218, aligned 70, masked 23): nothing kept. Case 5's
+// position copied by value 345 (1316 bytes); case 1/6's two distances inline in the point_along_vector calls 300 (1284); both edge
+// vectors formed before the first length 347; case 1/6's missing parent as an early return 218 (same code); re-measured: the
+// surface as a const pointer 218, the entry parameter declared mutable (no start_out alias, the declaration in path.cpp
+// too) 220, a case-5 vertices pointer 218. The entry is still the cause: retail loads actor_index into EAX first and moves
+// pathfinding to EBX; no spelling of the cases changes it. Also: both lengths computed before either test 349 (1284 bytes, a
+// variant of the edges-first form); case 5's fallback copying the parent point and output index by member 353 (1292 bytes).
+// MiniMax R (11-11): no new form, no lower score (218): the entry still differs - retail moves the pathfinding
+// pointer into ebx and loads the actor index into eax before the switch, ours keeps the pathfinding pointer in eax
+// and reads the actor index in the cases that use it; the frame (0x40) and case 2 agree, so the whole difference is
+// that entry.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
@@ -910,9 +941,7 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
         {
             vector3f direction = *(vector3f const *)&pathfinding->vertices[surface->vertices[3]];
             point3f const *position = &pathfinding->vertices[surface->vertices[2]];
-            direction.i = direction.i * -1.f;
-            direction.j = direction.j * -1.f;
-            direction.k = direction.k * -1.f;
+            vector3f_scale(&direction, -1.f, &direction);
             if (actor_index != NONE && function_270400(actor_index, 0x05000534, 0x05000049,
                 position, &direction, NULL, (long *)start_out, NULL, parent_node_index_out))
             {

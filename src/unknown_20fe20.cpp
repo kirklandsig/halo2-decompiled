@@ -1181,6 +1181,17 @@ void function_2118c0(void)
 // Round 83 (m3 lane 10, fast): a 600 s permuter run (seed 8384, 54 tries, 822 s full baseline) none below 10; the output
 // vector as `p1 + m` 194 (804 bytes); the second pass's band loop as a `for` 10 (same code); p1 from the row local
 // (`noise[row + k]`) 163 (786 bytes); a `dword` band row stepped by 8 beside b 150 (every row reduced to a pointer).
+// Round 75 (m3 lane 15, fast): t as `(real)k + (real)m * 0.125f` 10; the third as `0.333333343f` 10; the four
+// component values declared outside the component loop 10; the m loop as a `for` 10 (all the same code); the forward
+// differences as named d1/d2/d3 values 194 (830 bytes).
+// Round 96 (m3 lane 10, fast; the compile-only harness agrees on each): the wrapped indices from a forceinline
+// helper with three out-parameters 10 (same code); in a `word wrapped[3]` array with constant indices 10; the
+// out-parameter helper with `long row = b * 8` 150 (every row reduced); the wrapped rows from `b * 8` with p1 and out
+// from `(b << 3) + k` 150; p1 from `row + k` and out from `(b << 3) + k` 163 (786 bytes) (the last three re-measure
+// listed forms); the wrapped rows spelled `&noise[row + w][0]` 10; the indices from a named `short next = k + 1`
+// 187 (798 bytes); the component index declared in the `for` 10. Harness only: the array or
+// separately assigned indices with `b * 8` rows 150-type code; `b * 8` for two wrapped rows and `b << 3` for the
+// third reduces all. Address-taken indices stay invariant, so the rows still reduce.
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -2623,6 +2634,20 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // parenthesizations in every order (144, none); the outer locals ahead of the helper in every order (72, XMM0 joins); the
 // existing vector3d_from_points3d with the parenthesized sums of the matched 0x210970/0x210a30, outer locals before or after
 // (168, XMM1-3 always x, y, z); (fast) vector3d_from_points3d + length_sq3f 345 (the delta vector moves the layout).
+// Round 84 (m3 lane 11; fast): the helper's differences in x, y, z order (staged z, y, x sum) 27; the one-expression sum
+// through a square helper 11 (retail's colours, x scheduled first); no helper, x, y, z locals with a three-scalar
+// length helper (staged k, j, i) 45; no helper, x, y, z locals with an accumulated z, y, x sum 45; the same with a
+// one-expression sum 45; the same with the selector read after the locals 45. The 45 forms give retail's y-first
+// schedule and y in XMM3 but z XMM2, x XMM0, sum XMM1 (retail z XMM1, x XMM2, sum XMM0), and the selector load
+// follows the z subtract. A compile-only harness agrees with the real build for the helper form (definition order
+// sets both colours and schedule there; extra uses in the cases move neither) but not for the no-helper forms, so
+// screen those with --fast: about 1100 harness forms (outer-local placement, every definition/sum order and shape,
+// scalar and square helpers) gave nothing.
+// Round 157 (m3 lane 8, fast): cases 6 and 7 through the existing dot3f with a local vector3f delta (cases 8/9 on its k)
+// 333 (case 7 loses its fold, the blocks move); the helper taking the points by value 557 (2044 bytes, copies); the existing
+// vector3d_from_points3d with dot3f for the square and the cases 59 (no hoist: x, y, z in definition order, colours x XMM0,
+// y XMM3, z XMM2, sum XMM1); the existing object_header_get/object_get getters for the unit test and the forward vector 333;
+// object_header_get for the unit test alone 3 (same code).
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
@@ -2940,6 +2965,25 @@ void function_20fda0(long arg_0);
 // read at the top of the block, just before the 0x20f040 call, or at function entry 44/44/46 (145/145/141 bytes; the pool is
 // held in EBX across the call, though the 0x20d570 argument order becomes retail's); the flag read into a bool ahead of the
 // owner 24; the owner as an element of the queue array indexed by the call 20.
+// Round 148 (m3 lane 7, fast): the owner offset named ahead of the node and the queue base added after it 22 (arg_1 then
+// arrives in ESI and 0x114e80 breaks); the call result narrowed implicitly (`short local_1 = function_20f040(...)`, 0x20ff50's
+// form) 19; the flag test un-negated with one queue call after the if/else 31 (round 33's code); the node offset computed at the top of the block
+// 19; the call result kept as a long and narrowed at the owner 19 (both same code). Diagnostic: the body built in
+// src/unknown_20f8b0.cpp (/O2 /Ob1 /Gr, no /arch:SSE, where retail's neighbours 0x20fd50, 0x20fda0 and 0x20ff50 sit) 19, so the
+// file flags do not set it. Compile-only (its listing equals the real one): the pool and queue pointers as two members of one
+// global, the masked index at the top of the block, a data local: same code. Retail's order is pool load, MOVSX, queue load:
+// the queue gets EAX only because the MOVSX frees it first; every form here loads both globals ahead of the MOVSX.
+// Also (round 148): the release arm as an early return 31 (round 33's code again); the 0x20d570 object index named in its
+// block 19.
+// Round 157 (m3 lane 8, fast): 0x20f040 returning `short` (definition, header and the four local declarations) 19
+// (0x20f040 itself 4, 0x20f2d0 146, 0x20d0c0 5, 0x26bc60 5: retail's own bytes want the full register); the record index
+// parameter as `dword` (definition and 0x114e80's declaration) 19; the two parameters swapped at the definition, the
+// declaration and 0x114e80's call 19 (LTCG keeps each value's register); descriptive local names 19 (same code); the team
+// through the existing object_get 20 (as the listed direct-team form). Diagnostic, reverted: one dead load from a
+// volatile local just before or just after the 0x20f040 call (not at function entry, 53) gives retail's queue register
+// (EAX, loaded after the MOVSX, `add esi, eax`) and retail's 0x20d570 set-up, leaving only the pool load (retail
+// hoists it above the MOVSX) and the node's data/offset registers swapped (retail offset ECX, data EAX): 51/52, 146/147
+// bytes. So retail has one scratch step more (or two fewer) than ours between the object lookup and the queue load.
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {

@@ -1,4 +1,6 @@
 import os
+import signal
+import subprocess
 
 import pytest
 
@@ -479,6 +481,50 @@ def test_d3d_objects_need_the_library_and_every_member(tmp_path, monkeypatch):
     fake_lib_tool(monkeypatch, [f'obj\\i386\\{stem}.obj' for stem in build.D3D_OBJECTS if stem != 'pusher'])
     with pytest.raises(SystemExit, match='no member named pusher.obj'):
         build.d3d_objects(str(tmp_path), str(xdk))
+
+
+def test_run_tool_retries_once_after_a_timeout(tmp_path, monkeypatch):
+    """A wedged Wine tool is killed after TOOL_TIMEOUT and tried once more,
+    rather than stalling the whole build."""
+    xdk = tmp_path / 'xdk'
+    (xdk / 'bin' / 'vc71').mkdir(parents=True)
+    calls = []
+
+    def fake_once(command, cwd, env):
+        calls.append(command)
+        if len(calls) == 1:
+            raise subprocess.TimeoutExpired(command, build.TOOL_TIMEOUT)
+        return 0, 'ok', ''
+
+    monkeypatch.setattr(build, '_run_tool_once', fake_once)
+    assert build.run_tool('CL.Exe', [], str(tmp_path), str(xdk)) == 'ok'
+    assert len(calls) == 2
+
+
+def test_running_a_tool_times_out_its_whole_process_group(tmp_path, monkeypatch):
+    """The tool is started in its own session and a timeout kills the group,
+    so a wedged wineserver cannot survive into the retry."""
+    started = {}
+
+    class Hung:
+        pid = 4242
+
+        def communicate(self, timeout=None):
+            if timeout is not None:
+                raise subprocess.TimeoutExpired('CL.Exe', timeout)
+            return '', ''
+
+    def fake_popen(command, **kwargs):
+        started.update(kwargs)
+        return Hung()
+
+    killed = []
+    monkeypatch.setattr(build.subprocess, 'Popen', fake_popen)
+    monkeypatch.setattr(build.os, 'killpg', lambda pid, sig: killed.append((pid, sig)))
+    with pytest.raises(subprocess.TimeoutExpired):
+        build._run_tool_once(['CL.Exe'], str(tmp_path), {})
+    assert started['start_new_session'] is True
+    assert killed == [(4242, signal.SIGKILL)]
 
 
 def test_build_refuses_a_source_named_like_a_d3d_member(tmp_path):

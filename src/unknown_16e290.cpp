@@ -1567,6 +1567,16 @@ struct s_camera_clip_reference_16ebf0
 	plane3f plane;
 	byte field_14[4];
 };
+// MiniMax H (11-11): no new form, no lower score (87); retail materialises the cluster address (mov edi,[esi+0xa0]; add eax,edi; mov al,[eax+0x70]) and keeps the reference in al, ours folds the address into the load and keeps it in cl, so the block is one instruction short; the false-first narrow default with the plane terms in retail's order matches retail's clip block instruction for instruction but still scores 105 because of that one missing instruction, and no source form of the cluster access (a pointer local, a pointer-arithmetic local, an explicit 0xb0 multiply, the existing prediction_cluster_get helper, the index in a local) changes the folding.
+// MiniMax C (11-11): no new form, no lower score (87); retail computes the two interpolated values into the other pair of registers (it multiplies the value from [esp+0x18] into xmm0 and the one from [esp+0x20] into xmm1, ours the other way round) and loads [esp+0x20] before it stores the new value to [esp+0x24].
+// MiniMax I (11-10): no new form, no lower score (87); the cross block's xmm0/xmm1 colouring of up.k and
+// forward.j is still swapped against retail's, while the three products, their results and the store slots
+// (matrix+0x10/+0x14/+0x18, contiguous once the caller's push is counted) agree; the cross lives in a shared
+// header this lane may not edit, and a permuter run over this function found nothing in 26 tries (best 87).
+// MiniMax R (11-10): no new form, no lower score (87); the plane's three products in retail's order (i*x, k*z, j*y)
+// give retail's multiply and add sequence instruction for instruction, but the score stays 87 because the clip block
+// above it keeps the reference in cl with a folded address where retail keeps it in al with the address materialised,
+// so every row after it stays shifted; the false-first narrow default with the else chain removed still scores 105.
 // MiniMax R (11-09): no new form, no lower score (87); the cross block gives retail's up.k to xmm0 and forward.j to xmm1 where ours gives them the other way round, though the three products agree; the cross written out as three component assignments scores 186 and was restored.
 // MiniMax A (11-06, run 52), not kept (87, same score): the clip plane's three products summed in
 // retail's order, the i term first and the j term last, give retail's multiply and add sequence

@@ -26,14 +26,7 @@ extern vector3f *g_4687bc;
 __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4,
  long arg_0, point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
 
-// MiniMax lane C (run 36, 10-31, later pass): no lower score; the fast check has to name both
-// lane files, otherwise the reduced build holds another object set (362 instead of 5), and the add
-// and multiply operand order, the literal quarter, a value or reference centre, the centre
-// pointer's scope and the mode-1 row order all leave the same five differences.
-// MiniMax lane C (run 36, 10-31): applied the lane-E score-5 body (short category, bool clear
-// state, one bool probe result with `category = 1` on a hit, mode-1 rows reading the centre through
-// a named copy of the cast parameter) to the current parameter order.
-// score 20 (was 26): round 96 typed the origin parameter `point3f const *` everywhere and read it directly (no
+// score 20 (was 20): round 96 (26 -> 20) typed the origin parameter `point3f const *` everywhere and read it directly (no
 // renaming copy): only the mode-1 positive x row is left (retail adds the centre x as the memory operand, ours
 // loads it first; 1176 bytes). Earlier note, at 26 (was 170; review of run 36): short category, the clear state as a bool, and one bool probe
 // result with `category = 1` on a hit (function_16a040 returns bool, so category gets the same value) are
@@ -42,6 +35,13 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // rows differed: retail folds the x centre as a memory operand and loads the z centre into a register,
 // that form loaded the x centre ahead of the first multiply and folded the z centre. Scores are from
 // `check.py --fast 0x1c8df0 0x1e55d0` (0x1c8df0 alone gives 360).
+// MiniMax lane C (run 36, 10-31, later pass): no lower score; the fast check has to name both
+// lane files, otherwise the reduced build holds another object set (362 instead of 5), and the add
+// and multiply operand order, the literal quarter, a value or reference centre, the centre
+// pointer's scope and the mode-1 row order all leave the same five differences.
+// MiniMax lane C (run 36, 10-31): applied the lane-E score-5 body (short category, bool clear
+// state, one bool probe result with `category = 1` on a hit, mode-1 rows reading the centre through
+// a named copy of the cast parameter) to the current parameter order.
 // Round 75 (all match-only, restored): clear state bool, one bool probe result for the mode-1/mode-2
 // probes with `category = 1` on a hit 28; with short category 26 (frame, slots, cmp ax all retail);
 // centre read through the cast parameter instead of the local copy 20: only the mode-1 x-row fold
@@ -213,6 +213,24 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // folds the mode-1 x row; all restored.
 // P399: Complete origin/endpoint/side/positive/opposite/all component arrays, complete quarter/endpoint array construction:
 // 20/20/20/20/20/20/20/20. NOT kept: no byte equality or native home repair; original complete body restored.
+// Round 171 (m3 lane 6, fast with 0x1e55d0): diagnostics: 1-13 initialised unused locals at the top 20, 14-16 26
+// (1175 bytes: a mode-2 z row flips, the mode-1 x row never); 1-8 before the side vector 20; 1-8 file-scope
+// declarations ahead of the definition 20. A copied centre pointer for the mode-1 rows 20 (copy-propagated); the
+// centre read once through the parameter's address for the mode-1 rows 45 (1175 bytes: x and y load first, z
+// folds), for every use 26 (1177 bytes), in the side vector and the rows 34, in the first probe block and the side
+// vector 18 (1175 bytes: z folds where retail loads, x still loads; match-only form, gain of 2, not kept). In every
+// body form the x row loads first.
+// Round 153 (m3 lane 7, fast with 0x1e55d0): retail's negative point shares the side vector's three stack slots in both
+// modes (as ours does, by lifetime); writing the mode-1 negative point into the side vector itself (no second point)
+// 73 (rows x, y, z; the frame changes), rows z, y, x 83, rows y, z, x 79; the two mode-1 points declared in the other
+// order 20 (same code); the negative rows z, y, x 33, y, x, z 32; the negative point through the existing
+// real_point3d_set 20 (same code), both mode-1 points through it 20 (same code). Reading of the six positive rows: a
+// row comes out as retail's `movaps; addss [centre]` when its side product is first formed inside that row's sum, and
+// as `movss [centre]; addss` when the product is already a common value before the row; retail has mode 1 x, y and
+// mode 2 x in the first form, ours mode 1 y and mode 2 x. In ours those are exactly the two centre components the side
+// vector loads as minuends (arg_1->y, arg_4->x); retail adds arg_1->x, its second subtrahend. Side vector forms on that
+// lead: i as `-(arg_4->y - arg_1->y)` 260 (1183 bytes, a real negation), j as `-(arg_1->x - arg_4->x)` 259, as
+// `0.0f - (arg_1->x - arg_4->x)` 259, both from named differences (dy, -dx) 259; j assigned then `-=` 20 (same code).
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

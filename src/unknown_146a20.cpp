@@ -59,6 +59,13 @@ bool g_47f05a;
 bool g_47f05b;
 
 // score 34 (was 34): frameless entry agrees; intermediate vtable store and successful-arm backing reload remain.
+// MiniMax R (11-11): no new form, no lower score (34); the abstract allocator's base vtable store
+// (`mov [eax], 0x453760`) is still dropped, because it comes from the shared constructors in
+// include/unknown_146a20.h, which this lane may not edit (BLOCKED-BY), and the pool placement still reloads
+// g_479888 at the join where retail reloads it on the constructed arm; the no-local form puts that reload in
+// retail's place but loses the 1 in EDX (36), and seven source forms all score 34 or more.
+// MiniMax E (11-11): no new form, no lower score (34); the base vtable store retail keeps comes from the inlined
+// constructors in include/unknown_146a20.h, which this lane may not edit, so the gap stands (BLOCKED-BY that header).
 // MiniMax C (11-09): no new form, no lower score (34); the abstract allocator's base vtable store is still elided (BLOCKED-BY include/unknown_146a20.h).
 // MiniMax D (11-06): no new form, no lower score (34); retail's base vtable store (0x453760) and its
 // derived vtable (0x4576a4) come from the shared constructors in include/unknown_146a20.h, which this lane may
@@ -369,6 +376,49 @@ bool g_47f05b;
 // 34 (149 bytes: the 1s become immediates and `block` takes a pushed EDI); `block` read after the three
 // stores with `block ? new ... : NULL` 34 (same code); `g_479890 = g_479880 = true` 36; the stores ordered
 // g_479880, g_479890, g_479884 38. The base vtable store stays dropped in all.
+// m3 lane 12 r103 (fast, 0x146b80/0x22c3e0 matched throughout): the buffer at `block + sizeof(c_havok_fixed_memory)` 34
+// (same code); with g_479888 at both placements (38, 144 B, retail's code but for the base vtable store and 1 as
+// immediates): an explicit `if (g_479888)` / `else g_479894 = NULL` 38 and the pool through a named pool pointer 38 (near
+// repeats of the block-form if/else and published-result forms above); the placement through g_479888 with the buffer
+// through `block` 36 (146 B, `mov edx, eax; add edx, 0x30`); placement and pool through `block`, buffer through
+// g_479888 43 (139 B). 0x453760 is
+// stored in retail only here and in the abstract allocator's deleting destructor 0x1470f0.
+// M3 lane 14 r79 (fast with all 57 functions of the header's ten files): a virtual destructor declared in the fixed base
+// 34 (the store still dropped, no other function changes). Diagnostic (header, removed at once): `if (buffer) m_count = 0;
+// else m_count = 1;` in the fixed base constructor keeps the fixed base's own vtable store beside its field stores (61 at
+// 162 bytes, 0x146b80 27): a branch present when dead stores are removed, between one vtable store and the next, keeps
+// the earlier store even after the branch becomes a `sete`. So retail's kept 0x453760 store points at a branch or block
+// boundary that this construction alone had there and that later vanished; in the shared constructors it would also
+// reach 0x146b80, 0x146e30 and 0x22c3e0, which drop the store. No other untried form on this function's side is known.
+// M3 lane 2 r67 (fast with 0x146b80/0x146e30/0x22c3e0): the fixed base's three member stores in reverse order 34 (same
+// code here; matched 0x146b80 goes to 2), so not kept. Every constructor change reaches 0x146b80 too, which drops the
+// abstract vtable store in retail, so the cause has to be one this call site alone has (retail's construction here keeps
+// the store and reloads g_479888 in the arm, 0x146b80's does neither); the call-site forms above cover the placement,
+// buffer and result spellings.
+// m3 lane 10 r87 (fast with 0x146b80/0x146e30/0x22c3e0/0x1470f0/0x147110/0x22c0a0, header trials restored): an empty
+// virtual destructor in the fixed base 34, in the fixed allocator 34 (retail's vtables give both the abstract's deleting
+// destructor 0x1470f0, so neither derived allocator has its own); the fixed base's count cleared through an inline member call 34;
+// the abstract's four words set through an inline member call 34 (near the listed compile-only init-method form),
+// through a word cursor 34. The store is dropped after
+// inlining whatever calls or loop shape the constructors have.
+// Round 80 (m3 lane 13, fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0/0x146bf0): `byte *block` re-measured 34 (same
+// code; listed above). No untried call-site form found: register-masked aligned 3, only the abstract vtable store and
+// the arm reload. The store comes from the shared constructors, which matched 0x146b80 and 0x22c3e0 also inline (they
+// drop it in retail); lane 4 r166's held constructor twin is the known match. Body unchanged at 34.
+// Lane 6 r167 (fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0, all unchanged; base 34, aligned 4 = the base vtable store
+// and the g_479888 reload at the join): `void *const block` 34, the pool constructed with `()` 34, `g_4798b4 += 1` 34,
+// `byte *const block` with `block + 0x30` 34 (all same code); re-measure: the fixed allocator in an abstract-typed local
+// published on the next line 38 (137 bytes; the listed typed-local-published form). The lever left is the shared
+// constructors in include/unknown_146a20.h (included by include/globals.h and contributor files) or the held twin.
+// Lane 4 r186: no untried call-site or header form left, so no trial ran. The call-site lists above cover the placement, buffer,
+// result, store-order and typed-block forms. The header lists above (rounds 7, 20, 37, 103, 300, T70, lane 14 r79, lane 2 r67,
+// lane 10 r87) cover initializer lists, out-of-line definitions, novtable, virtual destructors, memset, explicit and chained
+// stores, split and counted-down loops, member calls, a word cursor, a const table and the refcount initializer. The base vtable
+// store comes from the shared constructors in include/unknown_146a20.h: BLOCKED-BY 0x146b80, 0x22c3e0 (matched; retail drops that
+// store at both). The header reaches no contributor body: its contributor includers build none of these allocators.
+// Round 155 (m3 lane 8): retail 0x146b80 (same constructor, base store dropped) stores the fixed base's count before
+// its buffer and size; retail here keeps declaration order and keeps the store, so the two inlined copies differ in
+// scheduling, not in source. No untried form on either side; body unchanged.
 // @retail 0x146a20
 void function_146a20(void)
 {

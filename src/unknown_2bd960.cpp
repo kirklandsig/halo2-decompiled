@@ -683,6 +683,16 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 // Round 158 (m3 lane 5, plain): the step as `(i * 32 + 32) / half - i * 32 / half` 2; `count = count - (count & 1)`
 // 2; the polygon parity as `hill->count % 2 == 0` 31 (174 bytes); half declared in the loop's init beside i 2; the id
 // count as `sizeof(hill->ids) / sizeof(hill->ids[0])` 2 (the hill/index reload pair unchanged in each).
+// Round 165 (m3 lane 5, plain, with 0x2be050 and 0x2bdc00 matched in each): the function moved to retail's address
+// order, after its caller 0x2bdc00 and ahead of 0x2bdd20 (all 40 other functions in this file kept) 2; the marker
+// query through an inline (index, kind, maximum, ids) helper, here only 2, also at 0x2be050's query 2; the ids
+// pointer taken ahead of the index test 2; the step products as `((i + 1) << 5) / half - (i << 5) / half` 75
+// (156 bytes). The reload pair stays index first in each.
+// Round 189 (m3 lane 4, plain, 0x2be050 and 0x2bdc00 checked): the odd count dropped by `if (count & 1) count--;` 9;
+// an early return for NONE ahead of the query 60; the step loop in a static inline (hill, half) helper 145 (0x2bdc00
+// 55); `hill->count = count -= count & 1;` 2 (same code). Retail 0x2be050 takes the hill in EDI, so retail's first
+// reload is the hill argument for it. A bare block around half and the step loop 2, and one ending count's scope
+// before the polygon test 2 (both the same code).
 // @retail 0x2bdc70
 void hill_set(s_polygon_2be *hill, long index)
 {

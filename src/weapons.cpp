@@ -1946,6 +1946,11 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 }
 /* takes rounds from a weapon's reserve for a magazine: first its own, then
    the reserves of the holder's other weapons of the same kind */
+// MiniMax B (11-12): no new form, no lower score (83): the difference is register roles only (retail keeps
+// the magazine index in esi and the available/taken value in edi, ours the other way round, and retail holds
+// the pool global in ebp where ours reloads it per slot); the pool-in-ebp shape needs the pool global to be
+// known not to change across 0x106030 -> 0x159dd0, which lives in another lane's file.
+// MiniMax G (11-10): no new form, no lower score (83).
 // score 83 (was 107, fast): the slot test reads `weapon->definition_index == other->definition_index`, the slot take
 // reads `magazine->rounds_unloaded` at each use (no short local), and the first block's `unloaded` is a long. Found
 // from a permuter run (11-05) whose best form (81) also needed a volatile read, and kept without it; the operand order
@@ -2067,6 +2072,18 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 // the score is register roles only (retail keeps the magazine index in ESI and the available/taken value in EDI,
 // ours the reverse, and it pushes EDI later). One variable for available and taken 107 (same code); taken and/or
 // result declared at the top 180/110/110.
+// MiniMax E (11-10): no lower score (83). The remaining difference is register roles only: retail copies
+// the magazine index out of EAX into ESI, which is callee-saved and so survives the 0x1008f0 and 0x106030
+// calls, and keeps the available/taken value in EDI; it re-reads the count from its stack slot at every use
+// instead of holding it in EDX, and it keeps the pool global in EBP across the 0x106030 call. Retail also
+// saves EDI late, just before the 0x1008f0 call, because the value is dead before it; ours saves it in the
+// prologue because the magazine index already lives there. Ours keeps the magazine index in EDI and the
+// available value in ESI, the other way round, holds the count in EDX and reloads the pool global per slot.
+// The pool-in-EBP shape needs the pool global to be known not to change across 0x106030 -> 0x159dd0, which
+// lives in another lane's file. The parameter layout is the same as retail's (the magazine index in EAX, the
+// weapon index and the count on the stack, the callee popping them), so nothing here is blocked by the
+// declaration. A permuter over this body (25 tries, 310 s) found no variant below the baseline, and an
+// earlier run was stopped by the harness before it produced a result, so no permuter form is recorded here.
 // @retail 0x100b80
 bool function_100b80(long magazine_index, long weapon_index, long count)
 {
@@ -2885,6 +2902,8 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 	return result;
 }
 
+// MiniMax G (11-10): no new form, no lower score (389).
+// MiniMax R (11-10): no new form, no lower score; retail's frame is four bytes and keeps the weapon pointer in ebp with only the definition spilled, ours is eight bytes and spills both.
 // MiniMax C (11-01): no new form, no lower score.
 // score 389 (was 398): the active flag is published as `*active = result > 0.0f;`, which gives retail's two-exit
 // tail (eax 1/0 stored through al) byte for byte. Walked against retail statement by statement (w1D, 11-05):
@@ -2987,6 +3006,19 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // w1D (11-05): fallthrough `case 0x1d0007ba:` into `case 0x0c000569:` with the definition recomputed 408; progress
 // tests in retail's order without the trailing else 420; `long` instead of `short` case index 424.
 // Permuter, 25 minutes (11-05): 386 only with a word index and casts that change no value; not kept.
+// MiniMax E (11-10): no lower score (389). The 27-case switch reproduces retail's tree pivots exactly (root
+// 0x10000573, then 0xb0005a9, 0x5000081, 0x3000577, 0x4000567, 0x5000024, and on the greater side 0x1500056e,
+// 0x1700056c, 0x1700056f, 0x1d0007ba) but with the root oriented the other way: ours branches `jg` to an
+// out-of-line greater block, while retail branches `jle` to an out-of-line less-or-equal block that opens with
+// the pivot's own `je`; it also enters with a different prologue (the weapon in EDI and five pushes against
+// retail's `push ecx`). That form scores 412, so the if-chain form was kept. The shared bodies at 0xff9c8
+// (barrel), 0xffa80 (trigger) and 0xffaa9 (magazine) are the same in both forms. Retail's parameter layout is
+// the same as ours (the weapon index at [esp+4] and the name at [esp+8], the callee popping sixteen bytes), so
+// what is left is the tree's shape and the frame, not the declaration.
+// MiniMax A (11-12, run 62): no new form, no lower score (389); the first instruction is ours `sub esp, 8` against
+// retail's `push ecx`, ours loads the definition table before the weapon where retail loads it after, and the
+// weapon sits in EDI where retail keeps it in EBP, so the prologue and the switch's entry layout differ before
+// any case body is reached.
 // @retail 0xff5f0
 bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *active)
 {
@@ -3194,6 +3226,12 @@ struct s_ammo_conversion_entry
     long definition_index;
 };
 
+// MiniMax B (11-12): no new form, no lower score (190): the difference is in the homes and the
+// carriers only (retail holds the destination weapon in ebp and spills it around the conversion
+// scan, keeps the other weapon's definition index in edi, and stores the acquisition flag with
+// retail's polarity); flipping the flag's sense compiles worse, and the one lower permuter form
+// swaps two calls' arguments, which contradicts their declarations.
+// MiniMax G (11-10): no new form, no lower score (190).
 // MiniMax A (11-04): no new form, no lower score; the acquisition flag with retail's polarity 202, the
 // conversion path's flag before its minimum 205, the transfer's second minimum as a long 191.
 // MiniMax H (11-03): no new form, no lower score; retail saves ebx and ebp and keeps the weapon in ebp where ours saves ebx, esi and edi and keeps it in edi, so the stack slots and the loop's registers differ.
@@ -3325,6 +3363,18 @@ struct s_ammo_conversion_entry
 // top of the pass with `if (j >= count) continue;` after the loop 207 (713 bytes); a goto from the match to the tail 214
 // (712 bytes) (both fast, control 190).
 // Permuter, 25 minutes (11-05): 182 only with a volatile other_has_rounds and the same-definition test inverted; not kept.
+// MiniMax E (11-10): no lower score (190). Retail holds the destination weapon in EBP and spills it to
+// [esp+0x14], keeps the other weapon's definition index in EDI across the conversion scan, and stores the
+// acquisition flag the other way round (`setg` on "acquired", initialised to 0 in the prologue). Ours holds
+// the destination in EDI, keeps the other definition index in EBX (the other weapon is spilled instead) and
+// stores "not acquired" (`setle`). Flipping the flag to retail's sense compiles worse (202 at 720 bytes), so it
+// was reverted; the frame also differs by one slot. A permuter over this body (10 tries, 302 s) found only one
+// lower form, 186 against 190, and it swaps the arguments of two calls (function_1896c0's scale and tag, and
+// function_a88a0's player index and definition indices), which contradicts those declarations and is a
+// parameter-order change, so it was dropped. The parameter layout is the same as retail's (the weapon
+// index at [esp+4], the other index at [esp+8], the player index at [esp+12], the event index at [esp+16] and
+// the rounds pointer at [esp+20], the callee popping twenty bytes), so nothing here is blocked by the
+// declaration.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3438,6 +3488,8 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return unit ? unit->player_index : NONE;
 }
 
+// MiniMax G (11-10): no new form, no lower score (607).
+// MiniMax R (11-10): no new form, no lower score; the unit index without the volatile scores 657, with the volatile and the NONE at the declaration 637 and without the volatile and the NONE at the declaration 640, so the kept form stays the best.
 // MiniMax G (11-04): no new form, no lower score; the barrel pointer before the definition gives fast 638 (was 640), below the retention threshold.
 // MiniMax C (11-01): no new form, no lower score.
 // score 604 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
@@ -3517,6 +3569,16 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // Permuter, 40 minutes (11-05): full image 590 only with temporaries for call arguments and indices and casts that change
 // no value. Its plain parts (barrel before barrel_definition, function_b7360 before the rounds read, the clamp as nested ifs,
 // the fired test written positively, burst declared after the unit) give 639 fast, from 643. Not kept.
+// MiniMax E (11-10): no lower score (643 in the fast check, 607 in the plain one). Retail keeps the weapon
+// index in EBX, the barrel offset in EDI and spills the definition to [esp+0x14]; ours assigns those registers
+// the other way round and reserves four bytes more frame (mov eax, 0x1c64 against retail's 0x1c60). The fast
+// check warns that this function builds differently in the reduced image, so its plain-check score differs
+// from the fast one. The parameter layout is the same as retail's (both arguments on the stack, the callee
+// popping eight bytes), so what is left is register allocation and the frame.
+// MiniMax A (11-12, run 62): no new form, no lower score (607 in the plain check, 643 in the fast one); the first
+// difference is at +0xb, where ours loads the actor argument and the definition table before the weapon and retail
+// loads the pool pointer and takes the argument into EBX, so the prologue's registers and the four extra frame bytes
+// differ before any case body is reached.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4274,7 +4336,7 @@ struct s_entry_pair { long object_index; short entry_index; };
 struct s_damage_owner;
 struct s_type_1e6529;
 struct s_location;
-void __stdcall function_c8290(vector3f *aim, point3f *point, long unit_index, vector3f *velocity,
+void __stdcall function_c8290(point3f *point, vector3f *aim, long unit_index, vector3f *velocity,
     real const *offsets, bool project, bool use_aim, bool clip);
 bool function_109e00(long object_index, vector3f *velocity, bool required);
 void function_cafc0(long unit_index, point3f *position);
@@ -4489,7 +4551,7 @@ void __stdcall function_104150(long weapon_index, short barrel_index)
                 if (actor_index != NONE && WEAPON_SHORT_AT(g_4f55f0->data + (actor_index & 0xffff) * 0x888, 0x6fe) == 4)
                     use_aim = false;
                 if (WEAPON_LONG_AT(unit, 0x24c) != NONE) use_aim = false;
-                function_c8290(&direction, &origin, active_index, &motion,
+                function_c8290(&origin, &direction, active_index, &motion,
                     player_index != NONE ? (real *)(barrel_definition + 0x7c) : NULL, project, use_aim, true);
                 has_motion = function_109e00(active_index, &unit_velocity, true);
                 inherited_speed = direction.i * motion.i + direction.j * motion.j + direction.k * motion.k;

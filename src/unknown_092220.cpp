@@ -181,6 +181,13 @@ static __forceinline long function_925c2()
     return local_0;
 }
 
+// MiniMax S (11-11): no new form, no lower score (14); the guard's `jle` jumps to the count check's own `jg` where
+// retail jumps past it, because ours reuses the guard's flags to skip the compare, and this round's forms (an outer
+// count guard, the count compared as < 1001, the count check turned into an early exit) measure 131, 16 and 14.
+// MiniMax R (11-10): no new form, no lower score (14); the one difference left is the register the user flags load
+// into (eax here, the dying user-pointer register ecx in retail), and every spelling of the two tests still leaves
+// them in eax, so the body stands.
+// MiniMax I (11-10): no new form, no lower score (14); the user flags are still loaded into eax where retail loads them into the dying user pointer register ecx, and every spelling of the two tests leaves the load in eax.
 // MiniMax D (11-10): no new form, no lower score; the flags are still loaded into eax where retail
 // loads them into the dying user pointer register ecx, and the sibling 0x92220 in this file matches
 // with the same flags loaded into ecx, because there eax still holds the result and the allocator
@@ -191,6 +198,10 @@ static __forceinline long function_925c2()
 // into two ifs, the condition written negated, the modulo form and the kind read directly with no
 // local all leave the load in eax (14 each), the mask test first gives 15, the pointer assigned
 // before the kind test with the test negated gives 115, and reading the field in the two kinds
+// separately gives 149; every one was reverted, so the body stands. The two shorter encodings
+// leave the function two bytes short, so every later field is reported as differing as well; the
+// tail of the function matches retail instruction for instruction, and the two global loads in the
+// reduced image are the check's unresolved placeholders, not differences of the code.
 // separately gives 149; every one was reverted, so the body stands.
 // MiniMax D (11-10): no new form, no lower score; retail loads the user flags into the pointer's own
 // register (mov ecx, [ecx+8]) and compares them there, this build loads them into eax, and the two
@@ -259,6 +270,14 @@ static __forceinline long function_925c2()
 // Native procedure record reference 14; signed/unsigned full-width kind 129/129;
 // request/task/both workspaces before result 14/14/14; named submitted count 14;
 // conditional report-flag bit stores 63.
+// MiniMax B (11-11): no new form, no lower score (14); the user flags still load into eax where retail loads them
+// into the dying pointer register ecx, and the permuter on this function was stopped at its time limit without a
+// variant that beat it.
+// MiniMax A (11-11): no new form, no lower score (14); the plain (full-image) check agrees with the fast one on all fourteen differences, so the register choice is not a reduced-image artifact, and no spelling of the flags load reaches retail's dying register.
+// MiniMax G (11-11): no new form, no lower score (14); the user flags are still loaded into eax where retail loads
+// them into the pointer register ecx, and our two shorter encodings leave the body two bytes short, so every later
+// branch lands elsewhere; the flags in a named local, the two tests apart, the pointer from a conditional
+// expression and the two tests in the other order (14, 14, 125, 15) leave the code as it was.
 // @retail 0x925c0
 long online_round_report(XNKID const *session_id, ULONGLONG const *round_key, long count, XONLINE_STAT_PROC const *procedures, bool flag0, bool flag1)
 {

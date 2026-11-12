@@ -47,6 +47,9 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
+// MiniMax H (11-10): no new form, no lower score (298): the optional-state homes still sit four bytes
+// low and our LTCG inlines 0x11bed0 where retail calls it, so the webs that follow cannot be recovered
+// here: BLOCKED-BY 0x11bed0's own file (src/unknown_11cc90.cpp).
 // Statement walk (b4L, 11-06) against retail 0x1d48f0-0x1d5110: every field, offset, condition direction, callee,
 // argument order and add order agrees (bounds 0x1d4948-0x1d4a8c, local_1/local_2 0x1d4a9f-0x1d4b26, rigid body and
 // shape 0x1d4b4b-0x1d4c09, release of the info objects 0x1d4c10-0x1d4c39, ray 0x1d4e61-0x1d4ee7 with `&& !local_0`
@@ -62,9 +65,13 @@ const dword g_455978[81] = {
 // 0x29b2e0), not a vector2f. With the existing normalize_inline on that copy (`k = 0.0f; if (normalize_inline(&v)
 // == 0.0f) continue;`, scaled by arg_6) 308 (2078 B), with 0x29b2e0's helper copied in 306; neither kept (higher than
 // 298, no behaviour change). All other differences are register/stack homes and the 0x11bed0/0x279740 inlining.
+// MiniMax R (11-10): no new form, no lower score (298); the two optional-state homes still sit four bytes below
+// retail's, and the constant retail scales by is still read from a different address.
+// MiniMax R (11-10): no new form, no lower score; the first difference is at +0x21, where retail reloads the bound's component into xmm3 and adds the offset to it and ours copies the offset into xmm3 and adds the component to it.
 // MiniMax C (11-05): no new form, no lower score; ours is 2123 bytes against retail's 2083.
 // MiniMax A (11-04): no new form, no lower score; the optional-state homes sit four bytes low (retail +0x30/+0x40, ours
 // +0x2c/+0x3c) and retail hoists the bounds' zero component above the centre loads.
+// MiniMax E (11-11): no new form, no lower score (298): the aligned frame agrees; the optional bounds/exclusion homes and the selective helper expansion remain, and the helper 0x11bed0 is defined in its own file: BLOCKED-BY 0x11bed0.
 // score 298 (was 298): aligned frame 0x1d4 agrees; optional bounds/exclusion homes and selective helper expansion remain.
 // Lane 18 r37 (fast): result flag declared at function entry 400; sample count declared before the FPU
 // setup 529; contact presence declared inside the sample loop 353 (2121 B); result flag declared after the

@@ -895,6 +895,10 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // a defaulted parameter 2, from a `long` zero local 2; a local object with a volatile member zeroed by its constructor 93 (stores
 // vanish); the result stored from eax/edx inside the asm block 129 (322 bytes). At 0x199740, 0x6a8a0 and 0x80e10 ours lifts only
 // the low store, by one or two instructions; retail keeps the source order at each.
+// Round 152 (m3 lane 7, fast): a 600 s permuter run (43 tries) best 2; start held in a LARGE_INTEGER 2; elapsed declared at
+// function scope 2; the first read named `now` and copied into start 2; every declaration direct-initialised 2. Diagnostic:
+// attempts non-volatile 90 (270 bytes): then only the low zero store rises above `push edi`, so the volatile attempts store
+// after the rdtsc is what lifts the high store as well.
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {
@@ -1002,6 +1006,17 @@ struct s_bitmap_texture_view
 	dword level_addresses[3];
 };
 
+// MiniMax I (11-11): no new form, no lower score (3); the last three instructions are the whole difference: retail loads the masked level address into the base register, which is dead after that load, and we load it into EDX.
+// MiniMax E (11-11): no new form, no lower score (3); the level addresses as pointers, the whole bitmap read through a local pointer (const and non-const) and the store through a pointer to the texture's data field all compile to the same three instructions, so the masked level address is still loaded into EDX where retail reuses the dead base register; a permuter run over the function was stopped at its time limit without a result.
+// MiniMax G (11-10): no new form, no lower score (3); ten spellings of the last statement (the whole expression cast, the masked value in a named local, the raw address in a named local, the array through a pointer local, the element reached by pointer arithmetic, the texture through a local pointer, the mask first, the mask as a complement, the store and the mask split, and the mask with an assign) all compile to the same three instructions, so the masked level address is still loaded into EDX where retail reuses the dead base register.
+// MiniMax C (11-11): no new form, no lower score (3); the element array typed as pointers and the mask as an unsigned literal compile byte-identically, and the masked level address is still loaded into EDX where retail reuses the dead base register. This round also tried: the masked address written back into the bitmap parameter and stored from there, the raw address in a named local with the mask applied at the store, and the mask applied by a second store to the field — all of them give the same three differences. A copy of the bitmap pointer in a named local compiles byte-identically as well.
+// MiniMax E (11-10): no new form, no lower score (3); a permuter run over the function (34 tries in 304s, full
+// image and reduced image) found nothing below the baseline.
+// MiniMax D (11-10): no new form, no lower score (3); the masked level address is still loaded into EDX where
+// retail reuses the dead base register: the address in a named local, the store and the mask split, the mask
+// written first and as a long constant and as a complement, the element's type as long, unsigned long and int,
+// and the value unsigned all leave the same three instructions; a permuter run over the function ended without
+// reporting any variant; the reduction branch, the format bits and the three header stores agree with retail.
 // score 3 (was 3): the last three instructions are the whole difference - retail loads the masked
 // level address into the bitmap base register that dies with that load and stores it from there,
 // ours loads it into edx and masks it there; the reduction branch, the format bits and the three

@@ -84,6 +84,17 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // then `if (!force && flag) return;` 218 (threaded to the same code); the object through a named header-entry pointer
 // 218; the elapsed clamp right after the zero return 246 (816 bytes); the existing ai object getter 218; force declared
 // before update and assigned after it 218. A 600 s permuter run on the kept body (45 tries) found nothing below 21.
+// Round 182 (m3 lane 4, fast = plain 21; masked aligned 12: object load register, the object/force homes, the false
+// store's place and the reload's place): the cache as an element of the pool (`&((s_3dfe0_cache *)g_509434->data)[index]`,
+// the matched 0x3dd10's form) 21 (aligned 12), on the update-first base 218 (aligned 28); `bool const force` 21;
+// the distance test's object through a fresh lookup 255 (842 bytes: not merged across the calls); `(void)&object_index;`
+// at the top (0x3dd10's idiom) 21, on the update-first base 218. Diagnostic: the update-first base (218) has retail's
+// object/force homes and EBX load; left there are the timestamps in EDI/ESI, the object index loaded straight into EDI
+// for 0xd1850 (retail ESI then `mov edi, esi`), the false store after the home store and no reload in the force arm.
+// Round 114 (m3 lane 9, fast = plain 21; masked aligned 8 on the base, 15 on the update-first form): update-first re-measured 218 (homes
+// and EBX load as retail, sample/update timestamps in EDI/ESI); the tail under `if (cache->valid)` in place of the early return 21 (same
+// code), with update first 218; the special-flag tests as plain `& 0x2000` / `& 2` tests setting 1 48; the elapsed clamp as a ternary 21
+// (same code); `update = update || cache->update_time == NONE || update_elapsed > 1` 205, with update first 121.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

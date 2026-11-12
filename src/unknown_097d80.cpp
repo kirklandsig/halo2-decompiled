@@ -52,6 +52,25 @@ struct c_aggregate : c_child
 };
 
 
+// MiniMax G (11-11): no new form, no lower score (31); under /GL the address-taken produced count keeps a slot
+// of its own, so the frame stays 0x8024 against retail's 0x8020 and every slot below it shifts by four.
+// MiniMax B (11-11): no new form, no lower score (31); the produced count moved out of the collection loop to the
+// function scope scores 42, so the frame stays 0x8024 against retail's 0x8020: the produced count keeps a slot of its
+// own because its address reaches the child's v5.
+// score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
+// reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
+// loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its
+// for-init, which gives retail's starts[i]/starts[i + 1] load order; left: only the frame, 0x8024 against
+// 0x8020 (`produced` keeps its own slot where retail packs the loop-2 cursor and loop-3 count into it, and the
+// two temporary slots are swapped). This body built without /GL is byte-exact (BLOCKED by the build flag). Compiled without /GL (screen only) the body
+// gets retail's 0x8020 frame and every slot, 20 left (EBX/EBP and the boundary loads); every /GL form
+// screened keeps 0x8024.
+// MiniMax S (11-10): no new form, no lower score (31); the frame is still 0x8024 against retail's
+// 0x8020: retail packs the loop-2 cursor and the loop-3 count into the address-taken produced slot
+// (frame +0x00) while ours keeps a slot of its own for the produced count, and the two temporary slots
+// stay swapped. Hoisting the produced count out of the loop measures 42 and a table local for the
+// children measures 126, so both are reverted; the body is byte exact only in a /GL- build of this
+// file, which costs 0x97f60, 0x97fe0 and 0x980d0 their matches.
 // MiniMax D (11-08): the frame is 0x8024 against retail's 0x8020 and the two output
 // slots differ - retail keeps the address-taken block count at +0x10 shared with the loop spills and the
 // allocator output at +0x1c, ours gives the count +0x1c and the allocator output +0x20; the byte-exact form
@@ -63,7 +82,6 @@ struct c_aggregate : c_child
 // MiniMax G (11-06): no new form, no lower score: the frame is still 0x8024 against retail's 0x8020, with
 // the two low loop homes exchanged and the produced count keeping a slot of its own; the body is byte-exact
 // only in a /GL- build of this file, which costs 0x97f60, 0x97fe0 and 0x980d0 their matches (52, 80 and 56).
-// score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
 // reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
 // loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its
 // for-init, which gives retail's starts[i]/starts[i + 1] load order; left: only the frame, 0x8024 against
@@ -382,6 +400,40 @@ struct c_aggregate : c_child
 // end of the file 31; the three aggregate functions moved below the handle-table functions 31 (frame 0x8024 in each, same
 // code). Diagnostic, removed at once: `#pragma optimize("a", on)` around the body 31 (frame 0x8024: even the no-aliasing
 // setting keeps the escaped output apart under LTCG). Still BLOCKED by the build flag.
+// M3 lane 14 r79: no new form. Retail's call passes `produced`'s address (+0x10, stored 0 after the pushes) to the
+// virtual v5 at [eax + 0x14]; under LTCG an address that reaches an unknown callee keeps its own slot, so the shared
+// slot needs this body out of LTCG (the flag lead above, a user decision). Every source-side lever I could think of
+// (scopes, wrappers, shared outputs, types, names, loop shapes) is already listed with its score.
+// Round 228 (m3 lane 3, fast with the six file-mates, all still matched; only the frame differs, 0x8024 against
+// 0x8020): produced's statements in an extra brace block inside the collection test 31; the collection loop as a
+// `while` 31; the cleanup's outer loop as a `while` 31; the query result as `result = get_info(...) ? result : NONE`
+// 31; the collection call through the children's real class (`children[i]` as c_handle_table_450cd0, v5 = 0x98cf0,
+// with its own parameter types) 31 (same code each). Re-measured: the nested child/error tests 31, `blocks + total`
+// 31, the early `continue` guard 42. Still BLOCKED by the build flag.
+// Round 147 (m3 lane 8, fast): one function-scope index for the collection and dispatch loops 31 (same code, as
+// rounds 42 and 66 found); no unlisted form left. Still BLOCKED by the build flag.
+// Round 80 (m3 lane 13, fast with the file's six other functions): retail's cleanup ignores the get_info output too
+// (it stores -1 on failure and the release pushes the constant -1), so the dead output is retail's, not a behaviour
+// slip. Re-measured listed forms: `children[i]` without the cast does not compile here (the members are the handle
+// table type), v5's count output as `long &` 31 (same code). Stack-masked aligned 7: only the produced slot. Still
+// BLOCKED by the build flag.
+// Lane 6 r167 (fast with the six file-mates, all still matched; base 31, every difference the frame: ours spills the
+// children cursor at +0x10 and the loop counts at +0x14 with `produced` alone at +0x1c, retail packs `produced` with the
+// loop-count spill at +0x10). Re-measures of listed forms only, no new form left: the dispatch bound read as
+// `j < starts[i + 1]` 121 (388 B, as listed); the cleanup item read into `object` before its null test 74 (368 B; listed
+// at 89 on an older body); the dispatch gate as nested ifs 31 (same code, listed); the dispatch inner loop as a while
+// with the bound read each pass 121 (388 B, the listed bound form); the error test ahead of the child test 37 (listed).
+// Still BLOCKED by the build flag.
+// M3 lane 12 r113: no unlisted form; still only the frame (0x8024 against 0x8020, `produced` unpacked under /GL).
+// Still BLOCKED by the build flag.
+// M3 lane 16 r106 (fast with the six file-mates, all still matched; base 31): the cleanup's item count in the inner loop's
+// for-init (`j = 0, count = block->count`) 74; the source read as `source[0]` 31 (same code); `produced` at function scope,
+// zeroed after its add (`total += produced; produced = 0;`) 147 (389 B); v5's request parameter typed `s_request *` 31 (same
+// code); the query test as `get_info(...) == false` 31 (same code). Frame 0x8024 in each; still BLOCKED by the build flag.
+// M3 lane 12 r115 (fast with the six file-mates, all still matched): `starts` declared before `blocks` 31 (new).
+// Re-measured listed forms: the count `dword` with v5's output `dword *` 31 (Round 137's int); the count named `added`
+// 31; the collection result stored to error after the total 32 (Round 135); the cleanup query output as `dword` 31
+// (Round 218); the item cleared before its release 45 (listed at 59). Frame 0x8024 in each; still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

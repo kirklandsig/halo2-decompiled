@@ -566,11 +566,14 @@ bool function_172750(long mode, point3f const *point, real radius);
 // the second tag lookup first 172. Re-measured: the 4th/5th parameters as the material class (0x188180's
 // call adapted) still match here (fast), 0x188180 56; still BLOCKED-BY the declarations in
 // src/impacts.cpp and src/projectiles.cpp.
+// MATCH (APPLIED 11-10 by the m3 coordinator, fix v2-1102, full check 0 lost): the 4th/5th parameters as the material
+// class at the definition and the declarations/calls in src/impacts.cpp, src/projectiles.cpp and src/unknown_050690.cpp;
+// 0x1882d0 still matched, 0x188180 77 -> 56, 0x2285d0 176 -> 164, 0xfd740 49 -> 8.
 // @retail 0x1883e0
-void function_1883e0(long tag_index, bool ignore_distance, point3f const *point, short element_index, long entry_element_index, long index, long variant,
+void function_1883e0(long tag_index, bool ignore_distance, point3f const *point, c_type_47f957 element_index, c_type_47f957 entry_element_index, long index, long variant,
 	long *first_value04, long *second_value04, long *first_value, long *second_value, long *first_value0c, long *second_value0c)
 {
-	s_globals_element *element = globals_element_get((s_globals_element_block_view *)g_4e034c, (short)entry_element_index);
+	s_globals_element *element = globals_element_get((s_globals_element_block_view *)g_4e034c, entry_element_index.m_index);
 	long first_index = index == 13 ? 14 : index;
 	long first04 = NONE;
 	long second04 = NONE;
@@ -586,16 +589,16 @@ void function_1883e0(long tag_index, bool ignore_distance, point3f const *point,
 
 		if (tag_index != NONE)
 		{
-			first_entry = function_188130(tag_index, first_index, 0, (short)entry_element_index);
-			second_entry = function_188130(tag_index, index, 1, (short)entry_element_index);
+			first_entry = function_188130(tag_index, first_index, 0, entry_element_index.m_index);
+			second_entry = function_188130(tag_index, index, 1, entry_element_index.m_index);
 		}
 		if (!first_entry)
 		{
-			first_entry = function_1882d0(0, c_type_47f957(element_index), first_index, c_type_47f957((short)entry_element_index));
+			first_entry = function_1882d0(0, element_index, first_index, entry_element_index);
 		}
 		if (!second_entry)
 		{
-			second_entry = function_1882d0(1, c_type_47f957(element_index), index, c_type_47f957((short)entry_element_index));
+			second_entry = function_1882d0(1, element_index, index, entry_element_index);
 		}
 
 		if (first_entry)
@@ -673,6 +676,13 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// score 46 (was 56): the six NONE defaults now precede the effect point; left are the second scan's
+// index register and the stack slots of the scale and the object index, which follow the parameter
+// order that the callers in other files fix (MiniMax D, 11-10).
+// MiniMax S (11-10): no new form, no lower score (56): the first difference is still the call's register split,
+// which follows the parameter list that 0x1883e0's declarations in src/impacts.cpp and src/projectiles.cpp fix;
+// past that call the homes of the two vectors and of the four scalar values sit at different offsets from
+// retail's and the home stores come in a different order.
 // MiniMax I (11-08): no new form, no lower score (77); the argument order still comes from the call sites in other files.
 // MiniMax R (11-07, run 38): no new form, no lower score (77); still BLOCKED-BY 0x1883e0's fourth and fifth
 // parameter types, whose declarations are in src/impacts.cpp and src/projectiles.cpp, so retail's point and
@@ -748,6 +758,16 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // aggregate initializer 77; the first scan on a `long` index to a literal 3 77; both arrays NONE-initialized in
 // their declarations 77 (all the same code). 0x1883e0 is in this file; the block is its declarations in
 // src/impacts.cpp (held change) and src/projectiles.cpp, which name the old parameter types.
+// MiniMax H (11-11): no new form, no lower score (165): retail calls 0x1765e0 out of line with the
+// promoted ABI (ESI = arg1, EBX = arg2, EAX = arg3) while this build inlines it, so our frame is 0x16c
+// against retail's 0x48; retail's first parameter is the vector multiplied by 0.01 while our declaration
+// has the point first, and the clip call's flag in DL and point in ESI come from 0x171d00's declaration.
+// MiniMax S (11-11): no new form, no lower score (165): the call's register split still follows the parameter list that 0x1883e0's declarations in src/impacts.cpp and src/projectiles.cpp fix, so our frame is 0x16c against retail's 0x48 and the two scans sit elsewhere.
+// MiniMax E (11-10): no new form, no lower score (77); the first difference is still the call's register split, which follows the parameter list that 0x1883e0's declarations in src/impacts.cpp and src/projectiles.cpp fix.
+// MiniMax E (11-10): no new form, no lower score: the arguments land in the other registers and the
+// scan's registers are rotated against retail's, because retail's parameter list puts the forward
+// vector third and has eleven parameters against our ten, and that list is fixed by the callers
+// in src/items.cpp and src/bipeds.cpp, which this lane may not edit.
 // MiniMax E (11-09): no new form, no lower score (77); the arguments land in the other registers (retail takes
 // the point in EAX and the forward vector in ECX and reads its fourth argument from the stack into EBX, while
 // ours takes the forward vector in EDX and the tag index in EBX), because retail's parameter list puts the
@@ -759,25 +779,26 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // offsets; the block is still blocked by 0x1883e0's declarations, which live in src/impacts.cpp and
 // src/projectiles.cpp and name the old parameter types, so the effect point and the velocity forms
 // that were measured (77 each) leave the body as it is.
+// MiniMax R (11-11): no new form, no lower score (46): retail's second scan keeps a dword index in EDI and the scale in EBP, ours strength-reduces the scan into a pointer walk with a countdown in EBP; a 32-bit index gives retail's index form but rotates the other homes.
 // @retail 0x188180
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
-	long entry_element_index, long effect_value, s_location const *location, real scale)
+	c_type_47f957 entry_element_index, long effect_value, s_location const *location, real scale)
 {
 	long first_values[3];
 	long second_values[3];
 	point3f effect_point;
 	s_sound_position position;
 
-	effect_point.x = forward->i * 0.01f + point->x;
-	effect_point.y = forward->j * 0.01f + point->y;
-	effect_point.z = forward->k * 0.01f + point->z;
 	second_values[0] = NONE;
 	second_values[1] = NONE;
 	second_values[2] = NONE;
 	first_values[0] = NONE;
 	first_values[1] = NONE;
 	first_values[2] = NONE;
-	function_1883e0(tag_index, false, point, g_47d8e0, entry_element_index, index, variant,
+	effect_point.x = forward->i * 0.01f + point->x;
+	effect_point.y = forward->j * 0.01f + point->y;
+	effect_point.z = forward->k * 0.01f + point->z;
+	function_1883e0(tag_index, false, point, c_type_47f957(g_47d8e0), entry_element_index, index, variant,
 		&first_values[0], &second_values[0], &first_values[1], &second_values[1], &first_values[2], &second_values[2]);
 
 	for (dword i = 0; i < sizeof(second_values) / sizeof(second_values[0]); i++)

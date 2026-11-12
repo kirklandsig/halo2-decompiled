@@ -249,6 +249,16 @@ PRIVATE inline byte const *material_parameters(long tag)
 // table loads); combined with the pass through a reference 5, with the chain index read from the published entry 5;
 // the reference form with the pass through a reference 5, with `third + (next & 0x1ff)` 5. Diagnostic (not kept):
 // `second` read once through its address in the direct form, in the restore block or at the top, 5/5. Restored.
+// Round 64 (m3 lane 2, fast; control: the direct entry store with the word read back from the field 5, where the only
+// difference left is `second` loading right after the entry lea, retail after the two table loads): on the direct
+// form, the chain and pass bases named after the store and before `next` 5; `second` through a const reference bound
+// in the restore block 5; `(void)&second;` at the top 5 (diagnostic; the load still moves, so not an aliasing effect);
+// on the reference form, the tables field bound to a const reference for the 0xc/0x14/0x1c bases 5; tables and entry
+// both written through references, the later bases read through the tables reference 5. Original body restored.
+// Round 109 (m3 lane 16, fast control 5; the direct entry store gives 5 with only `second` loading right after the entry lea):
+// on the direct store, the entry word read from the assignment's value (an embedded assignment, diagnostic) 5 (direct-form code);
+// the chain base named before the store 174; chain and pass bases both named before it 183; the chain base from the `tables`
+// local with the pass base from the field 210 (974 bytes); the pass base from the local with the chain base from the field 210.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
@@ -1076,6 +1086,8 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // target all compile to the same descending pair and score 6, because they also flip the store
 // order in cases 10 and 14/18; putting the zeros ahead of the width and height stores in case 13
 // rebuilds the whole switch (97). Original body restored.
+// MiniMax S (11-10): no new form, no lower score (2): the shared case 12/13 tail still stores out[3] before out[2] where retail stores out[2] first; a descending pair of statements (out[3] then out[2]) scores 2, the chain in either direction, an ascending pair of statements, a pair that reads the first zero back and a local zero score 6, and the pointer form that matches byte for byte costs 0x19ca0 its match (0x19ca0 then scores 130), so the body stays as it is.
+// MiniMax R (11-10): no new form, no lower score (2): the shared tail's zero pair is out[3] before out[2] in every spelling tried (the chain in either direction, two separate statements, a repeated target: 6 each); a reference to the array in the tail also scores 6, and the pointer form that matches 0x1b2c0 byte for byte costs 0x19ca0 its match (130), so it stays rejected.
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {

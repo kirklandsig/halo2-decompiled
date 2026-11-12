@@ -187,48 +187,10 @@ struct s_1ce970
 		__m128 const *arg_6, __m128 const *arg_7, __m128 const *arg_8);
 };
 
-class c_component_joint_allocator
-{
-public:
-	virtual void slot0() = 0;
-	virtual void slot1() = 0;
-	virtual void slot2() = 0;
-	virtual void slot3() = 0;
-	virtual void *allocate(long size, long kind) = 0;
-};
-
-/* the six constraints, reference counted, from Havok's constraint memory */
-class c_component_joint_constraint
-{
-public:
-	static void *operator new(size_t size)
-	{
-		void *block = ((c_component_joint_allocator *)g_480118)->allocate(size, 0x27);
-		((c_havok_reference_counted *)block)->allocation_size = (word)size;
-		return block;
-	}
-};
-
-class c_component_joint_3 : public c_component_joint_constraint
-{
-public:
-	c_component_joint_3(c_component_joint_snapshot_3 const *info);
-	byte unknown00[0x50];
-};
-
-class c_component_joint_4 : public c_component_joint_constraint
-{
-public:
-	c_component_joint_4(c_component_joint_snapshot_4 const *info);
-	byte unknown00[0x60];
-};
-
-class c_component_joint_5 : public c_component_joint_constraint
-{
-public:
-	c_component_joint_5(c_component_joint_snapshot_5 const *info);
-	byte unknown00[0xf0];
-};
+// Use the shared constraint layouts and their matched constructors.
+typedef lane_a_spring c_component_joint_3;
+typedef lane_a_ball_socket c_component_joint_4;
+typedef lane_a_prismatic c_component_joint_5;
 
 void function_1d0150(s_havok_component *component, s_havok_contact_entities *contact, short a, short b);
 byte *__fastcall function_30c170(hkWorld *world);
@@ -376,6 +338,11 @@ static __forceinline s_havok_contact_entities *joint_constraint_create(s_havok_c
 // to the same bytes (22); an explicit `if (size > 0)` adds a second guard (1828 bytes, 86).
 // This round: an early `if (size <= 0) return;` before the loop adds its own copy of the
 // epilogue (1828 bytes, 86); `break` in the found path is canonicalised into the same bytes (22).
+// Round 74 (m3 lane 2, fast): found code after the loop reached by `goto found` with an explicit `return;` after the loop
+// 22; `while (true)` with the exhausted return inside and `break` to found code after the loop 22 (both the same code: the
+// layout is not lexical); the call first in the comparison 23; entity_b compared in place 61 (1820 bytes: read after the
+// call, component in EBX, tail layout unchanged); the ground body named per iteration 22; the found path's main-body test
+// through the existing havok_component_rigid_body_get 22, with the first loop's fixed-body test through it too 22 (same code).
 // @retail 0x1d77d0
 void __stdcall function_1d77d0(s_havok_component *component, s_physics_model_owner *owner)
 {

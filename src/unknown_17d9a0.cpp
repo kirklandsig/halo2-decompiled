@@ -124,20 +124,22 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 	point[2] = matrix->forward.k * *x + matrix->left.k * *y + matrix->position.z;
 	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
-// MiniMax I (11-09): no new form, no lower score; the plain check gives 46 while the fast image cannot measure this body, and the only source lever left is the corner helper's parameter order, which measures 40 but changes a declaration, so it is reported rather than applied.
-// MiniMax A (11-06, run 52): no new form, no lower score (46) - retail keeps the axis in ax and the
-// flag in cl, ours sign-extends the axis into ecx and puts the flag in al.
 
+// score 46 (was 46): retail's length and every lookup, store and the tail; left are the products' load/memory sides (retail's
+// ranks: j fields > bounds[1,2] > i fields > bounds[0,3] > k fields; ours differ and move with symbol count), the plane store base
+// and the first corner's registers (the axis stays live in ECX, so the flag takes EAX). Earlier at 138: frame 0xc and matrix/dot
+// prefix agree; plane-store base, projection operands/publication and inverse schedule remain.
+// MiniMax G (11-11): no new form, no lower score (46): the products' load and memory sides, the plane-distance store
+// base and the first corner's axis and flag registers are as the earlier rounds left them; a short axis result measures 162.
+// This round: the fast image measures this body exactly only with 0x120850 and 0x22bbca checked beside it (46; alone it
+// gives 258); the axis as a short through the helper 165, the three components as named locals 46 and the determinant's
+// product with its operands swapped 46 (both the same code).
 // MiniMax R (11-04): the corner products' operand order (register/memory sides) changes no code at all
 // (46), a short axis result scores 162, the short axis passed to the corners 186, and a plane pointer for
 // the copy, the dot and the store 65 (the store base then matches retail but the dot's sides flip); the
 // store-only and copy-only pointer forms give 51 and 61; no new form, no lower score.
 // MiniMax E (11-05): no new form, no lower score; the products' load and memory sides are as the earlier
 // rounds left them, and the fast image cannot measure this body (four unresolved calls).
-// score 46 (was 46): retail's length and every lookup, store and the tail; left are the products' load/memory sides (retail's
-// ranks: j fields > bounds[1,2] > i fields > bounds[0,3] > k fields; ours differ and move with symbol count), the plane store base
-// and the first corner's registers (the axis stays live in ECX, so the flag takes EAX). Earlier at 138: frame 0xc and matrix/dot
-// prefix agree; plane-store base, projection operands/publication and inverse schedule remain.
 // At 158: plane-distance store base and projection/edge scheduling remain; both indices long 179f, horizontal long 164f, vertical long 179f, captured-index Y-first 164f, plane view after normal copy 181f.
 // Read-only projection metadata 164; selector field inputs 164; output reference 164; shared
 // point construction 162; vertical index first 164; table row before point 158 (kept); complete
@@ -480,6 +482,46 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // Round 100 (m3 lane 12, `--fast 0x17d9a0 0x120850 0x22bbca`, 46 as the full check): the plane distance computed after the axis call 65; the side
 // test through `.n[axis]` 46 (same code); the normal copied before the bounds 70; the corner helper's x and y read into named reals first 137
 // (971 bytes); the inverse zeroed before the edge test with no else 108 (975 bytes). All restored.
+// Round 182 (m3 lane 4, `--fast 0x17d9a0 0x120850 0x22bbca`, control 46, masked aligned 42): retail keeps the short axis in AX
+// (stored from AX, extended at the side test and again at the first corner) and stores the plane's d through the
+// normal's base. A `plane3f *plane` for the copy, dot, store and axis call with `quad->axis` stored straight from the
+// call 193 (the dot loads the position first); the pointer for the copy, dot and store only, axis stored straight 174
+// (store base as retail, dot sides flipped, the side flag still in EAX). No other untried natural form found in this note.
+// Round 66 (m3 lane 2, `--fast 0x17d9a0 0x120850 0x22bbca`): retail's first corner indexes with the call's raw short (`movsx edx, ax`)
+// and the flag in CL, both still in registers after their stores, and reloads both from the quad for corners 1-3; ours keeps
+// the long axis in ECX, so the flag takes AL. The side test reading matrix->up 47; `axis` and a `positive` local passed to all
+// four corners 241 (923 bytes); the axis local alone 179 (966 bytes); the positive local alone 190 (962 bytes). Diagnostic: VC
+// keeps `up.i * 0.0f`, so the corners are not a (x, y, 0) point through a full transform. The compile-only harness is not
+// faithful here (masked 151 against our own build). The corner lookup through a call to the existing prism_project
+// (src/unknown_245bd0.cpp, used by matched 0x245bd0) 178 plain (976 bytes; `--fast` 330, the reduced image leaves it out). All restored.
+// MiniMax I (11-09): no new form, no lower score; the plain check gives 46 while the fast image cannot measure this body, and the only source lever left is the corner helper's parameter order, which measures 40 but changes a declaration, so it is reported rather than applied.
+// MiniMax A (11-06, run 52): no new form, no lower score (46) - retail keeps the axis in ax and the
+// flag in cl, ours sign-extends the axis into ecx and puts the flag in al.
+// Lane 14 r81 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46; second number the register-masked aligned count, 37
+// for 46): the permuter (`--fast --anneal`, 600 s) scores this body 245 on its reduced image against 46 full and found
+// nothing. The corner helper taking the bounds array with two indices (`bounds, 0, 2` ...) 42 (36; corner 0 is then
+// retail's, corners 1-3 still load the i fields over bounds[1] and reload the axis early; not kept: a helper
+// signature picked by score, 4 under the bar), with the indices in y, x order 42 (same code); on it: a plane pointer
+// for the copy, dot and store 61, `quad->axis = function_120850(...)` with the side test reading it 172, the axis
+// local passed to all four corners 181 (966 bytes), axis and a `positive` local passed to all four 241 (923 bytes).
+// M3 lane 12 r114 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46 = the full check; [masked aligned, register-masked], control
+// [39, 28]): a `point2f *corners = quad->corners` local for the four outputs and both edges 46 (first difference +0x67) [42, 30];
+// the normal copied from the quad's own matrix copy (position still from the parameter) 49 [41, 30]; the distance's position
+// from the quad's copy (normal as now) 65 [58, 49]; the corners transformed through the quad's matrix copy 220 [125, 98]; the
+// corners from the quad's bounds copy 228 (976 B) [145, 118]. Retail reads both parameters (EBX matrix, ESI bounds) for every
+// corner. The residue is still the products' load/memory sides, the plane store base and the first corner's AX/CL roles.
+// m3 lane 1 r92 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46, register-masked aligned 37): new: the table row as
+// `axis * 2 + (side != 0)` (0x173910's spelling) 192 (999 bytes). Re-measured: `quad->axis = function_120850(...)` with the
+// side test through quad->axis 174 (masked 43; AX store as retail, the flag still in EAX and the first corner's two
+// extensions merged). Every other natural form found (axis/side types, plane pointer or helper, dot sides, edge helpers,
+// helper signatures, value locals) is listed above; no untried natural form left. Body unchanged.
+// M3 lane 4 r190 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46): the table row in 0x245bd0's projection order
+// `side + axis * 2` 46 (same code); that with `quad->axis` stored straight from the call 174 (the listed direct store: AX
+// store as retail, the extended axis then reused at the first corner, so the flag still takes EAX); the listed plane
+// pointer for the copy, dot, store and axis call re-measured 65 (store base as retail; the dot and corner 0's first product
+// flip sides); that with the `side + axis * 2` row 65; the flag stored by an if/else 59 (984 bytes); the corner point
+// built by a brace initializer 54; the row index named for both lookups (re-measured on this base) 163; the helper's side
+// parameter `long` 166; the point's second row written forward-first like the others 46 (same code). Body unchanged.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -836,6 +878,8 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
+// MiniMax E (11-11): no new form, no lower score (535 on the full build, 834 on the reduced image):
+// the frame is still 0x21d8 against retail's 0x21dc and the locals still sit in other stack homes.
 // w14H (11-06, fast, plain): statement-by-statement walk against retail found no logic difference (fields, offsets,
 // condition directions, callee arguments, loop shapes, rotation coefficients and bounds all agree). The angle helper's second
 // clamp is now the existing function_50650 (retail's inlined clamped arccosine) instead of its body written out: fast 795 -> 793,
@@ -843,7 +887,7 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // retail sums i, k, j) NOT kept. flags is read as a byte (retail 0x17fdd2, +0xc of the 16-byte entry) through the cast.
 // MiniMax E (11-05): no new form, no lower score; the first +0x41 tag spill, the plane base, the first
 // selectors and the product memory sides are as the earlier rounds left them.
-// score 539 (was 539): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
+// score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // Frame 0x21dc and length 3647 agree; tag/count/plane homes and rotation spills remain.
 // Earlier: 552 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // at +0xb4 versus retail +0x94. Count/plane homes, initial face-call scheduling and rotation spills remain.
@@ -1128,6 +1172,40 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // DH385: Entry output-counter native memset/first-face memcpy producers, seven subsets,
 // then first-face memmove: 562/562/539/566/562/562/566/789. NOT kept: no gain or tag-home
 // recovery; original scalar counters, face publication, all helpers and complete body restored.
+// Round 108 (m3 lane 9, plain; masked = aligned with stack offsets and registers masked, baseline 496): `matrix.scale = 1.0f;`
+// before the position 535 (masked 469); `short remaining = secondary_count;` before the guard, tested there 539; the counts
+// declared face count first 535 (re-measure); `sign * decal_normal_angle_17fd20(...)` 535 (same code); the edge's min/max as two
+// ternaries 613 (re-measure of DH383's conditional producers, 614); the axis scaled `inverse * axis.i`, `axis.j * inverse`,
+// `axis.k * inverse` for the component loop 559; the edge side as `long reverse` 646 (3631 B).
+// Retail's offset rotation writes each partial sum to +0x10 and reloads it: a register-pressure spill, not a source form.
+// M3 lane 3 r225 (plain; base 535, aligned [exact, stack-masked, register-masked] [676, 501, 366]; the first ~400 instructions agree
+// once stack offsets and registers are masked, apart from the first loop's index increment and the secondary-count store): the axis
+// scale through vector3f_scale with the named inverse 559 (3631 bytes) [679, 471, 348]; with 1.0f / length written in the call 568
+// (3631) [674, 468, 341]; as three `*=` statements 559 (3631); the three diagonal terms as (1 - square) * cosine + square 535 (same
+// code); `remaining` declared under the flags test and tested before the do-while 534 (retail's store ahead of the jle, one point,
+// not kept). Lead: retail loads 1.0f into xmm0 before the reciprocal and reuses it for the sign, the clamp and every 1 - x of the
+// rotation (ours reloads the constant at each use), and it spills the k * k, j * sine and i * sine products (i * sine through x87),
+// so the rotation block's register pressure differs, not its statement order.
+// m3 lane 12 r106 (plain; fast gives 834 on the unchanged body here): start/end and the selected plane at function
+// scope 535 (same code); face_count declared before secondary_count 535 (retail's store order for the two counts,
+// slots unchanged); the first plane at function scope 535; the selected plane alone 535; start/end alone 535 (all
+// the same frame homes: scope and declaration order do not move a slot in this body).
+// MiniMax H (11-11): no new form, no lower score (535 plain, 834 on the reduced image): the frame is 0x21d8 against
+// retail's 0x21dc and the definition pointer, the count and the zeroed word still sit in other slots than retail's,
+// so every row after the first loop stays shifted.
+// MiniMax D (11-10): no new form, no lower score: the definition pointer, the count and the zeroed word
+// still sit in other frame slots than retail's (0x94, 0x20 and 0x54 against our 0xb4, 0x18 and 0x4c).
+// Round 187 (m3 lane 4, plain): the edge walk started from `first_edge` (edge_index copied from it) 535 (same code); the
+// angle limit named once ahead of the candidate loop 751 (3679 bytes); the endpoint vertices named as vertex pointers 535
+// (same code); the endpoint vertex indices named, the vertex array indexed at each use 691 (3615 bytes); the endpoint
+// addresses written in the distance calls and the two copies 664 (3631 bytes). Lead from that last form: the i term of
+// both inlined plane distances then loads the plane first (`fld [eax + 0x44]; fmul [ecx]`) as retail does; with the
+// point pointers ours loads the point first there.
+// M3 lane 10 r92 (plain, the file's other eight functions unchanged in each; fast 834 on unchanged source; base 535, aligned 672,
+// masked 355): nothing kept. The rotation's sine products named sine_i/j/k (re-measure of round 234's form) 569 (3663 bytes, masked
+// 384); `one_minus_cosine * axis.k` named once for both k pairs (retail spills that product at +0xec) 536 (3663 bytes, masked 328);
+// both 589 (3663 bytes); the sign as `-1.0f` set to 1.0f in an if 536 (masked 349); the squares computed k, i, j (retail's order)
+// 537; the rows in retail's visit order (forward i, j, left i, j, forward k, up k, i, left k, up j) 545.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

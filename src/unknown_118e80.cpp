@@ -1102,6 +1102,17 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax B (11-11): no new form, no lower score (92); still BLOCKED-BY 0x1c4b00's force parameter, declared long in files
+// this lane may not edit, so the result byte's shape cannot be produced here.
+// MiniMax C (11-11): no new form kept (92); the squared length written as three statements with an accumulator
+// gives retail's k, j, i product order and 90, and the shared length_sq3f gives the same 92 as the expression, but
+// a two-point gain under the keep bar was reverted; the re-fetched object's copy still loads the object before the
+// first component where retail loads the component first, and 0x1c4b00's force parameter is still declared long in
+// src/unknown_1c25a0.cpp, so its movzx cannot be produced here.
+// MiniMax I (11-10): no new form, no lower score (92); the copy's destination is still reached with a
+// separate add where retail folds the index into the base load, and the 0x119bc0 result still travels in
+// al where retail keeps it in a stack byte; the latter needs 0x1c4b00's last parameter to be a bool in a
+// file this lane may not edit.
 // MiniMax D (11-10): no new form, no lower score; the 0x119bc0 result still travels in al where retail
 // stores it to a stack byte and pushes the containing dword, and that shape comes from 0x1c4b00's last
 // parameter being a bool, whose declarations sit in files this lane may not edit; the squared length is
@@ -1222,7 +1233,14 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // kept); the member form with the in-place object pointer 90; the copy through memcpy 92; the squared-length test written
 // `0.0f < sum` 92. Still BLOCKED-BY 0x1c4b00's `long force` parameter (src/unknown_1c25a0.cpp and its declarations,
 // held by other lanes this round).
+// MiniMax R (11-10): no new form, no lower score (92); the squared length still sums the three components in the order the compiler picks (i, j, k) where retail sums them from k down to i, and three component locals that follow retail's order score 90, under the bar; the 0x119bc0 result still travels in al where retail stores it to a stack byte and pushes the containing dword. This round: declaring the force a bool in this file alone gives 44, but it breaks the two other calls in this file (0x119020 0 -> 141 and 0x119c10 0 -> 13), because the definition in src/unknown_1c25a0.cpp still declares it a long and the call sites then take a different register shape; the definition and all fourteen declarations of 0x1c4b00 have to change together.
 // MiniMax R (11-10): no new form, no lower score; the squared length still sums the three components in the order the compiler picks (i, j, k) where retail sums them from k down to i, and three component locals that follow retail's order score 90, under the bar; the 0x119bc0 result still travels in al where retail stores it to a stack byte and pushes the containing dword, which needs 0x1c4b00's last parameter declared as a bool in a file this lane may not edit.
+// Round 86 (m3 lane 11, fast; aligned / register-masked 17 / 16 at 92, so the score is mostly the one-row shift from the
+// `movzx` of the force argument): `if (load) result = true;` for the 0x119380 `|=` 110 (masked 21); the frozen test as
+// `result = (flags & 1) != 0; if (!result)` 272; the definition's physics bit read once into a named bool for both tests
+// 271 (1019 bytes); a named pointer to the countdown word at 0x206 for its three uses 92 (same code); an early `return
+// false` for the 0xb4 test 276 (1039 bytes). Still BLOCKED-BY 0x1c4b00's `long force` parameter (the bool form, 44,
+// needs declarations in src/bipeds.cpp, a contributor's, and in four files other lanes hold this round).
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

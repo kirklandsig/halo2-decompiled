@@ -132,6 +132,11 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 	return destination;
 }
 
+// score 21 (was 40): the string pointer and the character counter are kept in different registers
+// here, and an extra register is pushed and restored around the copy loop. Tried: count before
+// start in the parameter list 40; the length in a named local after the sign tests 40;
+// string + start with start unmodified 28 but start then arrives in edx (0xb5f10 differs);
+// that with a plain string parameter 41; start = string + start 40.
 // MiniMax H (11-07): the sign and count tests with the bounded length in a named local and the
 // source pointer named before the compare give 21 with the matched caller 0xb5f10 and the matched
 // 0xb61d0 unchanged: the start now reaches EDI at entry as in retail, but the inlined scan still
@@ -148,11 +153,6 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // (28) but LTCG then passes the start in EDX and the matched caller 0xb5f10 differs at 6; not kept.
 // A second local for the count gives 51, the guard still testing the parameter gives 28 with the same
 // caller loss, and the scanner helper without __forceinline gives 56 here and 49 for 0xb61d0.
-// score 21 (was 40): the string pointer and the character counter are kept in different registers
-// here, and an extra register is pushed and restored around the copy loop. Tried: count before
-// start in the parameter list 40; the length in a named local after the sign tests 40;
-// string + start with start unmodified 28 but start then arrives in edx (0xb5f10 differs);
-// that with a plain string parameter 41; start = string + start 40.
 // Cursor displacement with fixed/explicit maximum, unequal/ordered end tests and signed/unsigned
 // returns: eight forms 36 each; threshold rejected, shared find changed.
 // that with a plain string parameter 41; start = string + start 40; a local copy of the start
@@ -425,6 +425,20 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // (101 bytes); the two sign tests as separate nested ifs 21; `count + start` in the compare 21; the early source
 // pointer `const` 21 (all three the same code). In retail AL holds the false result through the scan, so only ECX
 // and EDX are free for it: retail colours the counter first (ECX), ours the walk.
+// Round 76 (m3 lane 13, fast with 0xb5f10/0xb61d0; [0xb5f10]; compile-only /Gd harness with every parameter on the stack):
+// the natural body (named length, `string + start` at the call) is retail's body in that pass (start EDI, walk EDX, count
+// ECX), and LTCG then passes start in EDX. Over eight forms a start loaded into EDI in that pass arrives in the first of
+// ECX/EDX written after entry (the walk's), so the 21 form's early source is what puts the walk in ECX; by that rule retail's
+// own body would also give EDX. New: a named end after the scan with the source at the call 28 [6]; the guards as `break`s
+// out of `do { } while (false)` 28 [6], with the length call in the test 28 [6], with the early source 21 [match] (the 21
+// code). Re-measures: `long end` before the scan 49 [83]; `length >= start + count` 29 [6]; one condition with the length
+// call 28 [6]; nested tests, named length and `start += (long)string` after the clamp 40 [match].
+// Round 110 (m3 lane 16, fast with 0xb5f10/0xb61d0, both matched each time; [0xb5f10] unchanged at match): on main's 21
+// body, true facts `__assume(start >= 0 && count > 0)` inside the guard, `__assume(length >= 0 && length < 0x200)` after the
+// scan, `__assume(count > 0 && count <= 0x200)` after the clamp 21/21/21; the source declared (not assigned) before the
+// length 21; the length renamed to sort after source, start and string 21. All the same code: value facts, declaration
+// order and names leave the walk ECX / count EDX split. The rename repeats round 118's names finding; no untried natural
+// source form was found this round.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
@@ -782,6 +796,11 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // the restore 10; the same with the sentinel arm first 10; with `while (!done && position != total)` and the
 // completion under `if (!done)` after the loop 10; with the 0xb6320 success arm first 10; `while (true)` with
 // nested ifs, `continue` while short of the total and one return at the loop's end 10. All the same code.
+// Round 156 (m3 lane 8, fast): on the would-block `return true` form (44, 208 bytes, re-measured: the success value
+// then shares BL and its exit cross-jumps with the false one) the success result as `sent >= 0` 48, the send count as
+// a ternary 66 (204 bytes); the would-block test with its `return true` ahead of `if (sent < 0) goto` 57 (208 bytes);
+// no success assignment with the completion returning true before the label 64; `short sent` declared at function
+// scope 10; `long written` declared at function scope 10 (both the same code).
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {

@@ -73,6 +73,8 @@ extern byte *g_51eca8;
 extern short g_51ecb0;
 c_2d8ab0 *g_47f044;
 
+// MiniMax G (11-10): no new form, no lower score (7); four group-loop splits (the entity list, the index, the group entry and the element read each in their own local) all score 63, so the group loop still loads the entity list into EAX and the index into ECX where retail uses ECX and EDX, and the release loop's entry test still uses EDX and EAX where retail uses EAX and ECX.
+// MiniMax C (11-11): no new form, no lower score (7); the group loop still loads the entity list into EAX and the index into ECX where retail uses ECX and EDX, and the release loop's entry test still uses EDX and EAX where retail uses EAX and ECX; the forms tried this round (the element read through a named local, the index in a named local and both) compile to the same 507 bytes and the same seven differences.
 // MiniMax I (11-09): no new form, no lower score; this round's permuter (900 s, then 1800 s with annealing, the second spending 843 s on the reduced image's build) produced no candidate; the element read through a named entity local, an entity-list local, an index local and all three together compile to the same 507 bytes and the same seven differences; the group loop still keeps the entity list in ECX and the index in EDX where retail keeps them in EAX and ECX, and the release loop's entry test still uses EAX and ECX where retail uses EDX and EAX.
 // score 7 (was 7): this round: the entity list bound to a const pointer local leaves the same seven
 // differences; the group loop still loads the entity list into EAX and the index into ECX where retail
@@ -147,6 +149,13 @@ c_2d8ab0 *g_47f044;
 // uses EDX and EAX where retail uses EAX and ECX; the entity list and the index through named locals
 // and the index read before the element all compile to the same 507 bytes and leave the same seven
 // differences.
+// MiniMax H (11-11): no new form, no lower score (7); the body is unchanged, because the group scan still
+// loads the entity list into EAX and the index into ECX where retail uses ECX and EDX, and the release
+// loop's entry test still uses EDX and EAX where retail uses EAX and ECX; the element read written as a
+// pointer sum, and the entity list, the index and the group entry each in their own local, compile to the
+// same 507 bytes and leave the same seven differences.
+// MiniMax R (11-10): no new form, no lower score (7); the body is unchanged, and the two register pairs of
+// the group scan and the release scan still differ from retail's.
 // @retail 0x1c3d30
 void function_1c3d30()
 {

@@ -61,9 +61,6 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 	return arg_0->k * arg_1->k + arg_0->j * arg_1->j + arg_1->i * arg_0->i;
 }
 
-// MiniMax H (11-05): no new form, no lower score; retail saves EBX around the middle for the +0x290
-// pointer and re-reads its arguments from their stack homes per region, where ours holds the input in
-// EBX from the prologue, and the 748 form is a held lead under the keep bar.
 // score 715 (was 750): s1E walk against retail (3482 bytes, retail 3499; frame 0x88 agrees). Behaviour fixes: 0x29b2e0's
 // third argument is the +0x290 pointer in EBX (0x29c2a4-0x29c2bb; was &local_5), and 0x1f9760's arg_4 (last_out) is the
 // stack byte tested at 0x29c7e5 (was arg_5). Forms kept: direct input (no reference local), shared normalize3d for the
@@ -71,6 +68,15 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // (0x29c068 fsubr dword), the signed-root helper reading the scale from the definition at the product (0x29c595).
 // Tried: complement local for 1 - field_64 (771, no change), vector2f struct copies for local_15 / local_17 (717 / 723),
 // double root (775). Left: early input/heading and normalizer memory-product homes, stack slot order, per-region re-reads.
+// MiniMax C (11-11): no new form, no lower score (715 in the full build; the fast check gives 648 or 715 depending on
+// how the reduced image links); the calls that show up as different in the listing are the
+// same normalize2d (retail 0x2b400) reached at our own address, so they are not real differences; what is left is
+// the early input/heading homes, the normalizer memory-product homes, the stack slot order and retail's per-region
+// re-reads of its arguments, with retail saving EBX around the middle for the +0x290 pointer where this build holds
+// the input in EBX from the prologue.
+// MiniMax H (11-05): no new form, no lower score; retail saves EBX around the middle for the +0x290
+// pointer and re-reads its arguments from their stack homes per region, where ours holds the input in
+// EBX from the prologue, and the 748 form is a held lead under the keep bar.
 // Earlier 750 (was 750): Frame 0x88 agrees; early input/heading homes and normalizer storage remain. Alias-free normalizer loop 822; early-return clamp 829; output scale loop 824; output clamp loop 812; smoothing loop 825 (fast).
 // Earlier 750 (was 750): Frame 0x88 agrees; early input/heading and normalization homes remain. Alias-free
 // planar response snapshot 853; shared default vector 807; native input copy 804; shared radial predicate
@@ -355,6 +361,74 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // seven subsets then native history transfer: 849/840/822/834/835/835/836/799. NOT kept:
 // no gain or native frame/entry recovery; original input storage, helper arithmetic,
 // vector transfers and complete body restored. Early object/input/heading homes remain.
+// Lane 5 r164 (plain; aligned/register-masked LCS [394/232] for 715): the input copy's length through the existing
+// normalize_inline (retail sums i, k, j; ours k, j, i either way) 807; the +0x290 address written at each use (no local_4)
+// 875; local_15 and local_17 both as planar vector2f copies 723 (3466 bytes [380/226]); the clamp helper as an if/else-if on
+// its parameter 795; field_64 read once into a named local for the three blend rows (retail keeps it in XMM6) 731. The
+// region from local_4 to the end of the if-chain in its own block (diagnostic) 715, the same code. Lead: matched 0x4d640 and
+// 0x9eac0 save EBX around plain sequential statements, so the region's form is not what keeps our push at entry; ours uses
+// EBX only inside that region too (same live range and jumps), and the head/tail esp shifts cost about 70 instructions.
+// Lane 12 r102 (plain; the fast image 648 carries the builds-differently caveat): both planar inputs as aggregate copies
+// (`*(vector2f const *)arg_2`, `*(vector2f const *)local_4`) 723 (3466 bytes; both copies then take retail's integer
+// moves, the shifts cost more), local_17's alone 723, local_15's alone 717; with normalize_inline for local_9 824;
+// local_9 renamed `direction` 715 (identical). EBX: our tail after the arg_7 test uses no EBX either, so retail's late
+// push/early pop has no visible source cause yet.
+// m3 lane 7 r146 (plain unless marked fast; fast builds this function differently, control 648): retail saves EBX only from
+// the `lea ebx, [ebp + 0x290]` join to the closing *arg_7 test; ours uses EBX in exactly the same lines but saves it at entry, and
+// several frame slots (local_6, local_8, local_9) also sit 4 or 0xc bytes apart. The middle region inside `do { } while (false)` 715
+// (same code); the +0x290 pointer read at each use (no local_4) 875 (3569 bytes); point local_8 declared with the opening locals
+// 648 fast (same code); local_7 declared before local_6 651 fast; local_9 declared before local_8 648 fast (same code).
+// Diagnostics: the disabled caller 0x1f38c0 (and 0x1f6090) enabled 715 (same code, so the missing caller is not the cause); the
+// 0x26c conditional call removed 848 (EBX still saved at entry). A retail scan finds 24 matched functions with a mid-function EBX
+// save and no path around it (0x1cbad0, 0x17c040, 0x40e90: EBX used only for a call's register argument, a byte test, or ahead
+// of tail calls); none of their shapes is a natural rewrite here.
+// Round 80 (m3 lane 13; all plain, because the fast image hides the cause below; EBX save given as the listing index
+// of push/pop, retail 45/811): the entry EBX save comes from the named `double local_27` (the radial distance). The
+// fast image already saves EBX late as retail (fast 648 differs from plain only in that save and the esp offsets it
+// moves). In the plain build that double as a `real` (diagnostic) 750 at frame 0x8c gives retail's 45/808; 0x1f9e70's
+// `double dot` as a `real` 715 (EBX still at entry; 0x1f9e70 137 -> 302); both 750. The same double pads 0x1f38c0's
+// callers when that body is enabled (#581, round 78). Leave-one-out of each kept form, EBX still at entry in each:
+// reference input 715, private normalizer 818, clamp temps for MIN 847, double root 775, by-value scale 771, the
+// 0x1f9760 flags swapped back 716; all of them together (lane 12 r91's corrected-argument step) 848 at 3464 bytes,
+// EBX still at entry, so lane 12's mid-function save was a fast result. Retail tests the radial distance once (fsqrt,
+// the gap loaded after it, one fcompi, each arm its own exits): as one test `gap > d ? mode != 2 || !flag : !flag &&
+// local_18 > local_16` with the named double (one use) 805 (EBX at entry); with the square root in the test (no named
+// double) 778 (3460 bytes, frame 0x8c, EBX 45/803 as retail); that with a named blend complement 780, with
+// local_15/local_17 as planar aggregate copies 789, with both 791; `field_50 * 0x1f9e70(...)` 715 and on the
+// square-root form 778 (same code each; retail loads field_50 before the normalize2d call and keeps it in a slot).
+// Next: the double-free forms add a slot (frame 0x8c; retail's lowest slot, shared by the steering scale, the root
+// and the ratio, moves to +0x30); find it. Body unchanged at 715.
+// M3 lane 8 r151 (plain each; fast 648 builds differently): `real perp = -local_17.j;` at its three uses on this base 775
+// (3488 bytes); the forward dot `arg_2->i * local_17.i + arg_2->j * local_17.j` 715 (same code); both 775; the last dot
+// as `local_26.i * -local_17.j + local_26.j * local_17.i` 715 (same code); the side flip as one comparison,
+// `local_21 = (... > 0.0f) == local_22;`, 721 (3484 bytes). Lead on the EBX save: matched 0x17c040 shows the same
+// mid-function `push ebx ... pop ebx` as a short borrow of a callee-saved register no web holds (its byte test needs BL
+// with EAX, ECX and EDX busy), as 0xa5a60 borrows EBP. So retail never gave EBX to a web in the main allocation here
+// and borrowed it for the +0x290 pointer; ours allocates EBX in the main pass. That is register pressure (retail
+// reloads the definition pointer into ESI per region and re-reads arg_0 from its slot), not block structure.
+// m3 lane 14 r84 (plain each, with 0x29b990, 0x1f8510, 0x1f3e40, 0xba1d0, 0x1e4290, 0xb9dd0, 0x1f5f30, 0x1f9e70,
+// 0x29b2e0 and 0x29ab90, all unchanged; aligned/register-masked/register+esp-masked rows, base 583/341/174): re-measured
+// lane 10 r93's trial 2 (the implied `!(local_23 > local_27) &&` dropped, the root written in its test) 776 (3464 B). On
+// it: local_14 computed in the arm that uses it, just before local_25, 770 (3446 B, 531/310/178; frame 0x88 again and
+// EBX pushed where retail pushes it); local_14 folded into local_26's two components 770 (3453 B). On the 715 body:
+// local_14 computed in its arm 694 (3458 B, 510/323/261, EBX still saved at entry; match-only, a declaration moved, and
+// retail computes local_14 early, so the gain is slot packing, not retail's order); local_14 folded into local_26 746
+// (3467 B); with local_14 in its arm, local_19 computed at its one use 786 (3508 B). Retail copies local_15 with integer
+// moves and lays the local_21 chain out differently; those forms are listed.
+// Later, on the 694 form (local_14 in its arm): local_14 after local_25 760 (3464 B); local_20 declared just before the
+// side-test result's `local_5 = *arg_2;` 708 (3455 B); local_25 folded into local_26 655 (3464 B, 588/327/268; match-only:
+// both the moved declaration and the folded point). On 655: local_24 folded too 785, with local_20 declared late 669, with
+// the root in its test (lane 10's base) 771 (3450 B, frame 0x88, 535/314/175), local_23 read before the side test 790.
+// local_25 folded alone on the 715 body 718 (3499 B, retail's length, 548/352/184).
+// Round 93 (m3 lane 10, plain; 0x29b2e0 176, 0x29b990 MATCH and 0x1f9e70 137 unchanged; al/masked = aligned difflib
+// counts, base 583/174): the second radial test's implied `!(local_23 > local_27) &&` dropped (a failed first test with the
+// radius larger already makes `!flag` false), double kept, 805 (3471 B); with the root written in the test 776 (3464 B,
+// al 571, masked 162: EBX saved after the 0x26c test as retail, one fcompi and the flag test threaded as retail, but frame
+// 0x8c); on that form, listed forms re-measured: float squares 781 (3458 B: retail's `fld [x]; fmul [x]` squares), with
+// the distance on the left 781 (same code); `real perp = -local_17.j;` for its three uses 778 (3462 B, al 545); the
+// existing magnitude2d(&local_26) 780 (3462 B). Re-measured on the 776 form: local_15 as a planar aggregate copy 781 (3456 B), with
+// local_17's too 787 (3448 B); frame still 0x8c. There the extra slot is local_14 at +0x20 beside local_3's byte (+0x1f),
+// where retail keeps local_14 at +0x7c and local_3 at +0x27. A no-LTCG compile of the file gives frame 0x90.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -118,6 +118,19 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // reference, an early plain copy for the test and marker calls with plain late reads 116 (531 bytes), that copy declared
 // at the top 116. 0x109220 takes the object in EBX and 0x189340 in ESI, so retail's EBX load plus ESI copy is a colouring
 // order between the late object and the sound index.
+// Round 64 (m3 lane 2, plain): one late local read through the reference as its own statement before the call, used
+// for the call, test and dispatch 85 (it takes ESI and copies to EBX for 0x109220; the sound index takes EDI); that
+// with the sound index declared first in the function 85 (same code); a late local assigned a plain read inside the
+// call's arguments 90; the positioned arm (description, marker, call, dispatch) as a __forceinline helper taking the
+// object by value: given the early local 154 (528 bytes, frame 0xa4), given the plain parameter 168 (545 bytes). Every
+// single-load form also changes the request arm (zero stores as immediates, the NONE stored from ESI).
+// Round 113 (m3 lane 9, plain; four aligned lines left at 21: ours loads the object for 0x189340 into ESI before the
+// label push and reloads it into EBX after the call, retail loads it once into EBX after the positioned test and copies
+// it to ESI): the started test as object first 41 (528 bytes); the slot store at the end of each arm with one return
+// test after the join 76 (529 bytes), with the call's object read plain 95 (530 bytes); re-measured (round 90's
+// both-branch forms): each arm with its own sound index local, slot store and return test 90, with the call's object
+// read plain 87 (525 bytes). The request's object index set from the early `object` local 21 (same code); the scale
+// clamp at the function's top 166 (540 bytes).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

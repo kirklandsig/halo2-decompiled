@@ -183,10 +183,28 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// MiniMax G (11-11): no new form, no lower score (636); retail keeps q (the fourth stack argument) in EBX from entry and reads d
+// from its stack slot at each use while this build keeps d in EBX; the frame size 0x24 and the clock register agree, but the xmm
+// homes and the coefficient schedules still differ, and retail builds each zero with its own xorps where this build shares one
+// function-wide zero.
+// score 636 (was 636): earlier 636 (was 642); retail keeps q (the fourth stack argument) in EBX from entry and reads d from its stack
+// earlier 642; retail keeps q (the fourth stack argument) in EBX from entry and reads d from its stack
+// slot at each use; ours keeps d in EBX. Frame 0x24 and clock EDI agree; xmm homes and coefficient schedules remain.
+// retail keeps q in EBX from entry (reloading it after the activation copies, where EBX serves
+// a copy) and reads d from its stack slot at each use; ours keeps d in EBX. Frame 0x24 and clock EDI agree; the
+// speed-factor selection order, direction/sample homes and coefficient schedules remain.
+// MiniMax I (11-10): copying q into qr field by field (q->i, q->j, q->k) instead of one vector copy gives 636 (was 646)
+// at 2880 bytes; the d slot still takes EBX where retail keeps q, and the coefficient schedule still differs.
 // MiniMax h (11-05): the argument order is right (d in the third stack slot, q in the fourth, position in the fifth); retail copies the q slot into EBX and reads d from its own slot at each use, ours copies the d slot, and assigning the fallback pointer with a ternary instead of an if gives 642 with the same code, so no new form is kept.
 // MiniMax A (11-04): no new form, no lower score; retail branches on the fast flag before the rate multiply and loads the
 // constant there, ours multiplies first (642, same code).
-// score 642 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// Earlier 646 (was 642; the settling-ratio fix took 642 to 646): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// Earlier 636 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// Earlier 646 (was 642; the settling-ratio fix took 642 to 646): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// Earlier at 636 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// Earlier at 646 (was 642; the settling-ratio fix took 642 to 646): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// Earlier at 642: retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// Earlier (642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
 // activation copies) and reads d from its stack slot at each use; ours keeps d in EBX from entry. Frame 0x24
 // and clock EDI agree; direction/sample homes and coefficient schedules remain.
 // MiniMax E run 26: retail passes the state in ESI and the update flag in AL and reads its first argument from a different stack slot than the fastcall form ours compiles to; the declaration and the /Gr convention are fixed, so the prologue and every stack-relative access stay four bytes off and the direction/sample homes and the coefficient schedule still differ.
@@ -413,6 +431,80 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 74 (m3 lane 10, fast, caller 0x1eb6f0 MATCH in each): second step count as a ternary 640 (2881 bytes, a gain of 2, not kept); both as ternaries 681 (2880). A one-file harness screen of 127 plain spellings (ternary and if both ways, nested tests,
 // compare forms, commutative operands, constant declarations swapped) found none lower; commutative operand swaps change nothing, the sums and products are canonicalised.
 // Same round, fast: `s->distance` as if/else 671 (2884); duration with its 7/1 as if/else 680 (2891); limit test as nested ifs 642 (2878); `rem = rem < 0.f ? 0.f : rem` 642 (2878); `s->limited = false; if (limit != 0.f) s->limited = len2 > limit;` 687 (2883).
+// Round 65 (m3 lane 2, fast, caller 0x1eb6f0 MATCH in each; control 646 at 2875 bytes after the settling-ratio fix,
+// difflib aligned/register-masked in brackets [754/305]): delta scaled through vector3f_scale(&delta, dt / len, &delta) 678
+// (2893) [662/285]; the impulse through vector3f_scale(a, f, &s->impulse) 704 (2896) [636/269]; both 669 (2886) [700/288];
+// impulse helper + the 12/8 factor selected before t at the first site 700 (2886) [629/259], first two sites 702 (2873)
+// [547/255], all three 702 (2873) [545/247]. Lead: that last form has retail's k-before-t head and keeps the caller, but the
+// zero's xorps moves to the entry (a one-line shift) and the limit is spilled; d still takes EBX (those three re-measure round
+// 166's write + factor-first forms on this base; delta through vector3f_scale is the listed existing displacement scale).
+// `if (!s->active && dt > 0.001f)` as one test 646, `s->active == false` 646 (same code each); the final flag test's arms
+// swapped 646 (same code); `s->ticks_left = 0` before `fail = true` 646; the counter bumped in place and read back
+// (`s->counter++; long new_counter = s->counter;`) 643 (2877 bytes: retail's `inc edx; mov [esi+4], edx; mov eax, edx`);
+// void return alone 646 (same code); void with the read-back 642 (2877; `out` then goes to EAX before the flag update, as
+// retail, whose EAX at `ret` is `out`: retail returns nothing, and the only caller ignores the result); that with `s->duration
+// + 6 > new_counter` 642; the listed second-count ternary on this base 644, with void and the read-back 640 (2880 bytes).
+// Lead: the void/read-back tail is retail's but for duration + 6 in ECX (retail EDX); the gain is under the keep threshold.
+// MiniMax I (11-10): the fallback through a named pointer local (the parameter left unwritten) 666, the same fallback spelled at each component 649, the position copy written field by field 648 and the w*rate multiply moved after the qr reads 638; both builds lay the arguments out the same (out E+0x04, dt E+0x08, d E+0x0c, q E+0x10, pos E+0x14) and both reuse the pos slot for the fail byte, so the whole head difference is that the prologue copies d into EBX where retail copies q, and the fallback can only be retail's cmove once EBX holds q.
+// M3 lane 8 r150 (fast, caller 0x1eb6f0 checked; base 636 here, aligned 685, register-masked 278): retail keeps the limit in
+// no frame slot (ours stores it at +0x10) and copies `s->start = *pos` through EBX and EDI before reloading q. Tried: the
+// impulse through the existing vector3f_scale 675 (2896 bytes, aligned 588, masked 233; re-measure of round 166's lead, the
+// positional count rises); `vector3f qr = *q` as one aggregate copy 646 (aligned 760); the output position written
+// through `out->position` with no pointer local 705 (caller 0x1eb6f0 lost, 103); `s->limit` read at every use with no
+// limit local 667 (2882 bytes, aligned 670), with the vector3f_scale impulse 694 (aligned 588) (both re-measures of round
+// 166's list); the inactive and duration tests as one `!s->active && dt > 0.001f` 636 (same code); the 0.866 test with
+// its sides swapped 636 (same code); the counter read from the state at each use (no counter local) 636 (same code).
+// Round 181 (m3 lane 4, fast, caller 0x1eb6f0 MATCH in each): the impulse through the existing vector3f_scale 675
+// (2896 bytes); with the 12/8 factor selected before t at the first site 679 (retail's al/test/movss/jne/movss head,
+// caller kept); at all three sites 666 (2883; step, the 0.001 constant and zero still in other xmm registers, d still
+// EBX); on that, s->limit read at each use (no limit local) 705 (the constants and b move to the prologue), alone on
+// the current body 667; the three clamps as PIN(t, 0.001f, rate * k) 664, the first only 717.
+// Round 68 (m3 lane 15, fast, caller 0x1eb6f0 checked): the 12/8 factor selected before t in all three clamps 695
+// (2867 B, frame 0x20, caller 22); the time globals read at each use (no globals local; retail reloads g_510c54 in
+// the non-update part) 634 (2883 B, caller matched; gain 2, not kept); on that, the third clamp's factor before t3
+// 651, the counter conversion without `volatile` 703, the counter-stage dot with q first in the j and k products 634.
+// Round 168 (m3 lane 5, fast, caller 0x1eb6f0 checked in each): the output stage's three `goto done` and the label
+// written as nested if/else with `fail = true; s->ticks_left = 0;` in each failing path 636 (byte-identical code, kept
+// as a goto removal); qr computed as `q->i * globals->rate` at its scaling statements with no separate copy 694 (2851
+// B). Retail loads d from its slot at five sites (alignment dot, activation fallback, active fallback, the 0.866 test,
+// settle align) and q into EBX at entry; diagnostics: the settle align without d 753 (frame 0x1c), the post-0.866
+// fallback from `a` 689 (b then takes EBX, caller 2), the alignment without d 757 (d keeps EBX). Already listed (not
+// re-run): factor-first clamps, the impulse through vector3f_scale, the void return with the read-back,
+// the counter conversion, qr copies, dot operand orders, the distance from len3 and the limited flag first.
+// Later the same round: the settle copy `nq` written field by field 628 at 2886 B, positional only (`!!` lines 635 ->
+// 623 with the length 5 bytes long, aligned 478 -> 479, masked 173 -> 174; retail copies nq with integer moves; not
+// kept); the target fallback `s->target = *pos` field by field 692 (2878 B), `*position = qr` field by field 687 (2866
+// B). On that 628: `s->start` field by field 669 (2881 B); the output copy from q field by field 653 (2882 B, the listed
+// form); the settle length from nq 628, the 0.866 test with its sides swapped 628, `lo = MAX(0.f, lo)` 628, `rem =
+// MAX(0.f, rem)` 628 (same code each; the last repeats round 74's ternary clamp). On the 636 body: the output flag
+// through the existing setter `function_0bfe20(&out->flags, 2, fail || ...)` 636 (different code, same score).
+// M3 lane 16 r108 (fast, caller 0x1eb6f0 checked; m = register-masked aligned count, this body m 296): on the time
+// globals read at each use (no globals local, round 68's 634 re-measured: retail reloads g_510c54 in the output stage):
+// `vector3f qr = *q;` as one aggregate copy (retail copies q with integer moves) 642 (2878 B, m 306); the 12/8 factor
+// selected before t at all three clamps 712 (2861 B, caller 22); that with the impulse through the existing
+// vector3f_scale 703 (2883 B, m 272, caller 22); the same with the first clamp back to t first 722 (2881 B, caller 22);
+// the impulse through vector3f_scale alone 680 (2899 B, m 261, caller kept). With the globals read at each use, the
+// impulse helper no longer keeps the caller with factor-first clamps (it did on round 166's globals-local base).
+// Round 170 (m3 lane 5; plain unless marked fast, caller 0x1eb6f0 MATCH in each; base 636, `!!` 635, aligned 478,
+// masked 173): `dist` through the existing inline distance3d(pos, &s->target) 637 (aligned 485; ours already computes
+// dist on x87 as retail, and distance3d sums (i2 + j2) + k2 with an fxch, its out-of-line 0x3ea30's order, where
+// retail keeps (k2 + j2) + i2); the e3 test as `0.001f < e3` 636 (fast, same code); diagnostic, arms swapped (not
+// keepable): `if (0.001f >= e3)` with the settled block first, retail's constant-first compare and fall-through,
+// 643 (fast, 2883 B; aligned 465, masked 170); the two activation lengths through the existing magnitude3d 672
+// (2883 B; aligned 440, masked 157; the zero's xorps moves to the entry), all three lengths so 671 (2882 B; aligned
+// 458, masked 175). d keeps EBX in every one.
+// Round 154 (m3 lane 8, fast with the file's 17 matched functions; base 636, difflib aligned 478, register-masked
+// 173): the two stacked `// score` lines below the first were relabelled "Earlier at" (text and numbers kept). Read
+// again against retail: the first clamp selects the 12/8 factor into xmm1 before t and keeps e in the 0.001 register
+// (xmm3); ours computes t first. Every natural form for that (factor first, PIN, the impulse pointer that kills the
+// fast-flag CSE) and for the q/d EBX weight (aggregate and field copies of q, per-use reads, dot helpers, the fallback
+// spellings) is listed above. Combinations of listed forms (fast, aligned/masked in brackets): the time globals read
+// at each use (no globals local) re-measured 634 [489/173]; that with the 12/8 factor selected first at all three
+// clamps and the impulse through vector3f_scale 703 (caller 0x1eb6f0 lost, 22) [432/135], plus `s->limit` read at
+// each use 720 (caller lost) [424/133]; factor first + vector3f_scale alone re-measured 666 [405/137] (caller kept),
+// with `s->limit` at each use 705 [403/139]. In the output arm retail expands the nested MIN/MAX for the step
+// fraction without CSE, as ours does, but builds each zero with its own xorps (ours shares a function-wide zero in
+// xmm6) and stores one intermediate (e3 - MAX(0, w)) to the stack. Body unchanged.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
@@ -575,7 +667,10 @@ long function_1eb8a0(
 		if (counter == 0)
 			q = g_4687a4;
 		w = w * globals->rate;
-		vector3f qr = *q;
+		vector3f qr;
+		qr.i = q->i;
+		qr.j = q->j;
+		qr.k = q->k;
 		real third3 = e3 * 0.33333334f;
 		real lo = (w - third3) * 3.f * 0.5f;
 		real hi = (e3 - third3) * 3.f * 0.5f;
@@ -615,9 +710,8 @@ long function_1eb8a0(
 					position->k = position->k * ticks;
 					s->ticks_left = (long)((dist - hi) / e3 + 3.f - 0.5f);
 				}
-				goto done;
 			}
-
+			else
 			{
 				real v = PIN((double)s->alignment * 1.5, 0.75, 3.5);
 				real step = (real)(globals->rate * v);
@@ -647,7 +741,11 @@ long function_1eb8a0(
 						position->j = position->j * ticks;
 						position->k = position->k * ticks;
 						s->ticks_left = (long)ratio;
-						goto done;
+					}
+					else
+					{
+						fail = true;
+						s->ticks_left = 0;
 					}
 				}
 				else
@@ -658,20 +756,22 @@ long function_1eb8a0(
 					position->i = back * nq.i + qr.i;
 					position->j = nq.j * back + qr.j;
 					position->k = nq.k * back + qr.k;
-					if (!(step > len - m + 0.001f))
-						goto done;
+					if (step > len - m + 0.001f)
+					{
+						fail = true;
+						s->ticks_left = 0;
+					}
 				}
 			}
 		}
 		else
 		{
 			s->settled = true;
+			fail = true;
+			s->ticks_left = 0;
 		}
-		fail = true;
-		s->ticks_left = 0;
 	}
 
-done:
 	long new_counter = s->counter + 1;
 	s->counter = new_counter;
 	if (!fail && s->ticks_left > 0 && new_counter < s->duration + 6)

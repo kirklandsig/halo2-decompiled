@@ -69,6 +69,12 @@ s_unit_action_state function_e70b0(long unit_index);
 long function_1469f0(real seconds);
 
 #pragma intrinsic(_ReadWriteBarrier)
+// MiniMax G (11-10): no new form, no lower score (13); the two load regions are unchanged - the slot's reference is still loaded into EDX after the actor's index arithmetic where retail loads it into ECX before it, and the inlined action lookup still scales the index into ECX where retail scales it into EDX and reads the unit table late; that order comes from the macro in a file this lane may not edit, so the function cannot match from here.
+// MiniMax C (11-11): no new form, no lower score (13); the slot's reference is still loaded into EDX after the actor's index arithmetic where retail loads it into ECX before it, and the inlined action lookup still scales the index into ECX where retail scales it into EDX; that order comes from the action-lookup macro in src/unknown_0a76b0.cpp, a file this lane may not edit.
+// MiniMax D (11-10): no new form, no lower score (13); the slot's reference is still loaded into EDX after the
+// actor's index arithmetic where retail loads it into ECX before it, and the inlined action lookup still scales
+// the index into ECX where retail scales it into EDX and reads the unit table late - that order comes from the
+// macro in a file this lane may not edit, so the function cannot match from here.
 // MiniMax I (11-08): no new form, no lower score (13); the reference copied into a named local gives 16 with the table base in ESI instead of EDX, the barrier at five positions 94, and the action helper's result unused 13 (the same code).
 // MiniMax C (11-06): no new form, no lower score; the slot reference still loads into EDX after the actor's index arithmetic where retail loads it into ECX before it, and the inlined action lookup still scales the index in ECX where retail scales it into EDX.
 // MiniMax I (11-06): no new form, no lower score; the slot reference still loads into EDX after the actor's index arithmetic where retail loads it into ECX before it, and the inlined action lookup still scales the index in ECX where retail scales it into EDX; this round the reference copied into a named local after the actor's lookup (99) and before it (100) both move the load but grow the body, and the permuter (420 s) found no candidate.
@@ -106,6 +112,13 @@ long function_1469f0(real seconds);
 // Native field view and all scope forms restored; both remaining load regions still differ.
 // Early reference predicate/default-first/wide-result/presence predicate 109/108/111/109;
 // complete current/both reference values 100/104; native word equality logical/bitwise 222/130.
+// MiniMax H (11-11): no new form, no lower score (13); the body is unchanged, because the barrier still
+// decides where the slot's reference load sits: moving it above the actor's index arithmetic puts the
+// global loads after the barrier (94) instead of retail's early ECX load, and copying the reference into
+// a named local moves the load but sends the actor table's data to EBX with an extra push.
+// MiniMax E (11-10): no new form, no lower score: the slot's reference is still loaded into edx after
+// the actor's index arithmetic where retail loads it into ecx before it, and the inlined action
+// lookup's own order comes from the macro's order in another file, which this lane may not edit.
 // MiniMax E (11-09): no new form, no lower score (13); the barrier decides where the slot's reference load
 // sits: with the barrier before the compare the load sinks to the compare and the global stays folded in
 // it, with the barrier moved away the global is materialised into a register instead (94 at the top of

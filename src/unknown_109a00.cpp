@@ -5,6 +5,7 @@
 #include "unknown_1428b0.h"
 #include "vector_products.h"
 #include "normalize3d.h"
+#include "object_tag_definitions.h"
 
 // @flags /O2 /arch:SSE /Gr
 
@@ -306,12 +307,24 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 	}
 }
 
+// MiniMax C (11-11): no new form, no lower score (8); the failure block as a label with the two outer paths jumping into it, and the goto tail, both give the same listing, so the dot's i term still loads up first and the failure block still stores before its pops.
+// score 8 (was 14): frame 0x48 and 925-byte length agree; the i product loads up first, and
+// the not-valid edge and failure pops/stores differ. Earlier at 14: 56 before round 101, 112 before that; frame 0x48, the entry registers, the definition spill, the search and the axis bases agree (round 101); earlier at 56,
+// frame 0x48 and the entry registers agree, 0xb7060 matches; what remains: the definition spilled at its load (retail EAX, ours ECX, then the
+// default body and index registers), the search's bodies/offset load order, transform kept in EBP where retail has `lea ecx` and left in EBP, the dot's first two
+// products (retail k then j, up first), one cross product side, and the failure stores (retail after the pops).
+// MiniMax R (11-10), earlier at 8 (was 14): the projection's dot, the scale's input and the cross now take the transform's fields
+// directly, so the dot's term order (retail k, j, i) and the cross's products agree; left: the dot's i product (ours
+// up.i*forward.i, retail forward.i*up.i), the not-valid exit's jump (ours into the failure block's pops, retail to the
+// shared epilogue) and the failure block's order (ours stores then pops, retail pops then stores).
 // MiniMax C (11-09): no new form, no lower score (56); the definition's early spill, the axis base and the failure tail still differ.
 // MiniMax B (11-06): no new form, no lower score (56); a named physics slot index 58, the swapped count comparison 56, both 58 and the widened default body 251.
 // MiniMax I (11-05, run 37): no new form, no lower score (56); the transform-base lea, the dot's product order and the failure stores' placement still differ.
 // MiniMax A (11-04, run 41): no new form, no lower score (112); the entry registers are still reversed (retail
 // object in eax, entry in ecx) and the physics pointer is still spilled early.
-// score 56 (was 112): frame 0x48 and the entry registers agree, 0xb7060 matches; what remains: the definition spilled at its load (retail EAX, ours ECX, then the
+// MiniMax S (11-10): no new form, no lower score (56); the definition still spills to ECX where retail spills it to EAX (which also swaps the count and default-body
+// registers), the transform pointer still moves before the 0x141590 call, and the failure stores still precede the pops where retail's follow them.
+// Earlier at 56 (was 112): frame 0x48 and the entry registers agree, 0xb7060 matches; what remains: the definition spilled at its load (retail EAX, ours ECX, then the
 // default body and index registers), the search's bodies/offset load order, transform kept in EBP where retail has `lea ecx` and left in EBP, the dot's first two
 // products (retail k then j, up first), one cross product side, and the failure stores (retail after the pops).
 // Earlier at 112: object/entry registers, early physics-pointer spill and center/projection scheduling.
@@ -579,6 +592,73 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // Round 100 (m3 lane 12, fast with 0xb7060, which matched in each): body_index short 178; the projection as vector3f_add_scaled(up, forward,
 // -dot, up) 101 (910 bytes); the dot as a statement sum k, j, i on this body 62; `up` as a reference 56 (same code); the inner search as a while
 // loop with its own counter 56 (same code); the outer loop's found test as a break at the top of its body 56 (same code). All restored.
+// Lane 12 r104 (fast with 0xb7060, which matched in each; the 48 confirmed plain): the transform local dropped (the composition
+// call takes `&entry->transform`) and the axes reached through `matrix3x3 *rotation = &entry->transform.rotation;` declared after
+// that call 48 (925 bytes; the call's `lea ecx, [ebx+0xb0]` and forward's `lea edi, [ebx+0xb4]` are retail's; P369's number),
+// NOT kept: the same pointer declared at the top of the validity block 55, so the gain comes from where it is declared. Left at
+// 48: the head (definition register and spill, default-body registers, search offset load order), left and up formed from forward
+// (EDI) where retail forms them from the entry, the dot's terms (ours i, j, k forward-first; retail k, j up-first, then i), one
+// cross product side, the failure stores before the pops. Tried: the rotation pointer from the old transform local, after the call
+// 65; from the entry with the transform local kept 55; on 48: dot3f(forward, up) 48 (same code); forward, left and up named from the
+// rotation pointer 49; `up` taken from the entry instead 38 (up's lea and left's EBP as retail; a mixed spelling), on that
+// dot3f(forward, up) 38 (same code). Every second axis taken from the entry flips the head (entry EBP, 0xb7060 11): left and up from
+// the entry 117 (928), the three axes named from the entry after the call 124 (927), the axes as entry fields at each use with up
+// named 115 (928).
+// Round 101 (m3 lane 16, fast with 0xb7060, which matched in each; plain confirmed 14). Kept: the model's tag data named
+// (`byte *model`, used for the physics test and the definition lookup) with the physics index read through it at each use and
+// `long model_index` kept: 56 -> 43 (the definition loads into EAX and spills at once, the default body and search registers
+// are retail's); no `transform` pointer, the matrix call, normalizes, scale and cross on `&entry->transform...` (retail forms
+// each axis off the entry): 43 -> 20; `forward` and `left` named beside `up` (each axis through its own pointer): 20 -> 14
+// (`forward` alone also 14). Left: the dot's terms (retail k, j up-first, then i forward-first; ours j, i, k forward-first), the
+// cross's i row (retail loads up.j), and the failure block: retail's not-valid
+// exit uses the main epilogue so its failure block pops edi/esi/ebp before the two stores; ours jumps into the failure block's
+// epilogue. Tried: the three tag lookups through a new inline getter 56 (same code); the component index read at each use 64;
+// the model index inline too 51; on 20: no `up` pointer 145 (head flips, 0xb7060 11), dot3f arguments swapped 20 (same code),
+// the dot named 22; on 14: dot3f(forward, up) 14 (same code); with `forward` alone: the dot as statements k, j, i 63, one exit
+// through `body_index = NONE` and an else arm 14 (same code), forward and up declared together before the normalizes 28. A 600 s
+// permuter run (62 tries, from the `forward`-only form) found nothing below 14.
+// Round 103 (m3 lane 16; fast with 0xb7060, which matched in each; a compile-only /O2 /arch:SSE /Gr harness reproduces the
+// SSE residue and the failure tail exactly). The tail: retail's not-valid exit and the success path share the epilogue after
+// the last normalize, so the join after the valid test survives and the failure block merges with its own epilogue copy
+// (pops scheduled before the stores); ours threads the join away. Tried: guard gotos with the failure block before the
+// success code 14 (same code), after it 171 (head flips); `entry->active = true;` moved after the valid block 67 (retail's
+// tail, but the store then sits in the join, aligned 9); harness only, all keeping our tail: an early return on !valid, a
+// return inside the valid block, `else return;`, an empty else arm, three else arms, a success flag, the failure stores
+// swapped or chained, a `valid` local read before the active store, `inverse` declared outside the valid block or at the
+// top, the valid block as a forced-inline helper (with or without an early return). The SSE part: dot3f(up,
+// &entry->transform.forward) 10 (the cross's i row right); the dot, the scale's input and the cross's first operand through
+// `&entry->transform.up/forward` with the subtraction and normalizes through `up` 8 (left: the dot's i product, forward
+// first in retail; a mix of pointer and field spellings, so it needs a match); that with the active store after the valid
+// block 67 (aligned 3, register-masked 1: only the store's place and the i product left). Harness only: the subtraction
+// through the field instead 34 SSE lines; all 192 term orders, groupings and product orders of the dot as a local helper
+// leave the i product (2); a projection helper (vector, axis) 8-12; cross3f 31; the dot named 8; direct `up->i -= forward->i
+// * dot` 23; identity-local chains (diagnostic) at the pointers or the entry index: period 8, no state below the base; the
+// active store written at the head or the tail of both arms of the valid test 17 SSE lines (the tail moves but not to retail's).
+// Fast as well: the empty else arm 14 and the early return on !valid 14 (both the same code); the field-spelled dot, scale and cross
+// with the subtraction through the field too 143 (940 bytes, the head flips, 0xb7060 11).
+// M3 lane 3 r231 (fast with 0xb7060, which matched in each; the compile-only /Gr harness screened the tails first). New: the
+// body index declared NONE beside the component index, the failure stores as the then-arm of `if (body_index == NONE)` and the
+// update in its else (update last in source) 171: the not-valid exit then shares the success epilogue and the failure block
+// pops before its stores as retail, but the block moves up behind the body test (the head flips at +0x35); the whole update
+// block as a new forced-inline helper 18 (harness: our tail). Re-measured listed forms (round 103's guard gotos, round 101's
+// `body_index = NONE` exit): the failure block under a label at the top with gotos and the update last 171, the same block as
+// the body test's then-arm 171, the label block with the update in the body test's then-arm and `else goto failed;` 14 (same
+// code), a closing `if (body_index == NONE)` for the stores 14 (same code). So retail's epilogue sharing comes with the update
+// last in source, and retail keeps it with the failure block laid out last; no form found that does both. No other untried
+// natural form is left: the tail forms (early returns, flags, else arms, gotos, helpers, the active store's place) and the SSE
+// forms (all dot orders, field spellings, projection and cross helpers) are listed above, and the field-spelled SSE fix (8) is
+// a mix that needs a match, which the tail blocks.
+// Round 88: required typed model field 8; existing scalar vector builder for subtraction/scaling/
+// both 16/119/119; these with the shared direct cross 26/128/128; validity from both prior flags 244.
+// NOT kept: arithmetic/control forms regress, and scaling builders lose the matched caller (0 to 11).
+// Original arithmetic, transfers, search, calls and control restored; typed field confirmed plain 8.
+// m3 lane 1 r95 (fast with 0xb7060; base 8: the not-valid exit's target, the dot's i product and the failure block's
+// pops): guard clauses that clear the entry and return at each failed lookup (three copies of the two stores, the update
+// last with no return) 311 (960 B; 0xb7060 lost, 11); the body index defaulting to NONE with the component lookup and
+// search nested and one `if (body_index != NONE)` update / `else` clear 8 (same code); on that, the valid block as
+// `if (!entry->valid) return;` 8 (same code); the valid flag read into a local before the active store 14; the failure
+// stores chained `entry->active = entry->valid = false;` 8 (the two stores then run valid first, the other way round).
+// Also: the model's physics index named and used at its test and its lookup 117 (928 B; 0xb7060 lost, 11).
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
@@ -588,11 +668,11 @@ void function_109660(long object_index, long entry_index)
 	if (component_index != NONE)
 	{
 		s_carrier_component *component = (s_carrier_component *)(g_51e9b8->data + (component_index & 0xffff) * 0xa0);
-		long model_index = *(long *)(g_4e3b44[object->definition_index & 0xffff].bytes + 0x38);
-		long physics_index = *(long *)(g_4e3b44[model_index & 0xffff].bytes + 0x24);
-		if (physics_index != NONE)
+		long model_index = ((s_object_definition const *)g_4e3b44[object->definition_index & 0xffff].bytes)->model_tag_index;
+		byte *model = g_4e3b44[model_index & 0xffff].bytes;
+		if (*(long *)(model + 0x24) != NONE)
 		{
-			s_carrier_physics_definition *definition = (s_carrier_physics_definition *)g_4e3b44[physics_index & 0xffff].bytes;
+			s_carrier_physics_definition *definition = (s_carrier_physics_definition *)g_4e3b44[*(long *)(model + 0x24) & 0xffff].bytes;
 			long body_index = carrier_component_default_body(component);
 			bool found = false;
 			for (long i = 0; i < component->count && !found; i++)
@@ -622,24 +702,25 @@ void function_109660(long object_index, long entry_index)
 				carrier_body_angular_velocity_get(component->bodies[body_index].body, &entry->angular_velocity);
 				carrier_vector_from_havok((vector3f *)&entry->center, &component->bodies[body_index].body->motion->center);
 				entry->active = true;
-				transform4x3f *transform = &entry->transform;
 				if (entry->valid)
 				{
 					transform4x3f inverse;
 					function_141590(&entry->previous_transform, &inverse);
-					function_142a60(&entry->current_transform, &inverse, transform);
-					function_30bf0(&transform->forward);
-					function_30bf0(&transform->left);
-					vector3f *up = &transform->up;
+					function_142a60(&entry->current_transform, &inverse, &entry->transform);
+					vector3f *forward = &entry->transform.forward;
+					function_30bf0(forward);
+					vector3f *left = &entry->transform.left;
+					function_30bf0(left);
+					vector3f *up = &entry->transform.up;
 					function_30bf0(up);
 					vector3f scaled;
-					vector3f_scale(&transform->forward, dot3f(up, &transform->forward), &scaled);
+					vector3f_scale(&entry->transform.forward, dot3f(&entry->transform.up, &entry->transform.forward), &scaled);
 					up->i -= scaled.i;
 					up->j -= scaled.j;
 					up->k -= scaled.k;
 					function_30bf0(up);
-					cross3f_staged(up, &transform->forward, &transform->left);
-					function_30bf0(&transform->left);
+					cross3f_staged(&entry->transform.up, &entry->transform.forward, &entry->transform.left);
+					function_30bf0(left);
 				}
 				return;
 			}

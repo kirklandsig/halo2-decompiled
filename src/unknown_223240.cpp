@@ -75,6 +75,16 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
+// MiniMax C (11-11): NOT kept (coordinator, 11-11): 0x2b5d0 called as (3, view_count, ...) 79 (was 90); both
+// parameters are long, so the swap passes different values: a possible fix to 0x2b5d0's parameter order, kept only
+// with a match. On that swapped form: no lower score (79): the terminal stores still fold the record base into the
+// displacement in retail where our build adds the base to the index register, and giving the shared
+// helper the record index instead of the record pointer gives 106 (578 bytes) with that fold still
+// missing, so the pointer form stays. The outer pretest and the slot scan's registers are unchanged.
+// MiniMax C (11-10): the tail call now passes the mode first (3, the view count, ...), which is how
+// retail calls 0x2b5d0; the fast check gives 79 (575 bytes against retail's 575, was 90). Still differs:
+// retail's outer loop carries a pretest our do-while lacks, the slot scan keeps the pointer in EDX and
+// the predicate in CL, and the terminal stores fold the base into the displacement where ours adds it.
 // MiniMax I (11-09): no new form, no lower score; the fast check gives 90 (575 bytes against retail's 575)
 // and the listing confirms what the earlier rounds recorded: retail's outer loop carries a pretest
 // (`cmp ebp, edi; jle` at the loop's head, with the bottom test `cmp edi, ebp; jl` jumping back into the
@@ -86,6 +96,10 @@ void function_2232a0(void)
 // MiniMax H (11-05): no new form, no lower score; the tail still needs 0x2b5d0's own body (a stub in
 // src/stubs/lane_k.cpp, another file), and the count clamp and the slot test still differ.
 // MiniMax H (11-04): no new form, no lower score; the tail still needs 0x2b5d0's own body.
+// score 79 (was 90; 109 before the shared view count): one shared view count now feeds terminal indexing and the
+// tail, whose call now passes the mode first as retail does; the outer pretest, loop-entry source zero and
+// terminal registers still differ. The tail call still needs 0x2b5d0's own body, which is disabled here and
+// stubbed in src/stubs/lane_k.cpp, a file this lane may not edit: BLOCKED-BY 0x2b5d0.
 // score 90 (was 90; 109 before the shared view count): one shared view count now feeds terminal indexing and the tail; the outer
 // pretest, loop-entry source zero and terminal registers still differ. The tail call still needs 0x2b5d0's
 // own body (it takes the mode in EAX and the count on the stack), which is disabled here and stubbed in
@@ -303,6 +317,19 @@ void function_2232a0(void)
 // the found arm as a default-last conditional 118; with the counter declared first 160; with the source declared before
 // the loop and cleared at its top 123; the source looked up after the scan with the in-place `index != NONE &&
 // g_4686c4 != NONE` test 179. g_4e9c8c[i] is the same memory as `&g_4e9bd4[i].state` (globals.h). Still BLOCKED-BY 0x2b5d0.
+// Round 86 (m3 lane 11, fast; 0x223240 and 0x2232a0 match each time; aligned / register-masked counts 64 / 32 for this
+// body): retail's found arm (`xor eax, eax; cmp g_4686c4, -1; je; imul 0x358; add 0x4e9c8c`) is the existing 0x16f3a0
+// (`result = 0; if (index != NONE && g_4686c4 != NONE) result = &g_4e9bd4[index].state;`, the same memory) inlined, and
+// main declares 0x16f3a0 noinline. New forms: the source cleared at the loop top with the found arm as a default-first
+// conditional 119 (masked 31); the found arm calling 0x16f3a0 144 (550 bytes, masked 28: it stays a call), with a
+// forceinline declaration here 144 (still a call: the defining file's noinline wins); the scan as `while (++index < 4)`
+// with the break inside 264 (428 bytes); the end-of-scan test as `== 4` 125. Re-measures: a pretested for with the view
+// count after the loop 170 (aligned 108, as round 106's while); the loop-top clear plus default-first conditional in
+// that for 118 (masked 30, round 62's default-last form: retail's pretest, counter/count/record in EBP/EBX/EDI and the
+// source in ECX). BLOCKED-BY 0x2b5d0 and 0x16f3a0's noinline declaration.
+// MiniMax A (11-12, run 62): no new form, no lower score (90); a pretested `for` over the view count grows the
+// body to 589 bytes (150), and the tail is the 0x2b5d0 stub's inline body where retail calls the real function
+// (BLOCKED-BY src/stubs/lane_k.cpp).
 // @retail 0x2234e0
 void function_2234e0(void)
 {

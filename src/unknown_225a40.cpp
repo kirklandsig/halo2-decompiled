@@ -97,6 +97,21 @@ static inline void sound_track_start_impulse(long index, long handle)
 	}
 }
 
+// MiniMax H (11-12), NOT kept (coordinator): a byte match came only with the element getter's body written out and
+// `if (entry->label == entry->label) label = entry->label; else label = NONE;` around the read, a test that is always
+// true (reverted even with a match); without that test it is 16 (165 bytes). Retail materialises the case-0 entry
+// address as `add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`; a NULL test on the element pointer may be the natural form.
+// MiniMax D (11-10): no new form, no lower score (16); retail materialises the case-0 entry address
+// (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`, six bytes) and scales the entry index before the tag
+// mask, ours folds the base into the member load (`mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`,
+// seven bytes) and scales it after; after the call to 0x222930 retail copies the impulse parameter address
+// through EAX, ours through EDX; sixteen further shapes of that address (the sum written out at the call site
+// with the index term first, the entry address as an integer local read through the label's own offset, the
+// case block with the scaled offset computed before the tag lookup, the address read at a constant offset with
+// and without the byte cast, the entries array typed and indexed, the base field read as an integer, the whole
+// address as an integer read through an integer pointer, the base field typed as a long with the sum in
+// integer arithmetic, and the scaled offset in a local computed before the tag lookup) all compile to the
+// same folded bytes at 165 bytes, and the permuter ran for 883 s without a try.
 // MiniMax C (11-09): no new form, no lower score (16): the case-0 entry address is still folded into the member
 // load (`mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`, seven bytes) where retail materialises it
 // (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`, six bytes) and scales the entry index before the tag mask;
@@ -205,6 +220,14 @@ static inline void sound_track_start_impulse(long index, long handle)
 // Integer arithmetic for the entry sum, the sum with the index first, the label read
 // through an integer address, the label read in a helper and the impulse parameters in
 // a named pointer all give the same bytes; the permuter produced no candidate.
+// MiniMax R (11-10): no new form, no lower score (16): ours is 165 bytes against retail's 164 and the
+// first difference is at +0x20; the three differences left are the imul's place relative to the tag
+// mask (it follows from the shared helper's argument order, which may not change), the folded member
+// load against retail's materialised entry address (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`
+// against our `mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`), and the parameter address
+// copied through edx after the call to 0x222930 where retail copies it through eax. The forms the
+// earlier rounds record (every shape of the entry address, the impulse helper's shapes, the permuter's
+// runs) all measure 16 or worse.
 // @retail 0x225ab0
 void function_225ab0(void)
 {

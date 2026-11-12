@@ -1163,6 +1163,57 @@ void function_143250(
 // 0x23690 467); the workspace matrix ahead of the rotation terms 1766 (fast); that with the 648 single-use terms in
 // their next statement 1775 plain (10763 bytes, ret 4, frame 0x314; 0x22850 235, 0x23690 467); only the 37 rotation
 // snapshot copies propagated 1948 (fast, 10949 bytes: the band-start copies keep the snapshots out of the workspace).
+// M3 lane 12 r108 (plain; callers 0x22850 223 and 0x23690 401 unchanged): band one's four negations and term_10 written into
+// the matrix stores 1791 (10740 B); band two's 40 pure copies propagated 1947 (10952 B, likely N376's 1947 form); band two's
+// four negations alone 1767; band one's term_10 copy alone 1766 (same code); band three's 363 copies 1802 (10813 B);
+// band two's copies and negations (44) 1947; bands one and two together (49) 1906 (10916 B). All keep rotation on the stack (ret
+// 8, frame 0x30c). Retail stores each product to two stack slots at once (the term and its copy, e.g. [esp+0x98] and [esp+0x30]),
+// so its copies are real variables too, kept in memory in source order. Restored.
+// M3 lane 3 r225 (plain; base 1766, frame 0x314, ret 8 against retail's ret 4 with rotation in EAX; fast builds it differently,
+// frame 0x30c): `result[0] = coefficients[0]` as the first statement 1766 (same score, aligned 3009 against 3005); the matrix pointer
+// declared ahead of the rotation reads 1766; rotation[7] read straight after the other eight 1766; the matrix pointer dropped for
+// `workspace.matrix[...]` at every use 2027 (10501 bytes, frame 0x304, ret 8); the first copy first with rotation[7] in line 1766.
+// None moves rotation into a register: the entry statement order is not the convention's cause.
+// Lane 5 r166 (fast, 0x22850/0x23690/0x143250 listed, control 1766/223/401/MATCH): the nine leading rotation copies
+// dropped and rotation[] read at each use (matrix a plain array) 2516 (10021 bytes; rotation then arrives in ESI, 0x23690 350);
+// parameters as (result, rotation, coefficients, order), definition, declaration and all seven calls updated, 1766 (callers
+// unchanged); the matrix as its own array beside the eight grouped terms 2089 (10438); `result[0] = coefficients[0];` first
+// 1766; the matrix pointer as `real *const` 1766; the matrix pointer defined right after the grouped terms (top of the
+// body) 1766. Both builds compute the seven sqrt(N.0) terms at run time (seven fsqrt each). All restored.
+// m3 lane 14 r77: fast (convention pinned by the last full build, as lane 10 round 34 found), 0x143250 matched each time:
+// the workspace with matrix[49] as its first member 1766 (frame 0x314, ret 8); band one's five single-use negations and
+// copies written into their matrix stores 1791 (10740 B; a subset of round 145's first-400 form). Re-measured listed
+// forms: the matrix pointer declared ahead of the rotation reads 1766, term_10 dropped 1766 (same code). Plain checks of
+// round 145's declaration-count cause: every single-use real term written into its consumer within band three only
+// (945 written in, 396 declarations left) 2081 (10458 B, rotation EAX and ret 4, frame 0x308; callers 0x22850 223->226,
+// 0x23690 401->366), bands two and three (284 left) 2104 (10433 B, frame 0x304, ret 4); disjoint lifetimes sharing one
+// term name, all (152 declarations) 3684 (12498 B, frame 0x328, ret 4), the first 400 merges only (941 left) 3145
+// (12049 B, frame 0x32c, ret 4, masked difflib count 699 against 1063): any way below about 950 declarations gives
+// retail's convention, but each rewrites the body's allocation. Compile-only (no /GL): rotation is loaded once at entry
+// under both /Gd (EAX) and /Gr (ECX). The call deletions tried under --fast said nothing about the convention (pinned).
+// M3 lane 12 r111 (plain, callers 0x22850 223 and 0x23690 401 unchanged, 0x143250 matched): workspace fields in rotation-index
+// order (r0 term_5, r1 term_1, r2 term_6, r3 term_7, r4 term_0, r5 term_2, r6 term_3, r8 term_4) 1766 (67 listing lines move);
+// fields in band two's first-use order (term_7, term_5, term_0, term_1, term_3, term_2, term_6, term_4) 1766 (57 lines move);
+// `term_10 = workspace.term_4;` right after term_8 (retail evaluates term_8, term_10, term_11, term_12, term_13) 1766 (same
+// code); the workspace as plain locals with `real matrix[49]` declared first 2113 (10412 bytes, frame 0x300 as retail, ret 8); the plain
+// terms declared in rotation-index order 2113. Body restored.
+// Round 87 (m3 lane 11, plain with 0x22850/0x23690/0x143250): band one's nine matrix stores read from rotation[] (its five
+// negation/copy terms dropped) 1787 (10745 B, ret 8, rotation still on the stack); with the nine leading copies after
+// band one's early return 1830 (10706 B); the 37 copies of copies in bands two and three (`term_N = workspace.term_K`,
+// `term_N = term_9`) read from rotation[] 1780 (10788 B): rotation then arrives in ESI and result in EDI, but coefficients
+// moves to the stack (still ret 8; 0x23690 401 -> 350); both 1776 (10792 B); band two's 22 only 2050 (11035 B, rotation
+// ESI). Use count alone gives rotation a register but never a third register parameter (retail EAX/ECX/ESI).
+// m3 lane 11 r90: no trial run. The lever this note records (fewer than about 950 declared locals for retail's EAX rotation and
+// ret 4) has a dozen measured families above; each reaches the convention only by rewriting the allocation (1775-3684), and a new
+// attempt needs the 1341 term declarations re-expressed per band rather than another one-step form.
+// M3 lane 2 r72 (plain checks with 0x22850/0x23690/0x143250; base 1766, aligned 2934, callers 223/401 unchanged in each,
+// 0x143250 matched): retail ends `ret 4` (rotation EAX) and ours `ret 8` as the prompt says (both listings' last lines).
+// Bands two and three nested under `if (order > 2)` / `if (order > 3)` with one `return result;` 1766 (same code); rotation
+// read through one `real const *` local copy at the nine reads 1766 (same code); every term declared at its first
+// assignment instead of at the top 1766 (same code); the workspace declared after the 1341 terms (plain; earlier rounds
+// measured it fast only, where the convention is pinned) 1766 (same code); the two root products term_41/term_221 stored as
+// real 1766 (aligned 2952). Diagnostic (not kept): `#pragma optimize("p", on)` around the body 3960 (12712 bytes), so
+// retail's source-order schedule is not the float-consistency setting.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

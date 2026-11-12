@@ -135,6 +135,7 @@ void function_254200(void)
 
 #undef program_words_254200
 
+// MiniMax G (11-12): no new form, no lower score (4): the constant through a named local used for both coordinates keeps 4, the point copy declared before the half size gives 15, the point's coordinates through parallel pointers give 341; only the order of the two loads after the second reservation differs.
 // MiniMax C (11-09): no new form, no lower score (4 in the full build; the fast check's reduced image carries a
 // caveat, one global reference unresolved, so the 80 it reports is not this function's score): the only difference
 // left is the order of the two loads after the second buffer reservation, where retail loads the 16777215
@@ -171,6 +172,15 @@ void function_254200(void)
 // inline color helper 339; direct color products 4; color aggregate 33; color value input 218;
 // scalar color inputs 4; red-first color products 9; color home names 4; snapshot home names 4;
 // native point copy 4; point copy assignment 4; reference color input 4.
+// MiniMax R (11-10): no new form, no lower score (4): both sides are 1109 bytes and the only
+// difference is the order of two independent loads in the second and third vertex records, where
+// retail loads the 16777215 constant before it reloads the spilled y+h and we reload first; the
+// pool address of the constant is masked by the check, so only the order counts. The forms the
+// earlier rounds record (the constant through a named local, the member 4f form, the swapped y
+// operands, the y sum as a named local, the free 2s form, the point through parallel pointers) all
+// keep 4. Note that the fast check asked for several addresses at once reports 80 for this
+// function, because the reduced image then leaves a global reference unresolved and the constant's
+// pool address is no longer masked; the single-address fast check and the full build both give 4.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -451,6 +461,16 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // the first quad's inline-depth pragma pair dropped 422 (2356 bytes); the bitmap locals typed as the stage-texture
 // argument (casts moved to the 0x12360 tests) 2. Diagnostic: this function moved above 0x254490 in the file, both
 // unchanged (2 and 4), so the reload order is not the source order of the file. The two reloads stay swapped.
+// Round 75 (m3 lane 15, fast): the second quad's colour as a named `color3f const` aggregate 2; the quads' 64.f
+// positions through one `real const size` 2; both 2; the alpha getter's result named before the product 2; the last
+// quad's texture calls through `D3DDevice::SetVertexData2s` 2 (re-measure of round 134's form); every pixel-shader
+// definition write and the commit through one `D3DPIXELSHADERDEF *shader` pointer 2 (all the same code: named
+// constants fold before the reload order is set). The two reloads stay swapped. I found no other untried natural form;
+// the forms above cover the rest.
+// Round 96 (m3 lane 10, fast, with 0x254490 4 and 0x254200 matched as controls): the first quad's End through
+// `D3DDevice::End()` 2; every Begin and End through the D3DDevice:: member forms 2; the globals lookup helper as a ternary 2
+// (0x254490 4, 0x254200 still matched); the bitmap lookup helper with an early return 524 (2256 bytes; 0x254490 269,
+// 0x254200 145); the globals lookup helper with a NULL default and no else 517 (0x254490 280, 0x254200 158). Restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

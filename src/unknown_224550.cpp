@@ -94,6 +94,13 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// MiniMax b (11-11): no new form, no lower score (211); the tint's home is still exchanged with the second UV
+// set's bounds (ours +0x60/+0x50, retail +0x50/+0x60) and the blend still leaves XMM5 in the aspect block; the
+// uv sets declared before the tint, the tint in a nested scope (frame 0x50, the tint then at +0x50 but the second
+// UV set takes that slot) and the four clamped components written out one by one all give the same code.
+// score 211 (was 223): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
+// second UV set have swapped homes (ours +0x60/+0x50, retail +0x50/+0x60), and retail keeps the blend in XMM5
+// through the aspect block (ours reloads it), so the extents, reciprocals and aspect homes differ.
 // MiniMax R (11-09): no new form, no lower score (211); the tint's home is still exchanged with the second UV set's bounds and the blend still leaves XMM5 in the aspect block, and no spelling of the declaration order moved either this round.
 // MiniMax B (11-06) round 2: no new form, no lower score (211); the uv set declared before the
 // tint, the two uv sets declared one on each side of the tint and the tint declared at the top
@@ -107,9 +114,6 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // the clamp pointer from the whole tint and putting the tint in an inner block all give the
 // same code or a worse score (236).
 // MiniMax S (11-01): the tint computed after the UV block moves the first difference earlier; no lower score.
-// score 211 (was 223): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
-// second UV set have swapped homes (ours +0x60/+0x50, retail +0x50/+0x60), and retail keeps the blend in XMM5
-// through the aspect block (ours reloads it), so the extents, reciprocals and aspect homes differ.
 // Earlier at 381: Frame 0x50 versus 0x60 (the tint lived in a one-caller helper's scope, so uv_b reused its
 // slot); the angle is stored in a dead argument slot instead of a frame slot and the second UV set has no
 // frame home of its own; the cache is kept in EBP where retail reloads it into EBX; scalar homes remain.
@@ -472,6 +476,64 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // M3 lane 11 r81 (fast): both UV encodings right after the flip 431 (1925 bytes); the flip before the extents 250 (1949);
 // the 0x2000 quarter-turn right after the angle read 483 (1939); the bitmap read from the context at each use 211 (same code);
 // pivot products written pivot-first 211 (same code).
+// M3 lane 8 r150 (fast; aligned count 123, register-masked 59 on this body): retail's blend join is three entries, the
+// arm with the blend already in XMM5 jumping past both reloads, the count test's exit reloading the context and the blend,
+// the other exits the blend alone; ours keeps the blend in XMM2 inside the arm only. Tried: the sequence-frame block as a
+// forceinline helper writing the bounds, pivot and blend through pointers 220 (blend still XMM2 in the arm), returning
+// the blend by value 330, as a plain inline (left out of line) 644/637; the block after the join (extents to geometry) as a
+// forceinline helper taking the blend by value 211 (same code: the parameter is copy-propagated), with the flip passed in
+// 250, with the pivot by value 349; both helpers 220; a two-use `&frames[index % count]` getter 439 (first difference
+// moves to +0xb); the unit default bounds through a four-real setter 211 (same code).
+// m3 lane 3 r227 (fast; re-measures of round 431's loop forms on the current base): the colour modulation as a plain three-pass
+// loop 220, the seed modulation as one 214, both 213, the four clamps written out 211 (same code); the tint/second-UV homes stay
+// swapped in every form, so loop nesting does not set their order (and per round 91 neither do added reads, names or declaration
+// order). Diagnostics (wrong values, reverted): the direct-bounds arm without `uv_b = uv_a` 365, homes unchanged; an early
+// uv_b store above the tint is dropped as dead (211, same code). New combinations (fast): the tint in its own block ending at
+// the pack (re-measured 236, 1906 bytes, the tint then shares the second set's home, frame 0x50) with the colour modulation
+// loop 245, with the seed modulation loop 242, with both 240; the seed loop with the clamps written out 214; both modulation
+// loops with the clamps written out 214. The home order rule is still unknown.
+// Round 181 (m3 lane 4, fast): the aspect defaults declared with the pivot at the top of the bitmap arm 405 (1964 bytes);
+// the next-aspect products written blend first, `blend*(by*inv_bx)` 211 (same code); the inverse next terms blend first 211
+// (same code); the second UV set flipped before the first 271; the pivot first in the centre products 211 (same code).
+// Round 104 (m3 lane 9, fast): both aspect blends as one expression each 211; the pivot weight `1.0f - blend` named
+// once 211; `ax <= ay` with the arms swapped 211 (all the same code); `bx <= by` with the arms swapped 211 (aligned
+// 151 -> 159); the width product after the two flip calls 423 (1932 bytes). The compile-only harness does not
+// reproduce this body (normalized difference 394 against our own build), so the blend's XMM5 residence could not be
+// screened there.
+// Round 73 (m3 lane 15, fast = plain; register-masked aligned 59, all in the post-join aspect block plus the tint/second-UV
+// homes): geometry as `real geometry[4]` with element copies, or kept as the four-real overlay copied element by element, 400
+// (1974 bytes, identical code); the complement and both inverse sums computed ahead of the first aspect test 305 (1963 bytes,
+// the frame moves); the tint clamp through the existing PIN_126660 macro 429 (1933 bytes). Re-measured: the complement written
+// at each use 338 (1972 bytes). Diagnostics (wrong code, reverted): the tint keeps the top 16-byte slot with the colour
+// modulation removed, the clamps removed, both removed, the seed block removed, the tint as a four-real overlay, uv_b's copy
+// removed, a second flip of uv_b, uv_b's defaults removed, and the final call's UV arguments swapped (211, homes unchanged),
+// so neither reference density, type nor argument order sets these homes; the compile-only frame probe gives a third order
+// (geometry on top), so it cannot screen them.
+// Round 73, continued (diagnostics): uv_b's flip call under an always-true test 245, under two nested ones 405 (1958 bytes);
+// the tint stays on top in both, so lowering uv_b's branch frequency does not move the homes either.
+// M3 lane 1 r89 (fast; control 211, aligned 89, masked 34; retail's frame from its final call, low to high: geometry
+// +0x20, first UV set +0x30, tint +0x40, second UV set +0x50; ours exchanges the tint and the second set): the second set's
+// bitmap-arm defaults as `uv_b=uv_a;` after the first set's four stores 350 (1959 B); the aspect values set in both arms of
+// the `ax>ay` test instead of 1.0f defaults 253 (1953 B); the width product written at its two uses 423 (1932 B); the two
+// frame bounds copied before the blend 244 (1950 B); the alpha product moved down to the colour modulation 491 (1950 B);
+// one flip local for both arms, re-measured (round's "shared flip flags") 458 (1921 B).
+// M3 lane 12 r110 (fast; aligned/masked = line diff after address masking / with registers and stack offsets also
+// masked, control 211 at 136/34): diagnostics (helper bodies written out, not keepable forms): the flip written in the
+// body at both sites (no sprite_flip) 211; the UV encoding written in the body at all three sites (no function_x0ec080)
+// 211; both 211 (same code each: the two helpers are not the cause). Forms: the unit bounds as one initialized box copied to both sets 507 (1974 bytes); the aspect pair set in both arms
+// of the `ax>ay` test 253 (masked 40); the frame index clamped through a PIN macro 211 (same code); the sequence count
+// defaulted by `if (count < 1) count = 1;` 427 (1933 bytes); the frame position as `(real)intervals * f()` 211 (same
+// code). Diagnostics (reverted): blend passed as 0 to the last call 196 (masked 35, the
+// blend still leaves XMM5); blend zeroed per arm instead of at entry 469.
+// M3 lane 13 r82 (fast; control 211, aligned 213, register-masked 34): only the second set's reciprocals moved after the
+// first aspect test 239 (1957 bytes, masked 27: the join after the frame block becomes retail's, context reloaded in the arm
+// and the blend reloaded into XMM5 on the other paths, so the blend's XMM5 home is register pressure in the extents block);
+// the second set's extents and reciprocals after the first aspect test 278 (frame 0x5c, masked 28), between the flip and that
+// test 260, after `remaining_blend` 278; retail's order ax, ay, by, inv_ax, inv_ay, bx with the late second reciprocals 317;
+// the aspect pair as a `vector2f` 205 (1942 bytes, aligned 217: positional only, the packed colour's home moves), with the
+// inverse sums as a `vector2f` too 205 (same code), with the late second reciprocals 231; the extents as two `vector2f` 219,
+// with the aspect pair too 210 (aligned 223); the reciprocals as two `vector2f` 216; the geometry corners as two `point2f`
+// 221; the centre as a `point2f` 211 (same code).
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

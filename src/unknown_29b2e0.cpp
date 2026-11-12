@@ -51,6 +51,11 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
+// MiniMax H (11-11): no new form, no lower score (176); a normalizer with one exit 403 and the root taken from
+// the helper's return value instead of the pointer 263, so the root still sits at +0x10 where retail keeps it with
+// the yaw at +0xc.
+// score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
+// MiniMax I (11-10): no new form, no lower score (176).
 // MiniMax S (11-06): no new form, no lower score; the single-exit normalizer with the XY vector read before
 // the second copy reaches 169, one point short of the eight-point bar, and the original body is restored.
 // The rotation's cross terms and rows written with the axis component first, which is retail's order, score
@@ -59,7 +64,6 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // MiniMax D (11-09): no new form, no lower score; the length the normalizer stores sits four
 // bytes higher in the frame than retail's (ours +0x10, retail +0xc), and the unity constant and
 // the scaled components then get different registers.
-// score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // Frame 0x2c agrees at 1711/1706 bytes; unity XMM5/XMM4, root +0x10/yaw +0xc and rotation product/register homes remain.
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1711 bytes against 1706); the sqrt temporaries sit at +0x10 with
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
@@ -423,6 +427,55 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // out parameter into a local 263 (1719 bytes); the normalizer's length store ahead of the K scaling 176 (same
 // code); the first length from the normalizer's return value 263 (1719); the XY pair built after the second
 // normalization 368 (1712); the first length from the return value with the planar test as `> 0.0f` 316 (1715).
+// M3 lane 10 r90 (fast with 0x29b990, MATCH throughout, and 0x11cc90): no gain. The score line moved to the top of this note (it sat
+// below the MiniMax lines). Lead re-measured: single-exit normalizer + XY vector before the second copy 169. On it: both turn tests as
+// `product >= 0.0f` 174 (masked 196); the second axis through the existing cross3f 234 (1706 bytes, frame changes, first difference +0x2).
+// On 169 the x87 transfer temporaries (roots, acos) still share +0x10 with local_11 where retail packs them at +0xc with the clamp input and
+// the yaw; the yaw clamp's zero copy still sits below its branch.
+// Round 86 (m3 lane 1, fast with 0x29b990, which stays matched; aligned/masked in brackets, base 176 [133/69]): the
+// second axis through the existing cross3f (vector_products.h) on the single-exit normalizer 234 (1706 B [133/75]);
+// the rotation helper's three cross terms through cross3f into a vector 213 (1707 B [131/55], frame 0x24 against
+// 0x2c, the root then at retail's +0xc), with the single-exit normalizer 209 [127/55], plus the rows stored directly
+// 209 (same code), plus the XY vector before the second copy 209 [126/54]. Single-exit normalizer re-measured 171.
+// Round 179 (m3 lane 4, fast with 0x29b990, 0x1e5450, 0x11ce20 and 0x11cc90, all matched each time): the rotation
+// vector as the first input copy's own variable (no separate rotation local) 192 (1708 bytes); the second axis rows
+// with every product's factors swapped 176 (same code); those rows written k, j, i 190 at retail's 1706 bytes (masked
+// 72 against 69), with the single-exit normalizer 185 (that normalizer alone re-measured 171); the rotation's
+// projection computed after the three cross terms 176 (same code). Left: sine/cosine/pitch homes (retail +0x10/arg_3's
+// home/arg_4's home, ours the pitch at +0x10 and sine/cosine in the two homes) and the rotations' schedule.
+// Round 78 (m3 lane 14, fast with 0x29b990; masked aligned in brackets, base 176 [125]): the normalizer with one named
+// inverse for all three components 384 (1715 bytes) [162], 0x29b990 then 6; the else arm's angle zeros chained 179
+// [126]; the result vector stored before the two angle fields 182 [128]; the second normalization's failure test as
+// `!` 203 (1718 bytes); the XY normalization's result tested as a bool 176 (same code).
+// Round 105 (m3 lane 16, fast with 0x29b990, which stayed matched): the entry convention (ECX/EAX indices) agrees and
+// 0x11cc90 is already called. From +0x6e the differences are homes: retail's first root sits at +0xc (ours +0x10), and
+// the rotated result's spill homes use the first input copy's slot (+0x20, as retail's `mov ecx, [esp+0x20]` at the
+// join shows) where ours uses the second's (+0x2c), which moves every load order in the two rotations. New forms: the
+// rotation helper in 0x1f6090's actor_path_rotate spelling (cross with the axis first, aggregate result copy) 289 at
+// 1757; the actor fields and `*arg_5` stored in each arm with no shared result local 246 at 1741; the XY pair read
+// from the `local_5` copy instead of `arg_2` 430 at 1744; the second rotation's axis computed before the first rotation
+// 220 at 1731 (masked 95 -> 89). Re-measured: 0x11d3b0's rotation spelling (k, j, i dot, rows stored in place) 189 at
+// 1706 (the listed direct rows; masked 95 -> 68); the result local declared first 176 (same code).
+// m3 lane 5 r169 (fast with 0x29b990, which stays matched; aligned/masked in brackets): re-measured the r83 lead
+// (single-exit normalizer + the XY vector before the second copy) 169 [147/68]. On it, new: the second axis computed
+// before the first rotation's input copy 213 (1731 B); yaw_limit declared before the yaw delta 169 (same code); the
+// else arm's zeros before its vector copy 169 (same code); the half-pi limit computed before the yaw call 339 (1730 B).
+// The normalizer's single exit through a separate `result` initialised to zero 215 (1718 B). Left on 169: the x87
+// sqrt temporaries at +0x10 (retail +0xc with the yaw), the XMM3/5/6 rotation in the normalizers, the yaw clamp's zero
+// copy above its branch and the rotations' pitch/sine/cosine homes (retail pitch in arg_4's home, sine at +0x10).
+// m3 lane 14 r84 (fast with 0x29b990, 0x11cc90, 0x11ce20 and 0x1e5450; masked = registers and esp offsets masked,
+// base 114): the existing rotate_direction (unknown_1eb8a0.cpp) for both rotations, sin/cos as arguments or one named
+// pair, 817/817 (not inlined here: 1309 B, 0x29b990 48); the helper taking sine/cosine with one pair named here and
+// reused 225 (1735 B; the root temps move to +0x14); four named sine/cosine locals 179 (1710 B). Re-measured on this
+// base: the first rotation reading arg_2 with no copy 265 (1706 B, 0x29b990 1). No untried natural form found: the
+// rest is the rotations' and the second axis's schedule, which every listed spelling leaves. Also new: the two angle
+// fields stored inside each arm (zeros written directly in the else arm, the result vector still shared) 251 (1743 B).
+// Round 93 (m3 lane 10, fast with 0x29b990/0x11cc90/0x11ce20/0x1e5450, all matched): on the re-measured 169 lead
+// (single-exit normalizer, XY vector before the second copy) the rotation's projection dot named before sin/cos, the
+// cross terms before sin/cos, both, `local_11` declared at function scope and `local_4` declared before the first copy
+// all give 169 (same code). The yaw/pitch clamp block already matches retail instruction for instruction. Slot map on
+// the lead: retail packs the root and acos temporaries with the yaw at +0x00 (23 uses), ours with local_11 at +0x04
+// and the yaw alone at +0x00; the XMM numbering and the rotations' schedule follow from that.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

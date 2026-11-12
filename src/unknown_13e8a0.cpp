@@ -505,9 +505,48 @@ struct s_text_line_measurement
 // score 77 (was 77): retail loads the width into xmm4 before the multiply
 // chain and accumulates the four terms in xmm3; ours reloads the width into
 // xmm3 after the multiplies and accumulates in xmm0 (register allocation only).
+// MiniMax C (11-11): no new form, no lower score (77): the one difference left is the running width's reload —
+// retail loads it into xmm4 right after the scale and copies the advance into xmm3 (movaps) so the bound can
+// reuse xmm0, ours reloads it into xmm3 after the three multiplies and accumulates the update in xmm0; the
+// width's load placement follows the source order of its read, so moving the can_break block between the
+// metric definitions gives 111 and the block's own position is already the one retail uses.
+// MiniMax D (11-11): no lower score (77): naming the update's sum once before the test reaches 74 but computes the terms
+// twice, so it was reverted; with the sum written in the update arm the copy never appears and the allocation stays as it is.
+// M3 lane 13 r75 (fast; masked aligned count in brackets, base [16]): the end sum named and computed before the can_break block 75 [21]
+// (the width load then moves to retail's XMM4 right after the scale, but the adds move up with it; match-only); the else arm's
+// width update before `count++` 77 [16]; advance computed before offset 78 [18]; break_width stored before break_index 76 [16]; both
+// of those 75 [22].
 // Tried (77, same code): the test written as sum < x1; width += advance + offset + kerning;
 // a copy of the width taken after the kerning call. Worse: advance or offset written
 // inline at both uses (111), the can_break block ahead of offset/advance (111).
+// m3 lane 7 r146 (fast): the one cause is retail's `movaps xmm3, xmm0` after the advance product. The update's
+// advance is a second register copy, so the width takes xmm4 and loads early and the compare reuses xmm0 for x1.
+// Matched 0x142640 and 0x17c040 give that copy from `x = scale * x` on an already-defined variable. Tried (77, same
+// code): the advance product written out in the update only, or in the compare only (CSE merges it); a two-step
+// `advance = raw; advance *= scale`; the kerning call result named before its product; the update summed as
+// w+a+o+k, k+o+a+w, (a+o)+(k+w) (77) or a+(o+k)+w (76); the compare as w+x+a+o+k (77) or x+(a+o+k)+w (83).
+// Definition orders (kerning/offset/advance) kao 78, oka 82, ako 82, oak and aok 133 (393 bytes); break_width
+// declared first 77; the can_break stores swapped 76; the restore swapped 77; unsigned break_index 77. Permuter
+// (600 s) best 71: those swaps plus an unsigned index, a byte flag and a flag set from the count test (not kept).
+// Round 99 (lane 16): the cause is a copy, not the width load: retail copies the advance (`movaps xmm3,
+// xmm0`) right after its multiply and accumulates the width in that copy, so the bound reuses XMM0 and
+// the width goes to XMM4 early; ours accumulates in place in XMM0. Same code (77) for the accumulation as
+// width + advance + offset + kerning, the test as width + x + ... or x + width + ..., both of those;
+// the advance written out at both uses 111 (aligned 36 against 16); written out only in the
+// accumulation 77, only in the test 77; the new width named before the test (`real next_width = advance +
+// offset + kerning + width;`, used once in the else arm) 74 (width loaded early into XMM4 as retail, but
+// the copy runs the other way and the adds move ahead of the test; one-use local, not kept); the same
+// started from the advance and completed before the test 74; a copy of the advance at its definition,
+// accumulated in the else arm (as `+` or `+=`) 77 (copy propagated away).
+// Round 172 (m3 lane 5, fast): the bound test positive with the arms in natural order (`x1 > sum || !count`, or
+// `count == 0`) 77 and the products written scale first 77 (identical code); width and index accumulated in the
+// returned measurement aggregate 96 (400 bytes, XMM pattern unchanged); `advance + offset + kerning` named once for
+// both the test and the update 84; the token test negated with the done arm first 104. Diagnostic: `(real)(scale *
+// 1.f)` chains 1-3 deep in the kerning product fold away (identical code).
+// Round 116 (m3 lane 12, fast; control 77): the bound read once into a local before the loop 123 (425 bytes); the start
+// x read once into a local before the loop 116 (416 bytes); the test written `x1 <= sum && count` 80 (the compare then
+// takes x1 as a memory operand, `comiss xmm4, [edx+4]`). Retail's bound reuses XMM0 after the advance's last add in the
+// test, so its advance has two registers (XMM0 for the test, the XMM3 copy for the update); ours keeps one.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

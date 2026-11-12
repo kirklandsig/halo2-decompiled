@@ -11,6 +11,8 @@
 #include "globals.h"
 #include "unknown_0259d0.h"
 #include "vehicle_ray.h"
+#include "vector_products.h"
+#include "normalize3d.h"
 
 #define FLAG(bit) (1 << (bit))
 #define TEST_FLAG(flags, bit) (((flags) & FLAG(bit)) != 0)
@@ -1569,6 +1571,7 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
+// score 610 (was 610): earlier 637, 640 and 552; frame 0xb964 agrees and the prism cursor now has retail's plane.j anchor; sum/zero homes, axis re-read and early idiv remain.
 // b2C (11-06) retail walk, statement by statement against 0x16a8e0: every condition, field, constant, callee and argument order agrees (entry `radius > 0`, signed clamp to 8 and
 // signed `% point_count`, side/perpendicular/along/separation sums in retail's order, inside and 0.01/0.0001 tests, normal path when the length is <= 0.01, ray hits at +0x14, `0 - radius` opposite ray,
 // face sum below edge sum). Two fidelity fixes, both with retail evidence: the point reconstructions call the existing 0x120790 (retail inlines it: the two word table loads at 0x16aab5/0x16aabc and
@@ -1577,7 +1580,8 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // Still differs: retail re-reads the axis after the first point's stores (ours keeps it in a register), starts the `%` before the first reconstruction, and the sum homes (face +0x50, nearest +0x5c, edge +0x60).
 // Tried with the helper: pair struct for first/second 662, `next` index named first (+ long counts) 676.
 // MiniMax C (11-05): no new form, no lower score; retail's prism loop walks &prism->plane.j (plane.i at [esi-4], the point count at [esi+0x14]) where ours walks &prism->point_count (plane.i at [esi-0x18]), and our accumulator homes sit sixteen bytes above retail's.
-// score 640 (was 552): frame 0xb964 agrees; sum/zero homes, axis re-read and early idiv remain.
+// Earlier at 637 (was 640; a second score line, merged in round 185): earlier 552; frame 0xb964 agrees; sum/zero homes, axis re-read and early idiv remain.
+// frame 0xb964 agrees; sum/zero homes, axis re-read and early idiv remain.
 // frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
 // Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
 // product (540 -> 539 on the reduced image, one point, below the retention margin). Retail multiplies
@@ -1789,6 +1793,101 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // AC558: Complete post-query prism-presence/rejection results in bool/byte/short/long:
 // eight at 553, 2898 bytes (control 552). NOT kept: unmatched one-consumer outcomes;
 // original signed count guard, all live count reads, sums and full body restored.
+// m3 lane 3 r227 (fast; plain for the kept form): kept the two sums as separate point3f locals in place of the anonymous
+// two-member grouping 640 -> 637 (2915 bytes, plain-confirmed). Retail computes `(edge_index + 1) % point_count` at the top of the
+// edge loop (EAX = edge_index + 1, shared with the increment and spilled at +0xd0) and holds the remainder in EDX through the
+// first reconstruction; that pressure is what makes it re-read the axis and side for the second point. Measured on the grouped
+// base: separate sums with no outer guard (product in the test) 640 (2918); the named next index with separate sums 625 (2922,
+// frame changes at +0x1, aligned 735 -> 587), with no guard too 626; the second point's address first with separate sums and no
+// guard 617 (2908); no guard alone 644; the named next index alone 676 (2947). The next index and the point address are one-use
+// values moved ahead of a call: match-only. On the kept form: the two-use points pointer 630 (2909: lines -1, length -6, frame
+// +0x1; re-measure of the listed 622 form); the point count read once for the cap and the modulo 637 (same code).
+// Then on the kept form (fast): no outer guard with radius_squared still named before the loop 639 (2918); the near-plane test
+// written `fabs(distance) >= 0.01f || !inside` 640, the length test `fabs(magnitude) >= 0.0001f` 640; separation as
+// `inside ? 0.0f : nearest` after the closest copy 642; `face = false` after both edge rays 661 (2939). The second point's
+// address first with no guard gives retail's entry exactly (frame 0xb964, ESI zero, `cmp word ptr [esp + 0x16c], si`): the zero
+// register follows the edge loop's pressure from the early remainder.
+// Round 163 (m3 lane 6, fast; aligned/masked = difflib counts with addresses, or also registers and stack offsets,
+// masked; control 735/337): the call list already agrees (0x120790 inlined in both). Retail starts the `%` and the
+// next index (`inc eax`, stored for the back edge) at the loop top and re-reads axis and side for the second point.
+// Both point pointers taken before the two reconstructions (`point2f const *start = &prism->points[edge_index];`,
+// `end` likewise with the `%`) 620 (2902 B, 684/319: retail's idiv placement and axis/side re-read; one-use
+// pointers, kept only with a byte match); on it the plane distance terms written k, j, i 620 and projected y as
+// `(0.0f - distance) * plane.j` 620 (both same code: the sum order follows the prism cursor's anchor, ours at the
+// point count, retail at plane.j); the reconstructed points renamed edge_start/edge_end 620 (same slots). The
+// listed `next` index named first re-measured 676 (2947 B, 616/275: retail's loop-head sequence exactly, but the
+// side/perpendicular rows spill two XMM values). Scores below split as differing lines + length term (base 605 + 35):
+// the distance through the existing plane_distance_to_point 634 (606 + 28, frame kept); that with a two-use
+// `point2f const *points = prism->points;` before the edge loop 629 (2903 B, frame 0xb960); that local alone 622 plain
+// (607 + 15: the drop is the length term only; it removes retail's spilled point cursor `lea ebp, [esi + 0x18]` at
+// +0x98 and its slot, frame 0xb960 versus 0xb964, not kept); the local at the prism's scope 597 (587 + 10, 2872 B,
+// frame 0xb954, aligned 793/masked 388, not kept); X1's pointers count 600 + 20. A `next` index used for the `%`
+// and as the loop step (`edge_index = next`) 652 (2929 B, 640/296, frame kept); only the `end` pointer taken first
+// 620 (same code as both pointers). Outside the edge loop: the direction magnitude through sqrtf 641; the midpoint
+// rows as `0.5f * (negative + positive)` 640 (same code); radius_squared declared before the query call 624 (607 + 17:
+// the product moves ahead of the call where retail forms it after the count test, the zero moves to EBX; not kept);
+// the magnitude through length_sq3f 640 and the midpoint through real_point3d_set 640 (both same code). All restored.
+// Lane 10 r91 (fast; masked = aligned lines with registers and stack offsets masked, control 637 [337]): retail lays out the ray
+// part as edge-positive cast, the normal-path cast, then the edge-positive fallback (`point + ray`) and the negative cast (ours
+// keeps the edge arm whole before the normal arm). The nearest reset at the top of the prism loop 636 [336], `inside` there 637,
+// both 636; on the nearest-first body, `edge` computed before `relative` 603 (2875 B, frame 0xb958 [340]: the drop is the length
+// term, not more agreeing lines), with the side test's arms swapped 590 (2877 B [365]), the clamped point as a pointer to
+// first/second/candidate 633 (2860 B [374]). On 603: the clamped pointer 672, the endpoints declared at prism scope 603, edge
+// first alone on this body 604. On 590: the clamped pointer 673, without the nearest move 591, `inside` first too 590. All are
+// statement moves or arm swaps (kept only with a match), and the masked count rises, so the body is restored.
+// R229 (m3 lane 3, fast with 0x16a440/0x120790/0x2469b0): re-measure of the listed face classification from the normal
+// selection (553 then) on the current body: the separate face flag dropped and the final test made on `use_normal` (the
+// flag only ever mirrored it) 637 (2915 bytes; now a tie, kept as a clean-up, plain 637); one `ray` vector declared for
+// both ray arms (close to the listed shared-ray subsets) 629 (2896 bytes, but aligned 717 -> 778: positional only, and a
+// declaration merge picked by score: not kept); one hit record for all three ray calls (close to the listed one query
+// result) 652 (2920); the two root sums written i, j, k 637 each (same code); `available` through the existing
+// distance3d(&positive, &middle) 637 (2915), the three rays through the existing vector3f_scale 637 (2914), both 637.
+// Round 185 (m3 lane 4, fast with 0xc2d00/0x17a380/0x16a440/0x2469b0/0x120790): existing helpers in place of
+// hand-written bodies. The perpendicular as `cross3f(&edge, &prism->plane.n, &perpendicular)` 637 -> 628 (2908 bytes),
+// the side cross through cross3f too 628 (same code; alone 637); the side test as `dot3f(&prism->plane.n, &side) <
+// 0.0f` 628 -> 610 (2890 bytes, aligned 459 -> 409, register-masked 299 -> 255: the prism cursor moves to retail's
+// plane.j anchor and the side test is retail's instruction sequence). Re-measured on the 637/610 base (the cursor anchor
+// and code changed, so AC542's, R163's, R229's, Round 59's and DL167's results no longer apply): the amount through
+// dot3f, `length_sq3f(&edge)` and the separation through length_sq3f 610 (a tie, kept), the magnitude through
+// length_sq3f, the normalize and the three rays through vector3f_scale 610 (kept); relative and edge through
+// vector3d_from_points3d 613 (2885, aligned 482), the difference 614, the half 623, the distance through
+// plane_distance_to_point 623, the ray fallbacks through vector3f_add 627. New on 610: `available` through length_sq3f
+// 610 (kept); the projected point through this file's point_along_vector_1696d0 635, the candidate 629, both 627; the
+// two averages through vector3f_scale 610 (same code), the accumulations through vector3f_add 622 (aligned 393); no
+// `opposite` local 614; no inverse local in the normalize 614; the normal arm's call test negated with the arms
+// swapped 610; the accumulation arms swapped 610; use_normal declared first 610 (same code); negative declared before
+// positive 610 (same code). Match-only on 610: `(edge_index + 1) % prism->point_count` named at the loop top 610 (2912,
+// fully masked 151 -> 114: retail's early idiv), the second point's address taken first 549 (2876, fully masked 138),
+// both one-use values moved ahead of a call; `negative = *point;` ahead of the normal arm's ray 606 (2887, aligned 398, a
+// statement order). Left: the early remainder, the face/edge sum and count homes, the zero in EBX for ESI and the
+// scheduling around the two ray arms.
+// Round 188 (m3 lane 4, fast with 0xc2d00/0x17a380/0x16a440/0x2469b0/0x120790; aligned/masked = difflib counts, control
+// 409/253): the ray arms as `if (use_normal) { normal } else { edge }` 608 (2872 B, 380/219: retail's block order exactly,
+// edge-positive cast, normal arm, edge-positive fallback, negative cast, because the threaded flag test pulls the first
+// edge cast up and the rest follows the IL order; an arm swap, so match-only). On it, re-measured: the next index named at
+// the loop top 595 (2903 B, 325/213: retail's loop head exactly, the clamp select, `xor eax, eax`, early inc/idiv, the
+// zero in ESI; frame 0xb968), and with that no outer guard plus `radius * radius` at its use 547 (2888 B, 304/205; the
+// last alone 612, with the swap only 603, with the next index only 595). On that 547 composite the frame's extra 4 bytes
+// are one XMM spill in the side cross (relative.i and relative.j take each other's registers); there scalar sum locals
+// 618 (0xc2d00 and 0x17a380 break), `relative` through vector3d_from_points3d 591, `edge` through it 600. On the kept
+// body: `edge` alone through vector3d_from_points3d 628 (2907); `relative` alone 591 (2885, positional only: frame 0xb94c,
+// 463/287, and one of two parallel vectors, not kept); the side cross as `cross3f(&relative, &edge, &side)` tested `>
+// 0.0f` 609 (same 420/253); `direction` through vector3d_from_points3d 627; the arm swap with relative and edge through
+// it 612. On the kept body (fast): `separation` zeroed in the `inside` arm 610 (code differs); `half` as positive - middle
+// 599 at 2882 B (positional: 3 fewer differing lines, aligned 405/masked 256, and retail computes middle - positive);
+// `magnitude > 0.01f` tested after the normalize block 630; `amount = dot3f(...)` with rows `projected.x -
+// perpendicular.i * amount` 644; projected rows `point->x - distance * prism->plane.i` 602 (2887 B, positional: 420/267,
+// and retail forms 0 - distance); same code as the body (610): candidate rows projected first, the radius minimums as
+// ternaries, fallback z rows `point->z + ray.k`, midpoint rows positive first, `separation < nearest_squared_local`,
+// the magnitude through dot3f, projected as an aggregate initializer. Code-changing on the body: a separate opposite_ray
+// 651 (2919 B); face_hit for the negative cast 610; hit for the normal arm 629; `closest = projected` before the edge
+// loop with `separation = inside ? 0.0f : nearest_squared_local` 603 (2887 B, 598 differing lines; retail copies only
+// when inside); the distance as `dot3f(&prism->plane.n, (vector3f const *)point) - prism->plane.d` 623; length_sq3f(&edge)
+// named before the clamp chain 623; the nearest update's statements swapped 610; the edge-positive fallback through
+// point_along_vector_1696d0 689; the counts incremented before the radius updates 627. Same code: dot3f arguments
+// swapped in the side test and the amount, the two hit records swapped. Left: the composite needs two match-only forms
+// (the arm swap and the early next index); no untried natural form found for the side-cross register choice or the
+// sum homes.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
@@ -1797,14 +1896,11 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	bool result = false;
 	if (radius > 0.0f)
 	{
-		struct
-		{
-			point3f face_sum;
-			point3f edge_sum;
-		} accumulators;
+		point3f face_sum;
+		point3f edge_sum;
 		real nearest_squared_local;
-		accumulators.edge_sum = *g_468788;
-		accumulators.face_sum = *g_468788;
+		edge_sum = *g_468788;
+		face_sum = *g_468788;
 		long edge_count = 0;
 		long face_count = 0;
 		real edge_radius = radius;
@@ -1841,21 +1937,16 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 					edge.j = second.y - first.y;
 					edge.k = second.z - first.z;
 					vector3f side;
-					side.i = edge.j * relative.k - edge.k * relative.j;
-					side.j = edge.k * relative.i - relative.k * edge.i;
-					side.k = relative.j * edge.i - edge.j * relative.i;
-					if (prism->plane.k * side.k + prism->plane.j * side.j + prism->plane.i * side.i < 0.0f)
+					cross3f(&edge, &relative, &side);
+					if (dot3f(&prism->plane.n, &side) < 0.0f)
 					{
 						inside = false;
 					}
 					else
 					{
 						vector3f perpendicular;
-						perpendicular.i = prism->plane.k * edge.j - prism->plane.j * edge.k;
-						perpendicular.j = prism->plane.i * edge.k - prism->plane.k * edge.i;
-						perpendicular.k = prism->plane.j * edge.i - prism->plane.i * edge.j;
-						real amount = 0.0f - (perpendicular.i * relative.i +
-							perpendicular.k * relative.k + perpendicular.j * relative.j);
+						cross3f(&edge, &prism->plane.n, &perpendicular);
+						real amount = 0.0f - dot3f(&perpendicular, &relative);
 						point3f candidate;
 						candidate.x = perpendicular.i * amount + projected.x;
 						candidate.y = perpendicular.j * amount + projected.y;
@@ -1865,7 +1956,7 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 						point3f clamped;
 						if (along <= 0.0f)
 							clamped = first;
-						else if (along >= edge.j * edge.j + edge.i * edge.i + edge.k * edge.k)
+						else if (along >= length_sq3f(&edge))
 							clamped = second;
 						else
 							clamped = candidate;
@@ -1873,8 +1964,7 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 						difference.i = clamped.x - projected.x;
 						difference.j = clamped.y - projected.y;
 						difference.k = clamped.z - projected.z;
-						real separation = difference.i * difference.i + difference.k * difference.k +
-							difference.j * difference.j;
+						real separation = length_sq3f(&difference);
 						if (nearest_squared_local > separation)
 						{
 							nearest_squared_local = separation;
@@ -1889,7 +1979,6 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 					separation = nearest_squared_local;
 				if (radius_squared > separation)
 				{
-					bool face = true;
 					vector3f direction;
 					point3f positive;
 					point3f negative;
@@ -1901,14 +1990,11 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 						direction.i = closest.x - point->x;
 						direction.j = closest.y - point->y;
 						direction.k = closest.z - point->z;
-						real magnitude = (real)sqrt(direction.i * direction.i + direction.k * direction.k +
-							direction.j * direction.j);
+						real magnitude = (real)sqrt(length_sq3f(&direction));
 						if (!(fabs(magnitude) < 0.0001f))
 						{
 							real inverse = 1.0f / magnitude;
-							direction.i = inverse * direction.i;
-							direction.j = direction.j * inverse;
-							direction.k = direction.k * inverse;
+							vector3f_scale(&direction, inverse, &direction);
 							if (magnitude > 0.01f)
 								use_normal = false;
 						}
@@ -1916,10 +2002,7 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 					if (!use_normal)
 					{
 						vector3f ray;
-						ray.i = direction.i * radius;
-						ray.j = direction.j * radius;
-						ray.k = direction.k * radius;
-						face = false;
+						vector3f_scale(&direction, radius, &ray);
 						if (function_2469b0((s_shapes *)&shapes, point, &ray, &hit))
 							positive = hit.position;
 						else
@@ -1929,9 +2012,7 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 							positive.z = ray.k + point->z;
 						}
 						real opposite = 0.0f - radius;
-						ray.i = direction.i * opposite;
-						ray.j = direction.j * opposite;
-						ray.k = direction.k * opposite;
+						vector3f_scale(&direction, opposite, &ray);
 						if (function_2469b0((s_shapes *)&shapes, point, &ray, &hit))
 							negative = hit.position;
 						else
@@ -1944,9 +2025,7 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 					else
 					{
 						vector3f ray;
-						ray.i = prism->plane.i * radius;
-						ray.j = prism->plane.j * radius;
-						ray.k = prism->plane.k * radius;
+						vector3f_scale(&prism->plane.n, radius, &ray);
 						if (function_2469b0((s_shapes *)&shapes, point, &ray, &face_hit))
 							positive = face_hit.position;
 						else
@@ -1965,20 +2044,20 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 					half.i = middle.x - positive.x;
 					half.j = middle.y - positive.y;
 					half.k = middle.z - positive.z;
-					real available = (real)sqrt(half.i * half.i + half.k * half.k + half.j * half.j);
-					if (face)
+					real available = (real)sqrt(length_sq3f(&half));
+					if (use_normal)
 					{
-						accumulators.face_sum.x += middle.x;
-						accumulators.face_sum.y += middle.y;
-						accumulators.face_sum.z += middle.z;
+						face_sum.x += middle.x;
+						face_sum.y += middle.y;
+						face_sum.z += middle.z;
 						if (face_radius > available) face_radius = available;
 						++face_count;
 					}
 					else
 					{
-						accumulators.edge_sum.x += middle.x;
-						accumulators.edge_sum.y += middle.y;
-						accumulators.edge_sum.z += middle.z;
+						edge_sum.x += middle.x;
+						edge_sum.y += middle.y;
+						edge_sum.z += middle.z;
 						if (edge_radius > available) edge_radius = available;
 						++edge_count;
 					}
@@ -1988,18 +2067,18 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 		if (face_count > 0)
 		{
 			real inverse = 1.0f / face_count;
-			out->x = accumulators.face_sum.x * inverse;
-			out->y = accumulators.face_sum.y * inverse;
-			out->z = accumulators.face_sum.z * inverse;
+			out->x = face_sum.x * inverse;
+			out->y = face_sum.y * inverse;
+			out->z = face_sum.z * inverse;
 			*out_radius = face_radius;
 			result = true;
 		}
 		else if (edge_count > 0)
 		{
 			real inverse = 1.0f / edge_count;
-			out->x = accumulators.edge_sum.x * inverse;
-			out->y = accumulators.edge_sum.y * inverse;
-			out->z = accumulators.edge_sum.z * inverse;
+			out->x = edge_sum.x * inverse;
+			out->y = edge_sum.y * inverse;
+			out->z = edge_sum.z * inverse;
 			*out_radius = edge_radius;
 			result = true;
 		}

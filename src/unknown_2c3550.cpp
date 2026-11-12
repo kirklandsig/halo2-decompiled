@@ -601,6 +601,8 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// MiniMax G (11-10): no new form, no lower score (675).
+// score 675 (was 675): the 675 differing lines are 541 real ones (the rest are the unmatched
 // MiniMax I (11-06): retail's prologue interleaves the compare with the pushes and keeps the
 // pathfinding read after the radius block; no new form, no lower score.
 // MiniMax A (11-04): pathfinding read after the radius block 674, final_complete below the height 697,
@@ -608,7 +610,6 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // identifier 703, long step counter 764, bool result 736 and 756 with that order, the type guard split
 // into three sibling tests as retail does (setup, search-or-copy, object-index pass) 770; the permuter
 // (113 tries, annealed) found no variant below 675; no keepable gain.
-// score 675 (was 675): the 675 differing lines are 541 real ones (the rest are the unmatched
 // callees and the relocated globals); the frame 0x1f88 and the length agree, but retail keeps the
 // success result in a stack byte where ours keeps a dword, loads the source radius before the 0.2f
 // constant, and the path pointer and the obstacle, search and step homes differ.
@@ -772,6 +773,50 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // needs path.cpp's declaration and caller local changed; state->source.unknown04 reaches avoidance_search as a raw
 // zero-extended byte (0x2c4741 xor ecx,ecx; mov cl,[eax+4]) where ours emits test/setne, so the field is a bool in retail
 // (path.h declares byte); the (byte) cast on flags is codegen-neutral (dropped = 675).
+// M3 lane 12 r108 (fast, caller 0x270930 MATCH throughout): `real radius = state->source.radius; if (radius < 0.2f) radius =
+// 0.2f;` 754; every `goto done` as its own return (`return false;` on failure) 776 (frame changes: `result` folds away, retail
+// keeps it as the stack byte [esp+0x13]); every `goto done` as a `break` out of the step loop 745 (2971 B); that with `bool
+// result` 754 (2986 B); the copy-out loop on a `short output_count = *out_count;` local written back after the loop 714 (2974
+// B, frame 0x1f8c: the local spills). Retail's three epilogues: the loop end and the truncation share `return result` (the
+// byte reloaded), the `*out_count >= 4` test has its own `*complete = false;` epilogue, and the failure path returns 0 (`xor
+// al, al`) after the flag loop; retail keeps the out count in AX through the copy-out loop and stores it once after it. Restored.
+// score 675 (was 675): retail's result is a stack byte, NONE sits in EBX and the step loop computes start and start_node
+// before the input pointer; register homes and the transform loops' short indices differ.
+// M3 lane 3 r225 (fast agrees with plain at 675; aligned [exact, stack-masked, register-masked] base [602, 524, 471]): bool result
+// 754 [610, 531, 458]; with first_output declared at entry (retail zeroes [esp+0x68] there and stores the word count into it at
+// each step's end) 773; bool result with start and start_node computed before the input pointer 724 [608, 513, 437]; all three 745;
+// start and start_node before the input alone 675 (same score). The out parameter's short type stays BLOCKED by its declaration and
+// caller in a file another lane holds this round.
+// Lane 5 r166 (fast alone, control 675; CAVEAT on callee 0x2c0d60). Retail inlines obstacle_list_add (0x2c0d00) for the
+// state-point add: it loads the object index and radius before the count test and stores x then y with no spill. The existing
+// helper called there 712 (frame 0x1f8c: the helper volatile-reads radius and y to keep its own copy matched, so the inlined radius
+// spills); BLOCKED-BY 0x2c0d00 for that form (src/unknown_2c0d00.cpp was another lane's file this round). The source
+// record's byte at +4 (passed to both searches) declared bool in include/path.h 729 (2960 bytes); result as an unsigned byte 768 (2958); the radius clamp
+// written from the source value (`radius = source; if (radius < 0.2f) radius = 0.2f;`) 754; ignored, frame and node_index
+// as shorts together, without the delta change 701 (2976). All restored.
+// m3 lane 14 r77 (fast, 0x270930 and 0x2c4030 matched each time; difflib counts with addresses masked / registers and
+// offsets and XMM/integer registers masked too, control 418/275): retail passes the end-node local ([esp+0x18], the one carried to the next step) as
+// both searches' goal node: previous_node there 735 (2960 B, masked 273). Retail's three sibling `input->type == NONE`
+// tests (setup; search-or-copy; object-index pass, the node walk then reading input->point.output_index; MiniMax A's
+// listed 770) re-measured 822 (2906 B, masked 237), with that goal 778 (2945 B, 216), with the copy block reading the step back from its output entry (retail's
+// `lea edx, [eax + 0xc]` after the rep movsd) 813 (217), both 759 (2945 B, 213). On 759: the start/start_node if/else 769
+// (206), short transform-loop indices 764 (203), short frame 752 (211), all three 782 (194). On that: retail's retry flow
+// (a second search assigning `found` in each branch, one `if (!found)` failure block), `!avoid` first / `avoid` first
+// 730/758 (2937 B, frame 0x1f8c: the byte `last` is normalised into a new slot), with retail's flag loop (short index,
+// `flag` tested per obstacle under `step == count - 1`) 730/758 (masked 191/187); plus `bool last` 779/769 (2921 B,
+// masked 186/183); plus bool result 741/745 (2938 B, 772 against 775 instructions, masked 178/175: retail's separate
+// `xor al, al` and out-count epilogues appear). On 745: obstacle/search pointers set before `last` 754 (168), input after
+// start/start_node 772 (162), both 778 (162); on 778: the radius ternary 809, pathfinding after the radius 780,
+// first_output zeroed at entry 798, ternary with first_output 771 (plain 771, 2938 B, aligned 357, masked 155; the whole
+// form is build/r77/2c41b0-r77-shape.patch in worktree m3-lane14). Left there: ours keeps count in BP and state in EDI
+// through the prologue (retail: state EDX, object_index ESI, flag EDI, EBP scratch), and source.unknown04 is a byte here
+// (test/setne at both searches) where retail zero-extends a raw byte; that field is assigned in held 0x261280 and lane
+// 13's 0x260670, so it was not retyped. Nothing kept: every form scores above 675.
+// MiniMax D (11-10): no new form, no lower score: the permuter ran past its time limit without a result.
+// MiniMax A (11-12, run 62): no new form, no lower score (675); the prologue already differs at +0x14, where retail
+// takes the state argument into EBX and indexes the g_4e0300 pool's data with it (twelve-byte entries) while ours
+// takes the actor index into EAX and indexes g_4f55f0's data, and the count stays in EBP where retail keeps the
+// state in EDX, so the whole body is laid out differently.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

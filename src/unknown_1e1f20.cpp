@@ -592,6 +592,17 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// MiniMax B (11-11), NOT kept (coordinator): 236 to 216 (plain, 966 bytes) holds the definition bit in a byte flag set
+// by tests (`definition_counted`), a match-only form. The lead as written: the definition bit is now shifted and kept in
+// the dead parameter slot as retail does, and the counts loop and the tail follow it; still differs:
+// ours loads the actor pool into EAX and keeps the scaled index in EBX (retail: ECX and EAX) and
+// spills the actor pointer to a stack slot retail has not; the slot loop is rotated with an extra
+// jump and its slot displacement is in ECX (retail: EDX); the memory-entry walk keeps its countdown
+// in EBX and folds the entry pointer into the offset (retail: an entry pointer in EBX, the byte
+// offset in EDX and the countdown in a stack slot); the prop entry address is folded into the loads
+// instead of being materialised and re-derived after the callback; the iterator compare reloads the
+// actor pointer instead of comparing against the cached one; and the second parameter becomes a
+// Boolean before the 0x203ed0 call where retail pushes the raw value.
 // score 236 (was 281): frame 0x1c versus 0x20 (earlier body), entry actor displacement and cleanup stack homes remain;
 // at 236 the prologue registers, the memory walk (retail's inlined joint_decline: offset in EDX, count in a stack
 // slot) and the iterator compare against the cached actor differ.
@@ -788,6 +799,9 @@ void swarm_leader_detach(long actor_index);
 // 266/282/282/266/266/282/282; all with bounded short memory ordinal 282
 // (unchanged reduced control 266, full 281). NOT kept: no exact receiver graph;
 // original observations, ordinal, iterators and complete body restored.
+// MiniMax E (11-10): no new form, no lower score: the memory walk is still expanded at this site, so
+// the walk's index keeps the actor offset and the step's size apart where retail keeps them
+// together; that expansion's shape is set in another file, which this lane may not edit.
 // MiniMax E (11-04): no new form, no lower score; the memory walk's pointer walk, its index
 // body, the twice-read slot and the for-loop forms score 285, 370, 286, 288 and 555 against the
 // unchanged 266 (fast; 281 ordinary).
@@ -818,6 +832,14 @@ void swarm_leader_detach(long actor_index);
 // actor_index`) 289; the slot loop with a slot pointer as the matched 0x1e23c0 writes it 236 (same code). Retail's tail
 // also keeps NONE in EDI for the definition walk and stores the definition bit into the dead index slot. Still
 // BLOCKED-BY 0x26ed40 (inlined in retail; its file's /Ob1 keeps it out of line here: a build-flag decision).
+// M3 lane 10 r94 (fast, 0x26ed40/0x1e2150/0x258600/0x1e4990 listed, all MATCH; base 236, aligned 106, masked 65): no new form.
+// The first difference (+0x3: retail loads the actor pool into ECX and the offset into EAX, and keeps the actor pointer in EBP
+// unspilled) follows the memory walk, which is joint_decline (0x26ed40, MATCH) inlined in retail: its file's /Ob1 keeps it out
+// of line (a build-flag decision; `inline` on it costs 0x1bead0 and 0x26ef70), and the bool `value` needs the declaration in
+// src/unknown_1e3920.cpp, another lane's file this round. Still BLOCKED-BY 0x26ed40. Tried in the body: the prop walk with a
+// `next_index` local in place of the `current` copy 237; the unit branch first (`if (!actor->unknown007)`) 271; the prop record
+// released before the view record 286; the counts loop index as short 236 and the stop callback read at each use 236 (both the
+// same code).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

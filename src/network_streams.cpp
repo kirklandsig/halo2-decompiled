@@ -827,6 +827,20 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// MiniMax H (11-12): no new form, no lower score (60): the offset next - oldest - 1 is still strength-reduced into a second counter in esi where retail keeps the next sequence in esi and recomputes the offset in eax on every pass.
+// MiniMax B (11-11): no new form, no lower score (60): ours keeps the next sequence in ECX and strength-reduces
+// next - oldest - 1 into a second induction variable in ESI that is tested against the cached newest, while retail
+// keeps the next sequence in ESI, recomputes the offset in EAX on every pass and re-reads the newest at the
+// per-step test, holding the message pointer and the count scratch in ECX where we hold them in EAX; the
+// prologue, the count and the found-path stores match retail byte for byte; the forms tried (the member-form
+// index and bound, a local window count, the index inlined, the index written as statements, the window taken
+// by reference and the statement-order permuter) all score 63 or worse.
+// MiniMax A (11-11, run 58): score 60 (was 60): no lower score; retail keeps the next sequence in ESI and
+// recomputes next - oldest - 1 in EAX on every pass, ours keeps the next sequence in ECX and strength-reduces the
+// offset into a second induction variable in ESI; retail reads the newest three times (the count, the loop bound
+// and the per-step test) and the oldest once, and with the window pointer declared before the send call for the
+// count, the bound and the index (88, 235 bytes) our code reads the newest the same way but still reduces the
+// offset and keeps the next sequence in ECX.
 // score 60 (was 60): ours strength-reduces next - oldest - 1 into esi (next in
 // ecx) and compares next with the cached newest; retail keeps next in esi,
 // recomputes the offset and re-reads window->newest each step (as 0x94df0 does).
@@ -837,6 +851,85 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // &m_message_window for the count, the bound (local, window->newest or
 // m_message_window.newest in the condition) and the index: 60, 63, 80, 88-91;
 // a const window (60); reliable_stream_get_message (a call, 165).
+// Round 178 (m3 lane 4, fast): the 63 form (window pointer for the index, the bound read in the condition) is
+// retail's code but for one thing: ours keeps `next - oldest - 1` as a second counter in esi (next in ecx), retail
+// recomputes it each pass with next in esi. With &m_message_window at the index there is no second counter, but the
+// hoisted oldest is reloaded, next sits in ecx and `time` takes ebp (type then reuses its home, no `push ecx`).
+// Tried: the sibling 0x94df0's loop (bound in the condition, &m_message_window) 89; the stores after the loop
+// through a found pointer 91; `return 4` in the loop 129 (187 bytes); an oldest local for the count 91;
+// reliable_stream_get_message now inlines 89; a second read of oldest ahead of the loop (diagnostic) 86, still
+// reloaded; `while (++next < bound)` with the direct window 89, with the pointer 63, with a newest local 89;
+// newest declared ahead of the window pointer 63; a newest local with the direct window 89; a guarded do-while 89.
+// Round 183 (m3 lane 4, fast; aligned/register-masked difflib counts 33/13 at 60): the bound read in the loop test
+// with the window pointer for the index re-measures 60 (same code as the body below); the newest local with
+// &m_message_window at the index re-measures 89 (retail's loop body; the count folds oldest into its `sub` and the
+// loop hoists a second read into ESI, so `time` takes EBP). New: the window pointer declared before the
+// get_next_send call for the count, the bound and the index 80 (aligned 40, register-masked 11; the count's newest
+// and oldest are then both kept, EBX/EBP), with the bound from m_message_window.newest 88 (235 bytes), with the bound
+// in the loop test 80; the `&&` written as nested ifs with the window between them 80 (same code as the top window),
+// with &m_message_window at the index 91; the top window for the count with &m_message_window at the index 91; the
+// found path after the loop (`break`, then `if (next < newest)`) with the window index 72 (229 bytes),
+// &m_message_window index 86, bound in the test 97 (204 bytes). Retail shares only oldest between the count and
+// the loop and reads newest three times (count, bound, index test); no spelling here separates them that way.
+// m3 lane 7 r146 (fast; masked = registers and stack offsets masked, control 60 masked 23): the bound read as
+// m_message_window.newest in the condition with window kept for the index (the 63 above) has masked 16 at 226 bytes:
+// retail's per-step newest re-read, the oldest reused from the count in EBX and retail's frame. Only ours
+// strength-reduces next - oldest - 1 into its own induction variable (next in ECX, retail ESI with the offset
+// recomputed each pass). The siblings' &m_message_window form drops the reduction but hoists oldest apart from the
+// count (89 at 221 bytes, masked 16; time cached in EBP and type packed into its dead home). On the 63 form: next
+// declared at function scope 63, a while loop 63, a const window 63, window declared in the loop 89 (all masked 16).
+// `return 4` in the loop on the current body 108 (194 bytes), on the sibling form 129 (187 bytes). Matched 0x94df0
+// reuses oldest through its loop start (oldest + 1), which this loop does not have.
+// M3 lane 13 r75 (fast): reliable_stream_get_message is `inline` now: with the cached bound, the member bound or a bound local 89 each
+// (221 bytes; the same code as the member-window forms: retail's loop body, but `next` sits in ECX, which frees EBP for the `time`
+// pointer across get_next_send, and the count's oldest is reloaded; retail keeps `next` in ESI and the bound in EBP); on the member
+// form the flags read from the field at each test 89, `type = 4` before the stores 104 (209 bytes), the cursor declared before the loop 89.
+// m3 lane 11 r88 (fast): on the 63 form (window pointer for the count and the index, `m_message_window.newest` in the loop test)
+// ours has retail's hoisted bound in EBP and its per-step newest re-read; the strength-reduced `next - oldest - 1` is all
+// that is left. The shared index helper's offset as `sequence - (window->oldest + 1)` 60 on this body, as `(sequence - 1) -
+// window->oldest` 63 on the 63 form; on the 63 form `s_sequence_window *const window` 63 and `message` declared before the
+// loop 63. All compile to the same code as before (the reduction does not depend on these spellings); 0x94bf0 stays at 2.
+// Permuter on the 63 form (600 s, 68 variants): best 62, its baseline. On the 63 form: `return 4` in the loop 107 (195 bytes);
+// the flags read at each test 63 (same code); `message` as `index != NONE ? &m_messages[index] : 0` 60 (masked 20, the
+// reduction stays); the found test as `(flags & 3) == 1` 77 (223 bytes); the count as `newest != oldest` 78 (223); `long
+// flags` 63 (masked 18).
+// m3 lane 2 r70 (fast; control 60, masked 24): re-measured the member window everywhere 89 (221 bytes, masked 17: retail's loop
+// body, next ECX, oldest reloaded into ESI, bound EBX, `time` cached in EBP) and `window->newest` in the loop test 60 (same code).
+// On the member form: the found path's `*time` through `long *const *time_reference = &time;` 89, that read at the get_next_send
+// argument 89, `message` declared before the loop 89, `next` at function scope 89, both 89 (all the same code). Retail keeps all
+// four callee-saved registers on loop values (next ESI, the count's oldest EBX, bound EBP), so nothing caches `time`.
+// M3 lane 10 r94 (fast, 0x96510/0x94df0 listed; base 60, aligned 42, masked 23): get_next_send's success as an early
+// `return type` 79 (213 bytes), on the 63 form 78; the message pointer as a ternary 66 (224 bytes); `message` initialized to 0
+// at its declaration ahead of the index 75 (222 bytes); the flags tested through the field at each test 60, `index` declared
+// ahead of the loop 60 (both the same code); re-measured the 63 form 63 (with the flags through the field 63, same code). Still
+// only the second induction variable differs on the 63 form (next - oldest - 1 kept in ESI with next in ECX).
+// MiniMax R (11-11): no new form, no lower score (60): the offset next - oldest - 1 is strength-reduced into a
+// second counter in esi (the next sequence in ecx) and the newest is compared against the hoisted register, while
+// retail keeps the next sequence in esi, recomputes the offset in eax on every pass and re-reads window->newest at
+// the per-step test; with &m_message_window passed to the index helper the offset is recomputed per pass, but then
+// the frame and the register choice differ (89). The rest of the function agrees.
+// m3 lane 2 r75 (fast, 0x96510/0x94df0 listed): the found path left in the loop (`type == 0 &&` in the loop test, no
+// break) 80 (228 B: no second counter, but oldest is re-read every pass); the found test as `if (!(flags & 1) ||
+// (flags & 2)) continue;` 60 (same code); the shared index helper summing `first + sequence - oldest - 1` 95 (219 B,
+// and 17 matched users of the helper in this file lost); the count held in a named local, on this body 60 and on the
+// member-window form 89 (same code each). Re-measured the member-window form 89: its count folds oldest into `sub eax,
+// [edi + 0x34]` and the loop loads oldest again. Matched 0x94df0 has retail's exact loop (no second counter, the count's
+// oldest kept for the index) because its loop start reads oldest (`oldest + 1`); this loop starts from m_next_sequence.
+// MiniMax A (11-12): no new form, no lower score (60); the matched sibling 0x94df0's spelling (the bound read from
+// the member in the loop condition and the index helper given &m_message_window) reproduces retail's loop body, with
+// the offset recomputed on every pass and the newest re-read from memory, but the head and the register choice then
+// differ (89); with the bound in a local and the helper given the member the head matches retail and the loop body
+// does not (60). The strength reduction into the second counter is what frees ecx for the next sequence.
+// MiniMax A (11-12, later): still no lower score (60); the index written out in the function with the oldest taken as
+// a value (so the count keeps retail's mov/sub and the oldest in eax) still strength-reduces the offset into esi and
+// still reads the newest from the hoisted bound (58); the member form keeps retail's loop body but folds the count's
+// oldest into its sub, reloads the oldest in the loop and caches time in ebp (89); retail keeps the oldest in ebx from
+// the count and still recomputes the offset, so only the strength reduction and the register choice are left.
+// MiniMax A (11-12, third): still no lower score (60); handing the index helper the member (&m_message_window) kills
+// the strength reduction and the loop body then matches retail's instruction for instruction, but the head and the
+// register choice change with it (89): the next sequence stays in ecx where retail keeps it in esi, and retail reads
+// the newest from memory inside the helper while this build reads it from the hoisted bound; writing the index out
+// in the function with the member read gives 60 again, so the strength reduction is the whole of the difference.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

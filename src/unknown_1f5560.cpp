@@ -872,6 +872,8 @@ real normalize2d(point2f *v);
 // score 135 (was 135): frame 0x48 agrees and the code matches retail to the first trajectory call;
 // retail then caches the trajectory result in DL (spilled around calls, `mov al, dl` on the short
 // exits, no store after the request) where ours keeps it only on the stack, so the unit-state table
+// goes to EDX not ESI, the first facing store loads EAX/ECX, and the validity flag comes back in BL
+// where ours folds that exit to `xor al, al`, 12 bytes short in all.
 // goes to EDX not ESI and the first facing store loads EAX/ECX; retail also returns the validity
 // flag (`mov al, bl`) where ours folds that exit to `xor al, al`, 12 bytes short in all.
 // The trajectory helper uses retail ret 0x2c; the older extra-EDX blocker is absent.
@@ -1088,6 +1090,15 @@ real normalize2d(point2f *v);
 // 189/189/161/161/185/185/189/189. NOT kept: all grow native frame 0x48 to 0x4c/0x50; local-address forms
 // require equality. Original output copies, both exits and complete body restored; native DL/retry/return
 // transport remains.
+// MiniMax R (11-10): no new form, no lower score (135): ours is 923 bytes against retail's 935, so the
+// first difference is only a jump displacement at +0x111; what is still missing is those twelve bytes
+// and the DL retention with the separate request and invalid return transport, and the forms the
+// earlier rounds record (the trajectory result domains, the request-point and facing copies, the
+// force-result producers, the result declared first in the valid block) all measure 135 or worse.
+// MiniMax H (11-12): no new form, no lower score (135): retail carries the trajectory result in dl across the
+// request and hands the validity flag back in bl on the short exit, ours keeps the result only on the stack and
+// folds that exit to `xor al, al`; the permuter's 128 tries bottom out at 124 differing instructions (133 by the
+// check's metric) and a component-wise request copy reaches retail's 935 bytes but scores 164, so neither is kept.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1323,6 +1334,18 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
+// MiniMax G (11-12): no new form, no lower score (137; the fast check reads 117): the actor offset as a named local compiles to the same bytes as the folded expression.
+// MiniMax D (11-10): no new form, no lower score (137); retail scales the actor index into EDX before the
+// register saves and keeps the actor pointer in EDI with the object in ESI, ours hoists the global loads and
+// keeps the actor in ESI with the object in EDI; retail's function_1e5450 also takes its definition index
+// from the stack where our call leaves it in EDX.
+// MiniMax D (11-10): no new form, no lower score (137); retail computes the masked actor offset into EDX
+// before the prologue and adds the pool data with an address LEA (`lea edi, [edx + esi]`), ours loads the
+// pool global first, keeps the offset in ESI and adds it with `add esi, edi`; the two pointers keep the
+// other way round (ours actor ESI / object EDI, retail actor EDI / object ESI), which is what decides
+// the LEA against the ADD, and the two entry stores of the 1.0 factors come out in the opposite order
+// (ours `[esp + 0x10]` then `[esp + 0x1c]`, retail `[esp + 0x1c]` then `[esp + 0x10]`); the actor and
+// object pointers as const pointers change nothing (137).
 // MiniMax S (11-10): no new form, no lower score (137): the actor and object pointers still take the other way round (ours actor in esi / object in edi, retail actor in edi / object in esi), so the prologue is one byte shorter and every later row pairs with the wrong row.
 // MiniMax C (11-09): no new form, no lower score (137); the body differs only by the actor/object pointer pair (ours actor ESI / object EDI, retail actor EDI / object ESI), so the prologue is one byte shorter and every later row pairs with the wrong row.
 // Round 16: retail passes the object index in EAX and the actor index in ECX, ours passes the
@@ -1391,6 +1414,12 @@ real function_50650(real cosine);
 // listing: the 2-D normalize written out (plain or `*=` products) gives normalize2d_fast's code; retail keeps
 // velocity.j loaded across the length test (`mulss j, inv`, i through a copy of inv), ours folds both; the
 // non-LTCG listing places the four pops after the last merge's comiss as retail does, our LTCG build does not.
+// MiniMax R (11-10): no new form, no lower score (137): ours is 1326 bytes against retail's 1324 and the
+// first difference is at +0x4; what stands between the two is that retail keeps the velocity's j in a
+// register across the length test and scales i through a copy of the reciprocal where we fold both
+// products, and that retail's four pops sit after the last merge's comiss where our LTCG build puts
+// them before; the earlier rounds' forms (the clamp shapes, the two-pointer dot helper, the velocity
+// copy, the staged final product) all measure 137 or worse.
 // @retail 0x1f9e70
 real function_1f9e70(long actor_index, long object_index, point2f const *position,
     vector2f const *path_direction, vector2f const *facing, vector2f const *desired,
@@ -1655,6 +1684,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax G (11-12): no new form, no lower score (238): the side vector written as two scalars instead of a point2f compiles to the same bytes.
+// MiniMax D (11-10): no new form, no lower score (238); our frame puts the two saved values at
+// [esp + 0x28] and [esp + 0x2c] where retail has [esp + 0x1c] and [esp + 0x20], and retail materialises
+// the side flag only at the comparison while this build stores 1 at the top.
 // MiniMax S (11-10): no lower score (238): dropping the pointer-to-parameter origin copies gives 255 (worse) and is reverted; retail still materialises the side flag only at the comparison (store 1, ja, store 0) while this build stores 1 at the top and keeps the flag live from there.
 // MiniMax C (11-09): no new form, no lower score (238); retail materialises the side flag only at the comparison (store 1, ja, store 0) while this build stores 1 at the top and keeps the flag live from there.
 // MiniMax G (11-06): no new form, no lower score; retail keeps the normalizer length in the dead target
@@ -1777,6 +1810,15 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // N271: existing normalizer single-result entry-default/exhaustive/reused-magnitude/acceptance
 // graphs, then caller assigned-sign completion: 273/255/275/254; 255/260/265/259.
 // All ordinary-origin forms restored with the original helper; zero/radius and vector homes remain.
+// MiniMax R (11-10): no new form, no lower score (238), and the difference is reported rather than
+// repaired: retail's own call site (0x29a7fc) puts the actor in ecx, the object in eax, the target in
+// edx (`lea edx, [eax + ebp + 0x548]`) and the tag type as the first stack argument (`push eax` after
+// `sete al`), so retail's declaration is (actor_index, object_index, target, type, origin, facing,
+// obstacles), while this repository's declaration has the type and the target swapped and so puts our
+// type in edx and our target at [esp+4]; the two stack slots and the frame size otherwise agree with
+// retail's, and changing the parameter order is not a form this round may use. The left/right direction
+// swap (239), the swap with the shared origin local (289) and the swap with the operands exchanged
+// (291) all score worse than the 238 they start from, so the body was restored.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
