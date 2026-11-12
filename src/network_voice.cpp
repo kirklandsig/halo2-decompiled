@@ -1792,6 +1792,13 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // `include_mask ? 13 : 11` 149; written declared inside the capacity block with that size 197 (488 bytes); `capacity -=
 // entry_size` before `written++` 64. Re-measured: the ternary size in the current order 147. No other untried natural
 // form is left in the note's list (orders, size spellings, result, clamp, bit and mask forms).
+// m3 lane 2 r75 (fast with 0x56380 and 0x564c0; both builds already return with ret 0xc): `result +=` for the success
+// length 60 (same code: the add folds); re-measured round 142's cewk order with `include_mask ? 13 : 11` 134 (head through
+// the clamp is retail's but for `cmp edi, eax`, the zero result merged with the literal zeros; kept takes EAX); on that
+// form: one `player < 0 || player > 15` test for the clamped copy 133 (444 B), the entry size typed dword 134 (same code),
+// the inactive queue as an early `return result;` 175 (0x56380 73); on this body the clamp as `__max(0, __min(player, 15))`
+// 66. Retail never uses EAX's zero for a literal zero (`test edi, edi`, an immediate written store), so its result is no
+// constant there; every source start of 0 measured so far is merged.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

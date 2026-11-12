@@ -610,8 +610,7 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
-// score 34 (was 34; round 103 unchanged): the scratch buffer is one address-taken record (storage, owner, buffer,
-// score 34 (was 34): the scratch buffer is one address-taken record (storage, owner, buffer,
+// score 34 (was 34): round 103 unchanged; the scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
 // and size through pointers; with the `void *` parameters view and one function-scope byte count the
 // length, both sums' order, the dispatch hoist and the reloads after the claim are retail's. Left:
@@ -1030,6 +1029,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // the task's state store first, then the total and its conversion 232 (masked 33); the total, then the state store, then the
 // conversion 42 (masked 6); the body case's `bytes == size` as `size == bytes` 34 (same code); the direct arm's size before
 // its buffer on this base 34 (masked 4); the scratch clamp as `MIN(body_size - body_offset, size)` 35 (masked 3).
+// M3 lane 4 r190 (fast with 0x2adb10 and 0x2ada70, both matched throughout): the byte count declared in each case 161
+// (689 bytes); both positions `dword const` 34; the clamp as `if (body_size - body_offset < size) size = ...;` 35; the
+// signature position written at both uses (no local) 221 (694 bytes), both cases' positions so 221 (695 bytes).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
