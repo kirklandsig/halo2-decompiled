@@ -26,6 +26,7 @@ unknown_0cd660.cpp, unknown_0d0690.cpp, unknown_0d0e00.cpp). */
 #include "slot_handler.h"
 #include "unknown_11cc90.h"
 #include "vector_products.h"
+#include "object_tag_definitions.h"
 #include <math.h>
 #include <stddef.h>
 #include <string.h>
@@ -3339,6 +3340,10 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // (forceinline or inline) 127; the camera's address taken (`(void)&camera`, or both copies through a const reference
 // to it) 127, all the same code: the camera keeps EBP in every form that names it twice.
 // MiniMax A (11-11), NOT kept (coordinator 11-11): 113 -> 78 with the camera parameter and the result made volatile; volatile is reverted, body at 113.
+// Typed seats/acceleration fields 113; marker-result producer 115; CRT matrix transfer 113;
+// shared axis setters 112 (NOT kept: gain one); CRT camera/axis transfers 113/113;
+// plain axis traversals 128; sole-return failure jump with shared camera transfer 152.
+// NOT kept: subthreshold setter gain and tied or larger differences; original control and copies restored.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -3363,11 +3368,11 @@ bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *
 	}
 	else
 	{
-		byte *definition = UNIT_DEFINITION_GET(unit);
+		s_unit_definition *definition = (s_unit_definition *)UNIT_DEFINITION_GET(unit);
 		function_b9dd0(unit_index, &matrix->position);
 		matrix->forward = unit->forward;
 		matrix->up = unit->up;
-		*camera = *(s_unit_camera_data *)(definition + 0xf0);
+		*camera = *(s_unit_camera_data *)&definition->unit.acceleration;
 		return true;
 	}
 	return result;
@@ -5440,8 +5445,8 @@ struct s_unit_damage_source
    entry, else filling a free one or replacing the least recent of those
    but the largest); when asked, counts a hit from an ally against the
    unit or vehicle seat responsible (betrayal, reset after four seconds) */
-// score 31 (was 31; earlier 129, 140, 313): size and structure agree (854 bytes); what is left is register allocation:
-// score 31 (was 129; earlier 140, 313): size and structure agree (854 bytes); what is left is register allocation:
+// score 31 (was 31; earlier 129, 140, 313): 857/854 bytes; the first accumulation's load order
+// and the final short comparison remain. Earlier loop and responsible-source differences:
 // retail keeps the largest source's index in EDX and the slot in EAX where ours has them the other
 // way round (it widens the index once, `movsx edx, dx`; ours copies it to a long, `kept`, which
 // gives that widening but in the other register), and retail holds NONE in EBP for the team, player,
@@ -5496,6 +5501,10 @@ struct s_unit_damage_source
 // if/else 60, `limit = 5; if (c == NONE) limit = 3;` 36, `limit += 2` 36, `long limit` 31. Re-measured under LTCG:
 // `total = amount + source` 13, found declared first 13, `last` read at each use 13. In the harness only the second
 // half's code moves the add (spellings, operand sides, nested early returns and dummy stores do not).
+// Native source/free-slot cursors 35/35; updated count used for store/test 34;
+// complete expiry/admission predicates 31/31; selected threshold tests 52;
+// separate three/five-hit cases 49; separate second clock value 31.
+// NOT kept: ties or regressions; original body restored.
 // @retail 0xca700
 void __stdcall function_ca700(long unit_index, real amount, short type, bool notify, long player_index, short team,
 	long object_index, byte flag)
@@ -6047,12 +6056,15 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // after the check and started false 305; `return !failed` 317; `result = a && b && c` 312; on the 59 form result
 // declared first, no data local, an `allocated` flag, `!(a && b && c)`, `failed = false; if (...) failed = true;`
 // 59 each (same code). A 600 s permuter run on the 59 form (--fast --anneal), 45 tries, none below 59.
+// Typed unit-tag fields 59; source cursor 68; sequential/case allocation failure 326/301;
+// model-entry cursors 76; complete shared setters 200; CRT vector copies 59; shared forward address 60.
+// NOT kept: no gain; original body retained apart from the required typed tag fields.
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {
 	byte const *data = (byte const *)creation;
 	s_unit *unit = UNIT_GET(unit_index);
-	byte *definition = UNIT_DEFINITION_GET(unit);
+	s_unit_definition *definition = (s_unit_definition *)UNIT_DEFINITION_GET(unit);
 
 	unit->unknown238 = NONE;
 	memset(unit->weapon_object_indices, 0xff, sizeof(unit->weapon_object_indices));
@@ -6136,22 +6148,22 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 		unit->unknown15c = unit->forward;
 		unit->unknown150 = unit->forward;
 		unit->unknown14c = 0x6000086;
-		short grenade_type = *(short *)(definition + 0x1b4);
-		if (grenade_type >= 0 && grenade_type < 2 && *(short *)(definition + 0x1b6) >= 0)
+		short grenade_type = definition->unit.grenade_type;
+		if (grenade_type >= 0 && grenade_type < 2 && definition->unit.grenade_count >= 0)
 		{
-			unit->grenade_counts[grenade_type] = (char)definition[0x1b6];
+			unit->grenade_counts[grenade_type] = (char)definition->unit.grenade_count;
 		}
 		unit->object_flags |= 0x1000;
 		unit->unknown138 = *(short *)(data + 0x64);
 		if (g_4e6948->state == 1 && (unit->unknown138 == 0 || unit->unknown138 == NONE))
 		{
-			unit->unknown138 = *(short *)(definition + 0xc0);
+			unit->unknown138 = definition->unit.default_team;
 		}
 		function_10f430(unit_index, 0x7000001, 0x7000101, 0x7000101, 0x7000001, 0.0f, false, 2);
 		long first_index = NONE;
-		if (*(long *)(definition + 0x38) != NONE)
+		if (definition->object.model_tag_index != NONE)
 		{
-			byte *graph = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
+			byte *graph = g_4e3b44[definition->object.model_tag_index & 0xffff].bytes;
 
 			for (long i = 0; i < *(long *)(graph + 0x78); i++)
 			{
@@ -6164,9 +6176,9 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 		}
 		unit->unknown1f6 = (char)first_index;
 		long second_index = NONE;
-		if (*(long *)(definition + 0x38) != NONE)
+		if (definition->object.model_tag_index != NONE)
 		{
-			byte *graph = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
+			byte *graph = g_4e3b44[definition->object.model_tag_index & 0xffff].bytes;
 
 			for (long i = 0; i < *(long *)(graph + 0x78); i++)
 			{
