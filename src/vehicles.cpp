@@ -21,6 +21,7 @@ helpers only they call. */
 #include "object_iterator.h"
 #include "unknown_1eb550.h"
 #include "vehicle_ray.h"
+#include "object_tag_definitions.h"
 #include <math.h>
 #include <string.h>
 
@@ -1968,12 +1969,16 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // the forward-speed terms 13 (one-use; only the cross flips); the arm-1 dot through
 // dot3f re-measured 376 (2007). Diagnostic: a vehicle-index copy declared after `state` for every callback 13 (the reload
 // order stays, so it does not follow symbol order; the cross flips).
+// Round 117 (m3 lane 12, fast), at 9: the model tag read through the typed object definition 9 (same code, kept);
+// the forward speed grouped `(k + j) + i` explicitly 11 (the sum then (j + k) + i, the i term unchanged); `(real)`
+// casts on its three products 9; the vehicle index parameter as `dword` 9; `speed` declared at the overlay block's top
+// and assigned in the arm 9 (all three the same code).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
-	byte *model = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
+	byte *model = g_4e3b44[((s_object_definition const *)definition)->model.tag_index & 0xffff].bytes;
 	s_graph_tag *graph = (s_graph_tag *)g_4e3b44[*(long *)(model + 4) & 0xffff].bytes;
 	vector3f linear_velocity;
 
