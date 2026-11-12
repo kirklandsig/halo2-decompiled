@@ -1186,6 +1186,7 @@ struct s_item_flags_view_10b850
 // differences - the node handed to 0xb8bd0 as a raw dword and the type chain's compare - stay.
 // MiniMax E (11-11): no new form, no lower score (824); our frame is 0x154 bytes where retail's is 0x12c, so every
 // stack slot sits 0x28 higher, and the entry flag test reads the definition's byte in the other order.
+// MiniMax H (11-12): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, and the entry Boolean and the carrier, collision and rotation homes still differ.
 // score 824 (was 813): statement-by-statement walk against retail (s1B, 11-06). Behaviour fixes, all kept even though
 // the score rose 11: (1) the byte at [esp+0x12] is ONE flag: the definition's +0xbc bit 2 (skips gravity), set to true
 // before the ray query (0x10ba18) and cleared only by the settle branch (0x10bcf8); the draft's separate
