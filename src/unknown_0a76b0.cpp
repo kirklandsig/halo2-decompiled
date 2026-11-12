@@ -865,6 +865,9 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// MiniMax G (11-12): no new form, no lower score (92): the seat index and the direction sit 0xc below retail's slots and the
+// shared block-vector slot 0xc above them, so the whole frame is a permutation of retail's; the permuter (killed at its time
+// limit) produced no form.
 // score 92 (was 152): earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
 // and throw-globals homes, the release point (retail its own local in center's slot), the velocity scale's first
 // product and the spread blend's schedule. Before this round 288, 298 before lane 15 round 61's throw velocity through

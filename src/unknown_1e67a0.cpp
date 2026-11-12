@@ -574,6 +574,10 @@ real magnitude3d(vector3f const *v);
 bool g_46fcc4 = true;
 bool g_51e9bc;
 
+// MiniMax G (11-12): the jitter accumulated in a vector3f filled in place (the on/off values into offset.i/j/k, the named sign
+// and half-scale values multiplied in, the existing 0.2 vector3f_scale, the per-component limits products) 20 -> 12 at retail's
+// length: the offset packs into the dead limits home, which gives retail's spill slots; the projection dot's term order and its
+// i term's operand order still differ.
 // score 20 (was 20; 49 before r92; NOT kept 12 below; before r98 was 118; r101, r103 and r76 unchanged): 1078/1077 bytes; the projection dot sums j + k
 // where retail sums k + j, its i term loads velocity.i first (retail copies direction.i and multiplies from memory).
 // Earlier: velocity.i before the movement call multiplies limits.i by the control field from memory (retail loads the field first).
@@ -965,19 +969,22 @@ void function_1e6360(s_biped_physics_output *output, real rate, long object_inde
  if (g_51e9bc)
  {
   long bits = g_510c54->game_time * *(long *)((byte *)state + 0x18);
-  real x = (bits & 1) ? 1.0f : 0.0f;
-  real y = (bits & 2) ? 1.0f : 0.0f;
-  real z = (bits & 4) ? 1.0f : 0.0f;
+  vector3f offset;
+  offset.i = (bits & 1) ? 1.0f : 0.0f;
+  offset.j = (bits & 2) ? 1.0f : 0.0f;
+  offset.k = (bits & 4) ? 1.0f : 0.0f;
   real sign_x = (bits & 8) ? 1.0f : -1.0f;
-  x = sign_x * x;
+  offset.i = sign_x * offset.i;
   real sign_y = (bits & 16) ? 1.0f : -1.0f;
-  y = sign_y * y;
+  offset.j = sign_y * offset.j;
   real sign_z = (bits & 32) ? 1.0f : -1.0f;
-  z = sign_z * z;
-  x = ((bits & 64) ? 1.0f : 0.5f) * x;
-  y = ((bits & 128) ? 1.0f : 0.5f) * y;
-  z = ((bits & 256) ? 1.0f : 0.5f) * z;
-  vector3f offset = {x, y, z};
+  offset.k = sign_z * offset.k;
+  real scale_x = (bits & 64) ? 1.0f : 0.5f;
+  offset.i = scale_x * offset.i;
+  real scale_y = (bits & 128) ? 1.0f : 0.5f;
+  offset.j = scale_y * offset.j;
+  real scale_z = (bits & 256) ? 1.0f : 0.5f;
+  offset.k = scale_z * offset.k;
   vector3f_scale(&offset, 0.2f, &offset);
   offset.i *= limits.i;
   offset.j *= limits.j;
