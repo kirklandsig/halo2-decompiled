@@ -633,6 +633,11 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // same `if` at the loop's end moves both reloads into its head block in retail's order (122), so the order is not
 // a fixed rank of the two values. Retail's order is the order the loop head uses them. A 600 s permuter run on the
 // new form: 63 tries, best 2 (its baseline build took 1024 s).
+// Round 114 (m3 lane 9, fast = plain 2): the unit and definition lookups folded into the model read 2 (same code); re-measured on this
+// base, the target marker declared first 2 and the visited words declared before the markers 2 (same code). In 0x263210 the same kind of
+// difference (a preheader reload pair in the other order) went away when a local copy of a pool global with a re-read after a call was
+// replaced by the global read at each use; here the matching change, `iterator->b` read at each use with no re-read, is listed at 42/46.
+// Levers left outside this body: 0xb8d30's side-effect summary (its file, src/unknown_0b8ca0.cpp, was another lane's this round).
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
