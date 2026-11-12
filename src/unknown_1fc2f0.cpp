@@ -201,6 +201,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax G (11-12): no new form, no lower score (32); the deltas written i, j, k give retail's velocity stores (i, j, k)
+// and its (k + j) + i sum, but the scaled difference then runs i, j, k with them (79), so the helper's component order and
+// the store order stay coupled; retail's tick products run j, i, k with its stores i, j, k.
 // MiniMax G (11-11): no new form, no lower score (32); retail takes the scaled difference in the order j, i, k but its
 // deltas in the order i, j, k, and one source order cannot give both: writing the deltas i, j, k (79) moves the scaled
 // difference to i, j, k with them, so the difference stays inside the inlined helper and its component order.
