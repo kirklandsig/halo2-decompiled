@@ -703,7 +703,6 @@ struct s_biped_flags_10a_view
 // compares it there, computes the biped-plus-short-offset pointer early and spills it at [esp+0x20], and jumps to
 // the shared exit for its early return, where ours compares the field in memory, spills the object index at
 // [esp+0x20] where retail uses [esp+0x24] and returns inline.
-// score 210 (was 222; 224; 241; 280 before round 48): frame 0x16c agrees; retail computes the state pointer at the top and spills it (ours reads it at
 // score 222 (was 224; 241; 280 before round 48): frame 0x16c agrees; retail computes the state pointer at the top and spills it (ours reads it at
 // its one use, so the head is 25 bytes short), the 0x111650 call takes names in EAX where retail pushes both
 // arguments (BLOCKED-BY 0x111650, unmatched, ret 8 in retail), and the type-0 bit is read as `and al, 4` (retail
@@ -759,13 +758,14 @@ struct s_biped_flags_10a_view
 // (the `movsx`/`add` pair) up front and spills it at [esp+0x20] with the biped index at [esp+0x24], ours spills the
 // index at [esp+0x20] and reads the parent through the parent-object helper where retail reads the parent's index
 // field directly; retail also pushes EBX after its early-exit test and shares one epilogue, ours has its own.
-// MiniMax B (11-11): score 210 (was 222): the flag that says the biped changed is now set before the test on
+// MiniMax B (11-11), NOT kept (coordinator): 222 -> 210 moves `changed = true;` above the other-object test, a statement
+// order picked by score (match-only). The lead as written: the flag that says the biped changed is set before the test on
 // the biped's other object, which is where retail sets it (retail's mov bl, 1 sits before that cmp/je pair), so
 // the store no longer lands after the join; what still differs is that retail computes the state pointer and
 // spills it to its stack home before the early-exit test where ours rematerializes it, retail's type-0 bit test
 // shifts a byte and masks it where ours masks the bit directly, retail tests the flags word in memory where ours
 // caches it in a register, and the tail's or-chain differs because of the 0x111650 return convention.
-// MiniMax B (11-11): no new form, no lower score (210 kept): retail loads the biped's other-object field into a
+// MiniMax B (11-11): no new form, no lower score (210 on the moved-flag form, not kept): retail loads the biped's other-object field into a
 // register before the early-exit test and zeroes the result register there, so the test reads a register and the
 // early exit jumps to the shared epilogue; writing the body as one `if` with a result variable reproduces the zero
 // and the register load (301) and adding the state pointer as a local of its own reproduces the spill at
@@ -919,11 +919,11 @@ bool __stdcall function_dd360(long arg_159e6d)
 	{
 		biped->unknown0bc = g_510c54->game_time;
 		function_bba20(arg_159e6d);
-		changed = true;
 		if (BIPED_GET(arg_159e6d)->unknown0d4 != NONE)
 		{
 			function_b58c0(BIPED_GET(arg_159e6d)->unknown0d4, 4);
 		}
+		changed = true;
 	}
 
 	bool action = function_e6830(arg_159e6d);

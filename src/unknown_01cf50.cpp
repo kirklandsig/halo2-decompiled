@@ -7479,7 +7479,8 @@ void __stdcall function_214f0(real passes, real distortion, real strength, real 
     real scale, bool blend, bool preserve);
 bool function_022710();
 real scenario_ramp_evaluate_current(long index);
-// MiniMax B (11-11): improved to 120 (was 130); the grid is stored in the order retail stores it, the
+// MiniMax B (11-11), NOT kept (coordinator): 130 -> 120 stores the grid's fields in another order picked by score
+// (match-only). The lead as written: the grid is stored in the order retail stores it, the
 // two left values first, then the top, the right and the bottom, and only then the zero and one values,
 // so the sixteen stores fall in retail's order; what still differs is that this build reserves a frame
 // of 0x5c with the same twenty-two slots four bytes lower than retail's 0x58 and one slot unused at the
@@ -7526,7 +7527,7 @@ real scenario_ramp_evaluate_current(long index);
 // frame pointer's push inside the loop decides them.
 // MiniMax E (11-11): no new form, no lower score (139); retail's frame is 0x58 bytes with the frame pointer pushed
 // inside the filter loop, ours is 0x5c with it in the prologue, so every stack slot sits four bytes off.
-// score 120 (was 130): retail's frame is 0x58 bytes with the grid filling it to the top and the
+// score 130 (was 139): retail's frame is 0x58 bytes with the grid filling it to the top and the
 // frame pointer pushed inside the loop; ours is 0x5c with four unused bytes above the grid and the
 // frame pointer in the prologue, so every stack slot sits four bytes off.
 // MiniMax E (11-09): no new form, no lower score (139); retail calls 0x137a0 for the ramp's value where our
@@ -7585,18 +7586,10 @@ void __stdcall function_13870(bool finish, bool blur)
         real top = (real)g_4b9dd0;
         real right = (real)g_4b9dd6;
         real bottom = (real)g_4b9dd4;
-        grid[0].x = left;
-        grid[2].x = left;
-        grid[0].y = top;
-        grid[1].x = right;
-        grid[1].y = top;
-        grid[2].y = bottom;
-        grid[3].x = right;
-        grid[3].y = bottom;
-        grid[0].z = 0.0f; grid[0].w = 0.0f;
-        grid[1].z = 1.0f; grid[1].w = 0.0f;
-        grid[2].z = 0.0f; grid[2].w = 1.0f;
-        grid[3].z = 1.0f; grid[3].w = 1.0f;
+        grid[0].x = left; grid[0].y = top; grid[0].z = 0.0f; grid[0].w = 0.0f;
+        grid[1].x = right; grid[1].y = top; grid[1].z = 1.0f; grid[1].w = 0.0f;
+        grid[2].x = left; grid[2].y = bottom; grid[2].z = 0.0f; grid[2].w = 1.0f;
+        grid[3].x = right; grid[3].y = bottom; grid[3].z = 1.0f; grid[3].w = 1.0f;
         for (long i = 0; i < *(long *)((byte *)g_4e0350 + 0x3d0); ++i)
         {
             byte *entry = *(byte **)((byte *)g_4e0350 + 0x3d4) + i * 0x24;
