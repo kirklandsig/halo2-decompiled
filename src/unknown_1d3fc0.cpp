@@ -37,6 +37,12 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // body written out by hand and a second access path to one field, so they stay dropped; swapping the dot's
 // two arguments (dot3f(up, forward)) compiles to the same code, and the normalizer's square order, the
 // reciprocal carriers and the projection schedule are unchanged.
+// M3 lane 1 r96 (fast, 0x1c4a80 matched each time): the normalizer's locals and parameter renamed (length, inverse,
+// vector) 110 (identical code: names move nothing here); the flag9 branch's real declared in that branch 110; the axes
+// addressed through the matrix's rotation member (`&local_1[0].rotation.forward`, up, left) 110; the normalizer's scale
+// through the existing vector3f_scale with the reciprocal local 110 (re-measure of the listed scale helper), with
+// `1.0f / length` as its argument 147 (936 B); the loop counter declared at function scope 110; `up =` assigned from the
+// third normalization's returned pointer 110. The rotation-member addresses re-measure round 222's named rotation member.
 // MiniMax R (11-08): no new form, no lower score (110); the shapes that reach 2 need an existing helper's body
 // written out by hand, so the axis block still multiplies up's i first where retail multiplies forward's i first.
 // MiniMax D (11-06): no new form, no lower score; the helper's scale order k, i, j 115 and the k product with the
