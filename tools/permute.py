@@ -6,6 +6,9 @@ It works on a copy of src/, include/ and config/ (and the build caches
 build/obj and build/gen) in a scratch build root under build/permute/, so
 the repository is never modified unless --write or --write-only-match is
 given, and then only with a strictly better variant of the one function.
+The scratch builds compile stale sources in parallel (HALO2_BUILD_JOBS, or
+the CPU count, at most 16) and keep their last image when nothing it was
+linked from changed.
 --write writes the best variant whenever it scores better than the original;
 it may behave differently from the original. --write-only-match writes it only
 when a full build finds that it matches retail exactly and every decompiled
@@ -60,6 +63,7 @@ variant is scored twice.
 import argparse
 import bisect
 import difflib
+import functools
 import os
 import random
 import re
@@ -82,6 +86,8 @@ from xbe import FUNCTIONS_CSV, ROOT, Xbe, retail_xbe_path
 
 WORST = 10 ** 6
 DEFAULT_TRIES = 200
+BUILD_JOBS = max(1, int(os.environ.get('HALO2_BUILD_JOBS') or min(16, os.cpu_count() or 1)))
+# ^ sources the scratch builds compile at once, as tools/check.py does
 INT_TYPES = ['long', 'int', 'short', 'unsigned long', 'dword']
 CHAR_TYPES = ['char', 'byte']
 NOT_NAMES = {'long', 'int', 'short', 'unsigned', 'char', 'byte', 'dword', 'word', 'const', 'void', 'static', 'sizeof',
@@ -935,15 +941,118 @@ def mut_volatile_pointer(body, rng):
     return '\n'.join(lines)
 
 
+# A repeated literal or constant, held in one named local. The scheduler places
+# the load of a shared constant (NONE, 0, 1.0f, ...) differently from the
+# repeated immediate stores, and that placement is often the last difference in
+# a near miss. Insert the declaration at the top of the body or immediately
+# before the first use in code (not in a comment, string, case label, array
+# bound or static initializer).
+LITERAL = re.compile(r'(?<![A-Za-z0-9_.])(?:NONE|true|false|0x[0-9A-Fa-f]+|'
+                     r'\d+(?:\.\d*)?(?:[eE][-+]?\d+)?[fF]?)(?![A-Za-z0-9_.])')
+
+
+def _code_only(text):
+    """text with comments and string/character literals blanked out, its length
+    and newlines kept, so a literal found in it is code at the same offset."""
+    out, i = list(text), 0
+    while i < len(text):
+        j = _skip_literal(text, i)
+        if j == i:
+            i += 1
+            continue
+        for k in range(i, j):
+            if out[k] != '\n':
+                out[k] = ' '
+        i = j
+    return ''.join(out)
+
+
+def _literal_type(literal):
+    if literal == 'NONE':
+        return 'long'
+    if literal in ('true', 'false'):
+        return 'bool'
+    if literal.startswith('0x'):
+        return 'dword'
+    if re.search(r'[.eEfF]', literal):
+        return 'real'
+    return 'long'
+
+
+def mut_shared_constant(body, rng):
+    """Turns a literal repeated in code into one local, declared before its
+    first use or at the top of the body, and replaces the other uses with that
+    local. This changes when the constant reaches a register, which is what
+    some near misses need; the literals in comments, strings, case labels,
+    array bounds and static initializers are left alone."""
+    code = _code_only(body)
+    found = {}
+    for m in LITERAL.finditer(code):
+        literal = m.group(0)
+        start, end = m.start(), m.end()
+        line_start = code.rfind('\n', 0, start) + 1
+        line_end = code.find('\n', end)
+        line_end = len(code) if line_end < 0 else line_end
+        line = body[line_start:line_end]
+        before = line[:start - line_start]
+        if re.match(r'[ \t]*(?:case\b|default\b|#|static\b|typedef\b|enum\b)', line):
+            continue
+        if '__asm' in line or 'sizeof' in before:
+            continue
+        if '[' in before and re.search(r'\b(?:char|byte|short|long|int|dword|word|real|float|double|bool|void|'
+                                       r'[sc]_\w+)\s+\w+\s*\[', line):
+            continue                    # an array bound, not a value
+        found.setdefault(literal, []).append((start, end, line_start, line))
+    choices = [(literal, uses) for literal, uses in found.items() if 2 <= len(uses) <= 16]
+    if not choices:
+        return None
+    literal, uses = rng.choice(choices)
+    name = _fresh_temp(body)
+    type_ = _literal_type(literal)
+    first_start, _, first_line_start, first_line = uses[0]
+    first_indent = first_line[:len(first_line) - len(first_line.lstrip())]
+    min_indent = min(len(line) - len(line.lstrip()) for _, _, _, line in uses)
+    depth = code[:first_line_start].count('{') - code[:first_line_start].count('}')
+
+    def stays_in_scope(start):
+        d = depth
+        for ch in code[first_line_start:start]:
+            if ch == '{':
+                d += 1
+            elif ch == '}':
+                d -= 1
+            if d < depth:
+                return False
+        return True
+
+    before_first = (len(first_indent) == min_indent
+                    and not re.match(r'[ \t]*(?:else|case|default)\b', first_line)
+                    and all(stays_in_scope(start) for start, _, _, _ in uses[1:]))
+    places = []
+    if before_first:
+        places.append((first_line_start, first_indent))
+    m = re.search(r'(?m)^(?P<ind>[ \t]*)\S', body)
+    if m and (not before_first or m.start() != first_line_start):
+        places.append((m.start(), m.group('ind')))
+    if not places:
+        places.append((first_line_start, first_indent))
+    at, indent = rng.choice(places)
+    edits = [(start, end, name) for start, end, _, _ in uses]
+    edits.append((at, at, f'{indent}{type_} {name} = {literal};\n'))
+    for start, end, replacement in sorted(edits, reverse=True):
+        body = body[:start] + replacement + body[end:]
+    return body
+
+
 MUTATIONS = [mut_swap_operands, mut_reorder, mut_retype, mut_introduce_temp, mut_inline_temp, mut_swap_if_else,
              mut_for_while, mut_compound, mut_increment, mut_split_decl, mut_chain_assign, mut_bool_flag,
              mut_or_split, mut_ternary, mut_swap_ternary, mut_swap_args,
-             mut_volatile_read, mut_volatile_pointer]
+             mut_volatile_read, mut_volatile_pointer, mut_shared_constant]
 
 
 # Tried more often: call arguments traded places in a fifth of the edits that made a near function match, and
 # statement order or operand order in a few more (see the comment above mut_swap_args). The rest weigh 1.
-WEIGHTS = {mut_swap_args: 6, mut_reorder: 2, mut_swap_operands: 2}
+WEIGHTS = {mut_swap_args: 6, mut_reorder: 2, mut_swap_operands: 2, mut_shared_constant: 3}
 
 
 # ------------------------------------------------- typed mutations (--anneal)
@@ -2269,8 +2378,9 @@ class Scorer:
     def build(self):
         """Builds the scratch root: (map path, image path)."""
         if self.image is None:
-            return build.build(self.root, self.xdk), os.path.join(self.root, 'build', build.EXE_NAME)
-        return build.build(self.root, self.xdk, image=self.image), self.image
+            return (build.build(self.root, self.xdk, jobs=BUILD_JOBS, reuse=True),
+                    os.path.join(self.root, 'build', build.EXE_NAME))
+        return build.build(self.root, self.xdk, image=self.image, jobs=BUILD_JOBS, reuse=True), self.image
 
     def score_text(self, text):
         """Writes text as the source file and returns (score, first-difference text)."""
@@ -2334,7 +2444,8 @@ class FastScorer(Scorer):
         self.include = include
 
     def build(self):
-        return build.build(self.root, self.xdk, units=self.units, image=self.image, include=self.include), self.image
+        return build.build(self.root, self.xdk, units=self.units, image=self.image, include=self.include,
+                           jobs=BUILD_JOBS, reuse=True), self.image
 
 
 def prepare_scratch(scratch):
@@ -2343,6 +2454,54 @@ def prepare_scratch(scratch):
         s = os.path.join(ROOT, d)
         if os.path.isdir(s):
             shutil.copytree(s, os.path.join(scratch, d), copy_function=shutil.copy2)
+    # A generated stand-in unit names its source by absolute path, so the copies
+    # still name the working tree's source. Repoint them at this root's copy, or
+    # the build regenerates every unit and recompiles all ~1800 objects before
+    # the search's first try.
+    gen_dir = os.path.join(scratch, 'build', 'gen')
+    for name in (os.listdir(gen_dir) if os.path.isdir(gen_dir) else ()):
+        if not name.endswith('.cpp'):
+            continue
+        path = os.path.join(gen_dir, name)
+        with open(path, encoding='utf-8') as f:
+            text = f.read()
+        fixed = text.replace(ROOT + os.sep, scratch + os.sep)
+        if fixed != text:
+            with open(path, 'w', encoding='utf-8', newline='') as f:
+                f.write(fixed)
+    # The working tree's headers can be newer than its objects (a fresh checkout
+    # or a header edit since the last build). The copies are exact, so the
+    # objects are still valid; stamp them newer than everything copied, or every
+    # scratch build recompiles every source. Only the function's edited source
+    # (and anything genuinely changed in this scratch) should be stale. An
+    # object whose source is newer than it was stale in the working tree
+    # already (an edit not yet built there): drop the copy so the scratch
+    # builds it, or a stale stub object would define a symbol its edited source
+    # now defines too.
+    obj_dir = os.path.join(scratch, 'build', 'obj')
+    for dirpath, _, names in os.walk(obj_dir):
+        for name in names:
+            if not name.endswith('.obj'):
+                continue
+            path = os.path.join(dirpath, name)
+            source = _object_source(name[:-len('.obj')], scratch)
+            if source and os.path.getmtime(source) > os.path.getmtime(path):
+                os.remove(path)
+            else:
+                os.utime(path, None)
+
+
+def _object_source(stem, root):
+    """The source whose change makes build/obj/<stem>.obj stale, or None when
+    no source of that name exists (a generated object, or a source renamed
+    since the last build)."""
+    if stem.startswith('stubs_'):
+        path = os.path.join(root, 'src', 'stubs', stem[len('stubs_'):] + '.cpp')
+    elif stem.startswith('standard_'):
+        path = os.path.join(root, 'src', stem[len('standard_'):] + '.cpp')
+    else:
+        path = os.path.join(root, 'src', stem + '.cpp')
+    return path if os.path.exists(path) else None
 
 
 def new_scratch():
@@ -2491,7 +2650,7 @@ class FastSearch:
     none is scored twice. progress (0 to 1) is how far the run has gone."""
 
     def __init__(self, prefix, body, suffix, confirm, baseline, log=print, strategy=None, mutations=None,
-                 context=None):
+                 context=None, fast_baseline=None):
         self.prefix, self.original, self.suffix = prefix, body, suffix
         self.confirm, self.log = confirm, log
         self.strategy = strategy or Greedy()
@@ -2499,10 +2658,10 @@ class FastSearch:
         self.progress = lambda: 0.0
         self.lock = threading.Lock()  # guards the state below
         self.confirming = threading.Lock()  # one full build at a time
-        self.walk, self.walk_score = body, None  # the position and its reduced-image score
-        self.fast_baseline = None
+        self.walk, self.walk_score = body, fast_baseline  # the position and its reduced-image score
+        self.fast_baseline = fast_baseline
         self.best, self.best_score = body, baseline  # the best and its full-build score
-        self.best_fast = None  # the best's reduced-image score
+        self.best_fast = fast_baseline  # the best's reduced-image score
         self.baseline = baseline
         self.seen = {body}
         self.tries = 0
@@ -2518,7 +2677,8 @@ class FastSearch:
         return self.prefix + body + self.suffix
 
     def start(self, score, note):
-        """Records the original's reduced-image score (each worker scores it once)."""
+        """Records the original's reduced-image score (the caller may already
+        have scored it, so each worker does not)."""
         with self.lock:
             if self.fast_baseline is None:
                 self.fast_baseline = self.walk_score = self.best_fast = score
@@ -2593,7 +2753,8 @@ class FastSearch:
 
 def _work(search, scorer, rng, tries, deadline):
     """One worker of a --fast search."""
-    search.start(*scorer.score_text(search.text(search.original)))
+    if search.fast_baseline is None:
+        search.start(*scorer.score_text(search.text(search.original)))
     while deadline is None or time.time() < deadline:
         candidate, n = search.propose(rng, tries)
         if candidate is None:
@@ -2602,7 +2763,32 @@ def _work(search, scorer, rng, tries, deadline):
         search.offer(candidate, score, note, n, rng)
 
 
-def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, jobs=1, depth=None, anneal=False):
+def _fast_baseline_check(va, fast_baseline, baseline, allow_mismatch=False, log=print):
+    """--fast may only search when its reduced image scores the original the
+    same as the full image; otherwise it would optimise the wrong score.
+    allow_mismatch searches anyway, for a draft too far from retail for a plain
+    full search; every improvement is still confirmed by a full build."""
+    if fast_baseline != baseline:
+        if not allow_mismatch:
+            raise SystemExit(
+                f'the reduced image scores the original {fast_baseline} differing instructions, the full image '
+                f'{baseline}: --fast cannot search this function. Run without --fast: python tools/permute.py {va:#x}')
+        log(f'warning: the reduced image scores the original {fast_baseline}, the full image {baseline}; '
+            'searching the reduced score anyway (--allow-mismatch), each improvement confirmed by a full build')
+
+
+def context_units(context, rows, marked, depth=None):
+    """The sources a reduced image adds for each context function: its own
+    units (reduced_units), so a search can reproduce a function that only
+    builds as retail does beside its callers or siblings."""
+    units = set()
+    for va in context:
+        units |= reduced_units(va, rows, marked, depth)
+    return units
+
+
+def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, jobs=1, depth=None, anneal=False,
+             context=(), allow_mismatch=False):
     """The --fast search with jobs workers, each scoring on its own scratch root
     with its own seed (seed, seed + 1, ...), and one more root for the full
     builds: first the original's, whose map gives the library objects the
@@ -2610,7 +2796,9 @@ def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, j
     limit with a time limit, which starts after that first build. The images
     are linked in build/permute/<va>/ of the repository, one folder per root,
     as .img files (see build.build). anneal: the Anneal walk, with
-    TYPED_MUTATIONS besides MUTATIONS."""
+    TYPED_MUTATIONS besides MUTATIONS. context: other functions whose units
+    each reduced image also builds, for a function whose own units build
+    differently from the full image."""
     if tries is None:
         tries = DEFAULT_TRIES if time_limit is None else float('inf')
     own = scratch is None
@@ -2625,6 +2813,11 @@ def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, j
         full = Scorer(va, roots[0], image=os.path.join(images, 'full', 'halo2.img'))
         scorers = [FastScorer(va, root, os.path.join(images, name, 'reduced.img'), depth=depth)
                    for name, root in zip(names[1:], roots[1:])]
+        if context:
+            marked = build.marked_sources(full.root) + build.stub_sources(full.root)
+            extra = context_units(context, full.rows, marked, depth)
+            for scorer in scorers:
+                scorer.units |= extra
         with open(os.path.join(ROOT, full.marked.path), encoding='utf-8', newline='') as f:
             original = f.read()
         start, end = find_body(original, va)
@@ -2641,11 +2834,14 @@ def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, j
             for scorer in scorers:
                 scorer.include = include
                 scorer.units |= pinning
+        fast_baseline, fast_note = scorers[0].score_text(original)
+        _fast_baseline_check(va, fast_baseline, baseline, allow_mismatch, log)
+        log(f'baseline: {fast_baseline} differing instructions on the reduced image ({fast_note})')
         log(f'reduced image: {len(scorers[0].units)} sources: ' + ', '.join(sorted(scorers[0].units)))
         walk = dict(strategy=Anneal(), mutations=MUTATIONS + TYPED_MUTATIONS,
                     context=function_context(original, start, full.root)) if anneal else {}
         search = FastSearch(original[:start], original[start:end], original[end:], full.score_text, baseline, log,
-                            **walk)
+                            fast_baseline=fast_baseline, **walk)
         t0 = time.time()
         deadline = None if time_limit is None else t0 + time_limit
         if time_limit is not None:
@@ -2675,11 +2871,13 @@ def unmatched_callees(va, root=ROOT):
     not match retail yet. Under LTCG the registers a call passes its arguments
     in follow the callee's code, so while such a callee's differ from retail's,
     a caller can match retail's bytes and still pass it different arguments
-    (two of them swapped, say). Stubs and library code are not decompiled."""
+    (two of them swapped, say). Stubs and library code are not decompiled.
+    A recursive call to the function itself is not a blocker: once its own
+    bytes match, its self-calls are already retail's."""
     rows = read_rows(FUNCTIONS_CSV)
     decompiled = {m.retail for m in build.marked_sources(root)}
     calls = [int(c, 16) for c in rows.get(va, {}).get('calls', '').split()]
-    return [c for c in calls if c in decompiled and rows.get(c, {}).get('status') != 'matched']
+    return [c for c in calls if c != va and c in decompiled and rows.get(c, {}).get('status') != 'matched']
 
 
 def main():
@@ -2699,6 +2897,11 @@ def main():
     ap.add_argument('--jobs', type=int, default=1, help='with --fast: scorers working in parallel')
     ap.add_argument('--depth', type=int, default=None,
                     help='with --fast: follow callees only this many levels (default: all)')
+    ap.add_argument('--context', action='append', default=[], metavar='VA',
+                    help='with --fast: another function whose units the reduced image also builds (repeatable)')
+    ap.add_argument('--allow-mismatch', action='store_true',
+                    help='with --fast: search even when the reduced image scores the original differently, '
+                         'confirming each improvement with a full build')
     ap.add_argument('--anneal', action='store_true',
                     help='with --fast: simulated annealing with restarts, and the typed mutations too')
     args = ap.parse_args()
@@ -2708,12 +2911,20 @@ def main():
         ap.error('--depth takes a count of levels, and needs --fast')
     if args.anneal and not args.fast:
         ap.error('--anneal needs --fast')
+    if args.context and not args.fast:
+        ap.error('--context needs --fast')
+    if args.allow_mismatch and not args.fast:
+        ap.error('--allow-mismatch needs --fast')
     va = check.parse_addresses([args.address]).pop()
+    context = tuple(check.parse_addresses(args.context))
+    # progress is watched while a run is in flight, so flush each line as it is
+    # printed: redirected output would otherwise arrive only when the run ends
+    log = functools.partial(print, flush=True)
     if args.fast:
         result = run_fast(va, args.tries, args.seed, args.time_limit, jobs=args.jobs, depth=args.depth,
-                          anneal=args.anneal)
+                          anneal=args.anneal, context=context, allow_mismatch=args.allow_mismatch, log=log)
     else:
-        result = run(va, DEFAULT_TRIES if args.tries is None else args.tries, args.seed, args.time_limit)
+        result = run(va, DEFAULT_TRIES if args.tries is None else args.tries, args.seed, args.time_limit, log=log)
     rate = result.tries / result.seconds if result.seconds else 0
     if args.fast:
         print(f'{result.tries} tries in {result.seconds:.1f}s ({rate:.2f} tries/s); reduced image: best '
