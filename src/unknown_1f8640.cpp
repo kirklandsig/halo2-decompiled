@@ -373,6 +373,9 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
+// MiniMax G (11-12): no new form, no lower score (182): retail's case 2 arm runs the switch's value down through the
+// compare-and-decrement pair and calls 0x262b40, where ours tests the value in place and calls 0x410730, so the arm's
+// shape differs before the twenty bytes of extra code that shift every later branch.
 // score 182 (was 182): earlier 188; Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
 // MiniMax S (11-10): no new form, no lower score (182): the route dispatch still follows case 7 where retail puts it after case 5 with cases 6 and 7 behind it, and the final result still goes through BL where retail returns its frame byte.
 // MiniMax E (11-09): no new form, no lower score (188).

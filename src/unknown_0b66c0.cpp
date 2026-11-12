@@ -433,6 +433,12 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // out of `do { } while (false)` 28 [6], with the length call in the test 28 [6], with the early source 21 [match] (the 21
 // code). Re-measures: `long end` before the scan 49 [83]; `length >= start + count` 29 [6]; one condition with the length
 // call 28 [6]; nested tests, named length and `start += (long)string` after the clamp 40 [match].
+// Round 110 (m3 lane 16, fast with 0xb5f10/0xb61d0, both matched each time; [0xb5f10] unchanged at match): on main's 21
+// body, true facts `__assume(start >= 0 && count > 0)` inside the guard, `__assume(length >= 0 && length < 0x200)` after the
+// scan, `__assume(count > 0 && count <= 0x200)` after the clamp 21/21/21; the source declared (not assigned) before the
+// length 21; the length renamed to sort after source, start and string 21. All the same code: value facts, declaration
+// order and names leave the walk ECX / count EDX split. The rename repeats round 118's names finding; no untried natural
+// source form was found this round.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

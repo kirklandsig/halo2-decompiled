@@ -1592,6 +1592,21 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// MiniMax B (11-11): no new form, no lower score (703); the body is unchanged, and the forms listed above are exhausted.
+// MiniMax G (11-11, second pass): no new form, no lower score (703); retail keeps the users cursor in a stack slot
+// at +0x18 that points at the record start, ours keeps it at +0x14 pointing at the record's properties, and the
+// slot helper's null test is a branch here against retail's cmovne; the loop written as a pointer walk over the
+// users and the value groups puts the cursor in a register and turns the bound into a counter (784), the slot
+// lookup moved ahead of the property copy (847), and the slot helper's null test stays a branch when its "g"-off
+// pragma is dropped (703, 2910 bytes) all leave more differences than they remove, so the body stands.
+// MiniMax G (11-11): no new form, no lower score (703); the users cursor still rides in EBX where retail keeps it
+// in a stack slot at +0x18, and the logon-status test still lacks retail's decrement and branch; this round
+// re-read the diff and the statement walk the earlier rounds recorded agrees with the source on every block,
+// condition, callee and constant, so what is left is those two homes and the body stands. Reaching the record
+// through a named record pointer moves the cursor's anchor from the properties (+0x14) to the unknown10 (+0x10) and
+// spelling the copy through the array moves it the same way; the anchor is the largest field offset of the group
+// the fields share, so retail's record-start cursor is not spellable from this file (lane 16 r102 reached it only
+// by inlining the getter 0x647d0 in src/unknown_054fe0.cpp). Both forms stay at 703.
 // MiniMax H (11-11): no new form, no lower score (703); the users cursor still rides in EBX where retail keeps it in a stack slot at +0x18, and the logon-status test still lacks retail's decrement/branch.
 // score 703 (was 703; 709 before; 2910 bytes): Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax E (11-05): no new form, no lower score.
