@@ -1328,6 +1328,7 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
+// MiniMax G (11-12): no new form, no lower score (137; the fast check reads 117): the actor offset as a named local compiles to the same bytes as the folded expression.
 // MiniMax D (11-10): no new form, no lower score (137); retail scales the actor index into EDX before the
 // register saves and keeps the actor pointer in EDI with the object in ESI, ours hoists the global loads and
 // keeps the actor in ESI with the object in EDI; retail's function_1e5450 also takes its definition index
@@ -1677,6 +1678,7 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax G (11-12): no new form, no lower score (238): the side vector written as two scalars instead of a point2f compiles to the same bytes.
 // MiniMax D (11-10): no new form, no lower score (238); our frame puts the two saved values at
 // [esp + 0x28] and [esp + 0x2c] where retail has [esp + 0x1c] and [esp + 0x20], and retail materialises
 // the side flag only at the comparison while this build stores 1 at the top.
