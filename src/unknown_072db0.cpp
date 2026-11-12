@@ -434,6 +434,9 @@ long network_session_get_maximum_players(c_class_58d20 *session);
 // (139/134 bytes, NOT kept: extent moves away); direct final return 57; success-default
 // result 39; explicit failed-comparison arm 33; sole-exit admission goto 33; nested
 // index/pointer result 33. Unchanged reduced image matches; full image remains the judge.
+// P405 fast: inner readiness/type, peer readiness, final validity/index/pointer early rejections, direct success return, comparison rejection; scores 1, 2, 60, 68, 69, 69, 43, 68.
+// Inner readiness rejection is 34 at 138 bytes in the plain check (fast 1/134): final calls still reverse.
+// NOT kept: full score regresses; original body and all callee interfaces restored.
 // @retail 0x73360
 bool c_helper_b::v7()
 {
@@ -1592,6 +1595,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// MiniMax G (11-12): no new form, no lower score (703); the frame agrees (0xc0); the slot helper is the
+// static __forceinline function_74aa1 in this file (src/unknown_072db0.cpp:1588), whose null test is a
+// branch here against retail's cmovne, and the users cursor still rides in EBX where retail keeps it in
+// a stack slot at +0x18 that points at the record start.
 // MiniMax B (11-11): no new form, no lower score (703); the body is unchanged, and the forms listed above are exhausted.
 // MiniMax G (11-11, second pass): no new form, no lower score (703); retail keeps the users cursor in a stack slot
 // at +0x18 that points at the record start, ours keeps it at +0x14 pointing at the record's properties, and the

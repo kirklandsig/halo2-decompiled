@@ -13,6 +13,7 @@
 #include "unknown_124f90.h"
 #include "unknown_218ac0.h"
 #include "unknown_21e230.h"
+#include "bit_vector.h"
 #include "unknown_221810.h"
 #include "sound_driver.h"
 #include "crc.h"
@@ -1545,6 +1546,12 @@ long function_2197f0(real gain);
 // `s_decibels`) 153 (678 bytes: retail's EDI copy of the gain's bits goes, so retail returns a dword; 0x1251e0 then 6); arms 3
 // and 4 written interpolation-first 124 (687); arm 1's time sum product-first 94 (same code); re-measured the fade-in-local form
 // 87 (match-only), on it the product-first sum 87 (same code) and the clamp as if/else assignments 144 (681).
+// m3 lane 8 r158 (fast with 0x1295e0): arm 1's product as `fade_out * ((elapsed - hold) * inverse)` 94 (other code: the
+// inverse product is then formed first as retail, but fade_out is still multiplied from memory and the reciprocal is made
+// after `elapsed - hold`), with a `real fade_out` local for the test and the product 98 (masked 11), with the fade-in local of
+// the 87 form 87 (match-only; the 87 form re-measured 87); SOUND_SYSTEM read at each use (no sound_system local) 94 (same
+// code). Diagnostic (a volatile local, reverted at once): one or two dead volatile loads ahead of `elapsed` 171/180 (696/700 B):
+// elapsed stays in XMM2, so one more scratch step there does not give retail's XMM colouring.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2965,7 +2972,7 @@ static inline short sound_voice_find_available_channel(char type)
 
 	for (long i = system->first_channel[type]; i <= system->last_channel[type]; i++)
 	{
-		if ((system->free_bits[i >> 5] & (1 << (i & 31))) && !(system->streaming_bits[i >> 5] & (1 << (i & 31))))
+		if (bit_vector_test(system->free_bits, i) && !bit_vector_test(system->streaming_bits, i))
 		{
 			result = (short)i;
 			break;
@@ -3251,6 +3258,10 @@ static inline short sound_voice_find_available_channel(char type)
 // written ahead of the commit (`if (channel == NONE || (buffer_index == NONE && (...))) { fail } else { commit; return true; }`,
 // defaults before the channel test) 123 (433), with the complemented status 138, plus a byte result 142, without the commit's
 // `return true` 141 / byte 155.
+// m3 lane 8 r158 (fast with 0x127010, 0x127320, 0x12a5d0, 0x21de90, 0x129100): the commit's two bit updates through the
+// existing bit_vector_set 96, the search helper's two bit tests through bit_vector_test 96, both 96 (same code each; both
+// kept: existing helper calls in place of hand-written copies of their bodies); the requested-buffer local at every use (the
+// buffer assignment and the final test, no field re-read) 139 (441 B), for the assignment only 138 (441 B).
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3286,9 +3297,8 @@ bool __stdcall function_1295e0(short voice_index)
 				voice->unknown0e = buffer_index;
 				voice->channel_index = channel;
 				voice->driver_voice_index = driver_index;
-				system->streaming_bits[channel >> 5] |= 1 << (channel & 31);
-				channel = voice->channel_index;
-				system->free_bits[channel >> 5] &= ~(1 << (channel & 31));
+				bit_vector_set(system->streaming_bits, channel, true);
+				bit_vector_set(system->free_bits, voice->channel_index, false);
 				goto channel_done;
 			}
 		}

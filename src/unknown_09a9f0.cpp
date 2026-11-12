@@ -226,19 +226,18 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
+// score 49 (was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
+// earlier first lines 49 (was 49), 49 (was 49); retail's bool result in BL, the EBP borrow around the
+// header test and the data reload remain; round 151's entry is the last one above the marker.
 // MiniMax A (11-11, run 58): no lower score (49) - taking the result from the entity's published index after
 // the arm scores 66 and the bool result set after the attach scores 80; retail keeps the false result in BL from
 // before the creation call, saves EBP only around the header test and looks the header up twice, while ours
 // keeps the validity result in EBP and shares one header address between the flag test and the object lookup.
-// score 49 (was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
-// earlier first lines 49 (was 49), 49 (was 49); retail's bool result in BL, the EBP borrow around the
-// header test and the data reload remain; round 151's entry is the last one above the marker.
 // MiniMax R (11-09): no new form, no lower score; retail keeps the false result in BL, xors BL before the creation call and sets BL after it, while ours returns the result in EAX and holds the last argument in EBP, so our frame is four bytes wider (77 against the baseline's 49); the result bool declared before the creation call (77), the object lookup written as an array element (77) and the creation call's output taken through the parameter's own address (87) all score worse.
 // MiniMax A (11-06, run 52): no new form, no lower score (49) - a byte result set after the attach
 // reaches retail's shape but scores 77, and reading the header through the entity changes nothing;
 // retail keeps the result in bl and looks the header up twice.
-
-// score 49 (was 49): unchanged this round: the head's register roles still differ - retail saves
+// Earlier (49, was 49), merged from a second score line: unchanged this round: the head's register roles still differ - retail saves
 // MiniMax D (run 46): the early-return body 77, the bool result 69, the bool result with the header
 // pointer in a named local 77 (the header lookups still merge into one ECX entry and EBP becomes a
 // scratch register); no lower score.
@@ -739,6 +738,17 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // that add one either store the entity's index a second time (32, a redundant store) or clear it up front and
 // store it in the valid arm (71, and 67 with the index narrowed), so our header address stays shared and the
 // result stays in ebp where retail keeps it in bl.
+// m3 lane 2 r75 (fast with 0xa5b10): on the bool result set after the attach (77): `(void)&f;` 77 (same code, `f` still
+// cached in EBP); the flagged arm resetting the entity's field and clearing the local, no join store, retest of the local
+// 70 (char result) / 75 (bool), both threaded early (header shared); the field reset with a field retest 61 (176 B, the
+// memory retest is not forwarded). Match-only, on round 72's join form (first store, local cleared in the flagged arm,
+// stored again at the join, retested) with a bool result: 38 at 176 B, and all of it is retail's (head, `xor bl, bl`, the
+// EBP temporary, the data reload and recomputed index, `mov al, bl`) except the join itself: ours runs the flagged path
+// through `or eax, -1; cmp; mov [edi + 8], eax; je`, retail jumps to a constant store at the end. The same with the
+// retest outside the NONE test, the clear as a ternary, or the clear in an else arm: 38 each (same code); with the
+// entity's field also reset in the flagged arm 36 (an extra store, still not threaded). Without the join store, the
+// flagged arm's local as `object_index = entity->object_index = NONE` or read back from the reset field 75 each
+// (threaded early, header shared): the join with no store is threaded before CSE, the join with one never.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

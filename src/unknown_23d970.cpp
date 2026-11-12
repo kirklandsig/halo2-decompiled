@@ -564,18 +564,18 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
-// MiniMax R (11-11): no new form, no lower score (45); the reduced image the fast check builds compiles
-// this function differently from the full program (255 with 1224 bytes against the full build's 45 with
-// 1262 bytes), so the fast number no longer agrees with the full build and the plain check is the one to
-// trust when ranking variants here. A permuter run (198 tries in 2407 s, 10 sources in its reduced image)
-// confirms it: it scored the original 227 on the reduced image and 44 in the full image, and none of its
-// 198 rewrites beat 44 in the full image.
 // score 45 (was 45): the second product through the existing staged helper of src/unknown_1f03e0.cpp
 // (function_1f087b, every component computed before the stores, i first) gives retail's previous_up
 // loads (j, i, then k into xmm0 after the distance store) and folds forward's loads in the second
 // product. Left: the first product's right.i/right.j colours (ours xmm1/xmm2, retail xmm2/xmm1), the
 // second product's schedule (retail computes k, j, i) and the else branch's forward stores (through
 // edi here, ecx in retail).
+// MiniMax R (11-11): no new form, no lower score (45); the reduced image the fast check builds compiles
+// this function differently from the full program (255 with 1224 bytes against the full build's 45 with
+// 1262 bytes), so the fast number no longer agrees with the full build and the plain check is the one to
+// trust when ranking variants here. A permuter run (198 tries in 2407 s, 10 sources in its reduced image)
+// confirms it: it scored the original 227 on the reduced image and 44 in the full image, and none of its
+// 198 rewrites beat 44 in the full image.
 // MiniMax E (11-10): no new form, no lower score (45); the first cross product loads its two operands into the other pair of registers than retail (here xmm1/xmm2, there xmm2/xmm1), which moves the result of every later product of the second cross, and in the else arm retail keeps the three forward components on one pointer where this build stores the last two from the command pointer.
 // MiniMax C (11-09): no new form, no lower score (45); the first cross product still takes its two temporaries in the other pair of registers (ours xmm1/xmm2, retail xmm2/xmm1) and retail keeps the k term in xmm4 with a movaps where this build reloads it from memory.
 // MiniMax C (11-06): no new form, no lower score.
@@ -931,6 +931,15 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // forward pointer re-measured 43; on it: the pointer also for the copy and both products 223 (1272), an up pointer
 // for the second product, its normalize and the else arm's call 47 (1264), the forward copy through memcpy (listed) 43
 // (same code); the else arm's distance copy after the 0x11d090 call 62, after the pitch cosine 49. 0xe3910 shows the same two-cross pattern: retail's second cross reads forward apart from the first.
+// M3 lane 4 r190 (`--fast 0x23de50 0x1f0230`, 45 = the full check here): the one-use reset bound `maximum` written into
+// its test 45 (same code); 0xe3910's two-cross pattern (Round 58's listed form, re-measured) 59,
+// with the else arm's forward pointer 57; a grid of first product (previous_up x forward / forward x previous_up) x second
+// (function_1f087b / cross3f_staged, operands to match) x the else pointer x `right` declared first: 45/43/43, 217 x4,
+// 224 x4, 59/59/57/57 (best the listed else pointer, 43); the else pointer with the bound written in its test 43; the
+// else pointer plus an up pointer for the 0x11d090 call 47 (1264 bytes; near r115's up pointer). New forms: the delay and
+// timer clamps through the SDK's `max` 45 (same code); the controller index named once for its test and the slot 337
+// (1263 bytes); `advance = delay > observer->delay + 1.f;` assigned directly 74 (1270 bytes); `observer->delay == 0.f` 46.
+// Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
