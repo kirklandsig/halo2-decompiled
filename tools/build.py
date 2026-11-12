@@ -35,6 +35,7 @@ import json
 import os
 import pickle
 import re
+import signal
 import subprocess
 import sys
 import time
@@ -100,6 +101,9 @@ REDUCED_NAME = 'reduced'  # build(units=...): build/reduced.img, build/reduced.m
 # docs/DECOMPILING.md.
 INLINE_THRESHOLD = 81
 BALLAST_FUNCTIONS = 9000  # comfortably past the size where inlining changed
+TOOL_TIMEOUT = max(1, int(os.environ.get('HALO2_TOOL_TIMEOUT') or 600))
+# ^ seconds one cl/link/lib run may take before it is killed and retried once;
+#   Wine occasionally wedges a tool at 0% CPU, and one wedge must not stall a build
 
 
 @dataclass
@@ -456,16 +460,44 @@ def tool_arg(arg):
     return arg
 
 
+def _run_tool_once(command, cwd, env):
+    """Runs command in its own process group, so a timeout can kill the whole
+    tree. The SDK's tools are launched through a wrapper that execs Wine, and
+    Wine leaves a wineserver behind; killing only the wrapper would leave that
+    server wedged for the next attempt."""
+    posix = os.name == 'posix'
+    p = subprocess.Popen(command, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                         text=True, start_new_session=posix)
+    try:
+        stdout, stderr = p.communicate(timeout=TOOL_TIMEOUT)
+    except subprocess.TimeoutExpired:
+        if posix:
+            os.killpg(p.pid, signal.SIGKILL)
+        else:
+            p.kill()
+        p.communicate()
+        raise
+    return p.returncode, stdout, stderr
+
+
 def run_tool(tool, args, cwd, xdk):
-    """Runs one of the SDK's tools and returns what it printed."""
+    """Runs one of the SDK's tools and returns what it printed. A tool that
+    produces nothing for TOOL_TIMEOUT seconds is killed and tried once more:
+    Wine sometimes wedges cl.exe or link.exe at 0% CPU."""
     include, lib = (tool_arg(os.path.join(xdk, d)) for d in ('include', 'lib'))
     env = dict(os.environ, INCLUDE=include, LIB=lib)
-    args = [tool_arg(a) for a in args]
-    p = subprocess.run([os.path.join(xdk, 'bin', 'vc71', tool), '/nologo', *args], cwd=cwd, env=env,
-                       capture_output=True, text=True)
-    if p.returncode:
-        raise SystemExit(f'{tool} failed:\n{p.stdout}{p.stderr}')
-    return p.stdout
+    command = [os.path.join(xdk, 'bin', 'vc71', tool), '/nologo', *(tool_arg(a) for a in args)]
+    for attempt in (1, 2):
+        try:
+            returncode, stdout, stderr = _run_tool_once(command, cwd, env)
+            break
+        except subprocess.TimeoutExpired:
+            if attempt == 2:
+                raise SystemExit(f'{tool} timed out after {TOOL_TIMEOUT}s; set HALO2_TOOL_TIMEOUT to change it')
+            print(f'{tool} timed out after {TOOL_TIMEOUT}s; retrying once', file=sys.stderr)
+    if returncode:
+        raise SystemExit(f'{tool} failed:\n{stdout}{stderr}')
+    return stdout
 
 
 def d3d_objects(root, xdk):
