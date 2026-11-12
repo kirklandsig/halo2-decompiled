@@ -592,7 +592,8 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
-// MiniMax B (11-11): 236 to 216 (plain, 966 bytes): the definition bit is now shifted and kept in
+// MiniMax B (11-11), NOT kept (coordinator): 236 to 216 (plain, 966 bytes) holds the definition bit in a byte flag set
+// by tests (`definition_counted`), a match-only form. The lead as written: the definition bit is now shifted and kept in
 // the dead parameter slot as retail does, and the counts loop and the tail follow it; still differs:
 // ours loads the actor pool into EAX and keeps the scaled index in EBX (retail: ECX and EAX) and
 // spills the actor pointer to a stack slot retail has not; the slot loop is rotated with an extra
@@ -602,7 +603,7 @@ void swarm_leader_detach(long actor_index);
 // instead of being materialised and re-derived after the callback; the iterator compare reloads the
 // actor pointer instead of comparing against the cached one; and the second parameter becomes a
 // Boolean before the 0x203ed0 call where retail pushes the raw value.
-// score 216 (was 236; 281 before this round): frame 0x1c versus 0x20 (earlier body), entry actor displacement and cleanup stack homes remain;
+// score 236 (was 281): frame 0x1c versus 0x20 (earlier body), entry actor displacement and cleanup stack homes remain;
 // at 236 the prologue registers, the memory walk (retail's inlined joint_decline: offset in EDX, count in a stack
 // slot) and the iterator compare against the cached actor differ.
 // MiniMax I (11-09): no new form, no lower score; the body has retail's shape but the allocation differs from the first instruction: retail loads the actor table into EAX and keeps the scaled actor index in EBX with the actor pointer in EBP, ours loads the table into ECX and keeps the index in EAX; the memory walk's helper 0x26ed40 is another lane's file: BLOCKED-BY 0x26ed40 (src/unknown_26e370.cpp).
@@ -919,10 +920,7 @@ void __stdcall function_1e1a00(long actor_index, long value)
 		function_1e1250(actor_index);
 	}
 	byte *definition = (byte *)function_1e4990(actor_get(actor_index)->unknown054);
-	byte definition_counted = 0;
-	if (definition)
-		definition_counted = (byte)((*((dword *)definition) >> 3) & 1);
-	if (definition_counted)
+	if (definition && ((*(dword *)definition >> 3) & 1))
 	{
 		byte *counts = (byte *)g_5047f4;
 		--*(short *)(counts + 6);
