@@ -4294,6 +4294,7 @@ void function_c9e70(long unit_index, dword flags, s_type_1e6529 const *data, s_d
 	}
 }
 
+// MiniMax A (11-12): no new form, no lower score (163): retail still holds the constant 1 in a register for the whole body (saved at entry, used by the bit tests and returned with mov al, bl) and sends every case to one shared store tail, while this build returns an immediate and clones the store into the 0.0 case (602 bytes against retail 578); a local that only holds that constant is a barred form, so the shared tail is not reachable from here and the body stands.
 /* the unit's exported function values by name (0 to 1), and whether each
    is active; two names come from its weapon (0xff5f0) */
 // MiniMax H (11-12): no new form, no lower score (163); retail holds the constant 1 in a register for the whole body
@@ -4625,6 +4626,7 @@ void function_c50a0(long unit_index)
 	}
 }
 
+// MiniMax A (11-12): no new form, no lower score (166): the register plan still differs - retail keeps the vehicle pointer in esi, the -1 and the child index in ebp and the object pool pointer in edx, ours keeps the pool in esi and the vehicle in ebp - and the load of the old driver index sits before the definition lookup in ours and after it in retail; none of the source spellings tried earlier moves that plan, so the body stands.
 /* finds the vehicle's driver (+0x248) and gunner (+0x24c) among its
    riders, in two passes (plain seats, then seat groups whose rider is in
    place), recursing into ridden units; tells 0x1bbdf0 when the driver
@@ -5909,6 +5911,7 @@ void function_cf040(long unit_index, short type)
 	}
 }
 
+// MiniMax A (11-12): no new form, no lower score (1): the single difference is still the operand order of the weapon index read (ours [eax + edi + 8] against retail [edi + eax + 8]); retail own matched 0xe9370 emits both orders for the same unit-header lookup, so the order is not a fixed convention of one macro and the spellings tried earlier do not reach it. The body stands.
 /* whether the unit may enter the vehicle's seat: not its own, allowed for
    players or AIs (bits 16, 17), its weapons fit (bits 2, 3), the seat
    free, its seat group's partner friendly and willing, no enemy riding
@@ -7207,6 +7210,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 	return result;
 }
 
+// MiniMax A (11-12): no new form, no lower score (253): the frame is still 0x24 against retail 0x28 (retail keeps the second loop first in a stack slot, the flags word in memory and the hand index spilled), the unit is still held in edx, and retail still looks the unit up again after 0x110ab0 and reloads the state offset and word for each of the three state-bit tests where ours reads them once; the byte compares of the 0x113da0 and 0x113df0 results reach retail test al, al for two points only, which is under the keep bar, so the body stands.
 /* the unit's control update: counts down its ragdoll (+0x1f5) and two
    short timers, crouches or stands by the control bits, keeps its weapon
    and grenade choices, zoom (with the weapon's or the globals' zoom
@@ -7511,6 +7515,7 @@ struct s_unit_turn_state_view
 	word unknown7 : 1;
 };
 
+// MiniMax A (11-12): no new form, no lower score (395 in the plain build, 453 in the reduced one): the moved flag still sits in a register where retail keeps it in a stack byte, the state and aim pointers still take the other register roles, and the two divisions by the stored step still share one reciprocal; the forms for each of those are in the note below and none is kept, so the body stands.
 /* turns the unit's aim (+0x168) toward its desired aim (+0x15c) and its
    look (+0x18c) toward +0x180 at the definition's rates (scaled while it
    is in state 1 at +0x1bc), within its aim and look limits when they are
