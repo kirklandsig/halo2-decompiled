@@ -379,6 +379,13 @@ struct s_distance_query_contact
 	__m128 field_20;
 };
 
+/* the closest-point collector with room for eight contacts in place */
+struct s_distance_query_collector
+{
+	c_query_array_collector collector;
+	s_distance_query_contact contacts[8];
+};
+
 class hkWorld;
 extern hkWorld *g_51e9a4;
 void voice_fpu_enter();
@@ -394,52 +401,8 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
     arg_0->z = local_0.k * arg_3 + arg_1->z;
 }
 
-// score 8 (was 8): the three values of the query loop are kept in the stack slots in the
-// opposite order (retail j, first, i; ours first, i, j). Shared component base 8; i, j, k
-// declared at the top 8; chained FLT_MAX stores 8; contact pointer walk 8; shape calls
-// through the field pointers 168; about 300 natural forms compiled alone keep the slot order.
-// Indexed second/first/both shape reads 24/79/8; indexed second kind 24; both/second entry
-// shape reads 135/135; indexed second/both shape addresses 24/8; first body through an entry
-// pointer 8; contact index declared outside the loops 8; first body read in the outer loop 211;
-// second's body array in a local 158; second's count in a local 151. Round 60: the loop indices
-// renamed outer/inner 8 (same slots: these are spill homes, names do not order them); the collector
-// and contact buffer declared before the loops 181; i and j declared before the loops 8; an early
-// NONE return in place of the enclosing test 87; second declared before first, assigned in order 8.
-// Round 26: all 24 declaration orders of first, second, i and j at the top keep the slots, as do renames of them
-// (nine sets: these slots do not sort by name) and index initialisation before the loops. A component body
-// getter 8; j declared in the outer loop's body or before it 8/8; type_a read first 28; a contact count local 865
-// (1222 bytes); the second body read through the global 227 (710 bytes). Only a real extra read of j in the j or k
-// loop moves the slots to retail's j, first, i (it adds code and reverses second and the two scaled indices).
-// Round 118: four existing add-scaled/point reconstruction helpers 25 each; an explicit normal
-// copy with direct/shared/scalar reconstruction 95 each; the normal field address 8. Original restored.
-// Round 138: inner loop as while 68 (671 bytes); bodies by pointer add 8; context assigned after its declaration 8;
-// component guards nested 8; index guards nested 8.
-// Round 53 (m3 lane 15, fast): the second body read before the first 8; the query pointer named before the
-// call 8; entry pointers for both bodies 8; `result = true` first in the closer-contact arm 10; that test with
-// its operands swapped 8. Diagnostics: `(void)j`, `(void)i`, `(void)first` and unused initialised copies of
-// them (one or two) leave the slots, so no-code references do not order these spill homes.
-// Round 57 (m3 lane 15, fast): `__assume` at the loop top, before the kind calls or before the contacts: j >= 0 8, j < count 8, both 9, i >= 0 8, first or second
-// != NULL 8, two assumes 8, ahead of the loops 9; naming body_b 8, body_a 79, both 8 (no-code references do not move these homes). Second's extra body read 24 and
-// first's flag through the indexed expression 47 both give retail's j, first, i, but also move second to the top and swap the scaled indices (retail second, scaled i,
-// scaled j); with both 47; second's flag indexed 230, both flags 233; first's count in a local 36, with the extra read 42, with the flag 174; contact count local 865;
-// entry pointer for one body 8/8. So one reference fewer on first or one more on j is the right direction; the second group is what is left.
-// Round 78 (m3 lane 1, fast; control 8): the j-loop test as `second->count > j` 10; the i-loop test as
-// `first->count > i` 10; pre-increments 8; const component pointers 8; the contact-loop test as
-// `collector.entries.count > k` 8. Re-measured: first's flag through the indexed expression 47 (669 bytes) with
-// the slots unchanged in this build (first 0x24, i 0x28, j 0x2c; retail j 0x24, first 0x28, i 0x2c).
-// Round 141 (m3 lane 8, fast): a named component data pointer for first and second 8; a per-iteration contact
-// pointer in the contact loop 8; both body reads ahead of the collector set-up 27 (slots unchanged); the shape
-// addresses passed as `&body->shape` at the call (no address locals) 17 (slots unchanged, EBX/EDI swap);
-// a named world pointer for the context copy 170 (682 bytes).
-// Round 79 (m3 lane 11, fast): the closing FPU restore as a call to the existing voice_fpu_leave() 71 (628 bytes:
-// it stays out of line, and retail calls 0x53f80 out of line only from 0x538d3 and 0x18433c, so this body has the
-// sequence inline); i and j as short 149 (672); the collector without align(16) 19 (it moves 4 bytes); the b
-// point stored by three field stores in place of real_point3d_set 36; the contacts read through
-// collector.entries.data at each use (no contacts local) 8; (re-measured) a contact count local 865.
-// Round 181 (m3 lane 4, fast): the existing havok_component_get and havok_component_rigid_body_get getters with the
-// real component type and its body array 8; i and j as int 8; the collector, dispatch and contact loop as a forceinline
-// pair helper returning the closer flag 152 (685 bytes, every home moves); the outer loop as while 8; the contact buffer
-// declared before the collector 8. Diagnostic: j, first, i renamed to sort in retail's slot order 8 (names do not order them).
+/* The collector and its eight in-place contacts are one aggregate, as 0x183910 declares them;
+   that puts j, first and i in retail's spill slots. */
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
@@ -458,11 +421,11 @@ bool __stdcall function_183670(long component_a, long component_b, point3f *a, p
 			{
 				for (long j = 0; j < second->count; j++)
 				{
-					__declspec(align(16)) c_query_array_collector collector;
-					s_distance_query_contact buffer[8];
+					s_distance_query_collector query;
+					c_query_array_collector &collector = query.collector;
 					collector.entries.capacity_and_flags = 0x80000008;
 					collector.maximum = FLT_MAX;
-					collector.entries.data = buffer;
+					collector.entries.data = query.contacts;
 					collector.entries.count = 0;
 					s_distance_query_body *body_a = first->bodies[i].body;
 					s_distance_query_body *body_b = second->bodies[j].body;
@@ -873,6 +836,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // orders, classifier clamp spellings, result receivers, plane-arm orders, helper boundaries and root/key forms are all listed
 // above; what remains is the frame (0x40 versus 0x44, retail's two untouched dwords below the plane), the 1..16 classifier's
 // three data reads with the constants in the result register, and the dead second walk's loop pad.
+// MiniMax A (11-11, second pass): no new form, no lower score (239); what still differs is unchanged: the frame is 0x40 against retail's
+// 0x44 (retail's two untouched dwords below the plane), the origin and hit copies keep their own homes, and the plane arm hands 0x14a300
+// the plane index in the width our 0x14a300 takes where retail sign-extends it at every caller; that width is set in another file.
+// MiniMax A (11-11): no new form, no lower score (239); our frame is still 0x40 against retail 0x44 (the two untouched dwords below the plane), the origin and hit copies keep their own homes, and the plane arm still hands 0x14a300 the plane index in the width our 0x14a300 takes while retail sign-extends it at every caller; that width is set in another file, so the arm cannot be finished from here.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

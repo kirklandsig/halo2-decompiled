@@ -625,6 +625,10 @@ static inline bool teams_enabled_19e1c0()
 // local-team case too 385 (same code); with a `long` opponent counter 415; with both event teams at each use 387; those
 // two on the plain result 697/667; the team admissions with the subtype in a named local 390 -> 397. Retail's opponent
 // loop counts up (`inc edi; cmp edi, 8`); ours counts down in the free EBP, which retail gives to `remaining`.
+// MiniMax A (11-11, second pass): no new form, no lower score (390); what still differs is unchanged: our build still merges the
+// identical name-case tails that retail keeps apart, and its opponent loop still counts down in the free EBP that retail gives to the
+// remaining count, so the per-case registers and the tail layout stay different (1443 bytes is not reached).
+// MiniMax A (11-11): no new form, no lower score (390); our build still merges the identical name-case tails that retail keeps apart, and its opponent loop still counts down in the free EBP that retail gives to the remaining count, so the per-case registers and the tail layout stay different (1443 bytes is not reached).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

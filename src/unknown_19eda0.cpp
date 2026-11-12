@@ -510,6 +510,11 @@ PRIVATE inline long polygon_round_19f(real value)
 // tag computed just before the 0x1bbf0 call 418 (0x4b2d0 91), the group read ahead of the selected tag 404 (0x4b2d0 78),
 // each with `first * 10` in place 412/427 (ret 8 there, but first in EBX and third in EAX); the previous vertex index as
 // `index != 0 ? index - 1 : count - 1` 406; the texture position as `-=` 370 (same code).
+// MiniMax A (11-11, second pass): no new form, no lower score (370); what still differs is unchanged: retail still loads its constant
+// before the frame push where ours pushes first, the inner-radius lifetime still gives the two subtracted vectors different registers,
+// and the 0x4b2d0 call still takes the variant in the register where retail keeps it in the other register with the context byte and the
+// pass on the stack (that callee's convention is set in another file).
+// MiniMax A (11-11): no new form, no lower score (370); retail still loads its constant before the frame push where ours pushes first, the inner-radius lifetime still gives the two subtracted vectors different registers, and the 0x4b2d0 call still takes the variant in the register where retail keeps it in the other register with the context byte and the pass on the stack (that callees convention is set in another file).
 // @retail 0x19f680
 void function_19f680(long tag, long group, long pass, long variant, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,

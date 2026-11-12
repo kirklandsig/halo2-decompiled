@@ -15,6 +15,11 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
+// MiniMax E (11-11, run 80): no new form, no lower score (536): the two perspective-row crosses through the existing
+// staged helper compile to the same code (536) and the special path's two crosses through it score 537; retail
+// computes the cross components in the k, j, i order and keeps the first cross's products alive for the second
+// one, which gives its frame 0x60 with five vector copies against our 0x54 with four, and it holds the reciprocal
+// in xmm5 where we hold it in xmm1, so the shape pointer sits at [esp+0x14] in retail and at [esp+0x1c] here.
 // MiniMax G (11-11): no new form, no lower score: the permuter over this file's wave spellings produced no variant that matches retail's bytes; retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y are what keep those three on the x87 stack until after the product, and no plain spelling of the wave expression gives them a second use.
 // score 536 (was 594): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
 // against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
@@ -1053,6 +1058,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // T86: Descending initial/next/blend/tint channel indices 509/334/568/244;
 // descending channel pointers 697/604/623/622. NOT kept: no byte match or
 // frame/home recovery; original traversal, arithmetic and complete body restored.
+// MiniMax R (11-11): no new form, no lower score (233): the frame is four bytes shorter (0xa8 against retail's
+// 0xac), so every stack home below the top is off by four; retail keeps the u step and v + width in eight-byte
+// spill slots at the top of the frame, ours keeps them in four-byte homes among the channel homes, and the
+// first-edge Y, half-width, cursor and colour homes differ with them.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

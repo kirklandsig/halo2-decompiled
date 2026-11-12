@@ -156,6 +156,12 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
+// MiniMax E (11-11, run 80): no new form, no lower score (866): retail reads the shared global g_44a0b4 from
+// memory fourteen times and keeps it in xmm4 again after the pointer stores, while ours (a plain real declared
+// in another file) stays in xmm5 for the whole function; a reload would need a volatile qualifier or the
+// address of the global, both ruled out, and the global's definition and second declaration are outside this
+// file; the two pool scans' iterator walks, the gains array sharing a slot with the later existing list and
+// the zeroed count's home remain the other differences.
 // MiniMax S (11-11): no new form, no lower score (866); the prologue still zeroes a different register than
 // retail (ours ebp, retail esi, which retail also pushes before the zeroing), and the zeroed count's home differs
 // (esp+0x24 here, esp+0x88 in retail), so every frame offset after it differs.

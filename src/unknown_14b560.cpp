@@ -792,6 +792,12 @@ bool function_e4050(long object_index);
 // MiniMax C (11-11): no new form, no lower score (43): the datum address is still computed in ebx
 // where retail computes it in edi, and the root walk is still the out-of-line 0xbaf80 in the other
 // file, which is what decides the carriers.
+// MiniMax C (11-11): no new form, no lower score (43): retail's walk (the root preset to NONE, the walk
+// started at the unit and each step's object in a named local, so that it loads into eax) reaches 109 - it
+// keeps the entry test and the eax step, but the carriers rotate (the datum in ebp, the unit in edi, the
+// unit object in ebx, the root in esi) and the roles and the frame both go; the same walk with the unit
+// object looked up after it gives 101 with retail's table and root registers but the datum, the unit and
+// the unit object still rotated among ebx, ebp and edi; the kept parent-first walk stays the best at 43.
 // score 43 (was 43): frame 0x10 agrees; player/unit carrier roles and the root-walk entry differ.
 // MiniMax D (11-09): no new form, no lower score (43); reading the unit index before the player pointer gives 43 (was 44) but leaves the carriers as they were - retail holds the datum address in EDI and the unit index in EBX, we hold them the other way round - so it is not kept.
 // MiniMax C (11-09): no new form, no lower score (43); retail's walk presets its root to NONE and
@@ -2493,6 +2499,9 @@ static __forceinline long player_round_ticks(real value)
 // MiniMax E (11-11): no new form, no lower score (701): the frame is still 0x4c against retail's
 // 0x74, and the two calls this build expands are still expanded here.
 // MiniMax H (11-11): the lengths agree (2740 bytes); only the frame and the register set differ; no new form, no lower score.
+// MiniMax C (11-11): no new form, no lower score (701): the length agrees (2740 bytes); the frame is
+// still 0x4c against retail's 0x74 and the first 0x151b80 call is still expanded here where retail calls
+// it, and the definitions of 0x151b80, 0x151940 and 0xccd20 are in other files.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and
@@ -3028,6 +3037,11 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // the globals pointer is still carried in edi to the end of the function where retail loads it into
 // esi and reloads it after the busy check and again before the final store, and the callees that
 // could show the store to that global are in other lanes' files.
+// MiniMax C (11-11): no new form, no lower score (103 on the full build, 193 on the reduced one): the
+// reduced image overstates this body, since the plain build gives the same 103 and the same 611 bytes
+// for the named `globals` local and for reading g_4e8c20 at every use; what still differs is the register
+// alone - ours keeps the pointer in edi to the end of the function where retail has it in esi - and the
+// callees that decide that summary are in other lanes' files.
 // score 103 (was 103): reading g_4e8c20 directly at every use instead of through the named
 // `globals` local builds to the same bytes in the full build (611 = 611, first difference
 // +0x8) and scores 175 against 193 in the reduced image, so the local is not what holds the

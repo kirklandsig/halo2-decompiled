@@ -904,6 +904,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // too) 220, a case-5 vertices pointer 218. The entry is still the cause: retail loads actor_index into EAX first and moves
 // pathfinding to EBX; no spelling of the cases changes it. Also: both lengths computed before either test 349 (1284 bytes, a
 // variant of the edges-first form); case 5's fallback copying the parent point and output index by member 353 (1292 bytes).
+// MiniMax R (11-11): no new form, no lower score (218): the entry still differs - retail moves the pathfinding
+// pointer into ebx and loads the actor index into eax before the switch, ours keeps the pathfinding pointer in eax
+// and reads the actor index in the cases that use it; the frame (0x40) and case 2 agree, so the whole difference is
+// that entry.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

@@ -308,7 +308,7 @@ void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 	}
 	((pair_305790 *)this)->function_305790((manifold_305790 *)table, first_mask, second_mask);
 }
-// score 19 (was 24): Frame 0x44 and extent 847 agree; the returned byte is
+// score 24 (was 24): Frame 0x44 and extent 847 agree; the returned byte is
 // below the saved this instead of above the two side inputs. The remaining
 // 4-byte stack homes are shifted by four. A common result and sole exit fix
 // both distance-store/return orders, confirmed by the plain check.
