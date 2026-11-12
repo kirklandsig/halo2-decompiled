@@ -130,6 +130,10 @@ void *__cdecl function_2ef2f0(long arg_0, long arg_1, long arg_2, long value)
 // carriers differ before growth. First extent at use 11; direct radii/all fields 13/13;
 // radius/extent references 13/11; scalar broadcast loads 89; late second radius 13;
 // staged vector broadcasts 64. NOT kept: tied or larger differences; original observations restored.
+// First radius before second shape 11; both radii before extent 11; both
+// extent snapshots 71; scalar-set/shuffle broadcasts 72; four-lane broadcasts
+// 157; immutable output vectors 11; aligned extent loads 11; copy then add 72.
+// NOT kept: no gain.
 // @retail 0x2ef3b0
 void manifold_pair_2ef2f0::function_2ef3b0(description_2ed170 const *a, description_2ed170 const *b, input_2ef2f0 const *input, long arg_3)
 {
