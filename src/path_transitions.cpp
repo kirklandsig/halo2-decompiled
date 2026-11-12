@@ -512,6 +512,12 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 
 // score 218 (was 219): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
+// MiniMax C (11-11): no new form, no lower score (218); retail copies the pathfinding argument into EBX at the entry
+// and reads the actor index (the first stack argument) into EAX there, while this build keeps the pathfinding in EAX
+// and reloads the actor index at its case-5 use, so every case is seven bytes out of step; the actor test hoisted
+// ahead of case 5's direction (286) and the direction built inside the actor test (336) both score worse and were
+// reverted; swapping case 5's position and direction statements so the position comes first scores 265 and was
+// reverted, so the case-5 statements stay in their retail order.
 // MiniMax D (11-08): no new form, no lower score (219); retail keeps the first argument in EBX and reads the stack
 // argument into EAX at the entry, ours uses EAX for the actor and ECX for the stack argument, and the switch's case
 // bodies and the counter's register home still differ.
@@ -898,6 +904,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // too) 220, a case-5 vertices pointer 218. The entry is still the cause: retail loads actor_index into EAX first and moves
 // pathfinding to EBX; no spelling of the cases changes it. Also: both lengths computed before either test 349 (1284 bytes, a
 // variant of the edges-first form); case 5's fallback copying the parent point and output index by member 353 (1292 bytes).
+// MiniMax R (11-11): no new form, no lower score (218): the entry still differs - retail moves the pathfinding
+// pointer into ebx and loads the actor index into eax before the switch, ours keeps the pathfinding pointer in eax
+// and reads the actor index in the cases that use it; the frame (0x40) and case 2 agree, so the whole difference is
+// that entry.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

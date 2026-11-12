@@ -6,6 +6,26 @@
 #include "reference_counted_2d88a0.h"
 #include <new>
 
+struct array_vectors_2e1980
+{
+	__m128 *data;
+	long size;
+	unsigned long capacity_and_flags;
+	array_vectors_2e1980();
+	~array_vectors_2e1980();
+};
+
+struct vectors_2e1980 : array_vectors_2e1980
+{
+	__m128 *stack_block;
+	long stack_capacity;
+	vectors_2e1980(long capacity);
+	~vectors_2e1980();
+};
+
+void __cdecl function_2e02d0(entry_2e0250 *entries, int low, int high, order_2e0250 context);
+
+
 // a list of endpoints over storage it does not own
 struct endpoint_list_2e3370
 {
@@ -83,4 +103,71 @@ void class_2e1090::function_2e3370(bounds_2e0020 const *bounds, overlap_endpoint
 	lists->axes[0].append(sentinel);
 	lists->axes[1].append(sentinel);
 	lists->axes[2].append(sentinel);
+}
+
+// score 111 (was 171): first written form 171; frame now agrees. Sort setup
+// and loop registers differ. Object argument 141; its scope 141; cell
+// reference 130; named count 101 (NOT kept: repeated array pointer reads);
+// endpoint cursor 111; range pointer 100 (NOT kept: one use); element
+// reference 99; owner pointer 100; shared index 100 (NOT kept: shared local);
+// owner mask 40 (NOT kept: extra mask); separate pointers 99 (NOT kept:
+// one use); index first 100; int indices 100; while 100; axis reference 100;
+// early owner pointer 100 (NOT kept: one use); cell pointer 100; unscoped
+// indexed loop 101 (NOT kept: repeated array pointer reads); unscoped cursor 111.
+// @retail 0x2e3b00
+void class_2e1090::function_2e3b00()
+{
+	long const count = elements.size;
+	vectors_2e1980 saved(count);
+	saved.size = count;
+	longs_2e1ab0 order(count);
+	order.size = count;
+	longs_2e1ab0 remap(count);
+	remap.size = count;
+	for (long i = 0; i < elements.size; i++)
+	{
+		((element_2e1090 *)saved.data)[i] = elements.data[i];
+		((endpoint_2e0f80 *)order.data)[i].value = axes[0].data[elements.data[i].slots[4]].value;
+		((endpoint_2e0f80 *)order.data)[i].id = (unsigned short)i;
+	}
+	long const sortable_count = order.size - 1;
+	order_2e0250 context = {};
+	if (sortable_count > 1)
+	{
+		function_2e02d0((entry_2e0250 *)(order.data + 1), 0, sortable_count - 1, context);
+	}
+	for (long i = 0; i < elements.size; i++)
+	{
+		remap.data[((endpoint_2e0f80 *)order.data)[i].id] = i;
+		elements.data[i] = ((element_2e1090 *)saved.data)[((endpoint_2e0f80 *)order.data)[i].id];
+	}
+	for (long i = 1; i < elements.size; i++)
+	{
+		long owner = elements.data[i].owner;
+		if ((owner & 1) == 0)
+		{
+			*(long *)owner = i;
+		}
+		else
+		{
+			((cell_2e1090 *)((char *)cells + (owner & ~1)))->box = (unsigned short)i;
+		}
+	}
+	for (long i = 0; i < cells_used; i++)
+	{
+		cell_2e1090 &cell = cells[i];
+		for (long j = cell.boxes.size - 1; j >= 0; j--)
+		{
+			cell.boxes.data[j] = (unsigned short)remap.data[cell.boxes.data[j]];
+		}
+	}
+	for (long axis = 0; axis < 3; axis++)
+	{
+		endpoint_2e0f80 *endpoint = axes[axis].data;
+		for (long i = 0; i < axes[axis].size; i++)
+		{
+			endpoint->id = (unsigned short)remap.data[endpoint->id];
+			endpoint++;
+		}
+	}
 }

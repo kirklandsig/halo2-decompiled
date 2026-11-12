@@ -1459,6 +1459,8 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax H (11-11): no new form, no lower score (164); retail keeps index*12 as a value and re-reads the unit and
+// the pool's data for the second depletion query, and writes the first depletion with setle; the permuter (600 s) found nothing.
 // score 164 (was 164):
 // retail keeps index*12 as a value, re-reads the unit (and the pool's data for the second query)
 // for both depletion queries, writes the first depletion with setle and returns the result byte unnormalised.
@@ -1831,6 +1833,10 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
+// MiniMax E (11-11): no new form, no lower score (445); the frame's slots sit at retail's offsets one dword off
+// and retail keeps its frame pointer and the early pointer where ours does not.
+// MiniMax S (11-11): no new form, no lower score (445); retail's frame is 0xc against our 8, it keeps the pool pointer in ECX and the pool data in ESI where ours loads the global into EAX and the data into EDX, it forms the control pointer as base+offset where ours stores the bare offset, and it writes the true default at the entry where ours starts from the switch; the entry default is the known lead but it costs the matched caller 0x10ff40 its score.
+// MiniMax C (11-11): no new form, no lower score (445); `requested` still takes edi and the unit pointer is kept where retail keeps the pool data in esi and the index times twelve in edx.
 // score 445 (was 453): retail keeps the result byte in the first argument's dead slot and re-derives the unit in both seat
 // queries (rounds 85, 149 and 93 below).
 // MiniMax R (11-04): no new form, no lower score.
@@ -2269,6 +2275,15 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 	result->k = up->k * input_direction.k + up->j * input_direction.j + up->i * input_direction.i;
 }
 
+// MiniMax D (11-11): no new form, no lower score (776); the frame is still 0xcc against retail's 0xd4, and
+// retail's prologue still holds the lookup chain ours does not have: the unit's definition index, then the
+// definition's model tag at +0x38, then that tag's bytes, then +4 and one more tag, all stored into a frame
+// slot that is overwritten before any read. Writing that chain out in the source only produces the dead
+// store the compiler drops (the earlier round's unused-local form was eliminated as well), and the eight
+// missing frame bytes are the same ones the earlier rounds' angle and overlay forms could not recover.
+// MiniMax E (11-11): no new form, no lower score (776); retail's frame is 0xcc bytes where ours is 0xd4 and its
+// first angle is expanded out of line, so every stack slot sits eight bytes off.
+// MiniMax C (11-11): no new form, no lower score (776); the loop's channel play is still expanded two levels where retail calls 0x1cb490 out of line.
 // score 776 (was 776): frame 0xcc versus 0xd4 and first angle expansion remain; retail calls channel_play
 // (0x1cb490) out of line at five sites and expands only the final animation_10c start, ours expands the
 // overlay loop's call. At entry retail also loads an otherwise unused render-model tag into a stack slot.

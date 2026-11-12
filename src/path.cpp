@@ -375,6 +375,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// MiniMax G (11-11): no new form, no lower score (286); the frame is 0xe8 against retail's 0xe4 and the acquisition, flag and
+// scalar homes still differ; the scan's previous point, the link copy as an aggregate assignment, the previous-node test with
+// the arms swapped and one pathfinding-data local for the link and surface tests all give the same code or a higher score.
+// MiniMax H (11-11): no new form, no lower score (286); our frame is 0xe8 against retail's 0xe4, and in the scan retail keeps the link index in a register and multiplies it by 0x44 while ours reloads it from a stack slot each time, so the frame slots on the two sides sit four bytes apart.
 // MiniMax B (11-11): no new form, no lower score (286): the 200 of the round below comes from a flag that one test
 // sets and the next test reads, which is kept only with a byte match, so it is not available here.
 // score 286 (was 286): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.

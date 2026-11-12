@@ -1351,6 +1351,7 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// MiniMax S (11-11): no new form, no lower score (529): retail hands this function its block in eax and its query in edx while this build swaps them, and its frame is 0x2c against retail's 0x28.
 // score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
 // MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
 // and its query in edx while ours swaps them, and the parameter order is not ours to change.
@@ -1612,6 +1613,7 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // and `result = true;` last with retail's square and pin order 568 (masked 206, 0x3db00 lost). Re-measured: the early return 566
 // (masked 263); `bool result = false;` first with `result = true;` last 573 (block EBX and query EDI as retail, record ESI,
 // 0x3db00 lost).
+// MiniMax R (11-11): no new form, no lower score (529): the entry convention and the loop's homes stay rotated against retail's, and the parameter order that would fix the entry is not ours to change.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1688,6 +1690,9 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax B (11-11): no new form, no lower score (378); retail opens with the input length computed in x87 as
+// the matched magnitude3d helper's own body, while ours calls that helper from another file, so the length's
+// home and the frame (0x4c against retail's 0x40) stay as they are.
 // MiniMax D (11-10): no new form, no lower score (378); the frame is 0x4c where retail's is 0x40, and the
 // 0xd37f0 call hands over its block and query in the other order, which the callee's own file fixes.
 // MiniMax S (11-10): no new form, no lower score (378): our frame is 0x4c against retail's 0x40, so the
@@ -2225,6 +2230,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
+// MiniMax S (11-11): no new form, no lower score (542): the frame is the same 0x90, but the status, mesh, colour and sample homes sit 0xc bytes lower than retail's, and the second arm's 0x13da30 lookup expands here where retail calls it (that helper lives in another file).
 // MiniMax D (11-10): no new form, no lower score (542); the second arm's 0x13da30 lookup expands here where
 // retail calls it, and that helper lives in another file.
 // MiniMax S (11-10): no new form, no lower score (542): the frame is the same 0x90, but the status, mesh,
@@ -2499,6 +2505,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // registers through the first arm and the sample setup (difflib with registers 287 against 974, registers
 // and offsets masked 110 against 302): left there are the frame homes and the two inlined helpers (13
 // extra instructions shift the tail).
+// MiniMax R (11-11): no new form, no lower score (542): the argument split and the body's block schedule still differ from retail's, and the two inlined helpers live in files this lane may not edit.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

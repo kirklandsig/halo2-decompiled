@@ -125,6 +125,11 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
 
+// MiniMax G (11-11): no new form, no lower score (46): the products' load and memory sides, the plane-distance store
+// base and the first corner's axis and flag registers are as the earlier rounds left them; a short axis result measures 162.
+// This round: the fast image measures this body exactly only with 0x120850 and 0x22bbca checked beside it (46; alone it
+// gives 258); the axis as a short through the helper 165, the three components as named locals 46 and the determinant's
+// product with its operands swapped 46 (both the same code).
 // score 46 (was 46): retail's length and every lookup, store and the tail; left are the products' load/memory sides (retail's
 // ranks: j fields > bounds[1,2] > i fields > bounds[0,3] > k fields; ours differ and move with symbol count), the plane store base
 // and the first corner's registers (the axis stays live in ECX, so the flag takes EAX). Earlier at 138: frame 0xc and matrix/dot
@@ -866,6 +871,8 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
+// MiniMax E (11-11): no new form, no lower score (535 on the full build, 834 on the reduced image):
+// the frame is still 0x21d8 against retail's 0x21dc and the locals still sit in other stack homes.
 // w14H (11-06, fast, plain): statement-by-statement walk against retail found no logic difference (fields, offsets,
 // condition directions, callee arguments, loop shapes, rotation coefficients and bounds all agree). The angle helper's second
 // clamp is now the existing function_50650 (retail's inlined clamped arccosine) instead of its body written out: fast 795 -> 793,
@@ -1176,6 +1183,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // scope 535 (same code); face_count declared before secondary_count 535 (retail's store order for the two counts,
 // slots unchanged); the first plane at function scope 535; the selected plane alone 535; start/end alone 535 (all
 // the same frame homes: scope and declaration order do not move a slot in this body).
+// MiniMax H (11-11): no new form, no lower score (535 plain, 834 on the reduced image): the frame is 0x21d8 against
+// retail's 0x21dc and the definition pointer, the count and the zeroed word still sit in other slots than retail's,
+// so every row after the first loop stays shifted.
 // MiniMax D (11-10): no new form, no lower score: the definition pointer, the count and the zeroed word
 // still sit in other frame slots than retail's (0x94, 0x20 and 0x54 against our 0xb4, 0x18 and 0x4c).
 // Round 187 (m3 lane 4, plain): the edge walk started from `first_edge` (edge_index copied from it) 535 (same code); the

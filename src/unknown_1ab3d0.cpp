@@ -194,6 +194,10 @@ static __forceinline long real_to_long(real value);
 // Round 162 (m3 lane 5, fast): 4 to 25 unused initialised locals at the top (diagnostic) 2/4/4/6 with period 4, the i product's load
 // never flips; direction's components through a `real *` to its array 6; the test as `!(sum >= 0.0f)` 4; a projection local declared
 // at the function top 2; the direction pointer declared at the function top 2; a const facing pointer right after the actor lookup 2.
+// Round 152 (m3 lane 7, fast): the slot's data block through `slot->unknownc` (FORMS report) declared in place 6, at the top
+// 38 (463 bytes); retail forms the direction from the raw slot (`lea eax, [edi + 0x10]`, k cleared at `[edi + 0x18]`), so that
+// form does not apply. The direction pointer from the parameter 2; no slot_state local, the slot cast at each use 6; the
+// normalize call given the slot's own direction 2.
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {
