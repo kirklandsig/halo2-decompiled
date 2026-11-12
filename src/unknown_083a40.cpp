@@ -767,6 +767,8 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // `&watcher->players` 32; the swap's update in the `update` local in its own block 32; the occupant key pointer
 // taken before the swap call 222; `slot`/`occupied` declared at the else arm's top 32; the conflict scan through
 // `collection` (players and mask) 264. Swap order restored to main's.
+// Round 157 (m3 lane 8, fast with 0x83c90/0x84e90/0x84c90/0x69260): the count through a `long &` reference to `*count`
+// at every use 28; `updates` through a base-pointer local at every use 28 (both same code).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
