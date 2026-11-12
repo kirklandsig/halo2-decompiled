@@ -434,6 +434,9 @@ long network_session_get_maximum_players(c_class_58d20 *session);
 // (139/134 bytes, NOT kept: extent moves away); direct final return 57; success-default
 // result 39; explicit failed-comparison arm 33; sole-exit admission goto 33; nested
 // index/pointer result 33. Unchanged reduced image matches; full image remains the judge.
+// P405 fast: inner readiness/type, peer readiness, final validity/index/pointer early rejections, direct success return, comparison rejection; scores 1, 2, 60, 68, 69, 69, 43, 68.
+// Inner readiness rejection is 34 at 138 bytes in the plain check (fast 1/134): final calls still reverse.
+// NOT kept: full score regresses; original body and all callee interfaces restored.
 // @retail 0x73360
 bool c_helper_b::v7()
 {
