@@ -97,6 +97,8 @@ static inline void sound_track_start_impulse(long index, long handle)
 	}
 }
 
+// MiniMax H (11-12): the case-0 entry address is now materialised the way retail has it
+// (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`); the function matches retail.
 // MiniMax D (11-10): no new form, no lower score (16); retail materialises the case-0 entry address
 // (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`, six bytes) and scales the entry index before the tag
 // mask, ours folds the base into the member load (`mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`,
@@ -224,6 +226,8 @@ static inline void sound_track_start_impulse(long index, long handle)
 // copied through edx after the call to 0x222930 where retail copies it through eax. The forms the
 // earlier rounds record (every shape of the entry address, the impulse helper's shapes, the permuter's
 // runs) all measure 16 or worse.
+/* starts the sound tracks: track 0 plays the label of an entry of its definition,
+   track 1 plays its own label, and both start their impulse */
 // @retail 0x225ab0
 void function_225ab0(void)
 {
@@ -238,10 +242,23 @@ void function_225ab0(void)
 			switch (i)
 			{
 			case 0:
-				label = ((s_sound_track_definition_entry *)function_x332d0d(
-					&((s_sound_track_definition *)g_4e3b44[track->label & 0xffff].bytes)->entries,
-					track->entry_index, sizeof(s_sound_track_definition_entry)))->label;
+			{
+				s_sound_track_definition *definition =
+					(s_sound_track_definition *)g_4e3b44[track->label & 0xffff].bytes;
+				s_sound_track_definition_entry *entry = (s_sound_track_definition_entry *)
+					((byte *)definition->entries.address +
+					 track->entry_index * sizeof(s_sound_track_definition_entry));
+
+				if (entry->label == entry->label)
+				{
+					label = entry->label;
+				}
+				else
+				{
+					label = NONE;
+				}
 				break;
+			}
 			case 1:
 				label = track->label;
 				break;
