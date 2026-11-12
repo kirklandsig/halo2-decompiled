@@ -6892,6 +6892,12 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // MiniMax G (11-11): no new form, no lower score (576): retail overlaps the direction and the bounds at [esp+0x14] where ours gives each of them slots of their own, so every slot above them is four bytes out; the dot3f adds run i, j, k in ours and k, i, j in retail, and our body is 71 bytes shorter than retail's 2507.
 // MiniMax S (11-10): no new form, no lower score (576): retail computes left/top/right/bottom on the x87 stack and copies each through a temporary where we subtract and store directly, its second group of ten stage states and the three render-state calls of the second group stay out of line where ours inlines them, and its loop counts down in memory.
 // MiniMax D (11-10): no new form, no lower score (576).
+// MiniMax B (11-12): no new form, no lower score (576): retail computes left/top/right/bottom on the x87 stack with
+// the dword constant and copies each through a temporary, so the bounds are doubles before they are narrowed; the
+// three ways of writing that here - double locals with float narrowing temporaries, double casts on the two
+// centres, and both of those interleaved with the array stores - all score 614, because the double context makes
+// our build push ebx and ebp at the entry and grow the frame to 0x4c while retail keeps 0x44 and shrink-wraps the
+// two saves to its own epilogue, so every slot offset differs; a 900-second permuter run found no lower score.
 // score 576 (was 695), Round 1 of #1066: 2436 bytes against retail 2507. Fixed: the 2nd quad and the
 // loop begin with D3DDevice_Begin (retail calls it; ::Begin inlined it), the 1st quad uses the member
 // D3DDevice::SetVertexData4f (inlined, as retail), the first ten stage states go through
@@ -8633,6 +8639,12 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
 // MiniMax A (11-04): the character pointer computed before the empty-slot test 374 (worse), reverted; no lower score.
 // MiniMax D (11-01): no new form tried, no lower score.
 // score 328 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
+// MiniMax B (11-12): no new form, no lower score (328): retail loads the font pool before its first test and keeps
+// it in eax, reads the stack parameter into ebx with the -1 sentinel in ebp, keeps the header at [esp+0x10] and the
+// scaled character offset at [esp+0x14], has a second flag byte at [esp+0xf] it never reads, inlines the three
+// removal sites where ours calls the helper out of line, and puts the pixel buffer at [esp+0x30] (frame 0x2020
+// against our 0x201c); earlier rounds' forced-inline helper and plain header local scored worse in the full build.
+// score 342 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
 // clipped fill still writes the rows in another order than retail's.
 // Round 2 of #1066: a forced-inline removal helper (all three sites expanded, retail's 1133 bytes), the volatile
 // header as a plain local, one read of the pool and guarded do-while loops gave 279 on the fast image but 342 in the full
