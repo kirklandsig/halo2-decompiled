@@ -502,6 +502,11 @@ struct s_text_line_measurement
 	long index;
 };
 
+// MiniMax C (11-11): no new form, no lower score (77): the one difference left is the running width's reload —
+// retail loads it into xmm4 right after the scale and copies the advance into xmm3 (movaps) so the bound can
+// reuse xmm0, ours reloads it into xmm3 after the three multiplies and accumulates the update in xmm0; the
+// width's load placement follows the source order of its read, so moving the can_break block between the
+// metric definitions gives 111 and the block's own position is already the one retail uses.
 // score 77 (was 77): retail loads the width into xmm4 before the multiply
 // chain and accumulates the four terms in xmm3; ours reloads the width into
 // xmm3 after the multiplies and accumulates in xmm0 (register allocation only).

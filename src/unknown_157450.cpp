@@ -5497,7 +5497,10 @@ void function_159880(void)
 
 void __stdcall function_d6bc0(long object_index);
 
-// score 52 (was 52): native frame 0x18 and 869-byte length; initial scenario/rate stores, cached index test,
+// score 29 (was 52): the failed-schedule paths `continue` to the loop latch where retail falls into the countdown block
+// (the extra 4 bytes are near jumps), the schedule's index test uses the local where retail compares entries[i].index,
+// and case 1 reads into CL where retail uses AL. Earlier at 52 (was 52): native frame 0x18 and 869-byte length; initial
+// scenario/rate stores, cached index test,
 // case-1 CL versus AL (the same cause as the index test) and removal index reload remain; the kind admission order
 // (kind == 0 first, then 1..7, one tail-merged dispatch) now agrees through the switch in each kind arm. Earlier at 60
 // (was 97): case-1 CL versus AL, modifier admission order and removal index reload remained. Earlier at 112: timer at +0x20
@@ -5804,11 +5807,18 @@ void __stdcall function_d6bc0(long object_index);
 // tested bit 1 first 116 (first difference +0x5a); the engine pointer declared before `type` 83; the countdown in place
 // 52 (same code). Kept, same code: both squared distances through the existing dot3f 52. Re-measured: true default cleared
 // by the field test 172, a named timer pointer for the zero test, delay, countdown and continue 178.
-// score 29 (was 52): MiniMax R (11-11): the countdown block reads entries[i].index at each use instead of a copy in a
+// MiniMax R (11-11), 52 -> 29: the countdown block reads entries[i].index at each use instead of a copy in a
 // local (kept). With the switch's skip paths also jumping to the countdown block through a label (a goto; no behaviour
 // change, value04 is 0 there) it scores 7: that form is match-only and not kept (coordinator 11-11). R on the 7 form: the
 // scenario pointer is stored before the countdown period as retail does; left: the switch's index test compares the local
 // with -1 where retail compares the field itself, and the case-1 bit test uses CL where retail uses AL.
+// Round 110 (m3 lane 16, fast with 0x15c150 and the six callees, all matched each time; base 29): R's goto form
+// re-measured 7 (869 B); on it the schedule test reading entries[i].index 172 (858 B, `entries` again taken into a register,
+// as on the flag recipe); on it the 0x10a bit as a one-byte bitfield 125 (864 B: `test byte ptr [edx + 0x10a], 4`, so
+// retail's shift-and-test needs the word field). The direct-assignment flag (`schedule = bit;`, `schedule = d > 1.0f;`,
+// default `schedule = false`) re-measured on this base 129 (877 B, round 152's true/assign/assign). Every failed schedule
+// in retail falls into the countdown block, so no `continue` spelling reaches it; the two non-continue shapes are the flag
+// recipe and the goto, both match-only at 7.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

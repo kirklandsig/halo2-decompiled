@@ -97,6 +97,10 @@ static inline void sound_track_start_impulse(long index, long handle)
 	}
 }
 
+// MiniMax H (11-12), NOT kept (coordinator): a byte match came only with the element getter's body written out and
+// `if (entry->label == entry->label) label = entry->label; else label = NONE;` around the read, a test that is always
+// true (reverted even with a match); without that test it is 16 (165 bytes). Retail materialises the case-0 entry
+// address as `add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`; a NULL test on the element pointer may be the natural form.
 // MiniMax D (11-10): no new form, no lower score (16); retail materialises the case-0 entry address
 // (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`, six bytes) and scales the entry index before the tag
 // mask, ours folds the base into the member load (`mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`,

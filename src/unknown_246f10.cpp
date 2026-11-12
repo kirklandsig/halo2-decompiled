@@ -106,8 +106,9 @@ public:
 	virtual bool v12() = 0;
 };
 
+#include "impacts.h"
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
-	long unused, long effect_value, s_location const *location, real scale);
+	c_type_47f957 material, long effect_value, s_location const *location, real scale);
 
 // @retail 0x247070
 void function_247070(s_object_246eb0 const *particle, s_particle_impact const *impact, long definition_index, long tag_index)
@@ -121,7 +122,7 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 		short index = impact->index;
 		real scale = function_246eb0(particle);
 		function_188180(&impact->position, &impact->normal, tag_index, NONE, 10, variant,
-			index, (long)&impact->direction, &location, scale);
+			c_type_47f957(index), (long)&impact->direction, &location, scale);
 	}
 }
 

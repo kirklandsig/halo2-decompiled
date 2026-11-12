@@ -4540,6 +4540,10 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // before its 0x769a0 call, whose unread owner parameter this build's callee in src/unknown_075870.cpp does not
 // take, so the extra store in the caller cannot be written here.
 // MiniMax A (11-11): no new form, no lower score (305); the two byte flags sit one slot lower than retail's and the second pair of byte slots one higher, so the difference is a slot permutation this build does not reproduce from the source.
+// MiniMax R (11-11): no new form, no lower score (305): the frames agree (0xd8 with the same two pushes) and the
+// body length agrees, but the flag results are kept in registers and al where retail keeps them in stack bytes
+// (the byte at esp+0xb, this build at esp+0xa), and retail stores the session's value10 into a slot before its
+// 0x769a0 call, whose unread owner parameter the callee in another file does not take.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

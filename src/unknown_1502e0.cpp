@@ -1299,6 +1299,15 @@ long function_cbd50(long unit_index, short weapon_index);
 // MiniMax B (11-11): no new form, no lower score (215); retail computes the pool element address before the
 // prologue's register saves and keeps it whole in ebp, while this build splits the multiply from the base add,
 // keeps the pool pointer in a register of its own and frames 0x1c against retail's 0x18.
+// MiniMax G (11-11): no new form, no lower score (215); retail keeps the player in ebp and the pool in edi and
+// reloads the tag table inside the loop, this build keeps the tag table in ebx and the pool in ebp and spills the
+// player to a stack slot, so the frame is 0x1c against retail's 0x18; the pool global used directly (295), the tag
+// table read inside the loop or before it (215 each), the helper reading the tag table global itself (215) and
+// both of those with the pool global (293) all leave the player in a slot or in a volatile register.
+// T90: Inventory count pass through end-tested for/count-plus-cursor/while/outer
+// cursor, each mutable/read-only: 608/608/215/215/608/608/608/608.
+// End-tested cursors recover frame 0x18 but roll the count pass to 675/1006 bytes; counted cursors tie 215.
+// NOT kept: No native pool/player/tag ownership equality; original inventory index and complete body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1613,6 +1622,10 @@ void function_150820(dword *bits, bool local_only)
 // no-op probes at the player lookup fold away (identical code), so tuple phase is untested. No untried natural form
 // is left that compiles differently: the notes above cover declaration orders, hand/slot/result types, result graphs,
 // early exits, existing getters, pool copies, lifetimes and the permuter.
+// MiniMax G (11-11): no new form, no lower score (43); the difference is a register rotation only - retail keeps
+// the player in esi, the unit index in edx and the hand in edi, ours keeps them in edi, ecx and esi, and both
+// bodies are 210 bytes; the hand as a conditional expression, the unit index in a local of its own and the modes
+// array declared before the unit all leave the code as it was.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

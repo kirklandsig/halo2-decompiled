@@ -437,6 +437,12 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // exclusive conditional/failure-first publication 11/11; exclusive bound with
 // seat_index/selected_seat/target_state names 11/11/11; complete direct tag
 // reads at every use 27. All at 541 bytes; original complete body restored.
+// MiniMax A (11-11, second pass): no new form, no lower score (8); the seat scan's preamble is still the whole difference: retail keeps
+// the count in ESI and the index in EBP, tests the count against the index's own zero register (cmp esi,ebp) and stores the selected
+// pointer NULL from that register, while our build materialises a second zero in EAX for both the test and the store. The exclusive
+// bound (11), the count compared with the index (12), the count in a local (11), the while form (11), a 32-bit index (144), a seat-count
+// test around the scan (135) and the count read before the guard (67, which also moves the whole prologue) all fail to give retail's
+// registers; only a test that repeats the loop's own bound puts the count in ESI and the index in EBP, and that one is not kept.
 // MiniMax E (11-04, not kept, m3 review: the 8 -> 6 rests on a seat-count test
 // that repeats the loop's own bound, a redundant compare kept only with a byte
 // match; main's loop restored): with that test the count and the index occupy
@@ -449,6 +455,7 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // MiniMax G (11-10): no new form, no lower score (8); ten loop spellings (the bound exclusive or inclusive, the count in a local or read again, the seats array in a local, a while form, the index widened or narrowed) all give 11, 23 or 27, because every exclusive bound moves the count to EBP and the index to ESI where retail keeps the count in ESI and the index in EBP, and the inclusive bound keeps them but needs the decremented count and js/jle instead of retail's cmp/jle and cmp/jl.
 // MiniMax R (11-10): no new form, no lower score (8); the body is unchanged, and the seat scan's inclusive
 // bound still needs the decremented count and the separate zero that retail does not.
+// MiniMax A (11-11): no new form, no lower score (8); the seat scan preamble is the whole difference: retail keeps the count in ESI and the index in EBP, tests the count against the index own zero register (cmp esi,ebp) and stores the selected pointers NULL from that register, while our build materialises a second zero in EAX for both the test and the store; every exclusive spelling (for, while, the count in a local, the index declared first, the count compared with the index) moves the count to EBP and the index to ESI (11 or 12), and a seat-count test around the scan keeps retail registers and the native cmp/jl but our build still materialises the EAX zero (6, not kept: the test repeats the loops own bound).
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
@@ -707,6 +714,11 @@ extern "C" void _ReadWriteBarrier(void);
 // before the call 44 (208 bytes); with (actor, state) parameters and the barrier at the helper's top 6. Compile-only
 // diagnostics: a second definition of the state (in an else) loads the slot at entry; a read in the join block
 // loads it after the compare; helper forms without the barrier compare in ECX like the body without it.
+// Round 172 (m3 lane 6, fast; diagnostics only, reverted: a volatile cast is not keepable): the slot read once through
+// a volatile view of the parameter first, without the barrier 50 (210 bytes), with it 29; after the actor lookup
+// without the barrier 49 (210), then the barrier 31 (207); the barrier, then the read 29. Each loads the slot in the
+// entry block, but the data base then takes ESI (with a `push esi` at entry) where retail keeps it in EDX until the
+// constant 4. No untried non-volatile form that touches the slot's load or the entry block is left in this note.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -1766,6 +1778,12 @@ void function_1f86a0(long actor_index);
 // initialised to NULL, `specified != 0` in `same`, the 0xc byte as a typed `bool` member of the slot state, bit 6 as
 // `(flags & 0x40) != 0` at the store and the 0x1ba990 argument, the 0x2676d0/0x1e2030 test negated with its arms swapped.
 // Re-measured: the slot/selection pointers after the early return 233 (round 45's 261 on an older body).
+// MiniMax A (11-11, second pass): no new form, no lower score (134); the frame is still 0x10 against retail's 0x14, and the difference
+// is still the registers: ours keeps the incoming actor index in ECX and spills it to its own slot, keeps the seat flags byte in BL and
+// stores the iterator's result to the stack, where retail keeps the actor index in EDX and writes it straight into the iterator record,
+// pushes EBX before the call and keeps the result there, and spills the flags byte to the stack; the actor array base, the scaled index
+// and the tag table global therefore land in different registers (retail EBP, EDI and ESI, ours ECX, EBP and EDX).
+// MiniMax A (11-11): no new form, no lower score (134); our build keeps the incoming actor index in EBX for the whole body and saves it in the prologue, where retail keeps it in EDX only until the iterator record is filled and reloads it from its stack slot for each later call, so the actor array base, the scaled index and the tag table global land in different registers (retail EBP, EDI and ESI, ours ECX, EBP and EDX) and the frame slots of the stored actor pointer differ.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

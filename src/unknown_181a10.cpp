@@ -836,6 +836,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // orders, classifier clamp spellings, result receivers, plane-arm orders, helper boundaries and root/key forms are all listed
 // above; what remains is the frame (0x40 versus 0x44, retail's two untouched dwords below the plane), the 1..16 classifier's
 // three data reads with the constants in the result register, and the dead second walk's loop pad.
+// MiniMax A (11-11, second pass): no new form, no lower score (239); what still differs is unchanged: the frame is 0x40 against retail's
+// 0x44 (retail's two untouched dwords below the plane), the origin and hit copies keep their own homes, and the plane arm hands 0x14a300
+// the plane index in the width our 0x14a300 takes where retail sign-extends it at every caller; that width is set in another file.
+// MiniMax A (11-11): no new form, no lower score (239); our frame is still 0x40 against retail 0x44 (the two untouched dwords below the plane), the origin and hit copies keep their own homes, and the plane arm still hands 0x14a300 the plane index in the width our 0x14a300 takes while retail sign-extends it at every caller; that width is set in another file, so the arm cannot be finished from here.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
