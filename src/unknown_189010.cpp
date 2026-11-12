@@ -361,6 +361,11 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // priority as `(audible ? 2 : 0) + 1` 110 (same code). Re-measured, not new: the variant pointer read from the
 // request at each use 110. Still BLOCKED-BY 0x221810 (inlined at the first site here, called in retail) and
 // 0x21d110 (whose note names this function as its blocker: the two conventions have to move together).
+// MiniMax A (11-11, second pass): no new form, no lower score (110); what still differs is unchanged: the request is still copied field
+// by field where retail reloads the state flags after the call, because our build expands the first 0x221810 lookup inline (that helper's
+// inline-ness is set in src/unknown_221490.cpp, a file this lane may not edit) and the 0x21d110 call still takes the state by pointer on the
+// stack where retail passes it in a register (that callee's declaration is in another file).
+// MiniMax A (11-11): no new form, no lower score (110); our build still expands the first 0x221810 lookup inline where retail calls it out of line (that helpers inline-ness is set in another file and was ruled off limits), and the 0x21d110 call still takes the state by pointer on the stack and the tag index in the register where retail passes the state in the register and the tag index on the stack (that callees declaration is in another file).
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
