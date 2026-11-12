@@ -150,6 +150,12 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // for header 68, declared after the result 68, declared at the loop 15, with a walking output pointer as well 317 (1172
 // bytes). In all three pointer forms the result keeps 0x18 and the pointer takes 0x1c, so declaration order does not break
 // the tie between the two homes.
+// Round 85 (m3 lane 14, fast; ours ends `ret 8` like retail in both the fast and the full build): the increment moved
+// above the blend, which then writes `output[local_1 - 1]`, 93; the result declared and returned inside the table test
+// with `return 0` after it 293; the blend reading the copied entry back from the output record 297 (1197 bytes);
+// `1.0f - local_7` named right after the copy 98 (1208); the product update as `(1.0f - local_12) * local_7` 11 (same
+// code). Re-measured, not counted: the three blend addresses as `offset + base` in all eight combinations 11 (identical
+// code: the operand order in source never reaches the [eax + edx] address).
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

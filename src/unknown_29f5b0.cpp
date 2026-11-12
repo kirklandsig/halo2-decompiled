@@ -980,6 +980,10 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // Round 162 (m3 lane 5, fast): `static` on the definition 6; the definition moved below 0x2a0650 6; the position as a
 // `real const *` to the point's array 6; the callee's prototype declared inside the body 6; the effect index copied to a named
 // local before the vector 6. The whole difference follows from one choice: ours issues the table add ahead of `push esi`.
+// Round 152 (m3 lane 7, fast; a one-file harness with the callee's file is exact at 6): the vector from a force-inline taking a
+// pointer to the yaw/pitch pair with a named pitch cosine, `(real)cos` 6 or cosf 6; `true, true` for the constants 6; an inline
+// filling an output vector from the flag 6; one returning the vector by value 69 (122 bytes; 0x2a1120 8), from the angles 74
+// (harness); the position read through the table ahead of the flag 41 (harness, 98 bytes).
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {

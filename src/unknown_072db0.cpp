@@ -1255,6 +1255,11 @@ long function_1931a0(long count, s_surface_description *variant);
 // Round 226 (m3 lane 3, fast, still BLOCKED-BY 0x7e210): 0x7e210's player loop written as 0x63220's body with its calls
 // (0x192e60, 0x631f0, a two-evaluation max of 0x1931a0) gives this function its match (the top 0x192e60 call stays out of line
 // and the session arrives in EAX) but raises 0x7e210 766 -> 1032; with its capacity helper forceinline 8 here, 998 there.
+// Round 109 (m3 lane 16, fast control 8 / plain 6, still BLOCKED-BY 0x7e210): the matched caller 0x6fa60's ratings buffer without
+// its `__declspec(align(8))` 8 (0x7e210 766; aligned caller locals are not what keeps the session on the stack); in 0x7e210, the
+// write-only machine-id copy dropped 8 (0x7e210 937, 2700 bytes: retail has the copy); the capacity test through the existing
+// 0x193300 (our link already folds this file's twin into it) 8 (766, same code), with a forceinline redeclaration of it 8 (766);
+// that call with the top lookup after the capacity read 1 (942, 2732 bytes, as the private-helper form). All restored.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {
@@ -1581,6 +1586,7 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// MiniMax H (11-11): no new form, no lower score (703); the users cursor still rides in EBX where retail keeps it in a stack slot at +0x18, and the logon-status test still lacks retail's decrement/branch.
 // score 703 (was 703; 709 before; 2910 bytes): Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax H (11-04): the logon-status test written as (status - 1 == 0) reaches retail's

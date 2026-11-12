@@ -113,6 +113,11 @@ PRIVATE __forceinline long texture_floor(real value)
 // and with the loop body cut to one 0x143c0 call (the cut-down bodies also changed this function's frame or homes:
 // `state` moved into a register, `remaining` into EBP, so they do not isolate the latch); matched 0x18e80's latch takes EAX after a call that leaves EAX
 // unused. No untried natural form of the latch or the frame block is left in this note.
+// Round 189 (m3 lane 4, fast with 0x16b90 and 0x16b10): the shift count as `(byte)index` 111; the render reset state
+// typed (slot fields, +0x2c bias, +0x1420 slot mask) with per-use slot indexing 51 (419 bytes), with a slot pointer 4;
+// an inline pin function for both clamps 4; a short stage local at the loop top 4; the floor result named as an
+// integral before the clamp 4. Diagnostics: a cut-down loop (bsf, NONE test, a call, the clear) keeps EDX with an LTCG
+// or XDK callee, called conditionally or not; a second use of the mask (0x18e80's state clear) gives EAX, `mov ecx` first.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {

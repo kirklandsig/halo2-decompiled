@@ -52,6 +52,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 
 /* the next recent player after the iterator's: a valid, online, known player
    with a name; iterator starts at the first entry and ends at NONE */
+// MiniMax S (11-11): no new form, no lower score (43); retail's shape read off the disassembly - the index
+// scaled in place in ESI, the successor in EBX and the & 3 mask hoisted into AL before the loop - is not reached
+// by giving the successor its own local (51 as a while loop and as a guarded do/while, because the successor then
+// lands in ECX) nor by returning from the loop directly (52, which also drops the top zeroing of the result).
 // score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
 // retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
 // successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
@@ -356,6 +360,12 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the machine-local test with a successor local and early returns 44. Re-measured: `*iterator = index = entry->next` with an
 // early return 52, a successor local with early returns 49, an early `return false` then a do-while 55, a found pointer with
 // break 51 (133 bytes).
+// MiniMax A (11-11): no new form, no lower score (43); this round's new forms measured 43 or 71: the exclusion mask as a variable of its own, declared before or inside the loop (43), and the three loop forms that read the iterator in the loop (71).
+// MiniMax G (11-11): no new form, no lower score (43); retail reads the index straight into esi and scales it in
+// place, keeps the successor in ebx and hoists the & 3 mask into al before the loop, while ours copies the index
+// into esi, keeps the successor in edx and leaves the mask as an immediate; giving the successor its own local
+// moves it to ecx instead of ebx (51, and 52 with the loop left on a none successor), and passing the mask in at
+// the call site does not hoist it either.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

@@ -126,6 +126,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 	return success;
 }
 
+// MiniMax G (11-11): no new form, no lower score (244); retail gives the function scope locals the lower homes and the
+// inner scope ones the higher (the current sector 0x30, the line distance 0x34, the success flag 0x0e, the first-edge
+// flag 0x0f) where our build gives the inner scope locals the lower ones, and the dots' XMM roles follow the cross
+// product's operand order in the shared helper, so the frame and the rotation both come from outside this file.
 // score 244 (was 244): earlier 410; the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
 // the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
 // MiniMax C (11-05): no new form, no lower score; retail's cross product multiplies the direction's component first (direction.k*up.j where ours does up.j*direction.k) and adds the magnitude's squares in the other order, both from the shared cross3f and magnitude helpers; retail also keeps the first-edge flag at [esp+0xf] and the success flag at [esp+0xe] where ours keeps them the other way round, and hoisting or reordering those two declarations does not move them.

@@ -3546,6 +3546,10 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
+// MiniMax E (11-11): no new form, no lower score (101): the thirteen bytes retail has between the
+// member-state lea and the timeout call need an unread owner parameter on 0x769a0, whose definition
+// is in src/unknown_075870.cpp.
+// MiniMax D (11-11): no new form, no lower score (101): still BLOCKED-BY 0x769a0 in src/unknown_075870.cpp, where the call's register home is the callee's to decide.
 // MiniMax R (11-10): no new form, no lower score (101); the timed-out call's owner argument still has no home, because the callee that would take it is in another file.
 // MiniMax R (11-09): no new form, no lower score; the timed-out call's owner argument still has no home,
 // because the callee that would take it is in another file.
@@ -4368,6 +4372,9 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
+// MiniMax S (11-11): no new form, no lower score (305); the frames agree (0xd8 with the same two pushes) but our
+// body is one byte longer than retail's (1265 against 1264), and the result byte still lives at esp+0xa where
+// retail keeps it at esp+0xb.
 // MiniMax R (11-10): no new form, no lower score (305); the three flag bytes keep their homes a rotation apart
 // from retail's (retail: the peer block's better flag at esp+0x9, the same flag sharing the identity test's slot at
 // esp+0xa, the result at esp+0xb; ours: the same flag at esp+0x9, the result at esp+0xa, better at esp+0xb), and the
@@ -4532,6 +4539,11 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // at esp+0xb, where this build keeps it in al and frames it at esp+0xa) and stores session->value10 into a slot
 // before its 0x769a0 call, whose unread owner parameter this build's callee in src/unknown_075870.cpp does not
 // take, so the extra store in the caller cannot be written here.
+// MiniMax A (11-11): no new form, no lower score (305); the two byte flags sit one slot lower than retail's and the second pair of byte slots one higher, so the difference is a slot permutation this build does not reproduce from the source.
+// MiniMax R (11-11): no new form, no lower score (305): the frames agree (0xd8 with the same two pushes) and the
+// body length agrees, but the flag results are kept in registers and al where retail keeps them in stack bytes
+// (the byte at esp+0xb, this build at esp+0xa), and retail stores the session's value10 into a slot before its
+// 0x769a0 call, whose unread owner parameter the callee in another file does not take.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

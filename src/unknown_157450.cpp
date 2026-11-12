@@ -483,6 +483,13 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 
 /* recomputes the teams that have players */
 // score 32 (was 32): the word mask, its one reload ahead of the first jne, and present's update in EBX remain.
+// MiniMax D (11-11): 24 (was 32), NOT kept (coordinator 11-11: lane 14 r55's width cast on one side of the compare; retail compares dword; body stays at 32): the old team mask as a word local (retail's `mov cx` entry and its
+// word spill) with the present compare narrowed to a word (`(word)present_teams != old_team_mask`); the
+// present mask's high bits are always zero, so the narrowing keeps the behaviour. The compare is still
+// 16-bit where retail compares dwords (`mov esi, [present]; movzx eax, cx; cmp esi, eax`), and the mask
+// is still read from memory twice (retail reloads it once into ECX before the first jne and shares that
+// register with the OR for the store). Without the cast the word mask is 77 and the dword mask 32; a
+// one-use team-bit local on top of this was 21 but a one-use local is kept only with a byte match.
 // MiniMax C (11-06): no new form, no lower score; a word old-mask local is rematerialised from
 // globals->team_mask at each use (129, frame 0xc), a named new-mask local (129) only moves the
 // playing teams into EDX, and a volatile word mask (118) reloads the slot cleanly for the compare
@@ -5797,14 +5804,19 @@ void __stdcall function_d6bc0(long object_index);
 // tested bit 1 first 116 (first difference +0x5a); the engine pointer declared before `type` 83; the countdown in place
 // 52 (same code). Kept, same code: both squared distances through the existing dot3f 52. Re-measured: true default cleared
 // by the field test 172, a named timer pointer for the zero test, delay, countdown and continue 178.
+// score 29 (was 52): MiniMax R (11-11): the countdown block reads entries[i].index at each use instead of a copy in a
+// local (kept). With the switch's skip paths also jumping to the countdown block through a label (a goto; no behaviour
+// change, value04 is 0 there) it scores 7: that form is match-only and not kept (coordinator 11-11). R on the 7 form: the
+// scenario pointer is stored before the countdown period as retail does; left: the switch's index test compares the local
+// with -1 where retail compares the field itself, and the case-1 bit test uses CL where retail uses AL.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
     if (g_4e6948->mode == 4) return;
     byte *globals_tag = g_4e3b44[*(long *)((byte *)g_4e034c + 0x16c) & 0xffff].bytes;
     byte *preset = *(byte **)(*(byte **)(globals_tag + 0xc) + 0x534);
-    long arg_642c39 = g_510c54->field_2_3;
     byte *scenario = (byte *)g_4e0350;
+    long arg_642c39 = g_510c54->field_2_3;
     for (short i = 0; i < *(long *)(scenario + 0x120); ++i)
     {
         byte *placement = *(byte **)(scenario + 0x124) + i * 0x90;
@@ -5889,15 +5901,14 @@ void __stdcall function_15ae70(s_netgame_entry_state *entries)
             entries[i].value04 = countdown;
             if (countdown == 0)
             {
-                index = entries[i].index;
-                if (index != NONE && (placement[0] & 2) && object->type != 2)
+                if (entries[i].index != NONE && (placement[0] & 2) && object->type != 2)
                 {
-                    if (object->type == 1 && (function_158ff0(index) || function_15f060(&object->position, *(real *)(preset + 0x28))))
+                    if (object->type == 1 && (function_158ff0(entries[i].index) || function_15f060(&object->position, *(real *)(preset + 0x28))))
                     {
                         entries[i].value04 = 1;
                         continue;
                     }
-                    function_d6bc0(index);
+                    function_d6bc0(entries[i].index);
                 }
                 function_15aad0(entries, i);
             }
