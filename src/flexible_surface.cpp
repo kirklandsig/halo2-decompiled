@@ -690,6 +690,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // `old` for the rows only 162 (890 B). Same code: scalar-first products, the projection staged as `*= 1 - cosine`,
 // parenthesised row sums, dot3f(&g_55ecd4, &axis). Retail keeps no `old` or `cross` copy in memory (the global's j/k in
 // XMM5/XMM4, cross j/k spilled early, cross i formed inside the i row); only scalar code gives that.
+// m3 lane 8 r158 (fast with 0x118140, 0x30bf0, 0x117c80; both sides end in a plain `ret`): the permuter (`--fast --anneal`,
+// 600 s after an 856 s full-image baseline) tried 64 variants, best 117 (none lower); re-measured the listed definition
+// read only at the strength product 208 (880 B; 0x118140 stays matched). Register-masked aligned 45: the frame (0x28 for 0x20: `old`
+// lives in memory because its address reaches cross3f and dot3f), the seed pointer loaded after the time product (retail
+// before it) and the rotation block (retail keeps no `old` or `cross` copy: the global's j/k in XMM5/XMM4, cross j/k spilled,
+// cross i formed in the i row), which only the hand-written rotation (an existing helper's body, match-only) gives.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
