@@ -504,6 +504,12 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
+// MiniMax G (11-11): no new form, no lower score (303); the frame agrees at 0xa8, but retail keeps the first
+// temporary (the length, the random integer and the sine) at the frame bottom while ours puts it above the result
+// byte, so the axis and result homes sit four bytes lower here, and ours is twelve bytes longer than retail's
+// (1435 against 1423); this round re-read the diff and the rotations' candidate spill and the temp's home are the
+// two pairs that are left, so the body stands.
+// MiniMax H (11-11): no new form, no lower score (303); the frame agrees at 0xa8, but retail keeps the firsttemporary (the length, the random integer and the sine) at the frame bottom while ours puts it above the result byte, so the axis and result homes sit four bytes lower here, and ours is twelve bytes longer than retail's (1435 against 1423).
 // MiniMax H (11-11): no new form, no lower score (303); the frame agrees at 0xa8, but retail keeps the first temporary (the length, the random integer and the sine) at the frame bottom while ours puts it above the result byte, so the axis and result homes sit four bytes lower here, and ours is twelve bytes longer than retail's (1435 against 1423).
 // score 303 (was 303; 322 before that): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
 // score 303 (was 303; 322): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
@@ -875,6 +881,11 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
 // MiniMax B (11-11): no new form, no lower score (257); the body is unchanged, and the grids listed above are exhausted.
+// MiniMax G (11-11): no new form, no lower score (257); the two flags' byte homes are still swapped against
+// retail's (the result byte and the presence byte), the three vector components still reach the stack homes in the
+// order EAX/EDX/ECX where retail uses EAX/ECX/EDX, and our case 1 and case 2 blocks still cross-jump where retail
+// keeps them apart; this round re-read the diff and the swapped homes follow from the order the two flags are
+// written in, so the body stands.
 // MiniMax H (11-11): no new form, no lower score (257); the two flags' byte homes are still swapped against retail's (the result byte and the presence byte), and our case 1 and case 2 blocks still cross-jump where retail keeps them apart, so the direction chain's layout predecessor stands.
 // score 257 (was 257): frame 0x8c agrees; the result/point-valid byte homes, the direction chain's layout predecessor
 // (retail: case 2's remembered-prop 0x1e3b00 tail, which case 1's copy cross-jumps into) and the weapon path's registers differ.
@@ -1816,6 +1827,11 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax G (11-11): no new form, no lower score (442 plain, 548 on the reduced image); retail still calls 0x1fdd90
+// out of line with the slot offset spilled to [esp+0x30] and the actor index in ESI where ours expands the call
+// inline and keeps the index in EDI, and that helper is defined in another file, so its inline decision cannot be
+// moved from here; this round re-read the diff and the entry block and the frame (0xcc against retail's 0xc8) are
+// what that call leaves, so the body stands. BLOCKED-BY 0x1fdd90.
 // MiniMax H (11-11): no new form, no lower score (442 plain, 548 on the reduced image); retail still calls 0x1fdd90 out of line with the slot offset spilled to [esp+0x30] and the actor index in ESI where ours expands the call inline and keeps the index in EDI, and that helper is defined in another file, so its inline decision cannot be moved from here. BLOCKED-BY 0x1fdd90.
 // MiniMax C (11-11): no new form, no lower score (442); retail never inlines 0x1fdd90, so the block's difference is that helper's, and it lives in another file.
 // MiniMax A (11-11): no new form, no lower score (442 plain, 548 on the reduced image); retail calls 0x1fdd90

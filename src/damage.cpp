@@ -4499,6 +4499,15 @@ void function_db670(long object_index, long vehicle_index)
 
 /* a permutation destroyed elsewhere (over the network): starts its delayed
    effect, or destroys it here */
+// MiniMax G (11-11): no new form, no lower score (42); the mode-1 arm still keeps the permutation base in EAX where
+// retail holds it in EDI, so retail loads the flags word first and saves EDI across the branch while ours loads the
+// effect index first and leaves EDI unsaved, which also moves the &owner argument from [esp+0xc] to [esp+8]. Moving
+// the permutation pointer out of the arm rebuilds the body (57, and the compiler does not sink the loads back into the
+// arm: it builds the address before the branch with the regions base in EDI and the pointer in ECX), holding the
+// permutations array pointer out of the arm compiles to the same code (42), the at-marker flag in a local of its own
+// compiles to the same code, and the argument evaluation order follows 0xd9d60's declared parameter order, which this
+// file may not change. The else arm stays blocked by 0xda110, which retail calls with the permutation index in EAX
+// and five stack arguments where ours takes the region in EAX and the permutation in ECX.
 // MiniMax R (11-11): no new form, no lower score (42); the mode-1 arm still keeps the permutation base in
 // EAX where retail holds it in EDI, so retail loads the flags word first (`mov eax, [ecx+edi+4]`) and ours
 // loads the effect index first (`mov edx, [ecx+eax+0x34]`); the &owner argument lands at [esp+8] instead of
