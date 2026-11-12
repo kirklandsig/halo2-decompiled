@@ -826,6 +826,11 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // Round 82 (lane 11, fast): 0xe4bd0 declared after 0xbd020 (the move that gave 0xc98a0 retail's convention) 13; after
 // 0xdb5c0 13; 0xe5930 declared before it 13; the word pointer local with the move 10 (not kept: one-use local, no match);
 // the unit re-read for the type test 58 (repeat). BLOCKED-BY 0xe4bd0 (src/bipeds.cpp held this round) and 0xe5930.
+// Round 112 (m3 lane 16, plain with 0xe4bd0 and 0xc2d00): `inline` on 0xe4bd0's definition 13 (same code); the existing
+// word_flags_set for the +0x33e clear with the mask test plain or `!= 0` 10/10; with unit_at_masked_index 10; with
+// byte_flags_set for the first clear too 10; all three existing helpers 10 (each 95 bytes: the mask temp takes EAX as in
+// retail and only the 0xe4bd0 tail call is left; 0xc2d00 flips to 2, the accepted link flip). Round 281's 9 adds a
+// named bool used once for the type test, which is kept only on a match. Still BLOCKED-BY 0xe4bd0 / 0xe5930.
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {
