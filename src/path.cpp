@@ -375,6 +375,17 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// score 286 (was 286): frame 0xe8 versus retail 0xe4 (long link count), the node acquisition and the link/special flag
+// homes remain; retail spills both flags to one byte slot (+0xf), so its source sets them by tests (match-only here).
+// M3 lane 8 r159 (fast with 0x270930, which stays matched): lane 11 r71's flag form rebuilt on the current file 2 again
+// (1388 bytes, masked 0, re-measured; only `mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]` swapped at the scan's back
+// edge). On that 2, looking for retail's extra loop block that is gone after allocation: the projection clamp with the
+// three point stores written in each clamp arm (hoping they cross-jump after allocation) 145 (1408 bytes, not merged); the
+// count set by `count = count == 0 ? node->depth + 1 : count;` 288 (the count block changes, the pair does not move);
+// the 1600 distance test written at the end of each output-index arm 488 (1489 bytes; not merged, 0x270930 then 260);
+// `margin * 2.0f` named once before the scan as `minimum_length` 89 (1392 bytes); the step's node index stored before the
+// first-count update 294 (1391 bytes).
+// No plain form for the main body found that the notes above do not list; the body below is unchanged.
 // MiniMax H (11-12): no new form, no lower score (286): our frame is still 0xe8 against retail's 0xe4 and the node depth is still read with one instruction where retail uses a lea and a byte displacement; the inverted depth, previous-index, count and type tests score 307, 329, 286 and 286, the hoisted node pointer 286 and a separate first-node pointer 282.
 // MiniMax A (11-12): no new form, no lower score (286); the first difference is the acquisition, where retail computes the node address with a lea and reads the depth at +0x3e while ours reads it at +0xee, and retail's frame (0xe4) is exactly filled by its locals while ours needs one dword more, so the two sides' slots stay four bytes apart.
 // MiniMax G (11-11): no new form, no lower score (286); the frame is 0xe8 against retail's 0xe4 and the acquisition, flag and
@@ -383,7 +394,7 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // MiniMax H (11-11): no new form, no lower score (286); our frame is 0xe8 against retail's 0xe4, and in the scan retail keeps the link index in a register and multiplies it by 0x44 while ours reloads it from a stack slot each time, so the frame slots on the two sides sit four bytes apart.
 // MiniMax B (11-11): no new form, no lower score (286): the 200 of the round below comes from a flag that one test
 // sets and the next test reads, which is kept only with a byte match, so it is not available here.
-// score 286 (was 286): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
+// Earlier status line, 286 (was 286): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
 // MiniMax C (11-10): 286 -> 200 not kept: it came from a bool started false and set by if/else for the link test, the same
 // bool reset and reused for the surface test, an origin pointer and two-arm start/end fallbacks; test-set flags are kept only
 // with a byte match (lane 13 r63 held 16 with the same kind of flags). Retail keeps the edge flag in a byte at esp+0xf and reads
