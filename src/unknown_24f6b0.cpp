@@ -1,23 +1,18 @@
 #include "unknown_11c920.h"
 #include "unknown_1946f0.h"
 
-// @flags /O1 /Oi /Ob1 /arch:SSE /Gr
+// @flags /O2 /Ob1 /arch:SSE /Gr
 
 PRIVATE __forceinline void direction_face_point(s_direction_face const *face, vector3f const *point, vector3f *out)
 {
-	real local_0 = face->scale;
 	real x = point->i;
 	real y = point->j;
-	real z;
-	if (local_0 == 1.f)
+	real z = point->k;
+	if (face->scale != 1.f)
 	{
-		z = point->k;
-	}
-	else
-	{
-		x *= local_0;
-		y *= local_0;
-		z = local_0 * point->k;
+		x = face->scale * x;
+		y = face->scale * y;
+		z = face->scale * z;
 	}
 	out->i = face->axes[2].i * z + face->axes[1].i * y + face->axes[0].i * x + face->origin.i;
 	out->j = face->axes[2].j * z + face->axes[1].j * y + face->axes[0].j * x + face->origin.j;
@@ -25,7 +20,10 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 }
 
 /* Expands a face index and two six-bit coordinates to a unit direction. */
-// score 9 (was 9): retail sets z ahead of the scale test (`movaps xmm2, xmm3` before `jnp`, no else jump) with the
+// Matches (Fable lane 7 r153; @flags change approved by the user 11-12, applied on main by machine 3): /O1 /Oi becomes
+// /O2, the flags of its sibling unknown_24f590.cpp (this file holds only this function), and direction_face_point sets z
+// ahead of the scale test and scales x, y, z by face->scale. Full check: lost [], gained 0x24f6b0.
+// Before (score 9): retail sets z ahead of the scale test (`movaps xmm2, xmm3` before `jnp`, no else jump) with the
 // scale in xmm4; ours assigns z in the arm, with the scale in xmm2. Earlier state at 19: the components are stored in retail's order (i, j then
 // k), so our zero is materialised after the multiplies where retail keeps it
 // in xmm3 from the top of the function; the low six bits also come from a
