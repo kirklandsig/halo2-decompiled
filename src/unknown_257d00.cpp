@@ -1975,6 +1975,11 @@ void function_b7360(long object_index);
 // After that: local_0 and local_1 through the existing actor_get and cs_get (their bodies were written out here) 270, byte-identical,
 // kept; actor_get alone 270 (same code); case 13's object held as an s_swarm_object pointer (no casts at the two flag stores) 270 (same
 // code); the datum's +0x9c record typed as s_type_c3b527 so case 5's copy needs no cast 270 (same code).
+// T91: complete terminal tail orders 9/20/13, 13/9/20, 13/20/9, 20/9/13,
+// 20/13/9 give 270/287/475/283/475; complete 9/13/20 block before cases
+// 10/5/8 gives 318/287/339. Every entry prefix through notification dispatch
+// is unchanged after addresses are masked. NOT kept: no equality or gain;
+// original complete cases, fallthroughs, inputs, copies and callback restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

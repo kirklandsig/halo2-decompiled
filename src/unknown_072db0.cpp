@@ -428,6 +428,12 @@ s_surface_description *function_192e60(long index);
 long function_193300(s_surface_description *variant);
 long network_session_get_maximum_players(c_class_58d20 *session);
 
+// score 33 (was 33): frame agrees; final helper calls reverse and retain the variant in EBP,
+// adding four bytes. Earlier named call result and reversed comparison both 33.
+// Complete final result 35; admitted comparison result 33; outer default-return guard 11
+// (139/134 bytes, NOT kept: extent moves away); direct final return 57; success-default
+// result 39; explicit failed-comparison arm 33; sole-exit admission goto 33; nested
+// index/pointer result 33. Unchanged reduced image matches; full image remains the judge.
 // @retail 0x73360
 bool c_helper_b::v7()
 {

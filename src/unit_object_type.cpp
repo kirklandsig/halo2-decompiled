@@ -4761,6 +4761,12 @@ void __stdcall function_cc810(long vehicle_index)
 // Root choice: the second root's clamp as an else-if chain 162 and the test as `second < 0.0f || first < second` 162
 // (both same code); the test negated with the arms swapped 162 (other code); second computed before first 175 (716
 // bytes); `time` defaulted to the clamped second root and overridden by the first 174 (715 bytes).
+// T91: completed admission in a long 212; explicit bool/long producers 162/212;
+// success-default bool/long with complementary failed tests 177/206; unfinished
+// planning in the completion's else 162; moving-away begun after both early
+// planning exits 185; chained phase clears 161. NOT kept: the chained clears gain
+// only one; every other form ties or regresses. The x87 discriminant/frame remains,
+// including the 708-byte success-default bool form. Original complete body restored.
 // @retail 0xc7300
 void __stdcall function_c7300(real distance, real velocity, real speed_limit, real acceleration, s_unit_motion *motion)
 {
@@ -5108,8 +5114,9 @@ bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking
    a point projected onto the aim line from its center, moved by offsets
    along the aim and its left and up, then held clear of the world from
    its center; and its root object's velocity */
-// score 2 (was 184; earlier 202, 218): the frame, convention (aim and point in registers, the other six arguments on the stack,
-// score 184 (was 202; earlier 218): the frame, convention (aim and point in registers, the other six arguments on the stack,
+// score 2 (was 184; earlier 202, 218): frame 0x24 and 808 bytes agree; the first cross
+// product's j minuend loads aim.i before world-up.k. Earlier history follows.
+// Earlier 184 (was 202; earlier 218): the frame, convention (aim and point in registers, the other six arguments on the stack,
 // ret 0x18), branch shapes and call order agree; what differs is xmm register allocation and operand order.
 // Retail loads the dot product's seven operands first (aim.i in xmm0, the center in xmm4-6) and multiplies in a
 // register; ours folds the aim into memory operands. In each offset step retail loads the vector component and
@@ -5150,6 +5157,10 @@ bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking
 // projection block (diagnostic), so it is local to that product. The world-up global in a local first 6; the first
 // cross product written out (staged order) 108 (796 bytes), with that minuend's operands swapped 108.
 // Also on 2: `up` declared before `left` 2, `up` declared after the zero test 2, `0.0f == function_30bf0(&left)` 121.
+// T91: existing scalar-input setter for aim/fallback/aim+fallback/clip/aim+clip/fallback+clip/all
+// publications 216/131/201/62/202/122/217; world-up copied into left before an alias-safe
+// in-place staged cross 179. NOT kept: no match; original copies and helper calls restored.
+// First +0x12a still exchanges the first cross j minuend's load and memory multiplier.
 // @retail 0xc8290
 void __stdcall function_c8290(point3f *point, vector3f *aim, long unit_index, vector3f *velocity, real const *offsets,
 	bool project, bool use_aim, bool clip)
@@ -5243,6 +5254,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // xmm2 but high/low in xmm3/xmm4); the sums with below declared first 170; sums in the a/b block only 168; in the
 // c/d block only 61; each product right before its test (re-measure) 74; `high = low = 1.0f` 58 (same code); one
 // declaration for both 58 (same code). Also tried, not kept: the same helper copied privately here 58 (same code).
+// T91: current angle/rate read once for both bound products, separately/both,
+// 80/82/97; complete actor-query result 168; default vector through the existing
+// setter 178; success-default actor result 183; coherent bound-producer names 58;
+// updated angular velocity named for its store and integration 58. NOT kept:
+// no equality or gain; original observations, copies, result and rotation restored.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
