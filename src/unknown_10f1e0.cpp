@@ -1459,6 +1459,7 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax B (11-11): no new form, no lower score (164); the body is unchanged, and the forms listed above are exhausted.
 // MiniMax H (11-11): no new form, no lower score (164); retail keeps index*12 as a value and re-reads the unit and
 // the pool's data for the second depletion query, and writes the first depletion with setle; the permuter (600 s) found nothing.
 // score 164 (was 164):
