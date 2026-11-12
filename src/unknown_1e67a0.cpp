@@ -1033,6 +1033,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
+// MiniMax A (11-12): no new form, no lower score (114, the reduced image and the full build agree): naming the
+// sine and the cosine before the rotation call scores 150 (1382 bytes) against 114, so the call keeps its
+// expressions; the first difference is still the inlined rotation's dot and cross products, whose body is in
+// another file: retail multiplies the vector's component by the axis's from memory and sums the terms j, k, i,
+// ours multiplies the axis's component by the vector's and sums them i, j, k.
 // score 114 (was 114; 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // MiniMax S (11-07): no new form, no lower score; the crosses declared apart, declared at first use or
 // declared at the top of the body give 114, the two cross calls swapped give 124 and the goal copy by

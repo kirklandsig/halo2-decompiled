@@ -1,4 +1,5 @@
 #include "unknown_0b68c0.h"
+#include "object_tag_definitions.h"
 #include "unknown_11c920.h"
 #include "bit_vector.h"
 #include "globals.h"
@@ -983,6 +984,18 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // 271; the two copies into the scratch buffers swapped 243; the second block's assignments orientations-first 242; the sample flag
 // declared after final_matrices 240; node_count read ahead of the animation state 240; the second block's two pointers as one
 // chained assignment 240 (each other code).
+// m3 lane 8 r158 (fast with 0xbfe20, 0x137800, 0xbdb60, 0xbfe60, all MATCH): the definition typed s_object_definition (its
+// model_tag_index and object_type) 240 (same code, kept); the early tests through object_get() with `object = header->object`
+// 270 (847 B); the +0xa4 mask as a named `model_mask` for its three uses 240; the node count as `(dword)*(short *)` as
+// 0xbd090 writes it 240 (same code each). Diagnostics: the mask copy through an inline memcpy wrapper (a one-caller helper)
+// 240, and 295/287 on the two leads below (same code each); on round 168's single-exit lead the bit-29/+0x34b object through
+// `((s_object_header_view *)header)->object` 295 (same code as the lead). Re-measured on round 168's single-exit lead
+// (rebuilt 295; 0xbfe20 clear, bit-29/+0x34b through header->object): the listed fresh-table-lookup form for the bit-29/+0x34b
+// object (a fresh s_object_header lookup, unknown_0a58d0.h) 280 (828 B, masked 22: that load merges with `object` in EBP,
+// and the flags word is then read again for bit 29 and for the clear, as retail), on the 287 lead 288, with the plain `&=`
+// clear 270 (841 B). Object-pointer loads merge by address expression (the header variable, or a fresh table lookup),
+// whatever the type read; retail reads [header+8] three separate times (the first test, `object`, the bit-29 test), and no
+// spelling here gives the third.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
@@ -992,8 +1005,8 @@ transform4x3f const *__stdcall function_bd610(long object_index, byte const *nod
 	if (*(short *)((byte *)header->object + 0x112) == NONE || (object_index != NONE && ((byte *)header->object)[0xb3] > 0))
 		return result;
 	byte *object = (byte *)object_get(object_index);
-	byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
-	long model_index = *(long *)(definition + 0x38);
+	s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
+	long model_index = definition->model_tag_index;
 	if (model_index == NONE)
 		return result;
 	s_animation_state *state = (s_animation_state *)(object + *(short *)(object + 0x12a));
@@ -1009,7 +1022,7 @@ transform4x3f const *__stdcall function_bd610(long object_index, byte const *nod
 	rigid_transform_scaled *orientations = 0;
 	if ((bool)((*(dword *)(object + 4) >> 30) & 1) &&
 		!((bool)((*(dword *)(object + 4) >> 29) & 1)) &&
-		(!((1 << definition[0]) & 1) || !object[0x34b]))
+		(!((1 << definition->object_type) & 1) || !object[0x34b]))
 	{
 		long render_node_count = *(long *)(render_model + 0x1c);
 		for (long node = 0; !sample && node < render_node_count; ++node)
