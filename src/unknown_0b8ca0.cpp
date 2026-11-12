@@ -1756,6 +1756,15 @@ done:
 // read 27, on main's body 17 (same code): the re-reads CSE into the definition and the copy never survives. On the 27 form:
 // the palette offset read after the datum 27; the definition renamed to sort after the type 27 (same code, re-measure);
 // an early `return result` on NONE with the call returned directly 81 (244 bytes).
+// Round 86 (m3 lane 13, fast): the 27 form re-measured (long offsets and size, datum local, palette added at the call):
+// it reads size, palette offset, placement offset through the definition in ECX with the type in ESI, where retail keeps
+// the type in ECX, loads the definition into EAX for the palette offset and moves it to ESI only when the size takes EAX
+// (a definition that is not planned around the size's EAX). On it: the table indexed by the type at each read 27 (same
+// code); the datum as one expression (product first) after the palette offset local 27 (same code). Every table read
+// inside the call statement 67 (236 bytes: loads after the pushes, EBX never used); palette then block helpers with an
+// out size into locals 23; datum and palette helpers called in the argument list, taking the scenario 23, reading the
+// scenario global themselves 23 (all three: scenario ESI or EDI, index BX, the datum built after the pushes).
+// Diagnostic: the type not pushed 28 (type EAX, definition still ECX).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {

@@ -162,6 +162,15 @@ void function_22fba9(c_class_1473c9 *screen)
 // no callee-saved register and the screen is read as [esi+0x34] directly (54); one more loop after the model loop turns the
 // model loop's reset into `mov` but keeps the EAX copy, so in our build the `and` comes from being the last loop and the copy
 // from the model living in EDI.
+// Round 86 (m3 lane 13, fast): the model loop in a force-inlined helper taking the screen, the pane and the flag 23
+// (same code); `long i = 0;` above the pane lookup, re-measured, 25 (the text store becomes retail's `and`, the zero
+// moves above the call, the model loop unchanged); an empty trailing loop over another pane block after the model
+// loop 23 (deleted, same code); the text loop in such a helper 23, both loops in helpers 23 (same code). Diagnostics:
+// without the second loop the stores stay mov/mov/and (text mov, model
+// and), so the `and` follows the last loop, not a count of loops; the text loop placed after the model loop changes
+// the whole allocation (screen kept in EBX). Reading: `and [slot], reg` is a constant-zero store whose immediate a late
+// pass replaced by a zero register, `mov [slot], reg` a store the optimizer already tied to the counter; retail has
+// the first in the text loop only.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
