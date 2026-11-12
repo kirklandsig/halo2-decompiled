@@ -5201,6 +5201,7 @@ struct s_damage_object_creation
 
 /* marks damage sections destroyed, and splits off the model nodes no
    longer joined to the object's root as new objects */
+// MiniMax B (11-12): no new form, no lower score (156): the mask's zero store, the piece loop's guard order, the search's entry test and the last two lookups' scratch registers still differ.
 // score 156 (was 156): 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // mask in memory). Left: the mask's zero is stored ahead of the states call (retail: at the first node loop), the piece
 // loop's guard order and bottom test, the search's entry test, and the scratch registers of the last two lookups.
