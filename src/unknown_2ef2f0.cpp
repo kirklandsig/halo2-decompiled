@@ -183,6 +183,11 @@ void box_pair_2ef4b0::function_2ef4b0(description_2ed170 const *a, description_2
 }
 
 // the same as a function
+// score 13 (was 13): frame 0x168 and length 271 agree; the second radius loads late,
+// and contact/first/second vectors use +0x30/+0x20/+0x10 instead of +0x10/+0x50/+0x40.
+// Contact at entry 13; vector declarations at entry 13; const grown vectors 13;
+// query/contact role names 13/13; paired radii 35; cached extents 17; in-place growth 77.
+// NOT kept: ties or regressions; original observations and complete body restored.
 // @retail 0x2ef5d0
 void __cdecl function_2ef5d0(void const *a_, void const *b_, void const *input_, void *collector_)
 {

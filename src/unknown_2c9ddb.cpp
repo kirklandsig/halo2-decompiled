@@ -248,6 +248,14 @@ extern long g_55c154;
 // 174, with the game-type local 161. Diagnostic: `flag_c = true;` after the saved test now 153 (605 bytes) with `this`
 // still in EDI, so round 55's probe no longer reproduces. In every two-arm form EBX is shared by non-overlapping values
 // (the type or constant 1, then saved, then the &g_54e4a0 constant) and `this` takes EDI.
+// MiniMax A (11-12, run 63): no new form, no lower score (61); the body already has retail's two load call sites
+// (the default one out of line, the selected one inline) and retail's frame, so what is left here is the copy's
+// destination hoisted into EAX before `pop ecx` where retail uses the immediate, and our link's inlined copy.
+// MiniMax A (11-12, run 62): no new form, no lower score (61); the second half's call split into the two arms
+// retail has 174 (595 bytes) and the default choice tested without the byte local 77 (574 bytes), so the spill
+// stays; the first half still agrees to the second half's entry, where ours spills the default/existing choice to
+// a byte slot and retail branches on the selected index, and our link still inlines the 0x13fac0 name copy where
+// retail calls it out of line (BLOCKED-BY the copy's own file).
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

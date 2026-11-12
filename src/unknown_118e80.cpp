@@ -1102,6 +1102,8 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax B (11-11): no new form, no lower score (92); still BLOCKED-BY 0x1c4b00's force parameter, declared long in files
+// this lane may not edit, so the result byte's shape cannot be produced here.
 // MiniMax C (11-11): no new form kept (92); the squared length written as three statements with an accumulator
 // gives retail's k, j, i product order and 90, and the shared length_sq3f gives the same 92 as the expression, but
 // a two-point gain under the keep bar was reverted; the re-fetched object's copy still loads the object before the

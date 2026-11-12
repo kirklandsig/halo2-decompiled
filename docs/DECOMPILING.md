@@ -129,7 +129,10 @@ machine about 8 seconds for one function, 12 to 40 for twenty, and about
   full `python tools/check.py` before you finish.
 - It takes what it needs from the last full build in `build/` (any plain
   check makes one). Without one it says so, and leaves out the library objects
-  and the sources that take addresses.
+  and the sources that take addresses. After a branch switch or a header edit,
+  run a plain check of the function first: the reduced image otherwise
+  describes the tree of the last full build, and either scores the function
+  differently (and refuses to search) or describes its callees wrongly.
 - A function whose callees go a few hundred sources deep takes about as long
   as a full link (25 to 30 seconds). Several functions from one file or area
   share most of their image, so check them together.
@@ -337,12 +340,12 @@ rewrites have not helped, let `tools/permute.py` search for you:
 
 It mechanically rewrites the body of the function marked `// @retail 0x<va>`
 (operand swaps, statement and declaration order, integer types of locals,
-temporaries, `if`/`else` branches, `for`/`while`, `+=` forms, `++` forms,
-`a = b = 0` chains, a named `bool` for an `&&` condition, `||` and `&&`
-conditions against `else if` and nested `if`, `?:` against `if`/`else`,
-arguments of a call trading places or rotating, `volatile` reads, stores and
-pointers), rebuilds, and keeps the variant with the fewest differing
-instructions; 0 is a match. Rearranged arguments are tried most often: they
+temporaries, a repeated literal or constant held in one local, `if`/`else`
+branches, `for`/`while`, `+=` forms, `++` forms, `a = b = 0` chains, a named
+`bool` for an `&&` condition, `||` and `&&` conditions against `else if` and
+nested `if`, `?:` against `if`/`else`, arguments of a call trading places or
+rotating, `volatile` reads, stores and pointers), rebuilds, and keeps the
+variant with the fewest differing instructions; 0 is a match. Rearranged arguments are tried most often: they
 were the last change in about a quarter of the near functions that went on to
 match, as far as git shows. It works on a copy of `src/` in a scratch
 directory, so your tree is untouched; the search is deterministic for a given
@@ -354,16 +357,34 @@ matches by accident still has to read like Bungie's code.
 
 For near misses, the fast search is usually the better choice:
 
-    python tools/permute.py <va> --fast --anneal --jobs 1 --time-limit 600 --write-only-match
+    python tools/permute.py <va> --fast --anneal --jobs 4 --time-limit 600 --write-only-match
 
 - `--fast` scores each variant on a reduced image (the function, its callees
   and what it needs), which takes seconds instead of a full build. Every
-  improvement is confirmed by a full build.
+  improvement is confirmed by a full build. If the reduced image scores the
+  original differently from the full image, the search stops at once and says
+  to run it without `--fast`, because it would optimise the wrong score.
+- `--jobs N` scores variants in N workers, each on its own scratch root; in a
+  local run four workers covered about six times as many variants per second
+  as one, since a worker's link overlaps the others' compiles. A prepared
+  scratch compiles no sources (its copied objects and generated units are
+  already current), so the first build is a link.
+- `--context <va>` adds another function's units to every reduced image
+  (repeatable). Some functions only build as retail beside their callers or
+  siblings; without the extra units the reduced image scores them differently
+  and the search refuses to start.
+- `--allow-mismatch` searches the reduced score even when it disagrees with
+  the full image, for a draft too far from retail for a plain full search.
+  Every improvement is still confirmed by a full build, but the two scores may
+  not move together, so read the confirmation line before keeping a variant.
 - `--anneal` lets the search accept some worse variants and restart, so it
   can get past a local minimum.
 - `--write-only-match` writes a variant back only when a full build finds an
   exact match and every decompiled function it calls matches too. Any other
   match is reported for you to check by hand.
+- `HALO2_TOOL_TIMEOUT` (seconds, default 600) bounds one compiler or linker
+  call. Wine occasionally wedges a tool at 0% CPU; the call's whole process
+  group is then killed and tried once more, so one wedge cannot stall a run.
 
 **False matches.** Under LTCG a function that doesn't match yet takes its
 argument registers from its own body. So swapping the arguments at a call to

@@ -913,6 +913,10 @@ static __forceinline byte *view_allocate_buffer(long size, long owner, long rele
 // Round 52 (lane 14, fast; see 0x80e10's note for the shared helper's forms): `buffer->data` before `buffer->size` 21 (the only store order that
 // moves; not kept for one line); with `used` before `start` 21, the header after `result = true` 21, `size` declared before the increment 21,
 // `count = count + 1` 21. Without it: chained `start = used = 0` 22, `used` first 22, all three zeros chained 22, a memset of the two fields 97.
+// Round 157 (m3 lane 8, fast): the header as an aggregate initialiser `{ 0, 0, world value }` 98 (664 bytes, the memset
+// stores go); the ring's four fields set by copying a local ring value 207 (697 bytes); `result` declared after the two
+// allocations 90 (669 bytes); a `world` local for the header value, the 0x6a860 call and the flag store 65 (676 bytes:
+// held across the calls); the shared allocation helper called directly in place of the file's wrapper 22 (same code).
 // @retail 0x862e0
 bool function_862e0(c_simulation_view *view)
 {
@@ -961,7 +965,7 @@ bool function_862e0(c_simulation_view *view)
 
 bool function_685f0(long capacity, byte *destination, void *block, long *size);
 
-// score 1 (was 2): 0x685f0 is now declared (capacity, destination, block, size), the order
+// score 1 (was 1): earlier 2. 0x685f0 is now declared (capacity, destination, block, size), the order
 // retail's loads imply (register arguments load from the last to the first, and retail sets edx
 // before ecx), so the two loads come in retail's order and only the register differs: the
 // destination goes in eax, retail's in edx. With the standard marker on 0x685f0 this function
@@ -973,6 +977,9 @@ bool function_685f0(long capacity, byte *destination, void *block, long *size);
 // in edx; its body is contributor code).
 // Round 59: unchanged; the callee still reads the destination from eax (`mov edi, eax`, retail
 // `mov edi, edx`) and this is its only caller, so no caller form was retried.
+// Round 86 (m3 lane 14): unchanged; the only difference is still the destination's register for 0x685f0 (ours
+// `lea eax`, retail `lea edx`), which the contributor callee's body sets (it reads eax, retail edx; score 3 there).
+// BLOCKED-BY 0x685f0; no caller form tried.
 // @retail 0x869a0
 bool function_869a0(c_simulation_view *view, void *block)
 {

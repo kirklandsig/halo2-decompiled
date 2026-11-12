@@ -103,6 +103,7 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 	result->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
 }
 
+// MiniMax G (11-12): no new form, no lower score (6); the entry still loads the index before the radius constant where retail loads the constant first, and the x store still uses the formed vertex address where retail folds the address into the store's operands; the helper called with the array element scores 25 and with the array element for the w store as well 38.
 // MiniMax E (11-11): no new form, no lower score (6); the check's left column is ours and the right column is retail.
 // The entry still loads the index before the radius constant where retail loads the constant first, and the loop
 // still forms the vertex address before its x store where retail folds the address into the store's operands; an
@@ -232,6 +233,7 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
+// MiniMax G (11-12): no new form, no lower score (192); the frame is still 0x84 against retail's 0x90 with the origin's x and y and the edge vectors in stack homes, and the point-in-polygon query still needs the points before the point, which only the definition in another lane's file fixes.
 // MiniMax E (11-11): no new form, no lower score (192); the frame is still 0x84 against retail's 0x90 with the
 // origin's x and y and the edge vectors in stack homes, and the point-in-polygon query still needs the points before
 // the point, which only the definition in another lane's file fixes (BLOCKED-BY 0x23a220).
