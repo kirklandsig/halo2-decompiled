@@ -1218,6 +1218,10 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax B (11-12): no new form, no lower score (121): the initial velocity is still stack-passed where retail passes
+// it in xmm6, a whole-program convention the callee sets, so the whole XMM allocation after the entry differs - retail's
+// first float compare is in xmm5 where this build's is in xmm7; the caller's argument registers come from the callee's
+// definition, which this lane may not edit.
 // score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // MiniMax C (11-09): no new form, no lower score (121); the initial velocity is still passed on the stack where
 // retail keeps it in xmm6 and takes five stack floats, so the whole register assignment after the entry differs.
@@ -1651,6 +1655,12 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // Round 75 (m3 lane 14, fast): the animation id through a file-local inline getter in both blocks 2; the time through an
 // inline seconds getter 2; both 2; `adjusted` copy-initialised at its declaration 2; the node index declared before the
 // time 2.
+// Round 172 (m3 lane 6, fast): a 600 s annealing permuter run (its full-image baseline alone took 924 s): 12 tries, none
+// below 2; `time - step` named before the step test 9; the animation id read from the channel at each of the three
+// sample calls (no local) 203. Same code: `time /= 30.0f` on the frame position; a `c_animation_channel const &`
+// for the animation id and the frame position. On round 174's render-model lead: the render model read through the tag
+// table at each of the five calls (no local) 532 (1744 bytes); computed inside the 0xbf5a0 block 424 (1681); the model's
+// render model index in a local used at its test and the lookup 317.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
@@ -1859,6 +1869,11 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
+// MiniMax B (11-12) lead 61, NOT kept (coordinator: the one-use rate local is match-only; without it 382): the 11-11 lane's shape measures 61 here at retail's 1495 bytes (plain check
+// too), with 0x108600 and 0x108670 unchanged at 31 and 13 - the definition pointer's volatile dropped (retail reads the
+// definition once), the acceleration and the speed each one product added into a running value, and the tick rate read
+// into a local just before the power 0x11eed0 call; the rate local used by both reads gives 289 and the volatile kept
+// gives 354, so the gain rests on that one-use local (coordinator 11-11 wanted this form match-only).
 // MiniMax b (11-11): 58 (was 250), NOT kept (coordinator 11-11: needs the one-use `rate` local, match-only; without it 380; body at 250): the acceleration and the speed are each one product added into the
 // running value (the 0xcc term opens the acceleration, the 0xc4 term opens the speed, and the 0xd4 and 0xd0
 // terms are added into them), so both sums keep retail's operand order and its registers; the definition

@@ -813,6 +813,10 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // (test/setne at both searches) where retail zero-extends a raw byte; that field is assigned in held 0x261280 and lane
 // 13's 0x260670, so it was not retyped. Nothing kept: every form scores above 675.
 // MiniMax D (11-10): no new form, no lower score: the permuter ran past its time limit without a result.
+// MiniMax A (11-12, run 62): no new form, no lower score (675); the prologue already differs at +0x14, where retail
+// takes the state argument into EBX and indexes the g_4e0300 pool's data with it (twelve-byte entries) while ours
+// takes the actor index into EAX and indexes g_4f55f0's data, and the count stays in EBP where retail keeps the
+// state in EDX, so the whole body is laid out differently.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

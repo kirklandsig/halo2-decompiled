@@ -1946,6 +1946,10 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 }
 /* takes rounds from a weapon's reserve for a magazine: first its own, then
    the reserves of the holder's other weapons of the same kind */
+// MiniMax B (11-12): no new form, no lower score (83): the difference is register roles only (retail keeps
+// the magazine index in esi and the available/taken value in edi, ours the other way round, and retail holds
+// the pool global in ebp where ours reloads it per slot); the pool-in-ebp shape needs the pool global to be
+// known not to change across 0x106030 -> 0x159dd0, which lives in another lane's file.
 // MiniMax G (11-10): no new form, no lower score (83).
 // score 83 (was 107, fast): the slot test reads `weapon->definition_index == other->definition_index`, the slot take
 // reads `magazine->rounds_unloaded` at each use (no short local), and the first block's `unloaded` is a long. Found
@@ -3011,6 +3015,10 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // (barrel), 0xffa80 (trigger) and 0xffaa9 (magazine) are the same in both forms. Retail's parameter layout is
 // the same as ours (the weapon index at [esp+4] and the name at [esp+8], the callee popping sixteen bytes), so
 // what is left is the tree's shape and the frame, not the declaration.
+// MiniMax A (11-12, run 62): no new form, no lower score (389); the first instruction is ours `sub esp, 8` against
+// retail's `push ecx`, ours loads the definition table before the weapon where retail loads it after, and the
+// weapon sits in EDI where retail keeps it in EBP, so the prologue and the switch's entry layout differ before
+// any case body is reached.
 // @retail 0xff5f0
 bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *active)
 {
@@ -3218,6 +3226,11 @@ struct s_ammo_conversion_entry
     long definition_index;
 };
 
+// MiniMax B (11-12): no new form, no lower score (190): the difference is in the homes and the
+// carriers only (retail holds the destination weapon in ebp and spills it around the conversion
+// scan, keeps the other weapon's definition index in edi, and stores the acquisition flag with
+// retail's polarity); flipping the flag's sense compiles worse, and the one lower permuter form
+// swaps two calls' arguments, which contradicts their declarations.
 // MiniMax G (11-10): no new form, no lower score (190).
 // MiniMax A (11-04): no new form, no lower score; the acquisition flag with retail's polarity 202, the
 // conversion path's flag before its minimum 205, the transfer's second minimum as a long 191.
@@ -3562,6 +3575,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // check warns that this function builds differently in the reduced image, so its plain-check score differs
 // from the fast one. The parameter layout is the same as retail's (both arguments on the stack, the callee
 // popping eight bytes), so what is left is register allocation and the frame.
+// MiniMax A (11-12, run 62): no new form, no lower score (607 in the plain check, 643 in the fast one); the first
+// difference is at +0xb, where ours loads the actor argument and the definition table before the weapon and retail
+// loads the pool pointer and takes the argument into EBX, so the prologue's registers and the four extra frame bytes
+// differ before any case body is reached.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {

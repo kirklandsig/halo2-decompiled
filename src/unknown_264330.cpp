@@ -688,6 +688,10 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // Even with 0x264210 solved the inlined body scores 492-497 against 412, so this is a structural lead, not a near win.
 // BLOCKED-BY 0x264210's inline decision for 0x2641c0. Also round 114: the case-2 and completion view lookups through the existing
 // tracking_get (`&tracking_get(index)->view`) 412 (same code, kept: it replaces the written-out lookup).
+// Round 92 (m3 lane 11, fast with 0x1e34e0, 26 throughout): case 3's limit as one conditional 412 (other code); case 3's
+// decrement exit as `if (>= 0) break; goto release_tracking;` 433 (1616 B, frame 0xa0); the loop-tail state through the typed
+// `->unknown68` field 412 (same code); case 4's arms the other way round 443 (1644 B); sample/update declared after the 0x263670
+// call 412 (other code).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

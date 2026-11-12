@@ -6,6 +6,7 @@
 #include "unknown_2551c0.h"
 #include "unknown_0259a0.h"
 #include "unknown_1dacb0.h"
+#include "object_tag_definitions.h"
 
 /* the slot state of handler 0xc */
 struct s_slot_0c_state
@@ -493,7 +494,9 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 
 // MiniMax G (11-11), NOT kept (coordinator 11-11: 87 -> 20 by the unit index assigned inside the guard plus local_1 declared ahead of local_3, both match-only; a plain one-use local before the guard 68, the local at all four reads 241; body at 87): the guard's unit index travels in a named local and the object lookup comes
 // before the two vector copies, so the whole prologue and the guard now match retail's bytes.
-// score 20 (was 87): the frame is 0x54 and the length matches retail's, and the prologue, the
+// score 87 (was 87): frame 0x54 and length 963 agree; the unit argument uses ECX
+// instead of EAX, followed by target/vector scheduling and sum/length/projection/query homes.
+// Earlier 20: the frame is 0x54 and the length matches retail's, and the prologue, the
 // guard and the two vector copies all agree. Still differs in the scalar stack homes: the radius
 // sum, the first length, the adjusted projection and the location index sit one slot lower than
 // retail's, which writes the adjusted projection into the length's slot, and the side maximum
@@ -787,6 +790,9 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // side outputs and the location query 170 (951 B), the lateral test as `(size + radius) * 0.6f > fabs(lateral)` 162 (965 B), the
 // timing test as `projection < (...)` 17 (same code), the unit-index local read right after actor_get (ahead of the guard) 46 (964 B).
 // Body unchanged at 87.
+// Typed biped radius 87; complete constant scalars 87; readonly receivers 87; fabsf 87;
+// shared scaled difference 91; double-factor reversal 170; complete first-probe/timing admissions 87/87.
+// NOT kept: no gain; original body retained apart from the required typed radius field.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
@@ -824,7 +830,7 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1)
 					{
 						s_slot_object_view *local_12 = object_get(local_0->unknown018);
 						if (local_12->type == 0)
-							local_8 -= *(real *)(g_4e3b44[local_12->tag_index & 0xffff].bytes + 0x270);
+							local_8 -= ((s_biped_definition *)g_4e3b44[local_12->tag_index & 0xffff].bytes)->biped.physics.radius;
 						local_8 -= local_2->unknown03c;
 						if (dot3f(&local_4, &local_3) > 0.95f)
 						{

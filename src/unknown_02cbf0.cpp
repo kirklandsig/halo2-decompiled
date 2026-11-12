@@ -49,6 +49,10 @@ static __forceinline long floor_to_long_inline(real value)
 	}
 }
 
+// MiniMax H (11-12): no new form, no lower score (10); the first word's OR chain still keeps the entry's own load
+// before the parameter's where retail loads the parameter first, the kind is still copied before it is shifted, and
+// the six orders of the OR terms are canonicalised by the compiler into one schedule, so the order cannot be steered
+// from the source.
 // MiniMax I (11-11): no new form, no lower score (10): the first word's OR chain keeps the entry's own load before the parameter's where retail loads the parameter first, the kind is still copied before it is shifted, and the pool's copy is still inside the branch; a second read of the pool global reaches 7 but reads the global twice, so it was not kept.
 // MiniMax D (11-11): no new form, no lower score (10).
 // MiniMax S (11-10): no new form, no lower score (10): the first word's OR chain keeps the entry's own load before the parameter's where retail loads the parameter first, retail shifts the kind in the call result's register and copies it where we copy first and shift in ESI, and retail copies the pool argument above the bit-count test where ours copies it inside the branch.
@@ -286,6 +290,11 @@ static __forceinline long floor_to_long_inline(real value)
 // seven subsets then reversed initial field stores: 14/14/10/79/83/83/79/14.
 // NOT kept: no equality; the real declaration does not recover native OR/shift/pool
 // scheduling. Original record declaration, packed expressions and body restored.
+// MiniMax H (11-12): no new form, no lower score (10): the first word's OR chain was rebuilt in two and three
+// steps with the three terms in four different orders, and the kind's shift was written as a cast of the shifted
+// value, as a dword kind, as an in-place shift and as an assignment - the two- and three-step words all give 10,
+// the one-expression word 79, so the OR chain's order and the shift's copy are decided by the compiler; reading
+// the pool argument at the call scores 26 and the bits test written as != 0 changes nothing.
 // MiniMax A (11-10): no new form, no lower score (10): swapping the first word's three OR terms and
 // the kind's shift term (the shift first) both give byte-identical code, so the OR chain's order and
 // the shift's copy to esi are decided by MSVC, and the pool's `mov edx, esi` stays above the `jbe`.
