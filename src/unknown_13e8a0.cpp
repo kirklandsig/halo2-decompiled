@@ -502,14 +502,14 @@ struct s_text_line_measurement
 	long index;
 };
 
+// score 77 (was 77): retail loads the width into xmm4 before the multiply
+// chain and accumulates the four terms in xmm3; ours reloads the width into
+// xmm3 after the multiplies and accumulates in xmm0 (register allocation only).
 // MiniMax C (11-11): no new form, no lower score (77): the one difference left is the running width's reload —
 // retail loads it into xmm4 right after the scale and copies the advance into xmm3 (movaps) so the bound can
 // reuse xmm0, ours reloads it into xmm3 after the three multiplies and accumulates the update in xmm0; the
 // width's load placement follows the source order of its read, so moving the can_break block between the
 // metric definitions gives 111 and the block's own position is already the one retail uses.
-// score 77 (was 77): retail loads the width into xmm4 before the multiply
-// chain and accumulates the four terms in xmm3; ours reloads the width into
-// xmm3 after the multiplies and accumulates in xmm0 (register allocation only).
 // MiniMax D (11-11): no lower score (77): naming the update's sum once before the test reaches 74 but computes the terms
 // twice, so it was reverted; with the sum written in the update arm the copy never appears and the allocation stays as it is.
 // M3 lane 13 r75 (fast; masked aligned count in brackets, base [16]): the end sum named and computed before the can_break block 75 [21]
@@ -543,6 +543,10 @@ struct s_text_line_measurement
 // returned measurement aggregate 96 (400 bytes, XMM pattern unchanged); `advance + offset + kerning` named once for
 // both the test and the update 84; the token test negated with the done arm first 104. Diagnostic: `(real)(scale *
 // 1.f)` chains 1-3 deep in the kerning product fold away (identical code).
+// Round 116 (m3 lane 12, fast; control 77): the bound read once into a local before the loop 123 (425 bytes); the start
+// x read once into a local before the loop 116 (416 bytes); the test written `x1 <= sum && count` 80 (the compare then
+// takes x1 as a memory operand, `comiss xmm4, [edx+4]`). Retail's bound reuses XMM0 after the advance's last add in the
+// test, so its advance has two registers (XMM0 for the test, the XMM3 copy for the update); ours keeps one.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

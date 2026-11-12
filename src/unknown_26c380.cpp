@@ -126,6 +126,7 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 	return success;
 }
 
+// MiniMax G (11-12): no new form, no lower score (244); a plane2f line with the cross written out gives retail's normal/offset homes but grows the body to 1612 bytes (300), and the two-level exits reach the shared tail only through the held form's goto, which is match-only.
 // MiniMax G (11-11): no new form, no lower score (244); retail gives the function scope locals the lower homes and the
 // inner scope ones the higher (the current sector 0x30, the line distance 0x34, the success flag 0x0e, the first-edge
 // flag 0x0f) where our build gives the inner scope locals the lower ones, and the dots' XMM roles follow the cross

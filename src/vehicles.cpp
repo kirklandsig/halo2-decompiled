@@ -1295,6 +1295,8 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
+// MiniMax G (11-12): no new form, no lower score (561): the lit flags read as a word once with the byte read again in the false
+// arm (retail's shape) gives 576 at the same length, so the flag reads stay as they are.
 // MiniMax D (11-11): no new form, no lower score (561): the damage record cut to retail's 0x80 bytes (the frame 0x1990 to 0x1988) and the buffer and the names moved to the function's top scope change nothing, so the frame is still four bytes above retail's 0x1984 and every later slot shifts; the word at +0xc0 is still read into EAX where retail reads it into ECX.
 // MiniMax D (11-10): no new form, no lower score (561): the frame is 0x1990 where retail's is 0x1984, so
 // the physics state's layout is twelve bytes too big here and every later slot shifts with it; the word
@@ -2990,6 +2992,10 @@ real g_47ff30 = 2.5f;
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
+// MiniMax G (11-12): no new form, no lower score (682); the mass field read at each use (no mass local) gives retail's
+// frame 0xfc at 676 and 3248 bytes, and the reciprocal declared after the first clamp reaches 674 only by moving that
+// declaration; left: the frame, the acceleration scale, linear and angular velocity and maximum speed homes, retail's
+// 1.0 in XMM7 and the maximum speed product's operand order.
 // MiniMax B (11-11): no new form, no lower score (682): the frame is still the first difference and every slot under
 // it is displaced with it; I found no spelling of the projected-speed sums that moves the frame.
 // MiniMax R (11-06): no new form, no lower score (730); the permuter (600 s, 40 tries, seed 5501) gave best 709 differing
@@ -3445,6 +3451,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
    toward the controls' speed in the facing's frame, a yaw torque toward the
    steering, torques that hold the vehicle upright while it is off the
    ground, and its boost */
+// MiniMax G (11-12): no new form, no lower score (1000); the frame is 0x80 against retail's 0x74 and the velocity and force
+// homes are not one uniform shift; retail inlines 0x142640 and 0x1427f0 while this file calls them, and those helpers are
+// in a file that is not mine, so the inlining cannot be reached from here.
 // MiniMax B (11-11): no new form, no lower score (1000): the frame gap of twelve bytes and the mismatched homes stay;
 // the velocity and the force are not the same pair of homes, so no single local accounts for it.
 // MiniMax C (11-10): no new form tried, no lower score (1000); the frame is 0x80 against retail's 0x74 and the velocity and force homes between them are not one uniform shift, and the forms in the note below (the velocity as scalars, the acceleration producers, the contact results and the two helpers' inlining) all land above 1000.
@@ -4547,6 +4556,8 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
+// MiniMax G (11-12): no new form, no lower score (48): the cone call's arguments still ride in the other registers and the
+// count's zero store still follows the sum.
 // MiniMax B (11-11): no lower score (48): the count written as two statements and the count kept in a named local
 // both compile to the same code as the single expression, so the sum still lands in EAX and the zero store still
 // follows it.
@@ -4657,6 +4668,9 @@ extern byte g_5107ee;
    marker's downward pitch, the distance and the vehicle's speed; the
    effect's last marker sits between the marker and the hit, aimed along
    the reflected ray */
+// score 2 (was 2): left: the cone call's set-up pair only (ours adds the seed's offset before it takes the forward's
+// address, retail the reverse). The same swap sits at the cone call in 0xf6060 and 0x17c0e0, so it follows the cone
+// function's declaration and convention, not this body: BLOCKED-BY 0x146320 (its file is held).
 // MiniMax B (11-11): no new form, no lower score (41): retail's block holds the middle point's z and y words until
 // after the first products and keeps the colour constant in ECX across them; no source form I tried moves either.
 // MiniMax D (11-11): no lower score (2): the cone call's forward address and its seed address each in a
@@ -4687,7 +4701,7 @@ extern byte g_5107ee;
 // waits on 0x146320's file, and the middle-point copy is still scheduled ahead of the reflection's loads.
 // MiniMax R (11-06): no new form, no lower score (41); a named seed pointer for the cone call compiles
 // the same, and what is left is the cone call's EDI-before-ECX pair and the middle-point, dot and memset order.
-// score 41 (was 41): earlier 160; left: the cone call sets up EDI before ECX (retail ECX first; the same in
+// Earlier 41 (was 41): earlier 160; left: the cone call sets up EDI before ECX (retail ECX first; the same in
 // 0xf6060, BLOCKED-BY 0x146320, whose file is held) and the middle-point copy is scheduled ahead of
 // the reflection's loads (retail stores its z and y words after the first products).
 // Frame 0x8cc agrees; count/marker carriers, strength residence and reflection schedule remain.
@@ -4730,6 +4744,9 @@ extern byte g_5107ee;
 // chained 45; dot declared before middle 41 (same code); the dot written `2.0f * (...)` 41 (same code); the colours
 // stored right after the memset 80 (891 bytes). Retail loads the colour constant into ECX before the zero stores and
 // the middle copy's loads after the dot's; the cone pair stays BLOCKED-BY 0x146320.
+// Round 86 (m3 lane 14, fast): the collision's NONE store after the cone call 19; a const marker pointer 2; the marker
+// pointer declared ahead of the loop 2; the marker through a reference 2; the direction declared ahead of the marker
+// pointer 2 (all four the same code).
 // @retail 0xf62f0
 void __stdcall function_f62f0(long vehicle_index)
 {

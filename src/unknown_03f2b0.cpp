@@ -1528,6 +1528,10 @@ struct s_133f70;
 // for the 0x4ed284 test together with a signed-char previous level 322 [25] at 1309 bytes (the getter folds and leaves no
 // dead lea; the byte previous gives retail's byte store, byte compare and the dword push of the byte home that 0x4c190's
 // signed-char parameter takes); the second cache record named before its +0x44 offset 93 [29] (same code: it folds).
+// MiniMax A (11-12): no new form, no lower score (93); the reduced image builds this function differently from the
+// last full build (its fast score is 355, not 93), so a fast measurement of it is only a screen; what the fast diff
+// shows is that this build's frame is 0x3400 bytes against retail's 0x33f8 and that it returns with `ret 4` where
+// retail returns with `ret 0x18`, so the callee's argument count is one short here.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

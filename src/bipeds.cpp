@@ -505,6 +505,10 @@ void function_e5930(long unit_index);
 
 /* resets the biped's state: its flags, landing and melee timers, its ground
    contact and its physics mode */
+// MiniMax B (11-12): no new form, no lower score (118): the definition flag test wrapped in TEST_FIELD_BIT or written
+// as a ternary measures 121 (417 bytes) and the flag tested as a mask measures 118 (413 bytes), the same as here; this
+// build inlines 0xe5930 (defined in src/unknown_0e57e0.cpp) where retail calls it, so the body is 413 bytes against
+// retail's 343, and the noinline for 0xe5930 is a change in another file.
 // MiniMax S (11-11): no new form, no lower score (118): the body still matches retail's first 0x10a bytes and is 70
 // bytes longer, the extra bytes all coming from the reset dispatch expanding at this call site, and the 0x1f0 bit test
 // is still folded to a byte test where retail shifts the dword first; the reset helper's own file (src/unknown_0e57e0.cpp)
@@ -771,6 +775,11 @@ struct s_biped_flags_10a_view
 // and the register load (301) and adding the state pointer as a local of its own reproduces the spill at
 // [esp+0x20] (291), but the two together leave the whole body one instruction out of step (309) because this build
 // then keeps the state pointer in EBX and pushes EBX in the prologue where retail keeps it in its stack home.
+// MiniMax A (11-12): no new form, no lower score (222); retail computes the state pointer up front and spills it at
+// [esp+0x20] with the biped index at [esp+0x24], while this build spills the index at [esp+0x20] and reads the parent
+// through the parent-object helper, and retail's early exit jumps to the shared epilogue where this build has an
+// epilogue of its own; the forms tried (the state pointer as a local, the early exit as one return, the parent's
+// field read directly) all score 222 or worse.
 // @retail 0xdd360
 bool __stdcall function_dd360(long arg_159e6d)
 {
@@ -2740,6 +2749,10 @@ bool function_1d5120(s_havok_component *component, long rigid_body_index, long a
 void __stdcall function_1c3770(long object_index, dword flags);
 
 /* steps a dead biped's ragdoll settling (+0x3aa) toward rest */
+// MiniMax B (11-12): no new form, no lower score (63): the +0x3aa byte tested in place with the cast value read again
+// at the call, the count local as a byte, and the long local kept with the byte tested in place all measure 82 (253 bytes)
+// against the current 63 (245 bytes, retail's length), so the sign-extended long local stays; what is left is retail's
+// in-place byte test at +0x1a against this build's sign-extended long.
 // MiniMax S (11-11): no new form, no lower score (63): five spellings of the settling count - tested in
 // place without a local, a byte local, a short local, the count read again through BIPED_GET at the call and
 // a byte cast there - score 82, 82, 85, 68 and 82, because without the long local this build keeps the byte
@@ -3312,6 +3325,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // score 362 (was 362): frame 0x48 against retail's 0x4c (retail's dead flag byte before the 0xe16b0 call, a HELD
 // contributor form below), the +0x34b state byte zero-extended, scalar, centre and result homes. Round 85 (m3 lane 13) at
 // the end of this note; the earlier first lines are kept below as "Earlier first line".
+// MiniMax B (11-12): no new form, no lower score (362): the switch reads the +0x34b byte zero-extended where retail
+// sign-extends it; typing the field char (or casting it in the switch) measures 361, one point and under the gate, and
+// the field type also changes contributor code such as 0xe18d0, so the byte field stays.
 // MiniMax E (11-11, run 80): no new form, no lower score (362): retail's frame is 0x4c and ours 0x48, retail sign-extends the ragdoll state byte at +0x34b where we zero-extend it, and retail keeps the flags bit 9 in a stack slot before the 0xe16b0 call, which we do not; a signed cast on that byte measures 361 (under the keep bar) and the held form that feeds the flags bit 9 to the matched 0xe16b0 as an unread parameter changes a matched function's signature and needs the owner's ruling.
 // MiniMax H (11-11): no new form, no lower score (362); the headshot scale clamp written as an if-statement (362), with its test reversed (368), and the farthest-distance compare spelled the other way (362) all leave the code as it was, so the frame stays short of retail's 0x4c.
 // MiniMax R (11-09): no new form, no lower score (539); the state byte read as a signed byte gives 538, under the keep bar, and the frame stays 0x44 here against 0x4c in retail.
@@ -4474,6 +4490,10 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // existing helpers: delta through vector3d_from_points3d 356 (same code); back through vector3f_scale(&offset, -1.0f) 356 (same
 // code); offset through vector3d_from_points3d 372 (1942 bytes); both collision arms' target through vector3f_add_scaled 356
 // (same code); placed through real_point3d_set 356 (same code).
+// MiniMax A (11-12): no new form, no lower score (356); the first difference is at +0x71, where this build's origin
+// sits at [esp+0x44] and its matrix at [esp+0x60] while retail's origin sits at [esp+0x40] and its matrix at
+// [esp+0x50], so every slot below the matrix sits four bytes higher although both frames are 0x12c bytes; moving a
+// local to shape the frame is not allowed.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4805,6 +4825,9 @@ void function_e4300(long arg_159e6d)
 }
 
 /* gets the biped up and puts its Havok to sleep, unless it already sleeps */
+// MiniMax B (11-12): no new form, no lower score (91): this build inlines the body of 0xe5930 (defined in
+// src/unknown_0e57e0.cpp) into the caller where retail calls it, so the body is 113 bytes against retail's 61 and the
+// comparison pairs only the two calls; the noinline for 0xe5930 is a change in another file, which this lane may not make.
 // MiniMax S (11-11): no new form, no lower score (91): the body is still 113 bytes against retail's 61 because the
 // reset dispatch expands here instead of staying a call, and the unit index is still saved in EBX and pushed where retail
 // keeps it in ESI; the reset helper's own file (src/unknown_0e57e0.cpp) is not this lane's: BLOCKED-BY 0xe5930.
@@ -5430,6 +5453,11 @@ real magnitude3d(vector3f const *v);
 /* an actor riding a fast vehicle that is about to leave the ground (no
    ground under it, or none along its flight) says so, at most once every
    half second: falling (0x54), flipping over (0x56) or a jump (0x55) */
+// MiniMax B (11-12): no new form, no lower score (2): the two points are still the 0x1fb7e0 call's argument setup -
+// retail pushes the first NONE, moves the actor into ECX, zeroes EDX and pushes the second NONE, this build pushes both
+// NONEs before it touches the registers; the actor index in a named local, the two constants written as -1, the data
+// argument cast to its own type and the type local as a long all measure the same 2 (894 bytes), so the order follows the
+// callee's parameter list, which is declared in another file and cannot be steered from here.
 // MiniMax S (11-11): no new form tried this round, no lower score (2): the two points are still the 0x1fb7e0
 // call's argument setup - retail pushes the first NONE, moves the actor into ECX, zeroes EDX and pushes the
 // second NONE, this build pushes both NONEs before it touches the registers; the order follows the callee's
@@ -6117,11 +6145,15 @@ void function_e4c50(long arg_159e6d)
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 bool function_11c120(s_location const *location, point3f const *point, short *zone_index);
+#include "impacts.h"
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index,
-	long variant, long unused, long effect_value, s_location const *location, real scale);
+	long variant, c_type_47f957 material, long effect_value, s_location const *location, real scale);
 
 /* a walking biped's footstep effect: at its foot marker (or its origin),
    with the material it stands on */
+// MiniMax B (11-12): no new form, no lower score (168): the frame is 0xec against retail's 0x94 and the entry argument
+// sits at [esp+0xf0] against retail's [esp+0x98], so this build's locals take more room than retail's; the 0x188180
+// call's convention is set by the callee's definition in src/unknown_187ec0.cpp, which this lane may not edit.
 // MiniMax S (11-11): no new form, no lower score (168): the frame is still 0xec against retail's 0x94 because the foot
 // marker and the collision record do not share a home, and the material is still carried as a dword where retail keeps a
 // 16-bit value; the effect helper's parameter convention (src/unknown_187ec0.cpp) is not this lane's:
@@ -6229,7 +6261,7 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 		}
 		if (field_bit_test(biped->flags_c0, 6))
 		{
-			short material = *(short *)((byte *)biped + 0x44c);
+			c_type_47f957 material(*(short *)((byte *)biped + 0x44c));
 			short zone = NONE;
 			point3f probe;
 
@@ -6238,7 +6270,7 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 			s_location *location = (s_location *)((byte *)biped + 0x28);
 			if (function_11c120(location, &probe, &zone))
 			{
-				material = zone;
+				material = c_type_47f957(zone);
 			}
 			function_188180(&point, (vector3f *)((byte *)biped + 0x450), definition->object.footstep_effects.tag_index, arg_159e6d,
 				type, definition->object.impact_sound_size, material, (long)g_4687bc, location, scale);
@@ -6267,7 +6299,7 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 				if (function_1697c0(0x84000d, &point, &down, NONE, NONE, (s_collision_result_1697c0 *)&collision))
 				{
 					function_188180(&point, g_4687b0, definition->object.footstep_effects.tag_index, arg_159e6d, type,
-						definition->object.impact_sound_size, collision.unknown24, (long)g_4687bc, (s_location *)((byte *)biped + 0x28), scale);
+						definition->object.impact_sound_size, c_type_47f957(collision.unknown24), (long)g_4687bc, (s_location *)((byte *)biped + 0x28), scale);
 				}
 			}
 		}

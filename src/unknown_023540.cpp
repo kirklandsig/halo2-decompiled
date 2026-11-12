@@ -2409,6 +2409,8 @@ dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
 // MiniMax I (11-11): no new form, no lower score (140): retail tests the `simple` byte, stores the texture-mode global and only then loads and tests the `preserve_alpha` byte, where our build hoists that load above the store and keeps it in cl; retail's else arm tests a byte one slot past the last argument (the stack slot the caller leaves behind) where ours reuses the earlier load.
+// MiniMax G (11-12): no new form tried this round, no lower score (140): the byte at esp+0x6c is still read in a
+// different register and retail's short arm still reads a stack argument this function's declaration does not carry.
 // score 140 (was 140): Frame and retail extent agree; caller flag residency and native
 // fallback selection remain. Both complete coverage clamps now follow the retail upper-default stores.
 // MiniMax S (11-11): no new form, no lower score (140): the frame and the extent agree with retail, and what is
@@ -2890,6 +2892,10 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // the remainder and then adds four, our first matrix copy loads its four values into registers before it stores
 // them where retail stores each value as it loads it, and the three rotation calls still pass the rotation on
 // the stack instead of in eax because that callee lives in another file.
+// MiniMax A (11-12): no new form, no lower score (364); the first difference is at +0x52, where this build's early
+// exit jumps to a block that sits 0x36 bytes further from the function's start than retail's, and the body after that
+// pairs against the wrong instruction all the way down; the frame agrees (0x200) and the two length checks on the
+// count are the same, so what is left is the layout of the blocks and the order of the reads.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3027,6 +3033,8 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // ours keeps it in a register, so the result homes and the x87 rows differ.
 // MiniMax D (11-01): no new form tried, no lower score.
 // MiniMax G (11-04): no new form, no lower score.
+// MiniMax G (11-12): no new form tried this round, no lower score (94): the corner sets' x87/SSE schedule and
+// the second cosine's home still differ from retail's, and the length already agrees.
 // score 94 (was 211): Frame 0x58; 2022/2022 bytes. Bounds/trig scheduling and
 // the second cosine home remain; paired half extents recover native maximum/reciprocal registers.
 // Earlier 247 (was 279): Frame 0x58; 2027/2022 bytes. Maximum/reciprocal and
@@ -3773,6 +3781,15 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // depth-bias write as the matched siblings write it (global store, then D3DDevice_SetRenderState) 9, in the
 // skip-state arm 9, both 9.
 // Permuter (600 s, 46 tries on the reduced image): best 9.
+// Round 96 (m3 lane 10; fast, and a compile-only /FAs harness of the file, which reproduces the reload pairs but
+// not the shift): one function-scope gain and one function-scope upper/lower pair shared by the modes 9; the two
+// colours declared at function scope 9; exponent declared at function scope 9; the inverse span declared at function
+// scope 9 (round 132's form, re-measured); `gain = gain / (...)` 9; `exponent <= 3 ? 0 : 0x20` 9; `1L << exponent` 9;
+// `exponent < 1 ? 1.0f : 2.0f` 178. Harness only (both pairs still constant first): the shift selector macro instead
+// of the force-inline helper, `offset * gain`, `256.0f * inverse_span`, `0.5f * inverse_span`, `(real)1 /`, the
+// selected gain alone shared. FILTER_PIN as a
+// force-inline function flips both pairs to span first, but only because mode one's colour clamps then read each
+// field once (other code); on the two gain clamps alone the pairs stay constant first in other registers.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

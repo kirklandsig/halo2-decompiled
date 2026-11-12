@@ -428,6 +428,14 @@ static inline real interpolate_linear(real a, real b, real t)
 // the timing locals 1; the direction flips as `*= -1` 1; the fraction as `elapsed / (real)frame_time` 1 (round 11's uncast
 // elapsed, re-measured on this base); explicit `!= 0` bit tests in the three restart expressions 1 (all the same code); the
 // end-time test as `g_54d5b8 >= animation.end_time` 3 (the compare flips).
+// Round 96 (m3 lane 10, fast): the per-pass disposal reset moved from the loop top to the join just before the
+// restart test 1, to the loop bottom after the timing updates 1; restart uninitialised and cleared with
+// `restart = dispose = false;` before the loop 16 (round 69's form, re-measured); the three timing locals declared at
+// function scope 1; one function-scope flags word shared by both arms 1; dispose false at its declaration with the
+// pre-loop reset dropped and the per-pass reset at the join 1. All restored. Compile-only harness of the file (it
+// reproduces the skip): restart's address passed to an opaque call just before the loop makes the miss land on the
+// restart test with the loop otherwise unchanged; the same call after the loop does not; so the skip comes from the
+// known false start, and retail's source must leave restart's value unknown at the loop entry.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

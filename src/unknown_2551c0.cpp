@@ -492,6 +492,10 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1);
 
 s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 
+// MiniMax G (11-12): no new form, no lower score (87); the unit index in a local read at the guard, the object lookup and
+// the location query, with the lookup ahead of the two vector copies, gives 237 at 958 bytes, so the field is read again
+// where retail reads it; left: the 0x110ab0 argument register (ECX where retail uses EAX), the sum's operand order and the
+// sum, length and projection homes.
 // MiniMax G (11-11), NOT kept (coordinator 11-11: 87 -> 20 by the unit index assigned inside the guard plus local_1 declared ahead of local_3, both match-only; a plain one-use local before the guard 68, the local at all four reads 241; body at 87): the guard's unit index travels in a named local and the object lookup comes
 // before the two vector copies, so the whole prologue and the guard now match retail's bytes.
 // score 87 (was 87): frame 0x54 and length 963 agree; the unit argument uses ECX

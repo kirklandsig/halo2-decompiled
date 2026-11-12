@@ -349,6 +349,11 @@ void c_window_channel::v9()
 // load 4; an inline constructor taking the builder's arguments and building on `this` 30 (71 bytes: the field_c store
 // becomes dead before the builder and the pushes reorder); the builder's type argument as the just-cleared
 // `request.type` 3; the type test through a `word` local 3 (both the same code).
+// Round 86 (m3 lane 14, fast): an early return with `screen` declared bare and the id array decayed 3; a base-type
+// parameters pointer for the builder's argument 3; the callback given the first member's address 3; the builder's
+// arguments read into named locals ahead of the type clear 3; the request zeroed by memset before the builder 33 (82
+// bytes). No existing member of the request, parameters or channel type calls 0x149f49 on `this`, so round 100's
+// member-builder lead stays HELD.
 // @retail 0x23531c
 void c_window_channel::v10()
 {

@@ -1218,6 +1218,10 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax B (11-12): no new form, no lower score (121): the initial velocity is still stack-passed where retail passes
+// it in xmm6, a whole-program convention the callee sets, so the whole XMM allocation after the entry differs - retail's
+// first float compare is in xmm5 where this build's is in xmm7; the caller's argument registers come from the callee's
+// definition, which this lane may not edit.
 // score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // MiniMax C (11-09): no new form, no lower score (121); the initial velocity is still passed on the stack where
 // retail keeps it in xmm6 and takes five stack floats, so the whole register assignment after the entry differs.
@@ -1865,6 +1869,11 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
+// MiniMax B (11-12) lead 61, NOT kept (coordinator: the one-use rate local is match-only; without it 382): the 11-11 lane's shape measures 61 here at retail's 1495 bytes (plain check
+// too), with 0x108600 and 0x108670 unchanged at 31 and 13 - the definition pointer's volatile dropped (retail reads the
+// definition once), the acceleration and the speed each one product added into a running value, and the tick rate read
+// into a local just before the power 0x11eed0 call; the rate local used by both reads gives 289 and the volatile kept
+// gives 354, so the gain rests on that one-use local (coordinator 11-11 wanted this form match-only).
 // MiniMax b (11-11): 58 (was 250), NOT kept (coordinator 11-11: needs the one-use `rate` local, match-only; without it 380; body at 250): the acceleration and the speed are each one product added into the
 // running value (the 0xcc term opens the acceleration, the 0xc4 term opens the speed, and the 0xd4 and 0xd0
 // terms are added into them), so both sums keep retail's operand order and its registers; the definition
