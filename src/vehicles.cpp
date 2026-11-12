@@ -2992,6 +2992,10 @@ real g_47ff30 = 2.5f;
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
+// MiniMax G (11-12): no new form, no lower score (682); the mass field read at each use (no mass local) gives retail's
+// frame 0xfc at 676 and 3248 bytes, and the reciprocal declared after the first clamp reaches 674 only by moving that
+// declaration; left: the frame, the acceleration scale, linear and angular velocity and maximum speed homes, retail's
+// 1.0 in XMM7 and the maximum speed product's operand order.
 // MiniMax B (11-11): no new form, no lower score (682): the frame is still the first difference and every slot under
 // it is displaced with it; I found no spelling of the projected-speed sums that moves the frame.
 // MiniMax R (11-06): no new form, no lower score (730); the permuter (600 s, 40 tries, seed 5501) gave best 709 differing
@@ -3447,6 +3451,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
    toward the controls' speed in the facing's frame, a yaw torque toward the
    steering, torques that hold the vehicle upright while it is off the
    ground, and its boost */
+// MiniMax G (11-12): no new form, no lower score (1000); the frame is 0x80 against retail's 0x74 and the velocity and force
+// homes are not one uniform shift; retail inlines 0x142640 and 0x1427f0 while this file calls them, and those helpers are
+// in a file that is not mine, so the inlining cannot be reached from here.
 // MiniMax B (11-11): no new form, no lower score (1000): the frame gap of twelve bytes and the mismatched homes stay;
 // the velocity and the force are not the same pair of homes, so no single local accounts for it.
 // MiniMax C (11-10): no new form tried, no lower score (1000); the frame is 0x80 against retail's 0x74 and the velocity and force homes between them are not one uniform shift, and the forms in the note below (the velocity as scalars, the acceleration producers, the contact results and the two helpers' inlining) all land above 1000.

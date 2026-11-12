@@ -1051,6 +1051,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
+// MiniMax H (11-12): no new form, no lower score (766): the frame is still 0xd4 against retail's 0xb4, the session still comes in on the stack where retail passes it in eax with the output pointer on the stack, and the opening lookup is still expanded here while retail calls the matched 0x192e60 out of line.
 // MiniMax S (11-11): no new form, no lower score (766): the frame is 0xd4 against retail's 0xb4, the session
 // comes in on the stack where retail passes it in EAX with the output pointer on the stack, and the opening
 // lookup is expanded here while retail calls the matched 0x192e60 out of line; the session's EAX home belongs

@@ -166,6 +166,16 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // the pulse pointer computed at the top of the draw loop 14; the bounds as the existing box2f type 14 (all four the same
 // code); a separate draw-loop counter 38. Matched siblings 0x22bbca/0x24f0fc build their quads in a four-corner loop,
 // which retail keeps as a loop there; retail's eight straight stores here rule that form out.
+// Round 111 (m3 lane 16, fast control 14; all on the bounds-record pointer, re-measured 12): the eight corner stores as all x then
+// all y 87, all y then all x 86, corners 0, 3, 1, 2 16, the two top y stores first 87, x stores 0, 3, 1, 2 then the y stores 87,
+// the y stores then x stores 0, 3, 1, 2 87 (846 bytes where 86-87); named x and y spans after or before the pulse query 12/12,
+// named sprite width and height 83 (846 bytes), full extents named before halving 12, only the height 12, `0.5f * (...)` for the
+// half height or both 12/12 (12 = same code); the advance assigned inside the first x step (`x += advance = ...`), declared at the
+// step, at the loop top or at function scope, or as `x = (advance = ...) + x`, 53 each (the named-advance code). Re-measured with
+// the listing: half height at each use 18 (the advance then takes XMM3 and the half-height copy XMM4 as retail, but the half
+// height is computed after the x step, the 0.5 moves to XMM7 and x to XMM4). Diagnostic: the advance kept beside the position in
+// one three-real local 53 (same as a named advance). The two free registers at the product are XMM3 and XMM4 in both builds;
+// retail gives the product the lower one, ours the higher.
 // @retail 0x200462
 void function_200462(long arg_0)
 {
