@@ -188,6 +188,11 @@ struct s_physical_block_iterator
 // so they sit past the loop. The documented forms for the clamp, the case 0 shapes and the take test were
 // measured before and are worse on their own (209 to 284); the 93 form needs the policy helper, which is match-only.
 // score 201 (was 201): earlier 201 (was 347): frame 0x1054 and entry/ring roles agree; weighted-age mask registers, detached policy cases and final linking differ.
+// score 93 (was 201): the policy switch, the ring scan's successor and the block insertion now follow retail's shape; the walk's EBX/EDI roles, the overlap sum's register and the NONE register still differ.
+// MiniMax E (11-11): 201 -> 93 (1213 bytes, retail's length, first difference +0x338): the case 0 policy
+// goes through a small helper in 0x13d320's style, the second age is spelled MAX(age, 0), the before
+// block is read again through a fresh pool base with its successor in a local, the insertion is in two
+// stages with the first-block test repeated, and the scan writes its successor at both uses.
 // MiniMax E (11-09): 209 -> 201 (1214 bytes against retail's 1213): the second age is now spelled
 // MAX(0, physical->time - best.time), which for the unsigned difference is the same value as the
 // clamped one, so our mask for it and the multiply that follows it go away. What still differs: the
@@ -591,6 +596,7 @@ struct s_physical_block_iterator
 // `end` alone, a named block offset, the iterator's fields initialized index first. On the kept body: the oldest test with
 // `oldest != NONE` first 201 (different code); the default age clamped by `if (age < 0) age = 0;` 273 (first difference
 // +0x1); the new candidate's pages cleared before its time 203; the lead's two-stage insertion alone 213 (1227 bytes).
+// MiniMax E (11-11), NOT kept (coordinator 11-11): 201 -> 93 came from a new one-caller helper for the candidate test, `entry->previous = NONE` copied into both arms, a one-use pointer to the first block and the best.previous test split in two with the block data reloaded (forms kept only with a byte match; a one-caller helper never); body at 201. The split link order is the lead to explain in plain code.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

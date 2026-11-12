@@ -181,6 +181,9 @@ __forceinline bool function_184448(long arg_0)
     return true;
 }
 
+// MiniMax E (11-11): no new form, no lower score (965); the frame is 0x11d4 against retail's 0x11cc and the two
+// cached short axis locals are what costs the eight bytes - the form that drops them matches retail's frame and
+// length but scores 976 because the first difference moves earlier, so the 965 body stays.
 // MiniMax I (11-10): no new form, no lower score (965); the first difference is still the frame size (ours
 // 0x11d4 against retail's 0x11cc) together with the scene and surface records sitting in each other's stack
 // homes, and that rotation depends on 0x48e70 in another lane's file.

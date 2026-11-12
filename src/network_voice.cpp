@@ -1286,6 +1286,10 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax S (11-11): no new form, no lower score (94): the identity flag still takes BL here while retail keeps
+// it in AL, and the inner channel blocks are still not unrolled; moving the flag ahead of the total and the
+// channel pointer gives 111, and a nested group loop that would give the flag a longer live range also gives
+// 111, so the flag's register does not change from this body.
 // MiniMax S (11-10): no lower score (94): retail keeps the base of the four channels of a group and reaches
 // them with positive offsets, advancing it by 0x5c0 once per group, and takes the unknown00 flag in AL after
 // the total is set, while ours steps the cursor by 0x170 per channel (so the later channels get negative
@@ -1547,6 +1551,10 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// MiniMax S (11-11): no lower score (60): the player bit as a named local inside the membership helper 60 (same
+// code), the entry size as `include_mask ? 13 : 11` 147 (461 bytes), and the same size with the retail order
+// kept/written/capacity/size 137 (445 bytes, 0x56380 lost its match at 13); the mask load is still hoisted into
+// EAX above the shift where retail keeps the zero result in EAX and loads the mask into ECX after the shift.
 // MiniMax I (11-11): no new form, no lower score (60); retail keeps the zero result in EAX from entry to the
 // capacity-failure exit and gives the player bit EBP and the entry size EBX, and every order of the result,
 // capacity, size and written locals compiles to the same code.
@@ -1921,6 +1929,10 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax S (11-11): no new form, no lower score (85): the second availability byte still loads lazily where retail
+// loads both before the muted test, and the second port-flag query is still called out of line; expanding that query
+// at this site costs the matched callers 0x54890 and 0x53a20, and the session getters 0x59670/0x596a0
+// (src/unknown_059670.cpp) are outside this file: BLOCKED-BY 0x59670/0x596a0.
 // MiniMax G (11-11): no new form, no lower score: the second availability byte still loads lazily where retail
 // loads it beside the first and keeps it in dl for the mode test, and the remote mask still loads into edx
 // where retail uses esi; that pair appears only when the session getters 0x59670/0x596a0 are opaque to LTCG,
@@ -3561,6 +3573,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
+// MiniMax D (11-11): no new form, no lower score (139).
 // score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
 // homes differ.
 // MiniMax R (11-09): no lower score (139): the base and the offset kept apart, with the packet pointer never

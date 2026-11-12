@@ -217,6 +217,7 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// MiniMax D (11-11): no new form, no lower score (117); the fallback masked in place (`local_tag & 0xffff`) does reproduce retail's `and edx, 0xffff` but moves the tag table from EDI into ECX (152 alone, 149 with the four cache zeros stored together), and the stage and pass arguments still land in other registers than retail's ESI and EBP; the four cache zeros stored together do give retail's four consecutive stores but score 120.
 // score 117 (was 117): earlier first line 117 (was 117). The tag index masked as a 32-bit value inside the
 // subscript reproduces retail's `and edx, 0xffff` but moves the base global from EDI into ECX and raises the score
 // to 152, so the original is kept; the tag lookup still masks the index with a word load where

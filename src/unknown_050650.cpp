@@ -504,6 +504,7 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
+// MiniMax H (11-11): no new form, no lower score (303); the frame agrees at 0xa8, but retail keeps the first temporary (the length, the random integer and the sine) at the frame bottom while ours puts it above the result byte, so the axis and result homes sit four bytes lower here, and ours is twelve bytes longer than retail's (1435 against 1423).
 // score 303 (was 303; 322 before that): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
 // score 303 (was 303; 322): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
 // integer and the sine) at the frame bottom where ours puts it above the result byte, so the axis/result
@@ -1412,6 +1413,7 @@ done:
 // MiniMax D (11-09): no new form, no lower score: the body is unchanged at 9 (114 bytes, as retail's); the only difference is the prologue, where retail builds the actor offset in EAX (`mov eax, ecx`, `and`, `imul 0x888`) and forms the actor with `lea esi, [eax + edx]`, while ours builds the offset in ESI and adds the base (`add esi, edx`), one byte short; the shared getter is used by sixteen matched functions of this file, so its spelling cannot change without losing them.
 // MiniMax R (11-10): no new form, no lower score (9); the body is unchanged, and the shared lookup keeps
 // compiling to the same code.
+// MiniMax A (11-11): no new form, no lower score (9); the shared getter written as a byte-pointer product, as a base plus an offset local, as a slot local and as a two-statement add compiles byte-identically in all seventeen functions of the file.
 // @retail 0x296580
 void function_296580(long actor_index)
 {
@@ -1807,6 +1809,7 @@ struct s_actor_looking_turn_request
 };
 
 // MiniMax H (11-11): no new form, no lower score (442 plain, 548 on the reduced image); retail still calls 0x1fdd90 out of line with the slot offset spilled to [esp+0x30] and the actor index in ESI where ours expands the call inline and keeps the index in EDI, and that helper is defined in another file, so its inline decision cannot be moved from here. BLOCKED-BY 0x1fdd90.
+// MiniMax C (11-11): no new form, no lower score (442); retail never inlines 0x1fdd90, so the block's difference is that helper's, and it lives in another file.
 // MiniMax A (11-11): no new form, no lower score (442 plain, 548 on the reduced image); retail calls 0x1fdd90
 // out of line with the slot offset spilled to [esp+0x30] and the actor index in ESI, ours expands the call inline
 // and keeps the index in EDI, so the entry block and the frame (0xcc against retail's 0xc8) differ; the helper is
