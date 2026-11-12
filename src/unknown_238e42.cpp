@@ -888,7 +888,11 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
-// score 90 (was 90): the difference is purely the register colouring of the two
+// score 90 (was 90): the difference is purely the register colouring of the two values the
+// matched callee 0xac050 takes: retail reloads the selected identity pointer into eax and the
+// requested rank into ecx, so the callee needs no copy, ours keeps the pointer in ecx and the
+// rank in eax and copies the pointer into eax before the call, two bytes that shift every later
+// jump; the frame, the call arguments and every other instruction agree with retail.
 // values the matched callee 0xac050 takes (retail reloads the selected identity pointer into
 // eax and the requested rank into ecx, so the callee needs no copy; ours keeps the pointer in
 // ecx and the rank in eax and inserts a `mov eax, ecx` before the call, which shifts every
@@ -1182,6 +1186,13 @@ bool __stdcall function_2399da(long controller_index)
 // other offsets and every jump into them counts. The forms the earlier rounds record (the identity
 // and rank registers, the eight-byte residency subsets, the late requested producer, the removed
 // extra mov) all measure 90 or worse.
+// MiniMax H (11-12): no new form, no lower score (90); the identity pointer is reloaded from the
+// selection slot into ecx where retail reloads it into eax and the requested rank takes eax where
+// retail's takes ecx, so a copy of the pointer is needed before the removal call; twenty further
+// source forms (the identity copied into a local of its own, the own rank read before the identity
+// test, the requested rank copied into a local, a has-identity flag, the identity and the rank
+// declared at fourteen other positions, the identity test spelled five ways, the pointer held in
+// an integer) all compile to the same bytes.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

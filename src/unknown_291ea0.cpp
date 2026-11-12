@@ -134,6 +134,11 @@ inline void dialogue_name_override(long *name, long value)
 // sound NONE exits 87 (478 bytes); the masked unit index in a named local 9 (same code); the definition NONE test as a
 // nested block 9 (same code); the variant mismatch as `continue` 9 (same code). Re-measured on the round-78 override
 // form: round 16's vocalization default read ahead of the default name, now 126 (440 bytes, the name leaves the stack).
+// Round 96 (m3 lane 10, fast): the two differing loads are one cause each: retail's elements and pool loads reuse
+// EAX (the pool's `mov eax, [mem]` is a byte shorter, which is the jump and pad differences). Parameters ordered
+// (actor, name, script, duration) at the definition, declarations and all three calls 9 (same code); the default
+// name and the unit's dialogue state both through inline helpers 9; the override helper by reference 9; result
+// declared before the scenario pointer 9; the tag table pointer declared at function scope 9. All restored.
 // @retail 0x291ea0
 bool function_291ea0(long arg_80f1d4, long actor_index, long script_index, real *duration)
 {

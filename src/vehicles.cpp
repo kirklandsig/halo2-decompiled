@@ -1031,6 +1031,14 @@ __forceinline long vehicle_round(real value)
 // body; one-use pointer, needs a match); axis set to forward before the mode test with the cross overwriting it 173;
 // the side scale named before the side cross 82; the three vectors declared at function scope 11; the velocity call
 // before the strength value 146; cross3f_staged at the side with the dot as dot3f(&linear_velocity, &forward) 8.
+// m3 lane 1 r95 (fast), at 8: re-measured lane 10 r84's up pointer at the first cross with cross3f_staged at the side 6
+// (the first cross's k row and the dot's i term become retail's, the first cross's two up.i products flip to load forward,
+// and the side cross's forward.k * up.j still loads up.j; lane 13 r28 reported 2 for a like form), lane 10 r78's pointer
+// at both crosses 96 (735 B) and round 92's plain-side pointer form 8. New: the pointer declared before the mode test with
+// the staged side 6 (same three flips); that with the dot as dot3f(&linear_velocity, &vehicle->forward) 8 (the dot's i term
+// flips back; with the plain side cross it flips back too, so the staged side cross sets it); an up pointer declared with
+// the lookups and used at the condition and the first cross only 10; a forward pointer for the dot and the projection
+// scale only 50; the axis if/else inverted (`!= 4 && != 3` with the copy first) 8 (same code).
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -1287,6 +1295,8 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
+// MiniMax G (11-12): no new form, no lower score (561): the lit flags read as a word once with the byte read again in the false
+// arm (retail's shape) gives 576 at the same length, so the flag reads stay as they are.
 // MiniMax D (11-11): no new form, no lower score (561): the damage record cut to retail's 0x80 bytes (the frame 0x1990 to 0x1988) and the buffer and the names moved to the function's top scope change nothing, so the frame is still four bytes above retail's 0x1984 and every later slot shifts; the word at +0xc0 is still read into EAX where retail reads it into ECX.
 // MiniMax D (11-10): no new form, no lower score (561): the frame is 0x1990 where retail's is 0x1984, so
 // the physics state's layout is twelve bytes too big here and every later slot shifts with it; the word
@@ -2862,6 +2872,13 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // Round 84 (lane 10, fast), at 10: every contact access written `state->contacts[i].x` (no contact pointer) 46; the
 // half angle written into both trig calls 65; braking preset false and set by the test 222; the spin as `dt * torque`
 // 10 (same code); dt read after the vehicle and definition lookups 192.
+// m3 lane 1 r95 (fast), at 10: re-measured round 95's `state->contacts[i].torque = torque;` 8 (only the eight torque/offset
+// slot lines left; a mixed spelling, kept only on a match); on it: new, the braking store through the array too 22; the
+// permuter (926 s, 23 tries) best 8; re-measured round 114's brake store before the torque store 19 and spin named before
+// the calls 81 (torque still at 0x14, the offset at 0x18). New on the kept body: the gear product written field first
+// (`unknown378 * function_f14f0(...)`) 10; diagnostics that change torque's use count (behaviour kept, extra code): the
+// contact store as `braking ? 0.0f : torque` 166 (997 B), the spin as `braking ? 0.0f : torque * dt` 233 (994 B), a dead
+// `= 0.0f` initialiser on torque 10; in all three torque keeps 0x14 and the offset 0x18.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4532,6 +4549,8 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
+// MiniMax G (11-12): no new form, no lower score (48): the cone call's arguments still ride in the other registers and the
+// count's zero store still follows the sum.
 // MiniMax B (11-11): no lower score (48): the count written as two statements and the count kept in a named local
 // both compile to the same code as the single expression, so the sum still lands in EAX and the zero store still
 // follows it.
