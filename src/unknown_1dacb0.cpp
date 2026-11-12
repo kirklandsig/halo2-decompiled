@@ -1654,6 +1654,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // iterator as an aggregate initializer 769; the candidate as a ternary, or the result set by that ternary with no
 // candidate, 1024/1024 (2841 B). Lane 9's record (outputs and result as one local) re-measured 732; with the
 // `iterator.mode` first request 762 (2841 B, aligned 78, masked 43).
+// MiniMax D (11-11): no new form, no lower score (828): the third iterator output still takes the dead `found_mode`
+// argument slot instead of a frame slot, so retail's result shorts sit at +0xc/+0xe and ours at +0x8/+0xa, and retail's
+// EBP zero carrier in the second resource request is still missing; declaring the three NONE locals ahead of the early
+// return gives retail's sentinel register but reorders the prologue and scores 979.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

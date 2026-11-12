@@ -1171,9 +1171,19 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
+// MiniMax D (11-11): no new form, no lower score (824); the frame is still 0x154 against retail's 0x12c from the
+// first instruction, so every stack home sits 0x28 further out, and retail still extracts the flag bits in place
+// through a byte field view and folds the 0x20000000 bit into the field in memory where ours copies the word
+// out first. The open behaviour differences stand as they were: the node handed to 0xb8bd0 as a raw dword and the
+// type chain's compare at 0x10bd1c.
+// MiniMax S (11-11): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c, the two entry
+// bit tests stay in registers here while retail keeps the bytes in stack slots and re-reads the flags word, and
+// the definition pointer sits at 0x38 against retail's 0x1c.
 // MiniMax A (11-10): no new form, no lower score (824): our frame is 0x154 against retail's 0x12c
 // from the first instruction, so every stack home sits 0x28 further out and the two open behaviour
 // differences - the node handed to 0xb8bd0 as a raw dword and the type chain's compare - stay.
+// MiniMax E (11-11): no new form, no lower score (824); our frame is 0x154 bytes where retail's is 0x12c, so every
+// stack slot sits 0x28 higher, and the entry flag test reads the definition's byte in the other order.
 // score 824 (was 813): statement-by-statement walk against retail (s1B, 11-06). Behaviour fixes, all kept even though
 // the score rose 11: (1) the byte at [esp+0x12] is ONE flag: the definition's +0xbc bit 2 (skips gravity), set to true
 // before the ray query (0x10ba18) and cleared only by the settle branch (0x10bcf8); the draft's separate
@@ -1617,10 +1627,14 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 	vector3f velocity = {direction->i*scale, direction->j*scale, direction->k*scale};
 	function_10cf80(&velocity, object_index, false);
 }
+// MiniMax H (11-11): no new form, no lower score (140); the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write, the return byte still sits at esp+0xe where retail puts it at esp+0xf, and the damage data block and the position local still sit twelve bytes below retail's.
 // MiniMax A (11-06, run 52): no new form, no lower score (140) - retail keeps the two release
 // impulse paths apart with the flag clear at a different point in each, so splitting ours that way
 // (223) and giving the clear a byte-unit bit field (206) both score worse.
 
+// MiniMax G (11-11): no new form, no lower score (140); the return byte sits at esp+0xe where retail puts it at esp+0xf, the
+// release flag is cleared by a load, an and and a store where retail masks the byte in place, and retail expands the transform
+// helper into the call site while this build calls it out of line from a file this lane may not edit.
 // MiniMax S (11-10): no new form, no lower score (140): the return byte sits at esp+0xe where retail puts it at esp+0xf, the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write, our frame carries an extra byte local at 0x12, and the damage data block sits twelve bytes below retail's.
 // MiniMax I (11-10): no new form, no lower score (140); the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write, and the return byte still sits at esp+0xe where retail puts it at esp+0xf.
 // MiniMax D (11-05): no new form, no lower score.

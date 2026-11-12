@@ -223,6 +223,8 @@ public:
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
+// MiniMax H (11-11): no new form, no lower score (334); the flag byte read through a named datum pointer 334, through
+// its bitfield 334 and through a named word of flags 335 give the same code, so the base still folds into the scaled index.
 // score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
 // gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
 // MiniMax C (11-10): the score is 334 (was 334); the gate flag keeps its dead store where retail folds the address, and the settings pointer, the effect address and the random draws still live in different homes.

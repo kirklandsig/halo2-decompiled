@@ -385,6 +385,10 @@ PRIVATE inline long polygon_round_19f(real value)
     return result;
 }
 
+// MiniMax H (11-11): no new form, no lower score (370); the body is unchanged, because retail's 1.5 factor
+// still comes from a writable .data float at 0x47ff94 that only this function reads, the frame is still 0x34
+// against retail's 0x30, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX
+// from src/unknown_01cf50.cpp, which this lane may not edit.
 // score 370 (was 316; earlier 379, 393): see the round 170 line at the end of this note.
 // MiniMax G (11-10): no new form, no lower score (370); retail's 1.5 factor still comes from a writable .data float at 0x47ff94 that only this function reads, the frame is still 0x34 against retail's 0x30, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX from a file this lane may not edit.
 // MiniMax E (11-10): no new form, no lower score (370); the frame is still 0x34 against retail's 0x30 and retail still makes its two 1.5 multiplies from the factor in its .data (the centre distance in single precision 379, the fade limit written out 402, a writable global factor 389 and the parameter read without its alias 419 all score worse).
@@ -506,6 +510,11 @@ PRIVATE inline long polygon_round_19f(real value)
 // tag computed just before the 0x1bbf0 call 418 (0x4b2d0 91), the group read ahead of the selected tag 404 (0x4b2d0 78),
 // each with `first * 10` in place 412/427 (ret 8 there, but first in EBX and third in EAX); the previous vertex index as
 // `index != 0 ? index - 1 : count - 1` 406; the texture position as `-=` 370 (same code).
+// MiniMax A (11-11, second pass): no new form, no lower score (370); what still differs is unchanged: retail still loads its constant
+// before the frame push where ours pushes first, the inner-radius lifetime still gives the two subtracted vectors different registers,
+// and the 0x4b2d0 call still takes the variant in the register where retail keeps it in the other register with the context byte and the
+// pass on the stack (that callee's convention is set in another file).
+// MiniMax A (11-11): no new form, no lower score (370); retail still loads its constant before the frame push where ours pushes first, the inner-radius lifetime still gives the two subtracted vectors different registers, and the 0x4b2d0 call still takes the variant in the register where retail keeps it in the other register with the context byte and the pass on the stack (that callees convention is set in another file).
 // @retail 0x19f680
 void function_19f680(long tag, long group, long pass, long variant, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,
