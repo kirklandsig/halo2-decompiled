@@ -5405,6 +5405,7 @@ real magnitude3d(vector3f const *v);
 // before it sets edx and ecx, while retail pushes it after; 0 and -1 literals for NULL and NONE keep 2.
 // MiniMax R (11-01): earlier, the actor rode in ECX because LTCG knew magnitude3d preserved it; the helper file was closed.
 // MiniMax E (11-11): no new form, no lower score (2): the fourth argument in a local and the fifth argument in a local both keep the same two differences (the event call still pushes both NONEs before it moves the actor into ECX and zeroes EDX), and the whole type selection as one ternary keeps the same two differences; the permuter (900 s, annealing) found no match.
+// MiniMax H (11-11): no new form, no lower score (2): the two points are still the 0x1fb7e0 call's setup, where retail pushes the first NONE, moves the actor into ecx, zeroes edx and only then pushes the second NONE, and ours pushes both NONEs before the registers are set; that order comes from the callee's declaration and the argument list, which this lane may not edit.
 // score 2 (was 2): Logic walk (2026-10-31) against retail 0xe3380-0xe36fd: callees (0xb9dd0, 0xddf60 + 0x1697c0 = the
 // inlined 0xdf880 with offset 0.4 (0x45dd30) and length 8.0 (0x45dc18) at 0xe347a-0xe352f, 0x24590, 0x30bf0, 0x1fb7e0 with
 // eax type/ecx actor/edx NULL and two pushed NONEs at 0xe36e4-0xe36ec), offsets (0xbc bit 6, 0x12c, 0x12a, 0x7c, 0x244, 0x34c byte,

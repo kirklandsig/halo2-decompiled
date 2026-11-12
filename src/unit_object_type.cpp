@@ -2363,6 +2363,7 @@ void function_cfec0(long unit_index)
 /* the object that answers for the unit: the vehicle when the unit's seat
    has bit 0 or 3, or a rider of that vehicle with bit 27 of its
    definition's +0xbc and its object flag 26; else the unit */
+// MiniMax H (11-11): no new form, no lower score (2): the exit for unit_index == NONE returns the constant (or eax, 0xffffffff) where retail moves ebx (mov eax, ebx), so the body is one byte longer; the value is kept in the register only where an exit is shared with another path, and merging the exits moves the edi push into the prologue.
 // MiniMax S (11-11): no new form, no lower score (2); the copy propagation from the compared value into the returned one cannot be broken without a form review rejects, so the body stands as found.
 // MiniMax G (11-11): no new form, no lower score: a result variable returned at each level 47 (the copy in ebx is
 // dropped, so the prologue changes) and one final return 113 (the exits merge into one epilogue); a probe shows VC7
@@ -3437,6 +3438,9 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 
 /* whether the object's root, simulated by Havok and not keyframed, has
    something in the way (0x168f40 from its main rigid body's position) */
+// MiniMax H (11-11): no new form, no lower score (12): the body is retail's length and the only difference is the
+// pair of saved registers: the root index sits in edi here and in ebp in retail, and the rigid body's byte offset
+// takes the other; the rigid body pointer kept in a local scores 52 and the same call kept in a local scores 12.
 // MiniMax S (11-11): no new form, no lower score (12): the body is retail's length and the only difference is the
 // pair that tests the rigid-body index against -1, which sits at +0xe in ours and in retail's own registers, while
 // the root index and the NONE constant are kept in EBP where retail puts them in EDI; the sixteen-bit form of the
