@@ -926,6 +926,9 @@ bool g_51e9bc;
 // T90: Existing shared dot traversed by long/dword/short/word components, counted
 // cursors, array end, ordinal product and cursor product: 134/134/150/150/129/178/130/131.
 // NOT kept: All regress; projection ownership and native jitter spill reuse remain. Original shared dot and complete body restored.
+// m3 lane 2 r75 (plain, 0x24590/0x1cd6c0 listed): the named signs applied as `x *= sign_x` 20, the half scales as
+// `x *= (bits & 64) ? 1.0f : 0.5f` 20, both 20 (same code each); the three signs declared together ahead of their
+// products 109 (1055 B); the signs inline as `x *= (bits & 8) ? 1.0f : -1.0f` 41 (1082 B).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

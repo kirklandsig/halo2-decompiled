@@ -482,6 +482,10 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
+// MiniMax B (11-12): no lower score than 32 without the width cast MiniMax D's 11-11 round measured (24) or a volatile word
+// present (24): the mask test placed first hoists the mask load into ECX ahead of the jne as retail does, but swaps the
+// mask and old-playing stack slots (91-122), and a 32-bit OR of the mask with the present in the store still reloads the
+// mask from memory instead of sharing ECX with the compare.
 // score 32 (was 32): the word mask, its one reload ahead of the first jne, and present's update in EBX remain.
 // MiniMax D (11-11): 24 (was 32), NOT kept (coordinator 11-11: lane 14 r55's width cast on one side of the compare; retail compares dword; body stays at 32): the old team mask as a word local (retail's `mov cx` entry and its
 // word spill) with the present compare narrowed to a word (`(word)present_teams != old_team_mask`); the
