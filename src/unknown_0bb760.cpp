@@ -446,6 +446,11 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// MiniMax B (11-12): no new form, no lower score (84); re-read retail's listing: the clamp entry's constant
+// order, the blend's stack slot, the first scan's signed bound and the not-found exit's 1.0 reload are still
+// the four differences, and the spellings of the scan's bound that keep it rolled (less-than, the bound read
+// from the entry, a pointer bound, a do-while and the count compared the other way round) all land in a form
+// that does not match, so the body stands.
 // MiniMax H (11-11): no new form, no lower score (84); the first scan still leaves on `!=` where retail leaves on a signed `jl`, and every spelling of that bound makes the link-time build unroll the scan by four (637 for a less-than bound, 221 as a do-while), the blend still takes the index's old slot (105) and still sits at [esp+0x38] where retail keeps it at [esp+0x1c], so the body stands.
 // MiniMax E (11-10, run 73): no new form, no lower score (84); the blend still takes the seed's stack slot where retail keeps it in the index's old slot and its fstp still lands before the variant byte read instead of after the compare, the choice scan still exits on inequality where retail exits on less-than (a less-than bound unrolls by four here at 637, a short counter at 270), the count test still skips on zero where retail skips on zero or less, and retail's own 1.0 reload at the selection loop's not-found exit is still missing.
 // MiniMax D (11-11): no new form, no lower score (84): the first choices loop bounded by less than unrolls and scores 637 and the same loop as a do-while scores 221, the blend sharing the index's own home scores 105 (every slot shifts), so it still leaves on != where retail leaves on a signed jl, and the blend still sits at esp+0x38 where retail keeps it at esp+0x1c. Retail's entry guard for that scan is a test and a jle, so it skips the scan only when the count is negative, while ours skips it on zero and so admits no count of zero; the two guards and the two exits cannot be had from one source form.

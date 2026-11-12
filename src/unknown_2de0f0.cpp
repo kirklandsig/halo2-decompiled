@@ -44,6 +44,9 @@ public:
 // output-pointer load and stores differ. Value inputs to maximum/minimum/both, growth/both
 // operations 7/7/7/7/7; indexed endpoints 39; minimum first 7; late growth 52; local
 // minimum/maximum/both 61/88/135; vector point records 7. NOT kept: ties or larger code.
+// Reference-return operations 7; aligned maximum/minimum/both stores 13/21/22;
+// aligned growth/all stores 18/22; aligned point loads 21; copy-assignable
+// point vectors 7; vector inputs to extrema 7. NOT kept: no gain.
 // @retail 0x2de0f0
 void rounded_segment_2de0f0::function_2de0f0(transform_2de0f0 const &transform, float tolerance, bounds_2de0f0 &out) const
 {
