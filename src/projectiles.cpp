@@ -2951,6 +2951,8 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // MiniMax G (11-11): the material index is a dword local here, so the call to 0xfd7d0 pushes it raw as retail
 // does instead of sign-extending a word, and the store into the projectile keeps its 16-bit width.
 // MiniMax S (11-10): no new form, no lower score (1190); the frame is 0x220 against retail's 0x218, the velocity argument arrives on the stack where retail takes it in eax and keeps it in a callee-saved register, and the collision, effect and sound homes still differ. The sound and effect records start at the same address as retail's, so the eight extra frame bytes sit in the small scalar homes; the velocity pointer is kept in esi on both sides, but only retail's callers hand it over in eax.
+// MiniMax G (11-12): no new form tried this round, no lower score (1196): the frame is still 0x220 against
+// retail's 0x218 and the velocity argument still arrives on the stack instead of in eax.
 // score 1196 (was 1220): the frame is 0x220 against retail's 0x218, the velocity arrives on the stack where retail
 // takes it in eax, and 0xfd7d0's register arguments (retail takes the projectile index in eax and three of the six
 // out-pointers in ecx, edx and edi) still differ; that split is the compiler's choice for the callee.

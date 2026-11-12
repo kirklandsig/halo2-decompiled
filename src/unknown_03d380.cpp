@@ -336,6 +336,9 @@ void function_125a90(long value);
 // MiniMax lane E (11-01): no new form, no lower score; the named-condition form that gives retail's
 // block order still needs 0x221810 kept out of line.
 // MiniMax C (11-08): no new form, no lower score.
+// MiniMax G (11-12): no new form tried this round, no lower score (36): the element address is still built with an
+// imul and an add where retail multiplies into eax and forms the address with a lea; a probe shows no pointer
+// arithmetic spelling of that form in this compiler.
 // score 36 (was 36): the address of the record is built here with an imul
 // into ESI and an add; retail multiplies into EAX and forms the address with a
 // lea, so the type byte that is tested afterwards is compared in another value.

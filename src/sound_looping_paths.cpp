@@ -166,6 +166,8 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // MiniMax S (11-11): no new form, no lower score (866); the prologue still zeroes a different register than
 // retail (ours ebp, retail esi, which retail also pushes before the zeroing), and the zeroed count's home differs
 // (esp+0x24 here, esp+0x88 in retail), so every frame offset after it differs.
+// MiniMax G (11-12): no new form tried this round, no lower score (866): the prologue still zeroes ebp where retail
+// zeroes esi, and the zeroed count still sits at esp+0x24 instead of esp+0x88, so the later frame offsets differ.
 // score 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
 // frame layout and register homes remain (earlier starts 919 and 886 below).
 // MiniMax S (11-10): no new form, no lower score (866): retail reads the query count as a dword at the loop head and
