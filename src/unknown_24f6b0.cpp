@@ -140,6 +140,15 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // XMM3 from the top, scale XMM4, z XMM2, so ours colours z last); both arms complete (z, x, y read in one, scaled in
 // the other) 55 (244 bytes); z read before the scale 51; `z = point->k * scale` in the kept form 9 (same code); the
 // test on the field with the scale local in the else arm 64 (251 bytes).
+// Round 153 (m3 lane 7, fast; the flags result plain-confirmed): LEAD, not applied (build flags are the user's decision):
+// with this file built `/O2 /Ob1 /arch:SSE /Gr`, the flags of its two sibling files (0x24f590 and 0x24f7b0), and the
+// transform helper in 0x142570's body form (x, y, z read at entry, `face->scale` read at each use, a `!= 1.f` arm
+// scaling all three) this function matches byte for byte, in the fast check and in a plain check with its eleven
+// callers, 0x30bf0, 0x24f590 and 0x24f7b0 all still matched (patch: build/r153/held-24f6b0.patch). Under the current
+// `/O1 /Oi /Ob1` flags that helper scores 37 (242 bytes); on it a `void` return type (every caller ignores the
+// result) 37 (same code), stores i, k, j with variable-left products 29, the shared matrix type with the output
+// pointer returned into the final call 37 (same code), the three components passed to the helper by value 68
+// (254 bytes), by value without the grid stores 60 (240 bytes).
 // @retail 0x24f6b0
 real __fastcall function_24f6b0(dword index, vector3f *direction)
 {
