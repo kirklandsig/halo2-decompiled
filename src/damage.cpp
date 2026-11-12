@@ -2055,6 +2055,8 @@ long function_1e4a10(long index);
 /* damages an object's shield: scales the damage by the shield material's
    armor, takes it off the shield, passes what is left over to the body
    (accumulator->damage) and stuns the shield's recharge */
+// Round 172 lead 4 (match-only, not kept): only the reload order after function_d6a70 and function_176780 differs: retail reloads the spilled
+// shield damage before the zero, ours the zero first (the function_d5bc0 order is now retail's).
 // score 8 (was 8): only the reload order after three calls differs: after function_d5bc0 retail reloads 1.0f, the
 // zero, the maximum and the inverse (ours the zero, maximum, inverse, then 1.0f); after function_d6a70 and
 // function_176780 retail reloads the spilled shield damage before the zero (ours the zero first).
@@ -2105,6 +2107,25 @@ long function_1e4a10(long index);
 // the test and the lookup 23 (883 bytes, read ahead of the type test), declared inside the type test 8; the multiplier
 // declared uninitialised at the block top and assigned 1.0f at its old place 8 (same code); the shield default as
 // `shield_damage = body_damage; if (shield_damage <= 0.0f) shield_damage = 0.0f;` 10 (the compare flips).
+// Round 172 (m3 lane 6, plain-confirmed 4): kept six named values, each compiling to the same code alone: the clamped
+// vitality (store and test), the absorbed damage (accumulator store and subtraction), the actor index in the type test
+// (test and lookup), the end lookup in a fresh `damaged` local, and two parts named where they are computed: the
+// depletion below zero and the multiplier's reciprocal. Together they give retail's function_d5bc0 reload order (8 -> 4,
+// round 58's symbol-count lead): five of them 8, four 8, seven 4; the shield-damaged block's field_4_2 read into an info
+// pointer under a nested test in place of the depletion 4, with a second info pointer for the stun block in place of the
+// reciprocal too 4 (field copies mixed with direct reads, not kept); one info pointer for all five reads, re-measured on the
+// kept set, 223 (876 bytes); slot_handler.h's real_to_long for the ticks with five 7, with seven 4. Tried (fast): the object lookup
+// after the two damage locals 139 (876 bytes); shield damage declared first, read from the accumulator 220 (889); the
+// material's armor handles named 168, all four handles named 239 (907). On the info-pointer set (the same code as the
+// kept one): the stun threshold compare as
+// `threshold < shield` 4, the zero arguments of function_176780 as integer 0 4, `real shield_damage;` declared above
+// body damage 4 (all the same code); `0.0f == vitality && 0.0001f < body` 72 (878); one info pointer for the damaged
+// and stun blocks 206 (871); the in-radius subtraction ahead of the material lookup 145 (897); the overflow test
+// with the multiplier first 32; the side-effect test with the radius flag first 10. Diagnostic: a dead `1.0f` local
+// at the top moves nothing.
+// NOT kept (coordinator, lane 6 r172): 8 -> 4 needs all six named locals together (shield_vitality, absorbed,
+// actor_index, damaged, deficit, inverse_multiplier; five give 8). deficit and inverse_multiplier are one-use, and the
+// gain comes from the symbol count, so the set is match-only: re-apply it only with a form that reaches a byte match.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)

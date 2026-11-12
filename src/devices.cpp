@@ -1651,6 +1651,12 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // Round 75 (m3 lane 14, fast): the animation id through a file-local inline getter in both blocks 2; the time through an
 // inline seconds getter 2; both 2; `adjusted` copy-initialised at its declaration 2; the node index declared before the
 // time 2.
+// Round 172 (m3 lane 6, fast): a 600 s annealing permuter run (its full-image baseline alone took 924 s): 12 tries, none
+// below 2; `time - step` named before the step test 9; the animation id read from the channel at each of the three
+// sample calls (no local) 203. Same code: `time /= 30.0f` on the frame position; a `c_animation_channel const &`
+// for the animation id and the frame position. On round 174's render-model lead: the render model read through the tag
+// table at each of the five calls (no local) 532 (1744 bytes); computed inside the 0xbf5a0 block 424 (1681); the model's
+// render model index in a local used at its test and the lookup 317.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

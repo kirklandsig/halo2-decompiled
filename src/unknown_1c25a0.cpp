@@ -1226,6 +1226,10 @@ struct s_1c4040
 // store without its cast and the fixed island through g_51e9a4 17; that with 0x146bf0 before 0x1c3770 in
 // src/unknown_278f00.cpp 34 (0x1d1540 custom 215, eight matched lost); with 0x278f00 before 0x1c51c0 in
 // src/unknown_1c39c0.cpp 17; both 34; with 0x1c2690 first in src/unknown_146a20.cpp 17.
+// Round 172 (m3 lane 6, fast with 0x1c51c0, which stays 1): the priority tests as `local_0.field_4 < priority` in both
+// scans 12; the effect read through the globals at its test and the call 106; the island index a plain for-scoped local
+// in place of field_10 35; the mode test inverted with its arms swapped 73 (541 bytes); the fixed island's entity count
+// read once before its loop 185 (555 bytes). The convention stays the only cause (BLOCKED-BY 0xb7b40, as above).
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {
