@@ -94,6 +94,12 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 	g_5047f8[arg_0].field_18 = arg_0;
 }
 
+// MiniMax S (11-11): the far arm's rotated point now has storage of its own, as retail keeps it at +0x44/+0x48 while the
+// difference vector stays at +0x3c/+0x40, and the sine argument is negated in double, which is retail's `fld` of the wrapped
+// angle followed by `fchs`. The frame is now 0x64 as retail's and the score falls to 382. Still differs: the entry schedule,
+// the normalized XY/magnitude homes and 40 bytes of length.
+// score 382 (was 393; 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
+// frame 0x64 as retail's, 1692 bytes against retail's 1732.
 // score 393 (was 393; 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
 // frame 0x60 against retail's 0x64.
 // MiniMax S (11-06): The first arg_7 plus arg_8 sum lands in xmm3 where retail keeps it in xmm0, so the
@@ -466,13 +472,14 @@ void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f cons
 			{
 				real local_21 = local_19[local_20];
 				real local_22 = local_21 < 0.0f ? local_21 + 6.2831854820251465f : local_21 - 6.2831854820251465f;
-				real local_23 = (real)sin(local_7 == 0 ? -local_22 : local_22);
+				real local_23 = (real)sin(local_7 == 0 ? -(double)local_22 : (double)local_22);
 				real local_24 = (real)cos(local_22);
-				local_15.x = local_24 * arg_3->x - local_23 * arg_3->y;
-				local_15.y = local_24 * arg_3->y + local_23 * arg_3->x;
-				function_2992ba(local_6, local_10, local_21, &local_15, &local_2, arg_1, arg_2, local_9, local_5, arg_5, &local_27);
+				point2f local_32;
+				local_32.x = local_24 * arg_3->x - local_23 * arg_3->y;
+				local_32.y = local_24 * arg_3->y + local_23 * arg_3->x;
+				function_2992ba(local_6, local_10, local_21, &local_32, &local_2, arg_1, arg_2, local_9, local_5, arg_5, &local_27);
 				local_6++;
-				function_2992ba(local_6, local_10, local_22, &local_15, &local_2, arg_1, arg_2, local_9, local_5, arg_5, &local_27);
+				function_2992ba(local_6, local_10, local_22, &local_32, &local_2, arg_1, arg_2, local_9, local_5, arg_5, &local_27);
 				local_6++;
 			}
 		}

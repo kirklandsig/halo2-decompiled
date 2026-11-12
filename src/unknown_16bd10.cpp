@@ -727,6 +727,12 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
+// MiniMax H (11-11): no new form, no lower score (331); retail keeps the point case's normal in XMM3/4/5 with the zero in
+// XMM0 and ends case 2 with a read-modify-write `or [ebp], 0x40`, while ours splits the flag updates and keeps the zero in XMM1.
+// MiniMax C (11-11): no new form, no lower score (331): the length agrees (1696 bytes); case 2 still
+// loads the camera normal's j for the squared length where ours picks the function-wide zero register,
+// and the dot3f helper that computes it lives in include/unknown_0259d0.h, which this lane may not
+// edit; the point case's normals also still take XMM5/3/4 where retail gives them XMM3/4/5.
 // score 331 (was 331): round 112 (m3 lane 12) note at the end. Earlier at 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
 // score 331 (was 331; 385 earlier, 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
 // MiniMax C (11-05): no new form, no lower score; the plane's three normal copies are reloaded in the same order in both (i, k, j), but retail gives them XMM3/4/5 for i/j/k where ours gives XMM5/3/4; the squared length in field order scores 389, in k,i,j order 243, with the first two addends swapped 238, written from the direction alone 465, and with the multiply operands swapped it is byte-identical at 236.

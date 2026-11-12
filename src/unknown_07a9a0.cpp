@@ -1051,6 +1051,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
+// MiniMax S (11-11): no new form, no lower score (766): the frame is 0xd4 against retail's 0xb4, the session
+// comes in on the stack where retail passes it in EAX with the output pointer on the stack, and the opening
+// lookup is expanded here while retail calls the matched 0x192e60 out of line; the session's EAX home belongs
+// to the callers in other files.
 // score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
 // where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
 // expanded here while retail calls the matched 0x192e60 out of line.
@@ -1353,6 +1357,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // expression, no `use_parties` local, 858 (2812 B); the two identical team-type tests merged into one block 909 (2756 B);
 // the rated extrema as `if (rating > max) max = rating;` statements 818 (2812 B); the party spread and team tests joined
 // into one `||` test 907 (2764 B); `available` computed just ahead of its first use 821. Body unchanged.
+// m3 lane 16 r109 (fast, 0x73530 8 throughout unless noted): the write-only machine-id copy dropped 937 (2700 B); the capacity
+// test through the existing 0x193300 766 (same code), with a forceinline redeclaration 766; that with the top lookup after
+// the capacity read 942 (2732 B, 0x73530 1); 0x6fa60's ratings buffer without `__declspec(align(8))` 766. Body unchanged.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

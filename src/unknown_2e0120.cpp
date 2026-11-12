@@ -142,7 +142,7 @@ void __cdecl function_2e0250(entry_2e0250 *entries, int low, int high, order_2e0
 
 // sorts the entries from low to high (both included) by key
 // @retail 0x2e02d0
-void __cdecl function_2e02d0(entry_2e0250 *entries, int low, int high, long context)
+void __cdecl function_2e02d0(entry_2e0250 *entries, int low, int high, order_2e0250 context)
 {
 	int j = high;
 	int i = low;

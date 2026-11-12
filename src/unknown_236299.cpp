@@ -719,6 +719,11 @@ void __stdcall function_52040(void const *request, void const *vertices);
 // (both callers lose), for y 86, as named u/v values 79, if/else for both on the kept form 62 (callers lose);
 // corner 2's x read back from corner 1 21 (284 bytes), corner 3's y from corner 2 23 (284), both 86 (280);
 // const extents on the extents-first form 86.
+// Round 189 (m3 lane 4, fast with both callers): the texture coordinates read into named locals at the top 88 (289
+// bytes, both callers lose); the corners through the existing cross-file point2f_set with the extents first 86 (288
+// bytes, x0/width/height in xmm0/1/2), corner 0 set before the extents 85, height defined before width 85 (width in
+// retail's xmm2; the bottom sum copies y0), with the bottom sums written height-first 85 (same code), with named right
+// and bottom 85 (282 bytes).
 // @retail 0x23675a
 void function_23675a(s_bitmap_view *bitmap, s_texture_rect const *texture, dword color, short mode, s_float_rect const *bounds)
 {

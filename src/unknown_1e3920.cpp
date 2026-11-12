@@ -546,6 +546,9 @@ real function_267370(long object_index);
 // MiniMax C (11-09): no new form, no lower score (14); the axis global is still loaded after the copy instead of
 // between the j and k copies, and the plane x product and both cross products still differ in operand order
 // (include/vector_products.h, include/location_zones.h).
+// MiniMax E (11-11): no new form, no lower score (14): the carrier block is retail's and what is left is the plane x product and the cross-product operand ties inside the inlined header helpers (location_zones.h), whose header is not mine; the form that reaches 2 needs a one-use forward output pointer, which is not allowed.
+// MiniMax G (11-12): no new form, no lower score (14): the two crosses still differ in operand order and the plane x
+// product still differs in the inlined header helpers this lane may not edit.
 // score 14 (was 20): round 96 kept the resolved-carrier local (selection and root kept apart) with no `up`
 // local, kept together (plain 14; either alone 22, neither 20): the carrier block is retail's; left are the plane x product (retail loads
 // point.x, plane.i as the memory operand) and cross-product operand ties. Earlier at 20:
@@ -1386,6 +1389,13 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // inline budget is not what keeps retail's call); 0x1e4990 respelled as a `while` with an early return 421 (0x1e4990's own
 // code changes, still inlined). Retail inlines 0x1e4990 at 0x1e1a00's top-level call, so call frequency is not the reason
 // either.
+// MiniMax D (11-11): no new form, no lower score (253): the two NONE sentinels are still in EDI where retail keeps them
+// in ESI, the squad pointer still takes the slot at +0x1c where retail puts it at +0x10, and the 0x2036c0 outputs keep the
+// lower slots.
+// Round 92 (m3 lane 11, fast): the direction through the existing direction_from_angles (vector_angles.h) 308 (1273 B;
+// register-masked aligned 236 -> 215, the unit arm stays in source order); that with the palette count read at each use 307
+// (masked 194); with 32-bit grenade tests as well 308; the weapon test without its one-use unit, weapon and definition locals
+// 253 (same code; kept, it removes three one-use locals).
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1497,14 +1507,10 @@ long __stdcall function_1e0850(long character_index, long squad_index, s_203780 
 				}
 				if (actor->unknown018 != NONE)
 				{
-					s_ai_object *object = ai_object_get(actor->unknown018);
-					long weapon = function_cbd50(actor->unknown018, object->current_weapon);
-					if (weapon != NONE)
-					{
-						s_ai_object *weapon_object = ai_object_get(weapon);
-						byte *local_67e06b_3 = g_4e3b44[weapon_object->definition_index & 0xffff].bytes;
-						if (*(long *)(local_67e06b_3 + 0x2f4) != NONE) actor->unknown22a = true;
-					}
+					long weapon = function_cbd50(actor->unknown018, ai_object_get(actor->unknown018)->current_weapon);
+					if (weapon != NONE &&
+						*(long *)(g_4e3b44[ai_object_get(weapon)->definition_index & 0xffff].bytes + 0x2f4) != NONE)
+						actor->unknown22a = true;
 				}
 				if (actor->unknown018 != NONE && (data[0x1c] & 0x10))
 					function_b9c60(actor->unknown018, true);
@@ -1673,6 +1679,11 @@ void function_1e3b60(long actor_index);
 // 0x25d740 lookups too 26 (417, masked 219).
 // BLOCKED-BY 0x262ba0 (stacked actor) and 0x1f38c0 (stub until #581 is solved: 0x1f9e70's named double, in
 // src/unknown_1f5560.cpp, and 0x29bab0's local_27).
+// Round 92 (m3 lane 11, fast, in 0x262ba0 with 0x263210/0x264330/0x264b50/0x264210): case 3's limit as one conditional
+// 26 (0x262ba0 412, other code); case 3's decrement exit as `if (>= 0) break; goto release_tracking;` 26 (433, 1616 B, frame
+// 0xa0); the loop-tail state through the typed `->unknown68` field 26 (412, same code); case 4's arms the other way round 26
+// (443, 1644 B); sample/update declared after the 0x263670 call 26 (412, other code). The #581 route stays closed: the two
+// named doubles as `real` raise 0x29bab0 (715 -> 750) and 0x1f9e70 (137 -> 302), per their notes.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
@@ -2223,6 +2234,12 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // `unit_index` declared at the top of the second block 309 (aligned 155); on both blocks 315 (1216 B, aligned 155); the
 // queries' lookups through `unit_index` too 294 (1229 B, aligned 124, masked 51). Lead: the 298 form plus a transparent
 // 0x259a0. Body unchanged.
+// MiniMax D (11-11): no new form, no lower score (251): the pool and seed globals still have retail's registers the other
+// way round (retail holds the pool in EDI and reloads the seed into EBX) and the two-weapon index is still spilled.
+// Round 92 (m3 lane 11, fast): the actor through squads.h's s_actor_datum view (actor_datum_get, raw +0x84) 251 (same
+// code); the rounds draw through the existing random_index, its result in a named count 255, inside the expression 252; the
+// draw through random_next 251 (same code); random_index inside the expression with both second-block queries through 0xcbd50
+// (slot read from a fresh lookup) 279.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

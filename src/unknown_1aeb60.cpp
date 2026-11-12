@@ -561,6 +561,11 @@ struct s_1af5c6
 // copy of the ignore index made before the cluster test, where the inlined call's argument copy sits, 19 (same code, the
 // copy propagates); the whole tail in one nested block 19 (same code). Left as before: the second header mask in EAX
 // (retail ECX), the ignore index loaded after the first subtraction (retail first), the distance at +0x10 (retail +0x14).
+// Round 95 (m3 lane 10, plain): the ignore index's default copied before the second header lookup 29 (the mask temp moves
+// to ECX as retail's, but the default then holds EAX and the flag byte goes to BL); the flag held in a named bool 20; the
+// second lookup through a word-converted index 132 (movzx); through byte-offset element arithmetic 20; the flag test
+// negated with the arms swapped 20. Our `and eax, 0xffff` is one byte shorter than retail's ECX form, so everything after
+// +0x8c sits one byte early: the flagged call, global and constant lines after it are that shift, not separate causes.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {

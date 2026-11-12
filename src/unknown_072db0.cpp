@@ -428,6 +428,12 @@ s_surface_description *function_192e60(long index);
 long function_193300(s_surface_description *variant);
 long network_session_get_maximum_players(c_class_58d20 *session);
 
+// score 33 (was 33): frame agrees; final helper calls reverse and retain the variant in EBP,
+// adding four bytes. Earlier named call result and reversed comparison both 33.
+// Complete final result 35; admitted comparison result 33; outer default-return guard 11
+// (139/134 bytes, NOT kept: extent moves away); direct final return 57; success-default
+// result 39; explicit failed-comparison arm 33; sole-exit admission goto 33; nested
+// index/pointer result 33. Unchanged reduced image matches; full image remains the judge.
 // @retail 0x73360
 bool c_helper_b::v7()
 {
@@ -1255,6 +1261,11 @@ long function_1931a0(long count, s_surface_description *variant);
 // Round 226 (m3 lane 3, fast, still BLOCKED-BY 0x7e210): 0x7e210's player loop written as 0x63220's body with its calls
 // (0x192e60, 0x631f0, a two-evaluation max of 0x1931a0) gives this function its match (the top 0x192e60 call stays out of line
 // and the session arrives in EAX) but raises 0x7e210 766 -> 1032; with its capacity helper forceinline 8 here, 998 there.
+// Round 109 (m3 lane 16, fast control 8 / plain 6, still BLOCKED-BY 0x7e210): the matched caller 0x6fa60's ratings buffer without
+// its `__declspec(align(8))` 8 (0x7e210 766; aligned caller locals are not what keeps the session on the stack); in 0x7e210, the
+// write-only machine-id copy dropped 8 (0x7e210 937, 2700 bytes: retail has the copy); the capacity test through the existing
+// 0x193300 (our link already folds this file's twin into it) 8 (766, same code), with a forceinline redeclaration of it 8 (766);
+// that call with the top lookup after the capacity read 1 (942, 2732 bytes, as the private-helper form). All restored.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {
@@ -1581,6 +1592,22 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// MiniMax B (11-11): no new form, no lower score (703); the body is unchanged, and the forms listed above are exhausted.
+// MiniMax G (11-11, second pass): no new form, no lower score (703); retail keeps the users cursor in a stack slot
+// at +0x18 that points at the record start, ours keeps it at +0x14 pointing at the record's properties, and the
+// slot helper's null test is a branch here against retail's cmovne; the loop written as a pointer walk over the
+// users and the value groups puts the cursor in a register and turns the bound into a counter (784), the slot
+// lookup moved ahead of the property copy (847), and the slot helper's null test stays a branch when its "g"-off
+// pragma is dropped (703, 2910 bytes) all leave more differences than they remove, so the body stands.
+// MiniMax G (11-11): no new form, no lower score (703); the users cursor still rides in EBX where retail keeps it
+// in a stack slot at +0x18, and the logon-status test still lacks retail's decrement and branch; this round
+// re-read the diff and the statement walk the earlier rounds recorded agrees with the source on every block,
+// condition, callee and constant, so what is left is those two homes and the body stands. Reaching the record
+// through a named record pointer moves the cursor's anchor from the properties (+0x14) to the unknown10 (+0x10) and
+// spelling the copy through the array moves it the same way; the anchor is the largest field offset of the group
+// the fields share, so retail's record-start cursor is not spellable from this file (lane 16 r102 reached it only
+// by inlining the getter 0x647d0 in src/unknown_054fe0.cpp). Both forms stay at 703.
+// MiniMax H (11-11): no new form, no lower score (703); the users cursor still rides in EBX where retail keeps it in a stack slot at +0x18, and the logon-status test still lacks retail's decrement/branch.
 // score 703 (was 703; 709 before; 2910 bytes): Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax H (11-04): the logon-status test written as (status - 1 == 0) reaches retail's
