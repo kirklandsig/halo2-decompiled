@@ -872,6 +872,8 @@ real normalize2d(point2f *v);
 // score 135 (was 135): frame 0x48 agrees and the code matches retail to the first trajectory call;
 // retail then caches the trajectory result in DL (spilled around calls, `mov al, dl` on the short
 // exits, no store after the request) where ours keeps it only on the stack, so the unit-state table
+// goes to EDX not ESI, the first facing store loads EAX/ECX, and the validity flag comes back in BL
+// where ours folds that exit to `xor al, al`, 12 bytes short in all.
 // goes to EDX not ESI and the first facing store loads EAX/ECX; retail also returns the validity
 // flag (`mov al, bl`) where ours folds that exit to `xor al, al`, 12 bytes short in all.
 // The trajectory helper uses retail ret 0x2c; the older extra-EDX blocker is absent.
@@ -1093,6 +1095,10 @@ real normalize2d(point2f *v);
 // and the DL retention with the separate request and invalid return transport, and the forms the
 // earlier rounds record (the trajectory result domains, the request-point and facing copies, the
 // force-result producers, the result declared first in the valid block) all measure 135 or worse.
+// MiniMax H (11-12): no new form, no lower score (135): retail carries the trajectory result in dl across the
+// request and hands the validity flag back in bl on the short exit, ours keeps the result only on the stack and
+// folds that exit to `xor al, al`; the permuter's 128 tries bottom out at 124 differing instructions (133 by the
+// check's metric) and a component-wise request copy reaches retail's 935 bytes but scores 164, so neither is kept.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
