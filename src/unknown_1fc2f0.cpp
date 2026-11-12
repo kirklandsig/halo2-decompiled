@@ -201,11 +201,14 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// score 32 (was 32): frame 0x10 and the prediction prefix agree; first difference at +0x65: the velocity stores
+// and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
+// MiniMax G (11-12): no new form, no lower score (32); the deltas written i, j, k give retail's velocity stores (i, j, k)
+// and its (k + j) + i sum, but the scaled difference then runs i, j, k with them (79), so the helper's component order and
+// the store order stay coupled; retail's tick products run j, i, k with its stores i, j, k.
 // MiniMax G (11-11): no new form, no lower score (32); retail takes the scaled difference in the order j, i, k but its
 // deltas in the order i, j, k, and one source order cannot give both: writing the deltas i, j, k (79) moves the scaled
 // difference to i, j, k with them, so the difference stays inside the inlined helper and its component order.
-// score 32 (was 32): frame 0x10 and the prediction prefix agree; first difference at +0x65: the velocity stores
-// and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
 // MiniMax D (11-09): no new form, no lower score (32); the permuter run was killed with no candidate.
 // MiniMax R (11-09): the squares written out by hand in the three orders give 29 with the same code, and the store order whose
 // operations match retail's still shuffles the registers against it, so the difference stays inside the inlined length helper.
@@ -677,6 +680,11 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // computed before the squared length 46. A compile-only screen of 700 prediction, delta, length
 // and correction spellings (a copy of this file reproduces this listing) found nothing closer; the correction is
 // retail's only through local_scale3d (vector3f_add_scaled or spelled rows lose the copy-then-scale).
+// M3 lane 4 r190 (fast with 0x1fc660): the squared length through the existing dot3f(&delta, &delta) 32 (same code);
+// the deltas through the existing vector3d_from_points3d 80 (the listed i, j, k deltas); both 80; both plus the correction
+// through the existing vector3f_add 87; dot3f with the correction through vector3f_add 57 (369 bytes, the listed vector3f_add
+// form). New forms: the limit as `rate / 2.0f` 32, `real const limit` declared where computed 32, the root's product
+// rate-first 32 (all three the same code); the location tests state-first 36. Body unchanged.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

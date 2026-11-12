@@ -220,6 +220,17 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // folds), for every use 26 (1177 bytes), in the side vector and the rows 34, in the first probe block and the side
 // vector 18 (1175 bytes: z folds where retail loads, x still loads; match-only form, gain of 2, not kept). In every
 // body form the x row loads first.
+// Round 153 (m3 lane 7, fast with 0x1e55d0): retail's negative point shares the side vector's three stack slots in both
+// modes (as ours does, by lifetime); writing the mode-1 negative point into the side vector itself (no second point)
+// 73 (rows x, y, z; the frame changes), rows z, y, x 83, rows y, z, x 79; the two mode-1 points declared in the other
+// order 20 (same code); the negative rows z, y, x 33, y, x, z 32; the negative point through the existing
+// real_point3d_set 20 (same code), both mode-1 points through it 20 (same code). Reading of the six positive rows: a
+// row comes out as retail's `movaps; addss [centre]` when its side product is first formed inside that row's sum, and
+// as `movss [centre]; addss` when the product is already a common value before the row; retail has mode 1 x, y and
+// mode 2 x in the first form, ours mode 1 y and mode 2 x. In ours those are exactly the two centre components the side
+// vector loads as minuends (arg_1->y, arg_4->x); retail adds arg_1->x, its second subtrahend. Side vector forms on that
+// lead: i as `-(arg_4->y - arg_1->y)` 260 (1183 bytes, a real negation), j as `-(arg_1->x - arg_4->x)` 259, as
+// `0.0f - (arg_1->x - arg_4->x)` 259, both from named differences (dy, -dx) 259; j assigned then `-=` 20 (same code).
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

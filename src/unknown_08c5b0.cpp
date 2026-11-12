@@ -177,6 +177,9 @@ static inline long bungienet_user_voice_setting(short kind)
 // volatile read with a seeded default (`long setting = 1; if (kind == 1 && available) ...`) 12; the request's fields
 // read through a const source pointer local 4; index first with the volatile read as the selector's argument 5; the
 // kind held as a long 4; the kind arm's choice as a ternary 4.
+// Round 86 (m3 lane 14, fast, plain reads, no volatile): a top-level const request parameter 32 (95 bytes); the kind
+// held as a long 32; the selection as one ternary in place of the helper call 32; `old_setting != setting` 32; the
+// controller index read after the selector 30 (95 bytes). The compare folds in every plain-read form.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

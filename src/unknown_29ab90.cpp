@@ -46,6 +46,8 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // MiniMax I (11-11): no new form, no lower score (286); the two vectors copied from the same global still take
 // each other's frame homes - ours keeps the published vector in the lower slot and the one that feeds the
 // history term in the upper one, retail keeps them the other way round, and only a declaration order gives that.
+// MiniMax B (11-12): no new form, no lower score (286): the saved direction's planar copy taken as one aggregate (310)
+// and the two copies of the global with their declaration order exchanged (286, the same code) leave the score where it is.
 // score 286 (was 286; 320, 306 and 345 before): frame 0x64 and retail's entry copies agree (1865 bytes against 1863); saved-direction homes, planar operand order and xmm numbers of the floors remain.
 // b3M walk (11-06), every block against retail 0x29ab90..0x29b2d4: entry copies/0x658-0x678 history shift,
 // actor+0x26c test, 3-D magnitude (k,j,i sum, unrounded fabs test), 0x5d0/*arg_7 scale test, 1f9760 call, planar
