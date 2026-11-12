@@ -52,6 +52,15 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 
 /* the next recent player after the iterator's: a valid, online, known player
    with a name; iterator starts at the first entry and ends at NONE */
+// MiniMax B (11-12): no new form, no lower score (43); retail reads the index straight into esi and scales it
+// in place (imul esi, esi, 0x68), keeps the successor in ebx, hoists the & 3 mask into al before the loop and
+// tests the successor at the loop's end (cmp ebx, -1), while ours copies the index into a second register for
+// the entry, keeps the successor in a volatile register and leaves the mask as an immediate. The forms
+// measured: the successor in its own local stepped at the loop's end 49, the same with early returns 52, the
+// guarded do-while with the successor 49, the loop condition on the result with the successor 57, the index
+// stepped before the tests 57 and 58, the chain's end taken with an explicit break 50 (as an if/else 50 too),
+// and the result-terminated loop that leaves the index unchanged when the chain ends 34, which spins in the
+// source and was not kept.
 // MiniMax S (11-11): no new form, no lower score (43); retail's shape read off the disassembly - the index
 // scaled in place in ESI, the successor in EBX and the & 3 mask hoisted into AL before the loop - is not reached
 // by giving the successor its own local (51 as a while loop and as a guarded do/while, because the successor then

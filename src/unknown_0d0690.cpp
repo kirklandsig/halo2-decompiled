@@ -1351,6 +1351,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// MiniMax B (11-12): no new form, no lower score (529); retail hands this function its block in eax and its
+// query in edx while this build swaps them, so its frame is 0x2c against retail's 0x28 and the selection
+// result spills where retail keeps it in a register; the parameter order that would fix the swap is
+// retail's, and the callers' declarations are in files this lane may not edit.
 // MiniMax S (11-11): no new form, no lower score (529): retail hands this function its block in eax and its query in edx while this build swaps them, and its frame is 0x2c against retail's 0x28.
 // score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
 // MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
@@ -1690,6 +1694,13 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax B (11-12): no new form, no lower score (378); re-walked retail's listing statement by statement:
+// the field offsets, the constants, the pin arguments, the call arguments and the final pin order all
+// agree, and what is left is the frame (0x4c against retail's 0x40), the rotation projection added as
+// (j + k) + i where retail adds (k + i) + j from a live axis read, and the 0xd37f0 call handing its block
+// and query over in the other order. The live axis read moves this function's arguments (the record in
+// eax, the query in ecx and the type in edx where retail uses esi, eax and ecx), which costs 0x3db00 its
+// match, and the callers' declarations are in files this lane may not edit.
 // MiniMax B (11-11): no new form, no lower score (378); retail opens with the input length computed in x87 as
 // the matched magnitude3d helper's own body, while ours calls that helper from another file, so the length's
 // home and the frame (0x4c against retail's 0x40) stay as they are.
@@ -2232,6 +2243,10 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
+// MiniMax B (11-12): no new form, no lower score (542); the frame is retail's 0x90, but the status, mesh,
+// colour and sample homes sit 0xc bytes lower than retail's (the status at 0x24 against retail's 0x30 and
+// the sample pointer at 0x20 against retail's 0x2c), and the second arm's 0x13da30 lookup expands here where
+// retail calls it; both helpers live in files this lane may not edit.
 // MiniMax S (11-11): no new form, no lower score (542): the frame is the same 0x90, but the status, mesh, colour and sample homes sit 0xc bytes lower than retail's, and the second arm's 0x13da30 lookup expands here where retail calls it (that helper lives in another file).
 // MiniMax D (11-10): no new form, no lower score (542); the second arm's 0x13da30 lookup expands here where
 // retail calls it, and that helper lives in another file.
