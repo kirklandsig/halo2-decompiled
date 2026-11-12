@@ -907,6 +907,13 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // retail keeps the next sequence in esi, recomputes the offset in eax on every pass and re-reads window->newest at
 // the per-step test; with &m_message_window passed to the index helper the offset is recomputed per pass, but then
 // the frame and the register choice differ (89). The rest of the function agrees.
+// m3 lane 2 r75 (fast, 0x96510/0x94df0 listed): the found path left in the loop (`type == 0 &&` in the loop test, no
+// break) 80 (228 B: no second counter, but oldest is re-read every pass); the found test as `if (!(flags & 1) ||
+// (flags & 2)) continue;` 60 (same code); the shared index helper summing `first + sequence - oldest - 1` 95 (219 B,
+// and 17 matched users of the helper in this file lost); the count held in a named local, on this body 60 and on the
+// member-window form 89 (same code each). Re-measured the member-window form 89: its count folds oldest into `sub eax,
+// [edi + 0x34]` and the loop loads oldest again. Matched 0x94df0 has retail's exact loop (no second counter, the count's
+// oldest kept for the index) because its loop start reads oldest (`oldest + 1`); this loop starts from m_next_sequence.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
