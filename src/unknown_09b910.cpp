@@ -977,7 +977,7 @@ void function_fcbc0(long definition_index, point3f const *point, vector3f const 
  s_effect_owner const *owner, bool attached, bool airburst);
 void function_fcdd0(long definition_index, point3f const *point, vector3f const *forward);
 void function_fcea0(long effects_index, point3f const *point, vector3f const *direction,
- s_effect_owner const *owner, long index, vector3f const *normal);
+ s_effect_owner const *owner, short index, vector3f const *normal);
 
 // score 20 (was 20): only the 0xfcea0 call differs: retail passes the word field as a 16-bit argument
 // (`xor edx, edx; mov dx, [ebp + 0x2c]`, then its own argument order), ours zero-extends it with movzx for
@@ -1006,6 +1006,9 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // 16-bit parameter, and the value then stays 16-bit through 0xfd740 (contributor, held for its owner) into 0x1883e0's
 // fifth parameter, whose declarations include held src/impacts.cpp (this round's Avoid list), so the whole chain cannot
 // be retyped together. Still BLOCKED-BY 0xfd740 and 0x1883e0.
+// Matches (Fable lane 7 r153; applied on main by machine 3, 11-12): 0xfcea0's index and 0xfd740's element_index are `short`,
+// so retail's `xor edx, edx; mov dx, [ebp + 0x2c]` word load comes out and the value stays 16-bit into 0x1883e0's fifth
+// argument (0xfd740 drops its `(short)` cast there). Full check: lost [], 0xfd740 and 0xfcea0 still match, 0xfd0e0 25 -> 11.
 // @retail 0xa17d0
 bool c_projectile_effect_event::v11(long a, long const *entities, long c, void const *data)
 {

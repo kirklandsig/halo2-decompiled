@@ -789,15 +789,17 @@ void function_fcbc0(long definition_index, point3f const *point, vector3f const 
    0x1883e0 gives sounds as its "first" values and effects as its "second"
    (retail passes the effect slots it reads back, the fifth argument, ecx
    and edx, as 0x1883e0's second_value04, second_value and second_value0c) */
+// element_index is `short` (11-12, Fable lane 7 r153): its caller 0xfcea0 passes a 16-bit word and 0xa17d0 matches with it;
+// this function still matches.
 // @retail 0xfd740
-void function_fd740(point3f const *point, byte const *effects, long index, long element_index,
+void function_fd740(point3f const *point, byte const *effects, long index, short element_index,
 	long *effect0, long *effect1, long *effect2, long *sound0, long *sound1, long *sound2)
 {
 	long effect_index = *(long const *)(effects + 0x58);
 
 	if (effect_index != NONE)
 	{
-		function_1883e0(effect_index, false, point, c_type_47f957(g_47d8e0), c_type_47f957((short)element_index), index, 0, sound0, effect0,
+		function_1883e0(effect_index, false, point, c_type_47f957(g_47d8e0), c_type_47f957(element_index), index, 0, sound0, effect0,
 			sound1, effect1, sound2, effect2);
 		return;
 	}
@@ -1464,9 +1466,11 @@ long function_189fe0(s_sound_request const *request, long tag_index);
 // MiniMax A (11-11): matches; 0xfd740's six selector outputs now follow retail's order (effect 0, effect 1,
 // effect 2, sound 0, sound 1, sound 2) in its parameters, in its NONE stores and at both of its call sites,
 // which fixes the four register arguments of this call; 0xfd740 matches with it and 0xfd0e0 goes 29 -> 25.
+// index is `short` (11-12, Fable lane 7 r153): 0xa17d0 loads the word field for it with `xor edx, edx; mov dx` and matches;
+// this function still matches.
 // @retail 0xfcea0
 void function_fcea0(long effects_index, point3f const *point, vector3f const *direction,
-	s_effect_owner const *owner, long index, vector3f const *normal)
+	s_effect_owner const *owner, short index, vector3f const *normal)
 {
 	byte *effects = g_4e3b44[effects_index & 0xffff].bytes;
 	long sounds[3];
