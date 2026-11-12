@@ -1316,6 +1316,7 @@ struct s_batch_cache_4b5d0
 };
 
 struct s_133f70;
+// MiniMax I (11-11): no new form, no lower score (355 in the reduced image, 93 in the full build): the first difference is at +0x1 and the reduced image's score is inflated because the globals it leaves out are not masked; the tail is BLOCKED-BY 0x23690.
 
 // score 93 (was 93; 175 before round 82): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
 // frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain (the 93 is the

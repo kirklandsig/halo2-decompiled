@@ -1686,6 +1686,19 @@ long function_1fa7f0(void);
 // P392: Complete bitwise corner-query admission, both original results retained, success/failure in
 // bool/byte/short/long: 477/477/477/477/488/488/502/499. NOT kept: no native frame/edge/orientation
 // equality; one-use outcomes require a match. Original two-query admission and whole body restored.
+// MiniMax R (11-11): no new form, no lower score (400); a permuter run over this body (556 tries in 1210 s)
+// reached 386 on the reduced image and on the full image, but its best rewrite swaps the order of the sector
+// and node-index arguments of the trace call and of the two point arguments of the tangent call, and it
+// writes the link index through a volatile byte, so it changes what the function computes and is not kept;
+// the part of that rewrite that keeps the behaviour (the declaration order inside the loop, the reversed
+// comparison operands and the inverted type test) compiles to the same bytes as the body below, so the
+// score stays at 400 with the same 1752 bytes.
+// MiniMax R (11-11): no new form, no lower score (400); the prologue differs: retail pushes only esi and edi
+// and keeps the loop's zero in EBX and the count in SI, while ours pushes ebx and esi and keeps the zero in
+// EDX and the count in BX; retail reads the radius from the stack slot [esp+0x2c] and stores the expanded
+// radius at [esp+0x34] where ours reads [esp+0x30] and stores at [esp+0x44]; our locals sit at 0x10-0x58
+// where retail's sit at 0x6c-0x84, so the frame is 0x114 against retail's 0x10c and the two loops still
+// choose different registers; 1752 bytes against retail's 1746.
 // MiniMax S (11-09): no new form, no lower score; the frame is still eight bytes larger than retail's
 // (0x114 against 0x10c) and the first locals sit at higher offsets, so every stack slot and the
 // register choices in the two loops still differ; no form tried recovers retail's frame.
