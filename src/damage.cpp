@@ -852,6 +852,7 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 
 /* whether any entry of the block at +0x70 (0x60 byte entries) has the flag
    at +0x40 of the structure it points to */
+// MiniMax A (11-12): no lower score (2); the only source that reaches retail's latch order (inc before add) with retail's register pair is a for loop whose step is `++i, entry += 0x60` inside the count guard, and it repeats the count test and zeroes the index inside the guarded block (30), while an increment written as its own statement before the advance keeps retail's whole shape but moves the owner into edx and the index into ecx (8).
 // MiniMax G (11-11): no new form, no lower score (2); the one difference left is that retail increments the index before it
 // advances the entry pointer, and every form with the increment written as its own statement in the body gives retail's
 // instruction order but swaps the owner and index registers (8); the index types, the comparison order and the loop shapes
@@ -2469,6 +2470,10 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 /* damages an object's body: scales the damage by the body's material,
    applies region damage, takes it off the body and depletes the body when
    it runs out */
+// MiniMax A (11-11): no lower score (3); two forms not in the rounds below: the entry test nested inside the info test
+// (3, the load stays behind the branch) and a named region offset read before the regions pointer (3, the flags address
+// stays [edx + eax + 4]); an entry read into an integer local instead of a pointer (228) and a typed entry local (228)
+// give the same allocation as the plain pointer local. The original body is kept.
 // MiniMax G (11-11): no new form, no lower score (3); retail loads the region entry before the branch that tests the info
 // pointer and addresses the region flags as [eax + edx + 4] where this build uses [edx + eax + 4], the same address with the
 // base and index registers the other way round; naming the region entry in a local moves the load into the branch and scores
