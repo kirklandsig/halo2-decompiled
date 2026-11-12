@@ -156,6 +156,18 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // `1.0f - local_7` named right after the copy 98 (1208); the product update as `(1.0f - local_12) * local_7` 11 (same
 // code). Re-measured, not counted: the three blend addresses as `offset + base` in all eight combinations 11 (identical
 // code: the operand order in source never reaches the [eax + edx] address).
+// Round 111 (m3 lane 16, fast; control 11): a walking output pointer beside the result, declared ahead of the table test with
+// the pointer stepped after the result 51, stepped before it 64 (1193 bytes), declared inside the table test 15 (the result
+// keeps 0x18 and the cluster cursor 0x1c, so the output indexing does not weigh the result); the entry pointer declared at
+// function scope 11; the sum and the product declared at function scope ahead of the result 11; both sample indices declared
+// at function scope 11 (11 = same code). The low homes are ordered by reference count (8, 7, 5, 5, 5, 4, 4, 3, 3, 2): the
+// cluster cursor, the result and the output cursor tie at five, and retail orders that tie cursor, result, output cursor where
+// ours orders it result, cursor, output cursor. Diagnostics: the result first set inside the table test 75 (1181 bytes, homes
+// unchanged); an extra store through the cluster element at the loop top 249. The other two ties (sum before entry pointer,
+// product before the remaining count) sit as if ordered by name, so: a cluster element pointer for both accesses named
+// local_2, zcluster, cluster or a_cluster 11 each (same code); an explicit walking cluster pointer stepped at the loop end,
+// named zcluster, cluster or local_2 and declared at the loop 15 each, declared at function scope before or after the result
+// 15 each. In every one the result keeps 0x18 and the pointer 0x1c: neither its name nor its declaration place orders the tie.
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {
