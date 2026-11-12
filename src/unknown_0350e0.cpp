@@ -230,6 +230,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // as 332: the angle named inside the builder, `factor * step`, the parameters as (axis, factor, step, matrix). On 332:
 // the squares before the trig 354, the second pass storing rows straight to g_467104 332 (different code), the rows
 // through vector3f_rotate_into_axes 347, the squares written in place 385, `(1.0f - cosine)` in each cross product 350.
+// T90: Complete complement-axis scaler; with sine axis, squared axis, both, in-place
+// complement scale, reused sine scalars, diagonal parts and double-factor scale: 350/370/344/360/392/394/350/373.
+// NOT kept: No gain; native concurrent x87 inputs and matrix/vector homes remain. Both original helpers and complete body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2206,6 +2209,9 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // else path, and the camera sums' operand order. On 448: the distance attenuation through PIN 563 (2330 bytes), the
 // angular attenuation through PIN 531 (2314 bytes); with 0x2f2d0's dots through dot3f 449. Without the pair, ours keeps
 // x_scale and y_scale in unrelated slots (+0x28/+0x5c) where retail has them side by side in the dead direction slot.
+// T90: Clamp independent bounds, upper-first result, evolving-result tests and upper-first
+// conditional; complete visibility/alpha outcomes, full-capacity arm first, separate count publication: 529/591/533/492/505/498/506/492.
+// NOT kept: No gain; frame 0x90 versus 0x94 and addressed-output homes remain. Original clamp and entire body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
