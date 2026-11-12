@@ -1592,6 +1592,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// MiniMax G (11-12): no new form, no lower score (703); the frame agrees (0xc0); the slot helper is the
+// static __forceinline function_74aa1 in this file (src/unknown_072db0.cpp:1588), whose null test is a
+// branch here against retail's cmovne, and the users cursor still rides in EBX where retail keeps it in
+// a stack slot at +0x18 that points at the record start.
 // MiniMax B (11-11): no new form, no lower score (703); the body is unchanged, and the forms listed above are exhausted.
 // MiniMax G (11-11, second pass): no new form, no lower score (703); retail keeps the users cursor in a stack slot
 // at +0x18 that points at the record start, ours keeps it at +0x14 pointing at the record's properties, and the
