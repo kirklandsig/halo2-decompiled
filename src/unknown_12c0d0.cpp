@@ -899,6 +899,9 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // function scope 2; the first read named `now` and copied into start 2; every declaration direct-initialised 2. Diagnostic:
 // attempts non-volatile 90 (270 bytes): then only the low zero store rises above `push edi`, so the volatile attempts store
 // after the rdtsc is what lifts the high store as well.
+// Round 117 (m3 lane 12, fast): the pump counter and attempts as one volatile local (5 or 2, then 0 before the loop and
+// counted in it, as retail's one slot holds) 57 (290 bytes: the zero stores stay above `push edi`, the merged local takes
+// the lower slot and the loop's accesses grow), the same local named `pumps` 57 (the same code: the name does not move it).
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {
