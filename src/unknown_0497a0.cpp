@@ -15,6 +15,11 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
+// MiniMax E (11-11, run 80): no new form, no lower score (536): the two perspective-row crosses through the existing
+// staged helper compile to the same code (536) and the special path's two crosses through it score 537; retail
+// computes the cross components in the k, j, i order and keeps the first cross's products alive for the second
+// one, which gives its frame 0x60 with five vector copies against our 0x54 with four, and it holds the reciprocal
+// in xmm5 where we hold it in xmm1, so the shape pointer sits at [esp+0x14] in retail and at [esp+0x1c] here.
 // MiniMax G (11-11): no new form, no lower score: the permuter over this file's wave spellings produced no variant that matches retail's bytes; retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y are what keep those three on the x87 stack until after the product, and no plain spelling of the wave expression gives them a second use.
 // score 536 (was 594): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
 // against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
