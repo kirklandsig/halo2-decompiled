@@ -318,12 +318,14 @@ void function_f0fd0(long vehicle_index, bool set);
    unit's flags and are deleted */
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
-// score 99 (was 122): the frame is now retail's 0x14 and the body is retail's 473 bytes, with the prologue
-// stores, the shared next-index scan and the element computation in retail's order; what is left is the
-// register colouring around the object-pool lookup, where retail keeps the datum index in EDI, the pool's
-// data in EBP and the object pool in EBX and ours keeps them in EBX, EDI and EBP.
+// score 122 (was 122): frame 0xc against retail's 0x14; retail reads the pool from the iterator's home for
 // the scan (high water snapshot in ESI) and from a second stack copy for the element, and keeps the datum
 // index in EDI; ours forwards the pool into EDI for both.
+// MiniMax H (11-12) lead 99, NOT kept (coordinator): it needs a new `_ReadWriteBarrier()` (barriers are reverted) and
+// the iterator step's body written out by hand. With it the frame is retail's 0x14 and the body retail's 473 bytes, with the
+// prologue stores, the shared next-index scan and the element computation in retail's order; what is left is the
+// register colouring around the object-pool lookup, where retail keeps the datum index in EDI, the pool's
+// data in EBP and the object pool in EBX and ours keeps them in EBX, EDI and EBP.
 // MiniMax D (11-10): no new form, no lower score (122); retail's frame is 0x14 with the pool pointer in two
 // stack homes and the datum index in EDI, ours is 0xc with the pool forwarded into EDI and the object pool
 // hoisted into EBP.
@@ -564,25 +566,14 @@ extern "C" void _ReadWriteBarrier(void);
 // @retail 0x1fb510
 void function_1fb510(void)
 {
-	s_data_datum_iterator iterator;
-	s_record_pool *pool;
+	s_record_pool_iterator iterator;
 	s_recorded_animation *animation;
-	long index;
 
 	iterator.data = g_4f5724;
 	iterator.index = NONE;
 	iterator.datum_index = NONE;
-	iterator.datum = 0;
-	pool = g_4f5724;
-	while ((index = data_find_index(iterator.data, iterator.index + 1)) != NONE)
+	while ((animation = (s_recorded_animation *)function_1fb762(&iterator, iterator.data)) != 0)
 	{
-		byte *element = pool->data + pool->size * index;
-		long datum_index = (*(short *)element << 16) | index;
-
-		iterator.datum = element;
-		iterator.index = index;
-		animation = (s_recorded_animation *)element;
-		_ReadWriteBarrier();
 		s_recorded_animation_object *unit = recorded_animation_unit_try_and_get(animation->object_index);
 		_ReadWriteBarrier();
 		if (unit)
@@ -614,7 +605,7 @@ void function_1fb510(void)
 				function_f0fd0(animation->object_index, true);
 		}
 
-		record_pool_release(g_4f5724, datum_index);
+		record_pool_release(g_4f5724, iterator.datum_index);
 	}
 }
 #pragma function(_ReadWriteBarrier)
