@@ -2379,6 +2379,11 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // (193 bytes); the count through a byte offset 8; an entry pointer for the two tail stores only 8. Diagnostics: 1-8 unused constant locals at the top or before the
 // old-index test 8 each (no rotation step); the dead volatile load before the old-index test re-confirmed (lookup and
 // tail then retail's).
+// Round 93 (m3 lane 11, fast; 0x15b1e0, 0x15aad0, 0x15b220 and 0x15ace0 matched each time): the release helper reading
+// the pool through a local copy (`objects = g_4e0300`) 8, with the subscript spelling 8, with a named absolute index ahead
+// of the copy 8; a header pointer local in the helper 8; the out-of-range case as an early `continue` guard 8. Diagnostics
+// (the release written out here, not kept): with a function-top pool copy 28 (the copy takes EDI at entry and the lookup
+// stays base-first), with the copy inside the guard 8.
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {

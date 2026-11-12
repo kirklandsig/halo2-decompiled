@@ -247,6 +247,11 @@ __forceinline __m128 lerp_3009e0(__m128 from, __m128 to, float fraction)
 // first (recursively, with the ray cut at the split) and then the far one
 // with what is left of the ray; bounds cut the ray to a node's range; each
 // leaf reached is cast against.
+// score 892 (was 892): the command widens through ecx; retail uses eax
+// and a different saved-object home. The frame is 0x194 in both.
+// Copy pointer 892; copy reference 892; vector initializer 1018; scale cases
+// first 958; value cases first 955; leaf cases first 892; hit block 892;
+// nested filter 892. All restored.
 // @retail 0x3009e0
 void class_2df670::function_3009e0(pending_301800 *position, void const *root, fixed_ray_301800 *const segment)
 {
