@@ -3355,6 +3355,8 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // shared axis setters 112 (NOT kept: gain one); CRT camera/axis transfers 113/113;
 // plain axis traversals 128; sole-return failure jump with shared camera transfer 152.
 // NOT kept: subthreshold setter gain and tied or larger differences; original control and copies restored.
+// MiniMax A (11-12): no new form, no lower score (113): retail compares the parent index in memory and reloads it into ebx
+// where ours keeps it in ecx, and the camera copy still takes ours's register home instead of retail's ebp.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -4810,6 +4812,9 @@ void __stdcall function_cc810(long vehicle_index)
 // planning exits 185; chained phase clears 161. NOT kept: the chained clears gain
 // only one; every other form ties or regresses. The x87 discriminant/frame remains,
 // including the 708-byte success-default bool form. Original complete body restored.
+// MiniMax A (11-12): no new form, no lower score (162): our build folds the first test's stop_time * 0.5f * velocity * 0.5f
+// into one multiply by 0.25 where retail keeps three multiplies, and it evaluates the one-use discriminant on the x87 stack
+// where retail keeps it in SSE with a spilled root; the done flag is also a byte store here and a dword store in retail.
 // @retail 0xc7300
 void __stdcall function_c7300(real distance, real velocity, real speed_limit, real acceleration, s_unit_motion *motion)
 {
@@ -6168,6 +6173,9 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // Typed unit-tag fields 59; source cursor 68; sequential/case allocation failure 326/301;
 // model-entry cursors 76; complete shared setters 200; CRT vector copies 59; shared forward address 60.
 // NOT kept: no gain; original body retained apart from the required typed tag fields.
+// MiniMax A (11-12): no new form, no lower score (59): the first header read takes the scaled offset as the address base where
+// retail takes the data pointer, and the success arm's scratch registers stay swapped; the early-return form of the
+// out-of-memory block, tried here, scores 193 (59 with the failed flag kept).
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {
