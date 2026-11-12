@@ -2751,6 +2751,10 @@ bool function_1d5120(s_havok_component *component, long rigid_body_index, long a
 void __stdcall function_1c3770(long object_index, dword flags);
 
 /* steps a dead biped's ragdoll settling (+0x3aa) toward rest */
+// MiniMax G (11-12): no new form, no lower score (63): nothing new this round; the extra EBP (the Havok base loaded early), the
+// count transport and the hoisted 0x9fff flag clears still differ.
+// MiniMax G (11-12): no new form, no lower score (63): the extra EBP (the Havok base loaded early), the count
+// transport and the hoisted 0x9fff flag clears still differ.
 // MiniMax B (11-12): no new form, no lower score (63): the +0x3aa byte tested in place with the cast value read again
 // at the call, the count local as a byte, and the long local kept with the byte tested in place all measure 82 (253 bytes)
 // against the current 63 (245 bytes, retail's length), so the sign-extended long local stays; what is left is retail's
@@ -3324,6 +3328,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
+// MiniMax G (11-12): no new form, no lower score (362): nothing new this round; the frame 0x48 against retail's 0x4c (retail's
+// dead flag byte before the 0xe16b0 call) and the held homes remain.
+// MiniMax G (11-12): no new form, no lower score (362): frame 0x48 against retail's 0x4c (retail's dead flag byte
+// before the 0xe16b0 call) and the held homes remain.
 // score 362 (was 362): frame 0x48 against retail's 0x4c (retail's dead flag byte before the 0xe16b0 call, a HELD
 // contributor form below), the +0x34b state byte zero-extended, scalar, centre and result homes. Round 85 (m3 lane 13) at
 // the end of this note; the earlier first lines are kept below as "Earlier first line".
@@ -4248,6 +4256,10 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 /* places one of the ragdoll's bodies: hanging from its constraint's pivot on
    the body placed before it (kept within reach of the ragdoll's center and
    out of the world, turned to follow), or the first body at the point */
+// MiniMax G (11-12): no new form, no lower score (356): nothing new this round; the origin, the first property/distance, the
+// matrix, the second property/limit and the placed homes are still in another order.
+// MiniMax G (11-12): no new form, no lower score (356): the origin, the first property/distance, the matrix, the
+// second property/limit and the placed homes are still in another order.
 // score 356 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
 // (retail 0x40/0x4c/0x50/0x84/0x88, ours 0x44/0x40/0x60/0x5c/0x50), the pivot select and the materialized travel test.
 // Round 85 (m3 lane 13) at the end; the earlier first lines are kept below as "Earlier first line".
@@ -5161,6 +5173,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// MiniMax G (11-12): no new form, no lower score (79): nothing new this round; the first rotation and the staged cross product
+// operands (load-first where retail copies the axis) still differ.
+// MiniMax G (11-12): no new form, no lower score (79): the first rotation and the staged cross product operands
+// (load-first where retail copies the axis) still differ.
 // MiniMax D (11-11): no new form, no lower score (79); the first difference is still at +0x107, inside the
 // inlined rotation helper, whose body lives in another file and is not this lane's to change, so the bytes
 // from there on cannot be moved from here. What is left in this file is the first rotation's cross terms,
@@ -6155,6 +6171,10 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 
 /* a walking biped's footstep effect: at its foot marker (or its origin),
    with the material it stands on */
+// MiniMax G (11-12): no new form, no lower score (138): nothing new this round; the frame 0xec against retail's 0x94 (the marker
+// and the collision do not share a home) and the remaining homes differ.
+// MiniMax G (11-12): no new form, no lower score (138): frame 0xec against retail's 0x94 (the marker and the
+// collision do not share a home), the material carrier and the remaining homes differ.
 // MiniMax B (11-12): no new form, no lower score (168): the frame is 0xec against retail's 0x94 and the entry argument
 // sits at [esp+0xf0] against retail's [esp+0x98], so this build's locals take more room than retail's; the 0x188180
 // call's convention is set by the callee's definition in src/unknown_187ec0.cpp, which this lane may not edit.
