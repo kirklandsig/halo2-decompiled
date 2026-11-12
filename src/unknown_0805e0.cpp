@@ -366,6 +366,12 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // into esi, keeps the successor in edx and leaves the mask as an immediate; giving the successor its own local
 // moves it to ecx instead of ebx (51, and 52 with the loop left on a none successor), and passing the mask in at
 // the call site does not hoist it either.
+// Round 173 (m3 lane 6, fast with 0x1a303b/0x2b393c): the listed early-return form re-measured 52 (no EBX; next ECX,
+// flags EAX, mask immediate) and the listed `!result` loop with a successor 37 (player on the stack, ret 8, callers 15/27;
+// mask still an immediate there); that loop with the player copied into a local at entry 37 (same, callers lose); the
+// `!result` loop with no successor local 57; a guarded do-while with early returns and a `result` returned at the end 52;
+// `result` declared after the index 43 (same code); the XUID read once into a local for its two tests 50 (callers 2/2).
+// Also: the result as a byte 47 (129 bytes); the index as a short read from the iterator 54 (129 bytes, callers 2/2).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
