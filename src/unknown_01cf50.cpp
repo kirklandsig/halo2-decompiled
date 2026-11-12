@@ -308,6 +308,7 @@ void __stdcall function_15ec0(long index)
 
 __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 const long g_43e8e8[4] = { 32, 64, 128, 256 };
+// MiniMax A (11-12): no new form, no lower score (58): the allocation callee 0x15b10 still takes its out pointer in esi here and in ebx in retail, so the frame stays one push deeper and the copy count rides in edi; that callee lives in src/unknown_0158f0.cpp, which this lane may not edit. BLOCKED-BY 0x15b10.
 
 // MiniMax H (11-12): no new form, no lower score (58); the allocation callee 0x15b10 still takes its out pointer in
 // ESI here and in EBX in retail, so the frame stays one push deeper and the copy count rides in EDI; that callee
@@ -453,6 +454,7 @@ bool function_015a60(short format, long width, long height, long depth,
 // and the depth in the order the callee reads them, so the depth byte reaches the call in eax and
 // the height word in the first stack slot as retail does; the width still lives in di where retail
 // keeps it in bx and the texture pointer in ebx where retail keeps edi.
+// MiniMax A (11-12): no new form, no lower score (72): retail keeps the height in dx and stores it on the stack as a word at [esp+8] where ours zeroes eax first and stores a dword at [esp+0x10], and retail keeps the width in bx and passes it in ecx with the depth in ax to 0x359e0 while ours keeps the width in di; that callee lives in src/unknown_0359e0.cpp, which this lane may not edit. BLOCKED-BY 0x359e0.
 
 // MiniMax H (11-12): no new form, no lower score (72); retail keeps the height in DX and stores it on the stack as a
 // word at [esp+8] where ours zeroes EAX first and stores a dword at [esp+0x10], and retail keeps the width in BX and
@@ -2655,6 +2657,7 @@ struct s_render_transform_record
 	byte unknown10[0xc];
 	transform4x3f const *transform;
 };
+// MiniMax A (11-12): no new form, no lower score (51): the body is still eleven bytes longer than retail and keeps the transform table lookup result in eax where retail copies it to edx before the cmp edx, -1 test, because retail calls 0x1d6b0 out of line at the second site while this build inlines it at both; that helper inline-ness is decided in src/unknown_023540.cpp, which this lane may not edit. BLOCKED-BY 0x1d6b0.
 
 // MiniMax H (11-12): no new form, no lower score (51); retail calls the transform table's lookup (0x1d6b0) out of line
 // at the second site and this build inlines it at both, which makes our body eleven bytes longer and leaves the
@@ -3445,6 +3448,7 @@ bool function_128c0(s_128c0_settings const *settings)
 // offset reproduces retail's length (399) and its shape but moves the source pointer into ebp
 // (67), so it was dropped.
 
+// MiniMax A (11-12): no new form, no lower score (62): retail keeps the locked rectangle pointer at [esp+0xc] and its pitch at [esp+0x10] and ORs the 0xf0000000 flag into the pointer in memory, where ours keeps the pitch at [esp+0xc], the pointer at [esp+0x10] and sets the flag in a register; the inner loop also adds the x offset to the source side where ours adds it to the destination pixel pointer, and the locked rectangle field order comes from the XDK type, which this lane may not edit.
 
 // MiniMax H (11-12): no new form, no lower score (62); retail keeps the locked rectangle's pointer at [esp+0xc] and
 // its pitch at [esp+0x10] and ORs the 0xf0000000 flag into the pointer in memory, where ours keeps the pitch at
@@ -3962,6 +3966,7 @@ void function_1eb00()
 // retail divides into xmm2 and multiplies into xmm0.
 // MiniMax A (11-06, run 52): no new form, no lower score (79) - retail copies the first five constants
 // into its own locals in a different order.
+// MiniMax A (11-12): no new form, no lower score (79): retail body builds four shader programs from tables and caches that this project does not have, and the ratio of the two counters is still divided into xmm3 and multiplied into xmm4 where retail divides into xmm2 and multiplies into xmm0, so what is left is a knowledge difference rather than a local form and the body stands.
 
 // MiniMax H (11-12): no new form, no lower score (79); retail's body builds four shader programs from tables and
 // caches that this project does not have, and the ratio of the two counters is still divided into xmm3 and multiplied
@@ -4769,6 +4774,7 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
     }
 }
 // MiniMax I (11-11): no new form, no lower score (125): the four products taken in retail's order (the width's cosine product first, then the height's cosine, the width's sine and the height's sine) score 213 and grow the body to 1045 bytes, so the body keeps its own order; our body is still five bytes longer than retail's 1027, which is what moves the two early skips' branch targets and every later one.
+// MiniMax A (11-12): no new form, no lower score (125): our body is still five bytes longer than retail 1027, our four products reach the same stack slots in another register order (ours xmm1/xmm3/xmm2/xmm5 against retail xmm6/xmm3/xmm2/xmm7) and another multiply order, and our two early skips branch to a near block where retail branches to the end of the body; naming the four products in retail order scores 213, so the body stands.
 
 // MiniMax H (11-12): no new form, no lower score (125); our body is five bytes longer than retail's 1027, our four
 // products reach the same stack slots in another register order (ours xmm1/xmm3/xmm2/xmm5 against retail's
@@ -6134,6 +6140,7 @@ void __stdcall function_4efa0(long tag, long context, long first, long second,
 {
     function_4ede0(tag, context, first, second, third, handle, material);
 }
+// MiniMax A (11-12): no new form, no lower score (54): the score still rests on the load-bearing volatile tag local (without it the compiler rebuilds the body, 117), and retail still reads the block base out of the table before the tag lookup and keeps the tag in a register where ours spills it to a stack slot and reads it back; inlining the tag into the index gives 117 and reading the block before the tag gives 101, both worse, so the body stands.
 
 // MiniMax H (11-12): no new form, no lower score (54); the score still rests on the load-bearing volatile tag local
 // (without it the compiler rebuilds the body, 117), and retail still reads the block base out of the table before the
@@ -6414,6 +6421,7 @@ static __forceinline void offset_rectangle_1f070(short_rectangle2d *rectangle, s
     rectangle->top += dy;
     rectangle->bottom += dy;
 }
+// MiniMax A (11-12): no new form, no lower score (60): the two rectangles still sit four bytes higher in the frame than retail (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail [esp+0xc] and [esp+0x14]), the bitmap pointer still shares the clip slot instead of being spilled at [esp+0x1c], and the left edge is still clamped with a conditional set where retail branches; a long left edge gives retail slots but grows the frame, so the body stands.
 
 // MiniMax H (11-12): no new form, no lower score (60); the two rectangles still sit four bytes higher in the frame
 // than retail's (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail's [esp+0xc] and [esp+0x14]), the

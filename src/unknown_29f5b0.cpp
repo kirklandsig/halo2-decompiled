@@ -984,6 +984,9 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // pointer to the yaw/pitch pair with a named pitch cosine, `(real)cos` 6 or cosf 6; `true, true` for the constants 6; an inline
 // filling an output vector from the flag 6; one returning the vector by value 69 (122 bytes; 0x2a1120 8), from the angles 74
 // (harness); the position read through the table ahead of the flag 41 (harness, 98 bytes).
+// Round 76 (m3 lane 2, fast): the element from a forceinline (elements, index, element size) helper 6; const parameters 6; the
+// element as the table plus a named byte offset 6; a forceinline flag getter taking the index, position inline 6; a named pitch
+// cosine with the position inline 6. Diagnostic (not kept): `/G7` on the file's flags 6, the same schedule in the full LTCG build.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {
