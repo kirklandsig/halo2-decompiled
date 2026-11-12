@@ -70,6 +70,10 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
     return local_0;
 }
 
+// MiniMax C (11-11): no new form, no lower score (356): dropping the host-state copy reaches retail's
+// 0x34 frame but rises to 416, and what still differs is the callee-saved set - retail keeps the
+// connection in EDI with four register saves and none in ESI and the channel index in EBP, ours
+// reserves 0x38 and splits the saves - together with 0x75910's byte result, which is in another file.
 // score 356 (was 371): frame 0x38 versus 0x34 (local_18 still has a stack home, retail EBP); observer/channel/result
 // and counter homes remain.
 // MiniMax R (11-10): no new form, no lower score (356); the frame is still 0x38 here against retail's 0x34, this

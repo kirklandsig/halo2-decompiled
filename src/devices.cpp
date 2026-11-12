@@ -1870,6 +1870,11 @@ bool function_0b6760(s_index_pair const *pair);
 // sit in EDI/ESI where retail has ESI/EBX, the result stays in DL where retail keeps a stack byte, and the definition is re-read
 // where retail reads it once; the rate local, the clamp as an if/else, the channel pointer and the position arm's earlier
 // previous-value read all give the same code or a higher score.
+// MiniMax C (11-11): no new form, no lower score (250): the full check counts the same as the reduced
+// one (250 at 1479 bytes against retail's 1495), so the lead in the note below (dropping the definition
+// pointer's volatile, a rate local just before the power call, `bool result = false;` after the
+// definition and the 0xb3 byte as `<= 0`) is three points and stays under the eight-point gate; the
+// index and index * 12 still sit in EDI/ESI where retail has ESI/EBX, and the result stays in DL.
 // score 250 (was 250): the same body measured 248 at lane 14 round 62 and 250 in round 79's baseline. Earlier (248, was 285):
 // frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // where retail has ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads.
