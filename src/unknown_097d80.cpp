@@ -52,11 +52,6 @@ struct c_aggregate : c_child
 };
 
 
-// MiniMax G (11-11): no new form, no lower score (31); under /GL the address-taken produced count keeps a slot
-// of its own, so the frame stays 0x8024 against retail's 0x8020 and every slot below it shifts by four.
-// MiniMax B (11-11): no new form, no lower score (31); the produced count moved out of the collection loop to the
-// function scope scores 42, so the frame stays 0x8024 against retail's 0x8020: the produced count keeps a slot of its
-// own because its address reaches the child's v5.
 // score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
 // reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
 // loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its
@@ -65,6 +60,11 @@ struct c_aggregate : c_child
 // two temporary slots are swapped). This body built without /GL is byte-exact (BLOCKED by the build flag). Compiled without /GL (screen only) the body
 // gets retail's 0x8020 frame and every slot, 20 left (EBX/EBP and the boundary loads); every /GL form
 // screened keeps 0x8024.
+// MiniMax G (11-11): no new form, no lower score (31); under /GL the address-taken produced count keeps a slot
+// of its own, so the frame stays 0x8024 against retail's 0x8020 and every slot below it shifts by four.
+// MiniMax B (11-11): no new form, no lower score (31); the produced count moved out of the collection loop to the
+// function scope scores 42, so the frame stays 0x8024 against retail's 0x8020: the produced count keeps a slot of its
+// own because its address reaches the child's v5.
 // MiniMax S (11-10): no new form, no lower score (31); the frame is still 0x8024 against retail's
 // 0x8020: retail packs the loop-2 cursor and the loop-3 count into the address-taken produced slot
 // (frame +0x00) while ours keeps a slot of its own for the produced count, and the two temporary slots
@@ -434,6 +434,9 @@ struct c_aggregate : c_child
 // Re-measured listed forms: the count `dword` with v5's output `dword *` 31 (Round 137's int); the count named `added`
 // 31; the collection result stored to error after the total 32 (Round 135); the cleanup query output as `dword` 31
 // (Round 218); the item cleared before its release 45 (listed at 59). Frame 0x8024 in each; still BLOCKED by the build flag.
+// M3 lane 3 r236: no new form. Checked against this note: scopes, wrappers, shared outputs, widths, names, loop shapes,
+// the children's real type and the v5 declarations are listed; a non-virtual (qualified) v5 call would emit a direct call where
+// retail calls through the vtable. The only lever is the build flag (this body is byte-exact without /GL), a user decision.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
