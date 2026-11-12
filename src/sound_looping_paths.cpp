@@ -156,6 +156,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
+// MiniMax H (11-12): no new form, no lower score (866): retail still reads the shared global g_44a0b4 from memory fourteen times and keeps it in xmm4 where ours stays in xmm5 for the whole function, the prologue still zeroes a different register than retail (ours ebp, retail esi), and the zeroed count's home still differs (esp+0x24 here, esp+0x88 in retail), so every frame offset after it differs.
 // MiniMax E (11-11, run 80): no new form, no lower score (866): retail reads the shared global g_44a0b4 from
 // memory fourteen times and keeps it in xmm4 again after the pointer stores, while ours (a plain real declared
 // in another file) stays in xmm5 for the whole function; a reload would need a volatile qualifier or the
