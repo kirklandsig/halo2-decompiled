@@ -126,6 +126,10 @@ void *__cdecl function_2ef2f0(long arg_0, long arg_1, long arg_2, long value)
 	return function_2ee390(arg_0, arg_1, arg_2, value);
 }
 
+// score 11 (was 11): frame 0x134 and extent 244 agree; second box acquisition and radius
+// carriers differ before growth. First extent at use 11; direct radii/all fields 13/13;
+// radius/extent references 13/11; scalar broadcast loads 89; late second radius 13;
+// staged vector broadcasts 64. NOT kept: tied or larger differences; original observations restored.
 // @retail 0x2ef3b0
 void manifold_pair_2ef2f0::function_2ef3b0(description_2ed170 const *a, description_2ed170 const *b, input_2ef2f0 const *input, long arg_3)
 {
@@ -151,6 +155,11 @@ public:
 
 // the two boxes grown by their radii, and the contact found between them
 // passed on
+// score 13 (was 13): frame 0x168 and extent 273 agree; the second radius loads late,
+// contact uses +0x30 instead of +0x10, and grown vectors use +0x10/+0x20 instead of +0x40/+0x50.
+// Contact after query/after timer/renamed 13/13/13; paired radii alone/with renamed or late
+// contact 35/35/35; scalar broadcasts 82; first extent and paired radii 35.
+// NOT kept: ties or regressions; original inputs and full body restored.
 // @retail 0x2ef4b0
 void box_pair_2ef4b0::function_2ef4b0(description_2ed170 const *a, description_2ed170 const *b, input_2ef2f0 const *input, collector_2ef4b0 *collector)
 {

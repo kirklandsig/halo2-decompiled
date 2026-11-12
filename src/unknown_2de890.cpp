@@ -190,6 +190,13 @@ answer_2de9e0 c_child_transform::function_2de9e0(ray_2de9e0 const *ray, hit_2de9
 
 // the same cast with results going to a collector: the child is described
 // with its placement composed with the transform
+// score 51 (was 51): Frame 0xa8 and extent 336 agree. Translation and point
+// loads, metadata stores, argument pushes and descriptor carriers differ.
+// Translation named first 51; offset before transpose 52; shared placement
+// input 51; both metadata first 51; child field first 51; shared child 51;
+// whole descriptor 52; all coordinate products named 51. Both inverse users
+// checked. NOT kept: no match or qualifying gain; original body and helper
+// restored.
 // @retail 0x2deb20
 void c_child_transform::function_2deb20(ray_2de9e0 const *ray, description_2deb20 const *description, void *collector) const
 {

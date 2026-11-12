@@ -590,6 +590,18 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // tail alone 27, a group local in the loop's arm with the tail block local 51. The matched sibling 0x12e210 reads the block
 // twice through two lookups (two loads, no copy); the three fixup functions have no caller outside this file.
 // Wanted: a second use of the block in the loop's arm that leaves no code of its own.
+// Round 85 (m3 lane 14, fast): LEAD, the second use is a separate load. The arm reading the block through
+// `&cache_block->block` taken before the loop (the test reading the field directly) gives 14 at 266 bytes: the two loads
+// stay apart, as in matched 0x12e210, where the arm's re-read through the getter is its own `mov esi, [edi+8]`. The test's
+// block then goes to EDX as retail and the tail is exact. Left: our arm loads ESI from [edi+8] after EDX has been reused
+// for the pool data, where retail copies EDX into ESI before that load and reads the page shift first. Not kept (a field
+// read through its own address, mixed with direct reads; match-only). On that form, the same code: the group in a local
+// before the call 14, the pointer for the test and the direct read in the arm 14, group and base locals 14, the pointer
+// taken at the top 14, the tail's two reads through it as well 14; the release callee as (base, group) (a contributor's
+// function, measured and put back) 14, same code; the page shift named first 14 (same code); the tail reading the block
+// once into a local for its test and pointer 18. On the original body: the block local initialised above the tasks store
+// 71 (the block is loaded before the count and held in ESI across the lock calls); `__assume(local_1 != NULL)` in the arm
+// 45. A 600 s permuter run on the 14 form found nothing (its reduced image scores that form 73, the full image 13).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

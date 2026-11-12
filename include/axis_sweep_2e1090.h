@@ -108,6 +108,7 @@ public:
 	void function_2e29b0(long *owner, pairs_2e1090 *pairs);
 	void function_2e3370(bounds_2e0020 const *bounds, overlap_endpoints_2e3370 *out);
 	void function_2e0350(long *const *owners, bounds_2e0020 const *bounds, long count, pairs_2e1090 *added, pairs_2e1090 *removed);
+	void function_2e3b00();
 	void function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660 *collectors, long collector_stride);
 	void function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *collector);
 };
