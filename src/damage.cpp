@@ -856,6 +856,12 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 // advances the entry pointer, and every form with the increment written as its own statement in the body gives retail's
 // instruction order but swaps the owner and index registers (8); the index types, the comparison order and the loop shapes
 // (do-while, while, for) all leave the current code or score higher.
+// MiniMax H (11-11): no lower score (2); retail increments the index before it advances the entry pointer, and every
+// spelling that puts the increment in the body first (a separate `i++` statement, a while loop with the increment in
+// the body) either swaps the owner and index registers (8) or keeps the index's zeroing inside the count guard (5);
+// an increment as the last statement of the body (2) fuses it with the compare and leaves the order as it is, and a
+// comma expression that advances the entry inside the comparison keeps retail's registers but still emits the advance
+// before the increment, because the comparison's right operand is evaluated first.
 // MiniMax I (11-10): no lower score (2 kept); the only difference left is that retail increments the index before it
 // advances the entry pointer, and every form that puts the increment in the body before the advance (a `++i` statement
 // before `entry += 0x60`, a comma statement `++i, entry += 0x60`, or the index-based address `entries + 0x40 + i * 0x60`)
@@ -1723,6 +1729,10 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 // has eax, ecx, edx, and the finished flags are still stored after the `lea` where retail stores them before it; the copy
 // written as separate field reads splits it into more instructions, and the flag store moved ahead of the copy changes the
 // schedule elsewhere.
+// MiniMax H (11-11): no new form, no lower score (10); the copy of the owner's three dwords still goes through ecx,
+// edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after the address of the damage
+// record is built where retail stores them before it; the flags read and written through the union member (10), a
+// pointer to the flags word (10), a copy through a temporary (10) and the flags read before the copy (17) all fail.
 // MiniMax A (11-11): no new form, no lower score (10); the aggregate copy of *owner still goes through ecx, edx, eax
 // where retail has eax, ecx, edx, and the finished flags are still stored after the `lea eax, [data]` where retail
 // stores them before; the copy written as four field reads (the owner's three longs and its two shorts) splits into
@@ -2433,6 +2443,10 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // pointer and addresses the region flags as [eax + edx + 4] where this build uses [edx + eax + 4], the same address with the
 // base and index registers the other way round; naming the region entry in a local moves the load into the branch and scores
 // 228, and the other address spellings keep the current form.
+// MiniMax H (11-11): no lower score (3); the region entry is still loaded after the `info` test where retail loads it
+// before, and the region flags are still addressed as [edx + eax + 4]; a nested entry test (3), an entry local read
+// before the test (3), a top-level entry local (3) and an entry local shared with the 0xdb090 call (218) all leave
+// the load behind the branch.
 // MiniMax A (11-11): no lower score (3); retail's region entry is loaded before the branch that tests the info
 // pointer (the `je` at 0xd8d46 belongs to the `test ebx, ebx`) and its flags are addressed as [eax + edx + 4] where
 // ours uses [edx + eax + 4] - the same address with the base and index registers the other way round. The address
@@ -3199,6 +3213,8 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // puts the xmm1 copy before the stack reload; inverting the outer test (an early `return damage` when the team is none or the
 // state is not 1) gives the same two blocks in the same order and the same score, and the enemy test in a bare block with one
 // return at the end gives a single block instead of two.
+// MiniMax H (11-11): no new form, no lower score (5); the two final `return damage` blocks keep our order, retail
+// puts the xmm1 copy before the stack reload in the block that returns without a team.
 // MiniMax A (11-11): no new form, no lower score (5); the two final `return damage` blocks keep our order, retail
 // puts the xmm1 copy before the stack reload. Inverting the outer test (`if (team == NONE || state != 1) return
 // damage;` with the enemy logic in a bare block) leaves the two blocks in the same order and the same score (5), and
@@ -4457,6 +4473,9 @@ void function_db670(long object_index, long vehicle_index)
 // by 0xda110, which retail calls with the permutation index in EAX and five stack arguments (ret 0x14) where
 // ours takes the region in EAX and the permutation in ECX. The permuter on this function was starved by other
 // lanes' runs and produced no result.
+// MiniMax H (11-11): no new form, no lower score (42); retail keeps the permutation base in EDI across the branch and
+// calls 0xd9d60 with the flag in AL and the effect index in EAX, which are the callee's convention and not this body's
+// to change; the pointer-arithmetic and boolean-local spellings compile to the same code.
 // @coldspear's permuter (#104, 2026-10-30): 38 -> 29 only by swapping arguments at a call and adding volatiles (not kept).
 // MiniMax A (11-04, run 41): no new form, no lower score (28); the call to 0xd9d60 still takes the flag in a
 // register other than AL and the permutation other than EAX, and that callee's convention may not change.
@@ -5004,6 +5023,9 @@ dword function_db810(long object_index, long node_index)
 // MiniMax G (11-11): no new form, no lower score (4); retail masks the tag index before it pushes EBP and reuses EAX for the
 // tag entry while this build masks it after the push and takes the entry in EDX; a local for the masked index, a local for the
 // definition bytes and the tag table read through a local all leave the current code in place.
+// MiniMax H (11-11): no new form, no lower score (4); retail masks the tag index before it pushes EBP and reuses EAX
+// for the tag entry; a local for the model bytes, a local for the masked tag index and a local for the tag entry all
+// compile to the same four instructions, and the same source line in the matched 0xd9ff0 gives retail's EAX reuse.
 // MiniMax A (11-11): no new form, no lower score (4); retail masks the tag index before it pushes EBP and reuses
 // EAX for the tag entry (`mov eax, [eax + esi + 8]; mov eax, [eax + 0x38]`), ours masks it after the push and takes
 // the entry in EDX. A local for the masked tag index, a local for the definition bytes and the tag table read through

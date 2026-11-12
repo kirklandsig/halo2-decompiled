@@ -653,6 +653,23 @@ struct s_device_machine_view
 // before it gives the combined address (117); the zero store of case 0x1200055f on top of the committed body
 // is 117, not a gain. A byte cast widened back to a dword to keep the whole word is 120, so it is no better
 // than the byte load with its mask.
+// MiniMax S (11-11): 2 (was 34) with the group's flags read through the device-group macro into a
+// word before the machine test and masked into a byte after it, plus the zero store at the head of
+// case 0x1200055f's velocity block; left are retail's `lea eax, [eax + edx*4]` / `mov ax, [eax + 2]`
+// against our folded `mov ax, [eax + edx*4 + 2]` and the extra `and al, 3`. Tried on top of it, all
+// worse and all reverted: the group as a named pointer with the flags read after the machine test 122
+// (the shape becomes retail's - the address computed before the machine test, the word loaded at the
+// join - but the pointer lands in ESI with a push and a pop where retail keeps the address in EAX),
+// the same through a reference 122, the same with the word read into a named local 122, the element
+// address in a dword local with the word read through it 122, the flags read at each use after the
+// machine test 123 and the flags read in both arms of the machine test 123 (the group base is then
+// loaded late and the index is folded into the load); the permuter was started over the body twice
+// (with and without --fast) and stopped without a result.
+// score 2 (was 34): the group's flags still load through the combined address
+// (`mov ax, [eax + edx*4 + 2]`) where retail computes the address first
+// (`lea eax, [eax + edx*4]`, then `mov ax, [eax + 2]`), and ours still masks the byte
+// with 3, an instruction retail does not have; between the two the code is retail's
+// shifted by one. Plain masks plus the zero store leave only the group pointer's register.
 // MiniMax E (11-10): no new form, no lower score (34); retail loads the group's flags as a word into AX with the
 // group pointer still in EAX and tests bits 1 and 2, ours loads a byte and masks it with 3 - every word form moves
 // the pointer into ESI (120) or folds the index into the load's address (117), and the nested and compared tests
@@ -1008,14 +1025,12 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 			function_value = 1.0f;
 		if (device->type == 7 && device->power_group_index != NONE)
 		{
-			s_device_group *group = DEVICE_GROUP_GET(device->power_group_index);
+			word group_flags = DEVICE_GROUP_GET(device->power_group_index)->flags;
 			dword machine_flags = ((s_device_machine_view *)device)->flags;
-			word group_flags;
 
 			if (machine_flags & 0xd)
 				function_value = 1.0f;
-			group_flags = group->flags;
-			dword group_flag_bits = group_flags & 3;
+			byte group_flag_bits = (byte)(group_flags & 3);
 			if ((group_flag_bits & 1) && (group_flag_bits & 2))
 				function_value = 1.0f;
 			if (device->power == 1.0f || (machine_flags & 0x10))
@@ -1039,6 +1054,7 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 	case 0x1200055f:
 		if (device->power_velocity != 0.0f)
 		{
+			function_value = 0.0f;
 			if (device->flags & 8)
 			{
 				if (!(device->flags & 0x20) && !(0.0001f > fabs(device->motion_14c.cruise_velocity)))

@@ -78,6 +78,14 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
+// MiniMax R (11-11): no lower score (382); retail's selected point index is compared as a dword where ours is compared as a word and
+// retail's selected endpoint as a word where ours is compared as a dword, retail's group index is a sign-extended 32-bit value parked in the
+// dead argument slot, and retail's output loop indexes &arg_4->field_30[count] and rebuilds the record address from the group base; taking
+// the selected point as a long, the endpoint and the endpoint candidate as shorts, the group index as a long and the output indexed reaches
+// 431 at 1605 bytes, because our locals sit eight bytes below retail's (the marker position at [esp+0x70] against retail's [esp+0x68]) and
+// the extra spills fall inside the x87 sequences. A permuter run over this body (470 tries in 1212 s) reached
+// 381 in the full image, one line better, but it needs a volatile pointer to the group table and split
+// conditions, and a gain under eight is dropped, so the original body is kept.
 // score 382 (was 382): earlier 391, 390; frame 0x64 and the node-pointer/group-table roles (EBX/EBP) agree; the selected defaults' homes,
 // point bitmap, endpoint homes and x87 scheduling differ.
 // Earlier 391 (was 391; 390 before): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.

@@ -306,6 +306,7 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 	}
 }
 
+// MiniMax C (11-11): no new form, no lower score (8); the failure block as a label with the two outer paths jumping into it, and the goto tail, both give the same listing, so the dot's i term still loads up first and the failure block still stores before its pops.
 // score 14 (was 14): 56 before round 101, 112 before that; frame 0x48, the entry registers, the definition spill, the search and the axis bases agree (round 101); earlier at 56,
 // frame 0x48 and the entry registers agree, 0xb7060 matches; what remains: the definition spilled at its load (retail EAX, ours ECX, then the
 // default body and index registers), the search's bodies/offset load order, transform kept in EBP where retail has `lea ecx` and left in EBP, the dot's first two
