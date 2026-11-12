@@ -1096,6 +1096,10 @@ bool c_projectile_type::v8(long a, long b)
 // helper returning the bit or 0, with `result |=` at each, 56 (190 bytes) with the word read and 58 (192) with the mask (the
 // zero arm is not threaded); the 0xa5e70 call through an inline (object index, flags, update) forwarding helper with the mask
 // 12, passing the masked flags 12, with the word read 5. The tie is not moved by the call's argument webs.
+// Round 189 (m3 lane 4, fast, 0xa5e70 and the sibling v27s kept): the volatile definition copy declared after object
+// and flags (mask) 51; `(word)(index & 0xffff)` 5 (same code as the word read: the narrowing conversion gives object
+// ESI); the call's mask as `(word)(flags & 0x3ff)` with the index masked 12; `(dword)index % 0x10000` 12; the group
+// value through the existing cross-file inline device_group_get at the compare and the store (mask) 15.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
