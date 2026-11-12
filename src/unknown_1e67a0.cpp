@@ -574,6 +574,11 @@ real magnitude3d(vector3f const *v);
 bool g_46fcc4 = true;
 bool g_51e9bc;
 
+// MiniMax G (11-12) lead 12, NOT kept (coordinator): it needs the half-scale factors in one-use locals (scale_x/y/z,
+// match-only); with them written inline the same body is 33 (plain, 1081 bytes; fast mis-measures this function at 303). The lead as written: the jitter accumulated in a vector3f filled in place (the on/off values into offset.i/j/k, the named sign
+// and half-scale values multiplied in, the existing 0.2 vector3f_scale, the per-component limits products) 20 -> 12 at retail's
+// length: the offset packs into the dead limits home, which gives retail's spill slots; the projection dot's term order and its
+// i term's operand order still differ.
 // score 20 (was 20; 49 before r92; NOT kept 12 below; before r98 was 118; r101, r103 and r76 unchanged): 1078/1077 bytes; the projection dot sums j + k
 // where retail sums k + j, its i term loads velocity.i first (retail copies direction.i and multiplies from memory).
 // Earlier: velocity.i before the movement call multiplies limits.i by the control field from memory (retail loads the field first).

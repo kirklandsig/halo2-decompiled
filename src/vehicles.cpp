@@ -1295,6 +1295,8 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
+// MiniMax G (11-12): no new form, no lower score (561): the lit flags read as a word once with the byte read again in the false
+// arm (retail's shape) gives 576 at the same length, so the flag reads stay as they are.
 // MiniMax D (11-11): no new form, no lower score (561): the damage record cut to retail's 0x80 bytes (the frame 0x1990 to 0x1988) and the buffer and the names moved to the function's top scope change nothing, so the frame is still four bytes above retail's 0x1984 and every later slot shifts; the word at +0xc0 is still read into EAX where retail reads it into ECX.
 // MiniMax D (11-10): no new form, no lower score (561): the frame is 0x1990 where retail's is 0x1984, so
 // the physics state's layout is twelve bytes too big here and every later slot shifts with it; the word
@@ -4547,6 +4549,8 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
+// MiniMax G (11-12): no new form, no lower score (48): the cone call's arguments still ride in the other registers and the
+// count's zero store still follows the sum.
 // MiniMax B (11-11): no lower score (48): the count written as two statements and the count kept in a named local
 // both compile to the same code as the single expression, so the sum still lands in EAX and the zero store still
 // follows it.

@@ -70,6 +70,8 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
+// MiniMax G (11-12): no new form, no lower score (343): retail's angles are the x87 products of the step with 0.5 and 0.3 and its
+// axes are at 0x485624 and 0x485630, which the file's two helpers already take; the frame and the spill homes are what is left.
 // score 343 (was 356): round 103 below. r136 lane 7 (at 356): a compile-only copy reproduces this build's register skeleton exactly; screened
 // there, then built: `sinf(angle)` 357, `cosf(angle)` 357, matrix entries in retail's computation order (forward.i,
 // forward.j, left.i, left.j, forward.k, up.i, up.k, left.k, up.j) 381 (1750 bytes), caller-computed sine/cosine with
