@@ -1696,6 +1696,9 @@ PRIVATE inline long projectile_object_root(long object_index)
 /* the projectile type's new callback: its target, lifetime, range,
    attachment, starting velocity and spin, whether it starts under water,
    and the seat flags of the unit that fired it */
+// MiniMax G (11-11): no new form, no lower score (296); retail expands the speed update 0xfbfd0 inline after the
+// 0xfbd40 call and keeps index * 12 in EBP from entry, and that body is another lane's finished code which this lane
+// may not write out by hand, so the pool and tag homes, the speed update's schedule and the seat-bit tests stand.
 // MiniMax I (11-11): no new form, no lower score (296): retail expands the speed update 0xfbfd0 after the 0xfbd40 call and keeps index * 12 in EBP, and that body is another lane's finished code here, so the pool and tag homes, the speed update's schedule and the seat-bit tests stand.
 // MiniMax H (11-11): no new form, no lower score (296); retail expands 0xfbfd0 inline after the 0xfbd40 call and holds index * 12 in EBP, a body this lane may not write out by hand, so the pool and tag homes, the speed update's schedule and the seat-bit tests stand.
 // MiniMax S (11-10): no new form, no lower score (296): retail expands 0xfbfd0 after the 0xfbd40 call and holds index * 12 in EBP, a body this lane may not write out by hand, so the pool and tag homes, the speed update's schedule and the seat-bit tests stand.
@@ -1916,6 +1919,10 @@ real function_17c900(short function_type, real input);
 
 /* where a guided projectile aims: its target's point, led by the target's
    velocity, then wobbled around the line to it or wandering */
+// MiniMax G (11-11): no new form, no lower score (348); retail takes the projectile index off the stack and forms
+// the entry address itself, keeping the projectile in ESI, where we keep the index in ESI and the projectile in EBX
+// on the stack, so the aim point's stack home sits four bytes higher here; the declaration and the call's contract
+// may not change, and this round re-read the diff and the index's home is fixed by the caller, so the body stands.
 // MiniMax I (11-11): no new form, no lower score (348): retail takes the projectile index off the stack and forms the entry address itself, keeping the projectile in ESI, where we keep the index in ESI and the projectile in EBX on the stack, so the aim point's stack home sits four bytes higher here; the declaration and the call's contract may not change.
 // MiniMax H (11-11): no new form, no lower score (348); retail takes the projectile index off the stack and forms the entry address itself, keeping the projectile in ESI, where we keep the index in ESI, the projectile in EBX and save EBX on the stack, so the aim point's stack home sits four bytes higher here than in retail.
 // MiniMax S (11-10): no new form, no lower score (348): retail takes the projectile index off the stack and forms the entry address itself, keeping the projectile in ESI, where we keep the index in ESI, the projectile in EBX and save EBX on the stack, so the aim point's stack home sits four bytes higher here than in retail.
