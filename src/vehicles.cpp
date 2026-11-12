@@ -532,6 +532,11 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// MiniMax H (11-11): no new form, no lower score (126); the velocity copied as a planar aggregate with the speed's
+// squares written y then x 122 (four points, under the bar) and the y-first squares alone 126 (same code), so the
+// original body is kept; the 1.0 constant still lands in xmm2 instead of xmm3. Later in the same round: the velocity
+// copied x first 130 and the input magnitude computed after the speed 166 (the magnitude has to come first), so the
+// body's order stays.
 // score 126 (was 126): frame, length and layout now retail's; left: SSE register colouring (the 1.0 constant in
 // xmm2 against retail's xmm3, the normalized forward/heading in other registers), the velocity copy's eax/ecx, two
 // x87 operand orders in the atan2 sums and the reversing compare's operand order (`fxch`, jb).
@@ -1282,6 +1287,10 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
+// MiniMax D (11-11): no new form, no lower score (561): the damage record cut to retail's 0x80 bytes (the frame 0x1990 to 0x1988) and the buffer and the names moved to the function's top scope change nothing, so the frame is still four bytes above retail's 0x1984 and every later slot shifts; the word at +0xc0 is still read into EAX where retail reads it into ECX.
+// MiniMax D (11-10): no new form, no lower score (561): the frame is 0x1990 where retail's is 0x1984, so
+// the physics state's layout is twelve bytes too big here and every later slot shifts with it; the word
+// at +0xc0 is read into EAX where retail reads it into ECX.
 // score 561 (was 561): earlier 562; frame 0x1990 versus retail 0x1984, native flag-result byte stores (the six dead [esp+0x13]
 // earlier at 561 (was 562). Frame 0x1990 versus retail 0x1984, native flag-result byte stores (the six dead [esp+0x13]
 // stores), sum-loop unrolling, the flags348 write/read forms and scalar/SSE homes remain.
@@ -1943,6 +1952,12 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // once before the guard 508 (2043 bytes: VC computes it eagerly, no sinking into the arm); both lookups indexed by
 // `(word)vehicle_index` 178 (2011 bytes); vehicle_speed_fraction plain `inline` 581 (1803 bytes, out of line under
 // /Ob1); the update test written `vehicle->unknown400 != state->graph_tag_index` 10.
+// Round 173 (m3 lane 5, fast), at 9: by-value copies for the forward speed (the copies are materialised, not
+// scalar-replaced): the forward vector 317 (2055 bytes), the velocity 321 (2059), both 357 (2087), the forward copy with
+// i, j, k terms 317; one named absolute index for both lookups 13 (SIB unchanged, the cross flips); a velocity pointer for
+// the forward-speed terms 13 (one-use; only the cross flips); the arm-1 dot through
+// dot3f re-measured 376 (2007). Diagnostic: a vehicle-index copy declared after `state` for every callback 13 (the reload
+// order stays, so it does not follow symbol order; the cross flips).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2960,6 +2975,8 @@ real g_47ff30 = 2.5f;
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
+// MiniMax B (11-11): no new form, no lower score (682): the frame is still the first difference and every slot under
+// it is displaced with it; I found no spelling of the projected-speed sums that moves the frame.
 // MiniMax R (11-06): no new form, no lower score (730); the permuter (600 s, 40 tries, seed 5501) gave best 709 differing
 // instructions against the 711 of the body, and its variants swap call arguments, so the file was restored; the column
 // alignment puts the first differences at the frame (0x100 against 0xfc), the top slot
@@ -3413,6 +3430,8 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
    toward the controls' speed in the facing's frame, a yaw torque toward the
    steering, torques that hold the vehicle upright while it is off the
    ground, and its boost */
+// MiniMax B (11-11): no new form, no lower score (1000): the frame gap of twelve bytes and the mismatched homes stay;
+// the velocity and the force are not the same pair of homes, so no single local accounts for it.
 // MiniMax C (11-10): no new form tried, no lower score (1000); the frame is 0x80 against retail's 0x74 and the velocity and force homes between them are not one uniform shift, and the forms in the note below (the velocity as scalars, the acceleration producers, the contact results and the two helpers' inlining) all land above 1000.
 // score 1000 (was 1052): Statement-by-statement walk against retail (2026-11-06, v1B) found no behaviour difference
 // MiniMax R (11-06): no new form, no lower score (1000); the frame is 0x78 against retail's 0x74 and the homes
@@ -4037,7 +4056,18 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
 
-// score 136 (was 136): projection/cross input ranks and angle/trig homes remain;
+// MiniMax D (11-11): 117 (was 136): the flip truth is a byte-wide flag (retail keeps it in a byte at
+// [esp+0x1c] and hands it back in AL), the fallback up copy is one aggregate move, the angle stays on the
+// x87 stack as a double and the default case's axis is computed before the trigonometry; what still differs
+// is the dot's i-term operand rank, the two cross products' operand ranks, the trigonometry's spill slots
+// (the sine at [esp+0x18] and the cosine at [esp+0x1c], retail the other way) and the shared up rotation's
+// register order. The permuter's variant on the older body reaches 110 differing instructions, but its whole
+// gain is one call that computes the up from the left and the forward where retail computes the left from the
+// up and the forward, so it changes the result and is dropped (without that call the variant is 117); a fresh
+// run on this body found nothing lower in 46 tries. Retail returns the flag byte as it stands (`mov al, dl`)
+// while the bool return normalises it (`test`/`setne` on both exits); both spellings of retail's form (a bool
+// local, an unsigned char return) score 131 and change the declaration, so the byte-wide flag stays.
+// score 117 (was 136): projection/cross input ranks and angle/trig homes remain;
 // MiniMax C (11-10): the score is 136 (was 136); the dot product multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy moves one word and two floats where retail moves three words, and the trig block spills the sine and cosine where retail keeps the angle on the x87 stack.
 // MiniMax E (11-08): no new form, no lower score (136); the dot's i term still multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy still moves one word and two floats where retail moves three words, and the trig block still spills the sine and cosine through the stack where retail keeps the angle on the x87 stack.
 // MiniMax E (11-07): no new form, no lower score (136); the projection and cross operand ranks and the
@@ -4266,7 +4296,7 @@ bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_p
 {
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	real fraction = function_f4250(vehicle_index);
-	bool flipping = fraction > 0.0f;
+	unsigned char flipping = fraction > 0.0f;
 
 	facing->forward = vehicle->local_velocity;
 	facing->up = *g_4687b0;
@@ -4282,12 +4312,12 @@ bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_p
 	up->k -= projection.k;
 	if (function_30bf0(up) == 0.0f)
 	{
-		vector3f_assign(up, g_4687a8->i, g_4687a8->j, g_4687a8->k);
+		*up = *g_4687a8;
 	}
 	cross3f_staged(up, &facing->forward, &facing->left);
 	if (flipping)
 	{
-		real angle;
+		double angle;
 		real cosine;
 		real sine;
 		vector3f axis;
@@ -4303,11 +4333,11 @@ bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_p
 			break;
 		default:
 			angle = fraction * 6.2831855f;
-			sine = (real)sin(angle);
-			cosine = (real)cos(angle);
 			axis.i = 0.0f - result->forward.i;
 			axis.j = 0.0f - result->forward.j;
 			axis.k = 0.0f - result->forward.k;
+			sine = (real)sin(angle);
+			cosine = (real)cos(angle);
 			vector3f_assign(&result->forward,
 				cosine * result->forward.i + sine * result->up.i,
 				sine * result->up.j + cosine * result->forward.j,
@@ -4502,6 +4532,10 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
+// MiniMax B (11-11): no lower score (48): the count written as two statements and the count kept in a named local
+// both compile to the same code as the single expression, so the sum still lands in EAX and the zero store still
+// follows it.
+// MiniMax D (11-11): 47 (was 48), NOT kept (coordinator: under the 8-point bar, the body stays at 48): the two zero fields of the effect parameters now share one chained assignment (unknown3c and unknown30); what is left is that the two marker counts sum into EAX where retail sums them into EDI, the colour constant takes EAX where retail takes ECX, and the definition pointer is read into EDX early where retail reads it into EAX at the end.
 // MiniMax S (11-10): no new form, no lower score (48): the marker count sum still lands in EAX here and in EDI in retail, the scratch zero store still follows the sum here and precedes it in retail, and the 0x146320 set-up pair still waits on that file.
 // MiniMax E (11-08): no new form, no lower score (48); the marker count sum still lands in EAX here and in EDI in retail, the scratch zero store still follows the sum here and precedes it in retail, the effect block's tag and colour still ride in the other order, and the 0x146320 set-up pair still waits on that file.
 // MiniMax E (11-07): no new form, no lower score; the marker count sum still lands in EAX here and in
@@ -4530,6 +4564,9 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // Round 91: long primary count 169; primary-count address reference 48; direct definition macro at
 // the tag store 138; const definition 48; const primary count 48; const total 48; facing copied in
 // j/k/i order 67; four-byte-aligned short primary count 127 (prologue changed). Original body restored.
+// MiniMax D (11-10): no new form, no lower score (48): the two marker counts still sum into EAX where retail
+// sums them into EDI, the scale is still computed before the memset where retail computes it after, and the
+// colour constant still takes EAX where retail takes ECX; the permuter's run found nothing below 48.
 // Round 147 (m3 lane 7, fast, with 0xf62f0 and 0xf6010): the colours as one chained assignment 48; the scales chained
 // 50; length declared at its assignment 48; length and the ray vector declared where computed 48; the ray products
 // written `length * direction.i` 48 (all same code but the scales). No untried natural form is left here that
@@ -4605,6 +4642,30 @@ extern byte g_5107ee;
    marker's downward pitch, the distance and the vehicle's speed; the
    effect's last marker sits between the marker and the hit, aimed along
    the reflected ray */
+// MiniMax B (11-11): no new form, no lower score (41): retail's block holds the middle point's z and y words until
+// after the first products and keeps the colour constant in ECX across them; no source form I tried moves either.
+// MiniMax D (11-11): no lower score (2): the cone call's forward address and its seed address each in a
+// named local compile to the same code, so the seed's add still precedes the forward's lea where retail has
+// them the other way round; that pair belongs to 0x146320's parameter order, whose file is not this lane's.
+// The seed's address as byte-pointer arithmetic and as an index into the globals compile the same (2), and
+// the forward taken from the marker array rather than from the marker pointer scores 4. This file's
+// declaration of the cone call is what fixes the register mapping: swapping its first two parameters moves
+// the seed into EAX and the result into EDX, which is not what 0x146320 reads, so the order cannot change.
+// MiniMax D (11-11): 2 (was 6): the name store now comes before the three forward values and before the
+// colour stores, and the compiler then emits the name and the three forward values in retail's order;
+// what is left is the cone call's set-up pair, where ours adds the seed's offset before it takes the
+// forward's address and retail does the reverse.
+// MiniMax D (11-11): no lower score (6): the name store moved ahead of the three forward values scores 7,
+// and the same order with the three forward values in named locals scores 7 as well, because the compiler
+// sinks the three products and differences to their stores; retail computes them before the colour stores
+// and stores the name ahead of the three forward values, which our compiler does not do in one order.
+// MiniMax D (11-10): 6 (was 9): the three forward values are now computed before the colour stores, as
+// retail does, and the name store comes after them; what is left is the cone call's EDI-before-ECX pair
+// (it waits on 0x146320's file) and the four stores' order, where retail keeps the name ahead of the
+// three forward values.
+// MiniMax D (11-10): the flag test through the field-bit macro, the tag test and the strength test as
+// nested ifs, the marker, direction, collision and vector locals in retail's declaration order, and the
+// colour store ahead of the source store.
 // MiniMax S (11-10): no new form, no lower score (41): the cone call's EDI-before-ECX pair still waits on 0x146320's file, and the middle-point copy is still scheduled ahead of the reflection's loads.
 // MiniMax E (11-08): no new form, no lower score (41); the middle-point copy is still scheduled ahead of the reflection's loads where retail stores its z and y words after the first products, retail keeps the colour constant in ECX across those products while ours materialises it in EAX, and the cone call's EDI-before-ECX pair still waits on 0x146320's file.
 // MiniMax E (11-07): no new form, no lower score (41); the cone call's EDI-before-ECX pair still
@@ -4657,76 +4718,79 @@ extern byte g_5107ee;
 // @retail 0xf62f0
 void __stdcall function_f62f0(long vehicle_index)
 {
-	if (g_5107ee)
+	if (TEST_FIELD_BIT(g_5107ee))
 	{
 		s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 		byte *definition = VEHICLE_DEFINITION_GET(vehicle);
 
-		if (*(long *)(definition + 0x2a0) != NONE && vehicle->unknown25c > 0.0f)
+		if (*(long *)(definition + 0x2a0) != NONE)
 		{
-			s_object_marker markers[16];
-			short count = function_b8d30(vehicle_index, 0xf0000bb, markers, 15, false);
-
-			for (short marker_index = 0; marker_index < count; ++marker_index)
+			if (vehicle->unknown25c > 0.0f)
 			{
-				s_object_marker *marker = &markers[marker_index];
-				s_vehicle_wash_collision collision;
-				vector3f direction;
-				vector3f vector;
+				s_object_marker markers[16];
+				short count = function_b8d30(vehicle_index, 0xf0000bb, markers, 15, false);
 
-				collision.unknown24 = NONE;
-				random_vector_in_cone(&marker->matrix.forward, &direction, &g_4e7408->seed, 0.0f, 15.0f);
-				vector3f_assign(&vector, direction.i, direction.j, direction.k);
-				if (function_1697c0(0x800007, &marker->matrix.position, &vector, vehicle_index, NONE,
-					(s_collision_result_1697c0 *)&collision))
+				for (short marker_index = 0; marker_index < count; ++marker_index)
 				{
-					real strength = PIN((1.0f - collision.t) * (0.0f - marker->matrix.forward.k) * vehicle->unknown25c,
-						0.0f, 1.0f);
+					s_object_marker *marker = &markers[marker_index];
+					vector3f direction;
+					s_vehicle_wash_collision collision;
+					vector3f vector;
 
-					if (strength > 0.0f)
+					collision.unknown24 = NONE;
+					random_vector_in_cone(&marker->matrix.forward, &direction, &g_4e7408->seed, 0.0f, 15.0f);
+					vector3f_assign(&vector, direction.i, direction.j, direction.k);
+					if (function_1697c0(0x800007, &marker->matrix.position, &vector, vehicle_index, NONE,
+						(s_collision_result_1697c0 *)&collision))
 					{
-						s_effect_marker effect_markers[7];
-						s_effect_parameters parameters;
-						point3f middle;
-						real dot;
+						real strength = PIN((1.0f - collision.t) * (0.0f - marker->matrix.forward.k) * vehicle->unknown25c,
+							0.0f, 1.0f);
 
-						middle.x = (marker->matrix.position.x + collision.point.x) * 0.5f;
-						middle.y = (marker->matrix.position.y + collision.point.y) * 0.5f;
-						middle.z = (marker->matrix.position.z + collision.point.z) * 0.5f;
-						vector3f facing = direction;
-						function_1201a0(&facing, g_4687bc);
-						function_1763a0(&collision.point, &facing, effect_markers, &collision.normal);
-						dot = (collision.normal.i * facing.i + facing.j * collision.normal.j +
-							facing.k * collision.normal.k) * 2.0f;
-						effect_markers[6].position = middle;
-						memset(&parameters, 0, sizeof(parameters));
-						parameters.unknown34 = 0;
-						parameters.unknown38 = 0;
-						parameters.unknown3c = 0;
-						parameters.unknown30 = 0;
-						parameters.source = NULL;
-						parameters.color_a = 0xff808080;
-						parameters.color_b = 0xff808080;
-						effect_markers[6].name = 0x80000ba;
-						effect_markers[6].forward.i = facing.i - collision.normal.i * dot;
-						effect_markers[6].forward.j = facing.j - collision.normal.j * dot;
-						effect_markers[6].forward.k = facing.k - collision.normal.k * dot;
-						parameters.unknown18 = NONE;
-						parameters.object_index = NONE;
-						parameters.owner.unknown4 = NONE;
-						parameters.owner.unknown0 = NONE;
-						parameters.owner.unknown8 = NONE;
-						parameters.tag_index = *(long *)(definition + 0x2a0);
-						parameters.marker_count = 7;
-						parameters.markers = effect_markers;
-						parameters.flags = 4;
-						parameters.scale_a = strength;
-						parameters.scale_b = strength;
-						effect_new_from_parameters(&parameters);
+						if (strength > 0.0f)
+						{
+							s_effect_marker effect_markers[7];
+							s_effect_parameters parameters;
+							point3f middle;
+							real dot;
+
+							middle.x = (marker->matrix.position.x + collision.point.x) * 0.5f;
+							middle.y = (marker->matrix.position.y + collision.point.y) * 0.5f;
+							middle.z = (marker->matrix.position.z + collision.point.z) * 0.5f;
+							vector3f facing = direction;
+							function_1201a0(&facing, g_4687bc);
+							function_1763a0(&collision.point, &facing, effect_markers, &collision.normal);
+							dot = (collision.normal.i * facing.i + facing.j * collision.normal.j +
+								facing.k * collision.normal.k) * 2.0f;
+							effect_markers[6].position = middle;
+							memset(&parameters, 0, sizeof(parameters));
+							parameters.unknown34 = 0;
+							parameters.unknown38 = 0;
+							parameters.unknown3c = 0;
+							parameters.unknown30 = 0;
+							effect_markers[6].name = 0x80000ba;
+							effect_markers[6].forward.i = facing.i - collision.normal.i * dot;
+							effect_markers[6].forward.j = facing.j - collision.normal.j * dot;
+							effect_markers[6].forward.k = facing.k - collision.normal.k * (real)dot;
+							parameters.color_a = 0xff808080;
+							parameters.source = NULL;
+							parameters.color_b = 0xff808080;
+							parameters.unknown18 = NONE;
+							parameters.object_index = NONE;
+							parameters.owner.unknown4 = NONE;
+							parameters.owner.unknown0 = NONE;
+							parameters.owner.unknown8 = NONE;
+							parameters.tag_index = *(long *)(definition + 0x2a0);
+							parameters.marker_count = 7;
+							parameters.markers = effect_markers;
+							parameters.flags = 4;
+							parameters.scale_a = strength;
+							parameters.scale_b = strength;
+							effect_new_from_parameters(&parameters);
+						}
 					}
 				}
-			}
 
+			}
 		}
 	}
 }
@@ -4975,6 +5039,8 @@ bool __stdcall function_f8070(long bit, word const *flags);
 /* the vehicle object type's function values (+0x4c): its boost, brakes,
    ground contact, speeds, steering, engine and wheels; false for a name it
    does not know */
+// MiniMax H (11-11): no new form, no lower score (749); the definition pointer is still re-derived at each use instead of
+// retail's one copy in EBP, the zero and the result still take different SSE registers and the 1.0 is still hoisted here.
 // score 749 (was 749): Frame 0x18 and retail length agree; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain (was 765 before round 180).
 // MiniMax S (11-10): no new form, no lower score (749); the definition pointer is re-derived from the tag table at each use while retail keeps one copy in a callee-saved register (used at seven of its sites) and re-derives it at nine others; the zero and the result take different SSE registers and the 1.0 is loaded once per site here.
 // MiniMax R (11-09): no new form, no lower score (749); the definition pointer kept in a local unifies the branches and regresses to 1027, and retail's four-push prologue and per-site 1.0 load are not reachable from the source.

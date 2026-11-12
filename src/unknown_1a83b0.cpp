@@ -534,6 +534,14 @@ s_1a8a10 g_4453c0[] =
 // Re-measured (listed): y carried through the switch in a scalar and stored after the facing copy 24 (round 163),
 // also with the final switch reading the point through a pointer 24 (the scalar takes the 0x50 slot and the point's
 // y is never stored; j still folded); the value array and the copy declared before the first switch 17 (rounds 99, 90).
+// Round 91 (m3 lane 11, fast): what folds j. Facing fields read in place are not merged at all (both i and j load
+// twice, listed form re-measured 91), so retail's one i load with a register copy and two j loads look like i held
+// in a local and j read where it is used. Real: i in a scalar local with j read in place in both sums 31 (the j
+// re-read appears, but the second j load comes after the first sum and the registers move); that with the second
+// sum first 36; the scalar i read ahead of the switch 54. The facing copy ahead of the switch (listed 54) does
+// re-read j: the case stores between the copy and the negation stop the reuse, but the loads then sit before the
+// jump table. On it: stores in [3], [1], [2], [0] order 54; the second sum first 106. Diagnostic only: the point's
+// address stored to a global before the switch keeps the point in registers (508 bytes) and j stays folded.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

@@ -80,6 +80,10 @@ bool function_1946f0(s_bitstream *stream)
 // as a nested first member, as a base type, or the data as a one-element array (diagnostics); the index cast to a pointer and
 // the data to an integer at both addresses (diagnostic); forceinline address helpers taking (data, index), (stream, index) or
 // (index, data); the address as an integer sum from the dword buffer member.
+// Round 95 (m3 lane 10, fast): the whole discard block as a force-inlined helper taking (stream, bit) 2; the byte
+// index from a force-inlined bit-to-byte helper at each of its four uses 2; `if (!discard) return;` then the flat body
+// 2; a named bit-position local for the compare and the subtraction 4; the masked byte as `mask & byte` 2. A 600 s
+// permuter run on the body (76 tries) found none below 2.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

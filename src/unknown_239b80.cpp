@@ -229,6 +229,7 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
+// MiniMax D (11-11): no new form, no lower score (169); the one-counter body still rotates the pass test to the loop's foot and keeps the count in a register where retail reloads it from its home, so the two-counter body is kept.
 // score 169 (was 169): earlier 169 (was 170); at 170 (was 170) native output ordinal separates iteration from produced length;
 // frame 0x18 versus 0x14, count/departure homes, equality and compaction still differ.
 // MiniMax C (11-10): score 169 (was 169): no lower score this round. The frame is still 0x18 against
@@ -714,6 +715,7 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 	return fabs((double)a->x - b->x) < epsilon && fabs((double)a->y - b->y) < epsilon;
 }
 
+// MiniMax D (11-11): no new form, no lower score (129); retail reads the count argument as a dword home (`mov ecx, [ebp+8]; movsx edi, cx`) where this declaration's short count is read as a word, and that parameter type is declared in src/unknown_17d9a0.cpp, so the first difference stays.
 // score 129 (was 129): Retail length and the mask update agree; retail keeps the previous side in memory
 // aligned frame and stride/prior homes agree; prior-side byte and SIMD homes differ.
 // MiniMax S (11-08): no new form, no lower score (129); retail keeps the previous side in memory and this build keeps it in CL across the back edge, and the prior-side byte and SIMD homes differ.

@@ -99,10 +99,6 @@ struct class_2df670
 
 
 // (class_2e1090 is declared in axis_sweep_2e1090.h, through sweep_batches_2e50d0.h)
-// @stub 0x2e0020
-void class_2e1090::function_2e0020(element_2e1090 const *element, bounds_2e0020 *bounds)
-{
-}
 
 
 

@@ -1047,6 +1047,14 @@ struct s_string_buffer
 // follows them, nothing routed past); three arms (chain, `== 9`, else) each with the score1 format call, the else passing the
 // value 95 (484) or 0 95 (484: merged, the format string in EDI, the values out of ESI/EDI). All leave 9 in line: identical
 // arms merge into the one that falls into the format call, which is the 9 arm in every order tried.
+// Round 95 (m3 lane 10, plain; fast gives 34 at 475 bytes on this body): the 2 arm with its time format, the rest
+// loading under a six-mode chain arm, then `if (!= 2)` the `%d` format 90 (493 bytes: the second mode test stays, not
+// threaded); separate 1/3/4/7/8 else-if arms then a separate `if (== 9)` 67 (501: the identical arms merge before any
+// threading and the mode stays in EAX for the 9 test); the same with the 8 arm's loads reversed 67 (normalised, merged);
+// with the 8 arm reading through a row pointer 85 (507: that arm stays apart and still falls into an in-line 9 test, so
+// LTCG does not thread equality facts here); an early return when either score text is missing 13 (same code).
+// Re-measured: chain, `== 9` and else arms each with the score1 format call 95 (484 bytes: merged at IL level, the 9
+// test jumps straight to the loads, the format string CSEd into EDI).
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

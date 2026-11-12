@@ -40,6 +40,10 @@ public:
 
 // both ends placed by the transform, the box around them grown by the radius
 // and the tolerance
+// score 7 (was 7): frame 0x40 and the point loop agree; upper/lower result registers,
+// output-pointer load and stores differ. Value inputs to maximum/minimum/both, growth/both
+// operations 7/7/7/7/7; indexed endpoints 39; minimum first 7; late growth 52; local
+// minimum/maximum/both 61/88/135; vector point records 7. NOT kept: ties or larger code.
 // @retail 0x2de0f0
 void rounded_segment_2de0f0::function_2de0f0(transform_2de0f0 const &transform, float tolerance, bounds_2de0f0 &out) const
 {

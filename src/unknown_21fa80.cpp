@@ -73,6 +73,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 	return (c_channel_effects_view *)SOUND_DRIVER_GLOBALS->effects;
 }
 
+// MiniMax b (11-11): no new form, no lower score (544); our frame is still 0x22c against retail's 0x224, we push
+// EBP before the stream pointer is formed (retail forms the pointer first and pushes EBP after it), and the gain
+// difference is computed on the x87 stack where retail subtracts in SSE and only then takes the absolute value.
 // score 544 (was 545): full build; b2D 11-06 statement walk against retail found no logic difference
 // (every branch, field offset, callee and argument agrees). Precision fix kept: log10 taken of a double (fyl2x then fmul 20 unrounded, 0x21fe2f-0x21fe37).
 // Found, not kept: retail also sums the level energy unrounded on the x87 stack (faddp at 0x21fde3, fsqrt at 0x21fde9). A double `energy`

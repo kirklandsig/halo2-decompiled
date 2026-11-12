@@ -4319,7 +4319,7 @@ struct s_entry_pair { long object_index; short entry_index; };
 struct s_damage_owner;
 struct s_type_1e6529;
 struct s_location;
-void __stdcall function_c8290(vector3f *aim, point3f *point, long unit_index, vector3f *velocity,
+void __stdcall function_c8290(point3f *point, vector3f *aim, long unit_index, vector3f *velocity,
     real const *offsets, bool project, bool use_aim, bool clip);
 bool function_109e00(long object_index, vector3f *velocity, bool required);
 void function_cafc0(long unit_index, point3f *position);
@@ -4534,7 +4534,7 @@ void __stdcall function_104150(long weapon_index, short barrel_index)
                 if (actor_index != NONE && WEAPON_SHORT_AT(g_4f55f0->data + (actor_index & 0xffff) * 0x888, 0x6fe) == 4)
                     use_aim = false;
                 if (WEAPON_LONG_AT(unit, 0x24c) != NONE) use_aim = false;
-                function_c8290(&direction, &origin, active_index, &motion,
+                function_c8290(&origin, &direction, active_index, &motion,
                     player_index != NONE ? (real *)(barrel_definition + 0x7c) : NULL, project, use_aim, true);
                 has_motion = function_109e00(active_index, &unit_velocity, true);
                 inherited_speed = direction.i * motion.i + direction.j * motion.j + direction.k * motion.k;
