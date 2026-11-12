@@ -1551,6 +1551,7 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// MiniMax H (11-11): no new form, no lower score (60); the membership helper's mask test written with the shift first gives the same code, so the mask load still reaches EAX before the shift where retail keeps the zero result in EAX and loads the mask into ECX after it.
 // MiniMax S (11-11): no lower score (60): the player bit as a named local inside the membership helper 60 (same
 // code), the entry size as `include_mask ? 13 : 11` 147 (461 bytes), and the same size with the retail order
 // kept/written/capacity/size 137 (445 bytes, 0x56380 lost its match at 13); the mask load is still hoisted into

@@ -1921,6 +1921,7 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 // alone with five stack arguments and ret 0x14 in retail against our eax+ecx with four stack arguments and
 // ret 0x10; every walk that frees 0xda110's and 0xd9d60's conventions also flips a matched function, so the
 // declaration order stays as it is.
+// MiniMax H (11-11): no new form, no lower score (57); 0xd9d60 matches, but 0xda110 still hands two arguments over in registers where retail passes the permutation in eax and five on the stack, so the call setup in the tail and every branch target after it stay as they are.
 // MiniMax S (11-11): no new form, no lower score (57); every retail caller of 0xda110 (0xd5de0, 0xdaaa0 and
 // 0xdb760, all in this file) hands the permutation over in eax, so the calling convention is one decision for the
 // whole file and not this call site's.
@@ -2232,6 +2233,7 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 // differing lines are the two early exits, whose targets land five bytes past retail's because the tail is five
 // bytes longer; the setup of the 0xda110 and 0xd9d60 calls decides that tail, and both callees are unmatched
 // bodies in this file whose own walk keeps their conventions, so the parameter order is not mine to change.
+// MiniMax H (11-11): no new form, no lower score (73); the delay block's pending word sits in ecx where retail keeps it in eax, because retail's 0xda110 call takes the permutation in eax and ours still hands two arguments over in registers, so the two early exits keep landing five bytes past retail's.
 // MiniMax S (11-11): no new form, no lower score (73); retail passes 0xda110's permutation in eax at all six of
 // its call sites in this file (0xd5de0, four here and 0xdb760), so the transport is one decision for the whole file.
 // MiniMax S (11-10): no new form, no lower score (100): our frame is four bytes shorter than retail's, so the two arguments' stack homes sit four bytes lower, and the 0xda110 call setup pushes the arguments in another order with retail's xorps after that call where ours zeroes xmm2 before it.

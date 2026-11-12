@@ -365,6 +365,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// MiniMax H (11-11): no new form, no lower score (117); retail keeps the old direction in xmm3-xmm5 and computes the dot as (axis.k*old.k + axis.j*old.j) + old.i*axis.i, an order dot3f cannot produce, and the frame stays 0x28 against retail's 0x20 because the old direction's address reaches the cross and dot helpers.
 // MiniMax D (11-11): no new form, no lower score (117); the frame is still 0x28 against retail's 0x20, and the
 // eight extra bytes are still the copy of the old direction that has to live in memory because its address is
 // handed to the cross and dot helpers; dropping that copy and reading the global at each use gives 173. Retail
