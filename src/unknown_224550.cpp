@@ -94,6 +94,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// MiniMax b (11-11): no new form, no lower score (211); the tint's home is still exchanged with the second UV
+// set's bounds (ours +0x60/+0x50, retail +0x50/+0x60) and the blend still leaves XMM5 in the aspect block; the
+// uv sets declared before the tint, the tint in a nested scope (frame 0x50, the tint then at +0x50 but the second
+// UV set takes that slot) and the four clamped components written out one by one all give the same code.
 // score 211 (was 223): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
 // second UV set have swapped homes (ours +0x60/+0x50, retail +0x50/+0x60), and retail keeps the blend in XMM5
 // through the aspect block (ours reloads it), so the extents, reciprocals and aspect homes differ.

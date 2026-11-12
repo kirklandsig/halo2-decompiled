@@ -459,6 +459,11 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 	vector->k = axis->k * along + k * cosine - (axis->j * i - axis->i * j) * sine;
 }
 
+// MiniMax H (11-11): the loop-invariant radius times 1.2 as a named double with the ring as a named float reaches 118
+// in the reduced image but 146 in the full build, where the body returns to retail's own prologue, so it is not kept;
+// the ring float shared with the angle term 119, the ring phase named in the outer loop 143 (the frame grows to 0xdc)
+// and the cross-file rotation helper (the fast build cannot link it) all fail. The rotation's dot with the three
+// products named 90 (same code: the compiler orders the terms itself).
 // score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
 // it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
 // rotation's component spill, cross scheduling and register allocation remain.

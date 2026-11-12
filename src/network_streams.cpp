@@ -827,6 +827,19 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// MiniMax B (11-11): no new form, no lower score (60): ours keeps the next sequence in ECX and strength-reduces
+// next - oldest - 1 into a second induction variable in ESI that is tested against the cached newest, while retail
+// keeps the next sequence in ESI, recomputes the offset in EAX on every pass and re-reads the newest at the
+// per-step test, holding the message pointer and the count scratch in ECX where we hold them in EAX; the
+// prologue, the count and the found-path stores match retail byte for byte; the forms tried (the member-form
+// index and bound, a local window count, the index inlined, the index written as statements, the window taken
+// by reference and the statement-order permuter) all score 63 or worse.
+// MiniMax A (11-11, run 58): score 60 (was 60): no lower score; retail keeps the next sequence in ESI and
+// recomputes next - oldest - 1 in EAX on every pass, ours keeps the next sequence in ECX and strength-reduces the
+// offset into a second induction variable in ESI; retail reads the newest three times (the count, the loop bound
+// and the per-step test) and the oldest once, and with the window pointer declared before the send call for the
+// count, the bound and the index (88, 235 bytes) our code reads the newest the same way but still reduces the
+// offset and keeps the next sequence in ECX.
 // score 60 (was 60): ours strength-reduces next - oldest - 1 into esi (next in
 // ecx) and compares next with the cached newest; retail keeps next in esi,
 // recomputes the offset and re-reads window->newest each step (as 0x94df0 does).
@@ -889,6 +902,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // at its declaration ahead of the index 75 (222 bytes); the flags tested through the field at each test 60, `index` declared
 // ahead of the loop 60 (both the same code); re-measured the 63 form 63 (with the flags through the field 63, same code). Still
 // only the second induction variable differs on the 63 form (next - oldest - 1 kept in ESI with next in ECX).
+// MiniMax R (11-11): no new form, no lower score (60): the offset next - oldest - 1 is strength-reduced into a
+// second counter in esi (the next sequence in ecx) and the newest is compared against the hoisted register, while
+// retail keeps the next sequence in esi, recomputes the offset in eax on every pass and re-reads window->newest at
+// the per-step test; with &m_message_window passed to the index helper the offset is recomputed per pass, but then
+// the frame and the register choice differ (89). The rest of the function agrees.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

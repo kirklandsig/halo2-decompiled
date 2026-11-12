@@ -69,6 +69,10 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
+// MiniMax C (11-11): no new form, no lower score (49); the busy test folded into the && chain (65), the inverted busy test (65) and an explicit if/else (49) all leave the numeric select where retail branches to its own priority epilogue.
+// MiniMax H (11-11): no new form, no lower score (49); the body is unchanged, because the busy call's
+// result still becomes a numeric select where retail tests it and branches to its own epilogue that returns
+// the priority, and the fallback still tests the prop index where retail tests the node.
 // MiniMax I (11-08): no new form, no lower score (49); the busy-true path falling through to the shared zero exit gives 65 with the actor and node registers swapped.
 // MiniMax R (11-07, run 38): no new form, no lower score (49); the busy test still becomes a numeric select
 // where retail branches to a last `return priority` and falls into the shared `xor eax, eax` exit, and the
@@ -295,6 +299,12 @@ bool function_25d9b0(long prop_index);
 // workspace; the native velocity producers, the paired observations and the busy select forms were
 // all measured (49 each), and the form that removes the select (30) was dropped at review because
 // it tests the prop index where retail tests the node.
+// MiniMax A (11-11, second pass): no new form, no lower score (49); what still differs is unchanged: the busy call's tail is still the
+// mask select (neg al, sbb eax, eax, not eax, and eax, esi) where retail tests the flag and branches to its own return-priority epilogue
+// that returns the priority in AX, and our shared return-0 exit still sits after the priority block where retail's sits before it, so the
+// body stays six bytes longer (557 against 551); every spelling that breaks the select swaps the actor and node registers from retail's
+// EBX and EBP to ours EBP and EBX, which costs more than it gains.
+// MiniMax A (11-11): no new form, no lower score (49); the busy call tail is still the mask select (neg al, sbb eax, eax, not eax, and eax, esi) where retail tests the flag and branches to its own return-priority epilogue, and our shared return-0 exit still sits after the priority block where retail sits before it, so the body stays six bytes longer (557 against 551); the inverted test, an explicit else, a goto, the early-return chain, a priority guard with return priority last and the negated busy test all compile to the same 49 bytes.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
@@ -359,6 +369,9 @@ evaluate:
 	return 0;
 }
 
+// MiniMax H (11-11): no new form, no lower score (73); the body is unchanged, because retail calls
+// function_25d740 out of line and sinks the ESI/EDI saves while our build inlines it at this site; the
+// inline-ness of that helper is set in src/unknown_25d690.cpp, which this lane may not edit.
 // score 73 (was 73): retail calls function_25d740 out of line and sinks the ESI/EDI saves; our
 // build inlines it, so the prologue differs at +0x13. This round: reading the slot's expected
 // index into a local before the actor lookup, the reversed compare, a named actor local and the
@@ -558,6 +571,11 @@ evaluate:
 // `state->unknown20 <= 0` guard return with the prop compare kept nested 79 (265 B); the view test as its own nested if 73
 // (same code). The slot-data-block form was measured in round 13 (73, same code). src/unknown_25d690.cpp is open this
 // round, but every recorded 0x25d740 spelling that keeps it out of line changes its own bytes: still BLOCKED-BY 0x25d740.
+// MiniMax A (11-11, second pass): no new form, no lower score (73); what still differs is unchanged: our build still expands the call
+// to 0x25d740 at this site, so the prologue still saves esi and edi before the seat count test where retail tests the count before any
+// save and keeps that call out of line; the inline-ness of that helper is set in src/unknown_25d690.cpp, a file this lane may not edit,
+// and the 16-bit absolute load of the global that retail ends with cannot be masked by the checker.
+// MiniMax A (11-11): no new form, no lower score (73); our build still expands the call to 0x25d740 at this site, so the prologue still saves esi and edi before the seat count test where retail tests the count before any save and keeps that call out of line; the inline-ness of that helper is set in src/unknown_25d690.cpp, a file this lane may not edit.
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

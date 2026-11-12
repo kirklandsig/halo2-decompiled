@@ -278,6 +278,9 @@ void function_1d56f0(s_havok_component *component)
 // 0x1d0cf0 and 0x1d0c20 all as members of the component (inline free-function spellings kept for the other callers,
 // diagnostic): 77 (only the tail differs), 0x1d0cf0 65 and 0x1d0c20 38 unchanged (component and index still pushed),
 // matched 0x1d1b60 (2) and 0x115b10 (4) lost, 0xe0c70 63 -> 66. Restored. BLOCKED-BY 0x1d0cf0 (component in EBX).
+// MiniMax D (11-11): no new form, no lower score (77): the component lookup still reads [eax + edx + 0x40] where retail
+// reads [edx + eax + 0x40] for the same address, and the tail's registers and stack slots follow the callee, which is in
+// another lane's file.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

@@ -689,6 +689,14 @@ void function_1a6d80(void)
 // store 6, with the valid store through its own address too 6, the address taken before the call 6 (all folded to the same code,
 // and 0x1a77a0 then scores 20); `static` on the definition 6; `inline` on 0x1a71f0's definition 6; the valid store as constant
 // stores in an if/else on the call 15. Retail 0x1a71f0 writes eax, ecx and edx, so its clobbers do not explain the tie.
+// Round 152 (m3 lane 7, fast; round 137's harness, exact at 6): the tail is a scratch-register rotation phase. One dead load
+// (harness diagnostic) between the table reads and the call gives retail's tail exactly; two give ours; one at the top, after
+// the actor lookup or after the handler read leaves ours. So retail has one more code-less allocation step there. Forms: an
+// inline helper (id, type, short *count) returning the list 15 (retail's tail, but id becomes a register argument, ret 8, and
+// 0x1a77a0 50, 0x1a78a0 73, 0x1a79e0 53); the entry copied as an aggregate 27 (102 bytes); the node index named 6; the call's
+// count argument re-read from the table 6; its list argument re-indexed 12. Harness: a short type local 15 (same tail and
+// convention as the helper), a long type local 27, an entry reference 28, a row pointer 29, a short handler index 7, the
+// handler read after the table 20, between the reads 18, and casts, copies and declaration orders 6 each.
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {

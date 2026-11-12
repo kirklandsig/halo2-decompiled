@@ -851,6 +851,10 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // local with one `return header != NULL;` exit 79. Retail's matched scans that keep a stack parameter across the
 // loop (0x13d950, 0x1ff7d0, 0x204b20, 0x23f260) also give it EBP and the mask EBX; ours gives the parameter EBX.
 // No untried natural form is left in this note; the caller's declaration sits in another lane's file this round.
+// Round 157 (m3 lane 8, fast; the caller's file was open this round): the wrapper's field and conversion as `dword` 14
+// (same code); the iterator declared and initialised ahead of the header call 84 (202 bytes: the pool is held across the
+// call). Only called from 0x13eeb0 (no address taken in retail), yet its parameters stay on the stack. Caller-side forms
+// cannot reach the callee's colouring: the listed plain-long, `__stdcall`, by-value key and wrapper forms cover them.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

@@ -1158,6 +1158,13 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // checksum register and header-validation joins remain.
 // checksum register and header-validation joins remain. Earlier diagnosis before native handles:
 // the read-call value transport differed. The retained API and handle prefix now agree.
+// MiniMax R (11-11): no new form, no lower score (33); the query-size and write-count homes are still four
+// bytes off (ours &size at [esp + 0x34] where retail keeps it at [esp + 0x30], ours &bytes_written at
+// [esp + 0x40] where retail keeps it at [esp + 0x44]), the write call still builds its flags zero in EAX
+// where retail builds it in ECX with the handle already in EAX, the checksum compare still takes EDX where
+// retail takes EAX, and the slot-range test still compares against an immediate 1 where retail holds it in
+// ESI; moving the locals between scopes, changing their types and reordering the declarations all leave the
+// same code, and the permuter leaves the function at 33.
 // MiniMax D (11-09): no new form, no lower score (33); the query-size and write-count homes are still exchanged (ours size at [esp + 0x28], write count at [esp + 0x24], retail the other way round) and the write call still builds its flags zero in EAX where retail builds it in ECX with the handle already in EAX.
 // MiniMax R (11-09): the two out parameters sit in each other's homes, the size at [esp + 0x28] where retail keeps
 // it at [esp + 0x24] and the bytes written the other way round; declaring the bytes written local beside, before

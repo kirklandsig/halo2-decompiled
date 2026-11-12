@@ -308,14 +308,19 @@ void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 	}
 	((pair_305790 *)this)->function_305790((manifold_305790 *)table, first_mask, second_mask);
 }
-// score 24 (was 24): the added-contact flag sits at esp+0x1b, below the spilled this, where retail
-// has it at esp+0x2c, above the two sides (so the other 4-byte slots sit 4 bytes lower in retail);
-// the two distance stores also come after setting the result 2 in the first face branch and before
-// it in the second, the other way round from retail. A temporary or a flag declared earlier scores 51;
-// renaming it changes nothing.
+// score 24 (was 24): Frame 0x44 and extent 847 agree; the returned byte is
+// below the saved this instead of above the two side inputs. The remaining
+// 4-byte stack homes are shifted by four. A common result and sole exit fix
+// both distance-store/return orders, confirmed by the plain check.
+// Earlier: a temporary or early flag 51; flag rename unchanged.
+// SIMD buffers before count 24, before search 24; distinct side names 24;
+// shared side 31; face-index captures 156; backward key pointers 204;
+// named distances 24; common exit 19; direct byte test with it 47;
+// count before result 19; outer returned object with it 47.
 // the features of the axis of greatest separation, tried in turn up to eight
 // times: 1 when the manifold lists them already, 2 when they give a new
 // contact (its separation in the feature), 0 when none does
+// Codex T round 87, NOT kept (coordinator 11-11): 24 -> 19 only from a result local and new `goto done` exits in place of the returns (a new goto is kept only with a byte match); body at 24.
 // @retail 0x307c40
 int pair_305f60::function_307c40(table_305f60 *table, key_305f60 *key, feature_305f60 *feature)
 {

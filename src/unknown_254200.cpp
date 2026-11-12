@@ -135,6 +135,7 @@ void function_254200(void)
 
 #undef program_words_254200
 
+// MiniMax G (11-12): no new form, no lower score (4): the constant through a named local used for both coordinates keeps 4, the point copy declared before the half size gives 15, the point's coordinates through parallel pointers give 341; only the order of the two loads after the second reservation differs.
 // MiniMax C (11-09): no new form, no lower score (4 in the full build; the fast check's reduced image carries a
 // caveat, one global reference unresolved, so the 80 it reports is not this function's score): the only difference
 // left is the order of the two loads after the second buffer reservation, where retail loads the 16777215
@@ -466,6 +467,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // definition write and the commit through one `D3DPIXELSHADERDEF *shader` pointer 2 (all the same code: named
 // constants fold before the reload order is set). The two reloads stay swapped. I found no other untried natural form;
 // the forms above cover the rest.
+// Round 96 (m3 lane 10, fast, with 0x254490 4 and 0x254200 matched as controls): the first quad's End through
+// `D3DDevice::End()` 2; every Begin and End through the D3DDevice:: member forms 2; the globals lookup helper as a ternary 2
+// (0x254490 4, 0x254200 still matched); the bitmap lookup helper with an early return 524 (2256 bytes; 0x254490 269,
+// 0x254200 145); the globals lookup helper with a NULL default and no else 517 (0x254490 280, 0x254200 158). Restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

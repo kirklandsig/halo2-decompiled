@@ -406,6 +406,8 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 	slot->flags |= 1;
 }
 
+// MiniMax H (11-11): no new form, no lower score (13): the only difference left is the j and k rows of the inlined rotation, whose helper (rotate_vector_170d70) lives in src/unknown_170d70.cpp and may not be edited from here.
+// MiniMax S (11-11): no new form, no lower score (13): only the rotation's j and k rows differ, and the shared rotate helper that produces them lives in src/unknown_170d70.cpp.
 // MiniMax D (11-10): no new form, no lower score (13); the whole-image check still reads 13, and the
 // rows that are left are the shared rotation's j and k terms, whose helper is in another file.
 // MiniMax S (11-10): no new form, no lower score (13 on the full image, 339 on the reduced one): the only
@@ -562,6 +564,7 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // 23/13/15/21/31/21/27; both planar helpers with the vector setter 27. NOT kept:
 // no byte equality or gain. Original body and includes restored; held rotation helper
 // untouched. Native j/k input-load and sum ownership remain.
+// MiniMax R (11-11): no new form, no lower score (13): the rotation's j and k rows still differ from retail's, and the shared rotation helper's text decides them while its file is held.
 // MiniMax R (11-10): no new form, no lower score (13): the rotation's j and k rows still differ from retail's,
 // and the shared rotate helper in the other file decides them.
 // @retail 0x154df0

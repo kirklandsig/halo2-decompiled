@@ -2408,8 +2408,17 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax I (11-11): no new form, no lower score (140): retail tests the `simple` byte, stores the texture-mode global and only then loads and tests the `preserve_alpha` byte, where our build hoists that load above the store and keeps it in cl; retail's else arm tests a byte one slot past the last argument (the stack slot the caller leaves behind) where ours reuses the earlier load.
+// MiniMax G (11-12): no new form tried this round, no lower score (140): the byte at esp+0x6c is still read in a
+// different register and retail's short arm still reads a stack argument this function's declaration does not carry.
 // score 140 (was 140): Frame and retail extent agree; caller flag residency and native
 // fallback selection remain. Both complete coverage clamps now follow the retail upper-default stores.
+// MiniMax S (11-11): no new form, no lower score (140): the frame and the extent agree with retail, and what is
+// left is the byte at esp+0x6c, which retail reads in AL after the store into the global while ours keeps it in CL
+// across the branch, and the two default rectangles, which retail builds unconditionally and writes back into the
+// parameters' argument slots while ours branches over the block; retail's short arm reads a fourteenth stack argument
+// that this function's own declaration does not carry, and the declaration may not change in this lane:
+// BLOCKED-BY this function's parameter list.
 // MiniMax D (11-10): no new form, no lower score; retail's 0x2a8d0 reads a fourteenth stack
 // argument, the byte at esp+0x70, in the short arm where this source reads preserve_alpha, and
 // because that argument is a different value the second flag dies at the test, so retail loads it
@@ -2620,6 +2629,7 @@ dword __cdecl function_131fc0(real alpha);
 // reverted: a temporary caller in the 0x289e0 stub making the three calls the disabled 0x289e0 makes 140 [53] (plain), so
 // the missing caller is not what keeps the parameters in registers. A permuter run (43 tries in 622 s) reached 105 only
 // through an `int` temporary for one texture coordinate (changes what is drawn) and two volatile casts; nothing usable.
+// MiniMax A (11-11), NOT kept (coordinator 11-11): 140 -> 54 with both default-rectangle fallbacks written through volatile pointers to the parameters; volatile is reverted, body at 140.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2775,12 +2785,15 @@ bool spherical_harmonics_evaluate_directional_light(vector3f const *direction, d
     real red, real green, real blue, real *red_result, real *green_result, real *blue_result);
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green,
     real *blue, byte order, vector3f *direction, point3f const *position);
+// MiniMax C (11-11): no new form, no lower score (364); retail keeps the second copy of 0x235a0 out of line because of its call-site frequency (the call appears 17 times in retail), and the sample block's second test and the allocator still differ; the forms tried here score 401 and above.
 // MiniMax I (11-10): 364 (was 401): the sample flag is written the way retail writes it (0 at 0x23716 before the
 // admission chain, 1 at 0x23745 after it, read at 0x238ad and 0x23b62), the level clamp is `>=` (retail's cmovge),
 // the coefficient pointer starts at layout->data and reaches the level entry through pointer arithmetic (retail
 // loads the entry address and then the entry), and the sample count is a long. 0x73360 still matches.
 // MiniMax S (11-11): score 371 (was 401): the sample flag is stored false before the admission chain and
 // set true after it, as retail does at 0x23716; 0x22850 keeps 223.
+// MiniMax E (11-11): no new form, no lower score (364); the entry block matches retail's, but our body is 54 bytes
+// longer than retail's (1597 against 1543), which moves every later jump target, and the extra code is not located.
 // score 401 (was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
@@ -2871,6 +2884,14 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // determinants through one new inline helper 401 (same code), with the allocator too 478; the second test as
 // `available_samples >= 2` 401 (same code). Lead: the test retail has on the second sample's path that the optimizer
 // later removes.
+// MiniMax B (11-11), NOT kept (coordinator): 364 -> 284 needs a new goto after the masked-handle compare with minus one
+// (a new goto is match-only; the rounding alone gives 405, fast). The lead as written: the byte count is rounded up to a multiple of four before it is
+// tested for zero, the masked handle is compared with minus one the way retail does before the size is stored,
+// and the output pointer is taken from the handle masked a second time, which is where retail's second mask
+// comes from; what still differs is that our rounding computes four minus the remainder where retail subtracts
+// the remainder and then adds four, our first matrix copy loads its four values into registers before it stores
+// them where retail stores each value as it loads it, and the three rotation calls still pass the rotation on
+// the stack instead of in eax because that callee lives in another file.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -2989,6 +3010,8 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// MiniMax G (11-11): no new form, no lower score: the corner helper's two statements swapped 214 (2022 bytes, the
+// same code as an earlier round); the helper keeps one expression per coordinate.
 // MiniMax C (11-10): score 94 (was 211): the four bounds are now written corner by corner in the
 // order 0, 2, 1, 3 and the second angle's cosine and sine have their own locals, which reproduces
 // retail's bounds block (0.5 first, the first zero compare after bounds[1]'s store, 240 in xmm7 and
@@ -3006,6 +3029,8 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // ours keeps it in a register, so the result homes and the x87 rows differ.
 // MiniMax D (11-01): no new form tried, no lower score.
 // MiniMax G (11-04): no new form, no lower score.
+// MiniMax G (11-12): no new form tried this round, no lower score (94): the corner sets' x87/SSE schedule and
+// the second cosine's home still differ from retail's, and the length already agrees.
 // score 94 (was 211): Frame 0x58; 2022/2022 bytes. Bounds/trig scheduling and
 // the second cosine home remain; paired half extents recover native maximum/reciprocal registers.
 // Earlier 247 (was 279): Frame 0x58; 2027/2022 bytes. Maximum/reciprocal and
@@ -3181,6 +3206,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // its full build took 972 s and its reduced image scores 529 against the full image's 211. The compile-only harness
 // reproduces the corner region of that base exactly; the helper's spellings (four u sums, three v sums, scale/bias/half
 // operand sides, statement order: 192 forms, 6 distinct codes) give nothing closer to retail than main's spelling.
+// MiniMax R (11-11): no new form tried this round, no lower score (94): the body is retail's length and the first difference is at +0x524, where the address of a global that is not matched yet differs, so most of the score here is the unmatched globals and not the statements.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -3751,6 +3777,15 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // depth-bias write as the matched siblings write it (global store, then D3DDevice_SetRenderState) 9, in the
 // skip-state arm 9, both 9.
 // Permuter (600 s, 46 tries on the reduced image): best 9.
+// Round 96 (m3 lane 10; fast, and a compile-only /FAs harness of the file, which reproduces the reload pairs but
+// not the shift): one function-scope gain and one function-scope upper/lower pair shared by the modes 9; the two
+// colours declared at function scope 9; exponent declared at function scope 9; the inverse span declared at function
+// scope 9 (round 132's form, re-measured); `gain = gain / (...)` 9; `exponent <= 3 ? 0 : 0x20` 9; `1L << exponent` 9;
+// `exponent < 1 ? 1.0f : 2.0f` 178. Harness only (both pairs still constant first): the shift selector macro instead
+// of the force-inline helper, `offset * gain`, `256.0f * inverse_span`, `0.5f * inverse_span`, `(real)1 /`, the
+// selected gain alone shared. FILTER_PIN as a
+// force-inline function flips both pairs to span first, but only because mode one's colour clamps then read each
+// field once (other code); on the two gain clamps alone the pairs stay constant first in other registers.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

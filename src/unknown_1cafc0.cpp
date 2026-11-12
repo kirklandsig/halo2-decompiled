@@ -519,6 +519,11 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // its time on the first build and never reached a search, and the forms of the earlier rounds leave
 // the body at 348, the graph reload and the request expansion's register use still differ from
 // retail's.
+// MiniMax E (11-11): no new form tried, no lower score (348): from +0x1de retail loads the graph into EBX
+// for `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure
+// join) where ours keeps the graph in EBX and graph+0x34 in EBP, and the inheritance loop then keeps the
+// graph in EBP where ours reloads it per use; the graph and the mode-count pointer come from the inlined
+// graph helpers, so their register roles are not ours to make, and the body stands.
 // score 348 (was 348): frame (12) and both query temporaries' homes agree since the request expansion became the
 // existing graph_resources_request (retail's 0x1ddd00 inlined). From +0x1de retail loads the graph into EBX for
 // `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure join), where ours keeps
