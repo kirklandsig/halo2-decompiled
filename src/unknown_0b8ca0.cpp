@@ -11,6 +11,7 @@
 #include "unknown_16d180.h"
 #include "matrix_transform.h"
 #include "bit_vector.h"
+#include "object_tag_definitions.h"
 #include <math.h>
 #include <xmmintrin.h>
 #include <string.h>
@@ -680,6 +681,13 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 
 // score 165 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
 // bool result byte) while ours keeps EBP for the global base and a dword result.
+// MiniMax E (11-11): no new form, no lower score (165): the full build now self-aligns the frame like
+// retail (`and esp, -8`, 0xb4 bytes, a result byte), but the locals sit in other slots (the result byte
+// at [esp+0xf] against retail's [esp+0x13], the cluster index at [esp+0x30] against [esp+0x40]), so the
+// first difference is at +0x1a and every later offset shifts with the frame order.
+// MiniMax B (11-11): no new form, no lower score (165); splitting the header test so that the byte test
+// branches before the flags are read scores 232 at 874 bytes, and the frame slots still differ: our result
+// byte sits at 0xf against retail's 0x13 and our link iterator at 0x30 against retail's 0x40.
 // MiniMax D (11-08): ours has an unaligned 0xac frame where retail realigns to eight
 // bytes with a 0xb4 frame, so the register homes and the block layout differ from the first byte; the
 // realignment is decided by the whole-program view of the callers.
@@ -864,6 +872,32 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // code); the rest of the body inside the cluster loop's found branch (no re-test after the loop, as retail) 212 (873 B,
 // masked 80), with the step test inverted too 212 (masked 79). New: a named `double angle` ahead of the test 286 (857 B, frame
 // no longer self-aligns); the sum as `cos((double)((real)atan2(...) + 0.785...f))` 165 (retail's `fadd dword`, masked 92).
+// Round 174 (m3 lane 5, fast with 0xbf2c0/0x268c90): the definition read typed (s_object_definition, model_tag_index) 165
+// (same score, kept). Stacked forms, each on the one before: the root test through a root-object pointer with the flags
+// read in the test (retail reads the object pointer before the byte test and the flags after it) 164; the cluster bit
+// table pointer read before the first query (retail's `mov edi` placement; a one-use pointer) 161; a `visible` flag set in
+// the search loop instead of the NONE re-test (retail has no re-test) 208 (873 B); the step helper with a single result
+// (`result = NONE; if (absolute != NONE) result = ...`, the shape of matched 0xc3f90/0x176cb0, whose latches are
+// retail's) 118 (898 B: player index in memory, latch NONE test, 0xbc frame); the range zero as the model-NONE else arm
+// 90; the test as `cos(...) < dot` 67 (895 B), with `(real)atan2 + 0.785f` 67 (fadd dword); instead a named `real angle`
+// before `dot > cos((double)angle)` 69 (masked aligned 5: angle, dot, then fxch/fcos/fxch as retail; 0x30bf0 normalises
+// the offset, so the dot must follow the call), with `cos((double)angle) < dot` 67; atan2 without the double casts 267
+// (the radius is no longer spilled, frame not self-aligned); the zoom call through an inline wrapper taking the level as
+// a long 67 (retail's `movsx ebx`; 0xc8880 is a contributor's and tests `cmp bx`, so its short stays); on that, the
+// constant first in the angle sum 67, `(double)(real)` on the magnitude 67, the radius square before the definition 67,
+// the angle through an inline helper with a real radius 67, a named `real radius` for the square 67. Left at 67: the definition pointer in EDX (retail EAX), and
+// after the call retail stores and loads the magnitude before reloading the spilled radius (one more fxch). Without the
+// match-only pieces (flag, one-use table pointer, wrapper) the same body reads 210 (910 B; the re-test stays), so nothing
+// is kept (lead for the next round: all of them together, then the two causes above). Diagnostics: a `(short)(long)` cast
+// on the zoom argument folds (still `movsx bx`); the search as a for loop with the test in its condition 206 (re-test stays).
+// Also measured on the stack: `dot > cos((real)atan2(...) + 0.785f)` 126 (930 bytes: the float cos overload moves the dot to
+// SSE); the model index through TAG_DATA with no definition local 69 (same code); without the one-use table pointer but with
+// the flag 74, without the flag but with the pointer 206 (910 bytes). On the 67 form: the magnitude assigned inside the atan2
+// argument (diagnostic) 267 (873 bytes, frame no longer self-aligns); a named `double radius` read before the call and a named
+// `real distance` 250 (895 bytes): retail's exact x87 order (`fld distance; fld qword radius; fxch; fpatan; fadd dword; dot;
+// fxch; fcos; fxch`) but the frame no longer self-aligns - lead: retail holds the radius in memory across the call as a value,
+// where our build self-aligns only for a spill temp; the angle through an inline helper (double radius, real distance) 267
+// (873 bytes), with the normalising call inside the helper 67 (same as the 67 form), (double, double) 262 (877 bytes).
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -892,8 +926,8 @@ bool function_bba80(long object_index)
             goto done;
 
         byte *object = (byte *)OBJECT_GET(object_index);
-        byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
-        long model_index = *(long *)(definition + 0x38);
+        s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
+        long model_index = definition->model_tag_index;
         real radius_squared = *(real *)(object + 0x3c) * *(real *)(object + 0x3c);
         real range_squared = 0.0f;
         if (model_index != NONE)
@@ -1716,6 +1750,12 @@ done:
 // read ahead of the NONE test 30; palette and block both through helpers, palette first, 33 (scenario ESI, index BX). New:
 // the size and datums through a block helper of 0xd5260's shape with the palette offset read in the caller, from the
 // definition local or the table, 27/27 (same code).
+// Round 174 (m3 lane 5, fast): matched 0xa5bd0 shows retail's `mov edi, ebx` definition copy before its +0xe/+0xa reads
+// (its source reads the table again at the later uses); that idiom here (definition local for the palette offset, size and
+// placement offset through g_468630[type] again) on the 27 form 27 (same code), with the palette pointer as a local at its
+// read 27, on main's body 17 (same code): the re-reads CSE into the definition and the copy never survives. On the 27 form:
+// the palette offset read after the datum 27; the definition renamed to sort after the type 27 (same code, re-measure);
+// an early `return result` on NONE with the call returned directly 81 (244 bytes).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
@@ -1882,6 +1922,7 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax H (11-11): no new form, no lower score (285); retail still reaches one shared epilogue at 0xb987a from the ancestry-loop match, the !allowed test and the later branch where ours duplicates it, so the first difference is still the jump target at +0x76, and retail still inlines the marker pointer's helper, which needs that other file's /Ob1 flag. BLOCKED-BY 0xb8bd0.
 // MiniMax E (11-10, run 73): no new form, no lower score (285); retail reaches one shared epilogue at 0xb987a from the ancestry-loop match, the !allowed test and the later branch where we duplicate it, so the first difference is still the jump target at +0x76, and retail inlines function_b8bd0's marker pointer, which needs that other file's /Ob1 flag.
 // MiniMax D (11-11): no new form, no lower score (285): the ancestry loop's match jump still targets our own epilogue where retail jumps to its shared one at 0xb987a, and retail still inlines the marker pointer's helper from a file this lane may not edit.
 // MiniMax D (11-10): no new form, no lower score (285): the header's activity bit as a byte test gives 281
@@ -2086,6 +2127,13 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // type test as a mask 394 (1169 bytes, 152 / 102; 0xb8ee0 lost); plus the parent's node-matrix base read ahead of
 // the link stores (0xb8bd0's body by hand, diagnostic) 303 at 1236 bytes (158 / 115). Nothing reaches 277; body
 // unchanged. BLOCKED-BY 0xb8bd0 as before.
+// MiniMax A (11-11): no new form, no lower score (285); the body is unchanged: the parent's node matrix still needs 0xb8bd0's retail body, which this lane may not edit.
+// Round 174 (m3 lane 5, fast): the root tail's cluster test through the existing bit_vector_test (it replaces that helper's
+// body written out; retail's exact `mov ecx, [g_4e6948]; sar eax, 5; test` sequence) with the cluster local 291 (1225 bytes:
+// the attachment point's x/y homes reshuffle), with the cluster word read at each use 285 (1240 bytes; kept: same score, no
+// hand-written helper), nested under an outer root-flags test 285 (same code). Re-measured on that base: `allowed` as one &&
+// expression 317 (as listed), the byte activity bit 281. BLOCKED-BY 0xb8bd0 (ours: its file's /Ob1 keeps it out of line;
+// `inline` there loses 0xbcc20/0x11b710) and 0x142570 (/Ob1, inlined by retail). No untried natural form is left.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {
@@ -2134,9 +2182,8 @@ void __stdcall function_b93b0(long parent_index, volatile long index, volatile s
     header->flags |= 0x20;
     long root = function_baf80(index);
     s_object_header_view *root_header = OBJECT_HEADER_GET(root);
-    short cluster = *(short *)((byte *)root_header + 4);
-    if (!(root_header->flags & 1) && cluster != NONE &&
-        (*(dword *)((byte *)g_4e6948 + 0x11b8 + (cluster >> 5) * 4) & (1 << (cluster & 31)))) function_b7290(root);
+    if (!(root_header->flags & 1) && root_header->unknown04 != NONE &&
+        bit_vector_test((dword const *)((byte *)g_4e6948 + 0x11b8), root_header->unknown04)) function_b7290(root);
     if (was_active && !(root_header->flags & 4)) function_bba20(root);
     function_b7360(parent_index);
     function_b7360(index);

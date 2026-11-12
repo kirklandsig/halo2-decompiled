@@ -313,6 +313,12 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 struct s_looping_detail_request;
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
 
+// MiniMax B (11-11): no new form and no lower score (181); ours still takes the tag in EAX and the
+// state on the stack where retail takes the state in EAX and the tag on the stack, and ours calls the
+// start out of line at the effect path where retail expands it there, and expands the delete inline
+// where retail calls 0x21dcf0; the one fresh form (the effect path's start through the sound module's
+// entry, so both paths expand it) scores 285 and unmatches 0x189fe0's eight matched callers: still
+// BLOCKED-BY 0x189fe0.
 // score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // MiniMax E (11-10), not kept: 166 (was 181): the effect path starts the sound through the sound
@@ -1059,6 +1065,11 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // the loop-state test with the type compared first 132 (831 bytes); `loop_alternate != false` in the alternate ternary 158
 // (832 bytes). No existing record type with a long and a bool was found in include/ or the sound files, so the pair still
 // waits on a ruling about a two-member record for it (rounds 39 and 9 measured that form at 0).
+// Round 91 (m3 lane 11): no counted trial. The whole 30 is the flag's byte slot, and only an aggregate moves a
+// lone byte (rounds 29, 43, 73, 124), so statement, order, name and width forms cannot reach it. The looping pool's
+// users and record types (the g_4ed28c readers, the looping-sound datum and effect looping-sound views) expose no
+// existing interface that returns the state and the flag together, so the {long, bool} record (0 in rounds 9 and
+// 39) still has no real type behind it and waits on the ruling.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {

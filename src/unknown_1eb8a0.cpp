@@ -183,6 +183,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// MiniMax G (11-11): no new form, no lower score (636); retail keeps q (the fourth stack argument) in EBX from entry and reads d
+// from its stack slot at each use while this build keeps d in EBX; the frame size 0x24 and the clock register agree, but the xmm
+// homes and the coefficient schedules still differ, and retail builds each zero with its own xorps where this build shares one
+// function-wide zero.
 // score 636 (was 636): earlier 636 (was 642); retail keeps q (the fourth stack argument) in EBX from entry and reads d from its stack
 // earlier 642; retail keeps q (the fourth stack argument) in EBX from entry and reads d from its stack
 // slot at each use; ours keeps d in EBX. Frame 0x24 and clock EDI agree; xmm homes and coefficient schedules remain.

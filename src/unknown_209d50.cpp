@@ -123,6 +123,14 @@ static inline void *function_xc5914d(long thread_index, short size)
 // result copy declared after the three allocations 95; result cleared first in the arm 83 (277: the pointer is computed
 // straight into EAX and the two still merge); the result set in an else arm 90 (277: the pointer in EDX, the frame reference
 // in EAX, no home).
+// Round 85 (m3 lane 14, fast): a thread-pointer local in place of the frame-field reference 12 (same code); with the
+// volatile, `result = NULL` first in the arm 105 (301 bytes), the element passed directly 105 (same code); the result
+// copy declared just before the test 90 (270); `result = NULL` between the call and the expression update 23 (280);
+// the frame reference declared after the three allocations 118 (308).
+// Re-measured, not counted: the type test nested inside the count test compiles the same as the `&&` test in every
+// form; without the volatile, `result = NULL` at the start of the arm or before the call gives 83 at retail's 277 bytes
+// (no frame slot: our build keeps the frame in ESI, the pointer in EAX, and loads the expression pool in each block
+// where retail holds it in EBX across the initialisation block and the test), at the end of the arm 95 (266).
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

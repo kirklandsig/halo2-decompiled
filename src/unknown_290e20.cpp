@@ -493,6 +493,12 @@ struct s_ai_scene_assignment
 // local for the entry uses and the recursion 102 (352); an int next-role local set at the entry for the flag and the recursion
 // 59 at 347 bytes (round 14's 61 form: retail's ESI and head exactly, the stores then read the role with one movsx from the
 // slot and the recursion adds 1 to it).
+// Round 85 (m3 lane 14, fast): on the direct maximum, `__assume(*assignment_count < maximum_count)` after the head test
+// 59 (350 bytes; it adds no read that counts); on the int copy, the head test through the copy with the leaf test and the
+// recursion on the parameter 53 (350), the head test on the parameter with the other two through the copy 71 (354),
+// `*assignment_count += 1` 12 and `(short)(role_index + 1)` for the recursion 12 (both same code). Re-measured, not
+// counted: the direct maximum in a plain (full-image) check 59 (350 bytes, as --fast), with role_index renamed to sort
+// first 59 (names do not break the ESI tie).
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

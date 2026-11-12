@@ -15,6 +15,12 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
+// MiniMax E (11-11, run 80): no new form, no lower score (536): the two perspective-row crosses through the existing
+// staged helper compile to the same code (536) and the special path's two crosses through it score 537; retail
+// computes the cross components in the k, j, i order and keeps the first cross's products alive for the second
+// one, which gives its frame 0x60 with five vector copies against our 0x54 with four, and it holds the reciprocal
+// in xmm5 where we hold it in xmm1, so the shape pointer sits at [esp+0x14] in retail and at [esp+0x1c] here.
+// MiniMax G (11-11): no new form, no lower score: the permuter over this file's wave spellings produced no variant that matches retail's bytes; retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y are what keep those three on the x87 stack until after the product, and no plain spelling of the wave expression gives them a second use.
 // score 536 (was 594): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
 // against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
@@ -336,6 +342,10 @@
 // instructions); the same through vector3f_add_scaled(&v2, &r, sx, &r) 637 (2604 bytes); six named row sums in that order 536
 // (forward-substituted); the 8.2 argument as a named double on this base 585; s0 as `0.5f * (...)` 536 (same code); the
 // second cross w computed first, ahead of c, 685 (2596 bytes).
+// T86: Separate wave-origin copies, current/global before/after the cross,
+// 715/646/715/646; coordinate construction 633; library copy 715; separate
+// phase coordinates before/after the cross 626/619. NOT kept: no equality;
+// native frame and wave residence remain; original full body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -636,6 +646,11 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 }
 
 // score 233 (was 233): earlier 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// MiniMax C (11-11): no new form, no lower score (233); the frame is still 0xa8 against retail's 0xac, and the u
+// step and the V end still take 4-byte homes among the channel slots where retail spills them to the 8-byte homes
+// at +0xa4 and +0xac, so the body stays four bytes short after case 4; a permuter run over this function (300 s,
+// 31 tries, reduced image) found nothing below its 230 baseline, and the case-1/2 second x load and case 4's
+// per-arm position pointer remain the open leads.
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
@@ -1040,6 +1055,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // early point x load and case 4's per-arm position pointer are schedules of forms listed above. Case 4's direction alone
 // through the existing vector3d_from_points3d in both arms 483 (2584 bytes), the view alone through it 233 (same code);
 // case 1/2's first.x before second.x 233 (same code); both case 1/2 pairs and z first-row first 394 (2600 bytes).
+// T86: Descending initial/next/blend/tint channel indices 509/334/568/244;
+// descending channel pointers 697/604/623/622. NOT kept: no byte match or
+// frame/home recovery; original traversal, arithmetic and complete body restored.
+// MiniMax R (11-11): no new form, no lower score (233): the frame is four bytes shorter (0xa8 against retail's
+// 0xac), so every stack home below the top is off by four; retail keeps the u step and v + width in eight-byte
+// spill slots at the top of the frame, ours keeps them in four-byte homes among the channel homes, and the
+// first-edge Y, half-width, cursor and colour homes differ with them.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

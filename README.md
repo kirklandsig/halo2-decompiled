@@ -65,13 +65,13 @@ Analysis, documentation and review do not need it.
 
 ## Status
 
-Decompilation is under way, and 10573 retail functions now match byte for
+Decompilation is under way, and 10579 retail functions now match byte for
 byte. The checker reports:
 
 ```
-matched 10573 of 11326 game functions (2010354 of 2786206 bytes, 72.15%)
-matched 1337 of 1436 Havok functions (195249 of 290362 bytes, 67.24%)
-matched 11943 of 17654 functions in scope (2210028 of 3904218 bytes, 56.61%)
+matched 10579 of 11326 game functions (2015591 of 2786206 bytes, 72.34%)
+matched 1339 of 1436 Havok functions (196373 of 290362 bytes, 67.63%)
+matched 11951 of 17654 functions in scope (2216389 of 3904218 bytes, 56.77%)
 ```
 
 Matched code so far includes:
@@ -298,6 +298,12 @@ Want to be on this list? See [How to help](#how-to-help).
   leads: the subsystem lifecycle table, the data-array layout and some
   register conventions. We verified each one against the retail code
   ourselves; none of its code or text is used here.
+- [Project Cartographer](https://github.com/pnill/cartographer) and
+  [H2Codez](https://github.com/Project-Cartographer/H2Codez) (GPL-3.0): their
+  documented Halo 2 Vista tag definitions gave us tag layouts and field names,
+  which come from the publicly released Halo 2 Vista Editing Kit. We verify
+  each layout against the retail Xbox code and write our own declarations;
+  none of their code or text is copied.
 
 This project is not affiliated with, endorsed by or sponsored by Microsoft,
 Bungie, 343 Industries or Activision. Halo, Halo 2 and Xbox are trademarks of

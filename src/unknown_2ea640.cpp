@@ -223,6 +223,12 @@ void __cdecl function_2ea640(void const *a_, void const *b_, void const *input_,
 }
 // the agents of the tree's parts brought up to date, then each runs its
 // query against its part
+// score 23 (was 23): Frame 0x114 and extent agree; entry/end, parent/placement
+// and virtual-call carriers differ. Early iterator 23; existing body 23; paired
+// geometry 27; shape/key captures 27; parent first 24; child constructor 94,
+// with paired geometry 93; late end 30; count capture 23; early container 75,
+// before end 69; copied body 73. NOT kept: no equality or qualifying gain;
+// original observations, helpers, body and matched neighbors restored.
 // @retail 0x2ea830
 void class_2ea830::function_2ea830(void const *a, void const *b, void const *input, void *collector)
 {

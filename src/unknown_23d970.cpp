@@ -564,6 +564,12 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
+// MiniMax R (11-11): no new form, no lower score (45); the reduced image the fast check builds compiles
+// this function differently from the full program (255 with 1224 bytes against the full build's 45 with
+// 1262 bytes), so the fast number no longer agrees with the full build and the plain check is the one to
+// trust when ranking variants here. A permuter run (198 tries in 2407 s, 10 sources in its reduced image)
+// confirms it: it scored the original 227 on the reduced image and 44 in the full image, and none of its
+// 198 rewrites beat 44 in the full image.
 // score 45 (was 45): the second product through the existing staged helper of src/unknown_1f03e0.cpp
 // (function_1f087b, every component computed before the stores, i first) gives retail's previous_up
 // loads (j, i, then k into xmm0 after the distance store) and folds forward's loads in the second
@@ -921,6 +927,10 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // the timer cleared before the flags 47; velocity copied before offset 47; after the arms, modes[0] before value94 47, and in
 // the timer-3 block valuea0 before the distance 47. Same code: velocity copied from command->offset 45; up through the
 // existing normalize3d 44 (same instructions; it calls a local copy instead of 0x30bf0, so not kept).
+// M3 lane 12 r115 (fast with 0x1f0230): the first product through function_1f087b too 49 (1264 bytes); the else arm's
+// forward pointer re-measured 43; on it: the pointer also for the copy and both products 223 (1272), an up pointer
+// for the second product, its normalize and the else arm's call 47 (1264), the forward copy through memcpy (listed) 43
+// (same code); the else arm's distance copy after the 0x11d090 call 62, after the pitch cosine 49. 0xe3910 shows the same two-cross pattern: retail's second cross reads forward apart from the first.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

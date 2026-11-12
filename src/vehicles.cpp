@@ -532,6 +532,11 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// MiniMax H (11-11): no new form, no lower score (126); the velocity copied as a planar aggregate with the speed's
+// squares written y then x 122 (four points, under the bar) and the y-first squares alone 126 (same code), so the
+// original body is kept; the 1.0 constant still lands in xmm2 instead of xmm3. Later in the same round: the velocity
+// copied x first 130 and the input magnitude computed after the speed 166 (the magnitude has to come first), so the
+// body's order stays.
 // score 126 (was 126): frame, length and layout now retail's; left: SSE register colouring (the 1.0 constant in
 // xmm2 against retail's xmm3, the normalized forward/heading in other registers), the velocity copy's eax/ecx, two
 // x87 operand orders in the atan2 sums and the reversing compare's operand order (`fxch`, jb).
@@ -1026,6 +1031,14 @@ __forceinline long vehicle_round(real value)
 // body; one-use pointer, needs a match); axis set to forward before the mode test with the cross overwriting it 173;
 // the side scale named before the side cross 82; the three vectors declared at function scope 11; the velocity call
 // before the strength value 146; cross3f_staged at the side with the dot as dot3f(&linear_velocity, &forward) 8.
+// m3 lane 1 r95 (fast), at 8: re-measured lane 10 r84's up pointer at the first cross with cross3f_staged at the side 6
+// (the first cross's k row and the dot's i term become retail's, the first cross's two up.i products flip to load forward,
+// and the side cross's forward.k * up.j still loads up.j; lane 13 r28 reported 2 for a like form), lane 10 r78's pointer
+// at both crosses 96 (735 B) and round 92's plain-side pointer form 8. New: the pointer declared before the mode test with
+// the staged side 6 (same three flips); that with the dot as dot3f(&linear_velocity, &vehicle->forward) 8 (the dot's i term
+// flips back; with the plain side cross it flips back too, so the staged side cross sets it); an up pointer declared with
+// the lookups and used at the condition and the first cross only 10; a forward pointer for the dot and the projection
+// scale only 50; the axis if/else inverted (`!= 4 && != 3` with the copy first) 8 (same code).
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -1947,6 +1960,12 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // once before the guard 508 (2043 bytes: VC computes it eagerly, no sinking into the arm); both lookups indexed by
 // `(word)vehicle_index` 178 (2011 bytes); vehicle_speed_fraction plain `inline` 581 (1803 bytes, out of line under
 // /Ob1); the update test written `vehicle->unknown400 != state->graph_tag_index` 10.
+// Round 173 (m3 lane 5, fast), at 9: by-value copies for the forward speed (the copies are materialised, not
+// scalar-replaced): the forward vector 317 (2055 bytes), the velocity 321 (2059), both 357 (2087), the forward copy with
+// i, j, k terms 317; one named absolute index for both lookups 13 (SIB unchanged, the cross flips); a velocity pointer for
+// the forward-speed terms 13 (one-use; only the cross flips); the arm-1 dot through
+// dot3f re-measured 376 (2007). Diagnostic: a vehicle-index copy declared after `state` for every callback 13 (the reload
+// order stays, so it does not follow symbol order; the cross flips).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2851,6 +2870,13 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // Round 84 (lane 10, fast), at 10: every contact access written `state->contacts[i].x` (no contact pointer) 46; the
 // half angle written into both trig calls 65; braking preset false and set by the test 222; the spin as `dt * torque`
 // 10 (same code); dt read after the vehicle and definition lookups 192.
+// m3 lane 1 r95 (fast), at 10: re-measured round 95's `state->contacts[i].torque = torque;` 8 (only the eight torque/offset
+// slot lines left; a mixed spelling, kept only on a match); on it: new, the braking store through the array too 22; the
+// permuter (926 s, 23 tries) best 8; re-measured round 114's brake store before the torque store 19 and spin named before
+// the calls 81 (torque still at 0x14, the offset at 0x18). New on the kept body: the gear product written field first
+// (`unknown378 * function_f14f0(...)`) 10; diagnostics that change torque's use count (behaviour kept, extra code): the
+// contact store as `braking ? 0.0f : torque` 166 (997 B), the spin as `braking ? 0.0f : torque * dt` 233 (994 B), a dead
+// `= 0.0f` initialiser on torque 10; in all three torque keeps 0x14 and the offset 0x18.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4045,7 +4071,18 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
 
-// score 136 (was 136): projection/cross input ranks and angle/trig homes remain;
+// MiniMax D (11-11): 117 (was 136): the flip truth is a byte-wide flag (retail keeps it in a byte at
+// [esp+0x1c] and hands it back in AL), the fallback up copy is one aggregate move, the angle stays on the
+// x87 stack as a double and the default case's axis is computed before the trigonometry; what still differs
+// is the dot's i-term operand rank, the two cross products' operand ranks, the trigonometry's spill slots
+// (the sine at [esp+0x18] and the cosine at [esp+0x1c], retail the other way) and the shared up rotation's
+// register order. The permuter's variant on the older body reaches 110 differing instructions, but its whole
+// gain is one call that computes the up from the left and the forward where retail computes the left from the
+// up and the forward, so it changes the result and is dropped (without that call the variant is 117); a fresh
+// run on this body found nothing lower in 46 tries. Retail returns the flag byte as it stands (`mov al, dl`)
+// while the bool return normalises it (`test`/`setne` on both exits); both spellings of retail's form (a bool
+// local, an unsigned char return) score 131 and change the declaration, so the byte-wide flag stays.
+// score 117 (was 136): projection/cross input ranks and angle/trig homes remain;
 // MiniMax C (11-10): the score is 136 (was 136); the dot product multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy moves one word and two floats where retail moves three words, and the trig block spills the sine and cosine where retail keeps the angle on the x87 stack.
 // MiniMax E (11-08): no new form, no lower score (136); the dot's i term still multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy still moves one word and two floats where retail moves three words, and the trig block still spills the sine and cosine through the stack where retail keeps the angle on the x87 stack.
 // MiniMax E (11-07): no new form, no lower score (136); the projection and cross operand ranks and the
@@ -4274,7 +4311,7 @@ bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_p
 {
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	real fraction = function_f4250(vehicle_index);
-	bool flipping = fraction > 0.0f;
+	unsigned char flipping = fraction > 0.0f;
 
 	facing->forward = vehicle->local_velocity;
 	facing->up = *g_4687b0;
@@ -4290,12 +4327,12 @@ bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_p
 	up->k -= projection.k;
 	if (function_30bf0(up) == 0.0f)
 	{
-		vector3f_assign(up, g_4687a8->i, g_4687a8->j, g_4687a8->k);
+		*up = *g_4687a8;
 	}
 	cross3f_staged(up, &facing->forward, &facing->left);
 	if (flipping)
 	{
-		real angle;
+		double angle;
 		real cosine;
 		real sine;
 		vector3f axis;
@@ -4311,11 +4348,11 @@ bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_p
 			break;
 		default:
 			angle = fraction * 6.2831855f;
-			sine = (real)sin(angle);
-			cosine = (real)cos(angle);
 			axis.i = 0.0f - result->forward.i;
 			axis.j = 0.0f - result->forward.j;
 			axis.k = 0.0f - result->forward.k;
+			sine = (real)sin(angle);
+			cosine = (real)cos(angle);
 			vector3f_assign(&result->forward,
 				cosine * result->forward.i + sine * result->up.i,
 				sine * result->up.j + cosine * result->forward.j,
@@ -5017,6 +5054,8 @@ bool __stdcall function_f8070(long bit, word const *flags);
 /* the vehicle object type's function values (+0x4c): its boost, brakes,
    ground contact, speeds, steering, engine and wheels; false for a name it
    does not know */
+// MiniMax H (11-11): no new form, no lower score (749); the definition pointer is still re-derived at each use instead of
+// retail's one copy in EBP, the zero and the result still take different SSE registers and the 1.0 is still hoisted here.
 // score 749 (was 749): Frame 0x18 and retail length agree; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain (was 765 before round 180).
 // MiniMax S (11-10): no new form, no lower score (749); the definition pointer is re-derived from the tag table at each use while retail keeps one copy in a callee-saved register (used at seven of its sites) and re-derives it at nine others; the zero and the result take different SSE registers and the 1.0 is loaded once per site here.
 // MiniMax R (11-09): no new form, no lower score (749); the definition pointer kept in a local unifies the branches and regresses to 1027, and retail's four-push prologue and per-site 1.0 load are not reachable from the source.
