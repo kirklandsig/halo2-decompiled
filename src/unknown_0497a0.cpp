@@ -337,6 +337,10 @@
 // instructions); the same through vector3f_add_scaled(&v2, &r, sx, &r) 637 (2604 bytes); six named row sums in that order 536
 // (forward-substituted); the 8.2 argument as a named double on this base 585; s0 as `0.5f * (...)` 536 (same code); the
 // second cross w computed first, ahead of c, 685 (2596 bytes).
+// T86: Separate wave-origin copies, current/global before/after the cross,
+// 715/646/715/646; coordinate construction 633; library copy 715; separate
+// phase coordinates before/after the cross 626/619. NOT kept: no equality;
+// native frame and wave residence remain; original full body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1046,6 +1050,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // early point x load and case 4's per-arm position pointer are schedules of forms listed above. Case 4's direction alone
 // through the existing vector3d_from_points3d in both arms 483 (2584 bytes), the view alone through it 233 (same code);
 // case 1/2's first.x before second.x 233 (same code); both case 1/2 pairs and z first-row first 394 (2600 bytes).
+// T86: Descending initial/next/blend/tint channel indices 509/334/568/244;
+// descending channel pointers 697/604/623/622. NOT kept: no byte match or
+// frame/home recovery; original traversal, arithmetic and complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
