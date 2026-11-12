@@ -781,6 +781,9 @@ void function_fcbc0(long definition_index, point3f const *point, vector3f const 
 	effect_new_from_parameters(&parameters);
 }
 
+// MiniMax A (11-11): matches; the six selector outputs follow retail's order (effect 0, effect 1, effect 2,
+// sound 0, sound 1, sound 2) in the parameters and in the NONE stores, and both call sites pass them in that
+// order; retail reads them in eax, ecx, edx, esi, edi and ebp and null-tests them in that order.
 /* the effects and sounds of an effects block's effect (+0x58), three of
    each, NONE without one:
    0x1883e0 gives sounds as its "first" values and effects as its "second"
@@ -788,7 +791,7 @@ void function_fcbc0(long definition_index, point3f const *point, vector3f const 
    and edx, as 0x1883e0's second_value04, second_value and second_value0c) */
 // @retail 0xfd740
 void function_fd740(point3f const *point, byte const *effects, long index, long element_index,
-	long *effect0, long *sound0, long *effect1, long *sound1, long *effect2, long *sound2)
+	long *effect0, long *effect1, long *effect2, long *sound0, long *sound1, long *sound2)
 {
 	long effect_index = *(long const *)(effects + 0x58);
 
@@ -800,14 +803,14 @@ void function_fd740(point3f const *point, byte const *effects, long index, long 
 	}
 	if (effect0)
 		*effect0 = NONE;
-	if (sound0)
-		*sound0 = NONE;
 	if (effect1)
 		*effect1 = NONE;
-	if (sound1)
-		*sound1 = NONE;
 	if (effect2)
 		*effect2 = NONE;
+	if (sound0)
+		*sound0 = NONE;
+	if (sound1)
+		*sound1 = NONE;
 	if (sound2)
 		*sound2 = NONE;
 }
@@ -1458,6 +1461,9 @@ long function_189fe0(s_sound_request const *request, long tag_index);
 // eax (a stack argument loaded at entry), ecx, edx, esi, edi and ebp and null-tests them in that order at 0xfd783-0xfd7b5;
 // the caller's register choice (ecx = effect 1 at esp+0xa4, edx = effect 2 at +0xa8, esi = sound 0 at +0x94, edi = sound 1
 // at +0x98) is that callee's own convention, so nothing in this body moves it. BLOCKED-BY 0xfd740.
+// MiniMax A (11-11): matches; 0xfd740's six selector outputs now follow retail's order (effect 0, effect 1,
+// effect 2, sound 0, sound 1, sound 2) in its parameters, in its NONE stores and at both of its call sites,
+// which fixes the four register arguments of this call; 0xfd740 matches with it and 0xfd0e0 goes 29 -> 25.
 // @retail 0xfcea0
 void function_fcea0(long effects_index, point3f const *point, vector3f const *direction,
 	s_effect_owner const *owner, long index, vector3f const *normal)
@@ -1469,8 +1475,8 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 	long i;
 
 	function_11bed0(&location, point);
-	function_fd740(point, effects, 0xf, index, &effect_indices[0], &sounds[0], &effect_indices[1], &sounds[1],
-		&effect_indices[2], &sounds[2]);
+	function_fd740(point, effects, 0xf, index, &effect_indices[0], &effect_indices[1], &effect_indices[2], &sounds[0], &sounds[1],
+		&sounds[2]);
 	for (i = 0; i < NUMBEROF(effect_indices); i++)
 	{
 		long effect_index = effect_indices[i];
@@ -1615,8 +1621,8 @@ void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f 
 		parameters.markers = markers;
 		parameters.scale_b = scale_b;
 		parameters.marker_count = 6;
-		function_fd740(point, definition, 0xf, index, &effect_indices[0], &sounds[0], &effect_indices[1], &sounds[1],
-			&effect_indices[2], &sounds[2]);
+		function_fd740(point, definition, 0xf, index, &effect_indices[0], &effect_indices[1], &effect_indices[2], &sounds[0], &sounds[1],
+			&sounds[2]);
 		if (alternate && *(long *)(definition + 0xec) != NONE)
 		{
 			parameters.flags |= 4;

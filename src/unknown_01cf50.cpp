@@ -6570,6 +6570,7 @@ void geometry_cache_update(void);
 void function_12c600(void);
 void function_1de50(void);
 void function_22850(void);
+// MiniMax A (11-12): no new form, no lower score (153); retail's copy of the frame header is six contiguous dword stores into the globals at 0x485898-0x4858ac while ours moves the double through the x87 stack and the other fields one at a time, so our body is eleven bytes shorter than retail's 758.
 // MiniMax C (11-11): no new form, no lower score (153); retail copies the frame timestamp into the global as two dwords and uploads the gamma ramp inline against the device's own ramp buffers, while the shared global is a double in include/timed_effect.h and this build goes through x87 and calls D3DDevice_SetGammaRamp.
 // MiniMax D (11-10): no new form, no lower score (153); the timestamp's two halves cannot be written to the
 // shared global from this file, since the global is declared as a double in a header this lane may not edit and
