@@ -126,6 +126,13 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // 0x216800 against 0x1a6bf0): the store sits between the pops when its only later constraint is the frame release
 // (`add esp`), and after both pops when it feeds a longer chain; here the stores go through EBP, which `pop ebp`
 // follows, so the open question is what in retail lets the done store issue before `pop esi`.
+// Round 172 (m3 lane 6, fast with 0x2161d0, which stays matched): the bit test as `file_index & 0x200000` 91 (as
+// `(file_index >> 21) & 1` without the bool cast, the same code); the path build under an else arm that returns false,
+// the read after it 31 (the tracker still gives `mov edx, esi`; the inverted early return compiles the same); the path
+// cleared before the name 13; `index == bounded_index` 11; the cached arm's task stores before the copy 21. Same code:
+// the read as the arm of a ternary on the path helper's
+// result; the location call given the whole record. Of the 10, 8 follow from the 2-byte `mov edx, esi` (the four
+// jumps to the failure block, the read's call and the padding shift by 2); the pop order is the other 2.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {

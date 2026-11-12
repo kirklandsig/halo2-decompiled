@@ -74,6 +74,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax B (11-12): no new form, no lower score (106): retail keeps the old maximum in ECX with the enable byte in AL and reads the 15-bit counter with the 16-bit idiom, ours keeps them in EAX and DL, and the enable reload needs one object for g_510ca0 and the counters: BLOCKED-BY include/globals.h and src/unknown_1967d0.cpp.
 // MiniMax H (11-10): no new form, no lower score (106): retail keeps the old maximum in ECX with the
 // enable byte in AL and reads the 15-bit counter with the 16-bit idiom, ours keeps them in EAX and DL;
 // the permuter (--fast, 10 and 25 minutes) never reached a search, and the enable reload needs one
@@ -731,6 +732,14 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // delta 24, named at the join 85; a named field copy for the entry and the team call 80 volatile-free, 85
 // with the volatile delta, for the entry only 85; the delta read through its own address with the top
 // engine local 32, alone 85, at the join 85; a 600 s permuter run, 59 tries, none below 13.
+// Round 110 (m3 lane 16, fast with the matched callers 0x1ea770, 0x15b3a0, 0x15b7c0 and callees; volatile-free body
+// re-measured 85, the top engine globals local re-measured 32): retail's field is a stack parameter cached in EDX for the
+// entry block and read from its slot again for the team call; one parameter at most gets that EDX entry load. On the
+// volatile-free body: `by_team` copied into a local at the top for the team test 80 (256 bytes: delta's movsx takes the top
+// EDX load, the field stays folded); statistics read once through the siblings' `s_statborg *const *` own-address reference
+// 80 (same code as the copy); that reference with the volatile delta kept 85 (folded; delta out of the way does not hand the
+// field the load); `value = *entry; value += (short)delta;` 85; the entry as `values[index] + field` 85 (same code as the
+// volatile-free control); re-measured, round 169's first test through game_engine_get() with the peer named 85.
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)

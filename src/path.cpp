@@ -375,6 +375,8 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// MiniMax H (11-12): no new form, no lower score (286): our frame is still 0xe8 against retail's 0xe4 and the node depth is still read with one instruction where retail uses a lea and a byte displacement; the inverted depth, previous-index, count and type tests score 307, 329, 286 and 286, the hoisted node pointer 286 and a separate first-node pointer 282.
+// MiniMax A (11-12): no new form, no lower score (286); the first difference is the acquisition, where retail computes the node address with a lea and reads the depth at +0x3e while ours reads it at +0xee, and retail's frame (0xe4) is exactly filled by its locals while ours needs one dword more, so the two sides' slots stay four bytes apart.
 // MiniMax G (11-11): no new form, no lower score (286); the frame is 0xe8 against retail's 0xe4 and the acquisition, flag and
 // scalar homes still differ; the scan's previous point, the link copy as an aggregate assignment, the previous-node test with
 // the arms swapped and one pathfinding-data local for the link and surface tests all give the same code or a higher score.

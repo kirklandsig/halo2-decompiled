@@ -1083,6 +1083,7 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 	return result;
 }
 
+// MiniMax H (11-11): no new form, no lower score (828); the six declaration orders of the mode, class and type out-locals all compile to the same code, so their frame homes are not set by the declaration order, and the first difference is still retail's compare of the weapon class against NONE with the operands the other way round.
 // score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,
 // iterator_weapon_class at frame+0x00 and iterator_mode at frame+0x08, while ours keeps iterator_weapon_type
@@ -1401,6 +1402,7 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 	return result;
 }
 
+// MiniMax H (11-11): no new form, no lower score (828); the six declaration orders of the mode, class and type out-locals all compile to the same code, so their frame homes are not set by the declaration order, and the first difference is still retail's compare of the weapon class against NONE with the operands the other way round.
 // score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,
 // iterator_weapon_class at frame+0x00 and iterator_mode at frame+0x08, while ours keeps iterator_weapon_type

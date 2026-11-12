@@ -568,6 +568,15 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 /* whether the players and the extra players joining them can be balanced
    into the teams within the given imbalance; each extra player is a party
    of its own */
+// MiniMax H (11-12): no new form, no lower score (34); whole-program optimisation passes the player count in EDX
+// where retail's only caller (0x7e210, src/unknown_07a9a0.cpp) loads it into EAX, and the copy loop, the rep stosd
+// fill, the call setup and the final clamp all follow from that one exchange, so the body stands.
+// BLOCKED-BY 0x7e210 (another file).
+// MiniMax G (11-11): no new form, no lower score (34); the player count still arrives in EDX where retail's only
+// caller 0x7e210 (src/unknown_07a9a0.cpp, out of this lane) loads it into EAX, and the copy loop, the `rep stosd`
+// fill, the call setup and the final clamp all follow from that one exchange; this round re-read the diff and the
+// count's register is decided by the caller and the body, not by the parameter order or the declarations, so the
+// body stands.
 // MiniMax R (11-11): no new form, no lower score (34); the player count still arrives in EDX where retail's
 // only caller 0x7e210 (src/unknown_07a9a0.cpp, out of this lane) loads it into EAX, and the copy loop, the
 // `rep stosd` fill, the call setup and the final clamp all follow from that one exchange; the body, not the

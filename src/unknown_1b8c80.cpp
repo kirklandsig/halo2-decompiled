@@ -714,6 +714,11 @@ extern "C" void _ReadWriteBarrier(void);
 // before the call 44 (208 bytes); with (actor, state) parameters and the barrier at the helper's top 6. Compile-only
 // diagnostics: a second definition of the state (in an else) loads the slot at entry; a read in the join block
 // loads it after the compare; helper forms without the barrier compare in ECX like the body without it.
+// Round 172 (m3 lane 6, fast; diagnostics only, reverted: a volatile cast is not keepable): the slot read once through
+// a volatile view of the parameter first, without the barrier 50 (210 bytes), with it 29; after the actor lookup
+// without the barrier 49 (210), then the barrier 31 (207); the barrier, then the read 29. Each loads the slot in the
+// entry block, but the data base then takes ESI (with a `push esi` at entry) where retail keeps it in EDX until the
+// constant 4. No untried non-volatile form that touches the slot's load or the entry block is left in this note.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

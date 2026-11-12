@@ -1403,10 +1403,10 @@ static inline s_players_globals *players_globals_14f2e0()
 
 /* gives a player its unit (the unit kept for it, the unit waiting to be
    reused, or a new unit at a starting location) and resets its spawn state */
-// score 5 (was 46): the NONE outputs are materialised with `or eax, 0xffffffff` as retail has,
+// score 5 (was 5): the NONE outputs are materialised with `or eax, 0xffffffff` as retail has,
 // the 0x198 field is cleared with a memset and the flag clear follows the zero store as in retail.
 // What still differs: retail tests the mode before the outputs are materialised, ours materialises
-// them first. Round 29 (lane G): with the two
+// them first (the body reached 5 from 46 in MiniMax C's 11-11 round, below).
 // MiniMax E (11-11): no new form, no lower score (46): the timer-memset form reaches 43, under the
 // bar to keep, and the two NONE outputs are still written with a five-byte move where retail's
 // materialisation is three bytes long.
@@ -1414,7 +1414,7 @@ static inline s_players_globals *players_globals_14f2e0()
 // `mov eax,0xffffffff` in ours), which MSVC only shortens where the flags are dead, and the two bytes this
 // costs shift every later address; the permuter (87 variants in 913 s) found no variant below the baseline in
 // either the reduced or the full image; no lower score.
-// score 46 (was 46): the NONE outputs are materialised with `mov eax, 0xffffffff` where retail
+// Earlier at 46 (was 46): the NONE outputs are materialised with `mov eax, 0xffffffff` where retail
 // uses `or eax, 0xffffffff` (two bytes shorter, so every later stack address differs), and the
 // zero/flag store schedule differs; the success BL agrees. Round 29 (lane G): with the two
 // outputs declared and assigned separately and the timers cleared with a memset the score is 43,
@@ -1570,6 +1570,13 @@ static inline s_players_globals *players_globals_14f2e0()
 // the 0xb8540 stub leaves this at 46. Compile-only (/GL-) gives `mov` for every form that keeps the byte compare, even
 // with the state-1 block compiled out, so it cannot screen this. Hypothesis: the choice follows the byte temp's
 // register (matched 0xc5eb0 has `mov` after the same folded compare though its last EAX write is a full `shr eax`).
+// Round 116 (m3 lane 12, fast; control 5): re-measured the outputs declared in the mode block 43 (1031 bytes; `mov eax,
+// 0xffffffff` after the folded `cmp byte [edx+0xc], 4`); an inline helper that sets both outputs to NONE and then calls
+// player_get_representation, called in the mode block, 43 (same code as that form). A scan of every game function in
+// retail for a folded byte cmp/test, a jump, then a -1 finds seven sites (this one, 0x84f30 and 0x850c0 `mov`, 0x1070d0
+// `or`, 0x165f16 `or ecx`, 0x226a60 `or`, 0x2413c0 `mov ecx`); the two matched `or` sites (0x1070d0, 0x226a60) follow
+// loop or arithmetic code with no call into the test, so no matched function shows this one's idiom. 0xb8540 (the call on that path) stays a stub: enabling its draft loses 23 matched
+// functions (src/unknown_0b8540.cpp). No untried natural form found that changes this code.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -1896,6 +1903,11 @@ struct s_unit_player_assignment
 // chained 19; the old unit index in a named local for the outer comparison and the NONE test 17; re-measured round 43's
 // control-set argument read back 17 and the stored unit index passed to 0x1682bf 16 (449 bytes, same registers); a named user
 // index in the old-unit arm 111 (468 bytes); a named user index in the new-unit arm (three uses) 131 (459 bytes).
+// Round 174 (m3 lane 5, fast): matched 0xcea00 reads the same +0xd4 field with retail's `mov eax, [eax + ecx + 8]; mov eax,
+// [eax + 0xd4]` by re-assigning its unit pointer from a fresh lookup and reading the field at each use; that idiom here is
+// round 94's re-derived pointer: new block only 28, both blocks 17 (same code as this body). The same EAX-reuse gap (ours
+// takes EDX for the pointer) shows in 0xbba80's definition read, where matched 0xbfa40 gets the reuse with this file's
+// spelling, so it follows the surrounding allocation, not the spelling. No untried natural form found.
 // @retail 0x14cad0
 void function_14cad0(long player_index, long unit_index)
 {
@@ -3480,6 +3492,13 @@ struct s_unit_flags_14d8b0
 // Round 75 (m3 lane 14, fast): re-measured round 70's named engine-globals pointer 9 and named engine pointer 9; the reset
 // countdown as `(x -= 1) == 0` 9; one loop-scope unit shared by the flag block and the countdown block 9; the datum index read
 // after the flag block 9; the trigger hit's stores through the global directly 9; the final timeout block through the global 9.
+// Round 116 (m3 lane 12, fast): the 0x1521d0 guard read through `unit` (`unit = field; if (unit != NONE) call;`) 9 (same
+// code); re-measured the short slot index local, late block only, 9 (same code). Diagnostics (reverted): a dead read of a
+// volatile local just before the late mode test, the local initialised 340 or uninitialised 227; both also move the early
+// mode test (ticks arm) from ECX to EAX, so the allocation shifts for the whole function and no single statement here is
+// missing from ours. The late block is a one-step rotation of retail's (mode pointer EDX/ECX, engine index EAX/EDX, engine
+// pointer and slot index ECX/EAX, root pool temp EDX/ECX; ours/retail); both hoist g_4e9ae8 into EDI at the countdown join.
+// No untried natural form found that changes this code.
 // @retail 0x14d8b0
 void function_14d8b0(void)
 {

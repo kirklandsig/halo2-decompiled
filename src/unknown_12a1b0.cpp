@@ -1306,6 +1306,13 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // fade-in helper on a named element 35 at 211 bytes (index EDI, element ESI as retail; the offset is computed in the element's
 // register, `mov esi, edi; and; imul; mov al, [esi + edx + 2]; add esi, edx`, where retail forms it in EDX and `lea esi, [edx + eax]`);
 // the element formed offset first, `(index & 0xffff) * size + data`, the same code (35).
+// Round 110 (m3 lane 16, fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all matched each time; both builds `ret 8`,
+// retail's caller 0x21a250 pushes duration then curve and loads the first index into EBX, the declared order): a true
+// `__assume(index != NONE)` at the top of the loop body 24; `register` on the index 24; the iterator laid out index, first,
+// count (count's frame home unchanged) 24; diagnostic, 0x126df0's fade-in `sound` renamed to sort before every index name
+// 24 (0x126df0 still matched; reverted); a true `__assume(first_sound_index != NONE)` inside the guard 24. All the same code:
+// neither facts, layout order nor local names move the ESI/EDI tie. The layout swap may repeat round 15's "iterator fields
+// index-first" and the rename repeats the closed names dimension; no untried natural source form was found this round.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

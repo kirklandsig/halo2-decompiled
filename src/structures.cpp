@@ -489,6 +489,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 }
 // MiniMax I (11-11): no new form, no lower score (172): retail pushes ebx first and keeps the BSP pointer in ebx, we keep it in ebp and defer the ebp and esi pushes, and our frame's store slots sit one word lower than retail's; the callee's four argument registers (0x11e800) are outside this file.
 
+// MiniMax H (11-12): no new form, no lower score (172): our prologue still keeps the BSP global in ebp and defers the ebp and esi pushes where retail pushes ebx first, and our zero constant still takes ebx where retail gives it to edi.
 // MiniMax H (11-11): no new form, no lower score (172); the BSP pointer still lands in EBP where retail keeps it in EBX, the frame's slots sit one word apart from retail's, and the four pointers of the 0x11e800 call are handed over in another register order, that callee being in another file.
 // MiniMax E (11-10, run 73): no new form, no lower score (172); retail pushes ebx first and keeps the BSP global in ebx where we keep it in ebp, and the promoted clone of 0x11e800 hands its four pointers over in another register order (retail ecx, edx, eax, esi; ours ecx, edx, esi, eax); that callee lives in another file.
 // MiniMax D (11-11): no new form, no lower score (172): the BSP pointer still lands in EBP where retail keeps it in EBX, and the body is still seven bytes longer than retail's 726.
@@ -662,6 +663,12 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // and callers 0xd47d0/0x14af40 lose their match: the convention moves); both reference/surface selections
 // tested on `definition == NULL` 228 (719 bytes); the strip indices indexed from the section at each fetch
 // (no pointer local) 221 (747 bytes).
+// MiniMax B (11-11): no new form, no lower score (172): our body is seven bytes longer than retail's 726;
+// retail pushes ebx first and keeps the BSP base in EBX with the section in its stack home, we keep the BSP
+// base in EBP and the section in EBX; retail's range, plane and instance homes sit one word higher than
+// ours, its three vertex fetches are unrolled where ours are a loop, its two 0x16e1b0 output homes are
+// swapped against ours, and the promoted clone of 0x11e800 takes its four pointers in another register order
+// (retail ecx, edx, eax, esi; ours ecx, edx, esi, eax), that callee living in another file.
 // MiniMax I (11-11): no new form, no lower score (172): the three 0x16e1b0 output homes follow the
 // call's argument positions (arg3 to esp+0x34, arg4 to esp+0x38, arg5 to esp+0x3c) and not the
 // declaration order (swapping the two output declarations is byte-identical); retail keeps the
@@ -676,6 +683,10 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // MiniMax D (11-09): no new form, no lower score: the body is unchanged at 172 (726 bytes against retail's 726); the difference is the frame's shape (our slots sit one word lower than retail's and we do not push ebx first) and the 0x11e800 callee's registers, which are outside this file.
 // MiniMax S (11-10): no new form, no lower score (172): retail pushes ebx first and keeps the BSP global in ebx, we keep it in ebp and defer the ebp and esi pushes, so the prologue order differs although the frame slots agree; our zero constant takes ebx where retail gives it to edi.
 // MiniMax R (11-10): no new form, no lower score (172): the result as a bool (182), the result declared first (212/197) and four orders of the prologue reads (172/172/223/172) all leave retail's push-ebx-first prologue and its BSP in EBX unreproduced.
+// MiniMax A (11-12): no new form, no lower score (172); retail pushes ebx first and keeps the BSP global in ebx while
+// this build keeps it in ebp and defers the ebp and esi pushes, so the prologue order differs although the frame's
+// slots agree, and 0x11e800's argument registers are decided by that callee's body in another file; the permuter
+// (300 s, annealed) was stopped by the run's time limit without a result.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {

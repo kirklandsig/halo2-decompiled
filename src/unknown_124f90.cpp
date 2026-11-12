@@ -1275,6 +1275,8 @@ long function_2197f0(real gain);
 // reach. This round: the reciprocal from a fade-in local copy of the field 87 (684 bytes: a gain of seven and a one-use
 // copy, so the body stays), the product with the division written inline 145, a fade-out local for the product 94 and
 // the sum's addends swapped 87 (both the same code). The permuter (907 s, 201 tries) found no better form at all.
+// MiniMax B (11-11): no new form, no lower score (94); the only lower form listed needs a one-use copy of a field, which
+// this lane may not keep, so the body is unchanged.
 // score 94 (was 94): 177 before lane 10 round 69. Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
 // 1.0, fade-out), and the gain value carried into the last arm.
@@ -2597,6 +2599,12 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax B (11-11): no new form, no lower score (17); the delayed branch's two stores still swap (retail keeps the
+// start time and then the flag byte before the push, ours hoists the flag byte above the add and sinks the start time
+// past the push), and the set index is narrowed to a short at the 0x219070 call because 0x218f50 returns short in
+// another file; 0x219070's own set index is long here and in its definition.
+// MiniMax B (11-11): no new form, no lower score (17); still BLOCKED-BY 0x219070's parameter list and 0x1286b0's variant
+// indices, which live in other lanes' files, so the set index's width stays as it is.
 // MiniMax C (11-11): the 0x219070 call is a statement of its own now, so the chunk index is pushed after it as
 // in retail (15, was 17); left: the range index is still sign extended (`movsx ebp, ax`) where retail copies the
 // whole eax (0x218f50 returns short), and the delayed start still sets flag0 before storing the start time.
@@ -2974,6 +2982,8 @@ static inline short sound_voice_find_available_channel(char type)
 // work block 139, the early return as an explicit else 131, the same test negated as an early return 131 and a bool
 // result 113. The permuter (608 s, 100 tries) ends at 89, and only by declaring the sound pointer volatile and
 // swapping two declarations, so the body stays.
+// MiniMax B (11-11): no new form, no lower score (96); the goto-free forms repeat earlier rounds' 131 and 139, so the
+// result still lives in a stack byte where retail splits it between al and bl.
 // score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
 // through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
 // keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
@@ -4462,6 +4472,7 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 }
 
 // score 535 (was 535): Frame 0x130 versus 0xe8; native rotation, environment and listener-index homes remain.
+// MiniMax B (11-11): no new form, no lower score (535); the body is unchanged, and the forms listed above are exhausted.
 // MiniMax C (11-11): no new form, no lower score (535); our frame is 0x134 against retail's 0xe8, the fallback reverb constant's linkage lives in another file, and every form tried here lengthens the body and regresses.
 // MiniMax E (11-11): no new form, no lower score (535); the frame is still 0x134 against retail's 0xe8 because the
 // fallback reverb is copied to the stack here while retail reads the existing const, whose declaration is in

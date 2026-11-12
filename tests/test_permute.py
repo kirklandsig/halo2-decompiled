@@ -1,3 +1,4 @@
+import os
 import random
 import re
 
@@ -67,6 +68,30 @@ def test_reorder_independent_only():
     out = permute.mut_reorder('\n\tlong a = 1;\n\tlong b = 2;\n', rng())
     assert out == '\n\tlong b = 2;\n\tlong a = 1;\n'
     assert permute.mut_reorder('\n\tlong a = 1;\n\tlong b = a;\n', rng()) is None
+
+
+def test_shared_constant_becomes_one_local():
+    src = '\n\tx = NONE;\n\ty = NONE;\n\treturn x;\n'
+    out = permute.mut_shared_constant(src, rng())
+    assert out == '\n\tlong tmp0 = NONE;\n\tx = tmp0;\n\ty = tmp0;\n\treturn x;\n'
+
+
+def test_shared_constant_uses_its_literal_type():
+    out = permute.mut_shared_constant('\n\ta = 1.0f;\n\tb = 1.0f;\n', rng())
+    assert 'real tmp0 = 1.0f;' in out and out.count('1.0f') == 1
+
+
+def test_shared_constant_ignores_comments_and_strings():
+    src = '\n\t// NONE\n\tx = "NONE";\n\ty = NONE;\n\tz = NONE;\n'
+    out = permute.mut_shared_constant(src, rng())
+    assert out.count('NONE') == 3 and out.count('tmp0') == 3
+    assert '// NONE' in out and '"NONE"' in out
+
+
+def test_shared_constant_needs_two_uses_and_skips_array_bounds():
+    assert permute.mut_shared_constant('\n\tx = NONE;\n', rng()) is None
+    out = permute.mut_shared_constant('\n\tchar a[4];\n\tx = 4;\n\ty = 4;\n', rng())
+    assert 'char a[4];' in out and 'long tmp0 = 4;' in out
 
 
 def test_retype_changes_one_declaration():
@@ -255,7 +280,12 @@ def test_mutate_is_deterministic_and_valid_looking():
     assert first[0] == first[1] == first[2] and first[0] != b
     for seed in range(30):
         out = permute.mutate(b, random.Random(seed))
-        assert out is None or all(out.count(c) == b.count(c) for c in '{}()')
+        # A parenthesised expression replaced by a temporary drops its brackets
+        # (mut_introduce_temp): the code's brackets need only balance, and a
+        # brace in a comment or string is not a bracket.
+        if out is not None:
+            code = permute._code_only(out)
+            assert code.count('{') == code.count('}') and code.count('(') == code.count(')')
 
 
 @pytest.mark.sdk
@@ -296,6 +326,103 @@ def test_missing_symbol_is_a_failed_variant_not_a_crash(monkeypatch, tmp_path):
     assert (tmp_path / 'f.cpp').read_text() == 'variant'
 
 
+def test_scorer_builds_in_parallel_and_reuses(monkeypatch, tmp_path):
+    """A scratch build compiles stale sources in parallel and keeps its last
+    image when nothing it was linked from changed, as the plain check does."""
+    calls = []
+
+    def fake_build(*args, **kwargs):
+        calls.append(kwargs)
+        return 'map'
+
+    monkeypatch.setattr(permute.build, 'build', fake_build)
+    scorer = permute.Scorer.__new__(permute.Scorer)
+    scorer.root, scorer.xdk, scorer.image = str(tmp_path), None, None
+    assert scorer.build() == ('map', os.path.join(str(tmp_path), 'build', permute.build.EXE_NAME))
+    assert calls[-1]['jobs'] == permute.BUILD_JOBS and calls[-1]['reuse'] is True
+    fast = permute.FastScorer.__new__(permute.FastScorer)
+    fast.root, fast.xdk, fast.image, fast.units, fast.include = str(tmp_path), None, 'image', {'src/a.cpp'}, ()
+    assert fast.build() == ('map', 'image')
+    assert calls[-1]['jobs'] == permute.BUILD_JOBS and calls[-1]['reuse'] is True
+    assert calls[-1]['units'] == {'src/a.cpp'} and calls[-1]['include'] == ()
+
+
+def test_fast_rejects_a_reduced_baseline_that_disagrees():
+    """A reduced image that scores the original differently would make --fast
+    search the wrong score; the tool stops and names the plain search."""
+    with pytest.raises(SystemExit, match='without --fast'):
+        permute._fast_baseline_check(0x1234, 5, 2)
+    permute._fast_baseline_check(0x1234, 2, 2)  # agrees: no exit
+
+
+def test_fast_can_search_a_mismatched_baseline_when_asked(capsys):
+    """--allow-mismatch searches the reduced score anyway (a draft too far from
+    retail for a full search), warning that only full builds confirm gains."""
+    permute._fast_baseline_check(0x1234, 5, 2, allow_mismatch=True)
+    assert '--allow-mismatch' in capsys.readouterr().out
+
+
+def test_prepare_scratch_makes_copied_objects_current(monkeypatch, tmp_path):
+    """A copied object whose working-tree header is newer must not look stale
+    in the scratch tree, or every scratch build recompiles the whole program."""
+    root = tmp_path / 'repo'
+    for d in ('src', 'include', 'config', 'build/obj'):
+        (root / d).mkdir(parents=True, exist_ok=True)
+    obj = root / 'build' / 'obj' / 'a.obj'
+    obj.write_bytes(b'')
+    os.utime(obj, (1000, 1000))
+    header = root / 'include' / 'a.h'
+    header.write_text('')
+    os.utime(header, (2000, 2000))  # newer than the object
+    monkeypatch.setattr(permute, 'ROOT', str(root))
+    scratch = tmp_path / 'scratch'
+    scratch.mkdir()
+    permute.prepare_scratch(str(scratch))
+    assert (scratch / 'build' / 'obj' / 'a.obj').stat().st_mtime > (scratch / 'include' / 'a.h').stat().st_mtime
+
+
+def test_prepare_scratch_drops_an_object_its_source_outdates(monkeypatch, tmp_path):
+    """An object already stale in the working tree (its source edited since the
+    last build) must stay stale in the scratch. Otherwise a stale stub object
+    defines a symbol the edited source now defines too, and the link fails."""
+    root = tmp_path / 'repo'
+    for d in ('src/stubs', 'include', 'config', 'build/obj'):
+        (root / d).mkdir(parents=True, exist_ok=True)
+    stale = root / 'build' / 'obj' / 'stubs_a.obj'
+    stale.write_bytes(b'')
+    os.utime(stale, (1000, 1000))
+    (root / 'src' / 'stubs' / 'a.cpp').write_text('')
+    os.utime(root / 'src' / 'stubs' / 'a.cpp', (2000, 2000))
+    fresh = root / 'build' / 'obj' / 'b.obj'
+    fresh.write_bytes(b'')
+    os.utime(fresh, (3000, 3000))
+    (root / 'src' / 'b.cpp').write_text('')
+    os.utime(root / 'src' / 'b.cpp', (2000, 2000))
+    monkeypatch.setattr(permute, 'ROOT', str(root))
+    scratch = tmp_path / 'scratch'
+    scratch.mkdir()
+    permute.prepare_scratch(str(scratch))
+    assert not (scratch / 'build' / 'obj' / 'stubs_a.obj').exists()
+    assert (scratch / 'build' / 'obj' / 'b.obj').exists()
+
+
+def test_prepare_scratch_repoints_generated_units(monkeypatch, tmp_path):
+    """A copied stand-in unit must name the scratch tree's source, or the build
+    rewrites every unit and recompiles all of its objects."""
+    root = tmp_path / 'repo'
+    for d in ('src', 'include', 'config', 'build/obj', 'build/gen'):
+        (root / d).mkdir(parents=True, exist_ok=True)
+    (root / 'src' / 'a.cpp').write_text('')
+    (root / 'build' / 'gen' / 'a_tu.cpp').write_text(f'#include "{root / "src" / "a.cpp"}"\n')
+    monkeypatch.setattr(permute, 'ROOT', str(root))
+    scratch = tmp_path / 'scratch'
+    scratch.mkdir()
+    permute.prepare_scratch(str(scratch))
+    text = (scratch / 'build' / 'gen' / 'a_tu.cpp').read_text()
+    assert str(scratch / 'src' / 'a.cpp') in text
+    assert str(root / 'src' / 'a.cpp') not in text
+
+
 # ------------------------------------------------------------ --fast
 
 def marker(va, path, stub=False):
@@ -313,6 +440,19 @@ MARKERS = [marker(0x100, 'src/a.cpp'), marker(0x200, 'src/b.cpp'), marker(0x300,
            marker(0x800, 'src/f.cpp')]
 
 
+def test_unmatched_callees_ignores_a_self_call(monkeypatch):
+    """A recursive function's own call is not an unmatched blocker once its
+    bytes match retail; only its other unmatched callees are."""
+    rows = {0x100: {'calls': '00000200 00000100 00000300'},
+            0x200: {'status': 'near'},
+            0x300: {'status': 'matched'}}
+    monkeypatch.setattr(permute, 'read_rows', lambda path: rows)
+    monkeypatch.setattr(permute.build, 'marked_sources',
+                        lambda root: [marker(0x100, 'src/a.cpp'), marker(0x200, 'src/b.cpp'),
+                                      marker(0x300, 'src/c.cpp')])
+    assert permute.unmatched_callees(0x100) == [0x200]
+
+
 def test_reduced_units_follow_retail_callees_to_the_given_depth():
     assert permute.reduced_units(0x100, ROWS, MARKERS, depth=0) == {'src/a.cpp'}
     assert permute.reduced_units(0x100, ROWS, MARKERS, depth=1) == {'src/a.cpp', 'src/b.cpp', 'src/stubs/s.cpp'}
@@ -325,6 +465,16 @@ def test_reduced_units_follow_retail_callees_to_the_given_depth():
 def test_reduced_units_stop_at_stubs_and_leave_out_callers():
     units = permute.reduced_units(0x100, ROWS, MARKERS)
     assert 'src/e.cpp' not in units and 'src/f.cpp' not in units
+
+
+def test_context_units_add_each_context_functions_units():
+    """--context widens the reduced image with the units of other functions, so
+    one that only builds as retail beside its siblings can be searched."""
+    assert permute.context_units([], ROWS, MARKERS) == set()
+    assert permute.context_units([0x200], ROWS, MARKERS) == permute.reduced_units(0x200, ROWS, MARKERS)
+    assert permute.context_units([0x200, 0x800], ROWS, MARKERS, depth=1) == (
+        permute.reduced_units(0x200, ROWS, MARKERS, depth=1)
+        | permute.reduced_units(0x800, ROWS, MARKERS, depth=1))
 
 
 def test_reduced_units_survive_call_cycles():
