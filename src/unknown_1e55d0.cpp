@@ -67,6 +67,7 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// MiniMax G (11-12): no new form, no lower score (319): the velocity pointer as a pointer local gives the same code (the null test still folds), and the move/input register swap stays BLOCKED-BY 0x1ec690.
 // MiniMax H (11-10): no new form, no lower score (319): the move and input pointers still trade EBX and
 // EDI, and the case-3 callee's stub convention settles that swap: BLOCKED-BY 0x1ec690
 // (src/stubs/bipeds.cpp).

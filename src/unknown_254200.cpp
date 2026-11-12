@@ -135,6 +135,7 @@ void function_254200(void)
 
 #undef program_words_254200
 
+// MiniMax G (11-12): no new form, no lower score (4): the constant through a named local used for both coordinates keeps 4, the point copy declared before the half size gives 15, the point's coordinates through parallel pointers give 341; only the order of the two loads after the second reservation differs.
 // MiniMax C (11-09): no new form, no lower score (4 in the full build; the fast check's reduced image carries a
 // caveat, one global reference unresolved, so the 80 it reports is not this function's score): the only difference
 // left is the order of the two loads after the second buffer reservation, where retail loads the 16777215
