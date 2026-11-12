@@ -78,6 +78,12 @@ void class_2ea410::function_2ea410(void const *a, void const *b, void const *inp
 	timer_add_2ebc80("lt");
 }
 
+// score 25 (was 25): Frame 0x114 and extent 272 agree; the end calculation
+// lacks the cursor copy, and the descriptor and virtual-call carriers differ.
+// Iterator before end 25; captured count 25; parent first 26; buffer first 25;
+// while traversal 25; named key 25; named agent 25; whole initialization 59;
+// end after descriptor 28; end after container 32; existing body type 25.
+// NOT kept: no match or qualifying gain; original body restored.
 // @retail 0x2ea530
 void class_2ea530::function_2ea530(void const *a, void const *b, void const *input, void *collector, void *second_collector)
 {

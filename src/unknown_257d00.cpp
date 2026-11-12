@@ -1590,7 +1590,7 @@ bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
 #pragma inline_depth(2)
-// score 270 (was 301; 301 before): 1848 bytes as retail, with retail's success-test layout (return 0 after the test, the failure block
+// score 270 (was 270; 301 before r88; 301 before): 1848 bytes as retail, with retail's success-test layout (return 0 after the test, the failure block
 // last). Left: arg_0 in ESI and the output in EBP where retail has EBP and ESI (ours holds the point reference across 0x25ab50 at the
 // 1/19 site and case 5, retail reloads it), the prologue's pool order, the table-first lookups in cases 7 and 13, case 10's +0x8c
 // clear after the selector load and case 5's store order.
@@ -1965,11 +1965,21 @@ void function_b7360(long object_index);
 // g_4e0350 at each use 270 (masked 66); the guard as a goto to one `return success ? 0 : 2;` 651 (1684 bytes), to a
 // `short result` if/else 465 (1840), to `short result = 2; if (success) result = 0;` 651 (1684); the tail as
 // `if (!success) return 2; return 0;` 319 (1812).
+// M3 lane 15 r76 (fast with 0x25ab50, its other callers and this file's functions; aligned/masked in brackets, control 270
+// [133/68]): an inline helper returning a cs datum's target point (`cs_point_get(cs->unknown28)`) at the 1/19 copy and case 5
+// 556 (1772 bytes: LTCG leaves it a call), at the 1/19 site only 517 (1812), at case 5 only 316 (1808); the same helper
+// `__forceinline` at both, either one 270 each (same code: the inliner substitutes the parameter, so the read stays CSE'd).
+// Diagnostics: 0x25ab50's indices through an out-parameter decode helper 270 (0x25ab50 itself 25); lane 13 r63's store through a
+// pointer to a local in 0x25ab50 re-measured 107 (0x1b13b0 364, 0x25a380 364), and with named reference locals at 0x25a380's two
+// and 0x1b13b0's two call sites 107 with 0x25a380 matched again but 0x1b13b0 398 (1448 bytes against 1463).
+// After that: local_0 and local_1 through the existing actor_get and cs_get (their bodies were written out here) 270, byte-identical,
+// kept; actor_get alone 270 (same code); case 13's object held as an s_swarm_object pointer (no casts at the two flag stores) 270 (same
+// code); the datum's +0x9c record typed as s_type_c3b527 so case 5's copy needs no cast 270 (same code).
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
-	s_cs_datum *local_1 = ((s_cs_datum *)(g_502408->data + (arg_3 & 0xffff) * sizeof(s_cs_datum)));
-	s_actor_view *local_0 = ((s_actor_view *)(g_4f55f0->data + (arg_0 & 0xffff) * sizeof(s_actor_view)));
+	s_cs_datum *local_1 = cs_get(arg_3);
+	s_actor_view *local_0 = actor_get(arg_0);
 	s_258cf0 *local_2 = (s_258cf0 *)arg_2;
 	bool success = false;
 	if (((s_handler_actor_view *)local_0)->perception_index != NONE)
@@ -2372,6 +2382,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// MiniMax S (11-11): no new form, no lower score (479; 474 when only this function's own units are in the
+// reduced image); our body is longer than retail's (eight bytes in that image), so the jump table lands later
+// and every branch after it differs.
 // score 479 (was 479): earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // MiniMax R (11-10): no new form, no lower score.
 // Earlier 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare

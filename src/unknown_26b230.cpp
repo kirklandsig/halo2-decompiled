@@ -1839,6 +1839,12 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// MiniMax A (11-11, run 58): score 87 (was 87) as the notes above record it (89 on this build's reduced image,
+// the body unchanged): no lower score; retail keeps the walk's datum index in ESI
+// across the score call and stores it on the stack, ours keeps the walk's pool in memory, the selection in EDI
+// and compares the two scores with comiss on xmm0 where retail compares them on the x87 stack; the in-arm
+// compare (126) and the selection taken from the walk's datum index (128) each score worse alone, and the
+// shared walk step cannot keep the datum and its index in registers without losing its four matched users.
 // score 87 (was 87): round 112 (m3 lane 12) note at the end. Retail hoists the walk's pool load into ebx and keeps the selection
 // only on the stack (stored from esi, best stored in a tail shared with the initialisation);
 // ours keeps the pool in memory and the selection in edi.

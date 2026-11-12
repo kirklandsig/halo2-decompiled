@@ -255,6 +255,10 @@ PRIVATE inline byte const *material_parameters(long tag)
 // in the restore block 5; `(void)&second;` at the top 5 (diagnostic; the load still moves, so not an aliasing effect);
 // on the reference form, the tables field bound to a const reference for the 0xc/0x14/0x1c bases 5; tables and entry
 // both written through references, the later bases read through the tables reference 5. Original body restored.
+// Round 109 (m3 lane 16, fast control 5; the direct entry store gives 5 with only `second` loading right after the entry lea):
+// on the direct store, the entry word read from the assignment's value (an embedded assignment, diagnostic) 5 (direct-form code);
+// the chain base named before the store 174; chain and pass bases both named before it 183; the chain base from the `tables`
+// local with the pass base from the field 210 (974 bytes); the pass base from the local with the chain base from the field 210.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

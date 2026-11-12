@@ -144,6 +144,11 @@ struct s_9cca0
 // memcpy 12 (same code as the two longs), with the marker before the tag 10 (same code as the 10 form). Retail's 0x184440
 // passes `arg_2 + 0x1c` straight to 0x175180 as ours does (same call set), so the escape differs only by summary.
 // Block-scoped with the ten-byte zeroing moved after the vector copies 52 (201 bytes), after the marker 52.
+// Round 109 (m3 lane 16, fast; all with the event declared inside the `if` block, whose marker-before-tag form re-measures 10):
+// the tag stored first after the zeroing 31; marker and tag both first 29; the two vectors copied through references to the input
+// vectors 44; the flag pointer read into a local between the two copies 10 (same code); the marker right after the zeroing 10.
+// Retail's 0x175180 passes its own parameter on to the recursive call as ours does, and 0x184440 calls the same functions in both builds
+// (checked through the link map), so the escape that orders the flag test comes from 0x184440's body (965). Still BLOCKED-BY 0x184440.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {

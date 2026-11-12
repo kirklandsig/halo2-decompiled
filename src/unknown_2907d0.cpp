@@ -54,6 +54,7 @@ __forceinline void function_290852(transform4x3f const *arg_0, vector3f const *a
 vector2f *function_11df30(vector2f *angles, vector3f const *v);
 transform4x3f *function_b8c00(long object_index, long *node_count);
 
+// MiniMax E (11-11): no new form, no lower score (19): the else arm's two reads swapped 68, the position stored field by field 141, the transform read directly in one call 19; the transform still takes EBX and the point's y EBP, and the constant 1 stays shared between the result and field2e.
 // score 19 (was 19): earlier start 21. Ours keeps the transform pointer in EBX and the point's y component in
 // EBP, retail keeps them the other way round; retail also stores the last field with a
 // direct word store where ours moves it through EAX. Tried: the last field through the

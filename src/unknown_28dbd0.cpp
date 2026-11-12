@@ -73,6 +73,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
+// MiniMax R (11-11): the rotation rebuilt inside the helper the way retail reads it (sine first; the cross of
+// the heading and the up vector in scalar products; the cosine after the dot; the second cross subtracted in
+// the rows; the result left in registers) compiles to the same instruction sequence as retail, but the
+// register colouring and the stack layout differ: 205 (1212 bytes, frame 0x118, the first difference at the
+// zero register and then at the heading's homes). NOT kept: the score rises from 173; the original helper
+// and body restored.
 // score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
 // where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
 // first, stored after the dot) and colours the cross terms differently.

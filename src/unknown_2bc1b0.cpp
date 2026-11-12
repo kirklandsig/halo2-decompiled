@@ -298,6 +298,17 @@ struct s_item_object_2bc1
 // tested 91, an unsigned local timer 69, with the countdown ahead of the test 70 (543): every form decrements in al.
 // On the base: the timer reset ahead of the tally 55. The copy sequence occurs nowhere else in retail. Diagnostic on the
 // 69 form: the countdown from a force-inline one-line helper 91 (the copy is propagated; still `dec al`).
+// Round 74 (m3 lane 2, fast, 542 bytes unless noted; t = timer reset written before the tally). Re-measured, as round 160:
+// `= --timer` then `timer <= 0` t/a 69/69 (state EBX, ceiling ESI as retail; `dec al; test al, al` is two instructions
+// short of retail's copy pair, so the rest shifts); `timer--` then the store 69; the stored value re-read from the field
+// t/a 91/91; `--field <= 0` 91; `field = timer = timer - 1` 69; `timer = field = timer - 1` 91; main's countdown with the
+// timer reset first 55 (as round 160's 55). New: a char countdown t/a 91/91; `field--` then re-read 91; `timer = --field`
+// t/a 91/91; `!(timer > 0)` 69; a long countdown tested `(char)countdown <= 0` / `< 1` / stored uncast 85/85/85 (int
+// arithmetic); `(char)(timer - 1) <= 0` 91; a short countdown 90 (543); the tally through a char pointer to its element on
+// the 69 form, with `--timer` or the long countdown, 156/157 (frame 0x34; as round 8's 97 on another base); the field and
+// the local decremented separately (both orders), `field = timer - 1; timer--` and `field = timer - 1; if (--timer <= 0)`
+// 91 each; a byte timer tested `(char)timer <= 0` (two spellings) 65/65, `(char)(timer - 1)` 69; int/long countdown tested
+// `<= 0` 91/90/90 (543). Every form decrements in AL in place; none gives the copy pair.
 // @retail 0x2bc990
 void __stdcall function_2bc990(long team)
 {

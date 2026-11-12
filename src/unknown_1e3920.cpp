@@ -546,6 +546,7 @@ real function_267370(long object_index);
 // MiniMax C (11-09): no new form, no lower score (14); the axis global is still loaded after the copy instead of
 // between the j and k copies, and the plane x product and both cross products still differ in operand order
 // (include/vector_products.h, include/location_zones.h).
+// MiniMax E (11-11): no new form, no lower score (14): the carrier block is retail's and what is left is the plane x product and the cross-product operand ties inside the inlined header helpers (location_zones.h), whose header is not mine; the form that reaches 2 needs a one-use forward output pointer, which is not allowed.
 // score 14 (was 20): round 96 kept the resolved-carrier local (selection and root kept apart) with no `up`
 // local, kept together (plain 14; either alone 22, neither 20): the carrier block is retail's; left are the plane x product (retail loads
 // point.x, plane.i as the memory operand) and cross-product operand ties. Earlier at 20:
@@ -1386,6 +1387,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // inline budget is not what keeps retail's call); 0x1e4990 respelled as a `while` with an early return 421 (0x1e4990's own
 // code changes, still inlined). Retail inlines 0x1e4990 at 0x1e1a00's top-level call, so call frequency is not the reason
 // either.
+// MiniMax D (11-11): no new form, no lower score (253): the two NONE sentinels are still in EDI where retail keeps them
+// in ESI, the squad pointer still takes the slot at +0x1c where retail puts it at +0x10, and the 0x2036c0 outputs keep the
+// lower slots.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -2223,6 +2227,8 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // `unit_index` declared at the top of the second block 309 (aligned 155); on both blocks 315 (1216 B, aligned 155); the
 // queries' lookups through `unit_index` too 294 (1229 B, aligned 124, masked 51). Lead: the 298 form plus a transparent
 // 0x259a0. Body unchanged.
+// MiniMax D (11-11): no new form, no lower score (251): the pool and seed globals still have retail's registers the other
+// way round (retail holds the pool in EDI and reloads the seed into EBX) and the two-weapon index is still spilled.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

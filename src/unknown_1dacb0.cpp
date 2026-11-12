@@ -1323,6 +1323,13 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // the post-loop test 1060 (2873), `found` declared first in the block 755 (same code); both twins' bodies as one shared forceinline
 // helper (overlay bool) 828 (same code); the search as `while (result.index == NONE)` 828 (same code, the first test folds; close to
 // the listed result-driven while). No other untried natural loop, return or declaration form is left on either base.
+// Round 188 (m3 lane 4, fast with the twin, the siblings, 0x1dd9d0/0x1ddd00/0x2963f0/0x1dd560; aligned/masked control 321/141):
+// re-measured the siblings' flag form 755 (aligned 174) and the single exit around the do-while 1040 (2857 B, aligned 125: closest
+// in content; its excess is retail's EBP zero, our jumps over loop padding and `this` in EBP where retail has EBX). New: that single
+// exit with the siblings' store order 1040; with no per-iteration candidate 1018 (2845 B), with both 1018; no bare block after
+// the early return 828 (same code); the named lookup as a shared inline helper on the 755 form 755 (same code); the iterator by
+// an aggregate initializer 826 (two points); on that, the single exit 1038, no candidate 1020 (2791 B), `named` first 994, the
+// flag loop 769, the found outputs stored type, class, mode 827. Re-measured: `named` before the candidate 996.
 // m3 lane 14 r82 (fast; masked = register- and esp-masked aligned rows, base 76): `result = named ? named->animation_id :
 // result;` with no candidate 848 (2791 bytes, masked 96); the found mode copied into a named local before the outputs and used for
 // the found_mode store and the second request 828 (identical code: the copy coalesces even across the output stores); a do-while
@@ -1647,6 +1654,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // iterator as an aggregate initializer 769; the candidate as a ternary, or the result set by that ternary with no
 // candidate, 1024/1024 (2841 B). Lane 9's record (outputs and result as one local) re-measured 732; with the
 // `iterator.mode` first request 762 (2841 B, aligned 78, masked 43).
+// MiniMax D (11-11): no new form, no lower score (828): the third iterator output still takes the dead `found_mode`
+// argument slot instead of a frame slot, so retail's result shorts sit at +0xc/+0xe and ours at +0x8/+0xa, and retail's
+// EBP zero carrier in the second resource request is still missing; declaring the three NONE locals ahead of the early
+// return gives retail's sentinel register but reorders the prologue and scores 979.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

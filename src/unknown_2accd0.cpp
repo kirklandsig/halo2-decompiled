@@ -617,6 +617,8 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // length, both sums' order, the dispatch hoist and the reloads after the claim are retail's. Left:
 // the entry total in EAX (retail EDX) and size/position in ESI/EDI (retail EDI/ESI; the hoisted
 // body_size in ESI, retail ECX): retail computes each sum into a fresh register.
+// MiniMax D (11-11): no lower score (34): the total converted without its own local puts the entry sum in EDX as retail but
+// reorders the signature case's file-handle load (88); declaring the position before the size changes nothing (34).
 // MiniMax C (11-09): NOT kept: 28 (was 34), I's form again (a one-use local is kept only with a match): the entry total
 // folded into its float conversion (no total local) and the signature case naming the file handle once, which puts the entry sum in EDX with the task pointer in EAX and the
 // signature case's header size in EDX with the handle in EAX, as retail has them. Left: the dispatch still hoists
