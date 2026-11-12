@@ -967,6 +967,13 @@ real g_55e618;
 // both 264; the typed record with the perpendicular helper 265, with both helpers 264, with the rows helper 103; only
 // the tangent through the helper 102, only the perpendicular 198 (1552 B). 0x1697c0's own 25 are dot-product operand
 // orders and its result byte, not the record capture.
+// MiniMax A (11-12, run 63): no new form, no lower score (102); the prologue and the loop match instruction for
+// instruction, but retail's locals sit twelve bytes higher and its body is twelve bytes shorter, so its epilogue
+// starts at +0x5f4 where ours starts at +0x600 and the loop's exit jump differs.
+// MiniMax A (11-12, run 62): no new form, no lower score (102); the frame is 0x124 in both, but retail's sweep
+// vector sits at +0x44 and its collision record at +0xb0 where ours keeps the sweep at +0x38 and the record at
+// +0xa4, so every home from there up (and the twelve-byte length gap that follows) differs; that is the frame's
+// allocation order, which the rules bar me from reshaping.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

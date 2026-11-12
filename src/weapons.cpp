@@ -3011,6 +3011,10 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // (barrel), 0xffa80 (trigger) and 0xffaa9 (magazine) are the same in both forms. Retail's parameter layout is
 // the same as ours (the weapon index at [esp+4] and the name at [esp+8], the callee popping sixteen bytes), so
 // what is left is the tree's shape and the frame, not the declaration.
+// MiniMax A (11-12, run 62): no new form, no lower score (389); the first instruction is ours `sub esp, 8` against
+// retail's `push ecx`, ours loads the definition table before the weapon where retail loads it after, and the
+// weapon sits in EDI where retail keeps it in EBP, so the prologue and the switch's entry layout differ before
+// any case body is reached.
 // @retail 0xff5f0
 bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *active)
 {
@@ -3562,6 +3566,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // check warns that this function builds differently in the reduced image, so its plain-check score differs
 // from the fast one. The parameter layout is the same as retail's (both arguments on the stack, the callee
 // popping eight bytes), so what is left is register allocation and the frame.
+// MiniMax A (11-12, run 62): no new form, no lower score (607 in the plain check, 643 in the fast one); the first
+// difference is at +0xb, where ours loads the actor argument and the definition table before the weapon and retail
+// loads the pool pointer and takes the argument into EBX, so the prologue's registers and the four extra frame bytes
+// differ before any case body is reached.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
