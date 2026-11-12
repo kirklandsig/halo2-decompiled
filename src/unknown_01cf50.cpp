@@ -5826,6 +5826,7 @@ dword g_4b8430;
 // cross3f (vector_products.h) scores 128, since it puts `sine` in retail's shared temp [esp+0x14], but the full build then
 // loses the matched 0xc2d00 (its scheduling tie), so the written-out form stays. The alpha clamp is PIN's body written out.
 // MiniMax I (11-11), NOT kept (coordinator 11-11): 127 -> 2 with the reference entry bound as `s_4e260_model_entry const *const &entry = &((s_4e260_model_entry const *)references)[index]` (a reference to a one-use pointer: match-only) and the index < 0 test ahead of the geometry load; the same struct read as a plain typed index with the split test is 125 (under the keep bar). Lead: retail keeps the entry's address before reading its model; find the plain form that does that.
+// MiniMax E (11-12), NOT kept (coordinator 11-12): 127 -> 2 again, this time by reading the entry's model twice and AND-ing the copies (`model &= model_copy`, a no-op steer) with the index < 0 test first; together with MiniMax I's reference form above, retail evidently loads the model field twice from the entry's address. Find the plain source that uses entry->model twice.
 // @retail 0x4e260
 void __stdcall function_4e260(long tag, long context, long first, long second,
     long third, dword handle, byte *material)
@@ -5844,10 +5845,7 @@ void __stdcall function_4e260(long tag, long context, long first, long second,
     byte *table = *(byte **)((byte *)g_4e0348 + 0x238);
     byte *references = *(byte **)((byte *)g_4e0350 + 0x37c);
     byte *record = *(byte **)(table + 0x1c) + ((handle >> 8) & 0x3fffff) * 24;
-    byte *entry = references + (signed char)record[0] * 8;
-    long model = *(long *)(entry + 4);
-    long model_copy = *(long *)(entry + 4);
-    model &= model_copy;
+    long model = *(long *)(references + (signed char)record[0] * 8 + 4);
     byte *definition = g_4e3b44[model & 0xffff].bytes;
     byte *block = *(byte **)(table + 0x14) + *(short *)(record + 6) * 0x2c;
     word const *indices = *(word **)(definition + 0x2c);
@@ -5872,9 +5870,8 @@ void __stdcall function_4e260(long tag, long context, long first, long second,
         for (long part = 0; part < *(short *)(record + 0xa); ++part)
         {
             long index = *(short *)(record + 8) + part;
-            if (index < 0) continue;
             byte *geometry = *(byte **)(block + 0x28);
-            if (index >= *(long *)geometry) continue;
+            if (index < 0 || index >= *(long *)geometry) continue;
             byte *vertex = *(byte **)(geometry + 4) + index * 24;
             dword packed = *(dword *)vertex;
             byte *group = *(byte **)(definition + 0x14) + (packed & 7) * 20;
