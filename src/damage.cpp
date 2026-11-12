@@ -1050,6 +1050,7 @@ PRIVATE inline long damage_object_root(long object_index)
 	return root;
 }
 
+// MiniMax A (11-12): no new form, no lower score (206): the frame is still 0x1a4 against retail 0x1b4 and the entry block still pushes before it reads the flags word and negates it, where retail reads the flags first; the first 0xbadc0 use is expanded in this build while retail calls it, and the out-of-line form that makes the body byte exact lives in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
 // MiniMax B (11-12): no new form, no lower score (206): the frame is 0x1a4 against retail's 0x1b4 and the argument
@@ -5247,6 +5248,7 @@ struct s_damage_object_creation
 	long unknownc0;
 };
 
+// MiniMax A (11-12): no new form, no lower score (156): the mask zero is still stored ahead of the states call where retail stores it in the node loop preheader, and the piece loop guard order, the search entry test and the scratch registers of the last two lookups still differ; storing the zero inside the block gives retail store but reallocates the frame (170), so the body stands.
 /* marks damage sections destroyed, and splits off the model nodes no
    longer joined to the object's root as new objects */
 // MiniMax B (11-12): no new form, no lower score (156): the mask's zero store, the piece loop's guard order, the search's entry test and the last two lookups' scratch registers still differ.
