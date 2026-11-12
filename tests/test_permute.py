@@ -381,6 +381,31 @@ def test_prepare_scratch_makes_copied_objects_current(monkeypatch, tmp_path):
     assert (scratch / 'build' / 'obj' / 'a.obj').stat().st_mtime > (scratch / 'include' / 'a.h').stat().st_mtime
 
 
+def test_prepare_scratch_drops_an_object_its_source_outdates(monkeypatch, tmp_path):
+    """An object already stale in the working tree (its source edited since the
+    last build) must stay stale in the scratch. Otherwise a stale stub object
+    defines a symbol the edited source now defines too, and the link fails."""
+    root = tmp_path / 'repo'
+    for d in ('src/stubs', 'include', 'config', 'build/obj'):
+        (root / d).mkdir(parents=True, exist_ok=True)
+    stale = root / 'build' / 'obj' / 'stubs_a.obj'
+    stale.write_bytes(b'')
+    os.utime(stale, (1000, 1000))
+    (root / 'src' / 'stubs' / 'a.cpp').write_text('')
+    os.utime(root / 'src' / 'stubs' / 'a.cpp', (2000, 2000))
+    fresh = root / 'build' / 'obj' / 'b.obj'
+    fresh.write_bytes(b'')
+    os.utime(fresh, (3000, 3000))
+    (root / 'src' / 'b.cpp').write_text('')
+    os.utime(root / 'src' / 'b.cpp', (2000, 2000))
+    monkeypatch.setattr(permute, 'ROOT', str(root))
+    scratch = tmp_path / 'scratch'
+    scratch.mkdir()
+    permute.prepare_scratch(str(scratch))
+    assert not (scratch / 'build' / 'obj' / 'stubs_a.obj').exists()
+    assert (scratch / 'build' / 'obj' / 'b.obj').exists()
+
+
 def test_prepare_scratch_repoints_generated_units(monkeypatch, tmp_path):
     """A copied stand-in unit must name the scratch tree's source, or the build
     rewrites every unit and recompiles all of its objects."""

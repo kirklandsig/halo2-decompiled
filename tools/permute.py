@@ -2473,12 +2473,35 @@ def prepare_scratch(scratch):
     # or a header edit since the last build). The copies are exact, so the
     # objects are still valid; stamp them newer than everything copied, or every
     # scratch build recompiles every source. Only the function's edited source
-    # (and anything genuinely changed in this scratch) should be stale.
+    # (and anything genuinely changed in this scratch) should be stale. An
+    # object whose source is newer than it was stale in the working tree
+    # already (an edit not yet built there): drop the copy so the scratch
+    # builds it, or a stale stub object would define a symbol its edited source
+    # now defines too.
     obj_dir = os.path.join(scratch, 'build', 'obj')
     for dirpath, _, names in os.walk(obj_dir):
         for name in names:
-            if name.endswith('.obj'):
-                os.utime(os.path.join(dirpath, name), None)
+            if not name.endswith('.obj'):
+                continue
+            path = os.path.join(dirpath, name)
+            source = _object_source(name[:-len('.obj')], scratch)
+            if source and os.path.getmtime(source) > os.path.getmtime(path):
+                os.remove(path)
+            else:
+                os.utime(path, None)
+
+
+def _object_source(stem, root):
+    """The source whose change makes build/obj/<stem>.obj stale, or None when
+    no source of that name exists (a generated object, or a source renamed
+    since the last build)."""
+    if stem.startswith('stubs_'):
+        path = os.path.join(root, 'src', 'stubs', stem[len('stubs_'):] + '.cpp')
+    elif stem.startswith('standard_'):
+        path = os.path.join(root, 'src', stem[len('standard_'):] + '.cpp')
+    else:
+        path = os.path.join(root, 'src', stem + '.cpp')
+    return path if os.path.exists(path) else None
 
 
 def new_scratch():
