@@ -314,6 +314,7 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
+// MiniMax H (11-12): no new form, no lower score (36): the special arm still comes before the kind arm where retail puts the kind arm first, the element address is still a scaled index added to the base where retail multiplies into eax and adds the base, and 0x221810 still has to stay out of line, which needs a change in src/unknown_221490.cpp.
 // MiniMax I (11-11): no new form, no lower score (36): the special arm still comes before the kind arm in the layout where retail puts the kind arm first, our element address is a scaled index added to the base where retail multiplies into eax and adds the base, and 0x221810 still has to stay out of line, which needs a change in src/unknown_221490.cpp.
 // MiniMax D (11-11): no new form, no lower score (36): still BLOCKED-BY 0x221810, the getter in src/unknown_221490.cpp that this lane may not edit and that LTCG inlines here.
 // MiniMax S (11-10): no new form, no lower score (36): the special arm still comes before the kind arm in the layout where retail puts the kind arm first, and our element address is a scaled index added to the base where retail keeps the scaled product in EAX and adds the base to it.

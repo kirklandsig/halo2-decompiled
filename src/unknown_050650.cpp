@@ -797,6 +797,9 @@ struct s_collision_result_buffer_1697c0
 // call or through actor_looking_rotate: 286 at 1438 B [72] with retail's frame 0xa8, first difference +0x31. So the
 // order and homes of the trig values set the frame: arguments are evaluated right to left (cosine first), the named
 // pair gives retail's sine-first order. Also match-only (one-use call results; actor_looking_rotate's body by hand).
+// MiniMax A (11-12): no new form, no lower score (303): retail's pitch axis sits four bytes higher in the frame and its
+// magnitude temp is kept at the frame bottom, where ours stores it beside the axis, so every slot above them is out by
+// four bytes and the body is 12 bytes longer than retail's 1423.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1161,6 +1164,8 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // MiniMax B (11-11): no new form, no lower score (257); retail's two byte homes are the result at +0x12 and the presence
 // byte at +0x13 (the frame is 0x12 once the two pops are counted) and here they are the other way round, and both
 // compiles reference them equally often, so the order follows the block layout.
+// MiniMax A (11-12): no new form, no lower score: retail keeps case 2's block apart from case 1's where ours cross-jumps
+// them, and the fast image builds the callee 0x1e1f20 differently, so the score it shows (341) is above the full build's.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1343,6 +1348,11 @@ done:
 	return result;
 }
 
+// MiniMax A (11-12): no new form, no lower score (9): three fresh spellings of the lookup (the byte-offset
+// product through the pool data, the offset computed before the pool read, and a byte base with an offset
+// local) all compile to our code - MSVC keeps the scaled index in the pointer register and adds the base,
+// where retail keeps the product in eax and forms the actor with a lea; the shared getter is used by sixteen
+// matched functions of this file, so its spelling cannot change on its own account.
 // MiniMax H (11-11): no new form, no lower score (9); retail still builds the actor offset in EAX and forms the actor with a lea where ours keeps the scaled index in the pointer register and adds the base, and the shared getter cannot be respelled because sixteen matched callers depend on it.
 // MiniMax B (11-11): no new form, no lower score (9): the getter is shared with sixteen matched callers, so no
 // spelling of it can be changed on its own account, and none of the subscript forms reaches retail's prologue.
@@ -1410,6 +1420,10 @@ done:
 // Further forms: direct decoder result 42; low-mode rejection 38, with direct result 45;
 // path-first reset 21, with direct result 45; nested independent guards 9; native mode
 // snapshot 9; uniform getter observations 58. Original reset path and call values restored.
+// MiniMax A (11-12): no new form, no lower score (9): the lookup written in this body - the plain inline expression, the
+// byte-pointer product, the address of the array subscript, the masked index local and the offset local - compiles to our
+// code in every case; MSVC keeps the scaled index in the pointer register, so retail's `imul` in eax and its
+// `lea esi, [eax + edx]` are not reachable from the source. Original body restored.
 // MiniMax C (11-09): score 9 (was 9): retail's prologue is one byte longer than ours (its `lea esi,
 // [eax + edx]` against our `add esi, edx`), so our code is 113 bytes and retail's 114. Eight more
 // getter spellings all compile to our code and score 9: an unsigned offset local, the byte-pointer
@@ -1700,6 +1714,14 @@ struct s_actor_looking_structure_view
 // it raises 0x296e60 303 -> 311, and retail's 0x296e60 sums its two dots (k + j) + i and (i + j) + k, so a fixed
 // grouping in the shared helper is not retail's. The helper's dot parenthesized with the flat score 31.
 // Kept: the selected test as dot3f(best, &forward), same code (the hand-written dot was dot3f's body).
+// Round 111 (m3 lane 16, fast; control 23): forms ahead of the rotation, as perturbations of the operand ranks: the pathfinding
+// lookup as a ternary initializer 207; without the structure local (the global cast at both uses) 143 (926 bytes); the three
+// entry tests as nested ifs 23; `0.f < length` 23; the first trace test as `!= 0` 23; the best score declared before the best
+// index 25; the best pair declared before the candidate array 23 (23 = same code); cosine computed before sine in the angle
+// wrapper 41 (0x296e60 303 -> 300). Diagnostics (not source forms): one store through `specification` at entry keeps 924 bytes
+// and loads every axis component ahead of the candidate copy (123: retail loads only axis j there); a read at offset 0 or +4 of
+// `specification` at entry or ahead of 0x26c180 216-240 (943-948 bytes). The ranks move with what the function dereferences
+// before the loop, not with the helper's spelling.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
@@ -1957,6 +1979,8 @@ struct s_actor_looking_turn_request
 // two side tests) in its own inline helper scope, as retail's shared slots suggest, 527 at 1980 B (the helper stays out of
 // line); the two unused idle cosines in a block of their own around the 0x2973f0 query 442 (same code). Keeping 0x1fdd90
 // out of line is at most necessary, not enough: /Ob1 on its file (lane 7 r99) 569 and the noinline diagnostics 591/616.
+// MiniMax A (11-12): no new form, no lower score: our frame is 0xd0 against retail's 0xc8 and the cached animation words do
+// not have retail's homes; the fast image shows 548 because the callees outside the reduced image build differently there.
 // @retail 0x298370
 void function_298370(long actor_index)
 {

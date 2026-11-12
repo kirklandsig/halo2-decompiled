@@ -474,10 +474,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
+// score 218 (was 218; 219 before): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// colours and the projection sum's order differ.
 // MiniMax H (11-12): no new form, no lower score (218): the entry still differs - retail moves the pathfinding pointer into ebx and loads the actor index into eax before the switch, ours keeps the pathfinding pointer in eax and reads the actor index in the cases that use it; the frame and case 2 agree.
 // MiniMax A (11-12): no new form, no lower score (218); retail copies the pathfinding argument into ebx at the entry and reloads the vertices pointer from that copy before ebx takes the first vertex index, and taking the case-2 vertices and the trace from the pathfinding argument instead of from state->pathfinding scores 265 and 294, so the root cannot be kept alive by the case-2 use.
-// score 218 (was 219): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
-// colours and the projection sum's order differ.
 // MiniMax C (11-11): no new form, no lower score (218); retail copies the pathfinding argument into EBX at the entry
 // and reads the actor index (the first stack argument) into EAX there, while this build keeps the pathfinding in EAX
 // and reloads the actor index at its case-5 use, so every case is seven bytes out of step; the actor test hoisted
@@ -874,6 +874,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // pointer into ebx and loads the actor index into eax before the switch, ours keeps the pathfinding pointer in eax
 // and reads the actor index in the cases that use it; the frame (0x40) and case 2 agree, so the whole difference is
 // that entry.
+// M3 lane 10 r97 (fast with 0x270d90 at 286 and 0x270400 MATCH; base 218): nothing kept. The actor parameter typed dword 218
+// (same code); the actor declared third, ahead of the entry pointer (definition, declaration and the 0x270d90 call; stack order
+// unchanged) 218 (same code); that order on corners a, b, c, d 287 (1284 bytes: the actor load still comes first and pathfinding
+// arrives in EDX, as with every other order on that graph); corners d, a, b, c 356; c, a, b, d 358.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

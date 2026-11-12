@@ -2408,6 +2408,7 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax H (11-12): no new form, no lower score (140): the `simple` byte is still tested before the texture-mode global is stored where retail stores it first, the `preserve_alpha` byte is still loaded above that store and kept in cl, and retail's else arm still tests a byte one slot past the last argument where ours reuses the earlier load.
 // MiniMax I (11-11): no new form, no lower score (140): retail tests the `simple` byte, stores the texture-mode global and only then loads and tests the `preserve_alpha` byte, where our build hoists that load above the store and keeps it in cl; retail's else arm tests a byte one slot past the last argument (the stack slot the caller leaves behind) where ours reuses the earlier load.
 // MiniMax G (11-12): no new form tried this round, no lower score (140): the byte at esp+0x6c is still read in a
 // different register and retail's short arm still reads a stack argument this function's declaration does not carry.
@@ -3014,6 +3015,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// MiniMax H (11-12): no new form, no lower score (94): the bounds block now follows retail's order; what is left is the inlined corner rotation's x87 and SSE schedule and its result homes, and the corner helper's two statements swapped give 214.
 // MiniMax G (11-11): no new form, no lower score: the corner helper's two statements swapped 214 (2022 bytes, the
 // same code as an earlier round); the helper keeps one expression per coordinate.
 // MiniMax C (11-10): score 94 (was 211): the four bounds are now written corner by corner in the

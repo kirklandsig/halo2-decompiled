@@ -2840,6 +2840,10 @@ struct s_unit_event
 /* destroys a permutation of a region: hides it, starts its effects and
    area damage, and applies its side effects to the object (depletes the
    body, drops weapons, ejects riders, destroys attached children) */
+// MiniMax G (11-12): no new form, no lower score (476); retail's prologue takes only the object index in
+// EAX and reads the other five arguments off the stack with a 0x38 frame, ours takes the region index
+// and the permutation pointer in registers, and that argument set comes from this function's own first
+// pass, so it cannot be changed from here without a new parameter order.
 // score 476 (was 472): 472 before r94's walk; frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // r101: unchanged at 472; frame 0x38 agrees; permutation remains on the stack instead of EAX,

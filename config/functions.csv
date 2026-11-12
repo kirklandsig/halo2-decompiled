@@ -12404,7 +12404,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00303360,469,third:havok,speed,a16 pad ebp,,,,src/unknown_303360.cpp,matched
 00303540,604,third:havok,speed,a16 pad ebp,,,00303110,src/unknown_303110.cpp,todo
 003037a0,984,third:havok,speed,a16 pad ebp,,,00303360 00308590,src/unknown_303360.cpp,matched
-00303b80,580,third:havok,speed,a16 pad ebp,,,00303360 00308590,src/unknown_303b80.cpp,todo
+00303b80,580,third:havok,speed,a16 pad ebp,,,00303360 00308590,src/unknown_303b80.cpp,near
 00303dd0,2753,third:havok,speed,a16 pad ebp,,,00303360 00303540 003037a0 00303b80 00308590 0030a6b0,src/unknown_303dd0.cpp,todo
 003048a0,3573,third:havok,speed,a16 pad ebp,,,00303360 00303540 003037a0 00303dd0 00308590,src/unknown_3048a0.cpp,todo
 003056a0,133,third:havok,speed,a16 pad,,,,src/unknown_3056a0.cpp,matched
@@ -12877,8 +12877,8 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00319300,185,third:havok,speed,a16 pad ebp,,,,src/unknown_319300.cpp,matched
 003193c0,102,third:havok,speed,a16 pad,,,003114d0 00319740,src/lane_a_motion_constructor.cpp,matched
 00319430,84,third:havok,speed,a16 pad ebp,,,,src/lane_a_motion_leaves.cpp,matched
-00319490,307,third:havok,speed,a16 pad ebp,,,001d8d60 002db7a0 00319300 00372500,src/lane_a_motion_leaves.cpp,todo
-003195d0,299,third:havok,speed,a16 pad ebp,,,001d8d60 002db7a0 00319300 00372500,src/lane_a_motion_leaves.cpp,todo
+00319490,307,third:havok,speed,a16 pad ebp,,,001d8d60 002db7a0 00319300 00372500,src/lane_a_motion_leaves.cpp,matched
+003195d0,299,third:havok,speed,a16 pad ebp,,,001d8d60 002db7a0 00319300 00372500,src/lane_a_motion_leaves.cpp,matched
 00319700,56,third:havok,speed,a16 pad,,,,src/lane_a_motion_leaves.cpp,matched
 00319740,10,xdk:xonlines,speed,a16 pad,?SetCbRecvBuf@CSocket@@QAEXI@Z,,,src/lane_a_motion_leaves.cpp,matched
 00319750,68,third:havok,speed,a16 pad,,,002da610,src/lane_a_motion_leaves.cpp,matched
