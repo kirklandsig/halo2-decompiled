@@ -130,6 +130,10 @@ s_lighting_record *function_3db00(long object_index, real priority)
     function_d4080(*(short *)definition, &query, special, &g_55ee60);
     return &g_55ee60;
 }
+// score 77 (was 77): retail keeps the result in esi and tests it before the
+// reload, ours copies it into eax at the merge point and puts the cold "no
+// result" return block ahead of the initialization instead of after it
+// (retail returns it with mov eax, esi; ours folds it to the constant).
 // MiniMax H (11-12): no new form, no lower score (77); this round added the flag set before the walk, the flag in
 // both arms of the allocation test, the allocation stored straight into the result and the allocation stored into the
 // result with the flag after the walk, and they score 115, 83, 116 and 141. What is left is that retail tests the
@@ -140,10 +144,6 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // into EAX there; the copy of the cached index into the result between the two tests hides the known condition
 // from the compiler, and every spelling that keeps one variable for the cached and the allocated index or moves
 // the merge test onto the cached index scores worse (155 and 36).
-// score 77 (was 77): retail keeps the result in esi and tests it before the
-// reload, ours copies it into eax at the merge point and puts the cold "no
-// result" return block ahead of the initialization instead of after it
-// (retail returns it with mov eax, esi; ours folds it to the constant).
 // Tried: return NONE (77); the NONE test after the inner if (77); no early return (161);
 // "if (result != NONE) initialize = true; else return" (83); one variable for the
 // allocation and the result (141); result = cache_index at its declaration (148).
@@ -229,7 +229,7 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // (same code). Reading: VC drops the merge test only when every incoming path knows the result; a copy into result
 // between the cached-index test and the merge test hides it on the found path; a NONE return reached only through a
 // threaded jump stays unfolded.
-// MiniMax R (11-11): score 9 (was 77): the flag is now set in both arms of the allocation test (the allocation
+// MiniMax R (11-11): reached 9 from 77: the flag is now set in both arms of the allocation test (the allocation
 // succeeded, or the walk found a record) instead of after the walk, which is the same behaviour and gives retail's
 // merge block; left: the found path reloads the result from its stack home before the merge test where retail tests
 // the register value first and reloads it after, the walk's NONE exit still returns the constant -1 where retail
@@ -241,11 +241,16 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // it, and retail's init block copies the four state blocks itself (a 16-byte copy loop over an array in the object,
 // with the counts at 0x118 and 0x11a) where ours calls function_ba690 and copies with memcpy, so the score is not only
 // the merge block. The plain forms that set the flag on each path keep the score where it is.
-// score 77 (was 77): the flag is set in both arms of the allocation test now, which gives retail's merge block;
+// Earlier at 77 (was 77): the flag is set in both arms of the allocation test now, which gives retail's merge block;
 // left: the found path reloads the result from its stack home before the merge test where retail tests the register
 // value first and reloads it after, the walk's NONE exit still returns the constant -1 where retail returns the
 // reloaded value, and the function is one byte longer than retail's.
 // MiniMax R (11-11), NOT kept (coordinator 11-11): 77 -> 9 with the allocation test inverted (cache_index != NONE first) and `initialize = true` written in both arms, the oldest-record search's arm setting it when a record was found and returning otherwise (a statement copied into both arms: kept only with a byte match); body at 77. Lead: retail sets the flag on each path; find the plain form that does that.
+// Round 116 (m3 lane 12, fast with 0x3db00 and 0x3dd10; control 77): the walk as a `for` loop with the next-index call as
+// its increment 77 (same code). Correction to MiniMax H (11-12) above: ours inlines 0xba690 here as retail does (the same
+// `movsx [eax+0x11a]`, `movsx [eax+0x118]`, divide by ten and `rep movsd`/`rep movsb` copy loop); all 77 differences are
+// the block layout from +0x54 (the found path, the merge test and the walk's NONE epilogue). No untried natural form found
+// that changes this code.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

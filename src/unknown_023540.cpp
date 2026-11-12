@@ -2408,6 +2408,7 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax H (11-12): no new form, no lower score (140): the `simple` byte is still tested before the texture-mode global is stored where retail stores it first, the `preserve_alpha` byte is still loaded above that store and kept in cl, and retail's else arm still tests a byte one slot past the last argument where ours reuses the earlier load.
 // MiniMax I (11-11): no new form, no lower score (140): retail tests the `simple` byte, stores the texture-mode global and only then loads and tests the `preserve_alpha` byte, where our build hoists that load above the store and keeps it in cl; retail's else arm tests a byte one slot past the last argument (the stack slot the caller leaves behind) where ours reuses the earlier load.
 // MiniMax G (11-12): no new form tried this round, no lower score (140): the byte at esp+0x6c is still read in a
 // different register and retail's short arm still reads a stack argument this function's declaration does not carry.
@@ -2794,6 +2795,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // set true after it, as retail does at 0x23716; 0x22850 keeps 223.
 // MiniMax E (11-11): no new form, no lower score (364); the entry block matches retail's, but our body is 54 bytes
 // longer than retail's (1597 against 1543), which moves every later jump target, and the extra code is not located.
+// MiniMax H (11-12): no new form, no lower score (364): the body is still 54 bytes longer than retail's, so the shared exit lands at +0x621 where retail's is at +0x5eb, and the inlined matrix copy still loads its values into registers before storing them where retail stores each value as it loads it.
 // score 401 (was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
@@ -2892,6 +2894,10 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // the remainder and then adds four, our first matrix copy loads its four values into registers before it stores
 // them where retail stores each value as it loads it, and the three rotation calls still pass the rotation on
 // the stack instead of in eax because that callee lives in another file.
+// MiniMax A (11-12): no new form, no lower score (364); the first difference is at +0x52, where this build's early
+// exit jumps to a block that sits 0x36 bytes further from the function's start than retail's, and the body after that
+// pairs against the wrong instruction all the way down; the frame agrees (0x200) and the two length checks on the
+// count are the same, so what is left is the layout of the blocks and the order of the reads.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3010,6 +3016,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// MiniMax H (11-12): no new form, no lower score (94): the bounds block now follows retail's order; what is left is the inlined corner rotation's x87 and SSE schedule and its result homes, and the corner helper's two statements swapped give 214.
 // MiniMax G (11-11): no new form, no lower score: the corner helper's two statements swapped 214 (2022 bytes, the
 // same code as an earlier round); the helper keeps one expression per coordinate.
 // MiniMax C (11-10): score 94 (was 211): the four bounds are now written corner by corner in the

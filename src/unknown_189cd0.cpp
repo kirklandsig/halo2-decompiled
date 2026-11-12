@@ -31,7 +31,9 @@ long function_18d5b0(long label);
 long function_189fe0(s_sound_request const *request, long tag_index);
 long function_189340(long object_index, long tag_index, long audible, s_sound_marker const *marker, s_sound_source_callbacks const *source, real scale, long platform_playback, char const *variant);
 
-// score 21 (was 21): retail reads the object index once, after the playback call, into
+// score 11 (was 21): every object-index read is plain but the started test, which reads
+// through the reference; the code is retail's except that test (`cmp [esp+0xb8], -1`
+// where retail compares the late EBX load, 526 bytes). Before round 173 (at 21): retail reads the object index once, after the playback call, into
 // ebx and copies it to esi for the call; ours reads it into esi at the call and again
 // into ebx for the started test (526 bytes). With plain reads at the call, test and
 // dispatch (round 45, 90) the late read is one load as in retail, but into esi (the
@@ -131,6 +133,18 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // both-branch forms): each arm with its own sound index local, slot store and return test 90, with the call's object
 // read plain 87 (525 bytes). The request's object index set from the early `object` local 21 (same code); the scale
 // clamp at the function's top 166 (540 bytes).
+// Round 173 (m3 lane 6, plain): with the early uses (NONE test, marker test, both marker calls) read plain instead
+// of through an early local, and the playback call reading plain: the started test through the reference 11 (kept;
+// the early plain reads share one ESI load, the late plain reads one EBX load copied to ESI, as retail), the dispatch
+// through the reference instead 121 (536 bytes, frame 0xa4), a late local read through the reference for the call,
+// test and dispatch 85, the test through a non-volatile reference 116 (plain code); the first NONE test alone through
+// the reference with plain reads after it 169 (540 bytes); an early local for the first test only 169; the reference
+// declared and unused, volatile or not 116/116 (diagnostic). Every volatile read is one load more than retail, whose
+// two object loads each serve several uses; retail behaves as if the object index were memory-resident without one.
+// On the kept form: the call's operand through the reference with the test plain 41 (the volatile load goes straight into
+// ESI and the test and dispatch reload), call and test through it 28, test and dispatch 28, all three 28; the started test
+// nested 11 and `sound_index = NONE` at its declaration 11 (same code each). A volatile read never shares its load, so no
+// placement of it can match; a match needs a plain form that keeps the object index out of a register.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {
@@ -160,8 +174,7 @@ void __stdcall function_189cd0(long tag_index, long object_index, real scale, lo
 			else if (scale > 1.0f)
 				scale = 1.0f;
 
-			long object = *object_reference;
-			if (object == NONE && !positioned)
+			if (object_index == NONE && !positioned)
 			{
 				s_sound_request request;
 				request.location.unknown02 = 0;
@@ -181,20 +194,20 @@ void __stdcall function_189cd0(long tag_index, long object_index, real scale, lo
 			{
 				s_sound_source_description description;
 				description.flags = 0;
-				if (object != NONE)
+				if (object_index != NONE)
 				{
 					s_object_marker local_4f80fe;
-					function_b8d30(object, 0x4000095, &local_4f80fe, 1, false);
+					function_b8d30(object_index, 0x4000095, &local_4f80fe, 1, false);
 					function_1892a0(local_4f80fe.node_index, &local_4f80fe.node_matrix.position,
-						&local_4f80fe.node_matrix.forward, tag_index, object, &description);
+						&local_4f80fe.node_matrix.forward, tag_index, object_index, &description);
 				}
 				if (spatialization)
 					description.flags |= 1;
 				else
 					description.flags &= ~1;
-				sound_index = function_189340(*object_reference, tag_index, positioned ? 2 : 1, (s_sound_marker *)&description,
+				sound_index = function_189340(object_index, tag_index, positioned ? 2 : 1, (s_sound_marker *)&description,
 					&g_444b3c, scale, function_18d5b0(label), (char const *)&slot->permutation);
-				if (sound_index != NONE && object_index != NONE)
+				if (sound_index != NONE && *object_reference != NONE)
 				{
 					object_dispatch_sound_started(object_index, tag_index, sound_index);
 				}

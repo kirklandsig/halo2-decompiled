@@ -73,6 +73,11 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 	return (c_channel_effects_view *)SOUND_DRIVER_GLOBALS->effects;
 }
 
+// MiniMax A (11-12): no new form, no lower score (544); the file's fixed /Op still decides the mixed
+// arithmetic: the gain difference is computed on the x87 stack where retail subtracts in SSE and takes the
+// absolute value afterwards, our frame is still 0x22c against retail's 0x224, and we still push EBP before
+// the stream pointer is formed where retail forms the pointer first and pushes EBP after it; the names and
+// the declaration orders the notes above list all give the same code.
 // MiniMax b (11-11): no new form, no lower score (544); our frame is still 0x22c against retail's 0x224, we push
 // EBP before the stream pointer is formed (retail forms the pointer first and pushes EBP after it), and the gain
 // difference is computed on the x87 stack where retail subtracts in SSE and only then takes the absolute value.

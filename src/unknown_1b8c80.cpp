@@ -293,6 +293,16 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // 0xc8200 nested under the 0x1b8d80 test with its own `result = true` 3 (same code); a walking seat pointer advanced
 // at the body's end for every seat read 130 (360 bytes); the two rejections as direct `return false` 118 (365 bytes);
 // `result = false;` assigned just before the loop 52 (366 bytes, round 34's code).
+// Round 175 (m3 lane 5, fast with 0xc8200 0xc8b80 0xc8f60 0x1b8d80 0x1df560 0x11b0c0 0x11ade0 0x1b8eb0): retail's setup is
+// the plain last-to-first order of (unit, object, seat) with the reload lifted above the seat load: seat into DX, the saved
+// seat address into the first free register (EAX) and through it, the unit into ECX. Ours reads the object argument first,
+// through ECX, in every form: an unsigned conversion on the object argument 3 (same code); the object index in a local
+// just before the call 3 (same code); the seat index in a short local just before the call 33 (381 bytes: the seat is then
+// zero-extended and loaded last, the object still first through ECX); both locals 33; a function-scope seat pointer set at
+// the loop top for the object argument 3 (same code); the seat pointer kept in a local record ahead of the seat list, read
+// back for the object argument, 17 (the store moves ahead of the object read at the loop top, the reload still ECX).
+// tools/permute.py with the eight callers and callees as `--context` (its reduced image then scores 3, not round 169's
+// 112): 78 tries in 900 s, 17 at 3, none below.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {

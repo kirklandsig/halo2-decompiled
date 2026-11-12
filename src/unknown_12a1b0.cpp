@@ -1623,6 +1623,12 @@ struct s_looping_detail_request
 // before the compressed forward 103 (masked 30 -> 36, away from retail's forward-first order); the location call after
 // the forward and velocity 112, before the position add 113; velocity before the location call 112; flags and result
 // before the forward and velocity 130 (511 B); the forward before the position add 111. The query stays inlined in all ten.
+// Round 173 (m3 lane 6, plain with 0x219ed0/0x14dde0, both stay MATCH): the skip step through the real 0x14de10 instead of
+// the inline copy (diagnostic) 143 at 473 bytes, the query still inlined; the count tested `!= 0` 110 (same code); the skip
+// loop as `while (skip != 0)` 110 (same code); the count read at each use with no local 110 (same code); the skip loop as a
+// counted for 110 (same code); the count test as `>= 1` 110 (same code); the skip loop as `while (skip >= 1)` 110 (same
+// code); skip and player declared at the top of the else arm 110 (same code). The query stays inlined in every one; the
+// known match needs the ruled-out implied test.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

@@ -79,6 +79,7 @@ struct s_24e9c7_points
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// score 125 (was 125): round 112 (m3 lane 12) note at the end. The frame size, the bounds stores and the marker copy agree; what is
 // MiniMax G (11-11): no new form, no lower score (125): the result, kind and bitmap homes stay eight bytes above
 // retail's, the 1.0 constant stays in xmm4 where retail uses xmm5, and the sprite bounds are copied through esi where
 // retail loads the sprite pointer into eax. This round: the corner offsets written as `-side.x` and `-side.y` in place
@@ -90,7 +91,12 @@ struct s_24e9c7_points
 // not kept; the across values as one array 142 and the size inlined into the products 141. The permuter (612 s, 103
 // tries) also ends at 123, again by swapping two arguments of function_22a664, which changes what that call receives,
 // so the body stays.
-// score 125 (was 125): round 112 (m3 lane 12) note at the end. The frame size, the bounds stores and the marker copy agree; what is
+// M3 lane 1 r96 (fast, 0x22a664 matched): the alpha as one conditional expression stored straight into the global 125;
+// the kind test as two nested ifs 125; across i as `-size * forward_j` 125; the half width converted once into a named
+// real used for both side products 123 (two points: not kept), with the full width named then halved 123, with the named
+// real declared right after the half width 125, with `size * (0.0f - forward_j)` 134 (739 B), with side before up 125;
+// the side and back products moved after the first corner's origin copy 138 (740 B; across still sinks). Re-measured:
+// constant-first size 125, the bounds as one initializer 125, the marker's kind in a long local 130.
 // MiniMax C (11-09): no new form, no lower score (125): the full build's diff shows the group of
 // the result, kind and bitmap homes eight bytes above retail's, with retail's spill at -8 and its
 // unused slot at -0xc above them, and the 1.0 constant in xmm4 where retail uses xmm5; the bounds
