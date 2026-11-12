@@ -3003,6 +3003,8 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // first), so the cause stays 0x189060's order: BLOCKED-BY 0xbf600 (its call) and 0x17e670 (the decal call).
 // M3 lane 15 r76: no trial. The first difference (+0x24f) is still the decal call's two register arguments into 0x17e670
 // (contributor, unmatched at 429), and the sound arms still need the held 0x189060 order (aligned 25, register-masked 14).
+// M3 lane 16 r112: no trial (first difference still 0x17e670's register arguments, contributor). The held 0x189060
+// order's saved patch (lane 7 r117) no longer applies to current main and needs regenerating once its owner agrees.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
