@@ -1184,6 +1184,14 @@ void function_2118c0(void)
 // Round 75 (m3 lane 15, fast): t as `(real)k + (real)m * 0.125f` 10; the third as `0.333333343f` 10; the four
 // component values declared outside the component loop 10; the m loop as a `for` 10 (all the same code); the forward
 // differences as named d1/d2/d3 values 194 (830 bytes).
+// Round 96 (m3 lane 10, fast; the compile-only harness agrees on each): the wrapped indices from a forceinline
+// helper with three out-parameters 10 (same code); in a `word wrapped[3]` array with constant indices 10; the
+// out-parameter helper with `long row = b * 8` 150 (every row reduced); the wrapped rows from `b * 8` with p1 and out
+// from `(b << 3) + k` 150; p1 from `row + k` and out from `(b << 3) + k` 163 (786 bytes) (the last three re-measure
+// listed forms); the wrapped rows spelled `&noise[row + w][0]` 10; the indices from a named `short next = k + 1`
+// 187 (798 bytes); the component index declared in the `for` 10. Harness only: the array or
+// separately assigned indices with `b * 8` rows 150-type code; `b * 8` for two wrapped rows and `b << 3` for the
+// third reduces all. Address-taken indices stay invariant, so the rows still reduce.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

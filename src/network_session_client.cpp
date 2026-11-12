@@ -1115,6 +1115,14 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // with an unsigned count 195. Re-measured: the indexed form 195 (the count spilled, the state in EBX through the
 // call), `identities[count++]` 40 (only the copy's source and destination registers differ). A 600 s permuter run
 // on this body: 67 tries, nothing below 9 (the reduced image scores the original 35).
+// Round 172 (m3 lane 6, fast): the mask test as `(mask >> i) & 1` 215 (702 bytes); the destination re-derived as
+// `identities[count]` after each increment 177; the session close after the identity clear 208; the two NONE arrays
+// filled by `memset(..., 0xff, ...)` 238 (581 bytes); the count declared after the close call 15. Re-measures (the same
+// code as listed forms): the copy through a file-local inline helper called with `identities[count++]` 195 (the indexed
+// form's code); the destination set NULL at its declaration and assigned in the branch 195 (round 15's form). Same
+// code: one `long i` shared by both loops on the pointer (9), indexed (195) and `[count++]` (40) forms; the arm as
+// `if (!(mask & bit)) continue;` 9; a `dword (*)[3]` row pointer declared before the branch 9. Diagnostic: 1 to 8
+// unused locals on the indexed form 195 each (unlike 0xd9110, the symbol count does not move this colouring).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

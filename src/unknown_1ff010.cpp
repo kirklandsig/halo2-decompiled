@@ -519,7 +519,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // MiniMax I (11-06): no new form, no lower score; the frame and the prop and point refresh still agree and the first planar normalization is still the difference: retail divides first and tests the planar length after the scale products, ours tests the length against zero before dividing, and that schedule comes from the normalization helper, which is in another file.
 // MiniMax G (11-05): no new form, no lower score; the zero's lifetime depends on the inlined rotation from another file, so the rematerialised test zero stays unmatched.
 // MiniMax G (11-04): no new form, no lower score: the zero's lifetime and the rotation's register homes are the whole difference.
-// score 77 (was 77): frame 0x20 agrees. Retail tests the planar length after the scale products
+// score 77 (was 77): frame 0x20 agrees; retail tests the planar length after the scale products, keeps the
+// test zero in xmm0, multiplies the facing components as registers and stores the velocity directly, while
+// ours zeroes xmm6 above the divide, multiplies x * scale and carries that zero through the inlined turn.
 // Round 28: the existing rotate_vector_170d70 (src/unknown_170d70.cpp) for rotate_direction 130 at retail's 850
 // bytes (aligned 106 -> 88; lead), with the output through vector3f_scale 147 (830); vector3f_scale for the output
 // alone 147 (828); rotate_direction with scalar cross terms (dot first, or (1 - cosine) first) 134/134 (0x1ecf50
@@ -706,6 +708,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // inside the expansion. The forms the earlier rounds record ((real)0 and sine - sine for the
 // rotation's cosine, magnitude != 0.0f, the double zeros, rotate_vector_170d70 in place of the call,
 // the axis-first copy of the helper's body) all measure 77 or worse.
+// MiniMax H (11-12): no new form, no lower score (77); the full check shows 846 bytes against retail's 850 with the first difference at +0xeb, and the turn is expanded in our build as well, so the difference is inside it: retail multiplies the axis component by the turned one and loads the turned i, j, k into xmm4, xmm6 and xmm5 and reloads j twice, ours multiplies the turned component by the axis one and loads them into xmm5, xmm7 and xmm4; the scale products differ in the same way (retail `scale * x`, ours `x * scale`). The turn helper is in src/unknown_1eb8a0.cpp and the normalisation in include/unknown_11cc90.h, so neither is in this lane's files.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {

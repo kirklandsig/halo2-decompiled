@@ -23,6 +23,7 @@ The handlers of the unit request table at 0x467564
 #include "local_players.h"
 #include "game_engine_events.h"
 #include "impacts.h"
+#include "object_tag_definitions.h"
 #include <math.h>
 #include <string.h>
 
@@ -864,6 +865,9 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// MiniMax G (11-12): no new form, no lower score (92): the seat index and the direction sit 0xc below retail's slots and the
+// shared block-vector slot 0xc above them, so the whole frame is a permutation of retail's; the permuter (killed at its time
+// limit) produced no form.
 // score 92 (was 152): earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
 // and throw-globals homes, the release point (retail its own local in center's slot), the velocity scale's first
 // product and the spread blend's schedule. Before this round 288, 298 before lane 15 round 61's throw velocity through
@@ -1073,13 +1077,22 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // difference +0x146); left there are the origin/direction homes (0x48/0x54 swapped), the velocity scale's first product
 // (retail folds dir.i) and the blend's 1.0/ratio registers; on it a separate a76b0 origin 44, `1.0f - ratio` in the call
 // 128, that with velocity first 129, velocity first 41.
+// m3 lane 1 r95 (fast; kept: the throw speed read as the typed unit definition's grenade velocity, same code 92). Rebuilt
+// lane 14 r83's match-only lead (one function-scope origin, `placed` from function_bc1d0, release point and parent
+// velocity in bare blocks, the helper blend) at 41 (1699 B, register-masked aligned 22); on it: direction declared at
+// function scope beside the origin 41 (same code); origin renamed to sort before direction 41 (same code: names do not
+// order these slots); the permuter (928 s, 28 tries) best 41; the aim copied from the field and scaled in place 168
+// (1720 B); the random aim scale named before its scale call 46 (1700 B, masked aligned 19: the aim products then load
+// all three components as in retail, and the one extra byte is the velocity scale's unfolded first product, which shifts
+// every later call and jump); that with the throw speed named at its scale call 41 (the aim fold comes back: the two
+// fold choices move together); that with the blend weight computed before the aim scale 53.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
 {
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
 	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
-	byte *local_98b918 = g_4e3b44[unit->definition_index & 0xffff].bytes;
+	s_unit_definition *local_98b918 = (s_unit_definition *)g_4e3b44[unit->definition_index & 0xffff].bytes;
 	long projectile_index = actions->grenade_projectile_index;
 
 	if (projectile_index == NONE)
@@ -1171,7 +1184,7 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 					spread = false;
 				}
 
-				vector3f_scale(&direction, *(real *)(local_98b918 + 0x1b0), &velocity);
+				vector3f_scale(&direction, local_98b918->unit.grenade_velocity, &velocity);
 			}
 
 			if (spread && actions->grenade_throw_maximum > 0)
@@ -2610,6 +2623,17 @@ __forceinline char unit_action_round(real value)
 // a `play` flag cleared when no animation is found, the tail under `if (play)`; a flag form) 329 (1224 B); the 0xe9780
 // fallback as a switch re-measured 237 (1192 B, masked 35 against 51); the lunge target defaulting to target_index with
 // the 0x1c8 read nested in the `>= 1.0f` test 254 (1201 B); the short-slot hand getter with the fallback switch 267 (1191 B).
+// m3 lane 1 r95 (plain; the fast check carries a CAVEAT for callee 0x168470; register-masked aligned counts in brackets,
+// base 48): re-measured the existing short-slot unit_action_hand_weapon_get(unit, 0) alone 297 (1196 B) [46] and the lunge
+// speed read at its compare and at the divide (here through one `byte *` melee-globals local) 234 (1197 B) [47] (the
+// whole tail block, from the speed load to the 0x399 test, is then retail's code but for retail's `mov byte [esp+0x12], 1`
+// result store); new: with that, the 0xe9780 fallback as a switch (retail's sub/je and range-tree code) 237 (1192 B) [34];
+// with both and the short-slot getter 252 (1191 B) [32]; those with first_person_name = NONE declared first 311 (1191 B)
+// [24]: left at that masking are the prologue's pool load (retail loads it before `push esi`), the getter's NONE compare
+// and default store (retail `cmp ax, bx` and a register store from first_person_name's EBX, ours an immediate), the 0x1b
+// bit (retail `shr eax, 0x1b; test al, 1`), and retail's single exit through the result byte at [esp+0x12]; the switch
+// and per-use speed with TEST_FIELD_BIT on the 0x1b test 311 (1188 B, retail's length) [32], that with the short-slot
+// getter 241 (1188 B) [31].
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -4286,7 +4310,7 @@ long function_baf80(long object_index);
 short function_0b67a0(const s_small_index *data);
 long function_1eb020(long tag_index, long body_index, short *material_index);
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index,
-	long variant, long unused, long effect_value, s_location const *location, real scale);
+	long variant, c_type_47f957 material, long effect_value, s_location const *location, real scale);
 extern short g_54e898;
 extern vector3f *g_4687bc;
 
@@ -4344,12 +4368,22 @@ extern vector3f *g_4687bc;
 // the element 23, the component as `s_havok_component const *` 23, 0x0b67a0 given `&component->identifier` 23, the
 // strength clamp as a ternary 23 (all the same code); the impulse as `-shove.i` (unary minus) 76 (1084 B: the -1.0f
 // multiplies become sign flips). No untried natural form is left for the two register choices.
+// m3 lane 1 r95 (fast; base 23: eleven of the lines are branch offsets one byte off from the material's movsx for
+// 0x188180's `long` parameter, BLOCKED-BY 0x188180 as above; the rest is the material in DX stored at once where retail
+// holds it in CX and stores it before `mov ecx, esi`, and the rigid body's data/offset registers). Kept: the definitions
+// read through the typed object/unit definition fields (same code, 23). Tried: the node index as `char` (the nodes'
+// element type) 106 (1102 B); the material default-constructed with the block's locals and given a constructed value
+// at the effect block 23 (same code); 0x1eb020's out parameter as `c_type_47f957 *` (definition and declaration, the
+// call passing `&material_index`; 0x1eb020 still MATCH) 23 (same code); the material built first in the Havok block
+// 45 (1100 B); the node-count test folded into the index test with the element read at each use 27; re-measured the
+// material built after the component lookup 25 (the global load is not hoisted: retail's early CX load is a material
+// built ahead of the lookup, as here; only its register differs).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
 	bool result = true;
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	byte *local_98b918 = g_4e3b44[unit->definition_index & 0xffff].bytes;
+	s_unit_definition *local_98b918 = (s_unit_definition *)g_4e3b44[unit->definition_index & 0xffff].bytes;
 	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
 	long target_index = actions->point_target;
 
@@ -4364,7 +4398,7 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 
 		if (target)
 		{
-			byte *target_definition = g_4e3b44[*(long *)target & 0xffff].bytes;
+			s_object_definition *target_definition = (s_object_definition *)g_4e3b44[*(long *)target & 0xffff].bytes;
 			s_unit_action_unit *root = UNIT_ACTION_UNIT_GET(function_baf80(target_index));
 			vector3f direction = unit->forward;
 			point3f target_center;
@@ -4414,7 +4448,7 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 
 					if (function_30bf0(&shove) != 0.0f)
 					{
-						if (*(long *)(local_98b918 + 0x190) != NONE)
+						if (local_98b918->unit.boarding_melee.obstacle_smash_damage.tag_index != NONE)
 						{
 							s_type_1e6529 damage;
 
@@ -4423,7 +4457,7 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 							damage.unknown84 = 3;
 							damage.scale = 1.0f;
 							object_get_damage_owner(unit_index, &damage.owner);
-							damage.definition_index = *(long *)(local_98b918 + 0x190);
+							damage.definition_index = local_98b918->unit.boarding_melee.obstacle_smash_damage.tag_index;
 							damage.unknown14 = unit_index;
 							damage.position = unit_center;
 							damage.origin = unit_center;
@@ -4433,10 +4467,10 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 							function_d7b80(&damage, actions->point_target, NONE, NONE, NONE, NULL);
 						}
 
-						if (((1 << *local_98b918) & 1) && root->havok_component_index != NONE)
+						if (((1 << *(byte *)local_98b918) & 1) && root->havok_component_index != NONE)
 						{
-							byte *definition = g_4e3b44[unit->definition_index & 0xffff].bytes;
-							long effect_tag_index = *(long *)(g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes + 0x24);
+							s_object_definition *definition = (s_object_definition *)g_4e3b44[unit->definition_index & 0xffff].bytes;
+							long effect_tag_index = *(long *)(g_4e3b44[definition->model_tag_index & 0xffff].bytes + 0x24);
 
 							if (effect_tag_index != NONE)
 							{
@@ -4461,11 +4495,11 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 											impulse.j = shove.j * -1.0f;
 											impulse.k = shove.k * -1.0f;
 											function_1eb020(effect_tag_index, node_index, &material_index.m_index);
-											strength = target_definition[0x1a];
-											if (strength > definition[0x1a])
-												strength = definition[0x1a];
-											function_188180(&unit_center, &impulse, *(long *)(definition + 0x58), unit_index, 0xb, strength,
-												material_index.m_index, (long)g_4687bc, (s_location const *)((byte *)unit + 0x28), 1.0f);
+											strength = target_definition->impact_sound_size;
+											if (strength > definition->impact_sound_size)
+												strength = definition->impact_sound_size;
+											function_188180(&unit_center, &impulse, definition->footstep_effects.tag_index, unit_index, 0xb, strength,
+												material_index, (long)g_4687bc, (s_location const *)((byte *)unit + 0x28), 1.0f);
 										}
 									}
 								}
