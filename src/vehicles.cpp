@@ -4661,6 +4661,9 @@ extern byte g_5107ee;
    marker's downward pitch, the distance and the vehicle's speed; the
    effect's last marker sits between the marker and the hit, aimed along
    the reflected ray */
+// score 2 (was 2): left: the cone call's set-up pair only (ours adds the seed's offset before it takes the forward's
+// address, retail the reverse). The same swap sits at the cone call in 0xf6060 and 0x17c0e0, so it follows the cone
+// function's declaration and convention, not this body: BLOCKED-BY 0x146320 (its file is held).
 // MiniMax B (11-11): no new form, no lower score (41): retail's block holds the middle point's z and y words until
 // after the first products and keeps the colour constant in ECX across them; no source form I tried moves either.
 // MiniMax D (11-11): no lower score (2): the cone call's forward address and its seed address each in a
@@ -4691,7 +4694,7 @@ extern byte g_5107ee;
 // waits on 0x146320's file, and the middle-point copy is still scheduled ahead of the reflection's loads.
 // MiniMax R (11-06): no new form, no lower score (41); a named seed pointer for the cone call compiles
 // the same, and what is left is the cone call's EDI-before-ECX pair and the middle-point, dot and memset order.
-// score 41 (was 41): earlier 160; left: the cone call sets up EDI before ECX (retail ECX first; the same in
+// Earlier 41 (was 41): earlier 160; left: the cone call sets up EDI before ECX (retail ECX first; the same in
 // 0xf6060, BLOCKED-BY 0x146320, whose file is held) and the middle-point copy is scheduled ahead of
 // the reflection's loads (retail stores its z and y words after the first products).
 // Frame 0x8cc agrees; count/marker carriers, strength residence and reflection schedule remain.
@@ -4734,6 +4737,9 @@ extern byte g_5107ee;
 // chained 45; dot declared before middle 41 (same code); the dot written `2.0f * (...)` 41 (same code); the colours
 // stored right after the memset 80 (891 bytes). Retail loads the colour constant into ECX before the zero stores and
 // the middle copy's loads after the dot's; the cone pair stays BLOCKED-BY 0x146320.
+// Round 86 (m3 lane 14, fast): the collision's NONE store after the cone call 19; a const marker pointer 2; the marker
+// pointer declared ahead of the loop 2; the marker through a reference 2; the direction declared ahead of the marker
+// pointer 2 (all four the same code).
 // @retail 0xf62f0
 void __stdcall function_f62f0(long vehicle_index)
 {

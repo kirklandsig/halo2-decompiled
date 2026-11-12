@@ -1292,6 +1292,10 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // guard tests an immediate again); offset and count before a count guard 9. Sibling loops with the draw result in a
 // named bool stored on failure 106, `success = draw(...) && success` 114, `success &= draw(...)` 103; diagnostic: no
 // success flag at all still keeps the zero (106), as retail 0x13a532 does.
+// Round 86 (m3 lane 14, fast): the indexed first loop over a named count with loops 2 and 3 sharing one offset and count
+// declared after loop 1 127 (375 bytes); one element pointer declared at function scope for the current form 1 (same
+// code); the indexed first loop with the later bottom tests written `--count > 0` 125 (381 bytes); the indexed first
+// loop with the four masks declared in one statement 118; the same with a `short` index 138 (373 bytes).
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {
