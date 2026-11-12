@@ -1414,6 +1414,16 @@ bool function_2dba0(long tag, bool alternate, long c, long d, long e, point3f co
 extern bool g_4ba019;
 long function_baf80(long object_index);
 
+// MiniMax H (11-12, second pass): no new form, no lower score (12); retail keeps the definition pointer in EAX and
+// reuses the dying register for the model load where ours routes it through EDX, and in the parent chain retail masks
+// the handle with `and eax, 0xffff` before it reloads g_4e0300 where ours loads the pool first and narrows with
+// movzx. This round took the object, the parent object and the definition through their own element pointers, read
+// both model values inline and spelled the object lookup as byte-pointer arithmetic; every one of them scores 12, so
+// the register roles do not follow from those spellings either.
+// MiniMax H (11-12): no new form, no lower score (12); retail keeps the definition pointer in EAX and reuses the dying
+// register for the model load where ours routes it through EDX, and in the parent chain retail masks the handle with
+// `and eax, 0xffff` before it reloads g_4e0300 where ours loads the pool first and narrows with movzx; this round
+// added the byte-pointer and the offset-in-a-local spellings of the parent lookup and they compile to the same bytes.
 // MiniMax H (11-11): no new form, no lower score (12); retail still masks the parent index with `and eax,0xffff` before it reloads g_4e0300, while ours loads the pool first and truncates with movzx, and the pool load is hoisted above the mask in every spelling tried, so retail's order stays out of reach; the body stands.
 // MiniMax B (11-11): no lower score (12): the dword-masked parent index 22 (the earlier round's form, re-measured),
 // the byte-pointer parent lookup 22 and the inline model read for both chains 12 with the same code; retail's dying
@@ -1779,6 +1789,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 }
 // MiniMax I (11-11): no new form, no lower score (193): the body is 20 bytes shorter than retail's 812; the known form that reaches 177 raises 0x2e9e0 to 573, and 0x2e9e0's 492 body is tuned against the callee this one calls, so the two cannot be moved apart.
 
+// MiniMax H (11-12): no new form, no lower score (193); the three cross terms' order and the place of the case 1
+// reference copy still differ, and the helper forms that reach 177 and 182 still raise the caller to 573, so the body
+// stays as it is.
 // score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
 // MiniMax B (11-11): no new form, no lower score (193): the helper forms that reach 177 and 182 still raise the
 // caller to 573, so the body stays as it is.
@@ -2655,6 +2668,9 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
+// MiniMax H (11-12): no new form, no lower score (170); retail keeps the raw current length in its own slot at +0xc
+// and the pinned value at +4, while ours reuses one slot for both, and the later homes (the dot's float, the axis)
+// still take the other register roles.
 // MiniMax S (11-11): no new form, no lower score (170); retail keeps the raw current length in its own slot at +0xc and the pinned value at +4, while ours reuses one slot for both, and the later homes (the dot's float, the sine at +8, the angle and the cosine at +0xc) follow from that; naming the raw length, spelling the clamp as if/else and testing the guard on the raw all measure 251-252 because a named local changes the x87 shape (fst instead of fstp) and the compare. This round traced the arccosine: retail re-reads the dot as a float (`fld dword ptr [esp+0xc]`, the shape a call of acos with a float argument takes in our own build too), while under /GL our acosf and fabsf widen to their double forms and drag the dot's double copy (and with it the angle, sine and cosine homes) along; sinf and cosf keep their float form, and no source spelling recovers the float load.
 // score 170 (was 170): r136 lane 7 (fast with 0x24590/0x30bf0 in the image): ours keeps a double copy of the dot
 // (`fst qword`) for acos where retail re-reads the float; `acos((double)dot)` 170, `fabs((double)dot)` 170,
@@ -2910,6 +2926,9 @@ long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output
 s_cached_input_list g_5234e8[4];
 // MiniMax I (11-11): no new form, no lower score (147 in the reduced image, 113 in the full build): the body is 16 bytes shorter than retail's 548 and the first difference is at +0x2; the reduced image's score is inflated because the globals it leaves out are not masked.
 
+// MiniMax H (11-12): no new form, no lower score (113); the frame is still 0x9c against retail's 0xa0 - retail spills
+// the input list and reloads it at the loop top and keeps the total on the stack, the index in EBX and the cursor in
+// EBP, where ours holds the total in EBP.
 // score 113 (was 113): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop top; below).
 // r136 lane 7: the list read once into `s_masked_list *list` 132 plain (fast 136 at 538 bytes, LCS-aligned 68 -> 61);
 // entry/definition/object declared at the loop body's top 147 fast; total declared before view 159 fast; index
@@ -3500,6 +3519,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
+// MiniMax H (11-12): no new form, no lower score (486); the frame is still 0x60 against retail's 0x38 - retail keeps
+// one 12-byte home for the previous camera position and each element's old position, reads the delta from the stored
+// view position and copies the scaled projection inputs into fresh registers in both arms, and those forms shorten
+// the body.
 // MiniMax D (11-11): no new form, no lower score (486).
 // score 486 (was 486): frame 0x60 versus 0x38; retail keeps one 12-byte home for the previous camera position and
 // each element's old position, reads the delta from the stored view position, and copies the scaled projection
