@@ -405,6 +405,9 @@ void *__fastcall function_31bc70(void *arg_0);
 // Indexed transforms 575; indexed source 575; indexed output 573; source-bound 505;
 // output-bound 620; endpoint-array name 1; later frame 1; frame copy 624;
 // source-first advances 1; transform input order 1; y-product first 1.
+// Ascending cursor loop 1; while count test 1; unsigned count 1;
+// nonnegative count 1; aligned load 1; aligned store 1; point by value 1;
+// separate z product 1. All restored.
 // @retail 0x2f3030
 void indexed_2f28b0::function_2f3030(body_2f28f0 const *a, body_2f28f0 const *b, input_2f3030 const *input, results_2f3030 *results)
 {

@@ -78,6 +78,8 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
+// score 382 (was 382; 382 before): earlier 391, 390; frame 0x64 and the node-pointer/group-table roles (EBX/EBP) agree; the selected defaults' homes,
+// point bitmap, endpoint homes and x87 scheduling differ.
 // MiniMax R (11-11): no lower score (382); retail's selected point index is compared as a dword where ours is compared as a word and
 // retail's selected endpoint as a word where ours is compared as a dword, retail's group index is a sign-extended 32-bit value parked in the
 // dead argument slot, and retail's output loop indexes &arg_4->field_30[count] and rebuilds the record address from the group base; taking
@@ -86,8 +88,6 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // the extra spills fall inside the x87 sequences. A permuter run over this body (470 tries in 1212 s) reached
 // 381 in the full image, one line better, but it needs a volatile pointer to the group table and split
 // conditions, and a gain under eight is dropped, so the original body is kept.
-// score 382 (was 382): earlier 391, 390; frame 0x64 and the node-pointer/group-table roles (EBX/EBP) agree; the selected defaults' homes,
-// point bitmap, endpoint homes and x87 scheduling differ.
 // Earlier 391 (was 391; 390 before): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // Earlier 391 (was 391): 390 before; frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // MiniMax C (11-05): no new form, no lower score; retail's three selected-index homes are at [esp+0x44], [esp+0x28] and [esp+0x24] where ours are at [esp+0x40], [esp+0xc] and [esp+0x20]; retail holds the node pointer in ebx and the group table in ebp where we hold them the other way round, and loading the group table before the node pointer scores 397.
@@ -440,6 +440,11 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // natural form left beyond these: the remaining levers (retail's 32-bit group with a separate test and set, short terminal and
 // candidate) are listed above and change the length or need the field read beside a local copy. A scan of include/ for helpers this
 // body writes out found none unlisted (bit_vector, dot3f/length_sq3f, vector3d_from_points3d and distance3d are all above).
+// M3 lane 10 r97 (fast with 0x29e730 MATCH; base 382): nothing kept. Descriptive names for every local (best_group, best_point,
+// best_end_point, found, ... count) 382 (same code: the three defaults stay at +0x40/+0xc/+0x20, retail +0x44/+0x28/+0x24, so
+// names do not order these homes); the improvement flag declared before the pass loop 382; the pass's anchor pointer declared
+// before the anchor index 382; the selected group record named before the output loop (direct output kept) 382 (all same
+// code); the output step as an if/else increment/decrement 389.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
