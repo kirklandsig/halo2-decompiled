@@ -419,6 +419,7 @@ bool g_47f05b;
 // Round 155 (m3 lane 8): retail 0x146b80 (same constructor, base store dropped) stores the fixed base's count before
 // its buffer and size; retail here keeps declaration order and keeps the store, so the two inlined copies differ in
 // scheduling, not in source. No untried form on either side; body unchanged.
+// MiniMax A (11-12): no new form, no lower score (34); the base vtable store still comes from the shared constructor in include/unknown_146a20.h, which this lane may not edit (BLOCKED-BY), and the successful arm still reloads the backing store.
 // @retail 0x146a20
 void function_146a20(void)
 {

@@ -2143,6 +2143,7 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // takes the new frame slot and colour A the dead `unknown` home, retail the reverse; the tint spills); the first with both
 // queries in the call's arguments 187 (568 B). Round 117's volatile-parameter diagnostics stand as the cause: retail splits
 // the system's live range (ESI to the 0x1751d0 call, then its home), which no non-volatile form here reproduces.
+// MiniMax A (11-12): no new form, no lower score (128); the gap starts in the prologue (frame 0x40 against retail's 0x44) and in the order of the 0x175180/0x1751d0/0x137bd0 calls, so it needs a body rewrite rather than a local spelling.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
