@@ -314,6 +314,8 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
+// MiniMax I (11-11): no new form, no lower score (36): the special arm still comes before the kind arm in the layout where retail puts the kind arm first, our element address is a scaled index added to the base where retail multiplies into eax and adds the base, and 0x221810 still has to stay out of line, which needs a change in src/unknown_221490.cpp.
+// MiniMax D (11-11): no new form, no lower score (36): still BLOCKED-BY 0x221810, the getter in src/unknown_221490.cpp that this lane may not edit and that LTCG inlines here.
 // MiniMax S (11-10): no new form, no lower score (36): the special arm still comes before the kind arm in the layout where retail puts the kind arm first, and our element address is a scaled index added to the base where retail keeps the scaled product in EAX and adds the base to it.
 // MiniMax A (11-10): no new form, no lower score (36): retail keeps the sound-class lookup 0x221810
 // out of line - it is a one-line wrapper in src/unknown_221490.cpp - and lays the blocks special
@@ -334,6 +336,9 @@ void function_125a90(long value);
 // MiniMax lane E (11-01): no new form, no lower score; the named-condition form that gives retail's
 // block order still needs 0x221810 kept out of line.
 // MiniMax C (11-08): no new form, no lower score.
+// MiniMax G (11-12): no new form tried this round, no lower score (36): the element address is still built with an
+// imul and an add where retail multiplies into eax and forms the address with a lea; a probe shows no pointer
+// arithmetic spelling of that form in this compiler.
 // score 36 (was 36): the address of the record is built here with an imul
 // into ESI and an add; retail multiplies into EAX and forms the address with a
 // lea, so the type byte that is tested afterwards is compared in another value.

@@ -393,6 +393,8 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // score 43 (was 43; 43 at r76; before r98 was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's. Left: case 3's
 // arms are laid out none-first (retail selected-first, about 22 lines), the first cross's a.k * b.i and average.i load a first
 // (retail b.i first), both dots sum k, j, i (retail i, k, j) and the inlined 0x1201a0 tail loads j first (retail copies inv first).
+// MiniMax D (11-11): no lower score (43): the permuter over the case arms and the dot products found nothing better in its
+// time; re-laying the arms the way retail has them breaks the tail that the two selected arms share, so the body stands.
 // Round 219 (lane 3; fast, plain for the kept form): case 3's arms swapped (`selected == NONE` first), the existing cross3f_staged
 // in both selected arms and direct `*out = *a` / `*out = average` copies 43 (kept; each alone or in pairs 58-199). On that body:
 // case 3 selected-first again with a `break` 178; `if (selected == NONE) { copy; break; }` 43; case 3 through the existing
@@ -720,6 +722,9 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 }
 
 // score 163 (was 163; 163 at r76; 162 with the one-use settings copy dropped, not kept): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
+// MiniMax H (11-11): no new form, no lower score (163); the state dot still takes its registers from XMM4-6 where retail uses
+// XMM5-7, and the rotation block still schedules its products differently.
+// score 163 (was 163; 162 with the one-use settings copy dropped, not kept): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
 // MiniMax R (11-06): no new form, no lower score (163); a compile-only probe of the same three-term float sum
 // gives retail's (k + j) + i order when the three products have fresh component nodes, so the
 // state dot's shared ground-normal loads cannot reach that order from the forms the note below records.
@@ -1311,6 +1316,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // desired reused as the bounded copy (diagnostic) 514 (general delta takes 0x2c but every other slot moves);
 // vector3f_scale into delta, then `delta.i -= current->i` per row 351 (3053); on the first-arm form, the general
 // arm's k row as `limited.k + current->k` 346 (same code: the sum still commutes into xmm2).
+// MiniMax S (11-11): no new form, no lower score (347): the entry block still extracts the damping bit into ECX
+// where retail uses EDX and is one `mov ecx, eax` short, retail stores the gravity byte before its `lea ebp` where
+// ours stores it after, and the two cross products that take their operands the other way round belong to the
+// shared contact_cross helper, which nine matched functions in this file use.
 // MiniMax S (11-10): no new form, no lower score (347): the entry block still extracts the damping bit into ECX where
 // retail uses EDX and is one `mov ecx, eax` short, and retail stores the gravity byte before its `lea ebp` where ours
 // stores it after. The recorded flag-order sweep (412-500) and the flag widths recorded above never beat this body.
@@ -1606,6 +1615,8 @@ PRIVATE inline real contact_normalize(vector3f *vector)
     return length;
 }
 
+// MiniMax H (11-11): no new form, no lower score (413); retail keeps the entry zero in a persistent XMM6 and puts the accepted
+// count in the dead incoming request slot while ours does the opposite, and the direction components stay in different homes.
 // score 413 (was 413; earlier 418): Frame 0x64 agrees; persistent zero, count/component homes and direction residency remain.
 // Statement walk against retail (r721, b3B): every statement, offset, condition direction, callee, argument, loop and
 // switch shape agrees; the only behaviour differences were float sum groupings, which compile differently for an

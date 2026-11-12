@@ -1589,6 +1589,7 @@ short function_cccd0(long unit_index, short grenade_type, short delta);
 bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
+// MiniMax G (11-12): no new form, no lower score (270): the two initializers swapped give 487 and the output pointer declared first the same code; the argument slots for the actor index and the cs index agree with retail.
 #pragma inline_depth(2)
 // score 270 (was 270; 301 before r88; 301 before): 1848 bytes as retail, with retail's success-test layout (return 0 after the test, the failure block
 // last). Left: arg_0 in ESI and the output in EBP where retail has EBP and ESI (ours holds the point reference across 0x25ab50 at the
@@ -1975,6 +1976,11 @@ void function_b7360(long object_index);
 // After that: local_0 and local_1 through the existing actor_get and cs_get (their bodies were written out here) 270, byte-identical,
 // kept; actor_get alone 270 (same code); case 13's object held as an s_swarm_object pointer (no casts at the two flag stores) 270 (same
 // code); the datum's +0x9c record typed as s_type_c3b527 so case 5's copy needs no cast 270 (same code).
+// T91: complete terminal tail orders 9/20/13, 13/9/20, 13/20/9, 20/9/13,
+// 20/13/9 give 270/287/475/283/475; complete 9/13/20 block before cases
+// 10/5/8 gives 318/287/339. Every entry prefix through notification dispatch
+// is unchanged after addresses are masked. NOT kept: no equality or gain;
+// original complete cases, fallthroughs, inputs, copies and callback restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2382,6 +2388,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// MiniMax S (11-11): no new form, no lower score (479; 474 when only this function's own units are in the
+// reduced image); our body is longer than retail's (eight bytes in that image), so the jump table lands later
+// and every branch after it differs.
 // score 479 (was 479): earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // MiniMax R (11-10): no new form, no lower score.
 // Earlier 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare

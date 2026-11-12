@@ -634,11 +634,42 @@ struct s_device_machine_view
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
+// MiniMax E (11-11): no new form, no lower score (34); retail loads the group's flags as a word sharing the group
+// pointer's EAX (mov ax, [eax+2]) and tests bit 1 then bit 2, ours loads a byte and masks it with 3, and dropping
+// the mask gives retail's word load but moves the group pointer into a pushed ESI; case 0x1200055f's zero store is
+// still missing.
 // score 34 (was 34): group-word load/EAX sharing and velocity-zero join remain;
 // the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
 // retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
 // retail's shifted by one. Plain masks plus the zero store leave only the group pointer's register.
+// MiniMax D (11-11): no new form, no lower score (34); the group's flags have to reach retail's shape (a word
+// load into AX with the element address still in EAX, tested twice on AL) but VC splits the two: a computed
+// flags value frees the address into EAX and narrows the load to a byte with a mask (115), while a plain word
+// copy keeps retail's word load and pushes the address into ESI (122). The address alone never gives the lea
+// plus the word load together - as an index variable with the pool base in a local (53), as a word pointer to
+// the element (120), as an integer address (120) or read through the macro twice (122). Reading the flags
+// after the machine test gives retail's delayed load but the address still lands in ESI, and reading them
+// before it gives the combined address (117); the zero store of case 0x1200055f on top of the committed body
+// is 117, not a gain. A byte cast widened back to a dword to keep the whole word is 120, so it is no better
+// than the byte load with its mask.
+// MiniMax S (11-11): 2 (was 34) with the group's flags read through the device-group macro into a
+// word before the machine test and masked into a byte after it, plus the zero store at the head of
+// case 0x1200055f's velocity block; left are retail's `lea eax, [eax + edx*4]` / `mov ax, [eax + 2]`
+// against our folded `mov ax, [eax + edx*4 + 2]` and the extra `and al, 3`. Tried on top of it, all
+// worse and all reverted: the group as a named pointer with the flags read after the machine test 122
+// (the shape becomes retail's - the address computed before the machine test, the word loaded at the
+// join - but the pointer lands in ESI with a push and a pop where retail keeps the address in EAX),
+// the same through a reference 122, the same with the word read into a named local 122, the element
+// address in a dword local with the word read through it 122, the flags read at each use after the
+// machine test 123 and the flags read in both arms of the machine test 123 (the group base is then
+// loaded late and the index is folded into the load); the permuter was started over the body twice
+// (with and without --fast) and stopped without a result.
+// score 2 (was 34): the group's flags still load through the combined address
+// (`mov ax, [eax + edx*4 + 2]`) where retail computes the address first
+// (`lea eax, [eax + edx*4]`, then `mov ax, [eax + 2]`), and ours still masks the byte
+// with 3, an instruction retail does not have; between the two the code is retail's
+// shifted by one. Plain masks plus the zero store leave only the group pointer's register.
 // MiniMax E (11-10): no new form, no lower score (34); retail loads the group's flags as a word into AX with the
 // group pointer still in EAX and tests bits 1 and 2, ours loads a byte and masks it with 3 - every word form moves
 // the pointer into ESI (120) or folds the index into the load's address (117), and the nested and compared tests
@@ -994,14 +1025,12 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 			function_value = 1.0f;
 		if (device->type == 7 && device->power_group_index != NONE)
 		{
-			s_device_group *group = DEVICE_GROUP_GET(device->power_group_index);
+			word group_flags = DEVICE_GROUP_GET(device->power_group_index)->flags;
 			dword machine_flags = ((s_device_machine_view *)device)->flags;
-			word group_flags;
 
 			if (machine_flags & 0xd)
 				function_value = 1.0f;
-			group_flags = group->flags;
-			dword group_flag_bits = group_flags & 3;
+			byte group_flag_bits = (byte)(group_flags & 3);
 			if ((group_flag_bits & 1) && (group_flag_bits & 2))
 				function_value = 1.0f;
 			if (device->power == 1.0f || (machine_flags & 0x10))
@@ -1025,6 +1054,7 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 	case 0x1200055f:
 		if (device->power_velocity != 0.0f)
 		{
+			function_value = 0.0f;
 			if (device->flags & 8)
 			{
 				if (!(device->flags & 0x20) && !(0.0001f > fabs(device->motion_14c.cruise_velocity)))
@@ -1188,6 +1218,10 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax B (11-12): no new form, no lower score (121): the initial velocity is still stack-passed where retail passes
+// it in xmm6, a whole-program convention the callee sets, so the whole XMM allocation after the entry differs - retail's
+// first float compare is in xmm5 where this build's is in xmm7; the caller's argument registers come from the callee's
+// definition, which this lane may not edit.
 // score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // MiniMax C (11-09): no new form, no lower score (121); the initial velocity is still passed on the stack where
 // retail keeps it in xmm6 and takes five stack floats, so the whole register assignment after the entry differs.
@@ -1621,6 +1655,12 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // Round 75 (m3 lane 14, fast): the animation id through a file-local inline getter in both blocks 2; the time through an
 // inline seconds getter 2; both 2; `adjusted` copy-initialised at its declaration 2; the node index declared before the
 // time 2.
+// Round 172 (m3 lane 6, fast): a 600 s annealing permuter run (its full-image baseline alone took 924 s): 12 tries, none
+// below 2; `time - step` named before the step test 9; the animation id read from the channel at each of the three
+// sample calls (no local) 203. Same code: `time /= 30.0f` on the frame position; a `c_animation_channel const &`
+// for the animation id and the frame position. On round 174's render-model lead: the render model read through the tag
+// table at each of the five calls (no local) 532 (1744 bytes); computed inside the 0xbf5a0 block 424 (1681); the model's
+// render model index in a local used at its test and the lookup 317.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
@@ -1829,6 +1869,27 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
+// MiniMax B (11-12) lead 61, NOT kept (coordinator: the one-use rate local is match-only; without it 382): the 11-11 lane's shape measures 61 here at retail's 1495 bytes (plain check
+// too), with 0x108600 and 0x108670 unchanged at 31 and 13 - the definition pointer's volatile dropped (retail reads the
+// definition once), the acceleration and the speed each one product added into a running value, and the tick rate read
+// into a local just before the power 0x11eed0 call; the rate local used by both reads gives 289 and the volatile kept
+// gives 354, so the gain rests on that one-use local (coordinator 11-11 wanted this form match-only).
+// MiniMax b (11-11): 58 (was 250), NOT kept (coordinator 11-11: needs the one-use `rate` local, match-only; without it 380; body at 250): the acceleration and the speed are each one product added into the
+// running value (the 0xcc term opens the acceleration, the 0xc4 term opens the speed, and the 0xd4 and 0xd0
+// terms are added into them), so both sums keep retail's operand order and its registers; the definition
+// pointer's `volatile` is dropped and the rate is read into a local just before the power 0x11eed0 call;
+// 1495 bytes, as retail. Left: the position arm's channel pointer (ours in ECX with a copy into ESI, retail's
+// in ESI), the state slot read into EAX where retail reads it into ECX, and the order in which the position
+// 0x11eed0 and 0x1c6920 calls set their arguments up.
+// MiniMax G (11-11): no new form, no lower score (250); the frame 0x20 and the state test agree, but the index and index * 12
+// sit in EDI/ESI where retail has ESI/EBX, the result stays in DL where retail keeps a stack byte, and the definition is re-read
+// where retail reads it once; the rate local, the clamp as an if/else, the channel pointer and the position arm's earlier
+// previous-value read all give the same code or a higher score.
+// MiniMax C (11-11): no new form, no lower score (250): the full check counts the same as the reduced
+// one (250 at 1479 bytes against retail's 1495), so the lead in the note below (dropping the definition
+// pointer's volatile, a rate local just before the power call, `bool result = false;` after the
+// definition and the 0xb3 byte as `<= 0`) is three points and stays under the eight-point gate; the
+// index and index * 12 still sit in EDI/ESI where retail has ESI/EBX, and the result stays in DL.
 // score 250 (was 250): the same body measured 248 at lane 14 round 62 and 250 in round 79's baseline. Earlier (248, was 285):
 // frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // where retail has ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads.

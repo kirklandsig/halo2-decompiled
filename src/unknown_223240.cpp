@@ -327,6 +327,9 @@ void function_2232a0(void)
 // count after the loop 170 (aligned 108, as round 106's while); the loop-top clear plus default-first conditional in
 // that for 118 (masked 30, round 62's default-last form: retail's pretest, counter/count/record in EBP/EBX/EDI and the
 // source in ECX). BLOCKED-BY 0x2b5d0 and 0x16f3a0's noinline declaration.
+// MiniMax A (11-12, run 62): no new form, no lower score (90); a pretested `for` over the view count grows the
+// body to 589 bytes (150), and the tail is the 0x2b5d0 stub's inline body where retail calls the real function
+// (BLOCKED-BY src/stubs/lane_k.cpp).
 // @retail 0x2234e0
 void function_2234e0(void)
 {

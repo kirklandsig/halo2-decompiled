@@ -574,9 +574,14 @@ real magnitude3d(vector3f const *v);
 bool g_46fcc4 = true;
 bool g_51e9bc;
 
-// score 20 (was 20; 49 before r92; NOT kept 12 below; before r98 was 118; r101, r103 and r76 unchanged): at retail's 1077 bytes; the projection dot sums j + k
-// where retail sums k + j, its i term loads velocity.i first (retail copies direction.i and multiplies from memory), and
-// velocity.i before the movement call multiplies limits.i by the control field from memory (retail loads the field first).
+// MiniMax G (11-12) lead 12, NOT kept (coordinator): it needs the half-scale factors in one-use locals (scale_x/y/z,
+// match-only); with them written inline the same body is 33 (plain, 1081 bytes; fast mis-measures this function at 303). The lead as written: the jitter accumulated in a vector3f filled in place (the on/off values into offset.i/j/k, the named sign
+// and half-scale values multiplied in, the existing 0.2 vector3f_scale, the per-component limits products) 20 -> 12 at retail's
+// length: the offset packs into the dead limits home, which gives retail's spill slots; the projection dot's term order and its
+// i term's operand order still differ.
+// score 20 (was 20; 49 before r92; NOT kept 12 below; before r98 was 118; r101, r103 and r76 unchanged): 1078/1077 bytes; the projection dot sums j + k
+// where retail sums k + j, its i term loads velocity.i first (retail copies direction.i and multiplies from memory).
+// Earlier: velocity.i before the movement call multiplies limits.i by the control field from memory (retail loads the field first).
 // Earlier (20): the jitter spilled y and the z on/off value to the parameter homes (+0x2c/+0x30) where retail uses the limits'
 // +0x20/+0x24, and the dot's i term made the body one byte longer.
 // MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
@@ -918,6 +923,9 @@ bool g_51e9bc;
 // private dot helper taking both vectors by value 210 (1103), the velocity by pointer and the direction by value 185 (1130), by
 // reference either argument order 20/20 (same code as dot3f); `direction` declared before `movement`, after it or after `angular`
 // (assigned at the copy) 20 each (same code); re-measured: the dot written out i, j, k 139 (1093).
+// T90: Existing shared dot traversed by long/dword/short/word components, counted
+// cursors, array end, ordinal product and cursor product: 134/134/150/150/129/178/130/131.
+// NOT kept: All regress; projection ownership and native jitter spill reuse remain. Original shared dot and complete body restored.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -1367,6 +1375,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // body: the rotated copy written per component, or as an aggregate initializer from the three fields, 192/192 (1388); the velocity
 // rows through the existing vector3f_scale(&movement, scale, &state->velocity) 166 (1382 bytes, the stores are unchanged and the
 // rotation recolours), with `state->scale` passed directly 166, on lane 1 r83's single-exit lead (re-measured 114 [68/43]) 167.
+// MiniMax D (11-11): no new form, no lower score (114): the first difference is still inside the inlined
+// `rotate_direction`, whose definition is in another file, and the moved-away flag spelling that the notes above record
+// at 92 needs a flag set in a test, so it is not keepable.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

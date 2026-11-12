@@ -434,6 +434,9 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // after the bit test the product moves to ECX and the flags to EDX (retail: product EDX, flags EAX, ours EAX/ECX), so
 // the seat dies at the `movsx` in both and retail's scratch rotation sits one step past ours there; rounds 55 and 159 found
 // the same child-loop rotation under the held 0xd0590 order, so the missing step is not the parent's register alone.
+// MiniMax D (11-11): no new form, no lower score (118): the getter still loads the table global into EAX where retail
+// loads it into ECX, and that one byte moves every later jump target; the getter as a member of the table, with the
+// count in a local, with the global tested twice, written out at the call site or left out of line all give the same 118.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

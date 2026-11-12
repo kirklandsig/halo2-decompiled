@@ -155,6 +155,13 @@ void function_22fba9(c_class_1473c9 *screen)
 // shape) 23; the model pointer declared before its loop 23; a `*const` screen parameter 23 (all same code but the
 // first); permuter (600 s, 55 tries) best 21 instructions, its baseline. The model loop's copy is the normal shape
 // (matched 0x22facd copies the screen into ECX too); only retail's last loop reads [esi+0x34] directly.
+// Round 85 (m3 lane 14, fast): the text helper 0x22f9bf taking a short index 23 (same code); the model helper 0x22fa5b as
+// a member of the base widget (`this` the parent) 23, this function as a `__stdcall` member of the screen 23 (both same code,
+// every caller still matches); one widget local shared by the five loops 23 (same code); the model loop's test as
+// `pane->model_count > i` 23 (only the compare flips). Diagnostics: without the model loop's value0a store the model needs
+// no callee-saved register and the screen is read as [esi+0x34] directly (54); one more loop after the model loop turns the
+// model loop's reset into `mov` but keeps the EAX copy, so in our build the `and` comes from being the last loop and the copy
+// from the model living in EDI.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

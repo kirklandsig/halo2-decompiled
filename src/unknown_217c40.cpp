@@ -190,6 +190,14 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // helper taking the scale as an argument 537 (1996 bytes, 1.0 first); named float coordinates with
 // `x * scale * (1.0f / maximum)` 581 (2036 bytes). Diagnostic (reverted): the scale used in a separate function earlier
 // in this file 2, so the order is set inside this function after inlining and the reciprocal rewrite, not by the module.
+// Round 74 (m3 lane 2, fast, on the fabs-at-each-use 2 form): reciprocal as `scale / maximum` with one product per
+// coordinate 588 (1972 bytes, a real divss); the clamp helper defined after the function 2 (same code, so not a per-file
+// constant order); scaled axes stored first and normalized after the trig 562 (1988 bytes; re-measured, as round 97's
+// scaled stick locals); the reciprocal taken in each arm of the maximum 458; a `real const` coordinate scale at the loop
+// top 2 (same code; re-measured, as round 143's named scale local). Map: our 1.0 comes from the D3D library's state
+// member and the scale from src/unknown_157450.cpp; retail's scale lies in the Bink library's data. Then: atan2 over
+// coordinates already scaled by 1/32767 (named, products from them) 571 (1972 bytes); the raw coordinates as a named
+// point2f for atan2 and the products 554 (1996 bytes).
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

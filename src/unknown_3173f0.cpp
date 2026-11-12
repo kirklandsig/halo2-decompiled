@@ -155,20 +155,9 @@ void collector_3173f0::function_3173f0(pair_30d870 *added, long added_count, pai
 
 __forceinline void timer_add_3175e0(char const *label)
 {
-	timer_mark_2ebc80 *mark = (timer_mark_2ebc80 *)g_480154;
-	bool const room = (char *)mark < g_480158;
+	bool const room = g_480154 < g_480158;
 	if (room)
-	{
-		mark->label = label;
-		unsigned long time;
-		__asm
-		{
-			rdtsc
-			mov time, eax
-		}
-		mark->time = time;
-		g_480154 = (char *)(mark + 1);
-	}
+		timer_append_2ebc80(label);
 }
 
 // a box around a member's shape
@@ -249,7 +238,8 @@ void narrow_phase_317c00::function_3175e0(void const *step, void const *input)
 	bounds_3175e0 *bounds = (bounds_3175e0 *)stack_allocate_30d740(extent_bytes);
 	long const handles_size = (count * sizeof(handle_3175e0 *) + 15) & ~15;
 	handle_3175e0 **handles = (handle_3175e0 **)stack_allocate_30d740(handles_size);
-	float const tolerance = world->tolerance->distance * 0.5f;
+	tolerance_3173f0 const *world_tolerance = world->tolerance;
+	float const tolerance = world_tolerance->distance * 0.5f;
 	timer_add_3175e0("StCalcAabbs");
 	{
 		bounds_3175e0 *box = bounds;
@@ -266,12 +256,14 @@ void narrow_phase_317c00::function_3175e0(void const *step, void const *input)
 		}
 	}
 	timer_add_3175e0("St3AxisSweep");
-	sweep->sweep(handles, bounds, member_count, &added, &removed);
+	long const sweep_count = member_count;
+	sweep->sweep(handles, bounds, sweep_count, &added, &removed);
 	timer_add_3175e0("StExamine");
-	if (pending_count > 0)
+	long const pending_size = pending_count;
+	if (pending_size > 0)
 	{
 		long const old = added.size;
-		long const size = old + pending_count;
+		long const size = old + pending_size;
 		long capacity = added.capacity_and_flags & 0x7fffffff;
 		if (capacity < size)
 		{
