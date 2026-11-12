@@ -200,6 +200,9 @@ __forceinline void report_removed_2e29b0(class_2e1090 *sweep, long *owner, unsig
 // reloads the cell pointer into edx where retail uses ecx, and in the pair
 // scan the word pointer and the scanned box take ecx and edx the other way
 // round.
+// Existing XOR helper 257; existing AND helper 198; indexed held list 95;
+// count-based descent 205; indexed outer scan 279; branch-local pair 77;
+// consumed bit cursor 77; read-only cell-element pointer 77. All restored.
 // @retail 0x2e24b0
 void class_2e1090::function_2e24b0(long *owner, bounds_2e0020 const *bounds, pairs_2e1090 *pairs)
 {
