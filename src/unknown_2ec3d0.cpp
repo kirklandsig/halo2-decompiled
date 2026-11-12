@@ -20,6 +20,11 @@ public:
 	virtual void refresh(child_description_2edd00 const *child, typed_2edd00 **other, context_2edd00 const *context) {}
 };
 
+// score 141 (was 141): Frame 0x134 agrees; the saved object and search
+// result use different registers, with an extra array address kept across calls.
+// Decreasing count 141; one search exit 152; added-entry reference 164;
+// buffer declared first 141; stored key inputs 141; existing branch first 146;
+// direct table read 147; member copies 166; loop-index search result 166.
 // @retail 0x2ec3d0
 void keyed_list_2ec680::function_2ec3d0(description_2edd00 const *description, typed_2edd00 **other, context_2edd00 const *context)
 {

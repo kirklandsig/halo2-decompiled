@@ -198,6 +198,18 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // member and the scale from src/unknown_157450.cpp; retail's scale lies in the Bink library's data. Then: atan2 over
 // coordinates already scaled by 1/32767 (named, products from them) 571 (1972 bytes); the raw coordinates as a named
 // point2f for atan2 and the products 554 (1996 bytes).
+// Round 115 (m3 lane 9, fast, all on the fabs-at-each-use 2 form, which the fast image reproduces): the scaled
+// coordinate passed to a two-argument forceinline boost helper that holds the reciprocal (`value * (1.0f / maximum)`
+// or `value / maximum`) 20/20 (1.0 still first; the product becomes inverse * coordinate); the scaled x named ahead of
+// the reciprocal, y in place 557 (1988 bytes: computed ahead of the trig), the same after a named maximum 6 (the scale
+// product then precedes the inverse product in both sticks, 1.0 still first: a one-use value is forwarded to its use,
+// behind the reciprocal); the reciprocal written in place in both products, as `coordinate * (1.0f / maximum) * scale`,
+// `scale * (coordinate * (1.0f / maximum))` or `(1.0f / maximum) * coordinate * scale` 20/20/20, as
+// `coordinate * ((1.0f / maximum) * scale)` 578 (1972 bytes); the reciprocal assigned inside the x product, after the
+// coordinate 2, after `coordinate * scale` 2, after `scale * coordinate` 2, the last with y as `coordinate * inverse *
+// scale` 2 (all same code); the reciprocal, or only the maximum, through a two-argument forceinline helper 2/2 (same
+// code); the clamp as a macro 2 (same code); the numerator as the integer 1, 2 (same code), as a double 1.0, 561 (2044
+// bytes, a double division). In every form the 1.0 of the first reciprocal is reached before the scale.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

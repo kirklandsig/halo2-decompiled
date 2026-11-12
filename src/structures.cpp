@@ -936,6 +936,7 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // to main and the full diff is in build/r162/held-14a8e0.patch.
 // Round 109 (m3 lane 16): listing re-read, still only 0x11e800's four argument registers; the held r162 reorder re-measured on the
 // current base (fast, restored at once): MATCH here, 0x11e800 129 -> 126, 0x14ac60 172 -> 172. Still HELD, BLOCKED-BY 0x11e800.
+// Round 173 (m3 lane 6): listing re-read (fast 4), still only 0x11e800's four argument registers; BLOCKED-BY 0x11e800.
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)

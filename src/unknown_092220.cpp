@@ -270,6 +270,12 @@ static __forceinline long function_925c2()
 // Native procedure record reference 14; signed/unsigned full-width kind 129/129;
 // request/task/both workspaces before result 14/14/14; named submitted count 14;
 // conditional report-flag bit stores 63.
+// MiniMax B (11-12): no new form, no lower score (14); the user flags still load into eax where retail loads
+// them into the dying pointer register ecx; the record walked by a cursor pointer, the flags read through a
+// dword index, the inverted guard with an empty body, the flags in an unsigned local, the flags split from the
+// pointer, the record bound by reference, the kind read from the record directly, the flags in a
+// function-scope local, the early return out of the loop and the break with a status flag
+// (14, 14, 15, 14, 14, 14, 14, 14, 14, 98, 14) leave the code as it was.
 // MiniMax B (11-11): no new form, no lower score (14); the user flags still load into eax where retail loads them
 // into the dying pointer register ecx, and the permuter on this function was stopped at its time limit without a
 // variant that beat it.
