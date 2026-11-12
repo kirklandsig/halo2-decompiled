@@ -361,6 +361,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // early return 52, a successor local with early returns 49, an early `return false` then a do-while 55, a found pointer with
 // break 51 (133 bytes).
 // MiniMax A (11-11): no new form, no lower score (43); this round's new forms measured 43 or 71: the exclusion mask as a variable of its own, declared before or inside the loop (43), and the three loop forms that read the iterator in the loop (71).
+// MiniMax G (11-11): no new form, no lower score (43); retail reads the index straight into esi and scales it in
+// place, keeps the successor in ebx and hoists the & 3 mask into al before the loop, while ours copies the index
+// into esi, keeps the successor in edx and leaves the mask as an immediate; giving the successor its own local
+// moves it to ecx instead of ebx (51, and 52 with the loop left on a none successor), and passing the mask in at
+// the call site does not hoist it either.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

@@ -865,6 +865,11 @@ s_node_view *function_26be30(s_iterator *iterator);
 // `count > current` 4. Next: current declared at its first use above the admission loop. Matched functions
 // usually reload after a branch in reverse order of their entry stores, which is retail's order here; ours
 // reloads in store order, as 0x1c50c0 and 0x2b9b10 do, where no form has moved it yet.
+// Round 88: current declared first but initialized second 292; original declarations with current
+// initialized first 292; current begun at admission 270/1123; original declarations and chained zeros
+// 292; ordinary while fill/release 292/292; candidate ordinal name/both ordinal names 292/292.
+// These are reduced-image scores (unchanged 292/1136 versus plain 2/1120). NOT kept: the late
+// current changes the frame/length; other forms tie or exchange the entry stores with the reloads.
 // @retail 0x263210
 void __stdcall function_263210(long actor_index)
 {

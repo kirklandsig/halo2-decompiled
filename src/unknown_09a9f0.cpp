@@ -734,6 +734,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // value call on the local index 65; the flagged arm `{ entity->object_index = NONE; return result; }` with the join
 // store kept, byte 53, bool 49 (184 B: the flagged store is then retail's, but inline and its return folds to `xor al,
 // al`), long 57, nested 49 (same code); that without the join store 75 (160 B, the header address shared again).
+// MiniMax G (11-11): no new form, no lower score (49); retail reloads the table's data pointer and recomputes the
+// scaled index between the flag test and the object read, which needs a store between them - the only spellings
+// that add one either store the entity's index a second time (32, a redundant store) or clear it up front and
+// store it in the valid arm (71, and 67 with the index narrowed), so our header address stays shared and the
+// result stays in ebp where retail keeps it in bl.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1096,6 +1101,10 @@ bool c_projectile_type::v8(long a, long b)
 // helper returning the bit or 0, with `result |=` at each, 56 (190 bytes) with the word read and 58 (192) with the mask (the
 // zero arm is not threaded); the 0xa5e70 call through an inline (object index, flags, update) forwarding helper with the mask
 // 12, passing the masked flags 12, with the word read 5. The tie is not moved by the call's argument webs.
+// Round 189 (m3 lane 4, fast, 0xa5e70 and the sibling v27s kept): the volatile definition copy declared after object
+// and flags (mask) 51; `(word)(index & 0xffff)` 5 (same code as the word read: the narrowing conversion gives object
+// ESI); the call's mask as `(word)(flags & 0x3ff)` with the index masked 12; `(dword)index % 0x10000` 12; the group
+// value through the existing cross-file inline device_group_get at the compare and the store (mask) 15.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

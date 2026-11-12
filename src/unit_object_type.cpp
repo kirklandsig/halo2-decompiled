@@ -6764,7 +6764,11 @@ public:
    counting a held weapon in a multiplayer engine mode 7 with option 0x20,
    for the dropped weapon of a player on a flagged team; retail expands both
    counts in place */
-// score 530 (was 1032): Round 2 of #1049. The draft's logic matched retail statement by statement; the drop came from
+// score 492 (was 530): Frame 0x3c and length 1785 now agree. Early object/tag
+// spills, magazine flags, later register/slot choices and the expanded
+// 0x106030 call remain. The indexed magazine pass gives native pointer steps
+// and a countdown, confirmed by the ordinary whole-file check.
+// Earlier 530 from 1032: Round 2 of #1049. The draft's logic agreed; the drop came from
 // shape. Retail expands the round counts in place (the draft called a static helper): the slot loop's magazine loop
 // reloads the unit and the definition count each pass and calls 0x106030 per magazine, the held-weapon loop reads
 // the engine mode/team words each pass; the three flag tests
@@ -6781,6 +6785,13 @@ public:
 // short-array index, branch order swapped in the magazine loop, magazine pointer arithmetic 482 each; `break`
 // replaced by `return result` inside and `return false` after the loop 490 (separate early epilogue); helper static
 // function for both loops 780-1032.
+// Round 87: the first magazine pass uses its ordinary index for both real
+// strides, which compile to pointer steps and a countdown as in retail.
+// Body pointer steps 530; slot indexing 530; tag-pointer rename 530;
+// shared initial headers 512/1809 (NOT kept: mixed cached/direct pool reads);
+// indexed magazines 492/1785; per-arm held sums 510/1809; direct empty answer
+// 506/1767; library zero initialization 530. NOT kept: the per-arm held sums
+// and direct empty answer; the indexed pass is confirmed by the plain check.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
@@ -6806,11 +6817,11 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 			byte *magazine = *(byte **)(local_67e06b + 0x2c4) + 8;
 			short *state = (short *)((byte *)weapon + 0x22a);
 
-			for (long i = magazine_count; i != 0; i--, magazine += 0x5c, state += 8)
+			for (long i = 0; i < magazine_count; i++)
 			{
-				if (*(short *)magazine > 0)
+				if (*(short *)(magazine + i * 0x5c) > 0)
 				{
-					if (state[1] == 0 && state[0] == 0)
+					if (state[i * 8 + 1] == 0 && state[i * 8] == 0)
 					{
 						empty = true;
 					}

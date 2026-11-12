@@ -1183,6 +1183,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // scope 535 (same code); face_count declared before secondary_count 535 (retail's store order for the two counts,
 // slots unchanged); the first plane at function scope 535; the selected plane alone 535; start/end alone 535 (all
 // the same frame homes: scope and declaration order do not move a slot in this body).
+// MiniMax H (11-11): no new form, no lower score (535 plain, 834 on the reduced image): the frame is 0x21d8 against
+// retail's 0x21dc and the definition pointer, the count and the zeroed word still sit in other slots than retail's,
+// so every row after the first loop stays shifted.
 // MiniMax D (11-10): no new form, no lower score: the definition pointer, the count and the zeroed word
 // still sit in other frame slots than retail's (0x94, 0x20 and 0x54 against our 0xb4, 0x18 and 0x4c).
 // Round 187 (m3 lane 4, plain): the edge walk started from `first_edge` (edge_index copied from it) 535 (same code); the
