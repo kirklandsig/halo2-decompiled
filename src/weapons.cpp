@@ -1946,6 +1946,10 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 }
 /* takes rounds from a weapon's reserve for a magazine: first its own, then
    the reserves of the holder's other weapons of the same kind */
+// MiniMax B (11-12): no new form, no lower score (83): the difference is register roles only (retail keeps
+// the magazine index in esi and the available/taken value in edi, ours the other way round, and retail holds
+// the pool global in ebp where ours reloads it per slot); the pool-in-ebp shape needs the pool global to be
+// known not to change across 0x106030 -> 0x159dd0, which lives in another lane's file.
 // MiniMax G (11-10): no new form, no lower score (83).
 // score 83 (was 107, fast): the slot test reads `weapon->definition_index == other->definition_index`, the slot take
 // reads `magazine->rounds_unloaded` at each use (no short local), and the first block's `unloaded` is a long. Found
@@ -3222,6 +3226,11 @@ struct s_ammo_conversion_entry
     long definition_index;
 };
 
+// MiniMax B (11-12): no new form, no lower score (190): the difference is in the homes and the
+// carriers only (retail holds the destination weapon in ebp and spills it around the conversion
+// scan, keeps the other weapon's definition index in edi, and stores the acquisition flag with
+// retail's polarity); flipping the flag's sense compiles worse, and the one lower permuter form
+// swaps two calls' arguments, which contradicts their declarations.
 // MiniMax G (11-10): no new form, no lower score (190).
 // MiniMax A (11-04): no new form, no lower score; the acquisition flag with retail's polarity 202, the
 // conversion path's flag before its minimum 205, the transfer's second minimum as a long 191.
