@@ -1171,6 +1171,7 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
+// MiniMax H (11-11): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c from the first instruction, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack slots where ours holds them in registers.
 // MiniMax D (11-11): no new form, no lower score (824); the frame is still 0x154 against retail's 0x12c from the
 // first instruction, so every stack home sits 0x28 further out, and retail still extracts the flag bits in place
 // through a byte field view and folds the 0x20000000 bit into the field in memory where ours copies the word

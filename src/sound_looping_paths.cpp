@@ -162,6 +162,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // address of the global, both ruled out, and the global's definition and second declaration are outside this
 // file; the two pool scans' iterator walks, the gains array sharing a slot with the later existing list and
 // the zeroed count's home remain the other differences.
+// MiniMax H (11-11): no new form, no lower score (866); the prologue still zeroes a different register than retail (ours ebp, retail esi, which retail also pushes before the zeroing), and the zeroed count's home differs (esp+0x24 here, esp+0x88 in retail), so every frame offset after it differs.
 // MiniMax S (11-11): no new form, no lower score (866); the prologue still zeroes a different register than
 // retail (ours ebp, retail esi, which retail also pushes before the zeroing), and the zeroed count's home differs
 // (esp+0x24 here, esp+0x88 in retail), so every frame offset after it differs.
