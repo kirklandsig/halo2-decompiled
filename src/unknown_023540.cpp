@@ -3773,6 +3773,15 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // depth-bias write as the matched siblings write it (global store, then D3DDevice_SetRenderState) 9, in the
 // skip-state arm 9, both 9.
 // Permuter (600 s, 46 tries on the reduced image): best 9.
+// Round 96 (m3 lane 10; fast, and a compile-only /FAs harness of the file, which reproduces the reload pairs but
+// not the shift): one function-scope gain and one function-scope upper/lower pair shared by the modes 9; the two
+// colours declared at function scope 9; exponent declared at function scope 9; the inverse span declared at function
+// scope 9 (round 132's form, re-measured); `gain = gain / (...)` 9; `exponent <= 3 ? 0 : 0x20` 9; `1L << exponent` 9;
+// `exponent < 1 ? 1.0f : 2.0f` 178. Harness only (both pairs still constant first): the shift selector macro instead
+// of the force-inline helper, `offset * gain`, `256.0f * inverse_span`, `0.5f * inverse_span`, `(real)1 /`, the
+// selected gain alone shared. FILTER_PIN as a
+// force-inline function flips both pairs to span first, but only because mode one's colour clamps then read each
+// field once (other code); on the two gain clamps alone the pairs stay constant first in other registers.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
