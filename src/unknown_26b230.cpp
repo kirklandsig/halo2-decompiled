@@ -1839,15 +1839,15 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// score 87 (was 87): round 112 (m3 lane 12) note at the end. Retail hoists the walk's pool load into ebx and keeps the selection
+// only on the stack (stored from esi, best stored in a tail shared with the initialisation);
+// ours keeps the pool in memory and the selection in edi.
 // MiniMax A (11-11, run 58): score 87 (was 87) as the notes above record it (89 on this build's reduced image,
 // the body unchanged): no lower score; retail keeps the walk's datum index in ESI
 // across the score call and stores it on the stack, ours keeps the walk's pool in memory, the selection in EDI
 // and compares the two scores with comiss on xmm0 where retail compares them on the x87 stack; the in-arm
 // compare (126) and the selection taken from the walk's datum index (128) each score worse alone, and the
 // shared walk step cannot keep the datum and its index in registers without losing its four matched users.
-// score 87 (was 87): round 112 (m3 lane 12) note at the end. Retail hoists the walk's pool load into ebx and keeps the selection
-// only on the stack (stored from esi, best stored in a tail shared with the initialisation);
-// ours keeps the pool in memory and the selection in edi.
 // MiniMax C (11-09): score 87 (was 87): no new form and no lower score; retail still hoists the walk's pool into EBX
 // (reloading it from the stack after the bit scan takes EBX) where ours keeps it in memory and loads it into ECX at
 // each use, retail still keeps the selection on the stack where ours caches it in EDI and reloads it at the loop top,
@@ -2117,6 +2117,11 @@ void function_269250(long clump_index, long actor_index);
 // (both in EDI, merged at `push edi; call 0x269250`) is what our allocation buys, retail keeps them apart (selected reloaded
 // into EDX, created in EDI). The lever left is register priority between the walk's pool field and the selection, inside
 // the shared clump_datum_walk_next, whose respellings moved its four matched users in round 75.
+// M3 lane 3 r236: no new form. Checked against this note: the in-arm compare (retail's form, 126), selection sources,
+// declaration orders and scopes, the zero/best default score paths, ternaries, continue forms, one clump-index local,
+// the walk at function scope or as 0x26bc60's iterator, and inline/forceinline walk helpers are listed. The lever left is
+// register priority between the walk's pool field and the selection inside the shared clump_datum_walk_next, whose
+// respellings cost its four matched users (rounds 75 and 112).
 // @retail 0x2689d0
 void function_2689d0(void)
 {

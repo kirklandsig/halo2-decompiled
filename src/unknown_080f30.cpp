@@ -342,6 +342,14 @@ struct s_pending_message_storage : s_pending_message_header
 // retry helper as a statement macro (no parameter copies) 14; the reader's dead stamp as a two-long volatile array 14;
 // the pump and timeout arms as `result == 0 && pumps < maximum_pumps` then `else if (result == 0)` 14; this file's own
 // existing reader (pending_read_ticks) for the first reading 14, for both readings 14. The frame stays 0x1c in all.
+// Round 115 (m3 lane 9, fast, on a copy of both helpers in this file, header untouched; the copy reproduces 14): reading
+// of the two frames as slots handed out in turn, a later local taking an earlier free slot it fits: retail's order is
+// pump count, capacity, first stamp, second stamp, start (start then takes the first stamp's slot) and ours first
+// stamp, capacity, second stamp, pump count, start (the pump count takes it first). New: the counter read as two
+// emitted opcode bytes in place of the mnemonic 14 (same code), with a plain local 123 (252 bytes, stores dropped);
+// the size and page tests joined in one condition 14; the pump step as `pumps = pumps + 1` 14; start and the result
+// declared first and assigned in the old order 14; the pump arm ending in `continue` with the timeout arm unnested 14
+// (all four same code).
 // @retail 0x80e10
 bool function_80e10(s_pending_message_storage *request, void **output, long *size)
 {

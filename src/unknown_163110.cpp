@@ -617,6 +617,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 }
 
 // score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// M3 lane 1 r96 (fast, the file's matched functions unchanged): the near clamp's comparison flipped (`near_sum < k ? k :
+// near_sum`) 115; a `vector3f const *const` forward pointer 115; the plane pointer declared outside the pass loop 115; the
+// far normal copied from `*forward` and negated in place 428 (1867 B); the near clamp on the sum written out at both uses
+// (no near_sum local) 261 (1867 B). Re-measured: the bare-comparison classification 320 (1835 B).
 // MiniMax S (11-09): the plane-0 product with the two operands of the i term written the other way
 // round changes no code at all (115), so the coefficient's register is not chosen by the operand
 // order of that product.

@@ -392,6 +392,11 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // the plain-sum schedule returns), with the copy from that read 23; the samples through the full promotion
 // expression 25; the count stored first on this body 4, on the plain sum 10; an inline helper filling the
 // set through a pointer 8 (count first 10), returning it by value 10/10; both reads copied with memcpy 9/9.
+// Round 77 (m3 lane 15, fast with every function in this file): the copy into a `byte const *` local then `samples +
+// offset` 2, `&samples[offset]` 2, the dword indexed as `&((byte const *)samples_address)[offset]` 2, the entry as
+// `data->entries + entry_index` 2, no count local (the count read at the test and the store) 2, all the same code;
+// re-measured: the offset read into a local at the top 2 (same code), the offset through `data->entries[...]` at the
+// sum 23. The permuter on this memcpy body (600 s, anneal): 68 tries, best 2 on both images.
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {

@@ -217,12 +217,17 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
-// MiniMax D (11-11): no new form, no lower score (117); the fallback masked in place (`local_tag & 0xffff`) does reproduce retail's `and edx, 0xffff` but moves the tag table from EDI into ECX (152 alone, 149 with the four cache zeros stored together), and the stage and pass arguments still land in other registers than retail's ESI and EBP; the four cache zeros stored together do give retail's four consecutive stores but score 120.
 // score 117 (was 117): earlier first line 117 (was 117). The tag index masked as a 32-bit value inside the
 // subscript reproduces retail's `and edx, 0xffff` but moves the base global from EDI into ECX and raises the score
 // to 152, so the original is kept; the tag lookup still masks the index with a word load where
 // retail masks the 32-bit value, and the fallback EDX, the stage/pass homes and the unfused element
 // loads remain.
+// MiniMax D (11-11): no new form, no lower score (117); the fallback masked in place (`local_tag & 0xffff`) does reproduce retail's `and edx, 0xffff` but moves the tag table from EDI into ECX (152 alone, 149 with the four cache zeros stored together), and the stage and pass arguments still land in other registers than retail's ESI and EBP; the four cache zeros stored together do give retail's four consecutive stores but score 120.
+// M3 lane 1 r96 (fast, 0x2243c0 and 0x224d90 matched each time): block_element_224db0 defined out of line in another
+// file so LTCG inlines it at link time 117 (identical code: link-time inlining leaves no unfused load or dead `lea`);
+// the tag re-read from the definition at each of its three uses 135 (first difference +0x0, the group index read as a
+// word); a const instance pointer 117; a const byte view of the definition 117; the tag-data result declared after the
+// instance 117.
 // MiniMax D (11-10): no new form, no lower score (117); retail masks the fallback tag index in place in
 // EDX (`and edx, 0xffff` then `shl edx, 4`), ours zero-extends the index into EAX (`movzx eax, dx`) and
 // keeps the scaled index in EAX.

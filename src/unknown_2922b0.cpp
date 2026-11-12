@@ -458,6 +458,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // (masked 108), at the tail's cross only 570, at the arg_6 cross only 664; the tail's cross before the column transform
 // 562; the up pointer declared at the tail's top 576; the ray loop as a plain `for` 718; the offset points through
 // vector3f_add_scaled 576 (same code). Retail stores all three back-rotation outputs after their last loads.
+// MiniMax A (11-12): no new form, no lower score (576): our frame is 0xf8 against retail's 0x108, and the copied input, the
+// basis vectors, the origin and the collision result still share homes; the shared cross and scale helpers and the four-ray
+// countdown of the earlier rounds leave that difference alone.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
