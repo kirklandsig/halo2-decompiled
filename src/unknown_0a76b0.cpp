@@ -865,6 +865,7 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// MiniMax H (11-12): no new form, no lower score (92); the permuter over the function managed 17 tries in 301.7 s and found nothing (best 89, baseline 89, no confirming build), so the slot layout stands; this round added the player block's forward vector declared before the origin (92), copied in its declaration (100), and as a function local at the top of the function, above the projectile index and below the grenade type (92 each), which all leave the player's forward at the same home, so retail's forward at 0x20, grenade type at 0x2c and projectile index at 0x30 against our 0x28, 0x20 and 0x24 stands.
 // MiniMax G (11-12): no new form, no lower score (92): the seat index and the direction sit 0xc below retail's slots and the
 // shared block-vector slot 0xc above them, so the whole frame is a permutation of retail's; the permuter (killed at its time
 // limit) produced no form.
@@ -1906,6 +1907,7 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// MiniMax H (11-12): no new form, no lower score (11); the entry block keeps the same eleven instructions in the same order, with the type compare still ahead of the index arithmetic.
 // MiniMax H (11-11): no new form, no lower score (11); retail still loads the object-pool global into ECX and the unit header into EDX before it loads the type argument, while ours loads the type into ECX first and puts the global in EDX, so the type compare lands before the index arithmetic instead of after it; the rest of the function matches instruction for instruction.
 // MiniMax C (11-11): no new form, no lower score (11); the entry block still compares the type with 8 before the index arithmetic where retail loads the pool global and the unit header first and compares afterwards.
 // MiniMax C (11-10): score 11 (was 11): no lower score this round. Two new spellings of the lookup were
@@ -2497,6 +2499,7 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// MiniMax H (11-12): no new form, no lower score (234); the tail's register homes and the 0x1b bit test are unchanged.
 // MiniMax I (11-11): no new form, no lower score (234): the pool's and the offset's register homes are still ebp and edi where retail has edi and ebx, the NONE sentinel still rides in ebp where retail keeps it in ebx, and the lunge's divide still comes from memory.
 // MiniMax B (11-11): no new form, no lower score (234); the frame is retail's 0x14 but the pool, index, type and name
 // homes and the completion byte's home still differ, and the total-tick expression is still one product order away
