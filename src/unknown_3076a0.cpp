@@ -214,6 +214,11 @@ __forceinline __m128 rotate_inverse_307840(transform_307840 const *matrix, __m12
 // score 316 (was 316): retail computes the newest normal's three splats once,
 // spills them and shares them between the two rotations, and keeps the count
 // in edi; sharing the splats here scores 322 to 326.
+// Shared inverse inline 478; by-value normal 317; first rotation first 155
+// (NOT kept: its computations run in the opposite order to retail);
+// count captured at distance loop 510; pointer/count loop 452; early key 316;
+// separate rejection guards 316; direct side bits 331;
+// output reference 316; original count bound 510.
 // the faces of the two boxes most nearly facing along the normal of the
 // newest contacts, when both face it closely: their contacts and, when asked,
 // those of the edges around them, with the smallest distance among the
