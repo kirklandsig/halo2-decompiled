@@ -734,6 +734,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // value call on the local index 65; the flagged arm `{ entity->object_index = NONE; return result; }` with the join
 // store kept, byte 53, bool 49 (184 B: the flagged store is then retail's, but inline and its return folds to `xor al,
 // al`), long 57, nested 49 (same code); that without the join store 75 (160 B, the header address shared again).
+// MiniMax G (11-11): no new form, no lower score (49); retail reloads the table's data pointer and recomputes the
+// scaled index between the flag test and the object read, which needs a store between them - the only spellings
+// that add one either store the entity's index a second time (32, a redundant store) or clear it up front and
+// store it in the valid arm (71, and 67 with the index narrowed), so our header address stays shared and the
+// result stays in ebp where retail keeps it in bl.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
