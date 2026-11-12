@@ -914,6 +914,12 @@ found:
 
 // the sphere's centre and radius in the tree's fixed-point grid, and the
 // walk of the tree from its root
+// score 65 (was 65): Frame 0x28 and extent 213 agree; first +4 exchanges
+// argument registers, followed by different saved registers and spill homes.
+// Tree view after publication 65; direct vector lanes 65; box declared first 65;
+// command pointer renamed 65; direct command argument 65; const helper input
+// 65; helper result renamed 65; coordinate stores together 65.
+// NOT kept: none improves the original body.
 // @retail 0x3008d0
 void class_3008d0::function_3008d0(void const *tree_, const __m128 *sphere, s_surface_key_array *keys_)
 {

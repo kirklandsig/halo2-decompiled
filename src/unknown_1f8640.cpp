@@ -376,7 +376,7 @@ struct s_1f8a70_actor
 // MiniMax G (11-12): no new form, no lower score (182): retail's case 2 arm runs the switch's value down through the
 // compare-and-decrement pair and calls 0x262b40, where ours tests the value in place and calls 0x410730, so the arm's
 // shape differs before the twenty bytes of extra code that shift every later branch.
-// score 182 (was 182): earlier 188; Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
+// score 182 (was 182; 182 before): earlier 188; Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
 // MiniMax S (11-10): no new form, no lower score (182): the route dispatch still follows case 7 where retail puts it after case 5 with cases 6 and 7 behind it, and the final result still goes through BL where retail returns its frame byte.
 // MiniMax E (11-09): no new form, no lower score (188).
 // MiniMax E (11-06): 188 then (was 188): no new form lowered it. The byte locals sit two bytes lower
@@ -737,6 +737,12 @@ struct s_1f8a70_actor
 // taking the address alone does not keep the false store or the reload after 0x1f8750).
 // T90: Destination case orders 324567/342567/423567/432567/245367/253467/352467/425367: 350/366/378/378/359/362/350/378.
 // NOT kept: No native dispatch/result equality; original case order, every case body and full function restored.
+// M3 lane 10 r97 (fast with the file's ten other functions and 0xe70b0, all MATCH throughout; base 182): nothing kept. Ours keeps
+// route_found in the shared +0x12 frame byte as retail does (a store after each route call) but folds the failure block's false
+// across 0x1f8750; retail reloads the byte there, and its zero-route test materializes the node test (`setne al; test al, al`).
+// route_found typed byte 184; declared at function scope 182; case 6's `route_mode == 0` test nested around the 0x1f9580 call 182
+// (same code); the zero-route test through a new inline bool helper (diagnostic) 381 (no setne, the layout moves); the first exit's
+// 0x1f86a0 call before `result = false;` 447 (1624 bytes).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

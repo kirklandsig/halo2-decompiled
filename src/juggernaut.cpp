@@ -212,6 +212,15 @@ void juggernaut_set(long player_index, bool juggernaut)
 // `waiting = function_15d770(i); if (!waiting) waiting = function_15db30(i);` 20; the player pointer read after waiting 20.
 // A 600 s permuter run (47 tries) found 19 only with `(dword)` on the random value (an unsigned modulo, wrong) and the
 // bit and exclusion tests nested.
+// Round 93 (m3 lane 11, fast): every player index read from `iterator.index` 20; candidates and count declared before
+// the iterator 20; `juggernaut_is((short)(player_index & 0xffff))` 74 (233 bytes: the global is reloaded in the loop); the
+// whole test as one condition 20; player_index at function scope 20; nested bit and exclusion tests 20, with the store in
+// braces 20; an eligibility flag set in if/else arms 69 (245 bytes); a 16-form screen of `waiting` folded into the test, a
+// named selected candidate, `if (count <= 0) return;` and a named absolute index 20 each; `!(waiting || unit == NONE)`,
+// `(flags & 3) == 0`, `(players & bit) == 0`, `!((waiting || unit == NONE) && (flags & 3))`, `!(excluded == index)` 20 each.
+// Diagnostics (not kept): with the draw removed count takes EBX and the pointer EBP as in retail; a second real use of the
+// pointer in the loop gives the same swap, a CSE'd duplicate read does not; count used twice after the loop keeps EBP. So
+// the allocator ranks the pointer below count here and above it in retail, counting only uses that survive CSE.
 // @retail 0x192a30
 void function_192a30(long excluded_player_index)
 {
