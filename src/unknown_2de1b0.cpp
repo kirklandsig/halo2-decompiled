@@ -97,6 +97,9 @@ public:
 	answer_2deda0 function_2de1b0(segment_2deda0 const *segment, hit_2deda0 *hit);
 };
 
+// Codex P408 (11-12, held for the user's OK on a file-flag change): moved after its callee 0x2dddf0 into
+// src/unknown_2dddf0.cpp, with that file's @flags gaining /GX (this body needs it; 0x2dddf0 still matches), it reaches
+// retail's length (1435 bytes, frame 0xc8 against retail's 0xb8) and scores 257 (was 340); full check lost [].
 // @retail 0x2de1b0
 answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit_2deda0 *hit)
 {

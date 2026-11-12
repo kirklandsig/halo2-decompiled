@@ -117,6 +117,12 @@ ELEMENTS_2D91D0(keys_300290, long);
 // range to a child cell, split the walk where the range spans both sides of a
 // plane (the first side by recursion), cut it off where the range misses a
 // slab, move the key base, or give a key to add to the list
+// score 466 (was 466): Frame 0x3c versus 0x38; the two-child case takes
+// the saved-object register for a bound instead of using the argument homes.
+// Byte command 542; copy rename 466; memcpy 466; corner loop 466;
+// bounds loop 482; byte OR 515; shared bound tuple 466; positive branch 469;
+// case-local bounds 466; range cursor 467; command cursor 466; both 467;
+// both byte bounds loaded first 492.
 // @retail 0x2ff8b0
 void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char const *node)
 {
