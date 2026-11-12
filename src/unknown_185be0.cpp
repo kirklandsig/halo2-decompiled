@@ -143,6 +143,9 @@ union s_185be7
     vector2f field_8;
 };
 
+// MiniMax H (11-11): no new form, no lower score (590): retail keeps NONE in EBX for its early uses and re-reads
+// the control global after the call to 0x24590, whose declaration lives in src/unknown_023540.cpp, so the reload
+// cannot be produced from this file; the forms tried here that would force a re-read score worse.
 // MiniMax B (11-11): no new form, no lower score (590): retail's entry block reads the control global into ECX and
 // forms the +0x14 address from it, ours reads it into EBX and keeps it there, and the NONE constant swaps registers
 // with it; I found no spelling that makes this build reload the global.
