@@ -801,6 +801,16 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // a ternary 66 (204 bytes); the would-block test with its `return true` ahead of `if (sent < 0) goto` 57 (208 bytes);
 // no success assignment with the completion returning true before the label 64; `short sent` declared at function
 // scope 10; `long written` declared at function scope 10 (both the same code).
+// Round 93 (m3 lane 11): a compile-only copy of this file (CL /c /O2 /Ob1 /Gr /FAs, about 1 s a form) gives our exit
+// order exactly; 34 forms screened there, none with retail's: the restore after the shared return (a `goto` to it ending in
+// `return true` or in `result = true; goto return_exit`), the shared return as a label inside `if (sent != -2)` with every
+// exit (success too) jumping to it, endless-loop forms with every exit a `break` to one `return result`, the sentinel test
+// after the loop behind `goto negative` or a `break` and a re-test, a two-case switch, the restore calling a function,
+// `sent + 2 == 0`, `sent < -1` then `sent < 0`. VC chains the single-predecessor restore block as the compare's fallthrough
+// wherever it sits in the source, so retail's order seems to need that block to have a second predecessor at layout time.
+// Fast: the success nested under the 0xb6320 test with `else if (sent == -2)` returning true 44 (208 bytes); `for (;;)`
+// with `continue` and the completion then `break` 10; the sentinel test after the loop 10; the inner label 10; the
+// two-case switch 10.
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {

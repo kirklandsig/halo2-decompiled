@@ -181,6 +181,9 @@ inline void end_agent_316110(agent_316110 *agent)
 // cleanup 54; const record cleanup with an element reference 67; external
 // pair-reference argument 6; pair base with agent-value cleanup 6. A single
 // worker search of 474 variants found none below 6.
+// Equal-first order test 241; compound order test 257; pair-loop continues 6;
+// record-loop continue 6; while pair scans 6; source-index shift 52;
+// shift data snapshot 36; earlier first handle 209. NOT kept: no gain.
 // @retail 0x316110
 void cache_316110::function_316110(pair_316110 const *pair)
 {

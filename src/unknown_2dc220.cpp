@@ -177,6 +177,9 @@ public:
 // top, entering past them, where ours reloads them on the back edge (a 7-byte
 // pad and the outside case land there); declaration orders, non-const splats
 // and other loop forms did not move it.
+// Byte bound selectors 802; bound cursors 849; named coordinate indices 327;
+// named products in both sums 327; plane-array end 776; first result tested
+// first 781; byte result 754; ordinary inline 1782. All restored.
 // The same walk as 0x2dce60 below, for the nodes a set of planes holds: the
 // box is the third argument
 // @retail 0x2dc220
@@ -510,6 +513,10 @@ public:
 // stack slots (also with the second side's commands passed straight to its
 // test); the three-byte reads of case 0x29 have ecx/edx swapped (any macro
 // form gives the same code).
+// First classification outermost 592; positive second classification 105;
+// one final return 86; byte scan ordinals 702; unsigned scan ordinals 93;
+// aligned intrinsic transfers 758; ordinary helper inline 86; memcpy copy 86.
+// NOT kept: no qualifying gain; the body and shared helper are restored.
 // Walks the commands below a node whose box is `offset` (a lower and an upper
 // corner, narrowed in place as the walk goes down): a split gives each side
 // its box, a side the sphere misses is dropped, a side it holds whole has its

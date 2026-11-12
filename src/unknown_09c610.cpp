@@ -149,6 +149,12 @@ struct s_9cca0
 // vectors 44; the flag pointer read into a local between the two copies 10 (same code); the marker right after the zeroing 10.
 // Retail's 0x175180 passes its own parameter on to the recursive call as ours does, and 0x184440 calls the same functions in both builds
 // (checked through the link map), so the escape that orders the flag test comes from 0x184440's body (965). Still BLOCKED-BY 0x184440.
+// Round 173 (m3 lane 6, fast): `if (!0x122c10(...)) return false;` before the fill, the record at function scope 9 (same
+// code), declared after that return 9; the record declared inside the `if` block as the matched sibling 0x9c610 does
+// 12 (the flag test then sits where retail's does; ours stores the first vector's i before the location's second dword
+// and its k early, retail sinks that k past the test), with the marker before the tag 10, plus the tag test on the
+// input 10; the early return with the record in a block after it 12; the record in a block that also encloses the 0x122c10
+// test 9 (function-scope code): the flag test moves only when the record's scope starts after that call.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {
