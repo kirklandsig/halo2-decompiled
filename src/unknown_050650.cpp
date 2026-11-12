@@ -1700,6 +1700,14 @@ struct s_actor_looking_structure_view
 // it raises 0x296e60 303 -> 311, and retail's 0x296e60 sums its two dots (k + j) + i and (i + j) + k, so a fixed
 // grouping in the shared helper is not retail's. The helper's dot parenthesized with the flat score 31.
 // Kept: the selected test as dot3f(best, &forward), same code (the hand-written dot was dot3f's body).
+// Round 111 (m3 lane 16, fast; control 23): forms ahead of the rotation, as perturbations of the operand ranks: the pathfinding
+// lookup as a ternary initializer 207; without the structure local (the global cast at both uses) 143 (926 bytes); the three
+// entry tests as nested ifs 23; `0.f < length` 23; the first trace test as `!= 0` 23; the best score declared before the best
+// index 25; the best pair declared before the candidate array 23 (23 = same code); cosine computed before sine in the angle
+// wrapper 41 (0x296e60 303 -> 300). Diagnostics (not source forms): one store through `specification` at entry keeps 924 bytes
+// and loads every axis component ahead of the candidate copy (123: retail loads only axis j there); a read at offset 0 or +4 of
+// `specification` at entry or ahead of 0x26c180 216-240 (943-948 bytes). The ranks move with what the function dereferences
+// before the loop, not with the helper's spelling.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
