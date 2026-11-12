@@ -1058,6 +1058,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // T86: Descending initial/next/blend/tint channel indices 509/334/568/244;
 // descending channel pointers 697/604/623/622. NOT kept: no byte match or
 // frame/home recovery; original traversal, arithmetic and complete body restored.
+// MiniMax R (11-11): no new form, no lower score (233): the frame is four bytes shorter (0xa8 against retail's
+// 0xac), so every stack home below the top is off by four; retail keeps the u step and v + width in eight-byte
+// spill slots at the top of the frame, ours keeps them in four-byte homes among the channel homes, and the
+// first-edge Y, half-width, cursor and colour homes differ with them.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

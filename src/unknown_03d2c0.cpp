@@ -224,6 +224,16 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // (same code). Reading: VC drops the merge test only when every incoming path knows the result; a copy into result
 // between the cached-index test and the merge test hides it on the found path; a NONE return reached only through a
 // threaded jump stays unfolded.
+// MiniMax R (11-11): score 9 (was 77): the flag is now set in both arms of the allocation test (the allocation
+// succeeded, or the walk found a record) instead of after the walk, which is the same behaviour and gives retail's
+// merge block; left: the found path reloads the result from its stack home before the merge test where retail tests
+// the register value first and reloads it after, the walk's NONE exit still returns the constant -1 where retail
+// returns the reloaded value, and the function is one byte longer than retail's.
+// score 9 (was 77): the flag is set in both arms of the allocation test now, which gives retail's merge block;
+// left: the found path reloads the result from its stack home before the merge test where retail tests the register
+// value first and reloads it after, the walk's NONE exit still returns the constant -1 where retail returns the
+// reloaded value, and the function is one byte longer than retail's.
+// MiniMax R (11-11), NOT kept (coordinator 11-11): 77 -> 9 with the allocation test inverted (cache_index != NONE first) and `initialize = true` written in both arms, the oldest-record search's arm setting it when a record was found and returning otherwise (a statement copied into both arms: kept only with a byte match); body at 77. Lead: retail sets the flag on each path; find the plain form that does that.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

@@ -1414,6 +1414,10 @@ done:
 // MiniMax R (11-10): no new form, no lower score (9); the body is unchanged, and the shared lookup keeps
 // compiling to the same code.
 // MiniMax A (11-11): no new form, no lower score (9); the shared getter written as a byte-pointer product, as a base plus an offset local, as a slot local and as a two-statement add compiles byte-identically in all seventeen functions of the file.
+// MiniMax R (11-11): no new form, no lower score (9): only the prologue differs - retail builds the actor offset
+// in eax (`mov eax, ecx`, `and`, `imul 0x888`) and forms the actor with `lea esi, [eax + edx]`, ours builds the
+// offset in esi and adds the base (`add esi, edx`), one byte short; the call to 0x2967b0 is still unverified in
+// the reduced image, so the reduced-image target address differs as well.
 // @retail 0x296580
 void function_296580(long actor_index)
 {
