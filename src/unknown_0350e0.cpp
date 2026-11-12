@@ -1446,6 +1446,9 @@ long function_baf80(long object_index);
 // load-chain scopes 12/12/12; single void exit 12; explicit limit tests 12; both model
 // handles immutable 12. NOT kept: no byte equality or gain; original body restored.
 // MiniMax A (11-11): no new form, no lower score (12); the definition and model reads written inline (the model twice) and the parent chain written inline all compile to the same code, and the permuter's fifty tries kept the baseline.
+// MiniMax R (11-11): no new form, no lower score (12): the parent lookup differs - retail masks the parent index
+// with `and eax, 0xffff` before it loads g_4e0300 and keeps the definition pointer in eax, ours loads the pool
+// first and truncates the index with movzx; the pool load is hoisted above the mask in every spelling tried.
 // @retail 0x4baf0
 void function_4baf0(long object_index, real distance, byte *first, byte *second)
 {

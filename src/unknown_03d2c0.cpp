@@ -224,6 +224,15 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // (same code). Reading: VC drops the merge test only when every incoming path knows the result; a copy into result
 // between the cached-index test and the merge test hides it on the found path; a NONE return reached only through a
 // threaded jump stays unfolded.
+// MiniMax R (11-11): score 9 (was 77): the flag is now set in both arms of the allocation test (the allocation
+// succeeded, or the walk found a record) instead of after the walk, which is the same behaviour and gives retail's
+// merge block; left: the found path reloads the result from its stack home before the merge test where retail tests
+// the register value first and reloads it after, the walk's NONE exit still returns the constant -1 where retail
+// returns the reloaded value, and the function is one byte longer than retail's.
+// score 9 (was 77): the flag is set in both arms of the allocation test now, which gives retail's merge block;
+// left: the found path reloads the result from its stack home before the merge test where retail tests the register
+// value first and reloads it after, the walk's NONE exit still returns the constant -1 where retail returns the
+// reloaded value, and the function is one byte longer than retail's.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
@@ -239,7 +248,11 @@ long __stdcall function_3ddd0(long object_index)
     {
         cache_index = record_pool_allocate(g_509434);
         result = cache_index;
-        if (cache_index == NONE)
+        if (cache_index != NONE)
+        {
+            initialize = true;
+        }
+        else
         {
             real oldest = -3.402823466e+38f;
             long index = data_datum_index(g_509434, function_16bc00(g_509434, 0));
@@ -255,9 +268,11 @@ long __stdcall function_3ddd0(long object_index)
                 }
                 index = data_datum_index(g_509434, function_16bc00(g_509434, index == NONE ? 0 : (index & 0xffff) + 1));
             }
-            if (result == NONE) return result;
+            if (result != NONE)
+                initialize = true;
+            else
+                return result;
         }
-        initialize = true;
     }
     if (result != NONE)
     {
