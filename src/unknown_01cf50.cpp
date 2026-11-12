@@ -68,6 +68,7 @@ long function_25960(void);
 struct s_shader_cache;
 void function_1c590(s_shader_cache *state, long tag, long index);
 void __stdcall function_1c710(void *state);
+// MiniMax H (11-12): no new form, no lower score (188): the body is still 35 bytes longer than retail's 1422 and the first difference is still at +0x335, where the state setup's flag stores and the two render-state calls sit in another order; retail inlines only the first of the four SetVertexData2s calls and calls the other three out of line, and this build inlines two of them.
 // MiniMax I (11-11): no new form, no lower score (188): the body is 35 bytes longer than retail's 1422 and the first difference is at +0x335, where the state setup's flag stores and the two render-state calls sit in another order.
 
 // MiniMax B (11-11): no new form, no lower score (188); retail inlines only the first of the four SetVertexData2s
@@ -3692,6 +3693,7 @@ bool g_55e6bc;
 // MiniMax E (11-10): no new form, no lower score (87 alone, 127 with this file's other addresses); the near
 // plane folded into one product with the global (114), the far plane declared first (122) and a row base with
 // constant indices (951) all score worse, and the row's three products are still summed in a rotated order.
+// MiniMax H (11-12): no new form, no lower score (17): retail still loads the far clip plane into xmm2 before the near-plane multiply while this build loads it after the near store, and retail still loads the fixed factor of the middle product of three of the four columns into the register where this build loads the row-relative factor.
 // score 10 (was 87): the matrix base, the row base, the advancing cursor and the row counter sit
 // in the registers retail uses, each row's three products are summed in the source order, and the
 // near and far planes are now computed into locals of their own, so the far plane's load lands at
@@ -4226,6 +4228,7 @@ extern long g_485898;
 // MiniMax D (11-10): no new form, no lower score (285): the 1.0 constant still takes XMM0 where retail holds it in XMM3, and naming it as a constant local compiles the same.
 // MiniMax A (11-04): the corner locals declared at function scope, before the position 285 (the same code); no lower score.
 // MiniMax D (11-01): the scale as a ternary 288 (worse), reverted; no lower score.
+// MiniMax H (11-12): no new form, no lower score (285): the frame is still 0x38 bytes against retail's 0x34, the 1.0 constant still takes xmm0 where retail holds it in xmm3, and the three byte-to-float conversions still start at xmm1 where retail starts them at xmm0.
 // score 285 (was 285): retail's frame is 0x34 bytes and ours 0x38, because retail reuses the
 // position's stack slots for the corner coordinates while we keep two slots of our own, and
 // retail tests the definition's flag byte where it lies while we copy the byte into bl.
@@ -4920,6 +4923,7 @@ void function_48010(real const *color);
 // MiniMax S (11-10): no new form, no lower score (244): retail copies the mode parameter into ebp in the prologue and keeps the flag scratch in esi where ours loads the mode later, and retail keeps six of its eighteen function_0222d0 calls out of line (the default arm's four, the blend op and the alpha test off) where ours inlines all six, which is most of the remaining score; the only lever (inline_depth) may not be added.
 // MiniMax D (11-10): no new form, no lower score (244).
 // MiniMax D (11-01): no new form tried, no lower score.
+// MiniMax H (11-12): no new form, no lower score (244): retail still copies the mode parameter into ebp in the prologue and keeps six of its function_0222d0 calls out of line where this build inlines all six, and the switch on the mode still writes its states in the other order.
 // score 244 (was 244): retail copies the mode parameter into ebp in the prologue and keeps the
 // flag scratch in esi, while we keep the flag scratch in ebp and load the mode into esi later;
 // retail is also 17 instructions longer than ours, and the two drift apart in the mode branch.
@@ -5954,6 +5958,7 @@ dword g_4b8430;
 // reference form in place the only difference left was the order of two independent reloads after a grow call (xmm2 and
 // xmm3), and none of the perturbations tried here (the vertex data's products written the other way round, the position
 // and light statements reordered or split, the size and alpha computed at another point) moved that order.
+// MiniMax H (11-12): no new form kept, no lower score (127): the model's read is still one fused load where retail takes a lea and a separate load, and the only forms that reproduce retail's addressing are the ones the rules keep only on a byte-for-byte match (a reference to the entry scores 2, a plain typed index with the split test scores 125); a 900 s permuter run from the reference form found nothing below 2.
 // score 127 (was 544), Round 1 of #1066: same size as retail (2406). What changed: the rotation is one
 // transform4x3f (forward/left/up filled by either branch, then position stored into it, so retail's
 // copy of the position after the branch appears), the angle is computed inside each branch (the sin/cos
@@ -7681,6 +7686,7 @@ real scenario_ramp_evaluate_current(long index);
 // frame pointer's push inside the loop decides them.
 // MiniMax E (11-11): no new form, no lower score (139); retail's frame is 0x58 bytes with the frame pointer pushed
 // inside the filter loop, ours is 0x5c with it in the prologue, so every stack slot sits four bytes off.
+// MiniMax H (11-12): no new form, no lower score (130): this build still pushes ebp in the prologue and frames 0x5c while retail pushes ebx, esi and edi and frames 0x58, saving ebp around the filter loop instead, so every stack slot sits four bytes off and the grid's stores come in another order.
 // score 130 (was 139): retail's frame is 0x58 bytes with the grid filling it to the top and the
 // frame pointer pushed inside the loop; ours is 0x5c with four unused bytes above the grid and the
 // frame pointer in the prologue, so every stack slot sits four bytes off.
@@ -7815,6 +7821,7 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // count test is a test/jle and the loop head carries the imul of the 0x98 stride.
 // MiniMax E (11-10): no new form, no lower score (299); the sign-extended group index and the index slot's
 // place in the frame are what the loop's induction variable fixes.
+// MiniMax H (11-12): no new form, no lower score (299): the group index is still sign-extended where retail moves the 32-bit index, the index slot still sits at another offset in the frame, and this build still strength-reduces the group stride into a second counter, which makes the frame 0x1898 against retail's 0x1894.
 // score 299 (was 310): fast score; our group index is sign-extended (movsx esi, ax) where retail moves the
 // 32-bit index, the index slot sits at [esp+0x3c] against retail's [esp+0x58], an extra mov edi, edi stands in
 // the loop head, and the body is 3 bytes longer than retail's.
@@ -9485,6 +9492,7 @@ __declspec(noinline) void function_016a30(real scale, short y, short x);
 // MiniMax E (11-11): no new form, no lower score (171); retail sign-extends the two offsets into the argument
 // registers of 0x16a30 and passes the palette global itself as the out-parameter, while the callee here takes
 // shorts and the palette is reached through a local; the callee's declaration lives in src/unknown_0167a0.cpp.
+// MiniMax H (11-12): no new form, no lower score (171): the two offsets still reach 0x16a30 in the other order than retail's, and the callee takes short offsets here where retail's took ints; the callee's declaration lives in another file this lane may not edit.
 // score 171 (was 171): the two offsets passed to 0x16a30 still sit in the other order, and the palette
 // is still reached through a different call sequence than retail's.
 // MiniMax D (11-05): no new form, no lower score - retail passes the two offsets to 0x16a30 in its own order and reaches the palette through a different call sequence, so the difference is in the call order rather than in a local form.

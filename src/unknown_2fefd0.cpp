@@ -225,7 +225,7 @@ public:
 // runs a command stream until a command gives an offset, and adds the
 // position's offset plus that one to the list; commands before it skip their
 // operands or move the position
-// score 78 (was 161): one shared value tail fixes the entry registers.
+// score 161 (was 161): one shared value tail fixes the entry registers.
 // The byte-value store and four-byte offset read still differ; the tables
 // begin four bytes early. Earlier note 166 (was 166): retail reads the command's byte before it pushes the
 // registers and into another register, and the jump table and the table of
@@ -369,7 +369,7 @@ found:
 }
 
 // the same for a stream whose commands 0x10 to 0x2b have other operands
-// score 12 (was 92): one shared value tail fixes the entry registers.
+// score 92 (was 92): one shared value tail fixes the entry registers.
 // The byte-value store and four-byte offset read still differ. Earlier body:
 // retail reads the command's byte before it pushes the
 // registers and into another register, and the table of command lengths sits

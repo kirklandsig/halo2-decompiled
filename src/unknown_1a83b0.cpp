@@ -542,6 +542,45 @@ s_1a8a10 g_4453c0[] =
 // re-read j: the case stores between the copy and the negation stop the reuse, but the loads then sit before the
 // jump table. On it: stores in [3], [1], [2], [0] order 54; the second sum first 106. Diagnostic only: the point's
 // address stored to a global before the switch keeps the point in registers (508 bytes) and j stays folded.
+// Round 115 (m3 lane 9, fast): what folds j, continued. A dead store into the value array, or a goto to a label, between
+// the copy and the first sum 17/17 (same code: the dead store is removed first). Unary minus inside the sum 86 (it
+// becomes a subtraction), as a named value 17 (same code). A perpendicular 2D local: its j assigned first from the copy
+// 17 (same code), its i first 39, its j from the actor 38, no copy at all 93, with the second sum first 92 (reads in
+// place never merge: four loads). A second actor pointer computed at the top for the negated read 46 (still folded).
+// The negated j named ahead of the copy 17; with the sums stored straight into the array in [0], [2], [1], [3] order
+// 17, in [0], [1], [2], [3] order 21, each sum stored where it is computed 17, the negations stored first 20 (all still
+// folded: a one-use value is forwarded to its use, past the copy). The copy written inside every case arm, after,
+// between or ahead of the point stores 30/31/91 (the loads sink to the join and j is still folded), so of all forms
+// only the copy ahead of the switch (54, re-measured with both sums y product first) keeps the two j loads apart: the
+// reuse does not cross the jump table. The best score, identifier and index initialised between the copy and the
+// sums 23, the score alone there 22, all three ahead of the copy 23 (the score store is emitted where written).
+// Diagnostics, not keepable (the opening pragma dropped so helpers inline; 0x1f57a0 then inlines too, 592 bytes): the
+// perpendicular and both sums through inline 2D helpers reading the actor give four loads; with the copy as their
+// input, one j load. So an inlined call between the copy and the sum does not split the reuse either. The negated j
+// named ahead of the switch 48 (it is computed ahead of the jump table), a perpendicular 2D local there 53. Diagnostic,
+// reverted: the compiler barrier intrinsic between the copy and the first sum 16 (retail's second j load, but the
+// second sum's i product is still computed first and the four stores keep our order), and on it both term orders of
+// each sum, either sum first and six store orders (48 forms) 16-31: the term order inside a sum never changes the code.
+// Round 115, later (fast): LEAD. Retail's block reads as one 2D frame transform: left = i * y + (-j) * x and
+// forward = j * y + i * x, the second sum's i a saved copy (xmm6) and the negated j read in place. The three
+// initialisations written identifier, index, score give retail's tail (`or edi` ahead of the score store) on the kept
+// body: 15 (not kept: a declaration order, a gain of 2); index, score, identifier 77. With that order and a facing
+// copy plus a perpendicular 2D local (its i assigned `0.0f - j` from the actor ahead of the copy's j, its j assigned
+// the actor's i), the sums written `copy.i * y + perpendicular.i * x` and `copy.j * y + perpendicular.j * x` and the
+// stores in [2], [3], [0], [1] order: 27, every instruction retail's (the second j load, the copy ahead of the first
+// sum, both sums in turn, the stores [3], [1], [2], [0]) and only the xmm numbering left: ours j 1, i 2, zero 3,
+// perpendicular j 4, x 5, y 6 against retail's zero 1, i 2, j 3, x 4, y 5, copy 6. On it: the four assignments in
+// every order, the perpendicular's j from the actor or from the copy (36 forms) 20-39 (the perpendicular's j from the
+// copy ahead of its i is folded away: 20, base numbering, base schedule); the two locals as scalars 34-38, both 91-94;
+// the six initialisation orders 27-31; ten declaration orders of the two locals, the point and the array 27 each (same
+// code); the two locals grouped as the transform's rows, all 24 assignment orders 27-37; the perpendicular's j
+// assigned after the first sum from the actor 80 (retail's numbering, but i is loaded again), from the copy 29-34 (the
+// copy is then made at the first product and takes xmm1); only the negated j in an aggregate field with i used in both
+// sums 15-21 (a one-field aggregate is forwarded early: folded j, base schedule); i and the negated j in one aggregate
+// with a scalar j 28-29; a scalar i with the negated j and j in one aggregate 29-35; all three in one three-field
+// aggregate 29-35. Diagnostic: the barrier with the perpendicular forms (9) 16-93. Reading: the numbering puts the
+// perpendicular's j ahead of x and y whenever it is a named value assigned ahead of the first sum; retail numbers
+// that copy last, as the compiler's own copy of a twice-used i, while still evaluating the negated j as a late leaf.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
