@@ -2388,10 +2388,16 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// MiniMax A (11-12): the case 2 dot product's terms in retail's order, `local_6.x * local_0->unknown290.i +
+// local_0->unknown290.j * local_6.y` (the x term first, the y term second): the full build goes 479 -> 477
+// (2404 bytes); the reduced image reads 474 before the change and 477 after it, so the gain holds in the
+// full build only; left: retail's aggregate copy at +0x424, case 4's direct facing reads, case 18's held
+// references, case 14's block after 21, case 6's two flag stores and the post-switch test laid out after
+// case 0.
 // MiniMax S (11-11): no new form, no lower score (479; 474 when only this function's own units are in the
 // reduced image); our body is longer than retail's (eight bytes in that image), so the jump table lands later
 // and every branch after it differs.
-// score 479 (was 479): earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
+// score 477 (was 479): earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // MiniMax R (11-10): no new form, no lower score.
 // Earlier 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
 // (0x2594b5 `comiss xmm0, [1.0]; jbe 0x2597fa`, true for a NaN distance); `d <= 1.f` compiled to
@@ -2697,7 +2703,7 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 				{
 					point2f local_6 = *(point2f *)((byte *)local_0 + 0x4d8);
 					if (normalize2d(&local_6) > 0.f &&
-						local_0->unknown290.j * local_6.y + local_6.x * local_0->unknown290.i < 0.984f)
+						local_6.x * local_0->unknown290.i + local_0->unknown290.j * local_6.y < 0.984f)
 					{
 						vector3f const *turn_facing = (vector3f const *)((byte *)local_0 + 0x4d8);
 						vector3f_assign(&local_0->unknown424.vector, turn_facing->i, turn_facing->j, turn_facing->k);
