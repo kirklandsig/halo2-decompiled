@@ -163,6 +163,12 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 #define request_weapon(player, slot, headers) \
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
+// MiniMax A (11-12): no new form, no lower score (118): the frame, the length and every case still agree
+// with retail, and the gap is still the rotation the notes above name - the inlined lookup hands the table
+// to eax where retail hands it to ecx, and the fourth case holds the parent in ecx where retail holds it
+// in esi; the form that puts the parent in esi reads the parent before the 0x13cb40 call and measures 115,
+// under the retention margin, so it stays out, and the rotation itself is decided by the parameter order of
+// 0xd0590, in another file.
 // MiniMax C (11-11): no new form, no lower score (118): the inlined lookup still hands the table to
 // eax where retail hands it to ecx, and the fourth case still holds the parent in ecx where retail
 // holds it in esi, which the callees in the other files decide.
