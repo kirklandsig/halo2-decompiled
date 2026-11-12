@@ -137,6 +137,10 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // `= {0}` for its memset 231 (978 bytes), the saved reference copy declared const 12, the repeated found test held
 // in one named bool 177. No untried natural form left in this body: the levers are 0x260670 (src/unknown_260670.cpp,
 // another lane's file this round) and the held src/unknown_261280.cpp prototypes. Still BLOCKED-BY 0x260670.
+// Round 116 (m3 lane 12): no trial. Both swapped pairs are use-count ties in retail too (the actor spill and the offset
+// slot four references each, the prop node and the bool output two each), and every natural use-count change is listed
+// above with its score. The levers left are outside this body: 0x260670 (score 440 at 3097 bytes against 3077) and the
+// output prototypes in the held src/unknown_261280.cpp.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

@@ -2409,6 +2409,8 @@ dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
 // MiniMax I (11-11): no new form, no lower score (140): retail tests the `simple` byte, stores the texture-mode global and only then loads and tests the `preserve_alpha` byte, where our build hoists that load above the store and keeps it in cl; retail's else arm tests a byte one slot past the last argument (the stack slot the caller leaves behind) where ours reuses the earlier load.
+// MiniMax G (11-12): no new form tried this round, no lower score (140): the byte at esp+0x6c is still read in a
+// different register and retail's short arm still reads a stack argument this function's declaration does not carry.
 // score 140 (was 140): Frame and retail extent agree; caller flag residency and native
 // fallback selection remain. Both complete coverage clamps now follow the retail upper-default stores.
 // MiniMax S (11-11): no new form, no lower score (140): the frame and the extent agree with retail, and what is
@@ -2890,6 +2892,10 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // the remainder and then adds four, our first matrix copy loads its four values into registers before it stores
 // them where retail stores each value as it loads it, and the three rotation calls still pass the rotation on
 // the stack instead of in eax because that callee lives in another file.
+// MiniMax A (11-12): no new form, no lower score (364); the first difference is at +0x52, where this build's early
+// exit jumps to a block that sits 0x36 bytes further from the function's start than retail's, and the body after that
+// pairs against the wrong instruction all the way down; the frame agrees (0x200) and the two length checks on the
+// count are the same, so what is left is the layout of the blocks and the order of the reads.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3027,6 +3033,8 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // ours keeps it in a register, so the result homes and the x87 rows differ.
 // MiniMax D (11-01): no new form tried, no lower score.
 // MiniMax G (11-04): no new form, no lower score.
+// MiniMax G (11-12): no new form tried this round, no lower score (94): the corner sets' x87/SSE schedule and
+// the second cosine's home still differ from retail's, and the length already agrees.
 // score 94 (was 211): Frame 0x58; 2022/2022 bytes. Bounds/trig scheduling and
 // the second cosine home remain; paired half extents recover native maximum/reciprocal registers.
 // Earlier 247 (was 279): Frame 0x58; 2027/2022 bytes. Maximum/reciprocal and

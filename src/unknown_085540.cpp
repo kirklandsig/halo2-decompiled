@@ -965,7 +965,7 @@ bool function_862e0(c_simulation_view *view)
 
 bool function_685f0(long capacity, byte *destination, void *block, long *size);
 
-// score 1 (was 2): 0x685f0 is now declared (capacity, destination, block, size), the order
+// score 1 (was 1): earlier 2. 0x685f0 is now declared (capacity, destination, block, size), the order
 // retail's loads imply (register arguments load from the last to the first, and retail sets edx
 // before ecx), so the two loads come in retail's order and only the register differs: the
 // destination goes in eax, retail's in edx. With the standard marker on 0x685f0 this function
@@ -977,6 +977,9 @@ bool function_685f0(long capacity, byte *destination, void *block, long *size);
 // in edx; its body is contributor code).
 // Round 59: unchanged; the callee still reads the destination from eax (`mov edi, eax`, retail
 // `mov edi, edx`) and this is its only caller, so no caller form was retried.
+// Round 86 (m3 lane 14): unchanged; the only difference is still the destination's register for 0x685f0 (ours
+// `lea eax`, retail `lea edx`), which the contributor callee's body sets (it reads eax, retail edx; score 3 there).
+// BLOCKED-BY 0x685f0; no caller form tried.
 // @retail 0x869a0
 bool function_869a0(c_simulation_view *view, void *block)
 {

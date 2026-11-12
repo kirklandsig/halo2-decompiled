@@ -574,6 +574,11 @@ real magnitude3d(vector3f const *v);
 bool g_46fcc4 = true;
 bool g_51e9bc;
 
+// MiniMax G (11-12) lead 12, NOT kept (coordinator): it needs the half-scale factors in one-use locals (scale_x/y/z,
+// match-only); with them written inline the same body is 33 (plain, 1081 bytes; fast mis-measures this function at 303). The lead as written: the jitter accumulated in a vector3f filled in place (the on/off values into offset.i/j/k, the named sign
+// and half-scale values multiplied in, the existing 0.2 vector3f_scale, the per-component limits products) 20 -> 12 at retail's
+// length: the offset packs into the dead limits home, which gives retail's spill slots; the projection dot's term order and its
+// i term's operand order still differ.
 // score 20 (was 20; 49 before r92; NOT kept 12 below; before r98 was 118; r101, r103 and r76 unchanged): 1078/1077 bytes; the projection dot sums j + k
 // where retail sums k + j, its i term loads velocity.i first (retail copies direction.i and multiplies from memory).
 // Earlier: velocity.i before the movement call multiplies limits.i by the control field from memory (retail loads the field first).
@@ -921,6 +926,9 @@ bool g_51e9bc;
 // T90: Existing shared dot traversed by long/dword/short/word components, counted
 // cursors, array end, ordinal product and cursor product: 134/134/150/150/129/178/130/131.
 // NOT kept: All regress; projection ownership and native jitter spill reuse remain. Original shared dot and complete body restored.
+// m3 lane 2 r75 (plain, 0x24590/0x1cd6c0 listed): the named signs applied as `x *= sign_x` 20, the half scales as
+// `x *= (bits & 64) ? 1.0f : 0.5f` 20, both 20 (same code each); the three signs declared together ahead of their
+// products 109 (1055 B); the signs inline as `x *= (bits & 8) ? 1.0f : -1.0f` 41 (1082 B).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

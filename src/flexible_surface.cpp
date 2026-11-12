@@ -365,6 +365,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// MiniMax B (11-12): no new form, no lower score (117): the frame is 0x28 against retail's 0x20 and the entry keeps the
+// random's state pointer in ESI where retail reloads it, so the locals differ before the first compare; the body is
+// retail's length (880 bytes).
 // MiniMax H (11-11): no new form, no lower score (117); retail keeps the old direction in xmm3-xmm5 and computes the dot as (axis.k*old.k + axis.j*old.j) + old.i*axis.i, an order dot3f cannot produce, and the frame stays 0x28 against retail's 0x20 because the old direction's address reaches the cross and dot helpers.
 // MiniMax D (11-11): no new form, no lower score (117); the frame is still 0x28 against retail's 0x20, and the
 // eight extra bytes are still the copy of the old direction that has to live in memory because its address is

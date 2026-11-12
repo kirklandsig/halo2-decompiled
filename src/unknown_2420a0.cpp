@@ -1583,6 +1583,11 @@ void function_2422d0(long slot)
 // 0x243a80 test with `continue` and the reject code after it 7; a team entry pointer at the loop top 7 (same code);
 // the two arrays declared the other way round 7; the third loop's test as a `continue` 7; the first loop as `while`
 // with the increment at the body's end 7 (all the same code).
+// Round 86 (m3 lane 14, fast): loop 2 over a stepped `long *` element pointer 70; loop 3's test with the table read
+// before the 0x243a80 call 12; the team count through an inline reader 7 and the team entry through an inline
+// accessor 7 (both the same code); loop 2 as `while` with the increment at the body's end 7 (same code); no slot
+// local re-measured 79 (a repeat of round 42's form). Diagnostics: without loop 3 the swap stays (71); without loop 2
+// the whole allocation moves (108).
 // @retail 0x2423f0
 bool function_2423f0()
 {

@@ -865,6 +865,9 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// MiniMax G (11-12): no new form, no lower score (92): the seat index and the direction sit 0xc below retail's slots and the
+// shared block-vector slot 0xc above them, so the whole frame is a permutation of retail's; the permuter (killed at its time
+// limit) produced no form.
 // score 92 (was 152): earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
 // and throw-globals homes, the release point (retail its own local in center's slot), the velocity scale's first
 // product and the spread blend's schedule. Before this round 288, 298 before lane 15 round 61's throw velocity through
@@ -1329,6 +1332,18 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 // getter then inlines too); the existing player value getter for the notice 19 (same code); the pool local for the entry
 // lookup 16 (a repeat). Compile-only: retail's layout comes back only when the success path ends with the a8c10 call
 // (the bit set and `result = true` before it) or without the notice block; every other order or shape keeps ours.
+// Round 153 (m3 lane 7, fast): both builds lay the blocks out alike (success path, an exit, the notice block, an exit);
+// retail's ten failure jumps and the notice block's three go to the first exit and the notice block ends in the copy,
+// ours send them to the last one and merge the first into the success path (hence its early pops). `result = true`
+// ahead of the active-bit store 19 (same code); the notice block ending in `return result` 45 (958 bytes, its result
+// folded to `xor al, al`), with the result set first 45; the immediate throw ending in `return result` 43; both ending
+// in `return result` 74 (956 bytes); the exit label in the function's own scope (no inner braces) 19 (same code), with
+// the three later declarations hoisted without initialisers 19 (same code); the active bit and the result set ahead
+// of the 0xa8c10 call 26 (965 bytes: the copy after the call is then left unmerged, but the jumps still go to the
+// last exit); the notice block after `return result`, entered and left by gotos, 19 (same code; re-measured).
+// The grenade condition as `!(grenade && count > 0)` 19 (same code), as `grenade == NULL || count < 1` 48 (965 bytes,
+// `cmp ax, 1`), as two nested tests jumping over the notice block 19 (same code), held in a named bool 176, as an
+// empty then-arm with the notice in the else 19 (same code).
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
@@ -4307,7 +4322,7 @@ long function_baf80(long object_index);
 short function_0b67a0(const s_small_index *data);
 long function_1eb020(long tag_index, long body_index, short *material_index);
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index,
-	long variant, long unused, long effect_value, s_location const *location, real scale);
+	long variant, c_type_47f957 material, long effect_value, s_location const *location, real scale);
 extern short g_54e898;
 extern vector3f *g_4687bc;
 
@@ -4496,7 +4511,7 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 											if (strength > definition->impact_sound_size)
 												strength = definition->impact_sound_size;
 											function_188180(&unit_center, &impulse, definition->footstep_effects.tag_index, unit_index, 0xb, strength,
-												material_index.m_index, (long)g_4687bc, (s_location const *)((byte *)unit + 0x28), 1.0f);
+												material_index, (long)g_4687bc, (s_location const *)((byte *)unit + 0x28), 1.0f);
 										}
 									}
 								}

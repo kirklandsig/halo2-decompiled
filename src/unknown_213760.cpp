@@ -1656,6 +1656,15 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // CompareFileTime(current, stored) == 0;` 80 (934 bytes); the closing switch as an if/else-if chain 136 (936 bytes); the
 // stored file time as a pointer advanced with the type 35; same code: `!CompareFileTime(...)`, the stored time indexed as a
 // FILETIME array, `!(index == 0 || index == 1)`.
+// M3 lane 4 r190 (fast with 0x2138f0, 0x213800, 0x2149c0): the write count renamed to sort after the size, the size renamed
+// to sort last, the expected size renamed: 33 each (same code: names do not order these slots). Retail's size/write-count
+// homes come from declaring the write count inside the resized block (with the header): the close written in both arms
+// 179 (994 bytes, not tail-merged; both homes as retail); the write success from that block, `written = bytes == 0x800` 98,
+// `if (bytes == 0x800) written = true;` 83 (the whole resize/write/close block then matches retail except the write's
+// handle-first setup; the range test's ESI 1 shifts the rest; match-only flag form); the not-resized arm dropped and
+// `(!resized || bytes != 0x800)` tested 157 (frame 0x1140); the write's flags as a named `s_file_write_flags` local (as
+// font_loading.cpp writes it) 33 (same code). Body unchanged. Lead for the next round: the in-block write count combined
+// with Round 53's three forms; even then the write's handle-first setup (flags zero in ECX) is still left.
 // @retail 0x213970
 void function_213970(void)
 {
