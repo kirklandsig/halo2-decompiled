@@ -5817,6 +5817,22 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
 // dropped (the same code), and retail keeps the first argument in ecx where ours reads it from the
 // stack.
 
+// MiniMax G (11-12): no new form, no lower score (62); retail's convention is edx = the tag, ecx = the
+// first (copied to esi), eax = the second (copied to edi), e+4 = the third and e+8 = the fourth (copied
+// to ebp), ret 8, with the tag table in ebx; the record index is the third argument and the selected
+// tag lands in the dead fourth slot, as here. New forms: `first * 10` in place 91 (239 B), the same
+// multiply fused into the entry read 91 (same code), the range index with its operands swapped 91 (same
+// code), a local holding a copy of the first argument (the same code). Restored.
+// MiniMax G (11-12): the call to 0x1bbf0 is the other blocker and it is in another file: our 0x1bbf0
+// (in this file) compiles to retail's code with the same `ret 0x14` slots, but retail's 0x16b90 takes
+// the scale as its third argument (its prologue reads the tag at e+8 and the state at e+4) while the
+// declaration at src/unknown_0167a0.cpp:263 has the scale last, so our 0x1bbf0 gives the second, third
+// and fourth parameters different stack slots and this caller pushes the first, third, second and
+// fourth where retail pushes the first, second, fourth and third.
+// MiniMax G (11-12): the permuter (300 s, 10 tries) reached 60 in both images by pulling the 0xffff and
+// the 10 into constant locals and reordering the two calls' arguments: two points is under the keep bar,
+// the constant locals and the reordered calls are not allowed forms, and the calls would pass something
+// else, so the body stands.
 // MiniMax C (11-11): no new form, no lower score (62); the second argument still arrives in eax where retail takes it in ecx, and the callers of this function are in other files.
 // MiniMax R (11-10): no new form, no lower score (62); the second argument still arrives in EAX where retail takes it in ECX and the arguments behind it still sit one stack slot lower, because the callers are in other files.
 // MiniMax I (11-10): no new form, no lower score (62); the second argument still arrives in EAX where retail takes it in ECX and the arguments behind it still sit one stack slot lower, because the callers are in other files.
@@ -6720,6 +6736,10 @@ void function_22850(void);
 // x87 here and through two dword stores in retail, because the shared global is a double in a header this
 // lane may not edit, and the gamma ramp still goes out through D3DDevice_SetGammaRamp instead of retail's
 // inline upload into the device's own ramp buffers.
+// MiniMax G (11-12): no new form, no lower score (153); the two blockers are unchanged and both live
+// outside this lane's files: the frame time global is declared double in include/timed_effect.h, so
+// retail's dword-wise copy of the timestamp cannot be written here, and retail uploads the gamma ramp
+// inline against the device's own ramp buffers where ours calls D3DDevice_SetGammaRamp.
 // MiniMax A (11-06, run 52): no new form, no lower score (153) - retail copies the timestamp into the
 // global as two dwords and uploads the gamma ramp into the device's own ramp buffer; three separate
 // channel stores in retail's red/green/blue order (and 255.0f) score the same 153, not kept, and a

@@ -3224,6 +3224,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 	entry->initial = entry->initial < 0.0f ? 0.0f : entry->initial > *maximum ? *maximum : entry->initial;
 }
 
+// MiniMax G (11-12): no new form, no lower score (317); both builds spill the counter and the entries
+// base to stack homes, so only the two registers differ (retail: the counter in edx and the base in ebp;
+// ours the other way round), and the base is a load of state->entries rather than a local, so declaring
+// the locals in another order cannot move it.
 // score 317 (was 317): r136 lane 7: names and declaration order do not move the first/i slots here (compile-only
 // screen); `first` declared after `found` 358; decay entry pointer before the `initial` pointer 377 (1343 bytes);
 // decay without the `initial` pointer 417 (1259 bytes); growth `entry->initial += entry->elapsed;` 317; an
