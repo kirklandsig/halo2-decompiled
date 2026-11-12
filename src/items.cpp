@@ -891,6 +891,7 @@ struct s_item_impact_definition
 	long sound_index;
 };
 
+#include "impacts.h"
 struct s_item_impact
 {
 	long type;
@@ -898,7 +899,7 @@ struct s_item_impact
 	point3f point;
 	byte unknown14[8];
 	s_location location;
-	short material;
+	c_type_47f957 material;
 	byte unknown26[2];
 	vector3f normal;
 	byte unknown34[0x40 - 0x34];
@@ -907,7 +908,7 @@ struct s_item_impact
 
 real function_1201a0(vector3f *v, vector3f const *fallback);
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
-	long unused, long effect_value, s_location const *location, real scale);
+	c_type_47f957 material, long effect_value, s_location const *location, real scale);
 dword vector3d_compress(vector3f const *vector);
 long function_1895f0(s_sound_position const *position, real scale, long tag_index);
 
@@ -931,7 +932,7 @@ void function_10c880(long item_index, s_item_impact const *impact, vector3f cons
 			kind = definition->kind > other_kind ? other_kind : definition->kind;
 		}
 		function_188180(&impact->point, &impact->normal, effect_index, item_index, kind + 10, kind,
-			(word)impact->material, (long)&direction, &impact->location, scale);
+			impact->material, (long)&direction, &impact->location, scale);
 	}
 	if (definition->sound_index != NONE)
 	{

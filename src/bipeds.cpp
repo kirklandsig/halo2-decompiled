@@ -6081,8 +6081,9 @@ void function_e4c50(long arg_159e6d)
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 bool function_11c120(s_location const *location, point3f const *point, short *zone_index);
+#include "impacts.h"
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index,
-	long variant, long unused, long effect_value, s_location const *location, real scale);
+	long variant, c_type_47f957 material, long effect_value, s_location const *location, real scale);
 
 /* a walking biped's footstep effect: at its foot marker (or its origin),
    with the material it stands on */
@@ -6175,7 +6176,7 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 		}
 		if (field_bit_test(biped->flags_c0, 6))
 		{
-			short material = *(short *)((byte *)biped + 0x44c);
+			c_type_47f957 material(*(short *)((byte *)biped + 0x44c));
 			short zone = NONE;
 			point3f probe;
 
@@ -6184,7 +6185,7 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 			s_location *location = (s_location *)((byte *)biped + 0x28);
 			if (function_11c120(location, &probe, &zone))
 			{
-				material = zone;
+				material = c_type_47f957(zone);
 			}
 			function_188180(&point, (vector3f *)((byte *)biped + 0x450), definition->object.footstep_effects.tag_index, arg_159e6d,
 				type, definition->object.impact_sound_size, material, (long)g_4687bc, location, scale);
@@ -6213,7 +6214,7 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 				if (function_1697c0(0x84000d, &point, &down, NONE, NONE, (s_collision_result_1697c0 *)&collision))
 				{
 					function_188180(&point, g_4687b0, definition->object.footstep_effects.tag_index, arg_159e6d, type,
-						definition->object.impact_sound_size, collision.unknown24, (long)g_4687bc, (s_location *)((byte *)biped + 0x28), scale);
+						definition->object.impact_sound_size, c_type_47f957(collision.unknown24), (long)g_4687bc, (s_location *)((byte *)biped + 0x28), scale);
 				}
 			}
 		}
