@@ -786,9 +786,18 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax E (11-11): no new form, no lower score (43): the unit-start NONE-root walk (the root preset
+// to NONE and the walk started from the unit) gives 109, and the datum and the unit still take ebx
+// and edi where retail takes edi and ebx.
 // MiniMax C (11-11): no new form, no lower score (43): the datum address is still computed in ebx
 // where retail computes it in edi, and the root walk is still the out-of-line 0xbaf80 in the other
 // file, which is what decides the carriers.
+// MiniMax C (11-11): no new form, no lower score (43): retail's walk (the root preset to NONE, the walk
+// started at the unit and each step's object in a named local, so that it loads into eax) reaches 109 - it
+// keeps the entry test and the eax step, but the carriers rotate (the datum in ebp, the unit in edi, the
+// unit object in ebx, the root in esi) and the roles and the frame both go; the same walk with the unit
+// object looked up after it gives 101 with retail's table and root registers but the datum, the unit and
+// the unit object still rotated among ebx, ebp and edi; the kept parent-first walk stays the best at 43.
 // score 43 (was 43): frame 0x10 agrees; player/unit carrier roles and the root-walk entry differ.
 // MiniMax D (11-09): no new form, no lower score (43); reading the unit index before the player pointer gives 43 (was 44) but leaves the carriers as they were - retail holds the datum address in EDI and the unit index in EBX, we hold them the other way round - so it is not kept.
 // MiniMax C (11-09): no new form, no lower score (43); retail's walk presets its root to NONE and
@@ -1394,6 +1403,17 @@ static inline s_players_globals *players_globals_14f2e0()
 
 /* gives a player its unit (the unit kept for it, the unit waiting to be
    reused, or a new unit at a starting location) and resets its spawn state */
+// score 5 (was 46): the NONE outputs are materialised with `or eax, 0xffffffff` as retail has,
+// the 0x198 field is cleared with a memset and the flag clear follows the zero store as in retail.
+// What still differs: retail tests the mode before the outputs are materialised, ours materialises
+// them first. Round 29 (lane G): with the two
+// MiniMax E (11-11): no new form, no lower score (46): the timer-memset form reaches 43, under the
+// bar to keep, and the two NONE outputs are still written with a five-byte move where retail's
+// materialisation is three bytes long.
+// MiniMax H (11-11): the only real difference is the -1 constant's form (`or eax,0xffffffff` in retail,
+// `mov eax,0xffffffff` in ours), which MSVC only shortens where the flags are dead, and the two bytes this
+// costs shift every later address; the permuter (87 variants in 913 s) found no variant below the baseline in
+// either the reduced or the full image; no lower score.
 // score 46 (was 46): the NONE outputs are materialised with `mov eax, 0xffffffff` where retail
 // uses `or eax, 0xffffffff` (two bytes shorter, so every later stack address differs), and the
 // zero/flag store schedule differs; the success BL agrees. Round 29 (lane G): with the two
@@ -1401,6 +1421,19 @@ static inline s_players_globals *players_globals_14f2e0()
 // but the constant stays a mov in every form tried (a struct of the two outputs, one and two
 // declarations, chained and separate assignments, ~0 and -1 spellings), so the gain is under the
 // keep threshold and the original body is restored.
+// MiniMax C (11-11): the two output locals are declared in the enclosing block (their stack homes
+// are unchanged) and the mode test is a nested if, so the sentinel is materialised with
+// `or eax, 0xffffffff` as in retail, and the 0x198 field is cleared with a memset, which puts the
+// flag clear after the zero store. What still differs: the order of the mode test and the output
+// materialisation (four instructions) and nothing else. Moving the two declarations into the mode
+// block puts the materialisation where retail has it, but the build then emits the five-byte
+// `mov eax, 0xffffffff` (43 at 1031 bytes), and the same happens with unsigned outputs, `~0`, a
+// copy from the first output, a goto restructure and a spelled-out constant; this round also tried
+// the two tests merged into one condition, the outputs declared at function scope (275), the outputs
+// declared without an initialiser and assigned inside the mode block, the sentinel as a long literal
+// and as 0xffffffff, and the outputs typed int with the address cast at the call - every one of them
+// gives the same five-byte `mov eax, 0xffffffff` (43); a permuter run over
+// the function was stopped by the harness's time limit before it reported a candidate.
 // MiniMax R (11-10): no new form, no lower score (46); the sentinel is still materialised with the five-byte
 // `mov eax, 0xffffffff`, the two outputs take the opposite stack slots and their stores the opposite order; the
 // outputs declared in the other order give 48, a named sentinel local and the second output copied from the first 46.
@@ -1573,105 +1606,108 @@ bool __stdcall function_14f2e0(long player_index)
 		}
 	}
 
-	if (!result && g_4e6948->mode != 4)
+	if (!result)
 	{
 		long tag_index = NONE;
 		long third_person = NONE;
 
-		player_get_representation(player_index, &tag_index, &third_person);
-		short location_index = (short)function_14ef00(player_index, tag_index, true, false);
-		if (location_index == NONE || tag_index == NONE)
+		if (g_4e6948->mode != 4)
 		{
-			goto done;
-		}
-
-		s_players_globals *globals = players_globals_14f2e0();
-		bool reused = false;
-
-		if (globals->unknownac != NONE && function_badc0(globals->unknownac, 3))
-		{
-			s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
-			s_marker_position_angle const *location = (s_marker_position_angle const *)&scenario->starting_locations[location_index];
-			point3f position;
-			real facing;
-			vector3f forward;
-
-			marker_record_get_position_and_angle(location, &position, &facing);
-			forward.i = (real)cos(facing);
-			forward.j = (real)sin(facing);
-			forward.k = 0.0f;
-			function_b75a0(players_globals_14f2e0()->unknownac, &position, &forward, g_4687b0, NULL, false);
-			globals = players_globals_14f2e0();
-			function_b9c60(globals->unknownac, false);
-			function_b7290(globals->unknownac);
-			unit_index = players_globals_14f2e0()->unknownac;
-			players_globals_14f2e0()->unknownac = NONE;
-			reused = true;
-		}
-		else
-		{
-			s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
-			s_marker_position_angle const *location = (s_marker_position_angle const *)&scenario->starting_locations[location_index];
-			s_object_creation_14f2e0 creation;
-			real facing;
-			color3f colors[4];
-
-			function_b7930(&creation, tag_index, NONE, NULL);
-			creation.field_0c = third_person;
-			marker_record_get_position_and_angle(location, &creation.position, &facing);
-			creation.forward.i = (real)cos(facing);
-			creation.forward.j = (real)sin(facing);
-			creation.forward.k = 0.0f;
-			creation.up = *g_4687b0;
-			creation.player_index = player_index;
-			creation.team_index = player->team_index;
-			creation.field_a8 = *(dword *)((byte *)player + 0x89);
-			if (function_15f330(&player->appearance, player->team_index, colors))
+			player_get_representation(player_index, &tag_index, &third_person);
+			short location_index = (short)function_14ef00(player_index, tag_index, true, false);
+			if (location_index == NONE || tag_index == NONE)
 			{
-				creation.change_color_mask |= 0xf;
-				memcpy(creation.colors, colors, sizeof(colors));
+				goto done;
 			}
-			unit_index = function_b7b40(&creation);
-		}
 
-		if (unit_index == NONE)
-		{
-			goto done;
-		}
-		function_14cad0(player_index, unit_index);
-		function_a7870(unit_index);
-		function_a7a30(unit_index, 0x400);
-		if (g_4e6948->state == 2)
-		{
-			function_15e970(unit_index);
-		}
-		else if (!reused)
-		{
-			s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
-			bool initial = !TEST_FIELD_BIT(player->flag3);
-			long profile_index = initial ? 1 : 0;
-			bool loaded = false;
+			s_players_globals *globals = players_globals_14f2e0();
+			bool reused = false;
 
-			if (profile_index > scenario->starting_profile_count - 1)
+			if (globals->unknownac != NONE && function_badc0(globals->unknownac, 3))
 			{
-				profile_index = scenario->starting_profile_count - 1;
+				s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
+				s_marker_position_angle const *location = (s_marker_position_angle const *)&scenario->starting_locations[location_index];
+				point3f position;
+				real facing;
+				vector3f forward;
+
+				marker_record_get_position_and_angle(location, &position, &facing);
+				forward.i = (real)cos(facing);
+				forward.j = (real)sin(facing);
+				forward.k = 0.0f;
+				function_b75a0(players_globals_14f2e0()->unknownac, &position, &forward, g_4687b0, NULL, false);
+				globals = players_globals_14f2e0();
+				function_b9c60(globals->unknownac, false);
+				function_b7290(globals->unknownac);
+				unit_index = players_globals_14f2e0()->unknownac;
+				players_globals_14f2e0()->unknownac = NONE;
+				reused = true;
 			}
-			if (!initial && (scenario->flags12 & 0x20))
+			else
 			{
-				s_tail_traits *loadout = function_1529a0(player_index);
-				if (loadout)
+				s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
+				s_marker_position_angle const *location = (s_marker_position_angle const *)&scenario->starting_locations[location_index];
+				s_object_creation_14f2e0 creation;
+				real facing;
+				color3f colors[4];
+
+				function_b7930(&creation, tag_index, NONE, NULL);
+				creation.field_0c = third_person;
+				marker_record_get_position_and_angle(location, &creation.position, &facing);
+				creation.forward.i = (real)cos(facing);
+				creation.forward.j = (real)sin(facing);
+				creation.forward.k = 0.0f;
+				creation.up = *g_4687b0;
+				creation.player_index = player_index;
+				creation.team_index = player->team_index;
+				creation.field_a8 = *(dword *)((byte *)player + 0x89);
+				if (function_15f330(&player->appearance, player->team_index, colors))
 				{
-					loaded = function_152bf0((byte const *)loadout, unit_index);
+					creation.change_color_mask |= 0xf;
+					memcpy(creation.colors, colors, sizeof(colors));
 				}
+				unit_index = function_b7b40(&creation);
 			}
-			if (!loaded && profile_index >= 0 && profile_index < scenario->starting_profile_count)
+
+			if (unit_index == NONE)
 			{
-				function_cce00(unit_index, (short)profile_index, true, initial);
+				goto done;
+			}
+			function_14cad0(player_index, unit_index);
+			function_a7870(unit_index);
+			function_a7a30(unit_index, 0x400);
+			if (g_4e6948->state == 2)
+			{
+				function_15e970(unit_index);
+			}
+			else if (!reused)
+			{
+				s_scenario_spawn_view_14f2e0 *scenario = (s_scenario_spawn_view_14f2e0 *)g_4e0350;
+				bool initial = !TEST_FIELD_BIT(player->flag3);
+				long profile_index = initial ? 1 : 0;
+				bool loaded = false;
+
+				if (profile_index > scenario->starting_profile_count - 1)
+				{
+					profile_index = scenario->starting_profile_count - 1;
+				}
+				if (!initial && (scenario->flags12 & 0x20))
+				{
+					s_tail_traits *loadout = function_1529a0(player_index);
+					if (loadout)
+					{
+						loaded = function_152bf0((byte const *)loadout, unit_index);
+					}
+				}
+				if (!loaded && profile_index >= 0 && profile_index < scenario->starting_profile_count)
+				{
+					function_cce00(unit_index, (short)profile_index, true, initial);
+				}
 			}
 		}
 	}
 
-	player->field_198 = 0;
+	memset(&player->field_198, 0, sizeof(player->field_198));
 	player->flag9 = false;
 	player->flag10 = false;
 	player->field_17c = 0;
@@ -1860,6 +1896,11 @@ struct s_unit_player_assignment
 // chained 19; the old unit index in a named local for the outer comparison and the NONE test 17; re-measured round 43's
 // control-set argument read back 17 and the stored unit index passed to 0x1682bf 16 (449 bytes, same registers); a named user
 // index in the old-unit arm 111 (468 bytes); a named user index in the new-unit arm (three uses) 131 (459 bytes).
+// Round 174 (m3 lane 5, fast): matched 0xcea00 reads the same +0xd4 field with retail's `mov eax, [eax + ecx + 8]; mov eax,
+// [eax + 0xd4]` by re-assigning its unit pointer from a fresh lookup and reading the field at each use; that idiom here is
+// round 94's re-derived pointer: new block only 28, both blocks 17 (same code as this body). The same EAX-reuse gap (ours
+// takes EDX for the pointer) shows in 0xbba80's definition read, where matched 0xbfa40 gets the reuse with this file's
+// spelling, so it follows the surrounding allocation, not the spelling. No untried natural form found.
 // @retail 0x14cad0
 void function_14cad0(long player_index, long unit_index)
 {
@@ -2459,6 +2500,13 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax C (11-11): no new form, no lower score (701); the first 0x151b80 call is still expanded here where retail calls it, and the definitions of 0x151b80, 0x151940 and 0xccd20 are in other files that this lane may not edit.
+// MiniMax E (11-11): no new form, no lower score (701): the frame is still 0x4c against retail's
+// 0x74, and the two calls this build expands are still expanded here.
+// MiniMax H (11-11): the lengths agree (2740 bytes); only the frame and the register set differ; no new form, no lower score.
+// MiniMax C (11-11): no new form, no lower score (701): the length agrees (2740 bytes); the frame is
+// still 0x4c against retail's 0x74 and the first 0x151b80 call is still expanded here where retail calls
+// it, and the definitions of 0x151b80, 0x151940 and 0xccd20 are in other files.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and
@@ -2983,10 +3031,22 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax E (11-11): no new form, no lower score (103 on the full build, 193 on the reduced one):
+// reading the globals pointer at each use (175 on the reduced image), keeping it for the last write
+// (173), writing the status after the countdown (181) and giving the second loop its own iterator
+// (171 on the full build) all leave it at or above the baseline. On the full build the body is
+// retail's length (611 bytes, first difference +0x8) and the whole difference is the register the
+// globals pointer takes: ours keeps g_4e8c20 in edi where retail has it in esi, and the two loops
+// swap the datum and unit registers with it.
 // MiniMax C (11-11): no new form, no lower score (103 on the full build, 193 on the reduced one):
 // the globals pointer is still carried in edi to the end of the function where retail loads it into
 // esi and reloads it after the busy check and again before the final store, and the callees that
 // could show the store to that global are in other lanes' files.
+// MiniMax C (11-11): no new form, no lower score (103 on the full build, 193 on the reduced one): the
+// reduced image overstates this body, since the plain build gives the same 103 and the same 611 bytes
+// for the named `globals` local and for reading g_4e8c20 at every use; what still differs is the register
+// alone - ours keeps the pointer in edi to the end of the function where retail has it in esi - and the
+// callees that decide that summary are in other lanes' files.
 // score 103 (was 103): reading g_4e8c20 directly at every use instead of through the named
 // `globals` local builds to the same bytes in the full build (611 = 611, first difference
 // +0x8) and scores 175 against 193 in the reduced image, so the local is not what holds the

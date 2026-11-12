@@ -101,6 +101,15 @@ union s_6ec80
 // pointers swap EBX/EDI); the data pointer as a ternary 256 (masked 26); the 0x4dac value as a ternary 242 (974 bytes, masked
 // 21); all three 254 (masked 13), the same unscoped 254; first/second id NONE chained 225, unscoped 7. Same code as the plain
 // reads: inline result-default getters for the 0x4da8/0x4dac/data/short values (225 scoped, 5 unscoped).
+// Round 96 (m3 lane 10, fast): the scoped mask's NONE-to-EDI shift comes from the 0x49c8 getter's result-default
+// body: with the mask scoped and that read written by hand (`if (live) value_49c8 = arg_0->value49c8;`) NONE and the
+// zero stay in ECX/ESI and the first difference moves from +0x17 to +0x101, 195 (left: the hand read compares against
+// the NONE register where retail's getter loads into ECX, compares with -1 and re-forms NONE, and the two block
+// pointers swap EBX/EDI); the same hand read unscoped 195, scoped with the 0x4d08 getter also by hand 195; scoped with
+// only the 0x4d08 getter by hand 225; scoped with the result-default 0x49c8 body as a file-local forceinline helper
+// 225. A compile-only harness (dummy first parameter so the session arrives in EDX, getters inline) does not show
+// the shift: there the scoped mask keeps NONE in ECX. The 0x49c8 read as `live ? value : NONE` 177 unscoped, 229
+// scoped (990 bytes each).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

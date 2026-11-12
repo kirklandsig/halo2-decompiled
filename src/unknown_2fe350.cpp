@@ -23,6 +23,10 @@ struct bounds_2fe350
 
 // score 31 (was 31): the same operations; retail reads the half extents before
 // the transform and the tolerance later, and keeps the mask in one register.
+// Products split from absolute 31; mask after third product 31; all three
+// products before absolute 31; broadcast intrinsic 43; half extents first 31;
+// mask at each use 31; delayed third absolute 31; separate splat steps 31.
+// NOT kept: no match or qualifying gain; original body restored.
 // @retail 0x2fe350
 void __cdecl function_2fe350(void const *query, const __m128 *half_extents, float tolerance, void *out)
 {

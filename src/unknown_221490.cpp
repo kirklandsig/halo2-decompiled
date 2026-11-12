@@ -1022,6 +1022,7 @@ extern "C" void _ReadWriteBarrier(void);
 // registers: forwarders with one, two (with the index) or four parameters, const globals or voice, the buffer
 // parameters declared first, a dword index, the voice from the global or ahead of `globals`, a zero local for the
 // memset, the memset after the first volume.
+// Round 157 (m3 lane 8, fast): the existing gain-to-volume helper `__forceinline` 21 (same code; 0x220fd0 194, 571 bytes).
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

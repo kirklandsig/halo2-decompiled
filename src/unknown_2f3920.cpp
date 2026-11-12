@@ -262,6 +262,12 @@ void capsule_pair_2f3920::function_2f3920(void const *a, void const *b, void con
 	capsule_contact_2f3920(a, b, input, collector);
 }
 
+// score 2 (was 2): Only the base/index encoding of the two transformed-point
+// stores differs; frame 0xe4 and extent agree. Source-first steps 2; aligned
+// store intrinsic 2; indexed walk 28; ascending counter 2; source limit 260;
+// source step at use 262; output step at use 2; both steps at use 262;
+// direct array members 2; output limit 248; unsigned counter 2; ordinary absolute value 5.
+// NOT kept: no equality; original shared body and both users restored.
 // @retail 0x2f3d00
 void __cdecl function_2f3d00(void const *a, void const *b, void const *input, void *collector)
 {
