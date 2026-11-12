@@ -100,6 +100,9 @@ void __stdcall function_1c710(void *state);
 // are not kept, so the pair was dropped at review: 188 (fast, 1457 bytes, retail 1422; main 316).
 // Permuter (25 min on #1066, about 800 variants): 104 only with SetVertexData2s/4f arguments swapped; not kept.
 // MiniMax I (11-11), NOT kept (coordinator 11-11): 188 -> 96 only by moving the inline_depth pragma pair from the fourth corner's vertex call to the second's (pragmas are never kept); body at 188.
+// MiniMax A (11-12): no new form, no lower score (188); the body is 35 bytes longer than retail's 1422 and the first
+// difference is at +0x335, where retail inlines only the first of the four SetVertexData2s and calls the other three
+// out of line, and the only lever for that (an inline_depth pair) may not be added.
 // @retail 0x46230
 void __stdcall function_46230(short target, real const *bounds)
 {
@@ -3726,6 +3729,18 @@ bool g_55e6bc;
 // bytes), because link-time inlining changes with the set of functions in the image, so a fast measurement
 // of this function is only meaningful in an image that holds it alone.
 // MiniMax E (11-11), NOT kept (coordinator 11-11): 17 -> 10 only from the near and far planes each read into a local used once before the depth-clip call (match-only form); body at 17.
+// MiniMax A (11-12): no new form, no lower score (17); the far clip plane read into a local before the call is hoisted
+// to the function entry (18), the near and far planes each read into a local used once scores 10 but is a match-only
+// form, and selecting the depth-clip factor into a local before the call scores 133; the near plane in a local of its
+// own keeps the far load late (17), the depth-clip call after the projection selection gives 122 (573 bytes), and the
+// middle products written with pointer arithmetic (19, 25) move other columns' operands instead of this one's. What
+// still differs is that retail loads the far clip plane into xmm2 from before the near-plane multiply while this build
+// loads it after the near store, and that retail loads the fixed factor of the middle product of three of the four
+// columns into the register while this build always loads the row-relative factor there. Reading the fixed factor
+// through a second pointer name for the matrix gives 23, the product parenthesised gives 21, and the loop counter as
+// int, unsigned or short changes nothing; a toy compile with the SDK's compiler shows that the order of the two
+// factors of a product does not follow the source, so the three products retail loads the other way round are not
+// reachable from the source order.
 // @retail 0x12d50
 void function_12d50(bool scaled, real const *projection, real *output)
 {
@@ -4216,6 +4231,10 @@ extern long g_485898;
 // matches retail's diamond), the 0x40 test on its own lookup with the definition taken inside the if (294), the table
 // cached in a local (301), position copied after the scale test (304). None lower than 285, none kept.
 // MiniMax I (11-11), NOT kept (coordinator 11-11): 285 -> 272 from three one-use scaled locals, the scale as a ternary re-reading the definition, and the four corners in a bounds[4] array (stack-home steer); body at 285.
+// MiniMax A (11-12): no new form, no lower score (285); this build frames 0x38 bytes against retail's 0x34 because
+// retail reuses the position's stack slots for the corner coordinates while this build gives the corners slots of
+// their own, so every slot above the position sits four bytes higher, and the 1.0 constant still takes xmm0 where
+// retail holds it in xmm3.
 // @retail 0x2e540
 long __stdcall function_2e540(s_slot *slot, byte *data)
 {
@@ -4909,6 +4928,10 @@ void function_48010(real const *color);
 // at the six calls (288). None below 244, so the source is unchanged.
 // Permuter (25 min on #1066, about 850 variants): 228 only with the cull value stored through a word cast and a
 // word read of a long field; not kept.
+// MiniMax A (11-12): no new form, no lower score (244); retail copies the mode parameter into ebp in the prologue and
+// dispatches on it with a compare chain, while this build keeps the flag scratch in ebp and reaches the mode through
+// a jump table, and the forms tried (the if/else chain for the modes, the switch with a case 0, all eighteen sites
+// called out of line) measure 244 or worse.
 // @retail 0x47930
 void function_47930(word flags, long format, long mode)
 {
@@ -5901,6 +5924,12 @@ dword g_4b8430;
 // 0xc2d00 scores 249 in the reduced image with either form, so the helper call is kept and the
 // coordinator's full check should confirm 0xc2d00.
 // MiniMax D (11-10): no new form, no lower score (302).
+// MiniMax A (11-12): no new form, no lower score (127); the model's read stays one fused load where retail takes a
+// lea and a separate load, and the forms that do reproduce retail's addressing are the match-only ones the coordinator
+// has already rejected (a reference to the entry scores 2, a plain typed index with the split test scores 125); with the
+// reference form in place the only difference left was the order of two independent reloads after a grow call (xmm2 and
+// xmm3), and none of the perturbations tried here (the vertex data's products written the other way round, the position
+// and light statements reordered or split, the size and alpha computed at another point) moved that order.
 // score 127 (was 544), Round 1 of #1066: same size as retail (2406). What changed: the rotation is one
 // transform4x3f (forward/left/up filled by either branch, then position stored into it, so retail's
 // copy of the position after the branch appears), the angle is computed inside each branch (the sin/cos
@@ -7641,6 +7670,10 @@ real scenario_ramp_evaluate_current(long index);
 // MiniMax B (11-11): no new form, no lower score (139); retail saves ebp around the filter loop (at 0x13a43, popped
 // at 0x13b72) and frames 0x58, while this build saves it in the prologue and frames 0x5c, so every instruction
 // after the prologue pairs against the wrong one and the rest of the function cannot be read off the diff.
+// MiniMax A (11-12): no new form, no lower score (130); this build pushes ebp in the prologue and frames 0x5c while
+// retail pushes ebx, esi and edi and frames 0x58, saving ebp around the filter loop instead, so every stack slot sits
+// four bytes off; the grid's fields stored in retail's order give 120, but that form was already rejected as a store
+// order picked by score.
 // @retail 0x13870
 void __stdcall function_13870(bool finish, bool blur)
 {
@@ -7805,6 +7838,9 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // body 513 (2000 bytes) - the loop's zero register moves to ebp and the frame pointer is pushed in the
 // prologue. The body was restored.
 // MiniMax R (11-11): no new form kept this round, no lower score (299): the +8 field test written as <= 0 gives retail's load, test and jle, but the one-byte shift it makes downstream raises the score to 313, so the original test stays.
+// MiniMax A (11-12): no new form, no lower score (299); the count test written as `<= 0` gives retail's load, test
+// and jle instead of a compare against 1, but the length that changes makes the rest of the body pair against the
+// wrong instruction and the score rises to 313, so the original stands.
 // @retail 0x4f010
 void __stdcall function_4f010(void *payload)
 {
@@ -9433,6 +9469,10 @@ __declspec(noinline) void function_016a30(real scale, short y, short x);
 // MiniMax B (11-11): no new form, no lower score (171); retail sign-extends the two offsets into the argument
 // registers of 0x16a30 and passes the palette global itself as the out-parameter, while the callee here takes
 // shorts and the palette is reached through a local; the callee's declaration lives in src/unknown_0167a0.cpp.
+// MiniMax A (11-12): no new form, no lower score (171); retail sign-extends the two offsets into the argument
+// registers of 0x16a30, whose declaration is in another file, and passes the palette global itself as the
+// out-parameter, which the address-taking exception does not cover; the offset order, the palette result local and
+// the dimension orders all score no better.
 // @retail 0x12560
 void function_12560()
 {

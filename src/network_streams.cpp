@@ -914,6 +914,21 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // member-window form 89 (same code each). Re-measured the member-window form 89: its count folds oldest into `sub eax,
 // [edi + 0x34]` and the loop loads oldest again. Matched 0x94df0 has retail's exact loop (no second counter, the count's
 // oldest kept for the index) because its loop start reads oldest (`oldest + 1`); this loop starts from m_next_sequence.
+// MiniMax A (11-12): no new form, no lower score (60); the matched sibling 0x94df0's spelling (the bound read from
+// the member in the loop condition and the index helper given &m_message_window) reproduces retail's loop body, with
+// the offset recomputed on every pass and the newest re-read from memory, but the head and the register choice then
+// differ (89); with the bound in a local and the helper given the member the head matches retail and the loop body
+// does not (60). The strength reduction into the second counter is what frees ecx for the next sequence.
+// MiniMax A (11-12, later): still no lower score (60); the index written out in the function with the oldest taken as
+// a value (so the count keeps retail's mov/sub and the oldest in eax) still strength-reduces the offset into esi and
+// still reads the newest from the hoisted bound (58); the member form keeps retail's loop body but folds the count's
+// oldest into its sub, reloads the oldest in the loop and caches time in ebp (89); retail keeps the oldest in ebx from
+// the count and still recomputes the offset, so only the strength reduction and the register choice are left.
+// MiniMax A (11-12, third): still no lower score (60); handing the index helper the member (&m_message_window) kills
+// the strength reduction and the loop body then matches retail's instruction for instruction, but the head and the
+// register choice change with it (89): the next sequence stays in ecx where retail keeps it in esi, and retail reads
+// the newest from memory inside the helper while this build reads it from the hoisted bound; writing the index out
+// in the function with the member read gives 60 again, so the strength reduction is the whole of the difference.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
