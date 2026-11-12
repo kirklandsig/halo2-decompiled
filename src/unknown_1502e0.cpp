@@ -1304,6 +1304,10 @@ long function_cbd50(long unit_index, short weapon_index);
 // player to a stack slot, so the frame is 0x1c against retail's 0x18; the pool global used directly (295), the tag
 // table read inside the loop or before it (215 each), the helper reading the tag table global itself (215) and
 // both of those with the pool global (293) all leave the player in a slot or in a volatile register.
+// T90: Inventory count pass through end-tested for/count-plus-cursor/while/outer
+// cursor, each mutable/read-only: 608/608/215/215/608/608/608/608.
+// End-tested cursors recover frame 0x18 but roll the count pass to 675/1006 bytes; counted cursors tie 215.
+// NOT kept: No native pool/player/tag ownership equality; original inventory index and complete body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {

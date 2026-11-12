@@ -840,6 +840,10 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // (frame and registers differ from +0x1); the 0x155760/0x218d30/0x30bf0 prototypes moved to the top of the file 2; the along
 // bound written `along < length_squared` 2; the normalize result cast to void 2; the projection dot as one expression
 // instead of the staged sum 6. Re-measure: `distance_squared < maximum_distance * maximum_distance` 2.
+// Round 92 (m3 lane 11, plain, with 0x189400/0x1895f0 matched): the existing helpers together (to_camera through
+// vector3d_from_points3d, both lengths through length_sq3f, projection and along through dot3f, the projection through
+// vector3f_scale) 312 (514 B: the inline_depth(0) pragma keeps them calls); without vector3f_scale 288 (539 B); to_camera
+// and the lengths only 251 (575 B); length_squared declared at its initialisation 2; a const maximum distance 2.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

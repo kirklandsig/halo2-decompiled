@@ -79,6 +79,7 @@ void cache_copy_forget(char const *map_name);
 bool map_copy_request(char const *map_name, long priority);
 void __stdcall cache_copy_record_use(char const *map_name);
 
+// MiniMax G (11-12): no new form, no lower score (29); state 11's three loads are still one rotation step off (ours total eax, completed edx, limit ecx against retail's eax, ecx, edx), so the compare keeps the operands the other way round, and states 7, 9, 16 and 19 still differ in register choice and statement order; this round the chunk as a single variable clamped by `if (limit <= chunk) chunk = limit;` (30) and the ternary with the limit on the left (30) both keep the completed value in edx and the limit in another register.
 // MiniMax E (11-11): no new form, no lower score (29); the check's left column is ours and the right column is retail.
 // Retail's state 11 clamp is `mov eax,[total]; mov ecx,[completed]; mov edx,[limit]; sub eax,ecx; cmp edx,eax; jg L;
 // mov eax,edx;` - the chunk shares the remaining's register, the limit is the compare's left operand and the

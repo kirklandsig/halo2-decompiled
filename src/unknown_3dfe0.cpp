@@ -91,6 +91,10 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // at the top (0x3dd10's idiom) 21, on the update-first base 218. Diagnostic: the update-first base (218) has retail's
 // object/force homes and EBX load; left there are the timestamps in EDI/ESI, the object index loaded straight into EDI
 // for 0xd1850 (retail ESI then `mov edi, esi`), the false store after the home store and no reload in the force arm.
+// Round 114 (m3 lane 9, fast = plain 21; masked aligned 8 on the base, 15 on the update-first form): update-first re-measured 218 (homes
+// and EBX load as retail, sample/update timestamps in EDI/ESI); the tail under `if (cache->valid)` in place of the early return 21 (same
+// code), with update first 218; the special-flag tests as plain `& 0x2000` / `& 2` tests setting 1 48; the elapsed clamp as a ternary 21
+// (same code); `update = update || cache->update_time == NONE || update_elapsed > 1` 205, with update first 121.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

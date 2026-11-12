@@ -913,6 +913,10 @@ static __forceinline byte *view_allocate_buffer(long size, long owner, long rele
 // Round 52 (lane 14, fast; see 0x80e10's note for the shared helper's forms): `buffer->data` before `buffer->size` 21 (the only store order that
 // moves; not kept for one line); with `used` before `start` 21, the header after `result = true` 21, `size` declared before the increment 21,
 // `count = count + 1` 21. Without it: chained `start = used = 0` 22, `used` first 22, all three zeros chained 22, a memset of the two fields 97.
+// Round 157 (m3 lane 8, fast): the header as an aggregate initialiser `{ 0, 0, world value }` 98 (664 bytes, the memset
+// stores go); the ring's four fields set by copying a local ring value 207 (697 bytes); `result` declared after the two
+// allocations 90 (669 bytes); a `world` local for the header value, the 0x6a860 call and the flag store 65 (676 bytes:
+// held across the calls); the shared allocation helper called directly in place of the file's wrapper 22 (same code).
 // @retail 0x862e0
 bool function_862e0(c_simulation_view *view)
 {
