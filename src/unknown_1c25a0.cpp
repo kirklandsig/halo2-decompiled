@@ -991,6 +991,13 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // Round 137 (lane 7, fast): `0x34e < g_47f050` 1; the call's result compared `== false` 1; attempt reset before the force
 // flag is set 3; `g_47f050 >= 0x34f` 5; the force step nested in a plain else 1.
 // m3 lane 11 r83 (fast): the walk forms in 0x1c4040's note re-measured 1/1/1/1/1 (the two 34 forms lose eight matched).
+// Round 175 (m3 lane 5): no form of this body can move the one differing instruction, so none was measured: under /Gr
+// the second argument of a default-convention callee is DL in every spelling, and retail's AL needs function_1c4040 in
+// the custom regime. Retail's graph gives the walk that does it: 0x146bf0 (with 0x146da0 inlined) calls 0x1c2690, which
+// calls 0x1c39c0, which calls this function, so both callers of function_1c4040 are on the walk's stack when it is
+// first reached, provided the cycle is entered at 0x146bf0 while 0x278f00 is still unvisited. Retail enters there
+// through 0xb7b40, whose body is disabled here; every other caller of 0x146bf0 is reached only after 0x278f00.
+// BLOCKED-BY 0xb7b40 (and the bodies its walk needs, see function_1c4040's note).
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
@@ -1683,6 +1690,25 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // (894 bytes); the main-body comparison as `index == main index` 4; one rigid-body fetch shared by the linear and angular reads
 // 67 (861 bytes). Retail's 0x1d1160 (ends at +0xc5) never touches EBX; its only direct call, 0x1d1010, saves it, so the index
 // spill is no callee clobber in the bytes.
+// Round 175 (m3 lane 5, fast with 0x1d10b0 0x1d1160 0x1d1010 0xe5300; plain agrees): the cause of the index spill. The two
+// vectors and the loop index as the members of one local record (a, b, index, in that order: retail's frame) with a plain
+// `for` and no mirror give retail's `test eax, eax` entry and the index store at each definition; positionally 105 (864
+// bytes), aligned only the 4-byte reload after the 0x1d1160 call and the 0x1d10b0 setup pair are missing. The reload
+// appears (868 bytes, 2: the pair alone) as soon as the compiler takes 0x1d1160 to write through its velocity argument,
+// while 0x1d1010 and 0x1d10b0, given the same record's addresses, stay known not to. What makes it so in 0x1d1160
+// (each with the record form here; 0x1d1160 loses its match in every one): a real store through the pointer
+// (diagnostic); the vector conversion through a plain function of this file that stores through its output pointer
+// (under /Ob1 it stays out of line, even with one call site: 0x1d1160 146-176 bytes); an SSE load intrinsic on the
+// velocity's members (`_mm_load_ss(&velocity->i)`: 0x1d1160 204-240 bytes in six spellings, since the store intrinsic
+// goes through a `lea` and the member read through a stack copy). What does not (105, no reload): a non-const velocity
+// pointer; 0x1d1010 defined after 0x1d1160; `inline` on 0x1d1160; 0x1d1160 defined in this file; the conversion helper
+// as `inline` or `__forceinline`; the conversion (vector alone, or point and vector) through plain functions defined
+// in src/unknown_1cfb90.cpp, which is built without /Ob1 (they are inlined at link time, 0x1d1160 still matches, and
+// the caller then sees no write); local copies of the point and the vector; an early `return` on the first path; the
+// set intrinsics; a load intrinsic on the point only; the vector by value (copied to the stack, 252). So the callee
+// must keep, when this function is compiled, a call or intrinsic that takes the velocity pointer and may store, yet
+// end with retail's bytes: not found. With it the recipe is this record, 0x1d10b0 as a component member (index,
+// velocity) and that callee form.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

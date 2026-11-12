@@ -125,15 +125,15 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
 
+// score 46 (was 46): retail's length and every lookup, store and the tail; left are the products' load/memory sides (retail's
+// ranks: j fields > bounds[1,2] > i fields > bounds[0,3] > k fields; ours differ and move with symbol count), the plane store base
+// and the first corner's registers (the axis stays live in ECX, so the flag takes EAX). Earlier at 138: frame 0xc and matrix/dot
+// prefix agree; plane-store base, projection operands/publication and inverse schedule remain.
 // MiniMax G (11-11): no new form, no lower score (46): the products' load and memory sides, the plane-distance store
 // base and the first corner's axis and flag registers are as the earlier rounds left them; a short axis result measures 162.
 // This round: the fast image measures this body exactly only with 0x120850 and 0x22bbca checked beside it (46; alone it
 // gives 258); the axis as a short through the helper 165, the three components as named locals 46 and the determinant's
 // product with its operands swapped 46 (both the same code).
-// score 46 (was 46): retail's length and every lookup, store and the tail; left are the products' load/memory sides (retail's
-// ranks: j fields > bounds[1,2] > i fields > bounds[0,3] > k fields; ours differ and move with symbol count), the plane store base
-// and the first corner's registers (the axis stays live in ECX, so the flag takes EAX). Earlier at 138: frame 0xc and matrix/dot
-// prefix agree; plane-store base, projection operands/publication and inverse schedule remain.
 // MiniMax R (11-04): the corner products' operand order (register/memory sides) changes no code at all
 // (46), a short axis result scores 162, the short axis passed to the corners 186, and a plane pointer for
 // the copy, the dot and the store 65 (the store base then matches retail but the dot's sides flip); the
@@ -515,6 +515,13 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // side test through quad->axis 174 (masked 43; AX store as retail, the flag still in EAX and the first corner's two
 // extensions merged). Every other natural form found (axis/side types, plane pointer or helper, dot sides, edge helpers,
 // helper signatures, value locals) is listed above; no untried natural form left. Body unchanged.
+// M3 lane 4 r190 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46): the table row in 0x245bd0's projection order
+// `side + axis * 2` 46 (same code); that with `quad->axis` stored straight from the call 174 (the listed direct store: AX
+// store as retail, the extended axis then reused at the first corner, so the flag still takes EAX); the listed plane
+// pointer for the copy, dot, store and axis call re-measured 65 (store base as retail; the dot and corner 0's first product
+// flip sides); that with the `side + axis * 2` row 65; the flag stored by an if/else 59 (984 bytes); the corner point
+// built by a brace initializer 54; the row index named for both lookups (re-measured on this base) 163; the helper's side
+// parameter `long` 166; the point's second row written forward-first like the others 46 (same code). Body unchanged.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

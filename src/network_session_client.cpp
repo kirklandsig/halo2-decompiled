@@ -795,6 +795,24 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // players first 108, the summary fetched before the variant 108, the copy through memcpy per machine 108 (all 477
 // bytes, the session in ESI, 0x6e500 69 and 0x72700 94). Every preset-pair / `for`-copy combination collapses to
 // 108, so the next round should skip that base.
+// Round 175 (m3 lane 5; real = fast with the inlined callees and both callers, control 22; screens on a compile-only
+// first-pass harness, build/r175/fp, that reproduces the session register and the mask fold, about 1700 forms). Reading:
+// retail's copy loop is the plain `for` (its count spill follows the two leas; the hand countdown spills first) and its
+// opening computes both stored addresses before testing them, so the body below is not retail's source in either place.
+// What blocks each: (1) with a `for` copy loop the player loop folds the mask read (`test [session + 0x111c], reg`)
+// whenever the member count is a local, in every spelling of the loop (guarded, braced, `!=`, while, a named machine
+// pointer, memcpy, walked output and player pointers); it stays unfolded only with the hand countdown, with the count
+// read from the session at each use (a second count load, real 132), with the machine mask stored after the copy loop
+// (real 133), with the summary fetched just before the player loop (real 134) or with the 0x49c8 value named before the
+// loop (round 122, a stack slot). (2) The session takes EBX only with the original three-test opening and the variant
+// named either immediately before the summary getter or at the top of the state block; every opening that computes the
+// pair first (preset, live-and-flag, inline getter, `== NULL`, empty-then, early `return true`, the variant or the
+// summary between the pair and its test) keeps ESI across about 600 combinations of variant position, summary
+// position, buffer and memset order, count and address locals, index scope, mask spelling and named player pointers.
+// Real: preset pair + `for` copy + a `long const *` to the 0x49c8 value named before the player loop 108 (477 bytes,
+// propagated back, ESI); `for` copy + variant and summary just before the player loop 134 (479 bytes, EBX, callers
+// match); `for` copy + mask stored after the copy loop 133 (495 bytes, EBX); the same on the preset pair 137 (ESI);
+// preset pair + `for` copy + the count read at each use 132 (495 bytes, ESI).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

@@ -1591,7 +1591,7 @@ void function_b7360(long object_index);
 
 // MiniMax G (11-12): no new form, no lower score (270): the two initializers swapped give 487 and the output pointer declared first the same code; the argument slots for the actor index and the cs index agree with retail.
 #pragma inline_depth(2)
-// score 270 (was 270; 301 before r88; 301 before): 1848 bytes as retail, with retail's success-test layout (return 0 after the test, the failure block
+// score 270 (was 270; 270 before; 301 before r88; 301 before): 1848 bytes as retail, with retail's success-test layout (return 0 after the test, the failure block
 // last). Left: arg_0 in ESI and the output in EBP where retail has EBP and ESI (ours holds the point reference across 0x25ab50 at the
 // 1/19 site and case 5, retail reloads it), the prologue's pool order, the table-first lookups in cases 7 and 13, case 10's +0x8c
 // clear after the selector load and case 5's store order.
@@ -1981,6 +1981,13 @@ void function_b7360(long object_index);
 // 10/5/8 gives 318/287/339. Every entry prefix through notification dispatch
 // is unchanged after addresses are masked. NOT kept: no equality or gain;
 // original complete cases, fallthroughs, inputs, copies and callback restored.
+// M3 lane 10 r97 (fast with the file's 28 other functions and 0x1b13b0, all unchanged; base 270): nothing kept. The parameters and
+// locals renamed to the declaration's names (actor_index, object_index, state, cs_index; actor, cs, output) 270 (same code: names
+// do not swap EBP/ESI); success declared first 270; the output pointer declared first 270 (same code). Round 68's second datum
+// pointer (declared after the actor) for the 1/19 and case 5 point reads and both selector reads, with case 9 reading g_4e0350 at
+// each use, re-measured on this body 495 (1856 bytes: arg_0 then takes EBP as retail, but the shared `lea edi, [ecx + edx]` and
+// the prologue order follow); the second pointer for the case 10 and case 5 selector reads alone 490 (1856). Retail keeps the +0x8c
+// and +0x9a clears ahead of the selector loads (ours sinks each store below its load) and reloads +0x28 after 0x25ab50 at both sites.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2388,10 +2395,16 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// MiniMax A (11-12): the case 2 dot product's terms in retail's order, `local_6.x * local_0->unknown290.i +
+// local_0->unknown290.j * local_6.y` (the x term first, the y term second): the full build goes 479 -> 477
+// (2404 bytes); the reduced image reads 474 before the change and 477 after it, so the gain holds in the
+// full build only; left: retail's aggregate copy at +0x424, case 4's direct facing reads, case 18's held
+// references, case 14's block after 21, case 6's two flag stores and the post-switch test laid out after
+// case 0.
 // MiniMax S (11-11): no new form, no lower score (479; 474 when only this function's own units are in the
 // reduced image); our body is longer than retail's (eight bytes in that image), so the jump table lands later
 // and every branch after it differs.
-// score 479 (was 479): earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
+// score 477 (was 479): earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // MiniMax R (11-10): no new form, no lower score.
 // Earlier 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
 // (0x2594b5 `comiss xmm0, [1.0]; jbe 0x2597fa`, true for a NaN distance); `d <= 1.f` compiled to
@@ -2697,7 +2710,7 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 				{
 					point2f local_6 = *(point2f *)((byte *)local_0 + 0x4d8);
 					if (normalize2d(&local_6) > 0.f &&
-						local_0->unknown290.j * local_6.y + local_6.x * local_0->unknown290.i < 0.984f)
+						local_6.x * local_0->unknown290.i + local_0->unknown290.j * local_6.y < 0.984f)
 					{
 						vector3f const *turn_facing = (vector3f const *)((byte *)local_0 + 0x4d8);
 						vector3f_assign(&local_0->unknown424.vector, turn_facing->i, turn_facing->j, turn_facing->k);

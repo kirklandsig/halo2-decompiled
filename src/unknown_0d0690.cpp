@@ -262,6 +262,19 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // fill through vector3f_assign 32, colour first 120; the clamps through pinned_real 66 at 821 bytes (the clamp
 // joins change), colour first 121. Kept: the ray through the existing vector3f_scale (same code on both arm orders;
 // the hand-written ray was its body).
+// Round 111 (m3 lane 16, fast; colour first re-measured 121): a plain-inline in-place blend wrapper (colour, other
+// colour, ratio) 253, colour first 298 (plain too: LTCG then inlines 0x131c20's body); a power local read before the
+// first-light test for the first-arm assignment, the test and the divide, with the add re-reading the field, 158 (824
+// bytes, the load hoists above the branch); colour first with each of the six aggregate copies as memcpy 121 each;
+// with {count, address} pointer locals for the lights, the entries or both 121 each (30 each strength first, same
+// code); with `i++` or `i += 1`, nested entry tests, `if (sky)`, the blend as a repeated-expression PIN macro or the
+// sky helper without its count local 121 each (same code); the result declared before the collision sentinel 123; the
+// sky helper without its scenario local 142, with early returns 223; the post-call add re-reading the entry through
+// the light 154 (the entries pointer is reloaded after the call and the add stays load-first: it is a fresh load, so
+// only the add's operand order differs). Diagnostics on colour first (not source forms): one store through `record`,
+// or one read at offset 0 of `point` or `record`, anywhere ahead of the add in source order (function entry or the
+// first-light arm) gives retail's in-place add at 821 bytes; two of them cancel; reads at +4, +8 or +0x10, and
+// statements after the loop or after either arm's strength assignment, change nothing. The ECX/EDI pair never moved.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {

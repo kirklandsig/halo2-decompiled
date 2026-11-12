@@ -114,6 +114,9 @@ void class_2e1090::function_2e3370(bounds_2e0020 const *bounds, overlap_endpoint
 // one use); index first 100; int indices 100; while 100; axis reference 100;
 // early owner pointer 100 (NOT kept: one use); cell pointer 100; unscoped
 // indexed loop 101 (NOT kept: repeated array pointer reads); unscoped cursor 111.
+// New: record copies 111; tagged branch first 111; axis pointer/count 110
+// (NOT kept: gain 1); box decrement in body 111; captured endpoint count 115;
+// direct size test 147; inclusive last ordinal 147; unsigned owner 111.
 // @retail 0x2e3b00
 void class_2e1090::function_2e3b00()
 {
