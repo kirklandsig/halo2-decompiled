@@ -1044,6 +1044,9 @@ PRIVATE inline long damage_object_root(long object_index)
 
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
+// MiniMax B (11-12): no new form, no lower score (206): the frame is 0x1a4 against retail's 0x1b4 and the argument
+// slots sit lower here; retail reads the flag word at [esi+0xc], masks bit 1 and negates it before the pushes where this
+// build pushes first and loads the flag afterwards, and the link-time inliner still folds the callee in.
 // score 206 (was 206): left is 0xbadc0 and register allocation. The link-time inliner inlines 0xbadc0 at the first
 // MiniMax A (11-11): no new form, no lower score (206); the frame is still 0x1a4 against retail's 0x1b4 and the
 // entry block still pushes before it reads the flags word and negates it, where retail reads the flags first. The
@@ -1916,6 +1919,9 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 /* destroys a damage region: picks the permutations whose chance and body
    threshold allow it, and destroys each now or schedules it after its
    delay */
+// MiniMax B (11-12): no new form, no lower score (57): the accumulator's flags word in a named local, the test written
+// as a comparison, and both together all measure 57 (554 bytes); what is left is the register pair - retail loads the
+// accumulator pointer into ECX and the flags into EAX where this build loads the pointer into EAX and the flags into ECX.
 // MiniMax E (11-11, run 80): no new form, no lower score (57): the body's instructions still agree with retail
 // except for the call setup of the two unmatched callees, and 0xda110 (in this file) takes the permutation in eax
 // alone with five stack arguments and ret 0x14 in retail against our eax+ecx with four stack arguments and
@@ -2229,6 +2235,9 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 /* damages a region: raises its damage level by the damage over the span to
    its next permutation's threshold, and when the level fills, destroys the
    permutations at that threshold */
+// MiniMax B (11-12): no new form, no lower score (73): the instructions agree with retail but the register pair is
+// swapped - retail loads the accumulator pointer into ECX and the flags into EAX where this build loads the pointer into
+// EAX and the flags into ECX, the same shape as 0xdae60; the body is 961 bytes against retail's 958.
 // MiniMax E (11-11, run 80): no new form, no lower score (73): the instructions agree with retail's and the
 // differing lines are the two early exits, whose targets land five bytes past retail's because the tail is five
 // bytes longer; the setup of the 0xda110 and 0xd9d60 calls decides that tail, and both callees are unmatched
@@ -4501,6 +4510,10 @@ void function_db670(long object_index, long vehicle_index)
 
 /* a permutation destroyed elsewhere (over the network): starts its delayed
    effect, or destroys it here */
+// MiniMax B (11-12): no new form, no lower score (42): the mode-1 arm still keeps the permutations base in EAX where
+// retail keeps it in EDI (with its push edi/pop edi) and still loads the effect index first where retail loads the flags
+// word first; the flag in a bool local, the flags word in a dword local, the flags word in a long local and the flag
+// compared against zero all measure 42, and reading the fields through the indexed expression measures 73.
 // MiniMax G (11-11): no new form, no lower score (42); the mode-1 arm still keeps the permutation base in EAX where
 // retail holds it in EDI, so retail loads the flags word first and saves EDI across the branch while ours loads the
 // effect index first and leaves EDI unsaved, which also moves the &owner argument from [esp+0xc] to [esp+8]. Moving

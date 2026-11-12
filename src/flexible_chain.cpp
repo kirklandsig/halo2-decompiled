@@ -234,6 +234,9 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
+// MiniMax B (11-12): no new form, no lower score (171): the body is retail's length (1368 bytes) and the first difference
+// is the register pair at the segment's axis load, retail keeping the value in EDX where this build keeps it in EDI and
+// then in ECX; the permuter on this address was killed by its time limit without a result.
 // score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // seven local-name sets, declaration reversals and entry/loop scopes 194;
 // shared cross 207, both point differences 286, both helpers 280;
