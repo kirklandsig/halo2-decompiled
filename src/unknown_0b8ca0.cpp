@@ -674,10 +674,9 @@ real function_c8880(long unit_index, short field_240);
 static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 {
     long absolute = function_16bc00(data, index == NONE ? 0 : (index & 0xffff) + 1);
-    long result = NONE;
-    if (absolute != NONE)
-        result = (*(short *)(data->data + data->size * absolute) << 16) | absolute;
-    return result;
+    if (absolute == NONE)
+        return NONE;
+    return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
 // MiniMax B (11-12): score 71 (was 165): the step helper now takes its result after the call, the cluster
@@ -908,6 +907,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // fxch; fcos; fxch`) but the frame no longer self-aligns - lead: retail holds the radius in memory across the call as a value,
 // where our build self-aligns only for a spill temp; the angle through an inline helper (double radius, real distance) 267
 // (873 bytes), with the normalising call inside the helper 67 (same as the 67 form), (double, double) 262 (877 bytes).
+// NOT kept (coordinator review, MiniMax B 11-12): 165 -> 71 rested on match-only forms (a `visible` flag set in the cluster loop, a (real) cast on atan2, the swapped comparison); without them the full build gives 215, worse than main's 165. The body is main's again.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -921,29 +921,25 @@ bool function_bba80(long object_index)
             index = *(long *)((byte *)OBJECT_GET(index) + 0x14);
         }
         s_object_header_view *header = OBJECT_HEADER_GET(root);
-        byte *root_object = (byte *)header->object;
-        if (!(((byte *)header)[2] & 1) || !(bool)((*(dword *)(root_object + 4) >> 8) & 1) || (bool)((*(dword *)(root_object + 4) >> 18) & 1))
+        dword flags = *(dword *)((byte *)header->object + 4);
+        if (!(((byte *)header)[2] & 1) || !(bool)((flags >> 8) & 1) || (bool)((flags >> 18) & 1))
             goto done;
         s_object_link_iterator links;
         short cluster = function_b8a80(root, &links);
-        bool visible = false;
         while (cluster != NONE)
         {
             if (bit_vector_test((dword const *)((byte *)g_4e6948 + 0x1138), cluster))
-            {
-                visible = true;
                 break;
-            }
             cluster = function_b8b20(&links);
         }
-        if (!visible)
+        if (cluster == NONE)
             goto done;
 
         byte *object = (byte *)OBJECT_GET(object_index);
         s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
         long model_index = definition->model_tag_index;
         real radius_squared = *(real *)(object + 0x3c) * *(real *)(object + 0x3c);
-        real range_squared;
+        real range_squared = 0.0f;
         if (model_index != NONE)
         {
             real range = *(real *)(g_4e3b44[model_index & 0xffff].bytes + 0x28);
@@ -955,8 +951,6 @@ bool function_bba80(long object_index)
             else
                 range_squared = 1600.0f;
         }
-        else
-            range_squared = 0.0f;
         s_record_pool *players = g_4e8c24;
         long player_index = object_query_next_ab(players, NONE);
         while (player_index != NONE)
@@ -988,8 +982,8 @@ bool function_bba80(long object_index)
                     offset.j = centre->y - position.y;
                     offset.k = centre->z - position.z;
                     vector3f *forward = (vector3f *)((byte *)OBJECT_GET(*(long *)(player + 0x2c)) + 0x15c);
-                    if (cos((double)((real)atan2((double)*(real *)(object + 0x3c), (double)function_30bf0(&offset)) + 0.7853981852531433f)) <
-                        offset.k * forward->k + offset.j * forward->j + offset.i * forward->i)
+                    if (offset.k * forward->k + offset.j * forward->j + offset.i * forward->i >
+                        cos(atan2((double)*(real *)(object + 0x3c), (double)function_30bf0(&offset)) + 0.7853981852531433f))
                     {
                         result = true;
                         goto done;
