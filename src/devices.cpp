@@ -1869,7 +1869,7 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
-// MiniMax B (11-12): 61 (was 250), kept: the 11-11 lane's shape measures 61 here at retail's 1495 bytes (plain check
+// MiniMax B (11-12) lead 61, NOT kept (coordinator: the one-use rate local is match-only; without it 382): the 11-11 lane's shape measures 61 here at retail's 1495 bytes (plain check
 // too), with 0x108600 and 0x108670 unchanged at 31 and 13 - the definition pointer's volatile dropped (retail reads the
 // definition once), the acceleration and the speed each one product added into a running value, and the tick rate read
 // into a local just before the power 0x11eed0 call; the rate local used by both reads gives 289 and the volatile kept
@@ -1890,12 +1890,7 @@ bool function_0b6760(s_index_pair const *pair);
 // pointer's volatile, a rate local just before the power call, `bool result = false;` after the
 // definition and the 0xb3 byte as `<= 0`) is three points and stays under the eight-point gate; the
 // index and index * 12 still sit in EDI/ESI where retail has ESI/EBX, and the result stays in DL.
-// score 61 (was 250): the same body measured 248 at lane 14 round 62 and 250 in round 79's baseline; now the definition is
-// read once, the acceleration and the speed are each one product added into a running value and the tick rate is read
-// into a local before the power call; left are the entry's result-byte and definition-pointer stores in the other order
-// and the position arm, where the channel pointer is in ECX with a copy into ESI (retail's in ESI), the channel guard
-// calls 0x1c6620, and the position 0x11eed0 and 0x1c6920 calls set their arguments up in another order.
-// Earlier (248, was 285): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
+// score 250 (was 250): the same body measured 248 at lane 14 round 62 and 250 in round 79's baseline. Earlier (248, was 285):
 // frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // where retail has ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads.
 // MiniMax R (11-06): no new form, no lower score (248); the frame agrees and the registers are pushed in the order EBP, ESI, EDI here and EBX, EBP, ESI in retail.
@@ -2191,7 +2186,7 @@ bool __stdcall function_106790(long device_index)
 {
 	s_device *device = DEVICE_GET(device_index);
 	bool result = false;
-	byte const *saved_definition = g_4e3b44[device->definition_index & 0xffff].bytes;
+	byte const *volatile saved_definition = g_4e3b44[device->definition_index & 0xffff].bytes;
 	s_animation_state *state = NULL;
 	if (device_has_animation_state(device_index))
 		state = device_get_animation_state(device);
@@ -2225,10 +2220,11 @@ bool __stdcall function_106790(long device_index)
 		{
 			if (state && device_channel_valid(&device->channels[0]))
 				device->channels[0].set_frame_ratio(device->power);
-			real acceleration = *(real const *)(saved_definition + 0xcc) * device->position;
-			acceleration += *(real const *)(saved_definition + 0xd4) * (1.0f - device->position);
-			real speed = *(real const *)(saved_definition + 0xc8) * device->position;
-			speed += *(real const *)(saved_definition + 0xd0) * (1.0f - device->position);
+			real position_acceleration = *(real const *)(saved_definition + 0xcc) * device->position;
+			real remaining_acceleration = *(real const *)(saved_definition + 0xd4) * (1.0f - device->position);
+			real acceleration = position_acceleration + remaining_acceleration;
+			real speed = *(real const *)(saved_definition + 0xc8) * device->position +
+				*(real const *)(saved_definition + 0xd0) * (1.0f - device->position);
 			bool increasing = device->power_velocity > 0.0f;
 			device->flags = acceleration > 0.0f && speed > 0.0f ?
 				device->flags | 0x100 : device->flags & ~0x100;
@@ -2245,10 +2241,8 @@ bool __stdcall function_106790(long device_index)
 				real previous = device->power;
 				if (fabs(local_c01284_2) > speed)
 					device->power_velocity = increasing ? speed : 0.0f - speed;
-				real time_step = g_510c54->rate;
-
 				bool reached = function_11eed0(&device->power, &device->power_velocity,
-					group->value, time_step, speed, acceleration,
+					group->value, g_510c54->rate, speed, acceleration,
 					(*(byte const *)(saved_definition + 0xbc) & 1) != 0, 0.0f, 1.0f);
 				if (reached)
 					function_107980(device_index, increasing ? *(long const *)(saved_definition + 0xf0) : *(long const *)(saved_definition + 0xf8));
