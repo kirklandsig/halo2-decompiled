@@ -3504,7 +3504,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00106680,247,game,speed,a16 pad,,,0016ba40,src/devices.cpp,matched
 00106780,5,game,speed,a16 pad,,,00106680,src/devices.cpp,matched
 00106790,1495,game,speed,a16 pad,,,000b6760 000bd020 00107520 00107980 00107cc0 00115b10 0011eed0 001c6620 001c6920,src/devices.cpp,todo
-00106d70,654,game,speed,a16 pad,,,,src/devices.cpp,todo
+00106d70,654,game,speed,a16 pad,,,,src/devices.cpp,near
 00107000,203,game,speed,a16 pad,,,001c6f60,src/devices.cpp,matched
 001070d0,103,game,speed,a16 pad,,,,src/devices.cpp,matched
 00107140,68,game,speed,a16 pad,,,000b7360 001071e0,src/devices.cpp,matched
@@ -11860,7 +11860,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 002dff20,125,third:havok,speed,a16 pad ebp,,,002dff20,src/unknown_2dfec0.cpp,matched
 002dffa0,83,third:havok,speed,a16 pad,,,,src/unknown_2dffa0.cpp,matched
 002e0000,17,third:havok,speed,a16 pad,,,,src/unknown_2e0000.cpp,matched
-002e0020,249,third:havok,speed,a16 pad ebp,,,,,todo
+002e0020,249,third:havok,speed,a16 pad ebp,,,,src/unknown_2e0000.cpp,matched
 002e0120,156,third:havok,speed,a16 pad ebp,,,,src/unknown_2e0120.cpp,matched
 002e01c0,129,third:havok,speed,a16 pad ebp,,,002e01c0,src/unknown_2e0120.cpp,matched
 002e0250,125,third:havok,speed,a16 pad ebp,,,002e0250,src/unknown_2e0120.cpp,matched
@@ -11889,7 +11889,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 002e29b0,1466,third:havok,speed,a16 pad ebp,,,002d9160 002d91d0 002dfdc0 002dffa0 002e1ab0 002e1b40,src/unknown_2e24b0.cpp,todo
 002e2f70,1013,third:havok,speed,a16 pad,,,002d91d0 002dff20 002e1ab0 002e1b40,,todo
 002e3370,1933,third:havok,speed,a16 pad ebp,,,002dfec0 002e0250 002e1ab0 002e1b40,src/unknown_2e3370.cpp,todo
-002e3b00,574,third:havok,speed,a16 pad,,,002e02d0 002e1980 002e1a10 002e1ab0 002e1b40,,todo
+002e3b00,574,third:havok,speed,a16 pad,,,002e02d0 002e1980 002e1a10 002e1ab0 002e1b40,src/unknown_2e3370.cpp,todo
 002e3d40,2334,third:havok,speed,a16 pad ebp,,,002e1ab0 002e1b40 002e1be0 002e1c70,src/unknown_2e3d40.cpp,todo
 002e4660,2305,third:havok,speed,a16 pad ebp,,,002e1be0 002e1c70,src/unknown_2e3d40.cpp,todo
 002e4f70,125,third:havok,speed,a16 pad,,,002e1d10,src/unknown_2e4f70.cpp,matched
