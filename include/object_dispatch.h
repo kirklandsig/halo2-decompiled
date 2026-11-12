@@ -8,6 +8,7 @@
 
 #include "unknown_11c920.h"
 #include "globals.h"
+#include "object_tag_definitions.h"
 #include <stddef.h>
 
 /* the object types, in the order of g_468630 (each definition's name is a
@@ -90,18 +91,6 @@ struct s_object_type_definition
 typedef char assert_object_type_definition_create[(offsetof(s_object_type_definition, create) == 0x2c) ? 1 : -1];
 typedef char assert_object_type_definition_hierarchy[(offsetof(s_object_type_definition, type_hierarchy) == 0x84) ? 1 : -1];
 typedef char assert_object_type_definition_size[(sizeof(s_object_type_definition) == 0xc8) ? 1 : -1];
-
-/* an object definition tag, as far as these functions read it */
-struct s_object_definition
-{
-	byte unknown00[2];
-	word : 6;
-	word carries_objects : 1;             /* the object goes in the object list */
-	word : 9;
-	byte unknown04[0x38 - 0x4];
-	long model_tag_index;
-};
-typedef char assert_object_definition_size[(sizeof(s_object_definition) == 0x3c) ? 1 : -1];
 
 /* the datum every object starts with ("object" datum_size 0x12c) */
 struct s_object_common_datum

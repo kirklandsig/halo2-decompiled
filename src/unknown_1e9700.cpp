@@ -240,7 +240,8 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
-// score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
+// MiniMax H (11-11): the consideration flag is now a true default cleared by the test, which is retail's shape.
+// score 344 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // Round 170 (m3 lane 5, fast with the file's functions and 0xd9640; base aligned 132, masked 35): slot references counted in
 // both listings: retail killer 8, victim_team 8, damage_code 7 (killer stays in its home and is reloaded into EDX/EDI around the
 // fallback, the code is read once into ESI for both pushes); ours victim_team 8, damage_code 8, killer 6 (killer in EBP through
@@ -527,6 +528,7 @@ struct s_object_damage_view
 // al` / `movsx si, al` pair); with `if (killer != NONE) { if (killer == reported_player) ... } else if (reported valid)` as well
 // 353 [73]; that arm order alone 363 (1532 B); the arm order, team byte and a `&history[selected]` record pointer used three times
 // 455 (1583 B). The three slots stay rotated (killer still kept in EBP across its block). Body restored at 353.
+// MiniMax H (11-11), NOT kept (coordinator 11-11): 353 -> 344 only from consider_team set true and cleared by two nested tests in place of its one expression (a bool set by tests: match-only); body at 353.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -729,6 +731,14 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // delta 24, named at the join 85; a named field copy for the entry and the team call 80 volatile-free, 85
 // with the volatile delta, for the entry only 85; the delta read through its own address with the top
 // engine local 32, alone 85, at the join 85; a 600 s permuter run, 59 tries, none below 13.
+// Round 110 (m3 lane 16, fast with the matched callers 0x1ea770, 0x15b3a0, 0x15b7c0 and callees; volatile-free body
+// re-measured 85, the top engine globals local re-measured 32): retail's field is a stack parameter cached in EDX for the
+// entry block and read from its slot again for the team call; one parameter at most gets that EDX entry load. On the
+// volatile-free body: `by_team` copied into a local at the top for the team test 80 (256 bytes: delta's movsx takes the top
+// EDX load, the field stays folded); statistics read once through the siblings' `s_statborg *const *` own-address reference
+// 80 (same code as the copy); that reference with the volatile delta kept 85 (folded; delta out of the way does not hand the
+// field the load); `value = *entry; value += (short)delta;` 85; the entry as `values[index] + field` 85 (same code as the
+// volatile-free control); re-measured, round 169's first test through game_engine_get() with the peer named 85.
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)

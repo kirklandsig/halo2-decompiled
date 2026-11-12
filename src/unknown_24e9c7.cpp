@@ -79,6 +79,17 @@ struct s_24e9c7_points
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// MiniMax G (11-11): no new form, no lower score (125): the result, kind and bitmap homes stay eight bytes above
+// retail's, the 1.0 constant stays in xmm4 where retail uses xmm5, and the sprite bounds are copied through esi where
+// retail loads the sprite pointer into eax. This round: the corner offsets written as `-side.x` and `-side.y` in place
+// of the back vector 167 (722 bytes), the two across products as one point-typed local 144 (746 bytes), the half width
+// and side before the height 131, the back vector from the across products 154 (753 bytes), the corner sums written
+// out per component 229 (664 bytes), the negation spelled `size * (0.0f - forward_j)` 138 (739 bytes), the across-j
+// operand order swapped 125 and the scale read before the size 125 (the same code each). A named sprite pointer for
+// the bounds copy gives retail's `mov eax` / `lea esi` staging and 123, but it is a pointer local used once, so it is
+// not kept; the across values as one array 142 and the size inlined into the products 141. The permuter (612 s, 103
+// tries) also ends at 123, again by swapping two arguments of function_22a664, which changes what that call receives,
+// so the body stays.
 // score 125 (was 125): round 112 (m3 lane 12) note at the end. The frame size, the bounds stores and the marker copy agree; what is
 // MiniMax C (11-09): no new form, no lower score (125): the full build's diff shows the group of
 // the result, kind and bitmap homes eight bytes above retail's, with retail's spill at -8 and its

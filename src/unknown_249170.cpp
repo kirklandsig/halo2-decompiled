@@ -69,136 +69,7 @@ PRIVATE __forceinline point2f const *particle_spawn_extents(s_particle_system_da
 	return g_468760;
 }
 
-// score 2 (was 2): what is left is the case 1 fsin/xorps order; the first normalisation product
-// pair (retail folds i and loads j; ours loaded i and folded j) matches since round 91.
-// Round 42: one function-scope seed
-// pointer assigned in cases 5, 6, 7 and 9 (it then shares one home, the dead system argument's, as
-// in retail) 57 -> 6; on it function-scope sine/azimuth/radius/polar/radial/all six 314/36/32/313/
-// 395/422, extents 23, direction 356; tail without the volatile casts (plain, scale helper, `*=`)
-// 47 each; case 1 in retail store order/zero pair first/position.x first/sine products 6/6/8/6.
-// Before it: renamed case locals 57 (identical); case 7 seed before extents 128; case 1 velocity.j
-// before velocity.i 57; squared speed through length_sq3f or dot3f 57 (identical); permuter 77
-// tries, none under 6. Round 40: the position.z clear written in cases 0 and 9 (no labels) lets
-// case 0 jump to case 9's store as in retail, 65 -> 58; the side test with the converted value on
-// the left 58 -> 57. Then: normalisation operands swapped 57 (same code);
-// volatile-free normalisation and speed scale 98, through the existing scale helper 98/98; case 0
-// with the angle as the first operand, polar declared first or angle declared at the top 57 each;
-// case 1 with a chained zero, no sine local (309) or the zero store first 57.
-// Round 129 (82): side test with the converted value on the left 81 (fixes the ucomiss only);
-// case conversion/angle/seed/extent homes, trigonometric order, side test and normalization loads differ.
-// Earlier at 65: what is left is per-case stack homes (conversion temporaries, angles, seed
-// and extents in cases 0, 1, 5, 7 and 9), the case 1/9 fsin/xorps order, the side test's ucomiss
-// operands and the first normalisation product (scale first in retail, one byte shorter).
-// extents) differ in cases 0, 1, 5, 7 and 9; also the case 1/9 fsin/xorps order, the side
-// test's ucomiss operands and the first normalisation product (scale first in retail, one
-// byte shorter, which also moves the jump table by four bytes).
-// Round 129: side test with the converted value on the left 81 (fixes the ucomiss only);
-// random draws as `real x = function_x82e52f(seed, NULL, 0); x *= k;` 82 (same code; as one
-// product 554 in screen terms); named inverse local 82; the speed scale through the existing
-// scale helper 91 (2348 bytes, but its loads merge); swap plus direct draws 81. Screened:
-// local renames in case 0 (no slot change), `> 0.f`/reversed zero tests 109/114, an
-// in/out-pointer scale helper in every operand order 100.
-// Before: whole input vector 167, staged output 152, component loop 546, compound loop 546,
-// input snapshot/reverse stores 167, scaled components 106, aggregate output 152, snapshot
-// loop 586; matching 0x1c frame; earlier per-case expression forms excluded; with unqualified
-// scale inputs: ordinary inputs 106; existing scale helper 106; shared squared length 106;
-// shared azimuth 99; shared polar 329; shared shape scalars 416; scalar name order 106; case
-// declarations first 106; lifetime clamp 106; property inline/noinline 106/106; random-vector
-// inline/noinline 106/106; ordinary inverse inline 136; native side test 359; shared side
-// sign 345; ring/sphere/both shared position producers 94/84/96; cone/disk point setters
-// 84/95; shared/named direction workspace 380/82; all position helpers 111;
-// direction/seed/reverse case orders 319/575/518.
-// Ordinary pooled scaling with fraction result reference-first/pointer 106/106; returned real 82;
-// ordinary-inline reference-first/pointer/return 819/819/976; returned real plus ordinary extent query
-// 443; ordinary-inline original reference 819.
-// Round 421: cone velocity setter 114; ring velocity setter 548; cone/ring setters 552; fixed/direction setter 99;
-// cone/fixed setters 107; ring/fixed setters 558; all velocity setters 562; all velocity setters/final scale
-// helper 562.
-// Round 431: complete velocity/position/both field receivers 647/534/647; reversed receiver declarations 647;
-// with shared tail scales 647/534/647; both receivers with local tail scales 647. All trial pooled reads ordinary.
-// Original six differences remain: ring trig/zero order and the first normalization product pair.
-// On the original case-home graph, pointer-returning shared normalization/speed/both scales 47/47/47;
-// paired ring sine/cosine values alone or with each scale combination 497 each (exact-only, restored).
-// Round 91: both scales through the existing vector3f_scale on &particle->velocity, without the
-// volatile casts, 6 -> 2 (kept); the same on the velocity pointer local 47; the speed in a named local
-// first 24; the volatile casts dropped from the plain products 47. Case 1: zero stores after both trig
-// stores 2; no sine local 286; sine and cosine locals with their products 504; zero pair first 2;
-// position.y from the sine local 2; zero stores last 17; position.x copied from velocity.i 2;
-// velocity.i zeroed before the sine 2; radius-first products 2; permuter 68 tries, none under 2.
-// Round 207: float trig family 29; native reciprocal-root intrinsic 688 (16-byte aligned frame,
-// nine match losses, restored); native component array with inherited/ordinary reads 6/47;
-// all three tail declarations at entry 6; tail local names 6; reciprocal/squared-speed declaration
-// at entry separately 6/6. Original frame, helper, field accesses and qualified reads restored.
-// Round 16: normalisation operands swapped 6 (same code); without the casts, compound `*=` 47, tail
-// stores through particle->velocity 105, tail reads through particle->velocity 88 (that one keeps
-// retail's load-multiply-store order: the loads and stores sit on two unrelated bases); case 1 with
-// the zero stores last 21, a chained zero 6, a cosine local 504.
-// Round 207: float trig family 29; native reciprocal-root intrinsic 688 (16-byte aligned frame,
-// nine match losses, restored); native component array with inherited/ordinary reads 6/47;
-// all three tail declarations at entry 6; tail local names 6; reciprocal/squared-speed declaration
-// at entry separately 6/6. Original frame, helper, field accesses and qualified reads restored.
-// Round 12 (m3 lane 2; one-link harness with 0x247950's, 0x246cd0's, 0x259d0's and 0x1462e0's files
-// reproduces case 1 exactly): case 1 sinf 6, cosf 4; `position.x = velocity.i = 0.f` 2; velocity through
-// vector3f_assign with sine/cosine arguments 549 (2300 bytes: case 1's tail cross-jumps into case 2's);
-// a double sine 507. Harness only: the two zero stores in all 60 placements among the four trig stores
-// (both statement orders) keep xorps (or the velocity lea) between fld and fsin; the velocity through
-// vector3f_assign and the position through real_point3d_set 493; the position setter alone 305 (positional).
-// Round 29 (lane 11): case 1 with sinf for the sine 6, cosf for the cosine 4, both 8; the cosine store
-// before the sine store 11 (the one-use sine is evaluated at its use, after the fcos); the sine declared
-// before the radius call 2 (same code: it is carried past the call). Our scheduler fills the fld latency
-// before case 1's fsin with the xorps (as retail does in case 6) where retail's case 1 and case 4 do not.
-// Round 96 (one-link harness with 0x247950's, 0x246cd0's, 0x259d0's and 0x1462e0's files; case 1 swap
-// reproduced): the two zero stores placed before/after the sine definition in all four combinations keep the
-// swap; either one before the radius call 549-563 (stores move ahead of the call); a cosine local after
-// velocity.j / after position.x with sine/cosine products 321 (swap kept); `real const sine` 2 (same code);
-// position.y before velocity.k / velocity.k before position.y 2 (same code); sine declared ahead of the
-// radius call and assigned after it 2 (same code).
-// Round 211: shared seed cursor extended to cases 1/0/4/8/0+1/1+4/1+8/0+1+4+8
-// 2/16/2/16/9/16/9/24.
-// returned random-vector outputs in cases 2/3/5/2+3/2+5/3+5/all; all with sphere position helper
-// 78/460/75/477/527/473/532/535.
-// All source forms restored; case 1 fsin/xorps scheduling remains.
-// Round 58: reverse zero-field dependency 4; velocity/position/both zero components through the unions 2/2/2;
-// all velocity/all output components 2/2; entry-wide tail velocity pointer 512; const case radius 2. Body restored.
-// Round 190: case 1 azimuth as one returned product (never address-taken) 510; drawn into a separate fraction
-// then scaled into azimuth 2 (same code); assigned from the draw then `*=` 16 (the tail's first scale row
-// turns into movaps/mulss-from-memory, the swap stays); sine and radius declared at the top of case 1, either
-// order, 2/2 (same code). Body restored.
-// Round 56 (lane 11, fast; aligned where noted): on the case 1 fsin/xorps swap, a const zero local for both stores 24
-// (2352 bytes); integer zero literals 2 (same code); `velocity.i = position.x = 0.f` chained 4; a named cosine beside
-// the sine 24 (2352 bytes); position.x stored first and read back into velocity.i 4; no sine local 286 (aligned 13: the
-// swap stays and cases 6 and 7 move). Only the first fld after the radius call stays unfilled in retail's cases 1 and 4.
-// Round 125 (m3 lane 7, fast; positional/aligned, base 2/1): case 1 velocity through a case pointer 511/25; named cosine
-// with sine/cosine products 504/16 (2352 bytes); position.x read back from velocity.i 2/1; position.x stored first 4/2;
-// position through a case pointer 531/18 (2316 bytes); explicit double arguments 22/7; zero stores ahead of the sine 2/1.
-// Round 136: a field-first sine snapshot 2; cosine or both field-first snapshots 24/24 (2352 bytes);
-// assignment-expression sine 2, cosine 24 or both 24; position.x before field-first sine 2; position.y before cosine 8.
-// Original case restored; NOT kept: one-use field copies and producer-only forms without an exact match.
-// Round 133 (fast): case 1 with sine and cosine named and the position stores first 510 (2352 bytes); the cosine
-// named before the sine 24 (2352 bytes); position.y from the sine ahead of velocity.j 2; velocity.i stored before
-// the sine is defined 2; a cosine local after velocity.j with both position products from the locals 24. With
-// either zero store removed (diagnostic) the xorps still fills the fld -> fsin slot.
-// Case 1's azimuth as one product of a direct function_x82e52f draw 510.
-// Lane 13 round 66 (fast): retail leaves the slot after the first fld empty in cases 1 and 4 (both after the radius
-// call, its result live in XMM0) and fills it in cases 6 and 9. `velocity.i = position.x = 0.f` between velocity.j and
-// velocity.k 4; retail's store order (velocity.i, position.x, velocity.j, position.y from the sine, velocity.k,
-// position.z) 2; `azimuth = azimuth * 6.2831855f` 2; `azimuth = 6.2831855f * azimuth` 2; the sine and velocity stores
-// in an inner block 2 (all four the same code).
-// Round 97 (m3 lane 12, fast): case 1's position through particle_scale_position 505; the tail's squared speed through
-// the existing length_sq3f on the velocity pointer 2, then on &particle->velocity with the pointer local dropped 2 (same
-// code, kept); on that, the normalization or the speed scale through particle_scale_vector 42/16.
-// Round 72 (m3 lane 14, fast): case 1 with `radius * velocity.j` for position.y 2, `radius * velocity.k` for position.z 2,
-// a const radius 2, azimuth initialised to zero before the draw 2, radius declared at the case top and assigned after the
-// draw 2 (all the same code). Retail's case 1 has no jump into its block after the fsin (checked), so the swap is the
-// block scheduler's own choice.
-// Round 60 (m3 lane 2, fast): `default: __assume(0);` first in the switch 2 (same code); the lifetime clamp as
-// `lifetime < 0.01f ? 0.01f : lifetime` 4 (case 1 unchanged); the shape in a named local before the switch 24 (2352
-// bytes); the lifetime local declared then assigned 2 (same code); case 1's cosine named after the velocity.j store with
-// the position products still from the fields 24 (2352 bytes).
-// Round 145 (m3 lane 7, fast): redundant parentheses in case 1 (the position.y, position.z and both products, the
-// sine and cosine conversions, the two zero literals, the 2-pi factor, the radius call) 2 each; velocity.j stored before
-// the velocity.i zero 2; both zero stores after velocity.k 2; position.z stored before position.y 11. A compile-only
-// build of the file does not reproduce the case scheduling (other cases differ there too).
+/* a new particle's lifetime, rotation, spawn position and velocity, from its definition's spawn shape */
 // @retail 0x249170
 void function_249170(real const *values, s_particle_spawn_state *particle, s_particle_spawn_definition const *definition, s_particle_system_datum const *system)
 {
@@ -228,9 +99,7 @@ void function_249170(real const *values, s_particle_spawn_state *particle, s_par
 	}
 	case 1:
 	{
-		real azimuth;
-		particle_random_fraction(&g_4e7408->seed, azimuth);
-		azimuth *= 6.2831855f;
+		real azimuth = function_259d0(&g_4e7408->seed, NULL, 0, 0.f, 6.2831855f);
 		real radius = function_246cd0(&definition->radius, values);
 		real sine = (real)sin(azimuth);
 		particle->velocity.i = 0.f;

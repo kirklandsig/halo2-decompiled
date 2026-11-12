@@ -32,6 +32,11 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 
 // score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
+// MiniMax R (11-11): no new form, no lower score (110); the axis block's dot product still multiplies up's i
+// first where retail multiplies forward's i first, and the only shapes that flip it need the existing dot3f
+// body written out by hand and a second access path to one field, so they stay dropped; swapping the dot's
+// two arguments (dot3f(up, forward)) compiles to the same code, and the normalizer's square order, the
+// reciprocal carriers and the projection schedule are unchanged.
 // MiniMax R (11-08): no new form, no lower score (110); the shapes that reach 2 need an existing helper's body
 // written out by hand, so the axis block still multiplies up's i first where retail multiplies forward's i first.
 // MiniMax D (11-06): no new form, no lower score; the helper's scale order k, i, j 115 and the k product with the

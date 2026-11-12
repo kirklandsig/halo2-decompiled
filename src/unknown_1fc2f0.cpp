@@ -201,6 +201,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax G (11-11): no new form, no lower score (32); retail takes the scaled difference in the order j, i, k but its
+// deltas in the order i, j, k, and one source order cannot give both: writing the deltas i, j, k (79) moves the scaled
+// difference to i, j, k with them, so the difference stays inside the inlined helper and its component order.
 // score 32 (was 32): frame 0x10 and the prediction prefix agree; first difference at +0x65: the velocity stores
 // and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
 // MiniMax D (11-09): no new form, no lower score (32); the permuter run was killed with no candidate.
@@ -667,6 +670,13 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // parameter reference 99 (frame 0x14; tracked no longer arrives in EAX), so it stays; the deltas assigned i, j, k 79 (stores,
 // early dj square and (k + j) + i sum then retail's; left the tick products i, j for retail's j, i and the delta homes
 // di/dj/dk XMM3/XMM4/XMM2 for retail's XMM4/XMM2/XMM3). No unlisted form; body unchanged.
+// M3 lane 12 r115 (fast with 0x1fc660): the velocity rows spelled k, j, i or j, k, i with the deltas through the existing
+// vector3d_from_points3d 53/53 (row-order variants of the listed per-component tick stage); the squared length
+// accumulated j, k, i 30 (-2, a written-out length_sq3f), k, j, i 78; velocity and delta declared at their first use 32
+// (same code); the prediction straight into velocity with the scaled difference in place 57 (369 bytes); the limit
+// computed before the squared length 46. A compile-only screen of 700 prediction, delta, length
+// and correction spellings (a copy of this file reproduces this listing) found nothing closer; the correction is
+// retail's only through local_scale3d (vector3f_add_scaled or spelled rows lose the copy-then-scale).
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
