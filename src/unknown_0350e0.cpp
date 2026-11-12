@@ -3377,6 +3377,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // confirmations. Also: R149's decay form keeping clamp_cached_input(&state->entries[i]) 317 (different code, a84); the
 // decay loop through state->entries[i] with no `initial` pointer and the clamp as PIN 418 (1255 bytes); R149's growth
 // form alone 390 (1353 bytes).
+// MiniMax A (11-12, run 62): no new form, no lower score (317); a named local for the state's array pointer used
+// at every access grows the body to 1338 bytes (370) and an unsigned `first` is the same code, so what is left is
+// retail's home order (first at +0x10 and the loop index at +0x14, ours the reverse) with the state pointer in EBP
+// and `first` in EDX where we take EBP for `first` and EDX for the state.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

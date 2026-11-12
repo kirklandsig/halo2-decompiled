@@ -546,6 +546,12 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 	return result;
 }
 
+// MiniMax A (11-12, run 63): no new form, no lower score (3); the unknown18 assignment moved above the unknown22
+// one is 5, and the two global loads stay where they are, so the constant's place is still the only difference.
+// MiniMax A (11-12, run 62): no new form, no lower score (3); the owner.object_index assignment moved below the
+// unknown22 assignment 12, the permuter on this function was stopped before it produced a try, and `or eax, -1`
+// still comes right after the load of g_47d8e0 where retail stores that word at +0x7c first, loads g_4686c4 and
+// only then materialises the constant.
 // MiniMax C (11-09): no new form, no lower score (3); a 300 s permuter run (24 tries) found nothing lower.
 // MiniMax E (11-09): no new form, no lower score (3); the `or eax, -1` still comes right after the load of g_47d8e0, where retail stores that word at +0x7c first, loads g_4686c4 and only then does the `or`.
 // MiniMax D (11-06, run 49): no new form, no lower score (3); the `or eax, -1` still comes right after the load of g_47d8e0, retail stores that value at +0x7c first, loads g_4686c4 and only then does the `or`.
@@ -1213,6 +1219,13 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 }
 
 /* damages one object of the radius (and its children and siblings): the geometry to it, then the damage */
+// MiniMax A (11-12, run 63): no new form, no lower score (38); the near block with the normal's j and k stores
+// after the k row is 39, and that with the else arm's rows spelled node = node + direction is 39 as well.
+// MiniMax A (11-12, run 62): no new form, no lower score (38); the negations written out at each use grow the
+// body to 1547 bytes (304), the normal's i store before the node's i row with the j and k stores after the k row
+// 39, one negation per row with the j and k stores at the end 42, the normal's stores before the node's rows 288,
+// the origin and direction pointers swapped 42, and the else arm's rows spelled `node = node + direction` are the
+// same score with the folded row moved from the i row to the k row.
 // score 38 (was 38; 91 before m3 lane 1 r74): 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
 // score 38 (was 38): 91 before m3 lane 1 r74. 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
 // Earlier 38 (was 38; before r74 was 91): 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
@@ -2931,6 +2944,13 @@ struct s_unit_event
 // `__stdcall` 476 (same code); the region state pointer named at entry as in 0xdae60 572 (the permutation then arrives in
 // EAX as retail, the region in ECX; 0xdae60 42, 0xdaaa0 126); that without the region local 562. The region index stays a
 // register argument in every form.
+// MiniMax A (11-12, run 63): no new form, no lower score (476); the run 62 note's "callers in other files" is
+// wrong, all six call sites are in this file, and retail's prologue takes only the object index in EAX and reads
+// info, permutation, owner, region and accumulator off the stack with a 0x38 frame, so matching it needs the
+// declaration's parameter order changed, which is out of bounds.
+// MiniMax A (11-12, run 62): no new form, no lower score (476); the frame is 0x40 against retail's 0x38 and the
+// region index arrives in ECX where retail keeps it on the stack, so every stack home below the frame differs;
+// that register-argument set belongs to this function's callers in other files (BLOCKED-BY).
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
