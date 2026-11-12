@@ -98,9 +98,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // difference vector stays at +0x3c/+0x40, and the sine argument is negated in double, which is retail's `fld` of the wrapped
 // angle followed by `fchs`. The frame is now 0x64 as retail's and the score falls to 382. Still differs: the entry schedule,
 // the normalized XY/magnitude homes and 40 bytes of length.
-// score 382 (was 393; 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
+// score 382 (was 382; 393, 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
 // frame 0x64 as retail's, 1692 bytes against retail's 1732.
-// score 393 (was 393; 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
+// Earlier 393 (was 393; 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
 // frame 0x60 against retail's 0x64.
 // MiniMax S (11-06): The first arg_7 plus arg_8 sum lands in xmm3 where retail keeps it in xmm0, so the
 // two byte streams part company at the third instruction and the rest of the function is compared out of
@@ -394,6 +394,13 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // `local_21 >= 0.0f ? local_21 - 2pi : local_21 + 2pi` (retail's `comiss x, 0; jb` to the add) 393 (masked 140), the same as an
 // if/else 393 (same code); the far arm's facing dot written x term first 393 (same code); both 393 (masked 140); the ratio clamp
 // written `1.0 < local_13` 393 (same code).
+// M3 lane 10 r97 (fast with 0x29a190 MATCH, 0x298c30 MATCH, 0x299460 569 throughout; base 382; both builds `ret 0x1c` with the same
+// argument setup at 0x29a190's call): nothing kept. The positive endpoint computed before the negative one 396; both near-arm y rows
+// written sine term first 382 (same code; a listed form, r86's x-first); the sine assigned inside the y row with the x row after it (diagnostic, an embedded
+// assignment) 382, same code: the cosine and sine stay on x87 across the sine argument's branch, where retail spills the cosine to
+// +0x28 and forms `y * cos` in SSE before the branch; the emitter's facing output declared inside the inner loop 382, the rotated
+// point declared outside it 382 (same code); the sine's angle selected into a named double after the cosine, so the branch is
+// its own statement, 412 (0x29a190 45: the double local aligns the frame).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
