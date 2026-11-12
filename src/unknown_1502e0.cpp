@@ -1454,6 +1454,14 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // 0`, `^ 0`, identity inline, identical code), volatile global reads at entry / after the player lookup 57/54 and the
 // player index kept to the end 60 never move the pair, so reference counts do not decide it; the integer no-op probes
 // fold before allocation, so tuple phase is untested (only one-step volatile probes, which did not flip it).
+// Round 153 (m3 lane 7, fast): `primary == false` hand 17 (same code); the weapon read into a local by a ternary on the
+// slot 17 (same code); the slot declared at function scope 17 (same code); `(short)hand` at the 0xa9030 call 17 (same
+// code); the hand declared ahead of the result 48 (140 bytes). Re-measured: the unit index in a local declared after
+// the result 46 (the player index then arrives in EDX), the unit index local inside the dispatch block 17, the mode
+// arms swapped 27. Sibling 0x151aa0's retail passes its hand to 0xa8f80 in EBX, so EBX for the hand here is the
+// callee's parameter register; only the ESI/EDI pair (unit index against table and slot) is open. A unit index local
+// declared inside the tested block (first, or after the hand) and used for the lookup and both calls 17 (same code);
+// used for the lookup only, the calls reading the field, 17 (same code).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

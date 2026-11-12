@@ -482,6 +482,10 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
+// MiniMax B (11-12): no lower score than 32 without the width cast MiniMax D's 11-11 round measured (24) or a volatile word
+// present (24): the mask test placed first hoists the mask load into ECX ahead of the jne as retail does, but swaps the
+// mask and old-playing stack slots (91-122), and a 32-bit OR of the mask with the present in the store still reloads the
+// mask from memory instead of sharing ECX with the compare.
 // score 32 (was 32): the word mask, its one reload ahead of the first jne, and present's update in EBX remain.
 // MiniMax D (11-11): 24 (was 32), NOT kept (coordinator 11-11: lane 14 r55's width cast on one side of the compare; retail compares dword; body stays at 32): the old team mask as a word local (retail's `mov cx` entry and its
 // word spill) with the present compare narrowed to a word (`(word)present_teams != old_team_mask`); the
@@ -2375,6 +2379,11 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // (193 bytes); the count through a byte offset 8; an entry pointer for the two tail stores only 8. Diagnostics: 1-8 unused constant locals at the top or before the
 // old-index test 8 each (no rotation step); the dead volatile load before the old-index test re-confirmed (lookup and
 // tail then retail's).
+// Round 93 (m3 lane 11, fast; 0x15b1e0, 0x15aad0, 0x15b220 and 0x15ace0 matched each time): the release helper reading
+// the pool through a local copy (`objects = g_4e0300`) 8, with the subscript spelling 8, with a named absolute index ahead
+// of the copy 8; a header pointer local in the helper 8; the out-of-range case as an early `continue` guard 8. Diagnostics
+// (the release written out here, not kept): with a function-top pool copy 28 (the copy takes EDI at entry and the lookup
+// stays base-first), with the copy inside the guard 8.
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {

@@ -44,9 +44,15 @@ public:
 	void function_303b80();
 };
 
-// score 86 (was 86): retail keeps the two counts in eax and ebx and the two
-// best indices in the stack slots 0x24 and 0x28; ours keeps the counts in ebx
-// and edi and swaps the two slots, so the whole tail differs
+// score 2 (was 86): Frame 0x74 and extent 580 agree; first +0x221 swaps
+// a shift and a vector store on the B success return. Earlier: retail keeps
+// the two counts in eax and ebx and the two best indices in 0x24 and 0x28;
+// the old body kept the counts in ebx and edi and swapped the index slots.
+// One shared table ordinal 2; A ordinal renamed 86; index declarations swapped
+// 86; result declared outside loops 86; separate loop indices 86; conditional
+// edge counts 86; reversed comparison 90; four-entry layout 86. With the
+// shared ordinal: four-entry layout 2; intrinsic copies 33.
+// NOT kept: both combined forms; only the single table read is retained.
 // @retail 0x303b80
 void class_303360::function_303b80()
 {
@@ -105,7 +111,8 @@ void class_303360::function_303b80()
 	if (edges_b == 3)
 	{
 		count_b--;
-		sources_b[g_4136b0[best_b]] = sources_b[count_b];
-		corners_b[g_4136b0[best_b]] = corners_b[count_b];
+		int const replace_b = g_4136b0[best_b];
+		sources_b[replace_b] = sources_b[count_b];
+		corners_b[replace_b] = corners_b[count_b];
 	}
 }

@@ -2241,6 +2241,12 @@ bool function_1e11b0(long actor_index, bool active);
 // head read into a local and stored after the head update 154 (279 B; 0x203f60 4, 0x1c7bb0 55). Diagnostic: 0x203f60 with
 // an actor lookup at each store (84 B) stays out of line here, 78 at 184 B (masked 17 against 23). So LTCG's choice
 // follows 0x203f60's optimised size, and no same-code spelling of it moves the choice.
+// Round 75 (m3 lane 2, fast with 0x203d70 and 0x201ea0): the return as `(squad[2] & 0x80) ? true : false` 64 (same
+// code); the loop guarded by `&& g_4f55d0->active` on the flag test 66 (202 B); the actor looked up by `(word)actor_index`
+// 64 at 199 B, but the index becomes a register argument (0x203d70 105, 0x201ea0 24); `return true;` closing the tick arm
+// 79 (212 B); the actor index typed dword 64 (same code). Re-measured: `!= 0` return 65, the +0x34 store from
+// iterator.squad_index 65 (callers lost). Retail evidence for the flags lead: 0x1c7bb0 (another file) has the bodies
+// of 0x203f60 and 0x204d30 inline, while every caller in this file keeps both out of line.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -3191,6 +3197,9 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // two outside declarations, calls unchanged) 50 (same code; 0x202e90, 0x203120, 0x2011f0, 0x275cb0 still match); re-measured
 // round 73's follow-up in both pending arms (with its task test in each) 74 at 578 B. No call cycle runs through this function,
 // 0x202e90 or 0x1fb8a0, so file order is no lever. No untried natural form is left.
+// m3 lane 2 r75 (fast with 0x202e90): the pending arm reading +0x66 into local_2 before the delay test 72 (580 B);
+// `short local_3 = NONE;` 169 (578 B); the delay test as `< 1` 51 (579 B); the delay in a named short 50 and `byte *const
+// local_1` 50 (same code each). The first follow-up still reloads the index from its home.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

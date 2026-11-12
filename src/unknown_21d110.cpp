@@ -1070,6 +1070,12 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // users and record types (the g_4ed28c readers, the looping-sound datum and effect looping-sound views) expose no
 // existing interface that returns the state and the flag together, so the {long, bool} record (0 in rounds 9 and
 // 39) still has no real type behind it and waits on the ruling.
+// Round 111 (m3 lane 16, plain; control 30): real builds of the capture through a forced-inline getter called with the
+// sound index (earlier rounds only screened these): state and flag through two pointers 30, through two references
+// 30; the state returned and the flag through a pointer 30; the flag returned and the state through a pointer 191; the
+// getter taking the effect and testing its type itself 30; the whole entry loop in a forced-inline helper taking the
+// pair by value 30 (30 = identical code each time). In retail the pair sits like the argument block of one call
+// (state at the lower address, the flag in its own dword above it), which only one aggregate symbol gives here.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {
