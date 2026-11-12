@@ -5511,6 +5511,10 @@ real magnitude3d(vector3f const *v);
 // original/shared complete flight scale 2/30/2/184/2/30/2/184. All restored;
 // actor move versus second argument push remains the only two differences.
 // MiniMax R (11-11): no new form tried this round, no lower score (2): the two points are still the 0x1fb7e0 call setup - the first NONE has to be pushed after the actor moves into ECX and before EDX is zeroed - and that push order comes from the callee's declaration and the argument list, which this lane may not edit.
+// Round 416: Direct admission/timing/final-actor rejections and complete admission/actor guards
+// 2/2/2/2; falling-default event 32; baseline outcomes plus one admitted event 38 (897 bytes);
+// angular-velocity input pointer 2; final rejection with falling-default event 32. All restored;
+// the final actor move versus second stack push remains.
 // @retail 0xe3380
 void __stdcall function_e3380(long arg_159e6d)
 {
