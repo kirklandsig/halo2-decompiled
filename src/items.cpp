@@ -891,6 +891,7 @@ struct s_item_impact_definition
 	long sound_index;
 };
 
+#include "impacts.h"
 struct s_item_impact
 {
 	long type;
@@ -898,7 +899,7 @@ struct s_item_impact
 	point3f point;
 	byte unknown14[8];
 	s_location location;
-	short material;
+	c_type_47f957 material;
 	byte unknown26[2];
 	vector3f normal;
 	byte unknown34[0x40 - 0x34];
@@ -907,7 +908,7 @@ struct s_item_impact
 
 real function_1201a0(vector3f *v, vector3f const *fallback);
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
-	long unused, long effect_value, s_location const *location, real scale);
+	c_type_47f957 material, long effect_value, s_location const *location, real scale);
 dword vector3d_compress(vector3f const *vector);
 long function_1895f0(s_sound_position const *position, real scale, long tag_index);
 
@@ -931,7 +932,7 @@ void function_10c880(long item_index, s_item_impact const *impact, vector3f cons
 			kind = definition->kind > other_kind ? other_kind : definition->kind;
 		}
 		function_188180(&impact->point, &impact->normal, effect_index, item_index, kind + 10, kind,
-			(word)impact->material, (long)&direction, &impact->location, scale);
+			impact->material, (long)&direction, &impact->location, scale);
 	}
 	if (definition->sound_index != NONE)
 	{
@@ -1171,6 +1172,7 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
+// MiniMax H (11-11): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c from the first instruction, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack slots where ours holds them in registers.
 // MiniMax D (11-11): no new form, no lower score (824); the frame is still 0x154 against retail's 0x12c from the
 // first instruction, so every stack home sits 0x28 further out, and retail still extracts the flag bits in place
 // through a byte field view and folds the 0x20000000 bit into the field in memory where ours copies the word
@@ -1205,6 +1207,9 @@ struct s_item_flags_view_10b850
 // MiniMax S (11-10): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c, the two entry bit tests stay in registers here while retail keeps the bytes in stack slots and re-reads the flags word, and the definition pointer sits at 0x38 against retail's 0x1c. The 815 of the earlier round is the two-flag body (a separate flag for the definition bit and another for the position update); retail keeps one flag, set before the ray query and cleared only by the settle branch, so that body is not restored.
 // Earlier: Frame 0x154 versus 0x12c; entry Boolean publications and carrier/collision/flow/marker/rotation homes differ.
 
+// MiniMax B (11-12): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c and the entry's flag
+// byte differs - retail shifts the value and stores the parity byte where this build tests a bit of a shifted register;
+// the permuter on this address was killed by its time limit without a result.
 // Earlier: Frame 0x154 versus 0x12c, entry Boolean bytes and collision/carrier/rotation homes still differ.
 // Earlier: Frame 0x154 versus 0x12c and Boolean/vector homes remain.
 // Frame 0x154 versus 0x12c and Boolean/vector homes remain.
@@ -1632,6 +1637,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // impulse paths apart with the flag clear at a different point in each, so splitting ours that way
 // (223) and giving the clear a byte-unit bit field (206) both score worse.
 
+// MiniMax H (11-12): no new form, no lower score (140): the return byte still sits at esp+0xe where retail has esp+0xf, the release byte is still cleared with a load, an and and a store where retail masks the byte in place, and the transform helper is still called out of line.
 // MiniMax G (11-11): no new form, no lower score (140); the return byte sits at esp+0xe where retail puts it at esp+0xf, the
 // release flag is cleared by a load, an and and a store where retail masks the byte in place, and retail expands the transform
 // helper into the call site while this build calls it out of line from a file this lane may not edit.

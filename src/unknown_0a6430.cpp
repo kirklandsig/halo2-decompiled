@@ -1,6 +1,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_0a58d0.h"
+#include "object_tag_definitions.h"
 
 // @flags /O2 /arch:SSE /Gr
 
@@ -69,6 +70,13 @@ PRIVATE byte *update_object_0a6430(long index)
 // test joined to the count compare with `first` read ahead 34
 // (548 bytes: the tail's `xor eax, eax` goes, the head stays); a block-scoped object pool local for the 0x200 lookup
 // 16, for the 0x100 lookup 16.
+// Round 110 (m3 lane 16, fast with the six matched callers and six matched callees): the 0x200 definition read through
+// the typed object definition's model tag index 16 (same code, kept); the 0x80 call's short in a named local like the 0x40
+// block's 16 (same code); the state parameter typed as a const byte pointer (no entry copy; header and the six calls cast)
+// 16 (same code); the count compare and the word test as one `if` with the call reading both words 16 (same code); the
+// 0x2/0x34 entry as one `mask & 0x36` test 163 (551 bytes); the model tag index read at each use (src/devices.cpp's
+// form) 16 (same code). Diagnosis: in the 0x200 head retail's pool load reuses EAX after the index temp dies, which forces
+// the index-first order; ours colours the pool ECX, so the order follows from the colouring, not from the source order.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {
@@ -125,8 +133,8 @@ void function_a6430(c_object_type_definition const *definition, long mask, long 
 	{
 		long count = 0;
 		byte *object = update_object_0a6430(object_index);
-		byte *definition = *(byte **)((byte *)g_4e3b44 + (*(long *)object & 0xffff) * 16 + 8);
-		long model = *(long *)(definition + 0x38);
+		s_object_definition const *definition = (s_object_definition const *)g_4e3b44[*(long *)object & 0xffff].bytes;
+		long model = definition->model_tag_index;
 		if (model != NONE)
 		{
 			byte *local_0f244f = *(byte **)((byte *)g_4e3b44 + (model & 0xffff) * 16 + 8);
