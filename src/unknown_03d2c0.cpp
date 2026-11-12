@@ -229,7 +229,7 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // merge block; left: the found path reloads the result from its stack home before the merge test where retail tests
 // the register value first and reloads it after, the walk's NONE exit still returns the constant -1 where retail
 // returns the reloaded value, and the function is one byte longer than retail's.
-// score 9 (was 77): the flag is set in both arms of the allocation test now, which gives retail's merge block;
+// score 77 (was 77): the flag is set in both arms of the allocation test now, which gives retail's merge block;
 // left: the found path reloads the result from its stack home before the merge test where retail tests the register
 // value first and reloads it after, the walk's NONE exit still returns the constant -1 where retail returns the
 // reloaded value, and the function is one byte longer than retail's.
