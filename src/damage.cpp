@@ -1915,6 +1915,11 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 /* destroys a damage region: picks the permutations whose chance and body
    threshold allow it, and destroys each now or schedules it after its
    delay */
+// MiniMax E (11-11, run 80): no new form, no lower score (57): the body's instructions still agree with retail
+// except for the call setup of the two unmatched callees, and 0xda110 (in this file) takes the permutation in eax
+// alone with five stack arguments and ret 0x14 in retail against our eax+ecx with four stack arguments and
+// ret 0x10; every walk that frees 0xda110's and 0xd9d60's conventions also flips a matched function, so the
+// declaration order stays as it is.
 // MiniMax S (11-11): no new form, no lower score (57); every retail caller of 0xda110 (0xd5de0, 0xdaaa0 and
 // 0xdb760, all in this file) hands the permutation over in eax, so the calling convention is one decision for the
 // whole file and not this call site's.
@@ -2201,6 +2206,10 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 /* damages a region: raises its damage level by the damage over the span to
    its next permutation's threshold, and when the level fills, destroys the
    permutations at that threshold */
+// MiniMax E (11-11, run 80): no new form, no lower score (73): the instructions agree with retail's and the
+// differing lines are the two early exits, whose targets land five bytes past retail's because the tail is five
+// bytes longer; the setup of the 0xda110 and 0xd9d60 calls decides that tail, and both callees are unmatched
+// bodies in this file whose own walk keeps their conventions, so the parameter order is not mine to change.
 // MiniMax S (11-11): no new form, no lower score (73); retail passes 0xda110's permutation in eax at all six of
 // its call sites in this file (0xd5de0, four here and 0xdb760), so the transport is one decision for the whole file.
 // MiniMax S (11-10): no new form, no lower score (100): our frame is four bytes shorter than retail's, so the two arguments' stack homes sit four bytes lower, and the 0xda110 call setup pushes the arguments in another order with retail's xorps after that call where ours zeroes xmm2 before it.
