@@ -2961,6 +2961,7 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 /* a projectile's collision: damage to what it hit, the response of the
    material hit (detonating, bouncing, reflecting, attaching), the impact
    effects and sounds, then the projectile's action */
+// MiniMax H (11-12): no new form, no lower score (1196): the frame is still 0x220 against retail's 0x218, the velocity argument still arrives on the stack where retail takes it in eax and keeps it in a callee-saved register, and 0xfd7d0's register arguments still differ.
 // MiniMax S (11-11): no new form, no lower score (1220); retail's frame is eight bytes smaller and it keeps the biped in ebp where ours keeps it in ebx, and no form tried this round matches both, so the body stands as found.
 // MiniMax G (11-11): the material index is a dword local here, so the call to 0xfd7d0 pushes it raw as retail
 // does instead of sign-extending a word, and the store into the projectile keeps its 16-bit width.
