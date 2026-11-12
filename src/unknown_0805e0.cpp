@@ -739,14 +739,14 @@ bool function_80660(void)
 struct s_profile_record;
 void function_1537f0(s_profile_record *record);
 
+// score 18 (was 18): the loop's entry pointer is based at the entry's link run (EDX = entry + 0x5c) where
+// retail bases it at the view's field 0x4c (entry + 0x4c), so every entry store's displacement differs, and the
+// view's byte stores and the link stores come out in another order (ours makes the 0x52 byte and the NONE first).
 // MiniMax D (11-04): no new form, no lower score; the identity as three named dwords instead of an array
 // 53 (same code), it still folds into registers and the frame stays 0x98.
 // MiniMax E (11-05): no new form, no lower score; splitting the source record's 8-byte field into two
 // dwords to make it 4-aligned leaves the record at +0x18 and the frame at 0x98, and an index loop gives 78.
 // MiniMax C (11-08): no new form, no lower score.
-// score 18 (was 18): the loop's entry pointer is based at the entry's link run (EDX = entry + 0x5c) where
-// retail bases it at the view's field 0x4c (entry + 0x4c), so every entry store's displacement differs, and the
-// view's byte stores and the link stores come out in another order (ours makes the 0x52 byte and the NONE first).
 // Earlier (score 53, was 53): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
 // +0x10 and reads them back for the copy, with the source record right after at +0x1c); ours spills a
 // 350 countdown to +0x14 where retail compares the entry cursor with the array end (signed `jl`);
@@ -1019,6 +1019,18 @@ void function_1537f0(s_profile_record *record);
 // and the word after them by one memset 31 (260 bytes); the flags stores before the links 27; a pointer walk with the
 // link pointer 80 (275 bytes); every field through `g_4cf98c[index]` with the link pointer taken from it 44 (base
 // +0x4c, NONE in EBP); a dword pointer to the flags with the field chain 49.
+// Round 110 (m3 lane 16, fast with 0x7f8b0, 0x1537f0 and the caller 0x8d9f0): the link chain through `entry` with no link
+// pointer re-measured 49. NONE stays out of EBP only while the NONE stores go through a pointer derived from `entry`, and
+// the cursor base then lands on a link slot. A view pointer local for the 0x7f8b0 call with no link pointer 49; the link
+// pointer taken from `&g_4cf98c[index].unknown58` with the rest through `entry` 45 (base +0x4c, NONE in EBP, the record's
+// two zero words merged in EBX). Mixes of the `entry` local with the array element, not kept without a match: the 0x7f8b0
+// view through `&g_4cf98c[index].player` 14, the flags and the word after them through `g_4cf98c[index]` 14 (same code),
+// both 14: retail's byte-store order with only the base (+0x5c) left, so every remaining difference is a displacement;
+// with the link chain in retail's store order 14 (base +0x5e); the links as four `entry->` statements in retail's store
+// order with the tail through the array element 48, with the view through it 46 (NONE in EBP). Re-measures (same code):
+// the view and the tail both through the array element 14; the link pointer declared at the top of the loop body on the
+// tail-through-array form 14; on main's body the four link stores as separate statements in retail's order 18 (base +0x5e);
+// the entry pointer as `g_4cf98c + index` 18. No further untried natural form was found.
 // @retail 0x7f930
 void function_7f930(void)
 {
