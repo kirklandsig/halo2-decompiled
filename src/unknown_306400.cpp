@@ -422,9 +422,13 @@ public:
 // retail's does
 // score 11 (was 69): retail stores the contact's normal before its point, and
 // writes the not-found answer from a fresh zero in cl instead of bl.
-// score 11 (was 11): output stores and fresh failure zero still differ.
+// Output stores and fresh failure zero still differ.
 // Overlap outcome 74; lookup outcome 62; both 84; common failures 102/69/106;
 // both outcomes as bool 84; bool with common failure 106.
+// Pointer return 28; pointer return with class assignment 28; pointer return
+// with aligned stores 26; empty destructor 28; destructor and mutable-source
+// copy 28; destructor and aligned stores 26; mutable-source copy 28;
+// class local with empty destructor 11. NOT kept: no improvement.
 // @retail 0x307f90
 void query_2ef260::function_307f90(answer_307f90 *found, contact_307f90 *contact)
 {

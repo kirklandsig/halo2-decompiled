@@ -155,39 +155,31 @@ public:
 
 // the two boxes grown by their radii, and the contact found between them
 // passed on
-// score 13 (was 13): frame 0x168 and extent 273 agree; the second radius loads late,
-// contact uses +0x30 instead of +0x10, and grown vectors use +0x10/+0x20 instead of +0x40/+0x50.
-// Contact after query/after timer/renamed 13/13/13; paired radii alone/with renamed or late
-// contact 35/35/35; scalar broadcasts 82; first extent and paired radii 35.
-// NOT kept: ties or regressions; original inputs and full body restored.
 // @retail 0x2ef4b0
 void box_pair_2ef4b0::function_2ef4b0(description_2ed170 const *a, description_2ed170 const *b, input_2ef2f0 const *input, collector_2ef4b0 *collector)
 {
-	contact_307f90 contact;
 	timer_add_2ebc80("TtBoxBox");
 	box_2ef3b0 const *first_box = (box_2ef3b0 const *)a->shape;
 	box_2ef3b0 const *second_box = (box_2ef3b0 const *)b->shape;
-	__m128 grown_first = _mm_add_ps(first_box->half_extents, _mm_set_ps1(first_box->radius));
-	__m128 grown_second = _mm_add_ps(second_box->half_extents, _mm_set_ps1(second_box->radius));
-	query_2ef260 query((long)a, (long)b, 0, 0, 0, (long)a->placement + 0x20, grown_first,
-		(long)b->placement + 0x20, grown_second, input->tolerance);
-	contact.a = a;
-	contact.b = b;
+	contact_307f90 contact;
 	answer_307f90 found;
-	query.function_307f90(&found, &contact);
-	if (found.value)
 	{
-		collector->slot_1(&contact);
+		__m128 grown_first = _mm_add_ps(first_box->half_extents, _mm_set_ps1(first_box->radius));
+		__m128 grown_second = _mm_add_ps(second_box->half_extents, _mm_set_ps1(second_box->radius));
+		query_2ef260 query((long)a, (long)b, 0, 0, 0, (long)a->placement + 0x20, grown_first,
+			(long)b->placement + 0x20, grown_second, input->tolerance);
+		contact.a = a;
+		contact.b = b;
+		query.function_307f90(&found, &contact);
+		if (found.value)
+		{
+			collector->slot_1(&contact);
+		}
 	}
 	timer_add_2ebc80("Et");
 }
 
 // the same as a function
-// score 13 (was 13): frame 0x168 and length 271 agree; the second radius loads late,
-// and contact/first/second vectors use +0x30/+0x20/+0x10 instead of +0x10/+0x50/+0x40.
-// Contact at entry 13; vector declarations at entry 13; const grown vectors 13;
-// query/contact role names 13/13; paired radii 35; cached extents 17; in-place growth 77.
-// NOT kept: ties or regressions; original observations and complete body restored.
 // @retail 0x2ef5d0
 void __cdecl function_2ef5d0(void const *a_, void const *b_, void const *input_, void *collector_)
 {
@@ -197,18 +189,20 @@ void __cdecl function_2ef5d0(void const *a_, void const *b_, void const *input_,
 	timer_add_2ebc80("TtBoxBox");
 	box_2ef3b0 const *first_box = (box_2ef3b0 const *)a->shape;
 	box_2ef3b0 const *second_box = (box_2ef3b0 const *)b->shape;
-	__m128 grown_first = _mm_add_ps(first_box->half_extents, _mm_set_ps1(first_box->radius));
-	__m128 grown_second = _mm_add_ps(second_box->half_extents, _mm_set_ps1(second_box->radius));
-	query_2ef260 query((long)a, (long)b, 0, 0, 0, (long)a->placement + 0x20, grown_first,
-		(long)b->placement + 0x20, grown_second, input->tolerance);
 	contact_307f90 contact;
-	contact.a = a;
-	contact.b = b;
 	answer_307f90 found;
-	query.function_307f90(&found, &contact);
-	if (found.value)
 	{
-		((collector_2ef4b0 *)collector_)->slot_1(&contact);
+		__m128 grown_first = _mm_add_ps(first_box->half_extents, _mm_set_ps1(first_box->radius));
+		__m128 grown_second = _mm_add_ps(second_box->half_extents, _mm_set_ps1(second_box->radius));
+		query_2ef260 query((long)a, (long)b, 0, 0, 0, (long)a->placement + 0x20, grown_first,
+			(long)b->placement + 0x20, grown_second, input->tolerance);
+		contact.a = a;
+		contact.b = b;
+		query.function_307f90(&found, &contact);
+		if (found.value)
+		{
+			((collector_2ef4b0 *)collector_)->slot_1(&contact);
+		}
 	}
 	timer_add_2ebc80("Et");
 }
