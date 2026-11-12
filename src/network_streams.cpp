@@ -827,6 +827,13 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// MiniMax B (11-11): no new form, no lower score (60): ours keeps the next sequence in ECX and strength-reduces
+// next - oldest - 1 into a second induction variable in ESI that is tested against the cached newest, while retail
+// keeps the next sequence in ESI, recomputes the offset in EAX on every pass and re-reads the newest at the
+// per-step test, holding the message pointer and the count scratch in ECX where we hold them in EAX; the
+// prologue, the count and the found-path stores match retail byte for byte; the forms tried (the member-form
+// index and bound, a local window count, the index inlined, the index written as statements, the window taken
+// by reference and the statement-order permuter) all score 63 or worse.
 // MiniMax A (11-11, run 58): score 60 (was 60): no lower score; retail keeps the next sequence in ESI and
 // recomputes next - oldest - 1 in EAX on every pass, ours keeps the next sequence in ECX and strength-reduces the
 // offset into a second induction variable in ESI; retail reads the newest three times (the count, the loop bound

@@ -3647,11 +3647,26 @@ bool g_55e6bc;
 // retail multiplies the near plane before it reads the buffer's begin and end and writes the three shared
 // render globals (the near plane, the far plane and the flag word) after the check, where ours multiplies
 // after the compare and writes them before it.
+// MiniMax B (11-11): no new form, no lower score (17); retail keeps the far clip plane in xmm2 from before the
+// near-plane multiply while this build loads it after the near store, and retail loads the fixed factor of the
+// middle product of three of the four columns into the register while this build always loads the row-relative
+// factor there: swapping those products' operands, giving each column an accumulator of its own and moving the
+// scale into the selecting ternary all leave the score at 17 or worse.
 // MiniMax B (11-11): no new form, no lower score (17); the depth-clip arguments swapped score 10 but hand the
 // device the wrong plane (the inlined call stores its first argument in the lower plane register, as retail's own
 // stores show), so it was reverted; a local for the far plane hoists its load to the function entry (18), and the
 // three products stay as they are because this build keeps the higher-addressed factor in the register whatever
 // order the source uses (the swapped row scores the same 17, one row written as a single expression 27).
+// MiniMax B (11-11): no new form, no lower score (17); the operand order of a product does not come from the
+// source here: this build loads the row-relative factor first however the product is written (the first column's
+// middle product written with the fixed factor first scores the same 17), so retail's three products that load the
+// fixed factor first cannot be reached by swapping the operands; what still differs is that retail keeps the far
+// clip plane in xmm2 from before the near-plane multiply while this build loads it after the near store, and
+// retail loads the fixed factor of the middle product of three of the four columns into the register.
+// MiniMax B (11-11): the plain build gives 17 (587 bytes, the same length as retail); a reduced image that
+// holds this round's other nine functions as well builds this function differently (76 differences, 573
+// bytes), because link-time inlining changes with the set of functions in the image, so a fast measurement
+// of this function is only meaningful in an image that holds it alone.
 // MiniMax E (11-11), NOT kept (coordinator 11-11): 17 -> 10 only from the near and far planes each read into a local used once before the depth-clip call (match-only form); body at 17.
 // @retail 0x12d50
 void function_12d50(bool scaled, real const *projection, real *output)
@@ -7465,6 +7480,14 @@ void __stdcall function_214f0(real passes, real distortion, real strength, real 
     real scale, bool blend, bool preserve);
 bool function_022710();
 real scenario_ramp_evaluate_current(long index);
+// MiniMax B (11-11), NOT kept (coordinator): 130 -> 120 stores the grid's fields in another order picked by score
+// (match-only). The lead as written: the grid is stored in the order retail stores it, the
+// two left values first, then the top, the right and the bottom, and only then the zero and one values,
+// so the sixteen stores fall in retail's order; what still differs is that this build reserves a frame
+// of 0x5c with the same twenty-two slots four bytes lower than retail's 0x58 and one slot unused at the
+// top, the frame pointer is saved in the prologue where retail saves it around the filter loop, and the
+// blur block loads the 0.9 and 1.0 constants into other registers and computes the distortion in
+// another order.
 // MiniMax C (11-11): no new form, no lower score (139); retail saves ebp around the filter loop (at 0x13a43) and frames 0x58, this build saves it in the prologue and frames 0x5c, so every stack slot sits four bytes off and the four unused bytes above the grid remain.
 // MiniMax D (11-10): no new form, no lower score (139); the frame is still 0x5c with a frame pointer pushed in
 // the prologue against retail's 0x58, where retail keeps ebp for the grid loop's counter and pushes it only around
@@ -7487,6 +7510,15 @@ real scenario_ramp_evaluate_current(long index);
 // weights and the grid, a merged loop head, a while loop, an index-multiplied address and two others)
 // all leave the frame at 0x5c.
 // MiniMax D (11-05): no new form, no lower score - retail's frame is 0x58 bytes with the grid filling it and the frame pointer pushed inside the loop, ours is 0x5c with the pointer pushed in the prologue, so every stack slot sits four bytes off.
+// MiniMax B (11-11): improved to 130 (was 139); the entry address is now taken from the index
+// (base + i * 0x24), so the byte offset is an induction variable zeroed in the preheader the way
+// retail does it, and the filter loop from its head to its end now matches retail instruction for
+// instruction; what still differs is that this build reserves a frame of 0x5c with the same
+// twenty-two slots four bytes lower than retail's 0x58 and one slot unused at the top, the frame
+// pointer is saved in the prologue where retail saves it around the filter loop, the grid is
+// stored in another order (retail keeps the two left values, the top, the right and the bottom
+// before the zero and one values), and the blur block loads the 0.9 and 1.0 constants into other
+// registers and computes the distortion in another order.
 // MiniMax H (11-04): no new form, no lower score; the counter in the loop head gives 205, the entry
 // pointer as the induction variable 172 and both together 183 against 139, so retail's pushed frame
 // pointer and its 0x58 frame still stand.
@@ -7496,13 +7528,23 @@ real scenario_ramp_evaluate_current(long index);
 // frame pointer's push inside the loop decides them.
 // MiniMax E (11-11): no new form, no lower score (139); retail's frame is 0x58 bytes with the frame pointer pushed
 // inside the filter loop, ours is 0x5c with it in the prologue, so every stack slot sits four bytes off.
-// score 139 (was 139): retail's frame is 0x58 bytes with the grid filling it to the top and the
+// score 130 (was 139): retail's frame is 0x58 bytes with the grid filling it to the top and the
 // frame pointer pushed inside the loop; ours is 0x5c with four unused bytes above the grid and the
 // frame pointer in the prologue, so every stack slot sits four bytes off.
 // MiniMax E (11-09): no new form, no lower score (139); retail calls 0x137a0 for the ramp's value where our
 // build expands it into the float arithmetic, and the ramp's three results sit in different frame slots
 // (retail's esp+0xc, esp+0x6c and esp+0x10 against our esp+0x10, esp+0x14 and esp+0x74), so the difference
 // is not only the four-byte frame offset.
+// MiniMax B (11-11): no new form, no lower score (139); the blur block is instruction for instruction retail's
+// except that retail's 137a0 writes its first result at entry-0x54 and ours writes it at entry-0x58, so the
+// whole frame is four bytes out: retail reserves 0x58 with its twenty-two slots packed exactly (the distortion
+// at entry-0x58, the ramp result at entry-0x54, the weights at entry-0x50..entry-0x44 and the grid at
+// entry-0x40..entry-0x04) while this build reserves 0x5c with the same twenty-two slots four bytes lower and
+// one slot unused at the top; retail also stores the grid in a different order (the two left values first, then
+// the top, the right and the bottom, then the zero and one values) than this build's entry order; the forms
+// tried (the four bounds read straight from the globals, the counter hoisted out of the for statement, the
+// distortion and the extra swapped, the state local removed, the byte offset moved into the for statement and
+// the declaration orders) all leave the score at 139 or worse.
 // MiniMax B (11-11): no new form, no lower score (139); retail saves ebp around the filter loop (at 0x13a43, popped
 // at 0x13b72) and frames 0x58, while this build saves it in the prologue and frames 0x5c, so every instruction
 // after the prologue pairs against the wrong one and the rest of the function cannot be read off the diff.
@@ -7527,8 +7569,8 @@ void __stdcall function_13870(bool finish, bool blur)
             distortion = (1.0f - (1.0f - state->range[4])) * 0.9f;
         if (strength > 0.0f)
         {
-            strength = (extra + 1.0f) * strength * 0.5f;
-            strength = 0.0f > strength ? 0.0f : strength > 1.0f ? 1.0f : strength;
+            real scaled = (extra + 1.0f) * strength * 0.5f;
+            strength = 0.0f > scaled ? 0.0f : scaled > 1.0f ? 1.0f : scaled;
             if (g_4b9fd0 > 0.0f)
             {
                 distortion = (g_4b9fd4 - distortion) * g_4b9fd0 + distortion;
@@ -7549,10 +7591,9 @@ void __stdcall function_13870(bool finish, bool blur)
         grid[1].x = right; grid[1].y = top; grid[1].z = 1.0f; grid[1].w = 0.0f;
         grid[2].x = left; grid[2].y = bottom; grid[2].z = 0.0f; grid[2].w = 1.0f;
         grid[3].x = right; grid[3].y = bottom; grid[3].z = 1.0f; grid[3].w = 1.0f;
-        dword byte_offset = 0;
-        for (long i = 0; i < *(long *)((byte *)g_4e0350 + 0x3d0); ++i, byte_offset += 0x24)
+        for (long i = 0; i < *(long *)((byte *)g_4e0350 + 0x3d0); ++i)
         {
-            byte *entry = *(byte **)((byte *)g_4e0350 + 0x3d4) + byte_offset;
+            byte *entry = *(byte **)((byte *)g_4e0350 + 0x3d4) + i * 0x24;
             if (*(long *)(entry + 0x14) != NONE &&
                 (*(short *)(entry + 0x20) != NONE || *(short *)(entry + 0x22) != NONE))
             {
