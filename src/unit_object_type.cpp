@@ -5304,6 +5304,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // setter 178; success-default actor result 183; coherent bound-producer names 58;
 // updated angular velocity named for its store and integration 58. NOT kept:
 // no equality or gain; original observations, copies, result and rotation restored.
+// P405 fast: direct angular limits, complete rate/angle clamps, separate actor query admission, named upper bound, random-first high branch, named trig results, float trig calls; scores 142, 58, 175, 142, 57, 96, 58, 62.
+// NOT kept: the upper-bound local gives only one point (57), below the retention threshold;
+// other calibrated forms tie or regress. Original body and existing rotation restored.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
@@ -6133,7 +6136,7 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // score 59 (was 202; 253, 282 before that): the out-of-memory arm sets the return value before its store
 // and the body sits in the else arm, which gives retail's three return blocks and its 1040 bytes; the
 // logic agrees with retail statement by statement (re-walked in round 5 of #1049).
-// score 202 (was 202; 253, 282 before that): the logic agrees with retail statement by statement (re-walked in round 5 of #1049).
+// Earlier score 202 (was 202; 253, 282 before that): the logic agrees with retail statement by statement (re-walked in round 5 of #1049).
 // Round 5 of #1049: the four weapon slots are cleared with memset(.., 0xff, 16), which gives retail's lea/pointer fill
 // (definition spilled first, EDX the pointer, ECX the value; 253 -> 202). What still differs: (1) retail's early
 // `return false` after the animation check keeps its own epilogue (jne over `pop edi/esi/ebp; xor al,al; pop ebx;
@@ -6168,6 +6171,8 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // Typed unit-tag fields 59; source cursor 68; sequential/case allocation failure 326/301;
 // model-entry cursors 76; complete shared setters 200; CRT vector copies 59; shared forward address 60.
 // NOT kept: no gain; original body retained apart from the required typed tag fields.
+// P405 fast: long/short/word source ordinals, success result at admission, post-allocation unit local, allocation result, both model counts, multi-use team; scores 60, 208, 208, 305, 59, 330, 59, 59.
+// NOT kept: no confirmed permitted gain; original body and all callee interfaces restored.
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {

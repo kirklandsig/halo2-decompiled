@@ -1988,6 +1988,8 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 // first 57 (0x1c39c0 lost); function_10d4e0 first 67 (0xd8cb0 299); function_d9e70 first 67; with 0xd9d60's marker/object
 // swap 67; function_dbfb0 ahead of this and function_d9640 after function_dbc80 57, with the swap 57 (aligned 15 -> 28: 0xd9d60's
 // setup now agrees, 0xda110's takes two registers where retail passes one). BLOCKED-BY 0xda110 in that walk.
+// P405 fast: nested/combined/selected-mask/direct-conditional exclusion, combined threshold rejection, immediate-first delay, state/region references; scores 136, 57, 137, 90, 62, 82, 57, 57, 57.
+// NOT kept: no confirmed permitted gain; original body and all callee interfaces restored.
 // @retail 0xdae60
 void __stdcall function_dae60(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	s_damage_region_accumulator *accumulator)
@@ -4591,6 +4593,8 @@ void function_db670(long object_index, long vehicle_index)
 // 42 at 170 bytes and about 25 matched functions lost, restored; fast: an early `if (!info) return;` 54 (the owner zeroing
 // moves above the test); the flag as `(flags & 0x100000) != 0` 28 (same code); the permutation fields read through the
 // indexed expression at each use 27 (172 bytes); the mode test inverted with the arms swapped 41.
+// P405 fast: permutation reference, region reference, complete owner aggregate, named owner members, accumulator before owner/dispatch/lookup, effect early return; scores 42, 42, 62, 62, 50, 45, 59, 42.
+// NOT kept: no confirmed permitted gain; original body and all callee interfaces restored.
 // @retail 0xdb760
 void function_db760(long region_index, long object_index, long permutation_index, long mode)
 {
