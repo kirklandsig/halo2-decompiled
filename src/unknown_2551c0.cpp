@@ -492,6 +492,10 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1);
 
 s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 
+// MiniMax G (11-12): no new form, no lower score (87); the unit index in a local read at the guard, the object lookup and
+// the location query, with the lookup ahead of the two vector copies, gives 237 at 958 bytes, so the field is read again
+// where retail reads it; left: the 0x110ab0 argument register (ECX where retail uses EAX), the sum's operand order and the
+// sum, length and projection homes.
 // MiniMax G (11-11), NOT kept (coordinator 11-11: 87 -> 20 by the unit index assigned inside the guard plus local_1 declared ahead of local_3, both match-only; a plain one-use local before the guard 68, the local at all four reads 241; body at 87): the guard's unit index travels in a named local and the object lookup comes
 // before the two vector copies, so the whole prologue and the guard now match retail's bytes.
 // score 87 (was 87): frame 0x54 and length 963 agree; the unit argument uses ECX
@@ -793,6 +797,12 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // Typed biped radius 87; complete constant scalars 87; readonly receivers 87; fabsf 87;
 // shared scaled difference 91; double-factor reversal 170; complete first-probe/timing admissions 87/87.
 // NOT kept: no gain; original body retained apart from the required typed radius field.
+// m3 lane 8 r158 (fast with 0x2556b0, 0x110ab0, 0x30bf0, 0x1e4a50, 0x26bfa0, 0xe6900): re-measured the target lookup ahead
+// of the heading copy (round 31's form) 92 (964 B, register-masked 4: left are one scratch-rotation step, 0x110ab0's argument
+// in ECX for EAX, the 0x290 copy's register and the timing call's lea temporaries, then the timing outputs' homes and the
+// request stores); the unit's object looked up at each use (no local_12) 87 (same code); actor_get(arg_0) at every use (no
+// local_0) 277 (999 B). No other untried natural form: the rotation step needs the one-use unit local (match-only), and the
+// homes follow slot packing that the listed renames, scopes and declaration orders do not move.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

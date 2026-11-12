@@ -1000,6 +1000,11 @@ struct s_device_machine_view
 // through a file-local `inline` fraction helper whose result starts at 0 266 (547 B: the helper stays out of line),
 // with the two ifs 258 (555 B); the helper as `PRIVATE __forceinline` 117 at 654 B (inlined, but its zero-initialised
 // result takes a stack slot, as round 81's zero-initialised local did).
+// Round 175 (m3 lane 5, fast): tools/permute.py on this 2 body (the first run since the body changed): 86 tries in 900 s,
+// 36 at 2, none below. On the group pointer with a word read after the machine test (the pushed ESI, 122): the word local
+// declared ahead of the pointer and assigned after the machine test 122; a file-local inline bit test taking the flags
+// word and a bit number 122; the word assigned inside the first test 122; `if (!(f & 1)) {} else if (f & 2)` 122; a
+// `short` local with `!= 0` masks 122.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {

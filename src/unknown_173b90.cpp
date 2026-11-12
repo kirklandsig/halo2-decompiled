@@ -472,6 +472,13 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax A (11-12): the emitter list test wrapped around the loop with the offset's zero store
+// inside it: 42 -> 39 (1130 bytes), the store now follows the list test as in retail.
+// score 39 (was 42): the offset's zero store now follows the list test as in retail; left: row i of
+// both rotations sums the up product before the forward one (retail sums the forward one first and
+// loads forward.i into a register), the two saved registers are reloaded in the other order after
+// each property call, and the branch offsets and the two trailing bytes follow from the rotation
+// rows' lengths.
 // MiniMax b (11-11): no new form, no lower score (42): the emitter loop as an explicit list test
 // with the scale declared before the multiplier was measured at 39 and restored, since it stays
 // above 30 and the gain is small; row i of both rotations still sums the up product first.
@@ -800,66 +807,70 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 		cache->mask &= 0xfffecf7f;
 	}
 	long emitter_index = *(long *)((byte *)location + 4);
-	long emitter_definition_offset = 0;
-	while (emitter_index != NONE)
+	long emitter_definition_offset;
+	if (emitter_index != NONE)
 	{
-		s_particle_emitter_175610 *emitter = DATUM(g_51ec88, s_particle_emitter_175610, emitter_index);
-		long particle_index = emitter->first_particle_index;
-		s_emitter_definition_175610 *emitter_definition =
-			(s_emitter_definition_175610 *)(*(byte **)((byte *)definition + 0x34) + emitter_definition_offset);
-		if (particle_index != NONE)
+		emitter_definition_offset = 0;
+		while (emitter_index != NONE)
 		{
-			real multiplier = 1.0f;
-			real scale = 1.0f;
-			if (TEST_FIELD_BIT(system->flag10))
-				multiplier = function_3eb70();
-			matrix3x3 rotation;
-			point3f origin;
-			matrix3x3 const *rotation_result;
-			point3f const *origin_result;
-			color4f color;
-			dword emitter_mask = emitter_definition->mask;
-			if (definition->unknown0c)
-				function_248450(&rotation, (s_particle_frame const *)emitter, &origin, &rotation_result, &origin_result, *((byte *)location + 2) != 0);
-			cache->function_173c10(emitter_mask & 0x107f0);
-			if (emitter_definition->flags & 1)
-				color.alpha = function_246cd0(&emitter_definition->alpha, cache->values);
-			if (emitter_definition->flags & 2)
-				function_246d80(&emitter_definition->color, cache->values, (color3f *)&color.red);
-			if ((bool)((emitter_definition->flags >> 2) & 1))
-				scale = function_246cd0(&emitter_definition->scale, cache->values) * multiplier;
-			dword particle_mask = emitter_mask & 0xf80f;
-			while (particle_index != NONE)
+			s_particle_emitter_175610 *emitter = DATUM(g_51ec88, s_particle_emitter_175610, emitter_index);
+			long particle_index = emitter->first_particle_index;
+			s_emitter_definition_175610 *emitter_definition =
+				(s_emitter_definition_175610 *)(*(byte **)((byte *)definition + 0x34) + emitter_definition_offset);
+			if (particle_index != NONE)
 			{
-				s_particle_175610 *particle = DATUM(g_51ec84, s_particle_175610, particle_index);
-				point3f translated_position = particle->position;
-				vector3f motion = particle->velocity;
-				if (particle != cache->field_50)
-				{
-					cache->field_50 = particle;
-					cache->mask &= 0xffff07f0;
-				}
-				cache->function_173c10(particle_mask);
-				particle_index = particle->next_index;
-				if (!(emitter_definition->flags & 1))
-					color.alpha = function_246cd0(&emitter_definition->alpha, cache->values);
-				if (!(emitter_definition->flags & 2))
-					function_246d80(&emitter_definition->color, cache->values, (color3f *)&color.red);
-				if (!(bool)((emitter_definition->flags >> 2) & 1))
-					scale = function_246cd0(&emitter_definition->scale, cache->values) * multiplier;
+				real scale = 1.0f;
+				real multiplier = 1.0f;
+				if (TEST_FIELD_BIT(system->flag10))
+					multiplier = function_3eb70();
+				matrix3x3 rotation;
+				point3f origin;
+				matrix3x3 const *rotation_result;
+				point3f const *origin_result;
+				color4f color;
+				dword emitter_mask = emitter_definition->mask;
 				if (definition->unknown0c)
+					function_248450(&rotation, (s_particle_frame const *)emitter, &origin, &rotation_result, &origin_result, *((byte *)location + 2) != 0);
+				cache->function_173c10(emitter_mask & 0x107f0);
+				if (emitter_definition->flags & 1)
+					color.alpha = function_246cd0(&emitter_definition->alpha, cache->values);
+				if (emitter_definition->flags & 2)
+					function_246d80(&emitter_definition->color, cache->values, (color3f *)&color.red);
+				if ((bool)((emitter_definition->flags >> 2) & 1))
+					scale = function_246cd0(&emitter_definition->scale, cache->values) * multiplier;
+				dword particle_mask = emitter_mask & 0xf80f;
+				while (particle_index != NONE)
 				{
-					function_2477b1(rotation_result, (vector3f *)&translated_position, (vector3f *)&translated_position);
-					translated_position.x = origin_result->x + translated_position.x;
-					translated_position.y = origin_result->y + translated_position.y;
-					translated_position.z = origin_result->z + translated_position.z;
-					function_2477b1(rotation_result, &motion, &motion);
+					s_particle_175610 *particle = DATUM(g_51ec84, s_particle_175610, particle_index);
+					point3f translated_position = particle->position;
+					vector3f motion = particle->velocity;
+					if (particle != cache->field_50)
+					{
+						cache->field_50 = particle;
+						cache->mask &= 0xffff07f0;
+					}
+					cache->function_173c10(particle_mask);
+					particle_index = particle->next_index;
+					if (!(emitter_definition->flags & 1))
+						color.alpha = function_246cd0(&emitter_definition->alpha, cache->values);
+					if (!(emitter_definition->flags & 2))
+						function_246d80(&emitter_definition->color, cache->values, (color3f *)&color.red);
+					if (!(bool)((emitter_definition->flags >> 2) & 1))
+						scale = function_246cd0(&emitter_definition->scale, cache->values) * multiplier;
+					if (definition->unknown0c)
+					{
+						function_2477b1(rotation_result, (vector3f *)&translated_position, (vector3f *)&translated_position);
+						translated_position.x = origin_result->x + translated_position.x;
+						translated_position.y = origin_result->y + translated_position.y;
+						translated_position.z = origin_result->z + translated_position.z;
+						function_2477b1(rotation_result, &motion, &motion);
+					}
+					callback(particle, cache, &translated_position, &motion, scale, &color, context);
 				}
-				callback(particle, cache, &translated_position, &motion, scale, &color, context);
 			}
+			emitter_index = emitter->next_index;
+			emitter_definition_offset += sizeof(s_emitter_definition_175610);
 		}
-		emitter_index = emitter->next_index;
-		emitter_definition_offset += sizeof(s_emitter_definition_175610);
 	}
 }
 
@@ -1437,16 +1448,16 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
-// MiniMax b (11-11): 12 (was 47), NOT kept (coordinator 11-11: a bool set true then cleared by a test and a bool set by an if are match-only; the direct expressions with the global re-read score 113; body at 47): the view global is read at each use, the availability is cleared with
-// `xor bl, bl` before the view test and set with a branch on success, and same_view is declared true before the
-// availability and cleared by one `owner == NONE || g != owner || !available` test; 498 bytes, as retail.
-// Left: our `same_view = 1` store is emitted ahead of the view test, retail's sits between `test bl, bl` and
-// `jne` in the availability test's block, and the availability's own test block is reached a store earlier.
 // score 47 (was 47): availability clear/production and later view observation remain;
 // what still differs is the same-view flag: ours writes its true value to the stack byte
 // before the availability query, retail keeps the flag in BL and writes the true value only after the owner
 // tests, with the availability's own production after its query; frame 0x14, the owner, the view and the
 // post-attachment view refresh agree.
+// MiniMax b (11-11): 12 (was 47), NOT kept (coordinator 11-11: a bool set true then cleared by a test and a bool set by an if are match-only; the direct expressions with the global re-read score 113; body at 47): the view global is read at each use, the availability is cleared with
+// `xor bl, bl` before the view test and set with a branch on success, and same_view is declared true before the
+// availability and cleared by one `owner == NONE || g != owner || !available` test; 498 bytes, as retail.
+// Left: our `same_view = 1` store is emitted ahead of the view test, retail's sits between `test bl, bl` and
+// `jne` in the availability test's block, and the availability's own test block is reached a store earlier.
 // frame 0x14, NONE/owner and Boolean stack homes agree;
 // availability clear/result and the post-attachment view refresh remain.
 // M3 lane 13 r75 (fast; masked aligned count in brackets, base [5]): round 81's `effect_index != NONE && available && ...` re-measured 46
@@ -1806,6 +1817,16 @@ bool function_17afd0(long effect_index, long value);
 // availability, ternary owner, true-then-clear 122 (495 B). Re-measured: the branchy availability after the view read 131
 // (504 B: NONE moves to EBX, the effect index to EBP, the owner to EDI, the flag to a stack byte, same_view to BL).
 // Diagnostic (not kept): on that, same_view and the camera flag written through pointers 158 (513 B, the flag still spills).
+// M3 lane 4 r190 (fast with 0x1751d0; "P" = the view global at each use, the owner as if/else, `bool available = false;
+// if (g != NONE && !query(g)) available = true;` after the owner, plain same_view and attached, 138 at 510 bytes): the
+// availability renamed to sort first or last 138/138 (same code: local names do not move registers here); P with the
+// owner defaulted to NONE and same_view's operands owner/view/available 138, available/owner/view 59, view/owner/available
+// 138, owner/available/view 138, available/view/owner 58 (498 bytes; availability BL as retail), view/available/owner 138;
+// on the 58 form the owner default declared before the effect index 60, the effect index read after the definition call
+// 105 (495 bytes), the owner as if/else 118 (499 bytes); the view read into a local with the global only at the camera test
+// 58, the availability set by a nested test 58 (same code). Cause found: NONE takes EBX first and the availability then
+// reuses it, so the owner cannot share NONE's EBP as in retail; only a body whose availability is live across NONE's
+// range (this one's early clear) gives retail's homes. Body unchanged.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

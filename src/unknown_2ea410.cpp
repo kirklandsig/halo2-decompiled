@@ -56,6 +56,12 @@ public:
 	virtual void slot_4(void const *a, void const *b, void const *input, void *collector) {}
 };
 
+// score 79 (was 79): Frame 0x114 agrees; extent 270 versus 274. First +0x13
+// saves this in ESI rather than EDI; the input stays live across the update,
+// and the traversal starts with another table load. Cursor before end 81;
+// input view earlier 79; traversal scope 79; parent first 79; indexed count 80;
+// indexed end 84; buffer declared first 79; while cursor 79.
+// NOT kept: none improves the original body.
 // @retail 0x2ea410
 void class_2ea410::function_2ea410(void const *a, void const *b, void const *input, void *collector)
 {

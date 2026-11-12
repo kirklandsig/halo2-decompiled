@@ -459,15 +459,20 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 	vector->k = axis->k * along + k * cosine - (axis->j * i - axis->i * j) * sine;
 }
 
+// score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
+// it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
+// rotation's component spill, cross scheduling and register allocation remain.
+// The body is 1085 bytes versus retail 1089.
 // MiniMax H (11-11): the loop-invariant radius times 1.2 as a named double with the ring as a named float reaches 118
 // in the reduced image but 146 in the full build, where the body returns to retail's own prologue, so it is not kept;
 // the ring float shared with the angle term 119, the ring phase named in the outer loop 143 (the frame grows to 0xdc)
 // and the cross-file rotation helper (the fast build cannot link it) all fail. The rotation's dot with the three
 // products named 90 (same code: the compiler orders the terms itself).
-// score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
-// it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
-// rotation's component spill, cross scheduling and register allocation remain.
-// The body is 1085 bytes versus retail 1089.
+// M3 lane 1 r96 (fast, the file's other 13 functions and 0x1ecf50 matched each time): the keepable spelling of the listed
+// rotate_direction lead (the existing rotate_direction, the ring as one named float for the distance and the angle, the
+// trace distance read at each use) 108 (1080 B, frame 0xd4: the ring stays an x87 fild without the one-use phase); the same
+// without the ring float 108 (same code); sine and cosine through sinf/cosf 215 (1092 B); the direction declared once
+// outside the loops 90 (same code); the spoke counter declared ahead of the distance 90 (same code).
 // MiniMax I (11-10): no new form, no lower score (90).
 // MiniMax D (11-09): no new form, no lower score; retail keeps the ring value as a float in a
 // stack slot and reloads it as a double for the radius product where ours converts the counter
