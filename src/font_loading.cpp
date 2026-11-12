@@ -765,6 +765,11 @@ static inline word font_character_pixel(long alpha, long color)
 // NOT kept: all regress; most also lose the native frame or incoming roles.
 // Original copies, word helper and decoder restored; parity/literal/two-run gaps remain.
 // MiniMax D (11-09): no new form, no lower score: the committed body is the best form of this round (85 in the fast and the full check); retail computes the alpha's parity in thirty-two bits (xor ecx,ecx; mov cl,al; add eax,eax; and ecx,1; or ecx,eax) where ours narrows it to sixteen bits (and cl,1; movzx cx,cl), and the long-returning helper, the byte local and the removed casts all scored worse (105, 209).
+// MiniMax G (11-11): no new form, no lower score: the parity only widens to thirty-two bits when the byte cast
+// leaves the helper, which shrinks the function to 444 bytes and moves the run into ebp (204); a long returning
+// helper scores 105 (byte cast) and 212 (no cast); swapping case 1's two statements gives 83, below the gain
+// needed to keep it.
+// MiniMax R (11-11): no new form tried this round, no lower score (85): the body's first branch is at +0x24, the first argument's zero test, and it leaves for a different place than retail's, which jumps into the shared exit further down; the body is 8 bytes longer than retail's.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

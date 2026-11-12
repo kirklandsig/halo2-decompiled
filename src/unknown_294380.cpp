@@ -110,6 +110,11 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 
 // score 252 (was 252): three slot pairs swapped against retail (walk position/offset, record spill/centroid sum, object
 // spill/nearest distance), see below.
+// MiniMax C (11-11): no new form, no lower score; the fast check scores this function 280 at 3717 bytes, where the
+// note's 252 is the full build's count, and retail's dead store of zero to the speed vector's i is still missing, so
+// the walk head keeps its pad and every later slot stays off; the three-member local struct lead (274 on the fast
+// check) stays under the keep bar, and two permuter runs over this function (the second with the fast image and
+// annealing) were stopped at their time limits without producing any candidate.
 // MiniMax H (11-06): no new form, no lower score; retail's dead store of zero to the speed vector's i
 // (0x29454d, one of three consecutive stores into the slots 0x88/0x8c/0x90) is still missing, and the value
 // retail reads at 0x294a1e for the 0x294050 argument list comes from the slot 0x84 after one push, not from

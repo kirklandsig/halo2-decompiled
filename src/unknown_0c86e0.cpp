@@ -92,6 +92,8 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax H (11-11): no new form, no lower score (107); the unit is still fetched once across the two 0xbadc0 calls where retail fetches it again, so the entry saves and the later carriers stay as they are, and the callee's memory summary is in a file this lane may not edit. BLOCKED-BY 0xbadc0.
+// MiniMax C (11-11): no new form, no lower score (107); the unit fetch still merges into the entry fetch because of 0xbadc0's memory summary, and 0xbadc0 is in src/unknown_0bad50.cpp.
 // score 107 (was 107): Frameless entry saves, fresh unit lookup and late prior-state carrier remain.
 // MiniMax E (11-10, run 73): no new form, no lower score (107); retail re-fetches the unit pointer and both pool globals after the two 0xbadc0 calls where we keep the entry fetch, and 0xbadc0's memory effects are unknown because that callee lives in another file.
 // MiniMax D (11-11): no new form, no lower score (107): the unit is still fetched once across the two 0xbadc0 calls where retail fetches it again, so the entry saves and the later carriers stay as they are; the callee's memory summary is in a file this lane may not edit.

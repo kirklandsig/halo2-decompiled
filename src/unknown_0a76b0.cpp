@@ -1881,6 +1881,8 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// MiniMax H (11-11): no new form, no lower score (11); retail still loads the object-pool global into ECX and the unit header into EDX before it loads the type argument, while ours loads the type into ECX first and puts the global in EDX, so the type compare lands before the index arithmetic instead of after it; the rest of the function matches instruction for instruction.
+// MiniMax C (11-11): no new form, no lower score (11); the entry block still compares the type with 8 before the index arithmetic where retail loads the pool global and the unit header first and compares afterwards.
 // MiniMax C (11-10): score 11 (was 11): no lower score this round. Two new spellings of the lookup were
 // measured and dropped: a named unit header pointer 65, and a named pointer to the active bit vector 11 with
 // the entry order unchanged. A permuter run (300 s) was stopped at its time limit without a result.
@@ -2470,6 +2472,10 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// MiniMax I (11-11): no new form, no lower score (234): the pool's and the offset's register homes are still ebp and edi where retail has edi and ebx, the NONE sentinel still rides in ebp where retail keeps it in ebx, and the lunge's divide still comes from memory.
+// MiniMax B (11-11): no new form, no lower score (234); the frame is retail's 0x14 but the pool, index, type and name
+// homes and the completion byte's home still differ, and the total-tick expression is still one product order away
+// from retail's, so the body stays at retail's 1188 bytes.
 // score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
 // single exit and the layout switch: not kept at review (match-only forms); without the gotos 305.
