@@ -259,6 +259,10 @@ PRIVATE inline byte const *material_parameters(long tag)
 // on the direct store, the entry word read from the assignment's value (an embedded assignment, diagnostic) 5 (direct-form code);
 // the chain base named before the store 174; chain and pass bases both named before it 183; the chain base from the `tables`
 // local with the pass base from the field 210 (974 bytes); the pass base from the local with the chain base from the field 210.
+// Round 93 (m3 lane 11, fast): the direct entry store re-measured 5 (only the `second` load differs: right after the entry
+// lea, retail after the two table loads); the chain lookup as word-pointer arithmetic (0x174d0's spelling) on the reference
+// form 5, on the direct form 5, in both blocks 5/5. Diagnostics (not kept): on the direct form `second` read through a
+// plain pointer to it 5; through a pointer kept in memory 304 (the convention changes).
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
