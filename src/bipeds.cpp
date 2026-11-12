@@ -775,6 +775,11 @@ struct s_biped_flags_10a_view
 // and the register load (301) and adding the state pointer as a local of its own reproduces the spill at
 // [esp+0x20] (291), but the two together leave the whole body one instruction out of step (309) because this build
 // then keeps the state pointer in EBX and pushes EBX in the prologue where retail keeps it in its stack home.
+// MiniMax A (11-12): no new form, no lower score (222); retail computes the state pointer up front and spills it at
+// [esp+0x20] with the biped index at [esp+0x24], while this build spills the index at [esp+0x20] and reads the parent
+// through the parent-object helper, and retail's early exit jumps to the shared epilogue where this build has an
+// epilogue of its own; the forms tried (the state pointer as a local, the early exit as one return, the parent's
+// field read directly) all score 222 or worse.
 // @retail 0xdd360
 bool __stdcall function_dd360(long arg_159e6d)
 {
@@ -4485,6 +4490,10 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // existing helpers: delta through vector3d_from_points3d 356 (same code); back through vector3f_scale(&offset, -1.0f) 356 (same
 // code); offset through vector3d_from_points3d 372 (1942 bytes); both collision arms' target through vector3f_add_scaled 356
 // (same code); placed through real_point3d_set 356 (same code).
+// MiniMax A (11-12): no new form, no lower score (356); the first difference is at +0x71, where this build's origin
+// sits at [esp+0x44] and its matrix at [esp+0x60] while retail's origin sits at [esp+0x40] and its matrix at
+// [esp+0x50], so every slot below the matrix sits four bytes higher although both frames are 0x12c bytes; moving a
+// local to shape the frame is not allowed.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
