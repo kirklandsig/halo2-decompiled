@@ -726,6 +726,12 @@ real function_30bf0(vector3f *vector);
 // registers and offsets masked, the rest is the two seat-loop cross products' operand sides. Every natural form found that
 // changes those reference counts (range or facing reads, seat pointer or index, maxima, facing copies, result forms, one
 // amount/distance scalar) is listed above.
+// m3 lane 8 r158 (fast with 0x263740, 0x25c9d0, 0x26d370; register-masked aligned 17): the occupant object looked up at each
+// use (no `object` local) 173 (1319 B); actor_get(actor_index) at every use (no `actor` local) 286 (1344 B). Left as before:
+// the result's home (+4 for +0), the first seat-loop cross product's load order in `a->i * b->k` and `a->j * b->i` (ours
+// loads the forward component, retail the world-up one) and the second's `forward.k` products (ours loads forward.k, retail
+// copies side.j/side.k and multiplies forward.k from memory). The other files' cross helpers are file-private, so using one
+// here would be a copy of cross3f's body.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

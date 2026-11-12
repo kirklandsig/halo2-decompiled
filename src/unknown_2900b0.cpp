@@ -439,6 +439,17 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 // helper does the sample reset (memset at 0x22c, three NONE stores, the call). Diagnostics (reverted): dead loads at
 // entry, in the arm, after the pool and after the copy 104-105 (397 bytes), the centre update cut 351, the reset cut
 // 144: the actor data keeps the pool's ECX and the origin EDX in every one, so the colouring is local to the prologue.
+// Round 175 (m3 lane 5, fast with 0x1e3b60 and 0x28f890): the statement order is already retail's. Retail's load order
+// follows from its registers: its origin shares ECX with the pool pointer, so that load cannot rise above the pool chain,
+// while ours sits in EDX and the scheduler lifts it to the front; in the loop retail's `lea edx` leaves ECX to the pool
+// chain, ours scales in place and the pool chain (EDX) is lifted above the index copy. Four register picks are left: the
+// pool data (EDX for our ECX), the lea, the object reload after the call (EDX for our EAX) and the count's sign extension
+// (in place in EAX for our ECX). Tried: the creature lookup as byte arithmetic on the pool data, the form matched 0x2403b0
+// has where retail's lookup is index-first, 28 (same code); the count read once into a short local for the averaging 30
+// (the x sum's operands swap); the creature loop on a local iterator record 30 (same swap); the centre update written in
+// the function body, no inline helper, 28 (same code); tools/permute.py with `--context 0x1e3b60 --context 0x28f890`
+// (its reduced image then scores 28 as the full one does): 147 tries in 1200 s, none below 28. Diagnostics (reverted):
+// one component copied 138 (the data still ECX, the origin EDX); a second use of the pool data 114 (it moves to ESI).
 // @retail 0x28f8d0
 void function_28f8d0(long arg_0)
 {

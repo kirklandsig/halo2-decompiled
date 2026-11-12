@@ -62,6 +62,11 @@ inline __m128 cross_303540(__m128 const &a, __m128 const &b)
 
 // Shared tetrahedron reduction used by the convex-search callers. Exporting
 // it gives those callers the same actual implementation; it remains unmatched.
+// score 111 (was 111): stack arguments and a 0x58 frame replace retail
+// register inputs and a 0x5c frame. Explicit distance branches 108
+// (NOT kept: gain 3 and longer); default first 141; direct vertex reads 111;
+// value cross inputs 111; set1 broadcast 181; aligned mask load 174;
+// one result 111; advancing normal pointer 111.
 // @retail 0x303540
 int __cdecl function_303540(__m128 const *vertices, __m128 const *point, float orientation)
 {

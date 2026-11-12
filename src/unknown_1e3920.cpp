@@ -1110,6 +1110,11 @@ void __stdcall swarm_delete(long perception_index);
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
 
+// MiniMax A (11-12): no new form, no lower score (253): the two NONE locals declared ahead of the
+// definition change nothing; the frame, the length, the callees, the argument order and every field
+// access still agree with retail, and the first difference is still the NONE sentinel, which this
+// build holds in EDI where retail holds it in ESI, so the squad index takes the other register and
+// the blocks after the first call are laid out differently.
 // score 253 (was 253): Frame 0x118 and length agree; persistent sentinel EDI/ESI, squad/substitution homes, the unrotated
 // substitution loop and the unit arm's placement (retail puts it after the mode-2 case) remain.
 // MiniMax E (11-10): no new form, no lower score (253); the fields, conditions, callees and argument order all agree with retail, but the sentinel is held in edi here and in esi there, and the successor and query homes sit at other frame offsets, so the blocks after the first call are laid out differently.
@@ -1994,6 +1999,12 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// MiniMax A (11-12): no new form, no lower score (251): taking the unit pointer from the first
+// lookup instead of the repeated ai_object_get calls gives 361 (1171 bytes), so the repeated lookups
+// stay; the actor, weapon-options and object-pool registers still rotate against retail (ours actor
+// EDI, options ESI, the pool global re-read at every lookup; retail actor ESI, options EBP, the pool
+// global held in EDI across the callees), and that difference rides on the opaque callee the notes
+// above name.
 // score 251 (was 251): Frame 0x14 and the actor index in EBX agree; the actor, options and object-pool registers
 // rotate (ours actor EDI, options ESI, pool never held; retail actor ESI, options EBP, pool global in EDI) and scalar homes remain.
 // MiniMax E (11-10): no new form, no lower score (251); the ranges, clamp bounds, the x87 fraction and every store target agree with retail, and what is left is where the unit pointers live: retail keeps the index-derived unit pointer in esi and holds the object-pool global in edi across the calls, this build keeps the index in edi, puts the unit pointer in esi where retail has ebp, and re-reads the pool global at every lookup.
