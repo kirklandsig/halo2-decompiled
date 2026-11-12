@@ -631,8 +631,9 @@ bool __stdcall function_10f430(long unit_index, long mode, long weapon_class, lo
 bool function_1012c0(long weapon_index);
 long function_baf80(long object_index);
 struct s_location;
+#include "impacts.h"
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
-	long unused, long effect_value, s_location const *location, real scale);
+	c_type_47f957 material, long effect_value, s_location const *location, real scale);
 long function_189060(long object_index, short value, real scale, point3f const *position, vector3f const *direction,
 	long tag_index);
 
@@ -2938,6 +2939,9 @@ void function_c5740(long unit_index, bool start)
 // ours puts unit_index in EBX and the material in BP; and 0x188180 is still unmatched (bipeds.cpp, items.cpp
 // and unknown_187ec0.cpp), so which registers carry its first arguments is not ours to decide.
 // MiniMax R (11-11): no new form tried this round, no lower score (90): the body is retail's length and the first difference is at +0x0, so what is left is the register home of the two index arguments and the width of the material argument, which the callers' setup fixes outside this file.
+// Coordinator (11-12, lane 13 r85's held change): 0x188180's seventh parameter now carries the material as c_type_47f957,
+// the type its callee 0x1883e0 already takes (0xe4d90 168 -> 138, 0x10c880 69 -> 39, 0xec4f0 23 -> 8, 0x247070 30 -> 6);
+// this function rose 90 -> 97 with it. Its own parameter as that type gives 114 fast and needs contributor 0xcf040's call line.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -2957,7 +2961,7 @@ void __stdcall function_ceee0(long unit_index, long definition_index, short mate
 			{
 				byte *root = (byte *)UNIT_GET(function_baf80(weapon_index));
 
-				function_188180(point, forward, tag_index, unit_index, 0xf, 0, material_index, (long)(root + 0x70),
+				function_188180(point, forward, tag_index, unit_index, 0xf, 0, c_type_47f957(material_index), (long)(root + 0x70),
 					(s_location const *)(root + 0x28), 1.0f);
 			}
 			return;

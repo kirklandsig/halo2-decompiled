@@ -4310,7 +4310,7 @@ long function_baf80(long object_index);
 short function_0b67a0(const s_small_index *data);
 long function_1eb020(long tag_index, long body_index, short *material_index);
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index,
-	long variant, long unused, long effect_value, s_location const *location, real scale);
+	long variant, c_type_47f957 material, long effect_value, s_location const *location, real scale);
 extern short g_54e898;
 extern vector3f *g_4687bc;
 
@@ -4499,7 +4499,7 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 											if (strength > definition->impact_sound_size)
 												strength = definition->impact_sound_size;
 											function_188180(&unit_center, &impulse, definition->footstep_effects.tag_index, unit_index, 0xb, strength,
-												material_index.m_index, (long)g_4687bc, (s_location const *)((byte *)unit + 0x28), 1.0f);
+												material_index, (long)g_4687bc, (s_location const *)((byte *)unit + 0x28), 1.0f);
 										}
 									}
 								}

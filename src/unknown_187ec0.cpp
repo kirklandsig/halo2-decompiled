@@ -782,7 +782,7 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // MiniMax R (11-11): no new form, no lower score (46): retail's second scan keeps a dword index in EDI and the scale in EBP, ours strength-reduces the scan into a pointer walk with a countdown in EBP; a 32-bit index gives retail's index form but rotates the other homes.
 // @retail 0x188180
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
-	long entry_element_index, long effect_value, s_location const *location, real scale)
+	c_type_47f957 entry_element_index, long effect_value, s_location const *location, real scale)
 {
 	long first_values[3];
 	long second_values[3];
@@ -798,7 +798,7 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 	effect_point.x = forward->i * 0.01f + point->x;
 	effect_point.y = forward->j * 0.01f + point->y;
 	effect_point.z = forward->k * 0.01f + point->z;
-	function_1883e0(tag_index, false, point, c_type_47f957(g_47d8e0), c_type_47f957((short)entry_element_index), index, variant,
+	function_1883e0(tag_index, false, point, c_type_47f957(g_47d8e0), entry_element_index, index, variant,
 		&first_values[0], &second_values[0], &first_values[1], &second_values[1], &first_values[2], &second_values[2]);
 
 	for (dword i = 0; i < sizeof(second_values) / sizeof(second_values[0]); i++)
