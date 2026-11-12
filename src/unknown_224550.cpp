@@ -94,6 +94,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// MiniMax A (11-12): no new form, no lower score (211); the first difference is still the tint's home,
+// ours +0x60 where retail has +0x50, with the second UV set's bounds in the other slot, and the blend
+// still leaves XMM5 in the aspect block; the declaration orders the notes above list (both uv sets before
+// the tint, the tint in a nested scope, the tint at the top of the function) all give the same code, so
+// the swap cannot be moved that way.
 // MiniMax b (11-11): no new form, no lower score (211); the tint's home is still exchanged with the second UV
 // set's bounds (ours +0x60/+0x50, retail +0x50/+0x60) and the blend still leaves XMM5 in the aspect block; the
 // uv sets declared before the tint, the tint in a nested scope (frame 0x50, the tint then at +0x50 but the second
