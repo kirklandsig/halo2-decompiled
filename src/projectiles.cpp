@@ -386,6 +386,7 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 }
 
 /* the rotation a spinning projectile makes each tick */
+// MiniMax H (11-12): no new form, no lower score (3): the flag OR and store still cross the angle duplicate and the first axis load differently - ours hoists the axis load above the flag store and sinks the store below the duplicate, retail does the opposite.
 // MiniMax G (11-11): no new form, no lower score (3); the three differences are one schedule: retail completes the rotating-flag
 // OR and its store before the angle duplicate and the first axis load, while this build hoists that load above the flag store and
 // sinks the store below the duplicate; the axis stored through a pointer local, the three components copied in the other orders,
@@ -927,6 +928,7 @@ real function_30bf0(vector3f *v);
 /* aims a falling projectile along an arc: the slowest speed that reaches
    the target, then the time to it at the speed used (high or low arc),
    falling back to the slowest arc when the speed can't reach it */
+// MiniMax H (11-12): no new form, no lower score (232): the x87 divisions, the register homes and the frame are unchanged; the two divisions cannot be had together with the callee convention, since the convention follows how two_a is produced.
 // MiniMax G (11-11): no new form, no lower score (232); the frame is 0x28 against retail's 0x30, the two pointer parameters stay
 // in EDI and EDX where retail loads each at its use, and the rounded horizontal root and the two separate divisions still differ;
 // the two-element array reference and the horizontal length as an unsigned long both fold back to the same code or score higher.
@@ -1255,6 +1257,7 @@ extern vector3f *g_4687ac;
 
 /* whether a projectile's path to a point hits anything: the line from it,
    and for projectiles with a radius the two lines either side of it */
+// MiniMax H (11-12): no new form, no lower score (163): retail's return-true block still sits right after the first call and jumps back to it where ours puts the merged block last, and the collision pointer is still loaded into ebp.
 // MiniMax G (11-11): no new form, no lower score (163); the frame is 0x48 against retail's 0x34 and the three ray queries still
 // inline 0x16a040, whose defining file this lane may not edit; the radius at each use, the collision pointer read through its
 // own address, the side queries joined as one expression and an early return for the radius test all score 163 or higher.

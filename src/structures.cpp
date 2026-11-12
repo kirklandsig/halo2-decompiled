@@ -489,6 +489,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 }
 // MiniMax I (11-11): no new form, no lower score (172): retail pushes ebx first and keeps the BSP pointer in ebx, we keep it in ebp and defer the ebp and esi pushes, and our frame's store slots sit one word lower than retail's; the callee's four argument registers (0x11e800) are outside this file.
 
+// MiniMax H (11-12): no new form, no lower score (172): our prologue still keeps the BSP global in ebp and defers the ebp and esi pushes where retail pushes ebx first, and our zero constant still takes ebx where retail gives it to edi.
 // MiniMax H (11-11): no new form, no lower score (172); the BSP pointer still lands in EBP where retail keeps it in EBX, the frame's slots sit one word apart from retail's, and the four pointers of the 0x11e800 call are handed over in another register order, that callee being in another file.
 // MiniMax E (11-10, run 73): no new form, no lower score (172); retail pushes ebx first and keeps the BSP global in ebx where we keep it in ebp, and the promoted clone of 0x11e800 hands its four pointers over in another register order (retail ecx, edx, eax, esi; ours ecx, edx, esi, eax); that callee lives in another file.
 // MiniMax D (11-11): no new form, no lower score (172): the BSP pointer still lands in EBP where retail keeps it in EBX, and the body is still seven bytes longer than retail's 726.
