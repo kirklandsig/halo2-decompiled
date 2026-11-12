@@ -1361,6 +1361,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // m3 lane 16 r109 (fast, 0x73530 8 throughout unless noted): the write-only machine-id copy dropped 937 (2700 B); the capacity
 // test through the existing 0x193300 766 (same code), with a forceinline redeclaration 766; that with the top lookup after
 // the capacity read 942 (2732 B, 0x73530 1); 0x6fa60's ratings buffer without `__declspec(align(8))` 766. Body unchanged.
+// Round 76 (m3 lane 2, fast, control 766 / 0x73530 8; all restored): output cleared first 815; the top lookup inside the
+// `||` validity test 954 (2700 B; 0x73530 1, session in ECX); the loop's lookup through 0x192e60 at the loop body's top level
+// 930 (2716 B; 0x73530 matches: the inliner gives its one copy of 0x192e60 to the hotter loop site, so the top call stays out
+// of line as in retail, whose copy sits inside the inlined 0x63220); the variant index by an explicit state test 766; the
+// validity test split in two 766. Diagnostic (flags, not kept): this file without /arch:SSE 836, the top call still inlines.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
