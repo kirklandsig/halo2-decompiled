@@ -2792,6 +2792,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // set true after it, as retail does at 0x23716; 0x22850 keeps 223.
 // MiniMax E (11-11): no new form, no lower score (364); the entry block matches retail's, but our body is 54 bytes
 // longer than retail's (1597 against 1543), which moves every later jump target, and the extra code is not located.
+// score 284 (was 364 at this round's start; 401 in the previous full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // score 401 (was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
@@ -2882,6 +2883,13 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // determinants through one new inline helper 401 (same code), with the allocator too 478; the second test as
 // `available_samples >= 2` 401 (same code). Lead: the test retail has on the second sample's path that the optimizer
 // later removes.
+// MiniMax B (11-11): score 284 (was 364): the byte count is rounded up to a multiple of four before it is
+// tested for zero, the masked handle is compared with minus one the way retail does before the size is stored,
+// and the output pointer is taken from the handle masked a second time, which is where retail's second mask
+// comes from; what still differs is that our rounding computes four minus the remainder where retail subtracts
+// the remainder and then adds four, our first matrix copy loads its four values into registers before it stores
+// them where retail stores each value as it loads it, and the three rotation calls still pass the rotation on
+// the stack instead of in eax because that callee lives in another file.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -2911,14 +2919,20 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, long order, lo
         s_bucket_source const *buckets = (s_bucket_source const *)vertices;
         long total = function_023540(count, buckets, &g_4b89b0[g_5093e8], stride);
         long bytes = total * stride * sizeof(real);
+        if (bytes % 4) bytes = bytes - bytes % 4 + 4;
         if (!bytes) goto done;
         long next = g_487b18.size + bytes;
         if (next <= 0x27000)
         {
             long handle = g_487b18.size & 0x0fffffff;
             g_487b18.size = next;
+            if (handle == -1)
+            {
+                result = false;
+                goto done;
+            }
             g_4b89b0[g_5093e8].data_handle = handle;
-            real *output = (real *)(g_487b18.data + handle);
+            real *output = (real *)(g_487b18.data + (handle & 0x0fffffff));
             for (long bucket = 0; bucket < count; ++bucket)
             {
                 byte const *pair = (byte const *)vertices + 4 + bucket * 4;

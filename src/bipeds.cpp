@@ -703,6 +703,7 @@ struct s_biped_flags_10a_view
 // compares it there, computes the biped-plus-short-offset pointer early and spills it at [esp+0x20], and jumps to
 // the shared exit for its early return, where ours compares the field in memory, spills the object index at
 // [esp+0x20] where retail uses [esp+0x24] and returns inline.
+// score 210 (was 222; 224; 241; 280 before round 48): frame 0x16c agrees; retail computes the state pointer at the top and spills it (ours reads it at
 // score 222 (was 224; 241; 280 before round 48): frame 0x16c agrees; retail computes the state pointer at the top and spills it (ours reads it at
 // its one use, so the head is 25 bytes short), the 0x111650 call takes names in EAX where retail pushes both
 // arguments (BLOCKED-BY 0x111650, unmatched, ret 8 in retail), and the type-0 bit is read as `and al, 4` (retail
@@ -747,11 +748,29 @@ struct s_biped_flags_10a_view
 // 222/222/222 (same code); the early exit returning `changed` 222 (same code). Ours still caches flags_348 in CX and 0
 // in DL for the counter clears where retail tests memory and stores immediates (the constant hoisting of 0xe0c70's
 // 0x9fff).
+// MiniMax B (11-11): no new form, no lower score (222): the one form that helps is the names array's second
+// entry instead of the first, which scores 221 and is dropped as too small a gain; what still differs is that
+// retail computes the state pointer and spills it to its stack home before the early-exit test while ours
+// rematerializes it, retail's type-0 bit test shifts a byte and masks it where ours masks the bit directly,
+// retail tests the flags word in memory where ours caches it in a register, and the tail's or-chain differs
+// because of the 0x111650 return convention.
 // MiniMax I (11-10): no lower score (222 kept); a state local computed at the top of the function scores 322 and a
 // single-exit goto form 301, so both are worse than the base. What still differs: retail computes the state pointer
 // (the `movsx`/`add` pair) up front and spills it at [esp+0x20] with the biped index at [esp+0x24], ours spills the
 // index at [esp+0x20] and reads the parent through the parent-object helper where retail reads the parent's index
 // field directly; retail also pushes EBX after its early-exit test and shares one epilogue, ours has its own.
+// MiniMax B (11-11): score 210 (was 222): the flag that says the biped changed is now set before the test on
+// the biped's other object, which is where retail sets it (retail's mov bl, 1 sits before that cmp/je pair), so
+// the store no longer lands after the join; what still differs is that retail computes the state pointer and
+// spills it to its stack home before the early-exit test where ours rematerializes it, retail's type-0 bit test
+// shifts a byte and masks it where ours masks the bit directly, retail tests the flags word in memory where ours
+// caches it in a register, and the tail's or-chain differs because of the 0x111650 return convention.
+// MiniMax B (11-11): no new form, no lower score (210 kept): retail loads the biped's other-object field into a
+// register before the early-exit test and zeroes the result register there, so the test reads a register and the
+// early exit jumps to the shared epilogue; writing the body as one `if` with a result variable reproduces the zero
+// and the register load (301) and adding the state pointer as a local of its own reproduces the spill at
+// [esp+0x20] (291), but the two together leave the whole body one instruction out of step (309) because this build
+// then keeps the state pointer in EBX and pushes EBX in the prologue where retail keeps it in its stack home.
 // @retail 0xdd360
 bool __stdcall function_dd360(long arg_159e6d)
 {
@@ -900,11 +919,11 @@ bool __stdcall function_dd360(long arg_159e6d)
 	{
 		biped->unknown0bc = g_510c54->game_time;
 		function_bba20(arg_159e6d);
+		changed = true;
 		if (BIPED_GET(arg_159e6d)->unknown0d4 != NONE)
 		{
 			function_b58c0(BIPED_GET(arg_159e6d)->unknown0d4, 4);
 		}
-		changed = true;
 	}
 
 	bool action = function_e6830(arg_159e6d);
@@ -4195,7 +4214,7 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // take the other homes are the same match-only forms.
 // MiniMax E (11-11): no new form, no lower score (371); the frame's locals sit at [esp+0xc8] and [esp+0xd4] where
 // retail uses [esp+0xd4] and [esp+0xc8], and the two tails cross-jump at the z store and the call.
-// score 371 (was 371): round 112 (m3 lane 12) note at the end. Earlier at 354 (was 354): origin, distance, matrix, limit and
+// score 356 (was 371): round 112 (m3 lane 12) note at the end. Earlier at 354 (was 354): origin, distance, matrix, limit and
 // placed homes in another order; the pivot select and the materialized travel test differ.
 // MiniMax B (11-07): no new form, no lower score (354); our origin, distance and matrix homes are 0x44, 0x34 and
 // 0x60 against retail's 0x40, 0x4c and 0x50, while every home from 0x94 up agrees.
@@ -4413,6 +4432,16 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // target copied into matrix.position, then `-=` 340 at 1958 bytes (masked 53; the tails cross-jump at the z store and the
 // matrix home becomes retail's +0x50, but the copy is ours, not retail's register loads); the copy through real_point3d_set
 // 318 (same code as the 318 form: its stores fold away). Retail's tail needs the parent arm's target loads in xmm2/xmm1/xmm0.
+// MiniMax B (11-11): score 356 (was 371): the pivot select now tests `property_a != parent_body_index` and takes
+// pivot_b first, which is the order retail keeps the two pivots in; what still differs is the pairing of the stack
+// slots (ours takes the two addresses at esp+0x48 and esp+0x88 where retail takes esp+0x4c and esp+0x60), our
+// select compares in eax/esi and reads cmp [esp+0x40],ecx where retail compares in ecx/edi and reads the frame,
+// retail's travel test is materialized as a bool where ours branches on the raw comparison, and the second
+// transform puts the scale in xmm2/z where retail uses xmm3/xmm2.
+// MiniMax B (11-11): no new form, no lower score (371): what still differs is the pairing of the stack slots
+// (ours takes the two addresses at esp+0x48 and esp+0x88 where retail takes esp+0x4c and esp+0x60), the
+// order of the two pivots (ours keeps the first in esi and the second in edi, retail the other way round),
+// and the shape of the 0xdc3a0 call.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4449,9 +4478,12 @@ bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value,
 			havok_component_rigid_body_matrix_get(parent_body_index, component, &parent);
 			function_1cff80(&component->unknown7c.data[contact_index], &pivot_a, &pivot_b);
 			havok_component_contact_properties_get(component, contact_index, &property_a, &property_b);
-			parent_pivot = &pivot_b;
-			child_pivot = &pivot_a;
-			if (property_a == parent_body_index)
+			if (property_a != parent_body_index)
+			{
+				parent_pivot = &pivot_b;
+				child_pivot = &pivot_a;
+			}
+			else
 			{
 				parent_pivot = &pivot_a;
 				child_pivot = &pivot_b;

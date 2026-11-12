@@ -662,6 +662,12 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // and callers 0xd47d0/0x14af40 lose their match: the convention moves); both reference/surface selections
 // tested on `definition == NULL` 228 (719 bytes); the strip indices indexed from the section at each fetch
 // (no pointer local) 221 (747 bytes).
+// MiniMax B (11-11): no new form, no lower score (172): our body is seven bytes longer than retail's 726;
+// retail pushes ebx first and keeps the BSP base in EBX with the section in its stack home, we keep the BSP
+// base in EBP and the section in EBX; retail's range, plane and instance homes sit one word higher than
+// ours, its three vertex fetches are unrolled where ours are a loop, its two 0x16e1b0 output homes are
+// swapped against ours, and the promoted clone of 0x11e800 takes its four pointers in another register order
+// (retail ecx, edx, eax, esi; ours ecx, edx, esi, eax), that callee living in another file.
 // MiniMax I (11-11): no new form, no lower score (172): the three 0x16e1b0 output homes follow the
 // call's argument positions (arg3 to esp+0x34, arg4 to esp+0x38, arg5 to esp+0x3c) and not the
 // declaration order (swapping the two output declarations is byte-identical); retail keeps the
