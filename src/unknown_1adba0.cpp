@@ -536,6 +536,16 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // later game-time pointer (they never overlap) and EBX to the 0x1e5380 result, which overlaps both; ours gives that shared
 // register EBX and the result EBP, so the result is coloured after the constant here and before it in retail. Every lever
 // on the two webs' weights (uses, declaration point, typing, the -2 compares) is listed above.
+// Round 86 (m3 lane 13, fast with 0x110ab0): a named game-time pointer, re-measured, 91 (415 bytes; NONE EBP and result
+// EBX as retail, but the pointer EDI, ticks EBP and the EBX save moved to the 0x1e5380 call); the ticks through the
+// existing getter function_146650 15 (same code); the pointer named after the 0x18 call for the rate only 15 (same
+// code); the ticks read from the global first and the pointer named after it, ahead of the call, 15 (same code: both
+// fold into the shared load); the two `state == 1 && flag` tests through one inline predicate 101 (399 bytes, not
+// inlined). Diagnostics: two more late NONE compares 63, the swap unchanged; the 0x3c compare against -2 103: no NONE
+// register at all, yet the game-time pointer still takes EBX and the result EBP, so the contest is between the shared
+// game-time load and the result, not the NONE constant (it only rides in the pointer's register); one extra read
+// through the result 88: the result takes EDI, the pointer EBX, ticks EBP; the unit index read at the top 107: it takes
+// EBP until the result is set, NONE and the pointer stay EBX. Retail = the result ahead of the shared load.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {
