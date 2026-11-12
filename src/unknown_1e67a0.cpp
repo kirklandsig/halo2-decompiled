@@ -575,7 +575,7 @@ bool g_46fcc4 = true;
 bool g_51e9bc;
 
 // MiniMax G (11-12) lead 12, NOT kept (coordinator): it needs the half-scale factors in one-use locals (scale_x/y/z,
-// match-only); with them written inline the same body is 303 (1024 bytes). The lead as written: the jitter accumulated in a vector3f filled in place (the on/off values into offset.i/j/k, the named sign
+// match-only); with them written inline the same body is 33 (plain, 1081 bytes; fast mis-measures this function at 303). The lead as written: the jitter accumulated in a vector3f filled in place (the on/off values into offset.i/j/k, the named sign
 // and half-scale values multiplied in, the existing 0.2 vector3f_scale, the per-component limits products) 20 -> 12 at retail's
 // length: the offset packs into the dead limits home, which gives retail's spill slots; the projection dot's term order and its
 // i term's operand order still differ.
