@@ -244,6 +244,10 @@ void class_2e1090::function_2e24b0(long *owner, bounds_2e0020 const *bounds, pai
 // On 312: scan-input rename, list/cell references, int lookup result,
 // unsigned-int count and scan-local renames 312; array reference 452;
 // direct array-data inputs 325. Original code restored.
+// New: pointer-stop conditional result 452; moved-box memcpy 312;
+// combined scan guard 309 NOT kept (three-point gain); word step in body
+// 313; persistent cell cursor 325; read-only scan bits 312; late box
+// binding 345; fixed scratch base 312. Original body restored.
 // @retail 0x2e29b0
 void class_2e1090::function_2e29b0(long *owner, pairs_2e1090 *pairs)
 {

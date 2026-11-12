@@ -53,6 +53,10 @@ public:
 // score 67 (was 67): the offset vector stores and single-vector registers still differ.
 // Reference/pointer results 67; transform reference 67; count-first helper 67;
 // indexed run 87; whole copies with changed result 136; consumed SSE/reference results 67.
+// New: explicit vector copy assignment 68; SSE assignment 75;
+// run input reference 67; in-place single rotation 75; source step at
+// read 77; destination step at store 67; fixed links or method outside
+// class 67. All executable forms restored.
 // @retail 0x306400
 void box_pair_306400::function_306400()
 {
@@ -143,6 +147,11 @@ public:
 
 // whether the boxes overlap: no face or edge axis separates them by more
 // than the tolerance
+// score 295 (was 295): frame 0xb8 agrees; the initial mask load, vector
+// homes, row reuse and later scalar scheduling differ. Return-mask or
+// reference inputs 295; forced comparison or vector setter 295; four-lane
+// construction 448; face memcpy 417; result from mask 413; broadcast load
+// 451. All executable forms restored.
 // @retail 0x306580
 answer_306580 class_306580::function_306580()
 {
