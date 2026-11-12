@@ -177,6 +177,9 @@ public:
 // top, entering past them, where ours reloads them on the back edge (a 7-byte
 // pad and the outside case land there); declaration orders, non-const splats
 // and other loop forms did not move it.
+// Byte bound selectors 802; bound cursors 849; named coordinate indices 327;
+// named products in both sums 327; plane-array end 776; first result tested
+// first 781; byte result 754; ordinary inline 1782. All restored.
 // The same walk as 0x2dce60 below, for the nodes a set of planes holds: the
 // box is the third argument
 // @retail 0x2dc220

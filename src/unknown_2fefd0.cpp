@@ -225,11 +225,17 @@ public:
 // runs a command stream until a command gives an offset, and adds the
 // position's offset plus that one to the list; commands before it skip their
 // operands or move the position
-// score 166 (was 166): retail reads the command's byte before it pushes the
+// score 161 (was 161): one shared value tail fixes the entry registers.
+// The byte-value store and four-byte offset read still differ; the tables
+// begin four bytes early. Earlier note 166 (was 166): retail reads the command's byte before it pushes the
 // registers and into another register, and the jump table and the table of
 // command lengths sit at other addresses than retail's. (The fast check's
 // number moves with the reduced image it builds — 150, 169, 179, 182 for the
 // same source; the full check's 166 stands.)
+// Shared tail 78; word selector 190; one operand 161; cursor first after
+// sharing 109; named halves 78; copy pointer 78; copy reference 78;
+// value groups first 198.
+// NOT kept (coordinator review, Codex P409 11-12): 161 -> 78 came from new `goto record_value` jumps sharing one case tail; a new goto is kept only with a byte match. The body is main's again.
 // @retail 0x2ff210
 void offset_list_2ff210::function_2ff210(position_2ff210 const *position, unsigned char const *commands)
 {
@@ -363,9 +369,15 @@ found:
 }
 
 // the same for a stream whose commands 0x10 to 0x2b have other operands
-// score 92 (was 92): retail reads the command's byte before it pushes the
+// score 92 (was 92): one shared value tail fixes the entry registers.
+// The byte-value store and four-byte offset read still differ. Earlier body:
+// retail reads the command's byte before it pushes the
 // registers and into another register, and the table of command lengths sits
 // at another offset within the second argument.
+// Shared tail 12; word selector 221; one operand 92; cursor first after
+// sharing 86; named halves 12; copy pointer 12; copy reference 12;
+// value groups first 164.
+// NOT kept (coordinator review, Codex P409 11-12): 92 -> 12 came from new `goto record_value` jumps sharing one case tail; a new goto is kept only with a byte match. The body is main's again.
 // @retail 0x2ff570
 void offset_list_2ff210::function_2ff570(position_2ff210 const *position, unsigned char const *commands)
 {

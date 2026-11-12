@@ -44,15 +44,6 @@ public:
 	void function_303b80();
 };
 
-// score 2 (was 86): Frame 0x74 and extent 580 agree; first +0x221 swaps
-// a shift and a vector store on the B success return. Earlier: retail keeps
-// the two counts in eax and ebx and the two best indices in 0x24 and 0x28;
-// the old body kept the counts in ebx and edi and swapped the index slots.
-// One shared table ordinal 2; A ordinal renamed 86; index declarations swapped
-// 86; result declared outside loops 86; separate loop indices 86; conditional
-// edge counts 86; reversed comparison 90; four-entry layout 86. With the
-// shared ordinal: four-entry layout 2; intrinsic copies 33.
-// NOT kept: both combined forms; only the single table read is retained.
 // @retail 0x303b80
 void class_303360::function_303b80()
 {
@@ -75,7 +66,7 @@ void class_303360::function_303b80()
 		{
 			if (function_303360(&corners_b[i], (triangle_303360 *)corners_a, 0) == 7)
 			{
-				sources_b[0] = sources_b[i];
+				_mm_store_ps(sources_b[0].m128_f32, sources_b[i]);
 				corners_b[0] = corners_b[i];
 				count_b = 1;
 				return;
