@@ -237,6 +237,11 @@ grouping_3720a0::~grouping_3720a0()
 {
 }
 
+// score 396 (was 396): Frame 0xc8 agrees; the initial counter load and
+// saved pointer slots differ, and the cleanup call is absent.
+// Byte result on owner tests 396; deletion guard 396; body while 396;
+// link reference 396; direct join reads 417; action cursor 461;
+// earlier transfer-buffer declaration 396; reference indexers 396.
 // @retail 0x30e720
 void c_311100::function_30e720()
 {
