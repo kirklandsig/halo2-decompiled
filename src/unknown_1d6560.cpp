@@ -373,6 +373,12 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // One type read with no rigid-body local (both flag tests through the owner chain), kind 7 as the one-case switch: byte
 // type, case 0 through object_index 113 at 240 B [210]; long type 117 at 236 B [210]; byte or long type with case 0
 // re-reading the component 97/97 at 260 B [122].
+// Round 173 (m3 lane 6, fast, caller 0x1d5bf0 in brackets): round 60's 24 form rebuilt 24 [0] (left: object index EDX, headers
+// ESI, rigid body ECX in place, `mov al` + `movzx` type); on it the absolute index from the component with no object-index local
+// 101 [0]; the type read through the global with the header local for case 0 only 24 [0] (same code); `result` declared first 24
+// [0] (same code); declaration order o,a,h,r,t 88 [0]; o,a,h,t,r 111 at 268 B [9]; a dword absolute index 24 [0] (same code); a
+// dword object index 24 [0] (same code); the kind-7 route setting `result` (1, or 0xc in its one-case switch) with the main
+// switch as its `else` and one return 95 [0]. Body unchanged at 96.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

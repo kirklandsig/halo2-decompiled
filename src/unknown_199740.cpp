@@ -127,6 +127,9 @@ long __stdcall function_2cb5b0(byte *destination, long *destination_size, byte c
 // (a dead store) 103 (stores lost, 0x8c790/0x1241b0 lost); a new volatile zero local in the allocation helper's scope 104 (stores
 // lost: the volatile pair survives only in the asm's own inlined scope); a plain zero local with rdtsc spelled as two raw opcode
 // bytes 116 (stores lost, 0x194260 lost); the volatile local with the raw opcode bytes 3 (same code at every user).
+// Round 93 (m3 lane 11, fast): the allocator copy typed `void *` 3; the pool kept as a `long` and cast inside the test 3;
+// `&buffer[4]` as the source 3; the decompressor status in a named `long` 3; the pool freed before the result is set 51.
+// The difference is still the shared tick-counter reader's (include/unknown_080e10.h), not this body's.
 // @retail 0x199740
 bool __stdcall function_199740(byte *buffer, long size, byte *destination, long *decompressed_size)
 {

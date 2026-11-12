@@ -199,7 +199,10 @@ struct s_1d8e40 : hkRigidBody
 // asks for it
 // score 112 (was 112): retail keeps the first body in edi and the second in
 // ebx and takes 1.0f over the distance before the shape's difference; ours
-// swaps the two bodies and divides the difference by the distance
+// swaps the two bodies and divides the difference by the distance.
+// Root names 112; earlier second declaration 112; double reciprocal 112;
+// named inverse 125; scalar extraction unavailable; second shape first 112;
+// for parent walks 112; one positive filter guard 112; sum lane extraction 143.
 // @retail 0x2daae0
 void class_2da9f0::contact_2daae0(void *contact_)
 {

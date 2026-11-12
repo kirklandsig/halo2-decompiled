@@ -1248,6 +1248,14 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // entry->plane_offset after its store 560, the matrix scale stored before the position 305, the edges computed x0, y0,
 // x1, y1 288 (masked 101). Same code: `real const radius`, `transformed` declared first in the projection helper, its
 // -1/k local renamed.
+// M3 lane 3 r236 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0/0xc35a0; aligned 273, register-masked 122): the
+// existing vector3f_add_scaled (vector_products.h) for the cone plane point 290, with the distance through dot3f(plane
+// point, normal) 290 (same code each: the file's point_add_scaled_c35a0 is the same expression). Checked the other include/
+// vector helpers: vector3f_rotate_into_axes sums the matrix columns (not the projection's rows), plane_distance_to_point
+// subtracts d (not the plane's own distance), magnitude3d is out of line (retail has no call), the reciprocal normalizers
+// skip only a zero length (retail tests 1e-4). Re-measured on this base: cross3f for the left cross with normalize_inline
+// 548 (2817 B, masked 146); the file's cross_product_c1a80 there with normalize_inline 566 (2810 B, masked 134). No unlisted
+// helper or natural form is left.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

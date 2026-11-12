@@ -1316,6 +1316,7 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // 0x5c0 stride stays out of reach because the pointer walk is what the callers pin.
 // MiniMax G (11-12): no new form tried this round, no lower score (94): the identity flag still takes bl where
 // retail keeps it in al, and the inner channel blocks are still not unrolled.
+// MiniMax H (11-12): no new form, no lower score (94): the first difference is still at +0xd, where the exit out of the initialization test lands elsewhere than retail's, and the identity flag still lands in BL here where retail keeps it in AL.
 // score 94 (was 94): the flag stays in bl (retail al), so the loop temporaries take eax/al where retail uses
 // ebx/cl; retail loads the count into ebp before the multiplier and adds 2 before the total (ours folds the load
 // into imul and uses one lea). Frame, prologue, unrolling and cursor agree (347 bytes).
@@ -1972,6 +1973,7 @@ static inline dword voice_get_player_mask_inlined(void);
 // getters this needs live outside this file.
 // MiniMax G (11-12): no new form tried this round, no lower score (85): what is left is the order of the two
 // availability-byte loads and the register of the stack word, both decided by the schedule of the block.
+// MiniMax H (11-12): no new form, no lower score (85): the first branch is still at +0xb and still leaves for a different place than retail's shared exit at +0x1a6, so only the uninitialized path's exit sits at the wrong address.
 // score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
 // spill agree. Earlier at 94: frame 0x14 vs 0x18, bit spill and flag-query boundary differed;
@@ -3591,6 +3593,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // MiniMax D (11-11): no new form, no lower score (139).
 // MiniMax G (11-12): no new form tried this round, no lower score (139): retail keeps the channel in ebp from the
 // entry and spills the member, while ours loads the data pointer and keeps the member in ebp.
+// MiniMax H (11-12): no new form, no lower score (139): our EBP still serves the member and the consumed update in turn, so the channel gets no register, and retail's cursor still starts with an immediate add that ours folds into the shared constant.
 // score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
 // homes differ.
 // MiniMax R (11-09): no lower score (139): the base and the offset kept apart, with the packet pointer never

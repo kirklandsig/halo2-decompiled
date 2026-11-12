@@ -532,6 +532,10 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // `current = previous;` then first from previous 2; on this base the listed selection in the loop body 171 (484 bytes)
 // and written into the entry test 171 (VC does not hoist it). Retail shares first's slot with material (frame +4) and gives the
 // cursor the mode home; ours gives first the mode home with the cursor and material frame +4 alone.
+// Round 93 (m3 lane 11, fast): first renamed base_index/start_index/copy_start/zone_first/a_first 2 each and material
+// renamed chosen_material/override/a_material 2 each (a re-check: names do not move the slot); a short loop counter 152;
+// the copy's destination through `g_4c0b78.previous` 2, as `&g_4ba138[g_4c0b78.current]` 2; the entry table named right
+// before the `for` (after the selection) 2; the count named right before the `for` 171 (479 bytes).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

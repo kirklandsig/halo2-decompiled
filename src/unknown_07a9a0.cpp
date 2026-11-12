@@ -1051,6 +1051,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
+// MiniMax H (11-12): no new form, no lower score (766): the frame is still 0xd4 against retail's 0xb4, the session still comes in on the stack where retail passes it in eax with the output pointer on the stack, and the opening lookup is still expanded here while retail calls the matched 0x192e60 out of line.
 // MiniMax S (11-11): no new form, no lower score (766): the frame is 0xd4 against retail's 0xb4, the session
 // comes in on the stack where retail passes it in EAX with the output pointer on the stack, and the opening
 // lookup is expanded here while retail calls the matched 0x192e60 out of line; the session's EAX home belongs
@@ -1360,6 +1361,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // m3 lane 16 r109 (fast, 0x73530 8 throughout unless noted): the write-only machine-id copy dropped 937 (2700 B); the capacity
 // test through the existing 0x193300 766 (same code), with a forceinline redeclaration 766; that with the top lookup after
 // the capacity read 942 (2732 B, 0x73530 1); 0x6fa60's ratings buffer without `__declspec(align(8))` 766. Body unchanged.
+// Round 76 (m3 lane 2, fast, control 766 / 0x73530 8; all restored): output cleared first 815; the top lookup inside the
+// `||` validity test 954 (2700 B; 0x73530 1, session in ECX); the loop's lookup through 0x192e60 at the loop body's top level
+// 930 (2716 B; 0x73530 matches: the inliner gives its one copy of 0x192e60 to the hotter loop site, so the top call stays out
+// of line as in retail, whose copy sits inside the inlined 0x63220); the variant index by an explicit state test 766; the
+// validity test split in two 766. Diagnostic (flags, not kept): this file without /arch:SSE 836, the top call still inlines.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

@@ -434,6 +434,9 @@ long network_session_get_maximum_players(c_class_58d20 *session);
 // (139/134 bytes, NOT kept: extent moves away); direct final return 57; success-default
 // result 39; explicit failed-comparison arm 33; sole-exit admission goto 33; nested
 // index/pointer result 33. Unchanged reduced image matches; full image remains the judge.
+// P405 fast: inner readiness/type, peer readiness, final validity/index/pointer early rejections, direct success return, comparison rejection; scores 1, 2, 60, 68, 69, 69, 43, 68.
+// Inner readiness rejection is 34 at 138 bytes in the plain check (fast 1/134): final calls still reverse.
+// NOT kept: full score regresses; original body and all callee interfaces restored.
 // @retail 0x73360
 bool c_helper_b::v7()
 {
@@ -1266,6 +1269,13 @@ long function_1931a0(long count, s_surface_description *variant);
 // write-only machine-id copy dropped 8 (0x7e210 937, 2700 bytes: retail has the copy); the capacity test through the existing
 // 0x193300 (our link already folds this file's twin into it) 8 (766, same code), with a forceinline redeclaration of it 8 (766);
 // that call with the top lookup after the capacity read 1 (942, 2732 bytes, as the private-helper form). All restored.
+// Round 76 (m3 lane 2, fast control 8 / plain 6; trials in 0x7e210, all restored): the output cleared first 8 (0x7e210 815);
+// the top lookup made inside the `||` validity test 1 (0x7e210 954, 2700 bytes; the call there stays out of line and 0x7e210
+// takes the session in ECX, retail EAX; not kept: assignment inside the test, a rise in 0x7e210, retail calls it first); the
+// loop's lookup through 0x192e60 at the loop body's top level (every pass) MATCH here (0x7e210 930, 2716 bytes: the hotter loop
+// site takes the one inline copy and the top call stays out of line, as retail; not kept: it looks the variant up on every pass
+// and raises 0x7e210); the variant index by an explicit state test 8; the validity test split in two 8. Diagnostic (compiler
+// setting, not kept): 0x7e210's file without /arch:SSE 8 (0x7e210 836; the top call still inlines).
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {
@@ -1592,6 +1602,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// MiniMax G (11-12): no new form, no lower score (703); the frame agrees (0xc0); the slot helper is the
+// static __forceinline function_74aa1 in this file (src/unknown_072db0.cpp:1588), whose null test is a
+// branch here against retail's cmovne, and the users cursor still rides in EBX where retail keeps it in
+// a stack slot at +0x18 that points at the record start.
 // MiniMax B (11-11): no new form, no lower score (703); the body is unchanged, and the forms listed above are exhausted.
 // MiniMax G (11-11, second pass): no new form, no lower score (703); retail keeps the users cursor in a stack slot
 // at +0x18 that points at the record start, ours keeps it at +0x14 pointing at the record's properties, and the

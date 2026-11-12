@@ -257,6 +257,9 @@ public:
 // Second-radius load remains late; second radius first 24, both radii first 24, first
 // extent with radii 24, separate splats 29, mutable extents 76, const extents 6, native scalar vector
 // load 62, extent role names 9.
+// Delayed second shape 25; direct shape reads 25; box references 6;
+// radius references 6; extent references 6; vector-return growth 6;
+// output-reference growth 6; aligned extent loads 6. NOT kept: no gain.
 // @retail 0x2ef6e0
 void box_pair_2ef6e0::function_2ef6e0(description_2ed170 const *a, description_2ed170 const *b, input_2ef2f0 const *input, pair_collector_2ef6e0 *collector)
 {
@@ -284,6 +287,9 @@ void box_pair_2ef6e0::function_2ef6e0(description_2ed170 const *a, description_2
 // Second-radius load remains late; second radius first 24, both radii first 24, first
 // extent with radii 24, separate splats 29, mutable extents 76, const extents 6, native scalar vector
 // load 63, extent role names 9.
+// Delayed second shape 25; direct shape reads 25; box references 6;
+// radius references 6; extent references 6; vector-return growth 6;
+// output-reference growth 6; aligned extent loads 6. NOT kept: no gain.
 // @retail 0x2ef7f0
 void __cdecl function_2ef7f0(void const *a_, void const *b_, void const *input_, void *collector_)
 {
