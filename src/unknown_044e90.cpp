@@ -393,6 +393,11 @@ struct s_visibility_bound_record
 // the earlier rounds record (the tag table local, the entry and the two views declared in five
 // orders, the release masks, the chained counts and capacities, the query data read in the arms, the
 // plane loop rolled as a plain `for`) all measure 443 or worse.
+// MiniMax A (11-12): no new form, no lower score (443); this build is 1760 bytes against retail's 1742 and the first
+// difference is at +0x10, where retail forms the entry address as a scaled index added to the entry table
+// (`movsx eax, word [ebp + 8]`, `shl eax, 5`, `lea ebx, [eax + table]`) and this build forms it as a shifted copy
+// added to the same table (`shl edi, 5`, `add edi, ...`); retail then loads the tag table into esi and spills the
+// entry at [esp+0x30] while this build keeps the entry in a register.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

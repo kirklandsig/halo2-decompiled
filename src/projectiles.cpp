@@ -386,6 +386,7 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 }
 
 /* the rotation a spinning projectile makes each tick */
+// MiniMax H (11-12): no new form, no lower score (3): the flag OR and store still cross the angle duplicate and the first axis load differently - ours hoists the axis load above the flag store and sinks the store below the duplicate, retail does the opposite.
 // MiniMax G (11-11): no new form, no lower score (3); the three differences are one schedule: retail completes the rotating-flag
 // OR and its store before the angle duplicate and the first axis load, while this build hoists that load above the flag store and
 // sinks the store below the duplicate; the axis stored through a pointer local, the three components copied in the other orders,
@@ -789,15 +790,17 @@ void function_fcbc0(long definition_index, point3f const *point, vector3f const 
    0x1883e0 gives sounds as its "first" values and effects as its "second"
    (retail passes the effect slots it reads back, the fifth argument, ecx
    and edx, as 0x1883e0's second_value04, second_value and second_value0c) */
+// element_index is `short` (11-12, Fable lane 7 r153): its caller 0xfcea0 passes a 16-bit word and 0xa17d0 matches with it;
+// this function still matches.
 // @retail 0xfd740
-void function_fd740(point3f const *point, byte const *effects, long index, long element_index,
+void function_fd740(point3f const *point, byte const *effects, long index, short element_index,
 	long *effect0, long *effect1, long *effect2, long *sound0, long *sound1, long *sound2)
 {
 	long effect_index = *(long const *)(effects + 0x58);
 
 	if (effect_index != NONE)
 	{
-		function_1883e0(effect_index, false, point, c_type_47f957(g_47d8e0), c_type_47f957((short)element_index), index, 0, sound0, effect0,
+		function_1883e0(effect_index, false, point, c_type_47f957(g_47d8e0), c_type_47f957(element_index), index, 0, sound0, effect0,
 			sound1, effect1, sound2, effect2);
 		return;
 	}
@@ -927,6 +930,7 @@ real function_30bf0(vector3f *v);
 /* aims a falling projectile along an arc: the slowest speed that reaches
    the target, then the time to it at the speed used (high or low arc),
    falling back to the slowest arc when the speed can't reach it */
+// MiniMax H (11-12): no new form, no lower score (232): the x87 divisions, the register homes and the frame are unchanged; the two divisions cannot be had together with the callee convention, since the convention follows how two_a is produced.
 // MiniMax G (11-11): no new form, no lower score (232); the frame is 0x28 against retail's 0x30, the two pointer parameters stay
 // in EDI and EDX where retail loads each at its use, and the rounded horizontal root and the two separate divisions still differ;
 // the two-element array reference and the horizontal length as an unsigned long both fold back to the same code or score higher.
@@ -1255,6 +1259,7 @@ extern vector3f *g_4687ac;
 
 /* whether a projectile's path to a point hits anything: the line from it,
    and for projectiles with a radius the two lines either side of it */
+// MiniMax H (11-12): no new form, no lower score (163): retail's return-true block still sits right after the first call and jumps back to it where ours puts the merged block last, and the collision pointer is still loaded into ebp.
 // MiniMax G (11-11): no new form, no lower score (163); the frame is 0x48 against retail's 0x34 and the three ray queries still
 // inline 0x16a040, whose defining file this lane may not edit; the radius at each use, the collision pointer read through its
 // own address, the side queries joined as one expression and an early return for the radius test all score 163 or higher.
@@ -1464,9 +1469,11 @@ long function_189fe0(s_sound_request const *request, long tag_index);
 // MiniMax A (11-11): matches; 0xfd740's six selector outputs now follow retail's order (effect 0, effect 1,
 // effect 2, sound 0, sound 1, sound 2) in its parameters, in its NONE stores and at both of its call sites,
 // which fixes the four register arguments of this call; 0xfd740 matches with it and 0xfd0e0 goes 29 -> 25.
+// index is `short` (11-12, Fable lane 7 r153): 0xa17d0 loads the word field for it with `xor edx, edx; mov dx` and matches;
+// this function still matches.
 // @retail 0xfcea0
 void function_fcea0(long effects_index, point3f const *point, vector3f const *direction,
-	s_effect_owner const *owner, long index, vector3f const *normal)
+	s_effect_owner const *owner, short index, vector3f const *normal)
 {
 	byte *effects = g_4e3b44[effects_index & 0xffff].bytes;
 	long sounds[3];
@@ -2954,6 +2961,7 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 /* a projectile's collision: damage to what it hit, the response of the
    material hit (detonating, bouncing, reflecting, attaching), the impact
    effects and sounds, then the projectile's action */
+// MiniMax H (11-12): no new form, no lower score (1196): the frame is still 0x220 against retail's 0x218, the velocity argument still arrives on the stack where retail takes it in eax and keeps it in a callee-saved register, and 0xfd7d0's register arguments still differ.
 // MiniMax S (11-11): no new form, no lower score (1220); retail's frame is eight bytes smaller and it keeps the biped in ebp where ours keeps it in ebx, and no form tried this round matches both, so the body stands as found.
 // MiniMax G (11-11): the material index is a dword local here, so the call to 0xfd7d0 pushes it raw as retail
 // does instead of sign-extending a word, and the store into the projectile keeps its 16-bit width.

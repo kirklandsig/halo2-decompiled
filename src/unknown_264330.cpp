@@ -440,6 +440,8 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // MiniMax D (11-09): no new form, no lower score; the frame is four bytes larger than retail's
 // (0xa4 against 0xa0), retail takes the actor index in EAX where ours loads it from the stack,
 // and the body is 1620 bytes against retail's 1616.
+// MiniMax B (11-12): no new form, no lower score (412): sharing the release path's 0x25c820 call through a goto to the
+// tracking block gives 457, and a short for the node's old state gives 413; the frame stays 0xa4 against retail's 0xa0.
 // score 412 (was 412): the frame is 0xa4 against retail's 0xa0; retail takes the actor
 // index in EAX where ours loads the argument from the stack. The body is 1620 bytes
 // against retail's 1616.
@@ -995,6 +997,9 @@ real function_296600(long actor_index, long prop_ref_index);
 // MiniMax G (11-10): no new form, no lower score (91).
 // MiniMax I (11-10): no new form, no lower score (163).
 // MiniMax B (11-04): no new form, no lower score.
+// MiniMax B (11-12): no new form, no lower score (90): the reduced image scores this function at 225, so the fast number
+// is not the full build's 90; at the head the actor index stays in EDI where retail keeps it in EBX, and the pool global
+// is loaded before the frame setup instead of after it.
 // score 90 (was 90): retail's length, frame 0x20. Left (masked aligned count 20, registers and esp offsets masked): at the head ours
 // loads the object pool global before the game time and the object index, retail after them (so the object and table registers swap:
 // ours EAX/ECX, retail ECX/EAX, through the type-15 arm), the suppressed/current byte homes swapped, and the first 0x1c8df0 call, where retail

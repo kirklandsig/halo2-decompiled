@@ -1,6 +1,7 @@
 // @flags /O2 /Ob1 /GL-
 #include "lane_a_motion_leaves.h"
 #include "unknown_1cec30.h"
+#include "motion_step_319f70.h"
 #include <float.h>
 #include <string.h>
 
@@ -8,24 +9,6 @@ struct c_transformed_point
 {
 	__m128 value;
 	void transform(const void *matrix, const __m128 *point);
-};
-struct s_1d8d60 { __m128 field_0; void function_1d8d60(); };
-class quaternion_319300
-{
-public:
-	__m128 vector;
-	void function_319300(quaternion_319300 const &, quaternion_319300 const &);
-};
-struct rotation_2db630
-{
-	__m128 v;
-	void function_2db630(rotation_2db630 const &,rotation_2db630 const &);
-	void function_2db6f0(rotation_2db630 &) const;
-};
-struct vector_2db7a0
-{
-	__m128 v;
-	void function_2db7a0(rotation_2db630 const &,vector_2db7a0 const &);
 };
 struct c_component_rotation
 {
@@ -182,24 +165,24 @@ void class_3193c0::set_source(class_3193c0 *value)
 // Both actual retail entry points integrate the same motion; only one also
 // returns the solver-output cursor. Expand the computations, not a wrapper.
 #define LANE_A_INTEGRATE_COMPUTATIONS \
-	field_60=field_70; \
-	field_70=_mm_add_ps(field_70,_mm_mul_ps(lane_a_broadcast(step->delta_time),field_40)); \
-	__m128 squares=_mm_mul_ps(field_50,field_50); \
-	__m128 dot=_mm_add_ss(_mm_shuffle_ps(squares,squares,0xaa),_mm_add_ss(_mm_shuffle_ps(squares,squares,0x55),squares)); \
-	float speed; _mm_store_ss(&speed,_mm_sqrt_ss(dot)); \
-	field_60.m128_f32[3]=field_c*step->delta_time*speed; \
-	quaternion_319300 omega,current,product; \
-	omega.vector=_mm_mul_ps(lane_a_broadcast(0.5f),field_50); \
-	omega.vector.m128_f32[3]=0.0f; \
-	current.vector=rotation; \
-	product.function_319300(omega,current); \
-	rotation=_mm_add_ps(rotation,_mm_mul_ps(lane_a_broadcast(step->delta_time),product.vector)); \
-	s_1d8d60 normalized; normalized.field_0=rotation; normalized.function_1d8d60(); rotation=normalized.field_0; \
+	field_60 = field_70; \
+	as_vector_319f70(field_70).add_mul(broadcast_319f70(step->delta_time), field_40); \
+	as_vector_319f70(field_60)(3) = field_c * step->delta_time * as_vector_319f70(field_50).xyz_length(); \
+	{ \
+		quaternion_319300 omega, product; \
+		as_vector_319f70(omega.vector).set_mul(broadcast_319f70(0.5f), field_50); \
+		omega.vector = _mm_and_ps(omega.vector, *(__m128 const *)g_415120); \
+		product.function_319300(omega, *(quaternion_319300 const *)&rotation); \
+		rotation = _mm_add_ps(rotation, _mm_mul_ps(broadcast_319f70(step->delta_time), product.vector)); \
+		((s_1d8d60 *)&rotation)->function_1d8d60(); \
+	} \
 	transform_rotation.function_372500(&rotation); \
-	rotation_2db630 q; q.v=rotation; vector_2db7a0 local,rotated; local.v=field_20; \
-	rotated.function_2db7a0(q,local); \
-	transform_translation=_mm_sub_ps(field_70,rotated.v); \
-	field_70.m128_f32[3]=1.0f;
+	{ \
+		vector_2db7a0 rotated; \
+		rotated.function_2db7a0(*(rotation_2db630 const *)&rotation, *(vector_2db7a0 const *)&field_20); \
+		transform_translation = _mm_sub_ps(field_70, rotated.v); \
+	} \
+	as_vector_319f70(field_70)(3) = 1.0f;
 // @retail 0x3195d0
 void class_3193c0::integrate(lane_a_motion_step const *step)
 {

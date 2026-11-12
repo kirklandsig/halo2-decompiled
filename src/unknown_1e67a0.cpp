@@ -926,6 +926,9 @@ bool g_51e9bc;
 // T90: Existing shared dot traversed by long/dword/short/word components, counted
 // cursors, array end, ordinal product and cursor product: 134/134/150/150/129/178/130/131.
 // NOT kept: All regress; projection ownership and native jitter spill reuse remain. Original shared dot and complete body restored.
+// m3 lane 2 r75 (plain, 0x24590/0x1cd6c0 listed): the named signs applied as `x *= sign_x` 20, the half scales as
+// `x *= (bits & 64) ? 1.0f : 0.5f` 20, both 20 (same code each); the three signs declared together ahead of their
+// products 109 (1055 B); the signs inline as `x *= (bits & 8) ? 1.0f : -1.0f` 41 (1082 B).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -1030,6 +1033,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
+// MiniMax A (11-12): no new form, no lower score (114, the reduced image and the full build agree): naming the
+// sine and the cosine before the rotation call scores 150 (1382 bytes) against 114, so the call keeps its
+// expressions; the first difference is still the inlined rotation's dot and cross products, whose body is in
+// another file: retail multiplies the vector's component by the axis's from memory and sums the terms j, k, i,
+// ours multiplies the axis's component by the vector's and sums them i, j, k.
 // score 114 (was 114; 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // MiniMax S (11-07): no new form, no lower score; the crosses declared apart, declared at first use or
 // declared at the top of the body give 114, the two cross calls swapped give 124 and the goal copy by
