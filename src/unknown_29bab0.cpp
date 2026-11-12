@@ -68,6 +68,12 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // (0x29c068 fsubr dword), the signed-root helper reading the scale from the definition at the product (0x29c595).
 // Tried: complement local for 1 - field_64 (771, no change), vector2f struct copies for local_15 / local_17 (717 / 723),
 // double root (775). Left: early input/heading and normalizer memory-product homes, stack slot order, per-region re-reads.
+// MiniMax C (11-11): no new form, no lower score (715 in the full build; the fast check gives 648 or 715 depending on
+// how the reduced image links); the calls that show up as different in the listing are the
+// same normalize2d (retail 0x2b400) reached at our own address, so they are not real differences; what is left is
+// the early input/heading homes, the normalizer memory-product homes, the stack slot order and retail's per-region
+// re-reads of its arguments, with retail saving EBX around the middle for the +0x290 pointer where this build holds
+// the input in EBX from the prologue.
 // MiniMax H (11-05): no new form, no lower score; retail saves EBX around the middle for the +0x290
 // pointer and re-reads its arguments from their stack homes per region, where ours holds the input in
 // EBX from the prologue, and the 748 form is a held lead under the keep bar.

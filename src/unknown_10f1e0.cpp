@@ -633,6 +633,11 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // same `if` at the loop's end moves both reloads into its head block in retail's order (122), so the order is not
 // a fixed rank of the two values. Retail's order is the order the loop head uses them. A 600 s permuter run on the
 // new form: 63 tries, best 2 (its baseline build took 1024 s).
+// Round 114 (m3 lane 9, fast = plain 2): the unit and definition lookups folded into the model read 2 (same code); re-measured on this
+// base, the target marker declared first 2 and the visited words declared before the markers 2 (same code). In 0x263210 the same kind of
+// difference (a preheader reload pair in the other order) went away when a local copy of a pool global with a re-read after a call was
+// replaced by the global read at each use; here the matching change, `iterator->b` read at each use with no re-read, is listed at 42/46.
+// Levers left outside this body: 0xb8d30's side-effect summary (its file, src/unknown_0b8ca0.cpp, was another lane's this round).
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -1459,6 +1464,9 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax B (11-11): no new form, no lower score (164); the body is unchanged, and the forms listed above are exhausted.
+// MiniMax H (11-11): no new form, no lower score (164); retail keeps index*12 as a value and re-reads the unit and
+// the pool's data for the second depletion query, and writes the first depletion with setle; the permuter (600 s) found nothing.
 // score 164 (was 164):
 // retail keeps index*12 as a value, re-reads the unit (and the pool's data for the second query)
 // for both depletion queries, writes the first depletion with setle and returns the result byte unnormalised.
@@ -1831,6 +1839,10 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
+// MiniMax E (11-11): no new form, no lower score (445); the frame's slots sit at retail's offsets one dword off
+// and retail keeps its frame pointer and the early pointer where ours does not.
+// MiniMax S (11-11): no new form, no lower score (445); retail's frame is 0xc against our 8, it keeps the pool pointer in ECX and the pool data in ESI where ours loads the global into EAX and the data into EDX, it forms the control pointer as base+offset where ours stores the bare offset, and it writes the true default at the entry where ours starts from the switch; the entry default is the known lead but it costs the matched caller 0x10ff40 its score.
+// MiniMax C (11-11): no new form, no lower score (445); `requested` still takes edi and the unit pointer is kept where retail keeps the pool data in esi and the index times twelve in edx.
 // score 445 (was 453): retail keeps the result byte in the first argument's dead slot and re-derives the unit in both seat
 // queries (rounds 85, 149 and 93 below).
 // MiniMax R (11-04): no new form, no lower score.
@@ -2269,6 +2281,15 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 	result->k = up->k * input_direction.k + up->j * input_direction.j + up->i * input_direction.i;
 }
 
+// MiniMax D (11-11): no new form, no lower score (776); the frame is still 0xcc against retail's 0xd4, and
+// retail's prologue still holds the lookup chain ours does not have: the unit's definition index, then the
+// definition's model tag at +0x38, then that tag's bytes, then +4 and one more tag, all stored into a frame
+// slot that is overwritten before any read. Writing that chain out in the source only produces the dead
+// store the compiler drops (the earlier round's unused-local form was eliminated as well), and the eight
+// missing frame bytes are the same ones the earlier rounds' angle and overlay forms could not recover.
+// MiniMax E (11-11): no new form, no lower score (776); retail's frame is 0xcc bytes where ours is 0xd4 and its
+// first angle is expanded out of line, so every stack slot sits eight bytes off.
+// MiniMax C (11-11): no new form, no lower score (776); the loop's channel play is still expanded two levels where retail calls 0x1cb490 out of line.
 // score 776 (was 776): frame 0xcc versus 0xd4 and first angle expansion remain; retail calls channel_play
 // (0x1cb490) out of line at five sites and expands only the final animation_10c start, ours expands the
 // overlay loop's call. At entry retail also loads an otherwise unused render-model tag into a stack slot.
@@ -2833,6 +2854,11 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // depth of the constant's uses does not raise its rank. Plain: the siblings' request idiom (0x1147e0, 0x114710:
 // the three extra defaults stored unconditionally after the sound index) followed by `if (extra) memcpy` 73 (221
 // bytes: the defaults stay unconditional, roles unchanged).
+// Round 91 (m3 lane 11, fast): the delay computed into a local ahead of the clear 45; the delay stored first after the
+// clear 44. Ours colours the NONE constant last (lighter than the index and the priority despite seven uses), so
+// ours treats it as a rematerialisable constant where retail weighs it as a variable; no natural form found that
+// gives a NONE-valued variable (a constant-only local is a reverted form). Every other statement, test and type
+// form above is listed.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

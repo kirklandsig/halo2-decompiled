@@ -107,6 +107,9 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
     arg_1->z = local_4 + arg_0->position.z;
 }
 
+// MiniMax E (11-11): no new form, no lower score (93); the call to 0x17cfa0 still passes the first index in ECX
+// where retail passes it in EAX, and that order belongs to the callee's own body in another lane's file, so the
+// gap here is a contributor's; the frame, the guard's three tests and the body length agree.
 // MiniMax G (11-11): no new form, no lower score (93): the first difference is at +0xa, in the prologue - retail loads the fifth argument into eax before the pushes and keeps it there, ours loads it into ecx after the pushes and puts the cluster query in eax; the guard's three tests and the body length agree (2683 bytes both), and the guard written as three early returns scores 648 and is reverted.
 #pragma inline_depth(1)
 // score 93 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
@@ -234,6 +237,9 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // Still BLOCKED-BY 0x17cfa0: ours passes the NONE first index in ECX and the definition in EAX, retail the other way
 // round (its declared order already matches retail's last-to-first setup, so this is the callee's own body, a
 // contributor's).
+// MiniMax D (11-11): no new form, no lower score (93): the entry guard still gives the `s_180d81` pointer to ECX after
+// the register saves and the cluster-query pointer to EAX, where retail gives them the other way round; splitting the
+// guard into two tests scored 633 and a local copy of the pointer scored 168, and both were reverted.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {
