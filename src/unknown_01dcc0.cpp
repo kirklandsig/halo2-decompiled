@@ -272,6 +272,14 @@ long g_55e6c0;
 // data stores 41; the resource's first word stored ahead of the packing 31; the linear select as an if/else 148 (471);
 // the busy test as two separate else-if arms 137 (476). Diagnostic, not retail's code: a constant third argument to
 // 0x1d6f0 176 (503: LTCG then passes the count in EAX, held in EBX, and the index in ECX, so the call's raw count use sets the convention).
+// Round 115 (m3 lane 9, fast, on the round-51 signed pitch/packed lead, re-measured 29 at 484 bytes): reading: with no
+// merged clamp value (the three field stores in the arms, re-measured 139 at 495 bytes) the height is placed first
+// (EAX, loaded after the kind store) and the count takes EDX with its compare at the block's top, as retail; with a
+// merged value, that value is placed ahead of the height and takes EAX. An uninitialised level-count local set in three
+// if / else-if / else arms and stored after them 29 (484, same code as the ternary); a level-count copy of the count
+// clamped in place by if / else-if 166 (497: the count takes EBP), the copy read right after the kind store 166, its
+// store written after the packing 166. Diagnostics, not retail's code: one or two more uses of the height in the top
+// block 165/163 (495: the height then takes a callee-saved register).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {
