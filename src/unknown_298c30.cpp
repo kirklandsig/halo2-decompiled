@@ -401,6 +401,8 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // +0x28 and forms `y * cos` in SSE before the branch; the emitter's facing output declared inside the inner loop 382, the rotated
 // point declared outside it 382 (same code); the sine's angle selected into a named double after the cosine, so the branch is
 // its own statement, 412 (0x29a190 45: the double local aligns the frame).
+// MiniMax A (11-12): no new form, no lower score (382): retail loads its entries in another order and keeps the normalized
+// point and the magnitude in homes of their own, while ours still shares them with the entry loads.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -886,6 +888,8 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // 121), with the direction locals too 807 (masked 116); the per-scale order with that nesting, with/without the direction locals
 // 812/791; local_7 renamed local_07 621 (same code: names do not order the local_7/local_24 homes). At retail's length with masked
 // 121 the positional count stays high: registers differ in every block from the XMM5 radius hoist at entry onward.
+// MiniMax A (11-12): no new form, no lower score (569): retail loads the radius parameter at its first use while ours hoists it
+// into xmm5 at the entry, and the two side traces stay swapped against retail's +0xd0 and +0xf4 homes.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

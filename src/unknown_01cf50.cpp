@@ -6877,6 +6877,9 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // narrowing casts), center_x/center_y unrounded locals 585-592; direction and bounds in separate blocks
 // (retail overlaps both at esp+0x14; ours then grows the frame to 0x54) 584; all twenty stage states through
 // function_0224f0 (retail inlines the first ten, calls the second) 638; dot3f adds i, j, k, retail k, i, j.
+// MiniMax A (11-12): no new form, no lower score (576): retail computes the four screen bounds on the x87 stack through a
+// temporary each and overlaps the direction with them at [esp+0x14], our body is 71 bytes shorter than retail's 2507, and
+// its second group of ten stage states and its three render-state calls stay out of line where ours inlines them.
 // @retail 0x46ea0
 void function_46ea0(long tag, point3f const *position)
 {
@@ -8604,6 +8607,9 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
 // retail dec's in 32 bits and cmov's in 16, ours still dec's in 16). Differences left are all register choice:
 // retail loads g_54d574 before the first test and keeps it in eax, spills ebx/ebp across the call, stores the first
 // fill x as a word at [esp+0x1e], and inlines the third removal site where ours calls the helper out of line.
+// MiniMax A (11-12): no new form, no lower score (328): retail reads the stack parameter into ebx with the -1 sentinel in
+// ebp where ours uses esi and ebx, its text buffer keeps two word counters that are missing here, and our body is 25 bytes
+// shorter than retail's 1133 with the frame at 0x201c against retail's 0x2020.
 // @retail 0x1f5c0
 void __stdcall function_1f5c0(long character_index)
 {
