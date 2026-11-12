@@ -2225,6 +2225,8 @@ struct s_unit_motion
 // registers follow the call site's context - and retail reaches the calls out of line, which this build does not.
 // The change was dropped: LTCG inlines the callee into 0xc7840 (563 -> 1104) and 0x1faf80 (matched) flips to 16.
 // MiniMax S (11-11): no new form, no lower score (104); retail's register convention still needs the body out of line, which only a pragma or a new noinline twin can do, so the body stands as found.
+// MiniMax G (11-12): no new form tried this round, no lower score (104): the out-of-line convention still needs the
+// body to stay out of line, which only a pragma or a twin copy could give, so the body stands as found.
 // score 104 (was 104): this body keeps position/velocity on the stack (ret 0xc); retail takes them in
 // XMM5/XMM4, time in XMM3 and returns with ret 4. #515's body (output accumulators initialised from the inputs,
 // and each step as `time > motion->field ? motion->field : time` reading the field again) gives retail's
@@ -2369,6 +2371,8 @@ void function_cfec0(long unit_index)
 // dropped, so the prologue changes) and one final return 113 (the exits merge into one epilogue); a probe shows VC7
 // folds the -1 into every separate exit, for a parameter, a copy or a cast alike, and keeps the register copy only
 // when one return is reached from two paths, which merges the exits and moves the EDI push.
+// MiniMax G (11-12): no new form tried this round, no lower score (2): the only remaining difference is the last
+// exit, which returns the constant where retail moves the register copy, and no spelling of the copy avoids the fold.
 // score 2 (was 113): a return after each closing brace gives retail's per-level epilogues, lazy pushes and
 // exit order. Left: the last exit (unit_index == NONE) returns the constant (or eax, -1); retail moves ebx
 // (mov eax, ebx), so it did not fold the value there. Tried: a result variable returning at each level 47;
@@ -2877,6 +2881,8 @@ void function_c5740(long unit_index, bool start)
 // index in EBX and the material in BP, and the call to 0x188180 is unmatched in another lane's file.
 // MiniMax R (10-31): no new form, no lower score: retail passes the point in ECX and again on the stack and
 // never the forward to 0x188180, whose parameter types live in src/unknown_187ec0.cpp.
+// MiniMax G (11-12): no new form tried this round, no lower score (90): the call to 0x188180 still needs its
+// parameter types fixed in another lane's file, so the call setup cannot be matched from here.
 // score 94 (was 94): Frameless length agrees; definition/material/pool register ownership and call setup remain.
 // Pool snapshot 92 (two-point gain rejected); headers 94; shared tag lifetime 94; pool/tag 92;
 // direct unit observations 94; conditional material result 94; weapon getter 121; pool/getter 135;
@@ -3448,6 +3454,8 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // MiniMax I (11-11): no new form, no lower score (12); the root index and the NONE constant sit in EBP
 // where retail puts them in EDI and keeps the byte offset there, and the short root index that would give
 // retail's registers breaks the sixteen-bit semantics of the index.
+// MiniMax G (11-12): no new form tried this round, no lower score (12): the root index and the rigid-body offset
+// are still in the opposite registers from retail, and the short index that would swap them changes the width test.
 // score 12 (was 12): root and rigid-body offset saved registers differ (a short index gives
 // retail's registers but tests at 16 bits before extending: 3 aligned differences, 293 bytes);
 // entry result 89; native short body index 12 at 293 bytes; root cursor/seed 110/96;
@@ -4425,6 +4433,8 @@ store:
 // differently - retail spills the sampled speed first and then forms the forward pointer, the output
 // pointer and the seed copy, ours forms the forward pointer before the spill and the seed before the
 // output pointer, and the named forms of that setup all compile to the same four instructions.
+// MiniMax G (11-12): no new form tried this round, no lower score (4): the cone call's argument setup still has
+// the sampled-speed spill and the seed copy in the other order, and the callee itself lives in another lane's file.
 // score 4 (was 4): cone setup differs: retail spills sampled speed before forming the forward
 // pointer, then forms the output pointer before copying the seed. Ours swaps both pairs.
 // The 0x98 frame and every other instruction agree.
@@ -5019,6 +5029,8 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // differently, retail keeps the clamped yaw and pitch in the frame (+0xc and +0x10) where this build reuses the two
 // incoming argument slots, and the local vector sits at +0xc where retail's is at +0x18.
 // MiniMax D (11-11): no new form, no lower score (169).
+// MiniMax G (11-12): no new form tried this round, no lower score (169): the cross-product helper's own file stays
+// as it is, so the two component loads and the vector home cannot be brought into retail's order from here.
 // score 169 (was 169; earlier 179): the logic agrees with retail statement by statement (re-walked in round 4 of #1049).
 // Round 4 of #1049: the two cross products through the repo's cross3f_staged / cross3f (retail's left vector is
 // never stored and all three components are formed before the up stores) give 169 here, but including
@@ -7629,6 +7641,8 @@ real function_50650(real cosine);
 // MiniMax G (11-11): no new form, no lower score: the two 0xc7750 calls still push position and velocity on the
 // stack where retail passes them in xmm5 and xmm4 with the time in xmm3, and 0xc7750's accumulator form (28,
 // retail's convention) is inlined into both calls (1103 here) and flips the matched caller 0x1faf80 to 16.
+// MiniMax G (11-12): no new form tried this round, no lower score (563): the frame is still 0x8c against retail's
+// 0x80, and the two 0xc7750 calls still pass their arguments on the stack instead of in xmm registers.
 // score 563 (was 563): frame 0x8c versus retail 0x80; input/vector homes and prediction/call scheduling remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.

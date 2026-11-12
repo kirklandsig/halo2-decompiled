@@ -1314,6 +1314,8 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // named - all leave the flag in bl where retail keeps it in al, and the forms that do move it put the channels
 // pointer on the stack and lose the matched caller 0x54990; retail's group base with fixed displacements and a
 // 0x5c0 stride stays out of reach because the pointer walk is what the callers pin.
+// MiniMax G (11-12): no new form tried this round, no lower score (94): the identity flag still takes bl where
+// retail keeps it in al, and the inner channel blocks are still not unrolled.
 // score 94 (was 94): the flag stays in bl (retail al), so the loop temporaries take eax/al where retail uses
 // ebx/cl; retail loads the count into ebp before the multiplier and adds 2 before the total (ours folds the load
 // into imul and uses one lea). Frame, prologue, unrolling and cursor agree (347 bytes).
@@ -1559,6 +1561,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // MiniMax I (11-11): no new form, no lower score (60); retail keeps the zero result in EAX from entry to the
 // capacity-failure exit and gives the player bit EBP and the entry size EBX, and every order of the result,
 // capacity, size and written locals compiles to the same code.
+// MiniMax G (11-12): no new form, no lower score (60): the helper's mask and shift operands swapped compile to
+// the same code, and the entry size as `11 + 2 * (include_mask != 0)` reaches retail's setne form but lays the
+// block out differently (146), so the body stands.
 // score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
 // MiniMax R (11-09): no lower score (60): what still differs is the register split - the player bit sits
@@ -1958,6 +1963,8 @@ static inline dword voice_get_player_mask_inlined(void);
 // before the muted test, and the second port-flag query is still called out of line; the form that inlines the
 // first query and reaches retail's eager byte pair loses the matched callers 0x54890 and 0x53a20, and the session
 // getters this needs live outside this file.
+// MiniMax G (11-12): no new form tried this round, no lower score (85): what is left is the order of the two
+// availability-byte loads and the register of the stack word, both decided by the schedule of the block.
 // score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
 // spill agree. Earlier at 94: frame 0x14 vs 0x18, bit spill and flag-query boundary differed;
@@ -3575,6 +3582,8 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 }
 
 // MiniMax D (11-11): no new form, no lower score (139).
+// MiniMax G (11-12): no new form tried this round, no lower score (139): retail keeps the channel in ebp from the
+// entry and spills the member, while ours loads the data pointer and keeps the member in ebp.
 // score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
 // homes differ.
 // MiniMax R (11-09): no lower score (139): the base and the offset kept apart, with the packet pointer never
