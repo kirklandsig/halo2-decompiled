@@ -235,6 +235,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // T90: Complete complement-axis scaler; with sine axis, squared axis, both, in-place
 // complement scale, reused sine scalars, diagonal parts and double-factor scale: 350/370/344/360/392/394/350/373.
 // NOT kept: No gain; native concurrent x87 inputs and matrix/vector homes remain. Both original helpers and complete body restored.
+// T95: Complete scalar input captures in existing builders, axis/vector/matrix
+// subsets 1/2/4/3/5/6/7, then axis capture after trigonometry: 365/454/343/490/365/454/490/373.
+// NOT kept: no native concurrent-angle/publication recovery; original helper
+// input observations and full body restored. Current frame 0x90 agrees.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2227,6 +2231,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // T90: Clamp independent bounds, upper-first result, evolving-result tests and upper-first
 // conditional; complete visibility/alpha outcomes, full-capacity arm first, separate count publication: 529/591/533/492/505/498/506/492.
 // NOT kept: No gain; frame 0x90 versus 0x94 and addressed-output homes remain. Original clamp and entire body restored.
+// T95: Named original intensity/color-input/turn curve results at their calls,
+// subsets 1/2/4/3/5/6/7, then entry-declared destinations: 492/492/492/492/492/492/492/492.
+// NOT kept: one-use call-result storage misses equality; original expressions,
+// all call tuples and complete body restored; frame 0x90/0x94 remains.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
