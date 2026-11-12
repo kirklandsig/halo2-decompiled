@@ -827,6 +827,7 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// MiniMax H (11-12): no new form, no lower score (60): the offset next - oldest - 1 is still strength-reduced into a second counter in esi where retail keeps the next sequence in esi and recomputes the offset in eax on every pass.
 // MiniMax B (11-11): no new form, no lower score (60): ours keeps the next sequence in ECX and strength-reduces
 // next - oldest - 1 into a second induction variable in ESI that is tested against the cached newest, while retail
 // keeps the next sequence in ESI, recomputes the offset in EAX on every pass and re-reads the newest at the
