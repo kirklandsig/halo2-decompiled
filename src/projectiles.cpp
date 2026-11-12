@@ -1445,7 +1445,7 @@ long function_189fe0(s_sound_request const *request, long tag_index);
 // from esi, edi, ebx and edx. The four addresses are the same set, so only
 // the registers and their order differ; matching them needs the callee's
 // parameter order changed, which is not ours to change. BLOCKED-BY 0xfd740.
-// score 4 (was 4): only the register arguments of the 0xfd740 call differ (retail
+// score 0 (was 4): only the register arguments of the 0xfd740 call differ (retail
 // passes the first sound in esi, the second effect in ecx, the second sound in edi
 // and the third effect in edx; ours ebx/edi/esi/edx), set by that callee's own body.
 // BLOCKED-BY 0xfd740. NUMBEROF loop bounds 17; parameter defaults in the effects
