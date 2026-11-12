@@ -1055,6 +1055,13 @@ struct s_string_buffer
 // LTCG does not thread equality facts here); an early return when either score text is missing 13 (same code).
 // Re-measured: chain, `== 9` and else arms each with the score1 format call 95 (484 bytes: merged at IL level, the 9
 // test jumps straight to the loads, the format string CSEd into EDI).
+// Round 115 (m3 lane 9, fast; the reduced image scores the unchanged body 34 at 475 bytes, so these show the layout
+// only): a named bool for the 1/3/4/7/8 chain tested with `|| == 9` 65 (480 bytes, 9 in line); the chain's last two
+// modes as `1/3/4/7 || (== 8 ? true : == 9)` 69 (489); the 1/3/4/7 chain with an else holding a two-case 8/9 switch
+// and the same loads 65 (480, 9 in line); the bool assigned `== 9` when the chain fails, then tested 100 (485); the
+// bool started as `== 9` and set by the chain 105 (487). Diagnostic, not kept: the `== 9` arm with its own copy of the
+// whole tail and a return 171 (541 bytes: the copy is not folded back and the 9 test stays in line). None places a
+// block after the return.
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {
