@@ -1896,6 +1896,11 @@ struct s_unit_player_assignment
 // chained 19; the old unit index in a named local for the outer comparison and the NONE test 17; re-measured round 43's
 // control-set argument read back 17 and the stored unit index passed to 0x1682bf 16 (449 bytes, same registers); a named user
 // index in the old-unit arm 111 (468 bytes); a named user index in the new-unit arm (three uses) 131 (459 bytes).
+// Round 174 (m3 lane 5, fast): matched 0xcea00 reads the same +0xd4 field with retail's `mov eax, [eax + ecx + 8]; mov eax,
+// [eax + 0xd4]` by re-assigning its unit pointer from a fresh lookup and reading the field at each use; that idiom here is
+// round 94's re-derived pointer: new block only 28, both blocks 17 (same code as this body). The same EAX-reuse gap (ours
+// takes EDX for the pointer) shows in 0xbba80's definition read, where matched 0xbfa40 gets the reuse with this file's
+// spelling, so it follows the surrounding allocation, not the spelling. No untried natural form found.
 // @retail 0x14cad0
 void function_14cad0(long player_index, long unit_index)
 {
