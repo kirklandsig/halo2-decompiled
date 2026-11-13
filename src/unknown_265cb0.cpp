@@ -363,9 +363,6 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
-// MiniMax B (11-11): no new form, no lower score (84); the vector homes are still one slot off from retail's, the range's
-// first load and the two products still differ, and the range is still loaded into XMM2 for XMM0; the body is 1310 bytes
-// against retail's 1308.
 // score 84 (was 84): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // MiniMax G (11-04): the motion declaration hoisted beside the delta gives identical code (152);
 // no new form, no lower score.
@@ -732,6 +729,14 @@ real function_30bf0(vector3f *vector);
 // loads the forward component, retail the world-up one) and the second's `forward.k` products (ours loads forward.k, retail
 // copies side.j/side.k and multiplies forward.k from memory). The other files' cross helpers are file-private, so using one
 // here would be a copy of cross3f's body.
+// m3 lane 14 r88 (fast with 0x263740, 0x25c9d0, 0x26d370, all MATCH): `side` and `up` declared at the facing arm's top 84 (same
+// code); the loop maxima with the primary update first 83 (a statement order by score, not kept: a and b swap homes, so the
+// EBX output address agrees and the EDI one moves further off; retail has b below a, one slot above ours). A grep of this
+// note for the result, range, facing, seat, maxima, cross, plane, clip and out-of-range forms finds every other natural
+// form listed, so no untried one is left.
+// MiniMax B (11-11): no new form, no lower score (84); the vector homes are still one slot off from retail's, the range's
+// first load and the two products still differ, and the range is still loaded into XMM2 for XMM0; the body is 1310 bytes
+// against retail's 1308.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1997,9 +2002,6 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// MiniMax B (11-11): no new form, no lower score (168); the first difference is still the table load at +0x5c, ours
-// [eax+ecx+0x58] against retail [ecx+eax+0x58], a base/index order the compiler picks; the frame is still 0x7c against
-// retail's 0x80 and the normalized direction is still folded instead of being held in XMM1..XMM3 across the dots.
 // score 168 (was 168): retail's length (2880). Left, in order: the players iterator's table pointer loads into ECX where retail
 // uses EAX and stores it at once (one extra pad line after it); the search shape; the facing and relative dots keep the
 // direction in memory where retail holds j, k, i in xmm2, xmm1, xmm3 across both dots after the last normalize; the scoring
@@ -2410,6 +2412,14 @@ real function_2683f0(long actor_index, long node_index, short type)
 // A `short cooldown` local for the decay test and store 168 (same code); re-measured on this base: the reset chained as
 // `actor->unknown31e = *(short *)(data + 0x320) = 0;` 168 (same code); diagnostic: the two reset stores in the other order
 // 168 (same code). No other untried natural form found. Body unchanged.
+// m3 lane 14 r88 (fast with 0x25d810, 0x26be00, 0x25d740, all MATCH; 0x263210's fast DIFF 292 is a reduced-image artefact,
+// it shows on the unchanged body too): 0x26be00's own lookup written as an array index (it stays matched) 168 (same code: the
+// inlined table load's base/index order does not follow that spelling); the positive arm's slot store written in both arms
+// 481 (2896 B); re-measured on this base, the NONE reset first 174 (the merge then goes retail's way, the reset arm jumping
+// into the decay arm's 0x320/0x31c stores, but the reset arm is then laid out first). Body unchanged.
+// MiniMax B (11-11): no new form, no lower score (168); the first difference is still the table load at +0x5c, ours
+// [eax+ecx+0x58] against retail [ecx+eax+0x58], a base/index order the compiler picks; the frame is still 0x7c against
+// retail's 0x80 and the normalized direction is still folded instead of being held in XMM1..XMM3 across the dots.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

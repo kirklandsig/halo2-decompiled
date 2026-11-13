@@ -996,6 +996,12 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // clear 270 (841 B). Object-pointer loads merge by address expression (the header variable, or a fresh table lookup),
 // whatever the type read; retail reads [header+8] three separate times (the first test, `object`, the bit-29 test), and no
 // spelling here gives the third.
+// m3 lane 14 r88 (fast with 0xbfe20, 0xbfe60, 0xbdb60, 0xbfc90, all MATCH): re-measured the 0xbfe20 clear 262 (813 B; frame 0x4c,
+// orientations in ESI; left: the entry, where retail loads input_matrices into EDX before object_index and copies it to EDI,
+// the definition kept in EAX across the mask copy where retail stores it and reloads it, and the third object read). On that:
+// final_matrices declared at the top 262 (same code); `object` read as header->object 325 (798 B); both early tests through
+// object_get() 282 (834 B); the awake test through the existing 0xbfc90 259 (813 B); the early tests as two ifs 317 (804 B); the 0xbfc90 awake
+// test with `object` read as header->object 307 (814 B). Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
