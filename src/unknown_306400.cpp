@@ -53,6 +53,10 @@ public:
 // score 67 (was 67): the offset vector stores and single-vector registers still differ.
 // Reference/pointer results 67; transform reference 67; count-first helper 67;
 // indexed run 87; whole copies with changed result 136; consumed SSE/reference results 67.
+// New: explicit vector copy assignment 68; SSE assignment 75;
+// run input reference 67; in-place single rotation 75; source step at
+// read 77; destination step at store 67; fixed links or method outside
+// class 67. All executable forms restored.
 // @retail 0x306400
 void box_pair_306400::function_306400()
 {
@@ -143,6 +147,11 @@ public:
 
 // whether the boxes overlap: no face or edge axis separates them by more
 // than the tolerance
+// score 295 (was 295): frame 0xb8 agrees; the initial mask load, vector
+// homes, row reuse and later scalar scheduling differ. Return-mask or
+// reference inputs 295; forced comparison or vector setter 295; four-lane
+// construction 448; face memcpy 417; result from mask 413; broadcast load
+// 451. All executable forms restored.
 // @retail 0x306580
 answer_306580 class_306580::function_306580()
 {
@@ -422,9 +431,13 @@ public:
 // retail's does
 // score 11 (was 69): retail stores the contact's normal before its point, and
 // writes the not-found answer from a fresh zero in cl instead of bl.
-// score 11 (was 11): output stores and fresh failure zero still differ.
+// Output stores and fresh failure zero still differ.
 // Overlap outcome 74; lookup outcome 62; both 84; common failures 102/69/106;
 // both outcomes as bool 84; bool with common failure 106.
+// Pointer return 28; pointer return with class assignment 28; pointer return
+// with aligned stores 26; empty destructor 28; destructor and mutable-source
+// copy 28; destructor and aligned stores 26; mutable-source copy 28;
+// class local with empty destructor 11. NOT kept: no improvement.
 // @retail 0x307f90
 void query_2ef260::function_307f90(answer_307f90 *found, contact_307f90 *contact)
 {

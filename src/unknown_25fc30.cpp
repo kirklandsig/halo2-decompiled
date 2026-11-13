@@ -1823,6 +1823,10 @@ struct s_collision_result_25f7b0
 // (290). The home stays at +0x13 when the second bool is a byte group member of its own, so the
 // group holds the flag alone and MSVC gives it the group's top byte; retail's flag is the
 // group's bottom byte, which needs three more live byte locals before it.
+// Round 416: Actual visibility/collision/near-distance Boolean results, each and all combinations,
+// 4/4/4/4/4/4/4; native signed-byte attachment decision 4. All restored.
+// The one-use predicate results are restored without an exact match; byte +0x13/+0x10 and the
+// distance/fraction product loads remain.
 // @retail 0x25f7b0
 void __stdcall function_25f7b0(long arg_0, s_type_967e20 *arg_1, s_type_b36ac5 *arg_2)
 {

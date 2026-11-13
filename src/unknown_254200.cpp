@@ -190,6 +190,10 @@ void function_254200(void)
 // spilled y + size reload after the second and third reservations: retail's order is the order in which the two values are
 // defined in the first vertex's code (the constant at its stores, then the y sum), ours puts the sum first; 0x2548f0 has
 // the same pair the other way round (retail the earlier-defined coordinate first, ours the constant).
+// Round 416: Both cached-state helper calls 4; native member state calls 4; member End 4;
+// free Begin 247 (1053 bytes); direct availability rejection 4; active-quad rejection 4;
+// explicit texture selection 4; separate availability failures 4. Original calls and body restored;
+// the two depth/top-coordinate reload pairs remain.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {

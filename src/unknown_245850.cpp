@@ -110,6 +110,10 @@ struct s_245850
 // `(L + F) + U`, `(F + L) + U` or with swapped operands 7, as two statements 7, as three accumulating statements 0;
 // the scalars defined i, j, k with all three rows accumulated and the flat d sum 0 (plain 0, the patch), with the
 // grouped d sum 0; i, j, k with `(F + U) + L` rows 8; j,k,i with all rows accumulated 0, with a flat d sum 17.
+// Round 416: Descriptor reference 1; descriptor observed after extraction on the short-index graph 14;
+// immutable count 1; point input reference 1; unit-scale-first arm 1; separate point/normal scalar
+// lifetimes 8; output element reference 1; returned-output transform only 86 (582 bytes). All restored;
+// the sole lookup index-extension difference remains.
 // @retail 0x245850
 void function_245850(long arg_0, s_source_245400 const *arg_1,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

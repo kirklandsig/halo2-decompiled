@@ -112,7 +112,7 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // point helper produces; this round the surface index store moved to the top of the body scores 6 (no change) and is
 // reverted.
 // MiniMax I (11-09): no new form, no lower score; the x store split from the helper as its own array element, through a union view, through an int pun and with the components written through the union's array members score 110 to 140, the helper called with the array address scores 38, and the permuter (2400 s) found no candidate; this round the surface index as a member initializer scores 6, the value store before the surface pointer 33 and the surface index stored last 123, the helper called with the array address 25, a point3f pointer local 6, no vertex local 38 and the tag through the vertex 58; the entry loads the radius constant before the index where retail loads the index first, and the x store folds the vertex address into the store's operands where retail forms the address first.
-// score 6 (was 6): this round: no new form and no lower score; the entry still loads the index before
+// Earlier: this round: no new form and no lower score; the entry still loads the index before
 // the radius constant where retail loads the constant first, and the loop still forms the vertex address
 // before its x store where retail folds the address into the store.
 // MiniMax S (11-09, second round): no new form, no lower score (6); the entry still loads the
@@ -206,6 +206,10 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // stores through a named vertex 106. Every setter form materialises the vertex address before the x store; retail's
 // `mov [eax + ecx], edx; add eax, ecx` is the shape main's 0xa3df0 gets from a pointer whose first use is folded and
 // which is formed only for a later use. One compiler-setting diagnostic (not kept): /G5 or /G7 on the file 6, nothing moves.
+// Round 416: Advancing output cursor 92 (445 bytes); persistent edge cursor 117;
+// read-only edge pointer 6; post-transform point selection 6; memmove point copy 125 (459 bytes);
+// immutable output cursor 6; unsigned full-width edge ordinals 6; existing shared point transform
+// 323 (256 bytes). All restored; radius/index loads and the first vertex address/store remain.
 // @retail 0x1edd00
 c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, long index,
 	long user_data, const transform4x3f *matrix) : radius_shape_2de750(0.01f)
