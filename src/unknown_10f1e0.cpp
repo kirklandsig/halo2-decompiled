@@ -2315,6 +2315,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 	result->k = up->k * input_direction.k + up->j * input_direction.j + up->i * input_direction.i;
 }
 
+// MiniMax A (11-13): no new form, no lower score (776); our frame is still 0xcc against retail's 0xd4, the
+// first angle is still expanded where retail calls out of line, and retail's prologue chain of otherwise
+// unused tag loads is still missing.
 // score 776 (was 776): frame 0xcc versus 0xd4 and first angle expansion remain; retail calls channel_play
 // MiniMax D (11-11): no new form, no lower score (776); the frame is still 0xcc against retail's 0xd4, and
 // retail's prologue still holds the lookup chain ours does not have: the unit's definition index, then the
