@@ -867,6 +867,12 @@ void function_1c54b0(char const *variants, long object_index)
 // function scope and assigned at each iteration top 18 (flag first 4), assigned in the loop condition 37 (253 bytes; flag
 // after 40), assigned once before the loop 59/58 (harness); the island declared at function scope 18 (flag first 4); the
 // entity count declared at function scope 18 (flag first 4). Naming the world never moves the reload pair.
+// Round 94 (m3 lane 11, fast; flag before/after the call): the component index through the existing out-of-line
+// getter 0x1cf280 124/124 (208 bytes: the reduced image calls it); the per-entity test in an inline bool helper
+// 172/172 (156 bytes, not inlined); the island's entity count and entity through inline accessors 4/18 (same code);
+// the island through an inline (world, index) accessor 4/18 (same code). Compile-only diagnostic: the outer loop
+// written as a guarded do-while, so the world is read ahead of the index's first assignment, keeps the pair in either
+// flag order, so the pair does not follow which of the two values is defined first.
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {
