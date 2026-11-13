@@ -530,6 +530,11 @@ public:
 // factors read directly 86; indexed coordinate update 86; unsigned command
 // ordinal 86; stop case first 86; wide-bound cases later 487; ordinary
 // classifier inline 1410. NOT kept: no gain; executable text restored.
+// P428: both box vectors captured 86; scalar member view 86; repeated
+// diameter product 86; paired square expressions named 86; split shift
+// and anchor captured 730; axis names in every split 86; OR byte joins
+// 729; combined two-side outcomes 592. NOT kept: no improvement; integer
+// scheduling, the first scan and saved pointer/state homes still differ.
 // @retail 0x2dce60
 void class_2dce60::function_2dce60(pending_2ddbd0 *position, void const *root, __m128 const *offset)
 {
