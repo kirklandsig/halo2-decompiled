@@ -2902,6 +2902,10 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 	return result;
 }
 
+// MiniMax H (11-13): no new form, no lower score (389); retail opens with `push ecx` (one four-byte slot) and takes
+// the table entry into EBP, ours opens with `sub esp, 8`, keeps the weapon index in EBP and spills two pointers, so
+// the prologue and every register home downstream differ. The permuter was run on this function and reported only
+// the same baseline (389 differing instructions).
 // MiniMax G (11-10): no new form, no lower score (389).
 // MiniMax R (11-10): no new form, no lower score; retail's frame is four bytes and keeps the weapon pointer in ebp with only the definition spilled, ours is eight bytes and spills both.
 // MiniMax C (11-01): no new form, no lower score.
@@ -3488,6 +3492,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return unit ? unit->player_index : NONE;
 }
 
+// MiniMax H (11-13): no new form, no lower score (607 plain, 643 fast); the frame agrees at 0x1c64 against
+// 0x1c60 and the weapon, barrel, definition and holder still live in different homes, so the prologue and the
+// register allocation of the barrel walk differ. Nothing here can be reshaped without touching the declarations
+// that other files own.
 // MiniMax G (11-10): no new form, no lower score (607).
 // MiniMax R (11-10): no new form, no lower score; the unit index without the volatile scores 657, with the volatile and the NONE at the declaration 637 and without the volatile and the NONE at the declaration 640, so the kept form stays the best.
 // MiniMax G (11-04): no new form, no lower score; the barrel pointer before the definition gives fast 638 (was 640), below the retention threshold.
