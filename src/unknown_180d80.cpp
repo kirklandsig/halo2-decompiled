@@ -111,6 +111,9 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // where retail passes it in EAX, and that order belongs to the callee's own body in another lane's file, so the
 // gap here is a contributor's; the frame, the guard's three tests and the body length agree.
 // MiniMax G (11-11): no new form, no lower score (93): the first difference is at +0xa, in the prologue - retail loads the fifth argument into eax before the pushes and keeps it there, ours loads it into ecx after the pushes and puts the cluster query in eax; the guard's three tests and the body length agree (2683 bytes both), and the guard written as three early returns scores 648 and is reverted.
+// MiniMax G (11-12): no new form, no lower score (93): the entry guard still loads the strip pointer after the register saves and into
+// ecx where retail loads it before them into eax; the guard as one positive test scores 121, a local copy of the strip pointer 168, and
+// the permuter's 22 annealed tries over the reduced image found nothing below the 93 baseline.
 #pragma inline_depth(1)
 // score 93 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
 // MiniMax I (11-10): no new form, no lower score (93); the count sum and the vertex cursor still take the

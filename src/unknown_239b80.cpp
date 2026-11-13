@@ -229,6 +229,11 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
+// MiniMax G (11-12): score 161 (was 169): the departure update is now a short-circuit with the hull's first index
+// passed to the difference helper first, and the compaction runs through memmove; the frame is still 0x18 against
+// retail's 0x14, and the count, departure and hull-count homes still differ.
+// score 161 (was 169): frame 0x18 against retail's 0x14; the count, the departure flag and the hull count still live
+// in their own homes where retail keeps them in the dead argument homes.
 // MiniMax D (11-11): no new form, no lower score (169); the one-counter body still rotates the pass test to the loop's foot and keeps the count in a register where retail reloads it from its home, so the two-counter body is kept.
 // score 169 (was 169): earlier 169 (was 170); at 170 (was 170) native output ordinal separates iteration from produced length;
 // frame 0x18 versus 0x14, count/departure homes, equality and compaction still differ.
@@ -618,8 +623,7 @@ short function_239e50(short count, point2f const *points, short *indices)
 			previous_angle = best_angle;
 			if (next == NONE)
 				goto finished;
-			if (!left_start)
-				left_start = points2d_differ(&points[next], &points[indices[0]]);
+			left_start = left_start || points2d_differ(&points[indices[0]], &points[next]);
 			if (next == indices[0])
 				goto finished;
 			if (left_start && !points2d_differ(&points[next], &points[indices[0]]))
@@ -634,7 +638,7 @@ short function_239e50(short count, point2f const *points, short *indices)
 				if (indices[j] == indices[i])
 				{
 					hull_count = i - j;
-					memcpy(indices, &indices[j], sizeof(short) * (short)hull_count);
+					memmove(indices, &indices[j], sizeof(short) * (short)hull_count);
 					break;
 				}
 			}
