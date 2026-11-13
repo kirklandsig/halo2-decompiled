@@ -2908,82 +2908,6 @@ void function_20cbd0(short group_index, s_audio_priority_table *table, long targ
 void __stdcall function_20d570(short arg_1, long arg_0, long arg_2, void *arg_3);
 void function_20fda0(long arg_0);
 
-// score 19 (was 19): the short that comes back from the call is sign extended
-// here after the call and in retail before it, and the global is read into
-// EDX here and into EAX in retail.
-// Tried (r35): split side or node assignments, a const side or object, a byte owner,
-// an early guard and the object macro 19; an explicitly widened side 39;
-// (r169) the node before the queue 24 (pool loads first, node add moves up);
-// the node before the call 49; NODE() 19; a long side 39; the queue written
-// at both calls 62; a `byte *const &` node 19.
-// Round 141 (lane 4): retail loads the pool first and the queue into EAX after the MOVSX, then
-// builds the node as data + offset in EAX before the flag read (the 0x20d570 lookup shape); ours
-// loads the queue into EDX first and folds the node into the flag read. One queue call after the
-// if/else 19; the pool read into a local before the owner (0x20f960's form) 19; the node declared
-// first 19; the side cast inside the owner expression 19; the object through OBJECT_FROM_INDEX 19
-// (all the same code).
-// Round 57 (lane 10): retail's node takes its register from the data (mov eax, [edx + 0x44]; add
-// eax, ecx), ours from the scaled index, which is what folds the flag read and leaves the queue in
-// EDX. Node before owner 24; owner offset named 22; node from the data then `+=` the offset 19; data
-// local before the owner 19; masked index local before the owner 19; owner and node offsets both named
-// 22. A compile-only screen (its listing agrees with the real one) of ~680 owner, node, pool, inline
-// helper and typed element forms: none loads the data into EAX.
-// Round 122: full owner layout with array-element arithmetic 19; typed node element and fields 19;
-// owner declared first 19; raw call result with the pool read before sign extension 19; event callee
-// inline declaration 19; both/false-path/flag-path void-return cleanup expressions 19/19/19;
-// owner base then offset 19; owner base then offset with typed node element and fields 19.
-// Round 33 (lane 17): short team and side locals (0x20f1a0's form) 19; the flag test un-negated, release arm
-// first 31; the flag read into a named bool 19; node ahead of the owner with a short team and long side 24
-// (141 bytes: pool loaded first, node add explicit, but the side multiply moves up); the same with a short side 24.
-// Round 133 (fast): the node through unknown_20f8b0.cpp's existing audio_queue_node (declared here; LTCG
-// inlines it) 19 (same code), with the node ahead of the owner 24; the node computed at the top of the block
-// 49 (144 bytes) or between the team read and the call 48 (145 bytes; both keep the loads ahead of the call and
-// cost 0x114e80 13); permuter (600 s, 46 tries): nothing valid below 19 (its 16 reads the team as a dword).
-// The team field passed straight to the call without the long local 20.
-// Round 67 (m3 lane 14, fast): the owner as `local_1 * 0x7dc + (byte *)g_4f939c` 19, the node as
-// `(arg_1 & 0xffff) * 0x54 + g_4f9398->data` 19, both 19, the owner as `&((byte *)g_4f939c)[...]` 19, the
-// flag read as `*(bool *)(local_3 + 0x41)` 19, the pool read into a local after the owner 19 (all same
-// code). Reading: retail's owner base takes EAX (loaded after the MOVSX), the pool EDX and the node offset
-// ECX, so the node add must come before the flag byte load into CL; ours gives the owner base EDX, the
-// pool ECX and the offset EAX, which lets the flag load fold the add.
-// Round 140 (lane 8, fast): the call folded into the owner with a short team local (0x20f2d0's form) 19;
-// the node expression written at each use 50 (150 bytes: the 0x20d570 argument registers become retail's,
-// but the data pointer is reloaded); the owner from a one-line inline team-to-queue helper 19; the owner
-// as a `byte *` queue cast at the calls 19; the two global declarations swapped 19 (all same code).
-// Compile-only screens (their listing agrees with the real one): 97 combinations of the team and side
-// local types, the owner before or after the node, a local, typed or at-each-use node and the arm order,
-// and all 45 orders of the side, offset, pool, queue base, owner, data and node statements after the
-// call: none moves the base EDX / pool ECX / offset EAX assignment; nor do /O1, /Ox, /G6, /G7 or /Op.
-// Round 95 (m3 lane 16, fast): an `arg_1 == NONE` early return 19; the object lookup through an offset local (0xa1f70's
-// idiom) 19; the team read inside the call's argument 20; the node as `&data[(arg_1 & 0xffff) * 0x54]` 19; a node offset local
-// 19; every local declared at the top, assigned in place 19. Diagnostic: 1-8 unused locals ahead of the lookup 19 each (retail's
-// EAX/EDX/ECX is ours rotated by one; no numbering tie).
-// Round 159 (lane 5, fast): the cause is not outside the body either. The queue global defined beside the pool global in this
-// file (retail has them four bytes apart) 19 (same code in all 61 functions of the four files); diagnostics, restored: each
-// later callee (0x20fe20, 0x20fda0, 0x20d570) swapped for another function 30/31/39 and a pool-global store added to 0x20fe20
-// 19, the queue-then-pool load order unchanged in all four, so no callee's side-effect summary sets it. A pool pointer local
-// read at the top of the block, just before the 0x20f040 call, or at function entry 44/44/46 (145/145/141 bytes; the pool is
-// held in EBX across the call, though the 0x20d570 argument order becomes retail's); the flag read into a bool ahead of the
-// owner 24; the owner as an element of the queue array indexed by the call 20.
-// Round 148 (m3 lane 7, fast): the owner offset named ahead of the node and the queue base added after it 22 (arg_1 then
-// arrives in ESI and 0x114e80 breaks); the call result narrowed implicitly (`short local_1 = function_20f040(...)`, 0x20ff50's
-// form) 19; the flag test un-negated with one queue call after the if/else 31 (round 33's code); the node offset computed at the top of the block
-// 19; the call result kept as a long and narrowed at the owner 19 (both same code). Diagnostic: the body built in
-// src/unknown_20f8b0.cpp (/O2 /Ob1 /Gr, no /arch:SSE, where retail's neighbours 0x20fd50, 0x20fda0 and 0x20ff50 sit) 19, so the
-// file flags do not set it. Compile-only (its listing equals the real one): the pool and queue pointers as two members of one
-// global, the masked index at the top of the block, a data local: same code. Retail's order is pool load, MOVSX, queue load:
-// the queue gets EAX only because the MOVSX frees it first; every form here loads both globals ahead of the MOVSX.
-// Also (round 148): the release arm as an early return 31 (round 33's code again); the 0x20d570 object index named in its
-// block 19.
-// Round 157 (m3 lane 8, fast): 0x20f040 returning `short` (definition, header and the four local declarations) 19
-// (0x20f040 itself 4, 0x20f2d0 146, 0x20d0c0 5, 0x26bc60 5: retail's own bytes want the full register); the record index
-// parameter as `dword` (definition and 0x114e80's declaration) 19; the two parameters swapped at the definition, the
-// declaration and 0x114e80's call 19 (LTCG keeps each value's register); descriptive local names 19 (same code); the team
-// through the existing object_get 20 (as the listed direct-team form). Diagnostic, reverted: one dead load from a
-// volatile local just before or just after the 0x20f040 call (not at function entry, 53) gives retail's queue register
-// (EAX, loaded after the MOVSX, `add esi, eax`) and retail's 0x20d570 set-up, leaving only the pool load (retail
-// hoists it above the MOVSX) and the node's data/offset registers swapped (retail offset ECX, data EAX): 51/52, 146/147
-// bytes. So retail has one scratch step more (or two fewer) than ours between the object lookup and the queue load.
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {
@@ -2992,8 +2916,13 @@ void function_20fec0(long arg_0, long arg_1)
         byte *local_0 = *(byte **)(g_4e0300->data + (arg_0 & 0xffff) * 12 + 8);
         long local_9 = *(short *)(local_0 + 0x138);
         short local_1 = (short)function_20f040((short)local_9);
+        long absolute_index = arg_1 & 0xffff;
+        s_record_pool *pool = g_4f9398;
+        __assume(pool != NULL);
         s_node_owner *local_2 = (s_node_owner *)((byte *)g_4f939c + local_1 * 0x7dc);
-        byte *local_3 = g_4f9398->data + (arg_1 & 0xffff) * 0x54;
+        byte *local_3 = pool->data;
+        __assume(local_3 != NULL);
+        local_3 += absolute_index * 0x54;
         if (!local_3[0x41])
         {
             if (*(long *)(local_3 + 0x2c))

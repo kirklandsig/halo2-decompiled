@@ -1000,6 +1000,11 @@ struct s_device_machine_view
 // through a file-local `inline` fraction helper whose result starts at 0 266 (547 B: the helper stays out of line),
 // with the two ifs 258 (555 B); the helper as `PRIVATE __forceinline` 117 at 654 B (inlined, but its zero-initialised
 // result takes a stack slot, as round 81's zero-initialised local did).
+// Round 175 (m3 lane 5, fast): tools/permute.py on this 2 body (the first run since the body changed): 86 tries in 900 s,
+// 36 at 2, none below. On the group pointer with a word read after the machine test (the pushed ESI, 122): the word local
+// declared ahead of the pointer and assigned after the machine test 122; a file-local inline bit test taking the flags
+// word and a bit number 122; the word assigned inside the first test 122; `if (!(f & 1)) {} else if (f & 2)` 122; a
+// `short` local with `!= 0` masks 122.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1218,6 +1223,10 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax G (11-12): no new form, no lower score (121): nothing new this round; the initial velocity remains stack-passed
+// instead of xmm6, and the ramp-down residency and the return size differ.
+// MiniMax G (11-12): no new form, no lower score (121): the initial velocity remains stack-passed instead of xmm6,
+// and the ramp-down residency and the return size differ.
 // MiniMax B (11-12): no new form, no lower score (121): the initial velocity is still stack-passed where retail passes
 // it in xmm6, a whole-program convention the callee sets, so the whole XMM allocation after the entry differs - retail's
 // first float compare is in xmm5 where this build's is in xmm7; the caller's argument registers come from the callee's
@@ -1869,6 +1878,10 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
+// MiniMax G (11-12): no new form, no lower score (250): nothing new this round; frame 0x20 and the state test are retail's; the
+// index and index * 12 in edi/esi and the remaining homes differ.
+// MiniMax G (11-12): no new form, no lower score (250): frame 0x20 and the state test are retail's; the index and
+// index * 12 in edi/esi and the remaining homes differ.
 // MiniMax B (11-12) lead 61, NOT kept (coordinator: the one-use rate local is match-only; without it 382): the 11-11 lane's shape measures 61 here at retail's 1495 bytes (plain check
 // too), with 0x108600 and 0x108670 unchanged at 31 and 13 - the definition pointer's volatile dropped (retail reads the
 // definition once), the acceleration and the speed each one product added into a running value, and the tick rate read

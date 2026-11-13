@@ -472,6 +472,13 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax A (11-12): the emitter list test wrapped around the loop with the offset's zero store
+// inside it: 42 -> 39 (1130 bytes), the store now follows the list test as in retail.
+// score 39 (was 42): the offset's zero store now follows the list test as in retail; left: row i of
+// both rotations sums the up product before the forward one (retail sums the forward one first and
+// loads forward.i into a register), the two saved registers are reloaded in the other order after
+// each property call, and the branch offsets and the two trailing bytes follow from the rotation
+// rows' lengths.
 // MiniMax b (11-11): no new form, no lower score (42): the emitter loop as an explicit list test
 // with the scale declared before the multiplier was measured at 39 and restored, since it stays
 // above 30 and the gain is small; row i of both rotations still sums the up product first.
@@ -785,6 +792,7 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // M3 lane 12 r115 (fast with 0x173c10/0x2477b0): the definitions indexed by a short counter 271 (1130 bytes); the
 // defaults as one chained `multiplier = scale = 1.0f` 120 (1136), on the long-indexed form 115 (1138); a named flags
 // value for the six emitter-definition flag tests 292 (1157), on the long-indexed form 297 (1159).
+// NOT kept (coordinator review, MiniMax A 11-12): 42 -> 39 is under the keep bar (8+ on a function still above 30); the body is main's again.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1816,6 +1824,7 @@ bool function_17afd0(long effect_index, long value);
 // 58, the availability set by a nested test 58 (same code). Cause found: NONE takes EBX first and the availability then
 // reuses it, so the owner cannot share NONE's EBP as in retail; only a body whose availability is live across NONE's
 // range (this one's early clear) gives retail's homes. Body unchanged.
+// MiniMax A (11-12): no new form, no lower score (47); our same-view store is still emitted ahead of the view test where retail's sits inside the availability test's block, and the 12 form needs the match-only bool (set true and then cleared by a test).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

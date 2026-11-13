@@ -524,6 +524,7 @@ void function_e5930(long unit_index);
 // expands here, so the reset dispatch keeps its extra instructions.
 // MiniMax R (11-01): no new form, no lower score: 0xe5930 (src/unknown_0e57e0.cpp, not my file) still expands here, so the reset dispatch keeps its extra instructions.
 // MiniMax E (11-11): no new form, no lower score (118): the flag store scheduling and the final helper's expansion remain; the helper 0xe5930 is defined in another file and a new noinline declaration is not allowed: BLOCKED-BY 0xe5930.
+// MiniMax H (11-12): no new form, no lower score (118): the reset dispatch still expands here where retail calls it, and the dispatch's own file is not this lane's to edit.
 // score 118 (was 118): flag-store scheduling and the final helper's unwanted expansion remain; BLOCKED-BY 0xe5930.
 // Logic walk (2026-10-31): every store of 0xde4c0-0xde608 agrees with this source (offsets, sizes, the NONE/0/0x7f values,
 // the 0xb9dd0 call with &+0x368, the 0x1f0 bit 1 choosing flags_348 |= 8 / &= ~8, +0x3d8/+0x3e0/+0x3dc/+0x3e4/+0x3e8, the
@@ -707,6 +708,7 @@ struct s_biped_flags_10a_view
 // compares it there, computes the biped-plus-short-offset pointer early and spills it at [esp+0x20], and jumps to
 // the shared exit for its early return, where ours compares the field in memory, spills the object index at
 // [esp+0x20] where retail uses [esp+0x24] and returns inline.
+// MiniMax H (11-12): no new form, no lower score (222): the state pointer is still rematerialized instead of spilled to its stack home, and retail's early exit still jumps to a shared epilogue this build does not have.
 // score 222 (was 224; 241; 280 before round 48): frame 0x16c agrees; retail computes the state pointer at the top and spills it (ours reads it at
 // its one use, so the head is 25 bytes short), the 0x111650 call takes names in EAX where retail pushes both
 // arguments (BLOCKED-BY 0x111650, unmatched, ret 8 in retail), and the type-0 bit is read as `and al, 4` (retail
@@ -2749,6 +2751,10 @@ bool function_1d5120(s_havok_component *component, long rigid_body_index, long a
 void __stdcall function_1c3770(long object_index, dword flags);
 
 /* steps a dead biped's ragdoll settling (+0x3aa) toward rest */
+// MiniMax G (11-12): no new form, no lower score (63): nothing new this round; the extra EBP (the Havok base loaded early), the
+// count transport and the hoisted 0x9fff flag clears still differ.
+// MiniMax G (11-12): no new form, no lower score (63): the extra EBP (the Havok base loaded early), the count
+// transport and the hoisted 0x9fff flag clears still differ.
 // MiniMax B (11-12): no new form, no lower score (63): the +0x3aa byte tested in place with the cast value read again
 // at the call, the count local as a byte, and the long local kept with the byte tested in place all measure 82 (253 bytes)
 // against the current 63 (245 bytes, retail's length), so the sign-extended long local stays; what is left is retail's
@@ -3322,6 +3328,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
+// MiniMax G (11-12): no new form, no lower score (362): nothing new this round; the frame 0x48 against retail's 0x4c (retail's
+// dead flag byte before the 0xe16b0 call) and the held homes remain.
+// MiniMax G (11-12): no new form, no lower score (362): frame 0x48 against retail's 0x4c (retail's dead flag byte
+// before the 0xe16b0 call) and the held homes remain.
 // score 362 (was 362): frame 0x48 against retail's 0x4c (retail's dead flag byte before the 0xe16b0 call, a HELD
 // contributor form below), the +0x34b state byte zero-extended, scalar, centre and result homes. Round 85 (m3 lane 13) at
 // the end of this note; the earlier first lines are kept below as "Earlier first line".
@@ -4246,6 +4256,10 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 /* places one of the ragdoll's bodies: hanging from its constraint's pivot on
    the body placed before it (kept within reach of the ragdoll's center and
    out of the world, turned to follow), or the first body at the point */
+// MiniMax G (11-12): no new form, no lower score (356): nothing new this round; the origin, the first property/distance, the
+// matrix, the second property/limit and the placed homes are still in another order.
+// MiniMax G (11-12): no new form, no lower score (356): the origin, the first property/distance, the matrix, the
+// second property/limit and the placed homes are still in another order.
 // score 356 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
 // (retail 0x40/0x4c/0x50/0x84/0x88, ours 0x44/0x40/0x60/0x5c/0x50), the pivot select and the materialized travel test.
 // Round 85 (m3 lane 13) at the end; the earlier first lines are kept below as "Earlier first line".
@@ -4843,6 +4857,7 @@ void function_e4300(long arg_159e6d)
 // inlined at this straight-line call site, so the function is 113 bytes against retail's 61.
 // MiniMax R (11-01): no new form, no lower score: 0xe5930 (src/unknown_0e57e0.cpp, not my file) is still inlined at this straight-line call site, where retail keeps the call.
 // MiniMax E (11-11): no new form, no lower score (91): our LTCG still expands the reset-mode dispatch where retail calls 0xe5930 out of line (113 bytes against 61); the callee's file is not mine and a new noinline declaration is not allowed: BLOCKED-BY 0xe5930.
+// MiniMax H (11-12): no new form, no lower score (91): the reset dispatch still expands at this straight-line call site, and retail takes the index from ESI where this build takes it from the argument register.
 // score 91 (was 91): reset-mode dispatch expands instead of retail calling it out of line (113/61 bytes).
 // Separate reset noinline declaration 91; Boolean flag test 98; both 98; noinline with
 // field-use object lookup 94; Boolean lookup with/without noinline 101/101; both call-boundary
@@ -5158,6 +5173,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// MiniMax G (11-12): no new form, no lower score (79): nothing new this round; the first rotation and the staged cross product
+// operands (load-first where retail copies the axis) still differ.
+// MiniMax G (11-12): no new form, no lower score (79): the first rotation and the staged cross product operands
+// (load-first where retail copies the axis) still differ.
 // MiniMax D (11-11): no new form, no lower score (79); the first difference is still at +0x107, inside the
 // inlined rotation helper, whose body lives in another file and is not this lane's to change, so the bytes
 // from there on cannot be moved from here. What is left in this file is the first rotation's cross terms,
@@ -5471,6 +5490,7 @@ real magnitude3d(vector3f const *v);
 // MiniMax R (11-01): earlier, the actor rode in ECX because LTCG knew magnitude3d preserved it; the helper file was closed.
 // MiniMax E (11-11): no new form, no lower score (2): the fourth argument in a local and the fifth argument in a local both keep the same two differences (the event call still pushes both NONEs before it moves the actor into ECX and zeroes EDX), and the whole type selection as one ternary keeps the same two differences; the permuter (900 s, annealing) found no match.
 // MiniMax H (11-11): no new form, no lower score (2): the two points are still the 0x1fb7e0 call's setup, where retail pushes the first NONE, moves the actor into ecx, zeroes edx and only then pushes the second NONE, and ours pushes both NONEs before the registers are set; that order comes from the callee's declaration and the argument list, which this lane may not edit.
+// MiniMax H (11-12): no new form, no lower score (2): the two remaining points are the 0x1fb7e0 call's argument setup, where retail pushes the first NONE, moves the actor into ECX, zeroes EDX and only then pushes the second NONE, while this build pushes both NONEs before it touches the registers; that order follows the callee's declaration, which this lane must keep as it is.
 // score 2 (was 2): Logic walk (2026-10-31) against retail 0xe3380-0xe36fd: callees (0xb9dd0, 0xddf60 + 0x1697c0 = the
 // inlined 0xdf880 with offset 0.4 (0x45dd30) and length 8.0 (0x45dc18) at 0xe347a-0xe352f, 0x24590, 0x30bf0, 0x1fb7e0 with
 // eax type/ecx actor/edx NULL and two pushed NONEs at 0xe36e4-0xe36ec), offsets (0xbc bit 6, 0x12c, 0x12a, 0x7c, 0x244, 0x34c byte,
@@ -5507,6 +5527,10 @@ real magnitude3d(vector3f const *v);
 // original/shared complete flight scale 2/30/2/184/2/30/2/184. All restored;
 // actor move versus second argument push remains the only two differences.
 // MiniMax R (11-11): no new form tried this round, no lower score (2): the two points are still the 0x1fb7e0 call setup - the first NONE has to be pushed after the actor moves into ECX and before EDX is zeroed - and that push order comes from the callee's declaration and the argument list, which this lane may not edit.
+// Round 416: Direct admission/timing/final-actor rejections and complete admission/actor guards
+// 2/2/2/2; falling-default event 32; baseline outcomes plus one admitted event 38 (897 bytes);
+// angular-velocity input pointer 2; final rejection with falling-default event 32. All restored;
+// the final actor move versus second stack push remains.
 // @retail 0xe3380
 void __stdcall function_e3380(long arg_159e6d)
 {
@@ -6151,6 +6175,10 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 
 /* a walking biped's footstep effect: at its foot marker (or its origin),
    with the material it stands on */
+// MiniMax G (11-12): no new form, no lower score (138): nothing new this round; the frame 0xec against retail's 0x94 (the marker
+// and the collision do not share a home) and the remaining homes differ.
+// MiniMax G (11-12): no new form, no lower score (138): frame 0xec against retail's 0x94 (the marker and the
+// collision do not share a home), the material carrier and the remaining homes differ.
 // MiniMax B (11-12): no new form, no lower score (168): the frame is 0xec against retail's 0x94 and the entry argument
 // sits at [esp+0xf0] against retail's [esp+0x98], so this build's locals take more room than retail's; the 0x188180
 // call's convention is set by the callee's definition in src/unknown_187ec0.cpp, which this lane may not edit.

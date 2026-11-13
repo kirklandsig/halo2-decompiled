@@ -112,6 +112,19 @@ public:
 	void function_3175e0(void const *step, void const *input);
 };
 
+// score 48 (was 82): Frame 0x14 agrees; pointer/count transfer reaches
+// extent 487. First +0x49 differs in the allocation argument carrier, with
+// further cursor publication and call setup differences. Pointer countdown 48;
+// restored dispatcher 82; increasing pointer count 73; named capacity 76;
+// end from saved read 82; combined empty test 82; direct listener 82;
+// byte-copy helper 118. The pointer countdown is confirmed by a plain check.
+// Round 94: sum reversed 48; array renamed 48; initial base named 48;
+// temporary base saved 62; outer branch 48; destination advanced in store
+// 48; source advanced in store 47; while countdown 48; source declared
+// first 48; input/output pointer names 48. NOT kept: 47 is below the
+// required gain; the allocation and call setup still differ.
+// Serial search: 17 variants, best 42. NOT kept: gain under eight; a
+// constant local, one-use count copies and type/operand changes.
 // @retail 0x3173f0
 void collector_3173f0::function_3173f0(pair_30d870 *added, long added_count, pair_30d870 *removed, long removed_count)
 {
@@ -147,9 +160,13 @@ void collector_3173f0::function_3173f0(pair_30d870 *added, long added_count, pai
 		entries.capacity_and_flags = kept.size;
 	}
 	entries.size = kept.size;
-	for (long i = 0; i < kept.size; i++)
+	entry_3173f0 *destination = entries.data;
+	entry_3173f0 const *source = (entry_3173f0 const *)kept.data;
+	for (long remaining = kept.size; remaining > 0; --remaining)
 	{
-		entries.data[i] = ((entry_3173f0 *)kept.data)[i];
+		*destination = *source;
+		destination++;
+		source++;
 	}
 }
 

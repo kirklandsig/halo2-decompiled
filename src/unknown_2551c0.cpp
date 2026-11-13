@@ -797,6 +797,16 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // Typed biped radius 87; complete constant scalars 87; readonly receivers 87; fabsf 87;
 // shared scaled difference 91; double-factor reversal 170; complete first-probe/timing admissions 87/87.
 // NOT kept: no gain; original body retained apart from the required typed radius field.
+// m3 lane 8 r158 (fast with 0x2556b0, 0x110ab0, 0x30bf0, 0x1e4a50, 0x26bfa0, 0xe6900): re-measured the target lookup ahead
+// of the heading copy (round 31's form) 92 (964 B, register-masked 4: left are one scratch-rotation step, 0x110ab0's argument
+// in ECX for EAX, the 0x290 copy's register and the timing call's lea temporaries, then the timing outputs' homes and the
+// request stores); the unit's object looked up at each use (no local_12) 87 (same code); actor_get(arg_0) at every use (no
+// local_0) 277 (999 B). No other untried natural form: the rotation step needs the one-use unit local (match-only), and the
+// homes follow slot packing that the listed renames, scopes and declaration orders do not move.
+// T95: Reverse probe in dead motion/displacement vector storage, original products
+// or existing scaler, before/after location query: 105/105/222/222/87/87/240/204.
+// NOT kept: no exact native query/scalar residence; original separate reverse
+// direction, source vectors, helper inputs and full body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

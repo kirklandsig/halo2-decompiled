@@ -20,6 +20,10 @@ struct s_visibility_bound_record
 // code (443) and reading the entry's flags at each of its three uses instead of once at the top scores 465; the
 // frame 0x74a4 agrees with retail's and the difference sits in the head, where retail forms the entry address with
 // a lea into ebx from an index in eax before the register saves and we form it with an add into edi after them.
+// MiniMax B (11-12): no new form, no lower score (443): the frame agrees with retail's, and the difference sits in
+// the head, where retail forms the entry address with a lea into EBX from an index in EAX before the register
+// saves and we form it with an add into EDI after them; the entry's flags are read ahead of the tag test here
+// and in each arm there.
 // score 443 (was 443): earlier 476; plain, 1760 B: the releases through the existing release_visibility_list (moved from
 // earlier 443 was 476 (plain, 1760 B); the releases through the existing release_visibility_list (moved from
 // score 443 (was 443; 476 before; plain, 1760 B): the releases through the existing release_visibility_list (moved from

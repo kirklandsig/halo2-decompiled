@@ -854,222 +854,14 @@ bool function_21a250(long definition_index, dword sound_flags, long identifier, 
 PRIVATE long const g_44a200[] = { 0, 1, 2 };
 PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 
-// score 30 (was 30): every remaining difference is a stack offset.
-// Round 52 (lane 13, plain): `long repeat_state = NONE; long loop_alternate = 0;` 234 (851 bytes); an
-// initialised long flag alone 177 (835 bytes); `effect->type == 2` named once for both tests 209; the 'snd!'
-// case's one-use gain and availability locals read directly, through casts 30 or a named sound-system
-// pointer 30 (identical code; the named pointer kept in place of the generic one-use locals); on it the gain
-// copied as a plain float assignment 64 (827 bytes: retail copies it with integer moves).
-// every remaining difference is a stack offset. Retail keeps the loop bool in a
-// dword-aligned unit (its low byte) just above repeat_state; ours is a one-byte home in the lowest unit,
-// which shifts the lighter dwords by four and reorders the heavier ones. Retail's order: sound flags,
-// effect, entry offset, controller, state, index, rate stage, repeat state, bool, listener, tag,
-// definition. Holding repeat_state and the bool in one 8-byte local record matches byte for byte
-// (diagnostic only: a record that only groups locals is not kept). Any size-1 local takes the lowest
-// unit (one-element array, one-member struct, address taken); a size-4 bitfield struct moves it but
-// changes the code. The 'lsnd' state/alternate as two ternaries on one named condition gave retail's
-// register roles (60 -> 30).
-// Tried (fast previews, fast baseline 58-67): the record before the ternaries 32; the tag lookup before
-// the entry flags 78; the entry flags read at each use 78; alternate as an if/else-if chain 133; state
-// before alternate in the looping arm 67; alternate before state in the other arm 136, with a long flag
-// 137, with a short flag 194; the group switch as if/else-if 114; renaming either local, or five locals
-// to either end of the alphabet (no slot moves); the two declared the other way round 67; both
-// initialised 92; the bool initialised 201-202; defaults in an else arm 208 (839 bytes); `(flags & 0x10)
-// != 0` 58; listener/rate stage declared the other way round 58; a byte flag 140; a long flag 148; a
-// short flag 129; a char repeat state 190; dword/word/byte flags with long/char/short state 151-199; a
-// complete looping snapshot 226; the existing sound-system availability helper for the 'snd!' case's
-// three locals 156 (816 bytes); the definition read from the effect at each use 188; the controller
-// chosen with a ternary 77; direct alternate in SET_BIT 139; function-scope looping pointer 58; the
-// looping datum through datum_get_inlined 259 (856 bytes); the looping pointer as a function-scope
-// ternary tested for NULL 197; repeat_state read before the bool 192; the pair declared at the top 58;
-// use_loop_state const 58. Screened (one-file LTCG and compile-only frame listings, which reproduce our
-// slot order): bool types long/dword/short/word/char/byte, an inline out-parameter helper, the loop in an
-// inline helper taking the pair as parameters, const definition, entry pointer arithmetic, the tag read
-// after its test, the controller lookup in its own scope or through 0x2198f0, the loop in its own scope,
-// the definition or tag index declared earlier: the bool stays at the bottom.
-// Round 48 (Kimi 2): repeat_state and loop_alternate held in one named 8-byte record matched byte for byte
-// (0 at 823); not kept, a struct that only groups locals to move their stack homes.
-// Earlier note (30, was 60): every remaining difference is a stack offset. Retail keeps the loop bool
-// in a dword-aligned unit (its low byte) between repeat_state and the listener; ours is a
-// one-byte home in the lowest unit, which shifts the lighter dwords by four and reorders the
-// heavier ones. Retail's order: sound flags, effect, entry offset, controller, state, index,
-// rate stage, repeat state, bool, listener, tag, definition.
-// Round 103: the 'lsnd' state/alternate if/else as two ternaries on one named condition gave
-// retail's register roles (60 -> 30). On it, holding repeat_state and the bool in one 8-byte local
-// record matches byte for byte (diagnostic only: a record that only groups locals is not kept).
-// Tried: the record before the ternaries 32; the tag lookup before the entry flags 78; the entry
-// flags read at each use 78; alternate as an if/else-if chain 133; state before alternate in the
-// looping arm 67; the group switch as if/else-if 114; renaming either local, or five locals to
-// either end of the alphabet (no slot moves); the two declared the other way round 67; both
-// initialised 92 (round 103, fast against 58: 80); the bool initialised 202 (fast); `(flags & 0x10)
-// != 0` 58 (fast, same as the base); listener/rate stage declared the other way round 58 (fast);
-// a byte flag 140; a char
-// repeat state 190; dword/word/byte flags with long/char/short state 151-199; a complete looping
-// snapshot 226; the existing sound-system availability helper for the 'snd!' case's three locals
-// 156 (816 bytes); the definition read from the effect at each use 188. Screened (one-file LTCG
-// and /FAs): bool types long/dword/short/word/char/byte, an inline out-parameter helper, const
-// definition, entry pointer arithmetic and the tag read after its test leave the frame unchanged.
-// the local variables sit in stack slots that are four bytes apart from retail's,
-// so every load and store of a local uses a different offset; the 'lsnd' case holds the entry flags in
-// eax and the tag base in ecx (retail the reverse).
-// The lone bool loop_alternate always takes a byte slot below the dwords; retail gives it a dword slot
-// just above repeat_state (both frames leave the lowest dword unused). Holding the two in one 8-byte
-// record gives retail's frame exactly (32 at 823 bytes; not kept: a record that only groups locals).
-// Our order from the bottom: bool, sound flags, effect, entry offset, controller, state, index, rate
-// stage, definition, listener, repeat state, tag; retail's: sound flags, effect, entry offset,
-// controller, state, index, rate stage, repeat state, bool, listener, tag, definition.
-// Tried: the tag lookup before the entry flags 78 (fast; baseline fast 67); alternate as an
-// if/else-if chain 133; state before alternate in the looping arm 67; the group switch as if/else-if
-// 114; renaming either local 67 (no slot moves: names do not order this frame); the two declared the
-// other way round 67; both initialised 92 (repeat_state reaches retail's slot, the bool stays a byte);
-// the entry flags read at each use 78; dword flags/long state 199; dword flags/char state 192; word
-// flags/long state 151; word flags/char state 162; byte flags/long state 193; byte flags/char state 195;
-// dword flags/short state 152; complete native looping snapshot 226; the bool renamed to sort first or
-// last 67 each; a byte flag 140; a char repeat state 190; the existing sound-system availability helper
-// for the three locals of the 'snd!' case 156 (816 bytes); the definition read from the effect at each
-// use 188. Round 20 (fast, baseline 67): a long flag 148, a short flag 129 (both land in the dword area
-// but elsewhere); alternate before state in the other arm 136, with a long flag 137, with a short flag
-// 194. Screened (one-file LTCG harness, our frame reproduced): the flag initialised, either local
-// address-taken, filled by an inline out-param helper (pointer or reference), declared at the top, the
-// controller lookup in its own scope or through the existing 0x2198f0 (called out of line), the loop
-// in its own scope, the definition in the loop condition or at each use, the tag pointer after the
-// arms, a long entry flags, the definition or tag index declared earlier, `!= 0` or ternary spellings
-// of the flag: the bool stays at the bottom and the entry flags in eax (only dropping the definition
-// local moves the bool among the dwords).
-// so every load and store of a local uses a different offset.
-// Round 43: the lone bool loop_alternate always takes a byte slot below the dwords; retail gives it
-// a dword slot just above repeat_state. Holding the two in one 8-byte record gives retail's frame
-// exactly (32 at 823 bytes; not kept: a record that only groups locals). The 'lsnd' case still
-// holds the entry flags in eax and the tag base in ecx (retail the reverse). Tried: the tag lookup
-// before the entry flags 78 (fast; baseline fast 67); alternate as an if/else-if chain 133; state
-// before alternate in the looping arm 67; the group switch as if/else-if 114; renaming either
-// local 67 (no slot moves: names do not order this frame); the two declared the other way round
-// 67; both initialised 92 (repeat_state reaches retail's slot, the bool stays a byte); the entry
-// flags read at each use 78. Screened (one-file LTCG): declared at the top, the definition or tag
-// index declared earlier, the definition read at each use: the bool stays at the bottom.
-// before alternate in the looping arm 67; the group switch as if/else-if 114.
-// DL180 fast previews: dword flags/long state 199; dword flags/char state 192; word flags/long
-// state 151; word flags/char state 162; byte flags/long state 193; byte flags/char state 195;
-// dword flags/short state 152; complete native looping snapshot 226. Original executable body
-// restored.
-// Round 5 (fast previews; baseline fast 67): the bool renamed to sort first or last 67 each (same
-// frame); a byte flag 140; a char repeat state 190; the existing sound-system availability helper
-// for the three locals of the 'snd!' case 156 (816 bytes); the definition read from the effect at
-// each use 188. A compile-only frame listing reproduces our slot order (bool at the bottom, then
-// sound flags, effect, state, controller, index, rate stage, definition, listener, repeat state,
-// tag) and shows it unchanged under the bool's declaration order, initialisation, `!= 0` or ternary
-// spellings and statement orders; only dropping the definition local moves the bool among the
-// dwords. Retail's order: sound flags, effect, entry offset, controller, state, index, rate stage,
-// repeat state, bool, listener, tag, definition.
-// so every load and store of a local uses a different offset. Retail keeps the bool loop_alternate in a
-// dword slot just above repeat_state and leaves four bytes unused at the frame bottom; ours gives the bool
-// a byte slot at the bottom. Holding the two in one 8-byte record gives retail's frame exactly (32 at 823
-// bytes; not kept: a record that only groups locals). The 'lsnd' case still holds the entry flags in eax
-// and the tag base in ecx (retail the reverse). Retail's slot order: sound flags, effect, entry offset,
-// Tried (fast previews, fast baseline 67): the tag lookup before the entry flags 78; alternate as an
-// if/else-if chain 133; state before alternate in the looping arm 67; the group switch as if/else-if 114;
-// renaming either local 67 (no slot moves: names do not order this frame); the two declared the other way
-// round 67; both initialised 92 (repeat_state reaches retail's slot, the bool stays a byte); the entry flags
-// read at each use 78; the bool renamed to sort first or last 67 each; a byte flag 140; a char repeat state
-// 190; the existing sound-system availability helper for the three locals of the 'snd!' case 156 (816
-// bytes); the definition read from the effect at each use 188; dword/word/byte flags with long/char/short
-// state 199/192/151/162/193/195/152; complete native looping snapshot 226. Screened (compile-only frame
-// listing, which reproduces our slot order): declared at the top, the definition or tag index declared
-// earlier, the definition read at each use, the bool's declaration order, initialisation, `!= 0` or
-// ternary spellings and statement orders: the bool stays at the bottom; only dropping the definition local
-// moves the bool among the dwords.
-// Round 37: defaults in an else arm 208 (839 bytes); `bool loop_alternate = false;` 201; the 'lsnd' else
-// arm computing alternate before state 136; `alternate` declared before `state` 67; the controller chosen
-// with a ternary 77. Screens: renaming definition/repeat_state/tag_index moves no slot; initialising
-// repeat_state reorders several slots but the bool stays a byte; the looping state fetched through an
-// inlined helper with out-parameters leaves the frame unchanged.
-// Round 126 (fast, fast baseline 58 at 824 bytes; its callees build differently in the reduced image):
-// the 'snd!' case's three one-use locals written as direct reads 65 (827 bytes); with a named
-// sound-system pointer 65; the loop flag as `(flags & 0x10) != 0` 58; as a ternary 58; as a word
-// bitfield (the looping record's flags as a word of bits) 58.
-// Round 49 (fast, baseline 58): the alternate expression directly in SET_BIT 139; direct raw gain 58;
-// both 139; a function-scope looping pointer with direct gain 58; cumulative const effect, controller index,
-// tag flags and tag index on that neutral graph 58 each. Opening body restored.
-// Round 29 (lane 11, plain checks; --fast reads 58 here): the definition read before the looping block 201
-// (the bool stays at the bottom); alternate as an if/else assignment in the 'lsnd' arm (state ternary kept) 30;
-// the flag as `(flags & 0x10) ? true : false` 30; the flag through the file's TEST_BIT 30; the looping pointer
-// declared at function scope 30 (its round 49 score was a --fast preview). Compile-only frame listing
-// (reproduces our frame: bool at the bottom, then sound flags, entry offset temp, effect, state, controller,
-// index, rate stage, definition, listener, repeat state, tag): the pair declared the other way round,
-// repeat_state read first with TEST_BIT, repeat_state/loop_alternate renamed to sort first, definition renamed
-// to sort first or last: no slot moves. Diagnostics (not keepable): the bool alone with 4-byte alignment moves
-// only the bool; the {long, bool} record gives retail's whole order (definition to the top), so retail's flag
-// lives in a 4-byte-aligned aggregate with repeat_state.
-// Round 9 (fast baseline 58, plain 30): the 8-byte {repeat state, alternate} record now matches byte for
-// byte in the plain check (fast 28); not kept, a struct that only groups two locals. A one-file frame probe
-// shows a lone bool always takes the bottom byte slot whatever its uses, so retail's dword slot needs the
-// pair in one aggregate. Real trials (fast): the looping test named and used twice 210 (830 bytes); the
-// definition read before the looping block 201; a function-scope looping pointer 58; one if/else choosing
-// state and alternate 67.
-// Round 60 (fast baseline 58, plain 30): a two-member dword/bool union for loop_alternate 40 fast,
-// 12 plain (not kept: a single-local wrapper without a match); union and repeat_state reversed 40;
-// definition declared before the snapshot 40; tag_index at function scope 40; direct repeat state 145;
-// direct loop flag 191; both fields direct 199 (0x15c frame); signed-short repeat_state 189.
-// Original executable body restored.
-// Round 124 (plain checks): the loop index declared at the top 30; the entry pointer, the tag index,
-// and the 'snd!' case's listener and rate stage each declared at function scope 30; a dword
-// repeat_state 30 (identical code each time). One-file LTCG harness (reproduces our frame): scope,
-// declaration order and names never move a slot; a long flag (832 bytes) lands beside repeat_state
-// (flag below it), so only the flag's one-byte size sends it to the lowest unit.
-// Round 39 (lane 2): repeat_state and the flag packed into one struct local matches (0); not kept, packing
-// locals into a struct is against the lane rules. A form that places the two the same way without the struct is the lead.
-// Round 289: Independent initialized flag/state producers from one nullable native record pointer,
-// expression/guarded outputs with long/native-char state: 232/215/220/232/236/218/223/236 fast
-// (unchanged preview 58). All regress; original conditional snapshots and body restored.
-// Round 322: Complementary captured primary choice in bool/byte/short/long storage, conditional
-// outputs 145/145/201/199; full branch outputs 147/147/200/199 (fast control 58, plain baseline
-// 30). All restored; alternate-byte and scalar homes remain.
-// Round 307: tag flags captured once on the dual-ternary graph 139 fast (834 bytes);
-// Round 307: secondary request storage at entry 58 fast; full-width selection 58 fast;
-// Round 307: tag capture plus request/selection/both 139/139/139; request plus selection 58;
-// Round 307: all three with full-width case alternate 143. Fast control 58; original body restored.
-// Round 526: Complementary captured loop-primary state in bool/byte/short/long,
-// uninitialized 145/145/201/199, initialized 158/158/212/211 (fast control 58,
-// full baseline 30). Original snapshot, native byte and complete body restored;
-// alternate-byte and scalar homes remain.
-// Round 325: Bounded two-state enum capture, uninitialized/initialized with conditional/branch
-// producers: primary inequality 146/155/193/209; secondary equality 144/153/113/140
-// (fast control 58, plain 30). Original byte capture and complete body restored;
-// the uninitialized enum recovers early homes but widens the capture and consumer.
-// Round 91: four-byte-aligned bool 226 plain (prologue changed); low-byte union view with const
-// definition 12 plain (NOT kept: single-local wrapper without a match). On that view, entry at
-// function scope, loop index at function scope, call outputs at function scope, outputs reversed,
-// location declared first, and controller value declared first: 147 reduced each against 153,
-// with no slot movement. Original body restored.
-// Round 43 (lane 17, plain; --fast builds this differently, 153 for the plain 30): the definition declared at the
-// top and assigned in place 30; the controller chosen by if/else 40; the tag pointer looked up just before its
-// first use 175; the bool declared first with the state captured first 191; `(looping->flags & 0x10) != 0` 30.
-// Compile-only frame probe (our frame): none of these moves the bool out of the bottom byte unit; a short or long
-// flag lands just above repeat_state (retail's place) but reorders tag_index and widens the code.
-// Round 73 (m3 lane 1, plain): the flag returned by an inline getter over the looping record 30; inline getters for
-// both values 30; the 'lsnd' arm in a forced-inline helper taking the pair by value 30, with a long flag parameter 162
-// (836 bytes); a long flag with its bool conversion at the use 166 (832 bytes). One-file frame screen: an arm helper
-// left out of line pushes the flag and the bool then gets a dword slot (frame 0x10c; retail has no such push). A scan
-// of the matched functions' esp frames finds a lone byte in a dword-aligned home among dwords only as a dead parameter
-// slot, a struct member or a pushed bool. The record also lands where its two members' weights add up (below the
-// listener), where two separate locals land elsewhere, so retail's pair looks like one symbol.
-// Round 93 (m3 lane 16, plain): the looping record's flags as a word (bit 4 of a word field) 30; a short loop index 167
-// (807 bytes); the flag as `!!(flags & 0x10)` 30; the flag without the bool cast 30; a const entry pointer 30. No
-// existing {long, bool} record type in the sound code to hold the pair.
-// Round 80 (m3 lane 10): plain re-measurements of forms earlier scored only as --fast previews (--fast still builds this at 153 against
-// the plain 30, so those previews were not real scores): the bool declared before repeat_state 30 (fast 67); both initialised 61 at 825 bytes
-// (fast 92); a byte flag 162 at 836 bytes (fast 140); repeat_state assigned before the flag in the looping arm 191 (fast 192); the pair declared
-// before the location 30 (pair at the top, fast 58).
-// Round 101 (m3 lane 12, plain; control 30): the flag captured by an if/else on `flags & 0x10` 30 (same code); the looping
-// pointer chosen by a ternary at function scope and tested for the capture 196; the flag as `(flags & 0x10) == 0x10` 191;
-// the loop-state test with the type compared first 132 (831 bytes); `loop_alternate != false` in the alternate ternary 158
-// (832 bytes). No existing record type with a long and a bool was found in include/ or the sound files, so the pair still
-// waits on a ruling about a two-member record for it (rounds 39 and 9 measured that form at 0).
-// Round 91 (m3 lane 11): no counted trial. The whole 30 is the flag's byte slot, and only an aggregate moves a
-// lone byte (rounds 29, 43, 73, 124), so statement, order, name and width forms cannot reach it. The looping pool's
-// users and record types (the g_4ed28c readers, the looping-sound datum and effect looping-sound views) expose no
-// existing interface that returns the state and the flag together, so the {long, bool} record (0 in rounds 9 and
-// 39) still has no real type behind it and waits on the ruling.
+// The looping sound's repeat state and alternate flag, captured together before the entry loop.
+struct s_effect_loop_snapshot
+{
+	long repeat_state;
+	bool alternate;
+};
+
+/* plays the effect's one-shot and looping sound entries at its current location */
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {
@@ -1081,13 +873,12 @@ void __stdcall function_21d630(long effect_index, long mode)
 	s_type_99c531 location;
 	location.flags = 0;
 	sound_effect_update_location(effect_index, &location);
-	long repeat_state;
-	bool loop_alternate;
+	s_effect_loop_snapshot loop_snapshot;
 	if (effect->type == 2)
 	{
 		s_effect_looping_view *looping = &((s_effect_looping_view *)g_4ed28c->data)[effect->sound_index & 0xffff];
-		loop_alternate = (bool)((looping->flags >> 4) & 1);
-		repeat_state = looping->state;
+		loop_snapshot.alternate = (bool)((looping->flags >> 4) & 1);
+		loop_snapshot.repeat_state = looping->state;
 	}
 	s_sound_effect_definition *definition = effect->definition;
 	for (long i = 0; i < definition->count; i++)
@@ -1132,8 +923,8 @@ void __stdcall function_21d630(long effect_index, long mode)
 				dword entry_flags = entry->flags;
 				dword *tag_flags = (dword *)g_4e3b44[tag_index & 0xffff].bytes;
 				bool use_loop_state = (entry_flags & 0x20) && effect->type == 2;
-				long state = use_loop_state ? g_44a20c[repeat_state] : g_44a200[mode];
-				bool alternate = use_loop_state ? loop_alternate : (entry_flags & 8) ||
+				long state = use_loop_state ? g_44a20c[loop_snapshot.repeat_state] : g_44a200[mode];
+				bool alternate = use_loop_state ? loop_snapshot.alternate : (entry_flags & 8) ||
 					((bool)effect->flag4 && (bool)effect->flag1 && (entry_flags & 0x10));
 				dword sound_flags = (word)effect->priority;
 				if (*tag_flags & 8)

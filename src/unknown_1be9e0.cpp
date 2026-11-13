@@ -120,103 +120,9 @@ long __stdcall function_1bead0(long actor_index, s_slot *slot)
 /* invites the actor's clump members near enough, the nearest first */
 static __forceinline long real_to_long(real value);
 
-// score 24 (was 24): retail keeps the count test's g_46fbe4 return as its own
-// tail after it and puts the shared g_46fbe8 return last, where ours jumps back
-// to the countdown's g_46fbe4 return and falls into g_46fbe8 (445 bytes against
-// 457). Round 371: typed slot payload and short counters 88; payload/single
-// exit 88; payload/entry counters 111, with single exit 111. Round 86: early
-// return for the missing prop 109 (EBP saved late, its exit laid out inline);
-// prop index through the getter 138, nested again 133, with a return at each
-// level 96; accepted counter declared before the actor 75 (entry exact); the
-// countdown and count tests returning g_46fbe4 with one g_46fbe8 return after
-// them 37; the 16-bit participant sum 24 (kept); returned ternaries 91 (cmov);
-// ready flag 98 (setg); count test as >= with both returns 24; final return
-// only 81; the two branches swapped 102; short counters 24 (same code, kept as
-// they need no casts). Round 68: count in an else 24; countdown success return 90;
-// countdown arms reversed 87 (retail length); accepted arms reversed 57; earlier
-// participant-sum declaration 24; direct accepted return 67; count result 90;
-// node-level return removed on the narrow-sum graph 81.
-// Round 165: explicit negative eligibility exits, original/full-width retry snapshot,
-// status-three-first and both 24/27/43/46; positive nested eligibility with the same
-// three alternatives 24/27/43/46. Narrow sum, early counter and original body restored.
-// Countdown-local short/long branch result 90/116; one eligible-branch
-// short/long result 90/94; each with a separate decrement 90/116/90/94.
-// Original status tails and decrement expression restored.
-// Round 110: a second `return g_46fbe8;` after the count test keeps the count
-// test's g_46fbe4 return separate (retail's blocks) but VC lays the shared
-// g_46fbe8 return right after the countdown's: 90 (461 bytes); with nested
-// else returns 90; early node-test return with explicit inner returns 87/90;
-// flat early returns 143; one final return for the count failure 131;
-// count result by if/else 90; else-return nesting alone 24; count test
-// `>= 2` first on the explicit-return graph 24.
-// Round 45: VC keeps a merged return at its first occurrence. The countdown returning
-// g_46fbe8 while it counts (expiry falling to the node-level g_46fbe4) with the count test
-// returning both values keeps the count test's g_46fbe4 return separate, as retail, but the
-// merged g_46fbe8 return then sits after the countdown: 87 at retail's 457 bytes (count test
-// `< 2` first 87); the same with the NONE test as an early return 128 (448 bytes); with the
-// countdown also returning both 90 (461 bytes); the node failure as an else return 24;
-// g_46fbe8 returned once at the end after else returns for the node failure and NONE, with
-// the count test returning g_46fbe4 or both values: 24, 24 (same code).
-// Round 56: inline definition 24; multi-exit finished result after the actor 60, in the
-// participant branch 24, eligible branch 93, property branch 62; continue result in the
-// participant/eligible/function scopes 72/91/119. Original returns and result lifetimes restored.
-// Round 118: the slot's data block typed through `slot->unknownc` 24 (same code: retail
-// addresses the slot itself); the countdown returning g_46fbe8 while it counts and the
-// count test returning g_46fbe8 on success, both failures falling to the node-level
-// g_46fbe4 87 (retail length, the shared g_46fbe4 return then sits after the count test);
-// that with the missing prop as an early return 128; with the node failure as an early
-// return 131; the missing prop and node failure sharing one final return 81.
-// Round 134: the participant loop and count test as an inline helper returning the status 402 out of
-// line (195 bytes), 146 forced inline (470 bytes); both continuing paths `goto` a g_46fbe8 return after
-// the missing-prop return 24; an early missing-prop return with the countdown test reversed 141 (440 bytes);
-// the count test first in an if/else 57; the count failure through a named local 24. A compile-only screen
-// (it reproduces the return order: ours g_46fbe4, pause, g_46fbe8, g_46fbe4; retail g_46fbe4, pause, g_46fbe4,
-// g_46fbe4, g_46fbe8) of 378 + 180 combinations of the count test, countdown, node failure, missing prop and final
-// return forms, gotos, one result, and casts or a local on any one return found none with retail's order.
-// Round 75 (fast, no caveat): the count test as `accepted + joint->participant_count < 2` 37; a long
-// participant sum 37; the prop view test as `!(view && ...)` 24; no participant pointer local 27;
-// `declined >= 2` 26. Retail never tail-merges the count failure's g_46fbe4 return with the countdown's.
-// Round 101: a countdown field pointer used for the test, decrement and reset 24; an actor reference 24;
-// a joint reference 24; const state, joint or actor pointers 24 each; const node and view pointers 24;
-// an explicit outer missing-prop else 24. Every form kept the same return graph and 445-byte length.
-// Round 51 (fast): a compiled-out `do {} while (false);` at the loop end, after the pause, in the countdown arm, at the count test, at the join, at node level or at the
-// outer level, each on the current returns 24, on expiry falling to the node return 87 (457 bytes), on one continuing return at the end through gotos 24, on outer else returns
-// 24. One e4 fall-through at the end with a goto to the last e8 return 81 (430 bytes), with the node-level e4 kept 24; a status local from the top with two e8 assignments
-// 159 (440 bytes); both tests returning e8 with one final e4 131 (437 bytes). Matched 0x1b2630 and 0x1bbf40 get unmerged e4 blocks by tail duplication after a join.
-// Round 153 (fast): the decrement as its own statement 24; the countdown through a short `delay` local 24; the node byte test and the
-// view test as nested ifs 24; the actor lookup declared first 92; the pause countdown stored straight from real_to_long 24. Re-measured:
-// round 134's gotos to one final e8 (here with no count-failure return) 24, round 51's one final e4 131 (437 bytes, EBP pushed at entry),
-// round 45's 87 form 87 (457 bytes: the count failure's e4 and the node-level e4 merge at the count test, each merged return staying at its
-// first occurrence, and e8 sits after the countdown; VC lays blocks out by trace, not source order). Of the matched functions only 0x1b2630
-// and 0x1bbf40 have two identical e4 return blocks in retail.
-// Round 94 (lane 16, fast): participants as accepted plus the joint's count 24; count test `<= 1` 28 (444 bytes); the
-// participant status in a short local for both tests 24; node test `<= 0` 119; participant pointer stepped with the
-// counter 26.
-// Round 73 (lane 14, fast): one exit with a g_46fbe4 default at the top and g_46fbe8 assigned for the countdown,
-// pause and count success 142 (445 bytes, default loaded at entry), with an else-if count test 142; no default, both
-// values assigned in every arm and else 90 (461 bytes); a g_46fbe8 default returned by the countdown, pause and count
-// success with the failures falling to the node-level g_46fbe4 132 (460 bytes), declared at the top of the node block
-// 106 (frame 0x10); the g_46fbe8 default with g_46fbe4 assigned on every failure 130 (444 bytes); the g_46fbe8 default
-// read only by one final return, all failures returning g_46fbe4, 24 (same code: the default is rematerialised at the
-// end); with the countdown expiry and node failure assigning g_46fbe4, count failure returning it, 134 (frame 0x10),
-// the outer else assigning too 148, the pause returning the default 134; countdown expiry returning and count failure
-// assigning g_46fbe4 129 (457 bytes, frame 0x10). A default with a second definition is spilled here.
-// Round 64 (m3 lane 2, fast): the count test alone in a __forceinline (joint, accepted) helper returning both values
-// 90 (461 bytes, the helper's two returns fold into a cmov); the expiry falling to the node-level g_46fbe4 with both
-// continuing paths jumping to one g_46fbe8 return after the missing-prop return 87 (457 bytes: the node-level return
-// merges into the count failure's block and g_46fbe8 sits after the countdown as its fall-through); the participant
-// counter declared in its `for` 24; the node test, view test and countdown expiry as one condition returning g_46fbe4,
-// the loop under a countdown re-test, 98 (457 bytes, the re-test is not threaded); explicit expiry and count-failure
-// returns with both continuing paths jumping to a final g_46fbe8 24 (same code).
-// Round 85 (m3 lane 14, fast): `continue` for an empty participant 24 (same code); the countdown as a named flag set in the
-// eligibility test, `(!(counting_down = ...) || --state->unknown1c > 0)`, then `if (counting_down) return g_46fbe8;` 105 (461
-// bytes: the flag is materialised with setg, the count failure keeps its own g_46fbe4 block as the first one in source,
-// and the node failures and the expiry branch to it); a switch on the participant status 52; `declined` declared at the
-// top 62; the view through the existing prop_node_view helper with the +0x2a flag declared in that view's own type 24
-// (same code). Re-measured, not counted: round 118's 87 form (countdown returning g_46fbe8, both failures falling to the
-// node-level g_46fbe4) 87: there the expiry is `jle` to the count failure's block and g_46fbe8 is the countdown's
-// fall-through. Retail instead has a second copy of that g_46fbe4 block after the countdown, the node failures branching
-// to it, as when a jump to a return block is replaced by a copy; ours folds the jump into the conditional branch.
+/* The status is g_46fbe8 while the invitation is still running and g_46fbe4 once it is over. `waiting` is set only
+   where the block is left without a return and tested once at the end: retail's layout (each g_46fbe4 return at its
+   own test, the missing prop's next, the g_46fbe8 return last) comes from that one tail test. */
 // @retail 0x1beb70
 short __stdcall function_1beb70(long actor_index, s_slot *slot, bool active)
 {
@@ -224,6 +130,7 @@ short __stdcall function_1beb70(long actor_index, s_slot *slot, bool active)
 	s_joint_36 *joint = (s_joint_36 *)element_502424_get(state->element_index);
 	short accepted = 0;
 	s_actor_view *actor = actor_get(actor_index);
+	bool waiting = false;
 
 	if (actor->prop_index != NONE)
 	{
@@ -280,11 +187,14 @@ short __stdcall function_1beb70(long actor_index, s_slot *slot, bool active)
 				if (participants < 2)
 					return g_46fbe4;
 			}
-			return g_46fbe8;
 		}
-		return g_46fbe4;
+		else
+			return g_46fbe4;
+		waiting = true;
 	}
-	return g_46fbe4;
+	if (!waiting)
+		return g_46fbe4;
+	return g_46fbe8;
 }
 
 // @retail 0x1bee40

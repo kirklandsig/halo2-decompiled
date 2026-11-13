@@ -13,6 +13,7 @@
 #include "unknown_124f90.h"
 #include "unknown_218ac0.h"
 #include "unknown_21e230.h"
+#include "bit_vector.h"
 #include "unknown_221810.h"
 #include "sound_driver.h"
 #include "crc.h"
@@ -1545,6 +1546,12 @@ long function_2197f0(real gain);
 // `s_decibels`) 153 (678 bytes: retail's EDI copy of the gain's bits goes, so retail returns a dword; 0x1251e0 then 6); arms 3
 // and 4 written interpolation-first 124 (687); arm 1's time sum product-first 94 (same code); re-measured the fade-in-local form
 // 87 (match-only), on it the product-first sum 87 (same code) and the clamp as if/else assignments 144 (681).
+// m3 lane 8 r158 (fast with 0x1295e0): arm 1's product as `fade_out * ((elapsed - hold) * inverse)` 94 (other code: the
+// inverse product is then formed first as retail, but fade_out is still multiplied from memory and the reciprocal is made
+// after `elapsed - hold`), with a `real fade_out` local for the test and the product 98 (masked 11), with the fade-in local of
+// the 87 form 87 (match-only; the 87 form re-measured 87); SOUND_SYSTEM read at each use (no sound_system local) 94 (same
+// code). Diagnostic (a volatile local, reverted at once): one or two dead volatile loads ahead of `elapsed` 171/180 (696/700 B):
+// elapsed stays in XMM2, so one more scratch step there does not give retail's XMM colouring.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2599,6 +2606,7 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax H (11-12): no new form, no lower score (17); the first difference is still 0x219070's result, and the one-use short local that lowers it to 15 stays a match-only form.
 // MiniMax B (11-11): no new form, no lower score (17); the delayed branch's two stores still swap (retail keeps the
 // start time and then the flag byte before the push, ours hoists the flag byte above the add and sinks the start time
 // past the push), and the set index is narrowed to a short at the 0x219070 call because 0x218f50 returns short in
@@ -2965,7 +2973,7 @@ static inline short sound_voice_find_available_channel(char type)
 
 	for (long i = system->first_channel[type]; i <= system->last_channel[type]; i++)
 	{
-		if ((system->free_bits[i >> 5] & (1 << (i & 31))) && !(system->streaming_bits[i >> 5] & (1 << (i & 31))))
+		if (bit_vector_test(system->free_bits, i) && !bit_vector_test(system->streaming_bits, i))
 		{
 			result = (short)i;
 			break;
@@ -3251,6 +3259,10 @@ static inline short sound_voice_find_available_channel(char type)
 // written ahead of the commit (`if (channel == NONE || (buffer_index == NONE && (...))) { fail } else { commit; return true; }`,
 // defaults before the channel test) 123 (433), with the complemented status 138, plus a byte result 142, without the commit's
 // `return true` 141 / byte 155.
+// m3 lane 8 r158 (fast with 0x127010, 0x127320, 0x12a5d0, 0x21de90, 0x129100): the commit's two bit updates through the
+// existing bit_vector_set 96, the search helper's two bit tests through bit_vector_test 96, both 96 (same code each; both
+// kept: existing helper calls in place of hand-written copies of their bodies); the requested-buffer local at every use (the
+// buffer assignment and the final test, no field re-read) 139 (441 B), for the assignment only 138 (441 B).
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3286,9 +3298,8 @@ bool __stdcall function_1295e0(short voice_index)
 				voice->unknown0e = buffer_index;
 				voice->channel_index = channel;
 				voice->driver_voice_index = driver_index;
-				system->streaming_bits[channel >> 5] |= 1 << (channel & 31);
-				channel = voice->channel_index;
-				system->free_bits[channel >> 5] &= ~(1 << (channel & 31));
+				bit_vector_set(system->streaming_bits, channel, true);
+				bit_vector_set(system->free_bits, voice->channel_index, false);
 				goto channel_done;
 			}
 		}
@@ -3849,6 +3860,7 @@ vector3f *vector3d_decompress(dword arg_0, vector3f *arg_1);
 
 vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vector3f *arg_2);
 
+// MiniMax H (11-12): no new form, no lower score (101); retail still expands 0x16f3a0 where ours keeps the call, which is a caller-side decision in a file I may not edit.
 // MiniMax H (11-11): no new form, no lower score (101); the body is unchanged, because the lookup of the
 // object type is still expanded where retail calls it out of line and the depth pair that would keep it
 // out of line is ruled out; 0x221810 lives in src/unknown_221490.cpp, which this lane may not edit.
@@ -4471,6 +4483,7 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 	arg_2->k = (rotation_i * arg_1->j - rotation_j * arg_1->i) * local_2 + rotation_k * local_1 + local_0 * arg_1->k;
 }
 
+// MiniMax H (11-12): no new form, no lower score (535); retail still expands 0x1420f0 and 0x11c120, which carry noinline declarations on main.
 // score 535 (was 535): Frame 0x130 versus 0xe8; native rotation, environment and listener-index homes remain.
 // MiniMax B (11-11): no new form, no lower score (535); the body is unchanged, and the forms listed above are exhausted.
 // MiniMax C (11-11): no new form, no lower score (535); our frame is 0x134 against retail's 0xe8, the fallback reverb constant's linkage lives in another file, and every form tried here lengthens the body and regresses.

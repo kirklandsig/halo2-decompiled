@@ -336,6 +336,7 @@ void looping_sound_controllers_synchronize(bool initial_playback)
 
 void function_11bed0(s_location *location, point3f const *point);
 
+// MiniMax H (11-12): no new form, no lower score (93); 0x11bed0 stays expanded in every form tried, so retail's call is not caused by our spelling of it.
 // score 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
 // MiniMax A (11-11): no new form, no lower score (93); the location query (0x11bed0) is still expanded here while
 // retail calls it out of line, and retail still packs the iterator handle as an index and a datum in one word and
@@ -1623,6 +1624,12 @@ struct s_looping_detail_request
 // before the compressed forward 103 (masked 30 -> 36, away from retail's forward-first order); the location call after
 // the forward and velocity 112, before the position add 113; velocity before the location call 112; flags and result
 // before the forward and velocity 130 (511 B); the forward before the position add 111. The query stays inlined in all ten.
+// Round 173 (m3 lane 6, plain with 0x219ed0/0x14dde0, both stay MATCH): the skip step through the real 0x14de10 instead of
+// the inline copy (diagnostic) 143 at 473 bytes, the query still inlined; the count tested `!= 0` 110 (same code); the skip
+// loop as `while (skip != 0)` 110 (same code); the count read at each use with no local 110 (same code); the skip loop as a
+// counted for 110 (same code); the count test as `>= 1` 110 (same code); the skip loop as `while (skip >= 1)` 110 (same
+// code); skip and player declared at the top of the else arm 110 (same code). The query stays inlined in every one; the
+// known match needs the ruled-out implied test.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1916,6 +1923,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // itself, as every caller passed `0 - maximum, maximum` (0x1269f0 matched with it): the gain
 // step's call 307 -> 305 (plain).
 
+// MiniMax H (11-12): no new form, no lower score (305); the sound-event block's gain sum and the two getter stores are unchanged.
 // MiniMax B (11-11): no new form, no lower score (305): retail folds the pair's +8 into the lea that forms its
 // address and reads the two words at +0 and +2, ours forms the element base and reads them at +8 and +0xa; the frame
 // stays 0x11c against retail's 0x128.
@@ -2525,6 +2533,7 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // Earlier: frame 0x4b4 versus 0x4bc (retail reads the track value and the source scale before the
 // clear), the one-fill clear, 0x221810 inlined (BLOCKED-BY 0x221810) and 0x12a420 inlined at the stop_channel site remain.
 
+// MiniMax H (11-12): no new form, no lower score (339); the frame is still 0x4b4 against retail's 0x4bc.
 // Earlier: frame 0x4b4 versus 0x4bc, entry snapshots and the class lookup expansion still differ.
 // Full-width permutation selection keeps its values; both index widths 529 (three-point tail dropped),
 // chunk width alone 560, state width 550, frame names/property declaration 550; existing next-chunk
@@ -2814,6 +2823,7 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // read at each use 807; `!TEST_FIELD_BIT(flags & 1)` start test 614.
 // frame 0x3c agrees; definition/identifier, result and alternate homes still differ.
 
+// MiniMax H (11-12): no new form, no lower score (597); the update block's register and slot layout are unchanged.
 // Earlier: frame 0x3c and retail length recovered by the availability guard join;
 // definition/identifier carriers and flag/result lifetimes still differ.
 // The fixed four-entry energy traversal is rolled; both gain loops rolled 795, listener loop alone 798,

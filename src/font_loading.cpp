@@ -537,6 +537,7 @@ static inline word font_character_pixel(long alpha, long color)
 // MiniMax A (11-03): no new form, no lower score: the alpha parity is still masked in 16 bits where retail
 // widens it to 32 bits, and the literal word assembly and the run-two reuse still differ; dropping the byte
 // cast gives 204.
+// MiniMax H (11-12): no new form, no lower score (85): a 600 s permuter run (79 differing instructions at its baseline) found nothing lower, and the first branch still leaves for a different place than retail's, which jumps into the shared exit further down.
 // score 85 (was 85): the alpha parity is still masked in 16 bits (and cl, 1; movzx cx, cl) where
 // retail zeroes a 32-bit register first (xor ecx, ecx; mov cl, al; and ecx, 1); every 32-bit form of
 // the pixel helper reproduces retail's parity bytes but swaps the output and colour registers, so

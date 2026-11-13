@@ -32,6 +32,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 }
 // MiniMax I (11-11): no new form, no lower score (206): retail computes the second point's offsets first, spills all three and keeps the camera coefficients in registers; taking the two offset loops in retail's order scores 208, so the body keeps its own order.
 // MiniMax B (11-11): no new form, no lower score (206); the body is unchanged, and the forms listed above are exhausted.
+// MiniMax B (11-12): no new form, no lower score (206): the frame is still 0x20 against retail's 0x14 - the second
+// offset vector keeps its own home where retail shares it with the orthographic segment and keeps right.i in
+// xmm7 for both views - the scale is applied in place where retail copies the raw offsets before the test, and
+// the coefficients are still folded into the products.
 // score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products.
@@ -474,6 +478,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // retail's offset order 1i 1j 1k 0k 0i 0j 234 [190/80]; the second view transformed in place 253 (same code), the first in place 299
 // (1178 bytes, frame 0x2c); the depth limits named again 250 (1136 bytes); rows z first with the second point's offsets first 261
 // (1146 bytes) [132/78]; both scale steps ahead of both views, offset loops 217 (1136 bytes, frame 0x20). None below 206.
+// MiniMax A (11-12): no new form, no lower score (206): our frame is 0x20 against retail's 0x14 - retail keeps the first
+// view's depth and the second view's height in registers across the two inlined transforms, where ours spills them, so the
+// coefficient and result registers and the tail still differ.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

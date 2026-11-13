@@ -94,11 +94,24 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// score 211 (was 211): earlier 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
+// spill homes (the dead `values`/`context` argument slots) are swapped too; the blend leaves XMM5 in the aspect block.
+// M3 lane 8 r159 (fast): the aspect defaults declared y first (`aspect_y=1.0f,aspect_x=1.0f`) 209 (the default stores
+// then run in retail's order, but aspect_x still takes the context slot +0x8c and aspect_y the values slot +0x78, where
+// retail has them the other way round; an order of declarations, not kept); the aspect pair renamed width_scale/
+// height_scale 211 (same code: names do not move these slots); the second set's unit defaults stored before the first's
+// 215; the direct arm's copy as `uv_b.bounds=uv_a.bounds` 211 (same code); the colour modulation as `tint.red*=color->red`
+// 211 (same code); the next frame's bounds copied before the first's 217. All restored.
+// MiniMax A (11-12): no new form, no lower score (211); the first difference is still the tint's home,
+// ours +0x60 where retail has +0x50, with the second UV set's bounds in the other slot, and the blend
+// still leaves XMM5 in the aspect block; the declaration orders the notes above list (both uv sets before
+// the tint, the tint in a nested scope, the tint at the top of the function) all give the same code, so
+// the swap cannot be moved that way.
 // MiniMax b (11-11): no new form, no lower score (211); the tint's home is still exchanged with the second UV
 // set's bounds (ours +0x60/+0x50, retail +0x50/+0x60) and the blend still leaves XMM5 in the aspect block; the
 // uv sets declared before the tint, the tint in a nested scope (frame 0x50, the tint then at +0x50 but the second
 // UV set takes that slot) and the four clamped components written out one by one all give the same code.
-// score 211 (was 223): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
+// Earlier status line, 211 (was 223): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
 // second UV set have swapped homes (ours +0x60/+0x50, retail +0x50/+0x60), and retail keeps the blend in XMM5
 // through the aspect block (ours reloads it), so the extents, reciprocals and aspect homes differ.
 // MiniMax R (11-09): no new form, no lower score (211); the tint's home is still exchanged with the second UV set's bounds and the blend still leaves XMM5 in the aspect block, and no spelling of the declaration order moved either this round.

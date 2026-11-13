@@ -1034,6 +1034,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 }
 
 // score 114 (was 114; 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
+// MiniMax A (11-12): no new form, no lower score (114, the reduced image and the full build agree): naming the
+// sine and the cosine before the rotation call scores 150 (1382 bytes) against 114, so the call keeps its
+// expressions; the first difference is still the inlined rotation's dot and cross products, whose body is in
+// another file: retail multiplies the vector's component by the axis's from memory and sums the terms j, k, i,
+// ours multiplies the axis's component by the vector's and sums them i, j, k.
 // MiniMax S (11-07): no new form, no lower score; the crosses declared apart, declared at first use or
 // declared at the top of the body give 114, the two cross calls swapped give 124 and the goal copy by
 // components gives 120, so the body stays; the rotation products, the side-dot order and the exit copies differ.
@@ -1381,6 +1386,18 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // MiniMax D (11-11): no new form, no lower score (114): the first difference is still inside the inlined
 // `rotate_direction`, whose definition is in another file, and the moved-away flag spelling that the notes above record
 // at 92 needs a flag set in a test, so it is not keepable.
+// m3 lane 4 r191 (fast with 0x24590/0x1cd6c0/0x1ecf50, and 0xe3910/0xd0080 for helper forms; control 114, aligned/masked
+// 89/55): the six flag statements through bit_vector_set 365 (1404 B); moved_away as `alignment > dot && alignment > 0.99f`
+// 96 (1383 B, masked 67: positional; retail tests 0.99 first); a new no-argument tick-step inline getter for the rotation
+// rate on this body 144, with sinf/cosf 186, with that moved_away 174. rotate_direction body forms (control 0x1ecf50 MATCH,
+// 0xe3910 79, 0xd0080 58): an input copy 190 (every user worse); a named versine 112 (1393 B, 53/40: the turn-block crosses
+// and side dots become retail's, the rotation products do not; 0x1ecf50 14); the dot written out 111 (73/57); grouped
+// (j + k) + i 109 (1382 B, 105/83; 0x1ecf50 6), {k,i} + j 124, {j,i} + k 117 (0xd0080 38, 0x1ecf50 112); rows grouped
+// `v * cos + (p * a - c * s)` 208; a cross aggregate local 180; crosses before projected 154; rows into locals 174; no named
+// dot (`dot3f(v, a) * (1.0f - cosine)`) 94 at 1382 B (84/52; 0xd0080 36, but 0x1ecf50 91, 0xe3910 144); on that a named
+// versine 128, the dot written out inside the projection 112 (0x1ecf50 MATCH, 0xd0080 44, 0xe3910 144), that grouped
+// (j + k) + i 126, crosses first 187, rows into locals 177; rows `v * cos - c * s + p * a` 169, grouped so 171. The four
+// rotation products (dot j/k, cross_i) never move.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

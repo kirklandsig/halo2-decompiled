@@ -3546,6 +3546,16 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
+// MiniMax G (11-12): no new form, no lower score (101); the timeout owner still has no home, because the
+// callee that would read it (0x769a0, src/unknown_075870.cpp:312) is in another file; the announcement
+// id and member scheduling behind it are in this file and still differ.
+// MiniMax G (11-12): what is left in this file, read off retail's code: retail takes the member state's
+// address in two steps (lea eax, [ebp + eax*4 + 0x72dc] then mov eax, [eax+4]) where here the field
+// offset is folded into one displacement (mov eax, [ebp + eax*4 + 0x72e0]); retail stores the session's
+// value10 ([ebp + 0x10]) into the frame slot +0x14 before the timeout call, a dead store into the slot
+// that later holds the session id, and that id's home is +0x14 here it is +0x1c, while the id is passed
+// by address (lea ecx, [esp + 0x14]) in both. The two-step address needs a pointer local for the
+// member-state element, which the once-used-pointer form does not allow.
 // MiniMax E (11-11): no new form, no lower score (101): the thirteen bytes retail has between the
 // member-state lea and the timeout call need an unread owner parameter on 0x769a0, whose definition
 // is in src/unknown_075870.cpp.
@@ -4372,6 +4382,9 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
+// MiniMax G (11-12): no new form, no lower score (305); the same timeout spill as 0x5e3f0 sits here and
+// needs 0x769a0, whose definition is in src/unknown_075870.cpp; what is left in this file is the
+// rotation of the three boolean stack homes (the result byte at +0xa where retail keeps it at +0xb).
 // MiniMax S (11-11): no new form, no lower score (305); the frames agree (0xd8 with the same two pushes) but our
 // body is one byte longer than retail's (1265 against 1264), and the result byte still lives at esp+0xa where
 // retail keeps it at esp+0xb.

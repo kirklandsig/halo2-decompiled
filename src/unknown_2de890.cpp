@@ -197,6 +197,13 @@ answer_2de9e0 c_child_transform::function_2de9e0(ray_2de9e0 const *ray, hit_2de9
 // whole descriptor 52; all coordinate products named 51. Both inverse users
 // checked. NOT kept: no match or qualifying gain; original body and helper
 // restored.
+// Round 94: point by value 51; third column first 77; transpose macro 77;
+// direct column reads 91; coordinate broadcasts named 51; second metadata
+// read early 51; all object declarations first 51; both metadata stores late
+// 92. The third-column, macro and direct-read forms also lose the shared
+// user. NOT kept: no gain; original helper and body restored.
+// Serial search: 19 variants, best 41. NOT kept: an added volatile pointer,
+// one-use locals and casts without equality.
 // @retail 0x2deb20
 void c_child_transform::function_2deb20(ray_2de9e0 const *ray, description_2deb20 const *description, void *collector) const
 {

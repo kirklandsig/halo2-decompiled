@@ -322,6 +322,13 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // block count held in a local for the gate and the three loops 405 (1386 bytes). Same code: the position counter
 // declared before the drawn index, the z flag through a named tag-flags dword, the helper as plain inline
 // (re-measure, listed at 52 on an older base).
+// Round 111 (m3 lane 16, fast; control 30): the three entry tests as nested ifs 30; `local_15 != NULL` 30; the weighted test as
+// `selection_weight <= local_5` 30; the count test as `else if (local_6)` 31; the last index draw without its braces 30; the
+// result declared bare and then set 30 (30 = same code). The member's stores through forced-inline helpers: the +0x18 pair
+// through a helper taking the member 30, the first eight stores through one 30, all ten through one 30 (same code: a helper
+// that takes the member itself changes nothing); the pair through a helper taking a pointer to the pair 54 (1409 bytes, the
+// round 162 pointer effect). Retail keeps the ten stores in source order and reloads the argument right after the +0x18
+// store; ours moves that store and the reload above the four flag and zero stores.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

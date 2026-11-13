@@ -1702,6 +1702,7 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// MiniMax H (11-12): no new form, no lower score (339); the frame is still 0xa9c against retail's 0xaa8, and the file's flags still keep retail's inlining of 0x5a680 and its cmovne out of reach.
 // MiniMax S (11-11): no new form, no lower score (339); retail holds the session pointer in ecx and the state
 // word in edx, ours holds the pointer in ebx and the state in ecx, and the frames differ by twelve bytes
 // (0xa9c against 0xaa8), so every local home after the prologue differs.
@@ -1811,6 +1812,9 @@ struct s_summary_player_sort_entry
 // the cmovne needs /arch:SSE (a file-flag change); 0x5a680 inlined needs it inlined into this /Ob1 file (`inline` on
 // its definition loses 0x83220 and the 0x199ebc family, a local inline copy would be a twin); retail's three extra
 // frame homes follow from that inlining.
+// MiniMax A (11-12): no new form, no lower score (339): retail holds the session pointer in ecx and the state word in edx
+// where ours holds them in ebx and ecx, the frame is 0xa9c against retail's 0xaa8, and retail's cmovne for output->state
+// needs /arch:SSE, which this file's flags do not set.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

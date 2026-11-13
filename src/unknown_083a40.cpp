@@ -769,6 +769,14 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // `collection` (players and mask) 264. Swap order restored to main's.
 // Round 157 (m3 lane 8, fast with 0x83c90/0x84e90/0x84c90/0x69260): the count through a `long &` reference to `*count`
 // at every use 28; `updates` through a base-pointer local at every use 28 (both same code).
+// Round 115 (m3 lane 9, fast with 0x84e90/0x84c90/0x83c90/0x69260): reading: ours flattens the occupied key as inverse
+// base, cursor, collection and retail as collection, inverse base, cursor, so retail's tree had the collection ahead of
+// the index product. The occupied key through an inline player accessor given `&watcher->players` 294 (1064 bytes: the
+// argument is substituted and the key folds into the cursor, as the direct expression does), given `collection` 28
+// (same code); that accessor with every else-branch call given `&watcher->players` 294, forceinline 294, with no
+// collection local in the whole second loop 294; one collection variable assigned in each branch 28, assigned only
+// after the conflict scan with the first branch's call given `&watcher->players` 28, the occupied key indexed by the
+// record's stored player index 28 (all three same code).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
