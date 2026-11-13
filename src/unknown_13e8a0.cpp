@@ -502,6 +502,11 @@ struct s_text_line_measurement
 	long index;
 };
 
+// score 77 (was 77): unchanged this round: retail copies the advance product into XMM3 and accumulates
+// the update in that copy, loads the running width into XMM4 early and reuses the freed XMM0 for the
+// bound; ours keeps the advance in XMM0, accumulates the update there and reloads the width late into
+// XMM3, with the bound in XMM5. The permuter found no keepable form (its best, 72, adds a flag set by
+// one test and read by the next).
 // score 77 (was 77): retail loads the width into xmm4 before the multiply
 // chain and accumulates the four terms in xmm3; ours reloads the width into
 // xmm3 after the multiplies and accumulates in xmm0 (register allocation only).

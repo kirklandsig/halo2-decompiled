@@ -226,6 +226,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
+// score 49 (was 49): unchanged this round: retail keeps the false result in BL from before the creation
+// call and sets it only after the attachment, and it branches on the creation call's result instead of
+// materialising that comparison as a 0/1 value; retail also borrows EBP around the header flag test and
+// loads the object table's data pointer again for the object read, where ours shares one address between
+// the two reads and keeps the result in EBP.
 // score 49 (was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
 // earlier first lines 49 (was 49), 49 (was 49); retail's bool result in BL, the EBP borrow around the
 // header test and the data reload remain; round 151's entry is the last one above the marker.
