@@ -1639,6 +1639,7 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // the fields share, so retail's record-start cursor is not spellable from this file (lane 16 r102 reached it only
 // by inlining the getter 0x647d0 in src/unknown_054fe0.cpp). Both forms stay at 703.
 // MiniMax H (11-11): no new form, no lower score (703); the users cursor still rides in EBX where retail keeps it in a stack slot at +0x18, and the logon-status test still lacks retail's decrement/branch.
+// MiniMax B (11-13): no new form, no lower score (703); the users cursor still sits at +0x14 where retail keeps it at +0x18, the member fields are read off the properties address where retail reads them off the element, and the logon-status test still lacks retail's decrement and branch (the element through a named pointer 777, the copy before the slot lookup 847, the status written as (status - 1 == 0) 823; all worse).
 // score 703 (was 703; 709 before; 2910 bytes): Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax H (11-04): the logon-status test written as (status - 1 == 0) reaches retail's

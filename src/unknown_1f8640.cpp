@@ -376,6 +376,10 @@ struct s_1f8a70_actor
 // MiniMax G (11-12): no new form, no lower score (182): retail's case 2 arm runs the switch's value down through the
 // compare-and-decrement pair and calls 0x262b40, where ours tests the value in place and calls 0x410730, so the arm's
 // shape differs before the twenty bytes of extra code that shift every later branch.
+// MiniMax B (11-13): no new form, no lower score (182): retail's route dispatch is laid out between mode case 5 and case 6,
+// its failure block stores false into the frame byte, calls 0x1f8750 and reloads the byte, and its merged exit returns that
+// byte in AL where ours goes through BL; the permuter (fast, 5 tries in 394 s) found nothing below the 167 differing
+// instructions of the reduced image, so the body is the committed one.
 // score 182 (was 182; 182 before): earlier 188; Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
 // MiniMax S (11-10): no new form, no lower score (182): the route dispatch still follows case 7 where retail puts it after case 5 with cases 6 and 7 behind it, and the final result still goes through BL where retail returns its frame byte.
 // MiniMax E (11-09): no new form, no lower score (188).
@@ -750,6 +754,26 @@ struct s_1f8a70_actor
 // on the native returned-unit graph: 355/366/367/369/225/233/373/378. NOT kept:
 // no native dispatch/result equality; original six cases, two results, shared unit
 // temporary and full body restored.
+// M3 lane 1 r99 (fast with the file's ten other functions and 0xe70b0, all MATCH throughout; base 182; block order read off the listing).
+// New cause for the layout: retail's `route_mode = 1` store at 0x1f8c9d is one statement behind the mode switch, reached by cases 3 and
+// 5 and by case 6's 0x20 test and jumped over by cases 2, 4 and 7. With a `direct` flag set in those cases and `if (direct) route_mode
+// = 1;` behind the switch, the route test and what follows it land behind case 5 with cases 6 and 7 after them, at retail's position
+// (the first 154 lines agree): 315 at 1624 bytes, because the rest still differs (ours lays the failure call behind the first tested
+// operand and the route dispatch behind the second; retail has the dispatch behind the range test and the zero test, false store and
+// failure call behind case 7). A flag set in the cases and tested once is kept only with a match, so it is recorded, not kept. On
+// the flag form: nonzero route first 322; the route test inverted with the failure block (false store, 0x1f8750, the result) behind
+// it and the final test's failing path entering after the store (two gotos) 309 (store and reload then as retail, but through BL);
+// that as an if/else-if with the zero route first 302; as its own switch ahead of the route switch (three case orders) 309; as an
+// or of two and-chains 309; with a validity flag (four spellings) 309/315/322, none gives `setne`; the zero test's result in a named
+// bool 309; through an inline bool helper 393; the range failure storing its own false 309; the range test as its own statement
+// first 292 (dispatch behind the zero test, failure block last); the zero test and failure block written in the mode switch's
+// default arm 302; case 7's node stored before its radius 315 (same code); the failure block and the success path returning the
+// route result itself 454 (retail's `mov al, [esp + 0x12]` at both, but the first exit folds). Every spelling of the route test
+// comes out as one of three layouts, so the compiler normalises it; what still decides dispatch-or-failure behind the range test
+// is open. Without the flag: an empty inline taking the route result's address 182 (same code); its address passed to a real
+// call (diagnostic) 498 (frame 0x84, store and reload survive); the inverted test with a shared release tail 306 (four spellings,
+// same code); the mode switch's default as its own 0x1f8750 call and return 453 (the route test then sits behind case 6), with the
+// nonzero route first 477; validity flags 182 (same code). Body unchanged at 182.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
