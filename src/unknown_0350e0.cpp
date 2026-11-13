@@ -3151,6 +3151,9 @@ s_cached_input_list g_5234e8[4];
 // code). 0x31590's whole callee tree is matched, so this is not a clobber difference. Diagnostics: an extra use of the index
 // after the call (`(index >> 31)` added to the stored word) 149 (558 bytes, the index still in EDI), `&& index != NONE` in
 // the object test 113 (folded), so the index's own priority does not decide its register; the call's preference does.
+// M3 lane 2 r77 (fast with round 64's callee chain plus 0x241620, control 113): new: the 0x31590 call through an inline
+// wrapper taking the index by value 113, the entry through an inline getter taking it by value 113, both 113 (same code each:
+// inlined parameters are propagated, so a parameter copy does not move the index off 0x31590's EDI argument). Body unchanged.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
