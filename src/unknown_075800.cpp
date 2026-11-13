@@ -961,6 +961,7 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// MiniMax B (11-13): no new form, no lower score (153); the address and the message still keep different homes, and the caller that passes them lives in another file.
 // score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // MiniMax G (11-12): no new form, no lower score (196); retail's convention is eax = the message type,
 // ecx = the message (copied to ebx), edx = the receiver and the address on the stack (copied to edi at
