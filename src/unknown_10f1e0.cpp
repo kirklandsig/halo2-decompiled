@@ -2889,6 +2889,16 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // ours treats it as a rematerialisable constant where retail weighs it as a variable; no natural form found that
 // gives a NONE-valued variable (a constant-only local is a reverted form). Every other statement, test and type
 // form above is listed.
+// Round 237 (m3 lane 3, fast): the out value cleared at the top, after or before the index copy, 23/23 (it is stored to
+// the parameter's slot at once: an address-taken parameter is not kept in a register, and the roles stay); the sibling
+// 0x1147e0's order (out value cleared, the fallback lookup without an early return, then `index != NONE && 0x114520`)
+// 23, with the clear after the lookup 22, with the lookup as one conditional expression 22 (the implied test threads
+// away, roles unchanged). Diagnostics (each drops or adds real work) for the colouring order, which is index, request
+// priority, NONE by weight, the first taking EBX, the second ESI, the third EBP: without the request's priority store
+// the priority falls to third (index EBX, NONE ESI, priority EBP, loaded first as in retail) 63; without the entry
+// store the index stays in AX and NONE takes ESI 84; without both NONE takes EBX 88; two more NONE stores 38 (no
+// change of roles), four more 72 (NONE second). So NONE sits just under the priority here and would need the weight of
+// about eight more stores to pass the index, as retail's order (NONE, index, priority) needs.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

@@ -1314,6 +1314,11 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // 24 (0x126df0 still matched; reverted); a true `__assume(first_sound_index != NONE)` inside the guard 24. All the same code:
 // neither facts, layout order nor local names move the ESI/EDI tie. The layout swap may repeat round 15's "iterator fields
 // index-first" and the rename repeats the closed names dimension; no untried natural source form was found this round.
+// Round 237 (m3 lane 3, fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all matched each time; both builds `ret 8`):
+// the state test and the 0x126df0 call in a forceinline function taking the index (its parameter a copy of the loop's
+// index) 24, that function plain inline 24; a body-scoped copy of the index for the test and the call 24; an endless
+// loop with its own exit 24; the loop test on the next call's result with the body's index read from the iterator 24.
+// All the same code: a second name for the index does not split its weight, and the element stays the lighter value.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
