@@ -179,7 +179,7 @@ struct s_physical_block_iterator
 	s_record_pool_iterator iterator;
 };
 
-// score 201 (was 201): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
+// score 201 (was 201; round 95 m3 lane 11 at the end): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
 // and falls into the join), the second age's clamp folds, the walk's EBX/EDI roles and the link order differ.
 // M3 lane 8 r159 (fast, 0x13d320 MATCH each time; base 201, masked 56): the first candidate taken in an `if (!have_best)` arm
 // with the switch and `if (better) best = *candidate;` in the else arm 224 (1216 bytes; case 0 still threaded); the block
@@ -607,6 +607,19 @@ struct s_physical_block_iterator
 // `oldest != NONE` first 201 (different code); the default age clamped by `if (age < 0) age = 0;` 273 (first difference
 // +0x1); the new candidate's pages cleared before its time 203; the lead's two-stage insertion alone 213 (1227 bytes).
 // MiniMax E (11-11), NOT kept (coordinator 11-11): 201 -> 93 came from a new one-caller helper for the candidate test, `entry->previous = NONE` copied into both arms, a one-use pointer to the first block and the best.previous test split in two with the block data reloaded (forms kept only with a byte match; a one-caller helper never); body at 201. The split link order is the lead to explain in plain code.
+// M3 lane 11 r95 (fast with 0x13d320, which stays matched; base 201, masked aligned 86). Retail's insertion reads the pool data
+// once after the allocation for the entry, the first block, the predecessor's successor test and the successor block,
+// keeps only the predecessor's scaled index (`shl esi, 3`), and after the successor arms reloads `physical->blocks->data`
+// to update the predecessor's next. Forms: the second age as `MAX(physical->time - best.time, 0)` with the insertion through
+// element expressions at each use and the successor in `long next` 230 (1247 B, masked 74: the scaled index and the join
+// reload as retail, but the first arm reloads the data too); that clamp with the insertion in two stages (back links through
+// the `blocks` local with the successor in `long next`, then `if (best.previous == NONE) {entry->next = first; first =
+// result;} else` the predecessor taken afresh from `physical->blocks->data`) 221 (1237 B, masked 55: the insertion is then
+// retail's but for the NONE register, `or ebx, -1; cmp esi, ebx`, and one store's place; a repeated test, match-only;
+// diff saved as build/r95/lead-0x13d370-masked55.patch in m3-lane11's worktree); the two-stage insertion with main's
+// clamp 208 (1221 B, masked 57); case 0 as `if (older) { better = true; break; } if (same time && fewer pages) better =
+// true;` 201 (same code, still threaded); `bool better;` with no initializer 201 (same code). What keeps the count up on
+// every form is case 0 threaded into the take test, which moves cases 0 and 1 past the loop. Body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
