@@ -198,6 +198,7 @@ static __forceinline long real_to_long(real value);
 // 38 (463 bytes); retail forms the direction from the raw slot (`lea eax, [edi + 0x10]`, k cleared at `[edi + 0x18]`), so that
 // form does not apply. The direction pointer from the parameter 2; no slot_state local, the slot cast at each use 6; the
 // normalize call given the slot's own direction 2.
+// Round 117 (m3 lane 12, fast): the prediction helper (0x1ab4b1) as plain `inline` 2 (the same code).
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {

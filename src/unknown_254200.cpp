@@ -181,6 +181,19 @@ void function_254200(void)
 // keep 4. Note that the fast check asked for several addresses at once reports 80 for this
 // function, because the reduced image then leaves a global reference unresolved and the constant's
 // pool address is no longer masked; the single-address fast check and the full build both give 4.
+// Round 98 (m3 lane 10, single-address fast, control 4): the 16777215 constant as a file-scope `const real`, a
+// `static const real`, a double literal, an integer literal or `(real)0xffffff` 4 each (same code: the constant folds in the
+// front end); the point as two scalar coordinate locals after or before the size 107/182 (1113 bytes: float copies and a
+// `push ecx` frame, so the copied point record is retail's shape), declared y, x 107; no point copy at all 288; the member
+// 4f form in the first vertex only or the second only 4/4; a const size or a const point copy 4/4; the second vertex's x
+// sum or both y sums with the size first 4/4. What differs is still only the order of the constant's load and the
+// spilled y + size reload after the second and third reservations: retail's order is the order in which the two values are
+// defined in the first vertex's code (the constant at its stores, then the y sum), ours puts the sum first; 0x2548f0 has
+// the same pair the other way round (retail the earlier-defined coordinate first, ours the constant).
+// Round 416: Both cached-state helper calls 4; native member state calls 4; member End 4;
+// free Begin 247 (1053 bytes); direct availability rejection 4; active-quad rejection 4;
+// explicit texture selection 4; separate availability failures 4. Original calls and body restored;
+// the two depth/top-coordinate reload pairs remain.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {

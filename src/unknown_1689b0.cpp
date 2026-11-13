@@ -1888,6 +1888,10 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // swapped in the side test and the amount, the two hit records swapped. Left: the composite needs two match-only forms
 // (the arm swap and the early next index); no untried natural form found for the side-cross register choice or the
 // sum homes.
+// T95: Twice-used successor for modulo and back edge on the retained shared-cross graph,
+// long/int/short/word in plain for and while traversals: 643/643/641/641/643/643/641/641.
+// NOT kept: every form regresses, changes incoming argument registers at +0x13 and
+// lengthens to 2920/2922; original signed bounds, geometry and body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
