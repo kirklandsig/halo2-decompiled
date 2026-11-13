@@ -2239,6 +2239,11 @@ bool function_0b6760(s_index_pair const *pair);
 // P449: Power-change/position-activity, power preparation/advance, position preparation/advance,
 // position-change and lazy reversal decisions: eight 250s. NOT kept: no byte equality or native result-home repair.
 
+// P453: outer manual output 250; outer interpolation results 250;
+// outer acceleration products 250; outer integration snapshots 250;
+// separate power/position group declarations at function scope 250/250;
+// outer first/second manual completions 250/250. NOT kept: no gain;
+// original observations, pointer qualifier and body retained.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

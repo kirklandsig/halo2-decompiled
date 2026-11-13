@@ -466,6 +466,10 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // MiniMax R (11-10): no new form, no lower score (8); the body is unchanged, and the seat scan's inclusive
 // bound still needs the decremented count and the separate zero that retail does not.
 // MiniMax A (11-11): no new form, no lower score (8); the seat scan preamble is the whole difference: retail keeps the count in ESI and the index in EBP, tests the count against the index own zero register (cmp esi,ebp) and stores the selected pointers NULL from that register, while our build materialises a second zero in EAX for both the test and the store; every exclusive spelling (for, while, the count in a local, the index declared first, the count compared with the index) moves the count to EBP and the index to ESI (11 or 12), and a seat-count test around the scan keeps retail registers and the native cmp/jl but our build still materialises the EAX zero (6, not kept: the test repeats the loops own bound).
+// P453: index-plus-one bound 39; position/forward/direction output objects
+// at function scope 8/8/8, all three 8; earlier angle declaration 8;
+// direction aggregate initialization 8; position/forward declarations
+// exchanged 8. NOT kept: no gain; original scan and callee inputs retained.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
