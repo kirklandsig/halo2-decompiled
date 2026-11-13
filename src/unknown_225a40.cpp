@@ -79,6 +79,20 @@ static inline void *function_x332d0d(s_tag_block_view const *block, long index, 
 	return (byte *)block->address + index * element_size;
 }
 
+/* the definition entry track 0 plays, NULL while the track is not active */
+static inline s_sound_track_definition_entry *sound_track_definition_entry(s_sound_track const *track)
+{
+	s_sound_track_definition_entry *entry = NULL;
+
+	if (track->active)
+	{
+		entry = (s_sound_track_definition_entry *)function_x332d0d(
+			&((s_sound_track_definition *)g_4e3b44[track->label & 0xffff].bytes)->entries,
+			track->entry_index, sizeof(s_sound_track_definition_entry));
+	}
+	return entry;
+}
+
 long function_18d5b0(long label);
 long function_21d2c0(long platform_playback, real scale, short priority);
 void sound_effect_stop(long effect_index);
@@ -97,6 +111,9 @@ static inline void sound_track_start_impulse(long index, long handle)
 	}
 }
 
+/* starts the impulse of each active track again, then runs the update with no time elapsed.
+   Track 0's label comes through sound_track_definition_entry: retail forms that entry's address in
+   one register (`add eax, [edx + 0x70]`), the code of an entry pointer that is NULL on another path. */
 // score 16 (was 16): earlier start 15. Round 116 (m3 lane 9, fast): the track's fields read through the global at
 // each use with no track pointer 54 (164 B: case 0 folds i = 0); a pointer to the label chosen per case and read at the
 // call 42 (167 B); `if (!track->active) continue;` 16 (same code). Re-measures (same code as listed forms): `label` at
@@ -196,8 +213,6 @@ static inline void sound_track_start_impulse(long index, long handle)
 // with the index term first (the entry pointer taken from the sum, the label read through the
 // integer address, the entry pointer in a local) and the base term first; all compile to the same
 // folded bytes at 165 bytes. Still the folded member load against retail's materialised entry
-// address, the tag mask before the index scaling, and the parameter address copied through EDX
-// where retail copies it through EAX.
 // Earlier at 16 (was 16): this round's nine more shapes for the case-0 entry address: the index
 // Earlier score 16 (was 16): this round's nine more shapes for the case-0 entry address: the index
 // term first, the base term first, the two operands swapped, the base in a local, the scaled
@@ -264,9 +279,7 @@ void function_225ab0(void)
 			switch (i)
 			{
 			case 0:
-				label = ((s_sound_track_definition_entry *)function_x332d0d(
-					&((s_sound_track_definition *)g_4e3b44[track->label & 0xffff].bytes)->entries,
-					track->entry_index, sizeof(s_sound_track_definition_entry)))->label;
+				label = sound_track_definition_entry(track)->label;
 				break;
 			case 1:
 				label = track->label;
@@ -434,8 +447,7 @@ void __stdcall function_225b60(real elapsed)
 			{
 			case 0:
 				{
-					s_sound_track_definition_entry *entry = &((s_sound_track_definition_entry *)
-						((s_sound_track_definition *)g_4e3b44[track->label & 0xffff].bytes)->entries.address)[track->entry_index];
+					s_sound_track_definition_entry *entry = sound_track_definition_entry(track);
 					real duration = entry->duration > 0.001f ? entry->duration : 0.001f;
 					update.scale = sound_track_function_at_time(&entry->scale, track->unknown08 / duration);
 					update.handle = function_18d5b0(entry->label);

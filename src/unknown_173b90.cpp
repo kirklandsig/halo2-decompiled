@@ -800,6 +800,14 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // defaults as one chained `multiplier = scale = 1.0f` 120 (1136), on the long-indexed form 115 (1138); a named flags
 // value for the six emitter-definition flag tests 292 (1157), on the long-indexed form 297 (1159).
 // NOT kept (coordinator review, MiniMax A 11-12): 42 -> 39 is under the keep bar (8+ on a function still above 30); the body is main's again.
+// Round 178 (m3 lane 5, fast with 0x173c10/0x175430/0x2477b0, control 42): the placeholder-local scan that matched 0x1e6360
+// (n unused `long` locals at the function top, n = 0..7; diagnostic, removed) on four structures. This body: 42, 109, 53, 53,
+// 57, 57, 57, 70; with scale declared first: 40, 107, 51, 51, 55, 55, 55, 68 (all 1130 bytes); indexed definitions: 115, 106,
+// 118, 118, 113, 113, 113, 118; indexed with scale first: 113, 104, 116, 116, 111, 111, 111, 116 (1132-1138 bytes). The local
+// count does move both rotations here (every row turns at n = 1), but no count beats zero on any structure: row i's sum
+// order (retail left*y, forward*x, up*z) is not a product-phase state, and the indexed form's rows differ in their sum
+// order as well, so the count is not the lever for this function. One placeholder on the indexed form gives retail's
+// copy order (y, x, z into EAX/EDX/ECX) with the sums still (up*z + forward*x) + left*y.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

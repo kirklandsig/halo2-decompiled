@@ -650,6 +650,14 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // 334/334/334/334/334/334/334/334. NOT kept: one-use predicates require equality;
 // split effect addressing and gate/settings homes remain. Original comparisons,
 // reciprocal results, all random steps and complete body restored.
+// P441: Original-site masked/copied header word/dword/short/long accumulators: 334/338/334/338/334/338/334/338.
+// NOT kept: Separate effect-base addition, native DL/gate +0x1b and settings +0x1c remain. Original complete body restored.
+// P444: physical lower header field 334f; physical contact bits 334f; physical failure bit 334f; pooled particle lvalue 334f; cache-change producer 334f; native terminal-slot result 334f; double-factor initial scale 377f; allocator-admission producer 334f.
+// NOT kept: split effect addressing and gate/settings homes remain; original complete body restored.
+// P446: Native objects on the integrated entry-save/helper graph: blend, first sample, both, probes/placement, geometry, probes/placement/sample, all, all at consumers;
+// 406/395/446/465/446/446/446/447. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P448: Immutable incoming system/settings/publication/fraction/duration/scale/placement/cache bindings:
+// 334/334/334/334/334/334/334/334. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
