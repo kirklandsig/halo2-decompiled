@@ -70,7 +70,7 @@ bool function_2141f0(void)
 		break;
 	case 3:
 		memset(&g_55b4f0.header, 0, sizeof(g_55b4f0.header));
-		g_55b4f0.task = function_1a0f10(g_55b4f0.file, &g_55b4f0.header, 0x800, 0, 1, priority, &g_55b4f0.bytes_transferred, &g_55b4f0.done);
+		g_55b4f0.task = function_1a0f10(g_55b4f0.file, &g_55b4f0.header, 0x800, 0, 1, priority, &g_55b4f0.transfer_size, &g_55b4f0.done);
 		state = 4;
 		break;
 	case 4:
@@ -78,7 +78,7 @@ bool function_2141f0(void)
 			file_ref_clock_time(&g_55b4f0.header.last_used);
 			strncpy(g_55b4f0.header.path, g_55b4f0.path, 0x100);
 			g_55b4f0.header.path[0xff] = 0;
-			success = g_55b4f0.bytes_transferred == 0x800 && cache_header_verify((s_cache_header const *)&g_55b4f0.header);
+			success = g_55b4f0.transfer_size == 0x800 && cache_header_verify((s_cache_header const *)&g_55b4f0.header);
 			if (success)
 			{
 				for (long type = 0; type < 3; type++)
@@ -120,13 +120,13 @@ bool function_2141f0(void)
 				g_55b4f0.slot = slot;
 				memset(&file->header, 0, sizeof(file->header));
 				s_file_handle handle = file->file;
-				g_55b4f0.task = function_1a1050(handle, &file->header, 0x800, 0, s_file_write_flags(0), 1, priority, &g_55b4f0.bytes_transferred, &g_55b4f0.done);
+				g_55b4f0.task = function_1a1050(handle, &file->header, 0x800, 0, s_file_write_flags(0), 1, priority, &g_55b4f0.transfer_size, &g_55b4f0.done);
 				state = 8;
 			}
 		}
 		break;
 	case 8:
-		success = g_55b4f0.bytes_transferred == 0x800;
+		success = g_55b4f0.transfer_size == 0x800;
 		state = 9;
 		break;
 	case 9:
@@ -138,7 +138,7 @@ bool function_2141f0(void)
 		state = 10;
 		break;
 	case 10:
-		g_55b4f0.bytes_transferred = 0;
+		g_55b4f0.transfer_size = 0;
 		g_55b4f0.progress.completed = 0x800;
 		state = 11;
 		break;
@@ -150,7 +150,7 @@ bool function_2141f0(void)
 			long chunk = g_55b4f0.buffer_size <= remaining ? g_55b4f0.buffer_size : remaining;
 			g_55b4f0.chunk_size = chunk;
 			g_55b4f0.task = async_copy_position(g_55b4f0.file, g_557c90[g_55b4f0.slot].file, (void *)g_55b4f0.buffer,
-				chunk, g_55b4f0.progress.completed, g_55b4f0.progress.completed, 1, priority, &g_55b4f0.bytes_transferred, &g_55b4f0.done);
+				chunk, g_55b4f0.progress.completed, g_55b4f0.progress.completed, 1, priority, &g_55b4f0.transfer_size, &g_55b4f0.done);
 			state = 12;
 		}
 		else
@@ -159,11 +159,11 @@ bool function_2141f0(void)
 		}
 		break;
 	case 12:
-		success = (dword)g_55b4f0.chunk_size == g_55b4f0.bytes_transferred;
-		g_55b4f0.checksum ^= checksum_buffer_mmx((void const *)g_55b4f0.buffer, g_55b4f0.bytes_transferred);
+		success = (dword)g_55b4f0.chunk_size == g_55b4f0.transfer_size;
+		g_55b4f0.checksum ^= checksum_buffer_mmx((void const *)g_55b4f0.buffer, g_55b4f0.transfer_size);
 		if (success)
 		{
-			g_55b4f0.progress.completed += g_55b4f0.bytes_transferred;
+			g_55b4f0.progress.completed += g_55b4f0.transfer_size;
 			if ((dword)g_55b4f0.progress.completed >= g_55b4f0.progress.total)
 			{
 				success = g_55b4f0.checksum == g_55b4f0.header.checksum;
@@ -193,12 +193,12 @@ bool function_2141f0(void)
 			s_cache_file *file = &g_557c90[g_55b4f0.slot];
 			file_ref_clock_time(&g_55b4f0.header.last_used);
 			s_file_handle handle = file->file;
-			g_55b4f0.task = function_1a1050(handle, &g_55b4f0.header, 0x800, 0, s_file_write_flags(0), 1, 0, &g_55b4f0.bytes_transferred, &g_55b4f0.done);
+			g_55b4f0.task = function_1a1050(handle, &g_55b4f0.header, 0x800, 0, s_file_write_flags(0), 1, 0, &g_55b4f0.transfer_size, &g_55b4f0.done);
 			state = 15;
 		}
 		break;
 	case 15:
-		success = g_55b4f0.bytes_transferred == 0x800;
+		success = g_55b4f0.transfer_size == 0x800;
 		state = 16;
 		break;
 	case 16:

@@ -49,7 +49,7 @@ struct s_copy_header_view
 struct s_cache_copy_globals
 {
 	s_copy_header_view header;
-	dword bytes_transferred;
+	dword transfer_size;
 	long chunk_size;
 	s_cache_copy_progress progress;
 	long task;
