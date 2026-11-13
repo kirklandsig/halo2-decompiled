@@ -2973,6 +2973,8 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // alone 68; round 192's order with it and the getter 92, with `(char)biped->unknown3aa` 81, plus the getter 99.
 // MiniMax A (11-13): no new form, no lower score (63): this build sign-extends the +0x3aa byte into a long before the test where
 // retail tests the byte in place, and the extra EBP push stays.
+// This round: retail passes the settling count to 0x1d5120 in EAX and takes six stack arguments, while this build passes seven
+// because 0x1d5120's declaration and definition live in another file, so the call site cannot be matched from here.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
