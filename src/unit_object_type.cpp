@@ -3345,9 +3345,7 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // the result is retail's stack byte. Left: the seat's index multiply is scheduled before the parent lookup instead of
 // after it, the seats array comes back in ecx instead of esi, the unit spill is read after the matrix copy instead of
 // before it, and the camera data is read at [ebp+0x24] instead of the base being copied up by 0x24.
-// score 113 (was 113; earlier 116): retail keeps the false result as a stack byte (loaded for the failed-marker return) and
-// loads the camera argument only inside each branch, with the seat in ebp; ours folds the result to xor al,al,
-// hoists the camera into ebp at entry and spills the seat. Block order (seat, plain, failure tail) now agrees.
+// Earlier at 113: false folded to xor al,al, camera held in ebp and seat spilled; block order agreed.
 // Tried (all 113 or worse): result passed as the flag argument of 0xb8d30 (113), result set true on both paths
 // with one return (125), volatile result (121), marker declared at the top (113), camera through a local (113).
 // Round 5 of #1049: no logic difference in a fresh walk. The single-return form (`result = true;` after each copy,
@@ -3377,6 +3375,13 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // NOT kept: subthreshold setter gain and tied or larger differences; original control and copies restored.
 // MiniMax A (11-12): no new form, no lower score (113): retail compares the parent index in memory and reloads it into ebx
 // where ours keeps it in ecx, and the camera copy still takes ours's register home instead of retail's ebp.
+// P434: current entry has native parent reload, camera residency and frame 0x78; first +0x41 is
+// the arm span, then signed seat-index scheduling and copy/base registers. Complete camera record
+// assignment 132; actual acceleration fields, camera/acceleration record references, seat lifetime,
+// parent-marker name, actual-source lifetime and separate seat indexing all 91. NOT kept: ties or
+// regressions; original body restored. Current copy tails remain six bytes longer than retail.
+// Uniformly readonly tag receivers 91. Required parent seat-table access through the existing
+// unit.seats.address field 91 in fast/plain checks, retained with no code-size or score change.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -4339,7 +4344,7 @@ void function_c9e70(long unit_index, dword flags, s_type_1e6529 const *data, s_d
 // score 163 (was 163; earlier 168): every case, constant, clamp, store and weapon call matches retail's statements; what differs is
 // layout. Retail keeps the constant 1 in bl for the whole function (saved at entry, used by the `test bl, al` bit tests
 // and returned with `mov al, bl`) and sends every case to one shared store tail; ours returns an immediate and clones
-// the store into the 0.0 case (602 bytes, retail 578). Tried: bit tests as field bits and flags_10a through its byte
+// the store into the 0.0 case (608 bytes, retail 578). Tried: bit tests as field bits and flags_10a through its byte
 // view 173/180 (retail's shr/test forms, but larger); a function-level `found` bool set true and returned 168 (folded
 // to an immediate).
 // Round 4 of #1049 (logic walk: no behaviour difference; every case's field, constant, clamp, active test and the
@@ -4362,6 +4367,11 @@ void function_c9e70(long unit_index, dword flags, s_type_1e6529 const *data, s_d
 // 0.0 path; with field-bit tests for the 0x90005a1 pair 172 (masked 45), and for the 0x140005a2 bit too 177 (masked
 // 43); the 0x90005a1 pair as a ternary on those 170 and 177 (same code). The weapon name as a ternary with the index
 // initialised at its declaration 174 (619 bytes); that on the single-exit form 191 (640 bytes).
+// P434: complete bounded carrier 163; direct delegated returns 154 (597 bytes; NOT kept:
+// tail jump replaces retail call/return and removes its saved weapon-name register); complete
+// delegated name admission 168; bound defaults 154 (599 bytes; NOT kept: one-use bound copy
+// adds a nonnative transfer); branch-owned found 159 (NOT kept: gain four below eight); index
+// lifetime, uniformly const unit and property-value name 163/163/163. Original body restored.
 // @retail 0xc6b90
 bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *active)
 {
@@ -4856,6 +4866,9 @@ void __stdcall function_cc810(long vehicle_index)
 // MiniMax A (11-12): no new form, no lower score (162): our build folds the first test's stop_time * 0.5f * velocity * 0.5f
 // into one multiply by 0.25 where retail keeps three multiplies, and it evaluates the one-use discriminant on the x87 stack
 // where retail keeps it in SSE with a spilled root; the done flag is also a byte store here and a dword store in retail.
+// P434: immutable coefficient pair/root, entry-scope coefficients/root/time, descriptive
+// coefficient/root-result names, and complete single-completion outcomes each 162. NOT kept:
+// all tie; the discriminant stays on x87, frame 8 remains, and the first difference is +7.
 // @retail 0xc7300
 void __stdcall function_c7300(real distance, real velocity, real speed_limit, real acceleration, s_unit_motion *motion)
 {
