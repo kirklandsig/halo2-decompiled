@@ -673,6 +673,13 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // puts the inner counter's increment right after that join, ahead of the third store: retail's place. So retail's body has a
 // block boundary after the first two stores that emits no code (the scheduler hoists `inc esi` only to the top of its block);
 // none of the empty constructs above survive to scheduling.
+// Round 113 (m3 lane 16, fast): a byte copy of the type made at the type loop's top for the store 3; the type field
+// declared char 3; the per-type loop in a forceinline helper taking the voice index by pointer 3; the index advanced in
+// its own statement with `++i` 3; a while loop counting before the voice lookup 3. Diagnostics (removed): an always-true
+// `if (voice->sound_index == NONE)` around the later stores 3 (folded before scheduling, so a folded test leaves no block
+// boundary); the inner counter renamed to sort first or last 3/3 (names do not move it); the later stores through
+// `&g_4e6378[voice_index - 1]` 98 (589 bytes: the stores may alias the pool pointer, so it is reloaded). Also: the voice
+// through a forceinline getter taking the index (no stores in it) 3.
 // @retail 0x1253d0
 void function_1253d0(void)
 {

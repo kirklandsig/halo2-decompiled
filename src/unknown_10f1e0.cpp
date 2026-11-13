@@ -639,6 +639,12 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // difference (a preheader reload pair in the other order) went away when a local copy of a pool global with a re-read after a call was
 // replaced by the global read at each use; here the matching change, `iterator->b` read at each use with no re-read, is listed at 42/46.
 // Levers left outside this body: 0xb8d30's side-effect summary (its file, src/unknown_0b8ca0.cpp, was another lane's this round).
+// Round 113 (m3 lane 16, fast): `found == false` 2; each arm breaking on its own call with no `found` 2; the visited words as
+// long 2; the graph local declared in the loop body 2; the render model read as `((long const *)model)[1]` 2 (all the same
+// code: our back edge still reloads the table before the state). Every callee under the loop (0xb8d30, 0x1dcfa0, 0x1dcf20,
+// 0x1d90e0 and theirs) is matched, so the summaries that order the reloads cannot be changed without touching matched code.
+// Also: `alternate` copied into a bool local for the loop's test 2; each arm's graph lookup and iterator stores in a
+// forceinline helper returning the graph, called inside each arm's call 2.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)

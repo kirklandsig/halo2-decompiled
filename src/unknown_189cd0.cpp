@@ -149,6 +149,13 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // early, marker and started tests 107 (530 bytes); for the marker and started tests only 162 (540 bytes); the
 // positioned test written out at both uses 131 (528 bytes), with the reference kept 132 (527 bytes); no duration
 // local (the parameter cast at both uses) 116 (531 bytes, the plain-reads code).
+// Round 113 (m3 lane 16, plain; this body's listing differs only in the started test, `cmp [esp+0xb8], -1` for retail's
+// `cmp ebx, -1`): the started test and dispatch in a forceinline helper given `&object_index` (read through the pointer)
+// 116 (the address folds away, object in EBP, spatialization spilled); the started test and dispatch after the arms' join
+// with plain reads 109 (533 bytes, not threaded past the request arm); plain reads with the request's object index set from
+// the parameter 116; an arm-scoped object copy for every use in the positioned arm 116 (copy-propagated); the marker test
+// alone through the reference with the started test plain 96 (523 bytes); plain reads with `positioned` started false and
+// set under the spatialization test 141 (531 bytes).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {
