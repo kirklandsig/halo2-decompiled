@@ -219,6 +219,10 @@ __forceinline __m128 rotate_inverse_307840(transform_307840 const *matrix, __m12
 // count captured at distance loop 510; pointer/count loop 452; early key 316;
 // separate rejection guards 316; direct side bits 331;
 // output reference 316; original count bound 510.
+// Positive count scope 317; count name 316; all three row locals 316;
+// axes read once 318; ordinary inline 487; later second absolute vector 316;
+// false comparison arms first 309; conditional minimum 316.
+// NOT kept: false arms gain seven above 30; the original body remains.
 // the faces of the two boxes most nearly facing along the normal of the
 // newest contacts, when both face it closely: their contacts and, when asked,
 // those of the edges around them, with the smallest distance among the
