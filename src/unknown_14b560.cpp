@@ -786,6 +786,10 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// score 43 (was 43): unchanged this round: the unit record's address takes EBX where retail takes EDI
+// and the unit index takes EDI where retail takes EBX, and retail reads the unit object out of the
+// record into EBX once the record's address is dead; the root walk itself is the out-of-line 0xbaf80
+// whose body is in another file.
 // MiniMax E (11-11): no new form, no lower score (43): the unit-start NONE-root walk (the root preset
 // to NONE and the walk started from the unit) gives 109, and the datum and the unit still take ebx
 // and edi where retail takes edi and ebx.
@@ -2471,6 +2475,7 @@ static __forceinline long player_round_ticks(real value)
 // MiniMax C (11-11): no new form, no lower score (701): the length agrees (2740 bytes); the frame is
 // still 0x4c against retail's 0x74 and the first 0x151b80 call is still expanded here where retail calls
 // it, and the definitions of 0x151b80, 0x151940 and 0xccd20 are in other files.
+// MiniMax G (11-12): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, our link-time inlining still expands the 0x151b80 and 0xccd20 calls that retail makes out of line, and retail's two request homes are still one here.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and
@@ -2995,6 +3000,10 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the
+// function where retail loads it into ESI and reloads it after the busy check and again before the
+// final store, and the two loops swap the datum and unit registers with it; the reduced image
+// overstates this body, the full build gives the same 103 at retail's 611 bytes.
 // MiniMax E (11-11): no new form, no lower score (103 on the full build, 193 on the reduced one):
 // reading the globals pointer at each use (175 on the reduced image), keeping it for the last write
 // (173), writing the status after the countdown (181) and giving the second loop its own iterator

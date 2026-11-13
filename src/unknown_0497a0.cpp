@@ -21,6 +21,9 @@
 // one, which gives its frame 0x60 with five vector copies against our 0x54 with four, and it holds the reciprocal
 // in xmm5 where we hold it in xmm1, so the shape pointer sits at [esp+0x14] in retail and at [esp+0x1c] here.
 // MiniMax G (11-11): no new form, no lower score: the permuter over this file's wave spellings produced no variant that matches retail's bytes; retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y are what keep those three on the x87 stack until after the product, and no plain spelling of the wave expression gives them a second use.
+// MiniMax G (11-12): no new form, no lower score (536): the permuter's search over this body (full image, annealed, 26 tries) found
+// no better form; the frame is still 0x54 against retail's 0x60 and retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y are
+// what keep those three on the x87 stack until after the product.
 // score 536 (was 594): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
 // against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
@@ -649,6 +652,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
     return pixel;
 }
 
+// MiniMax G (11-12): no new form, no lower score (233): the frame is four bytes short (0xa8 against retail's 0xac), which puts the
+// definition, source, scale and vertex homes four bytes below retail's, and retail's u step, v and width are in the eight-byte spill
+// slots at the top of its frame in another order than ours; no new spelling of the three scalars moves them.
 // score 233 (was 233): earlier 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // MiniMax C (11-11): no new form, no lower score (233); the frame is still 0xa8 against retail's 0xac, and the u
 // step and the V end still take 4-byte homes among the channel slots where retail spills them to the 8-byte homes

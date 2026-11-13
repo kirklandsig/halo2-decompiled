@@ -312,6 +312,7 @@ static inline bool teams_enabled_19e1c0()
 // volatile result keeps our four name and team copy tails apart where retail keeps a copy of the length and
 // clamp in each case, and retail's prologue forms the first token compare with the string, the stack argument
 // and the token in the other registers.
+// MiniMax G (11-12): no new form, no lower score (390): the volatile result still keeps our four copy tails apart but frames 0x208 against retail's 0x204, and a plain result reaches that frame and retail's ESI result register only by merging the four tails into one block (691 this round); the permuter's 319 seconds over the body found nothing below its 385 baseline.
 // score 390 (was 390): retail clamps the copy length with `cmp remaining, length` and a conditional
 // move, so the comparison written as `remaining <= result` was tried: with the volatile result 466,
 // with a plain result 652 (against 390 and 691). The plain result does match retail's frame 0x204

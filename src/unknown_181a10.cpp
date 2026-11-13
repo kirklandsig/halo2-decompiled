@@ -462,7 +462,7 @@ struct s_slot_entry_list;
 extern s_slot_entry_list *g_4e0340;
 struct s_lookup_source;
 struct s_bsp3d;
-plane3f *bsp3d_get_plane(s_bsp3d const *bsp, short plane_index, plane3f *plane);
+plane3f *bsp3d_get_plane(s_bsp3d const *bsp, long plane_index, plane3f *plane);
 short *function_1ee410(s_lookup_source const *source, short *result);
 void function_182b90(c_material_shape *shape, hkEntity const *entity, real *friction, real *restitution, short *material);
 long havok_entity_property_2002_get(hkEntity const *entity);

@@ -523,6 +523,10 @@ public:
 // nodes collected, and the walk goes on into a side it holds part of (the
 // second side, when both are, by a call of its own); each node reached adds
 // its offset to the list
+// SIMD sum input by value 86; sphere vector captured once 701; diameter
+// factors read directly 86; indexed coordinate update 86; unsigned command
+// ordinal 86; stop case first 86; wide-bound cases later 487; ordinary
+// classifier inline 1410. NOT kept: no gain; executable text restored.
 // @retail 0x2dce60
 void class_2dce60::function_2dce60(pending_2ddbd0 *position, void const *root, __m128 const *offset)
 {
