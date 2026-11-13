@@ -746,6 +746,10 @@ struct s_1f8a70_actor
 // P434: complete adjacent-family orders 236457/237456/237645/452376/456237/457236/457623/623457
 // gave 211/364/357/388/234/387/383/370. NOT kept: all regress; original cases and full body restored.
 // Native frame, first false BL and unit/result +0x12 home agree; dispatch and late false reload remain.
+// T96: Destination case orders 235467/254367/325467/345267/354267/435267/453267/523467
+// on the native returned-unit graph: 355/366/367/369/225/233/373/378. NOT kept:
+// no native dispatch/result equality; original six cases, two results, shared unit
+// temporary and full body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

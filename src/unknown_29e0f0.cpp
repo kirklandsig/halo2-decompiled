@@ -452,6 +452,15 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // P433: Fixed group/lower-endpoint/candidate-record bindings, seven subsets,
 // then all with fixed validator mode: 382 each, 1596/1596 bytes. NOT kept:
 // native selected/default and pass homes unchanged; original full body restored.
+// T96: Float-root overload across all four length expansions, complete squared input,
+// delta aggregate, existing from-points delta, uniform square parts, named return,
+// ordinary inline and shared squared-length composition: 382/382/382/407/382/382/382/382.
+// NOT kept: no selected/default/bitmap-home recovery. Original private metrics,
+// helper contracts, includes and complete body restored.
+// T99: Full-width selected point with unchanged-start direction and separate output
+// walking cursor; pointer/indexed destinations, short/long walk and count domains:
+// 424/422/434/436/419/426/425/454. NOT kept: no exact output ownership
+// or default-home recovery; all original traversals and selected values restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

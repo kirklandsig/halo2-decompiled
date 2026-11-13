@@ -816,6 +816,10 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // P433: Index/object/motion/heading acquisition orders ABDC/ACBD/ACDB/ADBC/ADCB/CADB/CDAB/DACB,
 // planar clears at their producers: 102/87/101/98/110/101/101/110. NOT kept: no gain;
 // original body restored; unit argument and scalar/query homes remain.
+// T99: Function-owned request/world-query/animation-query output declarations,
+// subsets 1/2/4/3/5/6/7, then all with entry normalization declarations:
+// 110/87/87/110/110/87/110/110. NOT kept: request ownership grows the
+// native frame; other scopes canonicalize. All original workspaces restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

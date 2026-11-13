@@ -247,6 +247,11 @@ public:
 // Bounded word parts 117; high word plus bytes 107; staged integer sum 78;
 // low word plus high word 105; low slot bits after sharing 191; byte-width
 // operand 109; append by reference 78; named byte slot 78. All restored.
+// T98: byte snapshot 109; existing scalar 109; two cursor steps 167;
+// byte-add loop 81; word-add loop 98; byte-or loop 116;
+// indexed shifted sum 81; last-byte sum first 78; advanced-cursor read 76;
+// unit-step word loop 78; with the advanced-cursor read 76.
+// NOT kept: two counts gained above 30; the loop pair does not match.
 // @retail 0x2ff210
 void offset_list_2ff210::function_2ff210(position_2ff210 const *position, unsigned char const *commands)
 {
@@ -396,6 +401,10 @@ found:
 // Bounded word parts 108; high word plus bytes 103; staged integer sum 12;
 // low word plus high word 101; low slot bits 170; byte-width operand 86;
 // append by reference 12; named byte slot 12. All restored.
+// T98: byte snapshot 86; existing scalar 86; two cursor steps 144;
+// byte-add loop 15; word-add loop 101; byte-or loop 120;
+// indexed shifted sum 15; last-byte sum first 12; advanced-cursor read 10.
+// NOT kept: the two-count reduction is below the three-count gate.
 // @retail 0x2ff570
 void offset_list_2ff210::function_2ff570(position_2ff210 const *position, unsigned char const *commands)
 {

@@ -407,6 +407,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // angles and facing decision, plus direct complete rotated-point initialization, all 382.
 // NOT kept: no gain. Entry and first-normalization homes agree; inner cursor and wrapped
 // angle exchange +0x14/+0x18. Caller and scoring sibling stay matched in all eight trials.
+// T97: Complete upper-turn wrap truth in bool/byte/char/signed-char/short/word/int/long:
+// eight at 382. NOT kept: byte-neutral decision lifetimes; original array wrap,
+// shared producers, all call tuples and whole body restored. Unity/XY/wrapped-angle homes remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -913,6 +916,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // P433: Existing named forward/reverse/center trace records, seven subsets,
 // then all with center at its loop producer: 569 each, 3333/3372 bytes.
 // NOT kept: radius retention and pivot/trace homes unchanged; original body restored.
+// T99: Actual center-trace outcome owned by the operation result, clear/blocked
+// bool/byte/short/long: 780/783/781/785/792/792/783/798.
+// NOT kept: no equality or native radius/trace-home recovery; original independent
+// center result, complete sweep, every helper and all geometry restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

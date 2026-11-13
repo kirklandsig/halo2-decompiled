@@ -567,6 +567,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // provider return on the original word-palette graph, readonly cluster/tag sources, and
 // immutable palette/weighted source receivers all 607. NOT kept: no gain; native
 // return EDX, byte palette CL, selected record EBX and zero XMM7 remain unrecovered.
+// T96: Actual palette/alternate/both upper-cap-first range branches 604/608/605;
+// corresponding conditional selections 604/608/605; direct rejecting palette/alternate
+// chains 606/607. NOT kept: the three-point 604 lead is below the gate; first palette
+// carrier and zero/SIMD allocation remain. Original range expressions and body restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

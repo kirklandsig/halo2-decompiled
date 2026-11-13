@@ -1998,6 +1998,11 @@ void function_b7360(long object_index);
 // P433: Independent complete case eight before 0/17/3/4/7/5/9/13:
 // 437/426/424/394/358/328/332/335. NOT kept: all regress; original callback restored.
 // Pool/input/output ownership and retained point references remain.
+// T99: Both movement-query publications on the native-length completion graph:
+// admitted query value / independent fallback / failure-first / reject-then-publish /
+// fallback as completion / admission expression / separate stores with admission /
+// negative fallback admission: 619/601/467/619/463/466/460/270.
+// NOT kept: no equality or gain; original complete callback restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2693,6 +2698,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // P433: Explicit case-thirteen/default completion to the sole return before
 // 1/4/7/0/5/9/12/20: 621/621/621/621/621/621/621/621. NOT kept:
 // native length recovered but entry registers regress; original callback restored.
+// T99: Real animation-to-countdown fallthrough group before outer cases
+// 4/7/9/10/12/11/6/14: 475/483/479/483/483/483/468/474.
+// NOT kept: the 468 form needs the selected group placement without byte
+// equality; original complete case graph and countdown comparisons restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
