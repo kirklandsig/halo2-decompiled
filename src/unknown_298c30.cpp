@@ -403,6 +403,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // its own statement, 412 (0x29a190 45: the double local aligns the frame).
 // MiniMax A (11-12): no new form, no lower score (382): retail loads its entries in another order and keeps the normalized
 // point and the magnitude in homes of their own, while ours still shares them with the entry loads.
+// T97: Complete upper-turn wrap truth in bool/byte/char/signed-char/short/word/int/long:
+// eight at 382. NOT kept: byte-neutral decision lifetimes; original array wrap,
+// shared producers, all call tuples and whole body restored. Unity/XY/wrapped-angle homes remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

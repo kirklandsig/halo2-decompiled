@@ -464,6 +464,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // T95: Existing setters for all input copies/fallback captures/final publications,
 // family subsets 1/2/4/3/5/6/7: 653/649/579/685/637/663/693; all plus output clear 693.
 // NOT kept: no exact transfer-form repair; original helpers, in-place captures and body restored.
+// T97: Ordered early-return/conditional clamp 573/594; upper-first in-place/early-return/conditional
+// 592/612/626; sequential caps/lower-default/upper-default results 668/649/655. NOT kept:
+// best gains only three; no exact producer-lifetime repair. Original helper/body and in-place snapshots restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

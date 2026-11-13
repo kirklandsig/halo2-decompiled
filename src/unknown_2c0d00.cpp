@@ -446,6 +446,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // in the call 927 (3724 bytes). Diagnostic: local_4d3867 renamed to sort before the sphere flags (retail's byte order) is the same
 // code; the byte homes do not follow names. Ours keeps skip_classification in BL (shared with enemy) and straight in its own
 // dword; retail keeps skip at [esp+0x12] beside blocking/aligned/straight, with actor_index and self_unit in EBX and EBP.
+// T97: Nested identity/visibility/selected-carrier object admissions, seven subsets, then all with distance:
+// eight at 926 reduced (control 926; full 920). NOT kept: byte-neutral scope graphs; original
+// guards, qualifiers, marker/query storage and complete body restored. Frame 0x2cb4 still exceeds 0x2cac.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

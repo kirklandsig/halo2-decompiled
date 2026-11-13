@@ -1892,6 +1892,9 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // long/int/short/word in plain for and while traversals: 643/643/641/641/643/643/641/641.
 // NOT kept: every form regresses, changes incoming argument registers at +0x13 and
 // lengthens to 2920/2922; original signed bounds, geometry and body restored.
+// T97: One shared fallback owned by the existing return result, bool/byte/char/signed-char/short/word/int/long:
+// 645/619/619/619/614/614/616/616. NOT kept: all regress; original separate fallback paths,
+// geometry, counter observations and complete body restored. Sum homes and ESI zero still differ.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
