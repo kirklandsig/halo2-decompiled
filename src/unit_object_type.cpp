@@ -6676,6 +6676,11 @@ done:
    fell toward (front, back, left, right), plays its death (0x10ff40) and,
    from type 3, sets its ragdoll timer +0x1f5, its flags and (when the
    death had no animation) its deadness; a free biped turns to face it */
+// MiniMax B (11-13): no new form, no lower score (250): retail's scale block multiplies the x component in place and the y
+// component into a fresh register, which no single expression form gives; the facing copy, the split length test, the
+// __assume and the duration forms were measured again on the committed convention and none of them reached the 250
+// baseline, and the permuter (300 s, 7 tries) found 243 against a 244 reduced-image baseline, below the eight-point bar,
+// so the body is the committed one.
 // score 250 (was 254): Frame 0x24 agrees; retail takes the direction in ECX (round 82: now ours too) and keeps
 // the unit pointer in EBX, the definition on the stack. Round 5 of #1049: retail's epilogue clears AL (`xor al,
 // al` on every path, including the early return), so the function returns bool false (256 -> 254). The
