@@ -5253,6 +5253,9 @@ bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking
 // publications 216/131/201/62/202/122/217; world-up copied into left before an alias-safe
 // in-place staged cross 179. NOT kept: no match; original copies and helper calls restored.
 // First +0x12a still exchanges the first cross j minuend's load and memory multiplier.
+// P432: CRT aim/fallback/clip copies 2/2/2; basis/projection role names 2/2;
+// function-scope projection/vertical workspaces 2/2; normalization result 21.
+// NOT kept: no match; first cross j load and memory multiplier still exchange.
 // @retail 0xc8290
 void __stdcall function_c8290(point3f *point, vector3f *aim, long unit_index, vector3f *velocity, real const *offsets,
 	bool project, bool use_aim, bool clip)
@@ -5354,6 +5357,12 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // P405 fast: direct angular limits, complete rate/angle clamps, separate actor query admission, named upper bound, random-first high branch, named trig results, float trig calls; scores 142, 58, 175, 142, 57, 96, 58, 62.
 // NOT kept: the upper-bound local gives only one point (57), below the retention threshold;
 // other calibrated forms tie or regress. Original body and existing rotation restored.
+// P432: normalized random helper, upper/lower range helpers, actor observation,
+// CRT fallback, actor byte result, entry bounds, integrated angle result, both range helpers;
+// fast scores 58/43/43/58/58/58/266/105/61.
+// NOT kept: no permitted confirmed gain; original executable body restored.
+// Individual range helpers confirm 43/43; uniform use 61. NOT kept: selecting one
+// parallel producer only changes later rotation registers; native samplers already agree.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
@@ -6227,6 +6236,12 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // MiniMax A (11-12): no new form, no lower score (59): the first header read takes the scaled offset as the address base where
 // retail takes the data pointer, and the success arm's scratch registers stay swapped; the early-return form of the
 // out-of-memory block, tried here, scores 193 (59 with the failed flag kept).
+// P432: chained long/zero clears, fixed source bound, source step at store,
+// creation view scope, marker byte results, grenade count, model observation;
+// fast scores 59/59/58/59/59/62/119/80.
+// NOT kept: no permitted confirmed gain; original executable body restored.
+// Fixed source termination 58 moves first to +0x1a2 (native header addressing,
+// jne versus jb at the loop); NOT kept: gain one, below the retention threshold.
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {

@@ -437,6 +437,10 @@ long network_session_get_maximum_players(c_class_58d20 *session);
 // P405 fast: inner readiness/type, peer readiness, final validity/index/pointer early rejections, direct success return, comparison rejection; scores 1, 2, 60, 68, 69, 69, 43, 68.
 // Inner readiness rejection is 34 at 138 bytes in the plain check (fast 1/134): final calls still reverse.
 // NOT kept: full score regresses; original body and all callee interfaces restored.
+// P432: source observation, peer/primary field reads, primary type admission, joined peer gate,
+// decision through admissions, validity result, pointer-first validity;
+// plain scores 42/71/33/49/71/118/41/33.
+// NOT kept: no permitted confirmed gain; original executable body restored.
 // @retail 0x73360
 bool c_helper_b::v7()
 {
