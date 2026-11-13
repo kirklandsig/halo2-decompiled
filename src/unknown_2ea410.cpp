@@ -99,6 +99,10 @@ void class_2ea410::function_2ea410(void const *a, void const *b, void const *inp
 // parameter fields 25. NOT kept: these forms tie or regress.
 // Shared begin/end methods 25; NOT kept: no gain.
 // Serial search: 76 variants in 120 s, none below 25.
+// Round 424: parent reference 25; container reference 25; entry reference 25;
+// early parent view 25; scratch inside traversal 25; indexed end address 25;
+// scratch/child name order 25; early child declaration 25. NOT kept: no gain;
+// cursor/end staging and call carriers still differ.
 // @retail 0x2ea530
 void class_2ea530::function_2ea530(void const *a, void const *b, void const *input, void *collector, void *second_collector)
 {

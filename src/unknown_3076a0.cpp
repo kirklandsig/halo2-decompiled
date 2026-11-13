@@ -334,6 +334,11 @@ void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 // New: direct returned temporary 51; constructed/assigned result 51;
 // result before vectors, per pass or before loop 51; shorter vector or side
 // scopes 24; bounded for 282. Original returns and body restored.
+// Round 424: contact_found name 24; mutable returned object 24;
+// valid_contact name 24; encoded keys read through output 24; both side-bit
+// locals 31; both bound-test masks named 24; plain while attempts 282;
+// word edge axes 98. NOT kept: no gain; returned-byte home and the two
+// distance/return schedules still differ.
 // @retail 0x307c40
 int pair_305f60::function_307c40(table_305f60 *table, key_305f60 *key, feature_305f60 *feature)
 {

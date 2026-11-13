@@ -125,6 +125,11 @@ public:
 // required gain; the allocation and call setup still differ.
 // Serial search: 17 variants, best 42. NOT kept: gain under eight; a
 // constant local, one-use count copies and type/operand changes.
+// Round 424: entry-count capture 42; world shared for listener/dispatch 48;
+// derived listener 48; capacity flags once 48; shared final count 48;
+// array lifetime scope 48; guarded memcpy 121; freed-block capture 40.
+// NOT kept: 42 gains six above 30; both captures are one-use field copies
+// without equality. The original body and native final transfer remain.
 // @retail 0x3173f0
 void collector_3173f0::function_3173f0(pair_30d870 *added, long added_count, pair_30d870 *removed, long removed_count)
 {
