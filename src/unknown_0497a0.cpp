@@ -366,6 +366,10 @@
 // against native zero while retaining frame 0x54 versus 0x60.
 // P441: Existing selected v2/v3/v4 setter producers, singles/pairs/all then point setter: 693/713/646/734/701/698/758/719.
 // NOT kept: Native 0x60 frame, selected-basis homes and late x87 factor pops remain. Original complete body restored.
+// T103: Actual first/second/both wave-position results, point then vector receivers,
+// and reused sequential position receivers: 522/692/687/522/692/687/693/693.
+// NOT kept: first-result forms recover frame 0x60 but grow five bytes and use
+// nonmatching one-use results; original helpers and complete body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1116,6 +1120,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // the first; ours loads them for the first and copies down.
 // P441: Current/next/both/complete width-product branches, original then output-owned initial width: 510/511/545/558/576/572/584/590.
 // NOT kept: Native 0xac frame, first-edge Y and texture/color spill homes remain. Original complete body restored.
+// T103: Actual output UV point record direct/first/outer/both setters, then original
+// fields with first/outer/both setters and native UV value publication:
+// 233/241/241/240/241/241/240/410. NOT kept: no native frame/spill equality;
+// original vertex fields, UV stores, helper declarations and complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

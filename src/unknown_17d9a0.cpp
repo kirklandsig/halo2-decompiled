@@ -567,6 +567,10 @@ PRIVATE inline void decal_project_point_17d9a0(real const *point, long axis, boo
 // same code); a named table row pointer 175 (1006 bytes); the side test indexed by the stored field, with a short or a long axis
 // local, 177 / 179 (sides scrambled); the first corner given a short axis local and a `positive` local, corners 1-3 the fields,
 // 171 positional / aligned 30 (the bounds[1] products wrong again); `quad->plane.n.n[axis]` with the short local 165 / 23.
+// T103: Split point-builder stable horizontal/vertical/basis-subobject sets 1/2/4/3/5/6/7,
+// then all with the actual position subobject: 117/125/52/136/197/194/213/212.
+// NOT kept: no byte equality or native dot/selector/product-side repair; all four-use
+// helper inputs and the complete body restored on the retained 20-point graph.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
