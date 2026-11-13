@@ -1988,6 +1988,9 @@ void function_b7360(long object_index);
 // each use, re-measured on this body 495 (1856 bytes: arg_0 then takes EBP as retail, but the shared `lea edi, [ecx + edx]` and
 // the prologue order follow); the second pointer for the case 10 and case 5 selector reads alone 490 (1856). Retail keeps the +0x8c
 // and +0x9a clears ahead of the selector loads (ours sinks each store below its load) and reloads +0x28 after 0x25ab50 at both sites.
+// P423: Complete case four before 0/17/3/8/10/5/9/13/20/6 on the 1848-byte graph:
+// 344/337/335/367/390/425/427/428/428/427. Earlier core-only orders predated this result graph.
+// NOT kept: no gain; original complete callback restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2404,7 +2407,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // MiniMax S (11-11): no new form, no lower score (479; 474 when only this function's own units are in the
 // reduced image); our body is longer than retail's (eight bytes in that image), so the jump table lands later
 // and every branch after it differs.
-// score 477 (was 479): earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
+// score 479 (was 479): earlier 477, 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // MiniMax R (11-10): no new form, no lower score.
 // Earlier 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
 // (0x2594b5 `comiss xmm0, [1.0]; jbe 0x2597fa`, true for a NaN distance); `d <= 1.f` compiled to
@@ -2672,6 +2675,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // positional line while the body is 8 bytes long. Case 6's two flag stores (compile-only): `|= 0x29; |= 0x48`, bitfield
 // sets and inline set-up helpers all fold to `or 0x69`; only a branch between the two sets keeps retail's second store.
 // NOT kept (coordinator review, MiniMax A 11-12): 479 -> 477 is under the keep bar (8+ on a function still above 30); the body is main's again.
+// P423: Complete case four after 9/10/12/11/6/14/18/21:
+// 483/483/483/470/470/470/476/472. NOT kept: the 470 forms move the case away from its
+// retail position; no byte match. Original complete callback restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

@@ -890,6 +890,11 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // 121 the positional count stays high: registers differ in every block from the XMM5 radius hoist at entry onward.
 // MiniMax A (11-12): no new form, no lower score (569): retail loads the radius parameter at its first use while ours hoists it
 // into xmm5 at the entry, and the two side traces stay swapped against retail's +0xd0 and +0xf4 homes.
+// P423: Offset scalar reference 732; rotation scalar-pair references 569;
+// height reference 569; direction input references 569; direction output reference 569;
+// distance input references 569; all offset/rotation scalar references 732;
+// direction/distance references together 569. NOT kept: no gain or byte match;
+// original complete body and all existing helpers restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

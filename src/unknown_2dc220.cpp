@@ -180,6 +180,9 @@ public:
 // Byte bound selectors 802; bound cursors 849; named coordinate indices 327;
 // named products in both sums 327; plane-array end 776; first result tested
 // first 781; byte result 754; ordinary inline 1782. All restored.
+// Broadcasts inside loop 327; broadcasts at use 327; common vector member 327;
+// vector-by-value member 327; positive group count 746; partial return first 332;
+// payload-start pointers 327; shared coordinate member 327. All restored.
 // The same walk as 0x2dce60 below, for the nodes a set of planes holds: the
 // box is the third argument
 // @retail 0x2dc220
