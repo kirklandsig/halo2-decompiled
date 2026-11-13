@@ -139,7 +139,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 }
 
 #include "vector_products.h"
-// score 1367 (was 1367): earlier 1379, 1355; frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
+// score 1391 (was 1367): earlier 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
 // 0x2078f0 twice with unknown38 0 then 1, 0x2079f0 on both its paths, 0x227990, 0x2294a0, 0x22a4b0), loop shapes (the found
@@ -508,6 +508,12 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // the existing magnitude3d (0x24590) at the three direct magnitude sites 1486 (6102 B, inlined) [569]; the impact
 // position written straight by vector3f_add_scaled (no point local) 1431 (6211 B) [588]; the contact offset through the
 // existing vector3d_from_points3d 1376 [569]. All restored.
+// T95: Existing scaled-add direction/velocity/residual families, masks 1/2/4/3/5/6/7:
+// 1397/1393/1388/1374/1380/1393/1365; all plus moving-surface correction 1394.
+// NOT kept: 1374/1380/1365 clear the margin only as combinations; the first two
+// improve only length with more differing instructions, and the last substitutes
+// negated-scale addition for retail positive-product subtraction without equality.
+// Frame remains 0x5d0 versus 0x58c; original captures, kernels and complete body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
