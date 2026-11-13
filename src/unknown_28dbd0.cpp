@@ -73,6 +73,14 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
+// MiniMax B (11-12): no new form, no lower score (173); retail's rotation takes the second cross with the
+// rotated vector on the left (its .x is the up vector's .k times the sine) and subtracts that from the sum,
+// so the helper's cross the other way round and subtracted is the same value: 187. Retail keeps one of the
+// three cross products in a register and spills the other two as scalars (+0x20 and +0x28, the sine at
+// +0x24) where the helper spills the whole vector (12 bytes at +0x24..+0x2f, four bytes of frame more
+// than retail's 0x118); scaling the cross per component at the point of the sums gives 193 with the cosine
+// first and 197 with the sine first. The sine before the cosine gives 182, and the cross and the dot before
+// the two trigonometric calls gives 238. So the frame and the colouring of the cross terms stay as they are.
 // MiniMax R (11-11): the rotation rebuilt inside the helper the way retail reads it (sine first; the cross of
 // the heading and the up vector in scalar products; the cosine after the dot; the second cross subtracted in
 // the rows; the result left in registers) compiles to the same instruction sequence as retail, but the

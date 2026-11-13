@@ -31,6 +31,11 @@ long function_18d5b0(long label);
 long function_189fe0(s_sound_request const *request, long tag_index);
 long function_189340(long object_index, long tag_index, long audible, s_sound_marker const *marker, s_sound_source_callbacks const *source, real scale, long platform_playback, char const *variant);
 
+// MiniMax H (11-13): no new form, no lower score (11): the early object reads through a named local filled from the
+// reference with the started test read plain scores 90 (plain build), and the reduced image does not reproduce retail's
+// shape for this file (the permuter's reduced image scores the original 83 against the full image's 7), so the plain
+// check is the only reliable one here; what still differs is the started test, which reads the reference
+// (`cmp dword ptr [esp + 0xb8], -1`) where retail compares its late EBX copy (`cmp ebx, -1`).
 // score 11 (was 11): every object-index read is plain but the started test, which reads
 // through the reference; the code is retail's except that test (`cmp [esp+0xb8], -1`
 // where retail compares the late EBX load, 526 bytes). Before round 173 (at 21): retail reads the object index once, after the playback call, into
@@ -149,6 +154,13 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // early, marker and started tests 107 (530 bytes); for the marker and started tests only 162 (540 bytes); the
 // positioned test written out at both uses 131 (528 bytes), with the reference kept 132 (527 bytes); no duration
 // local (the parameter cast at both uses) 116 (531 bytes, the plain-reads code).
+// Round 113 (m3 lane 16, plain; this body's listing differs only in the started test, `cmp [esp+0xb8], -1` for retail's
+// `cmp ebx, -1`): the started test and dispatch in a forceinline helper given `&object_index` (read through the pointer)
+// 116 (the address folds away, object in EBP, spatialization spilled); the started test and dispatch after the arms' join
+// with plain reads 109 (533 bytes, not threaded past the request arm); plain reads with the request's object index set from
+// the parameter 116; an arm-scoped object copy for every use in the positioned arm 116 (copy-propagated); the marker test
+// alone through the reference with the started test plain 96 (523 bytes); plain reads with `positioned` started false and
+// set under the spatialization test 141 (531 bytes).
 // Round 430, plain object reads: address-first class pointer 128f/120p;
 // direct class fields 119f/124p; shared class index 152f/144p; shared
 // class flags 115f/113p; success predicate 141f/148p; request input

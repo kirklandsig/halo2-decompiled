@@ -865,6 +865,9 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// MiniMax B (11-13): no new form, no lower score (92): the origin and direction homes stay swapped and the forward,
+// grenade type and projectile index keep their homes (retail 0x20, 0x2c and 0x30 against our 0x28, 0x20 and 0x24);
+// the permuter over this function found no form either.
 // score 92 (was 92): 152 before m3 lane 14 r83; earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
 // MiniMax H (11-12): no new form, no lower score (92); the permuter over the function managed 17 tries in 301.7 s and found nothing (best 89, baseline 89, no confirming build), so the slot layout stands; this round added the player block's forward vector declared before the origin (92), copied in its declaration (100), and as a function local at the top of the function, above the projectile index and below the grenade type (92 each), which all leave the player's forward at the same home, so retail's forward at 0x20, grenade type at 0x2c and projectile index at 0x30 against our 0x28, 0x20 and 0x24 stands.
 // MiniMax G (11-12): no new form, no lower score (92): the seat index and the direction sit 0xc below retail's slots and the
@@ -1923,6 +1926,21 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// score 11 (was 11; 29 before): only the entry block's order differs (retail loads the global and the
+// actions pointer before `cmp ecx, 8; sete bl`). Tried: unit_action_active() 95; primary
+// declared first 11; primary inside the block 82; a unit local 90; an early-return guard 11;
+// actions read inside the test with primary first 11; the bit test as its expression 11; the test
+// result named first 11; `type == 8` in each call argument 82; the then-block as a call of the
+// switch-finished action 252, with that action inline 252 (not inlined).
+// Round 31: direct header lookup 11; named header 77; separate actions/primary assignments 11 each;
+// primary branch 87; zero/one ternary 11; long primary 96; active pointer 11;
+// force-inlined switch-finished action 82.
+// Round 187: a function-top pool local (`s_record_pool *objects = g_4e0300;`) for the lookup 11 (same
+// entry order); with a unit pointer from it 90.
+// Round 359: read-only actions 11; byte selector 76; signed-byte selector 76; short selector 97;
+// opposite hand decision 76; primary set from equality 87; signed action displacement 90; full-
+// width active result after primary 11. NOT kept: no qualifying byte match or gain; original
+// body restored.
 // MiniMax H (11-12): no new form, no lower score (11); the entry block keeps the same eleven instructions in the same order, with the type compare still ahead of the index arithmetic.
 // MiniMax H (11-11): no new form, no lower score (11); retail still loads the object-pool global into ECX and the unit header into EDX before it loads the type argument, while ours loads the type into ECX first and puts the global in EDX, so the type compare lands before the index arithmetic instead of after it; the rest of the function matches instruction for instruction.
 // MiniMax C (11-11): no new form, no lower score (11); the entry block still compares the type with 8 before the index arithmetic where retail loads the pool global and the unit header first and compares afterwards.
@@ -1953,21 +1971,6 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // The permuter (300 s) managed one try and found nothing.
 // MiniMax E (11-01): no new form, no lower score; the entry block keeps the same eleven
 // instructions in a different order in every form tried.
-// score 11 (was 29): only the entry block's order differs (retail loads the global and the
-// actions pointer before `cmp ecx, 8; sete bl`). Tried: unit_action_active() 95; primary
-// declared first 11; primary inside the block 82; a unit local 90; an early-return guard 11;
-// actions read inside the test with primary first 11; the bit test as its expression 11; the test
-// result named first 11; `type == 8` in each call argument 82; the then-block as a call of the
-// switch-finished action 252, with that action inline 252 (not inlined).
-// Round 31: direct header lookup 11; named header 77; separate actions/primary assignments 11 each;
-// primary branch 87; zero/one ternary 11; long primary 96; active pointer 11;
-// force-inlined switch-finished action 82.
-// Round 187: a function-top pool local (`s_record_pool *objects = g_4e0300;`) for the lookup 11 (same
-// entry order); with a unit pointer from it 90.
-// Round 359: read-only actions 11; byte selector 76; signed-byte selector 76; short selector 97;
-// opposite hand decision 76; primary set from equality 87; signed action displacement 90; full-
-// width active result after primary 11. NOT kept: no qualifying byte match or gain; original
-// body restored.
 // MiniMax E (11-09): no new form, no lower score (11); the type's flag is read much later (test bl,bl and
 // sete cl after the tag lookup), so retail can leave the compare at the end of the entry block, while ours
 // hoists it (cmp ecx,8 and sete bl) in front of the index arithmetic and reads the item table after the
@@ -1977,6 +1980,17 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // unchanged: retail loads the pool global into ECX and the type after it, ours loads the type into ECX
 // first and puts the global in EDX, so the compare lands before the index arithmetic instead of after
 // it.
+// Round 160 (m3 lane 8, fast): a statement that loads the unit ahead of the primary flag gives retail's first three
+// instructions (the pool global in ECX, the data in EDX, then the type), but the unit pointer is then kept in EAX and
+// reused by the put-away code after the branch (233 bytes): a named unit pointer 90, the unit read through a local
+// copy of the pool 90, the unit field read as a long 90, an inline accessor with its own unit local 90, an inline
+// accessor taking the unit pointer 90. The pool's header array named before the flag 65 (249 bytes; the array is
+// spilled and reused after the branch, the type loads first). The actions offset read into a long before the flag
+// 95 (233 bytes; it folds into the test, the unit is still reused). Diagnostic: with the actions pointer used twice
+// (the test repeated, folded to one) the lookup stays ahead of the flag as a whole statement and the unit is looked
+// up again after the branch, 74 (249 bytes), but the offset's add then comes before the compare and the unit index
+// takes EBP. Retail has the offset's load before the compare and its add after it, with nothing kept for the
+// second lookup but the scaled index.
 // P422: Complete mutable/const header tables with primary after/before acquisition
 // 65/67/65/67; const pool root 11/11; const pool/table 65/67. Existing object getter
 // boundaries, expression/unit receiver: 11/90 twice. All original calls restored.
@@ -2519,6 +2533,10 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// MiniMax B (11-13): reading the weapon index as a 16-bit short, so that the compare is retail's 16-bit one (movsx
+// ax, byte / cmp ax, bx against our 8-bit cmp dl, 0xff), scores 297 - the register allocation shifts - so the byte
+// compare stays; the pool header is still in edi where retail keeps it in ebp and the index in eax where retail keeps
+// it in edi.
 // score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // MiniMax H (11-12): no new form, no lower score (234); the tail's register homes and the 0x1b bit test are unchanged.
 // MiniMax I (11-11): no new form, no lower score (234): the pool's and the offset's register homes are still ebp and edi where retail has edi and ebx, the NONE sentinel still rides in ebp where retail keeps it in ebx, and the lunge's divide still comes from memory.

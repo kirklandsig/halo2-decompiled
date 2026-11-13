@@ -637,6 +637,11 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // != 0` 334 (same code); the effect gate byte shifted and masked in one expression 334 (same code); the velocity's i row spelled as
 // the j and k rows (`i = velocity->i + i`) 334 (same code). Retail also inlines the in-loop tag lookup (the tag-group compares)
 // where ours calls it. Body unchanged at 334.
+// m3 lane 14 r88 (fast with 0x247fd0 and 0x248cc0, both MATCH): `if (!local_3->unknown0c)` 334 (same code); the else arm's
+// factor as `arg_6 * (1.f - arg_5)` 334 (same code); the field_3c store ahead of the motion branch 354; re-measured round 32's
+// inline effect-record getter at both effect sites 334 (same code: the split `add eax, edx` stays folded). Diagnostics, not
+// kept: global optimisation off for this body 1686 (2770 B), so the unfolded address adds and loads are not that setting; in
+// the compile-only screen, local_0 or local_3 renamed to sort last moves no home. Body unchanged.
 // P436: Fixed existing inherited-velocity/contact-normal receivers, child handle/record,
 // reciprocal, motion weight and terminal tag/handle bindings: eight fast 334s, control 334.
 // NOT kept: no native split-address/gate/settings home repair or byte change. Original

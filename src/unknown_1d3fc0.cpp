@@ -406,6 +406,8 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // normalize3d, the rest normalize_inline 148 (926 bytes, ...the reciprocal then copied)" (same score, length and shape; the
 // masked counts come from a different script). Still open: a forward normalizer that sums j, i, k and scales k last into the
 // reciprocal's register. Body unchanged.
+// M3 lane 3 r238 (fast, 0x1c4a80 matched): round 150's 2 form re-measured 2 (922 B; the dot's i product copies up.i where
+// retail copies forward.i). No untried natural form found. Body unchanged at 110.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

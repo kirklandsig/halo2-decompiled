@@ -446,6 +446,14 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // in the call 927 (3724 bytes). Diagnostic: local_4d3867 renamed to sort before the sphere flags (retail's byte order) is the same
 // code; the byte homes do not follow names. Ours keeps skip_classification in BL (shared with enemy) and straight in its own
 // dword; retail keeps skip at [esp+0x12] beside blocking/aligned/straight, with actor_index and self_unit in EBX and EBP.
+// T97: Nested identity/visibility/selected-carrier object admissions, seven subsets, then all with distance:
+// eight at 926 reduced (control 926; full 920). NOT kept: byte-neutral scope graphs; original
+// guards, qualifiers, marker/query storage and complete body restored. Frame 0x2cb4 still exceeds 0x2cac.
+// T100: Existing object-header flag/property/model fields 926 fast, 920 plain, kept
+// with unchanged compiled code from the opening body. Completed marker-query result sets
+// 1/2/3/4/5/6/7: 926/926/926/926/926/926/924 fast (control 926). NOT kept: the
+// two-point conditional flag lead is below the gate and not exact; original scans
+// restored. Frame 0x2cb4 versus 0x2cac and actor/unit/priority homes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1303,6 +1311,9 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
 long function_1fa7f0(void);
+// MiniMax A (11-13): no new form, no lower score (400); the frame is still 0x114 against retail's 0x10c, the
+// source radius still sits at +0x30 against retail's +0x2c, the expanded radius at +0x44 against retail's
+// +0x34, and retail keeps the count in ebx where this build holds it in esi.
 // score 400 (was 400): earlier 418; the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // MiniMax E (11-10): no new form, no lower score (400); the frame is 0x114 here and 0x10c there, because the edge value and the other-side flag are kept in stack slots here and in ebx and bl there, which moves every other home by eight bytes.

@@ -4850,6 +4850,11 @@ bool function_158eb0()
 // after the iterator setup 9; `0 < rank / 2` 5; `return count != 1 ? result : false;` 47 (161 bytes); `return result &&
 // count != 1;` 63 (128 bytes). Re-measured: `++count` after the flag read 5; the flag through TEST_FIELD_BIT (the same
 // bool) 5; the iterator's index stored before its absolute index 7. Original body restored.
+// Round 113 (m3 lane 16, fast): a named player index with a long mode local `flag != 0` 37 (144 bytes, the mode straight to
+// EAX); the ternary on the global in the argument 38 (re-measured); the flag read before `++count` with the rank named 5; a
+// named player index with `flag ? 1 : 0` 5; the flag normalised at its read (`bool flag = g->flag1128 != 0`) and passed
+// directly 35. Diagnostics (removed): the iterator's data store written twice 5, the flag read twice 5 (copies removed before
+// allocation do not rotate the registers). Original body restored.
 // @retail 0x158f50
 bool function_158f50()
 {

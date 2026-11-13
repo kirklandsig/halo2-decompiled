@@ -16,6 +16,7 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
+// MiniMax H (11-13): no new form, no lower score (536).
 // MiniMax E (11-11, run 80): no new form, no lower score (536): the two perspective-row crosses through the existing
 // staged helper compile to the same code (536) and the special path's two crosses through it score 537; retail
 // computes the cross components in the k, j, i order and keeps the first cross's products alive for the second
@@ -1088,6 +1089,15 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // each alone, initial pair, next pair, all and all by library copy: 618/599/596/544/695/666/867/867.
 // NOT kept: input-record copies miss equality and regress; original input reads,
 // frame 0xa8/0xac, geometry, conversion helper and complete body restored.
+// m3 lane 14 r88 (fast with 0x42c50, 0x42b20, 0x43740, all MATCH; masked = aligned count with registers and stack offsets
+// masked, base aligned 149, masked 46): re-measured on the 233 base, the colour stored to the first vertex first (`outer->color
+// = vertex[0].color = ...`) 231 (a store order by score, not kept); the zero colour before the zero width 233 (same code); u and
+// v as one point2f texture coordinate (the source fields typed point2f) 582 (2596 B); case 4's else arm with the view computed
+// after the neighbour lookup 328 at retail's 2596 bytes (aligned 149 -> 134, masked 46 -> 35: case 4's per-arm position
+// pointer is then retail's; a statement order, match-only), that with the colour order 329 (masked 33); case 4's direction
+// ahead of the view in both arms 356 (2608 B); case 1/2's z row first 566 (2588 B). Left on the 328 form (masked 35): the
+// frame (retail's u step and V end in 8-byte temporary homes), case 0's load order, case 1/2's early x load, the side
+// length's fst, the colour store order and one tail reload. Body unchanged.
 // P436: Fixed existing point/current-state/next-state receivers, transition weight,
 // V origin, half-width, tint-object handle and side reciprocal: eight fast 233s,
 // control 233. NOT kept: frame 0xa8 versus 0xac and native scalar/spill homes

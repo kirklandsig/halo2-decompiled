@@ -1980,7 +1980,10 @@ void function_204450(long definition_index, long squad_index)
 bool function_1e11b0(long actor_index, bool active);
 
 #pragma inline_depth(0)
-// score 64 (was 64): frame 0xc agrees; the squad address stays in EBX instead of
+// score 64 (was 64): round 116 (m3 lane 9, fast with 0x203d70 and 0x201ea0): re-read only; the listing is the one
+// described below (the index stays in its stack home, the squad takes EBX and next EBP, the loop is rotated, and the
+// flag store and the return are byte-wide). No untried natural form is left under the function-level `inline_depth(0)`.
+// Earlier at 64 (was 64): frame 0xc agrees; the squad address stays in EBX instead of
 // retail's spilled ESI pointer and EBP handle. The common loop head and
 // full-width return mask still differ.
 // MiniMax D (11-11): no lower score (64): the form that reaches 13 needs the inline_depth pair inside the body, which is not
