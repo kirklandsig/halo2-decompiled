@@ -684,6 +684,9 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // through the root object, the range's zero is the model-NONE arm and the angle's sum is the float one
 // retail adds; the frame and its slots are retail's now (`and esp, -8`, 0xb4 bytes, the result byte at
 // [esp+0x13], the link iterator at [esp+0x40], the player index at [esp+0x14]).
+// MiniMax B (11-13): no new form, no lower score (165): the permuter cannot search this function on the reduced
+// image (248 differences there against the full image's 165), and the earlier 71-point form rested on match-only
+// forms, so the body stands as it is.
 // score 71 (was 165): the frame is retail's and the body is retail's length (895 bytes), but the cluster
 // bit table's base is read inside our loop where retail reads it once before the first query, the zoom
 // argument is narrowed to a short where retail passes it in a full register, the angle's x87 sequence

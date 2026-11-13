@@ -1677,6 +1677,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // and folded addresses add no rotation step); the header read as `valid = cache_file_header_read(index); if (valid)` 119
 // (914 bytes). Lane 6 r149's two missing steps (after the write's wait, before 0x213800) still have no natural source.
 // Body unchanged.
+// Round 175 (m3 lane 6): no new trial. Every form derivable from the listing (range-test spellings, close conditions,
+// write-block shapes, write/close/resize helpers, the flags object, size/count homes, names and types, the validity array
+// initializer, the cleanup flag) is listed above. Lane 4 r190's lead (the in-block write count with round 53's forms) is
+// measured at 7 by round 56 (m3 lane 1) and round 80 (m3 lane 12). Lane 2 r77's open lead (member objects with
+// constructors in the shared header type) changes a shared header and a global's initialization. Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

@@ -168,6 +168,9 @@ union s_185be7
 // and keeps NONE in ECX; the forms that would force the second read score worse (a NONE local for the first
 // test and the unit tests 739, a volatile re-read 1020), and the only spelling seen to reproduce the reload
 // exposes the global's address, which this lane may not do, so the body stands.
+// MiniMax A (11-13): no new form, no lower score (590); retail still reads the control global a second
+// time into ecx at the flag test where this build carries it in ebx from the entry block, and retail still
+// keeps none in ebx for its early tests.
 // score 590 (was 590; earlier 622, the lane's mixed form 516): 3773/3777 B, masked aligned about 157 (stack offsets and registers masked; 233 at 622). Round 56 (m3 lane 15, plain): PIN on
 // yaw/pitch 608, plus settings 781, plus limit clamps 827, plus turn rates 602, turn rates alone 619, yaw/pitch + turn rates + settings 589 (kept);
 // a ternary on named yaw/pitch values 608. Flags: all 22 through a set-flag macro 614 (3760 B, masked 140: retail's threaded tests), with long selected

@@ -231,7 +231,7 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // materialising that comparison as a 0/1 value; retail also borrows EBP around the header flag test and
 // loads the object table's data pointer again for the object read, where ours shares one address between
 // the two reads and keeps the result in EBP.
-// score 49 (was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
+// Earlier score line (49, was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
 // earlier first lines 49 (was 49), 49 (was 49); retail's bool result in BL, the EBP borrow around the
 // header test and the data reload remain; round 151's entry is the last one above the marker.
 // MiniMax A (11-11, run 58): no lower score (49) - taking the result from the entity's published index after
@@ -754,6 +754,14 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // entity's field also reset in the flagged arm 36 (an extra store, still not threaded). Without the join store, the
 // flagged arm's local as `object_index = entity->object_index = NONE` or read back from the reset field 75 each
 // (threaded early, header shared): the join with no store is threaded before CSE, the join with one never.
+// m3 lane 1 r98 (control 49): no new form run; every candidate checked against this
+// note is listed (the `== 0` flag test, `NONE != object_index`, the result cleared before the entity store, `value != 0`, an int
+// result, split declarations, getters, early returns, the clear in an else of one `&&` test). Two leads checked, neither applies:
+// the virtual v30 that 0xa5b40 calls before its detach is not the header flag test (the base returns false, the turret override
+// detaches), and src/ has no out-of-line predicate on the header's 0x10 flag to call (round 67's open lead). Retail recomputes the
+// whole lookup after the flag test (pool kept in EDX, data and index reloaded) with no store in between; only the match-only
+// forms above (join store with a local retest 36-38, a repeated entity store plus a word index 14) reproduce it.
+// 0 trials: no unlisted natural form (m3 lane 14 r84 above: "the other natural spellings are listed above").
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

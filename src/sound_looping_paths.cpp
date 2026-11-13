@@ -477,6 +477,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // forms) 866-1001; store orders and the 1.0f defaults (same code); array names, order and scope (same code: homes follow
 // lifetimes); helper routes for the pin/log/linear conversions and getters; grouping a count with its array would only move
 // homes (an aggregate made up to steer), so it is not a candidate.
+// MiniMax B (11-13): no new form, no lower score (866): retail keeps the entry zero in esi and the constant g_44a0b4 in xmm4 across the two scans, ours keeps the zero in ebp and the constant in xmm5; g_44a0b4 has to be a const global and its declaration is in src/sound_portal_paths.cpp, outside this file.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

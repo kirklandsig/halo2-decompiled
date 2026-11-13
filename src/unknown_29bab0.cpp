@@ -60,8 +60,6 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 {
 	return arg_0->k * arg_1->k + arg_0->j * arg_1->j + arg_1->i * arg_0->i;
 }
-// MiniMax A (11-12): no new form, no lower score (715): the fast check still reads 715 (648 when the reduced image links the same normalize2d differently), and the calls that show up as different in the listing are that helper reached at our own address; what is left is the early input and heading homes, the normalizer memory-product homes, the stack slot order and retail per-region re-reads of its arguments, so the 3482-byte body with the 0x88 frame stands.
-
 // score 715 (was 750): s1E walk against retail (3482 bytes, retail 3499; frame 0x88 agrees). Behaviour fixes: 0x29b2e0's
 // third argument is the +0x290 pointer in EBX (0x29c2a4-0x29c2bb; was &local_5), and 0x1f9760's arg_4 (last_out) is the
 // stack byte tested at 0x29c7e5 (was arg_5). Forms kept: direct input (no reference local), shared normalize3d for the
@@ -69,6 +67,7 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // (0x29c068 fsubr dword), the signed-root helper reading the scale from the definition at the product (0x29c595).
 // Tried: complement local for 1 - field_64 (771, no change), vector2f struct copies for local_15 / local_17 (717 / 723),
 // double root (775). Left: early input/heading and normalizer memory-product homes, stack slot order, per-region re-reads.
+// MiniMax A (11-12): no new form, no lower score (715): the fast check still reads 715 (648 when the reduced image links the same normalize2d differently), and the calls that show up as different in the listing are that helper reached at our own address; what is left is the early input and heading homes, the normalizer memory-product homes, the stack slot order and retail per-region re-reads of its arguments, so the 3482-byte body with the 0x88 frame stands.
 // MiniMax C (11-11): no new form, no lower score (715 in the full build; the fast check gives 648 or 715 depending on
 // how the reduced image links); the calls that show up as different in the listing are the
 // same normalize2d (retail 0x2b400) reached at our own address, so they are not real differences; what is left is
@@ -430,6 +429,13 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // existing magnitude2d(&local_26) 780 (3462 B). Re-measured on the 776 form: local_15 as a planar aggregate copy 781 (3456 B), with
 // local_17's too 787 (3448 B); frame still 0x8c. There the extra slot is local_14 at +0x20 beside local_3's byte (+0x1f),
 // where retail keeps local_14 at +0x7c and local_3 at +0x27. A no-LTCG compile of the file gives frame 0x90.
+// m3 lane 14 r89 (plain; control 715, aligned 583, register/stack-masked 174): the three `-local_17.j` uses written
+// `(0.0f - local_17.j)`, the decal plane flip's negation, 782 (3508 B, frame 0x90; aligned 539, masked 171); one
+// `real perpendicular = 0.0f - local_17.j;` after the heading's normalize for the three uses 774 (3488 B, masked 271;
+// unary minus and `0 - x` compile differently, so this is not the listed perp form); the side flip as `local_21 =
+// local_22 ? local_21 : !local_21;` 715 (same code), as `(dot > 0.0f) != !local_22` 765 (3499 B, masked 184), as
+// `local_21 ^= !local_22;` 725 (3480 B). Retail ends that arm with `test cl, cl; jne; test al, al; sete al; test al,
+// al; setne al`: the flipped value is converted to bool once more at the join, so its type there is not bool.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
