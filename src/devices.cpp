@@ -1223,6 +1223,7 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax H (11-12): no new form, no lower score (121): the initial velocity read into a local in the callee, passed through a local at the call site, both together and the formula reading the stored velocity back all measure 121, so the body stands.
 // MiniMax G (11-12): no new form, no lower score (121): nothing new this round; the initial velocity remains stack-passed
 // instead of xmm6, and the ramp-down residency and the return size differ.
 // MiniMax G (11-12): no new form, no lower score (121): the initial velocity remains stack-passed instead of xmm6,
@@ -1887,6 +1888,7 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
+// MiniMax H (11-12): no new form, no lower score (250): the acceleration and the speed each written as one product added into a running value measure 359, and the same form without the volatile measures 382, so the body stands.
 // MiniMax G (11-12): no new form, no lower score (250): nothing new this round; frame 0x20 and the state test are retail's; the
 // index and index * 12 in edi/esi and the remaining homes differ.
 // MiniMax G (11-12): no new form, no lower score (250): frame 0x20 and the state test are retail's; the index and
