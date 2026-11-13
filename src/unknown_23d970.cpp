@@ -944,6 +944,10 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // timer clamps through the SDK's `max` 45 (same code); the controller index named once for its test and the slot 337
 // (1263 bytes); `advance = delay > observer->delay + 1.f;` assigned directly 74 (1270 bytes); `observer->delay == 0.f` 46.
 // Body unchanged.
+// Round 175 (m3 lane 6): no new trial. The else arm's forward stores through ECX are the listed forward-pointer form
+// (43, one-use pointer); the existing direction_from_angles there is listed (156/224), as is 0x23d790's helper shape
+// (221/222). The first product's colours sit in cross3f (shared include/vector_products.h) and function_1f087b
+// (src/unknown_1f03e0.cpp, on this round's avoid list). Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
