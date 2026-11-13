@@ -735,101 +735,18 @@ bool function_b6320(s_upload_ab *upload, byte *buffer, long maximum, long *writt
 
 short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short length);
 
-// score 10 (was 10): retail lays the shared false exit out after the would-block test and the
-// restore exit last; ours puts the restore exit first. Tried: `return true` in the would-block arm 44;
-// direct returns everywhere 72 (retail's block order, but the results fold to constants); the
-// plain failure as `return false` behind `if (sent != -2)` 20; looping while the iteration
-// succeeded with the completion guarded after the loop 44; success arm ending in `continue` 10;
-// `if (sent != -2) return result;` then the restore and the goto 25 (retail's order, folded false);
-// success arm first in an if/else 10; position declared before the loop 10. Retail's shared
-// return (BL, not folded) follows the would-block test, so it comes first in its source order.
-// Round 90: accepted-send else/continue with the restore after it 10; the nonnegative-guard
-// equivalent 10; result from the sentinel before the conditional restore 74; result assigned
-// before the restore 10; both negative paths returning result 37; only the blocked path returning
-// result 44; result from a second sentinel test after the restore 75; success-first direct negative
-// return 30; error/sentinel else-if chain 50. Original body restored.
-// Round 118 (lane 5, fast): `if (sent != -2) goto return_exit;` then the restore and a second goto 10
-// (same code); the would-block arm ending in its own `goto return_exit` 10 (same code); the count as
-// `written ? send : 0` 44; `result = true` after the partial-position update 30; `sent = 0` then
-// `if (written)` 47. Every same-CFG spelling keeps the restore exit ahead of the shared false exit.
-// Round 134 (lane 5, fast; a one-file LTCG harness of this file plus its two callees' files gives 10 here):
-// the shared return as a label inside `if (sent != -2)` with the would-block arm `return true` 72 (retail's
-// block order, but every result folds to a constant); the same label with every exit jumping to it 10;
-// a completion flag set in an `if` and tested after the loop 10 (VC threads it away); the flag assigned from
-// the comparison 41 (sete); the restore after the loop on a `sent` re-test 10; break exits with the completion
-// re-tested after the loop 47; an empty `else` beside the would-block arm 10; the would-block arm returning
-// true with the other exits sharing the label 44 (208 bytes: success shares BL and falls into that return);
-// `while (result && ...)` with the completion guarded after the loop 44. Retail = four-way join (BL for the
-// false exits, CL for success, constant 1 for the restore) with the restore's copy laid out last; VC keeps the
-// function's single return block last whatever the source order.
-// Round 41 (lane 2, fast): the sentinel test inverted with the restore in the else arm: `result = false` in the
-// then arm 74 (226 bytes); gotos in both arms 10; `return result` / `return true` 20 (retail's block order, but the false exit
-// folds to `xor al, al` and BL takes the true result); `return false` then the restore and the goto 25; a `would_block` local
-// assigned to the result 74; the result from the sentinel, tested, then the restore 74.
-// Round 127 (lane 7, fast): `sent = -1` threaded from the failed call 10, with the `!= -2` test and two gotos 10; long
-// sent 33; `sent == -2` ahead of `sent < 0` 38; a named bool for the prepare call 10; `sent = 0` then `if (written)` 47.
-// Compile-only: direct returns fold with the result written through an inlined reference or pointer, a reference local,
-// an address-taken local, or as char/byte/long; the single-join form puts the false exit's compensation block after the restore.
-// Round 102: const position 10; the send count declared at the iteration top 10; position/written declarations
-// swapped 10; a direct completion return 67; direct builder and ordinary-failure returns 64; direct builder and
-// would-block returns 28; all three failure paths direct 64; an inline method declaration 10. Original body restored.
-// Round 215 (lane 3, fast): the would-block arm as a goto to a block after the shared return, `return true` 44 (208 bytes), ending
-// `result = true; return result` 44 (208), with `if (sent != -2) goto` first 44 (208), and falling into a single shared return 10; a
-// one-case switch on sent 10; `if (sent != -2)` with the restore in the else arm and an empty do-while 10, plus a goto 10, a dead
-// `written = 0` 10, a dead `sent = 0` 10, `__assume(!result)` 10, `result = result != false` 74 (226), `result = sent == -2` 74 (226);
-// the shared return as a label inside `if (sent != -2)` with the restore's goto to it 67, with an else 67, with the restore ahead of the
-// label 67 (the false result in a stack byte); that label with `return true` 72, plus `result = false` ahead of the test 72 (false folds,
-// EBP dropped). Every form that puts the false exit between the sentinel test and the restore adds a third false copy or folds or
-// spills the false result. Original body restored.
-// Round 172 (m3 lane 4, fast): the would-block arm setting the result before the position 10; the buffer declared
-// before the result 10; `sent <= -1` 23; `-2 == sent` 10; `result = sent >= 0` tested in place of `sent < 0` 74;
-// the send count passed without its `(short)` cast 10.
-// Round 156 (m3 lane 6, fast): `break` exits, `return true` in the sentinel arm and the completion under `if (result)`
-// 44 (208 bytes); `while (true)` with the completion stores and `break` inside 113 (271 bytes); success nested in
-// `if (b6320(...))` with `if (!result) return result;` 64; one shared false return (goto) with direct other returns 64
-// (the false exit folds); the success nested under the b6320 test with an `else goto` 10 (same code). CL-only screens
-// give today's code for the restore placed after the shared return, `bool result = false` initialised and `while (!done)`; a
-// one-chunk inline step returning a status is longer. Probe: with the sentinel miss as the only false exit the return
-// block still carries the BL copy (conditional false edges sink their copy into it), so the restore copy can only be
-// laid out last if the false exits reach the return through a block of their own.
-// Round 174 (m3 lane 4; one-file LTCG harness of this file with the 0xb6320 and 0xb5000 files, exact at 10): a `done` flag
-// with `do ... while (result && !done)` and the completion inside the success arm 10 (fast 10, the same code), as a head-
-// tested `while` 74 (232 bytes), with the would-block arm `return true` 44, or `result = true; return result` 44; success
-// nested under the 0xb6320 test with `else if (sent == -2)` and `if (!result) break;` plus a guarded completion 44 (fast 44),
-// with `if (!result) return result;` 64; the would-block `return true` with the success return written after the stores 64,
-// with every false exit `return result` 64, with the success result set after the partial update 50; `if (sent != -2) goto`
-// with an `else` around the restore 10; the restore as a labelled block after the shared return (diagnostic) 10. Layout
-// finding: a direct `return true` in the would-block arm puts the restore last (retail's place) but the success result then
-// shares BL with the false one (the loop test loses EBX); a real statement in the not-would-block arm (diagnostic redundant
-// `result = false`) puts that arm right after the sentinel test (retail's place for the BL exit) but folds it to `xor al, al`.
-// Round 100 (m3 lane 9, fast; goto-free forms in the style of the matched receive above): a `done` flag with
-// `do ... while (!done)`, the completion inside the success arm and `else if (sent != -2) done = true; else`
-// the restore 10; the same with the sentinel arm first 10; with `while (!done && position != total)` and the
-// completion under `if (!done)` after the loop 10; with the 0xb6320 success arm first 10; `while (true)` with
-// nested ifs, `continue` while short of the total and one return at the loop's end 10. All the same code.
-// Round 156 (m3 lane 8, fast): on the would-block `return true` form (44, 208 bytes, re-measured: the success value
-// then shares BL and its exit cross-jumps with the false one) the success result as `sent >= 0` 48, the send count as
-// a ternary 66 (204 bytes); the would-block test with its `return true` ahead of `if (sent < 0) goto` 57 (208 bytes);
-// no success assignment with the completion returning true before the label 64; `short sent` declared at function
-// scope 10; `long written` declared at function scope 10 (both the same code).
-// Round 93 (m3 lane 11): a compile-only copy of this file (CL /c /O2 /Ob1 /Gr /FAs, about 1 s a form) gives our exit
-// order exactly; 34 forms screened there, none with retail's: the restore after the shared return (a `goto` to it ending in
-// `return true` or in `result = true; goto return_exit`), the shared return as a label inside `if (sent != -2)` with every
-// exit (success too) jumping to it, endless-loop forms with every exit a `break` to one `return result`, the sentinel test
-// after the loop behind `goto negative` or a `break` and a re-test, a two-case switch, the restore calling a function,
-// `sent + 2 == 0`, `sent < -1` then `sent < 0`. VC chains the single-predecessor restore block as the compare's fallthrough
-// wherever it sits in the source, so retail's order seems to need that block to have a second predecessor at layout time.
-// Fast: the success nested under the 0xb6320 test with `else if (sent == -2)` returning true 44 (208 bytes); `for (;;)`
-// with `continue` and the completion then `break` 10; the sentinel test after the loop 10; the inner label 10; the
-// two-case switch 10.
+/* sends the upload a buffer at a time until everything is out (then waits for the response) or the
+   endpoint would block. A would-block leaves the loop with the result still false: the test after the
+   loop tells it from completion and rewinds the position past the buffer that was not sent. */
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {
     bool result;
     byte buffer[0x518];
+    long position;
     do
     {
-        long position = upload_position;
+        position = upload_position;
         long written = 0;
         result = false;
         if (!function_b6320((s_upload_ab *)((byte *)this + 0x30), buffer, sizeof(buffer), &written))
@@ -841,19 +758,24 @@ bool s_http_connection_ab::send()
             sent = function_b5000(endpoint, buffer, (short)written);
         if (sent < 0)
         {
-            if (sent == -2)
-            {
-                upload_position = position;
-                result = true;
-            }
-            goto return_exit;
+            if (sent != -2)
+                goto return_exit;
+            break;
         }
         result = true;
         if (sent < written)
             upload_position = position + sent;
     } while (upload_position != upload_file_length + upload_ending_length + upload_part_length + upload_header_length);
-    response_length = 0;
-    state = 3;
+    if (result)
+    {
+        response_length = 0;
+        state = 3;
+    }
+    else
+    {
+        upload_position = position;
+        result = true;
+    }
 
 return_exit:
     return result;

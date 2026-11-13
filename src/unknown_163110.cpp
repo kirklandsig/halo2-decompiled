@@ -616,8 +616,8 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
-// MiniMax G (11-12): no new form, no lower score (115): retail loads view->vector_e4.i into xmm4 before the forward copy, ours loads the copied normal's i into xmm4 and reads the coefficient late into xmm3, swapping the XMM3 and XMM4 roles; every term, grouping and operand order of the first plane's d still leaves the coefficient load after the copy.
 // score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// MiniMax G (11-12): no new form, no lower score (115): retail loads view->vector_e4.i into xmm4 before the forward copy, ours loads the copied normal's i into xmm4 and reads the coefficient late into xmm3, swapping the XMM3 and XMM4 roles; every term, grouping and operand order of the first plane's d still leaves the coefficient load after the copy.
 // M3 lane 1 r96 (fast, the file's matched functions unchanged): the near clamp's comparison flipped (`near_sum < k ? k :
 // near_sum`) 115; a `vector3f const *const` forward pointer 115; the plane pointer declared outside the pass loop 115; the
 // far normal copied from `*forward` and negated in place 428 (1867 B); the near clamp on the sum written out at both uses
@@ -963,6 +963,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // own copy) 452 (1819 B: the copy folds away); each plane's normal negated first and d taken as e4 (b4) times the negated
 // normal with no separate d negation (the same values) 479 (1803 B); that for plane 0 only 276, for plane 1 only 258 (first
 // difference +0x60 each); with d through dot3f 479 (1803 B). Body unchanged.
+// M3 lane 5 r177 (fast, 0x1648d0 and 0x320b0 matched each time): the far-plane mask as `use_plane1 = use_plane1 &&
+// (flag84 || flag85)` 392 (first +0x6); `culled = false` after the per-point loop 238; the clip denominator and distance
+// through a named `vector3f const *normal` 247 (1867 B); the far plane's negated vector as an aggregate initializer 115
+// (same code); plane 0's near distance subtracted before the d negation (`d -= near_distance`, then `d = -d`) 151 (first
+// +0x60). Re-measured: `out = &cursor[k]` with the cursor stepped after the per-point loop 196.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

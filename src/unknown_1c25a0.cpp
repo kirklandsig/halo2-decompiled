@@ -1243,6 +1243,9 @@ struct s_1c4040
 // scans 12; the effect read through the globals at its test and the call 106; the island index a plain for-scoped local
 // in place of field_10 35; the mode test inverted with its arms swapped 73 (541 bytes); the fixed island's entity count
 // read once before its loop 185 (555 bytes). The convention stays the only cause (BLOCKED-BY 0xb7b40, as above).
+// m3 lane 10 r99 (fast with 0x1c51c0 1 and 0x1c3f30 matched): `if (object_index == NONE) continue;` in both scans 8; the
+// success store in both arms of the mode test 8; the entity priority read at each use (no priority local) 170 (547 B); the
+// island loop as a `while` with its increment at the end 8; the entity typed as the priority view (cast back for the call) 8.
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {

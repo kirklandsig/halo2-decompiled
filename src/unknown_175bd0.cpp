@@ -2144,6 +2144,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // queries in the call's arguments 187 (568 B). Round 117's volatile-parameter diagnostics stand as the cause: retail splits
 // the system's live range (ESI to the 0x1751d0 call, then its home), which no non-volatile form here reproduces.
 // MiniMax A (11-12): no new form, no lower score (128); the gap starts in the prologue (frame 0x40 against retail's 0x44) and in the order of the 0x175180/0x1751d0/0x137bd0 calls, so it needs a body rewrite rather than a local spelling.
+// M3 lane 3 r238 (fast with 0x177040/0x176f60/0x178bc0/0x178eb0/0x179020): the node flag for 0x175270 in a named bool 135 at
+// 564 B (frame 0x44 as retail, register-masked aligned 41 -> 31, but the bool takes the effect argument's home and the
+// location index the frame slot, retail the reverse); round 184's lead re-measured 166 fast (552 B); the lead with that
+// named bool 172 (560 B, masked 21). Body unchanged at 128.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -2577,6 +2581,9 @@ event_done:
 // lookup (t), the first test and 0xbadc0's argument through it (f), then a, b, d: t alone 84 [84]; t+d 205; t+b 181; t+b+d 170;
 // t+a 177; t+a+d 166; t+a+b 177; t+a+b+d 166; f alone 203 (581 bytes); f+d 212; f+b 203; f+b+d 205; f+a 204; f+a+d 263; f+a+b 199;
 // f+a+b+d 206; with t too the f rows repeat (203/212/203/205/204/263/199/206). None below 63; body unchanged.
+// MiniMax H (11-13): no new form, no lower score (63): the object index is still cached across 0xbadc0 where retail
+// reloads it from the effect, and the head's load is still folded into the datum address where retail forms the pointer
+// first; both callees live in another file.
 // MiniMax C (11-09): score 63 (was 63): the object index stays cached across 0xbadc0, where retail
 // reloads it, and the head's load is folded into the datum address where retail forms the pointer
 // first; 0xbadc0 and 0xbaf80 live in another file, so the reload cannot be forced here.
@@ -3010,6 +3017,12 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // (contributor, unmatched at 429), and the sound arms still need the held 0x189060 order (aligned 25, register-masked 14).
 // M3 lane 16 r112: no trial (first difference still 0x17e670's register arguments, contributor). The held 0x189060
 // order's saved patch (lane 7 r117) no longer applies to current main and needs regenerating once its owner agrees.
+// M3 lane 10 r100 (fast, with every 0x189060 caller): the held change re-measured on current main and its patch
+// regenerated (build/r100/held-0x17a8a0.patch; still HELD, it edits the call line in 0xbf600): 0x189060 as (object, value,
+// position, direction, scale, tag) with the detached record filled position, compression, velocity, location 2; that
+// order alone 29; the record order alone 40. 0x189060, 0x107980, 0x166cd1, 0xf6670, 0x105dd0 and 0x1039a0 match in all
+// three, 0xceee0 (97) and 0xbf600 (50) are unchanged. The first difference is still the decal call's two register
+// arguments, BLOCKED-BY 0x17e670 (contributor).
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
@@ -3224,7 +3237,7 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // score 93 (was 93): unchanged this round: our frame is 0x4c against retail's 0x54 and the particle
 // system takes EDI where retail keeps it in ESI, so the homes of the two pointers and of the definition
 // sit at other offsets than retail's.
-// score 93 (was 93): frame 0x4c versus 0x54, the particle system in EDI (retail ESI) and the location mode cached
+// Earlier at 93 (was 93): frame 0x4c versus 0x54, the particle system in EDI (retail ESI) and the location mode cached
 // where retail spills the definition and reads the mode at each call.
 // MiniMax E (11-11): no new form, no lower score (93): the frame is still 0x4c against retail's 0x54,
 // and the per-call mode and the particle system still take the opposite registers.
@@ -3520,6 +3533,8 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // mode cached where retail spills the definition (the per-call read makes both indices register arguments).
 // Permuter on the 87 form (fast, anneal, 600 s, 68 tries; 87 in the full image too): best 86 only with volatile reads of
 // the mode and colour A and the tint and colour B swapped in the colour call (wrong values); not used.
+// M3 lane 3 r238 (fast with 0x176f60/0x178bc0/0x178c80/0x178eb0/0x179020): re-measured the mode read per call 108 (0x176f60
+// 25: both indices register arguments, the system in EDI, the definition in EBX); no untried natural form found.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

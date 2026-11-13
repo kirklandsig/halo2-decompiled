@@ -175,6 +175,9 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // each use as 0x1ea770 does 110 (427 bytes); the setter guard nested under the maximum compare 106 (same code); `kind`
 // as a short 111 (428 bytes); the row as the header's player record (`&statistics->players[index]`, fields at +0x12,
 // +0x14, +0x18) 109 (428 bytes).
+// MiniMax G (11-13): no new form, no lower score (106): the reload of the enable flag after the store
+// through `statistics` needs the aliasing that src/unknown_1967d0.cpp gets by taking &g_510cb0, so it
+// stays blocked; retail's old maximum in ECX and its 16-bit counter idiom are still unmatched here.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -241,12 +244,12 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
+// score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // MiniMax H (11-12): no new form, no lower score (353): the history entries read through a named record
 // pointer (player_index, time and amount off one pointer) compile to the same bytes as the indexed form, and
 // the permuter refuses this function because the reduced image and the full image disagree (446 against 350).
-// The score line below read 344 from a reduced build; the full build gives 353, which is the number here.
+// The score line above read 344 from a reduced build; the full build gives 353, which is the number here.
 // MiniMax H (11-11): the consideration flag is now a true default cleared by the test, which is retail's shape.
-// score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // Round 170 (m3 lane 5, fast with the file's functions and 0xd9640; base aligned 132, masked 35): slot references counted in
 // both listings: retail killer 8, victim_team 8, damage_code 7 (killer stays in its home and is reloaded into EDX/EDI around the
 // fallback, the code is read once into ESI for both pushes); ours victim_team 8, damage_code 8, killer 6 (killer in EBP through
@@ -534,6 +537,12 @@ struct s_object_damage_view
 // 353 [73]; that arm order alone 363 (1532 B); the arm order, team byte and a `&history[selected]` record pointer used three times
 // 455 (1583 B). The three slots stay rotated (killer still kept in EBP across its block). Body restored at 353.
 // MiniMax H (11-11), NOT kept (coordinator 11-11): 353 -> 344 only from consider_team set true and cleared by two nested tests in place of its one expression (a bool set by tests: match-only); body at 353.
+// m3 lane 1 r98 (fast with the file's functions and 0xd9640; control 353): `best = object->history[selected].amount;` in the
+// selection (to take one amount read off the walk's anchor), `else if (!consider_team) continue;` in the selection loop, and the
+// assist loop's skip test split into three `continue` tests: 353 each, identical code (the selected index is copy-propagated
+// before the walk is anchored). No other unlisted single form found; the cause stays the allocation one above (killer kept in
+// EBP across the fallback where retail keeps its home, the three rotated slots, the +4 walk base). 0 counted trials: no
+// unlisted code-changing natural form (round 163/lane 14 r79/lane 12 r114 above cover the remaining spellings).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

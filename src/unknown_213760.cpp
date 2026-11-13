@@ -1666,6 +1666,17 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // font_loading.cpp writes it) 33 (same code). Body unchanged. Lead for the next round: the in-block write count combined
 // with Round 53's three forms; even then the write's handle-first setup (flags zero in ECX) is still left.
 // MiniMax A (11-12): no new form, no lower score (33); the write's handle-first setup (the flags zero in ECX) and the query/count homes still differ, and the 6 form needs the goto and the set-in-test validity, which are match-only.
+// M3 lane 2 r77 (fast with 0x2138f0, 0x213800, 0x2149c0): re-measured: the count renamed `written` 33 (same code, as lane 4
+// r190); the count in the write block with the success set by its own test and `else if (cache_file_header_read(index))`
+// with `valid = true` 7 (left: the write's handle loaded after the flags zero, the checksum compare in EDX); that plus an
+// `s_file_handle` write local 114 (917 bytes: the write as retail, the close's `mov ecx, eax` copy dropped, the checksum in
+// ECX), the local declared at the loop body's top 114 (same code). New on that write-local form, none moves a register:
+// the close test through `file->handle` 114, `bool written = resized;` cleared when the count is short 114, the path and
+// stored checksum read through `file->unknown04` 114/114, the header-string helper without its byte pointer, with four
+// named string pointers or through a one-store string helper 114/114/114 (also 7/7/7 on the 7 form: inlined parameters
+// and folded addresses add no rotation step); the header read as `valid = cache_file_header_read(index); if (valid)` 119
+// (914 bytes). Lane 6 r149's two missing steps (after the write's wait, before 0x213800) still have no natural source.
+// Body unchanged.
 // Round 175 (m3 lane 6): no new trial. Every form derivable from the listing (range-test spellings, close conditions,
 // write-block shapes, write/close/resize helpers, the flags object, size/count homes, names and types, the validity array
 // initializer, the cleanup flag) is listed above. Lane 4 r190's lead (the in-block write count with round 53's forms) is

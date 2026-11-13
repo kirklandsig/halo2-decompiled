@@ -944,6 +944,10 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // timer clamps through the SDK's `max` 45 (same code); the controller index named once for its test and the slot 337
 // (1263 bytes); `advance = delay > observer->delay + 1.f;` assigned directly 74 (1270 bytes); `observer->delay == 0.f` 46.
 // Body unchanged.
+// M3 lane 2 r77 (`--fast 0x23de50 0x1f0870`, control 45): no unlisted natural form found for what is left (the first
+// product's colours, the second product's schedule and the else arm's stores through the forward pointer): product rows,
+// staging, helper choices, pointers, copies, declaration orders and the existing angle helpers (by value, and the pointer
+// form 0x23d790 builds its forward with) are all listed above. Body unchanged.
 // Round 175 (m3 lane 6): no new trial. The else arm's forward stores through ECX are the listed forward-pointer form
 // (43, one-use pointer); the existing direction_from_angles there is listed (156/224), as is 0x23d790's helper shape
 // (221/222). The first product's colours sit in cross3f (shared include/vector_products.h) and function_1f087b

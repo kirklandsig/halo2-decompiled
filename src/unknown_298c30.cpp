@@ -98,7 +98,7 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // difference vector stays at +0x3c/+0x40, and the sine argument is negated in double, which is retail's `fld` of the wrapped
 // angle followed by `fchs`. The frame is now 0x64 as retail's and the score falls to 382. Still differs: the entry schedule,
 // the normalized XY/magnitude homes and 40 bytes of length.
-// score 382 (was 382; 393, 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
+// score 382 (was 382; 393, 408, and 395 before the two retail-evidenced fixes of b3C below): first +0x57 uses a different SIMD carrier; inner cursor/wrapped-angle homes and candidate width differ,
 // frame 0x64 as retail's, 1692 bytes against retail's 1732.
 // Earlier 393 (was 393; 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
 // frame 0x60 against retail's 0x64.
@@ -403,6 +403,13 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // its own statement, 412 (0x29a190 45: the double local aligns the frame).
 // MiniMax A (11-12): no new form, no lower score (382): retail loads its entries in another order and keeps the normalized
 // point and the magnitude in homes of their own, while ours still shares them with the entry loads.
+// P435: immutable projection, endpoint distance, opening/direction/candidate/wrapped
+// angles and facing decision, plus direct complete rotated-point initialization, all 382.
+// NOT kept: no gain. Entry and first-normalization homes agree; inner cursor and wrapped
+// angle exchange +0x14/+0x18. Caller and scoring sibling stay matched in all eight trials.
+// T97: Complete upper-turn wrap truth in bool/byte/char/signed-char/short/word/int/long:
+// eight at 382. NOT kept: byte-neutral decision lifetimes; original array wrap,
+// shared producers, all call tuples and whole body restored. Unity/XY/wrapped-angle homes remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -890,6 +897,11 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // 121 the positional count stays high: registers differ in every block from the XMM5 radius hoist at entry onward.
 // MiniMax A (11-12): no new form, no lower score (569): retail loads the radius parameter at its first use while ours hoists it
 // into xmm5 at the entry, and the two side traces stay swapped against retail's +0xd0 and +0xf4 homes.
+// P423: Offset scalar reference 732; rotation scalar-pair references 569;
+// height reference 569; direction input references 569; direction output reference 569;
+// distance input references 569; all offset/rotation scalar references 732;
+// direction/distance references together 569. NOT kept: no gain or byte match;
+// original complete body and all existing helpers restored.
 // T95: Explicit signed-radius producers at first/pivot/both offset calls 886/874/915;
 // shared signed radius 939; magnitude-preserving first/pivot parameter scales 897/882;
 // repeated negative-radius producer 875; center-scale-only join 840.
@@ -901,6 +913,13 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // 569 (same code); the stored angle un-negated with the loop's `if (!field_0) local_28 *= -1.0f;` then a plain store 628;
 // the annulus test as a positive `if` around the rest of the obstacle body 569 (same code). Diagnostic: the first two
 // trace results' names exchanged 569 (homes unmoved: +0xd0/+0xf4 stay swapped against retail).
+// P433: Existing named forward/reverse/center trace records, seven subsets,
+// then all with center at its loop producer: 569 each, 3333/3372 bytes.
+// NOT kept: radius retention and pivot/trace homes unchanged; original body restored.
+// T99: Actual center-trace outcome owned by the operation result, clear/blocked
+// bool/byte/short/long: 780/783/781/785/792/792/783/798.
+// NOT kept: no equality or native radius/trace-home recovery; original independent
+// center result, complete sweep, every helper and all geometry restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

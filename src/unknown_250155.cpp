@@ -1552,6 +1552,10 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // (422 B); a datum pointer for the three row stores 128 [71]; `continue` on a failed allocation 83 (same code); both scans
 // skipping with `continue` 83 (same code); branch one's maximum as `item_count = count; if (maximum >= count) item_count =
 // maximum;` 85 [58].
+// MiniMax G (11-13): no new form, no lower score (83): every `memset` spelling of the tail fill
+// expands to `rep stosd` plus a byte tail here (164) while the index loop gives retail's clean
+// `rep stosd` but loses the allocation (172); the item_count and index_count homes stay swapped
+// whatever the declaration order is, and initialising item_count at the top gives 121.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2610,10 +2614,10 @@ static __forceinline void lobby_slot_widget_indices(short mode, long slot, short
 		*bitmap_b = slot + 0x15;
 		break;
 	default:
-		*text_a = NONE;
-		*text_b = NONE;
-		*bitmap_a = NONE;
 		*bitmap_b = NONE;
+		*text_a = NONE;
+		*bitmap_a = NONE;
+		*text_b = NONE;
 		break;
 	}
 }
@@ -2636,7 +2640,7 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // MiniMax B (11-12): no new form, no lower score (95): the spill slots keep the next stack slot
 // round from retail's, the voice query still keeps the entry's address where retail reloads the
 // player, and the last loop still keeps the screen in ebx where retail gives ebx to bitmap_a.
-// score 95 (was 95): the locals live in the other stack slots (shown count, the first
+// score 87 (was 95): the locals live in the other stack slots (shown count, the first
 // loop's player, the second loop's four widget indices), retail reloads players[i] after the
 // voice-state query, and the last loop keeps the screen in edi and bitmap_a in ebx where
 // ours keeps the screen in ebx and false in edi.
@@ -2827,6 +2831,9 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // with no default arm 165 (921 bytes); the bitmap stores shared after the switch, the default arm returning 196 (937 bytes);
 // the second loop's team test as one condition (team field read at each use) 95; the voice state as a long 95; the second
 // loop's search result as an initialised local 95 (the last three the same code). BLOCKED-BY 0x53b40 (the reload).
+// MiniMax G (11-13): no new form, no lower score (95): the reload of the player after the voice
+// query still needs a store through a pointer in the 0x53b40 chain, which lives in
+// src/network_voice.cpp and is not this round's file.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

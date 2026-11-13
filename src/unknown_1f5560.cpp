@@ -1099,6 +1099,12 @@ real normalize2d(point2f *v);
 // request and hands the validity flag back in bl on the short exit, ours keeps the result only on the stack and
 // folds that exit to `xor al, al`; the permuter's 128 tries bottom out at 124 differing instructions (133 by the
 // check's metric) and a component-wise request copy reaches retail's 935 bytes but scores 164, so neither is kept.
+// P442: Deferred complete initial/retry truth join at movement admission, original success-only
+// output publication, initial-first/retry-first/bitwise/conditional with bool then byte retry:
+// 195/194/163/199/195/194/166/199. NOT kept: no exact DL/return repair; original result graph and full body restored.
+// MiniMax G (11-13): no new form, no lower score (135): retail's short exit hands the validity flag
+// back in BL (`mov al, bl`) and ours folds that exit to `xor al, al`, because MSVC folds a returned
+// bool that was tested against zero; the trajectory result stays on the stack instead of in DL.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1334,6 +1340,11 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
+// MiniMax A (11-13): no new form, no lower score (137; the fast check reads 117): the actor address as the
+// folded sum of the pool pointer and the masked index compiles to the same bytes; the actor and object
+// pointers still take the other way round (ours actor in ESI and object in EDI, retail actor in EDI and
+// object in ESI), and retail still scales the actor index into EDX before it loads the pool where ours
+// loads the pool first and scales the index into ESI.
 // MiniMax G (11-12): no new form, no lower score (137; the fast check reads 117): the actor offset as a named local compiles to the same bytes as the folded expression.
 // MiniMax D (11-10): no new form, no lower score (137); retail scales the actor index into EDX before the
 // register saves and keeps the actor pointer in EDI with the object in ESI, ours hoists the global loads and
@@ -1684,6 +1695,12 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax A (11-13): no new form, no lower score (238): retail's and our prologue agree byte for byte
+// (the actor index in ECX, the object index in EAX, the target in EDX and the type in the first stack
+// slot), so the argument order is not what differs; what differs is the vector arithmetic's allocation
+// (retail keeps the zero in xmm1 and the direction's components at +0x1c and +0x20, ours keeps the zero
+// in xmm2 and the components at +0x28 and +0x2c), and retail still materialises the side flag only at the
+// comparison where this build stores it at the top and keeps it live from there.
 // MiniMax G (11-12): no new form, no lower score (238): the side vector written as two scalars instead of a point2f compiles to the same bytes.
 // MiniMax D (11-10): no new form, no lower score (238); our frame puts the two saved values at
 // [esp + 0x28] and [esp + 0x2c] where retail has [esp + 0x1c] and [esp + 0x20], and retail materialises

@@ -86,7 +86,15 @@ struct s_9cca0
     byte field_7e[10];
 };
 
-// score 9 (was 9): the two vector copies and the global's test are ordered
+// score 0 (was 9): matches retail (m3 lane 4 round 193). The record is declared inside the `if` block (its scope
+// starts after the 0x122c10 call, so the flag test moves above the late stores) and the tag is stored before the
+// second vector copy: the tag then holds EAX across that copy, so the second vector goes through EDX and ECX only
+// and the first vector's k is stored last, as in retail. The marker before the tag gives retail's tail. Location,
+// first vector, marker, tag, second vector (kept) matches, and so does the marker moved to the front; found by
+// building all 720 orders of the six stores in both scopes in a two-file link harness with an external 0x184440
+// (0.5 s a variant): at function scope the best order is the old body (9), tag-then-marker ahead of the second
+// vector is 2 off. The escape through 0x184440 was not the cause, so the BLOCKED-BY below no longer holds.
+// Earlier (at 9): the two vector copies and the global's test are ordered
 // differently; retail sinks the k component's store past the global's test and
 // loads the tag after it, ours stores the tag before the test. The test can only
 // move above the event's stores when LTCG knows the event's address does not
@@ -158,18 +166,18 @@ struct s_9cca0
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {
-    s_9cca0 local_1;
     byte const *local_0 = (byte const *)arg_3;
     if (function_122c10(0x6a707421, *(long const *)(local_0 + 0x30)))
     {
+        s_9cca0 local_1;
         memset((byte *)&local_1 + 4, 0, 0x78);
         memset(local_1.field_7e, 0, sizeof(local_1.field_7e));
         local_1.field_1c = *(long const *)(local_0 + 0xc);
         local_1.field_20 = *(long const *)(local_0 + 0x10);
         local_1.field_30 = *(vector3f const *)(local_0 + 0x24);
-        local_1.field_3c = *(vector3f const *)(local_0 + 0x18);
-        local_1.field_0 = *(long const *)(local_0 + 0x30);
         local_1.field_7c = -1;
+        local_1.field_0 = *(long const *)(local_0 + 0x30);
+        local_1.field_3c = *(vector3f const *)(local_0 + 0x18);
         if (*g_4ed280 && local_1.field_0 != NONE)
             function_184440(*(long const *)local_0, *(long const *)(local_0 + 4), (s_18444a const *)&local_1, *(long const *)(local_0 + 8));
     }

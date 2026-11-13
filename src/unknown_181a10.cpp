@@ -532,6 +532,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
+// score 238 (was 239; 238 in round 95's baseline, m3 lane 11 note at the end): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// MiniMax A (11-13): no new form, no lower score (239); the frame is still 0x40 against retail's 0x44, the second
+// node's home is still +0x14 against retail's +0x20, retail still reads the shape's data word three times where
+// ours reads it once, and the plane index still leaves the frame as a short.
 // score 239 (was 239): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // the plane); classifier clamp form, origin and hit copies, transformed-plane and output homes remain.
 // MiniMax H (11-11): no new form, no lower score (239); the frame is still 0x40 against retail's 0x44, retail still re-reads
@@ -846,6 +850,17 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // (its file is /Ob1) with the top scan as a call to it 368 (1210 B; still called, and 0x1829b0 MATCH -> 34); both plane
 // side tests' arms swapped (`!(d > 0.0f)` clears valid) 315, the record arm's alone 248; `contact->normal.k > scale &&
 // valid` 284 (1243 B); the final block as an early return 239 (2 lines differ).
+// M3 lane 11 r95 (fast with the file's functions; base 238, masked aligned 95). LEAD, 235 at 1243 bytes (masked 89; a gain of 3, kept
+// only with a match): a `c_batch_contact_shape *shape = second->shape;` local in the kind-24 block for the data read and the
+// 0x1ee410 call, the hit set by components and published by aggregate assignment, and `short material` declared beside
+// index/other_index; the frame is then 0x44 as retail's and the hit copies with movss, but the entry registers move (second
+// ESI, the walk EBX; retail EBX/EDI) and the origin still copies as one 12-byte home with dword moves at +0x2c, the hit at
+// +0x38 (retail: hit +0x2c, origin x +0x38). On the lead: no shape local 313 (1249 B); the hit copied as one aggregate 359
+// (1261 B); origin by components x, y, z 357 (1273 B); the decode as `switch (data >> 29)` with the instance arm as default
+// first 243 (a switch for an if); the hit set before origin is copied 237 (masked 83). On main: the hit by components through
+// real_point3d_set with aggregate publication and the material beside index/other_index 311 (1249 B); the exclusion test
+// split into `if (component, kind, data) { if (pointer && byte) return; }` 238 (same code: the data field still loads once).
+// The lead's diff is saved as build/r95/lead-0x1822f0-235.patch in m3-lane11's worktree.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
