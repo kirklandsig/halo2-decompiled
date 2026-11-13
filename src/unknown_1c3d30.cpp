@@ -73,10 +73,14 @@ extern byte *g_51eca8;
 extern short g_51ecb0;
 c_2d8ab0 *g_47f044;
 
+// score 7 (was 7): list/index registers and the release entry still differ.
+// New: direct world exit, const rate, const step input, scalar/record names,
+// released-object reference, body pointer, named state result and captured
+// increment result all 7. All forms restored.
 // MiniMax G (11-10): no new form, no lower score (7); four group-loop splits (the entity list, the index, the group entry and the element read each in their own local) all score 63, so the group loop still loads the entity list into EAX and the index into ECX where retail uses ECX and EDX, and the release loop's entry test still uses EDX and EAX where retail uses EAX and ECX.
 // MiniMax C (11-11): no new form, no lower score (7); the group loop still loads the entity list into EAX and the index into ECX where retail uses ECX and EDX, and the release loop's entry test still uses EDX and EAX where retail uses EAX and ECX; the forms tried this round (the element read through a named local, the index in a named local and both) compile to the same 507 bytes and the same seven differences.
 // MiniMax I (11-09): no new form, no lower score; this round's permuter (900 s, then 1800 s with annealing, the second spending 843 s on the reduced image's build) produced no candidate; the element read through a named entity local, an entity-list local, an index local and all three together compile to the same 507 bytes and the same seven differences; the group loop still keeps the entity list in ECX and the index in EDX where retail keeps them in EAX and ECX, and the release loop's entry test still uses EAX and ECX where retail uses EDX and EAX.
-// score 7 (was 7): this round: the entity list bound to a const pointer local leaves the same seven
+// Earlier: this round: the entity list bound to a const pointer local leaves the same seven
 // differences; the group loop still loads the entity list into EAX and the index into ECX where retail
 // uses ECX and EDX, and the release loop's entry test still uses EDX and EAX where retail uses EAX and ECX.
 // MiniMax D (11-09): no new form, no lower score (7); the group loop still loads the entity list into EAX
@@ -98,7 +102,7 @@ c_2d8ab0 *g_47f044;
 // MiniMax R (11-01): no new form, no lower score; the element select still loads the field pointer
 // into EAX and the index into ECX where retail uses ECX and EDX, and the release loop's entry test
 // still uses EDX and EAX where retail uses EAX and ECX.
-// score 7 (was 7): this round: five more shapes of the group loop's call (the entity list in a
+// Earlier: this round: five more shapes of the group loop's call (the entity list in a
 // named local, the element read through pointer arithmetic, the index read into a local before the
 // select, both of those together, and the element pointer in a local) all compile to the same 507
 // bytes and leave the same seven differences; four more shapes of the release loop's condition
@@ -106,11 +110,11 @@ c_2d8ab0 *g_47f044;
 // and 65. Still the element select loads the list into EAX and the index into ECX where retail
 // uses ECX and EDX, and the release loop's entry test uses EDX and EAX where retail uses EAX and
 // ECX.
-// score 7 (was 7): this round: the listings were re-read only; no new shape of the two register
+// Earlier: this round: the listings were re-read only; no new shape of the two register
 // pairs was found. The group loop still loads the entity list into EAX and the index into ECX
 // where retail uses ECX and EDX, and the release loop's entry test uses EDX and EAX where retail
 // uses EAX and ECX. The permuter (this round and the previous one) produced no candidate.
-// score 7 (was 7): this round: seven more shapes for the group loop and the release loop: the
+// Earlier: this round: seven more shapes for the group loop and the release loop: the
 // field pointer, the index, the entity and the group index in named locals, the selected group
 // list in a named local, the limit and the counter in named locals, and the release loop written
 // as a for statement. The named-local forms all compile to the same 507 bytes and the same seven
@@ -119,23 +123,23 @@ c_2d8ab0 *g_47f044;
 // and the release loop's entry test uses EDX and EAX where retail uses EAX and ECX.
 // MiniMax D (11-01): removing the global's address cast scores 12 and was reverted; no new form,
 // no lower score.
-// score 7 (was 7): this round's two more shapes: the entity list read as a pointer sum into the
+// Earlier: this round's two more shapes: the entity list read as a pointer sum into the
 // group entry, and the release loop written as a guarded do-while; both compile to the same 507
 // bytes with the same seven differences. Still the entity list and the index of the group loop
 // take EAX and ECX where retail uses ECX and EDX, and the release loop's entry test uses EDX and
 // EAX where retail uses EAX and ECX.
-// score 7 (was 7): the entity list and the index of the group loop and the two registers of
+// Earlier: the entity list and the index of the group loop and the two registers of
 // the release loop's entry test still differ from retail's (ECX and EDX, EAX and ECX) in every
 // shape tried: the list and the index as named locals, the index read before the select, the
 // entity as a named local, the select reversed, the group entry as a pointer sum, the release
 // condition reversed, `1 + field_14`, a for loop and `field_14 < field_c - 1`. All of them
 // compile to the same bytes and leave the same seven differences.
-// score 7 (was 7): the group loop still loads the entity list into EAX and the index
+// Earlier: the group loop still loads the entity list into EAX and the index
 // into ECX where retail uses ECX and EDX, and the release loop's entry test still uses
 // EDX and EAX where retail uses EAX and ECX; selecting the table and indexing it after
 // gives retail's tail and entry test but breaks the select block (63), so the element
 // select is kept.
-// score 7 (was 7): in the loop over the groups the entity list and the index take
+// Earlier: in the loop over the groups the entity list and the index take
 // different registers (retail ECX and EDX, ours EAX and ECX), and the release loop's
 // entry test uses EAX and ECX where ours uses EDX and EAX.
 // Shared/separate/entry control words 7/7/7; early step record 64; aggregate

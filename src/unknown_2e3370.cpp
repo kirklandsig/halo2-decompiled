@@ -60,6 +60,10 @@ struct overlap_endpoints_2e3370
 // read-only walk, nested tests, reordered pointers, const output cursor,
 // postincrement and cell reference 491; range by value 479. Shared-query
 // losses exclude the range-value, bound-value and group-step forms.
+// New: earlier low stores 526; separate corner scopes 526; one intrinsic
+// expression 476; indexed clear 534; sentinel loops
+// 481/444, both 487; ascending collection 464. Shared forms NOT kept:
+// other users regress.
 // @retail 0x2e3370
 void class_2e1090::function_2e3370(bounds_2e0020 const *bounds, overlap_endpoints_2e3370 *lists)
 {
