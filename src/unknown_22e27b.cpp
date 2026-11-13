@@ -436,6 +436,15 @@ static inline real interpolate_linear(real a, real b, real t)
 // reproduces the skip): restart's address passed to an opaque call just before the loop makes the miss land on the
 // restart test with the loop otherwise unchanged; the same call after the loop does not; so the skip comes from the
 // known false start, and retail's source must leave restart's value unknown at the loop entry.
+// Round 97 (m3 lane 1, fast): a named activity bool for the three opening tests with the same if/else 1; that bool
+// with the inactive arm as a second `if (!active)` 1; the flags read into a local at the join ahead of the restart
+// test 1 (the load sinks past the test); the two flags cleared by a chained assignment at the function top, either
+// order 1/1 (all the same code). A stand-alone reduction of the loop (compile-only) shows what stops the thread: a
+// compound exit test, an unknown start value, a store or a volatile load ahead of the test at the join (either
+// stays in the code), or restart's address passed to a real call anywhere in the function together with a call or
+// a store through a loaded pointer inside the loop. Stores through `this`, an address folded away by an inlined
+// helper, an array element or aggregate member for restart, always-false start expressions, and /O2, /Oa, /Ow,
+// /Op, /G7 (one settings diagnostic) do not stop it. Retail shows none of the forms that do, so the cause is open.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

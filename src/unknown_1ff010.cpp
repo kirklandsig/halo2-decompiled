@@ -719,6 +719,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // rotate_vector_170d70 99 (same code); the axis-first record_rotate_vector 142; side test before the turned copy 136;
 // side and sine before it 138; turned at function scope 99; turned copied by memcpy 99; a local copy of the inline
 // normaliser with `scale * v->i` or as is 99/99 (diagnostic: the product order is canonicalised).
+// MiniMax G (11-13): no new form, no lower score (77): both streams are 846 bytes against retail's
+// 850 and the difference is inside the rotation expansion, which lives in src/unknown_1eb8a0.cpp
+// and is not this round's file.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {

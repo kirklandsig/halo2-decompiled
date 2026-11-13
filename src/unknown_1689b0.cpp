@@ -1892,6 +1892,18 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // long/int/short/word in plain for and while traversals: 643/643/641/641/643/643/641/641.
 // NOT kept: every form regresses, changes incoming argument registers at +0x13 and
 // lengthens to 2920/2922; original signed bounds, geometry and body restored.
+// T97: One shared fallback owned by the existing return result, bool/byte/char/signed-char/short/word/int/long:
+// 645/619/619/619/614/614/616/616. NOT kept: all regress; original separate fallback paths,
+// geometry, counter observations and complete body restored. Sum homes and ESI zero still differ.
+// T100: Actual first/second/paired/projected/candidate/clamped/closest/all coordinate
+// array receivers with complete library point transfers: 614/614/613/614/614/614/614/613.
+// NOT kept: all lengthen and leave native sums/query-zero/early remainder unresolved.
+// Original point workspaces, helper calls, geometry and complete body restored.
+// P443: Scaled-difference edge/contact pairs, complete normalizer, separation/half setters,
+// complete along differences/candidate products, native-count result and radius-owned result:
+// 611/620/637/614/623/623/646/630. NOT kept: no native sum/zero/remainder repair; original geometry and helpers restored.
+// P446: Actual lower and upper endpoint admissions in bool/byte/short/long, preserving short-circuit edge-length evaluation;
+// 623/623/623/623/623/623/623/623. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

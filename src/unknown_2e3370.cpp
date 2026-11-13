@@ -125,6 +125,11 @@ void class_2e1090::function_2e3370(bounds_2e0020 const *bounds, overlap_endpoint
 // 110/110; paired memcpy 111; once-loaded indexed endpoints 111; head-tested
 // box ordinal 111; distinct loop names 111; initial bulk copy 189.
 // NOT kept: best gain one; sort setup and later loop registers remain.
+// P428: order base shared across sort/remap 186; empty object without
+// initialization 194; whole sort scope 111; original count for box loops
+// 216; saved-record base shared across both passes 164; forward cell
+// indices 111; cell pointer/countdown 199; endpoint-id reference 111.
+// NOT kept: no gain; sort-base setup and later loop carriers still differ.
 // @retail 0x2e3b00
 void class_2e1090::function_2e3b00()
 {

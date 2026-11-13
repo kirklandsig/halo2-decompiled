@@ -54,10 +54,15 @@ __forceinline void function_290852(transform4x3f const *arg_0, vector3f const *a
 vector2f *function_11df30(vector2f *angles, vector3f const *v);
 transform4x3f *function_b8c00(long object_index, long *node_count);
 
+// score 19 (was 19): earlier start 21. Round 116 (m3 lane 9, fast): descriptive names for every parameter and local
+// 19, the parameter reference declared after the point and the vector 19, a const reference to the transform in the
+// else arm 19 (all same code); the node indexed at both calls with the reference kept 51; re-measured `field2e = true`
+// 19. Nothing in our build calls this function: 0x2902b0's body is `#if 0` and its stub is empty, so the convention and
+// the EBX/EBP choice come from this body alone. No untried natural form is left.
 // MiniMax G (11-12): no new form, no lower score (19); retail keeps the transform in EBP and takes the record in EDI, our build
 // takes the record from the stack and the transform in EBX, so the caller's register choice (in another file) decides the rest.
 // MiniMax E (11-11): no new form, no lower score (19): the else arm's two reads swapped 68, the position stored field by field 141, the transform read directly in one call 19; the transform still takes EBX and the point's y EBP, and the constant 1 stays shared between the result and field2e.
-// score 19 (was 19): earlier start 21. Ours keeps the transform pointer in EBX and the point's y component in
+// Earlier at 19 (was 19): Ours keeps the transform pointer in EBX and the point's y component in
 // EBP, retail keeps them the other way round; retail also stores the last field with a
 // direct word store where ours moves it through EAX. Tried: the last field through the
 // plain output pointer 34, with field1c too 35; field2e as word 21; field2e stored before
@@ -95,6 +100,17 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // reference 19, returned vector 110; named products in every row 19;
 // output accumulation 19; node count at entry 19; node pointer at entry 19.
 // All restored; the register pair and shared constant remain.
+// Round 88 (m3 lane 13, fast). Diagnostic, restored at once: with the only caller 0x2902b0 compiled (its stub taken out, its
+// `#if 0` opened) this body is still 19 and the no-steering body 33, so the missing caller does not decide the convention. One
+// exit (`bool result = false`, `goto done` at the bounds failure, `result = true` at the end) 139 (458 bytes) with the steering
+// local and 133 without it (the result takes CL from the top); a result local set at the end beside the direct false return 19
+// (same code); the rotate helper as a plain static or plain inline function 19, and 33 without the steering local (same code as
+// forced: the link expands it either way). Diagnostics on the no-steering body, the transform still arriving in ECX and kept in
+// EBX: one more read of the point after the reset 65 (483 bytes); the no-object arm's forward from a global, so the transform has
+// fewer uses, 77. The transform as a by-value one-pointer aggregate (diagnostic) 86 (its load is no longer hoisted to the entry);
+// as a reference parameter 33 (the no-steering code); the initial point assigned after its declaration 19; the record-filling tail as an
+// inline function returning true, or returning nothing with `return true` after it, 89 each (438 bytes: 0x11df30 is then called
+// from it and no longer expanded). All restored.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

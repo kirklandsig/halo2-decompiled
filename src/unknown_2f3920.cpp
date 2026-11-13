@@ -270,6 +270,8 @@ void capsule_pair_2f3920::function_2f3920(void const *a, void const *b, void con
 // Separate first record 26; separate second record 222; all locals separate 258;
 // output pointer declared first 28; both traversal scopes widened 2;
 // named SSE result 2; forced transform expansion 2; explicit input load 2.
+// Input vector reference 2; matrix reference 2; output reference 2; output pointer 2;
+// input vector value 2; matrix member 2; member output reference 2; member input reference 2.
 // NOT kept: no equality; original shared body and both users restored.
 // @retail 0x2f3d00
 void __cdecl function_2f3d00(void const *a, void const *b, void const *input, void *collector)

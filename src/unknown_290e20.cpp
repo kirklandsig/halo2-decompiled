@@ -503,6 +503,12 @@ struct s_ai_scene_assignment
 // `if (local_3 != NONE)` as one exit 12; the switch default setting NONE for the shared test 12; the leaf copy as
 // `*local_0 = local_0[-1]` 24 (347 bytes: the leaf's element address then takes EBP directly, the first difference moves to
 // the scorer call's reload order); the int copy of the maximum declared per iteration in the loop body 12.
+// Round 160 (m3 lane 8, fast): on the direct maximum (no int copy, 59 at 350 bytes) 1-7 unused initialised locals at the
+// top 59 each (no count effect on the ESI choice); `(short)(role_index + 1)` for the recursion 59; the leaf test folded
+// into the increment 59; both 59; the head test as the loop condition's second half 59 (same code each); the last-role
+// test written at its use without the bool 105 (355 bytes). In the direct form our build reads the maximum into AX for
+// the head test and gives ESI to the role index across the scorer call; retail gives ESI to the maximum and reads the
+// role index from its slot twice.
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

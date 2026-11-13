@@ -1278,6 +1278,8 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax B (11-12): no new form, no lower score (94); a fade-in local with the scaled local reaches 87, but each holds a
+// value used once, so the body stays as it is; the division written out of the branch scores 160 and the product inlined 94.
 // MiniMax G (11-11): no new form, no lower score (94): the arm-1 clamp's divisor re-spelled through the class 99 and a
 // fade-in local for the test and the inverse 101; retail's division-first clamp and its fade-out-last product stay out of
 // reach. This round: the reciprocal from a fade-in local copy of the field 87 (684 bytes: a gain of seven and a one-use
@@ -1559,6 +1561,19 @@ long function_2197f0(real gain);
 // the 87 form 87 (match-only; the 87 form re-measured 87); SOUND_SYSTEM read at each use (no sound_system local) 94 (same
 // code). Diagnostic (a volatile local, reverted at once): one or two dead volatile loads ahead of `elapsed` 171/180 (696/700 B):
 // elapsed stays in XMM2, so one more scratch step there does not give retail's XMM colouring.
+// Round 178 (m3 lane 5, fast with 0x1251e0/0x1295e0/0x221810, control 94, 683 bytes; al = aligned differing lines, 52).
+// Reading of retail: arms 2, 3 and 4 add the gain from its home into the interpolation (`addss xmm0, [gain]`, the
+// by-value operand of operator+ plus `*this` read through its reference), arm 1 loads the gain into a register and adds
+// the interpolation into it, and after arm 3 the long view is reloaded (`mov edi, [gain]`) while arm 4 reads the float from
+// memory again. The local-count scan that matched 0x1e6360 (n unused locals, diagnostic) does nothing here: the division
+// form with a fade_out local 128 for n = 0..7 (same code), the division form 125 for n = 0, 1, 2 (same code). New forms:
+// every interpolation arm as `gain +=` 94 (same code); arm 1 interpolation first with the gain operand built from its
+// float value (`... + s_decibels(gain.value)`) 176 (703 bytes), on the division form 165 (698), with the fade_out local
+// 168; arm 1 as `s_decibels(gain.value + ....value)` 94 (same code); arm 1's interpolation in a named local added as
+// `fade + gain` 156 (687, the code of the listed interpolation-first form), on the division form with the fade_out local
+// 153 (682). Re-measured: interpolation first in arm 1 156 (687; the gain's by-value copy is stored from EDI to a new
+// slot and added from memory), the division form 125 (678, al 55), both 150 (682), the division form with a fade_out
+// local 128 (678).
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2990,6 +3005,9 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax B (11-12): no new form, no lower score (96); a bool result gives 113 at retail's length, the success path
+// returning early 133 and the failure path returning false with two other exits 135, so the shared exit with the result
+// byte in its stack slot stays closest.
 // MiniMax G (11-11): no new form, no lower score (96): retail's three returns (true at the entry, false in the failure
 // block, true at the commit) measure 131, and the index still lands in eax where retail keeps it in ecx. This round:
 // the failure block reached by a goto after the channel search, so that it follows the buffer tests as retail's
@@ -3270,6 +3288,32 @@ static inline short sound_voice_find_available_channel(char type)
 // existing bit_vector_set 96, the search helper's two bit tests through bit_vector_test 96, both 96 (same code each; both
 // kept: existing helper calls in place of hand-written copies of their bodies); the requested-buffer local at every use (the
 // buffer assignment and the final test, no field re-read) 139 (441 B), for the assignment only 138 (441 B).
+// Round 178 (m3 lane 5, fast with 0x129100/0x127320/0x12a5d0/0x21de90/0x127010; al = aligned differing lines; control 96,
+// al 73; about 60 forms). LEAD, 15 at 430 bytes (al 8; the form is saved as build/r178/held-1295e0-form15.txt): `bool result
+// = true;` declared before the voice and the sound, the search helper taking `long type`, the missing channel as `if
+// (channel == NONE) goto channel_failed;`, then `buffer_index = NONE; driver_index = NONE;` (buffer first), the status
+// test as `(byte)~status & DSBSTATUS_PLAYING`, and a failure-first if/else whose failure arm holds the label and whose
+// commit arm ends `result = true;`. Every instruction is retail's except three scheduling spots that have one cause: the
+// two early exits join the commit block's epilogue (so `mov al, bl` sinks below three pops in the failure tail and the
+// commit's pops stay together), where retail joins them to the failure block's epilogue. Not kept: it needs the second
+// `result = true;` (a redundant store), the moved declaration and a goto into an arm, all match-only. What each part
+// does (ablation on the goto-free twin of the lead, 74/79): result declared after the sound 116 (the entry index then
+// takes EAX and NONE takes EBP); no initializer with `else result = true;` for the early path 138; no `result = true;`
+// in the commit arm 161 (451 bytes, stack byte); plain status test 106; `char type` 79; driver default before the
+// buffer default 74 (the compare and the buffer store then use immediates where retail shares `or ebp, -1`).
+// Two families, by how the missing channel reaches the failure code. Implicit (`if (channel != NONE) { ... }` with the
+// failure after it, or `channel == NONE ||` / `channel != NONE &&` in one if/else, goto or not, commit before or after
+// the return): 79 (415 bytes, al 28), retail's code with the failure block and the return placed straight after the
+// search loop instead of after the buffer tests. Explicit (the goto above, the failure arm first or second, the commit
+// through `goto channel_done`, a label after the return, flat gotos with the exit label referenced first, or a one-pass
+// `do { } while (false)` with breaks): 15 each, the same code. Other forms: the defaults ahead of the channel test (both
+// families) 109-127 (al 20-44: the failure block is placed as retail's but the search result is not threaded, so the
+// counter stays in EDX and is copied); chained defaults 109 / 74 / 79; the defaults ahead of the search 121-128; the
+// failure written in both else arms 126, without the commit's `result = true;` 193; a `return true;` or `return result;`
+// in the commit arm 125, `return result;` in the failure arm 128 (any second return merges the result into one register
+// from the entry); the search returning from its loop gives the same code as the break form with `long type`, the
+// condition-controlled scan 127-129 (442 bytes).
+// On the lead with flat gotos, the early path as its own `return result;` or `return true;` 135 (431 bytes).
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {

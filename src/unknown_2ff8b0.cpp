@@ -127,6 +127,10 @@ ELEMENTS_2D91D0(keys_300290, long);
 // descending width tests 515; trailing update 503; on trailing update:
 // two-word decode 503, next-slot key 508, value cases first 556, saved-value
 // rename 503. All restored.
+// Base input type 466; four bound names 466; inner diagonal switch 706;
+// sole void exit 466; recursion before second step 463; separate bound loops
+// 466; low value-slot bits 466; append by reference 466. All restored.
+// NOT kept: the recursion change gains three and moves farther from the size.
 // @retail 0x2ff8b0
 void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char const *node)
 {
@@ -609,6 +613,14 @@ public:
 // first 376; all axial radii captured 213 (NOT kept: 1600 versus 1596 bytes);
 // named bounds, joined slab tests and unsigned command 375/375/375;
 // word distances 393 (1612 bytes). Original body restored.
+// Round 426: first limit read 375; first limit/radius read 374; lower
+// limit first 376; two-plane radius copy 205 (1600 bytes, NOT kept);
+// memcpy 375; signed int words 375; next_slot 376; one exit 375.
+// NOT kept: one-point gain or length beyond retail; original body restored.
+// Shared axial position 375; shared two-plane bounds 375; shared axial
+// extent 210 (1600 bytes, NOT kept: four excess bytes); nested bounds 375;
+// first distance decoded first 380; OR byte joins 496; append_copy 375;
+// mutable axial scalars 375. Original body and decoder macros restored.
 // @retail 0x300290
 void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char const *node)
 {
@@ -930,6 +942,10 @@ found:
 // ordinary conversion inline 84; long conversion result 65; chained clearing 65;
 // aggregate zero initialization 80; mutable node pointer 65.
 // NOT kept: all eight forms tie or regress; original executable text restored.
+// Round 426: float input renamed, shared conversion call, complete scaled
+// expressions, immutable tree pointer, tree reference, root-array reference,
+// earlier root address and separate radius increment all 65.
+// NOT kept: no improvement; original helper and body restored.
 // @retail 0x3008d0
 void class_3008d0::function_3008d0(void const *tree_, const __m128 *sphere, s_surface_key_array *keys_)
 {

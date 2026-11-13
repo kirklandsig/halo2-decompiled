@@ -314,32 +314,6 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
-// MiniMax H (11-12): no new form, no lower score (36): the special arm still comes before the kind arm where retail puts the kind arm first, the element address is still a scaled index added to the base where retail multiplies into eax and adds the base, and 0x221810 still has to stay out of line, which needs a change in src/unknown_221490.cpp.
-// MiniMax I (11-11): no new form, no lower score (36): the special arm still comes before the kind arm in the layout where retail puts the kind arm first, our element address is a scaled index added to the base where retail multiplies into eax and adds the base, and 0x221810 still has to stay out of line, which needs a change in src/unknown_221490.cpp.
-// MiniMax D (11-11): no new form, no lower score (36): still BLOCKED-BY 0x221810, the getter in src/unknown_221490.cpp that this lane may not edit and that LTCG inlines here.
-// MiniMax S (11-10): no new form, no lower score (36): the special arm still comes before the kind arm in the layout where retail puts the kind arm first, and our element address is a scaled index added to the base where retail keeps the scaled product in EAX and adds the base to it.
-// MiniMax A (11-10): no new form, no lower score (36): retail keeps the sound-class lookup 0x221810
-// out of line - it is a one-line wrapper in src/unknown_221490.cpp - and lays the blocks special
-// arm, removal, kind arm, keep store; LTCG inlines it here, so the kind arm's block order cannot be
-// reached from this file.
-// MiniMax R (11-10): no new form, no lower score (36): the special arm and the kind arm still swap their block, and the layout needs 0x221810 kept out of line, so it stays BLOCKED-BY 0x221810 in src/unknown_221490.cpp.
-// MiniMax R (11-09): no new form, no lower score; the special arm and the kind arm still swap their block
-// order, and the record address still goes to esi where retail multiplies into eax and lea's it.
-// This round: the element as an array subscript 36, the type test inverted 36, the special arm nested with
-// an explicit else 89, the re-test without the short cast 46 (it gives retail's shared jump target and
-// `cmp eax, 0x26`), the kind arm written as a branch 87; the block order still decides the score.
-// MiniMax lane G (11-04): no new form, no lower score; two separate type cases give retail's chain
-// (je to the special arm, jne to the kind arm) with 0x221810 out of line, but the pool pointer moves
-// to edi and the score is 83; the named `||` gives the same chain and the a/b slots but inlines 0x221810.
-// MiniMax H (11-04): no new form, no lower score; retail multiplies the element index in eax and lea's the address, ours multiplies in esi, and 0x221810 stays out of line.
-// MiniMax A (11-03): no new form, no lower score: the element address is still formed after the policy
-// byte is read, and the special, remove, ordinary and keep blocks stay in our order.
-// MiniMax lane E (11-01): no new form, no lower score; the named-condition form that gives retail's
-// block order still needs 0x221810 kept out of line.
-// MiniMax C (11-08): no new form, no lower score.
-// MiniMax G (11-12): no new form tried this round, no lower score (36): the element address is still built with an
-// imul and an add where retail multiplies into eax and forms the address with a lea; a probe shows no pointer
-// arithmetic spelling of that form in this compiler.
 // score 36 (was 36): the address of the record is built here with an imul
 // into ESI and an add; retail multiplies into EAX and forms the address with a
 // lea, so the type byte that is tested afterwards is compared in another value.
@@ -544,6 +518,43 @@ void function_125a90(long value);
 // record pointer of 0x221810 named before its test, the special arm as an if/else, the definition flags through a named
 // pointer. src/unknown_221490.cpp is open this round, but 0x221810 is one getter call, so no spelling of it keeps its
 // bytes and moves the inliner: still BLOCKED-BY 0x221810.
+// MiniMax H (11-12): no new form, no lower score (36): the special arm still comes before the kind arm where retail puts the kind arm first, the element address is still a scaled index added to the base where retail multiplies into eax and adds the base, and 0x221810 still has to stay out of line, which needs a change in src/unknown_221490.cpp.
+// MiniMax I (11-11): no new form, no lower score (36): the special arm still comes before the kind arm in the layout where retail puts the kind arm first, our element address is a scaled index added to the base where retail multiplies into eax and adds the base, and 0x221810 still has to stay out of line, which needs a change in src/unknown_221490.cpp.
+// MiniMax D (11-11): no new form, no lower score (36): still BLOCKED-BY 0x221810, the getter in src/unknown_221490.cpp that this lane may not edit and that LTCG inlines here.
+// MiniMax S (11-10): no new form, no lower score (36): the special arm still comes before the kind arm in the layout where retail puts the kind arm first, and our element address is a scaled index added to the base where retail keeps the scaled product in EAX and adds the base to it.
+// MiniMax A (11-10): no new form, no lower score (36): retail keeps the sound-class lookup 0x221810
+// out of line - it is a one-line wrapper in src/unknown_221490.cpp - and lays the blocks special
+// arm, removal, kind arm, keep store; LTCG inlines it here, so the kind arm's block order cannot be
+// reached from this file.
+// MiniMax R (11-10): no new form, no lower score (36): the special arm and the kind arm still swap their block, and the layout needs 0x221810 kept out of line, so it stays BLOCKED-BY 0x221810 in src/unknown_221490.cpp.
+// MiniMax R (11-09): no new form, no lower score; the special arm and the kind arm still swap their block
+// order, and the record address still goes to esi where retail multiplies into eax and lea's it.
+// This round: the element as an array subscript 36, the type test inverted 36, the special arm nested with
+// an explicit else 89, the re-test without the short cast 46 (it gives retail's shared jump target and
+// `cmp eax, 0x26`), the kind arm written as a branch 87; the block order still decides the score.
+// MiniMax lane G (11-04): no new form, no lower score; two separate type cases give retail's chain
+// (je to the special arm, jne to the kind arm) with 0x221810 out of line, but the pool pointer moves
+// to edi and the score is 83; the named `||` gives the same chain and the a/b slots but inlines 0x221810.
+// MiniMax H (11-04): no new form, no lower score; retail multiplies the element index in eax and lea's the address, ours multiplies in esi, and 0x221810 stays out of line.
+// MiniMax A (11-03): no new form, no lower score: the element address is still formed after the policy
+// byte is read, and the special, remove, ordinary and keep blocks stay in our order.
+// MiniMax lane E (11-01): no new form, no lower score; the named-condition form that gives retail's
+// block order still needs 0x221810 kept out of line.
+// MiniMax C (11-08): no new form, no lower score.
+// MiniMax G (11-12): no new form tried this round, no lower score (36): the element address is still built with an
+// imul and an add where retail multiplies into eax and forms the address with a lea; a probe shows no pointer
+// arithmetic spelling of that form in this compiler.
+// M3 lane 12 r119 (fast with the file and 0x221810/0x127320/0x125a90): diagnostic only, one `#pragma inline_depth(0)`
+// around the 0x221810 call (reverted): the class-type condition named (`bool special = (short)type == 0x20 ||
+// (short)type == 0x26;`) with `remove = type == 0x26 && !a;` 47 (special arm first, its `!a` threaded); the special arm
+// as `if (type == 0x26) remove = !a; else remove = false;` and the kind arm as `if (f(type)[0x4c] == 1) remove = false;`
+// 25 (retail's whole block order and arm code; left: the element address, ours `imul esi` + `add`, retail `imul eax` +
+// `lea esi`); with the pool global at each use 25 (same code); with the element read at each use through the pool 22
+// (416 bytes: retail's `imul eax` + `lea esi`, sunk below the b test). So with 0x221810 out of line the named-condition
+// layout is all but retail's; every natural spelling of it inlines 0x221810 (listed above). Still BLOCKED-BY 0x221810.
+// Real (no pragma): that whole 22 form 133 (468 bytes, 0x221810 inlined); the same with the class-type test written
+// inline as `||` (no named bool) and every element field read through the pool at each use (no element local, so no
+// mixed keep store) 47 (416 bytes).
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
