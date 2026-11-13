@@ -51,10 +51,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
+// score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax H (11-11): no new form, no lower score (176); a normalizer with one exit 403 and the root taken from
 // the helper's return value instead of the pointer 263, so the root still sits at +0x10 where retail keeps it with
 // the yaw at +0xc.
-// score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax I (11-10): no new form, no lower score (176).
 // MiniMax S (11-06): no new form, no lower score; the single-exit normalizer with the XY vector read before
 // the second copy reaches 169, one point short of the eight-point bar, and the original body is restored.
@@ -476,6 +476,13 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // all give 169 (same code). The yaw/pitch clamp block already matches retail instruction for instruction. Slot map on
 // the lead: retail packs the root and acos temporaries with the yaw at +0x00 (23 uses), ours with local_11 at +0x04
 // and the yaw alone at +0x00; the XMM numbering and the rotations' schedule follow from that.
+// m3 lane 1 r98 (fast with 0x29b990, 0x1e5450, 0x11ce20, 0x11cc90, all matched throughout; control 176). New, all fruitless: the
+// second angle (arg_2 against its copy) computed ahead of the first 283 (1706 B); the planar test as `> 0.0f` alone 328 (1707 B);
+// the second normalization's failure test as `!function_29b32b(&local_5)` 203 (1718 B); the XY vector as the planar copy
+// `*(vector2f const *)arg_2` 356 (1715 B, first difference +0x60); the pitch field stored before the yaw field at the end 178.
+// Re-measured on this base (listed on the 169 lead): the turn limits as ternary initializers, yaw/pitch/both 261/242/249
+// (1715/1713/1715 B); the elevation limit as a default plus `if` 272 (1709 B; same code on the 169 lead). Same code: the
+// first angle's sign as a self-assigning ternary 176.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
