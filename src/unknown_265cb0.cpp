@@ -750,6 +750,8 @@ real function_30bf0(vector3f *vector);
 // MiniMax B (11-11): no new form, no lower score (84); the vector homes are still one slot off from retail's, the range's
 // first load and the two products still differ, and the range is still loaded into XMM2 for XMM0; the body is 1310 bytes
 // against retail's 1308.
+// P458: Complete initial mode admission/rejection outcomes, bool/byte/short/long:
+// 150/150/150/150/150/150/150/150. NOT kept: native result/range/projection homes and basis products not recovered; original complete body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
