@@ -51,7 +51,7 @@ s_223240 g_47f0f8[6];
 
 void function_2f800(s_2f800_view *, s_2f800_source const *, s_2f800_size const *, s_2f800_size const *);
 void __stdcall function_2c8a0(byte const *);
-void __fastcall function_2b5d0(long, long, long, long, s_223240 const *);
+void function_2b5d0(long, long, long, long, s_223240 const *);
 void function_223080(long, long, long, s_223080 *, long, long, s_223081 const *);
 bool function_68290(void);
 void main_time_wait_for_vblank(void);
@@ -96,11 +96,12 @@ void function_2232a0(void)
 // MiniMax H (11-05): no new form, no lower score; the tail still needs 0x2b5d0's own body (a stub in
 // src/stubs/lane_k.cpp, another file), and the count clamp and the slot test still differ.
 // MiniMax H (11-04): no new form, no lower score; the tail still needs 0x2b5d0's own body.
+// NOT kept (coordinator review, MiniMax H 11-13): 90 -> 79 came from declaring 0x2b5d0 __fastcall in this file only
+// and calling it as (3, view_count, ...), the reverse of its definition's (count, mode) order in
+// src/unknown_023540.cpp: a local prototype that disagrees with the definition (and swaps the values passed). Lead:
+// retail passes 3 in ECX and the view count in EDX, so 0x2b5d0's real parameter order/convention is the question
+// (BLOCKED-BY 0x2b5d0).
 // score 79 (was 90; 109 before the shared view count): one shared view count now feeds terminal indexing and the
-// tail, whose call now passes the count in ECX, the mode in EDX and the three stack arguments as retail does;
-// the outer pretest, loop-entry source zero and terminal registers still differ. The tail call still needs
-// 0x2b5d0's own body, which is disabled here and stubbed in src/stubs/lane_k.cpp, a file this lane may not
-// edit: BLOCKED-BY 0x2b5d0.
 // tail, whose call now passes the mode first as retail does; the outer pretest, loop-entry source zero and
 // terminal registers still differ. The tail call still needs 0x2b5d0's own body, which is disabled here and
 // stubbed in src/stubs/lane_k.cpp, a file this lane may not edit: BLOCKED-BY 0x2b5d0.
@@ -334,11 +335,6 @@ void function_2232a0(void)
 // MiniMax A (11-12, run 62): no new form, no lower score (90); a pretested `for` over the view count grows the
 // body to 589 bytes (150), and the tail is the 0x2b5d0 stub's inline body where retail calls the real function
 // (BLOCKED-BY src/stubs/lane_k.cpp).
-// MiniMax H (11-13): the tail call now uses retail's own convention: 0x2b5d0 is declared __fastcall here and
-// called with the count (3) in ECX, the view count in EDX and the three stack arguments (the count, the layout
-// and &g_47f0f8[1]) — the values retail passes — so the score drops from 90 to 79. Still different: the outer
-// pretest and the loop-entry source zero, and the tail adds the base to the index where retail folds it into
-// the displacement.
 // @retail 0x2234e0
 void function_2234e0(void)
 {
@@ -390,7 +386,7 @@ void function_2234e0(void)
 		++local_0;
 	} while (local_0 < local_2);
 	function_2232a1(&g_47f0f8[view_count]);
-	function_2b5d0(3, view_count, local_2, local_3, &g_47f0f8[1]);
+	function_2b5d0(view_count, 3, local_2, local_3, &g_47f0f8[1]);
 }
 
 // @retail 0x223240
