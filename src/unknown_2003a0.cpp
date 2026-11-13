@@ -2251,6 +2251,11 @@ bool function_1e11b0(long actor_index, bool active);
 // iterator.squad_index 65 (callers lost). Retail evidence for the flags lead: 0x1c7bb0 (another file) has the bodies
 // of 0x203f60 and 0x204d30 inline, while every caller in this file keeps both out of line.
 // MiniMax A (11-12): no new form, no lower score (64); the frame, the argument's register and the unrotated step loop still need the statement-level inline pair or /Ob1, which are compiler settings this lane may not add.
+// HELD (coordinator 11-13, m3 lane 11 r96, Fable 5.2 xhigh): MATCH with the function-scope `inline_depth(0)` replaced
+// by a statement-level pair around the 0x203f60 call, two squad_get lookups (the tick test reads its own), the walk
+// through squad_actor_next_inline, the flag word tested and returned through one `short *` and set through the squad
+// after the stamp. DECOMPILING.md rules out new in-body pragmas (0x203d70's pair predates the rule), so it waits for
+// the maintainer's ruling on branch m3-held-203bf0 (every trial of the round kept the pair).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -3205,6 +3210,16 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // `short local_3 = NONE;` 169 (578 B); the delay test as `< 1` 51 (579 B); the delay in a named short 50 and `byte *const
 // local_1` 50 (same code each). The first follow-up still reloads the index from its home.
 // MiniMax A (11-12): no new form, no lower score (50); every instruction agrees with retail except the argument of the first 0x1fb8a0 call, where ours reloads the squad index from its stack home and retail keeps the EBP copy; a local copy of the parameter is propagated back, so the reload stays.
+// M3 lane 11 r96 (fast with 0x202e90 and 0x203bf0; control 50): a `byte *flags` for both 0x40 tests 50; a `short *` to the
+// +0x2a index for all six reads 50, for the four first-half reads 50, both pointers together 50/50 (all the same code),
+// the index pointer for three reads only 162 (578 B). A second squad_get(arg_1) at one first-half read gives the follow-up
+// retail's `mov eax, ebp` but the two-lookup entry (data loaded first, `lea`) with the squad spilled: first flag test 134
+// (581 B), first index test 157 (576 B), lock index 157, else-if flag 134, pending word 134; the else-if index 182 (578 B,
+// index and squad swap ESI/EBP). Diagnostics (not forms): one extra test in the second half ahead of the trigger
+// definition, or in the first arm's chain, gives `mov eax, ebp` with every earlier byte as retail; an extra test between
+// the task test and the second 0x202e90 call keeps the reload. So the reload is the last block of the index register
+// range being dropped when the range is cut for the second half's EBP; one more index reference, or one block more or
+// less off the follow-up path, keeps it. No code-neutral form found that adds either.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
