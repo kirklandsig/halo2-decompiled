@@ -1836,6 +1836,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // (472). Re-measured on this base (listed on older bases 178/142): the flag byte stored in each include_mask arm 176
 // (472 bytes; the loop core becomes retail test/store/branch and the entry size takes EBX as in retail, but the
 // player bit goes to memory), with `*cursor++ =` or `cursor[0] =` 176.
+// P442: Actual active-byte seeded result, long/int/dword/unsigned-int, direct admission
+// then shared active truth: 181/181/181/181/181/181/181/181. NOT kept: no exact result/home repair;
+// frame 0x10/0x14, ret 0x10/0xc and caller 0x56380 at 13 reject all forms. Original body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

@@ -1582,6 +1582,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // single and paired bindings, then paired field pointers: eight at 32.
 // NOT kept: no exact field-storage form; original observations and body restored.
 // Iterator scaling, leave-selector and request/slot publication homes remain.
+// P442: Complete direct-lvalue seat-priority leaf producers, eight branch orientations:
+// 33/113/108/113/32/113/108/113. NOT kept: no exact iterator/request-home repair; original
+// priority, flag observations, selection, requests and complete body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
