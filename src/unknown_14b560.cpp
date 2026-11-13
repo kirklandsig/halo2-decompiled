@@ -2626,6 +2626,9 @@ static __forceinline long player_round_ticks(real value)
 // reloads the header data and the unit for every weapon read (two in a row at the target latch); ours shares one
 // lookup. The two expansions retail does not have still decide the frame and length: BLOCKED-BY 0x151b80 (Avoid file)
 // and 0xccd20 (contributor).
+// MiniMax G (11-13): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and
+// this build inlines 0xccd20 and the first 0x151b80 call where retail calls them; those callees' inline
+// eligibility is fixed in other files, so the body stands.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {

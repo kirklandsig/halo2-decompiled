@@ -7702,6 +7702,9 @@ struct s_unit_turn_state_view
 // `return false;` or `return moved;` for the two start tests 431. Every single-exit form saves all four registers
 // at entry with an unused bottom slot (frame 0x80); retail saves EBX inside the `if`, EDI around the state pointer.
 // MiniMax B (11-13): no new form, no lower score (395): `moved` still sits in ebx for the whole function where retail keeps it in a stack byte, and ours still makes one reciprocal of the shared `step` where retail divides twice by the stored step.
+// MiniMax G (11-13): no new form, no lower score (395): the moved flag still sits in a register where retail
+// keeps it in a stack byte, and this build still makes one reciprocal of the shared step where retail divides
+// twice by the stored step; the single-exit and in-place-clamp forms in the note below score 419 and 400.
 // @retail 0xc60c0
 bool __stdcall function_c60c0(long unit_index)
 {
@@ -7985,6 +7988,9 @@ real function_50650(real cosine);
 // of the caller or the callee's linkage.
 // MiniMax R (11-11): no new form tried this round, no lower score (563): retail tests its second pointer at the entry and leaves the body when it is null, this build stores two zeroed speeds first and only then branches, and the frame is 0x8c against retail's 0x80.
 // MiniMax B (11-13): no new form, no lower score (563): retail tests its second pointer at the entry and leaves the body when it is null, ours stores two zeroed speeds first and only then branches; the frame is 0x8c against retail's 0x80.
+// MiniMax G (11-13): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80, and the
+// two 0xc7750 calls still pass their arguments on the stack where retail passes them in xmm registers; the
+// accumulator form of 0xc7750 that gives 28 is inlined into this body, so neither change is kept.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
