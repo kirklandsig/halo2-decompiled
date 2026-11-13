@@ -2372,6 +2372,13 @@ void function_cfec0(long unit_index)
 /* the object that answers for the unit: the vehicle when the unit's seat
    has bit 0 or 3, or a rider of that vehicle with bit 27 of its
    definition's +0xbc and its object flag 26; else the unit */
+// MiniMax G (11-13): no lower score (2): the only remaining difference is the last exit, where the value for
+// unit_index == NONE is returned as the constant (or eax, 0xffffffff) and retail moves the register copy
+// (mov eax, ebx), so our body is 258 bytes against retail's 257. This round tried fifteen more forms: a result local
+// returned at every level (113, 47 and 58, according to where it is assigned and returned), a copy of the value in the
+// exit as int, long, unsigned or as an index (2 each), one return per level through that local (47), the exits shared
+// by two paths (12, 32 and 39) and the local tested against itself (47 twice); every one of them scores 2 or worse,
+// because the local's value merges the exits and drops the copy in ebx. The body stands as found.
 // MiniMax H (11-12): no new form, no lower score (2): the exit for unit_index == NONE still returns the constant (or eax, 0xffffffff) where retail moves ebx; a result local (46) and a single final return (62) both change the frame and the register allocation, and this round's unsigned comparison (0xffffffffu) and the copy of the parameter that the test uses instead of the parameter itself both keep the fold, so the body stands as found.
 // MiniMax H (11-11): no new form, no lower score (2): the exit for unit_index == NONE returns the constant (or eax, 0xffffffff) where retail moves ebx (mov eax, ebx), so the body is one byte longer; the value is kept in the register only where an exit is shared with another path, and merging the exits moves the edi push into the prologue.
 // MiniMax S (11-11): no new form, no lower score (2); the copy propagation from the compared value into the returned one cannot be broken without a form review rejects, so the body stands as found.
@@ -3476,6 +3483,11 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 
 /* whether the object's root, simulated by Havok and not keyframed, has
    something in the way (0x168f40 from its main rigid body's position) */
+// MiniMax G (11-13): no lower score (12): the body is retail's length and the only difference is the pair of saved
+// registers - the root index sits in edi here and in ebp in retail, with the rigid body's byte offset in the other.
+// This round tried six more forms (the result local first, the NONE constant written as -1, a while loop for the root
+// walk, the byte offset in a local, the root read first and the result local last) and all of them score 12, so the
+// choice between the two registers does not follow from the source.
 // MiniMax H (11-12): no new form, no lower score (12): the root index still sits in edi where retail keeps it in ebp and the rigid body's byte offset in the other register; the short root index that gives retail's registers tests at 16 bits before extending.
 // MiniMax H (11-11): no new form, no lower score (12): the body is retail's length and the only difference is the
 // pair of saved registers: the root index sits in edi here and in ebp in retail, and the rigid body's byte offset
@@ -4460,6 +4472,10 @@ store:
    speed in a cone around the unit's aim on top of the unit's velocity
    (capped at 4 unless the unit's +0xc0 bit 1 is set), and deletes it in
    state 1 when it has nowhere to go and is not a predicted copy (0xa7670) */
+// MiniMax G (11-13): no new form tried this round, no lower score (4): the frame is retail's and the four
+// instructions that set up the cone call keep their order - the sampled speed's spill, the forward pointer, the output
+// pointer and the seed copy - while retail spills the speed first and copies the seed last; the callee 0x146320 and
+// its parameter list live in src/unknown_146240.cpp, which this lane may not edit, so the setup stays as it is.
 // MiniMax H (11-12): no new form, no lower score (4): the frame is retail's and every instruction agrees except the four that set up the cone call; that callee 0x146320 lives in src/unknown_146240.cpp, which this lane may not edit.
 // MiniMax S (11-11): no new form, no lower score (4): the frame is retail's and every instruction agrees except the
 // four that set up the cone call - retail spills the sampled speed first and then forms the forward pointer, the
@@ -5938,6 +5954,12 @@ void function_cf040(long unit_index, short type)
 	}
 }
 
+// MiniMax G (11-13): no lower score (1): the whole difference is still the base and index order of the header read
+// inside the weapon loop (ours [eax+edi+8], retail [edi+eax+8]). This round added five more spellings of that read -
+// the unit in a local, the byte-pointer sum, the header array in a local, the index term first as an integer sum and
+// the unit in a local together with the sum - and they score 303, 1, 1, 1 and 303; the three that keep the body at
+// retail's length also keep our operand order. A 300 second permuter run over this body (2 tries) found nothing
+// below 1, so the body stands.
 // MiniMax A (11-12): no new form, no lower score (1): the single difference is still the operand order of the weapon index read (ours [eax + edi + 8] against retail [edi + eax + 8]); retail own matched 0xe9370 emits both orders for the same unit-header lookup, so the order is not a fixed convention of one macro and the spellings tried earlier do not reach it. The body stands.
 /* whether the unit may enter the vehicle's seat: not its own, allowed for
    players or AIs (bits 16, 17), its weapons fit (bits 2, 3), the seat

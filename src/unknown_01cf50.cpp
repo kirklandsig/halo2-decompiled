@@ -2792,6 +2792,12 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
 // and lands in the other register, the divisor makes a round trip through the stack where retail
 // keeps it in a register and multiplies by g_4b9ff8 with an explicit mulss, and the two branches
 // share one call setup where retail repeats it.
+// MiniMax G (11-13): no new form tried this round, no lower score (26): the maximum's comparison still has its
+// operands the other way round and its result in the other register, the divisor still makes a round trip through the
+// stack where retail keeps it in a register, and the two branches still share one call setup where retail repeats it.
+// The value of constants[3] is read back through the volatile anchor already in the body, and no further volatile
+// anchor may be added, so the spelling that reaches retail's shape (the one the coordinator rejected for its
+// per-function pragma) cannot be kept.
 // MiniMax R (11-10): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register; the forms tried this round (the destination compared with the constant, the constant on the left of the compare, the less-than and less-or-equal spellings, the two-local forms with either declaration order and the four if/else spellings) measured 26, 27 and 28, never below the body above.
 // MiniMax H (11-05): no new form, no lower score; without the divisor's round trip through the stack the multiply is explicit again (a mulss by g_4b9ff8) but the maximum still lands in the other register, the reciprocal's register order differs and the two branches still share one call setup; the four forms of the maximum all give that same 47, the round trip with an explicit multiply gives 35, and the maximum's registers follow the live ranges rather than the source order.
 // MiniMax H (11-04): no new form, no lower score; the maximum's comparison operand order, the divisor's round trip through the stack and the shared call setup still differ.
@@ -3536,6 +3542,11 @@ void function_13d80()
 
 extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 
+// MiniMax G (11-13): no new form tried this round, no lower score: the whole difference is still the 0x15a60 call's
+// setup, where retail loads 9 into eax before it zeroes ecx and we zero ecx first; the callee 0x15a60 and its
+// parameter home live in src/unknown_0158f0.cpp, which this lane may not edit, so the setup stays as it is. The
+// reduced check builds this body differently from the plain one (425 bytes against retail's 441 there), so the plain
+// build is the judge of this function.
 // MiniMax H (11-12): no new form, no lower score (2): the whole difference is still the 0x15a60 call's setup, where retail loads 9 into eax before zeroing ecx and we zero ecx first; that callee's parameter home is fixed in src/unknown_0158f0.cpp, which this lane may not edit.
 // MiniMax H (11-11): no new form, no lower score (2): the whole difference is still the 0x15a60 call's setup, where retail loads 9 into eax before zeroing ecx and we zero ecx first; that callee's parameter home is fixed in src/unknown_0158f0.cpp, which this lane may not edit, and the reduced image builds this body differently, so the full check is the judge here.
 // MiniMax I (11-11): no new form, no lower score (2): the whole difference is still the 0x15a60 call's setup, which retail orders eax before ecx and we order ecx before eax; that callee's parameter home is fixed in src/unknown_0158f0.cpp, which this lane may not edit.
@@ -5539,6 +5550,11 @@ void function_1bd50(void *state);
 // retail's 204 bytes, but the score rises to 15, because MSVC gives `movzx eax, word ptr [...]`
 // where retail writes `xor eax, eax` and then `mov ax, word ptr [...]`; the 13-scoring body stays.
 // MiniMax D (11-09): no new form, no lower score: the body is unchanged at 13 (206 bytes against retail's 204); retail takes the fallback as a word in the same register as the other arm (`xor eax, eax`; `mov ax, word ptr [0x4858b8]`) so that both arms write one variable and the value is a phi in eax, while ours loads the long global and masks it, two bytes longer. This round: about sixteen forms (the two-call if/else with a shared or a separate variable, the plain ternary with both arms long or both short, the mixed `(word)` and long ternary, the mixed `(short)` and long ternary, the local-variable forms, the unsigned casts) all score 15 or worse; MSVC if-converts a ternary whose arms share a type into a `cmove`, widens a mixed-type one with a `movzx` or a `movsx`, and gives the value a fresh register when the arms write different variables.
+// MiniMax G (11-13): no new form tried this round, no lower score (13): retail takes the fallback index as a word
+// and widens it with an xor before it hands it over in the same register as the other arm, while ours loads the long
+// global g_4858b8 and masks it, so our body is 206 bytes against retail's 204; the global's declared type is long
+// (retail writes it as a dword) and this lane may not change a shared global's type, and reading it through a cast
+// of its own address is not allowed either, so the body stands.
 // MiniMax R (11-09): no new form, no lower score (13): retail loads the fallback index as a word and widens it with an xor while ours loads the long global g_4858b8 and masks it, and the branch sits after the element argument's push in retail and before it here; the global's type is a declaration this lane may not change, and reading it through a cast of its own address is not allowed either.
 // @retail 0x1c0d0
 void function_1c0d0(long tag, long stage)
