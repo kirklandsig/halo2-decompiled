@@ -4234,6 +4234,10 @@ extern long g_485898;
 // MiniMax A (11-04): the corner locals declared at function scope, before the position 285 (the same code); no lower score.
 // MiniMax D (11-01): the scale as a ternary 288 (worse), reverted; no lower score.
 // MiniMax H (11-12): no new form, no lower score (285): the frame is still 0x38 bytes against retail's 0x34, the 1.0 constant still takes xmm0 where retail holds it in xmm3, and the three byte-to-float conversions still start at xmm1 where retail starts them at xmm0.
+// MiniMax B (11-13): no new form, no lower score (285): retail loads its two constants (2/255 into xmm4, 1.0 into
+// xmm3) before the three byte conversions and keeps the conversions in xmm0..xmm2, so the constant and the
+// conversion registers are the compiler's own order and not the source's; the frame is still 0x38 against retail's
+// 0x34 because retail reuses the position's slots for the four corners.
 // score 285 (was 285): retail's frame is 0x34 bytes and ours 0x38, because retail reuses the
 // position's stack slots for the corner coordinates while we keep two slots of our own, and
 // retail tests the definition's flag byte where it lies while we copy the byte into bl.
@@ -6898,6 +6902,11 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // centres, and both of those interleaved with the array stores - all score 614, because the double context makes
 // our build push ebx and ebp at the entry and grow the frame to 0x4c while retail keeps 0x44 and shrink-wraps the
 // two saves to its own epilogue, so every slot offset differs; a 900-second permuter run found no lower score.
+// MiniMax B (11-13): no new form, no lower score (576): read against retail's listing, its four bounds are the two
+// floored values on the x87 stack (fld dword / fadd dword / fstp qword / floor / fstp dword) and its floor calls take
+// a double, so the values agree with ours and only the arithmetic differs: retail adds and subtracts dword constants
+// on the x87 stack where this build does the same in SSE with other constants; the double form of last round cannot
+// match because the double constants it needs are not in retail's data.
 // score 576 (was 695), Round 1 of #1066: 2436 bytes against retail 2507. Fixed: the 2nd quad and the
 // loop begin with D3DDevice_Begin (retail calls it; ::Begin inlined it), the 1st quad uses the member
 // D3DDevice::SetVertexData4f (inlined, as retail), the first ten stage states go through
@@ -7836,6 +7845,9 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // MiniMax E (11-10): no new form, no lower score (299); the sign-extended group index and the index slot's
 // place in the frame are what the loop's induction variable fixes.
 // MiniMax H (11-12): no new form, no lower score (299): the group index is still sign-extended where retail moves the 32-bit index, the index slot still sits at another offset in the frame, and this build still strength-reduces the group stride into a second counter, which makes the frame 0x1898 against retail's 0x1894.
+// MiniMax B (11-13): no new form, no lower score (299): the group index is still sixteen bits wide where retail
+// moves the 32-bit index, the while-loop form keeps retail's 0x1894 frame, and retail's stride is still an imul of
+// the 0x98 against this build's strength reduction into a second counter.
 // score 299 (was 310): fast score; our group index is sign-extended (movsx esi, ax) where retail moves the
 // 32-bit index, the index slot sits at [esp+0x3c] against retail's [esp+0x58], an extra mov edi, edi stands in
 // the loop head, and the body is 3 bytes longer than retail's.
@@ -8638,6 +8650,9 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
 // MiniMax D (11-10): no new form, no lower score (342): retail keeps the stack parameter in EBX with the -1 sentinel in EBP where ours uses ESI and EBX, so the two homes still differ.
 // MiniMax A (11-04): the character pointer computed before the empty-slot test 374 (worse), reverted; no lower score.
 // MiniMax D (11-01): no new form tried, no lower score.
+// MiniMax B (11-13): no new form, no lower score (328): the frame is still 0x201c against retail's 0x2020 and the
+// 41 missing bytes stand; retail reads the stack parameter into ebx with the -1 sentinel in ebp where ours uses esi
+// and ebx, and loads the font pool before its first test.
 // score 328 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
 // MiniMax B (11-12): no new form, no lower score (328): retail loads the font pool before its first test and keeps
 // it in eax, reads the stack parameter into ebx with the -1 sentinel in ebp, keeps the header at [esp+0x10] and the

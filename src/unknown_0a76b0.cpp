@@ -865,6 +865,9 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// MiniMax B (11-13): no new form, no lower score (92): the origin and direction homes stay swapped and the forward,
+// grenade type and projectile index keep their homes (retail 0x20, 0x2c and 0x30 against our 0x28, 0x20 and 0x24);
+// the permuter over this function found no form either.
 // score 92 (was 92): 152 before m3 lane 14 r83; earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
 // MiniMax H (11-12): no new form, no lower score (92); the permuter over the function managed 17 tries in 301.7 s and found nothing (best 89, baseline 89, no confirming build), so the slot layout stands; this round added the player block's forward vector declared before the origin (92), copied in its declaration (100), and as a function local at the top of the function, above the projectile index and below the grenade type (92 each), which all leave the player's forward at the same home, so retail's forward at 0x20, grenade type at 0x2c and projectile index at 0x30 against our 0x28, 0x20 and 0x24 stands.
 // MiniMax G (11-12): no new form, no lower score (92): the seat index and the direction sit 0xc below retail's slots and the
@@ -2510,6 +2513,10 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// MiniMax B (11-13): reading the weapon index as a 16-bit short, so that the compare is retail's 16-bit one (movsx
+// ax, byte / cmp ax, bx against our 8-bit cmp dl, 0xff), scores 297 - the register allocation shifts - so the byte
+// compare stays; the pool header is still in edi where retail keeps it in ebp and the index in eax where retail keeps
+// it in edi.
 // score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // MiniMax H (11-12): no new form, no lower score (234); the tail's register homes and the 0x1b bit test are unchanged.
 // MiniMax I (11-11): no new form, no lower score (234): the pool's and the offset's register homes are still ebp and edi where retail has edi and ebx, the NONE sentinel still rides in ebp where retail keeps it in ebx, and the lunge's divide still comes from memory.
