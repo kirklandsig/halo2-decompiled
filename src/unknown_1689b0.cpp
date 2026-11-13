@@ -1907,6 +1907,8 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // P449: Face/edge radius-improvement and final face/edge count-admission results in bool/long:
 // eight 623s. NOT kept: no native accumulator-home repair or byte equality; full original body restored.
 
+// P452: Conditional endpoint value, face/edge real divisors, closest/clamped/query-position/normal-input memmoves, native prism endpoint traversal:
+// 620/623/623/719/682/649/610/641. NOT kept: no gain; native accumulator/query-zero homes remain. Original record copies, counts, geometry, helpers and full body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

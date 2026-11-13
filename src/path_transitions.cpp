@@ -896,6 +896,8 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // P450: Separate first/second positive-length continuations, positive/complementary bool/long:
 // eight 218s at 1280 bytes. NOT kept: native early root/actor ingress stays different;
 // one-consumer decisions do not match. Original geometry, result qualifier and full body restored.
+// P452: Separate paired-start/end, actor-success/fallback and trace-initial/recovered point memmoves, then complete paired/actor endpoint contracts:
+// 357/354/341/319/335/245/359/400. NOT kept: all regress; native early root/actor ingress remains. Original record publications, result qualifier, helpers, caller roles and full body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
