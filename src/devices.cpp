@@ -2234,6 +2234,10 @@ bool function_0b6760(s_index_pair const *pair);
 // gives the same code. Retail does keep ECX live across calls to small leaves elsewhere (0x22eb8c after 0x22e37f), so
 // the refresh is an allocation choice, not a missing callee summary.
 // MiniMax A (11-13): no new form, no lower score (250): this build pushes ebp and esi where retail pushes ebx and ebp, and the
+// body is 16 bytes shorter than retail's. This round: dropping the `volatile` on the saved definition pointer, an earlier
+// round's lead, gives 386 at a 0x24 frame, so the qualifier stays. This round: the result local as a `byte` instead of a
+// `bool` scores 245 (the prologue and the result in DL do not change), a gain of five that is under the eight-point gate, so it
+// is reverted; the permuter (300 s, five tries) kept the baseline.
 // body is 16 bytes shorter than retail's.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)

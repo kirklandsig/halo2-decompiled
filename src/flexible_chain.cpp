@@ -611,6 +611,7 @@ void __stdcall function_1160c0(real dt)
 // (`real length = normalize3d(&axis); if (length == 0.f)`) 178 [160], first difference +0xc1; the physics index in a named
 // local for its test and the tag lookup 171; the target point declared with the loop's other locals 171; the direction
 // declared before the position 171; the delta's squared length through dot3f(&delta, &delta) 171 (all four the same code).
+// MiniMax A (11-13): no new form, no lower score (171): the first real difference is still the segments base in edi and the segment in ecx where retail uses edx for both, and retail's homes run length, segment, axis upward where ours are reversed; the rotation's cross terms and their loads follow from those homes.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
