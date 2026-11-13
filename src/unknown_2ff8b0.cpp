@@ -922,6 +922,10 @@ found:
 // command pointer renamed 65; direct command argument 65; const helper input
 // 65; helper result renamed 65; coordinate stores together 65.
 // NOT kept: none improves the original body.
+// Indexed coordinate loop 87; scale captured once 66; vector copied once 84;
+// ordinary conversion inline 84; long conversion result 65; chained clearing 65;
+// aggregate zero initialization 80; mutable node pointer 65.
+// NOT kept: all eight forms tie or regress; original executable text restored.
 // @retail 0x3008d0
 void class_3008d0::function_3008d0(void const *tree_, const __m128 *sphere, s_surface_key_array *keys_)
 {
