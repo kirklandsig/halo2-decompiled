@@ -27,6 +27,12 @@ struct bounds_2fe350
 // products before absolute 31; broadcast intrinsic 43; half extents first 31;
 // mask at each use 31; delayed third absolute 31; separate splat steps 31.
 // NOT kept: no match or qualifying gain; original body restored.
+// Round 94: shared broadcast 31; named extent 39; extent accumulator 39;
+// extents at each use 31; columns first in products 43; mask first 51;
+// incoming tolerance load 52; complete x/y/z terms first 31.
+// NOT kept: no gain; the input load and SIMD register schedule still differ.
+// Serial search: 29 variants, best 27. NOT kept: a scalar cast, mixed
+// operand order and partial expression inlining without equality.
 // @retail 0x2fe350
 void __cdecl function_2fe350(void const *query, const __m128 *half_extents, float tolerance, void *out)
 {
