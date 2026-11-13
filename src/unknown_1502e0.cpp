@@ -923,6 +923,9 @@ struct s_tail_transfer_traits
 	byte grenades[2];
 };
 
+// score 153 (was 153): unchanged this round: the first 0x11c bytes agree with retail; from the
+// selection loop on, the traits pointer comes back in EBP where retail keeps it in EAX, and our three
+// NONE homes sit at +0x18/+0x20/+0x28 against retail's two at +0x1c/+0x24.
 // MiniMax S (11-11): no new form, no lower score (153): the traits pointer comes back from the selection loop in ebp where retail keeps it in eax, and our three NONE homes sit at +0x18/+0x20/+0x28 against retail's two at +0x1c/+0x24.
 // score 153 (was 153):
 // MiniMax C (11-10): the score is 153 (was 153); the traits pointer comes back from the selection loop in EBP where retail keeps it in EAX and the unit index takes the other register, and our three NONE homes sit at +0x18/+0x20/+0x28 against retail's two at +0x1c/+0x24.
@@ -1158,6 +1161,7 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 long function_cbd50(long unit_index, short weapon_index);
 
 // MiniMax S (11-11): no new form, no lower score (215): retail computes the pool element address before the prologue's register saves and keeps it whole in ebp, while this build splits the multiply from the base add, keeps the pool pointer in a register of its own and frames 0x1c against retail's 0x18.
+// MiniMax G (11-12): no new form, no lower score (215): eight forms tried this round (unit local dropped or re-derived, pool and tag table hoisted or reloaded, player in a register or spilled) all score above 215; retail still inlines the weapon-slot lookup and derives the unit twice per iteration where ours calls function_cbd50.
 // score 215 (was 254):
 // MiniMax E (11-09): no new form, no lower score (254); taking the tag table straight from the global in every loop reaches retail's 1006 bytes but scores 275, and hoisting the copy to the declaration keeps the same 254 with the same code.
 // MiniMax H (11-06): the permuter's best form (246) needs a volatile cast, hand-written helper bodies and a
@@ -1508,8 +1512,8 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
-// MiniMax S (11-11): no new form, no lower score (43): every difference is one clean pairwise register rotation (retail: player esi, hand edi, unit index edx, temp ecx; ours: player edi, hand esi, unit index ecx, temp edx).
 // score 43 (was 43):
+// MiniMax S (11-11): no new form, no lower score (43): every difference is one clean pairwise register rotation (retail: player esi, hand edi, unit index edx, temp ecx; ours: player edi, hand esi, unit index ecx, temp edx).
 // MiniMax D (11-08): the saved roles are exchanged - retail keeps the player record in esi
 // MiniMax I (11-10): no new form, no lower score (43); every difference is one clean pairwise register
 // rotation (retail: player esi, hand edi, unit index edx, temp ecx; ours: player edi, hand esi, unit index
@@ -1634,6 +1638,14 @@ void function_150820(dword *bits, bool local_only)
 // the player in esi, the unit index in edx and the hand in edi, ours keeps them in edi, ecx and esi, and both
 // bodies are 210 bytes; the hand as a conditional expression, the unit index in a local of its own and the modes
 // array declared before the unit all leave the code as it was.
+// Round 154 (m3 lane 7, fast; 0x151b80 17 each time unless noted). New: `long hand = 1 - primary;` 68; `result =
+// result || function_cd4e0(...)` 87 (198 bytes); `result |= function_cd4e0(...)` 95 (193 bytes). Applied to 0x151aa0
+// and 0x151b80 together (re-measures here, all listed for 0x151aa0): `primary ? 0 : 1` 43 (0x151b80 17), the result
+// declared before the player 43 (0x151b80 35, 138 bytes), a unit_index local for the test and the lookup 43 (0x151b80
+// 17). Diagnostic: one to four unused named locals change nothing (43). 0x151b80 shows the same ESI/EDI exchange the
+// other way round (retail unit index in EDI, ours ESI). No other untried natural form found: declaration orders,
+// hand/slot/result widths and spellings, result graphs, early exits, existing getters, pool copies, lifetimes, joint
+// forms with 0x151b80 and permuter runs are all listed above.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

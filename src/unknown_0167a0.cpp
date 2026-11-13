@@ -1076,22 +1076,25 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // places those blocks at 18/19's positions); the 14/18 chain as `out[1] = out[2] = out[3]` 4, as
 // separate statements 2 (same code), that with the 12/13 chains reversed 6. Any change to the 12/13
 // pair's order flips cases 10 and 14 to +0xc first as well, while the shared tail stays +0xc first.
-// MiniMax C (11-09): score 2 (was 2): the shared tail's zero pair is out[3] before out[2] in every
+// MiniMax C (11-09), earlier: the shared tail's zero pair is out[3] before out[2] in every
 // spelling; writing the second zero through a pointer expression (`out[2] = 0.0f; *(out + 3) =
 // 0.0f;`) scores 6, because the independent stores also reorder cases 10 and 14/18 into
 // descending pairs. Original body restored.
-// MiniMax C (11-09): score 2 (was 2): the tail that cases 12 and 13 share still stores out[3]
+// MiniMax C (11-09), earlier: the tail that cases 12 and 13 share still stores out[3]
 // before out[2], retail stores out[2] first. Reversing the zero chain in both cases and writing
 // the two zeros as separate statements each score 6, and each flips the store order in cases
 // 10 and 14/18 with them; the pointer copy that matches exactly hides the write summary and
 // costs 0x19ca0 its match, so it stays rejected.
-// MiniMax C (11-09): score 2 (was 2): the shared tail's pair is out[3] before out[2] in every
+// MiniMax C (11-09), earlier: the shared tail's pair is out[3] before out[2] in every
 // spelling: the chain in either direction, two separate statements and a chain with a repeated
 // target all compile to the same descending pair and score 6, because they also flip the store
 // order in cases 10 and 14/18; putting the zeros ahead of the width and height stores in case 13
 // rebuilds the whole switch (97). Original body restored.
 // MiniMax S (11-10): no new form, no lower score (2): the shared case 12/13 tail still stores out[3] before out[2] where retail stores out[2] first; a descending pair of statements (out[3] then out[2]) scores 2, the chain in either direction, an ascending pair of statements, a pair that reads the first zero back and a local zero score 6, and the pointer form that matches byte for byte costs 0x19ca0 its match (0x19ca0 then scores 130), so the body stays as it is.
 // MiniMax R (11-10): no new form, no lower score (2): the shared tail's zero pair is out[3] before out[2] in every spelling tried (the chain in either direction, two separate statements, a repeated target: 6 each); a reference to the array in the tail also scores 6, and the pointer form that matches 0x1b2c0 byte for byte costs 0x19ca0 its match (130), so it stays rejected.
+// New: existing clamp helper 257; standard fill in pair/width/zero-only/
+// height ranges 94/68/119/68; pair plus width 97; all ranges 137;
+// standard color copy 141. NOT kept: all regress; range forms also lose a caller.
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {

@@ -459,6 +459,15 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // them). A byte scan of retail finds this append sequence in no other function, and the matched functions with an
 // unfolded setcc/test (0x4b160, 0x3d2c0, 0x56b70...) get it from a bool assigned in a switch or tested twice, which does
 // not fit here.
+// Round 86 (m3 lane 13, fast): bool append helpers again, looking for a form that keeps the count out of the scratch
+// registers (retail holds it in ESI and copies it to EAX for the post-increment, as our build does for a count that
+// lives in a stack home): a room helper and an index helper (`return list->count++`) under a bool append 51; the result
+// preset false and assigned under an `if (entry)` that folds after inlining 32; a count local with `long index =
+// count++; list->count = count;` 51; the room helper taking the count by value under the bool append 32; success handed
+// back through a bool out-parameter 32; one success flag shared with the 0x1368f0 file test 32 (the webs split). All
+// keep list EDX, count EAX, bool CL. Diagnostic: a function-scope count used after the loop 211 (701 bytes): the count
+// then loads into ESI with a stack store, list EAX, index EDX, so a count the allocator treats as a variable with a
+// home gives retail's ESI; no natural form found that makes it one without the store.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

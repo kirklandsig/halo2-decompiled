@@ -499,6 +499,10 @@ struct s_ai_scene_assignment
 // `*assignment_count += 1` 12 and `(short)(role_index + 1)` for the recursion 12 (both same code). Re-measured, not
 // counted: the direct maximum in a plain (full-image) check 59 (350 bytes, as --fast), with role_index renamed to sort
 // first 59 (names do not break the ESI tie).
+// Round 76 (m3 lane 2, fast): the loop as `for (iterator_new(...); iterator_next(&it);)` 12; the body nested under
+// `if (local_3 != NONE)` as one exit 12; the switch default setting NONE for the shared test 12; the leaf copy as
+// `*local_0 = local_0[-1]` 24 (347 bytes: the leaf's element address then takes EBP directly, the first difference moves to
+// the scorer call's reload order); the int copy of the maximum declared per iteration in the loop body 12.
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

@@ -112,7 +112,7 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // point helper produces; this round the surface index store moved to the top of the body scores 6 (no change) and is
 // reverted.
 // MiniMax I (11-09): no new form, no lower score; the x store split from the helper as its own array element, through a union view, through an int pun and with the components written through the union's array members score 110 to 140, the helper called with the array address scores 38, and the permuter (2400 s) found no candidate; this round the surface index as a member initializer scores 6, the value store before the surface pointer 33 and the surface index stored last 123, the helper called with the array address 25, a point3f pointer local 6, no vertex local 38 and the tag through the vertex 58; the entry loads the radius constant before the index where retail loads the index first, and the x store folds the vertex address into the store's operands where retail forms the address first.
-// score 6 (was 6): this round: no new form and no lower score; the entry still loads the index before
+// Earlier: this round: no new form and no lower score; the entry still loads the index before
 // the radius constant where retail loads the constant first, and the loop still forms the vertex address
 // before its x store where retail folds the address into the store.
 // MiniMax S (11-09, second round): no new form, no lower score (6); the entry still loads the
@@ -179,7 +179,7 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // surface_index first) and the vertex pointer taken as a point3f pointer all
 // leave the two differences in place, and the w store written through the array
 // again is worse (38).
-// score 6 (was 6): radius/index loads swap; vertex x uses the completed
+// Earlier, also at 6 (one note now): radius/index loads swap; vertex x uses the completed
 // address before its store. Derived count/kind/value initializers 33; all
 // member initializers 6; index/count/kind initializers 6; const source 6;
 // point memcpy 120; point value with in-place transform 128; word edge
@@ -196,6 +196,20 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // through the array element as a long copy (119), through the point3f view of that element (119) and
 // the helper called on the array element (38) are all worse, and writing the three components
 // separately (112) turns the y and z stores into long copies.
+// Round 98 (m3 lane 10, fast with 0x1ee4d0, 0x1ee500, 0x1ef950; control 6). Finding: retail's 0.01 radius is not a literal:
+// 0x47f068 is in .data and only this function reads it, so the source passed a global to the base constructor; with
+// `real g_47f068 = 0.01f;` (or const) as that argument the code is the same 6 (the index is still loaded first), so the
+// literal stays for now. Vertex stores: through the existing 4-component set of include/unknown_1cec30.h (element indexed,
+// element address, a named reference, w passed) 6 each (same code); through a file-local vector with direct member stores
+// or a 4-real free setter given the element address (inline or forceinline) 6 each; through a real array-of-vectors view of
+// the member (so the element is an lvalue) with either setter 6/6, with four direct member stores 106; four m128_f32 element
+// stores through a named vertex 106. Every setter form materialises the vertex address before the x store; retail's
+// `mov [eax + ecx], edx; add eax, ecx` is the shape main's 0xa3df0 gets from a pointer whose first use is folded and
+// which is formed only for a later use. One compiler-setting diagnostic (not kept): /G5 or /G7 on the file 6, nothing moves.
+// Round 416: Advancing output cursor 92 (445 bytes); persistent edge cursor 117;
+// read-only edge pointer 6; post-transform point selection 6; memmove point copy 125 (459 bytes);
+// immutable output cursor 6; unsigned full-width edge ordinals 6; existing shared point transform
+// 323 (256 bytes). All restored; radius/index loads and the first vertex address/store remain.
 // @retail 0x1edd00
 c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, long index,
 	long user_data, const transform4x3f *matrix) : radius_shape_2de750(0.01f)

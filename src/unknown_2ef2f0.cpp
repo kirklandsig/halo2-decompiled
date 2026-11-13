@@ -130,6 +130,10 @@ void *__cdecl function_2ef2f0(long arg_0, long arg_1, long arg_2, long value)
 // carriers differ before growth. First extent at use 11; direct radii/all fields 13/13;
 // radius/extent references 13/11; scalar broadcast loads 89; late second radius 13;
 // staged vector broadcasts 64. NOT kept: tied or larger differences; original observations restored.
+// First radius before second shape 11; both radii before extent 11; both
+// extent snapshots 71; scalar-set/shuffle broadcasts 72; four-lane broadcasts
+// 157; immutable output vectors 11; aligned extent loads 11; copy then add 72.
+// NOT kept: no gain.
 // @retail 0x2ef3b0
 void manifold_pair_2ef2f0::function_2ef3b0(description_2ed170 const *a, description_2ed170 const *b, input_2ef2f0 const *input, long arg_3)
 {
@@ -155,39 +159,31 @@ public:
 
 // the two boxes grown by their radii, and the contact found between them
 // passed on
-// score 13 (was 13): frame 0x168 and extent 273 agree; the second radius loads late,
-// contact uses +0x30 instead of +0x10, and grown vectors use +0x10/+0x20 instead of +0x40/+0x50.
-// Contact after query/after timer/renamed 13/13/13; paired radii alone/with renamed or late
-// contact 35/35/35; scalar broadcasts 82; first extent and paired radii 35.
-// NOT kept: ties or regressions; original inputs and full body restored.
 // @retail 0x2ef4b0
 void box_pair_2ef4b0::function_2ef4b0(description_2ed170 const *a, description_2ed170 const *b, input_2ef2f0 const *input, collector_2ef4b0 *collector)
 {
-	contact_307f90 contact;
 	timer_add_2ebc80("TtBoxBox");
 	box_2ef3b0 const *first_box = (box_2ef3b0 const *)a->shape;
 	box_2ef3b0 const *second_box = (box_2ef3b0 const *)b->shape;
-	__m128 grown_first = _mm_add_ps(first_box->half_extents, _mm_set_ps1(first_box->radius));
-	__m128 grown_second = _mm_add_ps(second_box->half_extents, _mm_set_ps1(second_box->radius));
-	query_2ef260 query((long)a, (long)b, 0, 0, 0, (long)a->placement + 0x20, grown_first,
-		(long)b->placement + 0x20, grown_second, input->tolerance);
-	contact.a = a;
-	contact.b = b;
+	contact_307f90 contact;
 	answer_307f90 found;
-	query.function_307f90(&found, &contact);
-	if (found.value)
 	{
-		collector->slot_1(&contact);
+		__m128 grown_first = _mm_add_ps(first_box->half_extents, _mm_set_ps1(first_box->radius));
+		__m128 grown_second = _mm_add_ps(second_box->half_extents, _mm_set_ps1(second_box->radius));
+		query_2ef260 query((long)a, (long)b, 0, 0, 0, (long)a->placement + 0x20, grown_first,
+			(long)b->placement + 0x20, grown_second, input->tolerance);
+		contact.a = a;
+		contact.b = b;
+		query.function_307f90(&found, &contact);
+		if (found.value)
+		{
+			collector->slot_1(&contact);
+		}
 	}
 	timer_add_2ebc80("Et");
 }
 
 // the same as a function
-// score 13 (was 13): frame 0x168 and length 271 agree; the second radius loads late,
-// and contact/first/second vectors use +0x30/+0x20/+0x10 instead of +0x10/+0x50/+0x40.
-// Contact at entry 13; vector declarations at entry 13; const grown vectors 13;
-// query/contact role names 13/13; paired radii 35; cached extents 17; in-place growth 77.
-// NOT kept: ties or regressions; original observations and complete body restored.
 // @retail 0x2ef5d0
 void __cdecl function_2ef5d0(void const *a_, void const *b_, void const *input_, void *collector_)
 {
@@ -197,18 +193,20 @@ void __cdecl function_2ef5d0(void const *a_, void const *b_, void const *input_,
 	timer_add_2ebc80("TtBoxBox");
 	box_2ef3b0 const *first_box = (box_2ef3b0 const *)a->shape;
 	box_2ef3b0 const *second_box = (box_2ef3b0 const *)b->shape;
-	__m128 grown_first = _mm_add_ps(first_box->half_extents, _mm_set_ps1(first_box->radius));
-	__m128 grown_second = _mm_add_ps(second_box->half_extents, _mm_set_ps1(second_box->radius));
-	query_2ef260 query((long)a, (long)b, 0, 0, 0, (long)a->placement + 0x20, grown_first,
-		(long)b->placement + 0x20, grown_second, input->tolerance);
 	contact_307f90 contact;
-	contact.a = a;
-	contact.b = b;
 	answer_307f90 found;
-	query.function_307f90(&found, &contact);
-	if (found.value)
 	{
-		((collector_2ef4b0 *)collector_)->slot_1(&contact);
+		__m128 grown_first = _mm_add_ps(first_box->half_extents, _mm_set_ps1(first_box->radius));
+		__m128 grown_second = _mm_add_ps(second_box->half_extents, _mm_set_ps1(second_box->radius));
+		query_2ef260 query((long)a, (long)b, 0, 0, 0, (long)a->placement + 0x20, grown_first,
+			(long)b->placement + 0x20, grown_second, input->tolerance);
+		contact.a = a;
+		contact.b = b;
+		query.function_307f90(&found, &contact);
+		if (found.value)
+		{
+			((collector_2ef4b0 *)collector_)->slot_1(&contact);
+		}
 	}
 	timer_add_2ebc80("Et");
 }
@@ -257,6 +255,9 @@ public:
 // Second-radius load remains late; second radius first 24, both radii first 24, first
 // extent with radii 24, separate splats 29, mutable extents 76, const extents 6, native scalar vector
 // load 62, extent role names 9.
+// Delayed second shape 25; direct shape reads 25; box references 6;
+// radius references 6; extent references 6; vector-return growth 6;
+// output-reference growth 6; aligned extent loads 6. NOT kept: no gain.
 // @retail 0x2ef6e0
 void box_pair_2ef6e0::function_2ef6e0(description_2ed170 const *a, description_2ed170 const *b, input_2ef2f0 const *input, pair_collector_2ef6e0 *collector)
 {
@@ -284,6 +285,9 @@ void box_pair_2ef6e0::function_2ef6e0(description_2ed170 const *a, description_2
 // Second-radius load remains late; second radius first 24, both radii first 24, first
 // extent with radii 24, separate splats 29, mutable extents 76, const extents 6, native scalar vector
 // load 63, extent role names 9.
+// Delayed second shape 25; direct shape reads 25; box references 6;
+// radius references 6; extent references 6; vector-return growth 6;
+// output-reference growth 6; aligned extent loads 6. NOT kept: no gain.
 // @retail 0x2ef7f0
 void __cdecl function_2ef7f0(void const *a_, void const *b_, void const *input_, void *collector_)
 {
