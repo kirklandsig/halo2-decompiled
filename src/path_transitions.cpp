@@ -885,6 +885,14 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // T100: Paired positive/fallback endpoint publication sets 1/2/3/4/5/6/7, then full
 // direct-success completion: 417/499/405/353/351/368/406/415. NOT kept: no native
 // early root/actor recovery or equality; original helpers, result and full body restored.
+// P443: Complete corner-index receiver, double-factor negation, endpoint receivers, radius-owner receiver,
+// guarded parent-output reference, four corner role names, paired length declarations and sole result exit:
+// 219/362/220/218/219/218/218/228. NOT kept: no native ingress/home repair; original complete body and helpers restored.
+// P445: Actual diameter and clearance results, paired widened-distance transport, consumed
+// negation return, trace rejection, parent-presence and complete corner admissions, separate projected/clamped fraction:
+// 218/218/368/218/218/219/219/228. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P447: Immutable paired lengths/projections/reciprocal/distances/corner pointers/actor-trace receivers; original-site lower/upper margin admissions:
+// 218/218/218/218/218/218/218/218. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

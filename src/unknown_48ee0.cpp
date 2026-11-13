@@ -23,6 +23,9 @@ extern real g_4c9798[36];
 // slot, and the frame's slots still run from the mode up where retail's start with the size.
 // MiniMax B (11-12): no lower score than 174: the mode flag in a byte local gives retail's exact length (1479 bytes)
 // but scores 176, and it in an int local, in a bool local or in one ternary gives 174, 174 and 174.
+// MiniMax A (11-13): no new form, no lower score (174): the mode bit loads the flags into EDX where retail uses EAX,
+// the size stays in a register across the two rounding calls where retail reloads it from its slot, and the frame's
+// slots still run from the mode up where retail's start with the size; the rounding callee now matches.
 // score 174 (was 174; 178 before): the far plane's near distance goes into a named local so the three
 // point components share one load; the mode bit still loads the flags into edx where retail
 // uses eax, and the size stays in a register across the rounding calls where retail reloads it.
