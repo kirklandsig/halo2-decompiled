@@ -2259,6 +2259,7 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // subsets 1/2/4/3/5/6/7, then entry-declared destinations: 492/492/492/492/492/492/492/492.
 // NOT kept: one-use call-result storage misses equality; original expressions,
 // all call tuples and complete body restored; frame 0x90/0x94 remains.
+// MiniMax B (11-13): no new form, no lower score (492): the frame is still 0x90 against retail's 0x94 and the scale output's home is still at +0x68 against retail's +0x84; retail computes delta i, j, k and then reflected j, i, k.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

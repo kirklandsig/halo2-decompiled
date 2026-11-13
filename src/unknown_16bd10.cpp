@@ -1050,6 +1050,7 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // direction-position/origin-position/all/all immutable: 501/505/435/544/552/538/590/590.
 // NOT kept: input copies grow the frame/extent and do not recover native direction-j
 // preload or zero/normal allocation. Original shared math, timer and full body restored.
+// MiniMax B (11-13): no new form, no lower score (331): the plane length's hoisted load still takes the normal's other component first, so retail's zero sits in xmm0 and ours in xmm1; the permuter cannot search this function because the reduced image scores it 348 against 331.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

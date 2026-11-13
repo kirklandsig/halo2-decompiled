@@ -4372,6 +4372,7 @@ void function_c9e70(long unit_index, dword flags, s_type_1e6529 const *data, s_d
 // delegated name admission 168; bound defaults 154 (599 bytes; NOT kept: one-use bound copy
 // adds a nonnative transfer); branch-owned found 159 (NOT kept: gain four below eight); index
 // lifetime, uniformly const unit and property-value name 163/163/163. Original body restored.
+// MiniMax B (11-13): no new form, no lower score (163): our build returns an immediate and clones the store into the 0.0 case (608 bytes against retail's 578), where retail keeps the constant 1 in bl and sends every case to one shared store tail.
 // @retail 0xc6b90
 bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *active)
 {
@@ -4716,6 +4717,7 @@ void function_c50a0(long unit_index)
 // P435: readonly tag/child, immutable previous driver, seated-only driver scope, immutable
 // seat flags, conditional pass assignment, outer pass workspace and traversal role names all 166;
 // typed unit flag fields 166, plain 166. Entry pool/vehicle allocation still differs.
+// MiniMax B (11-13): no new form, no lower score (166): retail keeps the vehicle pointer in esi and the header table pointer in edx and pushes its registers after the index arithmetic, ours keeps the vehicle in ebp and pushes first; the body is four bytes longer than retail's.
 // @retail 0xcc810
 void __stdcall function_cc810(long vehicle_index)
 {
@@ -4872,6 +4874,7 @@ void __stdcall function_cc810(long vehicle_index)
 // P434: immutable coefficient pair/root, entry-scope coefficients/root/time, descriptive
 // coefficient/root-result names, and complete single-completion outcomes each 162. NOT kept:
 // all tie; the discriminant stays on x87, frame 8 remains, and the first difference is +7.
+// MiniMax B (11-13): no new form, no lower score (162): the one-use discriminant is still evaluated on the x87 stack where retail keeps it in SSE, and the done flag is still a byte store here against retail's dword store.
 // @retail 0xc7300
 void __stdcall function_c7300(real distance, real velocity, real speed_limit, real acceleration, s_unit_motion *motion)
 {
@@ -5136,6 +5139,7 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // P435: angle/vector/frame role names, result first, CRT forward copy, readonly
 // receivers and immutable scales 169; direct projection field reads 262; alias-safe
 // in-place staged crosses 188. NOT kept: no gain; native cross loads and scalar homes remain.
+// MiniMax B (11-13): no new form, no lower score (169): the three direction sums' last term still multiplies the matrix component by forward_scale on the x87 stack where retail keeps the scale in a register until two final pops, and retail loads up.k and up.j first where ours preloads all three.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -7366,6 +7370,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // difference +0xed; aligned with registers masked only the zoom block's reload and the loop pad remain; unmasked
 // also the two `test al, al`, `movsx edx, bl` for the scale, `[ecx + edx + 8]` at the second loop's two unit
 // lookups where ours has `[edx + ecx + 8]`, and `shl cx, 1`); with the 0xcbd50 zoom weapon too 266.
+// MiniMax B (11-13): no new form, no lower score (253): retail keeps the flags in a stack dword and spills `first`, ours keeps the control word in edi and does not spill `first`; the 0x113da0 and 0x113df0 results are tested as al in retail and as eax here.
 // @retail 0xc58f0
 bool __stdcall function_c58f0(long unit_index)
 {
@@ -7660,6 +7665,7 @@ struct s_unit_turn_state_view
 // single exit 410 (1691; masked aligned 83 stack / 52 register against 103 / 68 here, the lead), plus an early
 // `return false;` or `return moved;` for the two start tests 431. Every single-exit form saves all four registers
 // at entry with an unused bottom slot (frame 0x80); retail saves EBX inside the `if`, EDI around the state pointer.
+// MiniMax B (11-13): no new form, no lower score (395): `moved` still sits in ebx for the whole function where retail keeps it in a stack byte, and ours still makes one reciprocal of the shared `step` where retail divides twice by the stored step.
 // @retail 0xc60c0
 bool __stdcall function_c60c0(long unit_index)
 {
@@ -7942,6 +7948,7 @@ real function_50650(real cosine);
 // keeps the calls out of line only when they sit in a conditional block (round 197's tests), never from the size
 // of the caller or the callee's linkage.
 // MiniMax R (11-11): no new form tried this round, no lower score (563): retail tests its second pointer at the entry and leaves the body when it is null, this build stores two zeroed speeds first and only then branches, and the frame is 0x8c against retail's 0x80.
+// MiniMax B (11-13): no new form, no lower score (563): retail tests its second pointer at the entry and leaves the body when it is null, ours stores two zeroed speeds first and only then branches; the frame is 0x8c against retail's 0x80.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
