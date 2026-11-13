@@ -2704,6 +2704,8 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // equality; original complete case graph and countdown comparisons restored.
 // P444: animation planar setter 501f; motion planar setter 494f; turning planar setter 490f; fallback planar setter 633f; case-four array difference 479f; nearest-candidate array difference 479f; retained-target array difference 479f; facing-input vector setter 627f.
 // NOT kept: native entry remains, but planar/case/exit transport does not match; original complete body restored.
+// P446: Actual case-five request, animation query, native mode, both subtype results, case-18/21 admissions and secondary-countdown producer;
+// 479/479/479/479/479/479/479/479. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
