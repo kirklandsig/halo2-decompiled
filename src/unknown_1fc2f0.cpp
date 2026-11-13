@@ -685,6 +685,17 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // through the existing vector3f_add 87; dot3f with the correction through vector3f_add 57 (369 bytes, the listed vector3f_add
 // form). New forms: the limit as `rate / 2.0f` 32, `real const limit` declared where computed 32, the root's product
 // rate-first 32 (all three the same code); the location tests state-first 36. Body unchanged.
+// M3 lane 2 r77 (fast with 0x1fc660, control 32): no unlisted natural form found for the coupled delta/store order: delta
+// and length orders, the prediction and tick stages through the existing helpers or written per component, in-place forms,
+// declaration places and the limit spellings are all listed above. Body unchanged.
+// M3 lane 7 r156 (fast with the file's five matched functions and 0x1e55d0): the squared length summed from the raw velocity
+// differences with the delta formed in the then-branch only 83 (378 B); the deltas j, i, k kept for the correction with the
+// length summed from raw differences i, j, k 77 (371 B; the sum is then not reassociated), the same k, j, i 77; the correction
+// written back into `velocity` with one output copy after the if 50 (366 B); the root through the existing magnitude3d(&delta)
+// 46 (366 B: inlined, its sum CSE'd with the squared length; chains i, j, k with stores i, j, k), with the deltas i, j, k 64,
+// i, k, j 64, k, i, j 38, j, k, i 59, k, j, i 54; the squared length through the existing out-of-line distance_sq3f
+// (0x24550, inlined) of state->velocity and velocity with the deltas j, i, k kept 103 (386 B: the differences are formed
+// twice), the deltas formed in the then-branch only 83 (374 B), the deltas i, j, k 98 (382 B). Body unchanged.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

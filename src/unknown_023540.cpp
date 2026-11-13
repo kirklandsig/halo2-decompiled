@@ -2639,6 +2639,7 @@ dword __cdecl function_131fc0(real alpha);
 // the missing caller is not what keeps the parameters in registers. A permuter run (43 tries in 622 s) reached 105 only
 // through an `int` temporary for one texture coordinate (changes what is drawn) and two volatile casts; nothing usable.
 // MiniMax A (11-11), NOT kept (coordinator 11-11): 140 -> 54 with both default-rectangle fallbacks written through volatile pointers to the parameters; volatile is reverted, body at 140.
+// MiniMax B (11-13): no new form, no lower score (140): our build still hoists the preserve_alpha load above the `simple` branch (kept in cl across 0x131fc0) where retail loads it after the branch and again in bl; the tail's two parameter-home writes are retail's.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -3024,7 +3025,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
-// score 54 (was 94): both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
+// score 54 (was 54): earlier 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
 // before; frame, bounds block, both trig sequences and every home retail's). Left: inside both corner sets
 // the scheduler places the x87 coordinate chains one slot earlier among the SSE ones than retail does
 // (first difference +0x527). Round 176 (m3 lane 5, fast = plain): the hand-written slot-12 shader call
@@ -3230,6 +3231,12 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // reproduces the corner region of that base exactly; the helper's spellings (four u sums, three v sums, scale/bias/half
 // operand sides, statement order: 192 forms, 6 distinct codes) give nothing closer to retail than main's spelling.
 // MiniMax R (11-11): no new form tried this round, no lower score (94): the body is retail's length and the first difference is at +0x524, where the address of a global that is not matched yet differs, so most of the score here is the unmatched globals and not the statements.
+// M3 lane 8 r161 (fast with 0x144f0, 0x14bc0, 0x1c590, 0x1c710, 0x1ccf0, 0x1cf50, 0x131fc0, 0x222d0, 0x288e0, all MATCH;
+// control 54): each angle's cosine and sine in a two-element array passed to the corner helper by pointer 165 (2010 B);
+// the corner helper plain `static inline` 54 (same code); a four-corner helper per set taking the cosine and sine 54
+// (same code), taking the angle and computing the pair itself 127; both corner buffers as one two-row array 54 (same code;
+// re-measure of the 211-era form). Left: in both corner sets our scheduler issues each x87 chain step one slot ahead of
+// retail's (first at +0x527: the c[3] `fstp` ahead of c[1]'s `subss`). Body unchanged.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

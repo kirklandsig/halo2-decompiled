@@ -1588,6 +1588,12 @@ void function_2422d0(long slot)
 // accessor 7 (both the same code); loop 2 as `while` with the increment at the body's end 7 (same code); no slot
 // local re-measured 79 (a repeat of round 42's form). Diagnostics: without loop 3 the swap stays (71); without loop 2
 // the whole allocation moves (108).
+// Round 174 (m3 lane 6, fast; the one-file harness does not reproduce this function): the getter given a second
+// read of the team entry through a `dword const` view, the index local before or after it 7/7 (merged, same
+// code); the object looked up by the entry's low word through a `word const` view 47 (`movzx eax, bx`: the object
+// takes EDI as in retail, but the index takes EBX and the team walker EBP); a header pointer local between the
+// index and the object 7 (same code); the absolute index as a named `word` local 81; the entry held as an
+// index/salt pair with the pair's index for the lookup 81.
 // @retail 0x2423f0
 bool function_2423f0()
 {

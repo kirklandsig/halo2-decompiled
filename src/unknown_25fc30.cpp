@@ -1737,6 +1737,8 @@ struct s_collision_result_25f7b0
 	byte unknown26[0x5c - 0x26];
 };
 
+// score 4 (was 4): the collision bool's byte home is +0x13 where retail keeps it at +0x10, and the product loads the
+// hit fraction where retail loads the distance. Earlier notes, merged into this one:
 // MiniMax G (11-10): no new form, no lower score (4): the hit fraction held in a named local scores 2 (the product becomes distance times fraction), but that local holds a value used once and the form is recorded above as not kept, so the original body stays. The collision flag's byte home is still +0x13: declaring it in the outer scope, and three named bool comparisons in the else branch (each used once in a condition), do not move it, because those bools are dropped before the frame is laid out; inlining the flag's expression at its use drops the slot and the code (256).
 // MiniMax C (11-09): no new form, no lower score (4): the full build's diff is only the collision
 // flag's byte home, ours at +0x13 where retail has +0x10; the rest of the frame agrees slot for
@@ -1760,7 +1762,7 @@ struct s_collision_result_25f7b0
 // MiniMax B (11-06): the hit fraction read into a named local before the distance is computed scores 2,
 // but that local holds a value used once and the same form was recorded as not kept on 10-31, so the
 // original body is restored (4); only the collision bool's byte home is left.
-// score 4 (was 7): the collision bool's byte home is +0x13 where retail keeps it at +0x10,
+// Earlier (4, was 7): the collision bool's byte home is +0x13 where retail keeps it at +0x10,
 // and the product loads the hit fraction where retail loads the distance.
 // Earlier rounds (7 or worse): byte collision flag, byte allow flag, long initial mode, short
 // collision flag, scoped ray setup/result, guarded collision fraction, hit distance, native
@@ -1827,6 +1829,17 @@ struct s_collision_result_25f7b0
 // 4/4/4/4/4/4/4; native signed-byte attachment decision 4. All restored.
 // The one-use predicate results are restored without an exact match; byte +0x13/+0x10 and the
 // distance/fraction product loads remain.
+// Round 97 (m3 lane 1; fast with 0x1c8df0, 0x1e55d0 and 0x1e1f20 listed: alone the fast check carries a caveat
+// and misbuilds this function, 261 at 916 bytes for every form). The first branch is 0x1c8df0 with constant
+// arguments (the ones 0x1b2770's call passes). Calling it there with the callee kept out of line 525 (670 bytes, a
+// call); with the callee's noinline declaration dropped the call is inlined here (249, 921 bytes: the parent bool
+// goes to BL and the frame is 0x7c) but also into matched 0x1b2770 (656, 1359 bytes), so not kept. One
+// function-scope bool for the parent test assigned in both branches 49 (952 bytes). The hit fraction as a local in
+// the hit block (the listed form) 2, declared at the branch top 2, with a zero store on the not-visible arm 2, at
+// function scope 2: only the bool's home is then left, and none of them moves it. Reading of the frame: retail's
+// three dword slots are +0x10 (this bool alone, its low byte), +0x14 (the else branch's mode, then its allow bool
+// in the same slot's low byte) and +0x18 (distance / side count); ours gives the lone bool a 1-byte home placed
+// after the dword slots (+0x13), so retail's bool is held in a dword slot the way a spilled call argument is.
 // @retail 0x25f7b0
 void __stdcall function_25f7b0(long arg_0, s_type_967e20 *arg_1, s_type_b36ac5 *arg_2)
 {

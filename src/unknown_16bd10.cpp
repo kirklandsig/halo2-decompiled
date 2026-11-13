@@ -727,13 +727,13 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
+// score 331 (was 331; 331 before): round 95 (m3 lane 11) note at the end; round 112 (m3 lane 12) before it. Earlier at 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
 // MiniMax H (11-11): no new form, no lower score (331); retail keeps the point case's normal in XMM3/4/5 with the zero in
 // XMM0 and ends case 2 with a read-modify-write `or [ebp], 0x40`, while ours splits the flag updates and keeps the zero in XMM1.
 // MiniMax C (11-11): no new form, no lower score (331): the length agrees (1696 bytes); case 2 still
 // loads the camera normal's j for the squared length where ours picks the function-wide zero register,
 // and the dot3f helper that computes it lives in include/unknown_0259d0.h, which this lane may not
 // edit; the point case's normals also still take XMM5/3/4 where retail gives them XMM3/4/5.
-// score 331 (was 331; 331 before): round 112 (m3 lane 12) note at the end. Earlier at 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
 // Earlier 331 (was 331; 385 earlier, 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
 // MiniMax C (11-05): no new form, no lower score; the plane's three normal copies are reloaded in the same order in both (i, k, j), but retail gives them XMM3/4/5 for i/j/k where ours gives XMM5/3/4; the squared length in field order scores 389, in k,i,j order 243, with the first two addends swapped 238, written from the direction alone 465, and with the multiply operands swapped it is byte-identical at 236.
 // b5K 11-06 statement walk against retail found no wrong field, offset, condition, callee or loop; the one
@@ -1040,6 +1040,17 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // for `fov = target`; a listed form, round 84's target local) 360; the time ratio pinned in its initializer 337; the blend written `start + (target - start) * t` 331 (same
 // code); `t` declared ahead of the function_13cb40 test 331 (same code). In the plane block: the length as dot3f(&plane.n,
 // &plane.n) 361; plane.n copied member by member 437 (1664 bytes).
+// M3 lane 11 r95 (fast with the file's matches, 0x16c6f0, 0x13cb40; base 331, masked aligned 38): the FOV blend reading
+// start from the field at both uses (no `start` local) 337 (masked 55); `if (function_13cb40() && target != 0.0f)` as one
+// test 331 (same code); the yaw rotation's products written `offset * cosine` / `offset * sine` 331 (same code: VC picks
+// the copied operand itself; retail copies the sine, ours the offset); `vector3f offset` declared before sine and cosine
+// 331 (same code); `command->distance = 0.0f - distance;` ahead of the offset rows 331 (masked 32: retail computes that
+// subtraction first and the three forward products before the other subtractions; a statement order, not kept). Body restored.
+// T96: Actual direction/origin/observer-position input values, then direction-origin/
+// direction-position/origin-position/all/all immutable: 501/505/435/544/552/538/590/590.
+// NOT kept: input copies grow the frame/extent and do not recover native direction-j
+// preload or zero/normal allocation. Original shared math, timer and full body restored.
+// MiniMax B (11-13): no new form, no lower score (331): the plane length's hoisted load still takes the normal's other component first, so retail's zero sits in xmm0 and ours in xmm1; the permuter cannot search this function because the reduced image scores it 348 against 331.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

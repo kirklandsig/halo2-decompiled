@@ -639,6 +639,12 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // difference (a preheader reload pair in the other order) went away when a local copy of a pool global with a re-read after a call was
 // replaced by the global read at each use; here the matching change, `iterator->b` read at each use with no re-read, is listed at 42/46.
 // Levers left outside this body: 0xb8d30's side-effect summary (its file, src/unknown_0b8ca0.cpp, was another lane's this round).
+// Round 113 (m3 lane 16, fast): `found == false` 2; each arm breaking on its own call with no `found` 2; the visited words as
+// long 2; the graph local declared in the loop body 2; the render model read as `((long const *)model)[1]` 2 (all the same
+// code: our back edge still reloads the table before the state). Every callee under the loop (0xb8d30, 0x1dcfa0, 0x1dcf20,
+// 0x1d90e0 and theirs) is matched, so the summaries that order the reloads cannot be changed without touching matched code.
+// Also: `alternate` copied into a bool local for the loop's test 2; each arm's graph lookup and iterator stores in a
+// forceinline helper returning the graph, called inside each arm's call 2.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -1465,6 +1471,10 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax B (11-12): no new form, no lower score (164); the permuter (57 tries, run with the 0xcbd50 context
+// because retail inlines that callee) finds nothing better than the baseline, and retail keeps the pool data
+// pointer in EBP, the unit index in ECX and the depleted flag in BL where ours keeps the data pointer in EDI
+// and pushes ESI and EDI.
 // score 164 (was 164):
 // MiniMax B (11-11): no new form, no lower score (164); the body is unchanged, and the forms listed above are exhausted.
 // MiniMax H (11-11): no new form, no lower score (164); retail keeps index*12 as a value and re-reads the unit and
@@ -2309,6 +2319,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 	result->k = up->k * input_direction.k + up->j * input_direction.j + up->i * input_direction.i;
 }
 
+// MiniMax A (11-13): no new form, no lower score (776); our frame is still 0xcc against retail's 0xd4, the
+// first angle is still expanded where retail calls out of line, and retail's prologue chain of otherwise
+// unused tag loads is still missing.
 // score 776 (was 776): frame 0xcc versus 0xd4 and first angle expansion remain; retail calls channel_play
 // MiniMax D (11-11): no new form, no lower score (776); the frame is still 0xcc against retail's 0xd4, and
 // retail's prologue still holds the lookup chain ours does not have: the unit's definition index, then the

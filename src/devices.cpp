@@ -1223,6 +1223,7 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax H (11-12): no new form, no lower score (121): the initial velocity read into a local in the callee, passed through a local at the call site, both together and the formula reading the stored velocity back all measure 121, so the body stands.
 // MiniMax G (11-12): no new form, no lower score (121): nothing new this round; the initial velocity remains stack-passed
 // instead of xmm6, and the ramp-down residency and the return size differ.
 // MiniMax G (11-12): no new form, no lower score (121): the initial velocity remains stack-passed instead of xmm6,
@@ -1488,6 +1489,8 @@ bool function_108530(long device_index, long name)
 // 123; both minimum clamps with the other comparison sense together (each alone listed at 121) 121. Retail's tail (the
 // cruise velocity reloaded from the motion for the deceleration, 2.0 hoisted into XMM3) follows from XMM6 being taken: the
 // accelerating block then has all eight XMM registers live and overwrites the velocity's register.
+// MiniMax A (11-13): no new form, no lower score (121): the frame and the length agree, but the SSE register allocation differs
+// from the first instruction (xmm7 here where retail uses xmm5) and every later pair follows that choice.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1895,6 +1898,7 @@ bool function_0b6760(s_index_pair const *pair);
 
 // score 250 (was 250): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI where retail has
 // ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads (match-only leads at 58 and 69 below).
+// MiniMax H (11-12): no new form, no lower score (250): the acceleration and the speed each written as one product added into a running value measure 359, and the same form without the volatile measures 382, so the body stands.
 // MiniMax G (11-12): no new form, no lower score (250): nothing new this round; frame 0x20 and the state test are retail's; the
 // index and index * 12 in edi/esi and the remaining homes differ.
 // MiniMax G (11-12): no new form, no lower score (250): frame 0x20 and the state test are retail's; the index and
@@ -2229,6 +2233,8 @@ bool function_0b6760(s_index_pair const *pair);
 // position-group `previous` read before its channel test and passed to it 96 [10]. Renaming the manual arm's `finished`
 // gives the same code. Retail does keep ECX live across calls to small leaves elsewhere (0x22eb8c after 0x22e37f), so
 // the refresh is an allocation choice, not a missing callee summary.
+// MiniMax A (11-13): no new form, no lower score (250): this build pushes ebp and esi where retail pushes ebx and ebp, and the
+// body is 16 bytes shorter than retail's.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

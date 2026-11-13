@@ -837,6 +837,15 @@ struct s_1aab50
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax B (11-12): no new form, no lower score (382); the normalised instruction streams differ in two ways: the
+// early false exit (xor al, al; pop ebp; add esp, 0x58; ret 8) sits at retail's 0x1aac35, in the middle of the
+// body, while here it lands after the main exit at the end of the function, so every later branch target is
+// displaced, and the velocity block colours its registers differently (retail keeps the view pointer in EAX and
+// the zero vector in XMM4, ours in ESI and XMM3). Writing the rejection as an early return (the entry tests
+// returning false at once, the body outside them, or the three tests as separate else branches) gives 508 or 527
+// at a 0x54 frame, since the result byte is then folded away and the frame loses four bytes, so the shared exit
+// with the result byte in its stack slot stays as it is. The permuter (run with the 0x25d740 and 0x25d690
+// contexts, since retail inlines those two callees) finds no rewrite that matches retail, so the body stays.
 // MiniMax E (11-11): no new form, no lower score (382): the frame and the length agree and the early false exit's place is right, but the object/magnitude and query scalar homes still differ, and the helper retail keeps out of line is expanded here (0x25d740, in another file): BLOCKED-BY 0x25d740.
 // MiniMax S (11-11): no new form, no lower score (382): the frame and the length agree, but the early false exit's place, the object/magnitude homes and the query scalar homes still differ.
 // score 382 (was 382): the frame and the length agree, and the early false exit's place, the

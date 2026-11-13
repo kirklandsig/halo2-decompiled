@@ -64,6 +64,14 @@ extern long g_55c154;
 // MiniMax C (11-11): no new form, no lower score (61): the link still expands the name copy in
 // place where retail calls 0x13fac0 out of line, and the default/existing choice is still spilled
 // to a byte slot where retail branches on the selected index itself.
+// MiniMax H (11-13): no new form, no lower score (61). Retail's two load call sites (the default arm inline,
+// the selected arm out of line at 0x2ca467) still cost 174 in a two-arm rewrite, because the frame flips to
+// `mov ebp, esp` with `sub esp, 0x254` and `this` leaves EBX; declaring 0x238c69 __fastcall with the
+// controller first (retail's own convention, as the sibling 0x238c21 has it) gives 75, since the reduced image
+// holds no body to take the convention from. The name copy is still expanded in place where retail calls 0x13fac0.
+// The permuter ran over this body for 300 s (six tries) and never beat its baseline of 56 differing instructions,
+// and rewriting the flag so that it is read again from `selected` after the load (instead of living in a byte
+// slot) scores 77, so the byte slot stays.
 // score 61 (was 61): Round 32: retail splits the block into two 0x212bc0 call sites (the default arm inline with
 // `saved` in EDX, the selected arm out of line at 0x2ca467), each with its own g_54e49c store, its own copy into
 // g_54e4a0 and its own 0x238c69 call (mode 5 / mode 7); ours keeps one call site and materialises the choice in a
@@ -256,6 +264,20 @@ extern long g_55c154;
 // stays; the first half still agrees to the second half's entry, where ours spills the default/existing choice to
 // a byte slot and retail branches on the selected index, and our link still inlines the 0x13fac0 name copy where
 // retail calls it out of line (BLOCKED-BY the copy's own file).
+// MiniMax A (11-05): no new form, no lower score; the second half's redundant selected re-read dropped 150, and retail's two 0x212bc0 call sites and its out-of-line 0x13fac0 copy still need another lane's file.
+// MiniMax H (11-04): no new form, no lower score; the two 0x212bc0 arms with a copy in each (174) and the selection read as a long after the call (77) are worse than the one call site with the classification spill, and retail's out-of-line 0x13fac0 copy is inlined into our build, which lives in another lane's file.
+// MiniMax R (11-01): no new form, no lower score; the permuter (900 s) found only 60, so the creation
+// classification spill and the expanded string copy remain.
+// MiniMax G (11-04): no new form, no lower score; the creation classification spill and the
+// expanded string copy remain.
+// MiniMax C (11-11): no new form, no lower score (61): the link still expands the name copy in
+// place where retail calls 0x13fac0 out of line, and the default/existing choice is still spilled
+// to a byte slot where retail branches on the selected index itself.
+// M3 lane 12 r119: no trial. Retail's second half is two load call sites (default arm inline, selected arm out of
+// line) feeding one shared 0x238c69 call, with 0x13fac0 called (ECX source, EDI destination, ESI count) and every
+// &g_54e4a0 use an immediate; ours has one load site, the inlined copy and the destination address in a register.
+// The two-arm forms (lane 5 r153's 32-form grid, R223, rounds 32-97) all flip the frame to unbiased with `this` out
+// of EBX, and the named-count form that keeps 0x13fac0 out of line is listed (88/179). Still BLOCKED-BY 0x13fac0.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
