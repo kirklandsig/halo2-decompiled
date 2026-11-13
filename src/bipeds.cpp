@@ -2760,6 +2760,7 @@ bool function_1d5120(s_havok_component *component, long rigid_body_index, long a
 void __stdcall function_1c3770(long object_index, dword flags);
 
 /* steps a dead biped's ragdoll settling (+0x3aa) toward rest */
+// MiniMax H (11-12): no new form, no lower score (63): byte-typed flag bitfields (103), a byte view of +0x349 clearing through the high byte (103), the count read again at the call through BIPED_GET (76) or in place (87) and the char body with a short selection (76) all measure worse; the extra EBP, the widened count test and the hoisted 0x9fff word clears remain.
 // MiniMax G (11-12): no new form, no lower score (63): nothing new this round; the extra EBP (the Havok base loaded early), the
 // count transport and the hoisted 0x9fff flag clears still differ.
 // MiniMax G (11-12): no new form, no lower score (63): the extra EBP (the Havok base loaded early), the count
@@ -3339,6 +3340,7 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
+// MiniMax H (11-12): no new form, no lower score (362): the only form this round - the state byte at +0x34b read with a signed cast - measures 361, under the keep gate, so the body stands.
 // MiniMax G (11-12): no new form, no lower score (362): nothing new this round; the frame 0x48 against retail's 0x4c (retail's
 // dead flag byte before the 0xe16b0 call) and the held homes remain.
 // MiniMax G (11-12): no new form, no lower score (362): frame 0x48 against retail's 0x4c (retail's dead flag byte
@@ -4282,6 +4284,7 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 /* places one of the ragdoll's bodies: hanging from its constraint's pivot on
    the body placed before it (kept within reach of the ragdoll's center and
    out of the world, turned to follow), or the first body at the point */
+// MiniMax H (11-12): no new form, no lower score (356): the two pivot roles swapped measure 356, the same code, so the body stands.
 // MiniMax G (11-12): no new form, no lower score (356): nothing new this round; the origin, the first property/distance, the
 // matrix, the second property/limit and the placed homes are still in another order.
 // MiniMax G (11-12): no new form, no lower score (356): the origin, the first property/distance, the matrix, the
@@ -5205,6 +5208,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// MiniMax H (11-12): no new form, no lower score (79): the angle multiplied the other way round measures 79, the sine and the cosine taken the other way round measure 111 and the second rotation taking the up field measures 143, so the body stands.
 // MiniMax G (11-12): no new form, no lower score (79): nothing new this round; the first rotation and the staged cross product
 // operands (load-first where retail copies the axis) still differ.
 // MiniMax G (11-12): no new form, no lower score (79): the first rotation and the staged cross product operands
@@ -6226,6 +6230,7 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 
 /* a walking biped's footstep effect: at its foot marker (or its origin),
    with the material it stands on */
+// MiniMax H (11-12): no new form, no lower score (138): the foot marker in its own block measures 146 and the point copied componentwise on top of that measures 138, the same code, so the body stands.
 // MiniMax G (11-12): no new form, no lower score (138): nothing new this round; the frame 0xec against retail's 0x94 (the marker
 // and the collision do not share a home) and the remaining homes differ.
 // MiniMax G (11-12): no new form, no lower score (138): frame 0xec against retail's 0x94 (the marker and the
