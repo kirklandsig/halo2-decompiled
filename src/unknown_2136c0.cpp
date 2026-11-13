@@ -232,6 +232,9 @@ void function_213970(void);
 // Round 528: Native progress/session/file-state zero-pair chains, seven subsets, then
 // all with paired header-state zeros: 131 each. Original independent resets restored;
 // separate storage allocations still prevent both complete retail clears.
+// M3 lane 1 r99: block B (0x55b4f0..0x55c02c) as one object, the held change of build/r99/held-2141f0.patch (it needs the owner's OK
+// for src/unknown_12be90.cpp), with member-wise clears 131 (same code); with one clear of the whole object 48 fast, 44 plain at 155
+// bytes, retail's length. Block A is then what is left.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

@@ -333,6 +333,22 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // one-aggregate lead: with the header, state, flags and slot in one object, the header memset is ordered before the later
 // global stores, which keeps `mov esi, 0x11` after the `rep stosd` (state 16) and the slot store ahead of the clears
 // (state 19). Still BLOCKED-BY g_55bd04/g_55bd08 (src/unknown_12be90.cpp); g_55bcf8 and g_55bd0c live in other files too.
+// M3 lane 1 r99 (fast with 0x214db0, 0x214030, 0x213fe0, 0x213fa0 and 0x163890, all MATCH throughout; base 29). Finding: each state's
+// scratch registers follow the states before it (the least recently used register is taken), so states 7, 9 and 11 are one chain and
+// no single-state form could read better. State 7's handle read into a named local after the header clear, as state 14 does, 248
+// (1724 bytes: states 7 and 9 exact, state 11 and after move); that with state 11's chunk as the difference clamped by
+// `if (g_55bd1c <= chunk)` 249; that without state 11's slot local 24; on it `remaining > g_55bd1c ? g_55bd1c : remaining` 10, a
+// named buffer local 24, a named limit local 8, `chunk >= g_55bd1c` 25, the chunk re-read from g_55bcf4 at the call 24,
+// `g_55bd1c <= remaining ? g_55bd1c : remaining` 8 (states 0 to 15 exact; left: states 16 and 19). On the 8 form: state 7 without
+// the handle local 99, without the file local 315, a header pointer 99, the file through a reference 99; state 16 without its result
+// store 132, with the state set first 8, with the store made into the header's own object (diagnostic) 5. Every cache-copy global as
+// a member of one object defined here (diagnostic) 5, and with state 19 in retail's order (release, then the slot store) MATCH.
+// HELD (needs the owner's OK for src/unknown_12be90.cpp, which defines g_55bd04 and g_55bd08 and uses them in 0x12bf40):
+// build/r99/held-2141f0.patch makes this function match byte for byte in the plain check with nothing lost (the 14 matched functions
+// that use these globals still match; 0x2136c0 131 -> 44 with one clear of the whole object). It takes four things together: the
+// cache-copy globals 0x55b4f0..0x55c02c as members of one object (a new include/cache_copy_globals.h, eight sources), state 19 in
+// retail's order, state 7's handle local, and state 11 as `g_55bd1c <= remaining ? g_55bd1c : remaining` without the slot local. None
+// is kept alone: the handle local is a one-use local (8, not a match), and without it the state 11 form reads 99.
 // @retail 0x2141f0
 bool function_2141f0(void)
 {
