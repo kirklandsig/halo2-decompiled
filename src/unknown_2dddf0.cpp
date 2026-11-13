@@ -155,6 +155,11 @@ public:
 // Temporary-object name 257; first output name 257; early segment declaration 257;
 // first calculation at function scope 265; early vector outputs 257;
 // direct length destination 320; explicit fraction subtraction 257; float root 257.
+// Intermediate scope 257; direction names 257; early directions 257;
+// endpoint read later 260; shared length sum 257; root input by value 257;
+// named ray adjustment 237 (1442 bytes, NOT kept: length grows);
+// cap path first 262; explicit cap else 264. The cap-first form recovers
+// frame 0xb8 but scores worse. Original body restored.
 // @retail 0x2de1b0
 answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit_2deda0 *hit)
 {

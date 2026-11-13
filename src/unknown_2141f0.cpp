@@ -79,6 +79,12 @@ void cache_copy_forget(char const *map_name);
 bool map_copy_request(char const *map_name, long priority);
 void __stdcall cache_copy_record_use(char const *map_name);
 
+// MiniMax A (11-13): no new form, no lower score (29): thirty-one spellings of state 11's chunk (the
+// clamp as an if, as a ternary with either operand on the left, with the strict comparison either way
+// round, with the limit or the remaining named first, and as a switch) all score 29 or worse, because
+// this compiler always coalesces the merge with the limit's register where retail merges with the
+// remaining's; states 7, 9, 16 and 19 still differ in register choice and statement order, and the
+// permuter over 600 s ends at 29, the baseline.
 // MiniMax G (11-12): no new form, no lower score (29); state 11's three loads are still one rotation step off (ours total eax, completed edx, limit ecx against retail's eax, ecx, edx), so the compare keeps the operands the other way round, and states 7, 9, 16 and 19 still differ in register choice and statement order; this round the chunk as a single variable clamped by `if (limit <= chunk) chunk = limit;` (30) and the ternary with the limit on the left (30) both keep the completed value in edx and the limit in another register.
 // MiniMax E (11-11): no new form, no lower score (29); the check's left column is ours and the right column is retail.
 // Retail's state 11 clamp is `mov eax,[total]; mov ecx,[completed]; mov edx,[limit]; sub eax,ecx; cmp edx,eax; jg L;
@@ -93,7 +99,7 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // MiniMax B (11-04): no new form, no lower score (the state 11 clamp as an in-place if, a min-clamp and a named-limit ternary all keep the same register rotation).
 // MiniMax B (11-03): no new form, no lower score.
 // MiniMax S (11-01): the state 11 clamp keeps the completed value in EDX and the limit in ECX; no lower score.
-// score 29 (was 30): earlier 37. State 0 is byte-exact. Left: states 7 and 9 are one rotation step of the scratch registers off (a probe load in state 7 fixes state 7's handle
+// score 29 (was 29): earlier 30, 37. State 0 is byte-exact. Left: states 7 and 9 are one rotation step of the scratch registers off (a probe load in state 7 fixes state 7's handle
 // and shifts state 9; a second in state 8 or ahead of state 9's file pointer fixes state 9), state 11's clamp registers rotate the same way, state 16 sets the state
 // ahead of the header clear, and state 19's slot store sinks (the one-struct lead below, still BLOCKED-BY g_55bd04/g_55bd08 in src/unknown_12be90.cpp).
 // Earlier (37, was 37): Frame 0x110 and retail length agree; request-copy order, file-handle
@@ -319,6 +325,14 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // listed above. Reading of the listing: from state 7 on our scratch choice of ECX and EDX is the reverse of retail's
 // (state 7 handle, state 9 handle, state 11 completed/limit), which the probe loads above locate as one IL temporary more
 // or less before state 7's handle load, in code whose bytes already agree.
+// M3 lane 8 r161 (fast with 0x214db0, 0x214030, 0x213fe0 and callers 0x213fa0, 0x163890, all MATCH; control 29,
+// register-masked aligned 12): every step to the next state as `state++` (re-measure on this base of the 471-era form)
+// 29; state 16's copy through a `s_cache_file *file` local as states 9, 13 and 14 do 29; `success` declared first 29;
+// the state read before the priority 29 (all four the same code); the progress record's total without `volatile` in
+// this file's view 347 (retail re-reads the total, so the qualifier is retail's). States 16 and 19 both fit the
+// one-aggregate lead: with the header, state, flags and slot in one object, the header memset is ordered before the later
+// global stores, which keeps `mov esi, 0x11` after the `rep stosd` (state 16) and the slot store ahead of the clears
+// (state 19). Still BLOCKED-BY g_55bd04/g_55bd08 (src/unknown_12be90.cpp); g_55bcf8 and g_55bd0c live in other files too.
 // @retail 0x2141f0
 bool function_2141f0(void)
 {

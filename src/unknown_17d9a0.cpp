@@ -125,6 +125,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
 
+// MiniMax H (11-13): no new form, no lower score (46): the corner products' load and memory sides and the plane-distance
+// store's base are as the earlier rounds left them, and the first corner still keeps the sign-extended axis in ECX where
+// retail keeps the short axis in AX and the flag in CL; the corner helper's parameter order measures 40 but is a
+// parameter-order change, so it is reported rather than applied.
 // MiniMax A (11-12): no new form, no lower score (46); the plane store's base, the products' load and
 // memory sides and the first corner's axis and flag registers are as the earlier rounds left them (retail
 // keeps the short axis in AX and the flag in CL, ours signs the axis into ECX and puts the flag in AL); this
@@ -527,6 +531,11 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // flip sides); that with the `side + axis * 2` row 65; the flag stored by an if/else 59 (984 bytes); the corner point
 // built by a brace initializer 54; the row index named for both lookups (re-measured on this base) 163; the helper's side
 // parameter `long` 166; the point's second row written forward-first like the others 46 (same code). Body unchanged.
+// M3 lane 2 r77 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46): new: the bounds copied before the matrix 156 (985 bytes,
+// the entry no longer matches); the second edge formed before the first 95; the second edge's length tested first 92
+// (975 bytes). No other unlisted natural form found: axis and side types and locals, plane pointer and helper forms, dot
+// sides, corner helper shapes and signatures, edge and inverse forms, copy orders and spellings are all listed above.
+// Body unchanged.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -883,6 +892,7 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
+// score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // MiniMax E (11-11): no new form, no lower score (535 on the full build, 834 on the reduced image):
 // the frame is still 0x21d8 against retail's 0x21dc and the locals still sit in other stack homes.
 // w14H (11-06, fast, plain): statement-by-statement walk against retail found no logic difference (fields, offsets,
@@ -892,6 +902,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // retail sums i, k, j) NOT kept. flags is read as a byte (retail 0x17fdd2, +0xc of the 16-byte entry) through the cast.
 // MiniMax E (11-05): no new form, no lower score; the first +0x41 tag spill, the plane base, the first
 // selectors and the product memory sides are as the earlier rounds left them.
+// MiniMax A (11-13): no new form, no lower score (535 plain, 834 on the reduced image); the frame and the
+// length still agree, the tag still spills at +0xb4 against retail's +0x94, and the count, plane and
+// rotation homes still differ.
 // score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // Frame 0x21dc and length 3647 agree; tag/count/plane homes and rotation spills remain.
 // Earlier: 552 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
@@ -1211,6 +1224,15 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // 384); `one_minus_cosine * axis.k` named once for both k pairs (retail spills that product at +0xec) 536 (3663 bytes, masked 328);
 // both 589 (3663 bytes); the sign as `-1.0f` set to 1.0f in an if 536 (masked 349); the squares computed k, i, j (retail's order)
 // 537; the rows in retail's visit order (forward i, j, left i, j, forward k, up k, i, left k, up j) 545.
+// m3 lane 14 r89 (plain; fast gives 834 here): `selected_plane` renamed `best_plane` 535 (the 16-byte plane homes
+// stay, ours +0x30/+0x60, retail +0x44/+0x34: names do not order this body's slots); the axis length and normalisation
+// through the existing normalize_inline (its sum order i, k, j is retail's) 650 (first difference +0x7); the four
+// rotations through the existing vector3f_rotate_into_axes with a matrix3x3 basis 573 (3615 B; its rows sum j, k, i
+// and i, j, k where retail's sum k, j, i as the private helper does); quad and matrix declared at the group's scope
+// 535 (same code); the bounds loop reading `matrix.up.n[k]` for the cast 535 (same code). Left: weight-ordered spill
+// homes (names and scopes do not move them) and the rotation block's schedule; rounds 10-12, 56, 92, 108, 187, 225,
+// T59 and DH383 above list its statement orders, named products, helpers and in-place forms, and no untried natural
+// form was found beyond these.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

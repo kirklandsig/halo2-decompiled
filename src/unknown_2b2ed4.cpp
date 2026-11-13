@@ -78,6 +78,8 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // MiniMax B (11-12): no new form, no lower score (316): the display name's buffer twice as long (638) and the
 // session and voice child pointers' slots exchanged (316, the same code) leave the score where it is; a 31-try
 // permuter found no variant below the baseline (351 on the reduced image, 313 in the full image).
+// MiniMax A (11-13): no new form, no lower score (316): the child, text, layout and suffix buffer homes differ from
+// retail's, and the suffix re-derivations differ with them.
 // score 316 (was 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
 // MiniMax I (11-05): no new form, no lower score. Retail's null-datum `je` jumps to the function's
 // end (offset 0x920 of 2345) where ours jumps to a near block, and the child, text and layout stack

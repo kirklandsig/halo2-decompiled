@@ -1052,6 +1052,9 @@ struct s_tail_transfer_traits
 // each use (no slot locals) 152 (gain under the gate). On that 152 form: `other` without its NONE preset 167 (808 B); `valid`
 // stored before the grenades 152 (same code); the no-seat primary through the existing 0xcbd50 (slot from a fresh lookup, primary
 // unpreset) 160 (816 B); the no-seat secondary through 0xcbd50 158 (812 B); `other` unpreset with `valid` first 167. Body restored.
+// P438: Original scenario/unit-index/unit/first/second and per-pass clock/age/weapon
+// bindings fixed independently: eight 153. NOT kept: selected-traits/unit/NONE homes
+// and no-seat reloads unchanged; original complete body restored.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1323,6 +1326,11 @@ long function_cbd50(long unit_index, short weapon_index);
 // form: the count test through the existing 0x101640 getter 211 (1007 B), the held test through the existing 0x101240 getter 213,
 // both 211; on the 211 form: the flag helper reading the tag table global itself 211 (same code), `hand != 0` for the arm 221,
 // `count` declared after the unit lookup 211. Best 211 is a gain of 4, under the gate; body restored.
+// P437: Held/pending/inventory/player lexical identities 215 each; immutable player/pool,
+// read-only inventory and fixed shared flag result 215 each. NOT kept: frame 0x1c versus 0x18
+// and native pool/player/tag homes unchanged; original complete body and helpers restored.
+// P440: First-loop do/while with the existing slot provider, and held/pending/paired/output/held-output/all walks: 215/215/330/329/313/215/330/313.
+// NOT kept: Native player/pool/tag homes remain; direct entry ties and genuine producer cursors regress. Original complete body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1523,6 +1531,7 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// MiniMax B (11-13): no new form, no lower score (43): the hand before the result (62), the result before the player (43), the unit pointer before the hand (70), the hand as an int (43) and the hand at the entry (86) all leave the register rotation - retail keeps the player in esi, the unit index in edx and the hand in edi, ours keeps them in edi, ecx and esi.
 // score 43 (was 43):
 // MiniMax S (11-11): no new form, no lower score (43): every difference is one clean pairwise register rotation (retail: player esi, hand edi, unit index edx, temp ecx; ours: player edi, hand esi, unit index ecx, temp edx).
 // MiniMax D (11-08): the saved roles are exchanged - retail keeps the player record in esi
@@ -1657,6 +1666,23 @@ void function_150820(dword *bits, bool local_only)
 // other way round (retail unit index in EDI, ours ESI). No other untried natural form found: declaration orders,
 // hand/slot/result widths and spellings, result graphs, early exits, existing getters, pool copies, lifetimes, joint
 // forms with 0x151b80 and permuter runs are all listed above.
+// P437: Fixed player/unit receivers and primary/player inputs, separate mode-consumer and
+// three-way admission scopes, and complete receiver/input binding graphs: 43 each. NOT kept:
+// no native player/hand or scratch-register recovery; original whole body and call tuples restored.
+// Round 178 (m3 lane 5, fast with 0x151b80/0x151940/0x151c10/0x14f820 and the callees; control 43, 0x151b80 17): the
+// same two pairs are exchanged in both functions (here player/hand in ESI/EDI and slot/unit index in ECX/EDX; in 0x151b80
+// slot/unit index in ESI/EDI), and our link-time inliner expands 0x151b80 into 0x14f820 where retail calls it, so retail's
+// source is heavier than ours in a way the final code does not show. New forms, each on both functions: an unused middle
+// candidate parameter as the family's other members have (the two declarations and two call lines in src/unknown_14b560.cpp
+// changed for the trial and put back) 43 / 17 (same code); the unit as a byte pointer with the offsets the matched callees
+// 0xa8f80/0xa9030 use 43 / 17 (same code); the held weapon through the existing 0xcbd50 with the slot read through a fresh
+// lookup and no unit or slot local, watching 0x14f820 for the expansion, 43 / 17 (same code, 0x14f820 unchanged at 701, 2740
+// bytes). Here only: every local declared at the function top and assigned in place, in six orders (player/result/hand/
+// unit/slot/weapon/modes, hand first, hand last, unit and slot first, result first, reversed) 43 each (same code).
+// Diagnostic, reverted: the unit index read through a dword lvalue at the three call arguments 43 / 17 (same code).
+// Flags diagnostic, reverted (the one compiler-setting trial): this file built with /Ob1 leaves both functions as they are
+// (43 / 17) and stops the 0x151b80 expansion in 0x14f820 (2636 bytes there against 2740, 775), so the exchange is not an
+// effect of that expansion.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

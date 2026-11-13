@@ -1724,6 +1724,7 @@ real function_30bf0(vector3f *vector);
 // are loaded onto the x87 stack in the other order, retail leaves one more value on the stack after the square
 // root, and the three components are stored in the other order (retail stores the x and the y before the z).
 // MiniMax D (11-01): no new form tried, no lower score.
+// MiniMax H (11-13): no new form, no lower score (378); the frame is 0x4c against retail's 0x40 and the normal copy and the limited, rotation and colour homes are elsewhere.
 // score 378 (was 378): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier, score 363 (was 364).
@@ -2214,6 +2215,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // sample pointer at 0x20 against retail's 0x2c), so the stores and the loads that name them differ throughout
 // the body; the calls and their arguments are in retail's order.
 // MiniMax C (11-06): no new form, no lower score.
+// MiniMax H (11-13): no new form, no lower score (542); the locals sit in other stack slots and the indexed compare uses the other operand order.
 // score 542 (was 542): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
 // score 542 (was 542; earlier 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
 // w14B (11-06): walked against retail statement by statement, both arms and every dynamic/base weight path:

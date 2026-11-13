@@ -4403,6 +4403,10 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // MiniMax D (11-10): no new form, no lower score (305).
 // MiniMax h (11-05): the result byte home is +0xa in ours and +0xb in retail, where the better flag shares +0xa with the identity-equal flag; exchanging the better and same declarations gives 305, spelling out the better decision gives 314 and the same decision 306, and the shared acknowledgement block sits after the reason-5 exit in ours but at the end of retail's.
 // MiniMax h (11-04): no new form, no lower score; the result byte stays at +0xa where retail keeps it at +0xb.
+// MiniMax B (11-13): no new form, no lower score (305): the boolean homes stay a rotation from retail's (the
+// acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa, and the two peer
+// bytes are zeroed at +0x11/+0x13 where retail zeroes its pair at +0x11/+0x12), and retail reads the acceptance byte
+// back where this build folds it to a constant.
 // score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
 // frame 0xd8 and length agree; result/identity/selection byte homes and
 // acknowledgement placement differ.

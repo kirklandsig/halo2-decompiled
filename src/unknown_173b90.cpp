@@ -800,6 +800,14 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // defaults as one chained `multiplier = scale = 1.0f` 120 (1136), on the long-indexed form 115 (1138); a named flags
 // value for the six emitter-definition flag tests 292 (1157), on the long-indexed form 297 (1159).
 // NOT kept (coordinator review, MiniMax A 11-12): 42 -> 39 is under the keep bar (8+ on a function still above 30); the body is main's again.
+// Round 178 (m3 lane 5, fast with 0x173c10/0x175430/0x2477b0, control 42): the placeholder-local scan that matched 0x1e6360
+// (n unused `long` locals at the function top, n = 0..7; diagnostic, removed) on four structures. This body: 42, 109, 53, 53,
+// 57, 57, 57, 70; with scale declared first: 40, 107, 51, 51, 55, 55, 55, 68 (all 1130 bytes); indexed definitions: 115, 106,
+// 118, 118, 113, 113, 113, 118; indexed with scale first: 113, 104, 116, 116, 111, 111, 111, 116 (1132-1138 bytes). The local
+// count does move both rotations here (every row turns at n = 1), but no count beats zero on any structure: row i's sum
+// order (retail left*y, forward*x, up*z) is not a product-phase state, and the indexed form's rows differ in their sum
+// order as well, so the count is not the lever for this function. One placeholder on the indexed form gives retail's
+// copy order (y, x, z into EAX/EDX/ECX) with the sums still (up*z + forward*x) + left*y.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1832,6 +1840,14 @@ bool function_17afd0(long effect_index, long value);
 // reuses it, so the owner cannot share NONE's EBP as in retail; only a body whose availability is live across NONE's
 // range (this one's early clear) gives retail's homes. Body unchanged.
 // MiniMax A (11-12): no new form, no lower score (47); our same-view store is still emitted ahead of the view test where retail's sits inside the availability test's block, and the 12 form needs the match-only bool (set true and then cleared by a test).
+// Round 113 (m3 lane 16, fast; "P" = the view global at each use, the owner as if/else, `bool available = false; if (g !=
+// NONE && !query(g)) available = true;` after the owner, plain same_view and attached; re-measured 138 at 510 bytes: NONE in
+// EBX, the owner in EDI, the availability spilled, same_view in BL): P with the second definition in its own local 138; the
+// owner NONE-defaulted and read through an effect pointer 138 (508 bytes); the walk as a for loop with the step in its
+// increment 138; the availability set by a nested test 138; `bool camera_relative = false;` at the block's top 102 (494
+// bytes: NONE now shares EBX with the owner and the later NONE tests are immediates, as retail's EBP pair, but the second
+// definition takes EBP, the availability still spills and the camera flag's store moves ahead of the second definition call);
+// P with `view_pass == same_view` 138.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
