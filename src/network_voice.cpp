@@ -203,6 +203,18 @@ bool voice_xhv_get_runtime_parameters(XHV_RUNTIME_PARAMS *parameters, c_voice_xh
 // guard and the esi region's exit copies the reload); that with the engine pointer bound before the guard 20 (275, lea
 // before the je again), bound at the function's top 24; `if (!result) return result;` then the flat body 90 (270 bytes,
 // a separate `xor al, al` exit); a false-initialised result set true inside the parameters test 108 (278).
+// Round 154 (m3 lane 7, one-file LTCG harness, exact). New: the guard written as `if (result) { ... }` around the
+// body with the engine bound before it 2 (same code, one goto fewer: kept); that with the three inner gotos as breaks
+// of a `do { } while (false)` 2 (same code; not kept, the loop only stands in for the gotos); `FAILED(error)` for
+// `!SUCCEEDED(error)` 2 (same code); the result pointer declared before the call, the result assigned after it 2
+// (same code); nested SUCCEEDED ifs keeping the volatile true store 20, with the engine bound inside 26 (280 bytes).
+// Re-measured (same code as listed forms): the engine bound inside the guard block 8 (MiniMax E nested block scope);
+// the ports loop as a force-inlined bool helper returning true 39/42/42 (round 98 force-inlined helper; plain
+// `inline` stays a call, 175-178); on the goto form with the engine after the guard: split result declaration, the
+// test through `*local_0`, the call stored through `*local_0`, `result == false`, a false-initialised result, the
+// call embedded in the guard and `return *local_0` 8 each (the listed engine-after-guard 8); permuter on the
+// unchanged body (600 s, 66 tries) best 2. Diagnostic: `#pragma optimize("s", on)` on the natural nested body 115
+// (frame pointer, 244 bytes).
 // @retail 0x55810
 bool voice_xhv_create(c_voice_xhv *xhv)
 {
@@ -212,44 +224,45 @@ bool voice_xhv_create(c_voice_xhv *xhv)
     bool result = voice_xhv_get_runtime_parameters(&parameters, xhv);
     engine = &xhv->engine;
     bool *local_0 = &result;
-    if (!result)
-        goto local_1;
-    error = XHVEngineCreate(&parameters, engine);
-    if (!SUCCEEDED(error))
-        goto local_1;
-    xhv->unknown0c = 0;
-    switch (xhv->mode)
+    if (result)
     {
-    case 1:
-        xhv->unknown0c = 0xb;
-        break;
-    default:
-        xhv->unknown0c = 0xf;
-        break;
+        error = XHVEngineCreate(&parameters, engine);
+        if (!SUCCEEDED(error))
+            goto local_1;
+        xhv->unknown0c = 0;
+        switch (xhv->mode)
+        {
+        case 1:
+            xhv->unknown0c = 0xb;
+            break;
+        default:
+            xhv->unknown0c = 0xf;
+            break;
+        }
+        for (DWORD mode = 0; mode < 4; mode++)
+        {
+            if (xhv->unknown0c & (1 << mode))
+                error = (*engine)->EnableProcessingMode(g_52731c[mode]);
+        }
+        if (!SUCCEEDED(error))
+            goto local_1;
+        error = (*engine)->SetCallbackInterface(xhv);
+        if (xhv->unknown0c & 4)
+            (*engine)->SetMaxPlaybackStreamsCount(15);
+        if (!SUCCEEDED(error))
+            goto local_1;
+        for (long port = 0; port != NONE; port = voice_port_next_index(port))
+        {
+            XHV_LOCAL_TALKER_STATUS status;
+            (*engine)->RegisterLocalTalker(port);
+            (*engine)->SetProcessingMode(port, g_52731c[xhv->port_modes[port]]);
+            (*engine)->GetLocalTalkerStatus(port, &status);
+            xhv->communicator_present[port] = status.communicatorStatus == XHV_VOICE_COMMUNICATOR_STATUS_INSERTED;
+            xhv->chat_data_ready[port] = false;
+            xhv->voice_mail_active[port] = false;
+        }
+        *(volatile bool *)local_0 = true;
     }
-    for (DWORD mode = 0; mode < 4; mode++)
-    {
-        if (xhv->unknown0c & (1 << mode))
-            error = (*engine)->EnableProcessingMode(g_52731c[mode]);
-    }
-    if (!SUCCEEDED(error))
-        goto local_1;
-    error = (*engine)->SetCallbackInterface(xhv);
-    if (xhv->unknown0c & 4)
-        (*engine)->SetMaxPlaybackStreamsCount(15);
-    if (!SUCCEEDED(error))
-        goto local_1;
-    for (long port = 0; port != NONE; port = voice_port_next_index(port))
-    {
-        XHV_LOCAL_TALKER_STATUS status;
-        (*engine)->RegisterLocalTalker(port);
-        (*engine)->SetProcessingMode(port, g_52731c[xhv->port_modes[port]]);
-        (*engine)->GetLocalTalkerStatus(port, &status);
-        xhv->communicator_present[port] = status.communicatorStatus == XHV_VOICE_COMMUNICATOR_STATUS_INSERTED;
-        xhv->chat_data_ready[port] = false;
-        xhv->voice_mail_active[port] = false;
-    }
-    *(volatile bool *)local_0 = true;
 local_1:
     return result;
 }
@@ -1286,6 +1299,9 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// score 94 (was 94): the flag stays in bl (retail al), so the loop temporaries take eax/al where retail uses
+// ebx/cl; retail loads the count into ebp before the multiplier and adds 2 before the total (ours folds the load
+// into imul and uses one lea). Frame, prologue, unrolling and cursor agree (347 bytes).
 // MiniMax S (11-11): no new form, no lower score (94): the identity flag still takes BL here while retail keeps
 // it in AL, and the inner channel blocks are still not unrolled; moving the flag ahead of the total and the
 // channel pointer gives 111, and a nested group loop that would give the flag a longer live range also gives
@@ -1316,6 +1332,7 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // 0x5c0 stride stays out of reach because the pointer walk is what the callers pin.
 // MiniMax G (11-12): no new form tried this round, no lower score (94): the identity flag still takes bl where
 // retail keeps it in al, and the inner channel blocks are still not unrolled.
+// MiniMax H (11-12): no new form, no lower score (94): the first difference is still at +0xd, where the exit out of the initialization test lands elsewhere than retail's, and the identity flag still lands in BL here where retail keeps it in AL.
 // score 94 (was 94): the flag stays in bl (retail al), so the loop temporaries take eax/al where retail uses
 // ebx/cl; retail loads the count into ebp before the multiplier and adds 2 before the total (ours folds the load
 // into imul and uses one lea). Frame, prologue, unrolling and cursor agree (347 bytes).
@@ -1500,6 +1517,13 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // past the flag, so the flag lands in al; our hoisted pointer frees bl and the flag lands in bl, which shifts the
 // mask and the product registers with it.
 // MiniMax R (11-11): no new form kept this round, no lower score (94): the first difference is at +0xd, where the exit out of the initialization test lands at a different place than retail's, and moving the identity flag ahead of the total gives 111, so the flag keeps BL here and AL in retail.
+// Round 154 (m3 lane 7, one-file harness, exact; 0x54990 and 0x56160 matched unless noted). New: the shared
+// membership helper with a named mask word 94 (same code; 0x55c40 and 0x56380 unchanged), as a ternary 103 (0x56160
+// 25, 0x55c40 154, 0x56380 74), as one `&&` test setting the result 118 (0x54990 5, 0x56160 55); the identity test as
+// an inline shared with 0x56380 (`return getter == player`, or through a named result) 94 (same code); the channels
+// parameter and the cursor `const` 94 (same code). Re-measured: a named bit inside the membership helper 94 (MiniMax
+// S in 0x55c40 note); the identity helper called inside the product 165 (the in-loop flag). Listing of the listed
+// flag-first form (93): the channels argument becomes a stack argument loaded into EBP and the flag still takes BL.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -1553,6 +1577,8 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
+// a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
 // MiniMax H (11-11): no new form, no lower score (60); the membership helper's mask test written with the shift first gives the same code, so the mask load still reaches EAX before the shift where retail keeps the zero result in EAX and loads the mask into ECX after it.
 // MiniMax S (11-11): no lower score (60): the player bit as a named local inside the membership helper 60 (same
 // code), the entry size as `include_mask ? 13 : 11` 147 (461 bytes), and the same size with the retail order
@@ -1564,8 +1590,6 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // MiniMax G (11-12): no new form, no lower score (60): the helper's mask and shift operands swapped compile to
 // the same code, and the entry size as `11 + 2 * (include_mask != 0)` reaches retail's setne form but lays the
 // block out differently (146), so the body stands.
-// score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
-// a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
 // MiniMax R (11-09): no lower score (60): what still differs is the register split - the player bit sits
 // in EBX and the entry size in EBP where retail keeps the bit in EBP and the size in EBX, the kept mask
 // is computed in EAX where retail computes it in EBX, and retail loads the queue's mask word after the
@@ -1799,6 +1823,16 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // the inactive queue as an early `return result;` 175 (0x56380 73); on this body the clamp as `__max(0, __min(player, 15))`
 // 66. Retail never uses EAX's zero for a literal zero (`test edi, edi`, an immediate written store), so its result is no
 // constant there; every source start of 0 measured so far is merged.
+// Round 154 (m3 lane 7, one-file harness, exact; 0x56380 matched unless noted). New: `11 + 2 * (include_mask != 0)`
+// (MiniMax G 146 in the current order) in the other 23 orders of size, kept, capacity and written: best 134 (cewk),
+// the rest 135-171 (orders with kept or written ahead of the size lose 0x56380 at 12/13); the per-arm flag-byte store
+// below with the three size spellings in the 24 orders: best 113 (ckwe with the ternary size; 0x56380 12); the header
+// stores swapped (`output[0]` first) 59 (1 lower, statement order, not kept); after it the count decrement before the
+// bit clear 183 (478 bytes, 0x56380 2), `kept ^= 1 << i` 99 (456), the player mask cleared before the compaction call
+// 70 (462), `written++` right after the capacity test 99, `capacity -= entry_size` right after the capacity test 176
+// (472). Re-measured on this base (listed on older bases 178/142): the flag byte stored in each include_mask arm 176
+// (472 bytes; the loop core becomes retail test/store/branch and the entry size takes EBX as in retail, but the
+// player bit goes to memory), with `*cursor++ =` or `cursor[0] =` 176.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -1942,6 +1976,15 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
+// remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
+// spill agree. Earlier at 94: frame 0x14 vs 0x18, bit spill and flag-query boundary differed;
+// word outer/target induction 118/106; word active 97; mask names 94; skip cleared inactive entries 110.
+// caller depth 0/1/2 241/94/94; wide bit with depth 1/2 118/118;
+// complete mask/policy/both assignments 108/104/110.
+// Rejected set 100; rejected set with wide bit 168; indexed rejection bit 99;
+// allowed result 107; signed allowed result 107; allowed result with wide bit 130;
+// candidate snapshot 97; candidate snapshot with wide bit 119. Frame/spill and flag-query expansion remain.
 // MiniMax S (11-11): no new form, no lower score (85): the second availability byte still loads lazily where retail
 // loads both before the muted test, and the second port-flag query is still called out of line; expanding that query
 // at this site costs the matched callers 0x54890 and 0x53a20, and the session getters 0x59670/0x596a0
@@ -1972,6 +2015,7 @@ static inline dword voice_get_player_mask_inlined(void);
 // getters this needs live outside this file.
 // MiniMax G (11-12): no new form tried this round, no lower score (85): what is left is the order of the two
 // availability-byte loads and the register of the stack word, both decided by the schedule of the block.
+// MiniMax H (11-12): no new form, no lower score (85): the first branch is still at +0xb and still leaves for a different place than retail's shared exit at +0x1a6, so only the uninitialized path's exit sits at the wrong address.
 // score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
 // spill agree. Earlier at 94: frame 0x14 vs 0x18, bit spill and flag-query boundary differed;
@@ -2082,6 +2126,17 @@ static inline dword voice_get_player_mask_inlined(void);
 // mask test or `i < 16` ahead of it in 0x54890 does not (83/97); `~local & players` 85 (same code); the active mask as a
 // ternary on voice_available() 120; `mask = remote; mask &= ~muted;` 85 (same code).
 // MiniMax R (11-11): no new form tried this round, no lower score (85): the first branch is at +0xb and leaves for a different place than retail's shared exit at +0x1a6, while the three later branches agree, so only the uninitialized path's exit sits at the wrong address.
+// Round 154 (m3 lane 7, one-file harness with src/unknown_058ee0.cpp linked, exact 85 at 427). New, with `inline` on
+// 0x53bb0: 0x53bb0 as `voice_available() ? bit != 0 : false` 93 (0x54890 76, 0x53a20 80); as `voice_available() &&
+// bit` 89 (71/75). New, body only: `if (local & active & bit)` 82 (415 bytes; 3 lower at another length, not kept);
+// after it the local mask read before the player mask 116, `j != 16` 85 (same code), the outer test as `if (!(local &
+// bit) || !(active & bit)) continue;` 85 (same code), a named `local & active` mask before the loop 149 (411),
+// `active &= local` before the loop 128 (415). Re-measured (same code as the listed `inline` on 0x53bb0, 102 with
+// 0x54890 83 and 0x53a20 84): both flag queries through one shared `(port, bit)` inline, 0x53bb0 alone through it,
+// through a two-level force-inlined chain, with a named flags local (lane 11 r77), as an early `return false`,
+// through a three-bit bitfield view. Diagnostic: a repeated availability test inside 0x53bb0 (more IL; 0x53bb0 itself
+// 31) keeps its call out of line in 0x53a20 (0) while 0x54890 still inlines it (119), so the per-site choice follows
+// the callee cost, but no same-code form of 0x53bb0 reaches that threshold.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -3588,9 +3643,12 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
+// score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
+// homes differ.
 // MiniMax D (11-11): no new form, no lower score (139).
 // MiniMax G (11-12): no new form tried this round, no lower score (139): retail keeps the channel in ebp from the
 // entry and spills the member, while ours loads the data pointer and keeps the member in ebp.
+// MiniMax H (11-12): no new form, no lower score (139): our EBP still serves the member and the consumed update in turn, so the channel gets no register, and retail's cursor still starts with an immediate add that ours folds into the shared constant.
 // score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
 // homes differ.
 // MiniMax R (11-09): no lower score (139): the base and the offset kept apart, with the packet pointer never
@@ -3839,6 +3897,14 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // the plain arm reads it three times and the member has retail's four references (call result, NONE test, test shift,
 // clear shift), all as retail; the cursor, member, channel-index, test-split, clamp, route and count spellings left are
 // those listed above, so no natural form is left to try against the member's EBP.
+// Round 154 (m3 lane 7, one-file harness, exact; 0x564c0 matched). New: the indexed form with the size debited right
+// after the size test 159 (479 bytes), that with the plain arm first 159 (490); the packet-cursor form with the plain
+// arm first, the early debit and the members word read before the member call 161; cursor with the plain arm first
+// and the early debit 190 (517); on the members-first indexed form: the packet-kind test before the member call 151,
+// all packet tests before the member call 151, `(members >> member) & 1` 163 (480). Re-measured: the members word
+// read before the member call 138 (round 112 screened it; 1 lower, statement order, not kept); indexed plain arm
+// first 162 (ordinary delivery arm first 162); cursor plain arm first 157 (lane 11 r77); cursor early debit 169
+// (round 50); the route at the relay arm top (same code). The member keeps EBP in every cursor form.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

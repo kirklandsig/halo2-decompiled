@@ -131,6 +131,11 @@ static inline void *function_xc5914d(long thread_index, short size)
 // form; without the volatile, `result = NULL` at the start of the arm or before the call gives 83 at retail's 277 bytes
 // (no frame slot: our build keeps the frame in ESI, the pointer in EAX, and loads the expression pool in each block
 // where retail holds it in EBX across the initialisation block and the test), at the end of the arm 95 (266).
+// Round 87 (m3 lane 14, fast; volatile-free forms only, since a match cannot keep the volatile): control 95 (266);
+// `result = NULL` first in the arm 83 (277 bytes, no stack home: the frame is read straight into ESI and the pointer
+// computed in EAX, where retail reads the frame through the frame reference into EAX and computes the pointer in EBX),
+// after the element pointer 83, with the element passed directly 83, with the result copy after the three allocations
+// 83, with a thread pointer local for the frame reference 83; null-first with no frame local 74 (280).
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

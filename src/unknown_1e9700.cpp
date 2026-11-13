@@ -740,6 +740,12 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // 80 (same code as the copy); that reference with the volatile delta kept 85 (folded; delta out of the way does not hand the
 // field the load); `value = *entry; value += (short)delta;` 85; the entry as `values[index] + field` 85 (same code as the
 // volatile-free control); re-measured, round 169's first test through game_engine_get() with the peer named 85.
+// Round 87 (m3 lane 14, fast with 0x1ea770, 0x15b3a0, 0x15b7c0, 0x1e9df0, 0x1968b0; volatile-free forms): control 85
+// (260 bytes, retail's but for the folded add and the first engine test's swap); an unused local reading the field at
+// the top (diagnostic) 80 (256: delta's movsx takes the EDX entry load and the old value is read through the entry
+// pointer); `(void)field;` 85; the value read as the array element with the entry pointer kept for the store 80 (256);
+// a row pointer indexed by the field at each use 270 bytes, and 0x15b3a0 (13) and 0x1ea770 (26) lose their matches;
+// the first engine test through game_engine_get() 85.
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)

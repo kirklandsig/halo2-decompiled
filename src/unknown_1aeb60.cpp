@@ -566,6 +566,14 @@ struct s_1af5c6
 // second lookup through a word-converted index 132 (movzx); through byte-offset element arithmetic 20; the flag test
 // negated with the arms swapped 20. Our `and eax, 0xffff` is one byte shorter than retail's ECX form, so everything after
 // +0x8c sits one byte early: the flagged call, global and constant lines after it are that shift, not separate causes.
+// Round 86 (m3 lane 13, plain): the hit fraction read into a local after the test, re-measured, 19 (the product then
+// loads the distance first; a one-use field copy, not kept); on it: the 0xbaf40 result in its own variable 19 (same
+// code); the distance declared with the other locals and its vector in a nested block 19 (same code: the distance
+// stays at +0x10); the second difference written into the ray vector's storage again 58 (593 bytes: the stores come
+// back); the actor's +0x26c test written where the mask is chosen, no early bool, 115 (568 bytes). The three sites
+// left (second header mask in EAX, ignore index loaded after the first subtraction, distance at +0x10) all sit in the
+// part retail gets from inlining 0x1c8df0, which LTCG keeps out of line here; a file-local reduced copy of it is ruled
+// out (no inline twin of an existing function).
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {

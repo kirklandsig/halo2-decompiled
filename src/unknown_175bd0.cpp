@@ -2143,6 +2143,7 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // takes the new frame slot and colour A the dead `unknown` home, retail the reverse; the tint spills); the first with both
 // queries in the call's arguments 187 (568 B). Round 117's volatile-parameter diagnostics stand as the cause: retail splits
 // the system's live range (ESI to the 0x1751d0 call, then its home), which no non-volatile form here reproduces.
+// MiniMax A (11-12): no new form, no lower score (128); the gap starts in the prologue (frame 0x40 against retail's 0x44) and in the order of the 0x175180/0x1751d0/0x137bd0 calls, so it needs a body rewrite rather than a local spelling.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3003,6 +3004,8 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // first), so the cause stays 0x189060's order: BLOCKED-BY 0xbf600 (its call) and 0x17e670 (the decal call).
 // M3 lane 15 r76: no trial. The first difference (+0x24f) is still the decal call's two register arguments into 0x17e670
 // (contributor, unmatched at 429), and the sound arms still need the held 0x189060 order (aligned 25, register-masked 14).
+// M3 lane 16 r112: no trial (first difference still 0x17e670's register arguments, contributor). The held 0x189060
+// order's saved patch (lane 7 r117) no longer applies to current main and needs regenerating once its owner agrees.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {

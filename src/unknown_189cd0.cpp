@@ -31,7 +31,7 @@ long function_18d5b0(long label);
 long function_189fe0(s_sound_request const *request, long tag_index);
 long function_189340(long object_index, long tag_index, long audible, s_sound_marker const *marker, s_sound_source_callbacks const *source, real scale, long platform_playback, char const *variant);
 
-// score 11 (was 21): every object-index read is plain but the started test, which reads
+// score 11 (was 11): every object-index read is plain but the started test, which reads
 // through the reference; the code is retail's except that test (`cmp [esp+0xb8], -1`
 // where retail compares the late EBX load, 526 bytes). Before round 173 (at 21): retail reads the object index once, after the playback call, into
 // ebx and copies it to esi for the call; ours reads it into esi at the call and again
@@ -145,6 +145,10 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // ESI and the test and dispatch reload), call and test through it 28, test and dispatch 28, all three 28; the started test
 // nested 11 and `sound_index = NONE` at its declaration 11 (same code each). A volatile read never shares its load, so no
 // placement of it can match; a match needs a plain form that keeps the object index out of a register.
+// Round 112 (m3 lane 16, plain; every form without the reference reads plainly): a named `attached` test for the
+// early, marker and started tests 107 (530 bytes); for the marker and started tests only 162 (540 bytes); the
+// positioned test written out at both uses 131 (528 bytes), with the reference kept 132 (527 bytes); no duration
+// local (the parameter cast at both uses) 116 (531 bytes, the plain-reads code).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

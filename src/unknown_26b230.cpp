@@ -2122,6 +2122,7 @@ void function_269250(long clump_index, long actor_index);
 // the walk at function scope or as 0x26bc60's iterator, and inline/forceinline walk helpers are listed. The lever left is
 // register priority between the walk's pool field and the selection inside the shared clump_datum_walk_next, whose
 // respellings cost its four matched users (rounds 75 and 112).
+// MiniMax A (11-12): no new form, no lower score (87); retail hoists the walk's pool into EBX, keeps the selection in memory and compares with the x87 stack, while ours reloads the pool from the struct field and compares with comiss; the lever is the shared clump_datum_walk_next, whose respellings cost its four matched users.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

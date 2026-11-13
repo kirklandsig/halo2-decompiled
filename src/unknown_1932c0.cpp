@@ -857,16 +857,12 @@ double timing_ticks_to_seconds(__int64 ticks);
 dword function_199560(void *data, dword size);
 bool __stdcall function_199740(byte *buffer, long size, byte *destination, long *decompressed_size);
 
-static __int64 variants_read_tsc(void)
-{
-	volatile __int64 ticks = 0;
-	__asm rdtsc
-}
+#include "unknown_080e10.h"
 
 static __forceinline s_game_variants_file *variants_buffer_allocate(void)
 {
 	s_game_variants_file *result = NULL;
-	__int64 start = variants_read_tsc();
+	__int64 start = function_80e13();
 	if (g_4e6464->page_count > 0)
 	{
 		long retries = 0;
@@ -881,7 +877,7 @@ static __forceinline s_game_variants_file *variants_buffer_allocate(void)
 				function_12c600();
 				continue;
 			}
-			__int64 elapsed = variants_read_tsc() - start;
+			__int64 elapsed = function_80e13() - start;
 			if (elapsed < 0)
 				elapsed = 0;
 			if (!((real)timing_ticks_to_seconds(elapsed) < 1.0f))
@@ -902,8 +898,6 @@ static inline short pending_request_last_result(s_pending_message_header const *
 }
 
 /* a received game variants file: decompressed into a fresh buffer and saved */
-extern "C" void _ReadWriteBarrier(void);
-#pragma intrinsic(_ReadWriteBarrier)
 // @retail 0x194260
 bool __stdcall game_variants_received(s_pending_message_header *header)
 {
@@ -916,7 +910,6 @@ bool __stdcall game_variants_received(s_pending_message_header *header)
 		dword size = header->size - 16;
 		if (data && size > 0 && function_199560(data, size) == sizeof(s_game_variants_file))
 		{
-			_ReadWriteBarrier();
 			s_game_variants_file *file = variants_buffer_allocate();
 			if (file)
 			{
@@ -929,71 +922,7 @@ bool __stdcall game_variants_received(s_pending_message_header *header)
 	}
 	return result;
 }
-#pragma function(_ReadWriteBarrier)
 
-// score 3 (was 3): first tick zero store precedes EDI save and false-result store;
-// timer before buffer 3; success rename 3; buffer rename 3; timestamp rename 3;
-// pointer declared first 3; retries before timer 17; write result assigned 53; long result 103.
-// unsigned retries 4; retry cap equality 4; elapsed clamp expression 3;
-// success before write 48; branch result initialization 104; allocation guard return 88;
-// prior-result expression 3; immutable start tick 3; allocator pointer name 3.
-// _ReadWriteBarrier (as 0x194260 has it) moves the zero xor after the pushes: after
-// the result 4; before the result 6; in the allocator before the counter read 4.
-// condition-declared buffer 3; assignment condition 3; immutable buffer 3;
-// split buffer assignment 3; nested buffer scope 3; cleanup goto 3;
-// buffer-guarded return 56; named write result 3; byte result 99.
-// Complemented result at bool/byte/short/long widths 102/102/106/100;
-// true entry result with explicit failures at those widths 100/80/84/87.
-// Round 69: shared header allocator (90 pumps, 1.0 s) 3; with the barrier after the result 4
-// (stores in order, `xor ebx` after the pushes); shared header tick helper 3; force-inline tick
-// helper with a separate zero assignment 3; plain inline allocator 297 (kept out of line).
-// Every spelling hoists the first zero store above the last push, as in 0x223b60.
-// Result declared after the allocation 70; tick reader __forceinline 3, inline 3; start
-// tick read before the null result 3; null result in an else arm 3; tick reader without
-// volatile 127 (the zero stores vanish).
-// Round 117: a barrier inside the tick reader after the zero store 3, before it 4 (the zero xor
-// again after the pushes); the header's address taken 3; the page count read before the tick
-// read 17; the reader with external linkage 3.
-// Round 133: the tick as `volatile long ticks[2]` 3; as two volatile longs 10; unsigned 3; as a
-// volatile LARGE_INTEGER 3; this function placed before 0x194260 3; the retry counter at the
-// allocator's top 17 (0x194260 then 8).
-// Round 66: bitwise-or write result 53 (240 bytes); file != NULL 3; call-first short-circuit result 47;
-// null-initialized file 3; write-failure early exit 85; NULL != file 3; write == true 5; write != false 3.
-// Opening body restored.
-// Round 30 (lane 17, fast; a compile-only build gives the same order): the reader's ticks declared, then zeroed 3;
-// file declared first, then the result 3; result zeroed after the allocation 70 (221 bytes); braced success
-// assignment 3; braced asm block 3; harness: `__int64 volatile`, LARGE_INTEGER QuadPart, forceinline reader 3 each.
-// Round 84 (fast): the reader's ticks as a struct of two volatile dwords 3; rdtsc in its own inner reader 3; the allocator's start read before its
-// null result 3; the page count in a named local 3; the result by a ternary on the write 3. Compile-only: the reader's stores take retail's order
-// only when they are not volatile and still survive, and only an asm reference to the local does that (banned steer); a pointer, a reference,
-// memset, a union, an array, `__assume`, `__noop` or a `T *` parameter of an inner reader all drop the stores.
-// Round 109: unnamed parameter 3; explicit unused-parameter statement 3; direct result initialization 3;
-// direct allocation initialization 3; explicit null-return else 98 (237 bytes); double-negated write test 3;
-// write test against zero 3; explicit false assignment in the write's else 47 (250). Opening body restored.
-// Lane 11 round 70 (fast): the result declared, then set false 3; the ticks const volatile 3, direct-initialized 3, as a volatile dword pair object 3; rdtsc
-// as two emitted bytes 3. Compile-only: no option changes the store order; non-volatile, parameter, aggregate-initialized and memset readers lose the stores.
-// The low store outranks `push edi` because the volatile pair chains low, high, asm; retail's order has no such chain.
-// Round 77 (m3 lane 1, fast, 0x194260 checked each time): a non-volatile tick local with `(void)&ticks;` and a
-// barrier 127 (the stores vanish; 0x194260 131), with `(void)&ticks;` alone 127; the zero as a volatile by-value
-// reader parameter 101 (0x194260 117); the volatile local in an inner block that ends before the asm 3. Diagnostic
-// only (barred, reverted): the non-volatile local made address-taken by a dead asm reference matches, with 0x194260
-// kept. Blocked by the asm ruling: retail's zero stores are non-volatile and survive because the address is taken.
-// Round 98 (m3 lane 12, fast, 0x194260 checked each time): a barrier after the reader's rdtsc 94 (259 bytes; 0x194260 92);
-// the allocator returning early when there are no pages 3; a barrier after the allocator's start read 6 (0x194260 4); the
-// elapsed time from a `now` local 3; the reader defined after the allocator, declared before it 3.
-// Round 158 (compile-only, which reproduces the order): the zero stores through a forceinline clearing helper taking
-// `volatile __int64 *` drop them (an 80-line listing); `file` declared first with the result after it 3; the result
-// declared bare and set false after the allocation (into a register, frame 0x10, a 72-line listing); the allocator's
-// start read before its null result 3; a volatile LARGE_INTEGER zeroed through QuadPart 3; (fast) the allocator returning
-// the allocation from inside a `while (true)` 105 (232 bytes; 0x194260 120), the low zero store still hoisted.
-// Round 165 (m3 lane 5, fast, 0x194260 kept each time): the allocator's start tick as a LARGE_INTEGER set through
-// QuadPart 3; (re-measured) the write result assigned directly 53 (240 bytes). The cause is the shared tick reader's
-// volatile zero pair (the same lift at the reader's other sites, src/unknown_12c0d0.cpp, include/unknown_080e10.h);
-// the only lever found there is an address-taking asm reference, which the asm ruling bars.
-// Round 189 (m3 lane 4, fast, 0x194260 checked): the result as `char` returned as `result != 0` 101 (233 bytes);
-// the allocator's retry count incremented after the pump call 74 (0x194260 73); its retry loop head-tested
-// `while (!result)` 3 (same code); the retry cap as `retries <= 89` 5 (0x194260 2); the timeout test as
-// `(real)seconds >= 1.0f` 51 (0x194260 49).
 // @retail 0x194160
 bool __stdcall game_variants_retry(s_pending_message_header *header)
 {

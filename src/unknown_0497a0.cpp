@@ -346,6 +346,10 @@
 // 715/646/715/646; coordinate construction 633; library copy 715; separate
 // phase coordinates before/after the cross 626/619. NOT kept: no equality;
 // native frame and wave residence remain; original full body restored.
+// T95: Plain three-channel final-clamp loops over actual scaled input records,
+// mode subsets 1/2/4/3/5/6/7 and all with unsigned ordinals: 618/617/558/656/650/632/647/647.
+// NOT kept: no exact scalarized output-record graph; original six scalar products,
+// clamp arms, shape/wave helpers and complete body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1062,6 +1066,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // 0xac), so every stack home below the top is off by four; retail keeps the u step and v + width in eight-byte
 // spill slots at the top of the frame, ours keeps them in four-byte homes among the channel homes, and the
 // first-edge Y, half-width, cursor and colour homes differ with them.
+// T95: Complete initial lower/upper and next lower/upper color-bound records,
+// each alone, initial pair, next pair, all and all by library copy: 618/599/596/544/695/666/867/867.
+// NOT kept: input-record copies miss equality and regress; original input reads,
+// frame 0xa8/0xac, geometry, conversion helper and complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
