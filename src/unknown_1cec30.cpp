@@ -2503,6 +2503,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // 275 with the setter building its word first (1454 bytes, the three setter sites then agree); only j/k
 // scalars with velocity.i scaled in memory 159/153 (1467-1470 bytes). Not kept.
 // Permuter (25 min on #1044 round 3, about 1050 variants): nothing below its own baseline (87 in its render).
+// P437: Fixed actual contact bound/normal magnitude/final speed, fixed/read-only contact
+// and surface receivers, and fixed body-index input: 91 each. NOT kept: early velocity j/k
+// and property-zero residence unchanged; original entire body and all helpers restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

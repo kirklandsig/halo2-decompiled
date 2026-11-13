@@ -961,6 +961,7 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // MiniMax G (11-12): no new form, no lower score (196); retail's convention is eax = the message type,
 // ecx = the message (copied to ebx), edx = the receiver and the address on the stack (copied to edi at
 // the entry), with the esi save delayed past the ja. Declaring the parameters in retail's order (the
@@ -970,7 +971,6 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // here. 0x94420 marked noinline in the handler's member declaration keeps 0x94420 and 0x93aa0 matched
 // and gives 211 (428 bytes): the inline of 0x94420 is not the blocker, the convention is.
 // MiniMax A (11-12): no new form, no lower score (196); the length already agrees with retail's 444 and the first difference is at the entry, where retail keeps the stacked message in edi and this build keeps it in esi, and that one choice fixes the push order and the argument registers of the handler calls.
-// score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // MiniMax S (11-10): no new form, no lower score (153 in the wider set, 196 in the two-source reduced
 // one); the case bodies call the same functions as retail (0x93f60, 0x93fa0, 0x940b0 and the rest are
 // in this file), but the reduced build does not pair their call targets, so most of the rows are that
@@ -1404,6 +1404,16 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // switch with 0x7afd0's call updated 217 (same convention: type ECX, address EAX kept there, message loaded into EBX from the
 // stack); the late switch with 11 ahead of 18 153 (same code). On the one switch the address stays in EAX because no use
 // crosses a call and the three lookups want it there; retail homes it in EDI and the message in EBX. Body unchanged.
+// m3 lane 1 r98 (control 153 plain, 196 fast): no new form run. The listing agrees with the notes above: this two-switch body
+// already has retail's convention (type EAX, message ECX kept in EBX, receiver EDX, address on the stack kept in EDI) because
+// the late compare chain inlines 0x94420; what is left is the early ESI save (the late chain's inlined body needs ESI ahead of
+// the range test) and that chain itself. The candidates checked against this note are all listed: the shared lookup for the
+// three connection cases (round 364), an empty call taking the address (round 45), parameter orders with the call in 0x7afd0
+// updated (rounds 63 and 233), and the unified switch's case orders. The open lead of m3 lane 1 r71 (a correct form of the
+// lookup argument that is not a direct EAX use at allocation) has its whole family listed: r71 (address spellings, copies,
+// getters, forced-inline helpers), round 150 (const reference to a cast temporary, file-local handlers), round 139 (address
+// declared long or as a reference), m3 lane 1 r88 (address copied at entry), round 85 (link read once), round 74 (0x92ef0's
+// parameter orders); no unlisted member was found, so no trial was run (0 trials: no unlisted natural form).
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

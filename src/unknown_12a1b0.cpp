@@ -1639,6 +1639,8 @@ struct s_looping_detail_request
 // counted for 110 (same code); the count test as `>= 1` 110 (same code); the skip loop as `while (skip >= 1)` 110 (same
 // code); skip and player declared at the top of the else arm 110 (same code). The query stays inlined in every one; the
 // known match needs the ruled-out implied test.
+// M3 lane 3 r238 (fast with 0x21b0e0, 0x14dde0, 0x219ed0): the flag7 store before the requested-audible copy at the end
+// 110 (other code, aligned 33 -> 35); the query stays inlined. I found no other caller-side form these notes do not list.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

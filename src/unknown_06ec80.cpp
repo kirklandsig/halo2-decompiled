@@ -110,6 +110,16 @@ union s_6ec80
 // 225. A compile-only harness (dummy first parameter so the session arrives in EDX, getters inline) does not show
 // the shift: there the scoped mask keeps NONE in ECX. The 0x49c8 read as `live ? value : NONE` 177 unscoped, 229
 // scoped (990 bytes each).
+// Round 97 (m3 lane 1, fast), all with the mask zeroed inside the guard (alone 225): the machines block's first
+// word read into a named local ahead of the loop 229 (980 bytes: NONE stays in ECX, but the word is then loaded
+// into EDI before the loop and the block pointers move to ESI/EBX); an out-pointer getter for the two blocks with
+// the null tests, mask loop and data test in an inline predicate taking both pointers 308 (928 bytes, not
+// inlined), both force-inlined 226; the mask zeroed between the two pointer tests with a populated flag 227
+// (diagnostic: the zero has to be live at the first pointer test for retail's allocation); a non-zero start value
+// (diagnostic) 227, so the shift does not come from sharing the zero register; the machines pointer renamed to
+// sort after the players pointer 225 (names move nothing).
+// A bool for "both blocks present" computed where the two blocks are fetched and tested at the guard, mask zeroed
+// inside 251 (985 bytes; it is materialised as a byte, not carried as the two pointer registers).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {
