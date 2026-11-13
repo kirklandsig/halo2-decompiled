@@ -807,6 +807,9 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // or existing scaler, before/after location query: 105/105/222/222/87/87/240/204.
 // NOT kept: no exact native query/scalar residence; original separate reverse
 // direction, source vectors, helper inputs and full body restored.
+// P433: Index/object/motion/heading acquisition orders ABDC/ACBD/ACDB/ADBC/ADCB/CADB/CDAB/DACB,
+// planar clears at their producers: 102/87/101/98/110/101/101/110. NOT kept: no gain;
+// original body restored; unit argument and scalar/query homes remain.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

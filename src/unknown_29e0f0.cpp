@@ -445,6 +445,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // names do not order these homes); the improvement flag declared before the pass loop 382; the pass's anchor pointer declared
 // before the anchor index 382; the selected group record named before the output loop (direct output kept) 382 (all same
 // code); the output step as an if/else increment/decrement 389.
+// P433: Fixed group/lower-endpoint/candidate-record bindings, seven subsets,
+// then all with fixed validator mode: 382 each, 1596/1596 bytes. NOT kept:
+// native selected/default and pass homes unchanged; original full body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
