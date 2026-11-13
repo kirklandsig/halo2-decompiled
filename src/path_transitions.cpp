@@ -882,6 +882,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // then corner-length/corner-actor/length-actor/all outcomes:
 // 388/406/357/263/441/408/423/467. NOT kept: no equality or native early root/actor
 // recovery; all extents grow. Original result, helpers, calls and full body restored.
+// T100: Paired positive/fallback endpoint publication sets 1/2/3/4/5/6/7, then full
+// direct-success completion: 417/499/405/353/351/368/406/415. NOT kept: no native
+// early root/actor recovery or equality; original helpers, result and full body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

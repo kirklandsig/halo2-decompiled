@@ -449,6 +449,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // T97: Nested identity/visibility/selected-carrier object admissions, seven subsets, then all with distance:
 // eight at 926 reduced (control 926; full 920). NOT kept: byte-neutral scope graphs; original
 // guards, qualifiers, marker/query storage and complete body restored. Frame 0x2cb4 still exceeds 0x2cac.
+// T100: Existing object-header flag/property/model fields 926 fast, 920 plain, kept
+// with unchanged compiled code from the opening body. Completed marker-query result sets
+// 1/2/3/4/5/6/7: 926/926/926/926/926/926/924 fast (control 926). NOT kept: the
+// two-point conditional flag lead is below the gate and not exact; original scans
+// restored. Frame 0x2cb4 versus 0x2cac and actor/unit/priority homes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

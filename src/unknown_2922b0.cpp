@@ -467,6 +467,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // T97: Ordered early-return/conditional clamp 573/594; upper-first in-place/early-return/conditional
 // 592/612/626; sequential caps/lower-default/upper-default results 668/649/655. NOT kept:
 // best gains only three; no exact producer-lifetime repair. Original helper/body and in-place snapshots restored.
+// T100: Actual success starts after basis/origin/initial scale, each of four origin
+// producers, or query-loop setup: 599/599/599/599/599/599/599/599. NOT kept: all
+// shorten away from native extent and lose the early native result store. Original
+// body, helpers and every in-place input/result snapshot restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

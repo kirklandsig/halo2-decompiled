@@ -1895,6 +1895,10 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // T97: One shared fallback owned by the existing return result, bool/byte/char/signed-char/short/word/int/long:
 // 645/619/619/619/614/614/616/616. NOT kept: all regress; original separate fallback paths,
 // geometry, counter observations and complete body restored. Sum homes and ESI zero still differ.
+// T100: Actual first/second/paired/projected/candidate/clamped/closest/all coordinate
+// array receivers with complete library point transfers: 614/614/613/614/614/614/614/613.
+// NOT kept: all lengthen and leave native sums/query-zero/early remainder unresolved.
+// Original point workspaces, helper calls, geometry and complete body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
