@@ -1904,6 +1904,9 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // 611/620/637/614/623/623/646/630. NOT kept: no native sum/zero/remainder repair; original geometry and helpers restored.
 // P446: Actual lower and upper endpoint admissions in bool/byte/short/long, preserving short-circuit edge-length evaluation;
 // 623/623/623/623/623/623/623/623. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P449: Face/edge radius-improvement and final face/edge count-admission results in bool/long:
+// eight 623s. NOT kept: no native accumulator-home repair or byte equality; full original body restored.
+
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

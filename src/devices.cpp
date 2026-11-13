@@ -1936,7 +1936,7 @@ bool function_0b6760(s_index_pair const *pair);
 // in EBX), the result as a stack byte at [esp+0xf] (ours DL), and one dead store retail makes before the power 0x11eed0
 // call (rate into the speed's slot, 0x106aa3). Tried: the rate read once into a local `time_step` for the delay product
 // and the call 334 (frame 0x24).
-// score 248 (was 248): earlier 285; frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
+// Earlier 248 (was 248): earlier 285; frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // 285 before lane 14 round 62. Frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // 285 before lane 14 round 62. Frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // Earlier (248, was 248): 285 before lane 14 round 62. Frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
@@ -2209,6 +2209,9 @@ bool function_0b6760(s_index_pair const *pair);
 // the position idle test as `!(value == position && velocity == 0.0f)` 262 (same code).
 // MiniMax A (11-13): no new form, no lower score (250): this build pushes ebp and esi where retail pushes ebx and ebp, and the
 // body is 16 bytes shorter than retail's.
+// P449: Power-change/position-activity, power preparation/advance, position preparation/advance,
+// position-change and lazy reversal decisions: eight 250s. NOT kept: no byte equality or native result-home repair.
+
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

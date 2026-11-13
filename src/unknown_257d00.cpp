@@ -2708,6 +2708,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // NOT kept: native entry remains, but planar/case/exit transport does not match; original complete body restored.
 // P446: Actual case-five request, animation query, native mode, both subtype results, case-18/21 admissions and secondary-countdown producer;
 // 479/479/479/479/479/479/479/479. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P449: Primary countdown, actor, animation release/index, facing, turn, delay and motion decisions:
+// 479/479/479/479/479/479/483/479. NOT kept: no exact scratch-register or completion-tail repair.
+
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
