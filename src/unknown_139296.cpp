@@ -1296,6 +1296,29 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // declared after loop 1 127 (375 bytes); one element pointer declared at function scope for the current form 1 (same
 // code); the indexed first loop with the later bottom tests written `--count > 0` 125 (381 bytes); the indexed first
 // loop with the four masks declared in one statement 118; the same with a `short` index 138 (373 bytes).
+// Round 174 (m3 lane 6; round 157's harness, counts as its positional differences). Diagnostics: with three sibling
+// (or three indexed) loops every instruction is retail's once the zero is not kept: three masks instead of four,
+// or one more reference to loop 1's offset (a store of it inside loop 1 or after it), each leave only the missing
+// or added store. So the zero (ten uses) ties with loop 1's offset and wins the tie. Forms: one function-scope
+// offset for three guarded do-whiles 115 (it takes arg_4's home), with a shared count 115, three indexed loops
+// over one function-scope index and count 106; one mask typed long (first or last) 106/106; the guard followed
+// by an inner `if (count)` around the do-while, offset before or after it 106/106 (the inner test folds); round
+// 171's guard + `for (count = n; count; --count)` in the first, second or third position with sibling loops
+// elsewhere 102/71/39 (retail's code plus that loop's own `test eax, eax; je`), in all three 103; the first loop
+// indexed with a long/short/word/dword/char/byte index and a long/short/dword count, or sibling with a
+// dword/short/word offset (27 forms) best 105; count-down loops with an up-counting index (`for (i = 0; count > 0;
+// count--, i++)`, `while (count-- > 0)`, the index declared ahead) in any position (11 forms) 106 each; the count
+// read ahead of its guard in the first loop only 31 (no zero register: the masks are cleared with `and`, the
+// count takes EBX, loops 2 and 3 exact), in the second or third only 106/106.
+// Calibration (same harness, diagnostic stores to a volatile global): one extra zero use restores the zero in
+// every form that drops it, so the comparison is one for one and those forms stand at nine. Per loop the sibling,
+// indexed, named-count and guarded-for forms count two, an offset set before its guard (do-while or for header)
+// one, round 171's guard + nonzero-count for one. Against the zero count: any reference to a loop's offset or
+// element pointer, and an in-loop read of arg_2, arg_3, the definition pointer or the success flag (each gives
+// retail's three loops plus the added store); not counted: those three outside the loops, the count, the item
+// pointer, a mask, an in-loop constant store. Forms that add no such reference: typed widget pointers in loops 2
+// and 3, a named masks pointer, the element formed in two statements 106 each (folded before allocation); the
+// first draw routine given the two unused trailing parameters its siblings have 106 (and that routine moves 6).
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

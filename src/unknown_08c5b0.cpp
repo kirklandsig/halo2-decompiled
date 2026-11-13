@@ -180,6 +180,12 @@ static inline long bungienet_user_voice_setting(short kind)
 // Round 86 (m3 lane 14, fast, plain reads, no volatile): a top-level const request parameter 32 (95 bytes); the kind
 // held as a long 32; the selection as one ternary in place of the helper call 32; `old_setting != setting` 32; the
 // controller index read after the selector 30 (95 bytes). The compare folds in every plain-read form.
+// Round 174 (m3 lane 6, round 157's harness, counts as its positional differences): the selector taking the
+// request by value 37 (37 instructions, the copy stays), a by-value local copy for both reads 37, the by-value
+// selector with the index read after it 37; the selector taking the request by const reference, plain read 29 (28
+// instructions, folded). Diagnostic: the matched sibling 0x8c790's identical `kind == 1` stays unfolded only
+// through its inlined 0x80e13 time-stamp read (a compile-only copy folds without it, with its result unused, or
+// with 64-bit arithmetic alone); here a plain read still folds with an asm block written into the handler.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {
