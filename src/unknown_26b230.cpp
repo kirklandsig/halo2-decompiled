@@ -2123,6 +2123,13 @@ void function_269250(long clump_index, long actor_index);
 // register priority between the walk's pool field and the selection inside the shared clump_datum_walk_next, whose
 // respellings cost its four matched users (rounds 75 and 112).
 // MiniMax A (11-12): no new form, no lower score (87); retail hoists the walk's pool into EBX, keeps the selection in memory and compares with the x87 stack, while ours reloads the pool from the struct field and compares with comiss; the lever is the shared clump_datum_walk_next, whose respellings cost its four matched users.
+// M3 lane 8 r161 (fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched; this
+// body 87): the team mismatch as `continue` ahead of the score call, the selection stored before best, 126 (480 B; the same
+// code as the in-arm compare); on it the selection local renamed to sort before the walk 126, the walk renamed to sort last
+// 126 (names do not move this register tie), the score declared at actor scope 126, and the walk, selection and best all at
+// function scope 126 (each the same code). In the in-arm form our walk step also lays the found block after the loop body
+// (retail and matched 0x268840 keep it inline after the not-found block), and the improving arm cannot cross-jump into the
+// initialisation's best store because our loop top reloads the selection into EDI. Body unchanged.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
