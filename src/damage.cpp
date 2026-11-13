@@ -3005,6 +3005,10 @@ struct s_unit_event
 // the drop blocks reading the datum through the pool at each use 523 (1900 bytes, the pool global reloaded per block); a local
 // copy of the pool for them 523 (masked 80: the global reloaded rather than kept, the offset in EBX); the destroy block
 // written in each arm of the destroy test 530 (masked 73, retail's shared 0xdb110 call shape).
+// MiniMax A (11-13): no new form, no lower score (517): taking the permutation pointer straight from the info's region array
+// (the one-use region pointer dropped) gives 557, so the region pointer stays; the first difference is still at +0xc, where
+// the region index takes EBX and the permutation pointer EBP where retail keeps them the other way round, and retail's
+// constant 1 travels through the region argument's dead stack home.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)

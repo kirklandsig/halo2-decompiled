@@ -526,6 +526,8 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // (round 218's 36, same code: the store is dead, so its place does not matter; left the direction pointer in ECX for retail's
 // EAX), with it first 65 (round 137). Retail's tail C is an exact copy of tail A's suffix and still unmerged, so its source
 // differs from tail A's in something that leaves no code.
+// MiniMax A (11-13): no new form, no lower score (244): the permuter (302 s, six tries) splits the blocked-and-success chain
+// assignment into two stores, which the fast check puts at 243, one point short of the bar, so the body stands.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
