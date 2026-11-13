@@ -1371,6 +1371,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // defaults 851 (2804 B); the player loop's second-rating copy ahead of the first 766 (masked 353); the group loop's
 // identity copy ahead of the three counter clears 766 (aligned 747, masked 340); the add loop leaving with `if (count >
 // available) break;` 766 (same code). The inline choices above stay the cause.
+// MiniMax A (11-13): no new form, no lower score (766): the first difference is still the stack ingress and the capacity switch, which retail expands as a jump table and this link keeps as a call, and the player loop, which retail inlines (0x63220 with its 0x192e60 call) and this link does not; the register homes follow from that choice.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

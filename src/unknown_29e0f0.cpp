@@ -466,6 +466,14 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // M3 lane 9 r118: no trial run. First difference +0x11 is still the three selected defaults' homes (+0x40/+0xc/+0x20 for
 // retail's +0x44/+0x28/+0x24), which lane 10 r97 showed names do not order. The note records twice that no untried natural
 // form is left (the 32-bit group test-and-set, short terminal and candidate change the length); I found none outside it.
+// P450: Original-site root-count/root-reference/reference-bound/record-compatibility
+// decisions in bool/long: 382/382/382/382/382/382/382/382. NOT kept: no byte equality or selected-default
+// home recovery; original complete body, metrics, bitmaps and traversals restored.
+// P453: nearest scalar at scan scope, route scalar at pass scope,
+// candidate pointer at pass scope, anchor pointer/distance at group
+// scope, record ordinal at pass scope, earlier uninitialized group
+// receiver and output cursor declarations: eight 382s. NOT kept:
+// default/bitmap/pass homes remain; original body retained.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

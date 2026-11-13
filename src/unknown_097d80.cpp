@@ -456,6 +456,14 @@ struct c_aggregate : c_child
 // P438: Complementary signed dispatch/block/item continuations, seven subsets then
 // both fixed child continuations as well: eight 31 at native 373 bytes. NOT kept:
 // no escaped-output/spill-home repair; original loops and complete body restored.
+// Round 80 (m3 lane 15, fast with the six file-mates, all still matched): the collection call through a forced-inline
+// forwarding function taking the count's address 146 (389 bytes, frame 0x8024). Diagnostic for the cause, restored at
+// once: with the count's address handed to a known out-of-line function of the image in place of the virtual v5 call,
+// the frame is retail's 0x8020 and the count sits at +0x10 with the loop spills packed into it, as in retail. So under
+// link-time code generation a local whose address reaches a virtual (unknown) callee keeps its own slot to the end of
+// the function, while one that reaches only known callees is packed by scope; retail's packing of this count therefore
+// needs either a known callee (retail calls through the vtable) or a compile without it. Still BLOCKED by the build
+// flag; no source form can pack the slot.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
