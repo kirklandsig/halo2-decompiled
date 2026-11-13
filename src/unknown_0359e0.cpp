@@ -292,6 +292,18 @@ PRIVATE inline long swizzle_log2(dword value)
 // both logs or common selection 62/72/72/56/71/66; both promotions after width/both logs
 // 72/97. NOT kept: best gain one, longer extent and lost exact caller; all forms lose
 // the direct caller, both late paired forms lose its caller too. Original body restored.
+// M3 lane 11 r96 (fast with 0x136140, 0x359e0, 0x1d6f0; control 57, 0x136140 MATCH): retail copies y out of CX as a 16-bit
+// value at entry (`mov si, cx`), leaves x in DX, and promotes both once just ahead of the mask branch; ours promotes both at
+// entry. x and y used directly 150 (315 bytes; x arrives in ECX and is copied to EBX, y becomes a stack argument homed in
+// EBP, the bit counts go to memory; 0x136140 28); `short` copies at entry 150 (same code); long copies after the mask 84
+// (275 bytes, both become stack arguments; 0x136140 125); the body in an inline helper called from the function 352 (it
+// stays out of line), in a forceinline helper with direct use / late copies / entry copies 150 / 84 / 57 (same code as
+// without it); a `short point[2]` local filled at entry with late long copies 84, used directly 150, y stored first 84 (all
+// folded away); the entry copies declared x then y 54 (0x136140 29: x and y swap ECX/EDX, so the copy order sets the
+// convention); late copies for the lookups with the parameters in the tails 112 (285 bytes); entry copies with the
+// parameters in the tails 146 (313 bytes). The register arguments follow the last/second-to-last/first rule over the
+// parameters the body keeps in registers at entry (width EAX, x EDX, y ECX), so retail keeps x and y enregistered as
+// shorts across both logarithms; no form here does that without moving the bit counts to memory.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

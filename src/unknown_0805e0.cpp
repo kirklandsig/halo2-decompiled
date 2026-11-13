@@ -391,6 +391,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // m3 lane 3 r239: no trial run. Checked against this note and listed: early returns, a successor local stepped at the
 // end, per-pass result, `continue` filters, priming lookups, the iterate helper, typed XUID tests, the null-identity
 // validity, two-use flags/XUID locals, split eligibility scopes, result/index/successor widths and every loop shape.
+// P451: Whole-loop long result 59; final name-word pointer / lazy offline result /
+// lazy identity-presence result / nullable early completion / sole-return goto 43/43/43/43/43;
+// memmove payload 53; explicit final Boolean return arms 52. NOT kept: no gain or equality;
+// original body/helpers restored. Native ESI entry, EBX successor and AL mask remain.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

@@ -1104,6 +1104,16 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // remain with no byte change; original complete tuning body restored.
 // P436: Existing object-tag attachments.address replaces the raw +0x98 read;
 // fast and ordinary checks both preserve 233 and 2592/2596 bytes.
+// M3 lane 11 r96 (fast with 0x42c50, 0x42b20, 0x43740, all MATCH; control 233, aligned 149). Frame map: retail has 37 dword
+// homes and three 8-byte homes at the top (u step +0xa4, V end +0xac, first.y spill +0xb4); ours has 40 dword homes (the u step,
+// the V end and one more) and one 8-byte home (the first.y spill, a promoted aggregate field). The loop and tail in a forceinline
+// helper taking the negated step and the V end as argument expressions 527 (2588 bytes, frame still 0xa8: argument temporaries
+// take dword homes too); the three scalars renamed (V end, U advance, V start, and two names at the ends of the alphabet) 233
+// each (same code: names do not move these spill homes); `point3f second, first;` 233 (same code); case 0 with the second edge
+// assigned first 458 (2584 bytes), that with the declarations swapped 458; case 0's first edge copied from the second's x and y
+// 439 (2584 bytes); case 0 as two aggregate copies of the position with the z offsets applied after, second first or first
+// first 698 / 698 (2680 bytes). Retail loads x and y once into XMM0/XMM1 for the second edge and copies them to XMM6/XMM5 for
+// the first; ours loads them for the first and copies down.
 // P441: Current/next/both/complete width-product branches, original then output-owned initial width: 510/511/545/558/576/572/584/590.
 // NOT kept: Native 0xac frame, first-edge Y and texture/color spill homes remain. Original complete body restored.
 // @retail 0x42cf0

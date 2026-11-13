@@ -498,6 +498,7 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // sum, length and projection homes.
 // MiniMax G (11-11), NOT kept (coordinator 11-11: 87 -> 20 by the unit index assigned inside the guard plus local_1 declared ahead of local_3, both match-only; a plain one-use local before the guard 68, the local at all four reads 241; body at 87): the guard's unit index travels in a named local and the object lookup comes
 // before the two vector copies, so the whole prologue and the guard now match retail's bytes.
+// MiniMax B (11-13): no new form, no lower score (87): the 0x110ab0 argument is loaded into ECX where retail uses EAX, and retail loads the unit-pool global and looks the object up before either vector is copied, so its scaled index takes EDX while ECX still holds the global; here the global is loaded between the two copies and ECX takes both the argument and the index. Moving the lookup ahead of the copies measures 94 and was left alone.
 // score 87 (was 87): frame 0x54 and length 963 agree; the unit argument uses ECX
 // instead of EAX, followed by target/vector scheduling and sum/length/projection/query homes.
 // Earlier 20: the frame is 0x54 and the length matches retail's, and the prologue, the
