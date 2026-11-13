@@ -2910,6 +2910,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // exit jumps to a block that sits 0x36 bytes further from the function's start than retail's, and the body after that
 // pairs against the wrong instruction all the way down; the frame agrees (0x200) and the two length checks on the
 // count are the same, so what is left is the layout of the blocks and the order of the reads.
+// MiniMax H (11-13): no new form, no lower score (364); the first difference is at +0x52, where this build's early exit jumps to a block that sits further from the function's start than retail's, so the body after that pairs against the wrong instruction; the three rotation calls also pass the rotation on the stack instead of in EAX, because that callee lives in another file.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
