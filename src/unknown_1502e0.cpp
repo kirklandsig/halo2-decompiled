@@ -1512,6 +1512,7 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// MiniMax B (11-13): no new form, no lower score (43): the hand before the result (62), the result before the player (43), the unit pointer before the hand (70), the hand as an int (43) and the hand at the entry (86) all leave the register rotation - retail keeps the player in esi, the unit index in edx and the hand in edi, ours keeps them in edi, ecx and esi.
 // score 43 (was 43):
 // MiniMax S (11-11): no new form, no lower score (43): every difference is one clean pairwise register rotation (retail: player esi, hand edi, unit index edx, temp ecx; ours: player edi, hand esi, unit index ecx, temp edx).
 // MiniMax D (11-08): the saved roles are exchanged - retail keeps the player record in esi

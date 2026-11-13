@@ -703,6 +703,7 @@ struct s_biped_flags_10a_view
 	word bit7 : 1;
 };
 
+// MiniMax B (11-13): no new form, no lower score (222): the 0x111650 call still takes the names in eax where retail pushes both arguments, and that callee (src/unknown_10f1e0.cpp) is not in this lane's files: BLOCKED-BY 0x111650.
 // MiniMax C (11-11): no new form, no lower score (222); retail computes the state pointer up front and spills it at [esp+0x20] with the biped index at [esp+0x24], ours spills the index there and reads the parent through the parent-object helper, and retail pushes EBX after its early-exit test and shares one epilogue where ours has its own.
 // MiniMax E (11-11): no new form, no lower score (222); retail loads the biped's havok index into a register and
 // compares it there, computes the biped-plus-short-offset pointer early and spills it at [esp+0x20], and jumps to
@@ -4839,6 +4840,7 @@ void function_e4300(long arg_159e6d)
 }
 
 /* gets the biped up and puts its Havok to sleep, unless it already sleeps */
+// MiniMax B (11-13): no new form, no lower score (91): retail's own signature takes the biped in edi and the index in esi where ours takes one argument, and the caller of that signature is in src/unit_object_type.cpp, so the difference is reported and not patched here.
 // MiniMax B (11-12): no new form, no lower score (91): this build inlines the body of 0xe5930 (defined in
 // src/unknown_0e57e0.cpp) into the caller where retail calls it, so the body is 113 bytes against retail's 61 and the
 // comparison pairs only the two calls; the noinline for 0xe5930 is a change in another file, which this lane may not make.
