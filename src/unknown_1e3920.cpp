@@ -538,236 +538,9 @@ real normalize2d(point2f *vector);
 real function_267370(long object_index);
 
 
-// MiniMax H (11-10): no new form, no lower score (14): `cross3f` for both crosses gives 46 (plain, against the
-// 14 baseline), a named forward pointer 417, a value local for the copied direction 419 and `left` declared
-// before the copy 416, all against the 416 fast control; the two cross products and the inlined zone product
-// still differ in operand order, and both helpers live in headers this lane may not edit
-// (include/location_zones.h, include/vector_products.h).
-// MiniMax S (11-10): no new form, no lower score (14): the plane x product and the two cross products still differ in operand order, and both helpers live in headers this lane may not edit (include/location_zones.h, include/vector_products.h).
-// MiniMax C (11-09): no new form, no lower score (14); the axis global is still loaded after the copy instead of
-// between the j and k copies, and the plane x product and both cross products still differ in operand order
-// (include/vector_products.h, include/location_zones.h).
-// MiniMax E (11-11): no new form, no lower score (14): the carrier block is retail's and what is left is the plane x product and the cross-product operand ties inside the inlined header helpers (location_zones.h), whose header is not mine; the form that reaches 2 needs a one-use forward output pointer, which is not allowed.
-// MiniMax G (11-12): no new form, no lower score (14): the two crosses still differ in operand order and the plane x
-// product still differs in the inlined header helpers this lane may not edit.
-// score 14 (was 20): round 96 kept the resolved-carrier local (selection and root kept apart) with no `up`
-// local, kept together (plain 14; either alone 22, neither 20): the carrier block is retail's; left are the plane x product (retail loads
-// point.x, plane.i as the memory operand) and cross-product operand ties. Earlier at 20:
-// First +0x140: plane x-product operands, parent-selection carriers
-// and cross-product registers remain; frame 0x90 and length 1724 agree. Signed zone
-// byte and NONE sentinel recover immediate zone compares, EDI table and later ECX resets
-// (plain 20). Existing marker and every call/value unchanged.
-// Round 106: the plane test through the out-of-line 0x11c120 with its noinline declaration dropped
-// (locate-only) keeps the same -1 sharing, so LTCG inlining is not the cause; without the
-// `(void)&actor_index` line 98 (same code); the second parent fetch in its own local 104; the
-// point declared before the sample call 98 (same code); plain cross3f for both crosses 123; the
-// entry parent ternary with the found arm first 102.
-// frame 0x8c versus 0x90; early NONE and held-bit byte home differ.
-// Reduced trials: point memcpy 371; early plane result 334; immutable inputs 371;
-// direct actor receiver 371; forward scalar names 371; sampled radius 371;
-// word/native plane key 308/308; plain word 385, early result 379, native key 385.
-// frame 0x8c versus 0x90; early NONE and held-bit byte home differ;
-// frame pointer 468; inline depth zero 608; index-clear schedule fast 376/plain 272;
-// direct plane result 418; named held-direction result 371 (fast control 371).
-// frame and held-direction byte home remain.
-// Field-zero chains 272; sentinel chains 273; signed mode range 343;
-// native seat index 322; early holder output 350 (all plain scores).
-// frame 0x8c versus 0x90 and held-direction byte home remain.
-// Byte plane result 273; left/actor references 273/273;
-// motion-direction reference 277; up reference 273 (plain).
-// Flag-range memset 441; movement-mode branches 369; named activity time 371;
-// per-use geometry fields 371; predicate/index role names 371 (fast control 371).
-// Held-direction pointer/reference 386/386; complete explicit plane-result arms 418;
-// true-first plane result 371; explicit arms with pointer/reference 425/425;
-// true-first result with pointer/reference 386/386 (fast control 371). All restored.
-// Round 167: Plane products, complete forward product terms, and both 371 each;
-// uniform four-use movement flags alone/with plane/with forward/with both 428 each;
-// complete named plane distance 371. Fast control 371; full baseline 273.
-// Original arithmetic, repeated flag observations and protected interfaces restored.
-// Early held-bit flag at function/active scope: bool 362/362, byte 362/362,
-// short 319/319, long 368/368 (fast control 371, callee caveat); all exact-only and restored.
-// Round 375: Complete native plane value, mutable/const plane with mutable/const point,
-// 452 each; the same four graphs with the shared plane-distance helper 452 each.
-// Native snapshot expands the frame; every form and the original float tree restored.
-// Round 377: Type-gated held-direction result bool/byte/short/long 367/367/385/382;
-// default-first producers 362/362/369/368 (fast control 371). Guarded bool restores
-// frame 0x90 but plain 267 gains only six, rejected; second cross helper 367 fast;
-// recovered-frame signed plane key 233 fast/373 plain. All executable forms restored.
-// Round 176: Shifted held bit on the retained first-cross graph 319 fast/272 plain;
-// complete inverse bool/byte/short/long 319 each; staged inverse bool/byte/short
-// 368/368/388 (fast control 371). Missing frame dword persists; all forms restored.
-// Round 351: native carrier control/held bit/both/seat/control-seat/held-seat/all
-// 273/272/272/273/273/272/272; complete readonly metadata 272. One-point gains rejected;
-// original external record observations restored; missing frame dword and held-bit byte remain.
-// Round 250: Entry receiver declarations, ordinal/type declarations, marker/point/predicate
-// declarations, each paired group, all groups, and all groups with phase-role names: 273 each. Every
-// value birth and original phase declaration restored. Frame 0x8c/0x90, early NONE and held-direction
-// byte home remain.
-// Round 111: existing 0xcaf90 marker read 190; inline header copy of the water test 192 (out of line
-// 506); existing 0x11c120 with its noinline declaration dropped 132; existing 0xe70b0 action getter
-// 313 (its unit lookup is not merged); seat field read in the test 113 (with a staged cross);
-// staged cross (every component before the stores) for both crosses 107, with the (second, first)
-// parameter order 107; NONE-initialised carrier with an if/else chain 107. Locate-only: the NONE
-// resets as 0 give retail's plane block exactly; resets as unsigned 0xffffffff 107. Staged cross
-// with retail's first-cross operand order 107 (canonicalised); the 0x118e80 call written in both
-// arms of the flag test (retail forms the vector address before the select) 98. Dropping
-// 0x11c120's noinline also inlined it into matched 0x25ccd0, so its body moved to a header
-// forceinline helper for the callers retail inlines it into (98, 0x11c120 and 0x25ccd0 still match).
-// Round 114: NONE-initialised carrier with an if/else chain 98; the chain with an explicit NONE else 98;
-// chained NONE resets 99; both crosses through the actor fields at each use 100; named forward
-// output pointer 96. Locate-only: the plane test's two compares against another constant give the
-// plane block exactly (54): the -1 shared between them and the resets is the cause; the resets then
-// take -1 in EAX (retail ECX) and the carrier stays in EDI.
-// Round 46: both NONE resets delayed across carrier selection 420 fast; unknown26c alone 415 fast/372 plain;
-// unknown274 alone 416 fast; the whole reset group 421 fast; initial/parent/held header getters and
-// bool held bit 416 fast each (reduced control 416). Original body restored.
-// Round 92 (plain checks; --fast builds this function at 416): helper reading the cluster/zone index
-// fields directly 96; the vehicle index split from the carrier (copy before 0xbaf40, set to the root)
-// 101, which gives retail's carrier block exactly (EAX, compare against the -1 register, `mov edi, eax`)
-// with the -1 still in EDI from the plane test; that with a NONE-initialised if/else carrier 101.
-// Locate-only on the split: plane compares against -2 52; cluster and zone keys as words against 0xffff
-// 33 (no sharing; left the zone compare's imm16 encoding, one byte, the plane x*i order and three
-// second-cross products); cluster word only 358 (the zone -1 joins the reset web); `(short)NONE` 87;
-// existing 0x11c120 through a forceinline redeclaration stays out of line 510. All restored.
-// Lane 17 round 2 (plain checks; the fast image gives 416 for the unchanged body): retail inlines 0x11c120
-// here only (five other callers call it), so the plane compares stay immediates there; our header copy is
-// optimized with this body and shares the resets' -1 in EDI. A swapped-operand staged cross (diagnostic)
-// compiles to the same products (canonicalised). Parent through an if 352; the later class test through
-// `type` 242; carrier chosen before the resets 376; type read after the plane test 127; point declared at
-// the top of the block 98.
-// Lane 9 r52 (plain): cross3f_staged staged i, j, k 108; left declared before up 98; a named second-cross
-// output pointer 98; a named sample pointer for 0x1e3a00 and the zone test 254; up/left declared at the top
-// of the block 112. The compile-only /FAs model forms retail's -1 web (`or ecx, -1` at the resets, the
-// carrier compared against ECX) but keeps `type` in EDI there, so it does not explain the LTCG sharing.
-// Round 23 (plain checks, 98): retail's two crosses order their product operands differently from
-// each other (first cross: the first three products flipped against ours; second: the last four),
-// while ours compiles both alike. Locate-only: the first cross's global axis through a local pointer
-// 98 (same code). The marker point and zone test in their own block 98; `left` declared before `up`
-// 98; the zone result through a bool local 100; `carrier` declared first in the block 98; the first
-// cross plain (cross3f) with the second staged 114 (1727 bytes); the first staged with the second
-// plain 112.
-// Round 58 (lane 12, plain checks; --fast builds this function at 416): the carrier's first arm
-// re-reading the parent index from the object 403 (frame 0x8c); the carrier's first test on the
-// parent index instead of the pointer 335 (1712 bytes); one 0x118e80 call with a ternary index
-// argument 107; the held bit as one bool expression 194; a named location pointer for the zone test
-// 100. Diagnostic (fast only, unfaithful here): `(short)NONE` in the shared zone helper leaves the
-// `or edi, -1` / `cmp ax, di` sharing unchanged.
-// Round 38 (m3 lane 14, fast with 0x1e2a90 in the list, which builds this body as the full build does, 98;
-// alone the image gives 416): aligned only 29, the positional count is the one-instruction shift of the
-// shared `or edi, -1`. The resets as `actor->unknown274 = actor->unknown26c = NONE;` before/after the word
-// clear 99/99; the 0x274 reset copied from the 0x26c field 101; re-measured on the faithful image: carrier
-// chosen before the resets 376, both NONE resets after the carrier choice 372; diagnostic: `(short)NONE` in
-// the zone helper's compares 98 (same code: the constant is shared either way).
-// Round 147 (m3 lane 4, plain checks; --fast differs only at the 0x28f8d0 call, an aligned diff shows 28 real
-// instructions left): a compile-only build of this file without /GL gives retail's immediate zone compares and
-// `or ecx, -1` at the resets, so the NONE sharing comes from the LTCG allocation, not the spelling. The shared
-// zone helper reading the cluster index at each use 96 (the sharing stays; three cross products flip to retail's
-// operand order and three away, so those orders follow internal numbering); the parent pointer set by an `if`
-// 352; typed byte fields for 0x265/0x267 98 (same code); the zone result in a named bool 100; `left` declared
-// before the up copy 98; type read before the parent 129. Re-measured: without `(void)&actor_index` 98 (same
-// code, removed: it only took the parameter's address); the parent ternary with the found arm first 102.
-// Round 282: native up values mutable/const 195/195; normalized left value 193;
-// up plus left mutable/const 237/237; native axis alone/with up/with both 175/235/264
-// (calibrated fast). Original frame 0x90, early NONE sharing and cross operands retained.
-// Round 38 (m3 lane 14, fast with 0x1e2a90 in the list, which builds this body as the full build does, 98;
-// alone the image gives 416): aligned only 29, the positional count is the one-instruction shift of the
-// shared `or edi, -1`. The resets as `actor->unknown274 = actor->unknown26c = NONE;` before/after the word
-// clear 99/99; the 0x274 reset copied from the 0x26c field 101; re-measured on the faithful image: carrier
-// chosen before the resets 376, both NONE resets after the carrier choice 372; diagnostic: `(short)NONE` in
-// the zone helper's compares 98 (same code: the constant is shared either way).
-// Lane 18 round 24 (fast, with 0x1e2a90 in the list): the shared zone helper with early `return false` exits 385
-// (0x11c120 49); a named `byte zone` local in the shared helper 342 (0x11c120 18); the first cross through plain
-// cross3f into a local copied to the field 175 (1749 bytes); the up copy component by component 188 (1760 bytes);
-// `carrier` declared at the top of the block 98 (same code).
-// DL234: shared predicate result from its final test, with direct cluster/entry keys
-// and a reused zone byte: 96/96/96/96/164/164/164/164; shared provider 0 -> 20/37 in the
-// first/last four. All rejected; header restored. Frame 0x90 agrees; NONE sharing and cross operands remain.
-// Round 508: Uniform three-use class snapshots short/byte/long at the original capture
-// 369/158/139; before the pure parent lookup 263/312/299; live class reads 125, with
-// child-default/parent-override carrier 388. Sentinel field fills, seven subsets and
-// all with short-mode clear, 357/357/357/96/357/357/357/357; two-point gain rejected.
-// Original observations and body restored; early NONE sharing and cross operands remain.
-// Round 295: field-sized library fills for first/second/both invalid handles 357 each;
-// conditional reset alone 96; combinations and short mode clear 357. Original assignments restored.
-// DL239: Complete default-forward/stored-forward/up memcpy subsets 1..7 score
-// 98/96/96/98/98/96/96; all memmove 226. Two-point leads rejected; original whole body restored.
-// Frame 0x90 agrees; early NONE sharing, carrier and cross operand homes remain.
-// Round 466: Multiply-used carrier/holder/mode scalar output-field pointers, subsets
-// 1..7 then all at actor admission: 351/104/351/104/348/101/351/351.
-// Early shared NONE and cross operands remain; every original destination and body restored.
-// DL241: Repeated native full-direction/carrier/holder Boolean field receivers, seven subsets then
-// immutable: 104/104/100/104/100/100/106/106. Shared zone success-default result with native
-// cluster/entry carriers: 326/379/373/169; provider 0 -> [60, 56, 59, 55]. All rejected; the
-// helper shifts early NONE to EBX without delaying it. Original body and entire header restored;
-// frame 0x90, late NONE ownership and cross operands remain.
-// DL243: Matched sample/eligibility/speed provider inline contracts, seven subsets: 98 each; all
-// three with uniform actor view at use 103. Inline 0x267370 raises its other user 0x266640 from
-// 194 to 565, so those forms also fail the shared-user rule. Original entire body and every
-// declaration restored; frame 0x90 agrees, early NONE sharing and cross operand homes remain.
-// DL248: Existing vector setter at default/stored/up copies, subsets 1..7 [109, 183, 185, 198, 200,
-// 218, 233]; two contact/held flag-pair CRT clears 383. Frame 0x90 and original length agree; early
-// shared NONE, carrier and cross operand homes remain. NOT kept: All vector-setter forms regress and
-// move extent away; the two-pair fill also regresses, with no source-induced control loss. Original
-// executable source restored.
-// Round 46 (fast with 0x1e2a90): code-neutral unused-local probes (diagnostic) before the up pointer,
-// 1..15: 100/100/101/103/101/99/101/98 repeating (period 8, never below the 22 differing SSE lines),
-// and with 1..7 more before the left pointer, all 56 pairs 98 or worse: the cross operand orders are not
-// a numbering tie; a NONE-initialised carrier with an if/else chain, the initialiser at the block top /
-// before the class read / before the sample call / before the marker point / before the 0x229 flag 98
-// each (same code); typed vector fields for 0x29c..0x2c0 in the actor struct used directly 101, through
-// the up/left pointer locals 98 (same code). All restored.
-// Round 160 (fast 416 control, aligned 33): the zone helper's NONE tests as `(short)NONE` 416 (same code), the cluster test
-// as `(word)` against 0xffff 420 (0x11c120 3), the plane's x term product written the other way 416 (same code), both 420.
-// The helper is unchanged; the `(word)` form gives retail's immediate compare at the head, the lead if 0x11c120 can keep it.
-// Round 48 (fast with 0x1e2a90): the zone helper's last plane product written `point->x * plane.i` 98 (same code,
-// canonicalised; 0x11c120/0x25ccd0 still match); the marker point at function scope 98 (same code); diagnostic,
-// both NONE resets through one long local 101; the unit index read once into a named local for the else block
-// 410 (1726 bytes); the object pointer `byte const *` 98 (same code). All restored.
-// Round 160 (fast 416 control, aligned 33): the zone helper's NONE tests as `(short)NONE` 416 (same code), the cluster test
-// as `(word)` against 0xffff 420 (0x11c120 3), the plane's x term product written the other way 416 (same code), both 420.
-// The helper is unchanged; the `(word)` form gives retail's immediate compare at the head, the lead if 0x11c120 can keep it.
-// Round 146 (m3 lane 5, fast with 0x1e2a90, aligned 28): the carrier as NONE then if/else-if 98 (same code); the root test
-// through a header pointer local 100; the carrier test inverted with an empty arm 98; both NONE resets ahead of the byte
-// flags 103; the zone result in a named bool 100; the class read after the sample call 98. Diagnostic: the zone statement,
-// the resets or both inside `if (1)` 98 each, so call-site nesting does not move the -1 sharing here.
-// DL260: Existing zone predicate with one completion-time optional-index publication, short/int/long/dword carriers in bool/byte result graphs: 96/96/96/96/375/375/375/375.
-// NOT kept: no exact native form; original complete executable source and every temporary contract restored.
-// DL262: Signed zone byte 20 plain; const cluster/plane receivers isolated, then signed
-// combinations and const BSP receiver: 20/98/98/20/20/98/20/20.
-// Keep only the native byte/sentinel declaration; all optional const receivers restored.
-// DL264: Existing staged cross scalar inputs/setter/returned receiver,
-// combinations then immutable inputs: 83/24/20/87/83/24/87/87.
-// NOT kept: no eligible native repair with preserved shared users; original executable source restored.
-// B449: Existing cross producer with whole-vector field/aggregate/setter/const construction,
-// each with aggregate/library publication: 135/135/135/135/135/135/135/135.
-// NOT kept: aggregate staging has no byte match; every shared helper and target body restored.
-// Round 69 (m3 lane 14, fast with 0x1e2a90): the first cross reading up as the field expression 22 (its k products turn
-// b-loaded: the second product as retail, the first away); no up local at all 22; no left local 20, `vector3f *const` up/left
-// 20, the second cross with field expressions 20 (same code each).
-// Round 96 (fast with 0x1e2a90; the cross ties follow local numbering): on the split, no `left` 16, neither
-// local 20, left before up 20, resolved as a ternary 302 (1728 B), root before the resolved copy 304 (1726 B), a
-// named forward output pointer 12; no `up` plus the forward pointer 2 (only the plane x product left; a one-use
-// pointer, match-only, not kept); no `left` plus the forward pointer 14. On the 2 form: location pointer 4, point
-// before the sample call 2, zone result in a bool 4, point at block top / function scope / first local / after
-// type / after object / after parent 2 each, sample pointer 4. Zone header (0x11c120/0x25ccd0 still match): the
-// existing plane_distance_to_point 6 (0x127400 554 -> 559); i,j,k and j,k,i written orders 2 (same code).
-// Compile-only (reproduces the plane block): dot3f either way, `< d`, x-first, parenthesised sums, point through
-// a pointer local, vector/real-array point, a zone-index output, the marker position passed directly: plane.i is
-// loaded in every form (even with point.x in a register). On the kept 14 body: mode read at each use 18, parent
-// definition inline 14, held index read at each use 18, left before the up copy 14, left at block top 24, held
-// object read at each use 74. Retail's other inlined copy at 0x16ebf0 loads plane.i too.
-// P395: Native left/up/forward cross-field reference subsets on the resolved-carrier graph
-// 14/12/12/2/2/12/12; left field direct at all uses 20. NOT kept: two-count forms use a
-// single-use forward output reference and miss equality; original cross receivers and whole body restored.
-// P397: Guarded complete scalar point/plane input producers, mutable/immutable,
-// singly and together, then complete distance receivers: eight 386 (1732/1724 bytes).
-// NOT kept: shared predicate users regress (11c120 62, 25ccd0 184); no exact plane
-// or cross-input recovery. Entire shared predicate and target body restored.
-// P422: Existing predicate input aliases, location/point/plane subsets 1/2/4/3/5/6/7:
-// 14/20/14/20/18/14/16; plane reference plus forward output reference 18.
-// NOT kept: no equality; several forms raise the other predicate user by five.
-// Required typed unit seat-array address 14; forward reference/pointer on that
-// typed-field graph 14/14. Output aliases restored; original shared predicate restored.
+/* refreshes the cached movement state of an actor: whether its head marker lies in its cluster's zone, the
+   vehicle it rides or is held by, and its forward, up and left vectors. Matches retail byte for byte; the
+   named output pointer of the second cross and the zone helper's plane pointer give retail's operand order. */
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -900,9 +673,10 @@ void function_1e3b60(long actor_index)
 			*(vector3f *)(actor_bytes + 0x29c) = *(vector3f *)(object + 0x168);
 		*(vector3f *)(actor_bytes + 0x2a8) = *(vector3f *)(object + 0x18c);
 		vector3f *left = (vector3f *)(actor_bytes + 0x2b4);
+		vector3f *forward = (vector3f *)(actor_bytes + 0x2c0);
 		cross3f_staged(g_4687b0, (vector3f *)(actor_bytes + 0x2a8), left);
 		function_30bf0(left);
-		cross3f_staged((vector3f *)(actor_bytes + 0x2a8), left, (vector3f *)(actor_bytes + 0x2c0));
+		cross3f_staged((vector3f *)(actor_bytes + 0x2a8), left, forward);
 		*(long *)(actor_bytes + 0x2d0) = *(long *)(object + 0xec);
 		*(long *)(actor_bytes + 0x2d4) = *(long *)(object + 0xf0);
 		*(long *)(actor_bytes + 0x2d8) = *(long *)(object + 0x100);
@@ -1708,6 +1482,17 @@ void function_1e3b60(long actor_index);
 // 0xa0); the loop-tail state through the typed `->unknown68` field 26 (412, same code); case 4's arms the other way round 26
 // (443, 1644 B); sample/update declared after the 0x263670 call 26 (412, other code). The #581 route stays closed: the two
 // named doubles as `real` raise 0x29bab0 (715 -> 750) and 0x1f9e70 (137 -> 302), per their notes.
+// M3 lane 10 r100 (fast, with 0x262ba0, 0x263210, 0x264210, 0x2641c0, their five other callers and 0x1e2570; 26 here in
+// every form): the stacked actor needs 0x2641c0 inlined in 0x262ba0 (retail), which its noinline declaration stops because
+// 0x264210 would inline it too. New on that decision: 0x264210 moved beside 0x264330 (the other file, same flags) with the
+// noinline declaration dropped still inlines it (0x264210 114 at 139 bytes, 0x262ba0 497, 0x1e2570 161), the move alone
+// changes nothing; 0x2641c0's copy as an aggregate assignment, its two tests nested, an explicit else arm, a named source
+// pointer: 0x2641c0 still matches and 0x264210 still inlines it (114) each; the two actor fields in named locals 0x2641c0 2,
+// 0x264210 116. Diagnostics: an extra statement in 0x264210 does not stop the inline (139 at 154 bytes), nor does hosting
+// 0x264210 in a file without /arch:SSE (114); a heavier 0x2641c0 does (its copy as a 14-pass loop: 0x264210 stays a call at
+// 68 bytes while 0x262ba0 still inlines it, 489 at 1684 bytes), so the decision follows the callee's size at a
+// non-loop site, not the caller, the file or the flags. Needed: a 0x2641c0 that compiles to retail's 78 bytes but
+// weighs more to the inliner. Still BLOCKED-BY 0x262ba0 and 0x1f38c0.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

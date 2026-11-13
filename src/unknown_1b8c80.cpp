@@ -1806,6 +1806,11 @@ void function_1f86a0(long actor_index);
 // pushes EBX before the call and keeps the result there, and spills the flags byte to the stack; the actor array base, the scaled index
 // and the tag table global therefore land in different registers (retail EBP, EDI and ESI, ours ECX, EBP and EDX).
 // MiniMax A (11-11): no new form, no lower score (134); our build keeps the incoming actor index in EBX for the whole body and saves it in the prologue, where retail keeps it in EDX only until the iterator record is filled and reloads it from its stack slot for each later call, so the actor array base, the scaled index and the tag table global land in different registers (retail EBP, EDI and ESI, ours ECX, EBP and EDX) and the frame slots of the stored actor pointer differ.
+// m3 lane 10 r99 (fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70, all matched): the decline's 0x20 test re-read from the
+// flags with the mask local used only by `same` 244 (868 B); the element index stored before the slot flag together with a
+// dword joint index compared as signed (MiniMax C's 133 and 132 forms combined) 132, two points and both steering, not kept;
+// `joint_index == NONE &&` in the while condition with no break 256 (874 B); the tail without gotos (one success bool, the
+// cleanup and `return NONE` in an `if (!success)`) 201; the root compare's operands swapped (selection's root first) 134.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

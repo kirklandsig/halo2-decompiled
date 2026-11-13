@@ -607,6 +607,10 @@ void __stdcall function_1160c0(real dt)
 // into a `rotated` local then added to position (either order), and the axis normalization rows all inverse-first, all
 // axis-first or all `*=`: 163 each (same code); the axis passed by value 334 (1399 bytes). 0x170d70's own helper is in a file
 // held for the sort_4byte change this round.
+// m3 lane 10 r99 (fast with 0x116750 matched; register-masked aligned count 112 for this body): the axis length named
+// (`real length = normalize3d(&axis); if (length == 0.f)`) 178 [160], first difference +0xc1; the physics index in a named
+// local for its test and the tag lookup 171; the target point declared with the loop's other locals 171; the direction
+// declared before the position 171; the delta's squared length through dot3f(&delta, &delta) 171 (all four the same code).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
