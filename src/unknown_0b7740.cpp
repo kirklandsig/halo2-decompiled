@@ -1004,6 +1004,12 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // 0xbdb60 call and passed to it 280; in the second block the three pointers set first and used in the copies and calls 259.
 // Re-measured: the bit-30 clear through 0xbfe20 262 (813 B), with the orientations offset ahead of the state 262 (same code).
 // Body unchanged.
+// m3 lane 14 r88 (fast with 0xbfe20, 0xbfe60, 0xbdb60, 0xbfc90, all MATCH): re-measured the 0xbfe20 clear 262 (813 B; frame 0x4c,
+// orientations in ESI; left: the entry, where retail loads input_matrices into EDX before object_index and copies it to EDI,
+// the definition kept in EAX across the mask copy where retail stores it and reloads it, and the third object read). On that:
+// final_matrices declared at the top 262 (same code); `object` read as header->object 325 (798 B); both early tests through
+// object_get() 282 (834 B); the awake test through the existing 0xbfc90 259 (813 B); the early tests as two ifs 317 (804 B); the 0xbfc90 awake
+// test with `object` read as header->object 307 (814 B). Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
