@@ -1303,6 +1303,9 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
 long function_1fa7f0(void);
+// MiniMax A (11-13): no new form, no lower score (400); the frame is still 0x114 against retail's 0x10c, the
+// source radius still sits at +0x30 against retail's +0x2c, the expanded radius at +0x44 against retail's
+// +0x34, and retail keeps the count in ebx where this build holds it in esi.
 // score 400 (was 400): earlier 418; the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // MiniMax E (11-10): no new form, no lower score (400); the frame is 0x114 here and 0x10c there, because the edge value and the other-side flag are kept in stack slots here and in ebx and bl there, which moves every other home by eight bytes.
