@@ -203,6 +203,15 @@ struct s_1d8e40 : hkRigidBody
 // Root names 112; earlier second declaration 112; double reciprocal 112;
 // named inverse 125; scalar extraction unavailable; second shape first 112;
 // for parent walks 112; one positive filter guard 112; sum lane extraction 143.
+// Direct rigid-body view 112; velocity reference 106; float sqrt 112;
+// scale updated in two steps 125; four-lane broadcast 135; output vector
+// initialization 112; direct contact observations 112; named speed 112;
+// velocity reference with staged reciprocal 31; motion pointer 120;
+// velocity value 112; threshold captured 177; subtraction captured 125;
+// both callback scalars captured 152; sum vector extraction 117.
+// NOT kept: the velocity reference gains six, below threshold; the 31-point
+// combination requires an exact match. Its input loads and scalar scratch
+// still differ. All executable text restored; serial search found no match.
 // @retail 0x2daae0
 void class_2da9f0::contact_2daae0(void *contact_)
 {

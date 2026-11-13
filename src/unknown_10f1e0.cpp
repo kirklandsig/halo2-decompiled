@@ -1856,6 +1856,10 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
+// MiniMax G (11-12): no new form, no lower score (445): the frame is still 0x8 against retail's 0xc — retail keeps the result byte in
+// the first argument's dead slot, the two flag bytes at the frame bottom and the control and controlling words above them, and it writes
+// the true default at the entry; declaring the two flags before the pointers gives 446, and the entry default with the switch's default
+// arm dropped gives 489, so neither spelling reaches retail's frame.
 // score 445 (was 445): earlier 445 (was 453): retail keeps the result byte in the first argument's dead slot and re-derives the unit in both seat
 // MiniMax E (11-11): no new form, no lower score (445); the frame's slots sit at retail's offsets one dword off
 // and retail keeps its frame pointer and the early pointer where ours does not.
@@ -2889,6 +2893,16 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // ours treats it as a rematerialisable constant where retail weighs it as a variable; no natural form found that
 // gives a NONE-valued variable (a constant-only local is a reverted form). Every other statement, test and type
 // form above is listed.
+// Round 237 (m3 lane 3, fast): the out value cleared at the top, after or before the index copy, 23/23 (it is stored to
+// the parameter's slot at once: an address-taken parameter is not kept in a register, and the roles stay); the sibling
+// 0x1147e0's order (out value cleared, the fallback lookup without an early return, then `index != NONE && 0x114520`)
+// 23, with the clear after the lookup 22, with the lookup as one conditional expression 22 (the implied test threads
+// away, roles unchanged). Diagnostics (each drops or adds real work) for the colouring order, which is index, request
+// priority, NONE by weight, the first taking EBX, the second ESI, the third EBP: without the request's priority store
+// the priority falls to third (index EBX, NONE ESI, priority EBP, loaded first as in retail) 63; without the entry
+// store the index stays in AX and NONE takes ESI 84; without both NONE takes EBX 88; two more NONE stores 38 (no
+// change of roles), four more 72 (NONE second). So NONE sits just under the priority here and would need the weight of
+// about eight more stores to pass the index, as retail's order (NONE, index, priority) needs.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {
@@ -3765,6 +3779,12 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
     return elapsed;
 }
 
+// MiniMax A (11-12): no new form, no lower score (12); the definition and the control still take each
+// other's homes (retail keeps the control at +0x1c and the definition at +0x20, ours the other way round) and
+// the two flag bytes are still cleared after the set test where retail clears them in the entry block; this
+// round's forms (the definition declared before the control, the overlay declared before the animation, the
+// force flag declared first, and the two flags declared ahead of the lookup, which rebuilds the function at
+// 682 bytes) all leave 12 or more, and the permuter found no candidate.
 // score 12 (was 12): earlier 12 (was 44): earlier BLOCKED-BY 0xe70b0 (its return type) for the frame 0x3c versus 0x38, lifted in lane 16 r97. Measured from
 // MiniMax b (11-06): no new form, no lower score; the action short's four-byte slot is the whole frame
 // difference, and it can only be a two-byte compiler temporary if 0xe70b0 returns its two-byte result

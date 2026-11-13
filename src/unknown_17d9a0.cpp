@@ -125,6 +125,11 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
 
+// MiniMax A (11-12): no new form, no lower score (46); the plane store's base, the products' load and
+// memory sides and the first corner's axis and flag registers are as the earlier rounds left them (retail
+// keeps the short axis in AX and the flag in CL, ours signs the axis into ECX and puts the flag in AL); this
+// round a short axis local with the field stored straight from it measures 162, though the length then
+// matches retail's 983 bytes; the fast image measures this body only with 0x120850 and 0x22bbca beside it.
 // score 46 (was 46): retail's length and every lookup, store and the tail; left are the products' load/memory sides (retail's
 // ranks: j fields > bounds[1,2] > i fields > bounds[0,3] > k fields; ours differ and move with symbol count), the plane store base
 // and the first corner's registers (the axis stays live in ECX, so the flag takes EAX). Earlier at 138: frame 0xc and matrix/dot
@@ -631,7 +636,7 @@ point2f g_55ec10[2][12];
 struct s_bsp3d;
 struct vector2f { real i, j; };
 struct plane2f { vector2f n; real d; };
-plane3f *bsp3d_get_plane(s_bsp3d const *bsp, short plane_index, plane3f *plane);
+plane3f *bsp3d_get_plane(s_bsp3d const *bsp, long plane_index, plane3f *plane);
 real function_11cf50(vector3f const *a, vector3f const *b);
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 short function_23a6f0(point2f *output, short count, point2f const *points,

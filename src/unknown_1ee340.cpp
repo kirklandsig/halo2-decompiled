@@ -179,7 +179,7 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // surface_index first) and the vertex pointer taken as a point3f pointer all
 // leave the two differences in place, and the w store written through the array
 // again is worse (38).
-// score 6 (was 6): radius/index loads swap; vertex x uses the completed
+// Earlier, also at 6 (one note now): radius/index loads swap; vertex x uses the completed
 // address before its store. Derived count/kind/value initializers 33; all
 // member initializers 6; index/count/kind initializers 6; const source 6;
 // point memcpy 120; point value with in-place transform 128; word edge
@@ -196,6 +196,16 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // through the array element as a long copy (119), through the point3f view of that element (119) and
 // the helper called on the array element (38) are all worse, and writing the three components
 // separately (112) turns the y and z stores into long copies.
+// Round 98 (m3 lane 10, fast with 0x1ee4d0, 0x1ee500, 0x1ef950; control 6). Finding: retail's 0.01 radius is not a literal:
+// 0x47f068 is in .data and only this function reads it, so the source passed a global to the base constructor; with
+// `real g_47f068 = 0.01f;` (or const) as that argument the code is the same 6 (the index is still loaded first), so the
+// literal stays for now. Vertex stores: through the existing 4-component set of include/unknown_1cec30.h (element indexed,
+// element address, a named reference, w passed) 6 each (same code); through a file-local vector with direct member stores
+// or a 4-real free setter given the element address (inline or forceinline) 6 each; through a real array-of-vectors view of
+// the member (so the element is an lvalue) with either setter 6/6, with four direct member stores 106; four m128_f32 element
+// stores through a named vertex 106. Every setter form materialises the vertex address before the x store; retail's
+// `mov [eax + ecx], edx; add eax, ecx` is the shape main's 0xa3df0 gets from a pointer whose first use is folded and
+// which is formed only for a later use. One compiler-setting diagnostic (not kept): /G5 or /G7 on the file 6, nothing moves.
 // Round 416: Advancing output cursor 92 (445 bytes); persistent edge cursor 117;
 // read-only edge pointer 6; post-transform point selection 6; memmove point copy 125 (459 bytes);
 // immutable output cursor 6; unsigned full-width edge ordinals 6; existing shared point transform

@@ -226,6 +226,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
+// score 49 (was 49): unchanged this round: retail keeps the false result in BL from before the creation
+// call and sets it only after the attachment, and it branches on the creation call's result instead of
+// materialising that comparison as a 0/1 value; retail also borrows EBP around the header flag test and
+// loads the object table's data pointer again for the object read, where ours shares one address between
+// the two reads and keeps the result in EBP.
 // score 49 (was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
 // earlier first lines 49 (was 49), 49 (was 49); retail's bool result in BL, the EBP borrow around the
 // header test and the data reload remain; round 151's entry is the last one above the marker.
@@ -1115,6 +1120,16 @@ bool c_projectile_type::v8(long a, long b)
 // and flags (mask) 51; `(word)(index & 0xffff)` 5 (same code as the word read: the narrowing conversion gives object
 // ESI); the call's mask as `(word)(flags & 0x3ff)` with the index masked 12; `(dword)index % 0x10000` 12; the group
 // value through the existing cross-file inline device_group_get at the compare and the store (mask) 15.
+// Round 98 (m3 lane 10, fast with 0xa5e70 and the sibling v27s, which all stay matched; control 5), full-width mask unless noted:
+// the base class's v27 called inline with the flags local / with `b` direct 51/51, with the word read 52 (the base is inlined,
+// but its definition copy lands in an incoming argument slot, so the frame has no `push ecx`); eight renamings of the object
+// local, the flags local and the `b` parameter (early and late names, the parameter itself named flags) 12 each: names do not
+// order the two registers; the group value's whole address expression written at both uses 15 (word read 8: the shared address
+// then includes the +4); 0xa5e70's flags parameter declared dword, word or short (definition and header; 0xa5e70 and its other
+// callers still match) 12 each; the call's mask from a narrow read of the flags, `(word)flags`, `(word)b`, `(short)b` or a
+// word read through the parameter's address, 12 each. Diagnostics (not kept): with the mask the flags take ESI at three uses
+// each (12) and at four each (37); the object takes it with the 0x400 test removed (40); with the word read the object takes
+// ESI even with one of its 0x140 reads removed (6), so the word read does not act through a use-count tie alone.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
