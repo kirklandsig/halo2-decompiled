@@ -100,10 +100,10 @@ long function_1469f0(real seconds);
 // operands swapped 13: all worse or equal. The copy does put the reference load where retail has it
 // (ECX, ahead of the actor's arithmetic) and keeps the global a memory operand, but the table's
 // data then moves to EBX with an extra push, where retail keeps it in EDX.
-// score 13 (was 13): the slot reference still loads into EDX after the actor's index
+// Earlier measurement 13 (was 13): the slot reference still loads into EDX after the actor's index
 // arithmetic, where retail loads it into ECX before it; reading the reference into a named
 // local before the actor's arithmetic (a bool or a copy) moves the load but costs the body.
-// score 13 (was 13): retail reads the slot reference before actor arithmetic and the object table
+// Earlier measurement 13 (was 13): retail reads the slot reference before actor arithmetic and the object table
 // after index arithmetic; ours has the opposite order in each case.
 // Slot data block 13; without the barrier 90; action helper result 13; actor/state/result 17;
 // result/state/actor 13; state/result/actor 13; result/actor/state 17; actor/result/state 17.
@@ -132,6 +132,10 @@ long function_1469f0(real seconds);
 // and reads the table late; the reference copied into a named local, the barrier at five positions,
 // the scope forms of the three locals and the action helper's unused result were all measured and
 // all score 13 or more, so the body stands as it is.
+// P419: Callback inline, getter __forceinline, outer scalar lifetimes,
+// immediate conversion results and direct action-failure arm 13 each;
+// low-readiness arm first 62; separate countdown update/test 13; double
+// random-result locals 116. All forms restored; both load regions remain.
 // @retail 0x1bf0f0
 short __stdcall function_1bf0f0(long actor_index, s_slot *slot, bool active)
 {

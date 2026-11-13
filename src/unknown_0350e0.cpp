@@ -30,6 +30,7 @@
 #include "vector_products.h"
 #include "unknown_033a0b.h"
 #include "bit_vector.h"
+#include "object_tag_definitions.h"
 
 
 
@@ -1473,6 +1474,10 @@ long function_baf80(long object_index);
 // MiniMax R (11-11): no new form, no lower score (12): the parent lookup differs - retail masks the parent index
 // with `and eax, 0xffff` before it loads g_4e0300 and keeps the definition pointer in eax, ours loads the pool
 // first and truncates the index with movzx; the pool load is hoisted above the mask in every spelling tried.
+// P419: Existing typed model fields 12; test-produced opaque result 128;
+// chained output clear 14; scalar weight names 12; combined cutoff 37;
+// in-place level cap 23; settings selection expression 12; late second
+// weight 47. No byte gain; typed fields alone confirmed by plain check.
 // @retail 0x4baf0
 void function_4baf0(long object_index, real distance, byte *first, byte *second)
 {
@@ -1486,8 +1491,8 @@ void function_4baf0(long object_index, real distance, byte *first, byte *second)
         *second = 0xff;
         return;
     }
-    byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
-    long model = *(long *)(definition + 0x38);
+    s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
+    long model = definition->model.tag_index;
     if (model != NONE)
     {
         byte *settings = g_4e3b44[model & 0xffff].bytes + 0x28;
@@ -1496,8 +1501,8 @@ void function_4baf0(long object_index, real distance, byte *first, byte *second)
         {
             word parent_slot = (word)parent;
             byte *local_be682a_2 = ((s_scalar_object_header *)g_4e0300->data)[parent_slot].object;
-            byte *parent_definition = g_4e3b44[*(long *)local_be682a_2 & 0xffff].bytes;
-            long parent_model = *(long *)(parent_definition + 0x38);
+            s_object_definition *parent_definition = (s_object_definition *)g_4e3b44[*(long *)local_be682a_2 & 0xffff].bytes;
+            long parent_model = parent_definition->model.tag_index;
             if (parent_model != NONE)
                 settings = g_4e3b44[parent_model & 0xffff].bytes + 0x28;
         }

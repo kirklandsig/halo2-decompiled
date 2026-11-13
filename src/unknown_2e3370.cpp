@@ -121,6 +121,10 @@ void class_2e1090::function_2e3370(bounds_2e0020 const *bounds, overlap_endpoint
 // New: record copies 111; tagged branch first 111; axis pointer/count 110
 // (NOT kept: gain 1); box decrement in body 111; captured endpoint count 115;
 // direct size test 147; inclusive last ordinal 147; unsigned owner 111.
+// P419: Context before count 111; branch-local context and direct empty value
+// 110/110; paired memcpy 111; once-loaded indexed endpoints 111; head-tested
+// box ordinal 111; distinct loop names 111; initial bulk copy 189.
+// NOT kept: best gain one; sort setup and later loop registers remain.
 // @retail 0x2e3b00
 void class_2e1090::function_2e3b00()
 {
