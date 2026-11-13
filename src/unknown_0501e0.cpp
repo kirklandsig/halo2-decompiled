@@ -30,13 +30,17 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
         ++output;
     }
 }
+// score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
+// the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
+// raw offsets before the test) and the coefficients folded into the products.
+// MiniMax H (11-13): no new form, no lower score (206).
 // MiniMax I (11-11): no new form, no lower score (206): retail computes the second point's offsets first, spills all three and keeps the camera coefficients in registers; taking the two offset loops in retail's order scores 208, so the body keeps its own order.
 // MiniMax B (11-11): no new form, no lower score (206); the body is unchanged, and the forms listed above are exhausted.
 // MiniMax B (11-12): no new form, no lower score (206): the frame is still 0x20 against retail's 0x14 - the second
 // offset vector keeps its own home where retail shares it with the orthographic segment and keeps right.i in
 // xmm7 for both views - the scale is applied in place where retail copies the raw offsets before the test, and
 // the coefficients are still folded into the products.
-// score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
+// Earlier (206, was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products.
 // MiniMax S (11-10): no new form, no lower score (206); our frame is still 0x20 against retail's 0x14 and the two view
@@ -481,6 +485,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // MiniMax A (11-12): no new form, no lower score (206): our frame is 0x20 against retail's 0x14 - retail keeps the first
 // view's depth and the second view's height in registers across the two inlined transforms, where ours spills them, so the
 // coefficient and result registers and the tail still differ.
+// m3 lane 10 r99 (fast with 0x30290, 0x30bf0 and 0x142640 matched; register-masked aligned count 185 for this body): the
+// helper's scaled copy as an aggregate copy of the input (`vector3f scaled = *arg_1;`) 330 (1198 B); same code (206): the
+// offsets renamed start/end so their names sort the other way, the view outputs renamed the same way, the blend scale and
+// orthographic length renamed, the two blend weights renamed.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

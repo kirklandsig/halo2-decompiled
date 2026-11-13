@@ -79,6 +79,7 @@ static __forceinline long floor_to_long_inline(real value)
 // written as ~0x1fffffff are byte-identical; the kind word's operands swapped puts the shift in the result
 // register as retail has it but moves the tag load into ECX (79); either packed word as one expression 79/288.
 // MiniMax I (11-05, run 37): no new form, no lower score (10); the first word's OR order, the kind shift and the pool register set still differ.
+// MiniMax H (11-13): no new form, no lower score (10); the two masked words are combined in the other order, so the kind is the word that is shifted here and the flags word is the one retail shifts, and the pool register is set after the bit-count test here and before it in retail.
 // score 10 (was 15): left: the first word's OR order (retail ORs flags and category before the
 // kept top bits), the kind shift (retail `shl eax, 0x1d; mov esi, eax`, ours `mov esi, eax; shl esi, 0x1d`)
 // and the pool register set before the bit-count test. Round 149 below. Earlier rounds' notes follow.

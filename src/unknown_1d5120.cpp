@@ -87,19 +87,6 @@ void function_1d56f0(s_havok_component *component)
     }
 }
 
-// MiniMax A (11-12): no new form, no lower score (77); the rigid-body lookup's two address operands
-// still read in the other order than retail's, and the success tail still pushes what retail passes
-// in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp) and the call cycle behind it.
-// MiniMax H (11-10): no new form, no lower score (77): the rigid-body lookup's two address operands
-// still read in the other order than retail's, and the success tail still pushes what retail passes in
-// EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp) and the call cycle behind it.
-// MiniMax I (11-09): no new form, no lower score; the lookup still reads [edx + eax + 0x40] where retail reads [eax + edx + 0x40], and the rigid body, the motion transform and the index in named locals all leave the same 77; the success tail still pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
-// MiniMax D (11-06): no new form, no lower score; the success tail cannot be matched from this file, because retail's 0x1d0cf0 takes the transform in EAX, the component in EBX and the index in ECX and returns plainly, while our call pushes the component and the index on the stack: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
-// MiniMax I (11-06): no new form, no lower score; the lookup still reads [eax + edx + 0x40] where retail reads [edx + eax + 0x40], and the success tail still pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
-// MiniMax G (11-05): no new form, no lower score; the rigid-body lookup's address operands still
-// read `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`, and the success tail still
-// pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
-// MiniMax B (11-04): no new form, no lower score.
 // score 77 (was 77): the lookup still reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`
 // and the success tail still pushes what retail passes in EAX/EBX/ECX: BLOCKED-BY 0x1d0cf0 (another file).
 // Earlier (score 77, was 77): every frame home and the body up to the success tail agree; left: the rigid-body
@@ -284,6 +271,27 @@ void function_1d56f0(s_havok_component *component)
 // MiniMax D (11-11): no new form, no lower score (77): the component lookup still reads [eax + edx + 0x40] where retail
 // reads [edx + eax + 0x40] for the same address, and the tail's registers and stack slots follow the callee, which is in
 // another lane's file.
+// MiniMax A (11-12): no new form, no lower score (77); the rigid-body lookup's two address operands
+// still read in the other order than retail's, and the success tail still pushes what retail passes
+// in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp) and the call cycle behind it.
+// MiniMax H (11-10): no new form, no lower score (77): the rigid-body lookup's two address operands
+// still read in the other order than retail's, and the success tail still pushes what retail passes in
+// EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp) and the call cycle behind it.
+// MiniMax I (11-09): no new form, no lower score; the lookup still reads [edx + eax + 0x40] where retail reads [eax + edx + 0x40], and the rigid body, the motion transform and the index in named locals all leave the same 77; the success tail still pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
+// MiniMax D (11-06): no new form, no lower score; the success tail cannot be matched from this file, because retail's 0x1d0cf0 takes the transform in EAX, the component in EBX and the index in ECX and returns plainly, while our call pushes the component and the index on the stack: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
+// MiniMax I (11-06): no new form, no lower score; the lookup still reads [eax + edx + 0x40] where retail reads [edx + eax + 0x40], and the success tail still pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
+// MiniMax G (11-05): no new form, no lower score; the rigid-body lookup's address operands still
+// read `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`, and the success tail still
+// pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
+// MiniMax B (11-04): no new form, no lower score.
+// M3 lane 12 r119: no trial. The listing is retail's except the lookup's `[eax + edx + 0x40]` and the 0x1d0cf0 call
+// tail (retail: transform in EAX, index in ECX, component loaded into EBX before the call; ours pushes component and
+// index). The forms on this side are listed above (the member form gives retail's lookup order, 76); the tail waits
+// on 0x1d0cf0's EBX component, which lane 5 r153's /Gd screen and round 3 of #1044 tie to LTCG's walk of the call
+// cycle through 0x1d1260/0x1d1540 (disabled 0xb8540/0xb7430 on retail's cycle). Still BLOCKED-BY 0x1d0cf0.
+// Retail's 0x1d0c20 (fast listing) takes the component on the stack and loads it into EBX only just before the
+// 0x1d0cf0 call, so 0x1d0c20 (38) and this tail wait on the same EBX parameter. The flag5-first 0x1d0cf0 body (15
+// here) is not retail's test order and raises 0x1d0c20 and 0x1d3fc0 (avoid-listed this round), so it was not re-run.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

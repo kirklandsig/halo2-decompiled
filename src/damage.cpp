@@ -7,6 +7,7 @@
 #include "data_array.h"
 #include "unknown_0259d0.h"
 #include "effects.h"
+#include "object_tag_definitions.h"
 #include "object_markers.h"
 #include "object_queries.h"
 #include "unknown_1dee50.h"
@@ -583,6 +584,9 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // Round 307: clear result reused 3; zero event aggregate copy 79; owner long/complete
 // payload memset 36/36; individual long/short sentinel memsets 3/3;
 // owner longs plus long sentinels 36; complete owner plus remaining sentinel memsets 35.
+// P422: Complete zero-clear partitions at flags/owner/handle/location/vector/scale/
+// material/tail boundaries 34/43/55/63/66/45/50/41, 111-133/104 bytes.
+// NOT kept: split bulk clearing adds stores or another clear and lengthens native code.
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {
@@ -971,6 +975,9 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 // result/count/guard or inside guard with original result: guarded index 5/5/5/5, unconditional
 // index 8/8/8/8 (47/47 bytes). Original body restored; NOT kept: result conversion and cursor
 // ownership do not recover both native zero scheduling and the owner/index register pair.
+// P422: Typed walking cursor with fused/separate/unequal/captured-result forms
+// 8/8/9/17; pointer-valued cursor with those forms 2/8/3/17 (all 47/47).
+// NOT kept: no equality; the latch order and register pair remain coupled.
 // @retail 0xd74b0
 bool function_d74b0(byte const *owner)
 {
@@ -1064,6 +1071,7 @@ PRIVATE inline long damage_object_root(long object_index)
 	return root;
 }
 
+// MiniMax A (11-13): no new form, no lower score (206): the damage-record copy is 136 bytes in both builds, but retail starts it 16 bytes later (its locals take four more dwords and the copy is eight-aligned), so the frame is still 0x1a4 against retail's 0x1b4; the count limit and the array size agree, and the first 0xbadc0 use is still expanded here where retail calls it. BLOCKED-BY 0xbadc0.
 // MiniMax A (11-12): no new form, no lower score (206): the frame is still 0x1a4 against retail 0x1b4 and the entry block still pushes before it reads the flags word and negates it, where retail reads the flags first; the first 0xbadc0 use is expanded in this build while retail calls it, and the out-of-line form that makes the body byte exact lives in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
@@ -1258,7 +1266,6 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // same score with the folded row moved from the i row to the k row.
 // MiniMax H (11-12): no new form, no lower score (38): the call to the transform helper is still out of line where retail expands it at the call site, and the point and the normal still keep their homes apart.
 // score 38 (was 38; 91 before m3 lane 1 r74): 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
-// score 38 (was 38): 91 before m3 lane 1 r74. 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
 // Earlier 38 (was 38; before r74 was 91): 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
 // MiniMax I (11-10): no new form, no lower score (38); the near block still computes the second and third negations before it stores the destination's first row where retail finishes each row before it starts the next, and the else arm's i and k rows still add the direction to the destination where retail adds the destination to the direction.
 // Earlier 38 (was 91): 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
@@ -1391,6 +1398,15 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // `data->node_direction` with the else arm on the pointer 42 (the i row then folds its memory operand instead of the k row;
 // retail folds none); the origin/direction pointers declared above the point and normal 42, or between the normal and the
 // flag 42 (masked 20 each).
+// m3 lane 7 r155 (fast with 0xd6c80, control 38, aligned 14): retail never moves a node-direction load above the previous
+// row's node store, as if the loads and the stores went through two different pointers. The node stores written through
+// `data->node_direction` and the loads through the pointer 39 (the i row becomes retail's line for line, the j and k stores
+// address off EBP; the cone dot flips), the same in both arms 41; the near block through the shared vector3f_add with a
+// negated vector copied back 332 (the inlined helper's loads move freely again); the negated names declared at the node
+// branch's top 38 and renamed 38 (same code).
+// MiniMax B (11-13): no new form, no lower score (38): the near block still computes its second and third negations
+// before it stores the destination's first row, where retail finishes each row before it starts the next, and the else
+// arm's i and k rows still add the direction to the destination where retail adds the destination to the direction.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -1770,6 +1786,8 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 
 /* damages an object with the globals' default damage (from +0x144), credited
    to an owner if one is given */
+// MiniMax B (11-13): no new form, no lower score (10): a copy through a local (10) and a cast destination (10) leave the same code; the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx.
+// MiniMax A (11-13): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after the damage record's address is built where retail stores them before.
 // MiniMax G (11-12): no new form, no lower score (10): nothing new this round; retail copies the owner through eax, ecx, edx
 // (this uses ecx, edx, eax) and stores the finished flags before `push edi` and the `lea` (this stores them
 // after the lea).
@@ -1966,60 +1984,6 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 /* destroys a damage region: picks the permutations whose chance and body
    threshold allow it, and destroys each now or schedules it after its
    delay */
-// MiniMax B (11-12): no new form, no lower score (57): the accumulator's flags word in a named local, the test written
-// as a comparison, and both together all measure 57 (554 bytes); what is left is the register pair - retail loads the
-// accumulator pointer into ECX and the flags into EAX where this build loads the pointer into EAX and the flags into ECX.
-// MiniMax E (11-11, run 80): no new form, no lower score (57): the body's instructions still agree with retail
-// except for the call setup of the two unmatched callees, and 0xda110 (in this file) takes the permutation in eax
-// alone with five stack arguments and ret 0x14 in retail against our eax+ecx with four stack arguments and
-// ret 0x10; every walk that frees 0xda110's and 0xd9d60's conventions also flips a matched function, so the
-// declaration order stays as it is.
-// MiniMax H (11-11): no new form, no lower score (57); 0xd9d60 matches, but 0xda110 still hands two arguments over in registers where retail passes the permutation in eax and five on the stack, so the call setup in the tail and every branch target after it stay as they are.
-// MiniMax S (11-11): no new form, no lower score (57); every retail caller of 0xda110 (0xd5de0, 0xdaaa0 and
-// 0xdb760, all in this file) hands the permutation over in eax, so the calling convention is one decision for the
-// whole file and not this call site's.
-// MiniMax I (11-10): no new form, no lower score (82).
-// MiniMax D (11-09): no new form, no lower score; the first difference (+0x4d) is only the `jle` target, five bytes
-// past retail's, because the tail is five bytes longer from the 0xd9d60/0xda110 call setup (retail passes the index
-// in eax and the flag in al, ours on the stack).
-// MiniMax G (11-04): no new form, no lower score; the two call setups still follow 0xd9d60's convention.
-// MiniMax E (11-06): no new form, no lower score; the two call setups still follow the conventions their
-// own unmatched bodies decide, so this stays behind 0xd9d60 and 0xda110.
-// MiniMax G (11-06): no new form, no lower score; the instruction stream agrees with retail except for one
-// extra `push eax` before the call to 0xda110, whose index retail passes in EAX; that transport is the
-// callee's own convention. BLOCKED-BY 0xda110.
-// MiniMax C (11-09): no new form, no lower score (82); the call setups of 0xda110 and 0xd9d60 still follow the
-// conventions their own unmatched bodies decide (BLOCKED-BY 0xd9d60's walk).
-// score 48 (was 57; 96 before that): 57 before m3 lane 2 r76's 0xd9d60 parameter order (see 0xdb760), 82 before m3 lane 1 r94's walk, kept for 0xd9d60's match; the body's instructions agree except the call setup of the two unmatched callees (0xda110 takes
-// its index in EAX, 0xd9d60 its flag in AL); both are back-edge targets of the link-time walk. BLOCKED-BY 0xd9d60.
-// Earlier at 96: what was left was register choice and the two unmatched callees' conventions. Retail keeps the
-// accumulator pointer in ecx (reusing it for the 0xda110 call's last argument) and the exclusive-flag value in eax, ours
-// the reverse; the permutation pointer is loaded as `edi = permutations; movss [edi + eax + 8]; add edi, eax` where ours
-// uses a lea; 0xda110 takes its first argument in eax and 0xd9d60 its flag in al, which their own unmatched bodies decide
-// (with the 0xd9d60 call of 0xdaaa0 removed, this function stays 94 and 0xd9d60 itself is 8). Writing the two
-// exclusive-flag tests as separate `if`s on `accumulator->flags & 0x400` (no `exclusive` local) gives retail's branch
-// shape and register assignment for the loop; `pending = (pending & 0xfff8) | (i & 7)` (same value as the xor form)
-// gives retail's byte-load `xor word [state + 4], ax`.
-// Tried: an `exclusive` dword local with `exclusive && ...` / `!exclusive && ...` (179: the compiler merges them into a
-// diamond and reloads flags), no `region` local (165: the regions array is reloaded every iteration), `region` or `state`
-// declared first (186, 183), a `permutations` local or `permutation += i` (188), `pending ^= (pending ^ i) & 7` and its
-// word-cast variants (110).
-// Round 268: permutation bound before first field test 87 (kept); pending word 96; both 87;
-// canonical exclusive bool 104; permutation/exclusive 96; pending/exclusive 104; all 96;
-// all with permutation before destroyed-bit admission 174. Plain whole-image check confirms 87.
-// Round 28 (lane 17, plain): `inline` on 0xd9d60 / on 0xda110 82/82; their declarations swapped 83 (0xda110 1868
-// bytes, 528; 0xdaaa0 151). Declaration order moves the walk (callees follow the TU's declaration order). 0xd6a70
-// before 0xc98a0 in the unit file: 57 (0xd9d60 8, 0xda110 1868 bytes), but 0xd6bc0, 0x11a320, 0x1039a0, 0xd9640,
-// 0xee910 lost and 0x176780 inlined into 0xd8cb0; 0xd6800 as __stdcall recovers only 0xd6bc0. 0xbd020 first there
-// and 0x146bf0 first in the 0xb8ca0 file: 57 with 27 lost. 0xd6800 first with __stdcall: 82, none lost, 0xca0b0 rises.
-// Round 44 (lane 15, fast): the pending field's bitfield form (see 0xdaaa0) here gives identical code, 82; with
-// 0xda110's 0xd9d60 call removed (diagnostic, reverted) 67 at 550 bytes.
-// m3 lane 16 r107 (plain, damage.cpp callee mention orders, see 0xd9d60's note; all restored): function_dbfb0 and function_d9640
-// first 57 (0x1c39c0 lost); function_10d4e0 first 67 (0xd8cb0 299); function_d9e70 first 67; with 0xd9d60's marker/object
-// swap 67; function_dbfb0 ahead of this and function_d9640 after function_dbc80 57, with the swap 57 (aligned 15 -> 28: 0xd9d60's
-// setup now agrees, 0xda110's takes two registers where retail passes one). BLOCKED-BY 0xda110 in that walk.
-// P405 fast: nested/combined/selected-mask/direct-conditional exclusion, combined threshold rejection, immediate-first delay, state/region references; scores 136, 57, 137, 90, 62, 82, 57, 57, 57.
-// NOT kept: no confirmed permitted gain; original body and all callee interfaces restored.
 // @retail 0xdae60
 void __stdcall function_dae60(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	s_damage_region_accumulator *accumulator)
@@ -2310,7 +2274,7 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 // MiniMax C (11-09): no new form, no lower score (100); the two call setups of 0xda110 and 0xd9d60 still follow
 // the conventions their own unmatched bodies decide, and the delay block's register rotation stays with them.
 // MiniMax E (11-10): no new form, no lower score (100); the callees' parameter order is not mine to change.
-// score 67 (was 73; 110 before that): 73 before m3 lane 2 r76's 0xd9d60 parameter order (see 0xdb760), 100 before m3 lane 1 r94's walk, kept for 0xd9d60's match; the pending field is a real bitfield, 3 bits of permutation and 13 of ticks, which gives
+// score 45 (was 67; 110 before that): 67 before m3 lane 7 r155's 0xda110 convention (its region index read through its address), 73 before m3 lane 2 r76's 0xd9d60 parameter order, 100 before m3 lane 1 r94's walk, kept for 0xd9d60's match; the pending field is a real bitfield, 3 bits of permutation and 13 of ticks, which gives
 // retail's byte xor and `or` forms in the delay block. Left: the setup of the 0xda110 and 0xd9d60 calls (their
 // conventions, BLOCKED-BY 0xd9d60's walk, see 0xdae60; one instruction more at each call, so every later line is off)
 // and an eax/ecx/edx rotation in the delay block and the destroyed-flag store. Round 44 (lane 15, fast): `i !=
@@ -2358,6 +2322,12 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 // alone). 0xda110 without its region local 67; object declared after region and permutation 67; no `__stdcall` 67; a named
 // region-state array for the update 67; 0xda110's permutation_index declared last 45 (permutation in EAX, region in ECX: the
 // accumulator test, random global and pending block then agree; not kept, no retail evidence for the declared position).
+// m3 lane 7 r155 (fast; 0xda110 now takes retail's convention, so its two call setups push the same arguments): left are
+// register choices only (masked 7): at each 0xda110 call retail loads the owner first (EDX) where ours loads the object first,
+// and the delay block's temporaries rotate (retail g_510c54 in ECX and the pending byte in EAX, ours EAX and EDX). Tried: the
+// pending field in 0xdae60's mask forms, all four uses 45, test and argument only 45 (same code); the pending permutation
+// stored after the delay product 33 (not kept: retail stores it first, the gain is the branch targets realigning); the pending
+// permutation named before the test 109; `seconds` and `ticks` declared at the delay block's top 45.
 // @retail 0xdaaa0
 void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	real damage, s_damage_region_accumulator *accumulator)
@@ -2627,6 +2597,10 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // M404: whole bounded-region admission in positive bool/byte/word/long and
 // complementary bool/byte/word/long forms: 3/3/3/3/3/3/3/3. Frame, extent and
 // region-load/address gaps unchanged; original nullable guard and complete body restored.
+// P422: Native model-region record receiver, const/mutable with combined/nested/
+// entry-first/named-admission guards: 228/228/167/228 twice (870/870).
+// NOT kept: typed entry ownership changes the incoming convention and saved roles.
+// P422: The required typed biped effect-tag field preserves 3/870 in the calibrated preview.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2721,7 +2695,7 @@ void function_d8cb0(long object_index, s_damage_effect_definition const *definit
 
 	if ((data->unknown04[0] & 1) && object->type == 0)
 	{
-		long effect_index = *(long *)(g_4e3b44[object->tag_index & 0xffff].bytes + 0x260);
+		long effect_index = ((s_biped_definition const *)g_4e3b44[object->tag_index & 0xffff].bytes)->biped.area_damage_effect.tag_index;
 
 		if (effect_index != NONE &&
 			(!TEST_FIELD_BIT(object->damage_flags.body_depleted) && damage > 10.0f || (accumulator->flags & 0x41)))
@@ -2889,7 +2863,7 @@ struct s_unit_event
 // EAX and reads the other five arguments off the stack with a 0x38 frame, ours takes the region index
 // and the permutation pointer in registers, and that argument set comes from this function's own first
 // pass, so it cannot be changed from here without a new parameter order.
-// score 476 (was 472): 472 before r94's walk; frame 0x38 agrees; permutation remains on the stack instead of EAX,
+// score 517 (was 476): 476 before m3 lane 7 r155's region read through its address, 472 before r94's walk; frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // r101: unchanged at 472; frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // with register homes/call setup and 1884/1868-byte length still differing.
@@ -3021,12 +2995,24 @@ struct s_unit_event
 // last 478 (the permutation arrives in EAX as retail, region in ECX; callers 0xdaaa0 67 -> 45, 0xdae60 48 -> 31; not kept: no
 // retail evidence for the declared position). Region stays a register argument in every form: retail loads it after the
 // pool, info and permutation loads have taken EAX/ECX/EDX, ours loads it first (into EBX).
+// m3 lane 7 r155 (plain unless marked fast): the region index read once through its address for the region pointer gives
+// retail's convention (`ret 0x14`, frame 0x38, the permutation alone in EAX, the region index a stack argument) and matches
+// 0xdae60 and 0xdb760 (0xdaaa0 67 -> 45, 0xd5de0 229 -> 194; full check: nothing lost), kept; this function 476 -> 517 (1852
+// bytes): the region index takes EBX and the permutation pointer EBP where retail has them the other way, and the constant 1
+// stays in EBX from the drop blocks on (retail: immediates there, ESI from the vehicle block). On it, fast: both drop values
+// as `long barrel_index` (the callees' parameter type, retail's `not eax; and eax, 1`) 511 at 1868 bytes (not kept, under 8);
+// on that, the address read moved to the 0xa8360 call, declared first, or at the region-state update 511 each (same code);
+// the drop blocks reading the datum through the pool at each use 523 (1900 bytes, the pool global reloaded per block); a local
+// copy of the pool for them 523 (masked 80: the global reloaded rather than kept, the offset in EBX); the destroy block
+// written in each arm of the destroy test 530 (masked 73, retail's shared 0xdb110 call shape).
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
 {
 	s_damage_object *object = DAMAGE_OBJECT(object_index);
-	s_damage_info_region *region = &info->regions[region_index];
+	/* retail keeps the region index on the stack (`ret 0x14`, every caller pushes it): read once through its address */
+	long const *region_reference = &region_index;
+	s_damage_info_region *region = &info->regions[*region_reference];
 	s_damage_info_permutation *permutation = &region->permutations[permutation_index];
 
 	if (g_4e6948->mode != 4)
@@ -3336,6 +3322,9 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 /* the damage a damage event does to an object before armor: a random
    amount between the definition's bounds, scaled by the event, the owner's
    AI and the game engine; sets *friendly when the team scale applies */
+// MiniMax B (11-13): no new form, no lower score (5): the permuter with annealing (27 tries) found nothing below 5.
+// MiniMax B (11-12): no new form, no lower score (5): the two final return blocks keep this build's order - the stack reload before the register copy where retail puts the copy first; an inverted outer test with an early return (5), separate team and state returns (28), the not-enemy return hoisted (60) and a merged tail return (24) all fail to swap them.
+// MiniMax A (11-13): no new form, no lower score (5): the CFG is retail's (both arms of the team test reach the one no-team exit) and only the order of the two cold exits differs; an inverted outer test (with and without an else), an explicit else and a single shared return all leave the layout alone or move the reload earlier, and two separate early returns give 28.
 // MiniMax G (11-12): no new form, no lower score (5): the tail's two `return damage` blocks swapped inside the
 // team test give 16, the no-team case as an early return before the team test gives 5 and the friendly case as
 // an early return with one enemy tail gives 59; the two cold blocks keep retail's code but not retail's order.
@@ -4603,68 +4592,6 @@ void function_db670(long object_index, long vehicle_index)
 
 /* a permutation destroyed elsewhere (over the network): starts its delayed
    effect, or destroys it here */
-// MiniMax B (11-12): no new form, no lower score (42): the mode-1 arm still keeps the permutations base in EAX where
-// retail keeps it in EDI (with its push edi/pop edi) and still loads the effect index first where retail loads the flags
-// word first; the flag in a bool local, the flags word in a dword local, the flags word in a long local and the flag
-// compared against zero all measure 42, and reading the fields through the indexed expression measures 73.
-// MiniMax G (11-11): no new form, no lower score (42); the mode-1 arm still keeps the permutation base in EAX where
-// retail holds it in EDI, so retail loads the flags word first and saves EDI across the branch while ours loads the
-// effect index first and leaves EDI unsaved, which also moves the &owner argument from [esp+0xc] to [esp+8]. Moving
-// the permutation pointer out of the arm rebuilds the body (57, and the compiler does not sink the loads back into the
-// arm: it builds the address before the branch with the regions base in EDI and the pointer in ECX), holding the
-// permutations array pointer out of the arm compiles to the same code (42), the at-marker flag in a local of its own
-// compiles to the same code, and the argument evaluation order follows 0xd9d60's declared parameter order, which this
-// file may not change. The else arm stays blocked by 0xda110, which retail calls with the permutation index in EAX
-// and five stack arguments where ours takes the region in EAX and the permutation in ECX.
-// MiniMax R (11-11): no new form, no lower score (42); the mode-1 arm still keeps the permutation base in
-// EAX where retail holds it in EDI, so retail loads the flags word first (`mov eax, [ecx+edi+4]`) and ours
-// loads the effect index first (`mov edx, [ecx+eax+0x34]`); the &owner argument lands at [esp+8] instead of
-// retail's [esp+0xc] because EDI is never pushed. That load order is the order MSVC evaluates 0xd9d60's
-// arguments in, which follows that callee's declared parameter order, so it cannot be changed from this file
-// (report item: retail reads the flags word before the effect index, ours after). The else arm stays blocked
-// by 0xda110, which retail calls with the permutation index in EAX and five stack arguments (ret 0x14) where
-// ours takes the region in EAX and the permutation in ECX. The permuter on this function was starved by other
-// lanes' runs and produced no result.
-// MiniMax H (11-11): no new form, no lower score (42); retail keeps the permutation base in EDI across the branch and
-// calls 0xd9d60 with the flag in AL and the effect index in EAX, which are the callee's convention and not this body's
-// to change; the pointer-arithmetic and boolean-local spellings compile to the same code.
-// @coldspear's permuter (#104, 2026-10-30): 38 -> 29 only by swapping arguments at a call and adding volatiles (not kept).
-// MiniMax A (11-04, run 41): no new form, no lower score (28); the call to 0xd9d60 still takes the flag in a
-// register other than AL and the permutation other than EAX, and that callee's convention may not change.
-// MiniMax E (11-06): no new form, no lower score; the mode-1 call needs 0xd9d60's retail convention
-// (the flag in AL and two stack arguments), and with the flag on the stack ours pushes three, so the
-// permutation base stays in EDX, EDI is saved only in the other arm and the frame offsets differ.
-// MiniMax G (11-06): no new form, no lower score; the effect flag is computed in EDX and passed on the
-// stack, retail computes it in AL and passes it in a register, and the permutation base stays in EDX
-// where retail keeps it in EDI. BLOCKED-BY 0xd9d60.
-// score 9 (was 42; 38 before that): 42 before m3 lane 2 r76's 0xd9d60 parameter order, 28 before m3 lane 1 r94's walk (kept for 0xd9d60's match), which raises it; frame 0x40 and ingress agree; late EDI save and callee transport remain.
-// The effect flag stays on the stack rather than AL; the destruction permutation stays on the stack
-// rather than EAX. The info argument is now on the stack as retail.
-// Earlier at 34: this function's own convention is now retail's (region in EAX, permutation in EBX, object
-// and mode on the stack); left are its callees' conventions: 0xd9d60 takes the flag on the stack where retail
-// passes it in AL (BLOCKED-BY 0xd9d60), and 0xda110 takes the permutation in ECX and the info in EDX where retail
-// passes the permutation in EAX and pushes the info (BLOCKED-BY 0xda110). Round 112: the parameters as (region,
-// object, permutation, mode), the order retail's only caller 0x9c910 sets up (EBX last, object pushed), 34 (kept;
-// matched 0x9c910); declared as (region, permutation, object, mode) the object took EBX and the permutation the stack 38.
-// B392: Owner/accumulator CRT zeroing subsets, null early return, entry owner/accumulator declarations,
-// chained defaults and existing default record: 52/45/32/28/52/45/28/55. Original body restored; late EDI
-// save and callee transport remain.
-// P346: Actual marker-placement bit as enabled/disabled bool/byte/short/long call inputs:
-// 28/28/28/28/28/28/28/28. NOT kept: no native callee transport or EDI-save recovery;
-// original body, owner initialization, parameter order and every callee interface restored.
-// Round 157 (m3 lane 5): in every walk that gives 0xd9d60 its retail convention (see its note) this function is 42;
-// the remaining differences are only the 0xd9d60 and 0xda110 call setups.
-// Round 67 (m3 lane 15): 0xb8540 enabled alone (plain screen) gives 0xd9d60 retail's AL convention (8) but this function
-// 42 at 170 bytes and about 25 matched functions lost, restored; fast: an early `if (!info) return;` 54 (the owner zeroing
-// moves above the test); the flag as `(flags & 0x100000) != 0` 28 (same code); the permutation fields read through the
-// indexed expression at each use 27 (172 bytes); the mode test inverted with the arms swapped 41.
-// P405 fast: permutation reference, region reference, complete owner aggregate, named owner members, accumulator before owner/dispatch/lookup, effect early return; scores 42, 42, 62, 62, 50, 45, 59, 42.
-// NOT kept: no confirmed permitted gain; original body and all callee interfaces restored.
-// m3 lane 2 r76: 0xd9d60's flag moved after `owner` (retail's four call sites load the flags word before the owner and effect
-// pushes, then set up the flag, ECX, EDX): 42 -> 9, the 0xd9d60 arm now line for line retail's (EDI base, flags first, the
-// &owner push at [esp+0xc]). BLOCKED-BY 0xda110: only its call setup is left (ours region EAX + permutation ECX, retail the
-// permutation alone in EAX and five pushes). Fast, in 0xda110 (restored): no region local 9; object declared last 9; no
-// `__stdcall` 9; a named region-state array 9; permutation_index declared last 9 (permutation EAX, region ECX).
 // @retail 0xdb760
 void function_db760(long region_index, long object_index, long permutation_index, long mode)
 {
@@ -5179,6 +5106,8 @@ dword function_db810(long object_index, long node_index)
 }
 
 /* the model node of the object's lowest ranked physics node */
+// MiniMax B (11-13): no new form, no lower score (4): the tag index in a local (4), the definition bytes in a local (4), the definition bytes local first (7), both locals (4), the short tag index (45) and the typed object definition's model tag read (4) all leave the same four instructions, and the permuter with annealing (23 tries) found nothing below 4.
+// MiniMax A (11-13): no new form, no lower score (4): the tag index is still masked after `push ebp` where retail masks it before, and the tag entry still goes into edx where retail reuses eax; a local for the masked index and a local for the tag entry leave the same four instructions, the permuter (307 s, 29 tries) found nothing under the baseline, and caching the masked index or the tag data pointer in a local changes neither difference.
 // MiniMax G (11-12): no new form, no lower score (4): nothing new this round; the tag index is still masked after `push ebp`
 // where retail masks it before, and the tag entry still goes into edx where retail reuses eax.
 // MiniMax G (11-12): no new form, no lower score (4): the tag index is still masked after `push ebp` where retail
@@ -5458,6 +5387,11 @@ struct s_damage_object_creation
 // the node states declared before the zeroed mask 156 (same code); the zeroed mask declared before the component pointer
 // 157; the state test as `if (node_states[i] == 0xff) continue;` 156 (same code); node_bit named above the state test 190
 // (likely round 101's merged form again); `creation.node_mask = ~piece_nodes;` right after the mask update 191 (779 bytes).
+// m3 lane 7 r155 (fast with 0xdb810 and 0xdbb40, control 156, aligned 29, masked 20): this body already keeps the mask in
+// memory in retail's slot; retail's guard order (`detached > 0 && tag != NONE`) as an if around a do-while ending on `!= 0`
+// 187 (aligned 54: the mask moves to ESI, `xor esi, esi` early, the frame 4 bytes smaller), with the mask declared after
+// `states` 187 (same code); with the zero declared after the 0xba690 call 229 as a while or a do-while, and with it declared at
+// the mask block's top 229.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
