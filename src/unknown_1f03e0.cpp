@@ -1021,7 +1021,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
-// score 347 (was 347): before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
+// score 347 (was 347; round 95 m3 lane 11 at the end): before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
 // 33 bytes equal retail's input-length block, and `magnitude3d(&change) + g_47ffb0` alone makes the history block
 // (0x1f0fd0-0x1f10ab) byte-exact, registers included: 573 (3038 B; aligned 152 -> 165, masked 64 -> 73), the product operand
 // orders in the crosses and the low arm flipping instead. With the input length as `magnitude3d(&state->input)` too, the input
@@ -1339,6 +1339,16 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // 171, masked 79); on 341: the input pointer after the flags 344, the history length through magnitude3d 351,
 // `flying || !limited_step` 523, the direct arm's speed per use 434, the low arm's normal from the field 421 (aligned 163).
 // The masked residue stays: the crosses' and low arm's product sides and the history block's x87 order.
+// M3 lane 11 r95 (fast with the file's functions and 0x24590; base 347, masked aligned 82): the flags declared flying, direct,
+// damping, gravity with `input` declared after them and `gravity = false` at the top of the first arm, together, 345 (3051 B,
+// masked 84; the entry block through the `lea ebp` is then retail's; a gain of 2, not kept); the general arm's step scaling
+// through the existing vector3f_scale(&limited, step, &limited) 469 (3048 B, masked 71: the history block's change.i add
+// becomes retail's in-place `addss xmm0, [edi+0x64]`, but the low arm's products reschedule); that with the three entry
+// forms 467 (3047 B, masked 73; the first arm now stores the gravity byte before out.k as retail, but the general arm's k
+// sum still commutes into xmm2, so the 5-byte k-store tail is not shared and the low arm is 5 B short); that plus
+// magnitude3d(&change) for the history maximum 561 (3047 B, masked 110); the general arm's output rows through the existing
+// vector3f_add(current, &limited, out + 0xc) 469 (3047 B, masked 86); the general delta through the existing
+// vector3d_from_points3d(current, &scaled, &delta) 352 (3052 B, masked 82). Body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
