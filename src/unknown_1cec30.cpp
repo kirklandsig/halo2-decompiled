@@ -2362,6 +2362,11 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
+// MiniMax H (11-12): no new form, no lower score (91): the whole difference is the velocity normalisation,
+// where retail keeps j and k in xmm2/xmm3 across the length branch and scales them in place while this build
+// reloads all three components in each arm and keeps the scale in the destination; the final set's component
+// order (speed*v.i, v.j*speed, v.k*speed against speed*v.i, speed*v.j, speed*v.k) compiles to the same bytes,
+// and the permuter (--fast, 33 tries in 287 s) left the baseline best at 87 differing instructions.
 // MiniMax S (11-11): no new form, no lower score (91): retail keeps the velocity's j and k in registers across the normalization branch and scales them in place, while this build reloads all three components in each arm and keeps the scale in the destination.
 // MiniMax I (11-10): no new form, no lower score (91); the speed block still converts the material count
 // into xmm4 where retail converts it into xmm1 and divides by it, retail still copies the x product into
