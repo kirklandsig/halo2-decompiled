@@ -105,6 +105,9 @@ void __stdcall function_1c710(void *state);
 // MiniMax A (11-12): no new form, no lower score (188); the body is 35 bytes longer than retail's 1422 and the first
 // difference is at +0x335, where retail inlines only the first of the four SetVertexData2s and calls the other three
 // out of line, and the only lever for that (an inline_depth pair) may not be added.
+// score 188 (was 188): the body is 35 bytes longer than retail's 1422 and the first difference is at +0x335, where
+// retail inlines only the first of the four SetVertexData2s and calls the other three out of line; the only lever for
+// that is an inline_depth pair, which may not be added.
 // @retail 0x46230
 void __stdcall function_46230(short target, real const *bounds)
 {
@@ -4014,6 +4017,9 @@ void function_1eb00()
 // MiniMax C (11-08): no new form, no lower score.
 // score 79 (was 79): the ratio of the two counters is computed with the other operand order:
 // ours divides into xmm3 and multiplies xmm4, retail divides into xmm2 and multiplies xmm0.
+// MiniMax B (11-13): no new form, no lower score (79): retail's body builds four shader programs from tables and caches
+// that this project does not have, so the difference is a knowledge difference and not a local form; the ratio of the two
+// counters is still computed with the other operand order.
 // @retail 0x36580
 void function_36580()
 {
@@ -4829,6 +4835,10 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
 // vertex calls and so draws something else, not kept. MiniMax D (11-01): no new form tried, no lower score.
 // Permuter (25 min on #1066, about 650 variants, on its own rendering that loses the round 2 order): best 142, above
 // this source's 125; nothing kept.
+// score 125 (was 125): our body is five bytes longer than retail's 1027, so the two early skips branch to a near block
+// here and to the end of the body in retail, and the four screen values are loaded in another register order (ours
+// xmm1/xmm3/xmm2/xmm5 against retail's xmm6/xmm3/xmm2/xmm7) and in another slot order; retail multiplies
+// width*cosine, height*cosine, width*sine and height*sine.
 // @retail 0x480a0
 void __stdcall function_480a0(point3f const *point, real width, real height, real cosine, real sine, dword color)
 {
@@ -6024,6 +6034,12 @@ dword g_4b8430;
 // loses the matched 0xc2d00 (its scheduling tie), so the written-out form stays. The alpha clamp is PIN's body written out.
 // MiniMax I (11-11), NOT kept (coordinator 11-11): 127 -> 2 with the reference entry bound as `s_4e260_model_entry const *const &entry = &((s_4e260_model_entry const *)references)[index]` (a reference to a one-use pointer: match-only) and the index < 0 test ahead of the geometry load; the same struct read as a plain typed index with the split test is 125 (under the keep bar). Lead: retail keeps the entry's address before reading its model; find the plain form that does that.
 // MiniMax E (11-12), NOT kept (coordinator 11-12): 127 -> 2 again, this time by reading the entry's model twice and AND-ing the copies (`model &= model_copy`, a no-op steer) with the index < 0 test first; together with MiniMax I's reference form above, retail evidently loads the model field twice from the entry's address. Find the plain source that uses entry->model twice.
+// MiniMax B (11-13), NOT kept (coordinator 11-13): 127 -> 2 a third time with MiniMax I's reference form (the entry's
+// address bound to `s_4e260_model_entry const *const &`, as in 0x273040, where it is kept because that function matches)
+// and the index < 0 test ahead of the geometry load. Here it is 2, not a match, so the one-use reference stays out.
+// What is left at 2: the order of two independent float reloads after the second SetVertexData4f call (retail loads
+// [esp+0xd8] and then [esp+0x54], ours the other way round); a 900 s permuter run and a hand sweep of the products'
+// order could not move it. Lead: with the reference form, find what orders those reloads; a match keeps the form.
 // @retail 0x4e260
 void __stdcall function_4e260(long tag, long context, long first, long second,
     long third, dword handle, byte *material)

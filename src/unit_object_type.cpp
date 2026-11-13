@@ -2416,6 +2416,10 @@ void function_cfec0(long unit_index)
 // Round 430: child result assigned before break 28; typed child flags 2;
 // typed parent table 2; existing unit/parent/sibling getter 2/2/2;
 // plain child while 2; null-child continue 2. No lower score.
+// MiniMax B (11-13): no new form, no lower score (2): the body is 258 bytes against retail's 257 and the last exit is
+// still the only difference left - it returns the constant where retail moves the register copy (mov eax, ebx); every
+// spelling of that copy folds back into the constant, and the per-level epilogues of the earlier forms move retail's
+// lazy pushes into the prologue.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
@@ -3530,6 +3534,10 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // field 12; separate body tests 12; root getter after the header 12;
 // branch result initialization 104; fixed-body exit 99; typed header
 // with the salt at four 12. All executable forms restored.
+// MiniMax B (11-13): no new form, no lower score (12): the body is retail's length and the only difference left is the
+// pair of saved registers - the root index sits in edi here and in ebp in retail, and the rigid body's byte offset takes
+// the other; the sixteen-bit root index that gives retail's registers changes the width of the NONE test, so the two
+// cannot be had together.
 // @retail 0xcc460
 bool __stdcall function_cc460(long object_index)
 {
@@ -6072,6 +6080,9 @@ void function_cf040(long unit_index, short type)
 // Round 430: shared low-word slot 263; shared header offset 2; direct
 // loop fields 1; hand while 1; outer hand declaration 1; const holder 1;
 // empty-hand continue 1; typed seat-table field 1. No lower score.
+// MiniMax B (11-13): no new form, no lower score (1): one instruction is left, the SIB byte of the weapon loop's header
+// lookup, whose address operands retail orders the other way round; the same lookup written as a pointer to the header
+// or through the masked index keeps our order.
 // @retail 0xc92c0
 bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_index, long *blocker_index, bool *grouped)
 {
@@ -6287,6 +6298,9 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // NOT kept: no permitted confirmed gain; original executable body restored.
 // Fixed source termination 58 moves first to +0x1a2 (native header addressing,
 // jne versus jb at the loop); NOT kept: gain one, below the retention threshold.
+// MiniMax B (11-13): no new form, no lower score (59): the first header read still takes the scaled offset as the address
+// base where retail takes the data pointer, and the success arm's scratch registers stay swapped; the early-return form
+// of the out-of-memory block scores 193, and the fixed source termination moves the first difference but gains only one.
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {

@@ -1404,6 +1404,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // address off EBP; the cone dot flips), the same in both arms 41; the near block through the shared vector3f_add with a
 // negated vector copied back 332 (the inlined helper's loads move freely again); the negated names declared at the node
 // branch's top 38 and renamed 38 (same code).
+// MiniMax B (11-13): no new form, no lower score (38): the near block still computes its second and third negations
+// before it stores the destination's first row, where retail finishes each row before it starts the next, and the else
+// arm's i and k rows still add the direction to the destination where retail adds the destination to the direction.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {

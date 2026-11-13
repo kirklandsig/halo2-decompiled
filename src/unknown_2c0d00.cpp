@@ -460,6 +460,8 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // Existing object-header fields used for the flag, property and model reads.
 // P447: Visibility/reference/property/model/physics/count decisions; lower/upper vertical exclusions at original producers:
 // 926/926/926/926/926/926/926/926. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// MiniMax B (11-13): no new form, no lower score (920): the frame is 0x2cb4 against retail's 0x2cac, and the actor,
+// unit, priority and query homes still differ; the byte homes do not follow the order of the source's object scan.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
