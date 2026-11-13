@@ -4266,6 +4266,7 @@ void __stdcall function_20bb0(long player, dword mask, long const *indices, long
 long __stdcall function_2e540(s_slot *slot, byte *data);
 extern long g_485898;
 
+// MiniMax G (11-13): no new form, no lower score (285): the diff re-read this round puts the first difference at the 1.0 constant's register (XMM0 here, XMM3 in retail) and shows our frame slots above retail's from the definition pointer on, with the masked tag kept in EBX in retail and no copy of it here, so the body stands.
 // MiniMax B (11-11): no new form, no lower score (285); retail's frame is 0x34 bytes and ours 0x38 because retail
 // reuses the position's stack slots for the corner coordinates and keeps the area in the dead argument's home, so
 // every slot above the position sits four bytes higher, and the 1.0 constant takes xmm0 here and xmm3 in retail.
@@ -6965,6 +6966,7 @@ void function_12a50(s_frame_parameters_12a50 const *parameters)
 bool function_48b00(point3f const *point, real radius, real *screen, real *extent);
 real function_30bf0(vector3f *vector);
 void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
+// MiniMax G (11-13): no new form, no lower score (576): the diff re-read this round shows retail summing the dot product's products in a rotated order and giving the two constants after the normalize call the other registers, with the call's result slot four bytes higher here than in retail, so the body stands.
 // MiniMax I (11-11): no new form, no lower score (576): the three direction components still sit four bytes higher in the frame than retail's (ours at frame+0x18, retail's at frame+0x14, so every slot above them is four bytes out) and the dot product's three products are still summed in a rotated order; retail keeps the second rounded screen coordinate on the x87 stack and narrows each bound through a temporary, and the double forms tried for that score 614, 586, 576, 614, 612 and 583; retail calls 0x224f0 out of line for the second group of ten stage states where our build inlines it, and the only lever for that (an in-body inline_depth pair) is not allowed.
 
 // MiniMax B (11-11): no new form, no lower score (576); retail overlaps the direction and the bounds at
@@ -7918,6 +7920,7 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
     return value;
 }
 
+// MiniMax G (11-13): no new form, no lower score (299): the thirty-two bit group index forms measure 506 to 507 again (a for loop over the counter 506, the counter as an int 507, the index widened by a cast 506), so the group index is still sign-extended where retail moves the thirty-two bit value, and the body stands.
 // MiniMax S (11-11): no new form, no lower score (299): the group index is still sign-extended (movsx esi, ax)
 // where retail moves the thirty-two bit index, the index slot still sits at [esp+0x3c] against retail's [esp+0x58],
 // an extra mov edi, edi still stands in the loop head and the body is still three bytes longer than retail's; the
@@ -8727,6 +8730,7 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
     }
     g_4b62a2 = (g_4b62a2 + 1) & 0x1ff;
 }
+// MiniMax G (11-13): no new form, no lower score (328): the diff re-read this round puts the first difference at the prologue's register plan - retail loads the pool into EAX before the pushes and holds the parameter in EBX with the -1 sentinel in EBP, ours in ESI and EBX - and none of the forms tried here moves it, so the body stands.
 // MiniMax I (11-11): score 328 (was 342): a named local for the scaled character offset, used by both the character pointer and the later slot store, adds the dword home retail has; our body is 25 bytes shorter than retail's 1133 and the frame is still 0x201c against retail's 0x2020, and a plain (non-volatile) header local gives 365 and is worse.
 // MiniMax I (11-11): no new form, no lower score (342): the body is 41 bytes shorter than retail's 1133 and the first difference is at +0x1; retail reads the stack parameter into ebx with the -1 sentinel in ebp, ours uses esi and ebx, and retail's text buffer keeps two word counters that are missing here.
 

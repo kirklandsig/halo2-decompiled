@@ -4817,6 +4817,14 @@ extern byte g_5107ee;
 // Round 86 (m3 lane 14, fast): the collision's NONE store after the cone call 19; a const marker pointer 2; the marker
 // pointer declared ahead of the loop 2; the marker through a reference 2; the direction declared ahead of the marker
 // pointer 2 (all four the same code).
+// Round 80 (m3 lane 15, fast with 0xf6060 and 0xf6010; the cone pair is still the only difference): the random globals
+// in a loop-body local for the seed's address 2 (same code); the seed through a reference 2 (same code); the seed's
+// address taken once ahead of the marker loop 148; the random globals read once at the function's top 179; an inline
+// forwarding wrapper declared seed first (diagnostic) 2 (same
+// code: an inlined wrapper's arguments are propagated, so the callee's own order still sets the pair). Retail's set-up
+// (the two pushes, the forward's `lea ecx`, the seed's `add edi, 4`, the result's `lea eax` last) is the right-to-left
+// evaluation of a cone function declared with the seed ahead of the forward, so no caller-side form can give it:
+// still BLOCKED-BY 0x146320, whose file this round's rules hold.
 // @retail 0xf62f0
 void __stdcall function_f62f0(long vehicle_index)
 {
