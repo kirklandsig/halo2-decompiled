@@ -215,6 +215,9 @@ bool voice_xhv_get_runtime_parameters(XHV_RUNTIME_PARAMS *parameters, c_voice_xh
 // call embedded in the guard and `return *local_0` 8 each (the listed engine-after-guard 8); permuter on the
 // unchanged body (600 s, 66 tries) best 2. Diagnostic: `#pragma optimize("s", on)` on the natural nested body 115
 // (frame pointer, 244 bytes).
+// Round 192 (m3 lane 4, fast): the result pointer declared before the engine address 2; the runtime parameters declared
+// after the engine pointer and the error 2; the mode switch as an if/else 74 (291 bytes); the result assigned from the
+// parameters call in its own statement 2; the processing-mode counter as `long` 3.
 // @retail 0x55810
 bool voice_xhv_create(c_voice_xhv *xhv)
 {
