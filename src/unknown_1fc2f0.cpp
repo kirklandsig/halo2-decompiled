@@ -696,6 +696,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // i, k, j 64, k, i, j 38, j, k, i 59, k, j, i 54; the squared length through the existing out-of-line distance_sq3f
 // (0x24550, inlined) of state->velocity and velocity with the deltas j, i, k kept 103 (386 B: the differences are formed
 // twice), the deltas formed in the then-branch only 83 (374 B), the deltas i, j, k 98 (382 B). Body unchanged.
+// M3 lane 5 r179 (fast with 0x1fc660/0x1fc350/0x1fc2f0/0x1fc710/0x1fc620): re-measured round 508's vector setter for the
+// delta, now with the parameter-address read kept, 90 (352 bytes). No untried natural form (lane 1 r90, lane 2 r77,
+// lane 12 r113). Body unchanged.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
