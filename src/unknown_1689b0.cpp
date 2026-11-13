@@ -1899,6 +1899,11 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // array receivers with complete library point transfers: 614/614/613/614/614/614/614/613.
 // NOT kept: all lengthen and leave native sums/query-zero/early remainder unresolved.
 // Original point workspaces, helper calls, geometry and complete body restored.
+// P443: Scaled-difference edge/contact pairs, complete normalizer, separation/half setters,
+// complete along differences/candidate products, native-count result and radius-owned result:
+// 611/620/637/614/623/623/646/630. NOT kept: no native sum/zero/remainder repair; original geometry and helpers restored.
+// P446: Actual lower and upper endpoint admissions in bool/byte/short/long, preserving short-circuit edge-length evaluation;
+// 623/623/623/623/623/623/623/623. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

@@ -45,21 +45,20 @@ __forceinline bool location_point_in_zone_inline(s_location const *location, poi
 
 	if (cluster_index != NONE)
 	{
-		s_11c120_bsp *bsp = (s_11c120_bsp *)g_4e0348;
-		s_11c120_cluster *cluster = &bsp->clusters[cluster_index];
+		s_11c120_cluster *cluster = &((s_11c120_bsp *)g_4e0348)->clusters[cluster_index];
 
 		if (cluster->zone != NONE)
 		{
-			s_11c120_zone *entry = &bsp->zones[cluster->zone & 0x7f];
-			short index = entry->index;
+			s_11c120_zone *entry = &((s_11c120_bsp *)g_4e0348)->zones[cluster->zone & 0x7f];
+			plane3f const *plane = &entry->plane;
 
-			if (index != NONE)
+			if (entry->index != NONE)
 			{
-				if (!(cluster->zone & 0x80) || 0.0f > entry->plane.k * point->z + entry->plane.j * point->y + entry->plane.i * point->x - entry->plane.d)
+				if (!(cluster->zone & 0x80) || 0.0f > plane->k * point->z + plane->j * point->y + plane->i * point->x - plane->d)
 				{
 					result = true;
 					if (zone_index)
-						*zone_index = index;
+						*zone_index = entry->index;
 				}
 			}
 		}

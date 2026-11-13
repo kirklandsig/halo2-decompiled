@@ -1567,6 +1567,7 @@ struct s_camera_clip_reference_16ebf0
 	plane3f plane;
 	byte field_14[4];
 };
+// MiniMax H (11-13): no new form, no lower score (87): the cross block still gives retail's up.k to xmm0 and forward.j to xmm1 the other way round, the clip block still folds the cluster address into the load where retail materialises it, and the interpolated pair still loads [esp+0x20] before the store to [esp+0x24]; the cross helper is in a shared header and 0x171d00 is in another file, and the permuter over this body was stopped at the run's time limit without a result.
 // score 87 (was 87): unchanged this round: the cross product's colouring is swapped against retail's
 // (retail gives up.k to XMM0 and forward.j to XMM1 where ours gives them the other way round), and the
 // clip block materialises the cluster address (a register load of the base, an add, then the byte load)

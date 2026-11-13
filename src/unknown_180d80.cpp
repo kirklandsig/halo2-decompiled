@@ -107,6 +107,9 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
     arg_1->z = local_4 + arg_0->position.z;
 }
 
+// MiniMax H (11-13): no new form, no lower score (93): the entry guard still loads the strip pointer after the register
+// saves and into ecx where retail loads it before them into eax, and the call to 0x17cfa0 still passes the first index in
+// ecx where retail passes it in eax; that callee lives in another file.
 // MiniMax E (11-11): no new form, no lower score (93); the call to 0x17cfa0 still passes the first index in ECX
 // where retail passes it in EAX, and that order belongs to the callee's own body in another lane's file, so the
 // gap here is a contributor's; the frame, the guard's three tests and the body length agree.
