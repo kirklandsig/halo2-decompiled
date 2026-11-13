@@ -2702,6 +2702,8 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // 4/7/9/10/12/11/6/14: 475/483/479/483/483/483/468/474.
 // NOT kept: the 468 form needs the selected group placement without byte
 // equality; original complete case graph and countdown comparisons restored.
+// P444: animation planar setter 501f; motion planar setter 494f; turning planar setter 490f; fallback planar setter 633f; case-four array difference 479f; nearest-candidate array difference 479f; retained-target array difference 479f; facing-input vector setter 627f.
+// NOT kept: native entry remains, but planar/case/exit transport does not match; original complete body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
