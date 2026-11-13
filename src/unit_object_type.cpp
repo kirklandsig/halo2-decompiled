@@ -2406,6 +2406,9 @@ void function_cfec0(long unit_index)
 // Hypothesis (inferred from that scan, not measured): retail's NONE exit was a shared return split again before the pushes
 // were placed.
 // MiniMax R (11-11): no new form tried this round, no lower score (2): the body is 258 bytes against retail's 257 and the last exit is the only difference left; every exit form measured before moves retail's lazy pushes into the prologue.
+// Round 430: child result assigned before break 28; typed child flags 2;
+// typed parent table 2; existing unit/parent/sibling getter 2/2/2;
+// plain child while 2; null-child continue 2. No lower score.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
@@ -3506,6 +3509,10 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // predeclarations 12/12; a guarded do/while root traversal 12; a short body result copied to a
 // widened body index 12. Original body and helper declaration restored.
 // MiniMax R (11-11): no new form tried this round, no lower score (12): the body is retail's length and the first difference is at +0xe, in the pair that tests the rigid-body index against -1; every form that changes that test also changes which registers the whole function keeps, so the EBP against EDI choice and the test cannot be made separately.
+// Round 430: direct query result 31; absent-body exit 102; typed fixed
+// field 12; separate body tests 12; root getter after the header 12;
+// branch result initialization 104; fixed-body exit 99; typed header
+// with the salt at four 12. All executable forms restored.
 // @retail 0xcc460
 bool __stdcall function_cc460(long object_index)
 {
@@ -6008,6 +6015,9 @@ void function_cf040(long unit_index, short type)
 // its lookups by the parameter as [data + offset] and its loop lookups by child_index as [offset + data], whether the
 // offset is fresh or reused, so the order seems to follow the index variable the offset came from.
 // Permuter (r104, 10 minutes, 53 variants): nothing below 1.
+// Round 430: shared low-word slot 263; shared header offset 2; direct
+// loop fields 1; hand while 1; outer hand declaration 1; const holder 1;
+// empty-hand continue 1; typed seat-table field 1. No lower score.
 // @retail 0xc92c0
 bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_index, long *blocker_index, bool *grouped)
 {

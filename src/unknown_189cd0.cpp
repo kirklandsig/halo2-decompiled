@@ -149,6 +149,11 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // early, marker and started tests 107 (530 bytes); for the marker and started tests only 162 (540 bytes); the
 // positioned test written out at both uses 131 (528 bytes), with the reference kept 132 (527 bytes); no duration
 // local (the parameter cast at both uses) 116 (531 bytes, the plain-reads code).
+// Round 430, plain object reads: address-first class pointer 128f/120p;
+// direct class fields 119f/124p; shared class index 152f/144p; shared
+// class flags 115f/113p; success predicate 141f/148p; request input
+// 114f/116p; early tag exit 114f/116p; early slot exit 114f/116p.
+// Unchanged preview 94f against 11p; every executable form restored.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {
