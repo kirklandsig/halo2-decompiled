@@ -2416,6 +2416,10 @@ event_done:
 
 #pragma inline_depth()
 
+// score 63 (was 63): unchanged this round: retail adds the record base into the scaled index before its
+// first load and keeps the object's index in EAX across the validity call, where ours reads the field
+// before the add and caches the index in ESI; the validity callee's body is in another file, so the
+// reload cannot be produced from here.
 // score 63 (was 63): this round found no gain - retail adds the record base into the scaled index before
 // its first load and keeps the object index in eax across 0xbadc0, whose argument convention is set in
 // src/unknown_0bad50.cpp.
@@ -3217,6 +3221,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
+// score 93 (was 93): unchanged this round: our frame is 0x4c against retail's 0x54 and the particle
+// system takes EDI where retail keeps it in ESI, so the homes of the two pointers and of the definition
+// sit at other offsets than retail's.
 // score 93 (was 93): frame 0x4c versus 0x54, the particle system in EDI (retail ESI) and the location mode cached
 // where retail spills the definition and reads the mode at each call.
 // MiniMax E (11-11): no new form, no lower score (93): the frame is still 0x4c against retail's 0x54,

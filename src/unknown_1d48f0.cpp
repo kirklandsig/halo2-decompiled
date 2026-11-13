@@ -47,6 +47,10 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
+// MiniMax H (11-12): no new form, no lower score (298): retail still expands 0x279740's range test at the
+// first release and calls 0x11bed0 out of line where this build does the opposite, and the caller-side
+// inline/noinline declarations the earlier rounds tried do not move it; the expansion boundary is set by
+// 0x11bed0's own file (src/unknown_11bed0.cpp), which is not mine.
 // MiniMax H (11-10): no new form, no lower score (298): the optional-state homes still sit four bytes
 // low and our LTCG inlines 0x11bed0 where retail calls it, so the webs that follow cannot be recovered
 // here: BLOCKED-BY 0x11bed0's own file (src/unknown_11cc90.cpp).

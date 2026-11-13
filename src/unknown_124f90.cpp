@@ -3778,6 +3778,14 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // range-in-case-0 base with the all-global increment, a loop-top `sounds = g_4e637c;` read by the start test and the sound
 // pointer 78, a body-scoped pool local for them 78; on the 29 form, the find through the global into a function-scope `next_index`,
 // then `sounds = g_4e637c`, then the datum through `sounds` 78 (the swap again).
+// Round 237 (m3 lane 3, fast): the range in case 0 re-measured 78 (558 bytes: every instruction retail's but the index
+// in EBP and the pool, voice and range pointers in EBX). On it: case 0's three range statements (class-flag test, find,
+// start) as a forceinline function taking the range address as its argument 229 (605 bytes), that function plain
+// inline 197 (522 bytes, called); the range bound as a reference first 78 (same code); the range held as the callee's
+// own pointer type (one cast where it is formed, none at the calls) 78 (same code); the range named inside the
+// class-flag test's arm, after the 0x221810 call 31 (559 bytes: index EBX and range EBP as retail, but the address is
+// formed after the call). So the swap appears exactly when the range is live across the class-flag call inside case 0;
+// above the mode (three calls) or after the flag call (one call) the index keeps EBX.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
