@@ -1312,6 +1312,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // cursor, each mutable/read-only: 608/608/215/215/608/608/608/608.
 // End-tested cursors recover frame 0x18 but roll the count pass to 675/1006 bytes; counted cursors tie 215.
 // NOT kept: No native pool/player/tag ownership equality; original inventory index and complete body restored.
+// P437: Held/pending/inventory/player lexical identities 215 each; immutable player/pool,
+// read-only inventory and fixed shared flag result 215 each. NOT kept: frame 0x1c versus 0x18
+// and native pool/player/tag homes unchanged; original complete body and helpers restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1646,6 +1649,9 @@ void function_150820(dword *bits, bool local_only)
 // other way round (retail unit index in EDI, ours ESI). No other untried natural form found: declaration orders,
 // hand/slot/result widths and spellings, result graphs, early exits, existing getters, pool copies, lifetimes, joint
 // forms with 0x151b80 and permuter runs are all listed above.
+// P437: Fixed player/unit receivers and primary/player inputs, separate mode-consumer and
+// three-way admission scopes, and complete receiver/input binding graphs: 43 each. NOT kept:
+// no native player/hand or scratch-register recovery; original whole body and call tuples restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

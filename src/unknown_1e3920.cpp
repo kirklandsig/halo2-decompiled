@@ -1415,6 +1415,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // register-masked aligned 236 -> 215, the unit arm stays in source order); that with the palette count read at each use 307
 // (masked 194); with 32-bit grenade tests as well 308; the weapon test without its one-use unit, weapon and definition locals
 // 253 (same code; kept, it removes three one-use locals).
+// P437: Fixed actual palette bound/squad bit/weapon handle/movement receiver, read-only
+// movement receiver and fixed placement/squad/substitution inputs: 252 each. NOT kept: no native
+// sentinel or squad/query-home recovery; original full body, helpers and call tuples restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
