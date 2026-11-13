@@ -788,7 +788,7 @@ PRIVATE __forceinline s_ai_importance_squad *ai_importance_squad_iterator_next(s
 	if (g_4f55d0->active)
 	{
 		s_record_pool *records = iterator->records.data;
-		long index = data_next_absolute_index_inlined(records, iterator->records.index + 1);
+		long index = data_find_index(records, iterator->records.index + 1);
 		if (index != NONE)
 		{
 			squad = (s_ai_importance_squad *)(records->data + records->size * index);
@@ -806,8 +806,7 @@ PRIVATE __forceinline s_ai_importance_squad *ai_importance_squad_iterator_next(s
 	return squad;
 }
 
-// score 2 (was 143): retail reloads the squad pool pointer between cmp edx, -1 and je in the
-// squad step; ours reloads it after the je on fall-through, the taken branch going to the shared reload.
+// lists the important actors (kind 1) then squads (kind 0), at most 256, and sorts them
 // @retail 0x1c8700
 void __stdcall ai_importance_list_build(long unused, s_ai_importance_list *list, long unused2)
 {
