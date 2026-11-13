@@ -504,7 +504,7 @@ void function_10cd50(long item_index)
 struct s_slot_entry_list;
 extern s_slot_entry_list *g_4e0340;
 struct s_bsp3d;
-plane3f *bsp3d_get_plane(s_bsp3d const *bsp, short plane_index, plane3f *plane);
+plane3f *bsp3d_get_plane(s_bsp3d const *bsp, long plane_index, plane3f *plane);
 real function_30bf0(vector3f *vector);
 void function_b75a0(long object_index, point3f const *position, vector3f const *forward,
 	vector3f const *up, s_location const *location, bool flag);
@@ -1638,6 +1638,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // impulse paths apart with the flag clear at a different point in each, so splitting ours that way
 // (223) and giving the clear a byte-unit bit field (206) both score worse.
 
+// MiniMax G (11-12): no new form, no lower score (140): nothing new this round; frame 0xac agrees; the return bytes +0xe/+0xf,
+// the release-byte read-modify-write and the tail still differ.
+// MiniMax G (11-12): no new form, no lower score (140): frame 0xac agrees; the return bytes +0xe/+0xf, the
+// release-byte read-modify-write and the tail still differ.
 // MiniMax H (11-12): no new form, no lower score (140): the return byte still sits at esp+0xe where retail has esp+0xf, the release byte is still cleared with a load, an and and a store where retail masks the byte in place, and the transform helper is still called out of line.
 // MiniMax G (11-11): no new form, no lower score (140); the return byte sits at esp+0xe where retail puts it at esp+0xf, the
 // release flag is cleared by a load, an and and a store where retail masks the byte in place, and retail expands the transform

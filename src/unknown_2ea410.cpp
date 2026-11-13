@@ -62,6 +62,10 @@ public:
 // input view earlier 79; traversal scope 79; parent first 79; indexed count 80;
 // indexed end 84; buffer declared first 79; while cursor 79.
 // NOT kept: none improves the original body.
+// Whole child initialization 89; input record copy 106; scratch inside loop 79;
+// record declaration before timing 79; direct input observations 79; immutable
+// container pointer 79; per-iteration child record 88; key before shape call 78.
+// NOT kept: key-before-call gains one, below threshold; other forms tie or regress.
 // @retail 0x2ea410
 void class_2ea410::function_2ea410(void const *a, void const *b, void const *input, void *collector)
 {
@@ -90,6 +94,11 @@ void class_2ea410::function_2ea410(void const *a, void const *b, void const *inp
 // while traversal 25; named key 25; named agent 25; whole initialization 59;
 // end after descriptor 28; end after container 32; existing body type 25.
 // NOT kept: no match or qualifying gain; original body restored.
+// Round 94: mutable end 25; split end 25; vector buffer 25; mutable cursor
+// 25; finish name 25; child_body name 25; paired cursor scope 32; direct
+// parameter fields 25. NOT kept: these forms tie or regress.
+// Shared begin/end methods 25; NOT kept: no gain.
+// Serial search: 76 variants in 120 s, none below 25.
 // @retail 0x2ea530
 void class_2ea530::function_2ea530(void const *a, void const *b, void const *input, void *collector, void *second_collector)
 {

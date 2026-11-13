@@ -3333,6 +3333,15 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // paths with a single return at the end) score 116 to 131 depending on where the result byte is written, and a second
 // view of the unit pointer (the seat read through it) scores 113 like the standing body, so the camera's home and the
 // seat's home still cannot both match.
+// MiniMax B (11-12): no new form, no lower score (113): a second view of the unit pointer for the parent lookup (the idiom that matches 0x13992a) reproduces retail's parent split (the compare in memory and the reload) and puts the seat in ebp, but the frame then loses four bytes (0x74 against retail's 0x78, the seat needs no spill) and scores 117; the single-return form that keeps retail's result byte promotes the camera into ebp instead of the seat (125 alone, 127 with the second view).
+// MiniMax B (11-12): score 91 (was 113): copying the camera data field by field instead of one struct assignment keeps the camera argument out of ebp (the struct assignment takes its address, so the pointer is hoisted into ebp at entry), and with the parent index read at the test and at the call the parent test compares in memory and the parent reloads into ebx as retail does; the frame is retail's 0x78 and the result is retail's stack byte. Left: the seat's index multiply is scheduled before the parent lookup, the seats array is in ecx rather than esi, the unit spill is read after the matrix copy, and the camera data is read at [ebp+0x24] rather than the base being copied up by 0x24.
+// score 91 (was 113; earlier 116): copying the camera data field by field (five float assignments) instead of one
+// struct assignment keeps the camera argument off ebp - the struct assignment takes its address, so the pointer is
+// hoisted into a callee-saved register at entry - and reading the parent index at the test and at the call (no local)
+// makes the parent test compare in memory and the parent reload into ebx as retail does. The frame is retail's 0x78 and
+// the result is retail's stack byte. Left: the seat's index multiply is scheduled before the parent lookup instead of
+// after it, the seats array comes back in ecx instead of esi, the unit spill is read after the matrix copy instead of
+// before it, and the camera data is read at [ebp+0x24] instead of the base being copied up by 0x24.
 // score 113 (was 113; earlier 116): retail keeps the false result as a stack byte (loaded for the failed-marker return) and
 // loads the camera argument only inside each branch, with the seat in ebp; ours folds the result to xor al,al,
 // hoists the camera into ebp at entry and spills the seat. Block order (seat, plain, failure tail) now agrees.
@@ -3374,17 +3383,21 @@ bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *
 	matrix->scale = 1.0f;
 	if (unit->parent_index != NONE && unit->parent_seat_index != NONE)
 	{
-		long parent_index = unit->parent_index;
 		s_unit_seat_definition *seat =
-			&UNIT_SEATS(UNIT_DEFINITION_GET(UNIT_GET(parent_index)))[unit->parent_seat_index];
+			&UNIT_SEATS(UNIT_DEFINITION_GET(UNIT_GET(unit->parent_index)))[unit->parent_seat_index];
 		s_object_marker marker;
 
-		if (function_b8d30(parent_index, *(long *)((byte *)seat + 8), &marker, 1, false))
+		if (function_b8d30(unit->parent_index, *(long *)((byte *)seat + 8), &marker, 1, false))
 		{
 			*matrix = marker.matrix;
 			function_b9dd0(unit->parent_index, &matrix->position);
-			*camera = *(s_unit_camera_data *)((byte *)seat + 0x24);
-			return true;
+			s_unit_camera_data const *source = (s_unit_camera_data const *)((byte *)seat + 0x24);
+			camera->unknown00 = source->unknown00;
+			camera->unknown04 = source->unknown04;
+			camera->unknown08 = source->unknown08;
+			camera->unknown0c = source->unknown0c;
+			camera->unknown10 = source->unknown10;
+			result = true;
 		}
 	}
 	else
@@ -3393,8 +3406,13 @@ bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *
 		function_b9dd0(unit_index, &matrix->position);
 		matrix->forward = unit->forward;
 		matrix->up = unit->up;
-		*camera = *(s_unit_camera_data *)&definition->unit.acceleration;
-		return true;
+		s_unit_camera_data const *source = (s_unit_camera_data const *)&definition->unit.acceleration;
+		camera->unknown00 = source->unknown00;
+		camera->unknown04 = source->unknown04;
+		camera->unknown08 = source->unknown08;
+		camera->unknown0c = source->unknown0c;
+		camera->unknown10 = source->unknown10;
+		result = true;
 	}
 	return result;
 }
@@ -4790,6 +4808,10 @@ void __stdcall function_cc810(long vehicle_index)
 // reads the acceleration from the argument at each use where ours loads it early into a register, and the forms
 // tried earlier (the discriminant in float locals, a double cast, the negation written out) all score 165 or more,
 // so the body stands.
+// MiniMax B (11-12): no new form, no lower score (162): a named float discriminant local, an explicit (double)
+// cast on the sqrt argument, the file's flags line without /Gr and the same line with /fp:strict all score 162 and
+// leave the discriminant on the x87 double stack; /Od rewrites the body (1343 bytes, 932), which shows the flags
+// line is applied, so the widening comes from the expression tree and not from the build settings.
 // score 162 (was 162; earlier 167): the logic agrees with retail statement by statement (re-walked in round 4 of #1049).
 // Retail keeps no local frame (its spills go in dead argument slots, ours reserves 8 bytes), computes the
 // quadratic's discriminant b*b - a*stop_position*4 in SSE and stores only for the fsqrt (ours chains it on the

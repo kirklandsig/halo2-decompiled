@@ -439,6 +439,17 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // length 21; the length renamed to sort after source, start and string 21. All the same code: value facts, declaration
 // order and names leave the walk ECX / count EDX split. The rename repeats round 118's names finding; no untried natural
 // source form was found this round.
+// Round 237 (m3 lane 3, fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): a plain string parameter with
+// a second forceinline length helper taking the pointer by reference (the counter then starts before the pointer is
+// read) 40 [35] at 104 bytes with the natural body, 49 [6] with the early source: the reference is folded and the string
+// arrives in ECX, start in EDX, `ret 4`. A plain string read through its own address at the scan 40 [6], at both uses
+// 40 [6] (the string stays a stack argument but is loaded once into EBX at entry, the scan's byte in AL and two exits).
+// The body in a forceinline inner function called from this one (inline parameter copies of start and count) 46 [94],
+// with the unnamed length 46, with `start += (long)string` 46, the inner plain inline 130 [31], with the volatile
+// parameter on this function 52 [84]. Re-measured: the natural body with the volatile parameter 28 [6] (start arrives
+// and stays in EDX, the walk in EDI); `start += (long)string` after the clamp 40 [match] (start stays in its arrival
+// ECX, `add ecx, [string]`, the walk in EDI). In retail start is moved to EDI at entry and the two loop values take
+// ECX/EDX, so start is coloured after them; here it keeps a scratch register unless the early source is present.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

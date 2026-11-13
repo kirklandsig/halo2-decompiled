@@ -14,6 +14,9 @@ struct s_1badc0
 real normalize2d(point2f *arg_0);
 
 // MiniMax C (11-11): no new form, no lower score (180); the length (1025) and the frame 0x90 agree, but the opening still forms the components in our order, and the copy schedule it needs is set by the query helper in src/unknown_1c20f0.cpp and the inline-ness of 0x30c60, both in other files this lane may not edit.
+// MiniMax G (11-12): no new form, no lower score (171): retail computes the centre-minus-actor and centre-minus-point differences in
+// the prologue and the point-minus-actor difference at its use, while ours still forms the point-minus-actor difference first; every
+// reordering of the three difference blocks regresses (219, 219, 221, 231, 231) and the squared length's sum order makes no difference.
 // score 171 (was 180): the centre is copied before the radius and both projections now go through
 // dot_product2d on a named actor-to-centre vector, and the squared length sums its j term first as
 // retail does; the opening still hoists the point's y difference above the copy.
