@@ -471,6 +471,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // producers, or query-loop setup: 599/599/599/599/599/599/599/599. NOT kept: all
 // shorten away from native extent and lose the early native result store. Original
 // body, helpers and every in-place input/result snapshot restored.
+// P443: Double-factor rays, logical normalization-zero tests, complete basis library copies, named query,
+// clearance ratio/free fraction, vector-setter rays and library hit fill: 691/576/578/576/575/575/578/700.
+// NOT kept: no native success/workspace repair; original body, helpers and in-place copies restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

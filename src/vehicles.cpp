@@ -1049,6 +1049,9 @@ __forceinline long vehicle_round(real value)
 // its own local, which moves retail's product operand loads). NOT kept (coordinator review 11-13): invented
 // one-caller helpers are reverted even with a match. Lead: the locals those helpers declare set the operand
 // order; look for an existing helper or inline (the vector math or vehicle headers) that would declare them.
+// P443: Entry-bit result, coefficient/axis/correction predicates, bounds receiver, projection predicate,
+// double-factor angular scale and vector-setter axis copy: 8/18/42/14/10/10/138/199. A 300 s permuter, 36 trials,
+// no lower than 8. NOT kept: no exact operand repair; original body and all shared helpers restored.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
