@@ -71,6 +71,11 @@ inline __m128 cross_303540(__m128 const &a, __m128 const &b)
 // arrays declared at entry 111; all product terms named 111; staged dot sum
 // 111; length scalar renamed 111; unsigned array index 111.
 // NOT kept: no gain; original code and helper restored.
+// P428: fourth vertex reused 111; normal-array initialization 111; all
+// vertex references 200; unweighted-vector name 111; zero-first ternary
+// 113; distance cursor 206; one exchange temporary 111; standard transpose
+// 111. NOT kept: no improvement; incoming registers and saved-register
+// count still differ, followed by the scalar fallback store.
 // @retail 0x303540
 int __cdecl function_303540(__m128 const *vertices, __m128 const *point, float orientation)
 {

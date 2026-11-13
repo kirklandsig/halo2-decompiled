@@ -52,6 +52,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 
 /* the next recent player after the iterator's: a valid, online, known player
    with a name; iterator starts at the first entry and ends at NONE */
+// score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
+// retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
+// successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
+// ours shares one register for index and successor.
 // MiniMax B (11-12): no new form, no lower score (43); retail reads the index straight into esi and scales it
 // in place (imul esi, esi, 0x68), keeps the successor in ebx, hoists the & 3 mask into al before the loop and
 // tests the successor at the loop's end (cmp ebx, -1), while ours copies the index into a second register for
@@ -65,10 +69,6 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // scaled in place in ESI, the successor in EBX and the & 3 mask hoisted into AL before the loop - is not reached
 // by giving the successor its own local (51 as a while loop and as a guarded do/while, because the successor then
 // lands in ECX) nor by returning from the loop directly (52, which also drops the top zeroing of the result).
-// score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
-// retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
-// successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
-// ours shares one register for index and successor.
 // MiniMax S (11-10): no new form, no lower score (43); the successor still rides in EDX where retail
 // keeps it in EBX (and retail reads the index straight into ESI where ours copies it), the mask is still
 // the immediate 3 where retail hoists it into AL before the loop, and the pushes keep our order.
@@ -381,6 +381,13 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // `!result` loop with no successor local 57; a guarded do-while with early returns and a `result` returned at the end 52;
 // `result` declared after the index 43 (same code); the XUID read once into a local for its two tests 50 (callers 2/2).
 // Also: the result as a byte 47 (129 bytes); the index as a short read from the iterator 54 (129 bytes, callers 2/2).
+// Round 113 (m3 lane 16, fast with 0x1a303b/0x2b393c): a successor local stepped at the loop's end with `result = tests`
+// and `return result` inside the found block 49; the same with the tests in a named bool and `return true`/`return false`
+// 49; `result = tests` each pass with the index stepped at the top and `break` 59 (135 bytes); a for loop on
+// `index != NONE && !result` assigning the result each pass and copying under `if (result && player)` 52 (callers 75/2);
+// `*iterator = entry->next` with `index = *iterator` at the loop's end and early returns 49; early returns with the successor
+// read through the table ahead of the entry pointer 53 (134 bytes); early returns with a successor local and the copy as an
+// aggregate assignment 49; the same with the guest test as `XOnlineIsUserGuest` on the flags dword 49. Original body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

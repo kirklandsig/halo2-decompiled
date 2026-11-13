@@ -126,12 +126,12 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 	return success;
 }
 
+// score 244 (was 244): earlier 410; the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
 // MiniMax G (11-12): no new form, no lower score (244); a plane2f line with the cross written out gives retail's normal/offset homes but grows the body to 1612 bytes (300), and the two-level exits reach the shared tail only through the held form's goto, which is match-only.
 // MiniMax G (11-11): no new form, no lower score (244); retail gives the function scope locals the lower homes and the
 // inner scope ones the higher (the current sector 0x30, the line distance 0x34, the success flag 0x0e, the first-edge
 // flag 0x0f) where our build gives the inner scope locals the lower ones, and the dots' XMM roles follow the cross
 // product's operand order in the shared helper, so the frame and the rotation both come from outside this file.
-// score 244 (was 244): earlier 410; the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
 // the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
 // MiniMax C (11-05): no new form, no lower score; retail's cross product multiplies the direction's component first (direction.k*up.j where ours does up.j*direction.k) and adds the magnitude's squares in the other order, both from the shared cross3f and magnitude helpers; retail also keeps the first-edge flag at [esp+0xf] and the success flag at [esp+0xe] where ours keeps them the other way round, and hoisting or reordering those two declarations does not move them.
 // MiniMax S (11-06): 106, not kept: the two sector-loop exits jump to a finish label before the closing stores
@@ -514,6 +514,18 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // member stores 390 [41] (1593 B), the line as `{*(vector2f const *)&normal}` initializer 415 [36] (1622 B). On the goto form:
 // `last_distance` declared with the entry locals ahead of the result stores 368 [31], the FLT_MAX store first 366 [28], the FLT_MAX
 // store after the hit-flag clear 34 [24] (same code). Body unchanged at 244.
+// m3 lane 1 r98 (fast with 0x26c380/0x26c4e0/0x26ccb0/0x26d370, matched throughout; control 244; goto form = the held 34 form
+// rebuilt on this body with `success = false; goto finish;` at the two two-level exits, 34 at 1605 B). New, all fruitless: the hit
+// test folded into the crossing test (`if (hit && (blocked || next != previous)) {...}` then an unconditional `hit = false;`)
+// 407 on this body (1577 B), 400 on the goto form (1582 B); on the goto form, tail C in retail's order (blocked, edge, distance)
+// ending in `return false;` instead of `success = false; goto done;` 465 (1661 B; `return success;` the same code); the surface
+// and first-edge arms swapped under `previous_surface_index == NONE` 323 on this body (1597 B), 314 on the goto form (1609 B);
+// on the goto form, the surface arm's distance1 computed before distance0 326 (1629 B), and `point0 = point1;` ahead of
+// `distance0 = distance1;` in the first-edge arm 36 (1605 B, two lines differ from the 34 form).
+// Re-measured on the goto form: tail C as blocked, edge, distance with `success = false;` after the blocked or the edge store 36
+// (round 218's 36, same code: the store is dead, so its place does not matter; left the direction pointer in ECX for retail's
+// EAX), with it first 65 (round 137). Retail's tail C is an exact copy of tail A's suffix and still unmerged, so its source
+// differs from tail A's in something that leaves no code.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
