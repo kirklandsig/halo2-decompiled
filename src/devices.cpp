@@ -1482,6 +1482,12 @@ bool function_108530(long device_index, long name)
 // 119 each (its code); the target pinned first 141 (507 B, ret 0x14 with the target as the register parameter, callers
 // 26/28); the position read into its local and then pinned 142 (507 B, the same convention move). Re-measured: the
 // duration stored first among the reset fields 121.
+// m3 lane 10 r99 (fast, callers 31/13 throughout, every form ret 0x18): the three zero clamps as `0.0f > x ? 0.0f : x` 125;
+// the ramp-up limit through the remaining time's sign (`if (remaining < 0.0f) { ramp_up_time = duration; remaining = 0.0f; }`)
+// 133; the cruise numerator's products initial/final velocity first 121; the duration zero clamp after both ramp zero clamps
+// 123; both minimum clamps with the other comparison sense together (each alone listed at 121) 121. Retail's tail (the
+// cruise velocity reloaded from the motion for the deceleration, 2.0 hoisted into XMM3) follows from XMM6 being taken: the
+// accelerating block then has all eight XMM registers live and overwrites the velocity's register.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1887,6 +1893,8 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
+// score 250 (was 250): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI where retail has
+// ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads (match-only leads at 58 and 69 below).
 // MiniMax G (11-12): no new form, no lower score (250): nothing new this round; frame 0x20 and the state test are retail's; the
 // index and index * 12 in edi/esi and the remaining homes differ.
 // MiniMax G (11-12): no new form, no lower score (250): frame 0x20 and the state test are retail's; the index and
@@ -1912,7 +1920,7 @@ bool function_0b6760(s_index_pair const *pair);
 // pointer's volatile, a rate local just before the power call, `bool result = false;` after the
 // definition and the 0xb3 byte as `<= 0`) is three points and stays under the eight-point gate; the
 // index and index * 12 still sit in EDI/ESI where retail has ESI/EBX, and the result stays in DL.
-// score 250 (was 250): the same body measured 248 at lane 14 round 62 and 250 in round 79's baseline. Earlier (248, was 285):
+// Earlier (250, was 250): the same body measured 248 at lane 14 round 62 and 250 in round 79's baseline. Earlier (248, was 285):
 // frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // where retail has ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads.
 // MiniMax R (11-06): no new form, no lower score (248); the frame agrees and the registers are pushed in the order EBP, ESI, EDI here and EBX, EBP, ESI in retail.
@@ -1932,7 +1940,7 @@ bool function_0b6760(s_index_pair const *pair);
 // in EBX), the result as a stack byte at [esp+0xf] (ours DL), and one dead store retail makes before the power 0x11eed0
 // call (rate into the speed's slot, 0x106aa3). Tried: the rate read once into a local `time_step` for the delay product
 // and the call 334 (frame 0x24).
-// score 248 (was 248): earlier 285; frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
+// Earlier (248, was 248): earlier 285; frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // 285 before lane 14 round 62. Frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // 285 before lane 14 round 62. Frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // Earlier (248, was 248): 285 before lane 14 round 62. Frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
@@ -2203,6 +2211,24 @@ bool function_0b6760(s_index_pair const *pair);
 // On q2: a channel pointer for the position arm's two tests and calls 247 (1495 B, masked 25); the position arm's
 // `previous` read before its channel test 253 (masked 15); the power `previous` read after the clamp 273 (masked 15);
 // the position idle test as `!(value == position && velocity == 0.0f)` 262 (same code).
+// m3 lane 10 r99 (fast unless noted; brackets = register-masked aligned count, 46 for this body): lane 15 r74's q2 rebuilt
+// 262 [11] (1487 B). On q2: acceleration as one expression 262 [11]; a shared complement local in both rows 262 [11]; speed
+// before acceleration 263 [12]; all four products named, then both sums 262 [11]; the position products named in both rows
+// (`position_acceleration`, `position_speed`, complement terms written out; MiniMax b's running-value shape) 69 at 1495 B
+// [6], first difference +0x3f3: on it the position arm's first channel test already keeps the channel in ESI as retail;
+// left are the state temporary (EAX, retail ECX) in the manual position arm and the refresh after the position 0x11eed0
+// call (ours device_index in EBX and the state in ECX across the 0xb6760 call, retail the state in EBX and device_index
+// reloaded for each push). Ablations with those named products: alone on this body 359 [45] (1476 B); without volatile and
+// with the if/else 266 [15]; + `<= 0` 266 [14]; + the rate local 71 [9]; + the result after the definition 264 [13]; without
+// volatile + rate + result + if/else 69 [7]; without volatile + rate + result + `<= 0` with the ternary kept 58 [10]
+// (MiniMax b's 58; plain 58, callers 31/13), without `<= 0` 59 [11]. A 600 s permuter run on the 58 form (anneal, one job,
+// about 20 variants) found none below 58. On the 69 form: `state` initialised by one conditional expression 404 (1476 B); a
+// channel pointer for the position-group arm's tests and calls 58 [12] (the first channel test back in ECX); the state
+// declared before the definition and result 72 [8]; a `const` definition pointer 69, a rate local for the position call too
+// 69, `state != NULL` in the refresh 69, the manual position arm's call tested directly 69 (all four the same code); the
+// position-group `previous` read before its channel test and passed to it 96 [10]. Renaming the manual arm's `finished`
+// gives the same code. Retail does keep ECX live across calls to small leaves elsewhere (0x22eb8c after 0x22e37f), so
+// the refresh is an allocation choice, not a missing callee summary.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {
