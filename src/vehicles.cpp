@@ -3221,6 +3221,8 @@ real g_47ff30 = 2.5f;
 // 682/688/688; complete/default-first speed magnitude 682/720; coefficient
 // expression/complete arms 682/682; full force accumulator 707.
 // NOT kept: no native-frame gain; original helper and body restored.
+// P441: Complete parallel error/impulse/acceleration producers, mutable/const, then immediate/phased force accumulators: 699/699/700/700/700/700/682/682; native grouped mass reloads 714.
+// NOT kept: Native frame 0xfc and acceleration/velocity homes remain; no eligible gain. Original complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -5972,6 +5974,8 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // 1037/978/1036/979; complete magnitude 978; sign admission/signed result 978/1039;
 // existing clamp 978. NOT kept: no eligible native-frame/extent gain;
 // original whole body restored. Current frame 0xfc versus native 0xd8.
+// P441: Signed-slip deadband complete arms / biased accumulator / result accumulator / bound default, each original/complete outer result: 1036/988/978/1061/978/1061/1036/1044.
+// NOT kept: No gain; native 0xd8 frame and handle/matrix/vector homes remain. Original complete body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

@@ -645,6 +645,8 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // 334/334/334/334/334/334/334/334. NOT kept: one-use predicates require equality;
 // split effect addressing and gate/settings homes remain. Original comparisons,
 // reciprocal results, all random steps and complete body restored.
+// P441: Original-site masked/copied header word/dword/short/long accumulators: 334/338/334/338/334/338/334/338.
+// NOT kept: Separate effect-base addition, native DL/gate +0x1b and settings +0x1c remain. Original complete body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
