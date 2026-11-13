@@ -241,6 +241,11 @@ public:
 // continue cases with one trailing update 78; two-word offset read on that form 78;
 // byte advance first 109; value declared at trailing update 78; next slot 91.
 // NOT kept: next-slot growth changes the later count/store sequence.
+// T98: byte snapshot 109; existing scalar 109; two cursor steps 167;
+// byte-add loop 81; word-add loop 98; byte-or loop 116;
+// indexed shifted sum 81; last-byte sum first 78; advanced-cursor read 76;
+// unit-step word loop 78; with the advanced-cursor read 76.
+// NOT kept: two counts gained above 30; the loop pair does not match.
 // @retail 0x2ff210
 void offset_list_2ff210::function_2ff210(position_2ff210 const *position, unsigned char const *commands)
 {
@@ -384,6 +389,10 @@ found:
 // continue cases with one trailing update 12; two-word offset read on that form 12;
 // byte advance first 86; value declared at trailing update 12; next slot 46.
 // NOT kept: next-slot growth changes the later count/store sequence.
+// T98: byte snapshot 86; existing scalar 86; two cursor steps 144;
+// byte-add loop 15; word-add loop 101; byte-or loop 120;
+// indexed shifted sum 15; last-byte sum first 12; advanced-cursor read 10.
+// NOT kept: the two-count reduction is below the three-count gate.
 // @retail 0x2ff570
 void offset_list_2ff210::function_2ff570(position_2ff210 const *position, unsigned char const *commands)
 {
