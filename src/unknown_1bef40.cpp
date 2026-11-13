@@ -69,6 +69,10 @@ s_unit_action_state function_e70b0(long unit_index);
 long function_1469f0(real seconds);
 
 #pragma intrinsic(_ReadWriteBarrier)
+// score 13 (was 13): retail loads the slot's reference into ECX ahead of the actor's index arithmetic and compares
+// it with the global as a memory operand; ours (with the barrier) loads it into EDX after the arithmetic, and the
+// inlined action lookup scales the index into ECX where retail scales it into EDX and reads the unit table late.
+// Earlier notes, merged into this one:
 // MiniMax G (11-10): no new form, no lower score (13); the two load regions are unchanged - the slot's reference is still loaded into EDX after the actor's index arithmetic where retail loads it into ECX before it, and the inlined action lookup still scales the index into ECX where retail scales it into EDX and reads the unit table late; that order comes from the macro in a file this lane may not edit, so the function cannot match from here.
 // MiniMax C (11-11): no new form, no lower score (13); the slot's reference is still loaded into EDX after the actor's index arithmetic where retail loads it into ECX before it, and the inlined action lookup still scales the index into ECX where retail scales it into EDX; that order comes from the action-lookup macro in src/unknown_0a76b0.cpp, a file this lane may not edit.
 // MiniMax D (11-10): no new form, no lower score (13); the slot's reference is still loaded into EDX after the
@@ -89,7 +93,7 @@ long function_1469f0(real seconds);
 // code), against the unchanged 13.
 // MiniMax S (11-09): the unit index carried into the action helper in a named long local 13 (the same code) and
 // in a named short local 29; the slot reference and the unit table's two load regions are unchanged.
-// score 13 (was 13): the slot reference is still loaded late into EDX where retail loads
+// Earlier: the slot reference is still loaded late into EDX where retail loads
 // it early into ECX, and the inlined action lookup still scales the index in ECX where
 // retail scales it into EDX and reads the unit table late; reading the reference into a
 // named local before the actor's arithmetic moves the load but spills the actor pointer;
@@ -100,10 +104,10 @@ long function_1469f0(real seconds);
 // operands swapped 13: all worse or equal. The copy does put the reference load where retail has it
 // (ECX, ahead of the actor's arithmetic) and keeps the global a memory operand, but the table's
 // data then moves to EBX with an extra push, where retail keeps it in EDX.
-// score 13 (was 13): the slot reference still loads into EDX after the actor's index
+// Earlier: the slot reference still loads into EDX after the actor's index
 // arithmetic, where retail loads it into ECX before it; reading the reference into a named
 // local before the actor's arithmetic (a bool or a copy) moves the load but costs the body.
-// score 13 (was 13): retail reads the slot reference before actor arithmetic and the object table
+// Earlier: retail reads the slot reference before actor arithmetic and the object table
 // after index arithmetic; ours has the opposite order in each case.
 // Slot data block 13; without the barrier 90; action helper result 13; actor/state/result 17;
 // result/state/actor 13; state/result/actor 13; result/actor/state 17; actor/result/state 17.
@@ -132,6 +136,22 @@ long function_1469f0(real seconds);
 // and reads the table late; the reference copied into a named local, the barrier at five positions,
 // the scope forms of the three locals and the action helper's unused result were all measured and
 // all score 13 or more, so the body stands as it is.
+// Round 97 (m3 lane 1, fast): the existing 0x1f86f0 predicate in place of the field test 107 (326 bytes; it stays a
+// call). No barrier 90 (the global is loaded into ECX at the top); no barrier with the compare's operands swapped 85
+// (322 bytes: the reference then loads into ECX ahead of the arithmetic as retail, but the global is loaded into EDX
+// for a register compare; 8 aligned differences against this body's 13). With the function first in the file that
+// swap turns matched 0x1bf230 into 8, so the rest was measured with the function at its address place (after
+// 0x1befd0), where the unchanged body scores 13 and every neighbour matches (the move alone gains nothing, not kept).
+// There: swapped with the barrier 13; swapped with the barrier at the function top 94, ahead of the result read 16,
+// in the first arm 85; the reference read into a long local after the result read and then the barrier 99 (323
+// bytes: retail's whole sequence, `cmp ecx, [global]` and retail's action-lookup order, but the table base moves to
+// EBX with a push at entry), with the compare swapped 99, without the barrier 90, swapped without it 85; that local
+// first or between the actor and the result 100/99; an aggregate-typed or const local 99/99; the result read first,
+// barrier-free, swapped/unswapped 85/90; a subtraction test 90; a named bool from the swapped compare 85. The state
+// typed as the whole slot (as 0x1befd0 and 0x1bf230 type it): plain 18, with the local and the barrier 16 (320
+// bytes: the table base goes through ESI and the two wait slots swap), barrier-free 90, swapped 85. Diagnostics
+// (reverted): a forced read through the actor ahead of the barrier 135; the later store taking another global 34
+// (the table base stays out of EDX either way).
 // @retail 0x1bf0f0
 short __stdcall function_1bf0f0(long actor_index, s_slot *slot, bool active)
 {
