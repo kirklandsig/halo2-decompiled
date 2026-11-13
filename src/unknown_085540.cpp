@@ -887,36 +887,10 @@ static __forceinline byte *view_allocate_buffer(long size, long owner, long rele
  return (byte *)function_80e14(size, owner, 0, release, 30, 0.1f);
 }
 
-// score 22 (was 22): ours hoists the time stamp's volatile low store and the header memset's
-// low store, and packs start's spill apart from the volatile. The dword local is written before
-// the byte local; retail writes the byte first and then the dword into the structure. Tried: the
-// volatile and start renamed 22; used zeroed before start 22; the header declared before the
-// view stores 22. _ReadWriteBarrier before the first allocation 19 (retail's store order; start's
-// spill still apart from the volatile's slot); before the count increment 27; before both
-// allocations 19. Each stamp's start spill shares its own volatile's slot in retail (ours pairs
-// the two volatiles): the helper's volatile renamed after `start` 22; the helper's result declared
-// before start 32 (and 0x6a8a0, 0x80e10, 0x18f260 worse). With the barrier: the header memset
-// before `unknownac = 0` 19; `long size` before the count increment 19. A compile-only build
-// gives the +0xc/+8 ring stores and the hoisted header store for every statement order.
-// Round 140 (lane 4): the ring pointer declared first in the block 25; `unknownac = 0` ahead of the
-// ring stores 200 (644 bytes); `header.value` assigned before kind and size 25; the count increment
-// after the 0x6a860 call 30 (its store then rides EBP into 0x86800's pushes: retail's interleave,
-// wrong call). Shared helper, all nine users identical or worse: the elapsed reader result named 22;
-// the reader's local non-volatile 250 (its zero stores vanish).
-// Round 135: allocation helper shapes: elapsed declared at its top 22; elapsed test as a nested inline
-// helper taking start 22; start declared then assigned 22. Reader: memset of a local, a volatile, a
-// long[2], a LARGE_INTEGER 250, 250, 250, 250 (621 bytes, the zero stores vanish).
-// Round 114: separate allocation scopes 22; one combined allocation-output declaration 22;
-// a ring reference 22; a const ring pointer 22; the size output declared before the count 22;
-// `+= 1` for either count 22; result declaration split from its initialization 22;
-// the header scoped to the write/serialization block 22.
-// Round 52 (lane 14, fast; see 0x80e10's note for the shared helper's forms): `buffer->data` before `buffer->size` 21 (the only store order that
-// moves; not kept for one line); with `used` before `start` 21, the header after `result = true` 21, `size` declared before the increment 21,
-// `count = count + 1` 21. Without it: chained `start = used = 0` 22, `used` first 22, all three zeros chained 22, a memset of the two fields 97.
-// Round 157 (m3 lane 8, fast): the header as an aggregate initialiser `{ 0, 0, world value }` 98 (664 bytes, the memset
-// stores go); the ring's four fields set by copying a local ring value 207 (697 bytes); `result` declared after the two
-// allocations 90 (669 bytes); a `world` local for the header value, the 0x6a860 call and the flag store 65 (676 bytes:
-// held across the calls); the shared allocation helper called directly in place of the file's wrapper 22 (same code).
+/* starts sending the world's state to a joining view: allocates the view's ring buffer and a scratch buffer, writes
+   the opening chunk, then the compressed state (0x86800). The ring is filled in through `buffer` and written through
+   its own address expression, as 0x86800 takes the ring just before its write; with one pointer for both, the
+   compiler tells the ring's fields apart and reorders the stores. */
 // @retail 0x862e0
 bool function_862e0(c_simulation_view *view)
 {
@@ -942,17 +916,18 @@ bool function_862e0(c_simulation_view *view)
    header.kind = 0;
    header.size = 0;
    header.value = view->world->unknown28;
-   if (view_buffer_write(buffer, sizeof(header), &header) != NONE)
-   {
+   if (view_buffer_write((s_ring_buffer *)&view->unknown9c, sizeof(header), &header) != NONE)
     view->unknownac++;
+   else
+    result = false;
+   if (result)
+   {
     long size;
     function_6a860(view->world, &size);
     if (!function_86800(0x40000, view, size, scratch)) result = false;
     view->world->flag11fc = 0;
     g_46e320[4](0);
    }
-   else
-    result = false;
    if (!result) view->release_buffer();
   }
   else
