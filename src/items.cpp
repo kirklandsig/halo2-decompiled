@@ -1940,6 +1940,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // and one after it (a shared helper gives one copy and the two calls then merge), and returns the byte at esp+0xf with the flag byte at
 // esp+0x13; dropping the spin flag's own local and setting the flag inside that branch moves the returned byte to esp+0xf but leaves
 // the body 874 bytes long (190), and giving the flag6 path its own copy of the impulse makes it 936 bytes (227).
+// P442: Actual activity-derived accumulated result, bool/byte/short/long, positive then
+// complementary outcomes: 273/277/232/239/197/196/194/196. NOT kept: no exact result-home repair;
+// original parent, spin, release, event and full body restored. Return/release/contact homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

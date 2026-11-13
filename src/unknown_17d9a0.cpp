@@ -131,6 +131,10 @@ PRIVATE inline void decal_project_point_17d9a0(real const *point, long axis, boo
 	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
 
+// MiniMax H (11-13): no new form, no lower score (46): the corner products' load and memory sides and the plane-distance
+// store's base are as the earlier rounds left them, and the first corner still keeps the sign-extended axis in ECX where
+// retail keeps the short axis in AX and the flag in CL; the corner helper's parameter order measures 40 but is a
+// parameter-order change, so it is reported rather than applied.
 // MiniMax A (11-12): no new form, no lower score (46); the plane store's base, the products' load and
 // memory sides and the first corner's axis and flag registers are as the earlier rounds left them (retail
 // keeps the short axis in AX and the flag in CL, ours signs the axis into ECX and puts the flag in AL); this

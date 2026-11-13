@@ -2581,6 +2581,9 @@ event_done:
 // lookup (t), the first test and 0xbadc0's argument through it (f), then a, b, d: t alone 84 [84]; t+d 205; t+b 181; t+b+d 170;
 // t+a 177; t+a+d 166; t+a+b 177; t+a+b+d 166; f alone 203 (581 bytes); f+d 212; f+b 203; f+b+d 205; f+a 204; f+a+d 263; f+a+b 199;
 // f+a+b+d 206; with t too the f rows repeat (203/212/203/205/204/263/199/206). None below 63; body unchanged.
+// MiniMax H (11-13): no new form, no lower score (63): the object index is still cached across 0xbadc0 where retail
+// reloads it from the effect, and the head's load is still folded into the datum address where retail forms the pointer
+// first; both callees live in another file.
 // MiniMax C (11-09): score 63 (was 63): the object index stays cached across 0xbadc0, where retail
 // reloads it, and the head's load is folded into the datum address where retail forms the pointer
 // first; 0xbadc0 and 0xbaf80 live in another file, so the reload cannot be forced here.
@@ -3014,6 +3017,12 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // (contributor, unmatched at 429), and the sound arms still need the held 0x189060 order (aligned 25, register-masked 14).
 // M3 lane 16 r112: no trial (first difference still 0x17e670's register arguments, contributor). The held 0x189060
 // order's saved patch (lane 7 r117) no longer applies to current main and needs regenerating once its owner agrees.
+// M3 lane 10 r100 (fast, with every 0x189060 caller): the held change re-measured on current main and its patch
+// regenerated (build/r100/held-0x17a8a0.patch; still HELD, it edits the call line in 0xbf600): 0x189060 as (object, value,
+// position, direction, scale, tag) with the detached record filled position, compression, velocity, location 2; that
+// order alone 29; the record order alone 40. 0x189060, 0x107980, 0x166cd1, 0xf6670, 0x105dd0 and 0x1039a0 match in all
+// three, 0xceee0 (97) and 0xbf600 (50) are unchanged. The first difference is still the decal call's two register
+// arguments, BLOCKED-BY 0x17e670 (contributor).
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
