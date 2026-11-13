@@ -31,6 +31,11 @@ long function_18d5b0(long label);
 long function_189fe0(s_sound_request const *request, long tag_index);
 long function_189340(long object_index, long tag_index, long audible, s_sound_marker const *marker, s_sound_source_callbacks const *source, real scale, long platform_playback, char const *variant);
 
+// MiniMax H (11-13): no new form, no lower score (11): the early object reads through a named local filled from the
+// reference with the started test read plain scores 90 (plain build), and the reduced image does not reproduce retail's
+// shape for this file (the permuter's reduced image scores the original 83 against the full image's 7), so the plain
+// check is the only reliable one here; what still differs is the started test, which reads the reference
+// (`cmp dword ptr [esp + 0xb8], -1`) where retail compares its late EBX copy (`cmp ebx, -1`).
 // score 11 (was 11): every object-index read is plain but the started test, which reads
 // through the reference; the code is retail's except that test (`cmp [esp+0xb8], -1`
 // where retail compares the late EBX load, 526 bytes). Before round 173 (at 21): retail reads the object index once, after the playback call, into

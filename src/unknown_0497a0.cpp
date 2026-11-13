@@ -15,6 +15,7 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
+// MiniMax H (11-13): no new form, no lower score (536).
 // MiniMax E (11-11, run 80): no new form, no lower score (536): the two perspective-row crosses through the existing
 // staged helper compile to the same code (536) and the special path's two crosses through it score 537; retail
 // computes the cross components in the k, j, i order and keeps the first cross's products alive for the second
