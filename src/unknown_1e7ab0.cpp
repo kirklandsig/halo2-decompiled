@@ -172,6 +172,7 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // MiniMax C (11-11): no new form, no lower score (118): the inlined lookup still hands the table to
 // eax where retail hands it to ecx, and the fourth case still holds the parent in ecx where retail
 // holds it in esi, which the callees in the other files decide.
+// MiniMax B (11-13): the getter's table and result declarations swapped (118, same code); the difference is still a register rotation, which the parameter order of 0xd0590 in another file decides.
 // score 118 (was 118): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
 // getter (retail table ECX, result EAX; ours the reverse) and runs through the later temporaries.
 // MiniMax I (11-09): no new form, no lower score (118); the aligned view (build/mm/align.py) shows that every

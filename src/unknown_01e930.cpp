@@ -353,7 +353,7 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // MiniMax B (11-03): no new form, no lower score. Retail's frame is 0x40 against our 0x3c and its
 // timeout compare (`fld`/`fcompi`) and its `movss` stores need /arch:SSE, which this file's flags line
 // does not carry; the build flags are the user's decision, so this file was not changed.
-// score 246 (was 246): frame 0x3c versus 0x40, allocation homes and SSE scheduling differ.
+// score 272 (was 272): earlier 246; frame 0x3c versus 0x40, allocation homes and SSE scheduling differ.
 // MiniMax S (10-31): no new form, no lower score. Retail zeroes its homes with ebx after an early
 // `xor ebx, ebx` and builds the allocation size as ((flags & 0x100) | 0x40) << 16; ours derives the same
 // size through a `large` bool and a ternary and zeroes the homes with eax. Our frame is one dword short.
@@ -586,6 +586,31 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // 0x163890 0x223a21 0x2ab8c0 and callees stay MATCH.
 // `dword large = flags & 0x100; size = (large | 0x40) << 16` 273 (1102) on the old skip, 290 (1087) on the plain one. The rest of the gap is
 // flags: retail is SSE code (movss 1.0f stores, `fld dword; fcompi` timeout), this file has no /arch:SSE, so it cannot match here.
+// M3 lane 1 r99. In this file (fast, base 272): the retry loop as `while (!block)` with the allocation as its first statement 299
+// (1067 bytes); that with the direct sound object read once into a local 306; that with block cleared after the start time 326.
+// In a file of its own with /arch:SSE (the allowed move; fast with this file's ten matched functions, all MATCH throughout; the
+// body unchanged there reads 272, aligned 170): retail's listing read slot by slot gives these forms, each checked in the listing.
+// (1) `bool skippable = true; if (loading) skippable = false;` is retail's `mov byte [esp+7], 1` ahead of the call and the
+// `xor al, al` / reload after it; one `bool loading` for both 0x2148b0 results gives both `cmp al, bl`. (2) The size stored by
+// `(flags & 0x100) ? 0x1400000 : 0x400000` and read back from permanent_memory_size after the three stores gives the and/or/shl
+// in EAX, the mask spill and the size in EBP, block in ESI, start in EDI. (3) The movie open as one call per arm of `flags &
+// 0x100`. (4) `(real)timing_ticks_to_seconds(elapsed) < 0.1f` gives `fld dword; fcompi`. (5) `block = NULL;` after the start
+// time and `while (!block) { block = ...; if (block) break; if (attempts < 30) { ...; continue; } ... }` gives retail's
+// unrotated loop with one allocation call, two `jmp`s back and D3DDevice_IsBusy still inline (the allocation in the while
+// condition, or `for (;;)`, duplicates the call; the tests nested as if/else leave IsBusy a call, 335 at 1050 bytes). (6) The
+// direct sound object read once into a local (retail's ESI across 0x155e50). (7) The last texture test written positively with
+// the rest of the function inside it puts the one shared 0x1565e0 exit last. (8) `function_1358c0(g_55ece8.format)`. With all
+// of these and `__int64 start = 0;` at the top: 150 at 1098 bytes, retail's length (aligned 80, most of it frame offsets). Left
+// there: frame 0x44 against 0x40 (ours gives the first clock temporary its own eight bytes at +4, retail has it at +0x10 with
+// start's high half sharing its high dword and the surround volumes over it); retail's two zero stores to one dead slot at
+// entry (`mov [esp+0x3c], ebx` twice, ahead of the memory-status clear: a 64-bit `start = 0` or clock value zeroed at the top
+// gives two stores but to two slots, 32-bit, float and elapsed-time initialisers vanish; texture size/data initialisers take
+// real homes, frame 0x4c); the constant 10 held in EBP for the texture call, the format store and 0x1358c0, and 3 through EDX
+// for copy_flags (retail reads like an inlined helper's parameters); the texture pointer loaded early at the tail; the order of
+// the surround volume stores. Also measured there: no top initialiser 302 (1085 bytes); the clock values zeroed at their reads
+// with a plain rdtsc helper 311 (frame 0x3c, the zero stores vanish); the retry as a `static inline` helper taking the stored
+// size 465 (909 bytes: it stays a call). The move is kept only with a match, so the file is as it was and the body below is
+// unchanged; the lead version is build/r99/body156_h3.cpp with build/r99/mk156.py.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

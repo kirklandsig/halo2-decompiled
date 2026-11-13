@@ -130,6 +130,10 @@ s_lighting_record *function_3db00(long object_index, real priority)
     function_d4080(*(short *)definition, &query, special, &g_55ee60);
     return &g_55ee60;
 }
+// MiniMax G (11-13): no lower score (77); the flag set in both arms of the allocation test reaches 9 again, but that is the
+// form the coordinator reverted on 11-11 (a statement copied into both arms, kept only with a byte match), so the body
+// stays as it is; the walk's NONE exit spelled as a then-arm return 83, the allocation test inverted with the flag in the
+// else arm 83, the flag hoisted above the allocation 116, and the permuter over the 9 form found nothing better.
 // score 77 (was 77): round 116 (m3 lane 9, fast with 0x3db00 and 0x3dd10): lane 14 r84's `long result = NONE;` and
 // `if (result == NONE) { allocation; walk; }` skeleton with round 99's `if (result != NONE) initialize = true;` after the
 // walk (no walk return) 99 (491 B: the walk's NONE exit jumps to the end as retail, but the allocation and walk paths are

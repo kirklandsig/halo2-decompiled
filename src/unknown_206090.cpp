@@ -521,6 +521,15 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // NOT kept: no byte match or supported native frame/result recovery; original complete body restored.
 // P446: Actual slip, force-transfer, movable-body, impact-record, append, collected-member, compatible-contact and created-impact producers;
 // 1388/1388/1388/1388/1388/1388/1414/1388. NOT kept: three-point nonmatch gains are below the eight-point bar; original complete body restored.
+// P449: Dominant-force/positive-force, moving-surface and friction-sign outcomes in bool/long:
+// eight 1364 fast (control 1367; full 1391). NOT kept: three-point context-relative gain; no exact frame/result repair.
+
+// P452: Independent magnitude/velocity-publication/query-origin/tangent/direction/velocity/friction-input/impact-normal memmove boundaries:
+// 1436/1376/1409/1397/1440/1407/1425/1376. NOT kept: 1376 leads retain nonnative record-transfer boundaries and excess frame; no byte equality. Original captures, all helpers, call tuples and full body restored; matched caller survives.
+// P454: Existing magnitude snapshot as aggregate/shared setter, five remaining native component-store
+// schedules ikj/jik/jki/kij/kji, plain component copy: 1623/1675/1623/1623/1623/1623/1623/1627.
+// NOT kept: no gain; construction shortens to 6022/5974 or grows to 6480 versus 6238, without native
+// frame recovery. Original snapshot, reduction, every helper and full body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
