@@ -179,6 +179,9 @@ void sweep_batches_2e50d0::function_2e50d0(owners_2e50d0 const *owners, bounds_a
 // three output cursors 283; endpoint base 284; outer cell cursor 284;
 // cell-list entry cursor 155 (NOT kept: seven-point gain above 30);
 // owner-slot cursor 316. Other new cursor forms regress; body restored.
+// Round 426: const marker 162; marker renamed 162; else region 162;
+// live branch first 203; typed owner 162; mutable owner 162; doubled index
+// 160; earlier last index 166. NOT kept: two-point gain above 30.
 // @retail 0x2e5590
 void sweep_batches_2e50d0::function_2e5590(owners_2e50d0 const *owners, pairs_2e1090 *pairs)
 {

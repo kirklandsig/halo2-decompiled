@@ -235,6 +235,10 @@ void __cdecl function_2ea640(void const *a_, void const *b_, void const *input_,
 // NOT kept: these forms tie or regress; cursor setup still differs.
 // Shared begin/end methods 23; NOT kept: no gain.
 // Serial search: 74 variants in 120 s, none below 23.
+// Round 424: parent reference 23; container reference 23; entry reference 23;
+// early parent view 23; aggregate child 57; scratch inside traversal 23;
+// indexed end address 23; scratch/child name order 23. NOT kept: no gain;
+// the native cursor copy and call carriers still differ.
 // @retail 0x2ea830
 void class_2ea830::function_2ea830(void const *a, void const *b, void const *input, void *collector)
 {

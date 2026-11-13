@@ -1832,6 +1832,14 @@ bool function_17afd0(long effect_index, long value);
 // reuses it, so the owner cannot share NONE's EBP as in retail; only a body whose availability is live across NONE's
 // range (this one's early clear) gives retail's homes. Body unchanged.
 // MiniMax A (11-12): no new form, no lower score (47); our same-view store is still emitted ahead of the view test where retail's sits inside the availability test's block, and the 12 form needs the match-only bool (set true and then cleared by a test).
+// Round 113 (m3 lane 16, fast; "P" = the view global at each use, the owner as if/else, `bool available = false; if (g !=
+// NONE && !query(g)) available = true;` after the owner, plain same_view and attached; re-measured 138 at 510 bytes: NONE in
+// EBX, the owner in EDI, the availability spilled, same_view in BL): P with the second definition in its own local 138; the
+// owner NONE-defaulted and read through an effect pointer 138 (508 bytes); the walk as a for loop with the step in its
+// increment 138; the availability set by a nested test 138; `bool camera_relative = false;` at the block's top 102 (494
+// bytes: NONE now shares EBX with the owner and the later NONE tests are immediates, as retail's EBP pair, but the second
+// definition takes EBP, the availability still spills and the camera flag's store moves ahead of the second definition call);
+// P with `view_pass == same_view` 138.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

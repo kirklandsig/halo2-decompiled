@@ -217,15 +217,15 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
-// MiniMax B (11-12): no new form, no lower score (117, was 117): the fallback path still masks the tag with a word
-// load where retail masks the 32-bit value (`and edx, 0xffff`), the stage and pass elements still land in other
-// registers than retail's ESI and EBP, and the element loads are still unfused; the score-8 chain needs the
-// elements bound by reference, which the rules allow only with an exact match.
 // score 117 (was 117): earlier first line 117 (was 117). The tag index masked as a 32-bit value inside the
 // subscript reproduces retail's `and edx, 0xffff` but moves the base global from EDI into ECX and raises the score
 // to 152, so the original is kept; the tag lookup still masks the index with a word load where
 // retail masks the 32-bit value, and the fallback EDX, the stage/pass homes and the unfused element
 // loads remain.
+// MiniMax B (11-12): no new form, no lower score (117, was 117): the fallback path still masks the tag with a word
+// load where retail masks the 32-bit value (`and edx, 0xffff`), the stage and pass elements still land in other
+// registers than retail's ESI and EBP, and the element loads are still unfused; the score-8 chain needs the
+// elements bound by reference, which the rules allow only with an exact match.
 // MiniMax D (11-11): no new form, no lower score (117); the fallback masked in place (`local_tag & 0xffff`) does reproduce retail's `and edx, 0xffff` but moves the tag table from EDI into ECX (152 alone, 149 with the four cache zeros stored together), and the stage and pass arguments still land in other registers than retail's ESI and EBP; the four cache zeros stored together do give retail's four consecutive stores but score 120.
 // M3 lane 1 r96 (fast, 0x2243c0 and 0x224d90 matched each time): block_element_224db0 defined out of line in another
 // file so LTCG inlines it at link time 117 (identical code: link-time inlining leaves no unfused load or dead `lea`);
@@ -586,6 +586,13 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // chains here are the bodies of private helpers of other files (unknown_0167a0.cpp, unknown_03bcb0.cpp); no out-of-line
 // accessor exists to call, so the unfused element loads (retail's `lea` then load, and its dead `lea`) still need the
 // match-only reference bindings of the score-8 chain.
+// M3 lane 5 r177 (fast, 0x2243c0 and 0x224d90 matched each time): the head through the tables lookups written as matched
+// 0x23ea80 writes them (group read as `((dword *)g_4e3b44)[(short)tag * 4]`, `& 0xffff` fallback, ordinals read straight from
+// the block addresses) 135 (first +0xe: the group load fuses to `[eax + edi]`; the in-place `and edx` then keeps the table in
+// EDI); the material index named for the lookup and the 0x1c590 call 146 (524 B); the flags local after the type-14 search
+// 132; the flags read at entry 132 (546 B); the callback context as an aggregate initializer `{ arg_0, search }` after the
+// flags 120. Re-measured: the group as a named dword with the `& 0xffff` fallback 135; named element pointers with the
+// ordinals masked at their uses 117 (same code).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

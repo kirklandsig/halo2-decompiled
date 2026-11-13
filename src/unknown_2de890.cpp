@@ -204,6 +204,12 @@ answer_2de9e0 c_child_transform::function_2de9e0(ray_2de9e0 const *ray, hit_2de9
 // user. NOT kept: no gain; original helper and body restored.
 // Serial search: 19 variants, best 41. NOT kept: an added volatile pointer,
 // one-use locals and casts without equality.
+// Round 425: inverse transform/point/both pointer contracts 51/51/51;
+// immutable SIMD intermediates 51; named returned vector 51;
+// lower/upper pair move intrinsics 58/70; complete result accumulator 51.
+// NOT kept: no eligible gain; original helper and body restored. Point/translation
+// loads and descriptor carriers remain; both inverse users checked.
+// Pair moves raise the exact inverse user to 9/28; both restored.
 // @retail 0x2deb20
 void c_child_transform::function_2deb20(ray_2de9e0 const *ray, description_2deb20 const *description, void *collector) const
 {

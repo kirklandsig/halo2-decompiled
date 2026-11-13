@@ -96,6 +96,11 @@ void function_2232a0(void)
 // MiniMax H (11-05): no new form, no lower score; the tail still needs 0x2b5d0's own body (a stub in
 // src/stubs/lane_k.cpp, another file), and the count clamp and the slot test still differ.
 // MiniMax H (11-04): no new form, no lower score; the tail still needs 0x2b5d0's own body.
+// NOT kept (coordinator review, MiniMax H 11-13): 90 -> 79 came from declaring 0x2b5d0 __fastcall in this file only
+// and calling it as (3, view_count, ...), the reverse of its definition's (count, mode) order in
+// src/unknown_023540.cpp: a local prototype that disagrees with the definition (and swaps the values passed). Lead:
+// retail passes 3 in ECX and the view count in EDX, so 0x2b5d0's real parameter order/convention is the question
+// (BLOCKED-BY 0x2b5d0).
 // score 79 (was 90; 109 before the shared view count): one shared view count now feeds terminal indexing and the
 // tail, whose call now passes the mode first as retail does; the outer pretest, loop-entry source zero and
 // terminal registers still differ. The tail call still needs 0x2b5d0's own body, which is disabled here and

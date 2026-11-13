@@ -574,361 +574,9 @@ real magnitude3d(vector3f const *v);
 bool g_46fcc4 = true;
 bool g_51e9bc;
 
-// MiniMax G (11-12) lead 12, NOT kept (coordinator): it needs the half-scale factors in one-use locals (scale_x/y/z,
-// match-only); with them written inline the same body is 33 (plain, 1081 bytes; fast mis-measures this function at 303). The lead as written: the jitter accumulated in a vector3f filled in place (the on/off values into offset.i/j/k, the named sign
-// and half-scale values multiplied in, the existing 0.2 vector3f_scale, the per-component limits products) 20 -> 12 at retail's
-// length: the offset packs into the dead limits home, which gives retail's spill slots; the projection dot's term order and its
-// i term's operand order still differ.
-// score 20 (was 20; 49 before r92; NOT kept 12 below; before r98 was 118; r101, r103 and r76 unchanged): 1078/1077 bytes; the projection dot sums j + k
-// where retail sums k + j, its i term loads velocity.i first (retail copies direction.i and multiplies from memory).
-// Earlier: velocity.i before the movement call multiplies limits.i by the control field from memory (retail loads the field first).
-// Earlier (20): the jitter spilled y and the z on/off value to the parameter homes (+0x2c/+0x30) where retail uses the limits'
-// +0x20/+0x24, and the dot's i term made the body one byte longer.
-// MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
-// argument; the dot's term order and the jitter block's register allocation still differ.
-// MiniMax S (11-10): no new form, no lower score (49); the reduced image lays this function out differently from retail (fast 308,
-// 1018 bytes against 1077), so the fast diff is not a faithful picture of it and no change was steered from it; the full check agrees
-// with the queue (49, ours 1078 bytes against retail's 1077).
-// Before 11-07 (118, was 132): the first 79 lines and the frame agree; projection order and x-operands, the velocity row schedule and the jitter spills (retail spills y and the z on/off value into the limits' slots, ours x and the z on/off into parameter homes) remain. Earlier: 1.0 sat in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
-// (tests al/ah) and tests the on/off bits 1, 2, 4 before the sign bits 8, 16, 32, spilling the z on/off factor and
-// y to the limits' spill slots. Plain bits 170; on/off first with `*=` 233, with the factor on the left 233 (both
-// 1020 bytes; aligned difference 129 against this body's 154); on/off first in a jitter vector 163 (1048 bytes,
-// aligned 110, closest), its products added straight into the velocity 239.
-// Round 16 (later): the jitter block's shape, the constant's XMM ownership and the limit spills
-// are the whole difference; the plain score is 132 and the reduced image scores 310 because the
-// reduced build does not inline the magnitude helper retail inlines.
-// Round 16: the near-distance value named in a local, the comparison against it and the second
-// magnitude in the branch (plain 132 -> 130; dropped, a gain under 8); the sign factor on the left of
-// the on/off factor 131, the scale factor on the left of the jitter value 130, both 131, and the scaled
-// products added straight into the velocity 163 (1051 bytes against retail's 1077); the jitter block's
-// own body restored.
-// Round 36: single-workspace jitter 163; shared jitter add 157; shared movement add 156; all shared updates 156;
-// jitter rename 156; shared offset scale 139; scale with direct updates 155; scale with shared jitter add 149.
-// Native word/short/dword bit samples 168/168/170; on/off-first samples 231/231/233;
-// word/dword native jitter workspaces 161/163 (exact-only). Original sample and body restored.
-// Round 308: Complete control/speed-scale/projection-input value subsets 288/256/294/195/287/259/296;
-// all with immutable native limits 296. All regress; original observations, projection stores,
-// frame and inherited jitter qualifier restored. Constant/limit ownership and jitter spills remain.
-// Round 430: native definition/output fields and real view of the existing dual-use output field,
-// all seven subsets 132; ordinary bit sample on that complete field graph 170. Original declarations
-// and body restored; constant/limit XMM ownership, jitter order and spill homes remain.
-// Lane 15 r19 (fast checks need 0x24590 listed): jitter in retail's order (on/off, signs, scales,
-// `*=`) with a plain long 233 (1020 bytes; the jitter block then has retail's shape, bits in EAX and
-// retail's test order), with the volatile long 202 (1053 bytes); the blend factor as one
-// if/else-if/else chain 215 (1081 bytes); factor declared before input_fraction 165;
-// `1 + (def - 1) * blend` and `blend * (def - 1) + 1` 132/132 (identical code).
-// Round 91: velocity updates through the existing vector3f_add/vector3f_add_scaled (in/out on
-// &state->velocity; retail reloads velocity.j/k after the velocity.i store, as those give): all three
-// 182, movement add 181, projection and movement 177, jitter add 130 (1077 bytes, retail's length;
-// not kept, -2); on the jitter add, plain bits with the on/off bits first 231 (1021 bytes; structural
-// 34 against 47), the same with volatile bits 201, on/off factor on the left 231; plus the movement
-// add 174 (1064 bytes, 251 instructions as retail, structural 28, aligned 96 against 105: closest
-// shape; limits.j/k then share one register where retail keeps two copies, and on_z/y spill
-// differently); plus a chained limits.j/k 258, both 208.
-// Round 116 (lane 6, fast, 0x24590 listed): projection through the existing vector3f_add_scaled 181 (1119
-// bytes); that with the jitter add 176; movement and jitter adds 182; the jitter add alone 130 again (1077
-// bytes, gain 2, not kept); on it, named on/off factors first with the volatile bits 201 (1054 bytes), with
-// plain bits 231 (1021 bytes: the jitter block takes retail's shape, bits in EAX, tests 1, 2, 4 first, but the
-// movement block above shifts). Retail reuses the limits.j/k spill slots for y and the z on/off factor.
-// Round 53 (lane 9, fast): jitter as on/off factors first with a plain long 233 (1020 bytes: limits.j/k
-// then share one register, so on_z and y are not spilled); `limits.k = limits.j` 221 (1045 bytes); the
-// projection dot with direction first in each product 132 (same code); the movement scaled by the field
-// at each use 172; length_squared summed k, j, i 144. Compile-only screens (magnitude3d inline, 512
-// spellings: scale local, length/projection/offset/control/limit/acceleration operand orders, volatile,
-// jitter factor and offset forms) never give retail's 1.0 in XMM3 or its k, j, i projection order.
-// Round 12 (lane 18, fast, 0x24590 listed): 1-7 unused initialised locals at the top 132 each (the XMM3/XMM4
-// constant choice is no numbering tie); the two `(void)&parameter;` statements were dead (removed: identical
-// code); without them, the jitter add through the existing vector3f_add 130 (1077 bytes, as round 91: not kept);
-// the movement scaled through the existing vector3f_scale 132; the direction normalised through it 132.
-// Round 67 (lane 12, fast, 0x24590 listed): limits, the jitter offset or both through the existing
-// vector3f_assign 132/132/132; a `vector3f *velocity = &state->velocity` pointer declared after the enable store
-// and used for every velocity access 128 (gain 4, not kept), declared just before the first velocity store 141;
-// on the top pointer: projection and movement through vector3f_add_scaled/vector3f_add 128, the jitter add
-// through vector3f_add 128, all three 128, the movement add alone 128, limits through vector3f_assign 128.
-// Round 47 (m3 lane 1, fast, 0x24590 listed; aligned counts against this body's 154): retail order
-// jitter (on/off, signs, scale-on-left selects) with a plain long and its products added straight into the
-// velocity plus the movement add through vector3f_add 202 (1055 bytes, aligned 111); round 91's 174 form
-// plus the projection through vector3f_add_scaled 191 (aligned 117); the jitter add through vector3f_add
-// with a plain long in the old order 163 (1045 bytes), plus the movement add 147 (1087 bytes), plus the
-// projection through vector3f_add_scaled too 147 (1086 bytes). Reconfirmed:
-// jitter add 130, with retail-order plain jitter 231, plus movement add 174 (aligned 129), retail order alone 233.
-// Round 62 (fast, 0x24590 listed; jitter on/off first with `*=` and a plain long in each): projection, movement
-// and jitter adds through the existing helpers 191 (1066 bytes); projection and movement 189 (1063, aligned
-// 110); projection and jitter 171 (1064); projection alone 188 (1068); the same on/off order keeping the
-// volatile long with projection and jitter 199 (1097), with all three 205 (1099). In each, limits.k is
-// memory-resident from its definition (retail keeps it in XMM7 and spills on_z and y instead).
-// Round 112 (m3 lane 7, fast, 0x24590 listed): the reciprocal square root through intrinsics instead of
-// the asm block (`_mm_store_ss(&inverse, _mm_rsqrt_ss(_mm_load_ss(&squared)))`, the same with _mm_set_ss, and
-// with a named __m128 estimate) 286/274/286 (1102/1094 bytes: the __m128 temporaries change the frame from
-// +0x0); limits.j/k as one chained assignment with retail's plain-long jitter order (j = k = and k = j)
-// 259/259 (1009 bytes), with the volatile jitter 221 (1045 bytes). Retail keeps two copies of the j/k limit
-// (XMM6/XMM7, two spill slots) only where ours has more pressure; the plain jitter merges them.
-// Round 126 (lane 5, fast, 0x24590 listed): written operand and sum orders do not reach the code: the
-// direction scaled as `inverse * i`, `j * inverse`, `k * inverse` (retail's register pattern) 132, the
-// projection summed i, j, k 132, `0.0f <` on the definition and blend tests 132, `1.0f == blend` 132,
-// `1.0f > magnitude` in the clamp 132 (all identical); speed/acceleration stores before the limits 212
-// (1065 bytes); limits in k, j, i order 136, in j, k, i order 134; retail-order jitter with a plain long
-// re-measured 233 (limits.k then shares limits.j's register and is stored at its definition).
-// Round 50 (lane 10, fast, 0x24590 listed): the projection as `0.0f - dot3f(&state->velocity, &direction)` (the
-// existing helper) 130 at retail's 1077 bytes, the dot then k first as retail (two points, not kept), with the
-// arguments swapped 130 (same code); on it: the direction scaled through vector3f_scale 130, the squared length
-// through length_sq3f 130, the direction declared then assigned 130, the projection and movement adds through
-// vector3f_add_scaled/vector3f_add 177 (1111 bytes), the movement add alone 178, the jitter add 132. On the plain
-// body: limits built unscaled and scaled in place by vector3f_scale 190 (1078 bytes: the j/k products are
-// multiplied separately); retail-order jitter with a plain long 233 again (limits.k stored from its definition and
-// velocity.k reading limits.j's XMM6), with `limits.j = limits.k = ...` or `limits.k = limits.j = ...` 259 (1009
-// bytes, one register). Left: 1.0 in XMM4 (retail XMM3), the direction loaded k/j/i into XMM3/2/1 (retail 2/1/3),
-// the velocity stores and the jitter block.
-// Round 69 (lane 12, fast, 0x24590 listed): the velocity pointer (`vector3f *velocity = &state->velocity`) declared
-// at the very top 128 (gain 4, not kept); retail-order jitter (on/off, signs, `*=` scales) on a plain long 233 (1020
-// bytes), with the top or post-enable velocity pointer 233/233; on that plain-long base, limits, the jitter offset or
-// both through the existing vector3f_assign 233 each (1020 bytes). On the plain long our build merges limits.j and
-// limits.k into one value (two stores and one spill where retail keeps XMM6/XMM7 copies and three stores); the
-// volatile long is what keeps them apart here, and no tried form keeps them apart without it.
-// Round 56 (m3 lane 1, fast, 0x24590 listed): limits as one aggregate initializer 132 (same code); that with
-// retail-order jitter on a plain long 233; that jitter with its products added straight into the velocity 239;
-// the scaled factor named (`speed_factor = x134 * factor`) 132 (same code); retail-order jitter on a plain long
-// with every on/off, sign and scale value as `v = 1.0f; if (!(bits & n)) v = alt;` 165 (1051 bytes, aligned 90
-// against this body's 104: limits split around the call and spilled at retail's +0x1c/+0x20/+0x24 from
-// XMM4/6/7, on_x/on_y in XMM2/XMM5 and on_z in a stack slot as retail, but 1.0 then takes XMM1, the factor XMM2
-// and input_fraction XMM3, retail 3/1/2, and the jitter sums run z first); on that, the products added straight
-// into the velocity 248, the jitter add through vector3f_add 160 (aligned 88), plus the movement add 164
-// (1098 bytes, aligned 82); only the on/off values in that if form, signs and scales as `*=` ternaries, 165
-// (1046 bytes, aligned 83: the on/off form alone gives the split limits).
-// Round 293: Plain indexed jitter sign/on, per-coordinate, on-first and branch-selected stages,
-// inherited sample 182/238/165/177; ordinary sample 222/179/218/243. The first and third
-// recover 1.0 in XMM3 but disturb other scalar/limit homes; original body restored.
-// Round 286: independent multi-use directional limits in ijk/ikj/jik/jki/kij/kji
-// producer order 158/160/158/158/160/160; immutable ijk/kji 158/160. Scalar forms
-// shrink the frame to 0x24; original 0x28 vector frame, limits and body restored.
-// DL220: Separate native limit/direction/jitter-offset scalar storage, seven subsets; all with ordinary bit sample:
-// 158/230/231/164/190/258/261/294. Constant/limit XMM ownership and jitter spills remain. Original body restored.
-// DL226: Uniform conditional zero/half multiplication, separate/together/coordinate-local,
-// inherited then ordinary sample: 179/190/205/189/213/223/238/221. All restored;
-// constant/limit ownership, direction carriers and jitter spill homes remain.
-// Round 450: Complete limit/weighted-acceleration/projection product-node subsets 1..7, then all
-// with ordinary bit sampling: 132/132/132/132/132/130/130/164. Weighted+projection and all-node
-// forms reach 1077 bytes at 130, only two points better, so reverted. Original observations,
-// products, sample qualifier and complete body restored; constant/limit ownership and jitter
-// spills remain.
-// DL235: Complete conditional factor expression, crossed with direct definition observations,
-// reused speed factor and ordinary sampling: 213/245/213/245/241/273/241/273.
-// All restored; constant/limit XMM ownership and jitter spills remain.
-// Round 76 (lane 12, fast, 0x24590 listed; al = aligned count against this body's 104, st = with registers masked against
-// 49): movement and projection through vector3f_scale (direction), dot3f, vector3f_add_scaled and vector3f_add 177, al
-// 103, st 46; retail-order jitter (on/off, signs, scales, plain long) added straight into the velocity 239, al 101,
-// st 47, through vector3f_add 231, al 98, st 43; both 199, al 91, st 37 and 188, al 90, st 35 (1068 bytes, closest
-// shape; left: 1.0 in XMM4 for XMM3, limits.k and the z on/off and y spills, limits/direction frame slots swapped);
-// on that, direction or limits renamed to flip the name order, or both, 188/188/188 (slots do not move); direction summed through
-// length_sq3f 202; direction copied by component 248. None kept (the positional count stays above 132).
-// Round 510: initial-velocity setter/control-field receiver/all-use scale-field receiver subsets
-// 159/246/243/128/160/241/246; all with ordinary sample 279; scale plus velocity receiver,
-// with/without shared jitter add 128/128. Four-point leads rejected; original body restored,
-// constant/limit ownership and jitter spills remain.
-// Round 317: Boolean sign/on/half bit-predicate groups 1..7, all with ordinary sample
-// 148/139/166/142/165/159/175/150 fast. Original complete body and sample qualifier restored.
-// Constant/limit XMM ownership, movement outputs and jitter spills remain.
-// DL239: Indexed animation scale/normalization/projection-and-movement stage subsets 1..7, all
-// with ordinary sample: 130/130/132/178/192/192/172/138. Two-point retail-length forms rejected.
-// Original complete body, sample qualifier, magnitude observations and frame 0x28 restored;
-// constant/limit ownership and jitter spills remain.
-// DL241: Complete direction memcpy with existing normalized scale/projected update and ordinary
-// sample subsets 0..7: 132/132/181/181/170/170/146/146. No gain; original vector copy, sample
-// qualifier, helpers, includes and whole body restored. Unity/limit XMM ownership and
-// direction/jitter homes remain.
-// DL243: Matched movement-provider inline with existing animation-scale/direction-scale/jitter-add
-// subsets 0..7: 132/132/132/132/130/130/130/130. Retail-length forms gain only two; scale-producer
-// one-use views require exact matching. Original body, both magnitude calls, sample qualifier,
-// declarations and includes restored; unity/limit/direction/jitter XMM ownership and spills
-// remain.
-// B381: complete normalization predicate, moving/stationary bool/byte/short/long,
-// 132/132/132/132/132/132/132/132. All tie; NOT kept: one-use truth carriers require an exact match.
-// Original frame 0x28, unity/limit/direction ownership and jitter spills remain.
-// DL252: Reciprocal ordinary/automatic inline boundaries on scalar/shared squared-length/shared
-// scale/shared dot graphs: 185/163/193/166/185/163/185/161. All relaxed contracts outline the
-// reciprocal; NOT kept: retail expands it. Original annotation, both roots, arithmetic and complete body
-// restored.
-// Round 80 (m3 lane 12, fast, 0x24590 listed): the second speed store read back from `state->speed` 132; the
-// jitter offsets as `0.2f * x * limits.i` 132; the definition's 0x90 factor named once and used three times 227
-// (1053 bytes); the definition read before the enable store 132; the direction declared beside the movement
-// output and assigned later 132 (all four 132s identical code).
-// Lane 17 r37 (fast, 0x24590 listed): the clamp as `1.0f < m ? 1.0f : m` 234 (1077 bytes); the speed and 0x148 stores
-// swapped 134; the angular rate declared before the movement 132; limits declared at the top 132; the jitter offsets as
-// `0.2f * x * limits.i` 132. Body restored.
-// Round 82 (m3 lane 16, fast, 0x24590 listed): one scale local for the limits, acceleration and movement 196 (1065
-// bytes); factor declared at the top 166 (first difference +0x3); `state->speed = field_148 = acceleration` 134; each
-// jitter value as one sign * on/off * scale product 162 (1057 bytes); the clamped control magnitude named 132 (same code).
-// Round 66 (m3 lane 11, fast, 0x24590 listed; m = register-masked aligned count, base 83): dot3f projection
-// 130 (m 85, repeat); retail-order plain-long jitter 233 (m 62, repeat); both 228 (1025 bytes, m 61); both
-// with the volatile long 196 (m 67); both with the scale factor on the left 228; dot3f plus a top velocity
-// pointer 128 (gain 4, not kept); dot3f, plain-long jitter and `limits.k = limits.j` 257 (1010 bytes, m 47,
-// closest structure: the limits/factor products, the j/k copies, the projection/movement stores and the
-// jitter spills remain).
-// DL254: Native jitter coefficient/offset phase passes, inherited then ordinary sample:
-// 168/180/165/204/220/220/177/197. Original complete body and helper contracts restored;
-// NOT kept: unsupported storage/return/domain nonmatches; native homes remain.
-// DH347: Last-consumer input/factor/acceleration, sampled-scale and direction/projection
-// scopes, seven subsets then complete scopes with descriptive limit naming: eight at 132.
-// Original body restored; frame 0x28 agrees, unity/limit/direction ownership and jitter homes remain.
-// Round 134 (m3 lane 8, fast, 0x24590 listed; al = aligned raw/masked/masked+stack, base 154/85/65). Kept: plain long with if-form
-// on/off and sign values, plain limits and the existing dot3f, vector3f_add_scaled and vector3f_add 129 (1087 bytes, first 118 lines
-// exact), plus the pointer normalise shared with the particle code 118 (1077 bytes, al 110/35/32). Tried: retail-order ternary jitter 233
-// (1020, al 129/60/54); the normalise summed k, i, j 128; limits through vector3f_assign 187 (1064) and a component-product inline 156
-// (1077); all three value kinds in the if form 163 (1098); on/off only 148 (1090); scale values in the if form 136/140; products added
-// straight 167-203; on/off, x/y/z declared in any order, or x as the on/off variable 57/59; velocity pointer local 145-169 (1027-1048);
-// scalar limits 95-200; bit-value inline for the values 90-198; body identity chains (diagnostic) 112-137. NOT kept, a new one-caller
-// inline: dot and scaled add in an inline taking velocity/direction pointers 66 (1077, written rows 61), with the dot terms named 57
-// (1078), with a statement dot 59 (1079), with a statement dot and a separate result pointer 52 (1079, al 65/23/20: 188 lines exact but
-// for the i term's x-operand; only the jitter block's spills and products left). A match should start from that 52 form.
-// DL263: Ordinary native sample with reused on/sign/half three-bit groups, seven subsets then
-// complete immutable groups: 161/156/158/150/149/153/150/150. NOT kept: no eligible native keeper;
-// original sample qualifier and complete body restored. Unity/limit/direction registers and jitter
-// spill homes remain.
-// N371: Complete movement/direction/limits/jitter workspace lexical orders, eight
-// forms 132/132/132/132/132/132/132/132. NOT kept: unmatched allocation-only forms; original
-// body restored; unity/limit/direction ownership and jitter spill homes remain.
-// MiniMax G (11-04): no new form; the fast check cannot score this function (its callees fall outside
-// the reduced image, so the diff misaligns from the first instruction), so it stands at 132.
-// Lane 13 round 66 (fast, 0x24590 listed; aligned in brackets, control 118 [110]): velocity.i as `limits.i *
-// control.i` 118 (same code); the projection dot written out as i, k, j 122 [107] (1081 bytes), as k, j, i 122 (the
-// same code: without /Op the sum is reordered); `dot3f(&direction, &state->velocity)` 118 (same code); the jitter
-// offsets as `(x * 0.2f) * limits.i` 113 [107] (retail's 0.2-first products, but limits.j/k then reassociate as
-// definition * factor * scale, new first difference at +0x123; five points, restored); on it each offset added
-// straight into the velocity 196 (1046 bytes).
-// Y603: Complete indexed velocity product/copy producers, original/direct projection argument:
-// 114/227/237/218/51/226/238/222. NOT kept: 114 gains only four; 51 grows from native 1077 to 1078 bytes.
-// Original body restored; projection ownership and native jitter factor spills remain.
-// DH377: Direct dot at the existing scaled-add argument 57 (1078 bytes); complete dot then negation 112.
-// Existing vector scale, direct/named projection 140/131; particle scale, named/direct 131/140;
-// separate correction, named/direct 133/137. Initial velocity setter/complete row products 152/122.
-// On the direct-dot lead, native jitter scale/limit stages 65/45/67/56, then output
-// declaration/setter 45/65 (best 1081 bytes).
-// NOT kept: closer forms move away from retail's 1077 bytes; the native-length 112 gains only six.
-// Original body restored at 118; initial i-row ownership, projection operands and jitter factor homes remain.
-// DH380: Destination-owned control copy then limit modulation via assignment/memcpy/setter/rows,
-// original then direct shared projection: 230/228/242/112/227/225/247/56. NOT kept: intermediate
-// output transfers require equality; original products, observations, projection and complete body restored.
-// N395: Complete limit-owned destination assignment/memcpy/setter/coordinate modulation,
-// original/direct projection: 238/237/238/237/198/201/112/56. NOT kept: coordinate form
-// gains six; direct form grows away from 1077 bytes; all transfer forms require equality.
-// Original complete body restored; projection ownership and jitter spill homes remain.
-// N397: Confined whole on/sign/weight scalar identities on the native-extent body 118/118/118/118/118/118/118/118.
-// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
-// T65: On the 49-point native-prefix graph, consumed-limit rows/setter and separate output setter
-// 57/56/57; complete coefficient magnitudes with separate rows/setter or consumed-limit rows/setter
-// 54/61/61/55; coordinate-local magnitude/product stages 54. NOT kept: all regress;
-// original body restored. Projection j/k ownership and native jitter spill homes remain.
-// P361: Existing shared dot producer with all component-product locals, six declaration orders and mutable/immutable initializers:
-// 56/56/56/56/56/56/56/56. NOT kept: no byte equality or eligible native-shape gain; original shared helper and complete body restored.
-// Projection j/k ownership and native jitter spill-home reuse remain.
-// P370: Existing dot/scaled-add/add inline-boundary masks 1..7 and automatic dot: eight at 49,
-// 1078/1077 bytes, first +0x261. NOT kept: ties; original helpers and complete body restored.
-// T68: Existing on-x/on-y/on-z/sign-x/sign-y/sign-z defaults, y/z pair and all six
-// initialized at entry, then after movement processing before the jitter gate:
-// 234/236/237/248/263/259/247/301/53/56/59/72/107/96/59/133. NOT kept: no exact ownership/home repair. Original executable body restored.
-// Projection j/k ownership and native jitter spill homes remain.
-// P394: Complete half-weight producers, coordinate/grouped expressions, coordinate/grouped defaults,
-// jitter/function declarations and post-movement/entry constant defaults: 56/111/95/125/111/111/139/265.
-// NOT kept: one-use factor storage requires equality; all regress. Original body restored.
-// Projection j/k ownership and consumed-limit jitter spill homes remain.
-// Lane 9 r98 (fast, 0x24590 listed, control 49): jitter products as `(x * 0.2f) * limits.i` 54 (1077 bytes: retail's 0.2-first
-// products, but the limits.i product upstream reassociates at +0x13b); the scales as `x *= (bits & 64) ? 1.0f : 0.5f` 49 (same
-// code); the jitter added straight into the velocity components 194 (limits.j/k merge); `dot3f(&direction, &state->velocity)` 56;
-// limits as three scalars 85 (frame 0x24, the limits spill to [esp]..[esp+8]; the jitter still spills on_z and x into the parameter
-// homes where retail spills on_z and y into the limits' frame slots). Body restored.
-// P402: Shared dot complete raw first/second/both input scalars, mutable then immutable, coordinate-paired
-// inputs and separate assignments:
-// 56/56/51/56/56/51/51/51. NOT kept: raw one-use input storage is unmatched; original shared producer and
-// complete body restored. Projection j/k ownership and native jitter spill homes remain.
-// T77: Negative-default actual jitter sign groups x/y/xy/z/xz/yz/xyz
-// 73/72/72/80/77/77/76; all signs in exhaustive arms 64. NOT kept: no gain;
-// native-length forms disturb unity allocation from +0x21, before the original projection gap.
-// Original full body restored; projection j/k ownership and jitter spill homes remain.
-// Lane 1 r83 (fast, 0x24590/0x1cd6c0 listed; al = aligned lines left / the same with registers masked, control 49, al 42/16): the
-// projection dot written out grouped (k + j) + i 136 (1090 bytes, al 67/24); sign_z started at -1.0f and set to 1.0f on its bit (retail's
-// `je; movaps xmm0, xmm3` over the register that holds -1.0) 80 at retail's 1077 bytes (re-measured, was 80; al 61/21: 1.0 then takes XMM4);
-// both 146 (1088); the jitter add as vector3f_add(&offset, &state->velocity, ...) 49 (same code); that with the sign 80, all three 142.
-// Left: the projection's k and j products swapped, the jitter values' registers and spill slots, the 0.2 products' order and the
-// interleaved velocity stores (retail stores velocity.i before it forms the y and z offsets).
-// Round 161 (m3 lane 5, fast, 0x24590 listed; aligned in brackets, control 49 [42]): the sign values as ternaries 64 (1081 bytes,
-// first +0x21) [52]; the on/off values as ternaries 179 (1058 bytes) [73]; each half-scale select folded into its offset product
-// (x/y/z assigned once) 171 (1067 bytes) [82]; the offset declared at the top of the jitter block 49 [42] (same code); the half
-// scales named before each `x = scale_x * x` 56 (1079 bytes) [44].
-// Lane 12 r104 (fast, 0x24590 and 0x1cd6c0 listed, control 49): what differs in the jitter block is the register of on_x
-// (retail XMM2, ours XMM1); from it -1.0 takes XMM2 here (retail reuses XMM0), x is spilled where retail spills y, and the
-// spills reuse the rsqrt temporaries' slots (+0x2c/+0x30) where retail reuses limits.j/limits.k's (+0x20/+0x24). Tried:
-// `limits` renamed to sort before the rsqrt temporaries 49 (same code: names move no spill slot); the on/off factor on the
-// left of each sign product 49 (same code); the offset vector's components as the jitter's working values 74 (1079 bytes);
-// the on/off values defaulting to 0 and set on their bits 179 (1058, the ternary code); the offset as one aggregate
-// initializer 49 (same code). Spellings giving listed numbers: the on/off values as if/else 179, the signs as if/else 64
-// (1081), the half scales as named if/else selects 56 (1079).
-// Round 101 (m3 lane 16, fast, 0x24590 listed): the scaled add given `-projection` 49, the jitter offset as one aggregate
-// initializer 49, the movement scaled as `scale * movement.i` 49, the movement add given `&movement` first 49 (all four same
-// code); the on/off values zero by default and set to 1.0f on their bits 179 (1058 bytes). Re-measured: `real angular` declared
-// first 49, dword bits 49, a velocity pointer before the first store 166 (1023 bytes). In the listing the projection's j and k products
-// trade registers (retail k in XMM7, j in XMM0) and the jitter's on/off values start one register on (ours XMM1, retail XMM2).
-// Round 103 (m3 lane 16, fast, 0x24590 listed; aligned 42, register-masked 16 on this body): the limits as a const aggregate
-// initializer 49, the bits as `long const` 49, the velocity rows as `limits.i * state->control.i` 49, the jitter rows as
-// `0.2f * x * limits.i` 49 (all four the same code), as `x * (0.2f * limits.i)` 105 (1086 bytes). The extra byte is the z sign:
-// retail builds it in place over the register holding -1.0 (`je; movaps xmm0, xmm3`) because that constant dies there, ours
-// copies 1.0 and selects -1.0 like the other two signs. A compile-only /Gr harness does not reproduce this body (142 SSE lines).
-// M3 lane 10 r92 (fast, 0x24590 and 0x1cd6c0 listed; al = aligned count, masked = aligned with registers and stack offsets masked,
-// base 49, al 67, masked 20): kept 20 (plain-confirmed, al 11, masked 4): the 0.2 factor applied by the existing vector3f_scale to
-// an offset initialized {x, y, z}, then `offset.i *= limits.i` per component (retail's `(x * 0.2) * limit` products; written in one
-// product the 0.2 moves last), x, y and z reused for their on/off values, and the on/off, sign and half-scale values all ternaries.
-// Steps: the vector3f_scale step alone 58 (1084 bytes), with `velocity.c += offset.c * limits.c` 102; on it, z sign defaulting to
-// -1.0f and set to 1.0f on its bit / x, y, z reused, 000-111: 49/56/80/80/58/45/47/54 (111 gives retail's interleaved velocity
-// stores, masked 12); partial reuse masks 41 each; signs as ternaries for x and y 20, all three 20, x alone 54; all three groups
-// ternaries 20 (kept); without the reuse 30 (measured with the on/off values in if form and again all ternary: 30 both). On 20: dot3f arguments swapped 20 (same code); limits as three scalars 69; the signs
-// inline as `x = ((bits & 8) ? 1.0f : -1.0f) * x` 41; `limits` or x/y/z renamed 20 (same code); the rsqrt asm written out with
-// function-scope temporaries (diagnostic) 144 (the spills still use the parameter homes). The jitter built in place in a vector3f
-// puts the y and z spills at retail's +0x20/+0x24 (the vector packs into the dead limits home) but moves velocity.i's operand order
-// and the velocity store interleave: named/inline signs 33/33, scaled into a separate offset or an offset initialized from the
-// products 36/36, with velocity.i's or the dot's operands swapped 33/36 (the written order does not reach these).
-// Also on 20: the jitter vector with the velocity add's arguments swapped 33; the tail as an out-of-place vector3f_scale from a
-// {x, y, z} jitter, `offset.c = limits.c * offset.c`, the velocity add's arguments swapped and dot3f's swapped, 15 combinations:
-// 20 or 41 (out-of-place scale or swapped add alone 41, both 20; the product and dot spellings never change the code).
-// M3 lane 10 r94 (fast, 0x24590/0x1cd6c0 listed; plain-confirmed 12): NOT kept (coordinator 11-11: the gain needs both parts, each alone regresses = a steering combination; match only) the jitter accumulated in a vector3f filled in place
-// (on/off values into offset.i/j/k, then the named sign and named half-scale values multiplied in, the existing 0.2 vector3f_scale,
-// `*= limits`, vector3f_add) 20 -> 12: retail's spill homes (the offset packs into the dead limits home) and its tail adds; with
-// inline signs 33, with the half scales inline 33 (round 92's form), with the scales named in one block before the products 96,
-// named scales on the scalar x/y/z jitter 30. On 12: the on/off values through vector3f_assign 65, as the vector's aggregate
-// initializer 12 (same code), a named animation pointer for the call 33, `*=` for the products 12 (same code); re-measured on
-// the vector (listed on the scalar jitter): the on/off values zero by default and set on their bits 24 (velocity.i before the
-// call then retail's, the spills go back to the parameter homes), the signs in if form 59; re-measured: projection direct in the scaled add 105 (velocity.i before the call then
-// retail's), the negated projection named 109, the 0.2 scale out of place 33, vector3f_add's arguments swapped 33, both 12 (same
-// code), movement through vector3f_scale 33. Before (on 20): a private dot helper in any of the six term orders 20 (same code:
-// the optimizer orders the sum), the dot written out in five orders 139 (1093 bytes), direction from movement's components
-// (aggregate initializer 198, vector3f_assign 204). Diagnostics (not kept): dead locals shift the commutative operand choices
-// with period 8 wherever they are declared (type and position do not matter): three on 12 give the dot's i term but lose the
-// tail adds (36), and one more with the projection direct in the call gives every line but the dot's (17, 1078 bytes); an
-// extra read of direction.j before the dot gives retail's k + j order but moves the direction registers (135). The permuter's
-// reduced image scores this body 263 (full 12), so it found nothing.
-// Phase map (diagnostic, dead locals 0-7 on the projection-direct form, which gives velocity.i before the call): the dot's
-// i term is retail's only at one count and the tail adds only at another, three apart (tail 1, i 4); swapping dot3f's
-// arguments moves the i count by 2, swapping vector3f_add's moves the tail count by -2, the out-of-place 0.2 scale moves both
-// by 2 and inline signs both by 3, so no combination of these lines them up (and the dot's j/k order never changes).
-// M3 lane 15 r76 (fast, 0x24590/0x1cd6c0 listed; aligned/register-masked in brackets, control 20 [6/4]): only the projection dot
-// differs (ours (j + k) + vel.i * dir.i, retail (k + j) + dir.i * vel.i), and that costs the extra byte. New: a block-scoped
-// `vector3f *velocity = &state->velocity` for the dot and both adds, declared before the dot or at the block top 160/160 (1035/1034
-// bytes); typed animation (+0x1c) and scale (+0x20) fields in the output view 20 (same code); `vector3f direction; direction =
-// movement;` 20 (same code). Re-measured on this base: the movement scaled through vector3f_scale 30 (1081 bytes: the dot's i term
-// becomes retail's, the jitter add's i row moves; with either add's or dot3f's arguments swapped 30, same code); the movement scaled
-// by the field at each use 141 (1077 bytes). Diagnostics (helper bodies written out, not keepable unless exact): the normalize's
-// three scale rows written out in any of the six orders 127-137 (1093 bytes) and the squared length written out 138 (1094): the dot
-// is then retail's (k + j, dir.i copied first), but direction takes XMM3/2/1 for k/j/i (retail XMM2/1/3) and the scale step adds
-// copies; the normalize as its own sub-helpers (squared, inverse root, scale) 20 (same code); the projection's scaled add written
-// out 135 (1087). Lead: reading direction directly anywhere in the body (not through an inlined helper's pointer) flips the dot to
-// retail's order but recolours direction; a form that gives the flip with the helper's colouring is what is left. Later in r76: a
-// private dot helper taking both vectors by value 210 (1103), the velocity by pointer and the direction by value 185 (1130), by
-// reference either argument order 20/20 (same code as dot3f); `direction` declared before `movement`, after it or after `angular`
-// (assigned at the copy) 20 each (same code); re-measured: the dot written out i, j, k 139 (1093).
-// T90: Existing shared dot traversed by long/dword/short/word components, counted
-// cursors, array end, ordinal product and cursor product: 134/134/150/150/129/178/130/131.
-// NOT kept: All regress; projection ownership and native jitter spill reuse remain. Original shared dot and complete body restored.
-// m3 lane 2 r75 (plain, 0x24590/0x1cd6c0 listed): the named signs applied as `x *= sign_x` 20, the half scales as
-// `x *= (bits & 64) ? 1.0f : 0.5f` 20, both 20 (same code each); the three signs declared together ahead of their
-// products 109 (1055 B); the signs inline as `x *= (bits & 8) ? 1.0f : -1.0f` 41 (1082 B).
+// The operand orders here follow the count of named locals and inlined calls: the speed is stored and read back,
+// the projection goes straight into the scaled add, the squared length is one expression and the jitter's 0.2
+// factor is applied per component (not through vector3f_scale); each of these is needed for the byte match.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -948,10 +596,9 @@ void function_1e6360(s_biped_physics_output *output, real rate, long object_inde
  limits.i = (*(real *)(definition + 0x78) * *(real *)((byte *)state + 0x20)) * factor;
  limits.j = (*(real *)(definition + 0x7c) * *(real *)((byte *)state + 0x20)) * factor;
  limits.k = (*(real *)(definition + 0x7c) * *(real *)((byte *)state + 0x20)) * factor;
- real acceleration = ((1.0f - input_fraction) * *(real *)(definition + 0x80) +
+ state->speed = ((1.0f - input_fraction) * *(real *)(definition + 0x80) +
   *(real *)(definition + 0x84) * input_fraction) * *(real *)((byte *)state + 0x20) * factor;
- state->speed = acceleration;
- *(real *)&state->field_148 = acceleration;
+ *(real *)&state->field_148 = state->speed;
  state->velocity.i = state->control.i * limits.i;
  state->velocity.j = state->control.j * limits.j;
  state->velocity.k = state->control.k * limits.k;
@@ -965,28 +612,37 @@ void function_1e6360(s_biped_physics_output *output, real rate, long object_inde
   movement.j *= scale;
   movement.k *= scale;
   vector3f direction = movement;
-  normalize_particle_direction_2b(&direction);
-  real projection = dot3f(&state->velocity, &direction);
-  vector3f_add_scaled(&state->velocity, &direction, 0.0f - projection, &state->velocity);
+  real squared = length_sq3f(&direction);
+  if (squared != 0.0f)
+  {
+   real inverse = inverse_sqrt_2b96(squared);
+   scale_particle_vector_2b(inverse, &direction);
+  }
+  vector3f_add_scaled(&state->velocity, &direction, 0.0f - dot3f(&state->velocity, &direction), &state->velocity);
   vector3f_add(&state->velocity, &movement, &state->velocity);
  }
  if (g_51e9bc)
  {
   long bits = g_510c54->game_time * *(long *)((byte *)state + 0x18);
-  real x = (bits & 1) ? 1.0f : 0.0f;
-  real y = (bits & 2) ? 1.0f : 0.0f;
-  real z = (bits & 4) ? 1.0f : 0.0f;
+  vector3f offset;
+  offset.i = (bits & 1) ? 1.0f : 0.0f;
+  offset.j = (bits & 2) ? 1.0f : 0.0f;
+  offset.k = (bits & 4) ? 1.0f : 0.0f;
   real sign_x = (bits & 8) ? 1.0f : -1.0f;
-  x = sign_x * x;
+  offset.i = sign_x * offset.i;
   real sign_y = (bits & 16) ? 1.0f : -1.0f;
-  y = sign_y * y;
+  offset.j = sign_y * offset.j;
   real sign_z = (bits & 32) ? 1.0f : -1.0f;
-  z = sign_z * z;
-  x = ((bits & 64) ? 1.0f : 0.5f) * x;
-  y = ((bits & 128) ? 1.0f : 0.5f) * y;
-  z = ((bits & 256) ? 1.0f : 0.5f) * z;
-  vector3f offset = {x, y, z};
-  vector3f_scale(&offset, 0.2f, &offset);
+  offset.k = sign_z * offset.k;
+  real scale_x = (bits & 64) ? 1.0f : 0.5f;
+  offset.i = scale_x * offset.i;
+  real scale_y = (bits & 128) ? 1.0f : 0.5f;
+  offset.j = scale_y * offset.j;
+  real scale_z = (bits & 256) ? 1.0f : 0.5f;
+  offset.k = scale_z * offset.k;
+  offset.i *= 0.2f;
+  offset.j *= 0.2f;
+  offset.k *= 0.2f;
   offset.i *= limits.i;
   offset.j *= limits.j;
   offset.k *= limits.k;

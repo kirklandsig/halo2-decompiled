@@ -1044,6 +1044,11 @@ __forceinline long vehicle_round(real value)
 // flips back; with the plain side cross it flips back too, so the staged side cross sets it); an up pointer declared with
 // the lookups and used at the condition and the first cross only 10; a forward pointer for the dot and the projection
 // scale only 50; the axis if/else inverted (`!= 4 && != 3` with the copy first) 8 (same code).
+// Round 192 (m3 lane 4, Fable then Opus): MATCH (8 -> 0, plain and full check) with three new one-caller
+// PRIVATE __forceinline helpers (vehicle_flip_strength, vehicle_flip_rate, vehicle_forward_speed: each declares
+// its own local, which moves retail's product operand loads). NOT kept (coordinator review 11-13): invented
+// one-caller helpers are reverted even with a match. Lead: the locals those helpers declare set the operand
+// order; look for an existing helper or inline (the vector math or vehicle headers) that would declare them.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -1977,6 +1982,12 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // the forward speed grouped `(k + j) + i` explicitly 11 (the sum then (j + k) + i, the i term unchanged); `(real)`
 // casts on its three products 9; the vehicle index parameter as `dword` 9; `speed` declared at the overlay block's top
 // and assigned in the arm 9 (all three the same code).
+// Round 192 (m3 lane 4, fast), at 9: the forward speed through the new vehicle_forward_speed helper (a forward pointer and a
+// speed local; 0xef870 uses it) 11 (the sum becomes (j + k) + i and its i product flips); the graph and animation-state
+// tests as nested ifs 9; `state` declared first at function scope 9; `graph` declared first at function scope 9; the file's
+// vehicle_cross for the left vector 9 (all four the same code). Diagnostics: 1/2/3 dead inline-helper locals at the top or
+// before the state lookup 13/13/17 (only the cross and forward-speed products move; the SIB pair and the three reloads
+// never do, so they are not a numbering phase).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2888,6 +2899,11 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // (`unknown378 * function_f14f0(...)`) 10; diagnostics that change torque's use count (behaviour kept, extra code): the
 // contact store as `braking ? 0.0f : torque` 166 (997 B), the spin as `braking ? 0.0f : torque * dt` 233 (994 B), a dead
 // `= 0.0f` initialiser on torque 10; in all three torque keeps 0x14 and the offset 0x18.
+// Round 192 (m3 lane 4, fast), at 10: braking assigned straight from its test (no if/else) 10; the quaternion declared at
+// function scope 10; cosf/sinf for the half-angle trig 10; the quaternion as a local of vehicle_contact_steer (no rotation
+// parameter) 183 (934 bytes); fmodf in the wrap helper 10. Diagnostics: 1 or 2 dead inline-helper locals at the top, before
+// the contact loop or before the spin 65/24 at each (the torque and loop-offset slots never move; only the spin tail's add
+// operands do), so the slot swap is not a numbering phase.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3217,6 +3233,10 @@ real g_47ff30 = 2.5f;
 // the speed staged as `speed = vehicle->speed; speed *= boost;` 715 at 3220.
 // Lead: the pointer friction form; left on it are the entry XMM numbering (retail keeps 1.0 in XMM7), the maximum
 // speed product's operand form, the reciprocal's placement and the force/torque scheduling.
+// Round 425: complete/negative-default/positive-default friction direction
+// 682/688/688; complete/default-first speed magnitude 682/720; coefficient
+// expression/complete arms 682/682; full force accumulator 707.
+// NOT kept: no native-frame gain; original helper and body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -5752,7 +5772,7 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    start, thrust toward the speed along the facing (faster diving, with
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
-// score 978 (was 990): earlier 1052, 1087, 1095; frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
+// score 978 (was 990): earlier 1052, 1087, 1095; frame 0xfc versus 0xd8; index/offset and vector/rotation homes remain.
 // V1A: statement-by-statement walk against all of retail's 1180 instructions found no logic difference (fields,
 // conditions, constants, callees, argument orders, clamp and bank cases all agree). Two source shapes that retail
 // shows and ours lacks, both measured by opcode alignment with offsets and registers ignored (0.757 -> 0.793):
@@ -5964,6 +5984,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // instructions: a lead once the earlier homes line up); the angular target through vector3f_scale and
 // scaled_difference3f 1042. Re-measured on 978: `-(strafe / strafe_maximum)` 1053 (5075 bytes, masked 270).
 // Lead: selections not yet screened for the clamp idiom of the spin tail: the side brake and the lift maxima.
+// Round 425: lateral brake limit-seeded/complete/upper-first/lower-first
+// 1037/978/1036/979; complete magnitude 978; sign admission/signed result 978/1039;
+// existing clamp 978. NOT kept: no eligible native-frame/extent gain;
+// original whole body restored. Current frame 0xfc versus native 0xd8.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
