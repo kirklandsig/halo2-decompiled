@@ -355,7 +355,7 @@ struct s_contact_surface_table
 struct s_bsp3d;
 struct s_slot_entry_list;
 extern s_slot_entry_list *g_4e0340;
-plane3f *bsp3d_get_plane(s_bsp3d const *bsp, short plane_index, plane3f *plane);
+plane3f *bsp3d_get_plane(s_bsp3d const *bsp, long plane_index, plane3f *plane);
 short function_120850(vector3f const *v);
 real *function_120810(real const *point, short axis, byte side, real *out);
 short function_296230(long object_index);

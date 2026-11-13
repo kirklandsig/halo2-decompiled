@@ -504,7 +504,7 @@ void function_10cd50(long item_index)
 struct s_slot_entry_list;
 extern s_slot_entry_list *g_4e0340;
 struct s_bsp3d;
-plane3f *bsp3d_get_plane(s_bsp3d const *bsp, short plane_index, plane3f *plane);
+plane3f *bsp3d_get_plane(s_bsp3d const *bsp, long plane_index, plane3f *plane);
 real function_30bf0(vector3f *vector);
 void function_b75a0(long object_index, point3f const *position, vector3f const *forward,
 	vector3f const *up, s_location const *location, bool flag);

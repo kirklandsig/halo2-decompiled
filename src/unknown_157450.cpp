@@ -5828,6 +5828,20 @@ void __stdcall function_d6bc0(long object_index);
 // default `schedule = false`) re-measured on this base 129 (877 B, round 152's true/assign/assign). Every failed schedule
 // in retail falls into the countdown block, so no `continue` spelling reaches it; the two non-continue shapes are the flag
 // recipe and the goto, both match-only at 7.
+// Round 237 (m3 lane 3, fast with 0x15c150 and the six callees, all matched each time unless noted; base 29): the label
+// form re-measured 7, with the schedule test on entries[i].index 172 (858 B). In the 172 listing the timer address is
+// coloured before `entries` and takes EBX (free once the loop-top index dies, still spilled to its slot), and `entries`
+// then takes EDI; with EBX held (the local test, or a diagnostic where the object takes it) the timer takes EDI and
+// `entries` stays in memory as in retail. On the label + field-test form: the countdown block re-reading the index into
+// the loop-top local 172 (same code), with 0xd6bc0 given that local 175; the function as a c_engine_equipment method
+// 172 (same code); the schedule test's index through a forceinline accessor returning the entry 181, the zero test and
+// the index test both through it 172, an accessor returning the object index 172, that accessor at every index read
+// 172. The zero test and the schedule decision in one condition around a forceinline bool predicate holding the mode
+// switch 139 (869 B), with the index test on the loop-top local 129 (877 B), nested under the zero test 139.
+// Diagnostics: without the 0x15aad0 call 179, without the `value04 = 1` reset store 200, without the 0xd6bc0 call 181
+// (`entries` still in EDI, so no use-count threshold); `entries` in a by-value one-member parameter 172 (same code,
+// 0x15c150 229); the index test evaluated into a bool in the zero test's own block 172. Left: what holds EBX, or favours
+// EDI for the timer, between retail's first block and its countdown.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

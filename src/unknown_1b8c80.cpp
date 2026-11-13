@@ -729,6 +729,18 @@ extern "C" void _ReadWriteBarrier(void);
 // without the barrier 49 (210), then the barrier 31 (207); the barrier, then the read 29. Each loads the slot in the
 // entry block, but the data base then takes ESI (with a `push esi` at entry) where retail keeps it in EDX until the
 // constant 4. No untried non-volatile form that touches the slot's load or the entry block is left in this note.
+// Round 94 (m3 lane 11, fast): the state as the data block address minus the header size (zero offset through a
+// member), no barrier 44 (208 bytes); a reference-typed state, no barrier 44; `__assume` on a slot field at the top,
+// no barrier 44, with it 6; the state through a view wrapper with an inline converting constructor 83 (237 bytes),
+// with the barrier 80 (234); the outer test inverted with an empty then-arm 6 (same code). Re-measured: data block
+// with the actor first and the barrier 31 (207), without 49 (210); state first with the barrier 29. Standalone
+// compile-only probes of the same shape: a local aggregate or constructor-built context holding both pointers, a
+// derived-type or first-member cast, a dead local store, an empty inline call taking the slot, `__noop`, an empty asm
+// block: none loads the parameter before its first use or stops the 0x26c load being formed from base+index ahead of
+// the add; only a member at a non-zero offset (the data block) or the barrier does. Readings: retail's 0x26c compare
+// stays in memory because ECX already holds the slot and EDX the base when the add is made; the data-block forms
+// instead keep the early load and move the base to ESI (pushed at entry), so the cause is a real entry-block use of
+// the slot ahead of the compare, not the block pointer.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
