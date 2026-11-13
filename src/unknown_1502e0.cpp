@@ -1161,6 +1161,7 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 long function_cbd50(long unit_index, short weapon_index);
 
 // MiniMax S (11-11): no new form, no lower score (215): retail computes the pool element address before the prologue's register saves and keeps it whole in ebp, while this build splits the multiply from the base add, keeps the pool pointer in a register of its own and frames 0x1c against retail's 0x18.
+// MiniMax G (11-12): no new form, no lower score (215): eight forms tried this round (unit local dropped or re-derived, pool and tag table hoisted or reloaded, player in a register or spilled) all score above 215; retail still inlines the weapon-slot lookup and derives the unit twice per iteration where ours calls function_cbd50.
 // score 215 (was 254):
 // MiniMax E (11-09): no new form, no lower score (254); taking the tag table straight from the global in every loop reaches retail's 1006 bytes but scores 275, and hoisting the copy to the declaration keeps the same 254 with the same code.
 // MiniMax H (11-06): the permuter's best form (246) needs a volatile cast, hand-written helper bodies and a

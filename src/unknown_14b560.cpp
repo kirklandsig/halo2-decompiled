@@ -2475,6 +2475,7 @@ static __forceinline long player_round_ticks(real value)
 // MiniMax C (11-11): no new form, no lower score (701): the length agrees (2740 bytes); the frame is
 // still 0x4c against retail's 0x74 and the first 0x151b80 call is still expanded here where retail calls
 // it, and the definitions of 0x151b80, 0x151940 and 0xccd20 are in other files.
+// MiniMax G (11-12): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, our link-time inlining still expands the 0x151b80 and 0xccd20 calls that retail makes out of line, and retail's two request homes are still one here.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and
