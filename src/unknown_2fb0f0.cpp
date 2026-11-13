@@ -239,6 +239,11 @@ __forceinline answer_2fb150 repeats_plane_2fb150(contact_2fb150 const *other, co
 // New: immutable body/shape pointers 330; later receiver alias 330;
 // input argument at use 330; entry cursor 470; final contact reference 364;
 // minimum-search cursor 405; int dispatch ordinals 330.
+// P453: separate part-body scopes 330; separate child buffers 330; body
+// aggregate initialization 330; hit element reference 330; paired memcpy
+// 379; minimum field at use 600; output header at use 317; final cursor 383.
+// NOT kept: header reloads differ from the native saved header; the gain
+// comes with a different observation pattern. Original body retained.
 // @retail 0x2fb150
 void class_2fb150::function_2fb150(void const *a_, void const *b_, void const *input_, void *collector)
 {

@@ -442,6 +442,14 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // (The all-three-locals form is close to round 84's 227/1211; its code here is 1210 bytes.) Also new: the two old components saved
 // after the dot 227 (frame 0x11c, other code); X.j/X.k computed before the cosine 227 (other code). Five codes, all 227-253.
 // A one-link LTCG harness does not reproduce this body (function_259d0 stays out of line there), so screens need fast.
+// M3 lane 1 r99 (fast with 0x28dab0, 0x256bd0 and 0x259d0, all MATCH throughout; base 173): one to four unused long locals at the
+// top of the function (a scan for the symbol-count effect on SSE operand order that matched 0x1e6360) 173 each, the same code, so
+// that lever does not reach this body. The rotation written in the caller in retail's order (sine, cross3f(heading, up), dot3f,
+// cosine, `projection *= 1 - cosine`, scalar cross j and k of heading x axis, rows `axis * projection + heading * cosine - cross *
+// sine` with cross i inline) into a result vector 251 (1188 bytes, frame 0x114), written back into the heading 231 (1209 bytes,
+// retail's length, frame 0x114: the x87 order and the phases are retail's, the XMM colouring and the heading/cosine homes are not);
+// those with the heading's zero k written as the constant 0.0f in the rotation terms 251/231 (the same code: the zero is already
+// known); the in-place form with one or three unused locals 231 (same code). Body unchanged at 173.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

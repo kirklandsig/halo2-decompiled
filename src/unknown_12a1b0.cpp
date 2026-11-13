@@ -2204,6 +2204,16 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 434 (1939 B: the copy is retail's, but the pool data is reloaded
 // after the store and the index product is shared); an entry pointer for the byte with the s_decibels store through a
 // second getter 465 (1939 B: the block is retail's but for the one shared index product).
+// M3 lane 11 r96 (plain, with 0x21b940, 0x1269f0, 0x125920, 0x126660 MATCH each time; second number the aligned count, control
+// 305 / 216): retail reads both short pairs through a pointer to the pair (`lea ..+8` for the pitch bounds, `lea ..+2` for the
+// range's minimum/maximum). The range pair through `s_short_bounds const *range = (s_short_bounds const *)&bounds->minimum` 418 /
+// 221 (the gain approach's add flips, as with every form that names part of the pitch block); that with the pitch bounds pointer
+// 418 / 218; a block-level `long range_count = playback->pitch_range_count;` ahead of the second pitch loop 375 / 193 (frame 0x128
+// and the whole update head as retail: first difference +0x39, homes off by 4 or 8); that with a `long count` ahead of the first
+// loop too 365 / 216; a `short track_index` loop variable 465 / 230 (1891 bytes). On the second-loop count form the second loop
+// still loads the datum index and the track index into EBX/EBP (one use each, in the creation call) and the sounds[i] address into
+// EDI with `active` in a slot, where retail holds NONE, track_definition and `active` there and indexes sounds[i] at each use:
+// those 14 bytes are what every natural combination listed above is short of.
 // P444: first signed-short range ordinal 420f; second signed-short range ordinal 464f; native previous-range value 464f; exhaustive seed result 454f; preparation result 479f; pitch-bounds pointer only 479f; pitch-bounds record lvalue 479f; real request flag field 479f.
 // NOT kept: no byte match or supported native frame/result recovery; original complete body restored.
 // MiniMax G (11-13): no new form, no lower score (305): the frame is 0x11c against retail's 0x128, and the
