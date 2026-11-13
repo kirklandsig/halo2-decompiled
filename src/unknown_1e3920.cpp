@@ -1110,7 +1110,7 @@ void __stdcall swarm_delete(long perception_index);
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
 
-// score 252 (was 253): frame 0x118 and length agree; the -1 sentinel in EDI (retail ESI, with the squad index reloaded into
+// score 252 (was 252): frame 0x118 and length agree; the -1 sentinel in EDI (retail ESI, with the squad index reloaded into
 // ECX), retail's one shared spill slot for the squad pointer, the squad bit and the actor, and the unit arm's place remain.
 // M3 lane 8 r159 (fast; masked aligned 115 at 253): kept, the squad bit as `bool flag = squad && ((bits >> 10) & 1);`
 // in place of the bool started false and set under `if (squad)` 252 (a re-measure of round 48's form; it removes a flag set
@@ -1409,6 +1409,10 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // register-masked aligned 236 -> 215, the unit arm stays in source order); that with the palette count read at each use 307
 // (masked 194); with 32-bit grenade tests as well 308; the weapon test without its one-use unit, weapon and definition locals
 // 253 (same code; kept, it removes three one-use locals).
+// M3 lane 12 r118 (fast, the eight matched callees still matched): retail's ESI is written before any read (`ret 0x10`), so it is
+// no register argument. The substitution query as a force-inline predicate in the while condition (no break) 252 (same code, the
+// loop still rotates); the predicate plain inline 483 (1151 B); taking the squad mode instead of the squad 252 (same code);
+// returning `forced ? 0x203900(...) : enabled` 348; taking the squad index as short 252 (same code).
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
