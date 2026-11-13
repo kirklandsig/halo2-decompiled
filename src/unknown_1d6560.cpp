@@ -385,6 +385,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // [0] (same code); declaration order o,a,h,r,t 88 [0]; o,a,h,t,r 111 at 268 B [9]; a dword absolute index 24 [0] (same code); a
 // dword object index 24 [0] (same code); the kind-7 route setting `result` (1, or 0xc in its one-case switch) with the main
 // switch as its `else` and one return 95 [0]. Body unchanged at 96.
+// M3 lane 3 r238 (fast, caller 0x1d5bf0 matched throughout): case 11 as an if / else-if chain 96 (same code); the two
+// flag selections as ternaries 98 (272 B). Re-measured: round 60's 24 form 24 (256 B), with a long type 89 (aligned 24,
+// masked 12: the type then loads with retail's one movzx; left is the entry's register choice, headers ESI loaded after
+// the bodies, object index EDX, rigid body in ECX, where retail loads the headers first into EDX and uses ECX, ESI).
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
