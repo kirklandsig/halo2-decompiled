@@ -1646,6 +1646,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 552 (frame 0x30), D1 D2 E S1 564; R T D1 D2 E S1 574 keeps `ret 0xc` but takes block in ECX and type from the stack (0x3db00
 // lost). With S1 and E the x87 length and the interleaved normal copy are retail's instruction for instruction; what is left
 // is which of parameters and record gets ESI. None kept (every positional score is above 529).
+// P451: Count admission enclosing scan and consumer 573; selected pointer scoped inside 574;
+// that graph with length before normal copy / early lightmap copy / shared bias / direct primary
+// output / early square / lightmap-first clamps 573/568/573/606/548/571. NOT kept: all regress
+// and lose 0x3db00; original body/helpers restored, frame 0x2c versus native 0x28 remains.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
