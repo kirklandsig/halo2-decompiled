@@ -948,6 +948,10 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // product's colours, the second product's schedule and the else arm's stores through the forward pointer): product rows,
 // staging, helper choices, pointers, copies, declaration orders and the existing angle helpers (by value, and the pointer
 // form 0x23d790 builds its forward with) are all listed above. Body unchanged.
+// Round 175 (m3 lane 6): no new trial. The else arm's forward stores through ECX are the listed forward-pointer form
+// (43, one-use pointer); the existing direction_from_angles there is listed (156/224), as is 0x23d790's helper shape
+// (221/222). The first product's colours sit in cross3f (shared include/vector_products.h) and function_1f087b
+// (src/unknown_1f03e0.cpp, on this round's avoid list). Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

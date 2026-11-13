@@ -561,7 +561,7 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
-// score 569 (was 621; 629, 733, 633 and 719 before that; the rise to 733 was the unrounded sine/cosine below): frame 0x114 as retail, 39 bytes short; radius and trace/pivot homes differ.
+// score 569 (was 569): earlier 621; 629, 733, 633 and 719 before that (the rise to 733 was the unrounded sine/cosine below); frame 0x114 as retail, 39 bytes short; radius and trace/pivot homes differ.
 // MiniMax S (11-06): Our frame is 0x120 against retail's 0x114, so every esp-relative home is four bytes
 // off; retail loads the scale factor into xmm1 after the first branch where ours loads xmm5 before it,
 // and the four scale locals and the two trace results still sit at other offsets.
@@ -894,6 +894,13 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // shared signed radius 939; magnitude-preserving first/pivot parameter scales 897/882;
 // repeated negative-radius producer 875; center-scale-only join 840.
 // NOT kept: no exact native-radius repair; original complete body restored.
+// Round 175 (m3 lane 6, fast; base 569): retail 0x2108a0, 0x210770 and their callees 0x1427f0/0x210d10 use no XMM5,
+// and both calls take the same custom registers in both builds, so the radius hoist into XMM5 is an allocation choice,
+// not an unknown-callee clobber. The end block as `field_8 = ratio > 1.0 ? 0.0f : field_8 * (1.0f - ratio)` 610; the
+// obstacle angle selection as one nested ternary 569 (same code); the break's ratio as `(local_27 - 1) / (real)local_23`
+// 569 (same code); the stored angle un-negated with the loop's `if (!field_0) local_28 *= -1.0f;` then a plain store 628;
+// the annulus test as a positive `if` around the rest of the obstacle body 569 (same code). Diagnostic: the first two
+// trace results' names exchanged 569 (homes unmoved: +0xd0/+0xf4 stay swapped against retail).
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

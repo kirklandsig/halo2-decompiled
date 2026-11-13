@@ -7268,7 +7268,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // second loop's `first` in a stack slot, the flags word in memory and the hand index spilled, so retail
 // carries four more bytes of locals - and the unit is still held in EDX while retail looks the unit up
 // again after 0x110ab0 and reloads the state offset and word for each of the three state-bit tests.
-// score 253 (was 253): the control tests 0x8000000/0x4000 are plain mask tests (retail `test eax, imm`), flag 2 of
+// score 244 (was 253): the control tests 0x8000000/0x4000 are plain mask tests (retail `test eax, imm`), flag 2 of
 // +0x10a goes through s_unit_flags_10a_view (load, shift, test), the zoom is a short compared against
 // the stored field (cmp bx; the field is then read, not the local, for the NONE tests), the zoom sound is read
 // before the level count, and the second loop's weapon index is NONE then an `if`. Still differs: frame 0x24 versus 0x28 (retail keeps the second loop's `first`
@@ -7305,14 +7305,27 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // 251 but both callees stop matching (5, 8); the flag block reading unit->unknown148 at each use 253 (`sar`, control
 // still in EDI); `last` a dword shift tested `& 1` (no union) 261, with the field reads 261; flags/last declared at the
 // loop top 253, the order last, flags, control 253 (same code).
+// Round 175 (m3 lane 6, fast then plain): kept 253 -> 244: bit 7 (0x80) set inside each hand's arm from its own
+// control bit (30 / 31), with no `last` local; retail tests the shifted control after the arms join (`test bl, 1`),
+// which gives retail's second-loop registers (control in EDX, EBX as the bit temp, `first` spilled to [esp+0x13]).
+// The definition flags read as `definition->unit.flags` (same code). On 244: the zoom weapon through 0xcbd50 274
+// (masked 27: retail's `or eax, -1` shape, but retail keeps the header global in EDI and reloads the data pointer
+// for the weapon's lookup, ours keeps the data pointer); the NONE-then-if zoom weapon 274 (re-measured); the zoom
+// block's unit read at each use 244; the weapon definition through object_get 244 (same code); `word flags = 0;`
+// with bit 1 set by the same ternary as the others 246 (`movzx ecx, cl; and ecx, 1` for retail's `shl cx, 1`); the
+// second loop's body under `if (current != NONE)` 244; the rate written into the call 244; `hand == 0` at each use
+// for `first` 282. Diagnostic: the listed word/dword overlay for the flags on 244 gives 229 (frame 0x28, first
+// difference +0xed; aligned with registers masked only the zoom block's reload and the loop pad remain; unmasked
+// also the two `test al, al`, `movsx edx, bl` for the scale, `[ecx + edx + 8]` at the second loop's two unit
+// lookups where ours has `[edx + ecx + 8]`, and `shl cx, 1`); with the 0xcbd50 zoom weapon too 266.
 // @retail 0xc58f0
 bool __stdcall function_c58f0(long unit_index)
 {
 	s_unit *unit = UNIT_GET(unit_index);
-	byte *definition = UNIT_DEFINITION_GET(unit);
+	s_unit_definition *definition = (s_unit_definition *)UNIT_DEFINITION_GET(unit);
 	bool changed = false;
 
-	if (!(TEST_FIELD_BIT((*(dword *)(definition + 0xbc) >> 11) & 1)))
+	if (!(TEST_FIELD_BIT((definition->unit.flags >> 11) & 1)))
 	{
 		if ((char)unit->unknown1f5 > 0)
 		{
@@ -7352,7 +7365,7 @@ bool __stdcall function_c58f0(long unit_index)
 			}
 		}
 	}
-	if (!(TEST_FIELD_BIT((*(dword *)(definition + 0xbc) >> 10) & 1)) && !(TEST_FIELD_BIT(((s_unit_flags_10a_view *)&unit->flags_10a)->bit2)))
+	if (!(TEST_FIELD_BIT((definition->unit.flags >> 10) & 1)) && !(TEST_FIELD_BIT(((s_unit_flags_10a_view *)&unit->flags_10a)->bit2)))
 	{
 		if (*((byte *)unit + 0x19) & 8)
 		{
@@ -7461,7 +7474,7 @@ bool __stdcall function_c58f0(long unit_index)
 			}
 		}
 	}
-	if (!(TEST_FIELD_BIT((*(dword *)(definition + 0xbc) >> 11) & 1)))
+	if (!(TEST_FIELD_BIT((definition->unit.flags >> 11) & 1)))
 	{
 		for (long hand = 0; hand < 2; hand++)
 		{
@@ -7485,7 +7498,6 @@ bool __stdcall function_c58f0(long unit_index)
 			}
 			dword control = unit->unknown148;
 			word flags;
-			bool last;
 
 			if (first)
 			{
@@ -7494,7 +7506,7 @@ bool __stdcall function_c58f0(long unit_index)
 				flags = TEST_FIELD_BIT((control >> 18) & 1) ? flags | 8 : flags & ~8;
 				flags = TEST_FIELD_BIT((control >> 19) & 1) ? flags | 0x10 : flags & ~0x10;
 				flags = TEST_FIELD_BIT((control >> 20) & 1) ? flags | 1 : flags & ~1;
-				last = TEST_FIELD_BIT((control >> 30) & 1);
+				flags = TEST_FIELD_BIT((control >> 30) & 1) ? flags | 0x80 : flags & ~0x80;
 			}
 			else
 			{
@@ -7503,9 +7515,8 @@ bool __stdcall function_c58f0(long unit_index)
 				flags = TEST_FIELD_BIT((control >> 23) & 1) ? flags | 8 : flags & ~8;
 				flags = TEST_FIELD_BIT((control >> 24) & 1) ? flags | 0x10 : flags & ~0x10;
 				flags = TEST_FIELD_BIT((control >> 25) & 1) ? flags | 1 : flags & ~1;
-				last = TEST_FIELD_BIT((control >> 31) & 1);
+				flags = TEST_FIELD_BIT((control >> 31) & 1) ? flags | 0x80 : flags & ~0x80;
 			}
-			flags = last ? flags | 0x80 : flags & ~0x80;
 			flags = TEST_FIELD_BIT((control >> 29) & 1) ? flags | 0x100 : flags & ~0x100;
 			flags = held ? flags | 0x20 : flags & ~0x20;
 			flags = unit->unknown240 != NONE ? flags | 0x40 : flags & ~0x40;
