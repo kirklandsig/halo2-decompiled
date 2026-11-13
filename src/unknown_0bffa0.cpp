@@ -1260,6 +1260,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // skip only a zero length (retail tests 1e-4). Re-measured on this base: cross3f for the left cross with normalize_inline
 // 548 (2817 B, masked 146); the file's cross_product_c1a80 there with normalize_inline 566 (2810 B, masked 134). No unlisted
 // helper or natural form is left.
+// m3 lane 15 r79 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, = full 290; masked = aligned rows with registers and
+// constants masked, 108): `__forceinline` declarations on the projection helper, the negate helper, the file's dot helper
+// (0xc1a80 and 0xc0520 stay matched), and forceinline redeclarations here of normalize3d and cross3f_staged: 290 each (same
+// code). In the forward cross retail loads the left vector's component first in every product except those with left.i,
+// and reloads left.i after the normalize where ours keeps it in XMM5 from the first cross. The direction table declared
+// before the face table 322, declared first of the three 367.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

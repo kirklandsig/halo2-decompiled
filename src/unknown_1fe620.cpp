@@ -12,6 +12,11 @@ void function_1fe410(point3f *arg_0, real arg_1);
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax A (11-13): no new form, no lower score (373): the timer result written straight into the
+// message field and the timer value folded into the conversion both compile to the same bytes; the frame
+// is still 0x4c against retail's 0x48, retail keeps the third settings pointer in esi from the entry where
+// ours caches the random state there, and the two flag bytes are still stored before the random state is
+// loaded.
 // MiniMax G (11-12): no new form, no lower score (373); the frame is still 0x4c against retail's 0x48, retail keeps the third settings pointer in esi from the entry where ours caches the random state there, and the two flag bytes are still stored before the random state is loaded.
 // score 373 (was 373): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
 // MiniMax E (11-11): no new form, no lower score (373); the frame is still 0x4c against retail's 0x48, retail keeps

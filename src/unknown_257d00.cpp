@@ -1589,12 +1589,12 @@ short function_cccd0(long unit_index, short grenade_type, short delta);
 bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
-// MiniMax G (11-12): no new form, no lower score (270): the two initializers swapped give 487 and the output pointer declared first the same code; the argument slots for the actor index and the cs index agree with retail.
 #pragma inline_depth(2)
 // score 270 (was 270; 270 before; 301 before r88; 301 before): 1848 bytes as retail, with retail's success-test layout (return 0 after the test, the failure block
 // last). Left: arg_0 in ESI and the output in EBP where retail has EBP and ESI (ours holds the point reference across 0x25ab50 at the
 // 1/19 site and case 5, retail reloads it), the prologue's pool order, the table-first lookups in cases 7 and 13, case 10's +0x8c
 // clear after the selector load and case 5's store order.
+// MiniMax G (11-12): no new form, no lower score (270): the two initializers swapped give 487 and the output pointer declared first the same code; the argument slots for the actor index and the cs index agree with retail.
 // Earlier 301 (was 301): the object index stays in ESI and the output pointer in EBP (retail EBP and ESI), the first exit test falls into the failure return, and some bodies are 24 bytes short.
 // MiniMax E (11-10): no new form, no lower score (301); retail reads the actor pool global before the datum pool and takes the actor index into ebp among the pushes, this build reads the datum pool first and takes the actor index into esi after the four pushes, and retail puts both return tails (the zero result and the shared 2) at the end of the function where this build leaves the 2 inline in the middle.
 // Lead (round 91, m3 lane 9): at the 1/19 site, the `field_3 |= 0x40` store written before the point copy (a store through the
@@ -1988,6 +1988,23 @@ void function_b7360(long object_index);
 // each use, re-measured on this body 495 (1856 bytes: arg_0 then takes EBP as retail, but the shared `lea edi, [ecx + edx]` and
 // the prologue order follow); the second pointer for the case 10 and case 5 selector reads alone 490 (1856). Retail keeps the +0x8c
 // and +0x9a clears ahead of the selector loads (ours sinks each store below its load) and reloads +0x28 after 0x25ab50 at both sites.
+// M3 lane 5 r177 (fast, 0x259e70, 0x259ec0 and 0x25ab50 matched each time): case 7's dot as `dot3f(forward, velocity)` 276;
+// case 7's actor unit index named for its two tests 333 (1852 B); case 7's moving test as one ternary with the object
+// looked up in the arm 364 (1860 B); the five `success = true` cases under one label list 270 (same code); case 5's
+// selector read at each use (no local_16) 270 (same code).
+// P423: Complete case four before 0/17/3/8/10/5/9/13/20/6 on the 1848-byte graph:
+// 344/337/335/367/390/425/427/428/428/427. Earlier core-only orders predated this result graph.
+// NOT kept: no gain; original complete callback restored.
+// P433: Independent complete case eight before 0/17/3/4/7/5/9/13:
+// 437/426/424/394/358/328/332/335. NOT kept: all regress; original callback restored.
+// Pool/input/output ownership and retained point references remain.
+// T99: Both movement-query publications on the native-length completion graph:
+// admitted query value / independent fallback / failure-first / reject-then-publish /
+// fallback as completion / admission expression / separate stores with admission /
+// negative fallback admission: 619/601/467/619/463/466/460/270.
+// NOT kept: no equality or gain; original complete callback restored.
+// P448: Original-site orientation/per-case movement/source/parent/property/lower-bound/lookup-result/final-mode decisions:
+// 272/270/272/272/272/272/272/272. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2404,7 +2421,8 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // MiniMax S (11-11): no new form, no lower score (479; 474 when only this function's own units are in the
 // reduced image); our body is longer than retail's (eight bytes in that image), so the jump table lands later
 // and every branch after it differs.
-// score 479 (was 479): earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
+// score 479 (was 479): earlier 477, 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
+// earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // MiniMax R (11-10): no new form, no lower score.
 // Earlier 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
 // (0x2594b5 `comiss xmm0, [1.0]; jbe 0x2597fa`, true for a NaN distance); `d <= 1.f` compiled to
@@ -2672,10 +2690,24 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // positional line while the body is 8 bytes long. Case 6's two flag stores (compile-only): `|= 0x29; |= 0x48`, bitfield
 // sets and inline set-up helpers all fold to `or 0x69`; only a branch between the two sets keeps retail's second store.
 // NOT kept (coordinator review, MiniMax A 11-12): 479 -> 477 is under the keep bar (8+ on a function still above 30); the body is main's again.
+// P423: Complete case four after 9/10/12/11/6/14/18/21:
+// 483/483/483/470/470/470/476/472. NOT kept: the 470 forms move the case away from its
+// retail position; no byte match. Original complete callback restored.
 // T95: Native entry and first point now agree; first +0x51 is a branch displacement.
 // Motion/animation/both last-consumer scopes 479/479/479; paired final planar
 // memcpy/memmove 479/479; state/current/both existing vector setters 565/592/594.
 // NOT kept: no exact transfer-form repair; original complete body restored.
+// P433: Explicit case-thirteen/default completion to the sole return before
+// 1/4/7/0/5/9/12/20: 621/621/621/621/621/621/621/621. NOT kept:
+// native length recovered but entry registers regress; original callback restored.
+// T99: Real animation-to-countdown fallthrough group before outer cases
+// 4/7/9/10/12/11/6/14: 475/483/479/483/483/483/468/474.
+// NOT kept: the 468 form needs the selected group placement without byte
+// equality; original complete case graph and countdown comparisons restored.
+// P444: animation planar setter 501f; motion planar setter 494f; turning planar setter 490f; fallback planar setter 633f; case-four array difference 479f; nearest-candidate array difference 479f; retained-target array difference 479f; facing-input vector setter 627f.
+// NOT kept: native entry remains, but planar/case/exit transport does not match; original complete body restored.
+// P446: Actual case-five request, animation query, native mode, both subtype results, case-18/21 admissions and secondary-countdown producer;
+// 479/479/479/479/479/479/479/479. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

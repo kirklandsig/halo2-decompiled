@@ -33,6 +33,10 @@ struct bounds_2fe350
 // NOT kept: no gain; the input load and SIMD register schedule still differ.
 // Serial search: 29 variants, best 27. NOT kept: a scalar cast, mixed
 // operand order and partial expression inlining without equality.
+// Round 424: aligned input load 31; intrinsic output stores 39; existing
+// vector members for all products/absolute 31, absolute alone 31, products
+// alone 31; tolerance scope 31; axis-vector names 31; separate scalar and
+// broadcast vectors 31. NOT kept: no gain; input and SIMD schedule differs.
 // @retail 0x2fe350
 void __cdecl function_2fe350(void const *query, const __m128 *half_extents, float tolerance, void *out)
 {

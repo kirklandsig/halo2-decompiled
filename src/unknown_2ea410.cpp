@@ -66,6 +66,10 @@ public:
 // record declaration before timing 79; direct input observations 79; immutable
 // container pointer 79; per-iteration child record 88; key before shape call 78.
 // NOT kept: key-before-call gains one, below threshold; other forms tie or regress.
+// P428: parent-field placement 79; end after child stores 79; end after
+// timing 78; mutable cursor 79; entry reference 79; vector scratch 79;
+// input reference 79; direct countdown 81. NOT kept: the one-point drop
+// shortens the body further; the other forms tie or regress.
 // @retail 0x2ea410
 void class_2ea410::function_2ea410(void const *a, void const *b, void const *input, void *collector)
 {
@@ -99,6 +103,10 @@ void class_2ea410::function_2ea410(void const *a, void const *b, void const *inp
 // parameter fields 25. NOT kept: these forms tie or regress.
 // Shared begin/end methods 25; NOT kept: no gain.
 // Serial search: 76 variants in 120 s, none below 25.
+// Round 424: parent reference 25; container reference 25; entry reference 25;
+// early parent view 25; scratch inside traversal 25; indexed end address 25;
+// scratch/child name order 25; early child declaration 25. NOT kept: no gain;
+// cursor/end staging and call carriers still differ.
 // @retail 0x2ea530
 void class_2ea530::function_2ea530(void const *a, void const *b, void const *input, void *collector, void *second_collector)
 {

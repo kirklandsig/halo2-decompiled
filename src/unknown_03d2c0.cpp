@@ -130,7 +130,14 @@ s_lighting_record *function_3db00(long object_index, real priority)
     function_d4080(*(short *)definition, &query, special, &g_55ee60);
     return &g_55ee60;
 }
-// score 77 (was 77): retail keeps the result in esi and tests it before the
+// score 77 (was 77): round 116 (m3 lane 9, fast with 0x3db00 and 0x3dd10): lane 14 r84's `long result = NONE;` and
+// `if (result == NONE) { allocation; walk; }` skeleton with round 99's `if (result != NONE) initialize = true;` after the
+// walk (no walk return) 99 (491 B: the walk's NONE exit jumps to the end as retail, but the allocation and walk paths are
+// threaded over the merge test retail keeps); re-measured the 9 form (9, 519 B). Every spelling that keeps the merge test
+// sends the found path through it; every spelling that threads the found path threads or folds the other paths too.
+// MiniMax H (11-12): no new form, no lower score (77); this round tried the cached and the allocated index in one variable (151), the allocation test inverted (151), the flag starting true and cleared on the hit (130), the initialization nested in the allocation arm (176), the hit returning early (186), one guard for the two tests (132) and the early return moved to the tail (152), and the permuter over the function managed 129 tries in 900.4 s without a confirming build (best 71, baseline 71), so the merge's register choice stands.
+// Earlier at 77 (was 77): retail keeps the result in esi and tests it before the
+// retail keeps the result in esi and tests it before the
 // reload, ours copies it into eax at the merge point and puts the cold "no
 // result" return block ahead of the initialization instead of after it
 // (retail returns it with mov eax, esi; ours folds it to the constant).

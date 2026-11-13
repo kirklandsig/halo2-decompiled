@@ -79,11 +79,11 @@ struct s_24e9c7_points
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// score 125 (was 125): round 112 (m3 lane 12) note at the end. The frame size, the bounds stores and the marker copy agree; what is
 // MiniMax B (11-12): no new form, no lower score (125, was 125): retail computes the two across products early and
 // spills the second one to [ebp-8], which it then reuses for the side vector's y, so its result home is [ebp-0x10];
 // this build sinks the products into the side computation, so they never get a stack home and the frame slots stay
 // eight bytes above retail's.
-// score 125 (was 125): round 112 (m3 lane 12) note at the end. The frame size, the bounds stores and the marker copy agree; what is
 // MiniMax G (11-11): no new form, no lower score (125): the result, kind and bitmap homes stay eight bytes above
 // retail's, the 1.0 constant stays in xmm4 where retail uses xmm5, and the sprite bounds are copied through esi where
 // retail loads the sprite pointer into eax. This round: the corner offsets written as `-side.x` and `-side.y` in place
@@ -451,6 +451,10 @@ struct s_24e9c7_points
 // 0x24e59f then 294, so it is out).
 // Also: the alpha's hidden arm first (`else if (placement->hidden) alpha = 0.0f; else ...`) 125 (same code); back as a copy of side
 // negated in place 175 (767 B); each corner's x sums before its y sums 137 (749 B).
+// M3 lane 5 r177 (fast, 0x24e59f and 0x22a664 matched each time): the up products as `-result * forward_i` and
+// `-result * forward_j` 139 (738 B); across i as `-(size * forward_j)` 125 (same code); the bitmap index read inside
+// the bitmap/shader test (the test reading the field) 125 (same code); corner 3 before corner 2 125 (masked 60 for 61:
+// stores only); the kind pointer `const` 125 (same code).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

@@ -67,6 +67,11 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// MiniMax A (11-13): no new form, no lower score (319): the output pointer declared before the state
+// pointer and declared after the first store (that store written through the move pointer) both compile to
+// the same bytes; retail still keeps the output pointer in EBX and the input pointer in EDI where ours
+// keeps them the other way round, and that swap is settled by the case-3 callee's own convention:
+// BLOCKED-BY 0x1ec690 (src/stubs/bipeds.cpp).
 // MiniMax G (11-12): no new form, no lower score (319): the velocity pointer as a pointer local gives the same code (the null test still folds), and the move/input register swap stays BLOCKED-BY 0x1ec690.
 // MiniMax H (11-10): no new form, no lower score (319): the move and input pointers still trade EBX and
 // EDI, and the case-3 callee's stub convention settles that swap: BLOCKED-BY 0x1ec690

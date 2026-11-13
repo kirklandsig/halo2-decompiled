@@ -375,7 +375,7 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
-// score 286 (was 286): frame 0xe8 versus retail 0xe4 (long link count), the node acquisition and the link/special flag
+// score 286 (was 286; round 95 m3 lane 11 at the end): frame 0xe8 versus retail 0xe4 (long link count), the node acquisition and the link/special flag
 // homes remain; retail spills both flags to one byte slot (+0xf), so its source sets them by tests (match-only here).
 // M3 lane 8 r159 (fast with 0x270930, which stays matched): lane 11 r71's flag form rebuilt on the current file 2 again
 // (1388 bytes, masked 0, re-measured; only `mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]` swapped at the scan's back
@@ -783,6 +783,22 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // test 366 (1374 bytes); count declared at the top with the other locals 349; the link copy moved out of the capacity
 // block (usable declared before it) 2 (same code); one pathfinding-data local for the link and surface tests 353 (re-measure of round 62's node-loop data local,
 // same number).
+// M3 lane 11 r95 (fast with the file's functions, 0x210a30 and 0x2104b0; base 286): both builds end in `ret 0x24` with one
+// register argument. The delta block written out here is 0x210a30's body (with 0x210850 inside); calling 0x210a30 stays
+// out of line while its file is /Ob1 (round 33's 524), so BLOCKED-BY 0x210a30's file flags for the clean form.
+// Round 71's flag form rebuilt on the current names (usable/special set by tests, short link count, MIN clamp, nested
+// conversions, per-arm distance; diff saved as build/r95/lead-0x270d90-score2.patch in m3-lane11's worktree): 2 again,
+// only `mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]` swapped in the scan loop's back-edge reload block (retail
+// reloads j first, then steps, after ebp held the step's point). New on the 2: the previous point as an if/else 2;
+// the traversal as `if (node_index != NONE) do {...} while (node_index != NONE);` 2 (same code each); the projected point
+// through the existing vector3f_add_scaled 2 (same code). Re-measured on the 2 (listed above): special nested 2, usable
+// nested 2, the edge test inverted with `continue` 2, the depth test inverted 132. On main, kept: the projected point
+// through the existing vector3f_add_scaled in place of its three rows written out, 286 (fast and plain; the edge and
+// offset vectors trade slots, the rows' registers rotate, the count holds; 0x270930 and the file's matches kept).
+// MiniMax A (11-13): no new form, no lower score (286): our frame is 0xe8 against retail's 0xe4; the extra dword is the `previous`
+// pointer, set to NULL here and left alone there (dropping that initializer gives retail's 0xe4 frame and the first six instructions
+// agree, but the body grows by two bytes and the score rises to 357, so it is not kept); both sides pass nine stack arguments in the
+// same slots; the node depth is read at one address here (node*0x44 + 0xee) and through a lea there.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -885,9 +901,7 @@ PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 						projection = margin;
 					else if (projection > length - margin)
 						projection = length - margin;
-					point->point.x = a->x + edge_vector.i * projection;
-					point->point.y = a->y + edge_vector.j * projection;
-					point->point.z = a->z + edge_vector.k * projection;
+					vector3f_add_scaled((vector3f const *)a, &edge_vector, projection, (vector3f *)&point->point);
 				}
 			}
 			vector3f delta;

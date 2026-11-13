@@ -487,6 +487,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 	}
 	return false;
 }
+// MiniMax H (11-13): no new form, no lower score (172): retail still saves ebx first and keeps the BSP global in ebx while this build keeps it in ebp and defers the ebp and esi saves, so the prologue's order and the frame's slot heights differ; the promoted 0x11e800 clone still hands its four pointers over in another register order (retail ecx, edx, eax, esi), and that callee lives in another file.
 // MiniMax I (11-11): no new form, no lower score (172): retail pushes ebx first and keeps the BSP pointer in ebx, we keep it in ebp and defer the ebp and esi pushes, and our frame's store slots sit one word lower than retail's; the callee's four argument registers (0x11e800) are outside this file.
 
 // MiniMax H (11-12): no new form, no lower score (172): our prologue still keeps the BSP global in ebp and defers the ebp and esi pushes where retail pushes ebx first, and our zero constant still takes ebx where retail gives it to edi.
@@ -687,6 +688,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // this build keeps it in ebp and defers the ebp and esi pushes, so the prologue order differs although the frame's
 // slots agree, and 0x11e800's argument registers are decided by that callee's body in another file; the permuter
 // (300 s, annealed) was stopped by the run's time limit without a result.
+// MiniMax B (11-13): no new form, no lower score (172): retail pushes ebx first and keeps the BSP global in ebx with the section in a stack home, ours keeps the BSP in ebp and the section in a register; the promoted clone of 0x11e800 takes its four pointers in another register order (retail ecx, edx, eax, esi), that callee being in another file.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
@@ -937,6 +939,11 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // Round 109 (m3 lane 16): listing re-read, still only 0x11e800's four argument registers; the held r162 reorder re-measured on the
 // current base (fast, restored at once): MATCH here, 0x11e800 129 -> 126, 0x14ac60 172 -> 172. Still HELD, BLOCKED-BY 0x11e800.
 // Round 173 (m3 lane 6): listing re-read (fast 4), still only 0x11e800's four argument registers; BLOCKED-BY 0x11e800.
+// Round 88 (m3 lane 13): baseline listing still differs only in 0x11e800's four argument registers (ours point/third/second/first
+// in ecx/edx/esi/eax, retail third/second/first/point in ecx/edx/eax/esi). HELD (needs the owner's OK): the r162 reorder, 0x11e800
+// declared (p, a, b, c, u, v) at its definition, this file's declaration and both calls, re-measured on the current base (fast,
+// restored at once): MATCH here, 0x11e800 129 -> 126, 0x14ac60 172 -> 172; the diff is in build/r88/held-14a8e0.patch.
+// BLOCKED-BY 0x11e800 (contributor).
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)
