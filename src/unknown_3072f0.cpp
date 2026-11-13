@@ -151,6 +151,10 @@ public:
 // output/array/contact references 97; direct append argument in that arm 97;
 // const member 97; index renamed 97; iterator renamed 97; global
 // optimization disabled 781; size preference 220. Opening body retained.
+// Stored array reference 97; current entry from index 193; direct indexed
+// entry uses 193; cursor in for scope 96; ordinal declared first 96; while
+// loop 97; one int for kind 182; retained entry-array base 97. NOT kept:
+// the 96 forms gain only one. Opening executable source restored.
 // @retail 0x3072f0
 void box_pair_3072f0::function_3072f0(class_308180 *manifold)
 {

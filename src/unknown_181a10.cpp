@@ -462,7 +462,7 @@ struct s_slot_entry_list;
 extern s_slot_entry_list *g_4e0340;
 struct s_lookup_source;
 struct s_bsp3d;
-plane3f *bsp3d_get_plane(s_bsp3d const *bsp, short plane_index, plane3f *plane);
+plane3f *bsp3d_get_plane(s_bsp3d const *bsp, long plane_index, plane3f *plane);
 short *function_1ee410(s_lookup_source const *source, short *result);
 void function_182b90(c_material_shape *shape, hkEntity const *entity, real *friction, real *restitution, short *material);
 long havok_entity_property_2002_get(hkEntity const *entity);
@@ -532,10 +532,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
-// MiniMax H (11-11): no new form, no lower score (239); the frame is still 0x40 against retail's 0x44, retail still re-reads
-// the shape's data word three times in the clamp and ours copies it once, and the plane index still goes out as a short.
 // score 239 (was 239): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // the plane); classifier clamp form, origin and hit copies, transformed-plane and output homes remain.
+// MiniMax H (11-11): no new form, no lower score (239); the frame is still 0x40 against retail's 0x44, retail still re-reads
+// the shape's data word three times in the clamp and ours copies it once, and the plane index still goes out as a short.
 // MiniMax I (11-06): the node-type guard as a named local, as a field reference, against a
 // constant held in a local, with an unsigned field and as an if/else all keep the folded memory
 // compare; no lower score.
@@ -840,6 +840,12 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // 0x44 (retail's two untouched dwords below the plane), the origin and hit copies keep their own homes, and the plane arm hands 0x14a300
 // the plane index in the width our 0x14a300 takes where retail sign-extends it at every caller; that width is set in another file.
 // MiniMax A (11-11): no new form, no lower score (239); our frame is still 0x40 against retail 0x44 (the two untouched dwords below the plane), the origin and hit copies keep their own homes, and the plane arm still hands 0x14a300 the plane index in the width our 0x14a300 takes while retail sign-extends it at every caller; that width is set in another file, so the arm cannot be finished from here.
+// m3 lane 4 r191 (plain for the first two, fast with 0x1829b0/0x1821d0/0x182800 after; aligned/masked 177/97): a long
+// plane index for bsp3d_get_plane (definition and all five declarations) 238 (174/94), with 0x245850 1 -> 103, 0x10cf80
+// 202 -> 200, 0x1fa3a0 80 -> 79 (restored; two of those files hold contributor code); `inline` on 0x1cf280's definition
+// (its file is /Ob1) with the top scan as a call to it 368 (1210 B; still called, and 0x1829b0 MATCH -> 34); both plane
+// side tests' arms swapped (`!(d > 0.0f)` clears valid) 315, the record arm's alone 248; `contact->normal.k > scale &&
+// valid` 284 (1243 B); the final block as an early return 239 (2 lines differ).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

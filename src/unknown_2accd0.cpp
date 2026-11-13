@@ -1032,6 +1032,7 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // M3 lane 4 r190 (fast with 0x2adb10 and 0x2ada70, both matched throughout): the byte count declared in each case 161
 // (689 bytes); both positions `dword const` 34; the clamp as `if (body_size - body_offset < size) size = ...;` 35; the
 // signature position written at both uses (no local) 221 (694 bytes), both cases' positions so 221 (695 bytes).
+// MiniMax A (11-12): no new form, no lower score (34); the difference is still the register rotation (the total in EAX against retail's EDX, the hoisted body_size in ESI against ECX) and the join copy at retail's 0x2ad911 that ours lacks because it coalesces the remaining count into ESI.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
