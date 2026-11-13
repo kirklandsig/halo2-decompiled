@@ -123,6 +123,10 @@ ELEMENTS_2D91D0(keys_300290, long);
 // bounds loop 482; byte OR 515; shared bound tuple 466; positive branch 469;
 // case-local bounds 466; range cursor 467; command cursor 466; both 467;
 // both byte bounds loaded first 492.
+// Shared value block with inner switch 476, ascending width tests 587,
+// descending width tests 515; trailing update 503; on trailing update:
+// two-word decode 503, next-slot key 508, value cases first 556, saved-value
+// rename 503. All restored.
 // @retail 0x2ff8b0
 void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char const *node)
 {
@@ -922,6 +926,10 @@ found:
 // command pointer renamed 65; direct command argument 65; const helper input
 // 65; helper result renamed 65; coordinate stores together 65.
 // NOT kept: none improves the original body.
+// Indexed coordinate loop 87; scale captured once 66; vector copied once 84;
+// ordinary conversion inline 84; long conversion result 65; chained clearing 65;
+// aggregate zero initialization 80; mutable node pointer 65.
+// NOT kept: all eight forms tie or regress; original executable text restored.
 // @retail 0x3008d0
 void class_3008d0::function_3008d0(void const *tree_, const __m128 *sphere, s_surface_key_array *keys_)
 {

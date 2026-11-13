@@ -242,6 +242,10 @@ grouping_3720a0::~grouping_3720a0()
 // Byte result on owner tests 396; deletion guard 396; body while 396;
 // link reference 396; direct join reads 417; action cursor 461;
 // earlier transfer-buffer declaration 396; reference indexers 396.
+// Pair-list rename 396; action-buffer rename 396; grouping rename 396;
+// direct body array 461; join next-slot 397; direct owner tests 458;
+// group while 396. NOT kept: island next-slot 387 puts the size update
+// before the element store; retail updates it afterwards.
 // @retail 0x30e720
 void c_311100::function_30e720()
 {
