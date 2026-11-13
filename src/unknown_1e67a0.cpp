@@ -1054,6 +1054,31 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // versine 128, the dot written out inside the projection 112 (0x1ecf50 MATCH, 0xd0080 44, 0xe3910 144), that grouped
 // (j + k) + i 126, crosses first 187, rows into locals 177; rows `v * cos - c * s + p * a` 169, grouped so 171. The four
 // rotation products (dot j/k, cross_i) never move.
+// Round 178 (m3 lane 5, fast with 0x24590/0x1cd6c0/0x1ecf50; al = aligned differing lines, control 114, al 89; about 80
+// forms). The local-count scan that matched 0x1e6360 (n unused locals, n = 0..7, diagnostic): this body 114, 140, 150, 150,
+// 139, 163, 166, 144; lane 1's single-store lead (the goal copied into the rotated local, one store at the end) 114 (al 68),
+// 123, 133, 133, 122, 164, 167, 144; the lead with moved_away preset false and set in its test 77 (1387 bytes, al 65), 166,
+// 163, 163, 165, 170, 170, 145; that with the side dots multiplied new first 75 (al 48), 164, 164, 164, 162, 164, 164, 146.
+// Zero is the best count on every structure, a placeholder scores the same wherever it is declared (function top, before
+// the forward copy, after the rotation, inside the turn block or the alignment block: 164 / 166), and one more local turns
+// the whole rotation, so the count is a global state and not a per-site lever here. Per-site forms on the lead with the
+// flag and the new-first product (75): the new side dot as (new_cross, up) 69 (1387 bytes, al 38, the closest body: both
+// exits, the flag, the old cross's registers and all but one side-dot product are retail's), the old side dot as
+// (old_cross, up) 108 (1391, al 49), both 108, the moved-away dot as (rotated, goal) 75 (same code), with sinf/cosf 87
+// (1383). On the 69 form: the cross helper's pointer parameters declared second operand first, at the new cross 69 (same
+// code), at the old cross or both 108 (it moves the side dots, not the cross); no scale local 166 (1393); a named axis
+// pointer 103 (1383, al 55); a named pointer to the state's forward vector 161 (1382); the moved-away dot named inside the
+// 0.99 test 195 (1382), with no scale local to keep the count 188 (1385, al 47); no component local 404 (1421: the flag
+// tests change, it is not a count step). Without the flag form (match-only): the lead with the new-first product 106 (al
+// 51), plus (new_cross, up) 107 (al 41), (new_cross, up) alone 111; the new-first product and (new_cross, up) on this body
+// 107 (al 62). None kept: the gains come from the flag form or from operand orders picked by score, and retail's
+// `mulss xmm1, xmm0` multiplies old by new. Left on the 69 form: the rotation's dot j/k and cross_i products (retail
+// copies the vector's component and multiplies by the axis from memory), the old cross's two forward.i products (retail
+// loads forward.i), the new cross's rotated.k * goal.j, the moved-away dot's term order (retail j, i, k) and the old side
+// dot's up.i * old.i. In retail the rotation's operands order as vector j, k, then axis k, j, then vector i, axis i (ours:
+// axis k, j, then the vector, then axis i); rotate_direction with its cross rows ahead of the dot gives 154 here at retail's
+// length with the first difference at +0x221, but loses matched 0x1ecf50 (160) and raises 0xe3910 and 0x1ff360, so the
+// helper stays.
 // P440: Plain coordinate-copy loops at goal/turned/initial boundaries, seven subsets then word ordinals: 161/207/215/172/206/206/205/155.
 // NOT kept: Native rotation j/k products, side dots and eager output loads remain. Original complete body restored.
 // @retail 0x1e5bb0

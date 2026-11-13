@@ -1302,6 +1302,7 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax A (11-13): no new form, no lower score (94): the identity flag still takes BL here while retail keeps it in AL, and retail sets the size to two only after the flag's compare where this build sets it before; no untried form in the list moves the flag out of BL.
 // score 94 (was 94): the flag stays in bl (retail al), so the loop temporaries take eax/al where retail uses
 // ebx/cl; retail loads the count into ebp before the multiplier and adds 2 before the total (ours folds the load
 // into imul and uses one lea). Frame, prologue, unrolling and cursor agree (347 bytes).
@@ -1580,6 +1581,7 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// MiniMax A (11-13): no new form, no lower score (60): the membership helper's mask and shift operands swapped compile to the same code (all four network-voice scores unchanged), and the register split stands (the player bit in EBX and the entry size in EBP where retail has EBP and EBX).
 // score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
 // MiniMax H (11-11): no new form, no lower score (60); the membership helper's mask test written with the shift first gives the same code, so the mask load still reaches EAX before the shift where retail keeps the zero result in EAX and loads the mask into ECX after it.
@@ -1836,6 +1838,21 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // (472). Re-measured on this base (listed on older bases 178/142): the flag byte stored in each include_mask arm 176
 // (472 bytes; the loop core becomes retail test/store/branch and the entry size takes EBX as in retail, but the
 // player bit goes to memory), with `*cursor++ =` or `cursor[0] =` 176.
+// Round 178 (m3 lane 5, fast with 0x56380/0x564c0/0x53b00, control 60): the kept-first order with the ternary size (137,
+// 0x56380 13) is the one family whose code keeps the zero result in EAX up to the capacity-fail edge with one epilogue, as
+// retail does, but it reuses that zero for the clamp and `written = 0`, passes the player on the stack and gives the cursor
+// EDI and the size EDX; retail's allocation (cursor EDX, the size and the kept temporary both EBX, the bit EBP, capacity
+// decremented in place) needs the cursor to keep EDX there. New forms: the result left unset on the active path with
+// `else result = 0;` for the inactive queue 175 (472 bytes, 0x56380 73, the result on the stack); the success length stored
+// through the result's address 60 (same code); on the kept-first ternary form the length in a local assigned to the result
+// after the mask loop 137 (same code as that form); kept in two steps (`kept = 1 << count; kept--;`) 60 (same code), on the
+// kept-first ternary form 137; `capacity -= 2` as the first statement of the active block 172 (472 bytes, 0x56380 2), with
+// kept first and the ternary 152 (456); written declared at function scope with kept first and the ternary 145; kept
+// declared at function scope and assigned in place, kept first with the ternary, 137. Diagnostic only (the result started
+// from a global read; the 24 statement orders x the two size spellings, 48 forms): no zero reuse and one epilogue in the
+// kept-first orders, but the player still goes on the stack (best 126, 0x56380 13); with the size first 54-167 and the
+// caller matched (54 for size/written/kept/capacity with `11 + 2 * include_mask`, which re-reads the global at the
+// capacity-fail exit). An opaque zero alone does not give retail's allocation.
 // P442: Actual active-byte seeded result, long/int/dword/unsigned-int, direct admission
 // then shared active truth: 181/181/181/181/181/181/181/181. NOT kept: no exact result/home repair;
 // frame 0x10/0x14, ret 0x10/0xc and caller 0x56380 at 13 reject all forms. Original body restored.
@@ -3651,6 +3668,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 }
 
 // MiniMax B (11-13): no new form, no lower score (139): the channel in a local (139), the cursor advanced on its own (180) and both together (180) leave the difference - retail keeps the channel in ebp from the entry and the data pointer in edi, ours keeps the data pointer in ebp.
+// MiniMax A (11-13): no new form, no lower score (139): a hoisted packet cursor (`byte *packet = data + 2`, advanced by
+// the packet size) scores 164 and a local copy of the channel compiles to the same bytes as the baseline, so retail's
+// split (the channel in ebp from the entry, the member spilled to the stack) stays out of reach here.
 // score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
 // homes differ.
 // MiniMax D (11-11): no new form, no lower score (139).

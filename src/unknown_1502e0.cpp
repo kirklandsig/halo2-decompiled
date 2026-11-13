@@ -1669,6 +1669,20 @@ void function_150820(dword *bits, bool local_only)
 // P437: Fixed player/unit receivers and primary/player inputs, separate mode-consumer and
 // three-way admission scopes, and complete receiver/input binding graphs: 43 each. NOT kept:
 // no native player/hand or scratch-register recovery; original whole body and call tuples restored.
+// Round 178 (m3 lane 5, fast with 0x151b80/0x151940/0x151c10/0x14f820 and the callees; control 43, 0x151b80 17): the
+// same two pairs are exchanged in both functions (here player/hand in ESI/EDI and slot/unit index in ECX/EDX; in 0x151b80
+// slot/unit index in ESI/EDI), and our link-time inliner expands 0x151b80 into 0x14f820 where retail calls it, so retail's
+// source is heavier than ours in a way the final code does not show. New forms, each on both functions: an unused middle
+// candidate parameter as the family's other members have (the two declarations and two call lines in src/unknown_14b560.cpp
+// changed for the trial and put back) 43 / 17 (same code); the unit as a byte pointer with the offsets the matched callees
+// 0xa8f80/0xa9030 use 43 / 17 (same code); the held weapon through the existing 0xcbd50 with the slot read through a fresh
+// lookup and no unit or slot local, watching 0x14f820 for the expansion, 43 / 17 (same code, 0x14f820 unchanged at 701, 2740
+// bytes). Here only: every local declared at the function top and assigned in place, in six orders (player/result/hand/
+// unit/slot/weapon/modes, hand first, hand last, unit and slot first, result first, reversed) 43 each (same code).
+// Diagnostic, reverted: the unit index read through a dword lvalue at the three call arguments 43 / 17 (same code).
+// Flags diagnostic, reverted (the one compiler-setting trial): this file built with /Ob1 leaves both functions as they are
+// (43 / 17) and stops the 0x151b80 expansion in 0x14f820 (2636 bytes there against 2740, 775), so the exchange is not an
+// effect of that expansion.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

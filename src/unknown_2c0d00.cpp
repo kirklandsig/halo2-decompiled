@@ -463,6 +463,8 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // P450: Original-site first/second/third marker eligibility in bool/long 926 each; lazy motion eligibility 916/916
 // (fast control 926, full 920). NOT kept: one-consumer decisions lack byte equality; motion shortens
 // to 3702/3731 and misses native frame 0x2cac. Original complete body restored.
+// MiniMax B (11-13): no new form, no lower score (920): the frame is 0x2cb4 against retail's 0x2cac, and the actor,
+// unit, priority and query homes still differ; the byte homes do not follow the order of the source's object scan.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
