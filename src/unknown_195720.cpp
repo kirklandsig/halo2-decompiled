@@ -84,6 +84,11 @@ bool function_1946f0(s_bitstream *stream)
 // index from a force-inlined bit-to-byte helper at each of its four uses 2; `if (!discard) return;` then the flat body
 // 2; a named bit-position local for the compare and the subtraction 4; the masked byte as `mask & byte` 2. A 600 s
 // permuter run on the body (76 tries) found none below 2.
+// Round 76 (m3 lane 2, fast): the clear from `saved / 8` with the count from the index 2; a second named index in the mask block
+// 2; the mask indexed by a copy of saved 2; the mask index as `(long)(saved / 8)` 2; the mask as `(byte)~(-1 << (saved % 8))` 4.
+// Compile-only screen (exact here): every spelling whose index value numbers to the named index (`saved / 8` at each use, in an
+// inline, through a copy, with `+ 0`, through a second local, in the join block) keeps both LEAs data-first; only an index that
+// stays a separate computation (`saved >> 3`, `(saved & ~7) / 8`, a reread checkpoint) ranks first, and it is then recomputed.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

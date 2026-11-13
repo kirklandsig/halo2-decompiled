@@ -92,6 +92,10 @@ struct s_245850
 // Round 354: Native signed 16-bit plane field, whole point and normal-only input subsets 1..7
 // 1/162/162/162/162/188/188/188; final complete inputs with separate normal scalars included last. Original
 // field, shared scalars and every transform/call restored; short lookup contract remains.
+// Round 416: Descriptor reference 1; descriptor observed after extraction on the short-index graph 14;
+// immutable count 1; point input reference 1; unit-scale-first arm 1; separate point/normal scalar
+// lifetimes 8; output element reference 1; returned-output transform only 86 (582 bytes). All restored;
+// the sole lookup index-extension difference remains.
 // @retail 0x245850
 void function_245850(long arg_0, s_source_245400 const *arg_1,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

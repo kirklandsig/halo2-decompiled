@@ -318,6 +318,9 @@ static inline bool kind_moves_311e40(int kind)
 // gets a part of its own over the moving one, and leaving kind 6 or 7 goes
 // back to the part underneath (when there is one); the world is told when
 // the body stops or starts being of kind 7
+// Delete member and predicate forced inline 103/103; flat transition chain 103;
+// non-moving arm first 214; independent before/after world guards 103/103;
+// conditional predicate 113; earlier flag declarations 103. NOT kept: no gain.
 // @retail 0x311e40
 void class_3115a0::function_311e40(int kind)
 {

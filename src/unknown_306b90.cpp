@@ -60,9 +60,12 @@ public:
 // centre in xmm2 where ours uses xmm1, and its sign `and` writes the sum's
 // register where ours writes the mask's (written sum first, our mask load
 // moves to the top of the block).
-// score 9 (was 9): zero/centre coloring and sign destination still differ.
+// Zero/centre coloring and sign destination still differ.
 // Native row loop 9; selected normal value 77; both 77; side result 31;
 // row/side 31; normal/side 95; all three 95; intrinsic row with both 79.
+// Scalar row array 36; scalar offset array 51; both 54; intrinsic row alone 95;
+// intrinsic offset 82; aligned comparison read 9; aligned normal writes 9;
+// aligned normal reads and writes 9. NOT kept: ties or larger differences.
 // @retail 0x306b90
 void box_306b90::function_306b90(face_306b90 *face, int axis) const
 {
@@ -96,12 +99,16 @@ void box_306b90::function_306b90(face_306b90 *face, int axis) const
 // Earlier: as 0x306b90, the zero splat's shuffle and the first
 // centre take xmm3 in retail (xmm2 here), and the sign `and` writes the sum's
 // register there, the mask's here.
-// score 13 (was 13): centre/zero coloring and nudge/sign destinations remain.
+// Centre/zero coloring and nudge/sign destinations remain.
 // Early comparison 34; native normal 82; both 94; side result 22;
 // comparison/side 36; normal/side 96; all 102; comparison first 102.
 // zero intrinsic 86; zero-left comparison 16; disjoint mask join 14; named mask terms 13;
 // named terms and disjoint join 14; aligned axis load 81; aligned normal store 13;
 // both vector memory boundaries 81.
+// Scalar offset array 60; aligned comparison read 13; aligned branch reads 13;
+// scalar axis array 134; axis reference 29; bit-difference selection 63;
+// aligned inverse inputs 13; aligned second-frame write 13.
+// NOT kept: ties or larger differences.
 // @retail 0x306d00
 void box_306b90::function_306d00(face_306b90 *face, int axis) const
 {
