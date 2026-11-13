@@ -2,6 +2,36 @@
 
 The newest entry comes first.
 
+## 2026-11-13: 10609 functions match
+
+```
+matched 10609 of 11326 game functions (2028392 of 2786206 bytes, 72.80%)
+matched 1345 of 1436 Havok functions (198690 of 290362 bytes, 68.43%)
+```
+
+1 new matches, none lost:
+- @BrassMonkey71's #1157: `0x1c8700` match.
+
+## 2026-11-13: 10608 functions match
+
+```
+matched 10608 of 11326 game functions (2027958 of 2786206 bytes, 72.79%)
+matched 1345 of 1436 Havok functions (198690 of 290362 bytes, 68.43%)
+```
+
+5 new matches, none lost:
+- Machine 3's batch 271 (#1162): `0x9cca0`, `0xb6000`, `0x100b80`, `0x1e3b60` and `0x225ab0` match.
+
+## 2026-11-13: 10603 functions match
+
+```
+matched 10603 of 11326 game functions (2025062 of 2786206 bytes, 72.68%)
+matched 1345 of 1436 Havok functions (198690 of 290362 bytes, 68.43%)
+```
+
+1 new matches, none lost:
+- @ccgman123's #1160: `0x869a0` match.
+
 ## 2026-11-13: 10602 functions match
 
 ```

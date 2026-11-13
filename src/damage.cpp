@@ -1071,6 +1071,7 @@ PRIVATE inline long damage_object_root(long object_index)
 	return root;
 }
 
+// MiniMax A (11-13): no new form, no lower score (206): the damage-record copy is 136 bytes in both builds, but retail starts it 16 bytes later (its locals take four more dwords and the copy is eight-aligned), so the frame is still 0x1a4 against retail's 0x1b4; the count limit and the array size agree, and the first 0xbadc0 use is still expanded here where retail calls it. BLOCKED-BY 0xbadc0.
 // MiniMax A (11-12): no new form, no lower score (206): the frame is still 0x1a4 against retail 0x1b4 and the entry block still pushes before it reads the flags word and negates it, where retail reads the flags first; the first 0xbadc0 use is expanded in this build while retail calls it, and the out-of-line form that makes the body byte exact lives in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
@@ -1403,6 +1404,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // address off EBP; the cone dot flips), the same in both arms 41; the near block through the shared vector3f_add with a
 // negated vector copied back 332 (the inlined helper's loads move freely again); the negated names declared at the node
 // branch's top 38 and renamed 38 (same code).
+// MiniMax B (11-13): no new form, no lower score (38): the near block still computes its second and third negations
+// before it stores the destination's first row, where retail finishes each row before it starts the next, and the else
+// arm's i and k rows still add the direction to the destination where retail adds the destination to the direction.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -1783,6 +1787,7 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 /* damages an object with the globals' default damage (from +0x144), credited
    to an owner if one is given */
 // MiniMax B (11-13): no new form, no lower score (10): a copy through a local (10) and a cast destination (10) leave the same code; the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx.
+// MiniMax A (11-13): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after the damage record's address is built where retail stores them before.
 // MiniMax G (11-12): no new form, no lower score (10): nothing new this round; retail copies the owner through eax, ecx, edx
 // (this uses ecx, edx, eax) and stores the finished flags before `push edi` and the `lea` (this stores them
 // after the lea).
@@ -3319,6 +3324,7 @@ PRIVATE inline real damage_random_range(real lower, real upper)
    AI and the game engine; sets *friendly when the team scale applies */
 // MiniMax B (11-13): no new form, no lower score (5): the permuter with annealing (27 tries) found nothing below 5.
 // MiniMax B (11-12): no new form, no lower score (5): the two final return blocks keep this build's order - the stack reload before the register copy where retail puts the copy first; an inverted outer test with an early return (5), separate team and state returns (28), the not-enemy return hoisted (60) and a merged tail return (24) all fail to swap them.
+// MiniMax A (11-13): no new form, no lower score (5): the CFG is retail's (both arms of the team test reach the one no-team exit) and only the order of the two cold exits differs; an inverted outer test (with and without an else), an explicit else and a single shared return all leave the layout alone or move the reload earlier, and two separate early returns give 28.
 // MiniMax G (11-12): no new form, no lower score (5): the tail's two `return damage` blocks swapped inside the
 // team test give 16, the no-team case as an early return before the team test gives 5 and the friendly case as
 // an early return with one enemy tail gives 59; the two cold blocks keep retail's code but not retail's order.
@@ -5101,6 +5107,7 @@ dword function_db810(long object_index, long node_index)
 
 /* the model node of the object's lowest ranked physics node */
 // MiniMax B (11-13): no new form, no lower score (4): the tag index in a local (4), the definition bytes in a local (4), the definition bytes local first (7), both locals (4), the short tag index (45) and the typed object definition's model tag read (4) all leave the same four instructions, and the permuter with annealing (23 tries) found nothing below 4.
+// MiniMax A (11-13): no new form, no lower score (4): the tag index is still masked after `push ebp` where retail masks it before, and the tag entry still goes into edx where retail reuses eax; a local for the masked index and a local for the tag entry leave the same four instructions, the permuter (307 s, 29 tries) found nothing under the baseline, and caching the masked index or the tag data pointer in a local changes neither difference.
 // MiniMax G (11-12): no new form, no lower score (4): nothing new this round; the tag index is still masked after `push ebp`
 // where retail masks it before, and the tag entry still goes into edx where retail reuses eax.
 // MiniMax G (11-12): no new form, no lower score (4): the tag index is still masked after `push ebp` where retail

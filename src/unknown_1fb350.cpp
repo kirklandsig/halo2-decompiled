@@ -563,6 +563,10 @@ extern "C" void _ReadWriteBarrier(void);
 // data_datum_index form (100), the result declared inside the loop (99), the object index in a local (99), the
 // object pool in a local (99) and the unit lookup written out in the body (99) all measure the same or worse,
 // and computing the datum index after the unit lookup gives 166.
+// MiniMax G (11-13): no new form, no lower score (122): retail's 0x14 frame with the pool in two
+// stack homes and the datum index in EDI still needs the iterator step's body written out by hand,
+// which is banned; the pool read from the global, from a local and from the iterator's own field all
+// leave the frame at 0xc.
 // @retail 0x1fb510
 void function_1fb510(void)
 {
