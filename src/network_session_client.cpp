@@ -1141,6 +1141,18 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // code: one `long i` shared by both loops on the pointer (9), indexed (195) and `[count++]` (40) forms; the arm as
 // `if (!(mask & bit)) continue;` 9; a `dword (*)[3]` row pointer declared before the branch 9. Diagnostic: 1 to 8
 // unused locals on the indexed form 195 each (unlike 0xd9110, the symbol count does not move this colouring).
+// Round 94 (m3 lane 11, fast with 0x6fcc0, 0x6f940 and 0x6fa60): on the indexed form (`memcpy(identities[count], ...); count++;`,
+// 195): the NONE fill ahead of the identity clear 208; the copy as two typed field assignments (the id, then the flags) 201
+// (714 bytes); the loop in an inline helper taking the count's address 458 (464 bytes) or returning the count 464 (453 bytes),
+// neither inlined; the loop index declared at function scope ahead of the count 195; an aggregate assignment through a
+// three-dword view with a separate `count++` 195. Diagnostic: the final session test re-read through the state instead of
+// `current` 149 (715 bytes), the state still takes EBX at +0xd, so `current` is not what beats the count. Readings: in
+// the 195 forms the loop keeps its index in ESI and borrows EBX for the copy, leaving the count in memory (`inc [esp+0xc]`);
+// retail and the 9 and 40 forms keep the count in EBX and borrow the index's ESI inside each copy (index reloaded after
+// it). So the tie is count against the loop index, not count against the state. Retail's copy order (source address, load,
+// then the destination copy, `inc ebx` after the last store) is the two-statement order, not `[count++]` (which captures
+// the destination first and steps the count before the last store), and 0x6fa60's matched loop is the same two-statement
+// shape on a field count.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

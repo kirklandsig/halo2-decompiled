@@ -11,6 +11,8 @@ struct s_profile_file_location
 	byte unknown3c;
 	char language;
 	byte unknown3e[2];
+	/* four more bytes follow the record in every retail frame that holds one (here, 0x215c00, 0x215e60) */
+	byte unknown40[4];
 };
 
 struct s_cached_profile_files
@@ -133,6 +135,19 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // the read as the arm of a ternary on the path helper's
 // result; the location call given the whole record. Of the 10, 8 follow from the 2-byte `mov edx, esi` (the four
 // jumps to the failure block, the read's call and the padding shift by 2); the pop order is the other 2.
+// Round 98 (m3 lane 10, fast with 0x2161d0, 0x216d70, 0x122810, 0x2acd60, 0x216800, 0x121570, which all stay matched): `inline`
+// on 0x216d70's definition 10 and on 0x122810's 10 (same code); `result = helper && read` 20, the helper as the last term of
+// the condition 10, `helper ? read : false` 10, the whole arm as one `&&` chain 50 (none gives the `lea`); the location and
+// the path as plain separate locals (the location type 0x44 bytes) in place of the record that grouped them with a pad field
+// 10, the same code, kept; a 0x40 location with a 0x104 path 14. Diagnostics, reverted: a real join (a test of a global)
+// after the path helper gives retail's `lea edx, [esp + 0x50]`, a plain store there keeps `mov edx, esi`, so the reuse is a
+// block-local register tracker and retail has a block boundary after the append call that leaves no code; the `done` and
+// `succeeded` stores both volatile give retail's `pop edi; store; pop esi` exactly (8; `done` alone 10; a join after the
+// `done` store 68): retail's task type has those flags volatile, as main's stores of `succeeded` and `unknown1` in the
+// 0x2acd60 family (through casts) also show. HELD (needs a ruling on volatile in a shared type): with done, unknown1 and
+// succeeded declared volatile where the task type is declared, main's six volatile casts on them and 0x2acd60's one-use
+// pointer removed, every function of the nine files that use the type reads as before (fast and plain) and this one is 8:
+// build/r98/held-2162b0-task-flags.patch. Not applied here.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {
@@ -155,19 +170,15 @@ bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file
 	}
 	else
 	{
-		struct
+		s_profile_file_location location;
+		char path[0x100];
+		location.name[0] = 0;
+		location.display_name[0] = 0;
+		path[0] = 0;
+		if (function_216800(file_index, &location) && location.language != -1)
 		{
-			s_profile_file_location field_0;
-			byte field_40[4];
-			char field_44[0x100];
-		} local_0;
-		local_0.field_0.name[0] = 0;
-		local_0.field_0.display_name[0] = 0;
-		local_0.field_44[0] = 0;
-		if (function_216800(file_index, &local_0.field_0) && local_0.field_0.language != -1)
-		{
-			function_216d70(local_0.field_44, local_0.field_0.name, local_0.field_0.type);
-			result = saved_game_file_read_begin(buffer, size, false, task, local_0.field_44);
+			function_216d70(path, location.name, location.type);
+			result = saved_game_file_read_begin(buffer, size, false, task, path);
 		}
 	}
 	return result;

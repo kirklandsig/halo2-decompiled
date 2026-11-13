@@ -236,6 +236,9 @@ __forceinline answer_2fb150 repeats_plane_2fb150(contact_2fb150 const *other, co
 // 330; reused selection pointer 423; declaration swap 330; tolerance
 // reference 369; vector-input references 330; implicit vector copy 496.
 // Equality operands exchanged 330, with agent reads at use 427.
+// New: immutable body/shape pointers 330; later receiver alias 330;
+// input argument at use 330; entry cursor 470; final contact reference 364;
+// minimum-search cursor 405; int dispatch ordinals 330.
 // @retail 0x2fb150
 void class_2fb150::function_2fb150(void const *a_, void const *b_, void const *input_, void *collector)
 {
