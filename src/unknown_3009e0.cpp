@@ -255,6 +255,10 @@ __forceinline __m128 lerp_3009e0(__m128 from, __m128 to, float fraction)
 // Shared value block: inner switch 993, ascending widths 953, descending
 // widths 957; trailing update 892; void copy helper 892; leaf buffer at
 // entry 892; both sixteen-byte names 892; common exit 892. All restored.
+// Next-depth exponent 989; integer doubling loop 1081; float doubling loop
+// 1143; offset scaled through its member 892; assignment with a reference result
+// 892; low value-slot bits 965; segment assignment 892; zeroed corner first
+// 950. All restored.
 // @retail 0x3009e0
 void class_2df670::function_3009e0(pending_301800 *position, void const *root, fixed_ray_301800 *const segment)
 {

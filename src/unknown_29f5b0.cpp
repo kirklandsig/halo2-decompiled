@@ -987,6 +987,9 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // Round 76 (m3 lane 2, fast): the element from a forceinline (elements, index, element size) helper 6; const parameters 6; the
 // element as the table plus a named byte offset 6; a forceinline flag getter taking the index, position inline 6; a named pitch
 // cosine with the position inline 6. Diagnostic (not kept): `/G7` on the file's flags 6, the same schedule in the full LTCG build.
+// Round 192 (m3 lane 4, fast): the two angles as one `real facing[2]` member (the camera code's layout) 6, read through a
+// `real const *facing` 6, with `(real)cos`/`(real)sin` 6; a const flag pointer with the position named after the components
+// 6; a const scenario view local and the flag as `cutscene_flags + index` 6.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {

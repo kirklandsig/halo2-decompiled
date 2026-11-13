@@ -514,6 +514,13 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // improve only length with more differing instructions, and the last substitutes
 // negated-scale addition for retail positive-product subtraction without equality.
 // Frame remains 0x5d0 versus 0x58c; original captures, kernels and complete body restored.
+// T97: Existing magnitude/first-normalizer/second-normalizer real values transported by double returns,
+// seven subsets then all with explicit real consumers: 1411/1380/1432/1410/1381/1437/1461/1378.
+// NOT kept: all regress against reduced control 1367 (full 1391); original contracts, captures and body restored.
+// P444: first lever-arm array difference 1432f; contact lever-arm array difference 1410f; moving-surface array difference 1399f; residual-velocity array difference 1391f; direction-normalization result 1367f; tangent-normalization result 1367f; peak-update producer 1367f; release-due producer 1367f.
+// NOT kept: no byte match or supported native frame/result recovery; original complete body restored.
+// P446: Actual slip, force-transfer, movable-body, impact-record, append, collected-member, compatible-contact and created-impact producers;
+// 1388/1388/1388/1388/1388/1388/1414/1388. NOT kept: three-point nonmatch gains are below the eight-point bar; original complete body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

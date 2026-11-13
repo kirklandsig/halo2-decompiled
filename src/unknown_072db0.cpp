@@ -437,6 +437,13 @@ long network_session_get_maximum_players(c_class_58d20 *session);
 // P405 fast: inner readiness/type, peer readiness, final validity/index/pointer early rejections, direct success return, comparison rejection; scores 1, 2, 60, 68, 69, 69, 43, 68.
 // Inner readiness rejection is 34 at 138 bytes in the plain check (fast 1/134): final calls still reverse.
 // NOT kept: full score regresses; original body and all callee interfaces restored.
+// P432: source observation, peer/primary field reads, primary type admission, joined peer gate,
+// decision through admissions, validity result, pointer-first validity;
+// plain scores 42/71/33/49/71/118/41/33.
+// NOT kept: no permitted confirmed gain; original executable body restored.
+// P434: signed-byte/byte/short/word/long/dword result storage 50/50/56/56/54/54;
+// every failed admission producing the bool/full-width result 58/54. NOT kept: all regress;
+// original bool body restored. Unchanged reduced match is a context difference (full 33).
 // @retail 0x73360
 bool c_helper_b::v7()
 {
@@ -1276,6 +1283,16 @@ long function_1931a0(long count, s_surface_description *variant);
 // site takes the one inline copy and the top call stays out of line, as retail; not kept: it looks the variant up on every pass
 // and raises 0x7e210); the variant index by an explicit state test 8; the validity test split in two 8. Diagnostic (compiler
 // setting, not kept): 0x7e210's file without /arch:SSE 8 (0x7e210 836; the top call still inlines).
+// M3 lane 10 r100 (fast with 0x7e210, 0x63220, 0x192e60 and nine of its callers; control 6 here, 0x7e210 766 at retail's 2828
+// bytes with the top 0x192e60 inlined and the capacity helper called, retail the reverse; still BLOCKED-BY 0x7e210). In
+// 0x7e210: the player loop's written-out rating adjustment replaced by a call to the existing 0x63220 (retail's loop is that
+// body inlined) MATCH here, 0x7e210 1097 at 2524 bytes (the 0x63220 call stays out of line in the loop; not kept: a rise in
+// 0x7e210; diff saved as build/r100/lead-0x73530-loop-call.patch), the result through a named local the same; that with the
+// capacity helper forceinline 8 here, 0x7e210 1033 at 2592 bytes (the top call inlines again); the capacity helper forceinline
+// alone 8, 0x7e210 906 at 2872 bytes (both inlined). In 0x192e60 (does a heavier spelling keep the top call out of line?): the
+// validity test written out 6 here (0x192e60 20, 0x7e210 906 at 2764 bytes, the top call still inlined), through the
+// out-of-line 0x192db0 6 (0x192e60 and 0x7e210 unchanged), early returns or one ternary 6 (0x192e60 35 at 60 bytes, 0x63220
+// 112, 0x73ca0 140), an element pointer local 6 (0x192e60 20). The top call inlines in every spelling.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {

@@ -1193,6 +1193,19 @@ bool __stdcall function_2399da(long controller_index)
 // test, the requested rank copied into a local, a has-identity flag, the identity and the rank
 // declared at fourteen other positions, the identity test spelled five ways, the pointer held in
 // an integer) all compile to the same bytes.
+// MiniMax G (11-13): no new form, no lower score (90): the permuter's only lower form (85) swaps the
+// arguments of `dialog_choice_show` and `dialog_ok_show`, which contradicts their declarations in
+// include/unknown_19b510.h, so it was dropped; splitting the identity test into a flag scores the
+// same 90. An annealed permuter run (60 tries, 606 s) found nothing below the baseline, and the
+// forms the earlier rounds record still hold: retail reloads the identity into eax and keeps the
+// requested rank in ecx, we reload the identity into ecx and keep the rank in eax, so we copy the
+// identity into eax before the removal call (retail has no copy). The identity in a local of its
+// own (plain, const, or set from the getter), the null test and the id test nested, the own rank
+// read ahead of the identity test and the requested rank in a local all compile to the same bytes;
+// the identity as a const local set from the getter is 426 bytes and scores 116, and so do the
+// identity declared inside the block and set from the getter, the identity preset to zero before
+// the getter, and the identity read into a local before the null test; the id test before the null
+// test scores 95.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

@@ -486,6 +486,11 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // present (24): the mask test placed first hoists the mask load into ECX ahead of the jne as retail does, but swaps the
 // mask and old-playing stack slots (91-122), and a 32-bit OR of the mask with the present in the store still reloads the
 // mask from memory instead of sharing ECX with the compare.
+// MiniMax A (11-13): no new form, no lower score (32): the word old mask read through the pointer still gives retail's
+// head exactly (77) but the tail drifts, the mask read straight off the field rematerialises it and drops the frame to
+// 0xc (129), the same with an early engine-index read (129), and an early engine local only moves the index and the
+// engine load above the stores (32). Left: the mask's word load and word spill, its one reload into ECX ahead of the
+// first jne, the playing teams in EDX and the engine index read at the head of the change block.
 // score 32 (was 32): the word mask, its one reload ahead of the first jne, and present's update in EBX remain.
 // MiniMax D (11-11): 24 (was 32), NOT kept (coordinator 11-11: lane 14 r55's width cast on one side of the compare; retail compares dword; body stays at 32): the old team mask as a word local (retail's `mov cx` entry and its
 // word spill) with the present compare narrowed to a word (`(word)present_teams != old_team_mask`); the
@@ -2384,6 +2389,20 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // of the copy 8; a header pointer local in the helper 8; the out-of-range case as an early `continue` guard 8. Diagnostics
 // (the release written out here, not kept): with a function-top pool copy 28 (the copy takes EDI at entry and the lookup
 // stays base-first), with the copy inside the guard 8.
+// M3 lane 10 r100 (fast; 0x15b1e0, 0x15aad0, 0x15ace0 and 0x15b220 matched each time): the release's parameters as
+// (index, object_index) at its definition, declaration and both calls 8; the release masking its own parameter (`object_index
+// &= 0xffff;`, a probe) 8; the grouped object and iterator as a small iterator type with inline begin/next/get members 8; the
+// scenario in a named local declared inside the loop 8; the entries reached through a typed equipment local for the test,
+// the call and both stores 8; re-measured, the release's lookup through engine_object_get 9 (it swaps the two hoisted
+// globals' registers and leaves the lookup base-first). A compile-only copy of this file (exact for the lookup) screened 224
+// spellings (lookup as sum, subscript or getter x mask in the expression, on the parameter or in a named local x entry
+// pointer x receiver local x named old index x index through a char local x if/else or early continue): base-first in all.
+// Diagnostics there: the dead load that gives retail's lookup works only at odd counts (1, 3, 5 ... 15) and only between the
+// bounds test and the old-index test (0-8 loads at the function top, before the index read, after it or inside the guard
+// change nothing; 0-16 unused locals change nothing); a second live use of the header address or of the masked index keeps
+// the base first. The scratch registers follow a rotation EAX, ECX, EDX per new temporary on both sides (retail: old EAX,
+// scaled index EDX, base EAX, iterator index EDX, iterator address EAX); what differs is only that retail evaluates the
+// scaled index before the base and gives it a new register.
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {
@@ -4850,6 +4869,11 @@ bool function_158eb0()
 // after the iterator setup 9; `0 < rank / 2` 5; `return count != 1 ? result : false;` 47 (161 bytes); `return result &&
 // count != 1;` 63 (128 bytes). Re-measured: `++count` after the flag read 5; the flag through TEST_FIELD_BIT (the same
 // bool) 5; the iterator's index stored before its absolute index 7. Original body restored.
+// Round 113 (m3 lane 16, fast): a named player index with a long mode local `flag != 0` 37 (144 bytes, the mode straight to
+// EAX); the ternary on the global in the argument 38 (re-measured); the flag read before `++count` with the rank named 5; a
+// named player index with `flag ? 1 : 0` 5; the flag normalised at its read (`bool flag = g->flag1128 != 0`) and passed
+// directly 35. Diagnostics (removed): the iterator's data store written twice 5, the flag read twice 5 (copies removed before
+// allocation do not rotate the registers). Original body restored.
 // @retail 0x158f50
 bool function_158f50()
 {

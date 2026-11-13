@@ -397,6 +397,16 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // `data->entries + entry_index` 2, no count local (the count read at the test and the store) 2, all the same code;
 // re-measured: the offset read into a local at the top 2 (same code), the offset through `data->entries[...]` at the
 // sum 23. The permuter on this memcpy body (600 s, anneal): 68 tries, best 2 on both images.
+// Round 160 (m3 lane 8, fast): in retail both reads are plain temporaries of one sum evaluated while the scale sits in
+// EAX: the samples go to EDX (the destination) and the offset to EDI, free once the samples are read. The curve set
+// built as a temporary object in the call's argument list 8 (the plain sum's code: the sum is still evaluated ahead
+// of the scale); the plain sum with 1-3 unused locals 8 each (no count effect); the entry's data offset copied with
+// memcpy instead of the samples 3 (the samples become the EDX destination as in retail, but the offset is read first,
+// into ESI in place), with a samples local before or after it 3/3, with the count read again from the entry 3; the
+// address field assigned the samples and then advanced by the offset 8, by the memcpy'd offset 3 (also with the samples
+// copied straight into the field); the set as an aggregate initializer 10 (the count stored first frees EBX for the
+// second read; with a samples local or the index form 10/10); the field assigned, the count stored, then the field
+// advanced 11, with the memcpy'd offset 10.
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {

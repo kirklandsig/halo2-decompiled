@@ -7,6 +7,7 @@
 #include "data_array.h"
 #include "unknown_0259d0.h"
 #include "effects.h"
+#include "object_tag_definitions.h"
 #include "object_markers.h"
 #include "object_queries.h"
 #include "unknown_1dee50.h"
@@ -583,6 +584,9 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // Round 307: clear result reused 3; zero event aggregate copy 79; owner long/complete
 // payload memset 36/36; individual long/short sentinel memsets 3/3;
 // owner longs plus long sentinels 36; complete owner plus remaining sentinel memsets 35.
+// P422: Complete zero-clear partitions at flags/owner/handle/location/vector/scale/
+// material/tail boundaries 34/43/55/63/66/45/50/41, 111-133/104 bytes.
+// NOT kept: split bulk clearing adds stores or another clear and lengthens native code.
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {
@@ -971,6 +975,9 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 // result/count/guard or inside guard with original result: guarded index 5/5/5/5, unconditional
 // index 8/8/8/8 (47/47 bytes). Original body restored; NOT kept: result conversion and cursor
 // ownership do not recover both native zero scheduling and the owner/index register pair.
+// P422: Typed walking cursor with fused/separate/unequal/captured-result forms
+// 8/8/9/17; pointer-valued cursor with those forms 2/8/3/17 (all 47/47).
+// NOT kept: no equality; the latch order and register pair remain coupled.
 // @retail 0xd74b0
 bool function_d74b0(byte const *owner)
 {
@@ -1064,6 +1071,7 @@ PRIVATE inline long damage_object_root(long object_index)
 	return root;
 }
 
+// MiniMax A (11-13): no new form, no lower score (206): the damage-record copy is 136 bytes in both builds, but retail starts it 16 bytes later (its locals take four more dwords and the copy is eight-aligned), so the frame is still 0x1a4 against retail's 0x1b4; the count limit and the array size agree, and the first 0xbadc0 use is still expanded here where retail calls it. BLOCKED-BY 0xbadc0.
 // MiniMax A (11-12): no new form, no lower score (206): the frame is still 0x1a4 against retail 0x1b4 and the entry block still pushes before it reads the flags word and negates it, where retail reads the flags first; the first 0xbadc0 use is expanded in this build while retail calls it, and the out-of-line form that makes the body byte exact lives in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
@@ -1396,6 +1404,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // address off EBP; the cone dot flips), the same in both arms 41; the near block through the shared vector3f_add with a
 // negated vector copied back 332 (the inlined helper's loads move freely again); the negated names declared at the node
 // branch's top 38 and renamed 38 (same code).
+// MiniMax B (11-13): no new form, no lower score (38): the near block still computes its second and third negations
+// before it stores the destination's first row, where retail finishes each row before it starts the next, and the else
+// arm's i and k rows still add the direction to the destination where retail adds the destination to the direction.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -1775,6 +1786,8 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 
 /* damages an object with the globals' default damage (from +0x144), credited
    to an owner if one is given */
+// MiniMax B (11-13): no new form, no lower score (10): a copy through a local (10) and a cast destination (10) leave the same code; the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx.
+// MiniMax A (11-13): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after the damage record's address is built where retail stores them before.
 // MiniMax G (11-12): no new form, no lower score (10): nothing new this round; retail copies the owner through eax, ecx, edx
 // (this uses ecx, edx, eax) and stores the finished flags before `push edi` and the `lea` (this stores them
 // after the lea).
@@ -2584,6 +2597,10 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // M404: whole bounded-region admission in positive bool/byte/word/long and
 // complementary bool/byte/word/long forms: 3/3/3/3/3/3/3/3. Frame, extent and
 // region-load/address gaps unchanged; original nullable guard and complete body restored.
+// P422: Native model-region record receiver, const/mutable with combined/nested/
+// entry-first/named-admission guards: 228/228/167/228 twice (870/870).
+// NOT kept: typed entry ownership changes the incoming convention and saved roles.
+// P422: The required typed biped effect-tag field preserves 3/870 in the calibrated preview.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2678,7 +2695,7 @@ void function_d8cb0(long object_index, s_damage_effect_definition const *definit
 
 	if ((data->unknown04[0] & 1) && object->type == 0)
 	{
-		long effect_index = *(long *)(g_4e3b44[object->tag_index & 0xffff].bytes + 0x260);
+		long effect_index = ((s_biped_definition const *)g_4e3b44[object->tag_index & 0xffff].bytes)->biped.area_damage_effect.tag_index;
 
 		if (effect_index != NONE &&
 			(!TEST_FIELD_BIT(object->damage_flags.body_depleted) && damage > 10.0f || (accumulator->flags & 0x41)))
@@ -3305,6 +3322,9 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 /* the damage a damage event does to an object before armor: a random
    amount between the definition's bounds, scaled by the event, the owner's
    AI and the game engine; sets *friendly when the team scale applies */
+// MiniMax B (11-13): no new form, no lower score (5): the permuter with annealing (27 tries) found nothing below 5.
+// MiniMax B (11-12): no new form, no lower score (5): the two final return blocks keep this build's order - the stack reload before the register copy where retail puts the copy first; an inverted outer test with an early return (5), separate team and state returns (28), the not-enemy return hoisted (60) and a merged tail return (24) all fail to swap them.
+// MiniMax A (11-13): no new form, no lower score (5): the CFG is retail's (both arms of the team test reach the one no-team exit) and only the order of the two cold exits differs; an inverted outer test (with and without an else), an explicit else and a single shared return all leave the layout alone or move the reload earlier, and two separate early returns give 28.
 // MiniMax G (11-12): no new form, no lower score (5): the tail's two `return damage` blocks swapped inside the
 // team test give 16, the no-team case as an early return before the team test gives 5 and the friendly case as
 // an early return with one enemy tail gives 59; the two cold blocks keep retail's code but not retail's order.
@@ -5086,6 +5106,8 @@ dword function_db810(long object_index, long node_index)
 }
 
 /* the model node of the object's lowest ranked physics node */
+// MiniMax B (11-13): no new form, no lower score (4): the tag index in a local (4), the definition bytes in a local (4), the definition bytes local first (7), both locals (4), the short tag index (45) and the typed object definition's model tag read (4) all leave the same four instructions, and the permuter with annealing (23 tries) found nothing below 4.
+// MiniMax A (11-13): no new form, no lower score (4): the tag index is still masked after `push ebp` where retail masks it before, and the tag entry still goes into edx where retail reuses eax; a local for the masked index and a local for the tag entry leave the same four instructions, the permuter (307 s, 29 tries) found nothing under the baseline, and caching the masked index or the tag data pointer in a local changes neither difference.
 // MiniMax G (11-12): no new form, no lower score (4): nothing new this round; the tag index is still masked after `push ebp`
 // where retail masks it before, and the tag entry still goes into edx where retail reuses eax.
 // MiniMax G (11-12): no new form, no lower score (4): the tag index is still masked after `push ebp` where retail

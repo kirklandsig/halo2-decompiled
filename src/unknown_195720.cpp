@@ -89,6 +89,11 @@ bool function_1946f0(s_bitstream *stream)
 // Compile-only screen (exact here): every spelling whose index value numbers to the named index (`saved / 8` at each use, in an
 // inline, through a copy, with `+ 0`, through a second local, in the join block) keeps both LEAs data-first; only an index that
 // stays a separate computation (`saved >> 3`, `(saved & ~7) / 8`, a reread checkpoint) ranks first, and it is then recomputed.
+// Round 192 (m3 lane 4, fast): the mode and position tests as nested ifs 2; the mask as `(byte)~(0xff << (saved % 8))` 4;
+// `unknown30 += 1` with the clear under one `count >= 0 && count != 0` 3; the count as `size_in_bytes - 1 - byte_index` 2;
+// the pop as a decrement statement then the read 2. Compile-only screens (diagnostic): 0 to 40 unused locals at the top and
+// 1 to 8 dead inline-helper locals at the top, the mode block, before the bound test or before the count: both LEAs stay
+// data-first.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

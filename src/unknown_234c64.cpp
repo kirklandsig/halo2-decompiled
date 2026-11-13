@@ -354,6 +354,11 @@ void c_window_channel::v9()
 // arguments read into named locals ahead of the type clear 3; the request zeroed by memset before the builder 33 (82
 // bytes). No existing member of the request, parameters or channel type calls 0x149f49 on `this`, so round 100's
 // member-builder lead stays HELD.
+// Round 174 (m3 lane 6, fast, with 0x2358c3 and 0x2354aa, which stay matched): the new request built in raw
+// storage with placement new and its pointer used throughout 3; the load given the request through a base-type
+// reference cast 3; the builder given the request through its base type 3; the load given the address of the
+// new request's first member 3; the request copy-initialised from a default one 3 (all the same code).
+// BLOCKED-BY 0x149f49: every address of the local is one value, copied from ECX after a free-function builder.
 // @retail 0x23531c
 void c_window_channel::v10()
 {

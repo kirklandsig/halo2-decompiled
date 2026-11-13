@@ -743,6 +743,8 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // bool-typed success; `bool success` reproduces that tail but scores 478 (graph in EBP, &mode_count recomputed per
 // group instead of retail's EBX copy), so `byte` stays. Retail also splits the roles: main graph in EBP with
 // &mode_count in EBX for the first five groups, then graph in EBX and &mode_count in EBP in the inheritance loop.
+// P440: Success-owned fallback completion scopes, first-three subsets then all four nonterminal successes: 348/348/348/348/348/348/348/348.
+// NOT kept: Native graph/base reloads and final return-byte normalization remain. Original complete body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
