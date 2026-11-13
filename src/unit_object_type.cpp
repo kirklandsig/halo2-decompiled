@@ -4759,6 +4759,10 @@ void function_c50a0(long unit_index)
 // seat flags, conditional pass assignment, outer pass workspace and traversal role names all 166;
 // typed unit flag fields 166, plain 166. Entry pool/vehicle allocation still differs.
 // MiniMax B (11-13): no new form, no lower score (166): retail keeps the vehicle pointer in esi and the header table pointer in edx and pushes its registers after the index arithmetic, ours keeps the vehicle in ebp and pushes first; the body is four bytes longer than retail's.
+// T101: Complete extra-gunner/partner-driver/partner-gunner predicate updates,
+// sets 1..7: 247/195/262/177/241/196/268; compound Boolean accumulation 201.
+// NOT kept: all regress and miss equality; native pool/vehicle/child ownership
+// remains different. Original complete body, accessors and activity calls restored.
 // @retail 0xcc810
 void __stdcall function_cc810(long vehicle_index)
 {
@@ -4922,6 +4926,10 @@ void __stdcall function_cc810(long vehicle_index)
 // coefficient/root-result names, and complete single-completion outcomes each 162. NOT kept:
 // all tie; the discriminant stays on x87, frame 8 remains, and the first difference is +7.
 // MiniMax B (11-13): no new form, no lower score (162): the one-use discriminant is still evaluated on the x87 stack where retail keeps it in SSE, and the done flag is still a byte store here against retail's dword store.
+// T101: Existing shared square-root boundary at quadratic/positive/both 162/162/162;
+// uniform fabsf 178, uncast fabs 162; reversed completion admissions 191;
+// complete/default-false moving-away producers 162/186. NOT kept: no gain or match;
+// the x87 discriminant and excess frame remain; original complete body restored.
 // @retail 0xc7300
 void __stdcall function_c7300(real distance, real velocity, real speed_limit, real acceleration, s_unit_motion *motion)
 {
@@ -5187,6 +5195,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // receivers and immutable scales 169; direct projection field reads 262; alias-safe
 // in-place staged crosses 188. NOT kept: no gain; native cross loads and scalar homes remain.
 // MiniMax B (11-13): no new form, no lower score (169): the three direction sums' last term still multiplies the matrix component by forward_scale on the x87 stack where retail keeps the scale in a register until two final pops, and retail loads up.k and up.j first where ours preloads all three.
+// T101: Existing vector setter at basis-copy/projection/reconstruction publications,
+// sets 1..7: 179/183/178/169/174/183/178; all with disabled early result 185.
+// NOT kept: no match or gain; delayed up.i, native scalar/vector homes and x87
+// forward-scale residence remain. Original complete body and shared helpers restored.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

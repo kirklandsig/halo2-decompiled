@@ -3677,7 +3677,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // MiniMax G (11-12): no new form tried this round, no lower score (139): retail keeps the channel in ebp from the
 // entry and spills the member, while ours loads the data pointer and keeps the member in ebp.
 // MiniMax H (11-12): no new form, no lower score (139): our EBP still serves the member and the consumed update in turn, so the channel gets no register, and retail's cursor still starts with an immediate add that ours folds into the shared constant.
-// score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
+// Earlier, score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
 // homes differ.
 // MiniMax R (11-09): no lower score (139): the base and the offset kept apart, with the packet pointer never
 // formed, compiles to the same bytes as the indexed form (139), so the gap is not the address form: retail holds
@@ -3933,6 +3933,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // read before the member call 138 (round 112 screened it; 1 lower, statement order, not kept); indexed plain arm
 // first 162 (ordinary delivery arm first 162); cursor plain arm first 157 (lane 11 r77); cursor early debit 169
 // (round 50); the route at the relay arm top (same code). The member keeps EBP in every cursor form.
+// T101: Actual local-recipient result reused for delivery and conditional removal,
+// bool/byte/short/long: indexed 138/138/160/163, independent cursor 158/158/158/159.
+// NOT kept: one-count leads fail the gain gate and change the native frame; no
+// predicate carrier matches. Original complete body, live counts and masks restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
