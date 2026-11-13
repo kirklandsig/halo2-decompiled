@@ -1331,6 +1331,10 @@ long function_cbd50(long unit_index, short weapon_index);
 // and native pool/player/tag homes unchanged; original complete body and helpers restored.
 // P440: First-loop do/while with the existing slot provider, and held/pending/paired/output/held-output/all walks: 215/215/330/329/313/215/330/313.
 // NOT kept: Native player/pool/tag homes remain; direct entry ties and genuine producer cursors regress. Original complete body restored.
+// P456: standard one-element zero clears across initial/attached/final output phases, all seven
+// complete phase families 215 each; one complete attached four-Boolean clear 309 at 988/1006 bytes.
+// NOT kept: no gain; original Boolean stores, all slot providers and complete body restored. The tag
+// table still hoists, player/pool homes remain nonnative and frame stays 0x1c versus 0x18.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {

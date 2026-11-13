@@ -3404,6 +3404,11 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // regressions; original body restored. Current copy tails remain six bytes longer than retail.
 // Uniformly readonly tag receivers 91. Required parent seat-table access through the existing
 // unit.seats.address field 91 in fast/plain checks, retained with no code-size or score change.
+// P456: native 0x78 frame and parent reload retained. Direct owner camera reads 91; existing vector
+// setter/complete vector prefix 106/111; plain five-component ordinal/cursors 91/91; result after
+// scale 91; byte result 85 at native 396 bytes (NOT kept: gain six below eight); marker before seat on
+// scalar-copy graph 91. Original copies/result restored; seat scheduling and native copy-base
+// advancement remain.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -4382,7 +4387,7 @@ void function_c9e70(long unit_index, dword flags, s_type_1e6529 const *data, s_d
 // retail's 578); a local holding only that constant is a banned form, so the shared tail is not reachable from
 // here and the body stands.
 // score 139 (was 163; earlier 168): every case, constant, clamp, store and weapon call matches retail's statements; what differs is
-// score 163 (was 163; earlier 168): every case, constant, clamp, store and weapon call matches retail's statements; what differs is
+// Earlier at 163 (was 163; earlier 168): every case, constant, clamp, store and weapon call matches retail's statements; what differs is
 // layout. Retail keeps the constant 1 in bl for the whole function (saved at entry, used by the `test bl, al` bit tests
 // and returned with `mov al, bl`) and sends every case to one shared store tail; ours still returns an immediate and
 // holds no ebx (574 bytes, retail 578). Tried: bit tests as field bits and flags_10a through its byte
@@ -4416,6 +4421,11 @@ void function_c9e70(long unit_index, dword flags, s_type_1e6529 const *data, s_d
 // adds a nonnative transfer); branch-owned found 159 (NOT kept: gain four below eight); index
 // lifetime, uniformly const unit and property-value name 163/163/163. Original body restored.
 // MiniMax B (11-13): no new form, no lower score (163): our build returns an immediate and clones the store into the 0.0 case (608 bytes against retail's 578), where retail keeps the constant 1 in bl and sends every case to one shared store tail.
+// P456: on the shared-clamp 574-byte graph, sole early/late found result 132/142; shared state with
+// original returns 139; existing field-bit forms 136; successive/upper-first clamps 139/143; identity-
+// plus-alias delegated name 142; delegated result from tests 143. Sole early found recovers BL but is
+// 582/578 bytes, gain seven: NOT kept below eight. Field-bit gain three also rejected. Original
+// executable body restored; native truth/shift-test and saved-name carriers remain.
 // @retail 0xc6b90
 bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *active)
 {
@@ -6334,6 +6344,10 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // MiniMax B (11-13): no new form, no lower score (59): the first header read still takes the scaled offset as the address
 // base where retail takes the data pointer, and the success arm's scratch registers stay swapped; the early-return form
 // of the out-of-memory block scores 193, and the fixed source termination moves the first difference but gains only one.
+// P456: native extent/unsigned source loop and three exits retained. Wide/byte failure carriers 59/59;
+// wide result 166; failure/ordinal/paired marker-result declaration lifetimes 59/59/59; nested
+// grenade/team admissions 59/59. NOT kept: ties or regression; header SIB and success scratch rotation
+// remain.
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {
