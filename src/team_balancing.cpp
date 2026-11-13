@@ -600,6 +600,7 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // function is chosen at the call site, and retail's caller 0x7e210 (src/unknown_07a9a0.cpp, out of this
 // lane) puts the player count in EAX while our build puts it in EDX; the copy loop, the `rep stosd` fill,
 // the argument rotation and the final clamp all follow from that one difference.
+// MiniMax H (11-13): no new form, no lower score (34); the player count is tested in EDX here and in EAX in retail, and the copy, the fill, the call setup and the clamp all follow from that one register, so the body stands.
 // score 34 (was 34): frame 0x48 agrees; from +0x14 the player-count EAX/EDX roles are exchanged
 // (retail player count in EAX, extra count in EDX) and flow through the copy, fill, call setup and
 // the final clamp's register: our loop temporaries take EDI/EAX (retail EDX/EDI), leaving EDX for the

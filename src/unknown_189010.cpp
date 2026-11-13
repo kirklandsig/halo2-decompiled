@@ -845,6 +845,12 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // vector3d_from_points3d, both lengths through length_sq3f, projection and along through dot3f, the projection through
 // vector3f_scale) 312 (514 B: the inline_depth(0) pragma keeps them calls); without vector3f_scale 288 (539 B); to_camera
 // and the lengths only 251 (575 B); length_squared declared at its initialisation 2; a const maximum distance 2.
+// m3 lane 15 r79 (fast with 0x188180, 542 sources, = the full check's 2): the result flag renamed 2; the location copy
+// first in the success block 42 (first +0x23); the forward copy declared after the position sums 2; the camera position
+// copied into a local used six times 194 (683 B); an explicit `goto local_2` after the success store 2 (a near-repeat of
+// the listed fall-through form); the projection products written `t * direction->i` 2 (same code). The retail
+// call graph has no cycle through this function or 0x1895f0 (0x1895f0 does not reach 0xf8eb0), so the context effect
+// is not a compile-order cycle through this function itself.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

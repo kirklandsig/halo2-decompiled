@@ -2639,6 +2639,10 @@ dword __cdecl function_131fc0(real alpha);
 // the missing caller is not what keeps the parameters in registers. A permuter run (43 tries in 622 s) reached 105 only
 // through an `int` temporary for one texture coordinate (changes what is drawn) and two volatile casts; nothing usable.
 // MiniMax A (11-11), NOT kept (coordinator 11-11): 140 -> 54 with both default-rectangle fallbacks written through volatile pointers to the parameters; volatile is reverted, body at 140.
+// MiniMax B (11-13): no new form, no lower score (140): our build still hoists the preserve_alpha load above the `simple` branch (kept in cl across 0x131fc0) where retail loads it after the branch and again in bl; the tail's two parameter-home writes are retail's.
+// MiniMax G (11-13): no new form, no lower score (140): this build still hoists the preserve_alpha load above
+// the `simple` branch (kept in cl across 0x131fc0) where retail loads it after the branch and again in bl; the
+// permuter run over this function found no usable form either.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2906,6 +2910,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // exit jumps to a block that sits 0x36 bytes further from the function's start than retail's, and the body after that
 // pairs against the wrong instruction all the way down; the frame agrees (0x200) and the two length checks on the
 // count are the same, so what is left is the layout of the blocks and the order of the reads.
+// MiniMax H (11-13): no new form, no lower score (364); the first difference is at +0x52, where this build's early exit jumps to a block that sits further from the function's start than retail's, so the body after that pairs against the wrong instruction; the three rotation calls also pass the rotation on the stack instead of in EAX, because that callee lives in another file.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)

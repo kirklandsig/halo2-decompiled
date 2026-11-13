@@ -865,12 +865,15 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// MiniMax B (11-13): no new form, no lower score (92): the origin and direction homes stay swapped and the forward,
+// grenade type and projectile index keep their homes (retail 0x20, 0x2c and 0x30 against our 0x28, 0x20 and 0x24);
+// the permuter over this function found no form either.
 // score 92 (was 92): 152 before m3 lane 14 r83; earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
 // MiniMax H (11-12): no new form, no lower score (92); the permuter over the function managed 17 tries in 301.7 s and found nothing (best 89, baseline 89, no confirming build), so the slot layout stands; this round added the player block's forward vector declared before the origin (92), copied in its declaration (100), and as a function local at the top of the function, above the projectile index and below the grenade type (92 each), which all leave the player's forward at the same home, so retail's forward at 0x20, grenade type at 0x2c and projectile index at 0x30 against our 0x28, 0x20 and 0x24 stands.
 // MiniMax G (11-12): no new form, no lower score (92): the seat index and the direction sit 0xc below retail's slots and the
 // shared block-vector slot 0xc above them, so the whole frame is a permutation of retail's; the permuter (killed at its time
 // limit) produced no form.
-// score 92 (was 152): earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
+// Earlier 92 (was 152), start 288: Left are the origin and direction frame homes (swapped), the projectile index, grenade type
 // and throw-globals homes, the release point (retail its own local in center's slot), the velocity scale's first
 // product and the spread blend's schedule. Before this round 288, 298 before lane 15 round 61's throw velocity through
 // vector3f_scale; earlier, flag 17 cleared and restored through bit_vector_set (retail reads the flags word
@@ -1098,6 +1101,11 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // origin (no position local) 248 (1739 B); the not-attached arms swapped (`unit->unknown12c == NONE` first; retail lays the
 // center arm first) 255. Diagnostic only: the blend through a private copy of the static vector3f_interpolate of
 // src/unknown_1a58b0.cpp (an Avoid file; its body is this blend) 95.
+// P439: Standard complete coordinate transfers at override origin/direction, fallback direction,
+// vehicle/player forward and fallback left, then backward override-origin/player-forward:
+// 270/312/308/130/313/171/270/313. NOT kept: range transfers do not recover native
+// saved-handle/type and shared-vector homes; each adds a copy call (21 versus 20).
+// Original copies and full body restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1983,6 +1991,10 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // up again after the branch, 74 (249 bytes), but the offset's add then comes before the compare and the unit index
 // takes EBP. Retail has the offset's load before the compare and its add after it, with nothing kept for the
 // second lookup but the scaled index.
+// P422: Complete mutable/const header tables with primary after/before acquisition
+// 65/67/65/67; const pool root 11/11; const pool/table 65/67. Existing object getter
+// boundaries, expression/unit receiver: 11/90 twice. All original calls restored.
+// NOT kept: table sharing adds a spill; input scheduling remains at 11.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {
@@ -2521,6 +2533,10 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// MiniMax B (11-13): reading the weapon index as a 16-bit short, so that the compare is retail's 16-bit one (movsx
+// ax, byte / cmp ax, bx against our 8-bit cmp dl, 0xff), scores 297 - the register allocation shifts - so the byte
+// compare stays; the pool header is still in edi where retail keeps it in ebp and the index in eax where retail keeps
+// it in edi.
 // score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // MiniMax H (11-12): no new form, no lower score (234); the tail's register homes and the 0x1b bit test are unchanged.
 // MiniMax I (11-11): no new form, no lower score (234): the pool's and the offset's register homes are still ebp and edi where retail has edi and ebx, the NONE sentinel still rides in ebp where retail keeps it in ebx, and the lunge's divide still comes from memory.
@@ -4363,7 +4379,7 @@ extern vector3f *g_4687bc;
 // offset at +0x5c, where our block is longer, and the 0x188180 call setup after it is blocked by
 // that callee's parameter order in another file.
 // MiniMax R (11-06): no new form, no lower score (45); the g_54e898 copy is a dword load here and a word load in retail, which also moves the exit block two bytes; retail's 0x1eb020 writes a dword into the material slot and it is read back as a dword, ours takes a short * and reads it back sign-extended, and that width is set in another file.
-// score 23 (was 23): 31 before 0x1883e0 matched with c_type_47f957 parameters; 45 before round 220's material local as the global material type (c_type_47f957, constructed from g_54e898
+// score 8 (was 8): 23 before main took 0x188180's material parameter as the 2-byte type by value (the held patch below); 31 before 0x1883e0 matched with c_type_47f957 parameters; 45 before round 220's material local as the global material type (c_type_47f957, constructed from g_54e898
 // as 0x277b80 does) gives retail's word copy, so every branch target now agrees; left are the copy's schedule (retail
 // loads into CX early and stores it just before the 0x0b67a0 call, ours stores at once from DX), the rigid body's
 // data/offset registers in its address add, and the 0x188180 call setup (BLOCKED-BY 0x188180: retail pushes the
@@ -4420,6 +4436,25 @@ extern vector3f *g_4687bc;
 // 45 (1100 B); the node-count test folded into the index test with the element read at each use 27; re-measured the
 // material built after the component lookup 25 (the global load is not hoisted: retail's early CX load is a material
 // built ahead of the lookup, as here; only its register differs).
+// m3 lane 4 r193 (base 8 at 1098 B, fast and plain: main has 0x188180's material parameter as the 2-byte type now, so the
+// 0x188180 blocker above is gone and two register choices are all that is left: (A) the default material goes through DX
+// and is stored before the pool's data load, retail holds it in CX and stores it just before `mov ecx, esi` (5 lines);
+// (B) ours loads the array into EDX and scales the index in EAX, retail scales into EDX and loads the array into EAX
+// (3 lines)). A whole-file compile-only harness reproduces both sites as the linked build has them (0.8 s a variant).
+// Fast: the default material built after the 0xb67a0 call 48 (1099 B); the node through a forceinline first-node getter
+// holding an element pointer 8 (same code), the same getter indexing the element at each use 12; the effect tag through a
+// forceinline getter 8 (same code); the array pointer in a local used for both reads 32; the index masked to a word at
+// the element 75 (1103 B); the default material through a forceinline getter returning the type 8 (same code); permuter
+// (27 tries) 8. Harness only, all the body's code unless noted: 0 to 33 unused locals; the index, or the component,
+// declared at the top of the function; index + array, byte arithmetic either way round, a named offset; element getters
+// taking (index, component) or (component, index); the default material assigned to a default-built local, built from a
+// short local, or filled through an out-parameter getter; the pool, the masked index or the pool's data named ahead of the
+// material; the definition and the model through forceinline tag getters, the model in a local, the tag assigned inside
+// its test; a short index (word compare, 3 lines off). Diagnostics: the material takes CX when one more scratch value is
+// loaded between the effect tag test and it (an extra copy placed ahead of it), or one fewer before it (no model lookup),
+// and a callee without a register argument moves the pool's data to ECX. So the scratch choice follows the order values
+// are loaded in and 0xb67a0's ECX argument, not the spelling of these statements: the lead is a statement whose value
+// retail loads between the tag test and the material (or one fewer ahead of it) without adding an instruction.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

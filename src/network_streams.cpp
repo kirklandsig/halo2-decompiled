@@ -827,6 +827,9 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// score 60 (was 60): round 116 (m3 lane 9, fast with 0x96510, 0x94df0 and 0x94bf0): the flag test as nested ifs 60
+// (same code as the listed `continue` form, so a re-measure). Still only the strength-reduced next - oldest - 1 (next
+// in ECX, the reduced offset in ESI) against retail's per-pass offset with next in ESI. No untried natural form is left.
 // MiniMax H (11-12): no new form, no lower score (60): the offset next - oldest - 1 is still strength-reduced into a second counter in esi where retail keeps the next sequence in esi and recomputes the offset in eax on every pass.
 // MiniMax B (11-11): no new form, no lower score (60): ours keeps the next sequence in ECX and strength-reduces
 // next - oldest - 1 into a second induction variable in ESI that is tested against the cached newest, while retail
@@ -841,7 +844,7 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // and the per-step test) and the oldest once, and with the window pointer declared before the send call for the
 // count, the bound and the index (88, 235 bytes) our code reads the newest the same way but still reduces the
 // offset and keeps the next sequence in ECX.
-// score 60 (was 60): ours strength-reduces next - oldest - 1 into esi (next in
+// Earlier at 60 (was 60): ours strength-reduces next - oldest - 1 into esi (next in
 // ecx) and compares next with the cached newest; retail keeps next in esi,
 // recomputes the offset and re-reads window->newest each step (as 0x94df0 does).
 // Passing &m_message_window to sequence_window_index (or declaring window inside
@@ -930,6 +933,12 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // register choice change with it (89): the next sequence stays in ecx where retail keeps it in esi, and retail reads
 // the newest from memory inside the helper while this build reads it from the hoisted bound; writing the index out
 // in the function with the member read gives 60 again, so the strength reduction is the whole of the difference.
+// Round 175 (m3 lane 6, fast; control 60): the bound local read from the member (`m_message_window.newest`) with the
+// window pointer kept for the index 63 (226 bytes; the same code as the listed 63 form); `message` as an if/else
+// (`if (index != NONE) ... else message = 0;`) 66 (224 bytes; the same code as the listed ternary); a local copy of `this`
+// for the index helper (`&stream->m_message_window`) or for the bound 89 each (the copy propagates away: the listed
+// all-member code); `message` declared after the index with its zero initializer 60, `short flags` 60, the bound declared
+// in the for initializer after `next` (`for (long next = ..., newest = window->newest; ...)`) 60 (all three the same code).
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

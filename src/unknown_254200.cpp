@@ -484,6 +484,16 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // `D3DDevice::End()` 2; every Begin and End through the D3DDevice:: member forms 2; the globals lookup helper as a ternary 2
 // (0x254490 4, 0x254200 still matched); the bitmap lookup helper with an early return 524 (2256 bytes; 0x254490 269,
 // 0x254200 145); the globals lookup helper with a NULL default and no else 517 (0x254490 280, 0x254200 158). Restored.
+// Round 88 (m3 lane 13, fast, single address, control 2). Diagnostic scan of the reload pair with neutral stores to a probe global:
+// ahead of the first quad two or more stores of different float constants, two float copies, four stores of one float constant or
+// four integer copies give retail's order (one float store, 2, 8 or 12 integer copies and 4 or 16 integer immediates do not); after
+// the first quad 1-3 float stores do not; at the end of the body 6 do and 1-3 do not. So about four more float operations ahead of
+// the pair flip it and integer code does so only at one count. 1-8 dead initialised locals (long or real) never move the pair (four
+// of them give 18: the last quad's y fold comes back). Source forms, the pair unchanged in each: the first definition's two counts as
+// one chained assignment 2; its texture modes and alpha outputs copied from the fields stored just before 2; both 2; the first quad's
+// depth in a non-const local 2; its corners in four non-const locals 18 (four more symbols, the y fold again); corners and depth 2;
+// a non-const zero priority local for the four bitmap calls 2; the scale parameter copied to a local 2; the half constant in a
+// non-const local 332 (2260 bytes). All restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

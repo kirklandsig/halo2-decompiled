@@ -229,13 +229,13 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
+// score 161 (was 161): earlier 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the hull count still live
+// in their own homes where retail keeps them in the dead argument homes.
 // MiniMax G (11-12): score 161 (was 169): the departure update is now a short-circuit with the hull's first index
 // passed to the difference helper first, and the compaction runs through memmove; the frame is still 0x18 against
 // retail's 0x14, and the count, departure and hull-count homes still differ.
-// score 161 (was 169): frame 0x18 against retail's 0x14; the count, the departure flag and the hull count still live
-// in their own homes where retail keeps them in the dead argument homes.
 // MiniMax D (11-11): no new form, no lower score (169); the one-counter body still rotates the pass test to the loop's foot and keeps the count in a register where retail reloads it from its home, so the two-counter body is kept.
-// score 169 (was 169): earlier 169 (was 170); at 170 (was 170) native output ordinal separates iteration from produced length;
+// Earlier score line (169, was 169): earlier 169 (was 170); at 170 (was 170) native output ordinal separates iteration from produced length;
 // frame 0x18 versus 0x14, count/departure homes, equality and compaction still differ.
 // MiniMax C (11-10): score 169 (was 169): no lower score this round. The frame is still 0x18 against
 // retail's 0x14; retail's outer pass has one dword counter in EBX, stored at F-0x10, reloaded at the
@@ -562,6 +562,15 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // (763 B), a short pass counter 250, `(short)pass < count` 240, the difference predicate as `>= eps || >= eps` 169, as
 // `!(< eps) || !(< eps)` 169. Left on 162: the frame word (widened count), the rotated pass loop, the long flag's
 // dword stores and the hull count in the dead index home.
+// m3 lane 1 r98 (fast with the file's functions; 0x239d50 matched unless noted, 0x23a6f0 129 as in the full build; control 161).
+// New, all fruitless: `short current = count;` at function scope before the classifier call (on this two-counter body) 264
+// (762 B, 0x239d50 80); that with the heading set before the lowest scan 241 (762 B, 0x239d50 80); `indices[hull_count] =
+// current; hull_count++;` keeping the pass loop 248 (794 B); `previous_angle = best_angle;` ahead of `current = next;` 163;
+// the compaction bound without the cast (`i < hull_count`) 161 (784 B, different code, no gain). Re-measured on this base:
+// the heading before the lowest scan 211 (784 B); `++hull_count;` for `hull_count = pass + 1;` 270 (810 B; lane 13 r58 ran
+// a separate increment on its while body); the current-first form with the first departure call in retail's operand order
+// 264 (same score). Retail computes both departure differences as next - first (`fld [next]; fsub [first]`): the first call's
+// (first, next) order on main is not retail's, which costs 1-2 points here (round 171's 162/163).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

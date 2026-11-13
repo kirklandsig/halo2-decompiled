@@ -446,6 +446,12 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// MiniMax A (11-13): no new form, no lower score (84); with the inverse computed inside the found branch (the
+// two conversions first, then the inverse) the blend takes retail's slot, the found block matches retail's
+// code step by step and the clamp entry orders its zero and its one the way retail does, but the
+// not-found path joins the clamp entry's load instead of carrying its own copy of the one (132) and the count
+// test and the first scan's exit still differ, so the body stands; merging the second fabs into the fmod call
+// scores 86 and leaves the blend in the seed's slot.
 // MiniMax B (11-12): no new form, no lower score (84); re-read retail's listing: the clamp entry's constant
 // order, the blend's stack slot, the first scan's signed bound and the not-found exit's 1.0 reload are still
 // the four differences, and the spellings of the scan's bound that keep it rolled (less-than, the bound read

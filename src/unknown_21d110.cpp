@@ -518,6 +518,8 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // not its order and not kept); the effect pointer fetched before sound_start 179 (465 bytes, masked 87; two points and a moved
 // declaration, not kept); the priority stored without the `(short)` cast, the allocation tested inside the condition, the
 // sound index declared at the top: 181 each (same code).
+// MiniMax A (11-13): no new form, no lower score (181): the entry takes its state in eax here and on the stack there, and the
+// argument order of the callee 0x189fe0 is fixed in another lane's file (BLOCKED-BY 0x189fe0).
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {

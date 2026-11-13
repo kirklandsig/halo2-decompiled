@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "unknown_3dfe0.h"
 #include "unknown_0259d0.h"
+#include "object_tag_definitions.h"
 
 extern s_record_pool *g_509434;
 extern dword g_4ba034;
@@ -95,6 +96,14 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // and EBX load as retail, sample/update timestamps in EDI/ESI); the tail under `if (cache->valid)` in place of the early return 21 (same
 // code), with update first 218; the special-flag tests as plain `& 0x2000` / `& 2` tests setting 1 48; the elapsed clamp as a ternary 21
 // (same code); `update = update || cache->update_time == NONE || update_elapsed > 1` 205, with update first 121.
+// m3 lane 15 r79 (fast with 0x3d2c0 and the callees = full 21; masked = aligned rows with registers and constants
+// masked, 8 here, all in the entry block): the object local renamed body/zobject 21 (same code); `bool force;` declared
+// before the object and assigned in place 21 (same code); no force local, its test written at both uses 161; the
+// object through a named header-entry pointer 21 (same code); a named position pointer (object + 0x30) for its three
+// uses 230; the elapsed clamp after the force arm 28. The parent's definition now reads the typed object definition
+// (same code). On the update-first diagnostic (218, masked 15: retail's EBX object and homes, but the two timestamps
+// take EDI/ESI and the force arm has no reload): renaming update, elapsed or update_elapsed, `type` before `special`
+// and the update test's operands swapped all leave the first push EDI (218).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
@@ -165,10 +174,10 @@ void function_3dfe0(long cache_index, long object_index, real priority)
     if (cache->parent != NONE)
     {
         byte *parent = ((s_3dd10_object_header *)g_4e0300->data)[cache->parent & 0xffff].object;
-        byte *definition = g_4e3b44[*(long *)parent & 0xffff].bytes;
-        type = *(short *)definition;
+        s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)parent & 0xffff].bytes;
+        type = definition->object_type;
         if ((bool)(((*(dword *)(parent + 4)) >> 13) & 1)) special = 1;
-        if ((bool)((*(word *)(definition + 2) >> 1) & 1)) special |= 1;
+        if ((bool)((definition->flags >> 1) & 1)) special |= 1;
     }
     function_d4080(type, &cache->current, special, &cache->lighting);
     cache->initialized = true;
