@@ -1339,6 +1339,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // 171, masked 79); on 341: the input pointer after the flags 344, the history length through magnitude3d 351,
 // `flying || !limited_step` 523, the direct arm's speed per use 434, the low arm's normal from the field 421 (aligned 163).
 // The masked residue stays: the crosses' and low arm's product sides and the history block's x87 order.
+// Round 425: multi-use direct/flying/positive-normal/low-normal input weights,
+// mutable 528/527/477/405; immutable 528/527/477/405. NOT kept: no exact native result;
+// original input observations and complete body restored. Damping carrier and
+// raw/bounded homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
