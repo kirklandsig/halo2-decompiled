@@ -454,6 +454,8 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 1/2/3/4/5/6/7: 926/926/926/926/926/926/924 fast (control 926). NOT kept: the
 // two-point conditional flag lead is below the gate and not exact; original scans
 // restored. Frame 0x2cb4 versus 0x2cac and actor/unit/priority homes remain.
+// MiniMax B (11-13): no new form, no lower score (920): the frame is 0x2cb4 against retail's 0x2cac, and the actor,
+// unit, priority and query homes still differ; the byte homes do not follow the order of the source's object scan.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
