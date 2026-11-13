@@ -486,6 +486,11 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // present (24): the mask test placed first hoists the mask load into ECX ahead of the jne as retail does, but swaps the
 // mask and old-playing stack slots (91-122), and a 32-bit OR of the mask with the present in the store still reloads the
 // mask from memory instead of sharing ECX with the compare.
+// MiniMax A (11-13): no new form, no lower score (32): the word old mask read through the pointer still gives retail's
+// head exactly (77) but the tail drifts, the mask read straight off the field rematerialises it and drops the frame to
+// 0xc (129), the same with an early engine-index read (129), and an early engine local only moves the index and the
+// engine load above the stores (32). Left: the mask's word load and word spill, its one reload into ECX ahead of the
+// first jne, the playing teams in EDX and the engine index read at the head of the change block.
 // score 32 (was 32): the word mask, its one reload ahead of the first jne, and present's update in EBX remain.
 // MiniMax D (11-11): 24 (was 32), NOT kept (coordinator 11-11: lane 14 r55's width cast on one side of the compare; retail compares dword; body stays at 32): the old team mask as a word local (retail's `mov cx` entry and its
 // word spill) with the present compare narrowed to a word (`(word)present_teams != old_team_mask`); the
