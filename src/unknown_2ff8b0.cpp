@@ -613,6 +613,10 @@ public:
 // limit first 376; two-plane radius copy 205 (1600 bytes, NOT kept);
 // memcpy 375; signed int words 375; next_slot 376; one exit 375.
 // NOT kept: one-point gain or length beyond retail; original body restored.
+// Shared axial position 375; shared two-plane bounds 375; shared axial
+// extent 210 (1600 bytes, NOT kept: four excess bytes); nested bounds 375;
+// first distance decoded first 380; OR byte joins 496; append_copy 375;
+// mutable axial scalars 375. Original body and decoder macros restored.
 // @retail 0x300290
 void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char const *node)
 {

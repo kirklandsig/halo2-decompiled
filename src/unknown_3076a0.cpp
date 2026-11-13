@@ -227,6 +227,11 @@ __forceinline __m128 rotate_inverse_307840(transform_307840 const *matrix, __m12
 // newest contacts, when both face it closely: their contacts and, when asked,
 // those of the edges around them, with the smallest distance among the
 // contacts
+// Normal snapshot 321; transpose macro 318; end-minus-count pointer 316;
+// fallback initialization 301; zero key aggregate 301; final else 316;
+// three named products 316; early vector declarations 316.
+// NOT kept: fallback stores precede tests, and the aggregate adds an early
+// zero store; neither occurs in retail. Original body and helper restored.
 // @retail 0x307840
 void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 {
