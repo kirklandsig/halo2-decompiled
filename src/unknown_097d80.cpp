@@ -441,6 +441,9 @@ struct c_aggregate : c_child
 // M3 lane 3 r236: no new form. Checked against this note: scopes, wrappers, shared outputs, widths, names, loop shapes,
 // the children's real type and the v5 declarations are listed; a non-virtual (qualified) v5 call would emit a direct call where
 // retail calls through the vtable. The only lever is the build flag (this body is byte-exact without /GL), a user decision.
+// P438: Complementary signed dispatch/block/item continuations, seven subsets then
+// both fixed child continuations as well: eight 31 at native 373 bytes. NOT kept:
+// no escaped-output/spill-home repair; original loops and complete body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

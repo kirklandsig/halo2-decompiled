@@ -927,7 +927,6 @@ struct s_tail_transfer_traits
 // selection loop on, the traits pointer comes back in EBP where retail keeps it in EAX, and our three
 // NONE homes sit at +0x18/+0x20/+0x28 against retail's two at +0x1c/+0x24.
 // MiniMax S (11-11): no new form, no lower score (153): the traits pointer comes back from the selection loop in ebp where retail keeps it in eax, and our three NONE homes sit at +0x18/+0x20/+0x28 against retail's two at +0x1c/+0x24.
-// score 153 (was 153):
 // MiniMax C (11-10): the score is 153 (was 153); the traits pointer comes back from the selection loop in EBP where retail keeps it in EAX and the unit index takes the other register, and our three NONE homes sit at +0x18/+0x20/+0x28 against retail's two at +0x1c/+0x24.
 // MiniMax D (11-10): no new form, no lower score (153); the selected traits, the unit index and the NONE home are
 // still kept in different registers and at different stack offsets than retail, and the no-seat branch still
@@ -1047,6 +1046,9 @@ struct s_tail_transfer_traits
 // reuses it. Observed in these trials (a lead, not a rule): 0xcbd50's lookup shares loads with caller lookups on the
 // global, not with lookups through a pool copy that stays a real variable (used twice or more; a single-use copy is
 // propagated). Still missing: a natural form that keeps the copy real.
+// P438: Original scenario/unit-index/unit/first/second and per-pass clock/age/weapon
+// bindings fixed independently: eight 153. NOT kept: selected-traits/unit/NONE homes
+// and no-seat reloads unchanged; original complete body restored.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {

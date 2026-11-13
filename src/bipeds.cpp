@@ -3604,6 +3604,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // the header's `flag11` bit 362 (same code); the component index in a named local for its NONE test and the lookup 362 (same
 // code); `value` declared before `direction` 362 (same code); `held` through the file's field_bit_test 362 (same code); the
 // fallback test as `size >= 1` 367 (1891 bytes).
+// P438: Original biped/component/definition bindings, cached count and strength/lift/
+// mass/projection bindings fixed independently: eight 362 at 1892/1908 bytes.
+// NOT kept: no frame or native component-address repair; original entire body restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -4516,6 +4519,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // sits at [esp+0x44] and its matrix at [esp+0x60] while retail's origin sits at [esp+0x40] and its matrix at
 // [esp+0x50], so every slot below the matrix sits four bytes higher although both frames are 0x12c bytes; moving a
 // local to shape the frame is not allowed.
+// P438: Original component/position bindings, limit/lowered/distance producers and
+// the existing transform matrix/input/output bindings fixed independently: eight 356.
+// NOT kept: matrix/origin/property homes unchanged; complete body and helper restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -5444,6 +5450,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // is now 79/79/79 (same code); a `vector3f *const` pointer 79 (same code). Re-measured: axis declared, then assigned before
 // the normalize 79; sine before cosine 111. The five matched functions that inline the same rotation (0x1055b0, 0x177d10,
 // 0x23d260, 0x2551f0, 0x29c860) each spell it privately, so none gives a shared helper form to copy.
+// P438: Existing fallback coordinate ranges through native/forward/backward library
+// copies, excluding native/native: 65/77/69/74/80/77/68/79. NOT kept: the 65/69/68
+// leads add out-of-line copy calls absent in retail; other gains miss the gate.
+// Original complete body and include set restored; first rotation/cross operands remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
