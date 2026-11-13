@@ -783,6 +783,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // test 366 (1374 bytes); count declared at the top with the other locals 349; the link copy moved out of the capacity
 // block (usable declared before it) 2 (same code); one pathfinding-data local for the link and surface tests 353 (re-measure of round 62's node-loop data local,
 // same number).
+// MiniMax A (11-13): no new form, no lower score (286): our frame is 0xe8 against retail's 0xe4; the extra dword is the `previous`
+// pointer, set to NULL here and left alone there (dropping that initializer gives retail's 0xe4 frame and the first six instructions
+// agree, but the body grows by two bytes and the score rises to 357, so it is not kept); both sides pass nine stack arguments in the
+// same slots; the node depth is read at one address here (node*0x44 + 0xee) and through a lea there.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

@@ -1482,6 +1482,8 @@ bool function_108530(long device_index, long name)
 // 119 each (its code); the target pinned first 141 (507 B, ret 0x14 with the target as the register parameter, callers
 // 26/28); the position read into its local and then pinned 142 (507 B, the same convention move). Re-measured: the
 // duration stored first among the reset fields 121.
+// MiniMax A (11-13): no new form, no lower score (121): the frame and the length agree, but the SSE register allocation differs
+// from the first instruction (xmm7 here where retail uses xmm5) and every later pair follows that choice.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -2203,6 +2205,8 @@ bool function_0b6760(s_index_pair const *pair);
 // On q2: a channel pointer for the position arm's two tests and calls 247 (1495 B, masked 25); the position arm's
 // `previous` read before its channel test 253 (masked 15); the power `previous` read after the clamp 273 (masked 15);
 // the position idle test as `!(value == position && velocity == 0.0f)` 262 (same code).
+// MiniMax A (11-13): no new form, no lower score (250): this build pushes ebp and esi where retail pushes ebx and ebp, and the
+// body is 16 bytes shorter than retail's.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

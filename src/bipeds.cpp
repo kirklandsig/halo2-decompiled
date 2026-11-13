@@ -2949,6 +2949,8 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // 73. With the count between the rate and the result pointer (round 192's order) and the named rate 65 (the tick pointer then takes
 // EAX before `&settled` as retail, but the rate goes through x87 and is pushed from EBP). Re-measured: the second-lookup re-read
 // alone 68; round 192's order with it and the getter 92, with `(char)biped->unknown3aa` 81, plus the getter 99.
+// MiniMax A (11-13): no new form, no lower score (63): this build sign-extends the +0x3aa byte into a long before the test where
+// retail tests the byte in place, and the extra EBP push stays.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -3601,6 +3603,8 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // the header's `flag11` bit 362 (same code); the component index in a named local for its NONE test and the lookup 362 (same
 // code); `value` declared before `direction` 362 (same code); `held` through the file's field_bit_test 362 (same code); the
 // fallback test as `size >= 1` 367 (1891 bytes).
+// MiniMax A (11-13): no new form, no lower score (362): our frame is 0x48 against retail's 0x4c, and this build reads the +0x34b
+// byte unsigned where retail reads it signed (the signed form was measured at 361 and is not keepable on its own).
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -4508,6 +4512,8 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // sits at [esp+0x44] and its matrix at [esp+0x60] while retail's origin sits at [esp+0x40] and its matrix at
 // [esp+0x50], so every slot below the matrix sits four bytes higher although both frames are 0x12c bytes; moving a
 // local to shape the frame is not allowed.
+// MiniMax A (11-13): no new form, no lower score (356): the frame agrees (0x12c) and the first difference is at +0x71, where the
+// register choice in the entry block differs; the body is one byte longer than retail's.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -5436,6 +5442,8 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // is now 79/79/79 (same code); a `vector3f *const` pointer 79 (same code). Re-measured: axis declared, then assigned before
 // the normalize 79; sine before cosine 111. The five matched functions that inline the same rotation (0x1055b0, 0x177d10,
 // 0x23d260, 0x2551f0, 0x29c860) each spell it privately, so none gives a shared helper form to copy.
+// MiniMax A (11-13): no new form, no lower score (79): the frame agrees (0x24) and the first difference is at +0x107; the body is
+// seven bytes longer than retail's.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -6199,6 +6207,17 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 // marker and the collision record do not share a home, and the material is still carried as a dword where retail keeps a
 // 16-bit value; the effect helper's parameter convention (src/unknown_187ec0.cpp) is not this lane's:
 // BLOCKED-BY 0x188180.
+// score 80 (was 138; earlier 168, 154): the frame is retail's 0x94 now (the foot marker in its own block, the down vector copied
+// after the point offset through vector3f_assign, and the count test as count - 1 >= 0); what is left is register choice — the
+// contact point load lands in edx against retail's eax, the marker position copy rotates eax/ecx/edx, the flag byte test uses al
+// against retail's cl, the material word comes from cx against retail's dx, the zone is stored as a dword against retail's
+// word, and the down vector's three components are loaded in reverse and stored after the argument pushes.
+// MiniMax A (11-13): no new form, no lower score (80): the point offset through the shared global g_47f05c (retail's operand
+// order), the zone typed as c_type_47f957 (retail's word store) and the count test as PIN(0, 0, count - 1) == 0 (retail's
+// lea/test/jge/jne) together score 80, the same as the baseline, so all three are reverted; the global alone scores 79 and the
+// typed zone alone 125 (its one byte less shifts the loop's padding).
+// Earlier first line: at 168 (from 154): frame 0xec versus 0x94 (marker and collision don't share a home), material carrier
+// (BLOCKED-BY 0xceee0 since round 85, see the end of this note; earlier BLOCKED-BY 0x188180).
 // score 168 (was 168; earlier 154): frame 0xec versus 0x94 (marker and collision don't share a home), material carrier
 // (BLOCKED-BY 0xceee0 since round 85, see the end of this note; earlier BLOCKED-BY 0x188180). Earlier first line: at 168
 // (from 154): frame 0xec versus 0x94 (marker and collision don't share a home), material carrier.
@@ -6289,16 +6308,19 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 	if (biped->physics_mode == 1 && definition->object.footstep_effects.tag_index != NONE)
 	{
 		point3f point;
-		s_object_marker foot;
 
-		if (marker < definition->biped.contact_points.count &&
-			function_b8d30(arg_159e6d, ((long *)definition->biped.contact_points.address)[marker], &foot, 1, false))
 		{
-			point = foot.matrix.position;
-		}
-		else
-		{
-			function_b9dd0(arg_159e6d, &point);
+			s_object_marker foot;
+
+			if (marker < definition->biped.contact_points.count &&
+				function_b8d30(arg_159e6d, ((long *)definition->biped.contact_points.address)[marker], &foot, 1, false))
+			{
+				point = foot.matrix.position;
+			}
+			else
+			{
+				function_b9dd0(arg_159e6d, &point);
+			}
 		}
 		if (field_bit_test(biped->flags_c0, 6))
 		{
@@ -6321,10 +6343,10 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 			byte *model = g_4e3b44[definition->object.model.tag_index & 0xffff].bytes;
 			long count = *(long *)(model + 0x78);
 
-			if (count >= 1)
+			if (count - 1 >= 0)
 			{
+				vector3f down;
 				s_biped_ground_collision collision;
-				vector3f down = *g_4687bc;
 				long i;
 
 				point = function_b8bd0(arg_159e6d, 0)->position;
@@ -6337,6 +6359,7 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 					}
 				}
 				vector3f_add_scaled((vector3f const *)&point, g_4687b0, 0.1f, (vector3f *)&point);
+				vector3f_assign(&down, g_4687bc->i, g_4687bc->j, g_4687bc->k);
 				if (function_1697c0(0x84000d, &point, &down, NONE, NONE, (s_collision_result_1697c0 *)&collision))
 				{
 					function_188180(&point, g_4687b0, definition->object.footstep_effects.tag_index, arg_159e6d, type,
