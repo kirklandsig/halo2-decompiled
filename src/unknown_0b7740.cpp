@@ -996,6 +996,14 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // clear 270 (841 B). Object-pointer loads merge by address expression (the header variable, or a fresh table lookup),
 // whatever the type read; retail reads [header+8] three separate times (the first test, `object`, the bit-29 test), and no
 // spelling here gives the third.
+// M3 lane 7 r156 (fast with the file, 0x137800, 0xbfe60, 0xbfe20; all matched stay matched): the work after the two early
+// tests in a one-caller inline helper given the parameters (diagnostic for retail's EDX input / EDI result pair) 1055 with
+// `inline` (not inlined; 0x137800 270 in the fast image), 286 with `__forceinline` (830 B, entry unchanged); the orientations
+// offset computed ahead of the animation state 240 (other code, not a gain); the mask copy ahead of final_matrices 282 (822 B);
+// the model index read from the definition at each use 240 (same code); in the sample arm `orientations` set before the
+// 0xbdb60 call and passed to it 280; in the second block the three pointers set first and used in the copies and calls 259.
+// Re-measured: the bit-30 clear through 0xbfe20 262 (813 B), with the orientations offset ahead of the state 262 (same code).
+// Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

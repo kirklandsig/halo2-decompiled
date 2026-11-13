@@ -1041,6 +1041,15 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // body case's start, on this body and on the folded total: the total stays in EAX here (EDX only when folded) and the
 // hoisted body_size stays in ESI everywhere, so the residue is the hoisted value's coalescing with position and size,
 // not a missing scratch-rotation step. Body unchanged.
+// M3 lane 7 r156 (fast with the file's 20 functions; 0x2ad480 stays 19): the direct arm's count as `size = body_size; size -=
+// body_offset;` 34 (same code); the body test as `body_size > body_offset` on this base 162 (689 B); the entry total summed header,
+// signature size, body 34 (same code); the state dispatch as an if / else-if / else chain 210 (687 B) and the switch without its
+// `default: __assume(0);` arm 218 (695 B, range check): in both the entry sum lands in EDX with the task pointer in EAX as in
+// retail (first difference +0x3f), so the unreachable default is what puts our entry sum in EAX; without it the dispatch no
+// longer hoists body_size and the signature sum still folds into ESI (masked aligned 23). The default placed first 34 (same
+// code); `case _signed_file_read_signature: default:` 177 (688 B, the listed default form); the body progress as `(real)(position
+// + bytes) / total_size` 107; re-measured on this body: the listed early out on `body_offset >= body_size` 103. No fifth unlisted
+// natural form found (the `__assume` on the state at the dispatch is listed too). Body unchanged.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

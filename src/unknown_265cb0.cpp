@@ -736,6 +736,12 @@ real function_30bf0(vector3f *vector);
 // loads the forward component, retail the world-up one) and the second's `forward.k` products (ours loads forward.k, retail
 // copies side.j/side.k and multiplies forward.k from memory). The other files' cross helpers are file-private, so using one
 // here would be a copy of cross3f's body.
+// M3 lane 7 r156 (fast with the file, 0x25c9d0, 0x26d370, 0x263740; all matched stay matched): the posture scale as
+// `if (*settings & 1) scale = 1.0f; else switch` with a `default: scale = 1.0f;` arm 214; the clipped delta written straight
+// into `delta` as `(motion.c * amount + point.c) - origin.c` 146 (1313 B); the scaled-range test inverted with its
+// out-of-range arm first 152 (1312 B); the secondary and primary tests as `distance_squared < x * x` 84 (same code); the
+// `> 1` clamp moved inside the `amount > 0.0f` test 252 (1308 B); `amount > 0.0f` in the clip test for `!(0.0f > amount)`
+// 259 (1294 B). Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2418,6 +2424,12 @@ real function_2683f0(long actor_index, long node_index, short type)
 // A `short cooldown` local for the decay test and store 168 (same code); re-measured on this base: the reset chained as
 // `actor->unknown31e = *(short *)(data + 0x320) = 0;` 168 (same code); diagnostic: the two reset stores in the other order
 // 168 (same code). No other untried natural form found. Body unchanged.
+// M3 lane 7 r156 (fast with the file, 0x25c9d0, 0x26d370, 0x263740, 0x25d810, 0x26be00, 0x25d740; base masked 64): `retain`
+// assigned directly in the not-positive arm 211 (2882 B, masked 62); the positive arm's decay through a `short cooldown` local
+// with an unconditional store (`if (cooldown > 0) cooldown -= 2;` then the store, retail's `jle` onto its store) 169 (both arms
+// share the store tail, but ours keeps the reset arm's copy and emits `sub eax, 2` for retail's `add eax, -2`); the decay as a
+// ternary store 173; that local form with the reset arm first 174; the established decrease test as `!(distance > 3.5f)`
+// (retail's `ja` sense) 239. Body unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
