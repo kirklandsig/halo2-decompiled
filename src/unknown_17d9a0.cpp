@@ -626,7 +626,7 @@ point2f g_55ec10[2][12];
 struct s_bsp3d;
 struct vector2f { real i, j; };
 struct plane2f { vector2f n; real d; };
-plane3f *bsp3d_get_plane(s_bsp3d const *bsp, short plane_index, plane3f *plane);
+plane3f *bsp3d_get_plane(s_bsp3d const *bsp, long plane_index, plane3f *plane);
 real function_11cf50(vector3f const *a, vector3f const *b);
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 short function_23a6f0(point2f *output, short count, point2f const *points,

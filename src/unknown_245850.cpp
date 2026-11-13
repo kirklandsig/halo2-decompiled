@@ -8,7 +8,7 @@ struct s_source_245400;
 struct s_collection_245270;
 struct s_line_list;
 short function_1ddda0(s_bsp3d const *arg_0, long arg_1, point3f *arg_2);
-plane3f *bsp3d_get_plane(s_bsp3d const *bsp, short plane_index, plane3f *plane);
+plane3f *bsp3d_get_plane(s_bsp3d const *bsp, long plane_index, plane3f *plane);
 void function_245270(real thickness, short count, point3f const *points, plane3f const *plane,
 	real height, long field_00, long field_04, long field_08, byte field_0c,
 	byte field_0d, short field_0e, s_collection_245270 *collection);
@@ -108,35 +108,36 @@ void function_245850(long arg_0, s_source_245400 const *arg_1,
 	bsp3d_get_plane((s_bsp3d const *)arg_1, local_0->field_00, &local_3);
 	if (arg_2)
 	{
-		real local_5;
-		real local_6;
-		real local_7;
 		for (short local_4 = 0; local_4 < local_2; ++local_4)
 		{
 			point3f const *point = &local_1[local_4];
 			point3f *out = &local_1[local_4];
-			local_5 = point->x;
-			local_6 = point->y;
-			local_7 = point->z;
+			real local_5 = point->x;
+			real local_6 = point->y;
+			real local_7 = point->z;
 			if (arg_2->scale != 1.f)
 			{
 				local_5 = arg_2->scale * local_5;
 				local_6 = arg_2->scale * local_6;
 				local_7 = arg_2->scale * local_7;
 			}
-			out->x = local_5 * arg_2->forward.i + (arg_2->up.i * local_7 + arg_2->left.i * local_6) + arg_2->position.x;
+			out->x = arg_2->up.i * local_7 + arg_2->left.i * local_6 + local_5 * arg_2->forward.i + arg_2->position.x;
 			out->y = arg_2->forward.j * local_5 + arg_2->up.j * local_7 + arg_2->left.j * local_6 + arg_2->position.y;
-			out->z = arg_2->up.k * local_7 + arg_2->left.k * local_6 + arg_2->forward.k * local_5 + arg_2->position.z;
+			out->z = arg_2->forward.k * local_5 + arg_2->up.k * local_7 + arg_2->left.k * local_6 + arg_2->position.z;
 		}
-		local_6 = local_3.j;
-		local_7 = local_3.k;
-		local_5 = local_3.i;
-		local_3.i = arg_2->left.i * local_6 + (arg_2->forward.i * local_5 + arg_2->up.i * local_7);
+		real local_5 = local_3.i;
+		real local_6 = local_3.j;
+		real local_7 = local_3.k;
+		local_3.i = arg_2->forward.i * local_5;
+		local_3.i += arg_2->up.i * local_7;
+		local_3.i += arg_2->left.i * local_6;
 		local_3.j = arg_2->forward.j * local_5;
 		local_3.j += arg_2->up.j * local_7;
 		local_3.j += arg_2->left.j * local_6;
-		local_3.k = arg_2->up.k * local_7 + (arg_2->forward.k * local_5 + arg_2->left.k * local_6);
-		local_3.d = arg_2->position.x * local_3.i + (arg_2->position.z * local_3.k + arg_2->position.y * local_3.j) + arg_2->scale * local_3.d;
+		local_3.k = arg_2->left.k * local_6;
+		local_3.k += arg_2->forward.k * local_5;
+		local_3.k += arg_2->up.k * local_7;
+		local_3.d = arg_2->position.z * local_3.k + arg_2->position.y * local_3.j + arg_2->position.x * local_3.i + arg_2->scale * local_3.d;
 	}
 	function_245270(arg_4, local_2, local_1, &local_3, arg_3, arg_5, arg_6, arg_0,
 		local_0->field_04, local_0->field_05, local_0->field_06, arg_7);
