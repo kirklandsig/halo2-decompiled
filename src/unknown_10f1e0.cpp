@@ -1856,6 +1856,10 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
+// MiniMax G (11-12): no new form, no lower score (445): the frame is still 0x8 against retail's 0xc — retail keeps the result byte in
+// the first argument's dead slot, the two flag bytes at the frame bottom and the control and controlling words above them, and it writes
+// the true default at the entry; declaring the two flags before the pointers gives 446, and the entry default with the switch's default
+// arm dropped gives 489, so neither spelling reaches retail's frame.
 // score 445 (was 445): earlier 445 (was 453): retail keeps the result byte in the first argument's dead slot and re-derives the unit in both seat
 // MiniMax E (11-11): no new form, no lower score (445); the frame's slots sit at retail's offsets one dword off
 // and retail keeps its frame pointer and the early pointer where ours does not.

@@ -2039,6 +2039,9 @@ real game_time_get_seconds();
 void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 
 // MiniMax I (11-11): no new form, no lower score (492): the body is retail's length (2285) and the first difference is at +0x2; the body is tuned against the callee 0x2f2d0 calls, and the form that would take 0x2f2d0 to 177 raises this one to 573.
+// MiniMax G (11-12): no new form, no lower score (492): the frame is still 0x90 against retail's 0x94, so the definition, source,
+// scale and vertex homes sit four bytes below retail's, and retail's tag, position, direction, colour, alpha, amount and scale
+// slots are in another order; the permuter's search over this body (full image, annealed) found no better form.
 // score 492 (was 492): earlier 492 (was 507): every D3D call here in the D3DDevice:: member form (retail inlines the vertex push-buffer
 // write, 0x2f17c-0x2f1ba; only the member form inlines it) and clamp_2e9e0 as an initialised single-exit result:
 // retail length, EBX definition and EBP NONE as retail. Frame 0x90 versus 0x94, the 12-byte output homes (ours
