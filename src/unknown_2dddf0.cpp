@@ -152,6 +152,9 @@ public:
 // placement 257; shared dot 344; endpoint names 257; direct vertices 347;
 // outer output scope 257; scalar roots 387; one exit 367; direct cap stores 257;
 // output names 257; output declarations swapped 257.
+// Temporary-object name 257; first output name 257; early segment declaration 257;
+// first calculation at function scope 265; early vector outputs 257;
+// direct length destination 320; explicit fraction subtraction 257; float root 257.
 // @retail 0x2de1b0
 answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit_2deda0 *hit)
 {

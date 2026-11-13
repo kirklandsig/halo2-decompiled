@@ -1046,6 +1046,25 @@ void function_1537f0(s_profile_record *record);
 // the view and the tail both through the array element 14; the link pointer declared at the top of the loop body on the
 // tail-through-array form 14; on main's body the four link stores as separate statements in retail's order 18 (base +0x5e);
 // the entry pointer as `g_4cf98c + index` 18. No further untried natural form was found.
+// Round 237 (m3 lane 3, fast with 0x7f8b0 and 0x1537f0, both matched each time unless noted): the hoist is a weight contest
+// for EBP between the -1 constant (four head stores and four link stores share one value) and the record's first forwarded
+// word. Diagnostics: one more read of that word (`entry->flags = source->field40`) ends the hoist with retail's base +0x4c
+// and the halves in EBP/EBX; one head store dropped still hoists (74); the record initializer's dead NONE stores zeroed
+// still hoist (46, 0x1537f0 2-16). Links as two prev/next pair statements through `entry` 49, with the view through the
+// array element 46, through the array element everywhere 44, view through `entry` 45 (all base +0x4c, NONE in EBP); the
+// same pairs or four statements through the link pointer, a second pointer per pair, a four-short view pointer 14-18 (no
+// hoist, base +0x5e or +0x5c: the base is the second non-zero-offset expression of the offset pointer); two links through
+// a pointer and two through `entry` 47 and the flags through a dword pointer 47-49 (base +0xc, hoist). The link value
+// from a short local 46, read back from the first link 46, from the record's own NONE shorts 46, from the list ends 60
+// (reloaded in the loop); the heads as two chains 46, read back from each other 46, as dword 0xffffffff 46; the entry
+// links written `0xffff` 46. Unsigned 16-bit link stores (word lvalues, any spelling of the constant) 5: no hoist, base
+// +0x4c and every instruction retail's but `mov eax, 0xffff` for `or eax, -1` (two bytes longer); three signed links and
+// one unsigned 6-9 (the unsigned one is an immediate store). A 64-bit read of the record's 0x40 field in 0x7f8b0 45-46
+// (0x7f8b0 61-68, 0x80490 85-106); a four-byte aggregate for that field 46-49 (same code); the timestamp through its
+// dword cast, a memset or a pointer 46. Diagnostic, the record initializer's NONE byte (the 0xff the view takes) zeroed
+// 48 (still hoists, so that byte is not in the contest); the record member typed as the view's source under 4-byte
+// packing, or as 36 dwords, 46-49 (same code). Left: what gives the forwarded word one more use, or the -1 constant
+// fewer, in retail's loop.
 // @retail 0x7f930
 void function_7f930(void)
 {
