@@ -203,6 +203,9 @@ __forceinline void report_removed_2e29b0(class_2e1090 *sweep, long *owner, unsig
 // Existing XOR helper 257; existing AND helper 198; indexed held list 95;
 // count-based descent 205; indexed outer scan 279; branch-local pair 77;
 // consumed bit cursor 77; read-only cell-element pointer 77. All restored.
+// Round 426: array-end loop 214; word countdown 116; pair next_slot 100;
+// short next_slot 119; direct call test 102; read-only input 77; separate
+// stop locals 81; cell branch first 88. NOT kept: no improvement.
 // @retail 0x2e24b0
 void class_2e1090::function_2e24b0(long *owner, bounds_2e0020 const *bounds, pairs_2e1090 *pairs)
 {

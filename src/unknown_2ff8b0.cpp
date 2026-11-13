@@ -609,6 +609,10 @@ public:
 // first 376; all axial radii captured 213 (NOT kept: 1600 versus 1596 bytes);
 // named bounds, joined slab tests and unsigned command 375/375/375;
 // word distances 393 (1612 bytes). Original body restored.
+// Round 426: first limit read 375; first limit/radius read 374; lower
+// limit first 376; two-plane radius copy 205 (1600 bytes, NOT kept);
+// memcpy 375; signed int words 375; next_slot 376; one exit 375.
+// NOT kept: one-point gain or length beyond retail; original body restored.
 // @retail 0x300290
 void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char const *node)
 {
@@ -930,6 +934,10 @@ found:
 // ordinary conversion inline 84; long conversion result 65; chained clearing 65;
 // aggregate zero initialization 80; mutable node pointer 65.
 // NOT kept: all eight forms tie or regress; original executable text restored.
+// Round 426: float input renamed, shared conversion call, complete scaled
+// expressions, immutable tree pointer, tree reference, root-array reference,
+// earlier root address and separate radius increment all 65.
+// NOT kept: no improvement; original helper and body restored.
 // @retail 0x3008d0
 void class_3008d0::function_3008d0(void const *tree_, const __m128 *sphere, s_surface_key_array *keys_)
 {
