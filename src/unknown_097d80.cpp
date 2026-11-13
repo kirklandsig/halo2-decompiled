@@ -52,6 +52,10 @@ struct c_aggregate : c_child
 };
 
 
+// MiniMax A (11-12): no new form, no lower score (31); the frame is still 0x8024 against retail's 0x8020 and
+// the two low loop homes are still swapped, because the produced count's address reaches the child's v5 and
+// so keeps a slot of its own under /GL; the body is byte-exact only in a /GL- build of this file, which would
+// cost 0x97f60, 0x97fe0 and 0x980d0 their matches.
 // score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
 // reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
 // loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its

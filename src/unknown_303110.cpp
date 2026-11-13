@@ -67,6 +67,10 @@ inline __m128 cross_303540(__m128 const &a, __m128 const &b)
 // (NOT kept: gain 3 and longer); default first 141; direct vertex reads 111;
 // value cross inputs 111; set1 broadcast 181; aligned mask load 174;
 // one result 111; advancing normal pointer 111.
+// Shared cross helper 111; shared dot helper 111; standard float swaps 208;
+// arrays declared at entry 111; all product terms named 111; staged dot sum
+// 111; length scalar renamed 111; unsigned array index 111.
+// NOT kept: no gain; original code and helper restored.
 // @retail 0x303540
 int __cdecl function_303540(__m128 const *vertices, __m128 const *point, float orientation)
 {

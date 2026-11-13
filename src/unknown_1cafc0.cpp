@@ -513,6 +513,10 @@ bool function_1cb920(void *data, long mode)
 void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, long weapon_type, bool urgent,
 	bool other);
 
+// MiniMax H (11-12): no new form, no lower score (348): the first difference is still the expansion of the
+// existing graph_resources_request (src/unknown_1dacb0.cpp), where retail does `add ebx, 0x34` for the
+// request's graph and reloads it into EBP lazily while ours keeps graph+0x34 in EBP, and that helper's body
+// is not mine to change.
 // MiniMax C (11-06): no new form, no lower score.
 // MiniMax H (11-04): no new form, no lower score; the two animation lookups' graph stays in ebx in retail and in ebp in ours, and its final mov al is not normalised there, both of which come from the inlined graph helpers rather than from the form of this body.
 // MiniMax D (run 37): no new form, no lower score; the permuter (15 minutes, --fast) spent all of
