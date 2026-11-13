@@ -1836,6 +1836,21 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // (472). Re-measured on this base (listed on older bases 178/142): the flag byte stored in each include_mask arm 176
 // (472 bytes; the loop core becomes retail test/store/branch and the entry size takes EBX as in retail, but the
 // player bit goes to memory), with `*cursor++ =` or `cursor[0] =` 176.
+// Round 178 (m3 lane 5, fast with 0x56380/0x564c0/0x53b00, control 60): the kept-first order with the ternary size (137,
+// 0x56380 13) is the one family whose code keeps the zero result in EAX up to the capacity-fail edge with one epilogue, as
+// retail does, but it reuses that zero for the clamp and `written = 0`, passes the player on the stack and gives the cursor
+// EDI and the size EDX; retail's allocation (cursor EDX, the size and the kept temporary both EBX, the bit EBP, capacity
+// decremented in place) needs the cursor to keep EDX there. New forms: the result left unset on the active path with
+// `else result = 0;` for the inactive queue 175 (472 bytes, 0x56380 73, the result on the stack); the success length stored
+// through the result's address 60 (same code); on the kept-first ternary form the length in a local assigned to the result
+// after the mask loop 137 (same code as that form); kept in two steps (`kept = 1 << count; kept--;`) 60 (same code), on the
+// kept-first ternary form 137; `capacity -= 2` as the first statement of the active block 172 (472 bytes, 0x56380 2), with
+// kept first and the ternary 152 (456); written declared at function scope with kept first and the ternary 145; kept
+// declared at function scope and assigned in place, kept first with the ternary, 137. Diagnostic only (the result started
+// from a global read; the 24 statement orders x the two size spellings, 48 forms): no zero reuse and one epilogue in the
+// kept-first orders, but the player still goes on the stack (best 126, 0x56380 13); with the size first 54-167 and the
+// caller matched (54 for size/written/kept/capacity with `11 + 2 * include_mask`, which re-reads the global at the
+// capacity-fail exit). An opaque zero alone does not give retail's allocation.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
