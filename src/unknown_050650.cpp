@@ -504,6 +504,15 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
+// score 303 (was 303): frame 0xa8 agrees; ours is 12 bytes longer (1435 against 1423). Frame map (F = esp
+// after `sub esp, 0xa8`): retail F+0 one transfer slot {magnitude, random integer, pitch sine, yaw cosine},
+// F+4 candidate, F+0x10 attempt, F+0x14 axis, F+0x23 result, F+0x30 {pitch cosine, yaw sine}, F+0x38 yaw
+// range, F+0x3c pitch range; ours F+0 candidate, F+0xc attempt, F+0x10 axis, F+0x1f result, F+0x20
+// {magnitude, both sines}, F+0x30 {random integer, both cosines}, F+0x38 pitch range, F+0x3c yaw range.
+// Round 176 (m3 lane 5, fast = full; 0x297660 stays matched): the wrapper's sine named `angle_sine` (the
+// homes sorted the other way by name) 303; sine and cosine in one declaration 303; the counter
+// post-incremented 303; yaw and pitch declared before the loop 303; the collision buffer declared before the
+// ray 303 (all same code). Re-measured: cosine first in the wrapper 300 (0x297d30 23 -> 41, as round 85).
 // MiniMax G (11-11): no new form, no lower score (303); the frame agrees at 0xa8, but retail keeps the first
 // temporary (the length, the random integer and the sine) at the frame bottom while ours puts it above the result
 // byte, so the axis and result homes sit four bytes lower here, and ours is twelve bytes longer than retail's
@@ -511,8 +520,8 @@ struct s_collision_result_buffer_1697c0
 // two pairs that are left, so the body stands.
 // MiniMax H (11-11): no new form, no lower score (303); the frame agrees at 0xa8, but retail keeps the firsttemporary (the length, the random integer and the sine) at the frame bottom while ours puts it above the result byte, so the axis and result homes sit four bytes lower here, and ours is twelve bytes longer than retail's (1435 against 1423).
 // MiniMax H (11-11): no new form, no lower score (303); the frame agrees at 0xa8, but retail keeps the first temporary (the length, the random integer and the sine) at the frame bottom while ours puts it above the result byte, so the axis and result homes sit four bytes lower here, and ours is twelve bytes longer than retail's (1435 against 1423).
-// score 303 (was 303; 322 before that): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
-// score 303 (was 303; 322): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
+// Earlier 303 (was 303; 322 before that): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
+// Earlier 303 (was 303; 322): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
 // integer and the sine) at the frame bottom where ours puts it above the result byte, so the axis/result
 // homes sit 4 lower; the two rotations keep the candidate in registers in retail (ours spills it between them).
 // Walk b4H (11-06, fast 303): statement-by-statement against retail 0x296e60-0x2973ec found no behaviour difference. Checked: pitch axis
@@ -522,7 +531,7 @@ struct s_collision_result_buffer_1697c0
 // `fraction > best` at result+4 (0x29723a); success normalizes the candidate (0x2972a2-0x297334); exit tail `!clear && best > 0.0` (0x297336-0x29734c).
 // Plain-form tries: drop `clear`, tail `!result && best_fraction > 0.f` 361 (1446 B, demotes matched 0x297660 to 10); `else clear = true;` 372 (1455 B). Kept `clear = true`
 // at the loop top: retail's `mov al, 1` (0x296f8f) sets it there on every attempt, and only this form matches 0x297660.
-// MiniMax E (11-06): score 303 (was 303): no new form lowered it. Retail puts the first 4-byte
+// MiniMax E (11-06): 303 (was 303): no new form lowered it. Retail puts the first 4-byte
 // temporary (the length, the integer and the sine) at the frame bottom where ours puts it above the
 // result byte, so the axis and result homes sit four lower, and ours is twelve bytes longer than
 // retail (1435 against 1423).
@@ -883,6 +892,13 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
+// score 257 (was 257): frame 0x8c agrees; left: the result/point-valid byte homes and the direction chain's
+// fall-through predecessor (retail: case 2's remembered 0x1e3b00 block; ours: the merged 0xcafc0 block).
+// Round 176 (m3 lane 5, plain): case 1's object index local renamed 257 (same code: the merge is
+// machine-level cross-jumping into whichever block is laid out before the chain); one case-2 object index for
+// both arms, the aiming arm reassigning it through 0xbaf80, 298; `default: return result;` 298 (1464 B); case
+// 6 reading specification->index at each use 257; case 2's prop reference in a named local used twice 257
+// (both same code). Re-measured: const specification 257, const state and object views 257.
 // MiniMax B (11-11): no new form, no lower score (257); the body is unchanged, and the grids listed above are exhausted.
 // MiniMax G (11-11): no new form, no lower score (257); the two flags' byte homes are still swapped against
 // retail's (the result byte and the presence byte), the three vector components still reach the stack homes in the
@@ -890,7 +906,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // keeps them apart; this round re-read the diff and the swapped homes follow from the order the two flags are
 // written in, so the body stands.
 // MiniMax H (11-11): no new form, no lower score (257); the two flags' byte homes are still swapped against retail's (the result byte and the presence byte), and our case 1 and case 2 blocks still cross-jump where retail keeps them apart, so the direction chain's layout predecessor stands.
-// score 257 (was 257): frame 0x8c agrees; the result/point-valid byte homes, the direction chain's layout predecessor
+// Earlier 257 (was 257): frame 0x8c agrees; the result/point-valid byte homes, the direction chain's layout predecessor
 // (retail: case 2's remembered-prop 0x1e3b00 tail, which case 1's copy cross-jumps into) and the weapon path's registers differ.
 // MiniMax D (11-10): no new form, no lower score (257).
 // MiniMax E (11-06), at 257 (was 257): no new form lowered it. The result and point-valid byte
@@ -1849,6 +1865,13 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
+// call site and ours inlines it (only /Ob1 on its file keeps it out of line: a build-flag lead).
+// Round 176 (m3 lane 5, plain): the action state through 0xe70b0 held in a named by-value local 544; the turn
+// block's planar vectors built from members (no `&actor->forward` cast) 450 (2032 B), that with the 0xe70b0
+// call 528; the state-7 test nested under `if (valid)` 442; direction declared at function scope 442 (both same
+// code). Re-measured: `function_e70b0(actor->unit_index).value` (the lookup's own body) 544 at 2000 B (retail's
+// 0xc8 frame and offset spill, the state on a stack word without DI), with bool valid/looking_valid 561.
 // MiniMax G (11-11): no new form, no lower score (442 plain, 548 on the reduced image); retail still calls 0x1fdd90
 // out of line with the slot offset spilled to [esp+0x30] and the actor index in ESI where ours expands the call
 // inline and keeps the index in EDI, and that helper is defined in another file, so its inline decision cannot be
@@ -1867,11 +1890,11 @@ struct s_actor_looking_turn_request
 // condition direction, callee, argument order (0x2980d0 looking/bounds flags, 0x2967b0 type pointers +0x420/+0x434/+0x688 and the movement temp, 0x10f630 first=ESI,
 // 0x11cc90 aiming/forward), constant (-1, 0.70710677, 0.34906584, 1.0, 2.5) and flag home agrees with the source; no behaviour difference
 // found. Remaining differences are the inlined 0x1fdd90 and register/frame layout only.
-// MiniMax E (11-06): score 442 (was 442): no new form lowered it. The frame is 0xcc against retail's
+// MiniMax E (11-06): 442 (was 442): no new form lowered it. The frame is 0xcc against retail's
 // 0xc8 and ours is four bytes shorter (2016 against 2020); retail keeps the actor index in ESI and
 // spills the slot offset to [esp+0x30] where ours keeps the index in EDI and the offset in ESI.
 // MiniMax H (11-04): no new form, no lower score; retail calls 0x1fdd90 at +0x198 where our build expands it inline, and marking it noinline gives 590 and is not a permitted form; the frame stays 0xcc against retail's 0xc8 and the actor table is held in a register.
-// score 442 (was 442): frame 0xcc versus retail 0xc8, early getter scheduling, vector homes and branch layout differ.
+// Earlier 442 (was 442): frame 0xcc versus retail 0xc8, early getter scheduling, vector homes and branch layout differ.
 // Tried the out-of-line predicate declaration 546 fast; horizontal aggregate copies 562 fast; initial native setters 546 fast;
 // explicit looking success/fallback stores 532 fast, 527 plain (three-point gain, restored); target point or selected vector
 // renamed 546 fast each; validity at function scope 546 fast; aggregate inputs plus explicit stores 549 fast;

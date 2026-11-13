@@ -472,9 +472,16 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// score 42 (was 42): left: the offset's zero store before the list test, the 1.0 defaults' order, three
+// reload pairs and row i of both rotations. Round 176 (m3 lane 5, fast): on indexed emitter definitions with
+// scale first (re-measured 113 at 1136 B; every integer difference fixed, only the rotations differ: VC
+// reassociates each row's three-term sum, retail row i (left*y + forward*x) + up*z, ours (up*z + forward*x)
+// + left*y): `unknown0c != 0` 113, the 0x107f0 refresh mask named 113, the location flag as a (bool) cast
+// 113 (all same code), the definition formed before the emitter lookup 124; on the body the emitter mask read
+// before the defaults 204.
 // MiniMax A (11-12): the emitter list test wrapped around the loop with the offset's zero store
 // inside it: 42 -> 39 (1130 bytes), the store now follows the list test as in retail.
-// score 39 (was 42): the offset's zero store now follows the list test as in retail; left: row i of
+// MiniMax A's form, not kept: 39 (was 42): the offset's zero store now follows the list test as in retail; left: row i of
 // both rotations sums the up product before the forward one (retail sums the forward one first and
 // loads forward.i into a register), the two saved registers are reloaded in the other order after
 // each property call, and the branch offsets and the two trailing bytes follow from the rotation
@@ -487,7 +494,7 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // before the emitter definition after each property call; the shared rotate helper in
 // include/matrix_transform.h keeps the sum order, and the body is unchanged since round 20's permuter run
 // (58 tries, none below 42), so it stands.
-// score 42 (was 42): both in-place rotations go through the shared rotate helper (it copies the
+// Earlier 42 (was 42): both in-place rotations go through the shared rotate helper (it copies the
 // input when the output is the input), which gives retail's j and k rows. Left: row i sums the up
 // product before the forward one (retail forward first, loading forward.i into a register); the
 // offset's zero store comes before the list test (retail after); the two 1.0 stores are swapped; and
