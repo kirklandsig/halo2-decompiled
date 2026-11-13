@@ -3546,37 +3546,6 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
-// MiniMax G (11-12): no new form, no lower score (101); the timeout owner still has no home, because the
-// callee that would read it (0x769a0, src/unknown_075870.cpp:312) is in another file; the announcement
-// id and member scheduling behind it are in this file and still differ.
-// MiniMax G (11-12): what is left in this file, read off retail's code: retail takes the member state's
-// address in two steps (lea eax, [ebp + eax*4 + 0x72dc] then mov eax, [eax+4]) where here the field
-// offset is folded into one displacement (mov eax, [ebp + eax*4 + 0x72e0]); retail stores the session's
-// value10 ([ebp + 0x10]) into the frame slot +0x14 before the timeout call, a dead store into the slot
-// that later holds the session id, and that id's home is +0x14 here it is +0x1c, while the id is passed
-// by address (lea ecx, [esp + 0x14]) in both. The two-step address needs a pointer local for the
-// member-state element, which the once-used-pointer form does not allow.
-// MiniMax E (11-11): no new form, no lower score (101): the thirteen bytes retail has between the
-// member-state lea and the timeout call need an unread owner parameter on 0x769a0, whose definition
-// is in src/unknown_075870.cpp.
-// MiniMax D (11-11): no new form, no lower score (101): still BLOCKED-BY 0x769a0 in src/unknown_075870.cpp, where the call's register home is the callee's to decide.
-// MiniMax R (11-10): no new form, no lower score (101); the timed-out call's owner argument still has no home, because the callee that would take it is in another file.
-// MiniMax R (11-09): no new form, no lower score; the timed-out call's owner argument still has no home,
-// because the callee that would take it is in another file.
-// MiniMax S (11-06): no new form, no lower score (101): retail's call into the timed-out check passes one argument on the stack and keeps the channel index in a register, ours passes two; the callee's declaration and definition are in other files.
-// MiniMax B (11-06): no new form, no lower score (101).
-// MiniMax G (11-04): no new form, no lower score; retail reads the member state through its own
-// address (lea plus a load at +4) where ours folds the +4 into the load, keeps a dead spill of
-// session+0x10 into the reply id's stack slot before the timeout call, and returns through two
-// epilogues (1 and 0) where ours keeps the peer result in EBX.
-// MiniMax G (11-05, held at m3 review): a take flag set by the state tests, the host member state
-// taken through a named pointer, the reply id written from session+0x10 before the timeout call and
-// the peer block returning true/false match byte for byte only with __assume(host_state != NULL),
-// which is false when state 9 or value44 sets the flag (host_state stays NULL there); 120 without
-// it. Held: build/held/mmg-1105-5e3f0-false-assume.patch.
-// MiniMax C (11-08): no new form, no lower score.
-// MiniMax E (11-10): no new form, no lower score (101); the timeout owner comes from a parameter of 0x769a0
-// whose declaration is in another file, so the spill cannot be settled here.
 // score 101 (was 101): Frame 0x3c agrees; held timeout owner spill and identifier/reply allocation remain.
 // Earlier: frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
 // Earlier: frame 0x3c agrees; retail loads session+0x10 and spills it, and splits the
@@ -3707,6 +3676,41 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // in ecx and its first field in edx before the stack argument, and reaches the member state through a pointer to
 // the field, while this build's callee takes the table in ecx and the owner on the stack; the callee is declared
 // in src/unknown_075870.cpp.
+// MiniMax G (11-12): no new form, no lower score (101); the timeout owner still has no home, because the
+// callee that would read it (0x769a0, src/unknown_075870.cpp:312) is in another file; the announcement
+// id and member scheduling behind it are in this file and still differ.
+// MiniMax G (11-12): what is left in this file, read off retail's code: retail takes the member state's
+// address in two steps (lea eax, [ebp + eax*4 + 0x72dc] then mov eax, [eax+4]) where here the field
+// offset is folded into one displacement (mov eax, [ebp + eax*4 + 0x72e0]); retail stores the session's
+// value10 ([ebp + 0x10]) into the frame slot +0x14 before the timeout call, a dead store into the slot
+// that later holds the session id, and that id's home is +0x14 here it is +0x1c, while the id is passed
+// by address (lea ecx, [esp + 0x14]) in both. The two-step address needs a pointer local for the
+// member-state element, which the once-used-pointer form does not allow.
+// MiniMax E (11-11): no new form, no lower score (101): the thirteen bytes retail has between the
+// member-state lea and the timeout call need an unread owner parameter on 0x769a0, whose definition
+// is in src/unknown_075870.cpp.
+// MiniMax D (11-11): no new form, no lower score (101): still BLOCKED-BY 0x769a0 in src/unknown_075870.cpp, where the call's register home is the callee's to decide.
+// MiniMax R (11-10): no new form, no lower score (101); the timed-out call's owner argument still has no home, because the callee that would take it is in another file.
+// MiniMax R (11-09): no new form, no lower score; the timed-out call's owner argument still has no home,
+// because the callee that would take it is in another file.
+// MiniMax S (11-06): no new form, no lower score (101): retail's call into the timed-out check passes one argument on the stack and keeps the channel index in a register, ours passes two; the callee's declaration and definition are in other files.
+// MiniMax B (11-06): no new form, no lower score (101).
+// MiniMax G (11-04): no new form, no lower score; retail reads the member state through its own
+// address (lea plus a load at +4) where ours folds the +4 into the load, keeps a dead spill of
+// session+0x10 into the reply id's stack slot before the timeout call, and returns through two
+// epilogues (1 and 0) where ours keeps the peer result in EBX.
+// MiniMax G (11-05, held at m3 review): a take flag set by the state tests, the host member state
+// taken through a named pointer, the reply id written from session+0x10 before the timeout call and
+// the peer block returning true/false match byte for byte only with __assume(host_state != NULL),
+// which is false when state 9 or value44 sets the flag (host_state stays NULL there); 120 without
+// it. Held: build/held/mmg-1105-5e3f0-false-assume.patch.
+// MiniMax C (11-08): no new form, no lower score.
+// MiniMax E (11-10): no new form, no lower score (101); the timeout owner comes from a parameter of 0x769a0
+// whose declaration is in another file, so the spill cannot be settled here.
+// M3 lane 12 r119: no trial. The first difference (+0x27) is still the 0x769a0 call setup: retail reads session+0x10
+// into ECX and spills it, then forms the member-state address with a separate lea; round 65's byte match needs the
+// unread owner parameter on 0x769a0, whose file (src/unknown_075870.cpp, held sort_4byte change) is avoid-listed
+// again. The forms on this side of the call are listed above (lane 11 r89). Still BLOCKED-BY 0x769a0.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {

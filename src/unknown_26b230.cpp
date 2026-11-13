@@ -2130,6 +2130,11 @@ void function_269250(long clump_index, long actor_index);
 // function scope 126 (each the same code). In the in-arm form our walk step also lays the found block after the loop body
 // (retail and matched 0x268840 keep it inline after the not-found block), and the improving arm cannot cross-jump into the
 // initialisation's best store because our loop top reloads the selection into EDI. Body unchanged.
+// M3 lane 12 r118 (fast with the eight matched neighbours, all still matched): the actor index read into a named local
+// (`actor_index`, four uses) before the post-walk tests 87 (same code), at the top of the actor loop body 87 (same code); on the
+// in-arm form (126 re-measured) the same two 126/126 and with `selected` declared at function scope as well 126. Diagnostics, removed
+// at once: `(void)&selected` and the improving arm writing `selected` through a pointer on the in-arm form 126 each (same code; the
+// address is propagated away, so retail's memory-only selection is not an address-taken local).
 // @retail 0x2689d0
 void function_2689d0(void)
 {
