@@ -1079,6 +1079,8 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // axis k, j, then the vector, then axis i); rotate_direction with its cross rows ahead of the dot gives 154 here at retail's
 // length with the first difference at +0x221, but loses matched 0x1ecf50 (160) and raises 0xe3910 and 0x1ff360, so the
 // helper stays.
+// P440: Plain coordinate-copy loops at goal/turned/initial boundaries, seven subsets then word ordinals: 161/207/215/172/206/206/205/155.
+// NOT kept: Native rotation j/k products, side dots and eager output loads remain. Original complete body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

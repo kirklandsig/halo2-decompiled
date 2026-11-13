@@ -1099,6 +1099,9 @@ real normalize2d(point2f *v);
 // request and hands the validity flag back in bl on the short exit, ours keeps the result only on the stack and
 // folds that exit to `xor al, al`; the permuter's 128 tries bottom out at 124 differing instructions (133 by the
 // check's metric) and a component-wise request copy reaches retail's 935 bytes but scores 164, so neither is kept.
+// P442: Deferred complete initial/retry truth join at movement admission, original success-only
+// output publication, initial-first/retry-first/bitwise/conditional with bool then byte retry:
+// 195/194/163/199/195/194/166/199. NOT kept: no exact DL/return repair; original result graph and full body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

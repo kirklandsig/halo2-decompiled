@@ -2103,6 +2103,14 @@ bool __stdcall function_110ab0(long unit_index)
 // 0xc, the data in ESI and the first query re-derived through a copy of ESI as in retail, but the unit index arrives in
 // ECX: callers 154/596); for the two weapon-object lookups only 454 (1797 B, callers 154/596); `result = interruptible
 // || requested == 0x600008c` 468 (1789 B). Body unchanged.
+// P443: Shared controlling truth, complete first depletion producer, independent held outcomes,
+// state/control accessors at all uses, native-use primary/overlay keys and named base query:
+// 474/464/500/534/521/445/445/445. NOT kept: no native frame/result repair; original complete body and macros restored.
+// P445: Actual allow receiver, shared overlay-policy dispatch, existing field-test macro,
+// declared set-field view, overlay-channel receiver, single/two-request local producers and immutable controlling handle:
+// 445/644/445/445/445/445/445/445. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P447: First/second signed slot arguments; first/second count decisions; overlay/allow admissions; primary and paired-overlay inner request case order:
+// 445/445/445/445/445/445/445/445. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {

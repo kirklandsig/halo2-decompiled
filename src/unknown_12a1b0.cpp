@@ -2201,6 +2201,8 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 434 (1939 B: the copy is retail's, but the pool data is reloaded
 // after the store and the index product is shared); an entry pointer for the byte with the s_decibels store through a
 // second getter 465 (1939 B: the block is retail's but for the one shared index product).
+// P444: first signed-short range ordinal 420f; second signed-short range ordinal 464f; native previous-range value 464f; exhaustive seed result 454f; preparation result 479f; pitch-bounds pointer only 479f; pitch-bounds record lvalue 479f; real request flag field 479f.
+// NOT kept: no byte match or supported native frame/result recovery; original complete body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

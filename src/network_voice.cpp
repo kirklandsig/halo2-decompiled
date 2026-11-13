@@ -1851,6 +1851,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // kept-first orders, but the player still goes on the stack (best 126, 0x56380 13); with the size first 54-167 and the
 // caller matched (54 for size/written/kept/capacity with `11 + 2 * include_mask`, which re-reads the global at the
 // capacity-fail exit). An opaque zero alone does not give retail's allocation.
+// P442: Actual active-byte seeded result, long/int/dword/unsigned-int, direct admission
+// then shared active truth: 181/181/181/181/181/181/181/181. NOT kept: no exact result/home repair;
+// frame 0x10/0x14, ret 0x10/0xc and caller 0x56380 at 13 reject all forms. Original body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
