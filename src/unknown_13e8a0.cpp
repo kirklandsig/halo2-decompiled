@@ -502,7 +502,11 @@ struct s_text_line_measurement
 	long index;
 };
 
-// score 77 (was 77): retail loads the width into xmm4 before the multiply
+// score 77 (was 77): round 116 (m3 lane 9, fast): kerning/offset/advance declared at function scope 77, the loop as
+// `while (!done)` 77 (both same code); re-measured (listed dimensions combined, same code): `advance = raw; advance =
+// scale * advance;` 77, all three metrics raw first and then `x = scale * x` 77. The cause stays the advance copy
+// (`movaps xmm3, xmm0`) that gives the width XMM4. No untried natural form is left.
+// Earlier at 77 (was 77): retail loads the width into xmm4 before the multiply
 // chain and accumulates the four terms in xmm3; ours reloads the width into
 // xmm3 after the multiplies and accumulates in xmm0 (register allocation only).
 // MiniMax C (11-11): no new form, no lower score (77): the one difference left is the running width's reload —
