@@ -463,6 +463,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // or default-home recovery; all original traversals and selected values restored.
 // P448: Original-site group/point/improvement/anchor/accepted-stop/visited-point/record/route-score decisions:
 // 382/382/382/382/382/382/382/382. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// M3 lane 9 r118: no trial run. First difference +0x11 is still the three selected defaults' homes (+0x40/+0xc/+0x20 for
+// retail's +0x44/+0x28/+0x24), which lane 10 r97 showed names do not order. The note records twice that no untried natural
+// form is left (the 32-bit group test-and-set, short terminal and candidate change the length); I found none outside it.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
