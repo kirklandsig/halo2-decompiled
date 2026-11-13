@@ -1471,6 +1471,10 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax B (11-12): no new form, no lower score (164); the permuter (57 tries, run with the 0xcbd50 context
+// because retail inlines that callee) finds nothing better than the baseline, and retail keeps the pool data
+// pointer in EBP, the unit index in ECX and the depleted flag in BL where ours keeps the data pointer in EDI
+// and pushes ESI and EDI.
 // score 164 (was 164):
 // MiniMax B (11-11): no new form, no lower score (164); the body is unchanged, and the forms listed above are exhausted.
 // MiniMax H (11-11): no new form, no lower score (164); retail keeps index*12 as a value and re-reads the unit and

@@ -52,6 +52,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 }
 
 // score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
+// MiniMax B (11-12): no new form, no lower score (176); the permuter's 129 tries find nothing better than the
+// baseline (172 on its reduced image), and retail keeps the unity vector in XMM4 where ours keeps it in XMM5
+// and the root at +0xc where ours keeps the yaw there.
 // MiniMax H (11-11): no new form, no lower score (176); a normalizer with one exit 403 and the root taken from
 // the helper's return value instead of the pointer 263, so the root still sits at +0x10 where retail keeps it with
 // the yaw at +0xc.
