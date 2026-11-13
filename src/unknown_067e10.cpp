@@ -1494,7 +1494,7 @@ void function_847d0(s_simulation_controller *controller, s_player_action *input)
 // constructors and Bungie's reset shape (0x95581) 3, or 4 with the marker; extra uses of
 // destination 39-53; /Oa /Ow /O1 /Os /G5-/G7, /d2 options and its own file 3. Only a call between
 // the store and the memset gives edx with the edi store (49).
-// @retail 0x685f0
+// @retail 0x685f0 standard
 bool function_685f0(long capacity, byte *destination, void *block, long *size)
 {
  bool result = true;
