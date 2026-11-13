@@ -95,6 +95,17 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // reference 19, returned vector 110; named products in every row 19;
 // output accumulation 19; node count at entry 19; node pointer at entry 19.
 // All restored; the register pair and shared constant remain.
+// Round 88 (m3 lane 13, fast). Diagnostic, restored at once: with the only caller 0x2902b0 compiled (its stub taken out, its
+// `#if 0` opened) this body is still 19 and the no-steering body 33, so the missing caller does not decide the convention. One
+// exit (`bool result = false`, `goto done` at the bounds failure, `result = true` at the end) 139 (458 bytes) with the steering
+// local and 133 without it (the result takes CL from the top); a result local set at the end beside the direct false return 19
+// (same code); the rotate helper as a plain static or plain inline function 19, and 33 without the steering local (same code as
+// forced: the link expands it either way). Diagnostics on the no-steering body, the transform still arriving in ECX and kept in
+// EBX: one more read of the point after the reset 65 (483 bytes); the no-object arm's forward from a global, so the transform has
+// fewer uses, 77. The transform as a by-value one-pointer aggregate (diagnostic) 86 (its load is no longer hoisted to the entry);
+// as a reference parameter 33 (the no-steering code); the initial point assigned after its declaration 19; the record-filling tail as an
+// inline function returning true, or returning nothing with `return true` after it, 89 each (438 bytes: 0x11df30 is then called
+// from it and no longer expanded). All restored.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

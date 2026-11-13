@@ -79,6 +79,20 @@ static inline void *function_x332d0d(s_tag_block_view const *block, long index, 
 	return (byte *)block->address + index * element_size;
 }
 
+/* the definition entry track 0 plays, NULL while the track is not active */
+static inline s_sound_track_definition_entry *sound_track_definition_entry(s_sound_track const *track)
+{
+	s_sound_track_definition_entry *entry = NULL;
+
+	if (track->active)
+	{
+		entry = (s_sound_track_definition_entry *)function_x332d0d(
+			&((s_sound_track_definition *)g_4e3b44[track->label & 0xffff].bytes)->entries,
+			track->entry_index, sizeof(s_sound_track_definition_entry));
+	}
+	return entry;
+}
+
 long function_18d5b0(long label);
 long function_21d2c0(long platform_playback, real scale, short priority);
 void sound_effect_stop(long effect_index);
@@ -97,142 +111,9 @@ static inline void sound_track_start_impulse(long index, long handle)
 	}
 }
 
-// score 16 (was 16): Frame 0x10 agrees; the entry address is folded into
-// its field load, and the parameter pointer still uses a different register.
-// MiniMax H (11-12), NOT kept (coordinator): a byte match came only with the element getter's body written out and
-// `if (entry->label == entry->label) label = entry->label; else label = NONE;` around the read, a test that is always
-// true (reverted even with a match); without that test it is 16 (165 bytes). Retail materialises the case-0 entry
-// address as `add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`; a NULL test on the element pointer may be the natural form.
-// MiniMax D (11-10): no new form, no lower score (16); retail materialises the case-0 entry address
-// (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`, six bytes) and scales the entry index before the tag
-// mask, ours folds the base into the member load (`mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`,
-// seven bytes) and scales it after; after the call to 0x222930 retail copies the impulse parameter address
-// through EAX, ours through EDX; sixteen further shapes of that address (the sum written out at the call site
-// with the index term first, the entry address as an integer local read through the label's own offset, the
-// case block with the scaled offset computed before the tag lookup, the address read at a constant offset with
-// and without the byte cast, the entries array typed and indexed, the base field read as an integer, the whole
-// address as an integer read through an integer pointer, the base field typed as a long with the sum in
-// integer arithmetic, and the scaled offset in a local computed before the tag lookup) all compile to the
-// same folded bytes at 165 bytes, and the permuter ran for 883 s without a try.
-// MiniMax C (11-09): no new form, no lower score (16): the case-0 entry address is still folded into the member
-// load (`mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`, seven bytes) where retail materialises it
-// (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`, six bytes) and scales the entry index before the tag mask;
-// the impulse parameter address is still copied through EDX where retail copies it through EAX.
-// MiniMax I (11-09): no new form, no lower score (16); the whole difference is the one byte of the case-0
-// entry address: retail materialises it (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`, six bytes) where
-// our build folds the base into the member load (`mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`,
-// seven bytes), and that extra byte shifts every later jump and call, which is why the listing marks the
-// four calls and the four jumps although each of them agrees with retail's; a permuter run over this
-// function again produced no candidate (0 tries), and seven more shapes of that address (the offset in a
-// local before the tag lookup, the offset and the tag each in a local, the address as an integer sum over
-// a dword base, the same read through a dword pointer, the typed array index, the address through the
-// shared helper and the integer sum with the index term first) all compile to the same folded bytes at
-// 165 bytes; the block's address field as a long instead of a pointer changes nothing either (0x225df0
-// and 0x225b60 still match with it). The index scaling also still follows the tag mask where retail
-// scales the index first, and the impulse parameter address is still copied through EDX where retail
-// copies it through EAX.
-// MiniMax I (11-09): no new form, no lower score; a permuter run over this function produced no candidate at all (0 tries in 791 s) and the case-0 entry address is still folded into the member load where retail materialises it with an add and a separate load.
-// MiniMax D (11-06): no new form, no lower score; the case-0 entry address is still folded into the member load (`mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`, seven bytes) where retail materialises it (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`, six bytes) and scales the entry index before the tag mask; this round nine more shapes of that address (the entry offset in a local, the typed array index, the address as an integer plus the member, the index term first, a dword variant, a new inline helper and the address-of form) all compile to the same folded bytes at 165, and the impulse parameter address is still copied through EDX where retail copies it through EAX; the entry offset scaled into a local before the tag lookup and the same address built as an integer sum and read through a long pointer also compile to the same folded bytes at 165, so the materialised address is not reachable by choosing another source shape here.
-// MiniMax I (11-05): no new form, no lower score: retail materialises the case-0 entry address (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`) and scales the entry index before the tag mask, ours folds the base into the member load and copies the impulse parameter address through EDX where retail copies it through EAX.
-// MiniMax H (11-04): no new form, no lower score: the entry address as an integer sum, that sum with
-// the index term first, the shared helper with the index term first, and the label read through a
-// helper that takes the entry pointer all still fold the base into the member load, so retail's
-// `add eax, [edx + 0x70]` and `mov eax, [eax + 0x3c]` stay out of reach; the parameter address is
-// still copied through EDX where retail copies it through EAX.
-// MiniMax H (11-03): no new form, no lower score; six more shapes of the case-0 entry address (the address as an integer sum, that sum with the index term first, the tag and index loads separated into locals, the scaled index computed before the tag lookup, the entries base as a long, the entry pointer in a local) all compile to the same folded bytes at 165 bytes; retail's `add eax, [edx + 0x70]` and `mov eax, [eax + 0x3c]` stay out of reach, and the parameter address is still copied through EDX where retail copies it through EAX.
-// MiniMax G (11-04): no new form, no lower score: retail materialises the case-0 entry address (`add eax, [edx + 0x70]`), every source shape of it folds into the member load.
-// MiniMax S (11-06): no new form, no lower score: the whole difference is one byte — retail's materialised entry address (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`, six bytes) against our folded member load (`mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`, seven bytes) — and that one byte shifts every later jump, so the other two differences are that the entry index is still scaled after the tag mask instead of before it and that the impulse parameter address is still copied through EDX where retail copies it through EAX.
-// Earlier score 16 (was 16): this round: five more shapes of the case-0 entry address (the entries array
-// indexed with a typed pointer, the entry address as an integer local, the entry pointer in a local
-// read through a statement of its own, the same with the scaled offset computed before the tag
-// lookup, and the offset-local-first shape retested) all compile to the same folded bytes at 165
-// bytes; retail's `add eax, [edx + 0x70]` is still out of reach, and the impulse parameter address
-// is still copied through EDX where retail copies it through EAX. The permuter on this function
-// finished with no candidate at all (0 tries), so nothing came from it either.
-// Earlier score 16 (was 16): this round: eleven more shapes of the case-0 entry address (the scaled offset
-// in a local computed before the tag lookup, the entry address as an integer local, the index term
-// first, the size term first, the label read through the address of its member, the entry pointer
-// in a local built from the shared helper, the entry pointer in a local built without it, the
-// entry pointer taken with typed pointer arithmetic, the shared helper without the inline
-// keyword, the entry pointer used twice, and the entries address in a local of its own) all
-// compile to the same folded bytes at 165 bytes; the two-use shape shows MSVC keeps the
-// scaled-index addressing even when it has to materialise the pointer, so retail's
-// `add eax, [edx + 0x70]` is not reachable by choosing another source shape here. The parameter
-// address copied through EDX where retail copies it through EAX stays as well, and follows from
-// the same register allocation.
-// MiniMax R (11-01): no new form, no lower score: the case-0 entry address as an integer sum (the
-// dword base, the offset added last, the offset summed with the index), through shared multi-caller
-// helpers, the entry pointer used twice (VC materialises it then, but only as `add eax, ecx`, with
-// an extra load), the entries address as a dword or byte pointer field and the entry reached as an
-// offset into the definition all give the same folded bytes at 165 bytes; the permuter ran to its
-// time limit without a candidate. Still the folded member load against retail's materialised entry
-// address, the tag mask before the index scaling, and the parameter address copied through EDX
-// where retail copies it through EAX.
-// Earlier score 16 (was 16): this round: six more shapes of the case-0 entry address (the scaled offset in
-// a local computed before the tag lookup, the definition in a local, the entry pointer in a local
-// taken from the shared helper, the entry address as a byte pointer, the unsigned scaled offset,
-// and the entry pointer without the helper) all compile to the same folded bytes at 165 bytes; two
-// more shapes of the impulse helper (the parameter address in a named pointer, the index stored
-// before the call) either move the index store ahead of the call or change nothing. Retail's
-// matched 0x225df0 reads the same entry address in the folded form (`mov eax, [edi + ecx + 0x3c]`)
-// while retail's 0x225ab0 materialises it (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`), so
-// the two retail functions differ in the addressing they picked. Still the folded member load
-// against retail's materialised entry address, the tag mask before the index scaling, and the
-// parameter address copied through EDX where retail copies it through EAX.
-// Earlier score 16 (was 16): this round: four more shapes of the case-0 entry address as an integer sum
-// with the index term first (the entry pointer taken from the sum, the label read through the
-// integer address, the entry pointer in a local) and the base term first; all compile to the same
-// folded bytes at 165 bytes. Still the folded member load against retail's materialised entry
-// address, the tag mask before the index scaling, and the parameter address copied through EDX
-// where retail copies it through EAX.
-// Earlier score 16 (was 16): this round's nine more shapes for the case-0 entry address: the index
-// term first, the base term first, the two operands swapped, the base in a local, the scaled
-// index in a local, the scaled index and the base in locals, the entry pointer in a local, the
-// address computed as an integer and the label read through that integer; all of them compile
-// to the same folded bytes at 165 bytes. Still the folded member load against retail's
-// materialised entry address, the tag mask before the index scaling, and the parameter address
-// copied through EDX where retail copies it through EAX.
-// Earlier score 16 (was 16): the entry index scaling and the tag mask hoisted out of the switch, the
-// scaled index as a local and the sum written out all compile to the same folded bytes; the
-// permuter ran to its time limit (78 tries, best equal to the baseline) and produced no
-// candidate. Still the folded member load against retail's materialised address, the tag mask
-// before the index scaling, and the parameter address copied through EDX where retail copies
-// it through EAX.
-// Earlier score 16 (was 16): retail materialises the entry address (`add eax, [edx + 0x70]`,
-// `mov eax, [eax + 0x3c]`) and scales the entry index before the tag mask, our build folds
-// the base into the member load (`mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`),
-// one byte longer; after the call to 0x222930 retail copies the parameter address through
-// eax, ours through edx. Every source shape of the entry address (typed indexing, an entry
-// reference, a pointer copy, the base and the scaled offset in locals, unsigned arithmetic,
-// the operands swapped, the field's address taken) compiles to the same folded bytes, so
-// what differs is the compiler's choice of addressing mode, not the source; the permuter
-// was killed by its time limit twice without producing a candidate.
-// Earlier score 16 (was 16): retail forms the entry address as a scaled index added to the entries
-// array (`imul`, `add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`), ours folds the base into
-// the load; after the call to 0x222930 retail copies the parameter address through eax, ours
-// through edx.
-// first, and the two calls take their argument in the other register.
-// typed/constant-size/forced element helpers 16/16/16; forced impulse helper 16;
-// parameter pointer 16; early handle 16; const track 16; no default 61; indexed byte address 16.
-// Member memcpy 16; entry value/reference 80/16; shared impulse input order 16;
-// short impulse index 45; index before parameter fill 17; short/unsigned loop index 57/16.
-// The scaled entry address still folds into the member load; the impulse pointer uses EDX.
-// index-first element sum 16; typed element helper 16; named entry pointer 16;
-// entry label at a byte offset 16; index-first sum written out 16; named base address 16.
-// Integer arithmetic for the entry sum, the sum with the index first, the label read
-// through an integer address, the label read in a helper and the impulse parameters in
-// a named pointer all give the same bytes; the permuter produced no candidate.
-// MiniMax R (11-10): no new form, no lower score (16): ours is 165 bytes against retail's 164 and the
-// first difference is at +0x20; the three differences left are the imul's place relative to the tag
-// mask (it follows from the shared helper's argument order, which may not change), the folded member
-// load against retail's materialised entry address (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`
-// against our `mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`), and the parameter address
-// copied through edx after the call to 0x222930 where retail copies it through eax. The forms the
-// earlier rounds record (every shape of the entry address, the impulse helper's shapes, the permuter's
-// runs) all measure 16 or worse.
-// Impulse-buffer rename 16; explicit range guard 51; buffer before guard 16;
-// early helper exit 16; failed-handle continue 16; loop inequality 16;
-// handle declaration at entry 16; block-reference helper 16. All restored.
+/* starts the impulse of each active track again, then runs the update with no time elapsed.
+   Track 0's label comes through sound_track_definition_entry: retail forms that entry's address in
+   one register (`add eax, [edx + 0x70]`), the code of an entry pointer that is NULL on another path. */
 // @retail 0x225ab0
 void function_225ab0(void)
 {
@@ -247,9 +128,7 @@ void function_225ab0(void)
 			switch (i)
 			{
 			case 0:
-				label = ((s_sound_track_definition_entry *)function_x332d0d(
-					&((s_sound_track_definition *)g_4e3b44[track->label & 0xffff].bytes)->entries,
-					track->entry_index, sizeof(s_sound_track_definition_entry)))->label;
+				label = sound_track_definition_entry(track)->label;
 				break;
 			case 1:
 				label = track->label;
@@ -417,8 +296,7 @@ void __stdcall function_225b60(real elapsed)
 			{
 			case 0:
 				{
-					s_sound_track_definition_entry *entry = &((s_sound_track_definition_entry *)
-						((s_sound_track_definition *)g_4e3b44[track->label & 0xffff].bytes)->entries.address)[track->entry_index];
+					s_sound_track_definition_entry *entry = sound_track_definition_entry(track);
 					real duration = entry->duration > 0.001f ? entry->duration : 0.001f;
 					update.scale = sound_track_function_at_time(&entry->scale, track->unknown08 / duration);
 					update.handle = function_18d5b0(entry->label);
