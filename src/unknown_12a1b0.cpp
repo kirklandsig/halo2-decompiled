@@ -431,6 +431,9 @@ void function_11bed0(s_location *location, point3f const *point);
 // (0x11bed0 25, 0x1697c0 591); one call of the existing 0x11be90 with a leaf ternary 90 (0x11bed0 35, 0x1697c0 575);
 // the cluster read before the leaf store 93 (0x11bed0 14); the cluster/bsp stores chained 93 (0x11bed0 2). 0x11bed0
 // stays expanded (227 bytes) in all ten, so its source spelling is not what makes retail call it.
+// MiniMax G (11-13): no new form, no lower score (93): the location query is still expanded here while retail
+// calls it out of line, and that callee's inline eligibility is fixed in another file, so the call boundary
+// and the register homes that follow it stand. BLOCKED-BY 0x11bed0.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -2201,6 +2204,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 434 (1939 B: the copy is retail's, but the pool data is reloaded
 // after the store and the index product is shared); an entry pointer for the byte with the s_decibels store through a
 // second getter 465 (1939 B: the block is retail's but for the one shared index product).
+// MiniMax G (11-13): no new form, no lower score (305): the frame is 0x11c against retail's 0x128, and the
+// outer index, the definition and the ring homes still differ; the forms in the note below all score 305 or
+// more, so the body stands.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2629,6 +2635,9 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // initialiser 467 (1942 B); the stop flag set after the 0x12a420 call at both sites 418 (1931 B); the effect through
 // track_definition->effect 339 (same code); the final 0x21fa80 call passing voice->channel_index 503 (1929 B); the
 // controller doppler as if/else 339 (same code); the doppler arms swapped (no controller first) 354.
+// MiniMax G (11-13): no new form, no lower score (339): the frame is 0x4b4 against retail's 0x4bc, and the
+// early scalar, primary and last-chunk homes still differ; the forms in the note below all score 339 or more,
+// so the body stands.
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {
@@ -3043,6 +3052,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // the start arm's constant 1 not in EBX, the alternate compares as int neg/sbb where retail compares bytes, the impulse
 // bits threaded); the one-use start_with_fade bool written into its test 648 (2506 B); one source pointer for every
 // source use in the index block 770 (2484 B); the arm resets with the final-test source pointer 658 (2506 B, masked 126).
+// MiniMax G (11-13): no new form, no lower score (597): the track loop's registers still differ - retail holds
+// the state in ebx, NONE in esi and the track in ebp with the index and the track definition in memory, while
+// this build holds NONE in ebx, the index in esi and the track definition in ebp; the forms in the note below
+// all score 596 or more.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
