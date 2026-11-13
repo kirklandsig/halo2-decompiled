@@ -130,11 +130,11 @@ s_lighting_record *function_3db00(long object_index, real priority)
     function_d4080(*(short *)definition, &query, special, &g_55ee60);
     return &g_55ee60;
 }
-// MiniMax H (11-12): no new form, no lower score (77); this round tried the cached and the allocated index in one variable (151), the allocation test inverted (151), the flag starting true and cleared on the hit (130), the initialization nested in the allocation arm (176), the hit returning early (186), one guard for the two tests (132) and the early return moved to the tail (152), and the permuter over the function managed 129 tries in 900.4 s without a confirming build (best 71, baseline 71), so the merge's register choice stands.
 // score 77 (was 77): retail keeps the result in esi and tests it before the
 // reload, ours copies it into eax at the merge point and puts the cold "no
 // result" return block ahead of the initialization instead of after it
 // (retail returns it with mov eax, esi; ours folds it to the constant).
+// MiniMax H (11-12): no new form, no lower score (77); this round tried the cached and the allocated index in one variable (151), the allocation test inverted (151), the flag starting true and cleared on the hit (130), the initialization nested in the allocation arm (176), the hit returning early (186), one guard for the two tests (132) and the early return moved to the tail (152), and the permuter over the function managed 129 tries in 900.4 s without a confirming build (best 71, baseline 71), so the merge's register choice stands.
 // MiniMax H (11-12): no new form, no lower score (77); this round added the flag set before the walk, the flag in
 // both arms of the allocation test, the allocation stored straight into the result and the allocation stored into the
 // result with the flag after the walk, and they score 115, 83, 116 and 141. What is left is that retail tests the
@@ -252,6 +252,12 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // `movsx [eax+0x11a]`, `movsx [eax+0x118]`, divide by ten and `rep movsd`/`rep movsb` copy loop); all 77 differences are
 // the block layout from +0x54 (the found path, the merge test and the walk's NONE epilogue). No untried natural form found
 // that changes this code.
+// m3 lane 14 r89 (fast with 0x3db00 and 0x3dd10, both matched; control 77): the found test held in a named bool 77
+// (same code); the merge and initialize tests joined as `result != NONE && initialize` 132 (506 B: the record pointer
+// then comes after the initialize test, retail computes it before); the walk's best index stored before its age 79;
+// the negative-age reset as a ternary 77 (same code); the found test written `!(cache_index == NONE || owner !=
+// object_index)` 77 (same code). Re-measured: the walk's NONE exit returning cache_index 77. As round 116 found, no
+// untried natural form changes the layout from +0x54.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

@@ -1421,6 +1421,14 @@ bool function_2dba0(long tag, bool alternate, long c, long d, long e, point3f co
 extern bool g_4ba019;
 long function_baf80(long object_index);
 
+// score 12 (was 12): the parent lookup differs. Retail masks the parent index (`and eax, 0xffff`,
+// `lea`) before it loads g_4e0300, ours loads g_4e0300 first and uses movzx; the first model
+// load also goes through EDX in ours and EAX in retail. Tried: `long parent_slot = parent & 0xffff`
+// (22), the same with byte-offset addressing (22). Also tried: `[parent & 0xffff]` written directly (22,
+// 459 bytes: retail loads g_4e0300 into EAX after the mask, ours into ECX before it), the parent object
+// and definition in one expression (22), `(word)parent` inline (12), the model read without the
+// definition local (12), `model` reused for the parent's model (12), `object_index != parent` (13),
+// `parent` declared before the model test (12), definition/model declared at the top (12).
 // MiniMax H (11-12, second pass): no new form, no lower score (12); retail keeps the definition pointer in EAX and
 // reuses the dying register for the model load where ours routes it through EDX, and in the parent chain retail masks
 // the handle with `and eax, 0xffff` before it reloads g_4e0300 where ours loads the pool first and narrows with
@@ -1452,14 +1460,6 @@ long function_baf80(long object_index);
 // src/unknown_133790.cpp - the index arrives in EDI and the distance on the stack - while retail's clone takes the
 // index in EBX and the distance in XMM1; that is where the frame (ret 0xc against 8) and the definition chain's
 // register roles (retail EAX, ours EDX) come from, so they are not reachable from this body.
-// score 12 (was 12): the parent lookup differs. Retail masks the parent index (`and eax, 0xffff`,
-// `lea`) before it loads g_4e0300, ours loads g_4e0300 first and uses movzx; the first model
-// load also goes through EDX in ours and EAX in retail. Tried: `long parent_slot = parent & 0xffff`
-// (22), the same with byte-offset addressing (22). Also tried: `[parent & 0xffff]` written directly (22,
-// 459 bytes: retail loads g_4e0300 into EAX after the mask, ours into ECX before it), the parent object
-// and definition in one expression (22), `(word)parent` inline (12), the model read without the
-// definition local (12), `model` reused for the parent's model (12), `object_index != parent` (13),
-// `parent` declared before the model test (12), definition/model declared at the top (12).
 // Round 109: the first chain's definition also lands in EDX (retail EAX, reusing the dying register as the model
 // load does). Tried: the parent object as `long *` (as matched 0x17bab0 writes it) with `[parent & 0xffff]` 22,
 // a parent header pointer 22, `long parent_index = parent & 0xffff` 22, `if (model == NONE) return;` 12, a two-caller
@@ -1478,6 +1478,14 @@ long function_baf80(long object_index);
 // chained output clear 14; scalar weight names 12; combined cutoff 37;
 // in-place level cap 23; settings selection expression 12; late second
 // weight 47. No byte gain; typed fields alone confirmed by plain check.
+// m3 lane 14 r89 (fast; control 12): our 0x3d7f0 calls this function at both sites, as retail does (the MiniMax B
+// 11-12 line above, which says it expands the body, is not so; the entry, index in EBX, distance in XMM1, ret 8,
+// and the frame agree with retail). New: the parent model defaulted to NONE and tested once after the parent test 12
+// (same code); every local renamed (a_ and z_ prefixes, descriptive names) 12 each (same code); the output clears
+// ahead of the object lookup 125; the flag's operands swapped 12 (same code); the 0xff stores chained 14.
+// Re-measured: the parent object, and both objects, through the existing inline getter object_default_placement_get
+// 22 (459 B, same code as `[parent & 0xffff]`). Matched 0x1e13f0 and 0x25b6b0 get the mask before the pool load by
+// passing the 0xbaf80 result straight into an inline getter with no compare in between.
 // @retail 0x4baf0
 void function_4baf0(long object_index, real distance, byte *first, byte *second)
 {
