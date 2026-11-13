@@ -241,6 +241,9 @@ public:
 // continue cases with one trailing update 78; two-word offset read on that form 78;
 // byte advance first 109; value declared at trailing update 78; next slot 91.
 // NOT kept: next-slot growth changes the later count/store sequence.
+// Switch-condition selector 78; sentinel loop 279; sole exit 78;
+// reversed terminal arms 98; width-template reader 358; remaining-byte reader
+// 152; backward-pointer reader 494; wider accumulator 839. All restored.
 // @retail 0x2ff210
 void offset_list_2ff210::function_2ff210(position_2ff210 const *position, unsigned char const *commands)
 {
@@ -384,6 +387,9 @@ found:
 // continue cases with one trailing update 12; two-word offset read on that form 12;
 // byte advance first 86; value declared at trailing update 12; next slot 46.
 // NOT kept: next-slot growth changes the later count/store sequence.
+// Typed word reader 361; shared counted byte reader 88; pointer-range
+// reader 421; shared word loop 673; weighted byte reader 88; wider parts
+// 12; snapshot memcpy 12; common terminal-width loop 285. All restored.
 // @retail 0x2ff570
 void offset_list_2ff210::function_2ff570(position_2ff210 const *position, unsigned char const *commands)
 {

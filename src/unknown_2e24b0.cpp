@@ -251,6 +251,10 @@ void class_2e1090::function_2e24b0(long *owner, bounds_2e0020 const *bounds, pai
 // combined scan guard 309 NOT kept (three-point gain); word step in body
 // 313; persistent cell cursor 325; read-only scan bits 312; late box
 // binding 345; fixed scratch base 312. Original body restored.
+// List base/count arguments 339; returned entry pointer 472; next-slot
+// pair copy 311 NOT kept (one-point gain); one count 312; scan count
+// argument 448; exclusive upper loop bound 343; existing list erase
+// with pointer search 312; twice-used endpoint slot 437. All restored.
 // @retail 0x2e29b0
 void class_2e1090::function_2e29b0(long *owner, pairs_2e1090 *pairs)
 {
