@@ -4,6 +4,7 @@
 #include "unknown_1523c0.h"
 #include "game_engine_events.h"
 #include "engine_peer.h"
+#include "unknown_2bd960.h"
 #include "unknown_13927e.h"
 
 // @flags /O2 /arch:SSE /Gr
@@ -127,8 +128,6 @@ struct s_state_2bd0
 	long time_to_move;
 };
 
-void hill_set(s_polygon_2be *hill, long index);
-
 // @retail 0x2bd200
 bool c_game_engine_45c878::v25()
 {
@@ -136,7 +135,7 @@ bool c_game_engine_45c878::v25()
 
 	state->hill_index = 0;
 	state->time_to_move = g_4e6948->s230 * g_510c54->field_2_3;
-	hill_set((s_polygon_2be *)state, 0);
+	((s_polygon_2be *)state)->hill_set(0);
 	return true;
 }
 
@@ -376,7 +375,7 @@ void c_game_engine_45c878::v40()
                     goto changed;
                 for (;;)
                 {
-                    hill_set((s_polygon_2be *)state, next);
+                    ((s_polygon_2be *)state)->hill_set(next);
                     long count = *(long *)((byte *)state + 0x60);
                     if (count >= 4 && !(count & 1))
                         break;

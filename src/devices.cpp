@@ -1666,6 +1666,15 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // for the animation id and the frame position. On round 174's render-model lead: the render model read through the tag
 // table at each of the five calls (no local) 532 (1744 bytes); computed inside the 0xbf5a0 block 424 (1681); the model's
 // render model index in a local used at its test and the lookup 317.
+// Round 94 (m3 lane 11, fast): the time assigned inside the first call's object expression (diagnostic, so its store
+// follows the animation push in source order) 2: the store's source position does not set the order; a block-local copy
+// of the render model for the block's three calls 2; a block-local copy of the state pointer 2; one function-scope
+// seconds variable shared with the later duration 315; the flag test in a named bool ahead of the matrix copy 352
+// (1633 bytes). Compile-only (same relative order as ours): the time declared first; the animation id read from the
+// channel at the first call. Reading across four builds: in ours, the compile-only copy and round 174's constant
+// render model the fstp is the eighth instruction after the branch, and in all of them except ours three instructions
+// separate it from the call (ours four, since the render model's reload opens the block); retail has both the reload
+// and three, as if that reload were not in the block when the store was placed.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

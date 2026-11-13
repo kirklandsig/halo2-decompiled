@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "unknown_19ec40.h"
 #include "engine_peer.h"
+#include "unknown_2bd960.h"
 #include "unknown_1523c0.h"
 #include "game_engine_events.h"
 #include "engine_object_definition.h"
@@ -76,25 +77,6 @@ struct s_spline_2bd
 {
 	long indices[24];
 	long count;
-};
-
-/* the hill: a polygon of 32 vertices on a closed spline through up to 16
-   markers, inside a circle and a height range */
-struct s_polygon_2be
-{
-	/* the markers (the spline's points) */
-	long ids[16];
-	/* the vertices each spline segment gets */
-	long steps[8];
-	long count;
-	point2f vertices[32];
-	real center_x;
-	real center_y;
-	real center_z;
-	real radius;
-	real z_min;
-	real z_max;
-	real perimeter;
 };
 
 /* the settings an engine update copies, as the peer sees them */
@@ -321,7 +303,6 @@ void c_engine_peer_a::q1(dword *value, long, s_settings_2bd *settings)
 	*value = result;
 }
 
-void hill_set(s_polygon_2be *hill, long index);
 
 // @retail 0x2bdc00
 bool c_engine_peer_a::q2(dword a, long, s_settings_2bd *settings)
@@ -339,7 +320,7 @@ bool c_engine_peer_a::q2(dword a, long, s_settings_2bd *settings)
 		if (state->l1a0 != index)
 		{
 			state->l1a0 = index;
-			hill_set((s_polygon_2be *)state, index);
+			((s_polygon_2be *)state)->hill_set(index);
 		}
 	}
 	if (a & 0x40)
@@ -634,92 +615,35 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 
 /* sets up the hill of the index: its markers, the vertices each spline
    segment gets (32 in all), and its polygon */
-// score 2 (was 2): Post-loop pointer/index restores remain reversed; eight compiled source trials restored.
-// Earlier: the post-loop pointer/index restores remain reversed.
-// Final count and entry divisor 2/2; low-bit clear/remainder 64/63; endpoint
-// parts/start-first 2/2; step cursor 10; parity first 6; polygon/index names 2/2.
-// NONE arm first 60; inline validity helper 2; count at the top 2; no half local 2;
-// validity bool 2; loop index outside 2; parameter copies 2; callee parameters swapped 2;
-// modulo parity 19; half before the count store 59; while loop 2; count stored after the loop 57.
-// Local count/divisor/index role names singly, in pairs and together 9 fast each;
-// unsigned ordinal 23 fast. Reduced baseline 9; full baseline 2.
-// Consumed count 9 fast; initialized divisor 61; shared start numerator 9;
-// compound step 9; nested validation 9; division normalization 56;
-// common exit 9; parallel endpoint numerators 9. Fast baseline 9, full 2.
-// Parameter names in either sort order 2; polygon test nested 9 fast; loop index
-// declared at the top 9 fast; count stored as one expression and halved from the
-// field 9 fast; while loop 9 fast (the restore pair unchanged in each).
-// Round 117 (fast, the restore pair read in each): loop bound `i != half` 9; step products as
-// `32 * (i + 1)` and `32 * i` 9; hill copied into a local at entry 9; `(short)index + 11` 9; a
-// test of index ahead of the count test (diagnostic) 33 with the pair unchanged, so the pair does
-// not follow the next use; const-qualified parameters 9; a 600 s permuter run, 54 variants, none below 9.
-// Round 98: an unsigned index parameter 9 fast; a zero-initialized divisor 9 fast;
-// an inclusive loop bound 64 fast; both guards as `> 3` 12 fast; `index + 0` at the final call
-// 9 fast; a read-only callee index 9 fast; a read-only callee index and pointer 9 fast;
-// the function placed before its callee 9 fast. Full baseline 2; all restored.
-// Round 133 (plain): loop index declared at the top 2; const-qualified parameters 2; half declared
-// before the count test 2; a field pointer for the steps 93 (136 bytes); the polygon test after the
-// if/else 27 (the restore pair unchanged in each).
-// Round 30 (lane 17, plain; earlier fast-only forms re-run because the reduced image gives 9 here): `(short)index + 11`
-// 2; step products as `32 * (i + 1)` and `32 * i` 2; the count stored as one expression and halved from the field 2;
-// the parity test as `== 0` 2; half declared at its assignment 2. Diagnostic: a float literal for the call's last
-// argument keeps the pair (it flips 0x281b60's pair).
-// Round 84 (plain): the steps loop as `while` with the index step last 2; the first term negated and written second 2; a nested polygon
-// test 2; half and i declared at the top of the found block 2; the even count as its own local 2. A compile-only copy with `__stdcall`
-// parameters reproduces the swapped pair. There a division by 3, 5, 7 or 100 anywhere in the function flips it (a division by 4 or 8, or
-// a `% 3`, does not), and 12 extra reads of either parameter do not, so reference counts do not decide it. 102 no-extra-code forms keep the pair.
-// Round 143 (plain): explicit start/end numerators with end = start + 32 2; prefix increment 2; reversed bound 2;
-// a short query-group local 2; &ids[0] 2; return after the build 2; != loop bound 3; compound increment 2.
-// All restored; the post-loop hill/index reload order remains.
-// Lane 11 round 70 (plain): half as `count >> 1` 50; the first guard alone as `count > 3` 4; `count -= count % 2 != 0` 75 (180 bytes); a named remainder 2;
-// the outer guard as `index >= 0` 6. Compile-only: distinct constant divisions added to the else arm flip the pair at counts 1-4 and 8, not at 5-7; `%`,
-// adds, mul, float forms, a call and a memset do not, nor dead or folded divisions, nor up to 32 named copies; 400 random no-extra-code forms gave no same-code flip.
-// Round 154 (plain): `(short)(11 + index)` 2; `if (NONE != index)` 2; `if (4 <= count)` 2; the final count read once into a
-// named local for both tests 2 (same code); loop bound `half > i` 2. The hill/index reload pair is unchanged in each.
-// Round 98 (m3 lane 12, plain): the count assigned in its test 2; a `long const` total of 32 for the step products 2;
-// half as a `long const` at its assignment 2; the two step quotients as named end/start values 2; the even count as
-// `count / 2 * 2` 51. Compile-only (reproduces the pair): a loop from 1 to half moves the registers; the steps through a
-// `long *` for the array 63 lines against 71; a short marker-group local and an ids local keep the pair.
-// Round 158 (m3 lane 5, plain): the step as `(i * 32 + 32) / half - i * 32 / half` 2; `count = count - (count & 1)`
-// 2; the polygon parity as `hill->count % 2 == 0` 31 (174 bytes); half declared in the loop's init beside i 2; the id
-// count as `sizeof(hill->ids) / sizeof(hill->ids[0])` 2 (the hill/index reload pair unchanged in each).
-// Round 165 (m3 lane 5, plain, with 0x2be050 and 0x2bdc00 matched in each): the function moved to retail's address
-// order, after its caller 0x2bdc00 and ahead of 0x2bdd20 (all 40 other functions in this file kept) 2; the marker
-// query through an inline (index, kind, maximum, ids) helper, here only 2, also at 0x2be050's query 2; the ids
-// pointer taken ahead of the index test 2; the step products as `((i + 1) << 5) / half - (i << 5) / half` 75
-// (156 bytes). The reload pair stays index first in each.
-// Round 189 (m3 lane 4, plain, 0x2be050 and 0x2bdc00 checked): the odd count dropped by `if (count & 1) count--;` 9;
-// an early return for NONE ahead of the query 60; the step loop in a static inline (hill, half) helper 145 (0x2bdc00
-// 55); `hill->count = count -= count & 1;` 2 (same code). Retail 0x2be050 takes the hill in EDI, so retail's first
-// reload is the hill argument for it. A bare block around half and the step loop 2, and one ending count's scope
-// before the polygon test 2 (both the same code).
+// The hill is the function's own object: as the object pointer it is the first value the compiler tracks, so after
+// the step loop retail reloads it ahead of the index (as a plain first parameter the index was reloaded first).
 // @retail 0x2bdc70
-void hill_set(s_polygon_2be *hill, long index)
+void s_polygon_2be::hill_set(long index)
 {
 	if (index != NONE)
 	{
-		long count = function_19ec40(0, 0.0f, (short)(index + 11), NONE, 0, 16, hill->ids, 0.0f);
+		long count = function_19ec40(0, 0.0f, (short)(index + 11), NONE, 0, 16, ids, 0.0f);
 
 		if (count >= 4)
 		{
 			long half;
 
 			count -= count & 1;
-			hill->count = count;
+			this->count = count;
 			half = count / 2;
 			for (long i = 0; i < half; i++)
 			{
-				hill->steps[i] = (i + 1) * 32 / half - i * 32 / half;
+				steps[i] = (i + 1) * 32 / half - i * 32 / half;
 			}
 		}
-		if (hill->count >= 4 && !(hill->count & 1))
+		if (this->count >= 4 && !(this->count & 1))
 		{
-			hill_build_polygon(hill, index);
+			hill_build_polygon(this, index);
 		}
 	}
 	else
 	{
-		hill->count = 0;
+		this->count = 0;
 	}
 }
 
