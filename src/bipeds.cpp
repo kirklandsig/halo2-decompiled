@@ -5527,6 +5527,19 @@ real magnitude3d(vector3f const *v);
 // original/shared complete flight scale 2/30/2/184/2/30/2/184. All restored;
 // actor move versus second argument push remains the only two differences.
 // MiniMax R (11-11): no new form tried this round, no lower score (2): the two points are still the 0x1fb7e0 call setup - the first NONE has to be pushed after the actor moves into ECX and before EDX is zeroed - and that push order comes from the callee's declaration and the argument list, which this lane may not edit.
+// Round 98 (m3 lane 10, fast with 0x1fb7e0, 0x24590, 0xe3c90, which stay matched; control 2). Cause found: retail's order
+// is not the callee's parameter order (the other 35 callers push both NONEs first) but one event call per arm, merged by the
+// compiler: the merged block then sets the registers before the pushes and the first push is hoisted above them. With one
+// call per arm (three, or two with the type local in the else arm) this build gives `push -1; xor edx, edx; push -1` but
+// keeps the actor in ECX across 0x24590 (20 each; with a named actor local 20/20); retail holds it in EDI and copies it
+// (`mov ecx, edi`), so retail's callers have no register information for 0x24590 (no retail caller keeps ECX or EDX
+// across it). Diagnostic, reverted: a named actor local, three calls and 0x30bf0 (already `inline`) in 0x24590's place give
+// retail's tail exactly (`mov edi, [edi + 0x12c]` ... `push -1; mov ecx, edi; xor edx, edx; push -1`; 27, all from the
+// stand-in). BLOCKED-BY 0x24590: needs round 32's `inline` on magnitude3d's definition (src/unknown_023540.cpp, on this
+// round's Avoid list, and six unmatched callers rose with it); the body for it is build/r98/lead-e3380.patch.
+// Also tried: the call through a file-local forceinline wrapper with its parameters in five orders 2 each (same code); the
+// type selection written as a conditional expression in the argument list 2 (same code), with a short cast 2, with `&&`
+// 19, inverted 2; a named actor local with the single call 2 (same code); four calls 45; two calls with a 0x56 default 207.
 // Round 416: Direct admission/timing/final-actor rejections and complete admission/actor guards
 // 2/2/2/2; falling-default event 32; baseline outcomes plus one admitted event 38 (897 bytes);
 // angular-velocity input pointer 2; final rejection with falling-default event 32. All restored;

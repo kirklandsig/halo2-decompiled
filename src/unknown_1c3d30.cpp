@@ -77,6 +77,9 @@ c_2d8ab0 *g_47f044;
 // New: direct world exit, const rate, const step input, scalar/record names,
 // released-object reference, body pointer, named state result and captured
 // increment result all 7. All forms restored.
+// MiniMax A (11-12): no new form, no lower score (7); the group loop still loads the entity list into
+// EAX and the index into ECX where retail uses ECX and EDX, and the release loop's entry test still
+// uses EDX and EAX where retail uses EAX and ECX; the permuter (612 s) produced no candidate.
 // MiniMax G (11-10): no new form, no lower score (7); four group-loop splits (the entity list, the index, the group entry and the element read each in their own local) all score 63, so the group loop still loads the entity list into EAX and the index into ECX where retail uses ECX and EDX, and the release loop's entry test still uses EDX and EAX where retail uses EAX and ECX.
 // MiniMax C (11-11): no new form, no lower score (7); the group loop still loads the entity list into EAX and the index into ECX where retail uses ECX and EDX, and the release loop's entry test still uses EDX and EAX where retail uses EAX and ECX; the forms tried this round (the element read through a named local, the index in a named local and both) compile to the same 507 bytes and the same seven differences.
 // MiniMax I (11-09): no new form, no lower score; this round's permuter (900 s, then 1800 s with annealing, the second spending 843 s on the reduced image's build) produced no candidate; the element read through a named entity local, an entity-list local, an index local and all three together compile to the same 507 bytes and the same seven differences; the group loop still keeps the entity list in ECX and the index in EDX where retail keeps them in EAX and ECX, and the release loop's entry test still uses EAX and ECX where retail uses EDX and EAX.

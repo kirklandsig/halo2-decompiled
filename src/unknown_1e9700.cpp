@@ -241,8 +241,12 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
+// MiniMax H (11-12): no new form, no lower score (353): the history entries read through a named record
+// pointer (player_index, time and amount off one pointer) compile to the same bytes as the indexed form, and
+// the permuter refuses this function because the reduced image and the full image disagree (446 against 350).
+// The score line below read 344 from a reduced build; the full build gives 353, which is the number here.
 // MiniMax H (11-11): the consideration flag is now a true default cleared by the test, which is retail's shape.
-// score 344 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
+// score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // Round 170 (m3 lane 5, fast with the file's functions and 0xd9640; base aligned 132, masked 35): slot references counted in
 // both listings: retail killer 8, victim_team 8, damage_code 7 (killer stays in its home and is reloaded into EDX/EDI around the
 // fallback, the code is read once into ESI for both pushes); ours victim_team 8, damage_code 8, killer 6 (killer in EBP through

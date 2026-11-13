@@ -2408,6 +2408,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // reduced image); our body is longer than retail's (eight bytes in that image), so the jump table lands later
 // and every branch after it differs.
 // score 479 (was 479): earlier 477, 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
+// earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // MiniMax R (11-10): no new form, no lower score.
 // Earlier 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
 // (0x2594b5 `comiss xmm0, [1.0]; jbe 0x2597fa`, true for a NaN distance); `d <= 1.f` compiled to
@@ -2678,6 +2679,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // P423: Complete case four after 9/10/12/11/6/14/18/21:
 // 483/483/483/470/470/470/476/472. NOT kept: the 470 forms move the case away from its
 // retail position; no byte match. Original complete callback restored.
+// T95: Native entry and first point now agree; first +0x51 is a branch displacement.
+// Motion/animation/both last-consumer scopes 479/479/479; paired final planar
+// memcpy/memmove 479/479; state/current/both existing vector setters 565/592/594.
+// NOT kept: no exact transfer-form repair; original complete body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
