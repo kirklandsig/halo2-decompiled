@@ -2421,6 +2421,9 @@ void function_cfec0(long unit_index)
 // still the only difference left - it returns the constant where retail moves the register copy (mov eax, ebx); every
 // spelling of that copy folds back into the constant, and the per-level epilogues of the earlier forms move retail's
 // lazy pushes into the prologue.
+// P455: Explicit rejected else-return arms at unit/parent/seat levels, seven
+// subsets 2/2/2/2/2/2/2; signed-range non-sentinel admission 92.
+// NOT kept: no exact separate NONE exit; original body and lazy saves restored.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
@@ -3546,6 +3549,10 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // pair of saved registers - the root index sits in edi here and in ebp in retail, and the rigid body's byte offset takes
 // the other; the sixteen-bit root index that gives retail's registers changes the width of the NONE test, so the two
 // cannot be had together.
+// P455: Captured/direct point aggregate 12/22; captured/direct shared setter
+// 12/12; standard point copy 46; entry point storage 12; setter result as
+// query input 12; post-root point storage 12. NOT kept: no match; wide
+// body comparison and original body restored; root/body saved-register pair remains.
 // @retail 0xcc460
 bool __stdcall function_cc460(long object_index)
 {
@@ -6106,6 +6113,9 @@ void function_cf040(long unit_index, short type)
 // MiniMax B (11-13): no new form, no lower score (1): one instruction is left, the SIB byte of the weapon loop's header
 // lookup, whose address operands retail orders the other way round; the same lookup written as a pointer to the header
 // or through the masked index keeps our order.
+// P455: Actual holder/input/occupant/group/result/iterator/unit/origin role names,
+// eight isolated forms 1/1/1/1/1/1/1/1. NOT kept: no byte match;
+// original executable body restored; frame and lone lookup operand exchange remain.
 // @retail 0xc92c0
 bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_index, long *blocker_index, bool *grouped)
 {
