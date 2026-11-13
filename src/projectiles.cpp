@@ -451,6 +451,14 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 // the shared normalizer takes its vector by pointer, so the axis copy's address escapes and the store cannot be reordered, and
 // making that helper take the vector by reference changes nothing (0xfa580 still matches, 0xfbd40 stays 3). This round: an extra
 // pointer local to the axis, used by the normalizer call or left unused, and the normalizer reading its parameter through its
+// address, all keep the same three differences (3 each, with 0xfa580 still matching). This round: the axis copy through the
+// existing vector3f_assign scores 81; a pointer local to the axis handed to the normalizer scores 14 (the flag order is still
+// ours and the squares come out in i, j, k order instead of retail's k, j, i); both are reverted.
+// This round: the normalizer reading its parameter through its address reproduces retail's tail exactly but scores 11, because
+// the squared terms then come out in i, j, k order instead of retail's k, j, i; the form is reverted. This round: the axis copy
+// between the sine and the cosine gives the same bytes (3); the flag assignment before the angle computation scores 10; the axis
+// copy written as three dword casts scores 28 (the copy loses its `lea` and the store stays after the flag OR); the escape in the
+// normalizer keeps the squared terms in i, j, k whatever order the source uses, so the tail and the squares cannot both be had.
 // address, all keep the same three differences (3 each, with 0xfa580 still matching).
 // @retail 0xfbd40
 void function_fbd40(long projectile_index)
@@ -1372,6 +1380,9 @@ extern vector3f *g_4687ac;
 // queries joined as one `||` expression 163; early `return false` for the radius/tag test 181 (767 bytes).
 // Permuter (25 min on #1061, about 1140 variants): 160 only with vector3d_from_points3d's two points swapped; not kept.
 // MiniMax A (11-13): no new form, no lower score (163): our frame is 0x48 against retail's 0x34, so every later offset is shifted;
+// the permuter ran 78 tries in 600 s and kept the baseline, and this round's run (4 tries in 394 s) kept it again.
+// This round: moving the opposite-point block after the first call scores 220, and re-reading the radius after the calls scores
+// 184; both are reverted.
 // the permuter ran 78 tries in 600 s and kept the baseline.
 // @retail 0xfc030
 bool function_fc030(long projectile_index, point3f const *point, s_collision_result_1697c0 *collision)

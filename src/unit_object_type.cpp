@@ -2421,6 +2421,9 @@ void function_cfec0(long unit_index)
 // still the only difference left - it returns the constant where retail moves the register copy (mov eax, ebx); every
 // spelling of that copy folds back into the constant, and the per-level epilogues of the earlier forms move retail's
 // lazy pushes into the prologue.
+// P455: Explicit rejected else-return arms at unit/parent/seat levels, seven
+// subsets 2/2/2/2/2/2/2; signed-range non-sentinel admission 92.
+// NOT kept: no exact separate NONE exit; original body and lazy saves restored.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
@@ -3546,6 +3549,10 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // pair of saved registers - the root index sits in edi here and in ebp in retail, and the rigid body's byte offset takes
 // the other; the sixteen-bit root index that gives retail's registers changes the width of the NONE test, so the two
 // cannot be had together.
+// P455: Captured/direct point aggregate 12/22; captured/direct shared setter
+// 12/12; standard point copy 46; entry point storage 12; setter result as
+// query input 12; post-root point storage 12. NOT kept: no match; wide
+// body comparison and original body restored; root/body saved-register pair remains.
 // @retail 0xcc460
 bool __stdcall function_cc460(long object_index)
 {
@@ -4708,6 +4715,7 @@ void function_c50a0(long unit_index)
 	}
 }
 
+// MiniMax G (11-13): no new form, no lower score (166): the diff re-read this round confirms the first difference is still the register plan around the object pool pointer, which none of the source spellings listed above moves, so the body stands.
 // MiniMax A (11-12): no new form, no lower score (166): the register plan still differs - retail keeps the vehicle pointer in esi, the -1 and the child index in ebp and the object pool pointer in edx, ours keeps the pool in esi and the vehicle in ebp - and the load of the old driver index sits before the definition lookup in ours and after it in retail; none of the source spellings tried earlier moves that plan, so the body stands.
 /* finds the vehicle's driver (+0x248) and gunner (+0x24c) among its
    riders, in two passes (plain seats, then seat groups whose rider is in
@@ -5154,6 +5162,7 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 /* clamps a direction to the unit's yaw and pitch limits for aiming (or,
    when asked, for looking, relative to its aim) in its own frame; whether
    it changed */
+// MiniMax G (11-13): no new form, no lower score (169): the diff re-read this round puts the first difference inside the shared cross-product helper, whose own file this lane may not edit, and the staged spelling of that helper measures 169 again, so the body stands.
 // MiniMax H (11-12): no new form, no lower score (169): retail loads up.k and up.j before up.i where this build preloads all three, retail keeps the clamped yaw and pitch in the frame where this build reuses the two incoming argument slots, and the local vector sits at +0xc where retail's is at +0x18; the cross-product helper's own file stays as it is.
 // MiniMax G (11-11): no new form, no lower score (169); the argument orders that reach 127 (the second cross product, the
 // frame call and the two angle readings with their operands exchanged) compute other values than retail - retail's bytes
@@ -6118,6 +6127,9 @@ void function_cf040(long unit_index, short type)
 // MiniMax B (11-13): no new form, no lower score (1): one instruction is left, the SIB byte of the weapon loop's header
 // lookup, whose address operands retail orders the other way round; the same lookup written as a pointer to the header
 // or through the masked index keeps our order.
+// P455: Actual holder/input/occupant/group/result/iterator/unit/origin role names,
+// eight isolated forms 1/1/1/1/1/1/1/1. NOT kept: no byte match;
+// original executable body restored; frame and lone lookup operand exchange remain.
 // @retail 0xc92c0
 bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_index, long *blocker_index, bool *grouped)
 {
@@ -6678,6 +6690,11 @@ done:
    fell toward (front, back, left, right), plays its death (0x10ff40) and,
    from type 3, sets its ragdoll timer +0x1f5, its flags and (when the
    death had no animation) its deadness; a free biped turns to face it */
+// MiniMax B (11-13): no new form, no lower score (250): retail's scale block multiplies the x component in place and the y
+// component into a fresh register, which no single expression form gives; the facing copy, the split length test, the
+// __assume and the duration forms were measured again on the committed convention and none of them reached the 250
+// baseline, and the permuter (300 s, 7 tries) found 243 against a 244 reduced-image baseline, below the eight-point bar,
+// so the body is the committed one.
 // score 250 (was 254): Frame 0x24 agrees; retail takes the direction in ECX (round 82: now ours too) and keeps
 // the unit pointer in EBX, the definition on the stack. Round 5 of #1049: retail's epilogue clears AL (`xor al,
 // al` on every path, including the early return), so the function returns bool false (256 -> 254). The

@@ -8,6 +8,7 @@
 #include <xtl.h>
 #include <string.h>
 #include "map_file_path.h"
+#include "cache_copy_globals.h"
 
 char *csprintf_256(char *buffer, const char *format, ...);
 int function_11c920(char const *s1, char const *s2);
@@ -38,17 +39,7 @@ struct s_cache_copy
 s_cache_copy g_55acac[MAXIMUM_CACHE_COPIES];
 
 /* the map being copied and the two maps waiting to be */
-struct s_cache_copy_request
-{
-	char map_name[256];
-	long priority;
-};
 
-extern long g_55bd04;
-extern long g_55bd08;
-bool g_55bd0c;
-char g_55bd21[0x103];
-s_cache_copy_request g_55be24[2];
 
 enum
 {
@@ -226,9 +217,6 @@ bool cache_copy_complete(char const *map_name)
 	return state >= 3 ? true : false;
 }
 
-long g_55bd18;
-long g_55bd1c;
-bool g_55bd20;
 
 long function_12d400(long type, long size, long user_data, long update, long release);
 void function_12d520(long address);
@@ -237,21 +225,21 @@ bool function_2141f0(void);
 // @retail 0x214030
 void cache_copy_buffer_release(void)
 {
-	if (g_55bd18)
+	if (g_55b4f0.buffer)
 	{
-		function_12d520(g_55bd18);
-		g_55bd18 = 0;
-		g_55bd1c = 0;
+		function_12d520(g_55b4f0.buffer);
+		g_55b4f0.buffer = 0;
+		g_55b4f0.buffer_size = 0;
 	}
 }
 
 // @retail 0x213fa0
 void __stdcall cache_copy_buffer_reclaim(long address, long user_data)
 {
-	while (g_55bd18)
+	while (g_55b4f0.buffer)
 	{
-		g_55bd20 = true;
-		if (g_55bd0c)
+		g_55b4f0.reclaim_requested = true;
+		if (g_55b4f0.done)
 		{
 			function_2141f0();
 		}
@@ -261,13 +249,13 @@ void __stdcall cache_copy_buffer_reclaim(long address, long user_data)
 // @retail 0x213fe0
 void cache_copy_buffer_resize(long size)
 {
-	if (g_55bd1c != size)
+	if (g_55b4f0.buffer_size != size)
 	{
 		cache_copy_buffer_release();
-		g_55bd18 = function_12d400(0, size, 0, 0, (long)cache_copy_buffer_reclaim);
-		if (g_55bd18)
+		g_55b4f0.buffer = function_12d400(0, size, 0, 0, (long)cache_copy_buffer_reclaim);
+		if (g_55b4f0.buffer)
 		{
-			g_55bd1c = size;
+			g_55b4f0.buffer_size = size;
 		}
 	}
 }
@@ -282,10 +270,10 @@ long cache_copy_current_priority(char const *map_name)
 	path.text[0] = 0;
 	path.get(map_name);
 	current_path.text[0] = 0;
-	current_path.get(g_55bd21);
+	current_path.get(g_55b4f0.path);
 	if (!function_11c920(path.text, current_path.text))
 	{
-		result = g_55be24[0].priority;
+		result = g_55b4f0.requests[0].priority;
 	}
 	return result;
 }
@@ -300,10 +288,10 @@ long cache_copy_queued_priority(char const *map_name)
 	path.text[0] = 0;
 	path.get(map_name);
 	queued_path.text[0] = 0;
-	queued_path.get(g_55be24[1].map_name);
+	queued_path.get(g_55b4f0.requests[1].map_name);
 	if (!function_11c920(path.text, queued_path.text))
 	{
-		result = g_55be24[1].priority;
+		result = g_55b4f0.requests[1].priority;
 	}
 	return result;
 }
@@ -368,10 +356,10 @@ bool map_names_equal(char const *map_name, char const *other_map_name)
 // @retail 0x214990
 void cache_copy_hurry(void)
 {
-	if (g_55bd04 && g_55bd04 < 0x11)
+	if (g_55b4f0.state && g_55b4f0.state < 0x11)
 	{
-		g_55bd08 = 2;
-		g_55bd04 = 0x11;
+		g_55b4f0.result = 2;
+		g_55b4f0.state = 0x11;
 	}
 }
 
@@ -386,28 +374,28 @@ bool map_copy_request(char const *map_name, long priority)
 	((s_map_name const *)map_name)->map_file_path_get(path);
 	if (location == _map_location_none)
 	{
-		if (!g_55be24[1].map_name[0] || priority >= g_55be24[1].priority)
+		if (!g_55b4f0.requests[1].map_name[0] || priority >= g_55b4f0.requests[1].priority)
 		{
-			memset(&g_55be24[1], 0, sizeof(g_55be24[1]));
-			strncpy(g_55be24[1].map_name, path, 0x100);
-			g_55be24[1].map_name[0xff] = 0;
-			g_55be24[1].priority = priority;
+			memset(&g_55b4f0.requests[1], 0, sizeof(g_55b4f0.requests[1]));
+			strncpy(g_55b4f0.requests[1].map_name, path, 0x100);
+			g_55b4f0.requests[1].map_name[0xff] = 0;
+			g_55b4f0.requests[1].priority = priority;
 			result = true;
 		}
 	}
 	else if (location == _map_location_copying)
 	{
-		if (map_names_equal(path, g_55be24[0].map_name))
+		if (map_names_equal(path, g_55b4f0.requests[0].map_name))
 		{
-			g_55be24[0].priority = priority;
+			g_55b4f0.requests[0].priority = priority;
 		}
 		result = true;
 	}
 	else if (location == _map_location_queued)
 	{
-		if (map_names_equal(path, g_55be24[1].map_name))
+		if (map_names_equal(path, g_55b4f0.requests[1].map_name))
 		{
-			g_55be24[1].priority = priority;
+			g_55b4f0.requests[1].priority = priority;
 		}
 		result = true;
 	}
@@ -415,7 +403,7 @@ bool map_copy_request(char const *map_name, long priority)
 	{
 		result = true;
 	}
-	if (g_55be24[0].map_name[0] && g_55be24[1].map_name[0] && g_55be24[1].priority >= g_55be24[0].priority)
+	if (g_55b4f0.requests[0].map_name[0] && g_55b4f0.requests[1].map_name[0] && g_55b4f0.requests[1].priority >= g_55b4f0.requests[0].priority)
 	{
 		cache_copy_hurry();
 	}
