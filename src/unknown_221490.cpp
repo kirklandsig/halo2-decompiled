@@ -1023,6 +1023,21 @@ extern "C" void _ReadWriteBarrier(void);
 // parameters declared first, a dword index, the voice from the global or ahead of `globals`, a zero local for the
 // memset, the memset after the first volume.
 // Round 157 (m3 lane 8, fast): the existing gain-to-volume helper `__forceinline` 21 (same code; 0x220fd0 194, 571 bytes).
+// Round 78 (m3 lane 15, fast; a compile-only build of this file reproduces every scratch register): without both
+// barriers (control 28, re-measured): `__assume(voice->buffer != NULL)` after the voice pointer 28; `__assume(voice_index
+// >= 0 && voice_index < globals->voice_count)` there 28; a count local with `__assume(voice_index < count)` 28; an empty
+// `if (voice->buffer != NULL && voice->submix != NULL)` there 28; the first two gains bound to const references ahead of
+// their conversions 28 (all the control's code). Reading (the no-barrier listing): from the truncation on retail is a plain
+// next-fit EAX/ECX/EDX rotation (truncation ECX, mask EDX, buffer set-up EAX/ECX, coefficient EDX, EAX/ECX again) and so is
+// ours one step ahead, which then skips the busy EAX at the mask; the one step is the memset's zero. Compile-only, no
+// form with retail's registers and no added code: 28 dead or code-free statements after the voice pointer or the memset
+// (unused loads, empty tests, inline getters, eight assume shapes); a call ahead of the decibels load (the rotation is not
+// reset by calls); forwarding, reference, out-parameter and forced-inline wrappers of the first two conversions; named
+// volume locals; the helper returning `int`, `dword` or `LONG`, with an `int` local, or converting through `__int64`,
+// `dword`, `double` or log10f. Forms that change the code: the helper returning from both arms 205 lines for 199, a
+// pinned-volume or outer-ternary helper 205/208, early returns or a PIN statement 210 (decibels EAX, the rest ours), the
+// helper returning `short` (a `movsx` per use, 204 lines) gives all three of retail's registers: a widening per conversion
+// is the kind of step retail has two more of.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

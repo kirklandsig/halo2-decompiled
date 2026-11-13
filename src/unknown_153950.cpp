@@ -744,6 +744,11 @@ struct s_player_axes_153d10
 // declaration 2 (all three the same code); the slot's direction written through a real pointer as an array 18 (re-measured,
 // as round 41). Forms earlier measured only in a harness, now plain: the axes, forward and up pointers declared at the top
 // of the block 2; forward and up declared after delta 2 (both the same code).
+// Round 117 (m3 lane 12, plain), on round 60's named-field form (forward 0x20 / up 0x2c in the player state, the 0x8c
+// vector in the speed slot, globals.h; the axes view dropped): both axis pointers dropped, cross and dots through the
+// state 37; the pointers declared after the cross 6 (this product right; the i row's first and the k row's two products
+// load up first); the pointers before delta with the cross and dots through them 103; cross3f and dot3f 8; cross3f_staged
+// and dot3f 8 (the same code). Header and body restored.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

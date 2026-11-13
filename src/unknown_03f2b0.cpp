@@ -1323,6 +1323,10 @@ struct s_133f70;
 // previous measured 326, so both forms were restored; what still differs is that the previous level is a dword
 // against retail's byte, the distance argument travels in ECX against retail's EAX, success is stored after the
 // esi spill against retail's before it, and the header's global is loaded last against retail's first.
+// MiniMax B (11-12): no new form, no lower score (93 on the full image, 355 on the reduced one): every difference
+// still sits before the 0x4c190 call - the previous level is a dword against retail's byte, the distance argument
+// travels in ECX against retail's EAX, success is stored after the esi spill against retail's before it and the
+// header's global is loaded last against retail's first - and the tail stays blocked by 0x23690 in another file.
 // score 93 (was 93; 175 before round 82): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
 // frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain (the 93 is the
 // round 82 baseline of this body; the scores listed below were measured on earlier bodies).
