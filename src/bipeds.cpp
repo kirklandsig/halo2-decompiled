@@ -1791,6 +1791,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // file still match); the one-use animation-flags pointer read at its use 685 (2792 B); both flags_348 bit reads through
 // flags_348_bits 570. No other untried natural form is left here: the frame dword still needs the gravity argument as an
 // inline call, and any new function flips 0x54590.
+// P436: Fixed existing biped/tag/component/animation receivers, airborne result,
+// root handle/receiver and turning result: eight fast 566s, control 566. NOT kept:
+// no native frame-word repair or byte change; original complete body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3826,7 +3829,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 /* turns the biped toward its desired facing: flying ones by their flight
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
-// score 549 (was 561): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
+// score 548 (was 561): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // MiniMax S (11-09): no new form, no lower score (605 in the reduced build); retail keeps the biped
 // index in EBP and the definition pointer in ECX with a home at +0x18, ours keeps the definition in
 // EBP and the index in EBX with a home at +0x1c, and retail's changed-result byte sits at +0x11
@@ -4009,6 +4012,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // remaining cross product through cross3f (the triple products as cross3f + dot3f) 690 (2776 B, masked 197); the whole
 // first wall block through helpers 636; every planar product through dot_product2d/cross_product2d 621; the three
 // TEST_FIELD_BIT tests through the file's field_bit_test 647.
+// P436: Baseline remeasured 548 (opening heading 549); frame 0x78 agrees, result byte
+// +0x12 versus +0x11 and flight scalar +0x14 versus +0x18 remain. Fixed existing
+// biped/tag/state receivers, special/wall results, native angle/cosine and phase limits:
+// eight fast 614s (control 614). NOT kept: no byte change or eligible gain; original
+// complete body restored. Native-width immutable inputs differ from earlier double-carrier forms.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

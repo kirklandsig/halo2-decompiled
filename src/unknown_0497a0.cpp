@@ -8,6 +8,7 @@
 #include "unknown_11cc90.h"
 #include "unknown_0494b0.h"
 #include "globals.h"
+#include "object_tag_definitions.h"
 
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -353,6 +354,10 @@
 // mode subsets 1/2/4/3/5/6/7 and all with unsigned ordinals: 618/617/558/656/650/632/647/647.
 // NOT kept: no exact scalarized output-record graph; original six scalar products,
 // clamp arms, shape/wave helpers and complete body restored.
+// P436: Fixed existing view/projection/side basis, special result, both waves, both
+// channel inputs, all six channel products and the complete maximum tree: eight fast
+// 536s, control 536. NOT kept: frame stays 0x54 versus native 0x60 with no byte change;
+// original complete body, every expression and all shared helpers restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1076,6 +1081,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // each alone, initial pair, next pair, all and all by library copy: 618/599/596/544/695/666/867/867.
 // NOT kept: input-record copies miss equality and regress; original input reads,
 // frame 0xa8/0xac, geometry, conversion helper and complete body restored.
+// P436: Fixed existing point/current-state/next-state receivers, transition weight,
+// V origin, half-width, tint-object handle and side reciprocal: eight fast 233s,
+// control 233. NOT kept: frame 0xa8 versus 0xac and native scalar/spill homes
+// remain with no byte change; original complete tuning body restored.
+// P436: Existing object-tag attachments.address replaces the raw +0x98 read;
+// fast and ordinary checks both preserve 233 and 2592/2596 bytes.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1150,8 +1161,8 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
         {
             point3f tint = *g_468710;
             byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
-            byte *object_tag = g_4e3b44[(*(long *)object) & 0xffff].bytes;
-            byte *markers = *(byte **)(object_tag + 0x98);
+            s_object_definition *object_tag = (s_object_definition *)g_4e3b44[(*(long *)object) & 0xffff].bytes;
+            byte *markers = (byte *)object_tag->attachments.address;
             function_bad50(object_index, *(short *)(markers + source->marker_index * 24 + 12), &tint);
             for (long c = 0; c < 3; ++c)
                 (&color.red)[c] *= (&tint.x)[c];
