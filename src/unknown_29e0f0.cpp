@@ -449,6 +449,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // the run loop counter `long` 1260 (2242 B); the endpoint search counter `long` 423 (1576 B); the group bitmap as `= {0}`
 // 382 (same code); the marker flag stored as `arg_4->field_2c = local_37 < 4;` before the append 404 (1574 B).
 // Re-measured: the marker position declared at function scope 382 (same code; listed 398 on an older body).
+// P433: Fixed group/lower-endpoint/candidate-record bindings, seven subsets,
+// then all with fixed validator mode: 382 each, 1596/1596 bytes. NOT kept:
+// native selected/default and pass homes unchanged; original full body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

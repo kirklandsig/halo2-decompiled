@@ -870,7 +870,7 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // MiniMax G (11-12): no new form, no lower score (92): the seat index and the direction sit 0xc below retail's slots and the
 // shared block-vector slot 0xc above them, so the whole frame is a permutation of retail's; the permuter (killed at its time
 // limit) produced no form.
-// score 92 (was 152): earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
+// Earlier 92 (was 152), start 288: Left are the origin and direction frame homes (swapped), the projectile index, grenade type
 // and throw-globals homes, the release point (retail its own local in center's slot), the velocity scale's first
 // product and the spread blend's schedule. Before this round 288, 298 before lane 15 round 61's throw velocity through
 // vector3f_scale; earlier, flag 17 cleared and restored through bit_vector_set (retail reads the flags word
@@ -1098,6 +1098,11 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // origin (no position local) 248 (1739 B); the not-attached arms swapped (`unit->unknown12c == NONE` first; retail lays the
 // center arm first) 255. Diagnostic only: the blend through a private copy of the static vector3f_interpolate of
 // src/unknown_1a58b0.cpp (an Avoid file; its body is this blend) 95.
+// P439: Standard complete coordinate transfers at override origin/direction, fallback direction,
+// vehicle/player forward and fallback left, then backward override-origin/player-forward:
+// 270/312/308/130/313/171/270/313. NOT kept: range transfers do not recover native
+// saved-handle/type and shared-vector homes; each adds a copy call (21 versus 20).
+// Original copies and full body restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1983,6 +1988,10 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // up again after the branch, 74 (249 bytes), but the offset's add then comes before the compare and the unit index
 // takes EBP. Retail has the offset's load before the compare and its add after it, with nothing kept for the
 // second lookup but the scaled index.
+// P422: Complete mutable/const header tables with primary after/before acquisition
+// 65/67/65/67; const pool root 11/11; const pool/table 65/67. Existing object getter
+// boundaries, expression/unit receiver: 11/90 twice. All original calls restored.
+// NOT kept: table sharing adds a spill; input scheduling remains at 11.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {

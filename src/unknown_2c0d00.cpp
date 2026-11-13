@@ -1754,6 +1754,9 @@ long function_1fa7f0(void);
 // and untyped step arms 458 (1746 B), the fallback's `next == 0 || next == index` first 400 (2 lines differ), the emit's
 // `type == NONE` first 400 (aligned 361), the distance block's `!=` arm first 441, the corner choice as
 // `if (!side) corners[1]` 405.
+// P437: Fixed actual reverse distance/location/left/right query results, predecessor/endpoint
+// receivers, opposite orientation and signed count input: 400 each. NOT kept: frame 0x114 versus
+// 0x10c and edge/orientation/count homes unchanged; original complete body and helpers restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

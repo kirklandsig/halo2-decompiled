@@ -445,6 +445,9 @@ struct c_aggregate : c_child
 // (an explicit scope end) 31; one function-scope index for all three loops 31 (same code); the last boundary stored as
 // `starts[i] = total` with the index at function scope 116 (389 B); re-measured on this body: the dispatch gate with the type
 // test first 36, total declared before error 31. Frame 0x8024 in each; still BLOCKED by the build flag.
+// P438: Complementary signed dispatch/block/item continuations, seven subsets then
+// both fixed child continuations as well: eight 31 at native 373 bytes. NOT kept:
+// no escaped-output/spill-home repair; original loops and complete body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

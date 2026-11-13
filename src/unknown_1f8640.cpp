@@ -743,6 +743,9 @@ struct s_1f8a70_actor
 // route_found typed byte 184; declared at function scope 182; case 6's `route_mode == 0` test nested around the 0x1f9580 call 182
 // (same code); the zero-route test through a new inline bool helper (diagnostic) 381 (no setne, the layout moves); the first exit's
 // 0x1f86a0 call before `result = false;` 447 (1624 bytes).
+// P434: complete adjacent-family orders 236457/237456/237645/452376/456237/457236/457623/623457
+// gave 211/364/357/388/234/387/383/370. NOT kept: all regress; original cases and full body restored.
+// Native frame, first false BL and unit/result +0x12 home agree; dispatch and late false reload remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

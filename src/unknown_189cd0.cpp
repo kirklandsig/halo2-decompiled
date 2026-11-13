@@ -156,6 +156,15 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // the parameter 116; an arm-scoped object copy for every use in the positioned arm 116 (copy-propagated); the marker test
 // alone through the reference with the started test plain 96 (523 bytes); plain reads with `positioned` started false and
 // set under the spatialization test 141 (531 bytes).
+// Round 430, plain object reads: address-first class pointer 128f/120p;
+// direct class fields 119f/124p; shared class index 152f/144p; shared
+// class flags 115f/113p; success predicate 141f/148p; request input
+// 114f/116p; early tag exit 114f/116p; early slot exit 114f/116p.
+// Unchanged preview 94f against 11p; every executable form restored.
+// P432: plain object reads with marker/request/description scopes, source admission,
+// class selection, independent/upper-first scale limits, native description bit;
+// plain scores 116/116/116/148/154/116/120/120.
+// NOT kept: no permitted confirmed gain; original executable body restored.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

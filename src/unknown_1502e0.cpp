@@ -1052,6 +1052,9 @@ struct s_tail_transfer_traits
 // each use (no slot locals) 152 (gain under the gate). On that 152 form: `other` without its NONE preset 167 (808 B); `valid`
 // stored before the grenades 152 (same code); the no-seat primary through the existing 0xcbd50 (slot from a fresh lookup, primary
 // unpreset) 160 (816 B); the no-seat secondary through 0xcbd50 158 (812 B); `other` unpreset with `valid` first 167. Body restored.
+// P438: Original scenario/unit-index/unit/first/second and per-pass clock/age/weapon
+// bindings fixed independently: eight 153. NOT kept: selected-traits/unit/NONE homes
+// and no-seat reloads unchanged; original complete body restored.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1323,6 +1326,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // form: the count test through the existing 0x101640 getter 211 (1007 B), the held test through the existing 0x101240 getter 213,
 // both 211; on the 211 form: the flag helper reading the tag table global itself 211 (same code), `hand != 0` for the arm 221,
 // `count` declared after the unit lookup 211. Best 211 is a gain of 4, under the gate; body restored.
+// P437: Held/pending/inventory/player lexical identities 215 each; immutable player/pool,
+// read-only inventory and fixed shared flag result 215 each. NOT kept: frame 0x1c versus 0x18
+// and native pool/player/tag homes unchanged; original complete body and helpers restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1657,6 +1663,9 @@ void function_150820(dword *bits, bool local_only)
 // other way round (retail unit index in EDI, ours ESI). No other untried natural form found: declaration orders,
 // hand/slot/result widths and spellings, result graphs, early exits, existing getters, pool copies, lifetimes, joint
 // forms with 0x151b80 and permuter runs are all listed above.
+// P437: Fixed player/unit receivers and primary/player inputs, separate mode-consumer and
+// three-way admission scopes, and complete receiver/input binding graphs: 43 each. NOT kept:
+// no native player/hand or scratch-register recovery; original whole body and call tuples restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

@@ -1791,6 +1791,14 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // file still match); the one-use animation-flags pointer read at its use 685 (2792 B); both flags_348 bit reads through
 // flags_348_bits 570. No other untried natural form is left here: the frame dword still needs the gravity argument as an
 // inline call, and any new function flips 0x54590.
+// P436: Fixed existing biped/tag/component/animation receivers, airborne result,
+// root handle/receiver and turning result: eight fast 566s, control 566. NOT kept:
+// no native frame-word repair or byte change; original complete body restored.
+// P439: Complete coordinate ranges for unit/alternate facing, target and fixed velocity,
+// then backward target/unit-facing/alternate-facing/fixed-velocity: 624/624/587/633/587/624/624/633.
+// NOT kept: every range adds a call (28 versus 27); facing/velocity recover frame
+// 0xfc only at 624/633. Original material/airborne homes remain; original
+// transfers, shared eye helpers, gravity observation and full body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3601,6 +3609,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // the header's `flag11` bit 362 (same code); the component index in a named local for its NONE test and the lookup 362 (same
 // code); `value` declared before `direction` 362 (same code); `held` through the file's field_bit_test 362 (same code); the
 // fallback test as `size >= 1` 367 (1891 bytes).
+// P438: Original biped/component/definition bindings, cached count and strength/lift/
+// mass/projection bindings fixed independently: eight 362 at 1892/1908 bytes.
+// NOT kept: no frame or native component-address repair; original entire body restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3826,7 +3837,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 /* turns the biped toward its desired facing: flying ones by their flight
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
-// score 549 (was 561): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
+// score 548 (was 561): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // MiniMax S (11-09): no new form, no lower score (605 in the reduced build); retail keeps the biped
 // index in EBP and the definition pointer in ECX with a home at +0x18, ours keeps the definition in
 // EBP and the index in EBX with a home at +0x1c, and retail's changed-result byte sits at +0x11
@@ -4009,6 +4020,16 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // remaining cross product through cross3f (the triple products as cross3f + dot3f) 690 (2776 B, masked 197); the whole
 // first wall block through helpers 636; every planar product through dot_product2d/cross_product2d 621; the three
 // TEST_FIELD_BIT tests through the file's field_bit_test 647.
+// P436: Baseline remeasured 548 (opening heading 549); frame 0x78 agrees, result byte
+// +0x12 versus +0x11 and flight scalar +0x14 versus +0x18 remain. Fixed existing
+// biped/tag/state receivers, special/wall results, native angle/cosine and phase limits:
+// eight fast 614s (control 614). NOT kept: no byte change or eligible gain; original
+// complete body restored. Native-width immutable inputs differ from earlier double-carrier forms.
+// P439: Lower-first yaw then pitch producers: raw-result updates, lower-default selection,
+// exhaustive arms and standard upper-bound selection: 604/603/604/627/610/610/612/604.
+// NOT kept: no supported native result-byte/flight-home repair; every original clamp,
+// unordered path, helper and complete body restored. Ordinary raw/default/exhaustive yaw
+// and upper-selection pitch 607/601/611/629 regress against full 548.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4508,6 +4529,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // sits at [esp+0x44] and its matrix at [esp+0x60] while retail's origin sits at [esp+0x40] and its matrix at
 // [esp+0x50], so every slot below the matrix sits four bytes higher although both frames are 0x12c bytes; moving a
 // local to shape the frame is not allowed.
+// P438: Original component/position bindings, limit/lowered/distance producers and
+// the existing transform matrix/input/output bindings fixed independently: eight 356.
+// NOT kept: matrix/origin/property homes unchanged; complete body and helper restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -5436,6 +5460,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // is now 79/79/79 (same code); a `vector3f *const` pointer 79 (same code). Re-measured: axis declared, then assigned before
 // the normalize 79; sine before cosine 111. The five matched functions that inline the same rotation (0x1055b0, 0x177d10,
 // 0x23d260, 0x2551f0, 0x29c860) each spell it privately, so none gives a shared helper form to copy.
+// P438: Existing fallback coordinate ranges through native/forward/backward library
+// copies, excluding native/native: 65/77/69/74/80/77/68/79. NOT kept: the 65/69/68
+// leads add out-of-line copy calls absent in retail; other gains miss the gate.
+// Original complete body and include set restored; first rotation/cross operands remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

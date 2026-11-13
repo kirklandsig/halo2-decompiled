@@ -1349,6 +1349,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // magnitude3d(&change) for the history maximum 561 (3047 B, masked 110); the general arm's output rows through the existing
 // vector3f_add(current, &limited, out + 0xc) 469 (3047 B, masked 86); the general delta through the existing
 // vector3d_from_points3d(current, &scaled, &delta) 352 (3052 B, masked 82). Body restored.
+// Round 425: multi-use direct/flying/positive-normal/low-normal input weights,
+// mutable 528/527/477/405; immutable 528/527/477/405. NOT kept: no exact native result;
+// original input observations and complete body restored. Damping carrier and
+// raw/bounded homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
