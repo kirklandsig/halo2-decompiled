@@ -73,6 +73,7 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 	return (c_channel_effects_view *)SOUND_DRIVER_GLOBALS->effects;
 }
 
+// MiniMax B (11-13): no new form, no lower score (544); the permuter refuses the reduced image for this function, and the full-image search over the declaration and statement forms found nothing better.
 // score 544 (was 545): full build; b2D 11-06 statement walk against retail found no logic difference
 // (every branch, field offset, callee and argument agrees). Precision fix kept: log10 taken of a double (fyl2x then fmul 20 unrounded, 0x21fe2f-0x21fe37).
 // MiniMax A (11-12): no new form, no lower score (544); the file's fixed /Op still decides the mixed
