@@ -1856,6 +1856,10 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
+// MiniMax G (11-12): no new form, no lower score (445): the frame is still 0x8 against retail's 0xc — retail keeps the result byte in
+// the first argument's dead slot, the two flag bytes at the frame bottom and the control and controlling words above them, and it writes
+// the true default at the entry; declaring the two flags before the pointers gives 446, and the entry default with the switch's default
+// arm dropped gives 489, so neither spelling reaches retail's frame.
 // score 445 (was 445): earlier 445 (was 453): retail keeps the result byte in the first argument's dead slot and re-derives the unit in both seat
 // MiniMax E (11-11): no new form, no lower score (445); the frame's slots sit at retail's offsets one dword off
 // and retail keeps its frame pointer and the early pointer where ours does not.
@@ -3775,6 +3779,12 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
     return elapsed;
 }
 
+// MiniMax A (11-12): no new form, no lower score (12); the definition and the control still take each
+// other's homes (retail keeps the control at +0x1c and the definition at +0x20, ours the other way round) and
+// the two flag bytes are still cleared after the set test where retail clears them in the entry block; this
+// round's forms (the definition declared before the control, the overlay declared before the animation, the
+// force flag declared first, and the two flags declared ahead of the lookup, which rebuilds the function at
+// 682 bytes) all leave 12 or more, and the permuter found no candidate.
 // score 12 (was 12): earlier 12 (was 44): earlier BLOCKED-BY 0xe70b0 (its return type) for the frame 0x3c versus 0x38, lifted in lane 16 r97. Measured from
 // MiniMax b (11-06): no new form, no lower score; the action short's four-byte slot is the whole frame
 // difference, and it can only be a two-byte compiler temporary if 0xe70b0 returns its two-byte result

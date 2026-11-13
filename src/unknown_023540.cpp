@@ -2408,11 +2408,19 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// score 140 (was 140): frame and length agree; left: retail keeps both rectangle parameters as memory
+// variables (each chosen default is written into the parameter's home, `lea ecx; mov [home], ecx; mov ebx, ecx`)
+// and re-reads preserve_alpha after 0x131fc0 where ours hoists its load above the `simple` branch into CL.
+// Round 176 (m3 lane 5, fast = plain): box2f views of the rectangles (diagnostic cast) 154; PSTextureModes set
+// at the top of each shader arm 151 (1735 B, the load still hoisted); one two-row default array 140 (same
+// code); the final combiner's alpha in its own locals 148 (1725 B); the bitmap lookup nested under the tag
+// test 140 (same code). Re-measured: aggregate-initialised defaults selected after both are built 156
+// (1717 B), selected by ternaries into pointer locals 156, that with the height's reciprocal first 162.
 // MiniMax H (11-12): no new form, no lower score (140): the `simple` byte is still tested before the texture-mode global is stored where retail stores it first, the `preserve_alpha` byte is still loaded above that store and kept in cl, and retail's else arm still tests a byte one slot past the last argument where ours reuses the earlier load.
 // MiniMax I (11-11): no new form, no lower score (140): retail tests the `simple` byte, stores the texture-mode global and only then loads and tests the `preserve_alpha` byte, where our build hoists that load above the store and keeps it in cl; retail's else arm tests a byte one slot past the last argument (the stack slot the caller leaves behind) where ours reuses the earlier load.
 // MiniMax G (11-12): no new form tried this round, no lower score (140): the byte at esp+0x6c is still read in a
 // different register and retail's short arm still reads a stack argument this function's declaration does not carry.
-// score 140 (was 140): Frame and retail extent agree; caller flag residency and native
+// Earlier 140 (was 140): Frame and retail extent agree; caller flag residency and native
 // fallback selection remain. Both complete coverage clamps now follow the retail upper-default stores.
 // MiniMax S (11-11): no new form, no lower score (140): the frame and the extent agree with retail, and what is
 // left is the byte at esp+0x6c, which retail reads in AL after the store into the global while ours keeps it in CL
@@ -2435,7 +2443,7 @@ dword __cdecl function_131fc0(real alpha);
 // spelling gave 138, but a gain under the keep threshold is dropped, so the body is restored;
 // caller flag residency and native fallback selection remain.
 // MiniMax E (11-09): no new form, no lower score (140); retail loads the byte at esp+0x6c after the branch on the byte at esp+0x68, ours hoists that load above the store into the global.
-// MiniMax E (11-06): score 140 (was 140): no new form lowered it. The inlined corner rotation still
+// MiniMax E (11-06): 140 (was 140): no new form lowered it. The inlined corner rotation still
 // expands with the opposite operand order and stores its results in different homes than retail, and
 // the byte local at esp+0x6c is read in AL where ours reads CL.
 // MiniMax D (11-01): no new form tried, no lower score.
@@ -2447,7 +2455,7 @@ dword __cdecl function_131fc0(real alpha);
 // into the parameter's home, ours branches over the block and leaves the parameters alone, so the
 // vertex emission that follows is one instruction out of step; retail also reloads preserve_alpha
 // after the call in the short arm where ours keeps the value in a register.
-// MiniMax C (11-10): score 140 (was 140): no lower score this round. Retail builds both default
+// MiniMax C (11-10): 140 (was 140): no lower score this round. Retail builds both default
 // rectangles unconditionally (source {0,width,0,height} at esp+0x18, destination {320-w*0.5,
 // 320+w*0.5, 240-h*0.5+arg, arg+h*0.5+240} at esp+0x28), tests the source first and the destination
 // second, and writes the chosen default pointer back into the two parameters' own argument slots
@@ -2458,7 +2466,7 @@ dword __cdecl function_131fc0(real alpha);
 // reference-to-parameter spellings. Retail also reads a fourteenth byte argument (esp+0x70) in the
 // short arm where this source reads preserve_alpha (esp+0x6c), so the declaration would have to
 // change, which this lane may not do; the call sites live in another lane's file.
-// score 140 (was 140): Frame and retail extent agree; caller flag residency and native
+// Earlier 140 (was 140): Frame and retail extent agree; caller flag residency and native
 // fallback selection remain. Both complete coverage clamps now follow the retail upper-default stores.
 // Earlier 154 (was 251): frame 0x28 agrees; zero/sampler homes, bitmap transport and late fallback selection remain.
 // Earlier: 251 fast (was 252 fast): the pixel-shader RGB output mask is selected before the shift
@@ -3016,29 +3024,37 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// score 54 (was 94): both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
+// before; frame, bounds block, both trig sequences and every home retail's). Left: inside both corner sets
+// the scheduler places the x87 coordinate chains one slot earlier among the SSE ones than retail does
+// (first difference +0x527). Round 176 (m3 lane 5, fast = plain): the hand-written slot-12 shader call
+// replaced by the existing function_1cc30(12) 274 (2013 B: kept out of line); on 54: corner rows with
+// scale first, trig-first products, 0.5 first, 1.0 first, the second sum y first, each trig pair as two
+// statements, point2f coordinate pairs: 54 each (same code); rows swapped 211 (2004 B); sine first in
+// both pairs 149 (2009 B); the 23 other orders of the first set's four corner calls 57-233.
 // MiniMax H (11-12): no new form, no lower score (94): the bounds block now follows retail's order; what is left is the inlined corner rotation's x87 and SSE schedule and its result homes, and the corner helper's two statements swapped give 214.
 // MiniMax G (11-11): no new form, no lower score: the corner helper's two statements swapped 214 (2022 bytes, the
 // same code as an earlier round); the helper keeps one expression per coordinate.
-// MiniMax C (11-10): score 94 (was 211): the four bounds are now written corner by corner in the
+// MiniMax C (11-10): 94 (was 211): the four bounds are now written corner by corner in the
 // order 0, 2, 1, 3 and the second angle's cosine and sine have their own locals, which reproduces
 // retail's bounds block (0.5 first, the first zero compare after bounds[1]'s store, 240 in xmm7 and
 // once as a memory operand); left: the inlined corner rotation's x87/SSE schedule and result homes.
 // The helper's two products given their own named locals (u = x*cosine - y*sine, v = x*sine + y*cosine)
-// score 320 (1914 bytes), so that form is not kept and the helper keeps its single expression.
-// MiniMax S (11-11): score 94 (was 211): the bounds are written corner by corner (0, 2, 1, 3),
+// gives 320 (1914 bytes), so that form is not kept and the helper keeps its single expression.
+// MiniMax S (11-11): 94 (was 211): the bounds are written corner by corner (0, 2, 1, 3),
 // which reproduces retail's block (0.5 loaded first, the first zero compare right after bounds[1]'s
 // store, 240 in xmm7 and once as a memory operand); the corner sets' x87/SSE schedule remains.
 // MiniMax S (11-09): no new form, no lower score (211); bounds/trig scheduling and the second
 // cosine home remain.
 // MiniMax E (11-09): no new form, no lower score (211); the first difference is the two early exits, whose targets are one byte apart - retail's reaches one byte further into the function than ours.
-// MiniMax E (11-06): score 211 (was 211): no new form lowered it. The inlined corner rotation still
+// MiniMax E (11-06): 211 (was 211): no new form lowered it. The inlined corner rotation still
 // multiplies the two vectors in the opposite order and folds the constant as a memory operand where
 // ours keeps it in a register, so the result homes and the x87 rows differ.
 // MiniMax D (11-01): no new form tried, no lower score.
 // MiniMax G (11-04): no new form, no lower score.
 // MiniMax G (11-12): no new form tried this round, no lower score (94): the corner sets' x87/SSE schedule and
 // the second cosine's home still differ from retail's, and the length already agrees.
-// score 94 (was 211): Frame 0x58; 2022/2022 bytes. Bounds/trig scheduling and
+// Earlier 94 (was 211): Frame 0x58; 2022/2022 bytes. Bounds/trig scheduling and
 // the second cosine home remain; paired half extents recover native maximum/reciprocal registers.
 // Earlier 247 (was 279): Frame 0x58; 2027/2022 bytes. Maximum/reciprocal and
 // trigonometric scheduling remain; both normalized scales now use their native parameter results.
@@ -3291,12 +3307,12 @@ void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     if (first_scale == 0.0f) first_scale = 1.0f;
     if (second_scale == 0.0f) second_scale = 1.0f;
     real first_coordinates[8], second_coordinates[8];
-    real cosine = (real)cos(first_angle), sine = (real)sin(first_angle);
+    real cosine = cosf(first_angle), sine = sinf(first_angle);
     texture_corner_rotate(-1.0f, -1.0f, cosine, sine, first_scale, &first_coordinates[0]);
     texture_corner_rotate(1.0f, -1.0f, cosine, sine, first_scale, &first_coordinates[2]);
     texture_corner_rotate(1.0f, 1.0f, cosine, sine, first_scale, &first_coordinates[4]);
     texture_corner_rotate(-1.0f, 1.0f, cosine, sine, first_scale, &first_coordinates[6]);
-    real second_cosine = (real)cos(second_angle), second_sine = (real)sin(second_angle);
+    real second_cosine = cosf(second_angle), second_sine = sinf(second_angle);
     texture_corner_rotate(-1.0f, -1.0f, second_cosine, second_sine, second_scale, &second_coordinates[0]);
     texture_corner_rotate(1.0f, -1.0f, second_cosine, second_sine, second_scale, &second_coordinates[2]);
     texture_corner_rotate(1.0f, 1.0f, second_cosine, second_sine, second_scale, &second_coordinates[4]);

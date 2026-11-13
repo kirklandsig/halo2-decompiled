@@ -895,6 +895,10 @@ byte g_55e708;
 // m3 lane 2 r71 (fast with the same list): the loop index declared at the top of the function, before or after the
 // absolute index, 38/38; the marker array declared at the top of the function 38 (all three the same code: the loop's
 // load order does not follow declaration order here).
+// Round 112 (m3 lane 16, fast with the same list): the first-person count assigned inside the fallback test
+// (`if (type != 2 || ... || !(count = ...)) count = ...`) 38; the clamp as two tests on `count > 1` 38; the outer
+// test as an early return 38; the outer test as nested ifs 38 (same code each); the second tag read into a named local
+// for its test and call 40.
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {

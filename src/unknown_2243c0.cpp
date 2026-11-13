@@ -217,6 +217,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// MiniMax B (11-12): no new form, no lower score (117, was 117): the fallback path still masks the tag with a word
+// load where retail masks the 32-bit value (`and edx, 0xffff`), the stage and pass elements still land in other
+// registers than retail's ESI and EBP, and the element loads are still unfused; the score-8 chain needs the
+// elements bound by reference, which the rules allow only with an exact match.
 // score 117 (was 117): earlier first line 117 (was 117). The tag index masked as a 32-bit value inside the
 // subscript reproduces retail's `and edx, 0xffff` but moves the base global from EDI into ECX and raises the score
 // to 152, so the original is kept; the tag lookup still masks the index with a word load where
