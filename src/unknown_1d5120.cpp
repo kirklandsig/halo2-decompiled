@@ -87,6 +87,9 @@ void function_1d56f0(s_havok_component *component)
     }
 }
 
+// MiniMax A (11-12): no new form, no lower score (77); the rigid-body lookup's two address operands
+// still read in the other order than retail's, and the success tail still pushes what retail passes
+// in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp) and the call cycle behind it.
 // MiniMax H (11-10): no new form, no lower score (77): the rigid-body lookup's two address operands
 // still read in the other order than retail's, and the success tail still pushes what retail passes in
 // EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp) and the call cycle behind it.

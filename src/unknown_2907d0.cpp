@@ -96,6 +96,10 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // bytes: a NULL test); the transform in a pointer local declared after the point and vector, read
 // once through local_4 113 (453), copied from the parameter with no steering local 33 (464; either
 // place). Permuter (600 s, annealing): reduced image 144 for this body, nothing better in 47 tries.
+// Helper input by value 135, by const reference 19; helper output by
+// reference 19, returned vector 110; named products in every row 19;
+// output accumulation 19; node count at entry 19; node pointer at entry 19.
+// All restored; the register pair and shared constant remain.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

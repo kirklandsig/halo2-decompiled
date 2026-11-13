@@ -100,6 +100,12 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
+// MiniMax B (11-12): no new form kept, no lower score (96, was 96): case 0 through the object_index local (the object
+// read through the index already in hand instead of a second read of the component) gives 91 at 256 bytes, but it
+// moves the component off the register the caller passes it in, and the caller 0x1d5bf0 then differs at 146 (it
+// matches with this body), so the original body is kept. The one type read at the entry (a byte local) gives 117 at
+// 236 bytes; the header array local gives 92; the headers, rigid body and object index declared in that order gives
+// 92 at 256 bytes. Retail's own convention is component EAX, rigid index ECX, kind EDI, owner and level on the stack.
 // score 96 (was 96): no local frame; retail reads the type once before the kind test (one type read shared by
 // both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
 // component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must

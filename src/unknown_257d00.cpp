@@ -2404,7 +2404,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // MiniMax S (11-11): no new form, no lower score (479; 474 when only this function's own units are in the
 // reduced image); our body is longer than retail's (eight bytes in that image), so the jump table lands later
 // and every branch after it differs.
-// score 477 (was 479): earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
+// score 479 (was 479): earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // MiniMax R (11-10): no new form, no lower score.
 // Earlier 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
 // (0x2594b5 `comiss xmm0, [1.0]; jbe 0x2597fa`, true for a NaN distance); `d <= 1.f` compiled to
@@ -2672,6 +2672,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // positional line while the body is 8 bytes long. Case 6's two flag stores (compile-only): `|= 0x29; |= 0x48`, bitfield
 // sets and inline set-up helpers all fold to `or 0x69`; only a branch between the two sets keeps retail's second store.
 // NOT kept (coordinator review, MiniMax A 11-12): 479 -> 477 is under the keep bar (8+ on a function still above 30); the body is main's again.
+// T95: Native entry and first point now agree; first +0x51 is a branch displacement.
+// Motion/animation/both last-consumer scopes 479/479/479; paired final planar
+// memcpy/memmove 479/479; state/current/both existing vector setters 565/592/594.
+// NOT kept: no exact transfer-form repair; original complete body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

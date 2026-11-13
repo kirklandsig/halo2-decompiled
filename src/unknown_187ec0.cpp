@@ -676,6 +676,10 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// score 165 (was 165): unchanged this round: retail calls 0x1765e0 out of line with the promoted
+// register split (ESI, EBX and EAX) while this build inlines it, so our frame is 0x16c against retail's
+// 0x48; retail's own parameter list differs from the declaration here (the forward vector is third and
+// there are eleven parameters against our ten), and that list is fixed by the call sites in other files.
 // score 46 (was 56): the six NONE defaults now precede the effect point; left are the second scan's
 // index register and the stack slots of the scale and the object index, which follow the parameter
 // order that the callers in other files fix (MiniMax D, 11-10).

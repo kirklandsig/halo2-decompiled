@@ -147,6 +147,10 @@ __forceinline void reach_all_2e3d40(char flags, element_2e1090 const *element, r
 // high ones start the same for each segment), is passed to that segment's
 // collector, until its distance left is passed; the boxes that hold the
 // start point go to every collector
+// score 539 (was 539): frame 0xe8 agrees; the first array home and later
+// pointer/array homes differ. Vector-word start values 539; signed words
+// 539; axis steps in body 541; const endpoints 539; pointer-copy loop 539;
+// time loop 538 (NOT kept: gain 1); widening loop 664; scalar arrays 539.
 // @retail 0x2e3d40
 void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660 *collectors, long collector_stride)
 {

@@ -459,6 +459,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 	vector->k = axis->k * along + k * cosine - (axis->j * i - axis->i * j) * sine;
 }
 
+// MiniMax H (11-12): no new form, no lower score (90): the ring is still converted with fild where retail
+// converts it to float, keeps it in a stack slot and reloads it as a double for the radius product; the named
+// ring float (119), the named ring phase (143) and the named double radius of the earlier rounds all score
+// worse, and the rotation block still spills a component where retail keeps the three in registers.
 // score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
 // it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
 // rotation's component spill, cross scheduling and register allocation remain.

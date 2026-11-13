@@ -507,6 +507,12 @@ struct s_text_line_measurement
 // scale * advance;` 77, all three metrics raw first and then `x = scale * x` 77. The cause stays the advance copy
 // (`movaps xmm3, xmm0`) that gives the width XMM4. No untried natural form is left.
 // Earlier at 77 (was 77): retail loads the width into xmm4 before the multiply
+// unchanged this round: retail copies the advance product into XMM3 and accumulates
+// the update in that copy, loads the running width into XMM4 early and reuses the freed XMM0 for the
+// bound; ours keeps the advance in XMM0, accumulates the update there and reloads the width late into
+// XMM3, with the bound in XMM5. The permuter found no keepable form (its best, 72, adds a flag set by
+// one test and read by the next).
+// score 77 (was 77): retail loads the width into xmm4 before the multiply
 // chain and accumulates the four terms in xmm3; ours reloads the width into
 // xmm3 after the multiplies and accumulates in xmm0 (register allocation only).
 // MiniMax C (11-11): no new form, no lower score (77): the one difference left is the running width's reload —
