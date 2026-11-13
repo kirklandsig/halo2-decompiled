@@ -8644,7 +8644,7 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
 // scaled character offset at [esp+0x14], has a second flag byte at [esp+0xf] it never reads, inlines the three
 // removal sites where ours calls the helper out of line, and puts the pixel buffer at [esp+0x30] (frame 0x2020
 // against our 0x201c); earlier rounds' forced-inline helper and plain header local scored worse in the full build.
-// score 342 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
+// score 328 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
 // clipped fill still writes the rows in another order than retail's.
 // Round 2 of #1066: a forced-inline removal helper (all three sites expanded, retail's 1133 bytes), the volatile
 // header as a plain local, one read of the pool and guarded do-while loops gave 279 on the fast image but 342 in the full
