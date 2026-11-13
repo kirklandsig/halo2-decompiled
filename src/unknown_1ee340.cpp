@@ -247,6 +247,10 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
+// MiniMax A (11-13): no new form, no lower score (192): the origin as an aggregate initialiser compiles to
+// the same bytes; the frame is still 0x84 against retail's 0x90 with the origin's x and y and the edge
+// vectors in stack homes, and the point-in-polygon query still needs the points before the point, which
+// only the definition in another lane's file fixes: BLOCKED-BY src/unknown_239b80.cpp.
 // MiniMax G (11-12): no new form, no lower score (192); the frame is still 0x84 against retail's 0x90 with the origin's x and y and the edge vectors in stack homes, and the point-in-polygon query still needs the points before the point, which only the definition in another lane's file fixes.
 // MiniMax E (11-11): no new form, no lower score (192); the frame is still 0x84 against retail's 0x90 with the
 // origin's x and y and the edge vectors in stack homes, and the point-in-polygon query still needs the points before
