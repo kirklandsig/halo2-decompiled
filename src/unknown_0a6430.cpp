@@ -77,6 +77,15 @@ PRIVATE byte *update_object_0a6430(long index)
 // 0x2/0x34 entry as one `mask & 0x36` test 163 (551 bytes); the model tag index read at each use (src/devices.cpp's
 // form) 16 (same code). Diagnosis: in the 0x200 head retail's pool load reuses EAX after the index temp dies, which forces
 // the index-first order; ours colours the pool ECX, so the order follows from the colouring, not from the source order.
+// Round 86 (m3 lane 13, fast): read as trees, retail loads the 0x100 object in place of the pool data (EAX) and the level
+// into a fresh register, and in the 0x200 block the tag index into a fresh register from the object in EDX: the object
+// is a value of its own there, while ours folds it into the next load (object ECX, level in place; 0x200 all in EAX).
+// Tried: the 0x100 block as an inline helper taking the level byte and the states pointer 122 (495 bytes, stays a
+// call), force-inlined 16 (same code); the getter built on a pool-and-index header helper 16 (same code); the getter
+// taking the pool from its three callers 16 (same code); the getter taking an index its callers mask 16 (same code).
+// Diagnostic:
+// a second read through the 0x100 object 74 (the object then ECX as a variable, the level EDX; the 0x200 head becomes
+// index-first with idx ECX, not retail's EDX).
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {
