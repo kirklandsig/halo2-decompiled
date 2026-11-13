@@ -2106,6 +2106,9 @@ bool __stdcall function_110ab0(long unit_index)
 // P443: Shared controlling truth, complete first depletion producer, independent held outcomes,
 // state/control accessors at all uses, native-use primary/overlay keys and named base query:
 // 474/464/500/534/521/445/445/445. NOT kept: no native frame/result repair; original complete body and macros restored.
+// P445: Actual allow receiver, shared overlay-policy dispatch, existing field-test macro,
+// declared set-field view, overlay-channel receiver, single/two-request local producers and immutable controlling handle:
+// 445/644/445/445/445/445/445/445. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {

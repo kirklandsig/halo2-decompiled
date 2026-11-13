@@ -1052,6 +1052,9 @@ __forceinline long vehicle_round(real value)
 // P443: Entry-bit result, coefficient/axis/correction predicates, bounds receiver, projection predicate,
 // double-factor angular scale and vector-setter axis copy: 8/18/42/14/10/10/138/199. A 300 s permuter, 36 trials,
 // no lower than 8. NOT kept: no exact operand repair; original body and all shared helpers restored.
+// P445: Const definition receiver, separate final angular coefficient, exhaustive bounded-rate result,
+// consumed scale return, widened completed dot transport, angular-output side workspace, duration and
+// elapsed-tick producers: 8/14/10/10/87/8/191/26. NOT kept: no exact product-load repair; whole body restored.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -3242,6 +3245,10 @@ real g_47ff30 = 2.5f;
 // NOT kept: no native-frame gain; original helper and body restored.
 // P441: Complete parallel error/impulse/acceleration producers, mutable/const, then immediate/phased force accumulators: 699/699/700/700/700/700/682/682; native grouped mass reloads 714.
 // NOT kept: Native frame 0xfc and acceleration/velocity homes remain; no eligible gain. Original complete body restored.
+// P445: Signed-climb result, shared backward bound, initial normalization admission,
+// native-order position setters, fallback setter, complete elevation arms, selected-bank magnitude provider
+// and immutable time/response/maximum/mass coefficients:
+// 716/765/699/682/682/721/687/682. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -5995,6 +6002,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // original whole body restored. Current frame 0xfc versus native 0xd8.
 // P441: Signed-slip deadband complete arms / biased accumulator / result accumulator / bound default, each original/complete outer result: 1036/988/978/1061/978/1061/1036/1044.
 // NOT kept: No gain; native 0xd8 frame and handle/matrix/vector homes remain. Original complete body restored.
+// P445: Existing wind difference, drift-length result, lift admission, driver-control receiver,
+// complete parallel angular-error parts, driver-bit result, full flip-time admission and readonly definition receiver:
+// 1035/1039/978/978/978/978/978/978. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
