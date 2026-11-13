@@ -4352,7 +4352,7 @@ extern vector3f *g_4687bc;
 // offset at +0x5c, where our block is longer, and the 0x188180 call setup after it is blocked by
 // that callee's parameter order in another file.
 // MiniMax R (11-06): no new form, no lower score (45); the g_54e898 copy is a dword load here and a word load in retail, which also moves the exit block two bytes; retail's 0x1eb020 writes a dword into the material slot and it is read back as a dword, ours takes a short * and reads it back sign-extended, and that width is set in another file.
-// score 23 (was 23): 31 before 0x1883e0 matched with c_type_47f957 parameters; 45 before round 220's material local as the global material type (c_type_47f957, constructed from g_54e898
+// score 8 (was 8): 23 before main took 0x188180's material parameter as the 2-byte type by value (the held patch below); 31 before 0x1883e0 matched with c_type_47f957 parameters; 45 before round 220's material local as the global material type (c_type_47f957, constructed from g_54e898
 // as 0x277b80 does) gives retail's word copy, so every branch target now agrees; left are the copy's schedule (retail
 // loads into CX early and stores it just before the 0x0b67a0 call, ours stores at once from DX), the rigid body's
 // data/offset registers in its address add, and the 0x188180 call setup (BLOCKED-BY 0x188180: retail pushes the
@@ -4409,6 +4409,25 @@ extern vector3f *g_4687bc;
 // 45 (1100 B); the node-count test folded into the index test with the element read at each use 27; re-measured the
 // material built after the component lookup 25 (the global load is not hoisted: retail's early CX load is a material
 // built ahead of the lookup, as here; only its register differs).
+// m3 lane 4 r193 (base 8 at 1098 B, fast and plain: main has 0x188180's material parameter as the 2-byte type now, so the
+// 0x188180 blocker above is gone and two register choices are all that is left: (A) the default material goes through DX
+// and is stored before the pool's data load, retail holds it in CX and stores it just before `mov ecx, esi` (5 lines);
+// (B) ours loads the array into EDX and scales the index in EAX, retail scales into EDX and loads the array into EAX
+// (3 lines)). A whole-file compile-only harness reproduces both sites as the linked build has them (0.8 s a variant).
+// Fast: the default material built after the 0xb67a0 call 48 (1099 B); the node through a forceinline first-node getter
+// holding an element pointer 8 (same code), the same getter indexing the element at each use 12; the effect tag through a
+// forceinline getter 8 (same code); the array pointer in a local used for both reads 32; the index masked to a word at
+// the element 75 (1103 B); the default material through a forceinline getter returning the type 8 (same code); permuter
+// (27 tries) 8. Harness only, all the body's code unless noted: 0 to 33 unused locals; the index, or the component,
+// declared at the top of the function; index + array, byte arithmetic either way round, a named offset; element getters
+// taking (index, component) or (component, index); the default material assigned to a default-built local, built from a
+// short local, or filled through an out-parameter getter; the pool, the masked index or the pool's data named ahead of the
+// material; the definition and the model through forceinline tag getters, the model in a local, the tag assigned inside
+// its test; a short index (word compare, 3 lines off). Diagnostics: the material takes CX when one more scratch value is
+// loaded between the effect tag test and it (an extra copy placed ahead of it), or one fewer before it (no model lookup),
+// and a callee without a register argument moves the pool's data to ECX. So the scratch choice follows the order values
+// are loaded in and 0xb67a0's ECX argument, not the spelling of these statements: the lead is a statement whose value
+// retail loads between the tag test and the material (or one fewer ahead of it) without adding an instruction.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
