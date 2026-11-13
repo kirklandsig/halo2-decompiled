@@ -92,6 +92,24 @@ struct s_245850
 // Round 354: Native signed 16-bit plane field, whole point and normal-only input subsets 1..7
 // 1/162/162/162/162/188/188/188; final complete inputs with separate normal scalars included last. Original
 // field, shared scalars and every transform/call restored; short lookup contract remains.
+// HELD (round 98, needs the owner's OK for the declaration in src/items.cpp, a contributor's file): with the plane
+// index declared long in bsp3d_get_plane (its definition and five declarations) this function matches byte for byte
+// in the plain check, 0x14a300 and 0x245aa0 stay matched and the other callers gain their sign-extending loads
+// (0x10cf80 202 -> 200, 0x1822f0 239 -> 238, 0x1fa3a0 80 -> 79, 0x17dd80 453): build/r98/held-245850.patch. The body
+// then is plainer than this one: loop-scoped scalars, the point rows in retail's order without grouping, the plane
+// scalars copied i, j, k, each normal row accumulated term by term and a flat d sum.
+// Round 98 (fast unless noted, long index in all six places; F, U, L are a row's forward, up and left products, P its
+// position term, X, Y, Z, S the d sum's position products and scale product): this body 103 (576 bytes; an int or
+// dword index the same 103, so the cause is the conversion at the call, not the name); the earliest plain body
+// (array-indexed rows, loop-scoped scalars) 103; its z row in five other term orders, or with swapped operands, 103
+// each (same code), as `F + (U + L)` 41, `(F + U) + (L + P)` 42, `F + (U + (L + P))` 106, `F + U + (L + P)` 108; the
+// point scalars defined z, y, x or y, z, x 111/110; the point and out pointers with the plain rows 26 (the whole
+// point loop as retail); with them the plane scalars defined i,k,j / j,i,k / j,k,i / k,i,j / k,j,i 35/27/22/41/38;
+// with j,k,i the k row as `a + (b + c)` in six orders 22-23, the d sum as `X + (Z + Y) + S` or `(Z + Y) + X + S` 7,
+// `Z + Y + (X + S)` or `Z + (Y + (X + S))` 24, S first or X, Y, Z order 22; with the grouped d sum the k row as
+// `(L + F) + U`, `(F + L) + U` or with swapped operands 7, as two statements 7, as three accumulating statements 0;
+// the scalars defined i, j, k with all three rows accumulated and the flat d sum 0 (plain 0, the patch), with the
+// grouped d sum 0; i, j, k with `(F + U) + L` rows 8; j,k,i with all rows accumulated 0, with a flat d sum 17.
 // @retail 0x245850
 void function_245850(long arg_0, s_source_245400 const *arg_1,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
