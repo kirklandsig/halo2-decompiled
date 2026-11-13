@@ -822,6 +822,15 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // native frame; other scopes canonicalize. All original workspaces restored.
 // P448: Original-site normalization/projection/type/complete first-probe/complete second-probe/clearance/side-score/animation-distance decisions:
 // 87/87/87/87/87/87/161/87. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// M3 lane 12 r120 (fast with the file's functions, 0x30bf0, 0x110ab0, 0x1e4a50, 0x26bfa0, 0xe6900): lane 17's match-only 17 form
+// rebuilt 17 (same 17 lines: sum 0x10 for retail's 0x14, length 0x14 for 0x18, adjusted 0x1c for 0x18, index 0x18 for 0x1c,
+// lateral XMM3 and maximum XMM2 for XMM2 and XMM3). On it: the location index declared ahead of the two side outputs 17 (same
+// code); the side outputs declared without initializers and zeroed just ahead of the location query 17 (same code); the side
+// outputs declared second first 19; the named size in the final subtraction 185 (970 bytes; the listed form, re-measured).
+// Reading of the homes: retail packs the adjusted projection into the first length's dead slot and the second side output
+// into the sum's, which needs length, sum and adjusted placed ahead of the side outputs; ours places the side outputs and the
+// index first (sum then joins the first side, length the second, adjusted is left alone at the top). No form found that
+// changes that order. Body unchanged at 87.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
