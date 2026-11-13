@@ -1040,6 +1040,7 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // for `fov = target`; a listed form, round 84's target local) 360; the time ratio pinned in its initializer 337; the blend written `start + (target - start) * t` 331 (same
 // code); `t` declared ahead of the function_13cb40 test 331 (same code). In the plane block: the length as dot3f(&plane.n,
 // &plane.n) 361; plane.n copied member by member 437 (1664 bytes).
+// MiniMax B (11-13): no new form, no lower score (331): the plane length's hoisted load still takes the normal's other component first, so retail's zero sits in xmm0 and ours in xmm1; the permuter cannot search this function because the reduced image scores it 348 against 331.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
