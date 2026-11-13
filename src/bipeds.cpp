@@ -1794,6 +1794,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P436: Fixed existing biped/tag/component/animation receivers, airborne result,
 // root handle/receiver and turning result: eight fast 566s, control 566. NOT kept:
 // no native frame-word repair or byte change; original complete body restored.
+// P439: Complete coordinate ranges for unit/alternate facing, target and fixed velocity,
+// then backward target/unit-facing/alternate-facing/fixed-velocity: 624/624/587/633/587/624/624/633.
+// NOT kept: every range adds a call (28 versus 27); facing/velocity recover frame
+// 0xfc only at 624/633. Original material/airborne homes remain; original
+// transfers, shared eye helpers, gravity observation and full body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4020,6 +4025,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // biped/tag/state receivers, special/wall results, native angle/cosine and phase limits:
 // eight fast 614s (control 614). NOT kept: no byte change or eligible gain; original
 // complete body restored. Native-width immutable inputs differ from earlier double-carrier forms.
+// P439: Lower-first yaw then pitch producers: raw-result updates, lower-default selection,
+// exhaustive arms and standard upper-bound selection: 604/603/604/627/610/610/612/604.
+// NOT kept: no supported native result-byte/flight-home repair; every original clamp,
+// unordered path, helper and complete body restored. Ordinary raw/default/exhaustive yaw
+// and upper-selection pitch 607/601/611/629 regress against full 548.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

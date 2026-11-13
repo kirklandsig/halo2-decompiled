@@ -358,6 +358,11 @@
 // channel inputs, all six channel products and the complete maximum tree: eight fast
 // 536s, control 536. NOT kept: frame stays 0x54 versus native 0x60 with no byte change;
 // original complete body, every expression and all shared helpers restored.
+// P439: Standard lower/upper six-row mode selections, masks 1/2/4/3/5/6/7,
+// then complete upper-only selection: 952/940/896/1200/1145/1129/1319/1380. NOT kept: native shape/inverse,
+// basis/wave homes and frame remain unresolved; original maxima, clamps, every
+// floating tree, helper and complete body restored. Every form adds 12-36 calls
+// against native zero while retaining frame 0x54 versus 0x60.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
