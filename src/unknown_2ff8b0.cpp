@@ -123,6 +123,10 @@ ELEMENTS_2D91D0(keys_300290, long);
 // bounds loop 482; byte OR 515; shared bound tuple 466; positive branch 469;
 // case-local bounds 466; range cursor 467; command cursor 466; both 467;
 // both byte bounds loaded first 492.
+// Shared value block with inner switch 476, ascending width tests 587,
+// descending width tests 515; trailing update 503; on trailing update:
+// two-word decode 503, next-slot key 508, value cases first 556, saved-value
+// rename 503. All restored.
 // @retail 0x2ff8b0
 void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char const *node)
 {
