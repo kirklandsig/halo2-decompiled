@@ -265,6 +265,13 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // the negative-age reset as a ternary 77 (same code); the found test written `!(cache_index == NONE || owner !=
 // object_index)` 77 (same code). Re-measured: the walk's NONE exit returning cache_index 77. As round 116 found, no
 // untried natural form changes the layout from +0x54.
+// M3 lane 13 r89 (fast with 0x3db00 and 0x3dd10, both matched; control 77): the flag computed from the found test, `bool
+// initialize = cache_index == NONE || owner != object_index;`, then `if (initialize) { allocation } else result = cache_index;`
+// 157 (498 bytes), with the arms the other way round 148 (495 bytes); the cache index stored into the object before the four
+// state copies 107; `state_count`/`states` declared at the top 77 (the code changes); the tail as `if (initialize && result !=
+// NONE)` 176 (488 bytes). Re-measured: the record pointer inside `if (initialize)` 132 (506 bytes, the listed joined-test 132).
+// Rebuilt for reading: 9, 83, 85, 86, 138, 145. VC folds `return result` after any NONE test of result (`or eax, esi` / `or
+// eax, -1`); retail's walk exit returns the register unfolded from a second epilogue, which no listed spelling gives.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
