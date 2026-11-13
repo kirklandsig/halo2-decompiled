@@ -181,6 +181,8 @@ static __forceinline long function_925c2()
     return local_0;
 }
 
+/* reports the round's statistics procedures for arbitration: every procedure's user must be
+   a valid account that is not a guest, and at most 1000 procedures are accepted */
 // MiniMax S (11-11): no new form, no lower score (14); the guard's `jle` jumps to the count check's own `jg` where
 // retail jumps past it, because ours reuses the guard's flags to skip the compare, and this round's forms (an outer
 // count guard, the count compared as < 1001, the count check turned into an early exit) measure 131, 16 and 14.
@@ -294,9 +296,11 @@ long online_round_report(XNKID const *session_id, ULONGLONG const *round_key, lo
 	for (long i = 0; i < count; i++)
 	{
 		XUID const *user = NULL;
-		word kind = procedures[i].wProcedureID;
-		if (kind == 0x8001 || kind == 0x8003 || kind == 0x8007)
+		if (procedures[i].wProcedureID == XONLINE_STAT_PROCID_UPDATE_REPLACE ||
+			procedures[i].wProcedureID == XONLINE_STAT_PROCID_UPDATE_INCREMENT)
 			user = &procedures[i].Update.xuid;
+		else if (procedures[i].wProcedureID == XONLINE_STAT_PROCID_CONDITIONAL)
+			user = &procedures[i].Conditional.xuid;
 		if (user->dwUserFlags == 0xbad00000 || (user->dwUserFlags & 3))
 			goto done;
 	}

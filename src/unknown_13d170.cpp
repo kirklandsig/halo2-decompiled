@@ -180,6 +180,9 @@ struct s_physical_block_iterator
 };
 
 // score 201 (was 201; round 95 m3 lane 11 at the end): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
+// MiniMax A (11-13): no new form, no lower score (201); the take test still jump-threads the case blocks past the
+// loop and the second age's clamp still folds away, and the only form that reaches 98 needs a policy helper with one caller.
+// score 201 (was 201): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
 // and falls into the join), the second age's clamp folds, the walk's EBX/EDI roles and the link order differ.
 // M3 lane 8 r159 (fast, 0x13d320 MATCH each time; base 201, masked 56): the first candidate taken in an `if (!have_best)` arm
 // with the switch and `if (better) best = *candidate;` in the else arm 224 (1216 bytes; case 0 still threaded); the block

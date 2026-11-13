@@ -1051,14 +1051,14 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
+// score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
+// where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
+// expanded here while retail calls the matched 0x192e60 out of line.
 // MiniMax H (11-12): no new form, no lower score (766): the frame is still 0xd4 against retail's 0xb4, the session still comes in on the stack where retail passes it in eax with the output pointer on the stack, and the opening lookup is still expanded here while retail calls the matched 0x192e60 out of line.
 // MiniMax S (11-11): no new form, no lower score (766): the frame is 0xd4 against retail's 0xb4, the session
 // comes in on the stack where retail passes it in EAX with the output pointer on the stack, and the opening
 // lookup is expanded here while retail calls the matched 0x192e60 out of line; the session's EAX home belongs
 // to the callers in other files.
-// score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
-// where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
-// expanded here while retail calls the matched 0x192e60 out of line.
 // MiniMax E (11-05): no new form, no lower score; the session's EAX home belongs to the caller's
 // declaration, which this lane may not change.
 // w14C (11-06): walked against retail block by block; no behaviour difference. The histogram cells are dwords in retail
@@ -1366,6 +1366,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 930 (2716 B; 0x73530 matches: the inliner gives its one copy of 0x192e60 to the hotter loop site, so the top call stays out
 // of line as in retail, whose copy sits inside the inlined 0x63220); the variant index by an explicit state test 766; the
 // validity test split in two 766. Diagnostic (flags, not kept): this file without /arch:SSE 836, the top call still inlines.
+// m3 lane 14 r89 (fast with 0x73530, 8 throughout; control 766, aligned 750, masked 348): the party loop's `last = count;`
+// ahead of the `first == NONE` test 766 (one row differs; masked 350); `out->player_count` stored ahead of the three NONE
+// defaults 851 (2804 B); the player loop's second-rating copy ahead of the first 766 (masked 353); the group loop's
+// identity copy ahead of the three counter clears 766 (aligned 747, masked 340); the add loop leaving with `if (count >
+// available) break;` 766 (same code). The inline choices above stay the cause.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

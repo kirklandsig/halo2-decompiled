@@ -802,7 +802,7 @@ bool function_e4050(long object_index);
 // unit object in ebx, the root in esi) and the roles and the frame both go; the same walk with the unit
 // object looked up after it gives 101 with retail's table and root registers but the datum, the unit and
 // the unit object still rotated among ebx, ebp and edi; the kept parent-first walk stays the best at 43.
-// score 43 (was 43): frame 0x10 agrees; player/unit carrier roles and the root-walk entry differ.
+// Earlier: frame 0x10 agrees; player/unit carrier roles and the root-walk entry differ.
 // MiniMax D (11-09): no new form, no lower score (43); reading the unit index before the player pointer gives 43 (was 44) but leaves the carriers as they were - retail holds the datum address in EDI and the unit index in EBX, we hold them the other way round - so it is not kept.
 // MiniMax C (11-09): no new form, no lower score (43); retail's walk presets its root to NONE and
 // starts the walk at the unit, so the unit carrier takes EBX and the datum address EDI, the other
@@ -912,6 +912,14 @@ bool function_e4050(long object_index);
 // cmp eax, -1; je`) because their walk starts from a copy of a value whose tested variable is reassigned before the
 // walk. In the 405 family the unit keeps EAX (0xe4050's argument) and the walk's step object reuses ECX; retail's step
 // object takes EAX, so its unit goes to EBX and the iterator index to the frame.
+// M3 lane 8 r161 (fast with 0xbadc0, 0xbaf40, 0xe4050, 0x14deb0, 0xbaf80 and caller 0x226190, all MATCH; control 43,
+// register-masked aligned 8): BLOCKED-BY 0xbaf80 still (its pin is in src/unknown_0bad50.cpp). The permuter's first run
+// here (anneal, 600 s, 50 tries; --fast needed --allow-mismatch, the reduced image scoring 44): best 40, only with a
+// volatile short store of the iterator index and two constant temporaries in the byte tests, not keepable; the volatile
+// store alone 45 (diagnostic, reverted at once). No unit local (the field read at the test, lookup, root start and 0xe4050)
+// 43; the iterator set-up with the datum index first 43; the parent walk as a do-while guarded by the unit object's parent
+// field 43 (aligned 28); `long const unit` 43; the unit object pointer declared at function scope 43 (same code). Body
+// unchanged.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -1185,6 +1193,13 @@ bool function_14ed80(void)
 // pointer for the sign test and the read 13 (167 bytes). Harness: the representation as `representations + index` with third
 // read first 9; the outputs written third first 10; the clamp as `>= count` 44; the index declared first 8. Diagnostics: a dead
 // load at any of seven points never moves globals out of EDX (not a rotation step); an extra use of first leaves it in ESI.
+// M3 lane 12 r118 (fast; a one-file harness exact at 8): the globals bound as a reference 8; the globals local and its readers in an
+// inner block 8; the sign test and clamp as a force-inline helper taking the globals and the player 8; the whole body as a
+// force-inline helper taking the player and the globals 10 (first EDX as retail, globals EDI); the bound test and element through a
+// pointer to the count/elements pair 53. Harness: no player local 51; `register` on the outputs or the globals 8; an inline globals
+// getter 8; the clamp helper plain inline 8; the element read as a helper with output pointers 8. Harness diagnostics: the named
+// globals local keeps EDX against 1-3 extra uses of first, volatile-sourced outputs or an extra use of itself; as a CSE temp or an
+// inlined parameter it ranks last (EDI); without the clamp it ranks last; retail ranks it between first and third.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
@@ -3020,7 +3035,7 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // for the named `globals` local and for reading g_4e8c20 at every use; what still differs is the register
 // alone - ours keeps the pointer in edi to the end of the function where retail has it in esi - and the
 // callees that decide that summary are in other lanes' files.
-// score 103 (was 103): reading g_4e8c20 directly at every use instead of through the named
+// Earlier: reading g_4e8c20 directly at every use instead of through the named
 // `globals` local builds to the same bytes in the full build (611 = 611, first difference
 // +0x8) and scores 175 against 193 in the reduced image, so the local is not what holds the
 // pointer in EDI; what still differs is the register itself: ours keeps g_4e8c20 in EDI where
@@ -3196,6 +3211,13 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // MiniMax R (11-10): no new form, no lower score (193 on the reduced image, 103 on the full one): the two
 // loops' datum and unit still take the opposite registers from retail, and the callee's inline rounding in
 // the other file decides the globals pointer.
+// M3 lane 8 r161 (fast in round 34's widened image with 0x14d3a0 listed, all matched callees still MATCH; control 103,
+// register-masked aligned 25): loop 1's unit as `dword` 112; `s_player const *player` 103; the vehicle through this
+// file's typed view (`vehicle->unknown34c > 0`) 103; the last unit read straight from the iterator's datum 103; loop 1's
+// player pointer and unit declared at function scope 103 (the last four the same code). Also repeated by mistake, not a
+// trial: round 71's NONE test on the field with the unit read after it, 103 again.
+// BLOCKED-BY 0xb8540 and 0xb7b40 (stubs, so nothing on loop 2's call tree is seen to write g_4e8c20) and 0xe4050 stand.
+// Body unchanged.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

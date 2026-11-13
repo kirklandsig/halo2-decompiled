@@ -1192,6 +1192,19 @@ void function_2118c0(void)
 // 187 (798 bytes); the component index declared in the `for` 10. Harness only: the array or
 // separately assigned indices with `b * 8` rows 150-type code; `b * 8` for two wrapped rows and `b << 3` for the
 // third reduces all. Address-taken indices stay invariant, so the rows still reduce.
+// Round 174 (m3 lane 6; a one-file LTCG harness, exact here, counts given as its positional differences; and a
+// compile-only lab of the band loop alone): the interpolation as an inline call of 0x212100 (b = 1.0f) with
+// `b * 8 + w` rows in the arguments 149 (every row reduced; the float code and the hoisting of the knot terms are
+// retail's), with `(b << 3) + w` in the arguments 149, with a named `long row = b << 3` 110 (the base folds into the
+// loads); the wrapped rows through a flat element index `(row + w) << 3` from `row = b * 8` (named index, in the
+// subscript, without the row local, as pointer arithmetic) 149 each; the call form with the three indices escaping
+// to an external function (diagnostic) 169, still reduced. Lab, about 90 forms: only an index read from the table's
+// own global, `row | w`, `row ^ w` or a wrap taken from the absolute row keep `add reg, 8` with unreduced rows, each
+// with other instructions; word/long/dword/short index parameters, dword rows, inline row helpers (pointer or long
+// index), `row - w`, a 64-bit sum, `*(table + row + w)`, a band pointer, `noise[b * 8][w * 8]`, a knot count from a
+// static, an extern const or a parameter, an output pointer stepped by 64 or passed in, and extra loop-carried
+// arrays (no register budget) all reduce every row; every short/word/byte row, product cast or sum cast keeps one
+// extension; a row carried from the previous pass (`row = b * 8` in the increment) gives a 0x300 byte offset.
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -2648,6 +2661,17 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // vector3d_from_points3d with dot3f for the square and the cases 59 (no hoist: x, y, z in definition order, colours x XMM0,
 // y XMM3, z XMM2, sum XMM1); the existing object_header_get/object_get getters for the unit test and the forward vector 333;
 // object_header_get for the unit test alone 3 (same code).
+// Round 174 (m3 lane 6, fast): the differences take XMM1-3 in the order they are created; with the staged z, y, x
+// sum the z load comes first exactly when z is created before y, and retail's y-first schedule when y is created
+// before z (helper differences x,y,z 27, y,z,x 26, y,x,z 19, z,y,x 14: retail's instruction order, other colours);
+// a one-expression sum is reordered by that creation order whatever its written terms. The sum through a
+// one-argument inline square with the differences written in the calls: staged z, y, x 14; one expression x+y+z
+// 27 (retail's schedule and square order, colours x, y, z), x+z+y 27, y+x+z 23, y+z+x 26, z+x+y 11, z+y+x 16;
+// named z, x, y differences with that square helper in the six term orders 11 each, as plain products in three
+// orders 11 each; a local vector assigned k, i, j with a one-expression sum in four term orders 11 each; named
+// squares over the z, x, y differences defined and summed in three orders (six forms) 11 each; the function's own
+// locals (z,x,y or x,y,z) ahead of an expression-only helper (eight forms) 418-432 (1940/1944 bytes); no helper,
+// the locals in the six definition orders with a staged sum declared before or after them 45 (y before z) or 47.
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
