@@ -4006,6 +4006,7 @@ void __stdcall function_61ef0(c_class_58d20 *session)
  {
   if (i != session->current_member)
   {
+   /* retail reads pending from memory here, not from a cached register */
    dword pending = *(volatile dword *)&transition->pending;
    dword bit = one << i;
    if (pending & bit)
