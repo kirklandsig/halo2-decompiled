@@ -225,7 +225,8 @@ public:
 // runs a command stream until a command gives an offset, and adds the
 // position's offset plus that one to the list; commands before it skip their
 // operands or move the position
-// score 161 (was 161): one shared value tail fixes the entry registers.
+// score 78 (was 161): one structured trailing update fixes the entry registers.
+// Earlier: one shared value tail fixes the entry registers.
 // The byte-value store and four-byte offset read still differ; the tables
 // begin four bytes early. Earlier note 166 (was 166): retail reads the command's byte before it pushes the
 // registers and into another register, and the jump table and the table of
@@ -236,6 +237,10 @@ public:
 // sharing 109; named halves 78; copy pointer 78; copy reference 78;
 // value groups first 198.
 // NOT kept (coordinator review, Codex P409 11-12): 161 -> 78 came from new `goto record_value` jumps sharing one case tail; a new goto is kept only with a byte match. The body is main's again.
+// Nested switch 243; ascending widths 207; descending widths 184;
+// continue cases with one trailing update 78; two-word offset read on that form 78;
+// byte advance first 109; value declared at trailing update 78; next slot 91.
+// NOT kept: next-slot growth changes the later count/store sequence.
 // @retail 0x2ff210
 void offset_list_2ff210::function_2ff210(position_2ff210 const *position, unsigned char const *commands)
 {
@@ -251,62 +256,62 @@ void offset_list_2ff210::function_2ff210(position_2ff210 const *position, unsign
 		case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: case 0x16:
 		case 0x17: case 0x18: case 0x19: case 0x1a: case 0x1b: case 0x1c:
 			commands = p + p[3] + 4;
-			break;
+			continue;
 		case 0x20:
 		case 0x21:
 		case 0x22:
 			commands = p + p[2] + 3;
-			break;
+			continue;
 		case 0x23:
 		case 0x24:
 		case 0x25:
 			commands = p + READ_2_2FF210(p + 5) + 7;
-			break;
+			continue;
 		case 0x26:
 		case 0x27:
 		case 0x28:
 			commands = p + 3;
-			break;
+			continue;
 		case 0x29:
 		case 0x2a:
 		case 0x2b:
 			commands = p + 7;
-			break;
+			continue;
 		case 0x05:
 			commands = p + p[1] + 2;
-			break;
+			continue;
 		case 0x06:
 			commands = p + READ_2_2FF210(p + 1) + 3;
-			break;
+			continue;
 		case 0x07:
 			commands = p + READ_3_2FF210(p + 1) + 4;
-			break;
+			continue;
 		case 0x01:
 		case 0x02:
 		case 0x03:
 		case 0x04:
 			commands = p + 4;
-			break;
+			continue;
 		case 0x09:
 		{
 			long const delta = p[1];
 			writable_2ff210(position, copy)->offset += delta;
 			commands = p + 2;
-			break;
+			continue;
 		}
 		case 0x0a:
 		{
 			long const delta = READ_2_2FF210(p + 1);
 			writable_2ff210(position, copy)->offset += delta;
 			commands = p + 3;
-			break;
+			continue;
 		}
 		case 0x0b:
 		{
 			long const start = READ_4_2FF210(p + 1);
 			writable_2ff210(position, copy)->offset = start;
 			commands = p + 5;
-			break;
+			continue;
 		}
 		// the value in the first of four slots (retail writes the slot the
 		// command names, past the end for the other three)
@@ -316,8 +321,6 @@ void offset_list_2ff210::function_2ff210(position_2ff210 const *position, unsign
 		case 0x63:
 			copy.values[op - 0x60] = p[1];
 			commands = p + 2;
-			value = copy.values[0];
-			writable_2ff210(position, copy)->values[0] = value;
 			break;
 		case 0x64:
 		case 0x65:
@@ -325,8 +328,6 @@ void offset_list_2ff210::function_2ff210(position_2ff210 const *position, unsign
 		case 0x67:
 			copy.values[op - 0x64] = READ_2_2FF210(p + 1);
 			commands = p + 3;
-			value = copy.values[0];
-			writable_2ff210(position, copy)->values[0] = value;
 			break;
 		case 0x68:
 		case 0x69:
@@ -334,8 +335,6 @@ void offset_list_2ff210::function_2ff210(position_2ff210 const *position, unsign
 		case 0x6b:
 			copy.values[op - 0x68] = READ_4_2FF210(p + 1);
 			commands = p + 5;
-			value = copy.values[0];
-			writable_2ff210(position, copy)->values[0] = value;
 			break;
 		default:
 			g_48017c->slot_1()->function_2d9000("unknown command %i\n", op);
@@ -363,13 +362,16 @@ void offset_list_2ff210::function_2ff210(position_2ff210 const *position, unsign
 			offset = op - 0x30;
 			goto found;
 		}
+		value = copy.values[0];
+		writable_2ff210(position, copy)->values[0] = value;
 	}
 found:
 	offsets->append(position->offset + offset);
 }
 
 // the same for a stream whose commands 0x10 to 0x2b have other operands
-// score 92 (was 92): one shared value tail fixes the entry registers.
+// score 12 (was 92): the byte store and final four-byte sum still differ.
+// Earlier: one shared value tail fixes the entry registers.
 // The byte-value store and four-byte offset read still differ. Earlier body:
 // retail reads the command's byte before it pushes the
 // registers and into another register, and the table of command lengths sits
@@ -378,6 +380,10 @@ found:
 // sharing 86; named halves 12; copy pointer 12; copy reference 12;
 // value groups first 164.
 // NOT kept (coordinator review, Codex P409 11-12): 92 -> 12 came from new `goto record_value` jumps sharing one case tail; a new goto is kept only with a byte match. The body is main's again.
+// Nested switch 223; ascending widths 204; descending widths 182;
+// continue cases with one trailing update 12; two-word offset read on that form 12;
+// byte advance first 86; value declared at trailing update 12; next slot 46.
+// NOT kept: next-slot growth changes the later count/store sequence.
 // @retail 0x2ff570
 void offset_list_2ff210::function_2ff570(position_2ff210 const *position, unsigned char const *commands)
 {
@@ -393,62 +399,62 @@ void offset_list_2ff210::function_2ff570(position_2ff210 const *position, unsign
 		case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: case 0x16:
 		case 0x17: case 0x18: case 0x19: case 0x1a: case 0x1b: case 0x1c:
 			commands = p + 4;
-			break;
+			continue;
 		case 0x20:
 		case 0x21:
 		case 0x22:
 			commands = p + 3;
-			break;
+			continue;
 		case 0x23:
 		case 0x24:
 		case 0x25:
 			commands = p + READ_2_2FF210(p + 3) + 7;
-			break;
+			continue;
 		case 0x26:
 		case 0x27:
 		case 0x28:
 			commands = p + 3;
-			break;
+			continue;
 		case 0x29:
 		case 0x2a:
 		case 0x2b:
 			commands = p + 7;
-			break;
+			continue;
 		case 0x05:
 			commands = p + p[1] + 2;
-			break;
+			continue;
 		case 0x06:
 			commands = p + READ_2_2FF210(p + 1) + 3;
-			break;
+			continue;
 		case 0x07:
 			commands = p + READ_3_2FF210(p + 1) + 4;
-			break;
+			continue;
 		case 0x01:
 		case 0x02:
 		case 0x03:
 		case 0x04:
 			commands = p + 4;
-			break;
+			continue;
 		case 0x09:
 		{
 			long const delta = p[1];
 			writable_2ff210(position, copy)->offset += delta;
 			commands = p + 2;
-			break;
+			continue;
 		}
 		case 0x0a:
 		{
 			long const delta = READ_2_2FF210(p + 1);
 			writable_2ff210(position, copy)->offset += delta;
 			commands = p + 3;
-			break;
+			continue;
 		}
 		case 0x0b:
 		{
 			long const start = READ_4_2FF210(p + 1);
 			writable_2ff210(position, copy)->offset = start;
 			commands = p + 5;
-			break;
+			continue;
 		}
 		// the value in the first of four slots (retail writes the slot the
 		// command names, past the end for the other three)
@@ -458,8 +464,6 @@ void offset_list_2ff210::function_2ff570(position_2ff210 const *position, unsign
 		case 0x63:
 			copy.values[op - 0x60] = p[1];
 			commands = p + 2;
-			value = copy.values[0];
-			writable_2ff210(position, copy)->values[0] = value;
 			break;
 		case 0x64:
 		case 0x65:
@@ -467,8 +471,6 @@ void offset_list_2ff210::function_2ff570(position_2ff210 const *position, unsign
 		case 0x67:
 			copy.values[op - 0x64] = READ_2_2FF210(p + 1);
 			commands = p + 3;
-			value = copy.values[0];
-			writable_2ff210(position, copy)->values[0] = value;
 			break;
 		case 0x68:
 		case 0x69:
@@ -476,8 +478,6 @@ void offset_list_2ff210::function_2ff570(position_2ff210 const *position, unsign
 		case 0x6b:
 			copy.values[op - 0x68] = READ_4_2FF210(p + 1);
 			commands = p + 5;
-			value = copy.values[0];
-			writable_2ff210(position, copy)->values[0] = value;
 			break;
 		default:
 			g_48017c->slot_1()->function_2d9000("unknown command %i\n", op);
@@ -505,6 +505,8 @@ void offset_list_2ff210::function_2ff570(position_2ff210 const *position, unsign
 			offset = op - 0x30;
 			goto found;
 		}
+		value = copy.values[0];
+		writable_2ff210(position, copy)->values[0] = value;
 	}
 found:
 	offsets->append(position->offset + offset);

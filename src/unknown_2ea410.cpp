@@ -62,6 +62,10 @@ public:
 // input view earlier 79; traversal scope 79; parent first 79; indexed count 80;
 // indexed end 84; buffer declared first 79; while cursor 79.
 // NOT kept: none improves the original body.
+// Whole child initialization 89; input record copy 106; scratch inside loop 79;
+// record declaration before timing 79; direct input observations 79; immutable
+// container pointer 79; per-iteration child record 88; key before shape call 78.
+// NOT kept: key-before-call gains one, below threshold; other forms tie or regress.
 // @retail 0x2ea410
 void class_2ea410::function_2ea410(void const *a, void const *b, void const *input, void *collector)
 {
