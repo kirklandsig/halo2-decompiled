@@ -54,10 +54,15 @@ __forceinline void function_290852(transform4x3f const *arg_0, vector3f const *a
 vector2f *function_11df30(vector2f *angles, vector3f const *v);
 transform4x3f *function_b8c00(long object_index, long *node_count);
 
+// score 19 (was 19): earlier start 21. Round 116 (m3 lane 9, fast): descriptive names for every parameter and local
+// 19, the parameter reference declared after the point and the vector 19, a const reference to the transform in the
+// else arm 19 (all same code); the node indexed at both calls with the reference kept 51; re-measured `field2e = true`
+// 19. Nothing in our build calls this function: 0x2902b0's body is `#if 0` and its stub is empty, so the convention and
+// the EBX/EBP choice come from this body alone. No untried natural form is left.
 // MiniMax G (11-12): no new form, no lower score (19); retail keeps the transform in EBP and takes the record in EDI, our build
 // takes the record from the stack and the transform in EBX, so the caller's register choice (in another file) decides the rest.
 // MiniMax E (11-11): no new form, no lower score (19): the else arm's two reads swapped 68, the position stored field by field 141, the transform read directly in one call 19; the transform still takes EBX and the point's y EBP, and the constant 1 stays shared between the result and field2e.
-// score 19 (was 19): earlier start 21. Ours keeps the transform pointer in EBX and the point's y component in
+// Earlier at 19 (was 19): Ours keeps the transform pointer in EBX and the point's y component in
 // EBP, retail keeps them the other way round; retail also stores the last field with a
 // direct word store where ours moves it through EAX. Tried: the last field through the
 // plain output pointer 34, with field1c too 35; field2e as word 21; field2e stored before

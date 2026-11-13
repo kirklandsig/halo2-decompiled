@@ -212,6 +212,11 @@ struct s_1d8e40 : hkRigidBody
 // NOT kept: the velocity reference gains six, below threshold; the 31-point
 // combination requires an exact match. Its input loads and scalar scratch
 // still differ. All executable text restored; serial search found no match.
+// P428: existing shared sum and dot operations 112/112. On the prior
+// 31-point form: squared-speed name 31; distinct side names 31; earlier
+// output declarations 31; native-vector reference 31; shape reference 31;
+// scalar-load intrinsic 104. NOT kept: the combined form requires an exact
+// match; call-input scheduling and the second scalar home still differ.
 // @retail 0x2daae0
 void class_2da9f0::contact_2daae0(void *contact_)
 {

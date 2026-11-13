@@ -459,14 +459,14 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 	vector->k = axis->k * along + k * cosine - (axis->j * i - axis->i * j) * sine;
 }
 
-// MiniMax H (11-12): no new form, no lower score (90): the ring is still converted with fild where retail
-// converts it to float, keeps it in a stack slot and reloads it as a double for the radius product; the named
-// ring float (119), the named ring phase (143) and the named double radius of the earlier rounds all score
-// worse, and the rotation block still spills a component where retail keeps the three in registers.
 // score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
 // it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
 // rotation's component spill, cross scheduling and register allocation remain.
 // The body is 1085 bytes versus retail 1089.
+// MiniMax H (11-12): no new form, no lower score (90): the ring is still converted with fild where retail
+// converts it to float, keeps it in a stack slot and reloads it as a double for the radius product; the named
+// ring float (119), the named ring phase (143) and the named double radius of the earlier rounds all score
+// worse, and the rotation block still spills a component where retail keeps the three in registers.
 // MiniMax H (11-11): the loop-invariant radius times 1.2 as a named double with the ring as a named float reaches 118
 // in the reduced image but 146 in the full build, where the body returns to retail's own prologue, so it is not kept;
 // the ring float shared with the angle term 119, the ring phase named in the outer loop 143 (the frame grows to 0xdc)
@@ -875,6 +875,11 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // listed object-reference contracts on this base: the axis taken by `const &` 90, the vector by reference as well 90 (same
 // code each). In the entry tail: `record->count` read once into a named short for the activation pair 128 (1081 B: retail
 // reads the count again after the word store, which may alias it); the 32 test as `>=` 91. Body unchanged.
+// M3 lane 5 r177 (fast, 0x26dde0, 0x26d3f0 and 0x26d100 matched each time): the ring loop as `do { ... ring++; } while (ring < 2)`
+// with no separate countdown 268 (1057 B, like the plain `for`); the distance computed at the top of the spoke loop (before
+// the direction copy and the angle) 242 (1097 B); the rotation's cross terms written `sine * (..)` 90 (same code); the
+// pathfinding lookup ahead of the direction copy 163 (1092 B); the 0.1-offset point in its own point local in place of
+// reusing `point` 117 (1085 B: retail reuses the trace point's slot).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

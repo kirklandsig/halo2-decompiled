@@ -8,6 +8,7 @@
 #include "unknown_11cc90.h"
 #include "unknown_0494b0.h"
 #include "globals.h"
+#include "object_tag_definitions.h"
 
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -15,6 +16,7 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
+// MiniMax H (11-13): no new form, no lower score (536).
 // MiniMax E (11-11, run 80): no new form, no lower score (536): the two perspective-row crosses through the existing
 // staged helper compile to the same code (536) and the special path's two crosses through it score 537; retail
 // computes the cross components in the k, j, i order and keeps the first cross's products alive for the second
@@ -353,6 +355,15 @@
 // mode subsets 1/2/4/3/5/6/7 and all with unsigned ordinals: 618/617/558/656/650/632/647/647.
 // NOT kept: no exact scalarized output-record graph; original six scalar products,
 // clamp arms, shape/wave helpers and complete body restored.
+// P436: Fixed existing view/projection/side basis, special result, both waves, both
+// channel inputs, all six channel products and the complete maximum tree: eight fast
+// 536s, control 536. NOT kept: frame stays 0x54 versus native 0x60 with no byte change;
+// original complete body, every expression and all shared helpers restored.
+// P439: Standard lower/upper six-row mode selections, masks 1/2/4/3/5/6/7,
+// then complete upper-only selection: 952/940/896/1200/1145/1129/1319/1380. NOT kept: native shape/inverse,
+// basis/wave homes and frame remain unresolved; original maxima, clamps, every
+// floating tree, helper and complete body restored. Every form adds 12-36 calls
+// against native zero while retaining frame 0x54 versus 0x60.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1076,6 +1087,21 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // each alone, initial pair, next pair, all and all by library copy: 618/599/596/544/695/666/867/867.
 // NOT kept: input-record copies miss equality and regress; original input reads,
 // frame 0xa8/0xac, geometry, conversion helper and complete body restored.
+// m3 lane 14 r88 (fast with 0x42c50, 0x42b20, 0x43740, all MATCH; masked = aligned count with registers and stack offsets
+// masked, base aligned 149, masked 46): re-measured on the 233 base, the colour stored to the first vertex first (`outer->color
+// = vertex[0].color = ...`) 231 (a store order by score, not kept); the zero colour before the zero width 233 (same code); u and
+// v as one point2f texture coordinate (the source fields typed point2f) 582 (2596 B); case 4's else arm with the view computed
+// after the neighbour lookup 328 at retail's 2596 bytes (aligned 149 -> 134, masked 46 -> 35: case 4's per-arm position
+// pointer is then retail's; a statement order, match-only), that with the colour order 329 (masked 33); case 4's direction
+// ahead of the view in both arms 356 (2608 B); case 1/2's z row first 566 (2588 B). Left on the 328 form (masked 35): the
+// frame (retail's u step and V end in 8-byte temporary homes), case 0's load order, case 1/2's early x load, the side
+// length's fst, the colour store order and one tail reload. Body unchanged.
+// P436: Fixed existing point/current-state/next-state receivers, transition weight,
+// V origin, half-width, tint-object handle and side reciprocal: eight fast 233s,
+// control 233. NOT kept: frame 0xa8 versus 0xac and native scalar/spill homes
+// remain with no byte change; original complete tuning body restored.
+// P436: Existing object-tag attachments.address replaces the raw +0x98 read;
+// fast and ordinary checks both preserve 233 and 2592/2596 bytes.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1150,8 +1176,8 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
         {
             point3f tint = *g_468710;
             byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
-            byte *object_tag = g_4e3b44[(*(long *)object) & 0xffff].bytes;
-            byte *markers = *(byte **)(object_tag + 0x98);
+            s_object_definition *object_tag = (s_object_definition *)g_4e3b44[(*(long *)object) & 0xffff].bytes;
+            byte *markers = (byte *)object_tag->attachments.address;
             function_bad50(object_index, *(short *)(markers + source->marker_index * 24 + 12), &tint);
             for (long c = 0; c < 3; ++c)
                 (&color.red)[c] *= (&tint.x)[c];

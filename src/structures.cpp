@@ -687,6 +687,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // this build keeps it in ebp and defers the ebp and esi pushes, so the prologue order differs although the frame's
 // slots agree, and 0x11e800's argument registers are decided by that callee's body in another file; the permuter
 // (300 s, annealed) was stopped by the run's time limit without a result.
+// MiniMax B (11-13): no new form, no lower score (172): retail pushes ebx first and keeps the BSP global in ebx with the section in a stack home, ours keeps the BSP in ebp and the section in a register; the promoted clone of 0x11e800 takes its four pointers in another register order (retail ecx, edx, eax, esi), that callee being in another file.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {

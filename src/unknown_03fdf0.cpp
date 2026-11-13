@@ -536,6 +536,13 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // renamed chosen_material/override/a_material 2 each (a re-check: names do not move the slot); a short loop counter 152;
 // the copy's destination through `g_4c0b78.previous` 2, as `&g_4ba138[g_4c0b78.current]` 2; the entry table named right
 // before the `for` (after the selection) 2; the count named right before the `for` 171 (479 bytes).
+// Round 160 (m3 lane 8, fast with 0x404b0): 1-8 unused initialised locals at the function top 2 each (no count effect on the
+// slots); the entry through a reference local 2 (same code); the loop test as `count > n` 4 (the latch compare's operands
+// swap); index declared inside the entry test 2 (same code); first read from previous and current then set from first 158
+// (492 bytes, the listed split form); material as if/else 76 (the listed if/else form). The slots fit a packer that
+// places the heaviest spilled local first: the cursor takes the dead mode home in both builds, and first shares it only
+// when its last read (the index start) comes before the cursor's start; in retail first still overlaps the cursor, so
+// it takes a frame slot, which material then shares.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

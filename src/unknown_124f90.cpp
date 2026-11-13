@@ -673,6 +673,13 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // puts the inner counter's increment right after that join, ahead of the third store: retail's place. So retail's body has a
 // block boundary after the first two stores that emits no code (the scheduler hoists `inc esi` only to the top of its block);
 // none of the empty constructs above survive to scheduling.
+// Round 113 (m3 lane 16, fast): a byte copy of the type made at the type loop's top for the store 3; the type field
+// declared char 3; the per-type loop in a forceinline helper taking the voice index by pointer 3; the index advanced in
+// its own statement with `++i` 3; a while loop counting before the voice lookup 3. Diagnostics (removed): an always-true
+// `if (voice->sound_index == NONE)` around the later stores 3 (folded before scheduling, so a folded test leaves no block
+// boundary); the inner counter renamed to sort first or last 3/3 (names do not move it); the later stores through
+// `&g_4e6378[voice_index - 1]` 98 (589 bytes: the stores may alias the pool pointer, so it is reloaded). Also: the voice
+// through a forceinline getter taking the index (no stores in it) 3.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1271,6 +1278,8 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax B (11-12): no new form, no lower score (94); a fade-in local with the scaled local reaches 87, but each holds a
+// value used once, so the body stays as it is; the division written out of the branch scores 160 and the product inlined 94.
 // MiniMax G (11-11): no new form, no lower score (94): the arm-1 clamp's divisor re-spelled through the class 99 and a
 // fade-in local for the test and the inverse 101; retail's division-first clamp and its fade-out-last product stay out of
 // reach. This round: the reciprocal from a fade-in local copy of the field 87 (684 bytes: a gain of seven and a one-use
@@ -2983,6 +2992,9 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax B (11-12): no new form, no lower score (96); a bool result gives 113 at retail's length, the success path
+// returning early 133 and the failure path returning false with two other exits 135, so the shared exit with the result
+// byte in its stack slot stays closest.
 // MiniMax G (11-11): no new form, no lower score (96): retail's three returns (true at the entry, false in the failure
 // block, true at the commit) measure 131, and the index still lands in eax where retail keeps it in ecx. This round:
 // the failure block reached by a goto after the channel search, so that it follows the buffer tests as retail's
