@@ -64,6 +64,11 @@ struct overlap_endpoints_2e3370
 // expression 476; indexed clear 534; sentinel loops
 // 481/444, both 487; ascending collection 464. Shared forms NOT kept:
 // other users regress.
+// P453: construction block removed 438; sort end-pointer bound 440;
+// box snapshot 452; all axis bases retained 595; all output header
+// references 439; separate ending endpoint 435; initial memset 455;
+// collected count retained 510. NOT kept: best gain three; array home
+// remains displaced. Original body and shared helpers retained.
 // @retail 0x2e3370
 void class_2e1090::function_2e3370(bounds_2e0020 const *bounds, overlap_endpoints_2e3370 *lists)
 {

@@ -33,6 +33,7 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products.
+// MiniMax G (11-13): no new form, no lower score (206): the diff re-read this round puts the first difference in the frame size (ours 0x20, retail's 0x14), and the forms that change the two offset loops' order or the scale step measure at or above the body, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (206).
 // MiniMax I (11-11): no new form, no lower score (206): retail computes the second point's offsets first, spills all three and keeps the camera coefficients in registers; taking the two offset loops in retail's order scores 208, so the body keeps its own order.
 // MiniMax B (11-11): no new form, no lower score (206); the body is unchanged, and the forms listed above are exhausted.
