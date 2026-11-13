@@ -671,6 +671,40 @@ extern long g_scale;
 static inline long scaled(long a) { return a * g_scale; }
 static inline long sq(long x) { return x * x; }
 static inline real sq(real x) { return x * x; }
+
+union vector3f
+{
+	real n[3];
+	struct { real i, j, k; };
+};
+
+struct s_pool
+{
+	char *data;
+};
+
+struct s_entry
+{
+	long salt;
+	s_thing *thing;
+};
+
+extern s_pool *g_pool;
+static inline real dot3f(vector3f const *a, vector3f const *b)
+{
+	return a->i * b->i + a->j * b->j + a->k * b->k;
+}
+static __inline vector3f *vector3f_scale(vector3f const *v, real s, vector3f *result)
+{
+	result->i = s * v->i;
+	result->j = s * v->j;
+	result->k = s * v->k;
+	return result;
+}
+#define ENTRY_GET(index) (((s_entry *)g_pool->data)[(index) & 0xffff].thing)
+static inline bool is_positive(long a) { return a > 0; }
+#define TWICE_OF(x) x * 2
+#define NEGATED(x) -x
 '''
 PARAMS = 's_thing *thing, long index, short count'
 
@@ -776,6 +810,30 @@ CASES = [
     # 'v>limit' reads limit (once), though '>' comes right before it
     (permute.mut_inline_helper, '\n\treturn above(index, helper(index, count));\n',
      {'\n\treturn ((bool)(((long)index)>((long)(helper(index, count)))));\n'}),
+    # a pointer alias of a parameter, read through '*'; a reference to a field; a pointer to a field, passed on
+    (permute.mut_remove_alias, '\n\tlong const *reference = &index;\n\tif (*reference != NONE)\n\t\treturn helper(*reference, count);\n\treturn 0;\n',
+     {'\n\tif (index != NONE)\n\t\treturn helper(index, count);\n\treturn 0;\n'}),
+    (permute.mut_remove_alias, '\n\ts_thing *const *reference = &thing;\n\treturn helper((*reference)->value, count);\n',
+     {'\n\treturn helper(thing->value, count);\n'}),
+    # 'if (*value)': the if's own parentheses stay
+    (permute.mut_remove_alias, '\n\tlong *value = &thing->value;\n\tif (*value)\n\t\treturn 1;\n\treturn 0;\n',
+     {'\n\tif (thing->value)\n\t\treturn 1;\n\treturn 0;\n'}),
+    (permute.mut_remove_alias, '\n\ts_point &point = thing->point[0];\n\tstore(point.x, true);\n\treturn point.y;\n',
+     {'\n\tstore(thing->point[0].x, true);\n\treturn thing->point[0].y;\n'}),
+    (permute.mut_remove_alias, '\n\tlong *value = &thing->value;\n\tstore(*value, true);\n\treturn helper(*value, 0);\n',
+     {'\n\tstore(thing->value, true);\n\treturn helper(thing->value, 0);\n'}),
+    # an existing helper's expression, in its operand order -> the helper; a macro both ways
+    (permute.mut_existing_helper, '\n\tvector3f v;\n\treal d = v.i * v.i + v.j * v.j + v.k * v.k;\n\treturn (long)d;\n',
+     {'\n\tvector3f v;\n\treal d = dot3f(&v, &v);\n\treturn (long)d;\n'}),
+    (permute.mut_existing_helper, '\n\treturn ((s_entry *)g_pool->data)[index & 0xffff].thing->value;\n',
+     {'\n\treturn ENTRY_GET(index)->value;\n'}),
+    (permute.mut_existing_helper, '\n\treturn ENTRY_GET(index)->value;\n',
+     {'\n\treturn ((s_entry *)g_pool->data)[index & 0xffff].thing->value;\n'}),
+    # an existing helper's stores through its pointer parameters <-> the call
+    (permute.mut_existing_helper, '\n\tvector3f v;\n\treal s = 2.0f;\n\tv.i = s * v.i;\n\tv.j = s * v.j;\n\tv.k = s * v.k;\n\treturn 0;\n',
+     {'\n\tvector3f v;\n\treal s = 2.0f;\n\tvector3f_scale(&v, s, &v);\n\treturn 0;\n'}),
+    (permute.mut_existing_helper, '\n\tvector3f v;\n\tvector3f w;\n\treal s = 2.0f;\n\tvector3f_scale(&v, s, &w);\n\treturn 0;\n',
+     {'\n\tvector3f v;\n\tvector3f w;\n\treal s = 2.0f;\n\tw.i = s * v.i;\n\tw.j = s * v.j;\n\tw.k = s * v.k;\n\treturn 0;\n'}),
     (permute.mut_test_field_bit, '\n\tif (thing->ready && !g_thing->ready)\n\t\treturn 1;\n\treturn 0;\n',
      {'\n\tif (TEST_FIELD_BIT(thing->ready) && !g_thing->ready)\n\t\treturn 1;\n\treturn 0;\n',
       '\n\tif (thing->ready && !TEST_FIELD_BIT(g_thing->ready))\n\t\treturn 1;\n\treturn 0;\n'}),
@@ -864,6 +922,83 @@ def test_typed_mutations_leave_alone_what_they_must():
     assert permute.mut_test_field_bit('\n\tif (thing->value > 2)\n\t\treturn 1;\n\treturn 0;\n', rng(), ctx) is None
     # the macro is undone only where it is tested, not where its bool is stored
     assert permute.mut_test_field_bit('\n\tlong n = TEST_FIELD_BIT(thing->count);\n\treturn n;\n', rng(), ctx) is None
+    # an alias stays when what it points at could move: its root or index written, the pointer itself moved,
+    # its address taken, a call between and a pointer loaded from memory in the chain; or when a const
+    # reference binds a converted copy, or the name is declared twice
+    assert permute.mut_remove_alias('\n\tlong *value = &thing->value;\n\tthing = g_thing;\n\treturn *value;\n', rng(), ctx) is None
+    assert permute.mut_remove_alias('\n\tlong *value = &thing->point[index].x;\n\tindex++;\n\treturn *value;\n', rng(),
+                                    ctx) is None
+    assert permute.mut_remove_alias('\n\tlong *value = &thing->value;\n\tvalue++;\n\treturn *value;\n', rng(), ctx) is None
+    assert permute.mut_remove_alias('\n\tlong *value = &index;\n\tlong **at = &value;\n\treturn *value;\n', rng(), ctx) is None
+    assert permute.mut_remove_alias('\n\tlong *x = &thing->point->x;\n\tstore(1, true);\n\treturn *x;\n', rng(), ctx) is None
+    assert permute.mut_remove_alias('\n\tlong const &value = thing->count;\n\treturn value;\n', rng(), ctx) is None
+    assert permute.mut_remove_alias('\n\t{\n\t\tlong *v = &index;\n\t\tstore(*v, 1);\n\t}\n\tlong *v = &thing->value;\n'
+                                    '\treturn *v;\n', rng(), ctx) is None
+    # a helper stays out when the code is not its exact expression (operand order, precedence), or an
+    # argument has a side effect or another type; for stores, when an argument is a field the stores could
+    # change; expanding, when an argument read more than once is not a name, a literal or an address
+    h = permute.mut_existing_helper
+    assert h('\n\tvector3f v;\n\treal d = v.k * v.k + v.j * v.j + v.i * v.i;\n\treturn (long)d;\n', rng(), ctx) is None
+    assert h('\n\tvector3f v;\n\treturn (long)(2 * v.i * v.i + v.j * v.j + v.k * v.k);\n', rng(), ctx) is None
+    assert h('\n\treturn ((s_entry *)g_pool->data)[helper(index, 0) & 0xffff].thing->value;\n', rng(), ctx) is None
+    assert h('\n\tvector3f v;\n\tv.i = index * v.i;\n\tv.j = index * v.j;\n\tv.k = index * v.k;\n\treturn 0;\n', rng(),
+             ctx) is None
+    assert h('\n\tvector3f v;\n\treal *s = &v.i;\n\tv.i = *s * v.i;\n\tv.j = *s * v.j;\n\tv.k = *s * v.k;\n\treturn 0;\n',
+             rng(), ctx) is None
+    assert h('\n\tvector3f v;\n\tvector3f w;\n\tvector3f_scale(&v, (real)helper(index, 0), &w);\n\treturn 0;\n', rng(),
+             ctx) is None
+    # a one-expression helper in the file itself is mut_inline_helper's to expand; one in a header is this one's,
+    # with the argument and result casts
+    assert h('\n\tvector3f v;\n\treturn (long)dot3f(&v, &v);\n', rng(), ctx) is None
+    assert h('\n\tvector3f v;\n\treturn (long)dot3f(&v, &v);\n', rng(), permute.Context(PARAMS, 'long', HEADER, own='')) == \
+        '\n\tvector3f v;\n\treturn (long)((real)(v.i * v.i + v.j * v.j + v.k * v.k));\n'
+    # arguments named like the other parameters are substituted once, not again
+    assert h('\n\tvector3f a;\n\tvector3f b;\n\treturn (long)dot3f(&b, &a);\n', rng(),
+             permute.Context(PARAMS, 'long', HEADER, own='')) == \
+        '\n\tvector3f a;\n\tvector3f b;\n\treturn (long)((real)(b.i * a.i + b.j * a.j + b.k * a.k));\n'
+    # a local named like a global the helper's code reads: the two would read different things
+    listed = permute.Context(PARAMS, 'long', HEADER + 'extern long *g_list;\nstatic inline long list_at(long i) { return g_list[i]; }\n')
+    assert h('\n\treturn g_list[index];\n', rng(), listed) == '\n\treturn list_at(index);\n'
+    assert h('\n\tlong g_list[4];\n\treturn g_list[index];\n', rng(), listed) is None
+    assert h('\n\ts_pool *g_pool = 0;\n\treturn ENTRY_GET(index)->value;\n', rng(), ctx) is not None  # a macro reads it here too
+    # #1064: an alias in a loop that writes its root after the use; a write through a pointer taken before it;
+    # a side effect in its index; its declaration the unbraced body of an if; its name in a comment
+    a = permute.mut_remove_alias
+    assert a('\n\tlong *value = &thing->value;\n\twhile (count--)\n\t{\n\t\tstore(*value, true);\n\t\tthing = g_thing;\n\t}\n'
+             '\treturn 0;\n', rng(), ctx) is None
+    taken = '\n\tlong *at = &index;\n\tlong *value = &thing->point[index].x;\n\t*at = 0;\n\treturn *value;\n'
+    assert all('long *value' in out for out in outputs(a, taken))  # 'at' may go ('index = 0;'), 'value' stays
+    assert a('\n\tlong *value = &thing->point[index++].x;\n\tstore(*value, true);\n\treturn *value;\n', rng(), ctx) is None
+    assert a('\n\tlong *value = &thing->point[helper(index, 0)].x;\n\tstore(*value, true);\n\treturn *value;\n', rng(),
+             ctx) is None
+    assert a('\n\tif (index)\n\t\tlong *value = &thing->value;\n\treturn *value;\n', rng(), ctx) is None
+    assert a('\n\tlong *value = &thing->value;\n\t// value: the count\n\treturn *value;\n', rng(), ctx) is None
+    # #1064: stores as the unbraced body of an if or a loop stay apart from the call, both ways
+    assert h('\n\tvector3f v;\n\tvector3f w;\n\treal s = 2.0f;\n\tif (index)\n\t\tvector3f_scale(&v, s, &w);\n\treturn 0;\n',
+             rng(), ctx) is None
+    assert h('\n\tvector3f v;\n\tvector3f w;\n\treal s = 2.0f;\n\twhile (index--)\n\t\tvector3f_scale(&v, s, &w);\n'
+             '\treturn 0;\n', rng(), ctx) is None
+    assert h('\n\tvector3f v;\n\treal s = 2.0f;\n\tif (index)\n\t\tv.i = s * v.i;\n\tv.j = s * v.j;\n\tv.k = s * v.k;\n'
+             '\treturn 0;\n', rng(), ctx) is None
+    # #1064: a double literal is not a real argument (collapsing); expanding keeps the float conversion
+    assert h('\n\tvector3f v;\n\tv.i = 0.3 * v.i;\n\tv.j = 0.3 * v.j;\n\tv.k = 0.3 * v.k;\n\treturn 0;\n', rng(), ctx) is None
+    assert h('\n\tvector3f v;\n\tvector3f w;\n\tvector3f_scale(&v, 0.3, &w);\n\treturn 0;\n', rng(), ctx) == \
+        '\n\tvector3f v;\n\tvector3f w;\n\tw.i = ((real)0.3) * v.i;\n\tw.j = ((real)0.3) * v.j;\n\tw.k = ((real)0.3) * v.k;\n\treturn 0;\n'
+    # #1064: an argument with an operator has its real type: (x + y) with real x and y is not a long
+    assert h('\n\treal x = 1.0f;\n\treal y = 2.0f;\n\treturn (x + y) > 0;\n', rng(), ctx) is None
+    assert outputs(h, '\n\treturn (index + 1) > 0;\n') == {'\n\treturn is_positive((index + 1));\n',
+                                                            '\n\treturn above((index + 1), 0);\n'}
+    # #1064: a volatile local is read as often as the code reads it
+    assert h('\n\tvolatile long v = index;\n\treturn v + v;\n', rng(), ctx) is None
+    assert h('\n\tlong v = index;\n\treturn v + v;\n', rng(), ctx) == '\n\tlong v = index;\n\treturn doubled(v);\n'
+    # #1064: a macro expands as the preprocessor does, no parentheses added; tokens stay apart
+    assert h('\n\treturn TWICE_OF(index + 1);\n', rng(), ctx) == '\n\treturn index + 1 * 2;\n'
+    assert h('\n\treturn -NEGATED(index);\n', rng(), ctx) == '\n\treturn - -index;\n'
+    # #1064: code in a comment is not code
+    assert h('\n\tvector3f v;\n\t// v.i * v.i + v.j * v.j + v.k * v.k\n\treturn 0;\n', rng(), ctx) is None
+    # a helper the file defines after the function cannot be called from it
+    late = permute.Context(PARAMS, 'long', HEADER, start=HEADER.index('union vector3f'))
+    assert h('\n\tvector3f v;\n\treal d = v.i * v.i + v.j * v.j + v.k * v.k;\n\treturn (long)d;\n', rng(), late) is None
 
 
 def test_a_declaration_in_a_switch_gets_braces():
