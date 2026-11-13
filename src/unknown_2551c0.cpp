@@ -820,6 +820,8 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // subsets 1/2/4/3/5/6/7, then all with entry normalization declarations:
 // 110/87/87/110/110/87/110/110. NOT kept: request ownership grows the
 // native frame; other scopes canonicalize. All original workspaces restored.
+// P448: Original-site normalization/projection/type/complete first-probe/complete second-probe/clearance/side-score/animation-distance decisions:
+// 87/87/87/87/87/87/161/87. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

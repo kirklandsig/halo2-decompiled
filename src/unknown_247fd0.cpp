@@ -656,6 +656,8 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // NOT kept: split effect addressing and gate/settings homes remain; original complete body restored.
 // P446: Native objects on the integrated entry-save/helper graph: blend, first sample, both, probes/placement, geometry, probes/placement/sample, all, all at consumers;
 // 406/395/446/465/446/446/446/447. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P448: Immutable incoming system/settings/publication/fraction/duration/scale/placement/cache bindings:
+// 334/334/334/334/334/334/334/334. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -2003,6 +2003,8 @@ void function_b7360(long object_index);
 // fallback as completion / admission expression / separate stores with admission /
 // negative fallback admission: 619/601/467/619/463/466/460/270.
 // NOT kept: no equality or gain; original complete callback restored.
+// P448: Original-site orientation/per-case movement/source/parent/property/lower-bound/lookup-result/final-mode decisions:
+// 272/270/272/272/272/272/272/272. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

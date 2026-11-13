@@ -476,6 +476,8 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // NOT kept: no native success/workspace repair; original body, helpers and in-place copies restored.
 // P446: Clearance failure, nearest-hit admission, finite-minimum admission, angle positivity, branch root ownership, uniform normalization results, uniform response angles, shared ray sample;
 // 572/572/572/572/576/577/577/657. NOT kept: four-point nonmatch gains are below the eight-point bar; original complete body restored.
+// P448: Uniform clamp lower/upper admissions, uniform normalization-zero decisions, four individual hit admissions, relational fixed-count termination:
+// 543/543/578/576/576/576/576/576. NOT kept: clamp comparison locals lack byte equality and native value evidence; original body/helpers restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
