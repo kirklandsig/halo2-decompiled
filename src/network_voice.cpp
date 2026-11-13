@@ -203,6 +203,7 @@ bool voice_xhv_get_runtime_parameters(XHV_RUNTIME_PARAMS *parameters, c_voice_xh
 // guard and the esi region's exit copies the reload); that with the engine pointer bound before the guard 20 (275, lea
 // before the je again), bound at the function's top 24; `if (!result) return result;` then the flat body 90 (270 bytes,
 // a separate `xor al, al` exit); a false-initialised result set true inside the parameters test 108 (278).
+// NOT kept (coordinator screen, MiniMax A 11-13): a goto the function on main does not have (kept only with a byte match); a new volatile (reverted even with a match): `goto local_1;`; the body is main's again.
 // @retail 0x55810
 bool voice_xhv_create(c_voice_xhv *xhv)
 {
@@ -212,44 +213,45 @@ bool voice_xhv_create(c_voice_xhv *xhv)
     bool result = voice_xhv_get_runtime_parameters(&parameters, xhv);
     engine = &xhv->engine;
     bool *local_0 = &result;
-    if (!result)
-        goto local_1;
-    error = XHVEngineCreate(&parameters, engine);
-    if (!SUCCEEDED(error))
-        goto local_1;
-    xhv->unknown0c = 0;
-    switch (xhv->mode)
+    if (result)
     {
-    case 1:
-        xhv->unknown0c = 0xb;
-        break;
-    default:
-        xhv->unknown0c = 0xf;
-        break;
+        error = XHVEngineCreate(&parameters, engine);
+        if (!SUCCEEDED(error))
+            goto local_1;
+        xhv->unknown0c = 0;
+        switch (xhv->mode)
+        {
+        case 1:
+            xhv->unknown0c = 0xb;
+            break;
+        default:
+            xhv->unknown0c = 0xf;
+            break;
+        }
+        for (DWORD mode = 0; mode < 4; mode++)
+        {
+            if (xhv->unknown0c & (1 << mode))
+                error = (*engine)->EnableProcessingMode(g_52731c[mode]);
+        }
+        if (!SUCCEEDED(error))
+            goto local_1;
+        error = (*engine)->SetCallbackInterface(xhv);
+        if (xhv->unknown0c & 4)
+            (*engine)->SetMaxPlaybackStreamsCount(15);
+        if (!SUCCEEDED(error))
+            goto local_1;
+        for (long port = 0; port != NONE; port = voice_port_next_index(port))
+        {
+            XHV_LOCAL_TALKER_STATUS status;
+            (*engine)->RegisterLocalTalker(port);
+            (*engine)->SetProcessingMode(port, g_52731c[xhv->port_modes[port]]);
+            (*engine)->GetLocalTalkerStatus(port, &status);
+            xhv->communicator_present[port] = status.communicatorStatus == XHV_VOICE_COMMUNICATOR_STATUS_INSERTED;
+            xhv->chat_data_ready[port] = false;
+            xhv->voice_mail_active[port] = false;
+        }
+        *(volatile bool *)local_0 = true;
     }
-    for (DWORD mode = 0; mode < 4; mode++)
-    {
-        if (xhv->unknown0c & (1 << mode))
-            error = (*engine)->EnableProcessingMode(g_52731c[mode]);
-    }
-    if (!SUCCEEDED(error))
-        goto local_1;
-    error = (*engine)->SetCallbackInterface(xhv);
-    if (xhv->unknown0c & 4)
-        (*engine)->SetMaxPlaybackStreamsCount(15);
-    if (!SUCCEEDED(error))
-        goto local_1;
-    for (long port = 0; port != NONE; port = voice_port_next_index(port))
-    {
-        XHV_LOCAL_TALKER_STATUS status;
-        (*engine)->RegisterLocalTalker(port);
-        (*engine)->SetProcessingMode(port, g_52731c[xhv->port_modes[port]]);
-        (*engine)->GetLocalTalkerStatus(port, &status);
-        xhv->communicator_present[port] = status.communicatorStatus == XHV_VOICE_COMMUNICATOR_STATUS_INSERTED;
-        xhv->chat_data_ready[port] = false;
-        xhv->voice_mail_active[port] = false;
-    }
-    *(volatile bool *)local_0 = true;
 local_1:
     return result;
 }
