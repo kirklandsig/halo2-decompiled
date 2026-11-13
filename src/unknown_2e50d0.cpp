@@ -175,6 +175,10 @@ void sweep_batches_2e50d0::function_2e50d0(owners_2e50d0 const *owners, bounds_a
 // test 67; head cursor 214; short snapshot 56; entry pointer 67;
 // postincrement store 56; wider scope, rename and narrower scope 56/56/56;
 // indexed read 224; direct store 169; early reference 161. New bodies restored.
+// Persistent tail/both element cursors 299/298; retained table base 242;
+// three output cursors 283; endpoint base 284; outer cell cursor 284;
+// cell-list entry cursor 155 (NOT kept: seven-point gain above 30);
+// owner-slot cursor 316. Other new cursor forms regress; body restored.
 // @retail 0x2e5590
 void sweep_batches_2e50d0::function_2e5590(owners_2e50d0 const *owners, pairs_2e1090 *pairs)
 {

@@ -1691,8 +1691,8 @@ long function_1fa7f0(void);
 // and node-index arguments of the trace call and of the two point arguments of the tangent call, and it
 // writes the link index through a volatile byte, so it changes what the function computes and is not kept;
 // the part of that rewrite that keeps the behaviour (the declaration order inside the loop, the reversed
-// comparison operands and the inverted type test) compiles to the same bytes as the body below, so the
-// score stays at 400 with the same 1752 bytes.
+// comparison operands and the inverted type test) compiles to the same bytes as the body below, so the score
+// stays at 400 with the same 1752 bytes.
 // MiniMax R (11-11): no new form, no lower score (400); the prologue differs: retail pushes only esi and edi
 // and keeps the loop's zero in EBX and the count in SI, while ours pushes ebx and esi and keeps the zero in
 // EDX and the count in BX; retail reads the radius from the stack slot [esp+0x2c] and stores the expanded
@@ -1750,6 +1750,10 @@ long function_1fa7f0(void);
 // `left && right` 401; type and link without initializers, set to NONE in the untyped arm 476 (1762 bytes); the corner as
 // `side ? corners[0] : corners[1]` 473 (1710 bytes); the other side passed as `!side` with `side = !side` at the end of the
 // attempt body 434 (1715 bytes, frame 0x10c; the listed for-increment form's code), plus the named last index 455 (1743 bytes).
+// m3 lane 4 r191 (fast with 0x270930/0x2c2a70; aligned/masked 349/95): if/else arms swapped (match-only forms): the typed
+// and untyped step arms 458 (1746 B), the fallback's `next == 0 || next == index` first 400 (2 lines differ), the emit's
+// `type == NONE` first 400 (aligned 361), the distance block's `!=` arm first 441, the corner choice as
+// `if (!side) corners[1]` 405.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

@@ -495,6 +495,9 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // maximum-change scales through the file scale helper, a separate speed-squared local, the center inline, chained
 // returns) 34 in all; the direction normalizer in the maximum branch 17 (re-measured, as round 7); the previous blend
 // through vector3f_scale on the shared-normalizer form 34.
+// Round 117 (m3 lane 12): the permuter (`--fast --anneal`, 600 s, 82 tries) best 10. The tree's statement-form i, j, k
+// squared sums are all file-local (path.cpp, unknown_1a58b0.cpp, impacts.cpp) and none reads k first; matched 0x2b8e10
+// keeps nothing in registers across its back edge, so it shows no reload order to follow.
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {

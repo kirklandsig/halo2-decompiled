@@ -223,9 +223,18 @@ public:
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
+// score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds (retail never
+// combines base+index or folds a memory operand at the gate, the definition short or the bit-4 test), homes differ.
+// M3 lane 8 r159 (fast with 0x247fd0 and 0x248cc0, both stay matched): kept, the probe direction through the existing
+// vector3f_assign (0.f, 0.f, -1.f) 334 and the 3-bit draw through the existing random_index(&seed, 5) 334 (same code each;
+// they replace those helpers' bodies written out). The scale step as three `*=` 334 (same code); re-measured on main, the
+// bit-4 test as TEST_FIELD_BIT(local_3->flag4) 352 (masked 69 -> 65, the shr/test is retail's but the definition pointer
+// moves); the header mask and set as one statement 334 (same code); the final
+// call's tag index and both getters written in the call (no one-use locals) 337 (first difference +0x12).
+// Diagnostic (reverted): the file built with /G5 334, same code, so the unfolded addressing is not the processor target.
 // MiniMax H (11-11): no new form, no lower score (334); the flag byte read through a named datum pointer 334, through
 // its bitfield 334 and through a named word of flags 335 give the same code, so the base still folds into the scaled index.
-// score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
+// Earlier status line (334, was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
 // gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
 // MiniMax C (11-10): the score is 334 (was 334); the gate flag keeps its dead store where retail folds the address, and the settings pointer, the effect address and the random draws still live in different homes.
 // MiniMax E (11-09): no new form, no lower score (334).
@@ -660,7 +669,7 @@ void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition
 		arg_1->field_4 = local_1;
 		local_2->field_02 &= 0xe004;
 		local_2->field_02 |= 4;
-		local_2->field_02_13 = (_random(&g_4e7408->seed, 0, 0) * 5) >> 16;
+		local_2->field_02_13 = random_index(&g_4e7408->seed, 5);
 		local_2->field_08 = 0.f;
 		function_248076(&g_4e7408->seed, local_23.field_98);
 		local_2->field_14 = (word)real_truncate(local_23.field_98 * 65535.f);
@@ -698,9 +707,7 @@ void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition
 			if (*(long *)((byte const *)arg_3 + 0x78) == 8)
 			{
 				local_23.field_c = local_2->field_1c;
-				local_23.field_18.i = 0.f;
-				local_23.field_18.j = 0.f;
-				local_23.field_18.k = -1.f;
+				vector3f_assign(&local_23.field_18, 0.f, 0.f, -1.f);
 				local_23.field_c.z += 1.f;
 				collision.unknown24 = NONE;
 				if (function_1697c0(0x800005, &local_23.field_c, &local_23.field_18, NONE, NONE, &collision))

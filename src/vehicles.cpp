@@ -21,6 +21,7 @@ helpers only they call. */
 #include "object_iterator.h"
 #include "unknown_1eb550.h"
 #include "vehicle_ray.h"
+#include "object_tag_definitions.h"
 #include <math.h>
 #include <string.h>
 
@@ -532,6 +533,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// MiniMax G (11-12): no new form, no lower score (126): nothing new this round; the SSE register colouring of the 1.0 constant
+// and the remaining homes remain.
+// MiniMax G (11-12): no new form, no lower score (126): the frame, the length and the layout are retail's; left are
+// the SSE register colouring (the 1.0 constant) and the remaining homes.
 // MiniMax H (11-11): no new form, no lower score (126); the velocity copied as a planar aggregate with the speed's
 // squares written y then x 122 (four points, under the bar) and the y-first squares alone 126 (same code), so the
 // original body is kept; the 1.0 constant still lands in xmm2 instead of xmm3. Later in the same round: the velocity
@@ -1968,12 +1973,16 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // the forward-speed terms 13 (one-use; only the cross flips); the arm-1 dot through
 // dot3f re-measured 376 (2007). Diagnostic: a vehicle-index copy declared after `state` for every callback 13 (the reload
 // order stays, so it does not follow symbol order; the cross flips).
+// Round 117 (m3 lane 12, fast), at 9: the model tag read through the typed object definition 9 (same code, kept);
+// the forward speed grouped `(k + j) + i` explicitly 11 (the sum then (j + k) + i, the i term unchanged); `(real)`
+// casts on its three products 9; the vehicle index parameter as `dword` 9; `speed` declared at the overlay block's top
+// and assigned in the arm 9 (all three the same code).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
-	byte *model = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
+	byte *model = g_4e3b44[((s_object_definition const *)definition)->model.tag_index & 0xffff].bytes;
 	s_graph_tag *graph = (s_graph_tag *)g_4e3b44[*(long *)(model + 4) & 0xffff].bytes;
 	vector3f linear_velocity;
 
@@ -4080,6 +4089,11 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
 
+// MiniMax G (11-12): no new form, no lower score (118): nothing new this round; the projection/cross input ranks and the
+// angle/trig homes remain.
+// MiniMax G (11-12): no new form, no lower score (118): the projection/cross input ranks and the angle/trig homes
+// remain; retail keeps the angle on the x87 stack in all three arms, which only the listed `double angle` spelling
+// gives.
 // MiniMax D (11-11): 117 (was 136): the flip truth is a byte-wide flag (retail keeps it in a byte at
 // [esp+0x1c] and hands it back in AL), the fallback up copy is one aggregate move, the angle stays on the
 // x87 stack as a double and the default case's axis is computed before the trigonometry; what still differs
@@ -5071,6 +5085,12 @@ bool __stdcall function_f8070(long bit, word const *flags);
 /* the vehicle object type's function values (+0x4c): its boost, brakes,
    ground contact, speeds, steering, engine and wheels; false for a name it
    does not know */
+// MiniMax G (11-12): no new form, no lower score (749): nothing new this round; the frame and the length are retail's, and the
+// entry definition ownership, the zero/result SSE allocation and the per-site versus hoisted 1.0 constants
+// are still not retail's.
+// MiniMax G (11-12): no new form, no lower score (749): frame 0x18 and retail's length agree, but the entry
+// definition ownership, the zero/result SSE allocation and the per-site versus hoisted 1.0 constants are still not
+// retail's.
 // MiniMax H (11-11): no new form, no lower score (749); the definition pointer is still re-derived at each use instead of
 // retail's one copy in EBP, the zero and the result still take different SSE registers and the 1.0 is still hoisted here.
 // score 749 (was 749): Frame 0x18 and retail length agree; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain (was 765 before round 180).

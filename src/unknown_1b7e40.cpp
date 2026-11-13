@@ -88,6 +88,7 @@ bool function_25d9b0(long prop_index);
 // MiniMax B (11-04): no new form, no lower score.
 // MiniMax S (11-09): no new form, no lower score (49); the fallback still ends in retail's shared zero exit and
 // the busy test still becomes a numeric select, so the block order and the two epilogues stand.
+// MiniMax B (11-12): no new form, no lower score (49); the busy call's tail is still the mask select (neg al; sbb eax,eax; not eax; and eax,esi) where retail tests the flag and branches to its own return-priority epilogue (pop edi; mov ax,si), so the body stays six bytes longer (557 against 551); the ternary, the named result, the explicit else, the empty then-arm, the merged outer if and the busy test folded into the && chain score 83, 49, 145, 65, 152 and 150, and passing the node's object index instead of the actor's prop index scores 36 but is not what retail does (retail loads the actor's prop index from [ebx+0x338] before the call).
 // score 49 (was 49): frame and actor/node homes agree; busy selection and zero/success epilogues differ.
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
 // (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.

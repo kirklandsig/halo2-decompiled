@@ -229,6 +229,12 @@ void __cdecl function_2ea640(void const *a_, void const *b_, void const *input_,
 // with paired geometry 93; late end 30; count capture 23; early container 75,
 // before end 69; copied body 73. NOT kept: no equality or qualifying gain;
 // original observations, helpers, body and matched neighbors restored.
+// Round 94: mutable end 23; split end 23; vector buffer 23; mutable cursor
+// 23; finish name 23; child_body name 23; paired cursor scope 30; direct
+// parameter fields 23; existing timing helper 25; indexed base 59.
+// NOT kept: these forms tie or regress; cursor setup still differs.
+// Shared begin/end methods 23; NOT kept: no gain.
+// Serial search: 74 variants in 120 s, none below 23.
 // @retail 0x2ea830
 void class_2ea830::function_2ea830(void const *a, void const *b, void const *input, void *collector)
 {

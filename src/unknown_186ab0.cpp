@@ -173,6 +173,7 @@ void player_action_initialize(s_player_action *arg_0);
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax B (11-04): no new form, no lower score.
 // MiniMax S (11-06): no new form, no lower score.
+// MiniMax G (11-12): no new form, no lower score (134): the inlined count read keeps our [edx + edi] against retail's [edi + edx], and the score-1 form still needs a pragma region and a one-caller forceinline wrapper.
 // score 134 (was 134): frame 0x54 agrees; selection comparison, byte-count extension, cyclic
 // operand order, cold clear and output/angle scheduling differ.
 // Earlier: frame 0x54 and selection inputs agree; comparison order,

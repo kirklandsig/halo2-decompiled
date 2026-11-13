@@ -3999,13 +3999,16 @@ long session_peer_map_find_machine(s_session_peer_map *map, const s_session_memb
 // @retail 0x61ef0
 void __stdcall function_61ef0(c_class_58d20 *session)
 {
+ long one = 1;
+ bool flag = true;
  s_session_peer_transition *transition = (s_session_peer_transition *)&session->value7420;
  for (long i = 0; i < session->member_count; i++)
  {
   if (i != session->current_member)
   {
-   dword pending = transition->pending;
-   dword bit = 1 << i;
+   /* retail reads pending from memory here, not from a cached register */
+   dword pending = *(volatile dword *)&transition->pending;
+   dword bit = one << i;
    if (pending & bit)
    {
     if (network_session_time_since(transition->times[i]) >= g_network_configuration.value148c)
@@ -4027,21 +4030,21 @@ void __stdcall function_61ef0(c_class_58d20 *session)
   s_session_peer_map *map = (s_session_peer_map *)transition->map;
   for (long i = 0; i < session->member_count; i++)
   {
-   if (transition->failed & (1 << i))
+   if (transition->failed & (one << i))
     failed++;
    else
    {
     long index = session_peer_map_find_machine(map, (const s_session_member_header *)&session->members[i]);
     bool present = false;
-    if (index != NONE) present = (*(dword *)((byte *)map + 0xbc) & (1 << index)) != 0;
+    if (index != NONE) present = (*(dword *)((byte *)map + 0xbc) & (one << index)) != 0;
     if (!present) missing++;
    }
   }
   if ((failed <= 0 || (network_session_time_since(transition->start_time) >= g_network_configuration.value148c &&
     network_session_time_since(transition->selection_time) >= g_network_configuration.value1490)) && !missing)
-   function_061570(session, true);
+   function_061570(session, flag);
  }
- else if (transition->failed & (1 << transition->selected))
+ else if (transition->failed & (one << transition->selected))
  {
   transition->selected = network_session_build_peer_map(session, (s_session_peer_map *)transition->map);
   transition->selection_time = network_session_time_now();
@@ -4059,7 +4062,7 @@ void __stdcall function_61ef0(c_class_58d20 *session)
    {
     s_network_session_member_state *member = &session->member_states[i];
     if (member->flag1)
-     network_observer_send_message(session->observer, session->value10, member->unknown04, true, 22, sizeof(message), &message);
+     network_observer_send_message(session->observer, session->value10, member->unknown04, flag, 22, sizeof(message), &message);
    }
    transition->send_time = network_session_time_now();
   }
