@@ -2005,6 +2005,10 @@ void function_b7360(long object_index);
 // NOT kept: no equality or gain; original complete callback restored.
 // P448: Original-site orientation/per-case movement/source/parent/property/lower-bound/lookup-result/final-mode decisions:
 // 272/270/272/272/272/272/272/272. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P451: Independent recording/selection/current-point cases before zero 465/472/476;
+// orientation default store 412; recording exhaustive stores 219; parent-owned moving result 270;
+// direct branch delay stores 290; orientation selector at every use 270. NOT kept: the 219
+// form moves the zero store away from retail and grows to 1852/1848; other forms tie or regress.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

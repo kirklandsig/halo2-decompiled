@@ -1631,6 +1631,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // (masked 263); `bool result = false;` first with `result = true;` last 573 (block EBX and query EDI as retail, record ESI,
 // 0x3db00 lost).
 // MiniMax R (11-11): no new form, no lower score (529): the entry convention and the loop's homes stay rotated against retail's, and the parameter order that would fix the entry is not ours to change.
+// P451: Count admission enclosing scan and consumer 573; selected pointer scoped inside 574;
+// that graph with length before normal copy / early lightmap copy / shared bias / direct primary
+// output / early square / lightmap-first clamps 573/568/573/606/548/571. NOT kept: all regress
+// and lose 0x3db00; original body/helpers restored, frame 0x2c versus native 0x28 remains.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

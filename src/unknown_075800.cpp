@@ -1414,6 +1414,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // getters, forced-inline helpers), round 150 (const reference to a cast temporary, file-local handlers), round 139 (address
 // declared long or as a reference), m3 lane 1 r88 (address copied at entry), round 85 (link read once), round 74 (0x92ef0's
 // parameter orders); no unlisted member was found, so no trial was run (0 trials: no unlisted natural form).
+// P451 (full 153, reduced control 196): Individual late cases in the primary root 216/196;
+// individual default-owned late cases 196/195; separate connection interval 197;
+// unsigned connection result / void call-return expressions / connection result name 196/196/196.
+// NOT kept: one-point best; native delayed ESI and outlined late-handler shape remain.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
