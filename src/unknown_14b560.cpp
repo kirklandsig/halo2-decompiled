@@ -1200,6 +1200,13 @@ bool function_14ed80(void)
 // getter 8; the clamp helper plain inline 8; the element read as a helper with output pointers 8. Harness diagnostics: the named
 // globals local keeps EDX against 1-3 extra uses of first, volatile-sourced outputs or an extra use of itself; as a CSE temp or an
 // inlined parameter it ranks last (EDI); without the clamp it ranks last; retail ranks it between first and third.
+// M3 lane 10 r100 (fast, with 0x14f0f0, 0x14f2e0, 0x14f190, 0x14f270 and 0x14f820): a return value the callers ignore
+// stays in the code (LTCG does not drop it): returning first 54 (0x14f0f0 1), `first != NONE` as bool 23 (173 bytes),
+// third 54, index 45. Declared player, first, globals, third 8 (same code); `long first;` then player, globals and
+// `long third = first = NONE;` 8 (same code), the chain ahead of the player 8 (same code); the NONE defaults repeated
+// in an else arm of the range test 61 (152 bytes; 0x14f2e0 272, 0x14f0f0 48), the same with globals declared between
+// the outputs 61. Diagnostic: without the clamp the function changes length and convention (140-142 bytes, 0x14f0f0
+// 40), so it does not isolate the ranking.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
