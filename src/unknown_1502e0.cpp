@@ -1317,6 +1317,8 @@ long function_cbd50(long unit_index, short weapon_index);
 // P437: Held/pending/inventory/player lexical identities 215 each; immutable player/pool,
 // read-only inventory and fixed shared flag result 215 each. NOT kept: frame 0x1c versus 0x18
 // and native pool/player/tag homes unchanged; original complete body and helpers restored.
+// P440: First-loop do/while with the existing slot provider, and held/pending/paired/output/held-output/all walks: 215/215/330/329/313/215/330/313.
+// NOT kept: Native player/pool/tag homes remain; direct entry ties and genuine producer cursors regress. Original complete body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {

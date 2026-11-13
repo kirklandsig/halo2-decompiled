@@ -1418,6 +1418,8 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // P437: Fixed actual palette bound/squad bit/weapon handle/movement receiver, read-only
 // movement receiver and fixed placement/squad/substitution inputs: 252 each. NOT kept: no native
 // sentinel or squad/query-home recovery; original full body, helpers and call tuples restored.
+// P440: Settings/perception/unit failure breaks, seven subsets then common failure cleanup: 947/947/947/947/947/947/971/963.
+// NOT kept: Shared failure scopes expand the frame and creation/query inlining. Original complete body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -2273,6 +2275,8 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // code); the rounds draw through the existing random_index, its result in a named count 255, inside the expression 252; the
 // draw through random_next 251 (same code); random_index inside the expression with both second-block queries through 0xcbd50
 // (slot read from a fresh lookup) 279.
+// P440: First-phase actor/unit/slot failure scopes, seven subsets then exhaustive success arms: 349/353/349/315/353/349/347/347.
+// NOT kept: Phase exits regress; actor/options/pool homes remain. Original complete body restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
