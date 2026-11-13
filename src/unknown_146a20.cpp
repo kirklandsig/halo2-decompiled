@@ -420,6 +420,14 @@ bool g_47f05b;
 // its buffer and size; retail here keeps declaration order and keeps the store, so the two inlined copies differ in
 // scheduling, not in source. No untried form on either side; body unchanged.
 // MiniMax A (11-12): no new form, no lower score (34); the base vtable store still comes from the shared constructor in include/unknown_146a20.h, which this lane may not edit (BLOCKED-BY), and the successful arm still reloads the backing store.
+// MiniMax G (11-13, later): no new form, no lower score (34): with the pool's placement read from g_479888 the
+// reload sinks into the successful arm and the join matches retail's lea, but the constant one then becomes an
+// immediate (38; 36 with a byte pointer), and with the placement read from the local the constant stays in edx and
+// the reload stays at the join (34); the abstract allocator's dead vtable store still comes from the shared
+// constructor in include/unknown_146a20.h (BLOCKED-BY), so the body stands.
+// MiniMax G (11-13): no new form, no lower score (34): the abstract allocator's dead vtable store and the
+// reload of the backing pointer on the successful arm are still missing; the shared constructor bodies they
+// follow are outside this queue, so the body stands.
 // @retail 0x146a20
 void function_146a20(void)
 {
