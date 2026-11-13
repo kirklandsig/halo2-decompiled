@@ -1033,6 +1033,14 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // (689 bytes); both positions `dword const` 34; the clamp as `if (body_size - body_offset < size) size = ...;` 35; the
 // signature position written at both uses (no local) 221 (694 bytes), both cases' positions so 221 (695 bytes).
 // MiniMax A (11-12): no new form, no lower score (34); the difference is still the register rotation (the total in EAX against retail's EDX, the hoisted body_size in ESI against ECX) and the join copy at retail's 0x2ad911 that ours lacks because it coalesces the remaining count into ESI.
+// M3 lane 2 r77 (fast with 0x2adb10 and 0x2ada70, both matched; control 34): re-measured the total folded into its
+// conversion 88 (the entry is retail's to +0x3f; the dispatch then hoists body_size into ESI where retail keeps ECX, and the
+// signature case's scratch registers fall one step behind). No unlisted natural form found: total, size, position, clamp,
+// getter, case and scope forms are all listed above. Diagnostic, reverted at once: one dead volatile read of a parameters
+// field before the total, before its conversion, after the state store, before the switch or at the header, signature or
+// body case's start, on this body and on the folded total: the total stays in EAX here (EDX only when folded) and the
+// hoisted body_size stays in ESI everywhere, so the residue is the hoisted value's coalescing with position and size,
+// not a missing scratch-rotation step. Body unchanged.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

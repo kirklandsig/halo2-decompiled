@@ -940,6 +940,10 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // timer clamps through the SDK's `max` 45 (same code); the controller index named once for its test and the slot 337
 // (1263 bytes); `advance = delay > observer->delay + 1.f;` assigned directly 74 (1270 bytes); `observer->delay == 0.f` 46.
 // Body unchanged.
+// M3 lane 2 r77 (`--fast 0x23de50 0x1f0870`, control 45): no unlisted natural form found for what is left (the first
+// product's colours, the second product's schedule and the else arm's stores through the forward pointer): product rows,
+// staging, helper choices, pointers, copies, declaration orders and the existing angle helpers (by value, and the pointer
+// form 0x23d790 builds its forward with) are all listed above. Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

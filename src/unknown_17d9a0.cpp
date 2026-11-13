@@ -522,6 +522,11 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // flip sides); that with the `side + axis * 2` row 65; the flag stored by an if/else 59 (984 bytes); the corner point
 // built by a brace initializer 54; the row index named for both lookups (re-measured on this base) 163; the helper's side
 // parameter `long` 166; the point's second row written forward-first like the others 46 (same code). Body unchanged.
+// M3 lane 2 r77 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46): new: the bounds copied before the matrix 156 (985 bytes,
+// the entry no longer matches); the second edge formed before the first 95; the second edge's length tested first 92
+// (975 bytes). No other unlisted natural form found: axis and side types and locals, plane pointer and helper forms, dot
+// sides, corner helper shapes and signatures, edge and inverse forms, copy orders and spellings are all listed above.
+// Body unchanged.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
