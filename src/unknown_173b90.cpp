@@ -1848,6 +1848,10 @@ bool function_17afd0(long effect_index, long value);
 // bytes: NONE now shares EBX with the owner and the later NONE tests are immediates, as retail's EBP pair, but the second
 // definition takes EBP, the availability still spills and the camera flag's store moves ahead of the second definition call);
 // P with `view_pass == same_view` 138.
+// T102: Complete different-view/detached/skip-draw result graphs, seven subsets,
+// then all with direct camera-result production: 116/50/96/118/119/98/121/121.
+// NOT kept: no exact availability/Boolean-home repair; original observations,
+// predicates, query gates, draw tuple and complete traversal restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
