@@ -57,6 +57,10 @@ public:
 // run input reference 67; in-place single rotation 75; source step at
 // read 77; destination step at store 67; fixed links or method outside
 // class 67. All executable forms restored.
+// Aligned field stores or reads 89; library vector copies 136; member
+// subtraction 74; typed stored transform with the run inline 67;
+// scalar lane view 67; native SIMD temporary 67; result constructors 159.
+// All restored.
 // @retail 0x306400
 void box_pair_306400::function_306400()
 {
@@ -152,6 +156,11 @@ public:
 // reference inputs 295; forced comparison or vector setter 295; four-lane
 // construction 448; face memcpy 417; result from mask 413; broadcast load
 // 451. All executable forms restored.
+// Scalar lane view, independent typed columns or typed stored vectors 295;
+// build all rows before squaring 293 NOT kept (two-point gain);
+// false-first answer 408; shared face/edge workspace 294 NOT kept
+// (one-point gain); scalar intrinsic read 444; setter reference result 295.
+// All restored.
 // @retail 0x306580
 answer_306580 class_306580::function_306580()
 {

@@ -3233,6 +3233,10 @@ real g_47ff30 = 2.5f;
 // the speed staged as `speed = vehicle->speed; speed *= boost;` 715 at 3220.
 // Lead: the pointer friction form; left on it are the entry XMM numbering (retail keeps 1.0 in XMM7), the maximum
 // speed product's operand form, the reciprocal's placement and the force/torque scheduling.
+// Round 425: complete/negative-default/positive-default friction direction
+// 682/688/688; complete/default-first speed magnitude 682/720; coefficient
+// expression/complete arms 682/682; full force accumulator 707.
+// NOT kept: no native-frame gain; original helper and body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -5768,7 +5772,7 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    start, thrust toward the speed along the facing (faster diving, with
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
-// score 978 (was 990): earlier 1052, 1087, 1095; frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
+// score 978 (was 990): earlier 1052, 1087, 1095; frame 0xfc versus 0xd8; index/offset and vector/rotation homes remain.
 // V1A: statement-by-statement walk against all of retail's 1180 instructions found no logic difference (fields,
 // conditions, constants, callees, argument orders, clamp and bank cases all agree). Two source shapes that retail
 // shows and ours lacks, both measured by opcode alignment with offsets and registers ignored (0.757 -> 0.793):
@@ -5980,6 +5984,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // instructions: a lead once the earlier homes line up); the angular target through vector3f_scale and
 // scaled_difference3f 1042. Re-measured on 978: `-(strafe / strafe_maximum)` 1053 (5075 bytes, masked 270).
 // Lead: selections not yet screened for the clamp idiom of the spin tail: the side brake and the lift maxima.
+// Round 425: lateral brake limit-seeded/complete/upper-first/lower-first
+// 1037/978/1036/979; complete magnitude 978; sign admission/signed result 978/1039;
+// existing clamp 978. NOT kept: no eligible native-frame/extent gain;
+// original whole body restored. Current frame 0xfc versus native 0xd8.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

@@ -246,6 +246,10 @@ grouping_3720a0::~grouping_3720a0()
 // direct body array 461; join next-slot 397; direct owner tests 458;
 // group while 396. NOT kept: island next-slot 387 puts the size update
 // before the element store; retail updates it afterwards.
+// Outer postdecrement 461; counter scope 396; current pointer name 396;
+// action scan snapshots 396; capacity call plus size store 443;
+// group entry reference 456; reverse transfer postdecrements 494;
+// forced owner inline 396. Original body and helper restored.
 // @retail 0x30e720
 void c_311100::function_30e720()
 {

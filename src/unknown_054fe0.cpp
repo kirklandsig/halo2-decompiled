@@ -1713,6 +1713,10 @@ struct s_summary_player_sort_entry
 // extra frame homes follow from 0x5a680 being inlined into this /Ob1 file; both are outside this lane's
 // files, so the frame (0xa9c against 0xaa8) and the type, membership and member-index homes stay as
 // they are.
+// MiniMax B (11-13): no new form, no lower score (339): the frame is still 0xa9c against retail's 0xaa8 and the
+// saved-register set differs (retail holds the connection in ecx and the state in edx where ours keeps them in ebx
+// and ecx), and retail's conditional move for output->state needs the SSE architecture flag this file's flags do
+// not set.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
 // MiniMax R (11-10): no new form, no lower score (339): retail writes output->state with a conditional move, which needs /arch:SSE that this file's flags do not set, and the frame is 0xa9c against retail's 0xaa8 with the type, membership and member-index homes still different.
 // MiniMax D (11-10): no new form, no lower score (339).
