@@ -1981,60 +1981,6 @@ bool __stdcall function_1d2f0(D3DSurface *surface, byte *bitmap);
 dword function_1362b0(s_type_7ba8e9 const *bitmap, point2f const *uv, real detail);
 dword function_015cd0(long index, dword entry);
 
-// score 4 (was 4): the conversion destination uses ECX rather than EAX; the UV address uses EDX rather than ECX.
-// Scoped/entry two-use conversion pointers 4/4; multiuse UV pointer with and without it 4/4;
-// direct success return 93; UV/storage names 4/4; getter noinline 4; both/sample noinline 4/4.
-// Round 39: bsp pointer local 4; palette ternary at the colour call 18; flag test nested in the
-// bitmap block 83; zero-result arm first 68; named first texture 4; inverted 0xd1680 test 19.
-// Neither register moves with dead locals added, the flag block, the request arm or the palette
-// call removed, or the two functions' definitions swapped: the cause looks outside this body.
-// Round 118: the buffer declared in the conversion block 4; a short result 19; the bsp globals
-// pointer in a local 4; the bitmap tested before the status 4; the result declared after the
-// buffer 4 (a compile-only build keeps the same two registers in every form).
-// Round 136 (m3 lane 6, fast): a sample pointer local set in each arm (0xd30d0's shape) 68 (312 B, block
-// order flips); UV filled by field stores 4; UV declared at function scope 4; palette colour as two unpack calls 4;
-// converted surface in a named local 6 (the d15e0 call moves ahead of the push, buffer still ECX); buffer declared
-// before the result 4; conversion failure jumping to the zero stores 4; conversion test inverted 4. The two leas
-// shift one scratch register together (ours ECX/EDX, retail EAX/ECX); unmatched callee 0x12ce00 writes the same
-// general registers as retail, so no register-summary gap there.
-// Round 129: callee-side inline sampling declaration 4; inline lock wrapper 4; tag/bitmap-scoped
-// temporary 4/4; tag-scoped UV 84 (303 B); partial aggregate UV 30 (316 B); unsigned result 4;
-// nested sampling guards 4; named palette predicate 4; split bitmap declaration 4.
-// Round 48 (m3 lane 2, fast): the sample/zero-store goto as one if/else at the tag scope 4 (same code,
-// kept); a permuter run on that body, 54 tries, best 4; texture-field test arms swapped 68 (312 B); the
-// conversion as `bitmap = convert ? temporary : NULL; if (bitmap) result = 3;` 39 (314 B); bitmap stored
-// before result = 3 in the success arm 6.
-// Round 89 (m3 lane 12, fast): the two leas follow one scratch rotation (retail is one temp behind or two ahead): a volatile probe
-// local (diagnostic, reverted) anywhere ahead of the first lea moves ECX/EDX to EDX/EAX, a test of the global ahead of the prelude
-// to EAX/ECX, and a probe in the sample block moves only the second. 0xd1630 returning void 4 (0xd1630 27). Removing (diagnostic)
-// the texture-field test, the flag block, the count test, the 0xd1680 test, the 0xd1630 call or the palette call: leas unchanged;
-// removing both prelude tests: EDX/EAX. A locations pointer defaulting to NULL and tested, by helper or ternary: EAX/ECX but 90
-// (312 B; the extra test stays). No shift (4 each): nested prelude tests; tag defaulting to NONE, by if, ternary or helper; a count
-// defaulting to 0, by local, helper or in the test; a named bool or bool helper for the prelude; a locations local, with or without
-// `do {} while (false)` or declared outside the block; a globals getter at each use or in a local; a location getter; `0 < count`.
-// Round 95 (m3 lane 12, fast): the tag field read at its test and again at the 0x137550 call 4; the sample test as
-// `bitmap && result != 1` 4; the texture test positive (conversion arm first) 57 (316 B); the redundant `else bitmap = NULL`
-// dropped 4 (same code); `result` renamed `status` 4. Callee register sets (0x12ce00, 0x358d0 under 0x1362b0) write the
-// same general registers as retail. A volatile probe (diagnostic, reverted) in callee 0xd1630 or in 0xd30d0 leaves both leas:
-// the rotation comes from this body.
-// Round 97 (m3 lane 12, fast): guard-clause returns for the prelude 49 (328 B); the tag read folded into the prelude test 4;
-// zero-store arm first 4; a dword conversion buffer 4; the tag as structures.cpp's const bsp read 4. Matched 0xd30d0 (same
-// arms) takes EDX/ECX for the two leas, so the step is set by this body's own earlier code.
-// Round 72 (m3 lane 14, fast): the conversion buffer as the 0x74-byte bitmap type (`s_type_7ba8e9 converted;`) 4;
-// the redundant `result = 1` after 0x12360 dropped 73 (299 bytes: its `mov edi, 1` goes); bitmap_index as long 4;
-// bitmap declared at the function top 4; the flag test as `(flags >> 1) & 1` 4.
-// Round 79 (m3 lane 11, fast): the texture field read into a named local before its test 4; the flag test as a named
-// bool 82 (310 bytes); the conversion result as a named bool 4; the palette conversion as a ternary assignment 4; the
-// zero colour as one chained assignment 4; (re-measured) UV filled by field stores 4. Permuter
-// (600 s, 63 variants, --fast --anneal) best 4. A one-file LTCG link with the callee files does not give this body's
-// convention (ret 0x18), so link-level screens need more files here.
-// Round 165 (m3 lane 5, fast; 0xd16d0 kept its match in each): the 0x137550 call through a two-parameter inline
-// forwarding helper 4; `out` declared at each of the five other positions, definition and both calls, 4 each (both
-// retail callers set EBX after the pushes, as ours do with `out` last); the bsp entry through an inline
-// (globals, index, size) element getter 4; flags as dword 4; the bitmap held as the lookup's return type with casts
-// at the texture calls 4. The two leas never moved.
-// Round 114 (m3 lane 9, fast = plain 4): the conversion buffer passed as `&temporary[0]` 4; `(void)` on the ignored 0xd1630, 0x1cfb0
-// and 0x12360 results 4/4/4 (all four the same code: an unused call result does not move the two leas).
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {
@@ -2042,10 +1988,10 @@ long function_d2f90(long flags, short bitmap_index, long palette_index, real u, 
     byte temporary[0x74];
     if (g_4e0344 && g_4e0344->count > 0)
     {
-        long tag = *(long *)((byte *)g_4e0344->locations + 0x1c);
-        if (tag != NONE)
+        byte *bsp = (byte *)g_4e0344->locations;
+        if (*(long *)(bsp + 0x1c) != NONE)
         {
-            s_bitmap_data *bitmap = (s_bitmap_data *)function_137550(tag, bitmap_index);
+            s_bitmap_data *bitmap = (s_bitmap_data *)function_137550(*(long *)(bsp + 0x1c), bitmap_index);
             if ((flags & 2) && bitmap && !function_d1680(bitmap))
                 function_1cfb0((s_bitmap_view *)bitmap);
             if (bitmap)

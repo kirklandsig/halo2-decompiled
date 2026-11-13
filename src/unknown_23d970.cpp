@@ -564,6 +564,10 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
+// MiniMax H (11-12): no new form, no lower score (45): what is left is the register colour of the first
+// product's operands (ours xmm1/xmm2, retail xmm2/xmm1), the second product's schedule and the else arm's
+// forward stores, all of them inside the shared helpers (include/vector_products.h and
+// src/unknown_1f03e0.cpp), whose bodies are not mine to change.
 // score 45 (was 45): the second product through the existing staged helper of src/unknown_1f03e0.cpp
 // (function_1f087b, every component computed before the stores, i first) gives retail's previous_up
 // loads (j, i, then k into xmm0 after the distance store) and folds forward's loads in the second

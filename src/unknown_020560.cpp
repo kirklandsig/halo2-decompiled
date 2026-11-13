@@ -118,6 +118,17 @@ PRIVATE __forceinline long texture_floor(real value)
 // an inline pin function for both clamps 4; a short stage local at the loop top 4; the floor result named as an
 // integral before the clamp 4. Diagnostics: a cut-down loop (bsf, NONE test, a call, the clear) keeps EDX with an LTCG
 // or XDK callee, called conditionally or not; a second use of the mask (0x18e80's state clear) gives EAX, `mov ecx` first.
+// Round 78 (m3 lane 15, fast with 0x143c0, 0x16b90 and 0x16b10): `__assume(state != NULL)` at the top 4; `__assume(index
+// >= 0 && index < 4)` after the bit scan 4; `__assume(entry != NULL)` ahead of the NONE test 4 (all the same code);
+// `__assume(count > 0)` after the count read 89 (405 bytes: the count goes through a stack home); `__assume(bitmap >= 0)`
+// ahead of the call 106 (413 bytes: the bitmap gets a stack home). Reading with round 79's latch probe: the clear's
+// temporary is a next-fit choice (the probe took ECX, the clear then EDX), so ours enters the latch one step after
+// EAX (the tag argument's load) and skips the shift's ECX, where retail enters it at EAX. Diagnostic (reverted): 0x143c0's
+// stage parameter as `long` (definition, the six declarations and the three `(short)` call casts; every caller passes a
+// long) 4, with 0x143c0 and its matched callers unchanged: the stage conversion is not the extra step. Probes (reverted):
+// one or two copies between globals ahead of the 0x143c0 call leave the clear in EDX; one after the call takes ECX and
+// the clear EDX; two after the call take ECX and EDX and the clear takes EAX. So the rotation restarts at the call (its
+// result's EAX) and retail has two more steps than ours between the call and the clear, with no code left for them.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {

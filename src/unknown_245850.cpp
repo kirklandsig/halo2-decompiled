@@ -8,7 +8,7 @@ struct s_source_245400;
 struct s_collection_245270;
 struct s_line_list;
 short function_1ddda0(s_bsp3d const *arg_0, long arg_1, point3f *arg_2);
-plane3f *bsp3d_get_plane(s_bsp3d const *bsp, short plane_index, plane3f *plane);
+plane3f *bsp3d_get_plane(s_bsp3d const *bsp, long plane_index, plane3f *plane);
 void function_245270(real thickness, short count, point3f const *points, plane3f const *plane,
 	real height, long field_00, long field_04, long field_08, byte field_0c,
 	byte field_0d, short field_0e, s_collection_245270 *collection);
@@ -92,6 +92,28 @@ struct s_245850
 // Round 354: Native signed 16-bit plane field, whole point and normal-only input subsets 1..7
 // 1/162/162/162/162/188/188/188; final complete inputs with separate normal scalars included last. Original
 // field, shared scalars and every transform/call restored; short lookup contract remains.
+// HELD (round 98, needs the owner's OK for the declaration in src/items.cpp, a contributor's file): with the plane
+// index declared long in bsp3d_get_plane (its definition and five declarations) this function matches byte for byte
+// in the plain check, 0x14a300 and 0x245aa0 stay matched and the other callers gain their sign-extending loads
+// (0x10cf80 202 -> 200, 0x1822f0 239 -> 238, 0x1fa3a0 80 -> 79, 0x17dd80 453): build/r98/held-245850.patch. The body
+// then is plainer than this one: loop-scoped scalars, the point rows in retail's order without grouping, the plane
+// scalars copied i, j, k, each normal row accumulated term by term and a flat d sum.
+// Round 98 (fast unless noted, long index in all six places; F, U, L are a row's forward, up and left products, P its
+// position term, X, Y, Z, S the d sum's position products and scale product): this body 103 (576 bytes; an int or
+// dword index the same 103, so the cause is the conversion at the call, not the name); the earliest plain body
+// (array-indexed rows, loop-scoped scalars) 103; its z row in five other term orders, or with swapped operands, 103
+// each (same code), as `F + (U + L)` 41, `(F + U) + (L + P)` 42, `F + (U + (L + P))` 106, `F + U + (L + P)` 108; the
+// point scalars defined z, y, x or y, z, x 111/110; the point and out pointers with the plain rows 26 (the whole
+// point loop as retail); with them the plane scalars defined i,k,j / j,i,k / j,k,i / k,i,j / k,j,i 35/27/22/41/38;
+// with j,k,i the k row as `a + (b + c)` in six orders 22-23, the d sum as `X + (Z + Y) + S` or `(Z + Y) + X + S` 7,
+// `Z + Y + (X + S)` or `Z + (Y + (X + S))` 24, S first or X, Y, Z order 22; with the grouped d sum the k row as
+// `(L + F) + U`, `(F + L) + U` or with swapped operands 7, as two statements 7, as three accumulating statements 0;
+// the scalars defined i, j, k with all three rows accumulated and the flat d sum 0 (plain 0, the patch), with the
+// grouped d sum 0; i, j, k with `(F + U) + L` rows 8; j,k,i with all rows accumulated 0, with a flat d sum 17.
+// Round 416: Descriptor reference 1; descriptor observed after extraction on the short-index graph 14;
+// immutable count 1; point input reference 1; unit-scale-first arm 1; separate point/normal scalar
+// lifetimes 8; output element reference 1; returned-output transform only 86 (582 bytes). All restored;
+// the sole lookup index-extension difference remains.
 // @retail 0x245850
 void function_245850(long arg_0, s_source_245400 const *arg_1,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
@@ -104,35 +126,36 @@ void function_245850(long arg_0, s_source_245400 const *arg_1,
 	bsp3d_get_plane((s_bsp3d const *)arg_1, local_0->field_00, &local_3);
 	if (arg_2)
 	{
-		real local_5;
-		real local_6;
-		real local_7;
 		for (short local_4 = 0; local_4 < local_2; ++local_4)
 		{
 			point3f const *point = &local_1[local_4];
 			point3f *out = &local_1[local_4];
-			local_5 = point->x;
-			local_6 = point->y;
-			local_7 = point->z;
+			real local_5 = point->x;
+			real local_6 = point->y;
+			real local_7 = point->z;
 			if (arg_2->scale != 1.f)
 			{
 				local_5 = arg_2->scale * local_5;
 				local_6 = arg_2->scale * local_6;
 				local_7 = arg_2->scale * local_7;
 			}
-			out->x = local_5 * arg_2->forward.i + (arg_2->up.i * local_7 + arg_2->left.i * local_6) + arg_2->position.x;
+			out->x = arg_2->up.i * local_7 + arg_2->left.i * local_6 + local_5 * arg_2->forward.i + arg_2->position.x;
 			out->y = arg_2->forward.j * local_5 + arg_2->up.j * local_7 + arg_2->left.j * local_6 + arg_2->position.y;
-			out->z = arg_2->up.k * local_7 + arg_2->left.k * local_6 + arg_2->forward.k * local_5 + arg_2->position.z;
+			out->z = arg_2->forward.k * local_5 + arg_2->up.k * local_7 + arg_2->left.k * local_6 + arg_2->position.z;
 		}
-		local_6 = local_3.j;
-		local_7 = local_3.k;
-		local_5 = local_3.i;
-		local_3.i = arg_2->left.i * local_6 + (arg_2->forward.i * local_5 + arg_2->up.i * local_7);
+		real local_5 = local_3.i;
+		real local_6 = local_3.j;
+		real local_7 = local_3.k;
+		local_3.i = arg_2->forward.i * local_5;
+		local_3.i += arg_2->up.i * local_7;
+		local_3.i += arg_2->left.i * local_6;
 		local_3.j = arg_2->forward.j * local_5;
 		local_3.j += arg_2->up.j * local_7;
 		local_3.j += arg_2->left.j * local_6;
-		local_3.k = arg_2->up.k * local_7 + (arg_2->forward.k * local_5 + arg_2->left.k * local_6);
-		local_3.d = arg_2->position.x * local_3.i + (arg_2->position.z * local_3.k + arg_2->position.y * local_3.j) + arg_2->scale * local_3.d;
+		local_3.k = arg_2->left.k * local_6;
+		local_3.k += arg_2->forward.k * local_5;
+		local_3.k += arg_2->up.k * local_7;
+		local_3.d = arg_2->position.z * local_3.k + arg_2->position.y * local_3.j + arg_2->position.x * local_3.i + arg_2->scale * local_3.d;
 	}
 	function_245270(arg_4, local_2, local_1, &local_3, arg_3, arg_5, arg_6, arg_0,
 		local_0->field_04, local_0->field_05, local_0->field_06, arg_7);

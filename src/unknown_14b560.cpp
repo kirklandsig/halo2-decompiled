@@ -786,6 +786,10 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// score 43 (was 43): unchanged this round: the unit record's address takes EBX where retail takes EDI
+// and the unit index takes EDI where retail takes EBX, and retail reads the unit object out of the
+// record into EBX once the record's address is dead; the root walk itself is the out-of-line 0xbaf80
+// whose body is in another file.
 // MiniMax E (11-11): no new form, no lower score (43): the unit-start NONE-root walk (the root preset
 // to NONE and the walk started from the unit) gives 109, and the datum and the unit still take ebx
 // and edi where retail takes edi and ebx.
@@ -1861,53 +1865,10 @@ struct s_unit_player_assignment
 	long previous_player_index;
 };
 
-// score 17 (was 17): post-call scratch registers and the representation push schedule differ;
-// the second new-unit lookup uses EDX for its object pointer, and the final engine load is one byte shorter.
-// Inline notification 17; inline control set 17; force object getter 17; unsigned new target 17;
-// unsigned representation 17; unit references 17; player reference 17; second lookup local 17;
-// engine globals local 17.
-// Tried: the engine test through game_engine_get 17; the state test in each
-// representation arm 45; the representation declared before the call 17;
-// the stored unit index field passed to function_1682bf 16. Round 106: the representation local
-// renamed 17; the existing first_person_character_from_player for the remap 17, the existing
-// function_a7a30 for both +0xd4 notifications 17, and both 17 (LTCG inlines each: same code);
-// block-scoped unit pointers 17.
-// Round 43: the control-set argument read back from player->unit_index 17; both +0xd4 fields read
-// at each use 17; both together 17; the outer comparison's operands swapped 18; the remap as one
-// conditional expression 17; the unit pointer declared before the player 17. Matched 0x14f190
-// makes the same 0x1682bf call with our schedule.
-// Round 135: `inline` on 0xb58c0, 0x1872d0, 0x1682bf, 0x13ac42, all four: 17, 17, 17, 17, 17; the
-// existing remap helper directly in the 0x1682bf argument list 17, through a local 17.
-// Round 125: direct player subscript 17; typed getter at the second lookups 17 and at all four 17;
-// const unit_index 17; const player_index 17; unit renamed assignment 17; chained latch reset 19;
-// engine-globals getter 17; unsigned old-unit target 17; const player pointer 17.
-// Round 53: the remap as a direct ternary argument with the representation local 17, with the field at each
-// use 148 (466 bytes, parameters move); old unit local for 0xcbf60 17; one function-scope target local 17; named
-// lookup pointers for both +0xd4 reads 17; early return on the same unit 17; named engine index 17.
-// Round 94 (fast): the representation as a `char` local 129 (450 bytes); the new unit pointer re-derived for its second
-// lookup 28; the old unit pointer re-derived for its second lookup 17; the control-set and 0x1682bf unit arguments read back
-// from the player 16 (449 bytes, registers unchanged); the representation declared before the control call 17. A dummy load
-// before 0xcbf60, or the notification made unconditional, moves only its own block's temporary: separate ties per block.
-// Round 85 (fast; all callees match): retail avoids ECX for the first load after the 0xb58c0, 0x1872d0 and engine
-// reads where ours takes it. Callee parameter orders (definition, declarations, every call): 0x1872d0 swapped 17
-// (0x14cdd0, 0x185b00 worse); 0x1682bf's five other orders 17/17/18/18/18 (its matched callers lose); this
-// function's own parameters swapped 17 (retail's callers push the player then set EBX, which fits either order);
-// a named engine pointer for the final test 17; the existing function_a7a30 for the old unit's notification 17.
-// Round 70 (m3 lane 13, fast): 1, 2, 3, 5 or 8 unused initialised entry locals 17 each (diagnostic: the clusters do
-// not follow symbol numbering); the old unit index in a named local at its three uses 140 (476 bytes); the old-unit block
-// as a static inline helper 243 (329 bytes, kept out of line), as a __forceinline helper 17; the +0xd4 notification as
-// one forceinline helper for both blocks 17; per-block named unit pointers 17 (repeat); unit_index typed dword 17.
-// Round 75 (m3 lane 14, fast): 0xb58c0 through a function pointer (diagnostic) still reloads into ECX after it, so it is no
-// register-summary gap; round 94's read-back arguments re-measured 16 (449 bytes, same registers); the new block's target declared
-// before the unit stores 17; the engine test as `!= NULL` 17; the representation declared at function scope 17; the word clears
-// chained 19; the old unit index in a named local for the outer comparison and the NONE test 17; re-measured round 43's
-// control-set argument read back 17 and the stored unit index passed to 0x1682bf 16 (449 bytes, same registers); a named user
-// index in the old-unit arm 111 (468 bytes); a named user index in the new-unit arm (three uses) 131 (459 bytes).
-// Round 174 (m3 lane 5, fast): matched 0xcea00 reads the same +0xd4 field with retail's `mov eax, [eax + ecx + 8]; mov eax,
-// [eax + 0xd4]` by re-assigning its unit pointer from a fresh lookup and reading the field at each use; that idiom here is
-// round 94's re-derived pointer: new block only 28, both blocks 17 (same code as this body). The same EAX-reuse gap (ours
-// takes EDX for the pointer) shows in 0xbba80's definition read, where matched 0xbfa40 gets the reuse with this file's
-// spelling, so it follows the surrounding allocation, not the spelling. No untried natural form found.
+/* moves a player to another unit (or to none): unlinks the old unit, links the new one and tells the player's
+   controls and first-person view. Each unit is looked up again after the calls for its +0xd4 notification, into a
+   pointer whose field is read at each use: a local holding the field's value instead rotates every later scratch
+   register by one. */
 // @retail 0x14cad0
 void function_14cad0(long player_index, long unit_index)
 {
@@ -1925,10 +1886,10 @@ void function_14cad0(long player_index, long unit_index)
 			}
 			unit->player_index = NONE;
 			unit->previous_player_index = player_index;
-			long target = ((s_unit_player_assignment *)object_get_unchecked(player->unit_index))->field_d4;
-			if (target != NONE)
+			s_unit_player_assignment *object = (s_unit_player_assignment *)object_get_unchecked(player->unit_index);
+			if (object->field_d4 != NONE)
 			{
-				function_b58c0(target, 0x400);
+				function_b58c0(object->field_d4, 0x400);
 			}
 			function_cbf60(player->unit_index, false);
 			player->unit_index = NONE;
@@ -1946,10 +1907,10 @@ void function_14cad0(long player_index, long unit_index)
 			unit = (s_unit_player_assignment *)object_get_unchecked(unit_index);
 			unit->player_index = player_index;
 			unit->previous_player_index = NONE;
-			long target = ((s_unit_player_assignment *)object_get_unchecked(unit_index))->field_d4;
-			if (target != NONE)
+			s_unit_player_assignment *object = (s_unit_player_assignment *)object_get_unchecked(unit_index);
+			if (object->field_d4 != NONE)
 			{
-				function_b58c0(target, 0x400);
+				function_b58c0(object->field_d4, 0x400);
 			}
 			function_cbf60(unit_index, true);
 			player->unit_index = unit_index;
@@ -2514,6 +2475,7 @@ static __forceinline long player_round_ticks(real value)
 // MiniMax C (11-11): no new form, no lower score (701): the length agrees (2740 bytes); the frame is
 // still 0x4c against retail's 0x74 and the first 0x151b80 call is still expanded here where retail calls
 // it, and the definitions of 0x151b80, 0x151940 and 0xccd20 are in other files.
+// MiniMax G (11-12): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, our link-time inlining still expands the 0x151b80 and 0xccd20 calls that retail makes out of line, and retail's two request homes are still one here.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and
@@ -3038,6 +3000,10 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the
+// function where retail loads it into ESI and reloads it after the busy check and again before the
+// final store, and the two loops swap the datum and unit registers with it; the reduced image
+// overstates this body, the full build gives the same 103 at retail's 611 bytes.
 // MiniMax E (11-11): no new form, no lower score (103 on the full build, 193 on the reduced one):
 // reading the globals pointer at each use (175 on the reduced image), keeping it for the last write
 // (173), writing the status after the countdown (181) and giving the second loop its own iterator
