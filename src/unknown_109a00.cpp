@@ -659,6 +659,17 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // `if (!entry->valid) return;` 8 (same code); the valid flag read into a local before the active store 14; the failure
 // stores chained `entry->active = entry->valid = false;` 8 (the two stores then run valid first, the other way round).
 // Also: the model's physics index named and used at its test and its lookup 117 (928 B; 0xb7060 lost, 11).
+// Round 78 (m3 lane 15, fast with 0xb7060, which matched in each; base 8). A non-null `__assume` on the object, on the
+// entry or on the component ahead of the lookups 11 each (the same code: three `[eax + ecx + 0x40]` body loads swap their
+// base and index); on `up` ahead of the dot 31, with `forward` too 33, with `left` as well 33 (the head flips); an
+// assume ahead of the success `return` (`entry->active`, or `body_index != NONE`) 31/31, or a non-null one on the entry
+// ahead of the failure stores 31 (the head flips, the tail stays ours). The function returning `bool` (true after the
+// update, false after the failure stores; the declaration in 0xb7060's file changed with it) 22 (929 bytes): every line
+// is retail's, tail included (the not-valid exit shares the success epilogue, the failure block pops before its
+// stores), but for `mov al, 1` and `xor al, al` ahead of the two `pop ebx` (link-time optimisation does not drop the
+// unused result). So retail's two returns were not the same block when its jumps were threaded, and left no code for
+// the difference. The body as a new forced-inline helper returning `bool`, the failure stores under `if (!...)` in the
+// function 22 (925 bytes: our tail again, and three cross and scale products change sides).
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

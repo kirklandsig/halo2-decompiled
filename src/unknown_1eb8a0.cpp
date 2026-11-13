@@ -183,6 +183,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// MiniMax G (11-12): no new form, no lower score (636): nothing new this round; the first clamp still computes t before the
+// 12/8 factor is selected into xmm1 (retail selects the factor first), as the earlier note describes.
+// MiniMax G (11-12): no new form, no lower score (636): the first clamp still computes t before the 12/8 factor is
+// selected into xmm1 (retail selects the factor first), and the q/d EBX weight and the impulse's fast flag are as
+// the earlier note describes.
 // MiniMax G (11-11): no new form, no lower score (636); retail keeps q (the fourth stack argument) in EBX from entry and reads d
 // from its stack slot at each use while this build keeps d in EBX; the frame size 0x24 and the clock register agree, but the xmm
 // homes and the coefficient schedules still differ, and retail builds each zero with its own xorps where this build shares one

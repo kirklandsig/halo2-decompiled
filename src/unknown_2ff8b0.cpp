@@ -601,6 +601,10 @@ public:
 // limit declarations first 521; paired word reads 521; axis loop 521.
 // Limits first with the loop-tail update 375, confirmed by ordinary check.
 // The latter follows the shared block at 0x3006e3; neither change adds a label.
+// One-plane radius snapshot 377; split value names 375; two-plane limits
+// first 376; all axial radii captured 213 (NOT kept: 1600 versus 1596 bytes);
+// named bounds, joined slab tests and unsigned command 375/375/375;
+// word distances 393 (1612 bytes). Original body restored.
 // @retail 0x300290
 void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char const *node)
 {

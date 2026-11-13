@@ -709,6 +709,16 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // rotation's cosine, magnitude != 0.0f, the double zeros, rotate_vector_170d70 in place of the call,
 // the axis-first copy of the helper's body) all measure 77 or worse.
 // MiniMax H (11-12): no new form, no lower score (77); the full check shows 846 bytes against retail's 850 with the first difference at +0xeb, and the turn is expanded in our build as well, so the difference is inside it: retail multiplies the axis component by the turned one and loads the turned i, j, k into xmm4, xmm6 and xmm5 and reloads j twice, ours multiplies the turned component by the axis one and loads them into xmm5, xmm7 and xmm4; the scale products differ in the same way (retail `scale * x`, ours `x * scale`). The turn helper is in src/unknown_1eb8a0.cpp and the normalisation in include/unknown_11cc90.h, so neither is in this lane's files.
+// Round 112 (m3 lane 16, fast with 0x1ecf50 and 0x2b400): the three tests against a double 0.0 199 (891 bytes, x87);
+// the cosine as a double 0.0 77; the planar copy `*(vector2f const *)&direction` for horizontal 77 (same code each);
+// the second normalisation's arms swapped 87. Lead: the cosine from a file-scope `real const` holding 0.0 99 (857
+// bytes) gives retail's code through the side test (zero tested in XMM0 after the scale products, j in XMM6, the
+// i * cosine product from a memory constant, a fresh zero later; retail's 0x183df0 uses the same 0x45dbd8 zero, the
+// file constant k_real_zero in src/unknown_183c60.cpp); left there: x loaded before the divide (retail folds it into
+// the product), k in XMM4 and i in XMM5 (retail i, k) with the dot summed j, k, i (retail j, i, k). On it:
+// rotate_vector_170d70 99 (same code); the axis-first record_rotate_vector 142; side test before the turned copy 136;
+// side and sine before it 138; turned at function scope 99; turned copied by memcpy 99; a local copy of the inline
+// normaliser with `scale * v->i` or as is 99/99 (diagnostic: the product order is canonicalised).
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {

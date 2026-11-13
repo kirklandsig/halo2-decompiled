@@ -855,6 +855,12 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // (same code); the iterator declared and initialised ahead of the header call 84 (202 bytes: the pool is held across the
 // call). Only called from 0x13eeb0 (no address taken in retail), yet its parameters stay on the stack. Caller-side forms
 // cannot reach the callee's colouring: the listed plain-long, `__stdcall`, by-value key and wrapper forms cover them.
+// Round 78 (m3 lane 15, fast with 0x13eeb0, 0x140900 and 0x16b840, which matched in each): a non-null `__assume` on
+// iterator.data after it is set 14; `__assume(font_index.field_0 != NONE)` at the top 14, the same on the character 14;
+// `__assume(prediction != NULL)` on the new prediction 14 (all the same code); the same assume at the top of the loop
+// body 58 (195 bytes). Reading: retail 0x140900 saves EBX itself, so no callee convention keeps the font out of EBX;
+// in matched 0x13d950 the mask's EBX is the iterator index's own register, free during the scan, which this
+// function's index (EAX throughout) does not offer.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

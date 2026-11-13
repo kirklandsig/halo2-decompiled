@@ -179,6 +179,16 @@ struct s_physical_block_iterator
 	s_record_pool_iterator iterator;
 };
 
+// score 201 (was 201): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
+// and falls into the join), the second age's clamp folds, the walk's EBX/EDI roles and the link order differ.
+// M3 lane 8 r159 (fast, 0x13d320 MATCH each time; base 201, masked 56): the first candidate taken in an `if (!have_best)` arm
+// with the switch and `if (better) best = *candidate;` in the else arm 224 (1216 bytes; case 0 still threaded); the block
+// arm's offset advanced as `offset += block->pages` 368 (1197 bytes). Re-measured on the 201 base (forms listed below): the
+// deletion walk on plain `s_record_pool_iterator iterator; s_physical_block *block;` locals, the pre-round-215 form, 212
+// (first difference +0x1; the grouping aggregate is worth 11 here), with block declared first 212 (same code); the link
+// section through the pool at each use (element macro, one best.previous test) 236 (1250 bytes); with the predecessor's
+// successor in `long next` 223 (1239, masked 47); with an `after` pointer and a fresh predecessor pointer after the arms
+// 214 (1228). No further natural form found that this note does not already list. All restored.
 // MiniMax D (11-11): no new form, no lower score (201); the first difference is still the jump to retail's
 // 0x13d679, and the code up to it matches retail instruction for instruction. What differs is the policy block
 // behind it: retail's default arm clamps both ages with `cmp; sbb; and`, multiplies the best's pages by the
@@ -187,8 +197,8 @@ struct s_physical_block_iterator
 // difference), makes the two products in the other order and jump-threads case 0 and case 1 into the take test,
 // so they sit past the loop. The documented forms for the clamp, the case 0 shapes and the take test were
 // measured before and are worse on their own (209 to 284); the 93 form needs the policy helper, which is match-only.
-// score 201 (was 201): earlier 201 (was 347): frame 0x1054 and entry/ring roles agree; weighted-age mask registers, detached policy cases and final linking differ.
-// score 93 (was 201): the policy switch, the ring scan's successor and the block insertion now follow retail's shape; the walk's EBX/EDI roles, the overlap sum's register and the NONE register still differ.
+// Status line before r159, 201 (was 201): earlier 201 (was 347): frame 0x1054 and entry/ring roles agree; weighted-age mask registers, detached policy cases and final linking differ.
+// Match-only recipe status, 93 (was 201): the policy switch, the ring scan's successor and the block insertion now follow retail's shape; the walk's EBX/EDI roles, the overlap sum's register and the NONE register still differ.
 // MiniMax E (11-11): 201 -> 93 (1213 bytes, retail's length, first difference +0x338): the case 0 policy
 // goes through a small helper in 0x13d320's style, the second age is spelled MAX(age, 0), the before
 // block is read again through a fresh pool base with its successor in a local, the insertion is in two
