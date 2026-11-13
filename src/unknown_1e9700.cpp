@@ -74,6 +74,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// score 106 (was 106): no frame; enable observations and maximum/register homes differ.
 // MiniMax B (11-12): no new form, no lower score (106): retail keeps the old maximum in ECX with the enable byte in AL and reads the 15-bit counter with the 16-bit idiom, ours keeps them in EAX and DL, and the enable reload needs one object for g_510ca0 and the counters: BLOCKED-BY include/globals.h and src/unknown_1967d0.cpp.
 // MiniMax H (11-10): no new form, no lower score (106): retail keeps the old maximum in ECX with the
 // enable byte in AL and reads the 15-bit counter with the 16-bit idiom, ours keeps them in EAX and DL;
@@ -83,7 +84,6 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // byte in AL and reads the 15-bit counter with the 16-bit idiom (`xor eax, eax` then a word load), ours keeps
 // the maximum in EAX, the enable byte in DL and zero-extends the counter; the enable reloads and the two
 // inlined helpers of src/unknown_1967d0.cpp stay out of reach.
-// score 106 (was 106): no frame; enable observations and maximum/register homes differ.
 // MiniMax H (11-04): no new form, no lower score; the enable reloads and the maximum homes still differ.
 // Earlier 106 (was 107): no frame; enable observations and maximum/register homes differ.
 // Lane 12 r78: MATCH (fast, plain and full check, lost []) with two changes together, not kept by the coordinator:
@@ -178,6 +178,11 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // MiniMax G (11-13): no new form, no lower score (106): the reload of the enable flag after the store
 // through `statistics` needs the aliasing that src/unknown_1967d0.cpp gets by taking &g_510cb0, so it
 // stays blocked; retail's old maximum in ECX and its 16-bit counter idiom are still unmatched here.
+// Round 157 (m3 lane 7, no counted trial): still BLOCKED-BY 0x196960/0x1968b0 (src/unknown_1967d0.cpp, held this round) and
+// the held globals.h aggregate for the enable reload; the MiniMax B/H/D/G lines and round 187 above list the in-body forms.
+// Reading of the team block: ours reloads the enable byte into DL ahead of the engine test and holds it through the team
+// byte test, where retail reloads it after that test, so retail's EDX is free for the engine index (EDX/EAX) and ours
+// takes EAX/ECX; the swap follows from the blocked reload, not a separate cause.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -543,6 +548,12 @@ struct s_object_damage_view
 // before the walk is anchored). No other unlisted single form found; the cause stays the allocation one above (killer kept in
 // EBP across the fallback where retail keeps its home, the three rotated slots, the +4 walk base). 0 counted trials: no
 // unlisted code-changing natural form (round 163/lane 14 r79/lane 12 r114 above cover the remaining spellings).
+// Round 157 (m3 lane 7, fast): the killer choice as a force-inline helper setting the killer, the damage code and the
+// threshold through pointers 353 (same code: the pointer outs are promoted after inlining, so the killer does not become
+// memory-resident as retail's is, stored at every assignment and reloaded at the killer block). Re-measured, the
+// `&object->history[selected]` record pointer 454 (1583 bytes): `selected` then takes the reported team parameter's home,
+// where retail keeps `best`, so `best` needs a new slot (frame 0x54) and the killer sorts below the victim. No counted
+// trial: lane 1 r98's survey, round 163, lane 14 r79 and lane 12 r114 above cover the remaining killer-block spellings.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -759,6 +770,13 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // pointer); `(void)field;` 85; the value read as the array element with the entry pointer kept for the store 80 (256);
 // a row pointer indexed by the field at each use 270 bytes, and 0x15b3a0 (13) and 0x1ea770 (26) lose their matches;
 // the first engine test through game_engine_get() 85.
+// Round 157 (m3 lane 7, fast with 0x1ea770, 0x1ea5b0, 0x1e9df0, 0x15b3a0, 0x15b7c0): the dirty test through the existing
+// game_engine_statborg_inline() 83 (270 bytes), on the volatile-free body 94 (268); the volatile-free body with a row pointer
+// local and `&row[field]` 80 (256: delta's movsx takes the EDX entry load, as in round 87's diagnostic, the field stays folded);
+// the team block through the header's s_player_datum (`player->team`) 13 (same code). Diagnostics: the volatile-free body with
+// the engine globals local at the top loads the field into EDX at entry (32, round 143's form); without the team call's use of
+// the field, LTCG makes it a register argument (89; 0x15b3a0, 0x1ea770 and 0x1ea5b0 change), so its cross-call use is what
+// keeps it a stack parameter. Stopped there: rounds 43, 87, 110, 143 and 169 cover the remaining entry and clamp spellings.
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)
