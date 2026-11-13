@@ -3820,6 +3820,12 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // selected gain alone shared. FILTER_PIN as a
 // force-inline function flips both pairs to span first, but only because mode one's colour clamps then read each
 // field once (other code); on the two gain clamps alone the pairs stay constant first in other registers.
+// Round 176 (m3 lane 6, fast; all restored at 9): on the no-shifted-local form (939: shift retail's, but small loaded once
+// into AL after fraction's move where retail loads CL first and copies it) `input` renamed 939 (names do not move it); the
+// two selectors ahead of `fixed` 31 (computed before the floor call); mode one's colour inputs through the matched sibling
+// 0x25e50's colour/scale references 11 (first.red's product operands swap; shift and pairs unchanged); the shifted word
+// declared before the clear and assigned after it 9; the alpha word through its own shifted local too 9; all four shifted
+// words (fraction, input, whole, alpha) named in parallel ahead of the first store 9.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

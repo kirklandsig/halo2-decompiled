@@ -303,6 +303,13 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // back for the object argument, 17 (the store moves ahead of the object read at the loop top, the reload still ECX).
 // tools/permute.py with the eight callers and callees as `--context` (its reduced image then scores 3, not round 169's
 // 112): 78 tries in 900 s, 17 at 3, none below.
+// Round 176 (m3 lane 6, fast, base fast 3): a loop-top `&seats[i]` pointer used only for the 0xc8200 seat argument 73
+// (380 bytes), only for the 0x1b8d80 arguments 74, only for the 0xc8f60 arguments 94, only for the object test, lookup
+// and store 102 (392 bytes), for the object arguments of both unoccupied-arm calls 94 (382 bytes). Also: 0xc8200 nested
+// under the 0x1b8d80 test with the unit read into a block-scoped local just before the call 3 (the seat-pointer reload now
+// takes EAX and the seat loads between it and the object read, as retail, but the unit load moves first: `mov ecx,
+// [edi + 0x18]` ahead of the seat); the occupied-object rejection alone as `return false` 102 (391 bytes); the hostile-team
+// rejection alone as `return false` 118 (391 bytes). Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
