@@ -478,6 +478,24 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // lifetimes); helper routes for the pin/log/linear conversions and getters; grouping a count with its array would only move
 // homes (an aggregate made up to steer), so it is not a candidate.
 // MiniMax B (11-13): no new form, no lower score (866): retail keeps the entry zero in esi and the constant g_44a0b4 in xmm4 across the two scans, ours keeps the zero in ebp and the constant in xmm5; g_44a0b4 has to be a const global and its declaration is in src/sound_portal_paths.cpp, outside this file.
+// M3 lane 16 r114 (fast with the file, 0x2197b0's file, 0x18d730 and 0x18dc90; control 866, aligned 1116 lines): retail's frame
+// keeps each count directly ahead of its array (choice count +0x34, choices +0x38; target count +0x88, targets +0x8c; existing
+// count +0xec, existing +0xf0), loads, increments and stores the count at each add, and forms the new element's address from the
+// incremented count: three counted lists (count, then elements), not separate locals. Retail also reads 0x44a0b4 fourteen times
+// (ten movss, four fld) and reloads it after stores through the pool's pointers: the read count of a global whose address is taken,
+// which the pin helper gives naturally when its bounds are `real const &`. Measured, not kept (the positional score rises while the
+// bodies are different lengths): the pin with const-reference bounds 922 (3401 bytes, aligned 1007), with a const-reference value
+// only 866 (same code); a counted-list template for choices and targets with `&list.elements[list.count++]` 933 (3301 bytes); with
+// `list.count++; &list.elements[list.count - 1]` (retail's add: inc, store, lea from the new count) and the target count stored
+// ahead of `primary` 937 (3272 bytes, aligned 1076: retail's prologue and first-loop shape); that with the reference pin 907 (3344
+// bytes, aligned 950); with the existing list counted too 942 (3376 bytes, aligned 993: retail's array order on the stack, every
+// home 8 bytes high because two more conversion temporaries are live); then the 1.0f stores as three statements, `definitions`
+// read inside the target loop, `distance` and `portal` in two-use locals, the target stores tag, decibels, gain, audible, cluster,
+// priority, source 955 (3392 bytes, aligned 970; the target loop then agrees line for line but for homes); the query count variable
+// reused as that loop's bound (retail stores the choice count to +0x10 and reads it back each pass) same code; an `add()` member
+// 948 (kept out of line even when forced). Diagnostics: 0x44a0b4 as an `extern const real` under a scratch name 866 (same code, 5
+// reads), a file-local constant 866, a scratch global with its address stored 938 (3405 bytes, 14 reads). build/r114/lead-18ae80.patch
+// holds the 955 body; next: the two extra temporaries (frame 0x4e8 against 0x4e0), then the first loop's registers.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
