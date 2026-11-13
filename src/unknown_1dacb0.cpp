@@ -1084,7 +1084,8 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 }
 
 // MiniMax H (11-11): no new form, no lower score (828); the six declaration orders of the mode, class and type out-locals all compile to the same code, so their frame homes are not set by the declaration order, and the first difference is still retail's compare of the weapon class against NONE with the operands the other way round.
-// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
+// MiniMax G (11-12): the three resolved outputs now share one array whose entries are set after the class check, which moves the -1 stores past the compare and puts the per-attempt candidate in the found_mode argument home where retail has it; the class load still lands in ECX where retail uses EDX, the result sits at frame+0x00 where retail has frame+0x0c, and the resolved outputs sit at frame+0x04 where retail has frame+0x00.
+// score 807 (was 828): Frame 0x2c agrees; the class load register, the result and resolved output homes and the later zero carrier remain.
 // MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,
 // iterator_weapon_class at frame+0x00 and iterator_mode at frame+0x08, while ours keeps iterator_weapon_type
 // at frame+0x00, iterator_mode at frame+0x04 and iterator_weapon_class in the reused argument slot; our
@@ -1347,16 +1348,18 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 	long *found_weapon_class, long *found_weapon_type)
 {
 	c_type_709360 result;
+	/* the mode, weapon class and weapon type the iterator resolved, in that order */
+	long resolved[3];
 
 	if (weapon_class == NONE)
 		return result;
 	{
 		s_graph_weapon_type_iterator iterator;
-		long iterator_mode = NONE;
-		long iterator_weapon_class = NONE;
-		long iterator_weapon_type = NONE;
 		s_graph_weapon_type *weapon_type_entry;
 
+		resolved[0] = NONE;
+		resolved[1] = NONE;
+		resolved[2] = NONE;
 		iterator.graph = this;
 		iterator.mode = mode;
 		iterator.weapon_class = weapon_class;
@@ -1366,8 +1369,8 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 		iterator.class_entry = NULL;
 		do
 		{
-			weapon_type_entry = graph_weapon_type_iterate(&iterator, &iterator_mode, &iterator_weapon_class,
-				&iterator_weapon_type);
+			weapon_type_entry = graph_weapon_type_iterate(&iterator, &resolved[0], &resolved[1],
+				&resolved[2]);
 			if (!weapon_type_entry)
 				break;
 			c_type_709360 animation_id;
@@ -1382,28 +1385,29 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 		} while (result.index == NONE);
 		if (found_mode)
 		{
-			*found_mode = iterator_mode;
+			*found_mode = resolved[0];
 		}
 		if (found_weapon_class)
 		{
-			*found_weapon_class = iterator_weapon_class;
+			*found_weapon_class = resolved[1];
 		}
 		if (found_weapon_type)
 		{
-			*found_weapon_type = iterator_weapon_type;
+			*found_weapon_type = resolved[2];
 		}
 		if (result.index != NONE)
 		{
 			function_1dd9d0(this, result);
 			graph_resources_request(this, mode, weapon_class, weapon_type, true, false);
-			graph_resources_request(this, iterator_mode, iterator_weapon_class, iterator_weapon_type, true, false);
+			graph_resources_request(this, resolved[0], resolved[1], resolved[2], true, false);
 		}
 	}
 	return result;
 }
 
 // MiniMax H (11-11): no new form, no lower score (828); the six declaration orders of the mode, class and type out-locals all compile to the same code, so their frame homes are not set by the declaration order, and the first difference is still retail's compare of the weapon class against NONE with the operands the other way round.
-// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
+// MiniMax G (11-12): the three resolved outputs now share one array whose entries are set after the class check, which moves the -1 stores past the compare and puts the per-attempt candidate in the found_mode argument home where retail has it; the class load still lands in ECX where retail uses EDX, the result sits at frame+0x00 where retail has frame+0x0c, and the resolved outputs sit at frame+0x04 where retail has frame+0x00.
+// score 807 (was 828): Frame 0x2c agrees; the class load register, the result and resolved output homes and the later zero carrier remain.
 // MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,
 // iterator_weapon_class at frame+0x00 and iterator_mode at frame+0x08, while ours keeps iterator_weapon_type
 // at frame+0x00, iterator_mode at frame+0x04 and iterator_weapon_class in the reused argument slot; our
@@ -1665,16 +1669,18 @@ c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon
 	long *found_weapon_class, long *found_weapon_type)
 {
 	c_type_709360 result;
+	/* the mode, weapon class and weapon type the iterator resolved, in that order */
+	long resolved[3];
 
 	if (weapon_class == NONE)
 		return result;
 	{
 		s_graph_weapon_type_iterator iterator;
-		long iterator_mode = NONE;
-		long iterator_weapon_class = NONE;
-		long iterator_weapon_type = NONE;
 		s_graph_weapon_type *weapon_type_entry;
 
+		resolved[0] = NONE;
+		resolved[1] = NONE;
+		resolved[2] = NONE;
 		iterator.graph = this;
 		iterator.mode = mode;
 		iterator.weapon_class = weapon_class;
@@ -1684,8 +1690,8 @@ c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon
 		iterator.class_entry = NULL;
 		do
 		{
-			weapon_type_entry = graph_weapon_type_iterate(&iterator, &iterator_mode, &iterator_weapon_class,
-				&iterator_weapon_type);
+			weapon_type_entry = graph_weapon_type_iterate(&iterator, &resolved[0], &resolved[1],
+				&resolved[2]);
 			if (!weapon_type_entry)
 				break;
 			c_type_709360 animation_id;
@@ -1700,21 +1706,21 @@ c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon
 		} while (result.index == NONE);
 		if (found_mode)
 		{
-			*found_mode = iterator_mode;
+			*found_mode = resolved[0];
 		}
 		if (found_weapon_class)
 		{
-			*found_weapon_class = iterator_weapon_class;
+			*found_weapon_class = resolved[1];
 		}
 		if (found_weapon_type)
 		{
-			*found_weapon_type = iterator_weapon_type;
+			*found_weapon_type = resolved[2];
 		}
 		if (result.index != NONE)
 		{
 			function_1dd9d0(this, result);
 			graph_resources_request(this, mode, weapon_class, weapon_type, true, false);
-			graph_resources_request(this, iterator_mode, iterator_weapon_class, iterator_weapon_type, true, false);
+			graph_resources_request(this, resolved[0], resolved[1], resolved[2], true, false);
 		}
 	}
 	return result;
