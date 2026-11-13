@@ -743,6 +743,10 @@ struct s_1f8a70_actor
 // route_found typed byte 184; declared at function scope 182; case 6's `route_mode == 0` test nested around the 0x1f9580 call 182
 // (same code); the zero-route test through a new inline bool helper (diagnostic) 381 (no setne, the layout moves); the first exit's
 // 0x1f86a0 call before `result = false;` 447 (1624 bytes).
+// T96: Destination case orders 235467/254367/325467/345267/354267/435267/453267/523467
+// on the native returned-unit graph: 355/366/367/369/225/233/373/378. NOT kept:
+// no native dispatch/result equality; original six cases, two results, shared unit
+// temporary and full body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

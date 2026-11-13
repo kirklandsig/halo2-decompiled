@@ -445,6 +445,11 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // names do not order these homes); the improvement flag declared before the pass loop 382; the pass's anchor pointer declared
 // before the anchor index 382; the selected group record named before the output loop (direct output kept) 382 (all same
 // code); the output step as an if/else increment/decrement 389.
+// T96: Float-root overload across all four length expansions, complete squared input,
+// delta aggregate, existing from-points delta, uniform square parts, named return,
+// ordinary inline and shared squared-length composition: 382/382/382/407/382/382/382/382.
+// NOT kept: no selected/default/bitmap-home recovery. Original private metrics,
+// helper contracts, includes and complete body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

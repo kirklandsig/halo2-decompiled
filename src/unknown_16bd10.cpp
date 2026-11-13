@@ -1040,6 +1040,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // for `fov = target`; a listed form, round 84's target local) 360; the time ratio pinned in its initializer 337; the blend written `start + (target - start) * t` 331 (same
 // code); `t` declared ahead of the function_13cb40 test 331 (same code). In the plane block: the length as dot3f(&plane.n,
 // &plane.n) 361; plane.n copied member by member 437 (1664 bytes).
+// T96: Actual direction/origin/observer-position input values, then direction-origin/
+// direction-position/origin-position/all/all immutable: 501/505/435/544/552/538/590/590.
+// NOT kept: input copies grow the frame/extent and do not recover native direction-j
+// preload or zero/normal allocation. Original shared math, timer and full body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

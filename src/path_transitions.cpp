@@ -878,6 +878,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // (same code); the actor declared third, ahead of the entry pointer (definition, declaration and the 0x270d90 call; stack order
 // unchanged) 218 (same code); that order on corners a, b, c, d 287 (1284 bytes: the actor load still comes first and pathfinding
 // arrives in EDX, as with every other order on that graph); corners d, a, b, c 356; c, a, b, d 358.
+// T96: Existing result owns paired-corner/both-length/actor-query/trace-query tests,
+// then corner-length/corner-actor/length-actor/all outcomes:
+// 388/406/357/263/441/408/423/467. NOT kept: no equality or native early root/actor
+// recovery; all extents grow. Original result, helpers, calls and full body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
