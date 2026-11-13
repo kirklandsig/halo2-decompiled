@@ -1198,6 +1198,10 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // sentinel or squad/query-home recovery; original full body, helpers and call tuples restored.
 // P440: Settings/perception/unit failure breaks, seven subsets then common failure cleanup: 947/947/947/947/947/947/971/963.
 // NOT kept: Shared failure scopes expand the frame and creation/query inlining. Original complete body restored.
+// P457: library enabled/forced/probability defaults 252/252/281; independent entry
+// enabled/forced/probability workspaces 252 each; existing complete direction setter
+// and actor-state library clear 252/252. NOT kept: ties or regression; required query
+// defaults retained and original complete body restored; sentinel and query homes remain.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
