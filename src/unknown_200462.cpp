@@ -176,6 +176,9 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // height is computed after the x step, the 0.5 moves to XMM7 and x to XMM4). Diagnostic: the advance kept beside the position in
 // one three-real local 53 (same as a named advance). The two free registers at the product are XMM3 and XMM4 in both builds;
 // retail gives the product the lower one, ours the higher.
+// Round 162 (m3 lane 8, fast with 0x2008fc 0x200891; control 14): each corner copied from the running position and then
+// offset (0x24ecae's idiom) 181 (921 bytes); the pulse pointer computed before the bitmap entry pointer 14 (identical).
+// A compile-only build without /GL does not reproduce the draw block (the pulse helper's return register differs).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

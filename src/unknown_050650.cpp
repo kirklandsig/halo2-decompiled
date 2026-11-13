@@ -1767,6 +1767,11 @@ struct s_actor_looking_structure_view
 // and loads every axis component ahead of the candidate copy (123: retail loads only axis j there); a read at offset 0 or +4 of
 // `specification` at entry or ahead of 0x26c180 216-240 (943-948 bytes). The ranks move with what the function dereferences
 // before the loop, not with the helper's spelling.
+// Round 162 (m3 lane 8, fast with 0x296e60 0x297660 0x2980d0; control 23): pre-loop and tail forms as rank perturbations, all
+// worse: the origin point named once for both trace calls 93; the output index named once for 0x210770 and 0x2105b0 197 (frame
+// changes); the specification's vector stored before its type 31; `result = true` before the specification stores 25.
+// Re-measured: the pathfinding pointer by if/else 207 (the listed ternary's code); the fraction declared after the rotate 136
+// (927 bytes, the listed form's code).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
