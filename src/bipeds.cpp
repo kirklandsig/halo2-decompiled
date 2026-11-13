@@ -1180,6 +1180,16 @@ extern long *g_51e9cc;
 // M3 lane 13 r85 (fast; the compile-only harness gives the same field-first add for each): the crouch change as a `real const`
 // 10, as a const reference to the call's result 10; the speed test as `0.0001f < speed_squared` 10, as
 // `!(speed_squared <= 0.0001f)` 292 (1485 bytes); the crouch field read into a local before the sum 10.
+// M3 lane 13 r88 (fast). The 2-form (case 5's 0x35c store in both arms, case 4's 0x354 store ahead of 0x364) re-measured 2, the
+// crouch-add pair alone; on it: 1-8 dead initialised locals at the top 2 each (the pair never moves: no symbol-count lever here);
+// 1-8 extern declarations or 1, 3, 8 prototypes ahead of the function 2 each; the crouch change's address stored to a global
+// (diagnostic) still field first (388, the frame shifts); the two changes as one two-element array 4; the height change declared
+// ahead of the crouch change 2; the sum assigned back to the crouch change and then pinned 2. The velocity push as a plain static
+// function of (object, velocity) 504 (1361 bytes: it stays a call); as a plain static function shaped like 0xb77d0 (object, linear,
+// angular, called with a NULL angular part) the link expands it by itself, 4 (the sum comes out i, j, k and the crouch add field
+// first, as with 0xb77d0 itself expanded); in that function length_sq3f, dot3f, a `moving` flag set by two tests or the terms
+// written k, j, i give the same code, 4 each, and 1-8 dead locals in the caller 4 each. So neither the sum's term order nor the
+// crouch pair follows a spelling of that body or a symbol count; retail's copy of 0xb77d0 here is still not reproduced.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
