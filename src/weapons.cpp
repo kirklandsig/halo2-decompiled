@@ -1950,6 +1950,12 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 // the magazine index in esi and the available/taken value in edi, ours the other way round, and retail holds
 // the pool global in ebp where ours reloads it per slot); the pool-in-ebp shape needs the pool global to be
 // known not to change across 0x106030 -> 0x159dd0, which lives in another lane's file.
+// MiniMax G (11-13): matches. The unit comes out of the pool's data through the same expression as the other
+// weapons' lookups, so the pool's data pointer stays in one register across the first slot, and the slot test
+// compares the other weapon's definition index with the weapon's, the other way round, so that both sides of
+// the comparison are materialised the way retail has them. The first block's `unloaded` is a short, which loads
+// the rounds with a 16-bit move and sign-extends it, and its minimum goes through a `take` local, which gives
+// retail's in-place `cmovle` on the loaded value.
 // MiniMax G (11-10): no new form, no lower score (83).
 // score 83 (was 107, fast): the slot test reads `weapon->definition_index == other->definition_index`, the slot take
 // reads `magazine->rounds_unloaded` at each use (no short local), and the first block's `unloaded` is a long. Found
@@ -2099,17 +2105,18 @@ bool function_100b80(long magazine_index, long weapon_index, long count)
 		if (magazine_index >= 0 && magazine_index < definition->magazine_count)
 		{
 			s_weapon_magazine *magazine = &weapon->magazines[magazine_index];
-			long unloaded = magazine->rounds_unloaded;
+			short unloaded = magazine->rounds_unloaded;
+			long take = count <= unloaded ? count : unloaded;
 
-			taken = count <= unloaded ? count : unloaded;
+			taken = take;
 			magazine->rounds_unloaded = unloaded - (short)taken;
 			if (taken > 0)
 				function_b7360(weapon_index);
 		}
 		if (weapon->unit_index != NONE && taken < count)
 		{
-			s_weapon_unit *unit = WEAPON_UNIT_GET(weapon->unit_index);
 			s_record_pool *pool = g_4e0300;
+			s_weapon_unit *unit = ((s_weapon_unit_header *)pool->data)[weapon->unit_index & 0xffff].unit;
 
 			for (long i = 0; i < 4; i++)
 			{
@@ -2118,7 +2125,7 @@ bool function_100b80(long magazine_index, long weapon_index, long count)
 				if (other_index != NONE && other_index != weapon_index)
 				{
 					s_weapon *other = ((s_weapon_header *)pool->data)[other_index & 0xffff].weapon;
-					if (weapon->definition_index == other->definition_index)
+					if (other->definition_index == weapon->definition_index)
 					{
 						s_weapon_magazine *magazine = &other->magazines[magazine_index];
 						long take = count - taken > magazine->rounds_unloaded ? magazine->rounds_unloaded : count - taken;
@@ -3379,6 +3386,12 @@ struct s_ammo_conversion_entry
 // index at [esp+4], the other index at [esp+8], the player index at [esp+12], the event index at [esp+16] and
 // the rounds pointer at [esp+20], the callee popping twenty bytes), so nothing here is blocked by the
 // declaration.
+// MiniMax G (11-13): no new form, no lower score (190): both streams are 215 instructions long and the
+// divergence starts in the prologue, where retail holds the destination weapon in EBP and the other
+// weapon in EBX while ours holds the destination in EDI; the acquisition flag is stored the other way
+// round as well (`setg` against our `setle`). An annealed permuter run over this body (300 s) again
+// found only the argument swaps of `function_1896c0` and `function_a88a0`, which contradict those
+// declarations, so it was dropped.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
