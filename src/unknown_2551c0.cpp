@@ -807,6 +807,10 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // or existing scaler, before/after location query: 105/105/222/222/87/87/240/204.
 // NOT kept: no exact native query/scalar residence; original separate reverse
 // direction, source vectors, helper inputs and full body restored.
+// T99: Function-owned request/world-query/animation-query output declarations,
+// subsets 1/2/4/3/5/6/7, then all with entry normalization declarations:
+// 110/87/87/110/110/87/110/110. NOT kept: request ownership grows the
+// native frame; other scopes canonicalize. All original workspaces restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

@@ -1988,6 +1988,11 @@ void function_b7360(long object_index);
 // each use, re-measured on this body 495 (1856 bytes: arg_0 then takes EBP as retail, but the shared `lea edi, [ecx + edx]` and
 // the prologue order follow); the second pointer for the case 10 and case 5 selector reads alone 490 (1856). Retail keeps the +0x8c
 // and +0x9a clears ahead of the selector loads (ours sinks each store below its load) and reloads +0x28 after 0x25ab50 at both sites.
+// T99: Both movement-query publications on the native-length completion graph:
+// admitted query value / independent fallback / failure-first / reject-then-publish /
+// fallback as completion / admission expression / separate stores with admission /
+// negative fallback admission: 619/601/467/619/463/466/460/270.
+// NOT kept: no equality or gain; original complete callback restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2676,6 +2681,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Motion/animation/both last-consumer scopes 479/479/479; paired final planar
 // memcpy/memmove 479/479; state/current/both existing vector setters 565/592/594.
 // NOT kept: no exact transfer-form repair; original complete body restored.
+// T99: Real animation-to-countdown fallthrough group before outer cases
+// 4/7/9/10/12/11/6/14: 475/483/479/483/483/483/468/474.
+// NOT kept: the 468 form needs the selected group placement without byte
+// equality; original complete case graph and countdown comparisons restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

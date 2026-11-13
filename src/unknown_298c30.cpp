@@ -897,6 +897,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // shared signed radius 939; magnitude-preserving first/pivot parameter scales 897/882;
 // repeated negative-radius producer 875; center-scale-only join 840.
 // NOT kept: no exact native-radius repair; original complete body restored.
+// T99: Actual center-trace outcome owned by the operation result, clear/blocked
+// bool/byte/short/long: 780/783/781/785/792/792/783/798.
+// NOT kept: no equality or native radius/trace-home recovery; original independent
+// center result, complete sweep, every helper and all geometry restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
