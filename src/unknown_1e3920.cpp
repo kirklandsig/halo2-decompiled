@@ -515,6 +515,7 @@ void function_1e4390(long actor_index)
 
 #include "object_markers.h"
 #include "location_zones.h"
+#include "object_tag_definitions.h"
 
 struct s_actor_object_sample
 {
@@ -762,6 +763,11 @@ real function_267370(long object_index);
 // singly and together, then complete distance receivers: eight 386 (1732/1724 bytes).
 // NOT kept: shared predicate users regress (11c120 62, 25ccd0 184); no exact plane
 // or cross-input recovery. Entire shared predicate and target body restored.
+// P422: Existing predicate input aliases, location/point/plane subsets 1/2/4/3/5/6/7:
+// 14/20/14/20/18/14/16; plane reference plus forward output reference 18.
+// NOT kept: no equality; several forms raise the other predicate user by five.
+// Required typed unit seat-array address 14; forward reference/pointer on that
+// typed-field graph 14/14. Output aliases restored; original shared predicate restored.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -846,8 +852,8 @@ void function_1e3b60(long actor_index)
 				}
 				if (!actor->unknown268 && !actor->unknown266 && *(short *)(object + 0x1fc) != NONE)
 				{
-					byte *definition = g_4e3b44[*(long *)parent & 0xffff].bytes;
-					actor_bytes[0x269] = (byte)((*(dword *)(*(byte **)(definition + 0x1cc) + *(short *)(object + 0x1fc) * 0xb0) >> 11) & 1);
+					s_unit_definition const *definition = (s_unit_definition const *)g_4e3b44[*(long *)parent & 0xffff].bytes;
+					actor_bytes[0x269] = (byte)((*(dword *)((byte *)definition->unit.seats.address + *(short *)(object + 0x1fc) * 0xb0) >> 11) & 1);
 				}
 			}
 		}

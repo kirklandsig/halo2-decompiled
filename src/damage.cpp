@@ -7,6 +7,7 @@
 #include "data_array.h"
 #include "unknown_0259d0.h"
 #include "effects.h"
+#include "object_tag_definitions.h"
 #include "object_markers.h"
 #include "object_queries.h"
 #include "unknown_1dee50.h"
@@ -583,6 +584,9 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // Round 307: clear result reused 3; zero event aggregate copy 79; owner long/complete
 // payload memset 36/36; individual long/short sentinel memsets 3/3;
 // owner longs plus long sentinels 36; complete owner plus remaining sentinel memsets 35.
+// P422: Complete zero-clear partitions at flags/owner/handle/location/vector/scale/
+// material/tail boundaries 34/43/55/63/66/45/50/41, 111-133/104 bytes.
+// NOT kept: split bulk clearing adds stores or another clear and lengthens native code.
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {
@@ -971,6 +975,9 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 // result/count/guard or inside guard with original result: guarded index 5/5/5/5, unconditional
 // index 8/8/8/8 (47/47 bytes). Original body restored; NOT kept: result conversion and cursor
 // ownership do not recover both native zero scheduling and the owner/index register pair.
+// P422: Typed walking cursor with fused/separate/unequal/captured-result forms
+// 8/8/9/17; pointer-valued cursor with those forms 2/8/3/17 (all 47/47).
+// NOT kept: no equality; the latch order and register pair remain coupled.
 // @retail 0xd74b0
 bool function_d74b0(byte const *owner)
 {
@@ -2627,6 +2634,10 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // M404: whole bounded-region admission in positive bool/byte/word/long and
 // complementary bool/byte/word/long forms: 3/3/3/3/3/3/3/3. Frame, extent and
 // region-load/address gaps unchanged; original nullable guard and complete body restored.
+// P422: Native model-region record receiver, const/mutable with combined/nested/
+// entry-first/named-admission guards: 228/228/167/228 twice (870/870).
+// NOT kept: typed entry ownership changes the incoming convention and saved roles.
+// P422: The required typed biped effect-tag field preserves 3/870 in the calibrated preview.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2721,7 +2732,7 @@ void function_d8cb0(long object_index, s_damage_effect_definition const *definit
 
 	if ((data->unknown04[0] & 1) && object->type == 0)
 	{
-		long effect_index = *(long *)(g_4e3b44[object->tag_index & 0xffff].bytes + 0x260);
+		long effect_index = ((s_biped_definition const *)g_4e3b44[object->tag_index & 0xffff].bytes)->biped.area_damage_effect.tag_index;
 
 		if (effect_index != NONE &&
 			(!TEST_FIELD_BIT(object->damage_flags.body_depleted) && damage > 10.0f || (accumulator->flags & 0x41)))

@@ -1972,6 +1972,10 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // unchanged: retail loads the pool global into ECX and the type after it, ours loads the type into ECX
 // first and puts the global in EDX, so the compare lands before the index arithmetic instead of after
 // it.
+// P422: Complete mutable/const header tables with primary after/before acquisition
+// 65/67/65/67; const pool root 11/11; const pool/table 65/67. Existing object getter
+// boundaries, expression/unit receiver: 11/90 twice. All original calls restored.
+// NOT kept: table sharing adds a spill; input scheduling remains at 11.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {
