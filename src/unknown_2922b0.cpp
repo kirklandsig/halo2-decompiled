@@ -478,6 +478,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // 572/572/572/572/576/577/577/657. NOT kept: four-point nonmatch gains are below the eight-point bar; original complete body restored.
 // P448: Uniform clamp lower/upper admissions, uniform normalization-zero decisions, four individual hit admissions, relational fixed-count termination:
 // 543/543/578/576/576/576/576/576. NOT kept: clamp comparison locals lack byte equality and native value evidence; original body/helpers restored.
+// P450: Separate forward/side/up normalization-zero producers in bool/long: 572/570/572/570/572/570;
+// final publication mode in bool/long 576/576. NOT kept: one-consumer decisions lack byte equality;
+// best six-point gain is below the eight-point bar. Original body, helpers and in-place captures restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

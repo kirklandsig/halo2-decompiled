@@ -893,6 +893,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // 218/218/368/218/218/219/219/228. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // P447: Immutable paired lengths/projections/reciprocal/distances/corner pointers/actor-trace receivers; original-site lower/upper margin admissions:
 // 218/218/218/218/218/218/218/218. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P450: Separate first/second positive-length continuations, positive/complementary bool/long:
+// eight 218s at 1280 bytes. NOT kept: native early root/actor ingress stays different;
+// one-consumer decisions do not match. Original geometry, result qualifier and full body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

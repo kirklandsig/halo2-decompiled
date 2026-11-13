@@ -463,6 +463,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // or default-home recovery; all original traversals and selected values restored.
 // P448: Original-site group/point/improvement/anchor/accepted-stop/visited-point/record/route-score decisions:
 // 382/382/382/382/382/382/382/382. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P450: Original-site root-count/root-reference/reference-bound/record-compatibility
+// decisions in bool/long: 382/382/382/382/382/382/382/382. NOT kept: no byte equality or selected-default
+// home recovery; original complete body, metrics, bitmaps and traversals restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
