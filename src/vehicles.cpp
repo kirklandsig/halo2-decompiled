@@ -533,6 +533,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// MiniMax B (11-13): no new form, no lower score (126): the velocity copy still takes x in ECX and y in EAX where retail takes
+// x in EAX and y in ECX, the entry magnitude's schedule (retail adds i*i + j*j before squaring k, so its 1.0 lands in XMM3) and
+// the reversing atan2's operand order remain; the known leads (the planar velocity copy with y-first squares 122, the blend rows
+// written x first) are statement orders or under the eight-point bar.
 // MiniMax G (11-12): no new form, no lower score (126): nothing new this round; the SSE register colouring of the 1.0 constant
 // and the remaining homes remain.
 // MiniMax G (11-12): no new form, no lower score (126): the frame, the length and the layout are retail's; left are
@@ -1305,6 +1309,9 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
+// MiniMax B (11-13): no new form, no lower score (561): our frame is 0x1990 where retail's is 0x1984, so every stack
+// reference sits a dword higher, and the point-sum loop's unrolling and the flag stores keep retail's different shape; this
+// needs a rewrite of the body's frame, not a tweak.
 // MiniMax G (11-12): no new form, no lower score (561): the lit flags read as a word once with the byte read again in the false
 // arm (retail's shape) gives 576 at the same length, so the flag reads stay as they are.
 // MiniMax D (11-11): no new form, no lower score (561): the damage record cut to retail's 0x80 bytes (the frame 0x1990 to 0x1988) and the buffer and the names moved to the function's top scope change nothing, so the frame is still four bytes above retail's 0x1984 and every later slot shifts; the word at +0xc0 is still read into EAX where retail reads it into ECX.
@@ -3017,6 +3024,10 @@ real g_47ff30 = 2.5f;
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
+// MiniMax B (11-13): no new form, no lower score (682): our frame is 0x100 where retail's is 0xfc (our mass local takes
+// the extra slot); the lead that reads the mass field at each use reaches retail's frame but only scores 676, under the
+// eight-point bar, and the entry XMM numbering, the maximum speed product's operand form and the force/torque scheduling
+// remain.
 // MiniMax G (11-12): no new form, no lower score (682); the mass field read at each use (no mass local) gives retail's
 // frame 0xfc at 676 and 3248 bytes, and the reciprocal declared after the first clamp reaches 674 only by moving that
 // declaration; left: the frame, the acceleration scale, linear and angular velocity and maximum speed homes, retail's
@@ -3480,6 +3491,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
    toward the controls' speed in the facing's frame, a yaw torque toward the
    steering, torques that hold the vehicle upright while it is off the
    ground, and its boost */
+// MiniMax B (11-13): no new form, no lower score (1000): our frame is a dword bigger than retail's 0x74 and the velocity
+// and force blocks build differently from the head; the scaled values' homes stay blocked by 0x1427f0/0x142640 (the
+// header's matrix_transform_vector has no scale step).
 // MiniMax G (11-12): no new form, no lower score (1000); the frame is 0x80 against retail's 0x74 and the velocity and force
 // homes are not one uniform shift; retail inlines 0x142640 and 0x1427f0 while this file calls them, and those helpers are
 // in a file that is not mine, so the inlining cannot be reached from here.
@@ -4109,6 +4123,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
 
+// MiniMax B (11-13): no new form, no lower score (118): the dot product's first term is still commuted (ours multiplies
+// forward.i by up.i where retail multiplies up.i by forward.i) and the first cross's operand order still differs; both follow
+// from the helper's argument order, which cannot be swapped for score.
 // MiniMax G (11-12): no new form, no lower score (118): nothing new this round; the projection/cross input ranks and the
 // angle/trig homes remain.
 // MiniMax G (11-12): no new form, no lower score (118): the projection/cross input ranks and the angle/trig homes
@@ -4590,6 +4607,11 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
+// MiniMax B (11-13): no new form, no lower score (48): the marker count sum still lands in EAX here and in EDI in retail
+// (a short, a long and a split `count +=` form all compile to the same `movsx eax, ax; add eax, edi`), the definition
+// pointer is still read into EDX early where retail reads it into EAX after the memset, and the facing copy still stores its
+// three components in the order i, k, j where retail stores j, k, i (the member-wise copy scores 67); the cone call's set-up
+// pair still waits on 0x146320's file.
 // MiniMax G (11-12): no new form, no lower score (48): the cone call's arguments still ride in the other registers and the
 // count's zero store still follows the sum.
 // MiniMax B (11-11): no lower score (48): the count written as two statements and the count kept in a named local
@@ -5105,6 +5127,8 @@ bool __stdcall function_f8070(long bit, word const *flags);
 /* the vehicle object type's function values (+0x4c): its boost, brakes,
    ground contact, speeds, steering, engine and wheels; false for a name it
    does not know */
+// MiniMax B (11-13): no new form, no lower score (749): the frame and the length are retail's, but the entry's zero and its
+// 1.0 still take XMM4 and XMM5 where retail takes XMM2, and the definition receiver and the per-site 1.0 lifetime still differ.
 // MiniMax G (11-12): no new form, no lower score (749): nothing new this round; the frame and the length are retail's, and the
 // entry definition ownership, the zero/result SSE allocation and the per-site versus hoisted 1.0 constants
 // are still not retail's.
