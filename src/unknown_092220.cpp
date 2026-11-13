@@ -238,7 +238,7 @@ static __forceinline long function_925c2()
 // file stops matching; the flags in a named local and the two tests split into two ifs stay
 // byte-identical to the baseline. Still the user flags are loaded into eax where retail loads them
 // into the dying pointer register.
-// score 14 (was 14): the plain (full) check agrees with the fast one: all 14 differences come from
+// Earlier measurement 14 (was 14): the plain (full) check agrees with the fast one: all 14 differences come from
 // one register choice, the user flags loaded into eax where retail loads them into the dying user
 // pointer register ecx; our two shorter encodings leave the function two bytes short, so every
 // later field (the globals and the calls) is reported as differing as well.
@@ -258,7 +258,7 @@ static __forceinline long function_925c2()
 // MiniMax C (11-08): forms tried, none lower: the flags in a local 14, the flags non-const 14, the
 // two tests split 14, the mask first 15, the flags unsigned 14, the kind as a switch 116; the
 // permuter's 55 tries kept the baseline 14.
-// score 14 (was 14): the user flags are loaded into eax in ours and into ecx in retail.
+// Earlier measurement 14 (was 14): the user flags are loaded into eax in ours and into ecx in retail.
 // The block layout is the same in both builds (the branch that finds no user jumps to the
 // shared load with ecx zero), so only the register the flags are loaded into differs.
 // This round: the flags in a named local and the two tests split into two ifs 14 (byte-identical
@@ -284,6 +284,9 @@ static __forceinline long function_925c2()
 // them into the pointer register ecx, and our two shorter encodings leave the body two bytes short, so every later
 // branch lands elsewhere; the flags in a named local, the two tests apart, the pointer from a conditional
 // expression and the two tests in the other order (14, 14, 125, 15) leave the code as it was.
+// P419: Separate real union arms 128; all five other equality-case orders
+// 16/16/17/17/16; function-scope user pointer 14; request aggregate 14.
+// All forms restored; flags still use EAX instead of the dying ECX pointer.
 // @retail 0x925c0
 long online_round_report(XNKID const *session_id, ULONGLONG const *round_key, long count, XONLINE_STAT_PROC const *procedures, bool flag0, bool flag1)
 {

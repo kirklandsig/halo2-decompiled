@@ -304,16 +304,16 @@ public:
 	virtual void get_closest(body_2fe830 const *a, body_2fe830 const *b, query_header_2fe830 const *header, closest_collector_2fe830 *collector) {}
 };
 
-// score 190 (was 190): stack layout: retail puts closest at esp+0x30 and
-// result at 0x60, ours the reverse (declaration order, scopes and names do
-// not move them); retail also resets moved_closest before it moves the body
-// in the loop, which here scores 197.
-// the same cast, the closest points found by the object itself; a move that
-// finds no closest points passes on the last hit
-// score 8 (was 8): the setup still exchanges shape and configuration registers.
+// score 8 (was 8): frame and homes agree; setup reads still exchange registers.
+// Earlier 190 form exchanged the first collector/result homes; declaration order,
+// scopes and names tied; reset before translation 197.
 // Native body copy with placement/parent or parent/placement stores 171/171;
 // copy before configuration 183/183; copy before collector or placement 174/171;
 // configuration before the placement copy on either body lifetime 229/229.
+// Immutable local/parent link/placement link/config link 8/8/8/8;
+// native count and settings name 8/8; source-body setter by reference/pointer
+// 24/24. NOT kept: no gain.
+// The same cast, with the object's third virtual query slot.
 // @retail 0x2fec10
 void class_2fec10::function_2fec10(void const *a_, void const *b_, void const *input_, void *collector_, void *second_collector_)
 {

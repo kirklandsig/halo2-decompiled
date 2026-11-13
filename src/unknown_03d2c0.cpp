@@ -130,6 +130,7 @@ s_lighting_record *function_3db00(long object_index, real priority)
     function_d4080(*(short *)definition, &query, special, &g_55ee60);
     return &g_55ee60;
 }
+// MiniMax H (11-12): no new form, no lower score (77); this round tried the cached and the allocated index in one variable (151), the allocation test inverted (151), the flag starting true and cleared on the hit (130), the initialization nested in the allocation arm (176), the hit returning early (186), one guard for the two tests (132) and the early return moved to the tail (152), and the permuter over the function managed 129 tries in 900.4 s without a confirming build (best 71, baseline 71), so the merge's register choice stands.
 // score 77 (was 77): retail keeps the result in esi and tests it before the
 // reload, ours copies it into eax at the merge point and puts the cold "no
 // result" return block ahead of the initialization instead of after it

@@ -1665,6 +1665,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // `(!resized || bytes != 0x800)` tested 157 (frame 0x1140); the write's flags as a named `s_file_write_flags` local (as
 // font_loading.cpp writes it) 33 (same code). Body unchanged. Lead for the next round: the in-block write count combined
 // with Round 53's three forms; even then the write's handle-first setup (flags zero in ECX) is still left.
+// MiniMax A (11-12): no new form, no lower score (33); the write's handle-first setup (the flags zero in ECX) and the query/count homes still differ, and the 6 form needs the goto and the set-in-test validity, which are match-only.
 // @retail 0x213970
 void function_213970(void)
 {

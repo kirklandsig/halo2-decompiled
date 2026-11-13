@@ -47,7 +47,7 @@ long function_14a280(s_bsp3d *bsp, long index, point3f *point)
 }
 
 // @retail 0x14a300
-plane3f *bsp3d_get_plane(s_bsp3d const *bsp, short plane_index, plane3f *plane)
+plane3f *bsp3d_get_plane(s_bsp3d const *bsp, long plane_index, plane3f *plane)
 {
 	s_bsp3d_plane *source = &bsp->planes[plane_index & 0x7fff];
 

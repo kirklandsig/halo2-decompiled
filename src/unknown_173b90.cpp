@@ -1831,6 +1831,7 @@ bool function_17afd0(long effect_index, long value);
 // 58, the availability set by a nested test 58 (same code). Cause found: NONE takes EBX first and the availability then
 // reuses it, so the owner cannot share NONE's EBP as in retail; only a body whose availability is live across NONE's
 // range (this one's early clear) gives retail's homes. Body unchanged.
+// MiniMax A (11-12): no new form, no lower score (47); our same-view store is still emitted ahead of the view test where retail's sits inside the availability test's block, and the 12 form needs the match-only bool (set true and then cleared by a test).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

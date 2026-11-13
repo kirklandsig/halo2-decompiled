@@ -865,6 +865,8 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// score 92 (was 92): 152 before m3 lane 14 r83; earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
+// MiniMax H (11-12): no new form, no lower score (92); the permuter over the function managed 17 tries in 301.7 s and found nothing (best 89, baseline 89, no confirming build), so the slot layout stands; this round added the player block's forward vector declared before the origin (92), copied in its declaration (100), and as a function local at the top of the function, above the projectile index and below the grenade type (92 each), which all leave the player's forward at the same home, so retail's forward at 0x20, grenade type at 0x2c and projectile index at 0x30 against our 0x28, 0x20 and 0x24 stands.
 // MiniMax G (11-12): no new form, no lower score (92): the seat index and the direction sit 0xc below retail's slots and the
 // shared block-vector slot 0xc above them, so the whole frame is a permutation of retail's; the permuter (killed at its time
 // limit) produced no form.
@@ -877,6 +879,9 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // slots (direction, origin, center, projectile index and the definition sit elsewhere), retail's second
 // copy of the throw direction inside the player block (copied with integer moves before both crosses and
 // the offset sum, which retail builds in three phases), and the spread blend (velocity*ratio products first).
+// MiniMax G (11-12): no new form, no lower score (92): the seat index and the direction sit 0xc below retail's slots and the
+// shared block-vector slot 0xc above them, so the whole frame is a permutation of retail's; the permuter (killed at its time
+// limit) produced no form.
 // Earlier (392): retail keeps the unit pointer in esi from entry (ours keeps the projectile's pool
 // offset there and reloads the unit), works on a second copy of the throw direction inside the player
 // block (copied with integer moves before both crosses and the offset sum), and blends the spread with
@@ -1086,6 +1091,13 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // all three components as in retail, and the one extra byte is the velocity scale's unfolded first product, which shifts
 // every later call and jump); that with the throw speed named at its scale call 41 (the aim fold comes back: the two
 // fold choices move together); that with the blend weight computed before the aim scale 53.
+// m3 lane 4 r191 (fast; 0xe8420/0xa91c0 MATCH; aligned/masked 70/14 at 92): the placement failure as an early return inside
+// the not-attached block (origin scoped there, its own b8540/d0e60 tail) 356 (1730 B: the two tails are not cross-jumped);
+// the a76b0 branch passing the throw path's direction (one function-scope direction) 105; origin and direction both at
+// function scope, shared with the a76b0 branch, 103; the throw offsets as three vector3f_add_scaled phases in place on
+// origin (no position local) 248 (1739 B); the not-attached arms swapped (`unit->unknown12c == NONE` first; retail lays the
+// center arm first) 255. Diagnostic only: the blend through a private copy of the static vector3f_interpolate of
+// src/unknown_1a58b0.cpp (an Avoid file; its body is this blend) 95.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1906,6 +1918,7 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// MiniMax H (11-12): no new form, no lower score (11); the entry block keeps the same eleven instructions in the same order, with the type compare still ahead of the index arithmetic.
 // MiniMax H (11-11): no new form, no lower score (11); retail still loads the object-pool global into ECX and the unit header into EDX before it loads the type argument, while ours loads the type into ECX first and puts the global in EDX, so the type compare lands before the index arithmetic instead of after it; the rest of the function matches instruction for instruction.
 // MiniMax C (11-11): no new form, no lower score (11); the entry block still compares the type with 8 before the index arithmetic where retail loads the pool global and the unit header first and compares afterwards.
 // MiniMax C (11-10): score 11 (was 11): no lower score this round. Two new spellings of the lookup were
@@ -2497,11 +2510,12 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
+// MiniMax H (11-12): no new form, no lower score (234); the tail's register homes and the 0x1b bit test are unchanged.
 // MiniMax I (11-11): no new form, no lower score (234): the pool's and the offset's register homes are still ebp and edi where retail has edi and ebx, the NONE sentinel still rides in ebp where retail keeps it in ebx, and the lunge's divide still comes from memory.
 // MiniMax B (11-11): no new form, no lower score (234); the frame is retail's 0x14 but the pool, index, type and name
 // homes and the completion byte's home still differ, and the total-tick expression is still one product order away
 // from retail's, so the body stays at retail's 1188 bytes.
-// score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
 // single exit and the layout switch: not kept at review (match-only forms); without the gotos 305.
 // Numeric hand 297; Boolean active bit 251; both 302; first result 235; all 302;
@@ -2646,6 +2660,11 @@ __forceinline char unit_action_round(real value)
 // bit (retail `shr eax, 0x1b; test al, 1`), and retail's single exit through the result byte at [esp+0x12]; the switch
 // and per-use speed with TEST_FIELD_BIT on the 0x1b test 311 (1188 B, retail's length) [32], that with the short-slot
 // getter 241 (1188 B) [31].
+// m3 lane 4 r191 (plain, with 0xe7900/0xe8420/0xa91c0/0xe9ed0/0xea090; aligned/masked 141/51; retail's prologue pushes EBX
+// before writing it, so no register argument there): the damage/end tick stores as conditional expressions 236 (1194 B);
+// the 0x1b test on the `actions` already fetched 343 (1167 B; 0xe9ed0 MATCH -> 27, 0xea090 MATCH -> 3); the mode selection
+// as `switch (mode)` 244 (1193 B); `target_index != NONE && is_biped` 234 (3 lines differ); `first_person_name != NONE &&
+// weapon_index != NONE` 234 (2 lines differ).
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

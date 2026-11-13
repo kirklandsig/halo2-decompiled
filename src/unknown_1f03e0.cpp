@@ -1331,6 +1331,14 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // field 350, both 364, the direct arm's rotation rows through `input` 570 (3029 B). Diagnostics (not kept): 1-8 unused initialised
 // locals at the top 347/478/579/575/490/479/474/474; magnitude3d with 0-7 of them 587/584/592/599/611/603/599/588. Seen in the
 // listing: in the first cross retail makes up.k the loaded operand of both products it is in, ours the memory operand.
+// m3 lane 4 r191 (fast with 0x1f0450/0x24590; aligned/masked 186/90 at 347): a new no-argument inline tick-step getter for
+// the four `* g_510c54->rate` reads (a new helper, match-only): on this body 541 (3048 B, masked 77), with both magnitude3d
+// lengths 356, with the input length only 346 (3052 B, masked 79), with the history length only 553 (3047 B); the existing
+// game_ticks_to_seconds(1) instead, on the both-lengths form, 585 (2 lines from it); `getter * x`: same code. On the 346
+// form: flags flying, direct, damping, gravity 342; `gravity = false` at the top of the first arm 345; both 341 (aligned
+// 171, masked 79); on 341: the input pointer after the flags 344, the history length through magnitude3d 351,
+// `flying || !limited_step` 523, the direct arm's speed per use 434, the low arm's normal from the field 421 (aligned 163).
+// The masked residue stays: the crosses' and low arm's product sides and the history block's x87 order.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
