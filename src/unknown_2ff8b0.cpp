@@ -127,6 +127,10 @@ ELEMENTS_2D91D0(keys_300290, long);
 // descending width tests 515; trailing update 503; on trailing update:
 // two-word decode 503, next-slot key 508, value cases first 556, saved-value
 // rename 503. All restored.
+// Base input type 466; four bound names 466; inner diagonal switch 706;
+// sole void exit 466; recursion before second step 463; separate bound loops
+// 466; low value-slot bits 466; append by reference 466. All restored.
+// NOT kept: the recursion change gains three and moves farther from the size.
 // @retail 0x2ff8b0
 void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char const *node)
 {

@@ -185,6 +185,9 @@ public:
 // payload-start pointers 327; shared coordinate member 327. All restored.
 // The same walk as 0x2dce60 below, for the nodes a set of planes holds: the
 // box is the third argument
+// Ordinary split tail 327; offsets after pointer step 652; partial predicates
+// 773; value width tests 456; inner value switch 553; paired sum parts 327;
+// named mask inputs 327; upward plane count 922. All restored.
 // @retail 0x2dc220
 void class_2dc220::function_2dc220(pending_2ddbd0 *position, void const *root, fixed_point_2dc220 const *fixed_point)
 {
