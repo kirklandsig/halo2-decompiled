@@ -175,6 +175,9 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // each use as 0x1ea770 does 110 (427 bytes); the setter guard nested under the maximum compare 106 (same code); `kind`
 // as a short 111 (428 bytes); the row as the header's player record (`&statistics->players[index]`, fields at +0x12,
 // +0x14, +0x18) 109 (428 bytes).
+// MiniMax G (11-13): no new form, no lower score (106): the reload of the enable flag after the store
+// through `statistics` needs the aliasing that src/unknown_1967d0.cpp gets by taking &g_510cb0, so it
+// stays blocked; retail's old maximum in ECX and its 16-bit counter idiom are still unmatched here.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {

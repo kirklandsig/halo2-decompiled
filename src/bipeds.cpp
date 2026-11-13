@@ -505,6 +505,7 @@ void function_e5930(long unit_index);
 
 /* resets the biped's state: its flags, landing and melee timers, its ground
    contact and its physics mode */
+// MiniMax A (11-13): no new form, no lower score (118): the reset dispatch still expands here where retail calls 0xe5930 out of line, so the body is 413 bytes against retail's 343; a switch or a do-while(0) wrapper around the call does not keep it out of line, and the callee's own file (src/unknown_0e57e0.cpp) is not this lane's: BLOCKED-BY 0xe5930.
 // MiniMax B (11-12): no new form, no lower score (118): the definition flag test wrapped in TEST_FIELD_BIT or written
 // as a ternary measures 121 (417 bytes) and the flag tested as a mask measures 118 (413 bytes), the same as here; this
 // build inlines 0xe5930 (defined in src/unknown_0e57e0.cpp) where retail calls it, so the body is 413 bytes against
@@ -704,6 +705,7 @@ struct s_biped_flags_10a_view
 };
 
 // MiniMax B (11-13): no new form, no lower score (222): the 0x111650 call still takes the names in eax where retail pushes both arguments, and that callee (src/unknown_10f1e0.cpp) is not in this lane's files: BLOCKED-BY 0x111650.
+// MiniMax A (11-13): no new form, no lower score (222): the first difference is the slot the state pointer is spilled to (this build's [esp+0x20] against retail's [esp+0x24], the same frame size), and retail reads the parent's index before the 0xbaf40 call where this build reads it after; moving a local to shape the frame is not allowed.
 // MiniMax C (11-11): no new form, no lower score (222); retail computes the state pointer up front and spills it at [esp+0x20] with the biped index at [esp+0x24], ours spills the index there and reads the parent through the parent-object helper, and retail pushes EBX after its early-exit test and shares one epilogue where ours has its own.
 // MiniMax E (11-11): no new form, no lower score (222); retail loads the biped's havok index into a register and
 // compares it there, computes the biped-plus-short-offset pointer early and spills it at [esp+0x20], and jumps to
@@ -1180,6 +1182,16 @@ extern long *g_51e9cc;
 // M3 lane 13 r85 (fast; the compile-only harness gives the same field-first add for each): the crouch change as a `real const`
 // 10, as a const reference to the call's result 10; the speed test as `0.0001f < speed_squared` 10, as
 // `!(speed_squared <= 0.0001f)` 292 (1485 bytes); the crouch field read into a local before the sum 10.
+// M3 lane 13 r88 (fast). The 2-form (case 5's 0x35c store in both arms, case 4's 0x354 store ahead of 0x364) re-measured 2, the
+// crouch-add pair alone; on it: 1-8 dead initialised locals at the top 2 each (the pair never moves: no symbol-count lever here);
+// 1-8 extern declarations or 1, 3, 8 prototypes ahead of the function 2 each; the crouch change's address stored to a global
+// (diagnostic) still field first (388, the frame shifts); the two changes as one two-element array 4; the height change declared
+// ahead of the crouch change 2; the sum assigned back to the crouch change and then pinned 2. The velocity push as a plain static
+// function of (object, velocity) 504 (1361 bytes: it stays a call); as a plain static function shaped like 0xb77d0 (object, linear,
+// angular, called with a NULL angular part) the link expands it by itself, 4 (the sum comes out i, j, k and the crouch add field
+// first, as with 0xb77d0 itself expanded); in that function length_sq3f, dot3f, a `moving` flag set by two tests or the terms
+// written k, j, i give the same code, 4 each, and 1-8 dead locals in the caller 4 each. So neither the sum's term order nor the
+// crouch pair follows a spelling of that body or a symbol count; retail's copy of 0xb77d0 here is still not reproduced.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -4874,6 +4886,7 @@ void function_e4300(long arg_159e6d)
 
 /* gets the biped up and puts its Havok to sleep, unless it already sleeps */
 // MiniMax B (11-13): no new form, no lower score (91): retail's own signature takes the biped in edi and the index in esi where ours takes one argument, and the caller of that signature is in src/unit_object_type.cpp, so the difference is reported and not patched here.
+// MiniMax A (11-13): no new form, no lower score (91): the reset dispatch still expands at this straight-line call site, so the body is 113 bytes against retail's 61; a switch or a do-while(0) wrapper around the call does not keep it out of line, and the callee's own file (src/unknown_0e57e0.cpp) is not this lane's: BLOCKED-BY 0xe5930.
 // MiniMax B (11-12): no new form, no lower score (91): this build inlines the body of 0xe5930 (defined in
 // src/unknown_0e57e0.cpp) into the caller where retail calls it, so the body is 113 bytes against retail's 61 and the
 // comparison pairs only the two calls; the noinline for 0xe5930 is a change in another file, which this lane may not make.
