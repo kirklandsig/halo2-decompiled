@@ -924,6 +924,10 @@ void hkRigidBody::motion_transform_set(hkTransform const &transform)
 void function_1d1260(s_havok_component *component);
 void function_1d1540(s_havok_component *component);
 
+// MiniMax A (11-12): no new form, no lower score (65); the component still arrives on the stack
+// where retail hands it over in EBX, so the frame is 0x84 against retail's 0x88 and the transform
+// copy is still a rep movsd where retail uses four movaps; the component's home is decided across
+// the 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 call cycle, whose bodies are in other files.
 // MiniMax S (11-11): no new form, no lower score (65): retail hands this function its component in ebx while this build keeps it on the stack, so the frame is 0x84 against retail's 0x88 and the transform copy is a rep movsd where retail uses four movaps.
 // MiniMax I (11-10): no new form, no lower score (65); the component and the index still arrive on the
 // stack where retail passes the transform in EAX, the index in ESI and the component in EBX and returns
@@ -1129,6 +1133,10 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 	frame->m_translation = position;
 }
 
+// MiniMax A (11-12): no new form, no lower score (38); every difference is still the frame (0x50
+// against retail's 0x5c) and the callee's convention, which hands the component over in ebx where
+// this build pushes it; retail's own arguments here are the matrix in EAX, the index in ECX and the
+// component on the stack, taken into EBX, with a plain ret 4.
 // MiniMax S (11-11): no new form, no lower score (38): every difference is the frame (0x50 against retail's 0x5c) and the callee's convention, which hands the component over in ebx where this build pushes it.
 // MiniMax H (11-10): no new form, no lower score (38): every difference is the frame and the callee's
 // convention (retail keeps the component in EBX, ours pushes it), and that choice is made by LTCG over
