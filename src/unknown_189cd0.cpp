@@ -170,6 +170,22 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // class selection, independent/upper-first scale limits, native description bit;
 // plain scores 116/116/116/148/154/116/120/120.
 // NOT kept: no permitted confirmed gain; original executable body restored.
+// Round 80 (m3 lane 15, plain; fast does not reproduce this file): the difference is a contest for EBP between the tag
+// index (8 uses over the whole function) and the object index (7 uses over its second half). Diagnostics, all with every
+// object read plain and no reference: the object part of the started test removed 27 at 521 bytes (retail's code but for
+// the missing compare); ONE extra use of the tag index in the positioned arm (a store of it into the description) 48 at
+// 525 bytes, which is retail's code exactly (tag EBP, spatialization EDI, object ESI then EBX, `cmp ebx, -1`) plus that
+// store; one far extra use of the object index (in the tail) 158 (568 bytes: tag EBP, object EDI in pieces). So retail's
+// compiler saw one more use of the tag index, or one fewer of the object index, than this body gives it; the volatile
+// read stands in for the latter. Forms tried, all reads plain: the started test in a by-value inline wrapper around the
+// dispatch 116; the marker lookup and description fill in a by-value inline helper 190 (470 bytes, out of line), forced
+// inline 116 (an inlined by-value parameter is propagated before allocation, so no wrapper takes a use off the
+// parameter); the spatialization pointer and the positioned test through two tag-taking inline helpers 121 (the
+// predicate stays out of line), both forced inline 162 (544 bytes, the second lookup is not merged); the function's
+// unused fourth and fifth arguments forwarded to 0x189340 as two parameters it ignores 116 (0x189340 and its callers
+// still match). Lead: an argument LTCG drops still counts in the caller's allocation, so a callee of this function
+// that takes the tag index in a parameter it never reads would give the extra use without code; no retail call shows
+// which, so none was added.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {
