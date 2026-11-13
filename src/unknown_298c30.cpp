@@ -98,7 +98,7 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // difference vector stays at +0x3c/+0x40, and the sine argument is negated in double, which is retail's `fld` of the wrapped
 // angle followed by `fchs`. The frame is now 0x64 as retail's and the score falls to 382. Still differs: the entry schedule,
 // the normalized XY/magnitude homes and 40 bytes of length.
-// score 382 (was 382; 393, 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
+// score 382 (was 382; 393, 408, and 395 before the two retail-evidenced fixes of b3C below): first +0x57 uses a different SIMD carrier; inner cursor/wrapped-angle homes and candidate width differ,
 // frame 0x64 as retail's, 1692 bytes against retail's 1732.
 // Earlier 393 (was 393; 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
 // frame 0x60 against retail's 0x64.
@@ -403,6 +403,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // its own statement, 412 (0x29a190 45: the double local aligns the frame).
 // MiniMax A (11-12): no new form, no lower score (382): retail loads its entries in another order and keeps the normalized
 // point and the magnitude in homes of their own, while ours still shares them with the entry loads.
+// P435: immutable projection, endpoint distance, opening/direction/candidate/wrapped
+// angles and facing decision, plus direct complete rotated-point initialization, all 382.
+// NOT kept: no gain. Entry and first-normalization homes agree; inner cursor and wrapped
+// angle exchange +0x14/+0x18. Caller and scoring sibling stay matched in all eight trials.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

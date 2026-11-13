@@ -4713,16 +4713,19 @@ void function_c50a0(long unit_index)
 // driver/gunner choice, gunner test in both arms) 259 at 728 bytes; a named seat pointer for the flags and the +0x3e
 // read 177 (671 bytes, masked aligned 29 -> 26); that with `child` declared before the inner loop and the next sibling
 // read from it 173 (653 bytes); `child` before the inner loop alone, re-measured, 222.
+// P435: readonly tag/child, immutable previous driver, seated-only driver scope, immutable
+// seat flags, conditional pass assignment, outer pass workspace and traversal role names all 166;
+// typed unit flag fields 166, plain 166. Entry pool/vehicle allocation still differs.
 // @retail 0xcc810
 void __stdcall function_cc810(long vehicle_index)
 {
 	s_unit *vehicle = UNIT_GET(vehicle_index);
-	byte *definition = UNIT_DEFINITION_GET(vehicle);
+	s_unit_definition *definition = (s_unit_definition *)UNIT_DEFINITION_GET(vehicle);
 	long old_driver_index = vehicle->unknown248;
 
 	vehicle->unknown248 = NONE;
 	vehicle->unknown24c = NONE;
-	if (TEST_FIELD_BIT((*(dword *)(definition + 0xbc) >> 26) & 1) && vehicle->parent_index != NONE && vehicle->actor_index == NONE &&
+	if (TEST_FIELD_BIT((definition->unit.flags >> 26) & 1) && vehicle->parent_index != NONE && vehicle->actor_index == NONE &&
 		(1 << ((byte *)g_4e0300->data)[(vehicle->parent_index & 0xffff) * 0xc + 3]) & 3)
 	{
 		vehicle->unknown24c = vehicle->parent_index;
@@ -4743,7 +4746,7 @@ void __stdcall function_cc810(long vehicle_index)
 			short seat_index = child->parent_seat_index;
 			if (seat_index != NONE)
 			{
-				s_unit_seat_definition *seats = UNIT_SEATS(definition);
+				s_unit_seat_definition *seats = UNIT_SEATS((byte *)definition);
 				dword flags = *(dword *)&seats[seat_index].flags;
 				bool grouped = (flags >> 11) & 1;
 				bool assign;
@@ -4800,7 +4803,7 @@ void __stdcall function_cc810(long vehicle_index)
 			}
 			else
 			{
-				gunner = (*(dword *)(UNIT_DEFINITION_GET(child) + 0xbc) >> 25) & 1;
+				gunner = (((s_unit_definition *)UNIT_DEFINITION_GET(child))->unit.flags >> 25) & 1;
 			}
 			if (gunner && (vehicle->unknown24c == NONE || vehicle->unknown24c == vehicle->unknown248))
 			{
@@ -5130,6 +5133,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // code); s_view_angles re-measured 169 (aligned 34, register-masked 13: only the first cross product's load order and
 // copies and the x87 forward term are left); yaw and pitch through atan2f/sqrtf 169 (same code); the four clamp
 // comparisons with their operands reversed 169 (same code).
+// P435: angle/vector/frame role names, result first, CRT forward copy, readonly
+// receivers and immutable scales 169; direct projection field reads 262; alias-safe
+// in-place staged crosses 188. NOT kept: no gain; native cross loads and scalar homes remain.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -6631,11 +6637,15 @@ done:
 // dx/cx, and stores NONE to the first one's slot before the test) 256, ternaries on the char fields 258;
 // a separate unit lookup for each index (retail re-reads the table for the second one; ours merges the two) 256;
 // the bit-9 test through a bool local 285 (no store appears); the direction copied field by field 258.
+// P435: typed tag flags 250 (plain 250); CRT direction/facing copies 250/253;
+// immutable angle magnitude, decision role names, entry state workspace, entry facing
+// output and one-completion animation admission 250; native case order 3,0,1,2 262.
+// NOT kept: no tuning gain; native zero/flag storage, state slot and facing tail remain.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
 	s_unit *unit = UNIT_GET(unit_index);
-	byte *definition = UNIT_DEFINITION_GET(unit);
+	s_unit_definition *definition = (s_unit_definition *)UNIT_DEFINITION_GET(unit);
 	real angle = 0.0f;
 	bool turn = false;
 	bool flag = false;
@@ -6658,7 +6668,7 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 			if (normalize2d(&facing) > 0.0f)
 			{
 				angle = function_11cc90((vector2f const *)&toward, (vector2f const *)&facing);
-				if (!((*(dword *)(definition + 0xbc) >> 9) & 1) && unit->type == 0 && unit->parent_index == NONE)
+				if (!((definition->unit.flags >> 9) & 1) && unit->type == 0 && unit->parent_index == NONE)
 				{
 					if (function_e70b0(unit_index).value == NONE)
 					{
@@ -6751,7 +6761,7 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 		{
 			*((byte *)unit + unit->animation_offset + 0x6c) |= 1;
 			*state |= 4;
-			if ((*(dword *)(definition + 0xbc) >> 1) & 1 && !function_a7670(unit_index))
+			if ((definition->unit.flags >> 1) & 1 && !function_a7670(unit_index))
 			{
 				function_d6bc0(unit_index);
 			}

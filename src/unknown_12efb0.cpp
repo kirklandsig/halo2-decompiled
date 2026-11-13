@@ -554,6 +554,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // pointer declared before the tag test 714; the three 0x131030 outputs declared at the tag arm's top 607 and the NULL-record
 // test as an early `goto` ahead of the record block 607 (same code each). No untried natural form is left: retail moves
 // the 0x130f60 result to EDX with -1 in EAX and holds 0.0 in XMM7 across the loop, and no recorded form gives either.
+// P435: function-scope provider output, provider output/return role names, immutable
+// provider return on the original word-palette graph, readonly cluster/tag sources, and
+// immutable palette/weighted source receivers all 607. NOT kept: no gain; native
+// return EDX, byte palette CL, selected record EBX and zero XMM7 remain unrecovered.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
