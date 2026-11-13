@@ -2109,6 +2109,8 @@ bool __stdcall function_110ab0(long unit_index)
 // P445: Actual allow receiver, shared overlay-policy dispatch, existing field-test macro,
 // declared set-field view, overlay-channel receiver, single/two-request local producers and immutable controlling handle:
 // 445/644/445/445/445/445/445/445. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P447: First/second signed slot arguments; first/second count decisions; overlay/allow admissions; primary and paired-overlay inner request case order:
+// 445/445/445/445/445/445/445/445. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {

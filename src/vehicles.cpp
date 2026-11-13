@@ -3249,6 +3249,8 @@ real g_47ff30 = 2.5f;
 // native-order position setters, fallback setter, complete elevation arms, selected-bank magnitude provider
 // and immutable time/response/maximum/mass coefficients:
 // 716/765/699/682/682/721/687/682. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P447: Uniform friction admissions; boost/descent/ascent/mode/turn-boost/fallback admissions; immutable late angular coefficient:
+// 682/682/682/734/682/684/699/682. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -6005,6 +6007,8 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // P445: Existing wind difference, drift-length result, lift admission, driver-control receiver,
 // complete parallel angular-error parts, driver-bit result, full flip-time admission and readonly definition receiver:
 // 1035/1039/978/978/978/978/978/978. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P447: Successor saturation clamp/complete arms/predecessor/direct publication; exhaustive pitch sign; shortest-rotation/banking/reversal admissions:
+// 978/978/1143/1140/978/978/978/1039. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

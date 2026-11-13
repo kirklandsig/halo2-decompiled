@@ -458,6 +458,8 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // P444: read-only byte receivers 926f; blocking-priority producer 926f; paired side-projection producers 926f; facing-limit producer 926f; node-presence producer 926f; motion-sphere result 942f; selected-carrier producer 926f; exhaustive priority result 924f.
 // NOT kept: no byte match or supported native frame/result recovery; trial forms restored.
 // Existing object-header fields used for the flag, property and model reads.
+// P447: Visibility/reference/property/model/physics/count decisions; lower/upper vertical exclusions at original producers:
+// 926/926/926/926/926/926/926/926. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
