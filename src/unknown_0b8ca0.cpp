@@ -679,7 +679,16 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
-// score 165 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
+// MiniMax B (11-12): score 71 (was 165): the step helper now takes its result after the call, the cluster
+// loop ends on a visible flag instead of a second test on the cluster, the header's flags are read
+// through the root object, the range's zero is the model-NONE arm and the angle's sum is the float one
+// retail adds; the frame and its slots are retail's now (`and esp, -8`, 0xb4 bytes, the result byte at
+// [esp+0x13], the link iterator at [esp+0x40], the player index at [esp+0x14]).
+// score 71 (was 165): the frame is retail's and the body is retail's length (895 bytes), but the cluster
+// bit table's base is read inside our loop where retail reads it once before the first query, the zoom
+// argument is narrowed to a short where retail passes it in a full register, the angle's x87 sequence
+// loads the radius before the distance and takes the cosine before the dot product where retail does the
+// opposite, and the definition pointer sits in edx where retail holds it in eax.
 // bool result byte) while ours keeps EBP for the global base and a dword result.
 // MiniMax E (11-11): no new form, no lower score (165): the full build now self-aligns the frame like
 // retail (`and esp, -8`, 0xb4 bytes, a result byte), but the locals sit in other slots (the result byte
@@ -898,6 +907,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // fxch; fcos; fxch`) but the frame no longer self-aligns - lead: retail holds the radius in memory across the call as a value,
 // where our build self-aligns only for a spill temp; the angle through an inline helper (double radius, real distance) 267
 // (873 bytes), with the normalising call inside the helper 67 (same as the 67 form), (double, double) 262 (877 bytes).
+// NOT kept (coordinator review, MiniMax B 11-12): 165 -> 71 rested on match-only forms (a `visible` flag set in the cluster loop, a (real) cast on atan2, the swapped comparison); without them the full build gives 215, worse than main's 165. The body is main's again.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -1756,6 +1766,15 @@ done:
 // read 27, on main's body 17 (same code): the re-reads CSE into the definition and the copy never survives. On the 27 form:
 // the palette offset read after the datum 27; the definition renamed to sort after the type 27 (same code, re-measure);
 // an early `return result` on NONE with the call returned directly 81 (244 bytes).
+// Round 86 (m3 lane 13, fast): the 27 form re-measured (long offsets and size, datum local, palette added at the call):
+// it reads size, palette offset, placement offset through the definition in ECX with the type in ESI, where retail keeps
+// the type in ECX, loads the definition into EAX for the palette offset and moves it to ESI only when the size takes EAX
+// (a definition that is not planned around the size's EAX). On it: the table indexed by the type at each read 27 (same
+// code); the datum as one expression (product first) after the palette offset local 27 (same code). Every table read
+// inside the call statement 67 (236 bytes: loads after the pushes, EBX never used); palette then block helpers with an
+// out size into locals 23; datum and palette helpers called in the argument list, taking the scenario 23, reading the
+// scenario global themselves 23 (all three: scenario ESI or EDI, index BX, the datum built after the pushes).
+// Diagnostic: the type not pushed 28 (type EAX, definition still ECX).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {

@@ -792,6 +792,7 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // M3 lane 12 r115 (fast with 0x173c10/0x2477b0): the definitions indexed by a short counter 271 (1130 bytes); the
 // defaults as one chained `multiplier = scale = 1.0f` 120 (1136), on the long-indexed form 115 (1138); a named flags
 // value for the six emitter-definition flag tests 292 (1157), on the long-indexed form 297 (1159).
+// NOT kept (coordinator review, MiniMax A 11-12): 42 -> 39 is under the keep bar (8+ on a function still above 30); the body is main's again.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -807,70 +808,66 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 		cache->mask &= 0xfffecf7f;
 	}
 	long emitter_index = *(long *)((byte *)location + 4);
-	long emitter_definition_offset;
-	if (emitter_index != NONE)
+	long emitter_definition_offset = 0;
+	while (emitter_index != NONE)
 	{
-		emitter_definition_offset = 0;
-		while (emitter_index != NONE)
+		s_particle_emitter_175610 *emitter = DATUM(g_51ec88, s_particle_emitter_175610, emitter_index);
+		long particle_index = emitter->first_particle_index;
+		s_emitter_definition_175610 *emitter_definition =
+			(s_emitter_definition_175610 *)(*(byte **)((byte *)definition + 0x34) + emitter_definition_offset);
+		if (particle_index != NONE)
 		{
-			s_particle_emitter_175610 *emitter = DATUM(g_51ec88, s_particle_emitter_175610, emitter_index);
-			long particle_index = emitter->first_particle_index;
-			s_emitter_definition_175610 *emitter_definition =
-				(s_emitter_definition_175610 *)(*(byte **)((byte *)definition + 0x34) + emitter_definition_offset);
-			if (particle_index != NONE)
+			real multiplier = 1.0f;
+			real scale = 1.0f;
+			if (TEST_FIELD_BIT(system->flag10))
+				multiplier = function_3eb70();
+			matrix3x3 rotation;
+			point3f origin;
+			matrix3x3 const *rotation_result;
+			point3f const *origin_result;
+			color4f color;
+			dword emitter_mask = emitter_definition->mask;
+			if (definition->unknown0c)
+				function_248450(&rotation, (s_particle_frame const *)emitter, &origin, &rotation_result, &origin_result, *((byte *)location + 2) != 0);
+			cache->function_173c10(emitter_mask & 0x107f0);
+			if (emitter_definition->flags & 1)
+				color.alpha = function_246cd0(&emitter_definition->alpha, cache->values);
+			if (emitter_definition->flags & 2)
+				function_246d80(&emitter_definition->color, cache->values, (color3f *)&color.red);
+			if ((bool)((emitter_definition->flags >> 2) & 1))
+				scale = function_246cd0(&emitter_definition->scale, cache->values) * multiplier;
+			dword particle_mask = emitter_mask & 0xf80f;
+			while (particle_index != NONE)
 			{
-				real scale = 1.0f;
-				real multiplier = 1.0f;
-				if (TEST_FIELD_BIT(system->flag10))
-					multiplier = function_3eb70();
-				matrix3x3 rotation;
-				point3f origin;
-				matrix3x3 const *rotation_result;
-				point3f const *origin_result;
-				color4f color;
-				dword emitter_mask = emitter_definition->mask;
-				if (definition->unknown0c)
-					function_248450(&rotation, (s_particle_frame const *)emitter, &origin, &rotation_result, &origin_result, *((byte *)location + 2) != 0);
-				cache->function_173c10(emitter_mask & 0x107f0);
-				if (emitter_definition->flags & 1)
-					color.alpha = function_246cd0(&emitter_definition->alpha, cache->values);
-				if (emitter_definition->flags & 2)
-					function_246d80(&emitter_definition->color, cache->values, (color3f *)&color.red);
-				if ((bool)((emitter_definition->flags >> 2) & 1))
-					scale = function_246cd0(&emitter_definition->scale, cache->values) * multiplier;
-				dword particle_mask = emitter_mask & 0xf80f;
-				while (particle_index != NONE)
+				s_particle_175610 *particle = DATUM(g_51ec84, s_particle_175610, particle_index);
+				point3f translated_position = particle->position;
+				vector3f motion = particle->velocity;
+				if (particle != cache->field_50)
 				{
-					s_particle_175610 *particle = DATUM(g_51ec84, s_particle_175610, particle_index);
-					point3f translated_position = particle->position;
-					vector3f motion = particle->velocity;
-					if (particle != cache->field_50)
-					{
-						cache->field_50 = particle;
-						cache->mask &= 0xffff07f0;
-					}
-					cache->function_173c10(particle_mask);
-					particle_index = particle->next_index;
-					if (!(emitter_definition->flags & 1))
-						color.alpha = function_246cd0(&emitter_definition->alpha, cache->values);
-					if (!(emitter_definition->flags & 2))
-						function_246d80(&emitter_definition->color, cache->values, (color3f *)&color.red);
-					if (!(bool)((emitter_definition->flags >> 2) & 1))
-						scale = function_246cd0(&emitter_definition->scale, cache->values) * multiplier;
-					if (definition->unknown0c)
-					{
-						function_2477b1(rotation_result, (vector3f *)&translated_position, (vector3f *)&translated_position);
-						translated_position.x = origin_result->x + translated_position.x;
-						translated_position.y = origin_result->y + translated_position.y;
-						translated_position.z = origin_result->z + translated_position.z;
-						function_2477b1(rotation_result, &motion, &motion);
-					}
-					callback(particle, cache, &translated_position, &motion, scale, &color, context);
+					cache->field_50 = particle;
+					cache->mask &= 0xffff07f0;
 				}
+				cache->function_173c10(particle_mask);
+				particle_index = particle->next_index;
+				if (!(emitter_definition->flags & 1))
+					color.alpha = function_246cd0(&emitter_definition->alpha, cache->values);
+				if (!(emitter_definition->flags & 2))
+					function_246d80(&emitter_definition->color, cache->values, (color3f *)&color.red);
+				if (!(bool)((emitter_definition->flags >> 2) & 1))
+					scale = function_246cd0(&emitter_definition->scale, cache->values) * multiplier;
+				if (definition->unknown0c)
+				{
+					function_2477b1(rotation_result, (vector3f *)&translated_position, (vector3f *)&translated_position);
+					translated_position.x = origin_result->x + translated_position.x;
+					translated_position.y = origin_result->y + translated_position.y;
+					translated_position.z = origin_result->z + translated_position.z;
+					function_2477b1(rotation_result, &motion, &motion);
+				}
+				callback(particle, cache, &translated_position, &motion, scale, &color, context);
 			}
-			emitter_index = emitter->next_index;
-			emitter_definition_offset += sizeof(s_emitter_definition_175610);
 		}
+		emitter_index = emitter->next_index;
+		emitter_definition_offset += sizeof(s_emitter_definition_175610);
 	}
 }
 
@@ -1827,6 +1824,7 @@ bool function_17afd0(long effect_index, long value);
 // 58, the availability set by a nested test 58 (same code). Cause found: NONE takes EBX first and the availability then
 // reuses it, so the owner cannot share NONE's EBP as in retail; only a body whose availability is live across NONE's
 // range (this one's early clear) gives retail's homes. Body unchanged.
+// MiniMax A (11-12): no new form, no lower score (47); our same-view store is still emitted ahead of the view test where retail's sits inside the availability test's block, and the 12 form needs the match-only bool (set true and then cleared by a test).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

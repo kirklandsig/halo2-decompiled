@@ -803,6 +803,10 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // request stores); the unit's object looked up at each use (no local_12) 87 (same code); actor_get(arg_0) at every use (no
 // local_0) 277 (999 B). No other untried natural form: the rotation step needs the one-use unit local (match-only), and the
 // homes follow slot packing that the listed renames, scopes and declaration orders do not move.
+// T95: Reverse probe in dead motion/displacement vector storage, original products
+// or existing scaler, before/after location query: 105/105/222/222/87/87/240/204.
+// NOT kept: no exact native query/scalar residence; original separate reverse
+// direction, source vectors, helper inputs and full body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

@@ -359,6 +359,11 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 // each box the moving box overlaps at the start, then each box whose three
 // intervals it enters on the way, is passed to the collector, until the
 // collector's distance left is passed
+// score 511 (was 511): frame 0x118 agrees; saved receiver and vector
+// homes differ, followed by scalar homes and axis registers. Four-entry
+// scan loop 682; outer axis cursor 511; shared input vectors 513; minimum
+// expression 511; displacement vector type 511; reached-element pointer
+// 668; direct time slots 511; byte flag 573. All forms restored.
 // @retail 0x2e4660
 void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *collector)
 {

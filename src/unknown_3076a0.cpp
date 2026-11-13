@@ -214,6 +214,11 @@ __forceinline __m128 rotate_inverse_307840(transform_307840 const *matrix, __m12
 // score 316 (was 316): retail computes the newest normal's three splats once,
 // spills them and shares them between the two rotations, and keeps the count
 // in edi; sharing the splats here scores 322 to 326.
+// Shared inverse inline 478; by-value normal 317; first rotation first 155
+// (NOT kept: its computations run in the opposite order to retail);
+// count captured at distance loop 510; pointer/count loop 452; early key 316;
+// separate rejection guards 316; direct side bits 331;
+// output reference 316; original count bound 510.
 // the faces of the two boxes most nearly facing along the normal of the
 // newest contacts, when both face it closely: their contacts and, when asked,
 // those of the edges around them, with the smallest distance among the
@@ -310,8 +315,9 @@ void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 }
 // score 24 (was 24): Frame 0x44 and extent 847 agree; the returned byte is
 // below the saved this instead of above the two side inputs. The remaining
-// 4-byte stack homes are shifted by four. A common result and sole exit fix
-// both distance-store/return orders, confirmed by the plain check.
+// 4-byte stack homes are shifted by four; two distance/return schedules
+// also differ. A prior common result gave 19 in the plain check, then was
+// restored under the exit rule.
 // Earlier: a temporary or early flag 51; flag rename unchanged.
 // SIMD buffers before count 24, before search 24; distinct side names 24;
 // shared side 31; face-index captures 156; backward key pointers 204;
@@ -320,7 +326,10 @@ void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 // the features of the axis of greatest separation, tried in turn up to eight
 // times: 1 when the manifold lists them already, 2 when they give a new
 // contact (its separation in the feature), 0 when none does
-// Codex T round 87, NOT kept (coordinator 11-11): 24 -> 19 only from a result local and new `goto done` exits in place of the returns (a new goto is kept only with a byte match); body at 24.
+// Common result 19 NOT kept: new goto exits require an exact match.
+// New: direct returned temporary 51; constructed/assigned result 51;
+// result before vectors, per pass or before loop 51; shorter vector or side
+// scopes 24; bounded for 282. Original returns and body restored.
 // @retail 0x307c40
 int pair_305f60::function_307c40(table_305f60 *table, key_305f60 *key, feature_305f60 *feature)
 {

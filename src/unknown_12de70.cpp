@@ -602,6 +602,16 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // once into a local for its test and pointer 18. On the original body: the block local initialised above the tasks store
 // 71 (the block is loaded before the count and held in ESI across the lock calls); `__assume(local_1 != NULL)` in the arm
 // 45. A 600 s permuter run on the 14 form found nothing (its reduced image scores that form 73, the full image 13).
+// Round 87 (m3 lane 14, fast): the EDI/EBP choice and whether the loop test's block stays apart follow the number of
+// reads of the cache block's field in the loop. With a block local for the tail's test and pointer: the loop read at each
+// use 51; that with a dead `(void)cache_block->block;` in the arm 51 (same code); with an unused block local in the arm
+// (diagnostic, a redundant statement) 18 at 266 bytes: EDI/EBP, the test's EDX and the tail are retail's, and only the
+// arm's own `mov esi, [edi+8]` (after the pool data load) stands where retail has `mov esi, edx` before it; a group local
+// in the arm 51; the loop's block local kept for the argument with the test reading the field 51; group and base as two
+// statements in the arm 51; a block local in the arm with the linked test repeated on it 53 (267 bytes). Compile-only:
+// the physical block getter with a pool local or an allocator local gives the same load order. Retail's arm load is a
+// second read forwarded from the test's register: it needs a real second use of the block in the arm, ahead of the
+// base's loads.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

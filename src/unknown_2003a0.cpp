@@ -2247,6 +2247,7 @@ bool function_1e11b0(long actor_index, bool active);
 // 79 (212 B); the actor index typed dword 64 (same code). Re-measured: `!= 0` return 65, the +0x34 store from
 // iterator.squad_index 65 (callers lost). Retail evidence for the flags lead: 0x1c7bb0 (another file) has the bodies
 // of 0x203f60 and 0x204d30 inline, while every caller in this file keeps both out of line.
+// MiniMax A (11-12): no new form, no lower score (64); the frame, the argument's register and the unrotated step loop still need the statement-level inline pair or /Ob1, which are compiler settings this lane may not add.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -3200,6 +3201,7 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // m3 lane 2 r75 (fast with 0x202e90): the pending arm reading +0x66 into local_2 before the delay test 72 (580 B);
 // `short local_3 = NONE;` 169 (578 B); the delay test as `< 1` 51 (579 B); the delay in a named short 50 and `byte *const
 // local_1` 50 (same code each). The first follow-up still reloads the index from its home.
+// MiniMax A (11-12): no new form, no lower score (50); every instruction agrees with retail except the argument of the first 0x1fb8a0 call, where ours reloads the squad index from its stack home and retail keeps the EBP copy; a local copy of the parameter is propagated back, so the reload stays.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

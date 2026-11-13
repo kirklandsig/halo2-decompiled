@@ -1269,6 +1269,13 @@ long function_1931a0(long count, s_surface_description *variant);
 // write-only machine-id copy dropped 8 (0x7e210 937, 2700 bytes: retail has the copy); the capacity test through the existing
 // 0x193300 (our link already folds this file's twin into it) 8 (766, same code), with a forceinline redeclaration of it 8 (766);
 // that call with the top lookup after the capacity read 1 (942, 2732 bytes, as the private-helper form). All restored.
+// Round 76 (m3 lane 2, fast control 8 / plain 6; trials in 0x7e210, all restored): the output cleared first 8 (0x7e210 815);
+// the top lookup made inside the `||` validity test 1 (0x7e210 954, 2700 bytes; the call there stays out of line and 0x7e210
+// takes the session in ECX, retail EAX; not kept: assignment inside the test, a rise in 0x7e210, retail calls it first); the
+// loop's lookup through 0x192e60 at the loop body's top level (every pass) MATCH here (0x7e210 930, 2716 bytes: the hotter loop
+// site takes the one inline copy and the top call stays out of line, as retail; not kept: it looks the variant up on every pass
+// and raises 0x7e210); the variant index by an explicit state test 8; the validity test split in two 8. Diagnostic (compiler
+// setting, not kept): 0x7e210's file without /arch:SSE 8 (0x7e210 836; the top call still inlines).
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {

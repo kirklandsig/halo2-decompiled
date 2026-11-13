@@ -65,6 +65,9 @@ public:
 // and negative flag region 16/16; entry result with separate production 29. All restored.
 // Existing byte conversion types on per-use/cached/reference owner graphs
 // 16/16, 22/22, 22/22; operand-reference inputs 16/16. All restored.
+// Stored owner/kind references 16/16; immutable owner/kind links 16/16;
+// on the current first-owner reads: const kind call 16, enum result 16,
+// virtual query 16, Boolean constructor 16. All restored.
 // @retail 0x319230
 s_result_319230 c_query_319230::function_319230(s_operand_319230 const *a, s_operand_319230 const *b) const
 {

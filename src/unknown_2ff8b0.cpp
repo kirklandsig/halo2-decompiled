@@ -117,6 +117,12 @@ ELEMENTS_2D91D0(keys_300290, long);
 // range to a child cell, split the walk where the range spans both sides of a
 // plane (the first side by recursion), cut it off where the range misses a
 // slab, move the key base, or give a key to add to the list
+// score 466 (was 466): Frame 0x3c versus 0x38; the two-child case takes
+// the saved-object register for a bound instead of using the argument homes.
+// Byte command 542; copy rename 466; memcpy 466; corner loop 466;
+// bounds loop 482; byte OR 515; shared bound tuple 466; positive branch 469;
+// case-local bounds 466; range cursor 467; command cursor 466; both 467;
+// both byte bounds loaded first 492.
 // @retail 0x2ff8b0
 void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char const *node)
 {
@@ -589,6 +595,16 @@ public:
 // child cell, split the walk where the sphere spans both sides of a plane
 // (the first side by recursion), cut it off where the sphere misses a slab,
 // move the key base, or give a key to add to the list
+// score 375 (was 521): Frame 0x2c and extent 1596 agree; first +0x176
+// exchanges two reads. Loop-tail value update 537; limits first 400; limits
+// between position and extent 514; byte command 521/1608; box rename 521;
+// limit declarations first 521; paired word reads 521; axis loop 521.
+// Limits first with the loop-tail update 375, confirmed by ordinary check.
+// The latter follows the shared block at 0x3006e3; neither change adds a label.
+// One-plane radius snapshot 377; split value names 375; two-plane limits
+// first 376; all axial radii captured 213 (NOT kept: 1600 versus 1596 bytes);
+// named bounds, joined slab tests and unsigned command 375/375/375;
+// word distances 393 (1612 bytes). Original body restored.
 // @retail 0x300290
 void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char const *node)
 {
@@ -606,73 +622,73 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 		{
 		// planes across two axes or three, then one
 		case 0x13:
+			low = node[1] * 2;
+			high = node[2] * 2;
 			position = box->centre[1] + box->centre[2];
 			extent = box->radius + (box->radius >> 1) + 1;
-			low = node[1] * 2;
-			high = node[2] * 2;
 			goto split;
 		case 0x14:
+			low = node[1] * 2;
+			high = node[2] * 2;
 			position = box->centre[1] - box->centre[2] + 0xff;
 			extent = box->radius + (box->radius >> 1) + 1;
-			low = node[1] * 2;
-			high = node[2] * 2;
 			goto split;
 		case 0x15:
+			low = node[1] * 2;
+			high = node[2] * 2;
 			position = box->centre[0] + box->centre[2];
 			extent = box->radius + (box->radius >> 1) + 1;
-			low = node[1] * 2;
-			high = node[2] * 2;
 			goto split;
 		case 0x16:
+			low = node[1] * 2;
+			high = node[2] * 2;
 			position = box->centre[0] - box->centre[2] + 0xff;
 			extent = box->radius + (box->radius >> 1) + 1;
-			low = node[1] * 2;
-			high = node[2] * 2;
 			goto split;
 		case 0x17:
+			low = node[1] * 2;
+			high = node[2] * 2;
 			position = box->centre[0] + box->centre[1];
 			extent = box->radius + (box->radius >> 1) + 1;
-			low = node[1] * 2;
-			high = node[2] * 2;
 			goto split;
 		case 0x18:
-			position = box->centre[0] - box->centre[1] + 0xff;
-			extent = box->radius + (box->radius >> 1) + 1;
 			low = node[1] * 2;
 			high = node[2] * 2;
+			position = box->centre[0] - box->centre[1] + 0xff;
+			extent = box->radius + (box->radius >> 1) + 1;
 			goto split;
 		case 0x19:
+			low = node[1] * 3;
+			high = node[2] * 3;
 			position = box->centre[2] + box->centre[1] + box->centre[0];
 			extent = box->radius * 4;
-			low = node[1] * 3;
-			high = node[2] * 3;
 			goto split;
 		case 0x1a:
+			low = node[1] * 3;
+			high = node[2] * 3;
 			position = box->centre[1] - box->centre[2] + box->centre[0] + 0xff;
 			extent = box->radius * 4;
-			low = node[1] * 3;
-			high = node[2] * 3;
 			goto split;
 		case 0x1b:
+			low = node[1] * 3;
+			high = node[2] * 3;
 			position = box->centre[2] - box->centre[1] + box->centre[0] + 0xff;
 			extent = box->radius * 4;
-			low = node[1] * 3;
-			high = node[2] * 3;
 			goto split;
 		case 0x1c:
-			position = box->centre[0] - box->centre[2] - box->centre[1] + 0x1fe;
-			extent = box->radius * 4;
 			low = node[1] * 3;
 			high = node[2] * 3;
+			position = box->centre[0] - box->centre[2] - box->centre[1] + 0x1fe;
+			extent = box->radius * 4;
 			goto split;
 
 		case 0x10:
 		case 0x11:
 		case 0x12:
-			position = box->centre[op - 0x10];
-			extent = box->radius;
 			low = node[1];
 			high = node[2];
+			position = box->centre[op - 0x10];
+			extent = box->radius;
 		// the sphere on the first side of the plane goes on there; on the
 		// second, to the second side; on both, the first side by recursion
 		split:
@@ -680,16 +696,16 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 			node += 4;
 			if (position + extent < high)
 			{
-				break;
+				continue;
 			}
 			long const skip = node[-1];
 			node += skip;
 			if (position > low + extent)
 			{
-				break;
+				continue;
 			}
 			function_300290(box, node - skip);
-			break;
+			continue;
 		}
 
 		// one plane across an axis, the second side's start given
@@ -702,16 +718,16 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 			node += 3;
 			if (along + box->radius < plane)
 			{
-				break;
+				continue;
 			}
 			long const skip = node[-1];
 			node += skip;
 			if (along > box->radius + plane + 1)
 			{
-				break;
+				continue;
 			}
 			function_300290(box, node - skip);
-			break;
+			continue;
 		}
 		// two planes across an axis, both sides' starts given
 		case 0x23:
@@ -726,16 +742,16 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 			if (along + box->radius < first_high)
 			{
 				node += first_skip;
-				break;
+				continue;
 			}
 			long const second_skip = READ_2_300290(node - 2);
 			node += second_skip;
 			if (along > box->radius + second_low)
 			{
-				break;
+				continue;
 			}
 			function_300290(box, node - second_skip + first_skip);
-			break;
+			continue;
 		}
 		// a slab across an axis the sphere must touch
 		case 0x26:
@@ -752,7 +768,7 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 				return;
 			}
 			node += 3;
-			break;
+			continue;
 		}
 		// the same in the whole grid
 		case 0x29:
@@ -769,17 +785,17 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 				return;
 			}
 			node += 7;
-			break;
+			continue;
 		}
 		case 0x05:
 			node += node[1] + 2;
-			break;
+			continue;
 		case 0x06:
 			node += READ_2_300290(node + 1) + 3;
-			break;
+			continue;
 		case 0x07:
 			node += READ_3_300290(node + 1) + 4;
-			break;
+			continue;
 		case 0x01:
 		case 0x02:
 		case 0x03:
@@ -798,7 +814,7 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 			copy.values[0] = box->values[0];
 			box = &copy;
 			node += 4;
-			break;
+			continue;
 		}
 		case 0x09:
 		{
@@ -810,7 +826,7 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 			}
 			copy.key_base += delta;
 			node += 2;
-			break;
+			continue;
 		}
 		case 0x0a:
 		{
@@ -822,7 +838,7 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 			}
 			copy.key_base += delta;
 			node += 3;
-			break;
+			continue;
 		}
 		case 0x0b:
 		{
@@ -834,7 +850,7 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 			}
 			copy.key_base = start;
 			node += 5;
-			break;
+			continue;
 		}
 
 		// the value in the first of four slots (retail writes the slot the
@@ -845,13 +861,6 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 		case 0x63:
 			copy.values[op - 0x60] = node[1];
 			node += 2;
-			value = copy.values[0];
-			if (box != &copy)
-			{
-				copy = *box;
-				box = &copy;
-			}
-			copy.values[0] = value;
 			break;
 		case 0x64:
 		case 0x65:
@@ -859,13 +868,6 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 		case 0x67:
 			copy.values[op - 0x64] = READ_2_300290(node + 1);
 			node += 3;
-			value = copy.values[0];
-			if (box != &copy)
-			{
-				copy = *box;
-				box = &copy;
-			}
-			copy.values[0] = value;
 			break;
 		case 0x68:
 		case 0x69:
@@ -873,13 +875,6 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 		case 0x6b:
 			copy.values[op - 0x68] = READ_4_300290(node + 1);
 			node += 5;
-			value = copy.values[0];
-			if (box != &copy)
-			{
-				copy = *box;
-				box = &copy;
-			}
-			copy.values[0] = value;
 			break;
 		default:
 			g_48017c->slot_1()->function_2d9000("unknown command %i\n", op);
@@ -907,6 +902,13 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 			offset = op - 0x30;
 			goto found;
 		}
+		value = copy.values[0];
+		if (box != &copy)
+		{
+			copy = *box;
+			box = &copy;
+		}
+		copy.values[0] = value;
 	}
 found:
 	((keys_300290 *)keys)->append(box->key_base + offset);

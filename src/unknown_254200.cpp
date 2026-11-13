@@ -181,6 +181,10 @@ void function_254200(void)
 // keep 4. Note that the fast check asked for several addresses at once reports 80 for this
 // function, because the reduced image then leaves a global reference unresolved and the constant's
 // pool address is no longer masked; the single-address fast check and the full build both give 4.
+// Round 416: Both cached-state helper calls 4; native member state calls 4; member End 4;
+// free Begin 247 (1053 bytes); direct availability rejection 4; active-quad rejection 4;
+// explicit texture selection 4; separate availability failures 4. Original calls and body restored;
+// the two depth/top-coordinate reload pairs remain.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {

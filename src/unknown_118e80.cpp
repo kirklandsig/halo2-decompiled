@@ -1102,6 +1102,11 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax B (11-12): no new form, no lower score (92); re-read the listing against the body: the only
+// logical difference left is the 0x119bc0 result, which still travels in al where retail keeps it in a stack
+// byte and pushes the containing dword; that shape comes from 0x1c4b00's last parameter being a bool in its
+// definition and in its thirteen declarations, which live in files this lane may not edit, and the squared
+// length is still summed in the compiler's own order. Still BLOCKED-BY 0x1c4b00.
 // MiniMax B (11-11): no new form, no lower score (92); still BLOCKED-BY 0x1c4b00's force parameter, declared long in files
 // this lane may not edit, so the result byte's shape cannot be produced here.
 // MiniMax C (11-11): no new form kept (92); the squared length written as three statements with an accumulator

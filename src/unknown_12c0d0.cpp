@@ -899,6 +899,9 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // function scope 2; the first read named `now` and copied into start 2; every declaration direct-initialised 2. Diagnostic:
 // attempts non-volatile 90 (270 bytes): then only the low zero store rises above `push edi`, so the volatile attempts store
 // after the rdtsc is what lifts the high store as well.
+// Round 117 (m3 lane 12, fast): the pump counter and attempts as one volatile local (5 or 2, then 0 before the loop and
+// counted in it, as retail's one slot holds) 57 (290 bytes: the zero stores stay above `push edi`, the merged local takes
+// the lower slot and the loop's accesses grow), the same local named `pumps` 57 (the same code: the name does not move it).
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {
@@ -1006,6 +1009,7 @@ struct s_bitmap_texture_view
 	dword level_addresses[3];
 };
 
+// MiniMax H (11-12): no new form, no lower score (3); the array reached through a const pointer local, the element reached by pointer arithmetic, the element's address taken first, the mask literal padded to eight digits and the level address widened before the mask all compile to the same three instructions, so the masked level address is still loaded into EDX where retail reuses the dead base register, and the permuter over the function managed 30 tries in 301.0 s without a confirming build (best 3, baseline 3).
 // MiniMax I (11-11): no new form, no lower score (3); the last three instructions are the whole difference: retail loads the masked level address into the base register, which is dead after that load, and we load it into EDX.
 // MiniMax E (11-11): no new form, no lower score (3); the level addresses as pointers, the whole bitmap read through a local pointer (const and non-const) and the store through a pointer to the texture's data field all compile to the same three instructions, so the masked level address is still loaded into EDX where retail reuses the dead base register; a permuter run over the function was stopped at its time limit without a result.
 // MiniMax G (11-10): no new form, no lower score (3); ten spellings of the last statement (the whole expression cast, the masked value in a named local, the raw address in a named local, the array through a pointer local, the element reached by pointer arithmetic, the texture through a local pointer, the mask first, the mask as a complement, the store and the mask split, and the mask with an assign) all compile to the same three instructions, so the masked level address is still loaded into EDX where retail reuses the dead base register.
