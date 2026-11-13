@@ -376,6 +376,10 @@ struct s_1f8a70_actor
 // MiniMax G (11-12): no new form, no lower score (182): retail's case 2 arm runs the switch's value down through the
 // compare-and-decrement pair and calls 0x262b40, where ours tests the value in place and calls 0x410730, so the arm's
 // shape differs before the twenty bytes of extra code that shift every later branch.
+// MiniMax B (11-13): no new form, no lower score (182): retail's route dispatch is laid out between mode case 5 and case 6,
+// its failure block stores false into the frame byte, calls 0x1f8750 and reloads the byte, and its merged exit returns that
+// byte in AL where ours goes through BL; the permuter (fast, 5 tries in 394 s) found nothing below the 167 differing
+// instructions of the reduced image, so the body is the committed one.
 // score 182 (was 182; 182 before): earlier 188; Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
 // MiniMax S (11-10): no new form, no lower score (182): the route dispatch still follows case 7 where retail puts it after case 5 with cases 6 and 7 behind it, and the final result still goes through BL where retail returns its frame byte.
 // MiniMax E (11-09): no new form, no lower score (188).
