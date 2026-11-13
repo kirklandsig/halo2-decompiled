@@ -5954,12 +5954,6 @@ real g_55e6e4, g_55e6e8, g_55e6ec, g_55e6f0, g_55e6f4, g_55e6f8;
 real g_52598c[3], g_525998[3];
 
 struct s_octree_output { long node; point3f center; };
-/* one entry of the scenario's model reference table (8 bytes each) */
-struct s_4e260_model_entry
-{
-	long unknown0;
-	long model;
-};
 extern s_octree_output g_4c5700[256];
 struct s_4ca40_colors;
 void function_4ca00(s_4ca40_colors const *settings, byte const *data, color3f *light, color3f *color);
@@ -6040,11 +6034,12 @@ dword g_4b8430;
 // loses the matched 0xc2d00 (its scheduling tie), so the written-out form stays. The alpha clamp is PIN's body written out.
 // MiniMax I (11-11), NOT kept (coordinator 11-11): 127 -> 2 with the reference entry bound as `s_4e260_model_entry const *const &entry = &((s_4e260_model_entry const *)references)[index]` (a reference to a one-use pointer: match-only) and the index < 0 test ahead of the geometry load; the same struct read as a plain typed index with the split test is 125 (under the keep bar). Lead: retail keeps the entry's address before reading its model; find the plain form that does that.
 // MiniMax E (11-12), NOT kept (coordinator 11-12): 127 -> 2 again, this time by reading the entry's model twice and AND-ing the copies (`model &= model_copy`, a no-op steer) with the index < 0 test first; together with MiniMax I's reference form above, retail evidently loads the model field twice from the entry's address. Find the plain source that uses entry->model twice.
-// MiniMax B (11-13): 2 (was 127): the model is read through the entry's address, which the binding to a reference keeps
-// alive - the same idiom as the matched 0x273040, whose retail code has the same lea and separate load - and the part
-// index's sign check comes before the geometry load, as retail has it; what is left is the order of two independent
-// float reloads after the second SetVertexData4f call (retail loads [esp+0xd8] and then [esp+0x54], ours the other
-// way round), which a 900 s permuter run and a hand sweep of the products' order could not move.
+// MiniMax B (11-13), NOT kept (coordinator 11-13): 127 -> 2 a third time with MiniMax I's reference form (the entry's
+// address bound to `s_4e260_model_entry const *const &`, as in 0x273040, where it is kept because that function matches)
+// and the index < 0 test ahead of the geometry load. Here it is 2, not a match, so the one-use reference stays out.
+// What is left at 2: the order of two independent float reloads after the second SetVertexData4f call (retail loads
+// [esp+0xd8] and then [esp+0x54], ours the other way round); a 900 s permuter run and a hand sweep of the products'
+// order could not move it. Lead: with the reference form, find what orders those reloads; a match keeps the form.
 // @retail 0x4e260
 void __stdcall function_4e260(long tag, long context, long first, long second,
     long third, dword handle, byte *material)
@@ -6063,8 +6058,7 @@ void __stdcall function_4e260(long tag, long context, long first, long second,
     byte *table = *(byte **)((byte *)g_4e0348 + 0x238);
     byte *references = *(byte **)((byte *)g_4e0350 + 0x37c);
     byte *record = *(byte **)(table + 0x1c) + ((handle >> 8) & 0x3fffff) * 24;
-    s_4e260_model_entry const *const &entry = &((s_4e260_model_entry const *)references)[(signed char)record[0]];
-    long model = entry->model;
+    long model = *(long *)(references + (signed char)record[0] * 8 + 4);
     byte *definition = g_4e3b44[model & 0xffff].bytes;
     byte *block = *(byte **)(table + 0x14) + *(short *)(record + 6) * 0x2c;
     word const *indices = *(word **)(definition + 0x2c);
@@ -6089,9 +6083,8 @@ void __stdcall function_4e260(long tag, long context, long first, long second,
         for (long part = 0; part < *(short *)(record + 0xa); ++part)
         {
             long index = *(short *)(record + 8) + part;
-            if (index < 0) continue;
             byte *geometry = *(byte **)(block + 0x28);
-            if (index >= *(long *)geometry) continue;
+            if (index < 0 || index >= *(long *)geometry) continue;
             byte *vertex = *(byte **)(geometry + 4) + index * 24;
             dword packed = *(dword *)vertex;
             byte *group = *(byte **)(definition + 0x14) + (packed & 7) * 20;
