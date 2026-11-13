@@ -67,9 +67,12 @@ inline float first_term_308910(__m128 v)
 // 15, direct lane 23, output scaling loop 59. This round: cross inputs by
 // value (both or either) 15, cross input order 15, dot inputs by value 15,
 // array-element reference 15, double product 15, outer result scope 15.
-// score 15 (was 15): inverse/shuffle and final scalar extraction still differ.
+// Further history: inverse/shuffle and final scalar extraction still differ.
 // Output dot storage a 70; b 65; a/b 88; a/dot 59; b/dot 51; all 87;
 // full output storage with cursor 84; original scalars with output cursor 39.
+// Existing scalar-return helpers 15/15; existing sum helpers 15/15; existing
+// cross helper 15; dot output reference 15; dot float return 15; helper sum
+// call 15. All restored.
 // @retail 0x308910
 void __cdecl function_308910(__m128 const *corners, float *out)
 {

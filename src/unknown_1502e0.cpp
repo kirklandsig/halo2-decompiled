@@ -1508,8 +1508,8 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
-// MiniMax S (11-11): no new form, no lower score (43): every difference is one clean pairwise register rotation (retail: player esi, hand edi, unit index edx, temp ecx; ours: player edi, hand esi, unit index ecx, temp edx).
 // score 43 (was 43):
+// MiniMax S (11-11): no new form, no lower score (43): every difference is one clean pairwise register rotation (retail: player esi, hand edi, unit index edx, temp ecx; ours: player edi, hand esi, unit index ecx, temp edx).
 // MiniMax D (11-08): the saved roles are exchanged - retail keeps the player record in esi
 // MiniMax I (11-10): no new form, no lower score (43); every difference is one clean pairwise register
 // rotation (retail: player esi, hand edi, unit index edx, temp ecx; ours: player edi, hand esi, unit index
@@ -1634,6 +1634,14 @@ void function_150820(dword *bits, bool local_only)
 // the player in esi, the unit index in edx and the hand in edi, ours keeps them in edi, ecx and esi, and both
 // bodies are 210 bytes; the hand as a conditional expression, the unit index in a local of its own and the modes
 // array declared before the unit all leave the code as it was.
+// Round 154 (m3 lane 7, fast; 0x151b80 17 each time unless noted). New: `long hand = 1 - primary;` 68; `result =
+// result || function_cd4e0(...)` 87 (198 bytes); `result |= function_cd4e0(...)` 95 (193 bytes). Applied to 0x151aa0
+// and 0x151b80 together (re-measures here, all listed for 0x151aa0): `primary ? 0 : 1` 43 (0x151b80 17), the result
+// declared before the player 43 (0x151b80 35, 138 bytes), a unit_index local for the test and the lookup 43 (0x151b80
+// 17). Diagnostic: one to four unused named locals change nothing (43). 0x151b80 shows the same ESI/EDI exchange the
+// other way round (retail unit index in EDI, ours ESI). No other untried natural form found: declaration orders,
+// hand/slot/result widths and spellings, result graphs, early exits, existing getters, pool copies, lifetimes, joint
+// forms with 0x151b80 and permuter runs are all listed above.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

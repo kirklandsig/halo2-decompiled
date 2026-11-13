@@ -697,6 +697,15 @@ void function_1a6d80(void)
 // count argument re-read from the table 6; its list argument re-indexed 12. Harness: a short type local 15 (same tail and
 // convention as the helper), a long type local 27, an entry reference 28, a row pointer 29, a short handler index 7, the
 // handler read after the table 20, between the reads 18, and casts, copies and declaration orders 6 each.
+// Round 117 (m3 lane 12, fast): an inline helper (actor index, type) returning the table entry 43 (113 bytes: `id`
+// becomes a register argument, ret 8, and 0x1a77a0 50, 0x1a78a0 73, 0x1a79e0 53), with the handler index and the
+// entry's list and count read in main's order 29 (104 bytes, the same convention change); an inline getter of the
+// actor's group (the lookup inside) into a short local 14 (103 bytes, as round 49's group local), called at both table
+// reads 27 (convention change), returning long into a long local 26 (101 bytes: the tail is then exactly retail's, the
+// head folds the actor address into the group load); `long group = owner->unknown004;` before the handler read 26 (the
+// same code), after it 27 (the pool load moves to ESI, so ECX is free when `id` is first loaded and `id` becomes a
+// register argument). Retail's tail needs one more value ahead of the table reads; its head needs the group read after
+// the handler read with ECX taken by the pool load.
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {
