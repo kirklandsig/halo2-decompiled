@@ -736,6 +736,20 @@ real function_30bf0(vector3f *vector);
 // loads the forward component, retail the world-up one) and the second's `forward.k` products (ours loads forward.k, retail
 // copies side.j/side.k and multiplies forward.k from memory). The other files' cross helpers are file-private, so using one
 // here would be a copy of cross3f's body.
+// M3 lane 7 r156 (fast with the file, 0x25c9d0, 0x26d370, 0x263740; all matched stay matched): the posture scale as
+// `if (*settings & 1) scale = 1.0f; else switch` with a `default: scale = 1.0f;` arm 214; the clipped delta written straight
+// into `delta` as `(motion.c * amount + point.c) - origin.c` 146 (1313 B); the scaled-range test inverted with its
+// out-of-range arm first 152 (1312 B); the secondary and primary tests as `distance_squared < x * x` 84 (same code); the
+// `> 1` clamp moved inside the `amount > 0.0f` test 252 (1308 B); `amount > 0.0f` in the clip test for `!(0.0f > amount)`
+// 259 (1294 B). Body unchanged.
+// m3 lane 14 r88 (fast with 0x263740, 0x25c9d0, 0x26d370, all MATCH): `side` and `up` declared at the facing arm's top 84 (same
+// code); the loop maxima with the primary update first 83 (a statement order by score, not kept: a and b swap homes, so the
+// EBX output address agrees and the EDI one moves further off; retail has b below a, one slot above ours). A grep of this
+// note for the result, range, facing, seat, maxima, cross, plane, clip and out-of-range forms finds every other natural
+// form listed, so no untried one is left.
+// MiniMax B (11-11): no new form, no lower score (84); the vector homes are still one slot off from retail's, the range's
+// first load and the two products still differ, and the range is still loaded into XMM2 for XMM0; the body is 1310 bytes
+// against retail's 1308.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2418,6 +2432,20 @@ real function_2683f0(long actor_index, long node_index, short type)
 // A `short cooldown` local for the decay test and store 168 (same code); re-measured on this base: the reset chained as
 // `actor->unknown31e = *(short *)(data + 0x320) = 0;` 168 (same code); diagnostic: the two reset stores in the other order
 // 168 (same code). No other untried natural form found. Body unchanged.
+// M3 lane 7 r156 (fast with the file, 0x25c9d0, 0x26d370, 0x263740, 0x25d810, 0x26be00, 0x25d740; base masked 64): `retain`
+// assigned directly in the not-positive arm 211 (2882 B, masked 62); the positive arm's decay through a `short cooldown` local
+// with an unconditional store (`if (cooldown > 0) cooldown -= 2;` then the store, retail's `jle` onto its store) 169 (both arms
+// share the store tail, but ours keeps the reset arm's copy and emits `sub eax, 2` for retail's `add eax, -2`); the decay as a
+// ternary store 173; that local form with the reset arm first 174; the established decrease test as `!(distance > 3.5f)`
+// (retail's `ja` sense) 239. Body unchanged.
+// m3 lane 14 r88 (fast with 0x25d810, 0x26be00, 0x25d740, all MATCH; 0x263210's fast DIFF 292 is a reduced-image artefact,
+// it shows on the unchanged body too): 0x26be00's own lookup written as an array index (it stays matched) 168 (same code: the
+// inlined table load's base/index order does not follow that spelling); the positive arm's slot store written in both arms
+// 481 (2896 B); re-measured on this base, the NONE reset first 174 (the merge then goes retail's way, the reset arm jumping
+// into the decay arm's 0x320/0x31c stores, but the reset arm is then laid out first). Body unchanged.
+// MiniMax B (11-11): no new form, no lower score (168); the first difference is still the table load at +0x5c, ours
+// [eax+ecx+0x58] against retail [ecx+eax+0x58], a base/index order the compiler picks; the frame is still 0x7c against
+// retail's 0x80 and the normalized direction is still folded instead of being held in XMM1..XMM3 across the dots.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

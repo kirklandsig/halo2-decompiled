@@ -28,6 +28,10 @@ public:
 // Next slot 168; indexed final slot 152; initialized child record 178;
 // outer search index 141; index name 141; key name 141; shared removal 139;
 // named returned record 175. NOT kept: shared removal gains only two.
+// Forced search inline 141; forced insertion inline 141; search cursor 141;
+// search count snapshot 141; direct dispatch 154; rejection first 150;
+// child record name 141; collection reads at calls 138. NOT kept: gain of three and
+// repeated collection reads where retail saves it. Original body restored.
 // @retail 0x2ec3d0
 void keyed_list_2ec680::function_2ec3d0(description_2edd00 const *description, typed_2edd00 **other, context_2edd00 const *context)
 {

@@ -151,6 +151,10 @@ __forceinline void reach_all_2e3d40(char flags, element_2e1090 const *element, r
 // pointer/array homes differ. Vector-word start values 539; signed words
 // 539; axis steps in body 541; const endpoints 539; pointer-copy loop 539;
 // time loop 538 (NOT kept: gain 1); widening loop 664; scalar arrays 539.
+// Round 430: default-axis if 547; indexed axes 532 (NOT kept: gain 7);
+// vector role names 539; unsigned axis counters 539; byte toggle 536
+// (NOT kept: gain 3); direct byte XOR/test 564; guarded indexed minimum
+// 559; explicit else blocks 539. All executable forms restored.
 // @retail 0x2e3d40
 void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660 *collectors, long collector_stride)
 {

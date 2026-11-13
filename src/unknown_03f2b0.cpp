@@ -1316,6 +1316,10 @@ struct s_batch_cache_4b5d0
 };
 
 struct s_133f70;
+// MiniMax H (11-13): no new form, no lower score (93 on the full image, 355 on the reduced one): the plain
+// build's first difference is at +0x21, where the call to 0x4bcc0 sets up its arguments - retail loads the
+// distance into EAX and pushes that, this build loads it into ECX and pushes that; what follows are the two
+// globals' addresses, which differ between the two builds, and the layout of the entry test.
 // MiniMax I (11-11): no new form, no lower score (355 in the reduced image, 93 in the full build): the first difference is at +0x1 and the reduced image's score is inflated because the globals it leaves out are not masked; the tail is BLOCKED-BY 0x23690.
 
 // MiniMax E (11-11, run 80): no new form, no lower score (93 on the full image, 355 on the reduced one); a byte

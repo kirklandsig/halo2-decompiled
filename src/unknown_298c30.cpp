@@ -98,7 +98,7 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // difference vector stays at +0x3c/+0x40, and the sine argument is negated in double, which is retail's `fld` of the wrapped
 // angle followed by `fchs`. The frame is now 0x64 as retail's and the score falls to 382. Still differs: the entry schedule,
 // the normalized XY/magnitude homes and 40 bytes of length.
-// score 382 (was 382; 393, 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
+// score 382 (was 382; 393, 408, and 395 before the two retail-evidenced fixes of b3C below): first +0x57 uses a different SIMD carrier; inner cursor/wrapped-angle homes and candidate width differ,
 // frame 0x64 as retail's, 1692 bytes against retail's 1732.
 // Earlier 393 (was 393; 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
 // frame 0x60 against retail's 0x64.
@@ -403,6 +403,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // its own statement, 412 (0x29a190 45: the double local aligns the frame).
 // MiniMax A (11-12): no new form, no lower score (382): retail loads its entries in another order and keeps the normalized
 // point and the magnitude in homes of their own, while ours still shares them with the entry loads.
+// P435: immutable projection, endpoint distance, opening/direction/candidate/wrapped
+// angles and facing decision, plus direct complete rotated-point initialization, all 382.
+// NOT kept: no gain. Entry and first-normalization homes agree; inner cursor and wrapped
+// angle exchange +0x14/+0x18. Caller and scoring sibling stay matched in all eight trials.
 // T97: Complete upper-turn wrap truth in bool/byte/char/signed-char/short/word/int/long:
 // eight at 382. NOT kept: byte-neutral decision lifetimes; original array wrap,
 // shared producers, all call tuples and whole body restored. Unity/XY/wrapped-angle homes remain.
@@ -564,7 +568,7 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
-// score 569 (was 621; 629, 733, 633 and 719 before that; the rise to 733 was the unrounded sine/cosine below): frame 0x114 as retail, 39 bytes short; radius and trace/pivot homes differ.
+// score 569 (was 569): earlier 621; 629, 733, 633 and 719 before that (the rise to 733 was the unrounded sine/cosine below); frame 0x114 as retail, 39 bytes short; radius and trace/pivot homes differ.
 // MiniMax S (11-06): Our frame is 0x120 against retail's 0x114, so every esp-relative home is four bytes
 // off; retail loads the scale factor into xmm1 after the first branch where ours loads xmm5 before it,
 // and the four scale locals and the two trace results still sit at other offsets.
@@ -893,10 +897,25 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // 121 the positional count stays high: registers differ in every block from the XMM5 radius hoist at entry onward.
 // MiniMax A (11-12): no new form, no lower score (569): retail loads the radius parameter at its first use while ours hoists it
 // into xmm5 at the entry, and the two side traces stay swapped against retail's +0xd0 and +0xf4 homes.
+// P423: Offset scalar reference 732; rotation scalar-pair references 569;
+// height reference 569; direction input references 569; direction output reference 569;
+// distance input references 569; all offset/rotation scalar references 732;
+// direction/distance references together 569. NOT kept: no gain or byte match;
+// original complete body and all existing helpers restored.
 // T95: Explicit signed-radius producers at first/pivot/both offset calls 886/874/915;
 // shared signed radius 939; magnitude-preserving first/pivot parameter scales 897/882;
 // repeated negative-radius producer 875; center-scale-only join 840.
 // NOT kept: no exact native-radius repair; original complete body restored.
+// Round 175 (m3 lane 6, fast; base 569): retail 0x2108a0, 0x210770 and their callees 0x1427f0/0x210d10 use no XMM5,
+// and both calls take the same custom registers in both builds, so the radius hoist into XMM5 is an allocation choice,
+// not an unknown-callee clobber. The end block as `field_8 = ratio > 1.0 ? 0.0f : field_8 * (1.0f - ratio)` 610; the
+// obstacle angle selection as one nested ternary 569 (same code); the break's ratio as `(local_27 - 1) / (real)local_23`
+// 569 (same code); the stored angle un-negated with the loop's `if (!field_0) local_28 *= -1.0f;` then a plain store 628;
+// the annulus test as a positive `if` around the rest of the obstacle body 569 (same code). Diagnostic: the first two
+// trace results' names exchanged 569 (homes unmoved: +0xd0/+0xf4 stay swapped against retail).
+// P433: Existing named forward/reverse/center trace records, seven subsets,
+// then all with center at its loop producer: 569 each, 3333/3372 bytes.
+// NOT kept: radius retention and pivot/trace homes unchanged; original body restored.
 // T99: Actual center-trace outcome owned by the operation result, clear/blocked
 // bool/byte/short/long: 780/783/781/785/792/792/783/798.
 // NOT kept: no equality or native radius/trace-home recovery; original independent

@@ -16,6 +16,7 @@
 #include "ai_actor.h"
 #include "path.h"
 #include "object_markers.h"
+#include "object_tag_definitions.h"
 #include "props.h"
 #include "object_queries.h"
 #include "unknown_1428b0.h"
@@ -454,6 +455,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 1/2/3/4/5/6/7: 926/926/926/926/926/926/924 fast (control 926). NOT kept: the
 // two-point conditional flag lead is below the gate and not exact; original scans
 // restored. Frame 0x2cb4 versus 0x2cac and actor/unit/priority homes remain.
+// P444: read-only byte receivers 926f; blocking-priority producer 926f; paired side-projection producers 926f; facing-limit producer 926f; node-presence producer 926f; motion-sphere result 942f; selected-carrier producer 926f; exhaustive priority result 924f.
+// NOT kept: no byte match or supported native frame/result recovery; trial forms restored.
+// Existing object-header fields used for the flag, property and model reads.
+// P447: Visibility/reference/property/model/physics/count decisions; lower/upper vertical exclusions at original producers:
+// 926/926/926/926/926/926/926/926. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// MiniMax B (11-13): no new form, no lower score (920): the frame is 0x2cb4 against retail's 0x2cac, and the actor,
+// unit, priority and query homes still differ; the byte homes do not follow the order of the source's object scan.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -607,8 +615,8 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
         real distance_squared = offset.k * offset.k + offset.j * offset.j + offset.i * offset.i;
         if (!(object_radius * object_radius >= distance_squared))
             continue;
-        byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
-        if (TEST_FIELD_BIT(((s_obstacle_definition_flags_2c *)(definition + 2))->no_obstacle))
+        s_object_definition const *definition = (s_object_definition const *)g_4e3b44[*(long *)object & 0xffff].bytes;
+        if (TEST_FIELD_BIT(((s_obstacle_definition_flags_2c const *)&definition->flags)->no_obstacle))
             continue;
         s_obstacle_motion_definition_2c *motion = NULL;
         bool blocking = false;
@@ -618,9 +626,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
         {
             short priority = 0;
             bool enabled = true;
-            if (*(long *)(definition + 0x5c) > 0)
+            if (definition->ai_properties.count > 0)
             {
-                motion = *(s_obstacle_motion_definition_2c **)(definition + 0x60);
+                motion = (s_obstacle_motion_definition_2c *)definition->ai_properties.address;
                 if ((motion->flags & 2) && *(real *)(object + 0xec) <= 0.0f)
                     enabled = false;
                 else
@@ -737,7 +745,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
             if (motion && (flags & 0x40) && (motion->flags & 2))
                 sphere_flags = 8;
         }
-        long model_index = *(long *)(definition + 0x38);
+        long model_index = definition->model_tag_index;
         if (model_index == NONE)
             continue;
         long physics_index = *(long *)(g_4e3b44[model_index & 0xffff].bytes + 0xc);
@@ -1311,6 +1319,9 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
 long function_1fa7f0(void);
+// MiniMax A (11-13): no new form, no lower score (400); the frame is still 0x114 against retail's 0x10c, the
+// source radius still sits at +0x30 against retail's +0x2c, the expanded radius at +0x44 against retail's
+// +0x34, and retail keeps the count in ebx where this build holds it in esi.
 // score 400 (was 400): earlier 418; the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // MiniMax E (11-10): no new form, no lower score (400); the frame is 0x114 here and 0x10c there, because the edge value and the other-side flag are kept in stack slots here and in ebx and bl there, which moves every other home by eight bytes.
@@ -1762,6 +1773,9 @@ long function_1fa7f0(void);
 // and untyped step arms 458 (1746 B), the fallback's `next == 0 || next == index` first 400 (2 lines differ), the emit's
 // `type == NONE` first 400 (aligned 361), the distance block's `!=` arm first 441, the corner choice as
 // `if (!side) corners[1]` 405.
+// P437: Fixed actual reverse distance/location/left/right query results, predecessor/endpoint
+// receivers, opposite orientation and signed count input: 400 each. NOT kept: frame 0x114 versus
+// 0x10c and edge/orientation/count homes unchanged; original complete body and helpers restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

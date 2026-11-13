@@ -533,6 +533,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// MiniMax B (11-13): no new form, no lower score (126): the velocity copy still takes x in ECX and y in EAX where retail takes
+// x in EAX and y in ECX, the entry magnitude's schedule (retail adds i*i + j*j before squaring k, so its 1.0 lands in XMM3) and
+// the reversing atan2's operand order remain; the known leads (the planar velocity copy with y-first squares 122, the blend rows
+// written x first) are statement orders or under the eight-point bar.
 // MiniMax G (11-12): no new form, no lower score (126): nothing new this round; the SSE register colouring of the 1.0 constant
 // and the remaining homes remain.
 // MiniMax G (11-12): no new form, no lower score (126): the frame, the length and the layout are retail's; left are
@@ -1044,6 +1048,17 @@ __forceinline long vehicle_round(real value)
 // flips back; with the plain side cross it flips back too, so the staged side cross sets it); an up pointer declared with
 // the lookups and used at the condition and the first cross only 10; a forward pointer for the dot and the projection
 // scale only 50; the axis if/else inverted (`!= 4 && != 3` with the copy first) 8 (same code).
+// Round 192 (m3 lane 4, Fable then Opus): MATCH (8 -> 0, plain and full check) with three new one-caller
+// PRIVATE __forceinline helpers (vehicle_flip_strength, vehicle_flip_rate, vehicle_forward_speed: each declares
+// its own local, which moves retail's product operand loads). NOT kept (coordinator review 11-13): invented
+// one-caller helpers are reverted even with a match. Lead: the locals those helpers declare set the operand
+// order; look for an existing helper or inline (the vector math or vehicle headers) that would declare them.
+// P443: Entry-bit result, coefficient/axis/correction predicates, bounds receiver, projection predicate,
+// double-factor angular scale and vector-setter axis copy: 8/18/42/14/10/10/138/199. A 300 s permuter, 36 trials,
+// no lower than 8. NOT kept: no exact operand repair; original body and all shared helpers restored.
+// P445: Const definition receiver, separate final angular coefficient, exhaustive bounded-rate result,
+// consumed scale return, widened completed dot transport, angular-output side workspace, duration and
+// elapsed-tick producers: 8/14/10/10/87/8/191/26. NOT kept: no exact product-load repair; whole body restored.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -1300,6 +1315,9 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
+// MiniMax B (11-13): no new form, no lower score (561): our frame is 0x1990 where retail's is 0x1984, so every stack
+// reference sits a dword higher, and the point-sum loop's unrolling and the flag stores keep retail's different shape; this
+// needs a rewrite of the body's frame, not a tweak.
 // MiniMax G (11-12): no new form, no lower score (561): the lit flags read as a word once with the byte read again in the false
 // arm (retail's shape) gives 576 at the same length, so the flag reads stay as they are.
 // MiniMax D (11-11): no new form, no lower score (561): the damage record cut to retail's 0x80 bytes (the frame 0x1990 to 0x1988) and the buffer and the names moved to the function's top scope change nothing, so the frame is still four bytes above retail's 0x1984 and every later slot shifts; the word at +0xc0 is still read into EAX where retail reads it into ECX.
@@ -1977,6 +1995,12 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // the forward speed grouped `(k + j) + i` explicitly 11 (the sum then (j + k) + i, the i term unchanged); `(real)`
 // casts on its three products 9; the vehicle index parameter as `dword` 9; `speed` declared at the overlay block's top
 // and assigned in the arm 9 (all three the same code).
+// Round 192 (m3 lane 4, fast), at 9: the forward speed through the new vehicle_forward_speed helper (a forward pointer and a
+// speed local; 0xef870 uses it) 11 (the sum becomes (j + k) + i and its i product flips); the graph and animation-state
+// tests as nested ifs 9; `state` declared first at function scope 9; `graph` declared first at function scope 9; the file's
+// vehicle_cross for the left vector 9 (all four the same code). Diagnostics: 1/2/3 dead inline-helper locals at the top or
+// before the state lookup 13/13/17 (only the cross and forward-speed products move; the SIB pair and the three reloads
+// never do, so they are not a numbering phase).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2888,6 +2912,11 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // (`unknown378 * function_f14f0(...)`) 10; diagnostics that change torque's use count (behaviour kept, extra code): the
 // contact store as `braking ? 0.0f : torque` 166 (997 B), the spin as `braking ? 0.0f : torque * dt` 233 (994 B), a dead
 // `= 0.0f` initialiser on torque 10; in all three torque keeps 0x14 and the offset 0x18.
+// Round 192 (m3 lane 4, fast), at 10: braking assigned straight from its test (no if/else) 10; the quaternion declared at
+// function scope 10; cosf/sinf for the half-angle trig 10; the quaternion as a local of vehicle_contact_steer (no rotation
+// parameter) 183 (934 bytes); fmodf in the wrap helper 10. Diagnostics: 1 or 2 dead inline-helper locals at the top, before
+// the contact loop or before the spin 65/24 at each (the torque and loop-offset slots never move; only the spin tail's add
+// operands do), so the slot swap is not a numbering phase.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3001,6 +3030,10 @@ real g_47ff30 = 2.5f;
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
+// MiniMax B (11-13): no new form, no lower score (682): our frame is 0x100 where retail's is 0xfc (our mass local takes
+// the extra slot); the lead that reads the mass field at each use reaches retail's frame but only scores 676, under the
+// eight-point bar, and the entry XMM numbering, the maximum speed product's operand form and the force/torque scheduling
+// remain.
 // MiniMax G (11-12): no new form, no lower score (682); the mass field read at each use (no mass local) gives retail's
 // frame 0xfc at 676 and 3248 bytes, and the reciprocal declared after the first clamp reaches 674 only by moving that
 // declaration; left: the frame, the acceleration scale, linear and angular velocity and maximum speed homes, retail's
@@ -3217,6 +3250,18 @@ real g_47ff30 = 2.5f;
 // the speed staged as `speed = vehicle->speed; speed *= boost;` 715 at 3220.
 // Lead: the pointer friction form; left on it are the entry XMM numbering (retail keeps 1.0 in XMM7), the maximum
 // speed product's operand form, the reciprocal's placement and the force/torque scheduling.
+// Round 425: complete/negative-default/positive-default friction direction
+// 682/688/688; complete/default-first speed magnitude 682/720; coefficient
+// expression/complete arms 682/682; full force accumulator 707.
+// NOT kept: no native-frame gain; original helper and body restored.
+// P441: Complete parallel error/impulse/acceleration producers, mutable/const, then immediate/phased force accumulators: 699/699/700/700/700/700/682/682; native grouped mass reloads 714.
+// NOT kept: Native frame 0xfc and acceleration/velocity homes remain; no eligible gain. Original complete body restored.
+// P445: Signed-climb result, shared backward bound, initial normalization admission,
+// native-order position setters, fallback setter, complete elevation arms, selected-bank magnitude provider
+// and immutable time/response/maximum/mass coefficients:
+// 716/765/699/682/682/721/687/682. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P447: Uniform friction admissions; boost/descent/ascent/mode/turn-boost/fallback admissions; immutable late angular coefficient:
+// 682/682/682/734/682/684/699/682. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3460,6 +3505,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
    toward the controls' speed in the facing's frame, a yaw torque toward the
    steering, torques that hold the vehicle upright while it is off the
    ground, and its boost */
+// MiniMax B (11-13): no new form, no lower score (1000): our frame is a dword bigger than retail's 0x74 and the velocity
+// and force blocks build differently from the head; the scaled values' homes stay blocked by 0x1427f0/0x142640 (the
+// header's matrix_transform_vector has no scale step).
 // MiniMax G (11-12): no new form, no lower score (1000); the frame is 0x80 against retail's 0x74 and the velocity and force
 // homes are not one uniform shift; retail inlines 0x142640 and 0x1427f0 while this file calls them, and those helpers are
 // in a file that is not mine, so the inlining cannot be reached from here.
@@ -4089,6 +4137,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
 
+// MiniMax B (11-13): no new form, no lower score (118): the dot product's first term is still commuted (ours multiplies
+// forward.i by up.i where retail multiplies up.i by forward.i) and the first cross's operand order still differs; both follow
+// from the helper's argument order, which cannot be swapped for score.
 // MiniMax G (11-12): no new form, no lower score (118): nothing new this round; the projection/cross input ranks and the
 // angle/trig homes remain.
 // MiniMax G (11-12): no new form, no lower score (118): the projection/cross input ranks and the angle/trig homes
@@ -4570,6 +4621,11 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
+// MiniMax B (11-13): no new form, no lower score (48): the marker count sum still lands in EAX here and in EDI in retail
+// (a short, a long and a split `count +=` form all compile to the same `movsx eax, ax; add eax, edi`), the definition
+// pointer is still read into EDX early where retail reads it into EAX after the memset, and the facing copy still stores its
+// three components in the order i, k, j where retail stores j, k, i (the member-wise copy scores 67); the cone call's set-up
+// pair still waits on 0x146320's file.
 // MiniMax G (11-12): no new form, no lower score (48): the cone call's arguments still ride in the other registers and the
 // count's zero store still follows the sum.
 // MiniMax B (11-11): no lower score (48): the count written as two statements and the count kept in a named local
@@ -5085,6 +5141,8 @@ bool __stdcall function_f8070(long bit, word const *flags);
 /* the vehicle object type's function values (+0x4c): its boost, brakes,
    ground contact, speeds, steering, engine and wheels; false for a name it
    does not know */
+// MiniMax B (11-13): no new form, no lower score (749): the frame and the length are retail's, but the entry's zero and its
+// 1.0 still take XMM4 and XMM5 where retail takes XMM2, and the definition receiver and the per-site 1.0 lifetime still differ.
 // MiniMax G (11-12): no new form, no lower score (749): nothing new this round; the frame and the length are retail's, and the
 // entry definition ownership, the zero/result SSE allocation and the per-site versus hoisted 1.0 constants
 // are still not retail's.
@@ -5752,7 +5810,7 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    start, thrust toward the speed along the facing (faster diving, with
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
-// score 978 (was 990): earlier 1052, 1087, 1095; frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
+// score 978 (was 990): earlier 1052, 1087, 1095; frame 0xfc versus 0xd8; index/offset and vector/rotation homes remain.
 // V1A: statement-by-statement walk against all of retail's 1180 instructions found no logic difference (fields,
 // conditions, constants, callees, argument orders, clamp and bank cases all agree). Two source shapes that retail
 // shows and ours lacks, both measured by opcode alignment with offsets and registers ignored (0.757 -> 0.793):
@@ -5964,6 +6022,17 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // instructions: a lead once the earlier homes line up); the angular target through vector3f_scale and
 // scaled_difference3f 1042. Re-measured on 978: `-(strafe / strafe_maximum)` 1053 (5075 bytes, masked 270).
 // Lead: selections not yet screened for the clamp idiom of the spin tail: the side brake and the lift maxima.
+// Round 425: lateral brake limit-seeded/complete/upper-first/lower-first
+// 1037/978/1036/979; complete magnitude 978; sign admission/signed result 978/1039;
+// existing clamp 978. NOT kept: no eligible native-frame/extent gain;
+// original whole body restored. Current frame 0xfc versus native 0xd8.
+// P441: Signed-slip deadband complete arms / biased accumulator / result accumulator / bound default, each original/complete outer result: 1036/988/978/1061/978/1061/1036/1044.
+// NOT kept: No gain; native 0xd8 frame and handle/matrix/vector homes remain. Original complete body restored.
+// P445: Existing wind difference, drift-length result, lift admission, driver-control receiver,
+// complete parallel angular-error parts, driver-bit result, full flip-time admission and readonly definition receiver:
+// 1035/1039/978/978/978/978/978/978. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P447: Successor saturation clamp/complete arms/predecessor/direct publication; exhaustive pitch sign; shortest-rotation/banking/reversal admissions:
+// 978/978/1143/1140/978/978/978/1039. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

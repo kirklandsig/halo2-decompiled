@@ -138,7 +138,7 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 
 // MiniMax H (11-12): no new form, no lower score (607); the palette slot is still sign-extended and compared 16-bit where retail compares the byte with -1.
 // MiniMax I (11-11): no new form, no lower score (607): the 0x130f60 call's result still stays in EAX where retail moves it to EDX and keeps NONE in EAX, so the palette slot is still read as a word and the body is one instruction short from there on; that register home is set by the clamp in the three-scalar helper here, whose other callers keep their own match.
-// score 607 (was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
+// score 607 (was 607): earlier 616. Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
 // MiniMax E (11-11): no new form, no lower score (607); the palette and accumulator carriers still differ from
 // retail in their scheduling only - every statement, field, condition and callee agrees, so the gap is register
 // and stack home placement that no legal spelling of this source reaches.
@@ -554,6 +554,19 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // pointer declared before the tag test 714; the three 0x131030 outputs declared at the tag arm's top 607 and the NULL-record
 // test as an early `goto` ahead of the record block 607 (same code each). No untried natural form is left: retail moves
 // the 0x130f60 result to EDX with -1 in EAX and holds 0.0 in XMM7 across the loop, and no recorded form gives either.
+// M3 lane 8 r161 (fast with 0x131030, 0x1317a0, 0x130f60, all MATCH; control 607, 3832 B, aligned 487, register-masked 232):
+// the clamp written in place (0x1317a0's own if/else-if) in the three-scalar and four-channel helpers 692 (3817 B, masked 155);
+// plus the three-scalar helper's weight/remaining after its products 698 (3806 B, masked 111); plus the merge helper in
+// retail's order (clamp in place, colour block under the source-weight test read from the field, then weight and remaining)
+// 685 (3817 B, aligned 283, masked 84); plus a char slot widened once into a long index at the top of the arm, the NULL
+// record set in the lookup arm and the source index re-read from the byte 693 (3817 B, masked 94); the merge-helper change
+// alone 705 (3841 B). Lead, not kept (one-caller getter): the last form with a 0x1318a0-shaped lookup getter 705 (3800 B,
+// masked 67, the lowest masked count recorded); left there: NONE in EDX and the 0x130f60 result in EAX (retail EAX/EDX), the
+// zero in XMM6 (retail XMM7). Body unchanged.
+// P435: function-scope provider output, provider output/return role names, immutable
+// provider return on the original word-palette graph, readonly cluster/tag sources, and
+// immutable palette/weighted source receivers all 607. NOT kept: no gain; native
+// return EDX, byte palette CL, selected record EBX and zero XMM7 remain unrecovered.
 // T96: Actual palette/alternate/both upper-cap-first range branches 604/608/605;
 // corresponding conditional selections 604/608/605; direct rejecting palette/alternate
 // chains 606/607. NOT kept: the three-point 604 lead is below the gate; first palette

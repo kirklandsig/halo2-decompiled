@@ -31,7 +31,8 @@ struct s_278300_references;
 void function_278300(s_278300_references *references);
 struct s_2797a0_group
 {
- byte unknown00[0x40];
+ byte unknown00[0x3c];
+ hkEntity **entities;
  long count;
 };
 struct s_2797a0_groups
@@ -63,16 +64,13 @@ struct s_1c3d30
  long field_14;
  byte field_18;
 };
-struct s_1c3d31
-{
- byte field_0[0x3c];
- hkEntity **field_3c;
-};
 extern hkWorld *g_51e9a4;
 extern byte *g_51eca8;
 extern short g_51ecb0;
 c_2d8ab0 *g_47f044;
 
+/* steps the Havok world for this tick, then runs the post-step pass over every entity the
+   island iterator yields and releases the bodies queued during the step */
 // score 7 (was 7): list/index registers and the release entry still differ.
 // New: direct world exit, const rate, const step input, scalar/record names,
 // released-object reference, body pointer, named state result and captured
@@ -99,7 +97,6 @@ c_2d8ab0 *g_47f044;
 // index into ECX where retail uses ECX and EDX, and the release loop's entry test still uses EDX and EAX where
 // retail uses EAX and ECX; the frame and the csr block agree, so the allocation is not steerable.
 // MiniMax B (11-04): no new form, no lower score: the group loop still loads the entity list into EAX and the
-// index into ECX where retail uses ECX and EDX, and the release loop's entry test still uses EDX and EAX where
 // retail uses EAX and ECX; the permuter was stopped by its time limit without a candidate.
 // MiniMax B (11-03): no new form, no lower score.
 // MiniMax R (11-01): no new form, no lower score; the element select still loads the field pointer
@@ -152,7 +149,6 @@ c_2d8ab0 *g_47f044;
 // release-index pointer 10.
 // group-table ternary reversed 11; entity list local 7; index local 7; both locals 7.
 // MiniMax S (11-09): no new form, no lower score; the group loop still loads the entity list into
-// EAX and the index into ECX where retail uses ECX and EDX, and the release loop's entry test still
 // uses EDX and EAX where retail uses EAX and ECX; the entity list and the index through named locals
 // and the index read before the element all compile to the same 507 bytes and leave the same seven
 // differences.
@@ -204,8 +200,8 @@ void function_1c3d30()
   ++g_51ecb0;
   while (function_2797a0(&local_3))
   {
-   s_1c3d31 *local_5 = (s_1c3d31 *)(!local_3.second ? local_3.groups->first[local_3.group] : local_3.groups->second[local_3.group]);
-   function_1c4a20(local_5->field_3c[local_3.index]);
+   function_1c4a20(!local_3.second ? local_3.groups->first[local_3.group]->entities[local_3.index]
+    : local_3.groups->second[local_3.group]->entities[local_3.index]);
   }
   --g_51ecb0;
   while (local_2->field_14 + 1 < local_2->field_c)
