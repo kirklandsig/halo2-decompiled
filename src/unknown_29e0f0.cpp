@@ -445,6 +445,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // names do not order these homes); the improvement flag declared before the pass loop 382; the pass's anchor pointer declared
 // before the anchor index 382; the selected group record named before the output loop (direct output kept) 382 (all same
 // code); the output step as an if/else increment/decrement 389.
+// M3 lane 5 r177 (fast with 0x29e730 and 0x29de20 matched each time; base 382): the pair loop counter `long` 448 (1561 B);
+// the run loop counter `long` 1260 (2242 B); the endpoint search counter `long` 423 (1576 B); the group bitmap as `= {0}`
+// 382 (same code); the marker flag stored as `arg_4->field_2c = local_37 < 4;` before the append 404 (1574 B).
+// Re-measured: the marker position declared at function scope 382 (same code; listed 398 on an older body).
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
