@@ -663,6 +663,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // split effect addressing and gate/settings homes remain. Original complete body restored.
 // P452: Real 0x5c collision extent on native-entry code, query scope, first sample, blend, probes, placement, all entry and all producer scopes:
 // 337/337/395/406/336/337/444/445. NOT kept: all regress (best 336 versus 334); no native gate/address repair. Original shared type, complete body, grouped storage, random steps, qualifier and helpers restored.
+// P454: Initial scale, blend setter, inherited-velocity sum, probe copy, contact-normal setter,
+// post-transform sum, age product and offset-probe constructor on native-entry code:
+// 354/334/341/344/359/335/334/343. NOT kept: none improves; original grouped storage, samples,
+// helpers, field observations and full body restored; native split-address/gate/settings homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
