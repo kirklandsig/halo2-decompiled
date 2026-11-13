@@ -645,6 +645,19 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // 0x1d90e0 and theirs) is matched, so the summaries that order the reloads cannot be changed without touching matched code.
 // Also: `alternate` copied into a bool local for the loop's test 2; each arm's graph lookup and iterator stores in a
 // forceinline helper returning the graph, called inside each arm's call 2.
+// Round 80 (m3 lane 15, fast with 0x113ba0, 0x113c60, 0x1cbe90, 0x1cbce0; still only the back edge's pair): both
+// pair-iterator functions (0x1dcf20, 0x1dcfa0) declared (iterator, graph), changed at the definitions, declarations and
+// all three calls 2 (same code, both still match; restored); a block-scope extern redeclaration of the tag table in
+// the body 2 (same code); the graph lookup once ahead of `if (alternate)` with the stores still in each arm 143 (517
+// bytes); the graph looked up in each iterator call's argument 107 (526 bytes). Diagnostics for the pair's order (each adds code, measured for the order only): one more use
+// of the tag table right after the break test, where EBX no longer holds it (a second load of it into EDX), gives
+// retail's order (state first); the same extra use at the loop's top, or at the end of the innermost block, one more
+// use of the state at the loop's top, after the calls or before the loop, one fewer table use before the loop, another
+// global read after the calls, the arms' iterator stores ahead of the graph lookup, the graph accessor 700 lines
+// further down its header, and the file of 0x142a60 built without link-time code generation (one compiler-setting
+// diagnostic, restored at once; 0xb8d30 then differs) all leave ours (table first). So the order is neither the
+// position of the last use, nor the use counts, nor a callee's side-effect summary: it flips only when the table also
+// has to be loaded a second time inside the loop on the every-pass path.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)

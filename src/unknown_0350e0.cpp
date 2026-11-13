@@ -40,10 +40,8 @@ matrix3x3 g_467104 = {
     { 0.0f, 0.0f, 1.0f }
 };
 
-PRIVATE __forceinline void rotation_from_axis(vector3f const *axis, real angle, matrix3x3 *matrix)
+PRIVATE __forceinline void rotation_from_axis(vector3f const *axis, real cosine, real sine, matrix3x3 *matrix)
 {
-    real sine = (real)sin(angle);
-    real cosine = (real)cos(angle);
     real xx = axis->i * axis->i;
     real yy = axis->j * axis->j;
     real zz = axis->k * axis->k;
@@ -73,7 +71,7 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 
 // MiniMax G (11-12): no new form, no lower score (343): retail's angles are the x87 products of the step with 0.5 and 0.3 and its
 // axes are at 0x485624 and 0x485630, which the file's two helpers already take; the frame and the spill homes are what is left.
-// score 343 (was 356): round 103 below. r136 lane 7 (at 356): a compile-only copy reproduces this build's register skeleton exactly; screened
+// score 334 (was 343): round 80 at the end of this note. Earlier 343 (was 356): round 103 below. r136 lane 7 (at 356): a compile-only copy reproduces this build's register skeleton exactly; screened
 // there, then built: `sinf(angle)` 357, `cosf(angle)` 357, matrix entries in retail's computation order (forward.i,
 // forward.j, left.i, left.j, forward.k, up.i, up.k, left.k, up.j) 381 (1750 bytes), caller-computed sine/cosine with
 // both angles and all four trig values first 370 (1796 bytes), the same with double angles 371.
@@ -240,12 +238,37 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // subsets 1/2/4/3/5/6/7, then axis capture after trigonometry: 365/454/343/490/365/454/490/373.
 // NOT kept: no native concurrent-angle/publication recovery; original helper
 // input observations and full body restored. Current frame 0x90 agrees.
+// Round 80 (m3 lane 15, fast with 0x137ed0, confirmed plain; al = LCS-aligned unmatched lines with registers and
+// stack slots masked, control 231): retail forms both angle products on the x87 stack before the first sine and takes
+// the sine before the cosine. Kept, 343 -> 334 (1781 bytes, frame 0x90, al 209, 0x137ed0 still matched): the two
+// angles as double locals of the function, each used twice, with the sine and cosine taken at the calls and the
+// builder receiving (axis, cosine, sine, matrix); arguments are evaluated right to left, so the sine parameter
+// follows the cosine. This gives retail's opening x87 lines (two fld/fmul pairs, `fld st(1)`, fsin, fxch, fcos).
+// The other ways to hold the angles: named real locals 353 (the 0.3 product goes to SSE); double locals cast to the
+// builder's real angle 332 at 1779 bytes (the products are forwarded to the calls, the second still late; the cast
+// only steers, not kept); a double angle parameter on the builder 334 with 0x137ed0 at 42 (the caller pads the
+// stack); the builder as (axis, sine, cosine, matrix) 335 (cosine first). On the kept form: one-use named sine and
+// cosine locals 342, with all four ahead of the builders 349; the builder in retail's computation order (squares,
+// sine products, each cross term before its pair) with named trig locals 332 (frame 0x8c, al 225, one-use locals)
+// and without them 348/354; cross terms stored in their matrix entry and adjusted in place 346/363; sine products
+// first 336; retail's second-matrix order 363; first-matrix order with the sine products i, k, j 345; the diagonal
+// between the pairs 341; the complement ahead of the diagonal 351; named sine products in the old order 388 (1821
+// bytes); the complement written in each cross product 348; stores in retail's entry order 351; the complement
+// declared first 332 (a moved declaration, -2, not kept); the cross products as `i * j * inverse` 334 (same code).
+// In-place row rotation (i and j saved, k read again), which is retail's shape for both passes: 413 to 415 at 1694
+// to 1701 bytes with frame 0x60 (al 191, the closest aligned form), with named trig locals 336/343 (frame 0x64).
+// Left: retail keeps the first matrix's squares in registers and multiplies the sine into the registers holding i
+// and k, re-reading the axis from memory for the cross terms; ours stores the squares and forms j*i and k*i early.
+// Retail's frame also has 0x20 bytes no instruction touches (after each matrix and at +0x28), which the in-place
+// forms lose.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
     matrix3x3 first, second;
-    rotation_from_axis(&g_485618.forward, step * 0.5f, &first);
-    rotation_from_axis(&g_485618.up, step * 0.3f, &second);
+    double forward_angle = step * 0.5f;
+    double up_angle = step * 0.3f;
+    rotation_from_axis(&g_485618.forward, (real)cos(forward_angle), (real)sin(forward_angle), &first);
+    rotation_from_axis(&g_485618.up, (real)cos(up_angle), (real)sin(up_angle), &second);
     vector3f forward = rotate_axis_vector(&first, &g_467104.forward);
     vector3f left = rotate_axis_vector(&first, &g_467104.left);
     vector3f up = rotate_axis_vector(&first, &g_467104.up);
@@ -3163,6 +3186,19 @@ s_cached_input_list g_5234e8[4];
 // M3 lane 2 r77 (fast with round 64's callee chain plus 0x241620, control 113): new: the 0x31590 call through an inline
 // wrapper taking the index by value 113, the entry through an inline getter taking it by value 113, both 113 (same code each:
 // inlined parameters are propagated, so a parameter copy does not move the index off 0x31590's EDI argument). Body unchanged.
+// Round 80 (m3 lane 15, fast with round 64's callee chain plus 0x241620 and 0x4ac30, control 113 as the full check):
+// `inline` on 0x31590's definition 146 (550 bytes; the index still rides EDI across the call, so the keyword does not
+// hide the callee's register summary; restored); the counter, list and total as fields of a local iterator record 133
+// (frame 0xa0 and retail's three adjacent slots, but the fields are still enregistered: list EBP); the admission
+// (`index != NONE && 0x31590`) in a named bool 113 (same code); `i`, a once-read list and the total declared in that
+// order ahead of the loop 132; that with the object read before the definition, `!(depth >= 0.0f)` and
+// `&g_5234e8[view]` at both calls 129. Diagnostics: two more uses of the entry pointer 164 (registers unchanged);
+// a dead assignment to 0x31590's index parameter 113 (the caller still keeps the index in EDI). Reading of retail:
+// the save order (ESI, EBX, EBP, EDI) is the order its registers were handed out: counter ESI, index EBX, cursor EBP,
+// object EDI, and the entry then displaces the counter from ESI; the object is defined before the entry (its load uses
+// the unformed address). Ours hands the index EDI, 0x31590's argument register, first, which leaves EBX to the cursor
+// and EBP to the total or list. Retail copies EBX to EDI at the call although 0x31590 never writes EDI, so its
+// allocator did not tie the index to the argument register; no source form found here unties it.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
