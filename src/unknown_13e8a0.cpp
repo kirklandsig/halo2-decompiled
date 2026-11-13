@@ -502,12 +502,17 @@ struct s_text_line_measurement
 	long index;
 };
 
-// score 77 (was 77): unchanged this round: retail copies the advance product into XMM3 and accumulates
+// score 77 (was 77): round 116 (m3 lane 9, fast): kerning/offset/advance declared at function scope 77, the loop as
+// `while (!done)` 77 (both same code); re-measured (listed dimensions combined, same code): `advance = raw; advance =
+// scale * advance;` 77, all three metrics raw first and then `x = scale * x` 77. The cause stays the advance copy
+// (`movaps xmm3, xmm0`) that gives the width XMM4. No untried natural form is left.
+// Earlier at 77 (was 77): retail loads the width into xmm4 before the multiply
+// unchanged this round: retail copies the advance product into XMM3 and accumulates
 // the update in that copy, loads the running width into XMM4 early and reuses the freed XMM0 for the
 // bound; ours keeps the advance in XMM0, accumulates the update there and reloads the width late into
 // XMM3, with the bound in XMM5. The permuter found no keepable form (its best, 72, adds a flag set by
 // one test and read by the next).
-// score 77 (was 77): retail loads the width into xmm4 before the multiply
+// Earlier note (77): retail loads the width into xmm4 before the multiply
 // chain and accumulates the four terms in xmm3; ours reloads the width into
 // xmm3 after the multiplies and accumulates in xmm0 (register allocation only).
 // MiniMax C (11-11): no new form, no lower score (77): the one difference left is the running width's reload —
@@ -552,6 +557,12 @@ struct s_text_line_measurement
 // x read once into a local before the loop 116 (416 bytes); the test written `x1 <= sum && count` 80 (the compare then
 // takes x1 as a memory operand, `comiss xmm4, [edx+4]`). Retail's bound reuses XMM0 after the advance's last add in the
 // test, so its advance has two registers (XMM0 for the test, the XMM3 copy for the update); ours keeps one.
+// Round 175 (m3 lane 6, fast; control 77): the bound test summed kerning first (`x + kerning + offset + advance + width`)
+// 77; the test's sum named right before the test 77; a copy of the width taken at the top of the character block, before
+// the kerning call, used for the break store, the test and the update 77 (variant of the listed copy after the call); the
+// font-cache flags declared once before the loop 77; `wrapped` declared at function scope and cleared at the loop top 77;
+// the returned aggregate filled by member assignment 77.
+// All the same code: retail's early width load into XMM4 (and with it the advance copy) did not move in any spelling.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

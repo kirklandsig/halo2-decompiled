@@ -446,6 +446,12 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 // assigned separately 3. The three differences are unchanged: retail's flag OR and store precede the
 // angle duplicate (`fld st(0)`) and the first axis load.
 // Permuter (25 min on #1061, about 1180 variants): nothing below 3.
+// MiniMax A (11-13): no new form, no lower score (3): retail completes the rotating-flag OR and store before the angle duplicate
+// and the first axis load, while this build hoists the axis load above the flag OR and sinks the flag store below the duplicate;
+// the shared normalizer takes its vector by pointer, so the axis copy's address escapes and the store cannot be reordered, and
+// making that helper take the vector by reference changes nothing (0xfa580 still matches, 0xfbd40 stays 3). This round: an extra
+// pointer local to the axis, used by the normalizer call or left unused, and the normalizer reading its parameter through its
+// address, all keep the same three differences (3 each, with 0xfa580 still matching).
 // @retail 0xfbd40
 void function_fbd40(long projectile_index)
 {
@@ -1079,6 +1085,8 @@ real function_30bf0(vector3f *v);
 // convention follows how two_a is produced, so the divisions and the convention cannot yet be had together.
 // Permuter (25 min on #1061, about 790 variants): 180 only with a volatile horizontal length and the found flag
 // as an unsigned long; not kept (volatile without a match).
+// MiniMax A (11-13): no new form, no lower score (232): our frame is 0x28 against retail's 0x30 and the SSE register allocation
+// differs from the first instruction (xmm7 and xmm4 here where retail uses xmm5 and xmm7).
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1363,6 +1371,8 @@ extern vector3f *g_4687ac;
 // a local __forceinline helper with 0x16a040's body for the three queries 187 (735 bytes, frame 0x3c); side
 // queries joined as one `||` expression 163; early `return false` for the radius/tag test 181 (767 bytes).
 // Permuter (25 min on #1061, about 1140 variants): 160 only with vector3d_from_points3d's two points swapped; not kept.
+// MiniMax A (11-13): no new form, no lower score (163): our frame is 0x48 against retail's 0x34, so every later offset is shifted;
+// the permuter ran 78 tries in 600 s and kept the baseline.
 // @retail 0xfc030
 bool function_fc030(long projectile_index, point3f const *point, s_collision_result_1697c0 *collision)
 {
@@ -1814,6 +1824,8 @@ PRIVATE inline long projectile_object_root(long object_index)
 // 339/339/305/339; each with completed attachment result 348/348/346/348.
 // The two-point equality-first lead is below retention; all restored.
 // Entry frame/slot/tag homes and speed-update expansion remain.
+// MiniMax A (11-13): no new form, no lower score (296): retail expands 0xfbfd0 into this body while this build calls it, so the
+// body is 66 bytes short of retail's (BLOCKED-BY 0xfbfd0).
 // @retail 0xf8200
 bool __stdcall function_f8200(long projectile_index, byte const *data, long unused)
 {
@@ -2093,6 +2105,8 @@ real function_17c900(short function_type, real input);
 // retail's); the drift rotation as a named vector then scaled and stored 330 (stores land last as retail, schedule still
 // differs). Remaining as before: the early xmm4 zero, to_target kept in xmm1-3 across the lead merge, the rotation's
 // register homes.
+// MiniMax A (11-13): no new form, no lower score (348): the frame agrees (0x30) but the entry register allocation differs, and
+// the body is four bytes longer than retail's.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
@@ -3049,6 +3063,7 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // all three short 1228. Created long gains only three and is rejected; all original Boolean
 // carriers and executable source restored. Frame 0x220/0x218, velocity and request homes remain.
 // MiniMax R (11-11): no new form tried this round, no lower score (1220): the body is 4856 bytes against retail's 4828, so 28 bytes are extra here, and the differences sit in many separate blocks rather than in one local's home.
+// MiniMax A (11-13): no new form, no lower score (1196): our frame is 0x220 against retail's 0x218, so every later offset is shifted.
 // @retail 0xfaa60
 void function_faa60(vector3f *velocity, long projectile_index, s_collision_result_1697c0 const *collision,
 	point3f *end_point, vector3f *displacement, short collision_count)

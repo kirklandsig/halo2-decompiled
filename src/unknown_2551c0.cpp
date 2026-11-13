@@ -813,6 +813,13 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // projection in the length variable (17): the third timing output renamed to sort first or last 17/17 (same code: names
 // do not order these slots); the adjusted projection in the heading-length local instead 17 (other slots: sum 0x10,
 // length 0x14, index 0x18, adjusted 0x1c), the lateral/maximum XMM3/XMM2 swap unchanged. Body unchanged at 87.
+// P433: Index/object/motion/heading acquisition orders ABDC/ACBD/ACDB/ADBC/ADCB/CADB/CDAB/DACB,
+// planar clears at their producers: 102/87/101/98/110/101/101/110. NOT kept: no gain;
+// original body restored; unit argument and scalar/query homes remain.
+// T99: Function-owned request/world-query/animation-query output declarations,
+// subsets 1/2/4/3/5/6/7, then all with entry normalization declarations:
+// 110/87/87/110/110/87/110/110. NOT kept: request ownership grows the
+// native frame; other scopes canonicalize. All original workspaces restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

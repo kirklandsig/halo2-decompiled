@@ -507,6 +507,7 @@ static inline word font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax B (11-13): no new form, no lower score (85): the pixel in a long local inside the word helper (226), the same without the byte cast (172, retail's length) and the parity in a long local (230) all widen the parity to thirty-two bits and score worse.
 // MiniMax B (11-12): no new form, no lower score (85): the body is 512 bytes against retail's 504 and the first
 // difference is the parity test, retail zeroing ECX before the shift where this build shifts first and tests the low bit
 // of the shifted value; the nine decode spellings with the case-1 order swapped measure 83 and the multiplication forms 109.

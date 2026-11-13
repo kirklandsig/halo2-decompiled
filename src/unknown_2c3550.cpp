@@ -780,6 +780,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // B, frame 0x1f8c: the local spills). Retail's three epilogues: the loop end and the truncation share `return result` (the
 // byte reloaded), the `*out_count >= 4` test has its own `*complete = false;` epilogue, and the failure path returns 0 (`xor
 // al, al`) after the flag loop; retail keeps the out count in AX through the copy-out loop and stores it once after it. Restored.
+// MiniMax H (11-13): no new form, no lower score (675); the frame agrees at 0x1f8c, but retail keeps the state
+// in EDX and the object index in ESI where ours keeps the count in EBP and the state in EDI, and the out
+// parameter's short type is still blocked by the declaration and the caller in path.cpp.
 // score 675 (was 675): retail's result is a stack byte, NONE sits in EBX and the step loop computes start and start_node
 // before the input pointer; register homes and the transform loops' short indices differ.
 // M3 lane 3 r225 (fast agrees with plain at 675; aligned [exact, stack-masked, register-masked] base [602, 524, 471]): bool result

@@ -221,6 +221,14 @@ void juggernaut_set(long player_index, bool juggernaut)
 // Diagnostics (not kept): with the draw removed count takes EBX and the pointer EBP as in retail; a second real use of the
 // pointer in the loop gives the same swap, a CSE'd duplicate read does not; count used twice after the loop keeps EBP. So
 // the allocator ranks the pointer below count here and above it in retail, counting only uses that survive CSE.
+// Round 160 (m3 lane 8, fast): the register order follows whether count is read inside the draw's block, not how often
+// it is read. Diagnostics: the draw as `candidates[0]` or with `& 15` for the modulo (count read only by the guard) gives
+// retail's count EBX / pointer EBP (the `& 15` form is 8: only the and/idiv lines differ); the modulo kept without the
+// guard 65 and `candidates[count - 1]` 59 both keep count in EBP. Tried on the real body, 20 each (same code): a dword
+// count with `(long)` at the guard and the modulo; a named total copied from count before the guard, or inside it; the
+// store and the increment in braces as two statements; the draw through random_next(), through a named seed pointer,
+// with the generator step written out, and with NULL/0 for the file and line; the players word through a pointer to the
+// field; the absolute index and the mask named.
 // @retail 0x192a30
 void function_192a30(long excluded_player_index)
 {
