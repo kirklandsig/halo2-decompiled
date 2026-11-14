@@ -1208,6 +1208,10 @@ struct s_item_flags_view_10b850
 // MiniMax S (11-10): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c, the two entry bit tests stay in registers here while retail keeps the bytes in stack slots and re-reads the flags word, and the definition pointer sits at 0x38 against retail's 0x1c. The 815 of the earlier round is the two-flag body (a separate flag for the definition bit and another for the position update); retail keeps one flag, set before the ray query and cleared only by the settle branch, so that body is not restored.
 // Earlier: Frame 0x154 versus 0x12c; entry Boolean publications and carrier/collision/flow/marker/rotation homes differ.
 
+// MiniMax G (11-13): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c,
+// the entry's flag byte differs (retail shifts the value and stores the parity byte where this
+// build tests a bit of a shifted register), and the walk still differs in the item table's own
+// expressions.
 // MiniMax B (11-12): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c and the entry's flag
 // byte differs - retail shifts the value and stores the parity byte where this build tests a bit of a shifted register;
 // the permuter on this address was killed by its time limit without a result.
@@ -1414,6 +1418,9 @@ struct s_item_flags_view_10b850
 // then two reversed geometry-label priorities: 863/863/863/863/863/863/863/863. NOT kept: all regress and lengthen;
 // original classification, observations, helpers and full body restored. Frame 0x154/0x12c
 // and entry Boolean/carrier/collision/rotation homes remain.
+// score 824 (was 824): the frame is 0x154 against retail's 0x12c, the entry's flag byte differs
+// (retail shifts the value and stores the parity byte where this build tests a bit of a shifted
+// register), and the walk still differs in the item table's own expressions.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

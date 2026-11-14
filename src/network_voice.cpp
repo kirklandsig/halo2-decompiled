@@ -1302,6 +1302,9 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax G (11-13): no new form, no lower score (94): the identity flag stays in bl where retail
+// keeps it in al, so the loop temporaries take eax/al where retail uses ebx/cl, and the inner
+// channel blocks are not unrolled.
 // MiniMax A (11-13): no new form, no lower score (94): the identity flag still takes BL here while retail keeps it in AL, and retail sets the size to two only after the flag's compare where this build sets it before; no untried form in the list moves the flag out of BL.
 // score 94 (was 94): the flag stays in bl (retail al), so the loop temporaries take eax/al where retail uses
 // ebx/cl; retail loads the count into ebp before the multiplier and adds 2 before the total (ours folds the load
@@ -1999,6 +2002,9 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax G (11-13): no new form, no lower score (85): the second availability byte loads lazily
+// where retail loads both before the muted test, and the second port-flag query is called out of
+// line: BLOCKED-BY 0x59670/0x596a0.
 // MiniMax B (11-13): no new form, no lower score (85): the session getters 0x59670/0x596a0 (src/unknown_058ee0.cpp) are outside this lane's files, and the second port-flag query is still called out of line where retail inlines it here: BLOCKED-BY 0x59670/0x596a0.
 // score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
@@ -3667,6 +3673,8 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
+// MiniMax G (11-13): no new form, no lower score (139): the member takes ebp where retail keeps
+// the channel from entry and spills the member, and the cursor and route homes differ.
 // MiniMax B (11-13): no new form, no lower score (139): the channel in a local (139), the cursor advanced on its own (180) and both together (180) leave the difference - retail keeps the channel in ebp from the entry and the data pointer in edi, ours keeps the data pointer in ebp.
 // MiniMax A (11-13): no new form, no lower score (139): a hoisted packet cursor (`byte *packet = data + 2`, advanced by
 // the packet size) scores 164 and a local copy of the channel compiles to the same bytes as the baseline, so retail's
