@@ -2145,6 +2145,11 @@ void function_269250(long clump_index, long actor_index);
 // continue;` in the selected arm 126 (same code). Diagnostic (an existing helper written out): a private step reading the
 // iterator's pool field at each use instead of the step's local copy 126 (same code), so the pool's reference count is not
 // what loses it the register. Body unchanged.
+// Round 103 (m3 lane 10, fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched): on
+// this body the score as one conditional expression (`team == ... ? function_268bb0(...) : best`) 128 (484 bytes); the score
+// declared at the actor-loop scope beside best 87 (same code); the creation arm reusing the walk's group pointer instead of
+// declaring a second one 87 (same code); a `dword` selection 87 (same code); the in-arm compare with the selection stored first
+// plus that group-pointer reuse 126 (480 bytes). All restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

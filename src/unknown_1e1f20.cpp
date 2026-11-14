@@ -592,6 +592,11 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// MiniMax E (11-14): no new form, no lower score (236): the first difference is still at +0x3, where the actor
+// pool goes into EAX and retail puts it in ECX; the slot loop is still rotated by a jump with an alignment pad
+// retail has not, retail's memory walk still indexes the record as actor base + 12*i in EDX and re-reads the slot
+// after the store, and the body still expands the callee at 0x26ed40 that lives in another file:
+// BLOCKED-BY 0x26ed40.
 // MiniMax B (11-11), NOT kept (coordinator): 236 to 216 (plain, 966 bytes) holds the definition bit in a byte flag set
 // by tests (`definition_counted`), a match-only form. The lead as written: the definition bit is now shifted and kept in
 // the dead parameter slot as retail does, and the counts loop and the tail follow it; still differs:

@@ -111,6 +111,12 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // as a reference parameter 33 (the no-steering code); the initial point assigned after its declaration 19; the record-filling tail as an
 // inline function returning true, or returning nothing with `return true` after it, 89 each (438 bytes: 0x11df30 is then called
 // from it and no longer expanded). All restored.
+// Round 103 (m3 lane 10, fast): the else arm reading the parameter directly (the address local only in the node arm) 19; the
+// address local as a reference to the parameter (`transform4x3f const *const &`) 19; the node count declared at function scope
+// ahead of the point 19; the rotate helper returning its output pointer, as 0x142640 does, 19; the helper's input as one vector
+// copy 130 (494 bytes). Diagnostic, restored: size preference for this body 252 (344 bytes, frame pointer and string moves), so
+// the shared constant 1 is not a size/speed choice. Retail inlines 0x142640 itself here (the scale test reads [esi]); that
+// function sits in an /Ob1 file with no `inline`, so ours calls it (312) and the private copy stands in. All restored.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

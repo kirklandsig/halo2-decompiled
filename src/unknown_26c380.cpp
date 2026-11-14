@@ -542,6 +542,13 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // one to seven unused `long` locals on the goto form 305/305/305/305/305/304/305 (1609-1612 B), the cross's row j operands
 // never flip. Left on the 32 form: the cross's row j first product, the magnitude's j/i order, the XMM1-3 roles and the
 // line/previous-sector slots.
+// M3 lane 11 r99 (fast; control 244): the outer sector loop as `do { ... } while (NONE != next_sector_index);` 391 (1590 B);
+// `else hit = false;` under the crossing test 244 (same code); `iterator.forward` read at each of its three uses (no `forward`
+// local) 299 (1600 B); the edge loop as `while ((edge = function_1fa720(&iterator)) != NULL)` with one iterator call 244 (same
+// code). Diagnostic dead-local scans (`long dead_k = k;` at the top, n = 0..7, removed): on the held goto form 34/305/305/305/
+// 305/305/304/305, on this body 244/305/305/305/305/305/310/305; every added local breaks the edge loop's in-place
+// `mulss xmm3, [edx]` fold, and the cross's row j operand and the magnitude's j/i order stay wrong at every n, so they are not
+// a symbol-count phase. Body unchanged.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

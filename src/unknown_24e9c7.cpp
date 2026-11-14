@@ -468,6 +468,10 @@ struct s_24e9c7_points
 // the loaded operand where retail multiplies into a copy of size, keeps 1.0 in XMM1 and reloads forward_i. On that form:
 // both products written operand-swapped, only x, only y 139/139/139 (same code); forward_i read once into a named local
 // for side y and up x 141 (741 B). Diagnostic: one to seven unused `long` locals 139 each (same code, no phase effect).
+// M3 lane 11 r99 (fast): the scale read from the placement at both uses (no `scale` local) 141 (740 B); the shader index
+// named once (`long shader_index`, test and call) 174 (742 B); the marker's kind named once for the bounds tests and the index
+// 130; the sequence index read from the kind at its four uses 125 (same code); the sequence's fields read through
+// `group->sequences[sequence_index]` at each use (no `sequence` pointer) 163 (747 B). Body unchanged.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

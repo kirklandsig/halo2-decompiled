@@ -841,6 +841,13 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // negations 130 (948 bytes); the radius first in both sums on the length-local form 17. Body unchanged at 87.
 // P477: Standard first-product-seeded forward/lateral/alignment reductions, seven producer subsets, then complete reverse-coordinate transform:
 // 259/248/142/270/251/239/261/281. NOT kept: all regress, with no native unit-argument/scalar-home repair; thirteen matched controls survive. Original reductions, typed radius, observations, helpers and complete body restored.
+// M3 lane 6 r179 (fast with 0x2556b0, 0x110ab0, 0x30bf0, 0x1e4a50, 0x26bfa0, 0xe6900; control 87): the target index read into
+// local_1 at the top and tested in the guard 237 (957 bytes); the actor pointer typed const 87 (same code); the target lookup
+// ahead of both copies with the two k clears together 93 (964 bytes); the returned global read into a `short result` at the
+// top 242 (969 bytes). LEAD, match-only: the tag table pointer copied into a function-scope local (`s_tag_instance *tags =
+// g_4e3b44;`, read once for the biped radius) 76: the timing call's lea temporaries and the request stores take retail's
+// registers (the 0x110ab0 argument still ECX); with lane 17's unit local before the test as well (written as a comma
+// expression, a diagnostic) 45, first difference +0x5b, so the two do not add (lane 17's form alone was 42).
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

@@ -239,7 +239,7 @@ void function_146de0(void);
 void function_146b80(void);
 
 // Disabled retail 0x2b5d0; activation regresses an opening match.
-void function_2b5d0(long count, long mode, long players, long layout, s_223240 const *source)
+void function_2b5d0(long mode, long count, long players, long layout, s_223240 const *source)
 {
     long const *players_reference = &players;
     long const *layout_reference = &layout;
@@ -2408,6 +2408,7 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax D (11-14): no new form, no lower score (140): frame and length agree, but the byte test load is still hoisted above the global store where retail keeps the store first; the preserve_alpha load that is hoisted instead comes from the callee 0x131fc0 in src/unknown_131e50.cpp: BLOCKED-BY the callee.
 // MiniMax B (11-13): no new form, no lower score (140): re-measured with the plain build (1729 bytes, as retail, first difference at +0x32b); what is left is the preserve_alpha load hoisted above the simple branch.
 // score 140 (was 140): frame and length agree; left: retail keeps both rectangle parameters as memory
 // variables (each chosen default is written into the parameter's home, `lea ecx; mov [home], ecx; mov ebx, ecx`)
