@@ -1307,6 +1307,15 @@ long function_1931a0(long count, s_surface_description *variant);
 // validity test written out 6 here (0x192e60 20, 0x7e210 906 at 2764 bytes, the top call still inlined), through the
 // out-of-line 0x192db0 6 (0x192e60 and 0x7e210 unchanged), early returns or one ternary 6 (0x192e60 35 at 60 bytes, 0x63220
 // 112, 0x73ca0 140), an element pointer local 6 (0x192e60 20). The top call inlines in every spelling.
+// Round 197 (m3 lane 4, fast control 8 / plain 6; trials in 0x7e210, all restored): 0x7e210's result flag declared first 8
+// (0x7e210 766, same code); the top lookup taking the getter's value directly with the loop reading the variant index from the
+// session getter again 8 (0x7e210 856, 2844 bytes); the opening test with `!variant` first 8 (766, same code); the type-5 scan's
+// exit as `return false` 8 (766, same code); the loop's written-out variant lookup replaced by the existing 0x192e60 called
+// inside `if (variant_index)` MATCH here (0x7e210 931 at 2732 bytes: the top lookup still inlines, but its pointer takes EBX and
+// the output pointer EBP, so the session takes EDI as in retail and arrives in EAX; not kept: a rise in 0x7e210; diff saved as
+// build/r197/lead-0x73530-loop-lookup.patch), plus `long histogram[16]` (retail clears 16 dwords) MATCH, 0x7e210 933 (2704
+// bytes). So the session's register needs no change to the inline choices, only to the first pass's register pressure.
+// Diagnostic (compiler setting, reverted at once): no inlining around only the top lookup statement MATCH here, 0x7e210 942.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {
