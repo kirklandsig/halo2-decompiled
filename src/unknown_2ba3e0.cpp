@@ -698,6 +698,12 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 
 real g_55e618;
 
+// score 102 (was 102): the sweep and collision homes sit twelve bytes below retail's (+0x38/+0xa4 against +0x44/+0xb0)
+// because the reflection block spills differently (retail copies dot for perp.i/j, multiplies perp.k in place and spills
+// tangent.i/j and perp.k). M3 lane 8 r165 (fast): perpendicular and tangent declared ahead of the dot 102 (same code);
+// the rebound coefficient named once for the three final rows 102 (same code); keep computed after the tangent 197
+// (1536 B, frame moves); the +0x34 scale ahead of the three rows 103; the normal pointer declared before the coefficient
+// loop 102 (same code).
 // MiniMax G (11-10): no new form, no lower score (102): the sweep vector and the collision record both sit twelve bytes lower here than in retail (sweep +0x38 against +0x44, record +0xa4 against +0xb0), so retail's frame holds twelve bytes more before the sweep; the aggregates this body declares do not account for that gap.
 // MiniMax S (11-09): no new form, no lower score (102); retail's sweep and collision homes
 // sit twelve bytes higher in the frame than ours (F+0x44 against F+0x38), the local handed to
@@ -998,6 +1004,7 @@ real g_55e618;
 // vector sits at +0x44 and its collision record at +0xb0 where ours keeps the sweep at +0x38 and the record at
 // +0xa4, so every home from there up (and the twelve-byte length gap that follows) differs; that is the frame's
 // allocation order, which the rules bar me from reshaping.
+// MiniMax A (11-14): no new form, no lower score (102); retail's sweep vector and its collision record still sit twelve bytes higher in the frame than ours, and retail's dot product still adds its three terms in another order than ours; the permuter (5 tries, 311 s) found nothing below the baseline.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

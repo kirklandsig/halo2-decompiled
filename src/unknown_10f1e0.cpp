@@ -1490,6 +1490,10 @@ long function_cbd50(long unit_index, short weapon_index);
 // and pushes ESI and EDI.
 // MiniMax H (11-13): no new form, no lower score (164); retail holds index times twelve in EDX and adds it to the pool data in EBP, while this build folds the index into the address expression, and the two stack slots are a dword apart.
 // score 164 (was 164):
+// MiniMax I (11-14): no new form, no lower score (164): the entry lookup and the two slot reads keep the index
+// folded into the address where retail holds index times twelve in EDX and the pool's data in EBP (four pushes
+// against our three), and the three flag bytes sit at +0x0e/+0x0f and the overlay word at +0x10 where retail has
+// the flags at +0x11/+0x12/+0x13 and the overlay in the dead argument slot at +0x14.
 // MiniMax B (11-11): no new form, no lower score (164); the body is unchanged, and the forms listed above are exhausted.
 // MiniMax H (11-11): no new form, no lower score (164); retail keeps index*12 as a value and re-reads the unit and
 // the pool's data for the second depletion query, and writes the first depletion with setle; the permuter (600 s) found nothing.
@@ -2130,6 +2134,11 @@ bool __stdcall function_110ab0(long unit_index)
 // P461: Complementary controlling-absence outcome bool/char/signed-char/byte
 // 474 each, short/word 451/451, long/dword 467/467. NOT kept: frame stays eight
 // versus twelve and every score regresses; original handle, queries and full body restored.
+// P489: Standard linear search for primary-seven, paired-two and shared overlay-eleven request sets, seven
+// subsets, then binary search over the same complete sets: 493/471/683/520/723/674/739/770. NOT kept: No
+// native instruction/frame equality. Original sets, switch/defaults, signed counts, status domains, field
+// observations, query/provider tuples, Boolean interface and complete body restored. No decoded table-tail-
+// only gain retained.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {

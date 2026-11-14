@@ -657,6 +657,13 @@ PRIVATE __forceinline void function_227814(vector3f const *arg_0, vector3f const
 	arg_2->k = local_0;
 }
 
+// score 5 (371 bytes against retail's 370): the only real difference is in
+// the inlined 0x227812, where `local_1.i = local_0; local_1.i *= arg_0->i;`
+// compiles to `movss xmm1, [edi]; mulss xmm1, xmm0` and retail has
+// `movaps xmm1, xmm0; mulss xmm1, [edi]` (one byte shorter; the other reported
+// differences are the CALL alignment that follows the extra byte). One-line
+// multiplication, a named factor and the commutative order kept or worsened
+// the form. Permuter: 174 tries in 300 s (seed 999), no lower form.
 // @retail 0x227810
 void impact_build_matrix(
 	long component_index,

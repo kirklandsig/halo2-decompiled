@@ -2960,6 +2960,11 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // the squad index from the stack into EAX where retail keeps it in EBP, and the jumps after it land two bytes
 // further in this body, so the block after the call is laid out differently and the body is 579 bytes against
 // retail's 578.
+// m3 lane 5 r181 (baseline 50, aligned 2): no new form. The listing is retail's apart from the first 0x1fb8a0
+// call's index load (ours reloads arg_1 from its home where retail keeps it in EBP) and the loop pad it shifts; in the
+// second half EBP holds the trigger record pointer in both builds, so the cut of arg_1's EBP range before the
+// follow-up is the allocator's weight decision rounds 119, 162 and lane 11 r96 above describe. Rounds 70 and 155 list
+// every first-half spelling; none is left untried.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

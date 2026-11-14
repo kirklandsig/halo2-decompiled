@@ -1606,6 +1606,11 @@ long function_2197f0(real gain);
 // (`1.0f > time * (1.0f / fade_in) ? time / fade_in : 1.0f`) 125 (678 bytes: retail's clamp branch, but fade_out still
 // multiplied from memory first and the join unchanged); the clamps of arms 2 and 4 as `1.0f > time ? time : 1.0f` 101.
 // Re-measured: arm 4 alone written interpolation first 120 (round 160 had 178 on an older body).
+// MiniMax G (11-14): no new form, no lower score (94): retail's fade-out tree is ((elapsed - hold) * inverse) * fade_out
+// with fade_out still in xmm1 and the constant 1.0f in xmm4, ours re-associates to (elapsed - hold) * fade_out * inverse
+// and reloads [eax+0xc] with the registers numbered one lower; forcing the tree through a temp local leaves the same
+// code, a fade_out local for the product measures 98, and the eight forms tried this round (the parenthesised product,
+// the sum's addends swapped, the local fade-out with the scaled local) measure 94, 98, 144, 94, 98 and 98.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3364,6 +3369,15 @@ static inline short sound_voice_find_available_channel(char type)
 // start 111 (433 bytes); the failure arm's `result = false;` after the two calls 49; `byte result` 119 (439 bytes);
 // `bool result = true;` declared between the voice and the sound 93; the requested-buffer local dropped (the byte read at
 // its test and its index) 15 (same code). A 600 s permuter run on it (66 tries) found none below 15. Main's body restored.
+// MiniMax G (11-14): no new form, no lower score (96): retail keeps the result in AL (set at the entry, cleared on the
+// failure path with xor bl, bl and moved back into AL), ours keeps it in a stack byte; spelling the result as a bool
+// reaches retail's 430-byte length but measures 113, and the other body forms (the result returned directly from the
+// commit arm, the failure arm first, the commit through a label) measure 124, 135 and 139, so the byte result stays.
+// MiniMax G (11-14, later): no new form, no lower score (96): the bool result reaches retail's 430 bytes but is also
+// spilled to the stack (mov byte ptr [esp + 0xf], al) because it is live across the calls, while retail parks the
+// result in BL only on the failure path; the explicit-return form (no result variable, return true in the commit arm,
+// return false in the failure arm and return true at the end) measures 135 (431 bytes) and moves the mov al, 1 from
+// the entry to the exit, and the same form with a bool result left in place gives the same 135.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -4024,6 +4038,9 @@ vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vec
 // use 117. The matched sibling 0x129790 keeps its six 0x221810 calls out of line without pragmas.
 // score 101 (was 101): unchanged this round: our link-time inlining expands 0x221810 (src/unknown_221490.cpp) where
 // retail calls it out of line; the first residual difference is the constant-forwarding fold `unknown0a |= 1`.
+// MiniMax G (11-14): no new form, no lower score (101): re-measured in the batch; the 0x221810 lookup still expands
+// here where retail calls it out of line, and the expansion still shifts the rest of the listing, so the case bodies
+// start at other offsets.
 // @retail 0x129aa0
 void function_129aa0(short arg_0, long *arg_1, s_looping_channel_spatialization *arg_2)
 {

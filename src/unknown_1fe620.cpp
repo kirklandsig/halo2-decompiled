@@ -12,6 +12,10 @@ void function_1fe410(point3f *arg_0, real arg_1);
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax B (11-14): no new form, no lower score (373): the frame is still 0x4c against retail's 0x48, retail keeps the
+// third settings pointer in ESI from the entry where this build caches the random state in that slot, and the two flag
+// bytes are still stored before the random state is loaded; the forms that write the third input out at each use and
+// the ones that move the random state into a named local all compile to the same bytes.
 // MiniMax C (11-14): no new form, no lower score (373): retail keeps the pool pointer in the base register
 // and forms the actor with lea edi,[edx+esi] (actor EDI, object ESI), while ours loads the pool early
 // into EDX and ends with the actor in ESI and the object in EDI, so the frame is 0x4c against retail's

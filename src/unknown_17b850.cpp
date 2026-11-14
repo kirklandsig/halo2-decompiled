@@ -382,9 +382,14 @@ void contrail_update(long contrail_index, bool detach, real dt)
 	contrail->unknown2c += dt;
 }
 
+// score 4 (was 6): a shared `one` local for the three literal 1s (the
+// 0x17c0e0 count, the flags03 bit and the index step) fixes the two locals'
+// EBX/EDI load order. The remaining differences are the two `frame_time`
+// updates' remaining/elapsed XMM registers.
 // @retail 0x17bc40
 void function_17bc40(real dt)
 {
+	long one = 1;
 	long contrail_index = data_datum_index(g_4ea944, function_16bc00(g_4ea944, 0));
 
 	while (contrail_index != NONE)
@@ -403,7 +408,7 @@ void function_17bc40(real dt)
 				real scale = contrail->scale;
 
 				contrail->scale = 0.0f;
-				function_17c0e0(contrail_index, 1, true);
+				function_17c0e0(contrail_index, one, true);
 				contrail->scale = scale;
 			}
 			if (active)
@@ -441,7 +446,7 @@ void function_17bc40(real dt)
 			}
 
 			real a = definition->unknown24;
-			if (definition->flags03 & 1)
+			if (definition->flags03 & one)
 				a = contrail->scale * a;
 			contrail->unknown1c -= a * elapsed;
 
@@ -463,7 +468,7 @@ void function_17bc40(real dt)
 			function_17c880(contrail_index);
 			record_pool_release(g_4ea944, contrail_index);
 		}
-		contrail_index = data_datum_index(g_4ea944, data_find_index(g_4ea944, contrail_index == NONE ? 0 : (contrail_index & 0xffff) + 1));
+		contrail_index = data_datum_index(g_4ea944, data_find_index(g_4ea944, contrail_index == NONE ? 0 : (contrail_index & 0xffff) + one));
 	}
 }
 
