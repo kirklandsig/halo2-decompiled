@@ -2592,21 +2592,8 @@ DWORD const g_43fdc0[5] = {1, 2, 5, 8, 6};
 bool g_47fe85 = true;
 typedef void (__stdcall *t_4b220_fill)(void *, long, void *);
 
-// MiniMax G (11-04): score 8 (was 8): retail's callee takes the count in ecx and reads the zero
-// it is given at [esp + 4] before it saves ebx, ours takes the count in eax and reads the same
-// argument at [esp + 8]; the only form that puts the zero back on the stack (its address taken)
-// moves the count to eax as well, and the form that moves the count into ecx passes the zero in
-// a register and costs this function its score. Later in the round: the early-return shape gives
-// retail's length but puts the exit block first, a copy of the mode in a local and a volatile
-// pointer to it leave the body as it is, and declaring the function __fastcall changes nothing,
-// since LTCG gives the count eax either way.
-// Later still: retail's callee never reads eax, so the eax slot is spent on an argument its body
-// does not use and the count sits in ecx; retail's source therefore has a parameter before the
-// count that LTCG does not promote, and none of the forms here reproduce that: a mode declared
-// as a pointer (a change to the declaration, which this lane may not make) lowers 0x35b00 to 1
-// but still passes the mode in eax, a volatile mode moves the count into ecx but drops this
-// function to 57, and mentioning the mode directly while its address is taken keeps the mode on
-// the stack but leaves the count in eax.
+// Draws an immediate-mode primitive into the D3D push buffer.
+// Uses the fill callback to write vertex data when the request fits.
 // @retail 0x4b220
 long function_4b220(long count, long mode, long primitive, long stride, t_4b220_fill fill, void *context)
 {
@@ -2929,48 +2916,8 @@ struct s_queued_material_payload
 	byte data[1];
 };
 
-// MiniMax B (11-13): no new form, no lower score (2): the payload's count still reaches 0x4b220 in EAX here and in ECX in retail, and that home is the callee's own declaration, which may not change.
-// MiniMax H (11-12): no new form, no lower score (2): the payload's count still reaches the 0x4b220 call in eax where retail has ecx, so the two call setups differ; retail's callee is a fastcall that takes the count in ecx and the other five arguments on the stack in the same order as here, so only the calling convention of 0x4b220's own declaration in this file differs, and that declaration this lane may not change.
-// MiniMax H (11-11): no new form, no lower score (2): the payload's count reaches the 0x4b220 call in eax here and in ecx in retail, so the two call setups differ; that register home belongs to the callee 0x4b220's own declaration in this file, which this lane may not change.
-// MiniMax I (11-11): no new form, no lower score (2): the payload's count still reaches the 0x4b220 call in eax here and in ecx in retail, and that register home belongs to the callee's own declaration, which this lane may not change.
-// MiniMax D (11-11): no new form, no lower score (2): retail's 0x4b220 takes the count in ecx and ours takes it in eax, while the five stack arguments keep the same order in both (the mode at [esp + 4], the primitive's table index, the stride, the fill callback and the context), so the count's register home is the callee 0x4b220's own body to decide.
-// MiniMax S (11-10): no new form, no lower score (2): the payload's count reaches the 0x4b220 call in eax here and in ecx in retail, so the two call setups differ; the register home is the callee's own declaration, which this lane may not change.
-// MiniMax A (11-10): no new form, no lower score (2): the body is unchanged at 144 bytes, as
-// retail's; the payload's count reaches the 0x4b220 call in eax here and in ecx in retail, and that
-// home is the callee 0x4b220's own declaration's, in this file but not one of this round's
-// functions.
-// MiniMax E (11-10): no new form, no lower score: the count of the payload reaches the 0x4b220
-// call in eax here and in ecx in retail, and the callee's own declaration picks that register home.
-// MiniMax R (11-10): no new form, no lower score (2): the payload's count reaches the 0x4b220 call in eax here and in ecx in retail; that home belongs to the callee's own declaration, which is not one of this round's functions.
-// MiniMax G (11-05): no new form, no lower score; the count's register is the callee's choice, so the call site cannot move the load of [esi + 0x14] into ecx.
-// MiniMax H (11-04): no new form, no lower score; the count reaches the 0x4b220 call in eax here and in ecx in retail, and that callee's own body in this file decides it (six body variants keep the count in eax).
-// MiniMax D (11-01): both builds push the five stack arguments and only the count's register
-// differs, which 0x4b220's own declaration fixes.
-// MiniMax D (11-01): no new form, no lower score; the declaration of 0x4b220 may not grow a
-// seventh parameter to give its count retail's register home.
-// MiniMax A (11-03): no new form, no lower score.
-// MiniMax G (11-04): no new form, no lower score; retail's 0x4b220 takes the count in ecx and
-// reads the zero it is given at [esp + 4], ours takes the count in eax; the callee is in this
-// file, but the form that moves the count into ecx also moves the zero into a register and
-// costs the callee its score; declaring the mode as a pointer lowers this function to 1 (the
-// caller then differs only in xor eax, eax against push 0), but that changes the declaration.
-// MiniMax G (11-12): no new form kept, no lower score (2): declaring 0x4b220's mode as the pointer retail
-// passes and null-tests moves the count into ecx and gives 1 here, but it moves the mode out of the callee's
-// stack and costs 0x4b220 in this file 49 (8 -> 57), so the body stands as found.
-// MiniMax H (11-13): no new form, no lower score (2); the payload's count reaches 0x4b220 in EAX here and in ECX in retail, and that home belongs to the callee's declaration.
-// score 2 (was 2): the count of the payload is handed to 0x4b220 in eax, retail hands it over
-// in ecx.
-// MiniMax D (11-06): no new form, no lower score: the count reaches the callee in eax here and in
-// ecx in retail; the count's use before the mode's test (9), the address-taken statements reordered
-// (8) and the count read from the global all keep it in eax, and the choice belongs to the callee
-// 0x4b220 in this file.
-// MiniMax E (11-08): no new form, no lower score: the count reaches the 0x4b220 call in eax here and in ecx in retail, and the callee's declaration fixes that register.
-// MiniMax E (11-09): no new form, no lower score: the count reaches the 0x4b220 call in eax here and in ecx in retail, and the callee's own declaration picks that register home.
-// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 2 (144 bytes, as retail's); the count of the payload reaches the 0x4b220 call in eax here and in ecx in retail, and that callee's parameter home is its own declaration's, which may not change.
-// MiniMax R (11-09): no new form, no lower score (2): the count of the payload still reaches the 0x4b220 call in eax here and in ecx in retail, so the two register setups differ; the register home is the callee's own declaration in this file, which this lane may not change, and declaring the mode as a pointer (the only form that moves the count into ecx) lowers this function to 1 but changes the declaration.
-// MiniMax A (11-13): no new form tried this round, no lower score (2): the payload's count still reaches
-// 0x4b220 in EAX here and in ECX in retail; that home is the callee's own declaration, which may not change:
-// BLOCKED-BY 0x4b220.
+// Processes a queued draw request, resets render state, and selects
+// the vertex format before drawing with optional begin/end callbacks.
 // @retail 0x35b00
 void __stdcall function_35b00(void *payload)
 {
@@ -5847,7 +5794,7 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
                         if (coordinates)
                         {
                             real const *offset = (real const *)&coordinates->offsets[attribute];
-                            
+
                             value[0] += offset[0];
                             value[1] += offset[1];
                             value[2] += offset[2];
