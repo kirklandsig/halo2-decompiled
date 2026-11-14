@@ -1845,6 +1845,7 @@ void function_1f86a0(long actor_index);
 // the two root calls to an undefined stand-in: with the mask local 134 (mask still in BL), with no mask local 229 (the
 // entry then takes EBX with its F+4 home and the reload after the roots as retail, but the flags byte is re-read for
 // both tests and nothing lands at F+3), against 244 for no mask local with the real roots.
+// MiniMax D (11-14): no new form, no lower score (134): the frame is still 0x10 against retail's 0x14 - retail spills the masked flags byte to a stack slot and keeps the loop entry in EBX, ours keeps the mask in BL and spills the entry - and ours still takes the incoming actor index in ECX and loads the tag table base late.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

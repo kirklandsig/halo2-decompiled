@@ -150,6 +150,10 @@ void __stdcall function_187510(long arg_0, real arg_1, real arg_2);
 void player_action_initialize(s_player_action *arg_0);
 
 #pragma inline_depth(0)
+// MiniMax D (11-14): score 133 (was 134): the selection comparison now reads the record's field 212 first
+// (cmp cx, ax against our cmp ax, cx), which is the one difference this round could close; the counted byte
+// is still read without retail's sign extension and the inlined count read keeps our [edx + edi] against
+// retail's [edi + edx], which the count helper's body fixes in another file.
 // MiniMax A (11-13): no new form, no lower score (134): retail's flag block, the tail pair copied as two single floats and the latch with the else arm first each scored 164 and were restored, so the counted byte is still read without retail's sign extension, the selection compare keeps our operand order and the inlined count read keeps our [edx + edi] against retail's [edi + edx], which is fixed by the helper body in another file.
 // MiniMax H (11-14): no new form, no lower score (134).
 // MiniMax H (11-11): no new form, no lower score (134): the edits tried this round - the field-first
@@ -176,7 +180,7 @@ void player_action_initialize(s_player_action *arg_0);
 // MiniMax B (11-04): no new form, no lower score.
 // MiniMax S (11-06): no new form, no lower score.
 // MiniMax G (11-12): no new form, no lower score (134): the inlined count read keeps our [edx + edi] against retail's [edi + edx], and the score-1 form still needs a pragma region and a one-caller forceinline wrapper.
-// score 134 (was 134): frame 0x54 agrees; selection comparison, byte-count extension, cyclic
+// score 133 (was 134): frame 0x54 agrees; byte-count extension, cyclic
 // operand order, cold clear and output/angle scheduling differ.
 // Earlier: frame 0x54 and selection inputs agree; comparison order,
 // MiniMax R (11-01): no new form, no lower score (the score-1 form needs a new inline_depth region
@@ -393,7 +397,7 @@ void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_acti
         if (local_5 || local_6 == NONE)
             local_1->field_2a = (char)function_cdeb0(local_1->field_0, NONE, local_6, local_5);
         short local_7 = function_cfe40(local_1->field_0);
-        if (local_7 != NONE && local_7 != local_4->field_212)
+        if (local_7 != NONE && local_4->field_212 != local_7)
         {
             local_1->field_2a = (char)local_7;
             local_1->field_2b = NONE;
