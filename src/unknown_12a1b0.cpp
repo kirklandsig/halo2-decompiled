@@ -1644,6 +1644,8 @@ struct s_looping_detail_request
 // known match needs the ruled-out implied test.
 // M3 lane 3 r238 (fast with 0x21b0e0, 0x14dde0, 0x219ed0): the flag7 store before the requested-audible copy at the end
 // 110 (other code, aligned 33 -> 35); the query stays inlined. I found no other caller-side form these notes do not list.
+// P459: Raw source-mode char/short/long/byte payloads at the original attached guard, original/native temporary output:
+// 110/110/110/110/127/127/127/127. NOT kept: native first-player call and detail/offset transport not recovered; original complete body restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -2219,6 +2221,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // MiniMax G (11-13): no new form, no lower score (305): the frame is 0x11c against retail's 0x128, and the
 // outer index, the definition and the ring homes still differ; the forms in the note below all score 305 or
 // more, so the body stands.
+// T103: Actual permutation-table input cursor alone, with per-pass counts, sound/gain/
+// both local input cursors, gain output, all cursors and complete request storage:
+// 466/482/417/436/431/433/515/517 (fast control 305). NOT kept: no byte equality;
+// native indexed input observations, request, range/ring homes and full body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -3068,6 +3074,8 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // the state in ebx, NONE in esi and the track in ebp with the index and the track definition in memory, while
 // this build holds NONE in ebx, the index in esi and the track definition in ebp; the forms in the note below
 // all score 596 or more.
+// P459: Independent update-on-start and two publication request-bit outcomes, seven subsets and all fixed Boolean producers:
+// 735/767/781/769/780/777/776/776. NOT kept: native true/raw-flags ownership and record/track homes not recovered; original complete body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

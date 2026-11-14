@@ -727,7 +727,7 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
-// score 331 (was 331; 331 before): round 95 (m3 lane 11) note at the end; round 112 (m3 lane 12) before it. Earlier at 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
+// score 331 (was 331; 331 before): m3 lane 2 r79 note at the end; round 95 (m3 lane 11) before it; round 112 (m3 lane 12) before that. Earlier at 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
 // MiniMax H (11-11): no new form, no lower score (331); retail keeps the point case's normal in XMM3/4/5 with the zero in
 // XMM0 and ends case 2 with a read-modify-write `or [ebp], 0x40`, while ours splits the flag updates and keeps the zero in XMM1.
 // MiniMax C (11-11): no new form, no lower score (331): the length agrees (1696 bytes); case 2 still
@@ -1051,6 +1051,14 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // NOT kept: input copies grow the frame/extent and do not recover native direction-j
 // preload or zero/normal allocation. Original shared math, timer and full body restored.
 // MiniMax B (11-13): no new form, no lower score (331): the plane length's hoisted load still takes the normal's other component first, so retail's zero sits in xmm0 and ours in xmm1; the permuter cannot search this function because the reduced image scores it 348 against 331.
+// M3 lane 2 r79 (fast with 0x16c6f0/0x13cb40, both MATCH; base 331, register-masked aligned 43): the FOV blend's `start` declared
+// and read after the PIN of t (retail loads start after the clamp) 337 (masked 45); the basis builder's returned matrix in its
+// own statement before function_141f60 373 (1700 B); the pan lerp's `1.0f - fraction` named once for the three rows 373 (1700
+// B); the point type read into a `short` local for the inner switch 373 (1700 B): any one added local gives this 373/1700 phase.
+// Kept as a clean-up: the one-use `dword camera_object_index` copy dropped, the NONE test reading `camera->object_index`, 331
+// (only the distance dot's i product changes: forward.i loaded first, where retail loads position.x first; masked 45). With
+// the mode local dropped too (lane 5 r166 listed that alone at 331) 371 (1700 B). The point-type local is the same code as the
+// basis statement. On the kept body: the animation case's flags update after its distance and timer stores 333 (masked 43).
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
@@ -1122,8 +1130,7 @@ void __stdcall function_16c840(long user_index, long unused, s_observer_command 
 			command->timer = time_scale != 0.0f ? game_ticks_to_seconds(camera->ticks) / time_scale : 0.0f;
 			command->forward = camera->forward;
 			command->up = camera->up;
-			dword camera_object_index = camera->object_index;
-			if (camera_object_index != NONE)
+			if (camera->object_index != NONE)
 			{
 				real yaw = (real)atan2(command->forward.j, command->forward.i);
 				real distance = dot3f(&command->forward, (vector3f *)&camera->position);

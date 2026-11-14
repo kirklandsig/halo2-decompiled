@@ -468,6 +468,13 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // keep list EDX, count EAX, bool CL. Diagnostic: a function-scope count used after the loop 211 (701 bytes): the count
 // then loads into ESI with a stack store, list EAX, index EDX, so a count the allocator treats as a variable with a
 // home gives retail's ESI; no natural form found that makes it one without the store.
+// Round 176 (m3 lane 6, fast; base fast 20), bool append helpers `add(list, &entry)` with `if (!add) break;`: result as
+// `!(count == 4096)` with memcpy into `entries[count++]` 32 (setne CL, count EAX, list EDX); `long index = count++;` and an
+// aggregate assignment 51; a slot pointer from `&entries[count++]` with an aggregate copy 32; `long index = count;` then
+// `count++;` and memcpy 51; the full test first with `result = false` / copy and `result = true` arms 54 (654 bytes,
+// the bool folds) (the last four repeat earlier rounds' forms); the result as `count != 4096 ? true : false` 32; a template
+// bounded-list type with a bool `add` member 151 (643 bytes), with the pointer `new_element` member 145 (651 bytes).
+// Permuter on this body (fast, anneal, 600 s): 84 tries, best 20. Pointer helper restored.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {
