@@ -9,6 +9,16 @@ matched 10616 of 11326 game functions (2032419 of 2786206 bytes, 72.95%)
 matched 1345 of 1436 Havok functions (198690 of 290362 bytes, 68.43%)
 ```
 
+0 new matches, none lost:
+- @ccgman123's #1170: closer scores and notes, no new match.
+
+## 2026-11-14: 10616 functions match
+
+```
+matched 10616 of 11326 game functions (2032419 of 2786206 bytes, 72.95%)
+matched 1345 of 1436 Havok functions (198690 of 290362 bytes, 68.43%)
+```
+
 2 new matches, none lost:
 - @BrassMonkey71's #1167: `0x35b00` and `0x4b220` match.
 
