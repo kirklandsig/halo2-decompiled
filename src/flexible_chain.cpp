@@ -630,6 +630,7 @@ void __stdcall function_1160c0(real dt)
 // P475: Standard target/velocity/interpolation coordinate contracts, seven subsets,
 // then complete graph with forward seeded distance reduction: 331/309/425/333/411/420/395/437.
 // NOT kept: no exact native segment/vector-home repair; original complete body restored.
+// MiniMax H (11-14): no new form, no lower score (171): the segment pointer is still in EDI where retail keeps it in EDX, and retail still loads all six axis and offset components into registers where this build reads offset k from memory at the dot and at two later products.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

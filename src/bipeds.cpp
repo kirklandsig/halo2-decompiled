@@ -3026,6 +3026,7 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // P475: Standard signed settling/lower/upper admission contracts, seven subsets
 // then all complementary: 111/131/126/155/149/153/174/174. NOT kept: no exact
 // EBP/count/body/flag repair; original predicates and complete body restored.
+// MiniMax H (11-14): no new form, no lower score (63): retail takes the settling count in EAX and passes six stack arguments where this build passes seven, and 0x1d5120's declaration and definition are in another file.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -5618,6 +5619,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // P475: Original axis/up snapshot ranges through native/forward/backward transfers,
 // excluding native/native: 204/204/218/248/248/218/248/248. NOT kept: no exact
 // first-rotation/final-cross operand repair; original snapshots and full body restored.
+// MiniMax H (11-14): no new form, no lower score (79): the frame agrees (0x24) and the first difference is still at +0x107, inside the shared rotation helper, whose own file is not this lane's.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

@@ -965,6 +965,7 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // 322/250/329/324/333; paired angle multiply, complete time subtraction and reset multiply
 // kernels 258/300/417. NOT kept: all regress; native right i/j, forward.k reuse and angle bases
 // remain. Original copies, arithmetic, shared products and complete body restored.
+// MiniMax H (11-14): no new form, no lower score (45): what still differs is the register colour of the first product's operands and the else arm's forward stores, both of them inside the shared helpers (include/vector_products.h and src/unknown_1f03e0.cpp), whose bodies this lane may not change.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

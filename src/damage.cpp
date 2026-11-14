@@ -1065,6 +1065,7 @@ PRIVATE inline long damage_object_root(long object_index)
 // noinline ruling (MiniMax G 11-06). The rest of that round: the flag update through a local (load, or, store), the
 // outer radius added in two statements, the parent walk through an index-returning helper, the s_data_datum_iterator
 // player scan and a squared-distance helper called at both tests.
+// MiniMax H (11-14): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4 and the first 0xbadc0 use is still expanded here where retail calls it, and that callee's own file is not this lane's.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -1568,6 +1569,7 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 // Original copy, flag graph and body restored; aggregate registers and final store schedule remain.
 // MiniMax C (11-14): the flags read and stored through the dword alias of the four-byte field, and the owner
 // copy read through a named pointer and through a named value, each give 10 (unchanged); no new form, no lower score.
+// MiniMax H (11-14): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after the record's address is built; a copy through a local and a cast destination both leave the same ten.
 // @retail 0xdbfb0
 void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool b, bool c)
 {
@@ -2766,6 +2768,7 @@ struct s_unit_event
 // re-measure); that with the drop and 0x20000 blocks reading the datum through a local copy of the pool at each use
 // 523 (1900 bytes); the pool form alone 543 (1896 bytes); the drop values written at each call with no local 512 (1868
 // bytes). Kept: the seat reads through the typed unit definition (unit.seats.count / unit.seats.address, the local named definition) 517 (same code).
+// MiniMax H (11-14): no new form, no lower score (517): the first difference is still at +0xc, where the region index takes EBX and the permutation pointer EBP where retail keeps them the other way round, and the region's stack home follows from the declaration's parameter order, which this lane may not change.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3141,6 +3144,7 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // computed at return (52), a team result initialized from damage then multiplied (5), enemy live from entry (5).
 // MiniMax C (11-14): the team test as an early return with the state test left in place 5, both tests as
 // early returns 28, and one enemy flag with a single final return (worse); no new form, no lower score.
+// MiniMax H (11-14): no new form, no lower score (5): only the order of the two cold exits differs (this build reloads the stack before it copies xmm1, retail copies first); a merged tail return measures 24 and an explicit else 5, so the block order stands.
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {
@@ -4915,6 +4919,7 @@ dword function_db810(long object_index, long node_index)
 // NOT kept: input lifetime/scalar ownership did not recover EAX reuse and the native save/mask schedule.
 // MiniMax C (11-14): the model tag read through the typed tag field, the tag index through a named local
 // and the definition through a named pointer all give 4 (unchanged); no new form, no lower score.
+// MiniMax H (11-14): no new form, no lower score (4): the four instructions that differ are the tag index's mask, the tag entry's two loads and the entry's field; retail masks the index before it pushes EBP and reuses EAX for the entry, and no spelling of them that this lane may write moves the mask ahead of the push.
 // @retail 0xdbb40
 long function_dbb40(long object_index)
 {
