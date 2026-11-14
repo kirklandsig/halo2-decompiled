@@ -745,16 +745,13 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // sign-extends the low word, where this declaration's short count is read as a word home, and that parameter's type is
 // declared in src/unknown_17d9a0.cpp, which this lane may not edit; retail also keeps the previous side in memory where
 // this build keeps it in CL.
-// MiniMax B (11-14): score 92 (was 129): a `count > 0` guard in front of the loop gives retail's count load into ECX
-// (`mov ecx, [ebp + 8]; movsx edi, cx`) and its `test cx, cx` loop guard at 0x23a78b, and the fraction written as an
-// if/else gives retail's else arm that materialises the zero at 0x23a887; the loop's and the fraction's products are
-// spelled `current->x * plane->n.i`, which takes retail's order (the y term first, then n.i*x). What is left is the
-// zero constant's home: this build materialises it late in XMM1, retail creates it early in XMM2, so every float home
-// from the loop on is one register out; the tail hoists the count load into its join where retail reads the count at
-// the use, and the body is 890 bytes against retail's 887.
-// score 92 (was 129): the zero constant lands in XMM1 after the entry distance where retail creates it in XMM2 before
-// it, so the loop's float homes are one register out; the tail hoists the count load into its join where retail reads
-// the count at the use, and the body is 890 bytes against retail's 887.
+// MiniMax B (11-14), NOT kept: 92 (was 129) with a `count > 0` guard in front of the loop (retail's count load
+// into ECX and its `test cx, cx` loop guard at 0x23a78b), the fraction as an if/else (retail's else arm that
+// materialises the zero at 0x23a887) and the products spelled `current->x * plane->n.i`. The guard repeats the
+// loop's own `i < count` test, so it is kept only with a byte match: without it the other two changes score 249,
+// and the guard around the `previous` setup and the loop together (where it would also protect the
+// points[count - 1] read) scores 271 (coordinator). At 92 what was left: the zero constant in XMM1 late where retail
+// creates it in XMM2 early, so the loop's float homes are one register out; 890 bytes against retail's 887.
 // MiniMax B (11-12): no new form, no lower score (129, was 129): retail reads the count argument as a dword home
 // (`mov ecx, [ebp + 8]; movsx edi, cx`) where this declaration's short count is read as a word home, and that type
 // is declared in src/unknown_17d9a0.cpp, so the first difference stays; retail also keeps the previous side in
@@ -1104,11 +1101,10 @@ short function_23a6f0(point2f *output, short count, point2f const *points,
 	point2f const *previous = &points[count - 1];
 	real previous_distance = previous->y * plane->n.j + previous->x * plane->n.i - plane->d;
 	bool previous_inside = previous_distance >= 0.f;
-	if (count > 0)
 	for (short i = 0; i < count; i++)
 	{
 		point2f const *current = &points[i];
-		real distance = current->y * plane->n.j + current->x * plane->n.i - plane->d;
+		real distance = current->y * plane->n.j + plane->n.i * current->x - plane->d;
 		bool inside = distance >= 0.f;
 		if (distance > epsilon)
 			positive = true;
@@ -1126,11 +1122,9 @@ short function_23a6f0(point2f *output, short count, point2f const *points,
 			real dy = previous->y - current->y;
 			real dx = previous->x - current->x;
 			real denominator = plane->n.i * dx + dy * plane->n.j;
-			real fraction;
+			real fraction = 0.f;
 			if (denominator != 0.f)
-				fraction = 0.f - (current->y * plane->n.j + current->x * plane->n.i - plane->d) / denominator;
-			else
-				fraction = 0.f;
+				fraction = 0.f - (current->y * plane->n.j + plane->n.i * current->x - plane->d) / denominator;
 			fraction = fraction < 0.f ? 0.f : fraction > 1.f ? 1.f : fraction;
 			output[result].x = dx * fraction + current->x;
 			output[result].y = dy * fraction + current->y;
