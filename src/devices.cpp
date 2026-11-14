@@ -1696,6 +1696,11 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // render model the fstp is the eighth instruction after the branch, and in all of them except ours three instructions
 // separate it from the call (ours four, since the render model's reload opens the block); retail has both the reload
 // and three, as if that reload were not in the block when the store was placed.
+// M3 lane 12 r121 (fast, and a one-file LTCG harness with the callee files that reproduces the swap): the render model
+// declared at function scope 2; the animation and time read through a channel pointer local 2; the time computed first in
+// the flag block with the sampled matrix after it 2 (harness); the render model as `(long)(void *)` of the tag data 2; the
+// animation state fetched after the matrix copy 341 (harness positional; the prologue reorders). Diagnostics (harness,
+// reverted at once): the render model or the time address-exposed, or the render model volatile, same code.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

@@ -464,6 +464,11 @@ struct c_aggregate : c_child
 // the function, while one that reaches only known callees is packed by scope; retail's packing of this count therefore
 // needs either a known callee (retail calls through the vtable) or a compile without it. Still BLOCKED by the build
 // flag; no source form can pack the slot.
+// M3 lane 12 r121 (one-file LTCG harness, exact on the control 31; the file-mates stayed matched): `produced` declared at
+// loop-body scope ahead of the child test 141 (fast, 389 bytes); the base v5 defined out of line (a known body) 31 (fast,
+// same code); the gate as `error == 0 && child != 0` 37; the count named block_count 31 (same code); the cleanup walking
+// the blocks with a block pointer 82 (391 bytes). A pure virtual v5 does not compile (the aggregate is instantiated).
+// Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
