@@ -226,6 +226,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
+// MiniMax G (11-14): no new form, no lower score (49): retail keeps the false result in bl and sets it only after the
+// attachment, ours keeps it in ebp; retail reloads the object table's data pointer and recomputes the scaled index
+// between the header flag test and the object read, ours shares one address between the two reads.
+// MiniMax S (11-14): no new form, no lower score (49): retail keeps the false result in BL from before the creation call and sets it only after the attachment, branches on the creation call's result instead of materialising it as a 0/1 value, borrows EBP around the header flag test and loads the object table's data pointer again for the object read, where ours keeps the result in EBP and shares one header address between the two reads; the result byte at the entry and the data reload are not reachable from this file.
 // score 49 (was 49; m3 lane 2 r79 at the end): unchanged this round: retail keeps the false result in BL from before the creation
 // call and sets it only after the attachment, and it branches on the creation call's result instead of
 // materialising that comparison as a 0/1 value; retail also borrows EBP around the header flag test and
@@ -769,6 +773,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // only after CSE. Every natural spelling that adds such a join (bool or local retests, early returns, predicates, do/while,
 // getters) is threaded before CSE in this build, and the forms that keep it (a store at the join, a cleared field retested)
 // are match-only and leave the join itself in place.
+// m3 lane 6 r178 (fast with 0xa5b10/0xa5b40/0xa5b80/0x108e10/0xbb780, matched throughout): on the bool result set
+// after the attach (77, re-measured: f cached in EBP from entry, so no EBP is left to borrow around the header test
+// and the header address stays shared) a folded test on the second virtual call to lower its block weight, `result
+// && value`, `value && object_index != NONE` or `value && entity`, 77 each (folded before allocation: f still in
+// EBP); `result = true` after the second virtual call 79 (158 bytes); the creation result stored straight into the
+// entity and read back into the local 77. Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1145,6 +1155,11 @@ bool c_projectile_type::v8(long a, long b)
 // word read through the parameter's address, 12 each. Diagnostics (not kept): with the mask the flags take ESI at three uses
 // each (12) and at four each (37); the object takes it with the 0x400 test removed (40); with the word read the object takes
 // ESI even with one of its 0x140 reads removed (6), so the word read does not act through a use-count tie alone.
+// Round 119 (m3 lane 9, fast with 0xa5e70, matched each time), with the full-width mask unless noted: the call's mask
+// from the flags local and both tests from `b` 12; only the 0x800 test from `b` 12; the group value pointer (or NULL)
+// from a forceinline taking the object 36 (189 bytes); the index reference bound at the function's top, before the
+// call, 12, with the word read 5. In the mask listings the group data reuses ESI after the flags (retail: after the
+// object). Diagnostic, compile-only: /G5, /G6, /G7 and /GB all keep `movzx eax, ax` for the word read.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

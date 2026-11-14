@@ -697,6 +697,8 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // decrement exit as `if (>= 0) break; goto release_tracking;` 433 (1616 B, frame 0xa0); the loop-tail state through the typed
 // `->unknown68` field 412 (same code); case 4's arms the other way round 443 (1644 B); sample/update declared after the 0x263670
 // call 412 (other code).
+// MiniMax C (11-14): no new form, no lower score (412); the actor/index/flag allocation and the
+// 0xa8-versus-0xa0 frame are unchanged.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
@@ -1186,6 +1188,8 @@ real function_296600(long actor_index, long prop_ref_index);
 // on the base both hit pointers as `not_current ? NULL : ...` 95 [28]; the root's argument as an object_index local set by an if (the
 // parent unit's index first) 260 [21], with `!current` in both calls 270 [26] (1277 B).
 // The actor through the existing actor_get 90 (same code, kept: it replaces the written-out lookup).
+// MiniMax C (11-14): no new form, no lower score (91 in the reduced image, the queue's 90); the actor
+// pointer still lives in edi where retail keeps it in ebx.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

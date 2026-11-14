@@ -1154,6 +1154,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
+// MiniMax G (11-14): no new form, no lower score (33): the query-size and write-count homes stay four bytes off (ours
+// at [esp + 0x34] where retail keeps [esp + 0x30]); retail loads the write's handle before its pushes and compares
+// against esi (1) where ours compares against ecx; the call-target difference (our 0x403320 against retail's 0x1a1050)
+// is the same function in the reduced map and is not a source difference.
 // score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
 // checksum register and header-validation joins remain.
 // checksum register and header-validation joins remain. Earlier diagnosis before native handles:
@@ -1691,6 +1695,18 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // cache_file_header_read(index) ? true : false;` 105 (932 bytes: a `setne` that is tested again, no threaded continue),
 // `!= false` 105 (same code); the close test with the handle test first 68; the cleanup's slot switch ahead of the header
 // memset 49; `remove_later = false;` ahead of the remove call 35. Body unchanged.
+// M3 lane 9 r120 (fast): the close repeated in both resize arms with no zero store 179 (994 bytes, VC keeps both tails);
+// the checksum operands swapped 33; `bool valid_types[3] = { true, true, true };` 263; the write count also zeroed at its
+// declaration 96 (934 bytes); the query size as unsigned long 33. The size/count homes look ordered by reference count:
+// the zero-store arm gives the count a third reference that retail's threaded join does not have.
+// P478 m3: Complete checksum memcmp/range-equal/typed-equality/short-circuit-memcmp
+// on positive-validation/native-count completion: 67/32/12/76; original checksum/query
+// and completed-query/count predicate forms: 90/250/248/119. Control 7 remeasured, uncredited.
+// NOT kept: unmatched completion flags require equality; 12 adds a nonnative comparison call;
+// other forms regress or move extent/frame away. Original helpers and full body restored; query/count/write/checksum remain.
+// P480 m3: Native by-value query/resize/write copy constructions, subsets 1/2/4/3/5/6/7,
+// then all four I/O boundaries on failure-only count flow: 43/43/35/36/32/32/32/39. NOT kept:
+// one-point gains to 32 fail the bar; original handles, helpers and complete body restored.
 // @retail 0x213970
 void function_213970(void)
 {

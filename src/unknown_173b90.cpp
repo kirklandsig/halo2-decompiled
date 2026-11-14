@@ -472,6 +472,12 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax R (11-14): the emitter list test wrapped around the loop with the offset's zero store
+// inside it, and the scale declared before the multiplier, measure 39 (was 42) at 1130 bytes; not
+// kept, since the gain is under eight and the score stays above 30. Left: row i of both rotations
+// sums the up product before the forward one, the two saved registers are reloaded in the other
+// order after each property call, the copy's second and third components swap, and the branch
+// offsets and the two trailing bytes follow from those lengths.
 // score 42 (was 42): left: the offset's zero store before the list test, the 1.0 defaults' order, three
 // reload pairs and row i of both rotations. Round 176 (m3 lane 5, fast): on indexed emitter definitions with
 // scale first (re-measured 113 at 1136 B; every integer difference fixed, only the rotations differ: VC
@@ -809,6 +815,14 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // order as well, so the count is not the lever for this function. One placeholder on the indexed form gives retail's
 // copy order (y, x, z into EAX/EDX/ECX) with the sums still (up*z + forward*x) + left*y.
 // P460: Callback-only position/motion/both rotation-return receivers, mutable/read-only, then complete early lifetimes: 122/122/126/122/122/126/126/126. NOT kept: output aliases miss equality and add 6-8 bytes; original shared rotations and whole body restored.
+// M3 lane 7 r158 (fast, base 42): on the emitter walk as `if (emitter_index != NONE) { offset = 0; do ... while }` (41
+// alone): scale first 39 (left: three reload pairs, row i of both rotations, branch offsets); with both refresh masks inline 39;
+// the emitter definition formed before the emitter lookup 44; `+=` translation 39; the motion rotated first 89; the particle
+// loop as do/while under its `if` 39.
+// P484: Linked-list for successor with empty-emitter continue, byte offset/row ordinal
+// 212/235; nested admission 42/115; post-admission definition receivers 260/262;
+// pre-admission unity defaults on the continue graph 210/233. NOT kept: no equality/gain;
+// original observations, offset/default timing, shared alias-safe rotations and body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1344,6 +1358,24 @@ void function_40e30(short, long, real, long, short, dword, dword, t_record_fill,
 // field reread after a call); that with the existing tag reused at the final getter 152; request-owned
 // loop advance 143; shifted-word bit five on the reread graph 320. Original executable body restored;
 // tag/group ownership and final getter scheduling remain.
+// M3 lane 7 r158 (fast; plain where marked; base 108): a path to 6 (plain 6 at 1380 B, first difference +0x20f) with every step
+// together; not kept, since its moved statements and one-use locals are match-only (diff saved as build/r158/r158-174420-six-
+// form.patch): 0x1e4e0's parameters as (size, position, callback, data) (retail's call sets EDX = position before ECX = size,
+// and 0x1e4e0 reads them there) 106; the definition's tag index in a local for the group, 0x137bd0 and the lookup 291 alone;
+// `request.system = system;` and `long index = system->location_index;` ahead of the bias and the camera block, the index
+// before the bias, 31 (the entry and the camera copies retail's; the other three orders 58/60/33); the frustum index read into
+// a local before 0x165010 (as 0x41640 does) 26; the 0x40e30 call's definition fetched into a local first 19; both locals 41 (the
+// rotation's phase turns), with one existing one-use local folded (in_pool, distance or shader) 12; the camera built as forward
+// copy, cross product, up copy (0x248450's order) 17 / 12; the left axis through particle_cross_product3d (0x248450's static
+// helper, row i's second product written b-first) 6. Left at 6: the rotation's three up-row products load the up element
+// first, retail the vector's k. Diagnostics on the 6 form (removed: volatile is not allowed): a volatile load of the location
+// index, of the bias short or of camera_relative at the camera test each give a MATCH (fast; a 600 s permuter run found the
+// first, full image MATCH); a volatile next-index read, a volatile request store or a volatile frame-counter read stay 6. So one
+// load in the block before the camera test that VC cannot forward gives retail's operand order. No plain form found: the index
+// through request.system 6, index before request 6, for and if + do/while loops 6, dword/int/unsigned index 6, the index
+// declared at the top or renamed 6, the 0x2477b1 rotation 12-17, other camera orders 10-20, the rotation written out 237, the
+// cross product written out 298, the bitfield tests without the macro 200-332 (the alias test folds), camera_relative read
+// through its address 195, the bias short named 195, the bias product constant-first 6.
 // @retail 0x174420
 void __stdcall function_174420(long system_index, bool view_pass, bool camera_relative, bool force_visible)
 {
@@ -1461,6 +1493,11 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
+// MiniMax R (11-14): no lower score (47): the availability's zero store still comes before the
+// second definition call and the availability is still made from the query result arithmetically;
+// moving the clear to just before the view read measures 125. Left: the availability's store order
+// and its arithmetic form against retail's branch, the view's reload after the attachment call, and
+// the two flag byte homes.
 // score 47 (was 47): availability clear/production and later view observation remain;
 // what still differs is the same-view flag: ours writes its true value to the stack byte
 // before the availability query, retail keeps the flag in BL and writes the true value only after the owner
@@ -1853,6 +1890,22 @@ bool function_17afd0(long effect_index, long value);
 // then all with direct camera-result production: 116/50/96/118/119/98/121/121.
 // NOT kept: no exact availability/Boolean-home repair; original observations,
 // predicates, query gates, draw tuple and complete traversal restored.
+// M3 lane 7 r158 (fast, base 47): P (the view global at each use, owner if/else, availability false after the owner and set
+// on success, plain same_view and attached) 138; P with the owner NONE-defaulted through a block-scoped effect pointer 138
+// (508 B); P with the owner if/else inverted 142; this body with it inverted 47 (same code); `long const` effect index and view
+// 47 (same code); P with the query tested `== 0` 138. In every P form NONE's register stays live through the view and owner
+// tests (`cmp esi, ebx`, `cmp edi, ebx`), where retail's ends at the owner default.
+// P468: Existing camera/draw result byte/short/long/dword storage domains:
+// 113/140/141/141/47/111/110/110. NOT kept: no equality for the native byte homes;
+// original availability, view snapshot, query gates and complete body restored.
+// P482: Six eager pure-scalar owner/view/availability conjunction orders, then two
+// mixed complete joins: 122/122/122/122/122/122/139/162. NOT kept: all regress;
+// full eager joins grow the frame to 0x18, final mix grows to 515 bytes. Original
+// Boolean graph, read/query phases and entire body restored; availability/view gaps remain.
+// P484: Shared three-relation view outcome (unavailable/available-other/available-owner),
+// byte/short/long/dword, original/producer-local zero lifetimes: 60/133/131/131/70/87/85/85.
+// NOT kept: no equality/gain; original availability, owner/view observations, query
+// gates, callback arguments, traversal and entire body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

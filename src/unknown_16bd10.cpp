@@ -1065,6 +1065,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // (no object_index local) 372 (1700 B); the timer reading game_time->scale at both uses (no time_scale local) 410 (1700 B);
 // the projected point offset along `&plane.n` (the copy of the same left vector) 449. Retail's default arm carries the
 // 0.0f of case 2 into the timer test in XMM0 (its own xorps splits the `|= 0x40` into load/or/store); ours re-zeroes XMM1.
+// P471: Complete case orders first/pan/point/animation, first/pan/animation/point,
+// first/animation/point/pan; standard distance minimum, projection/timer/FOV nonzero
+// and FOV-completion predicates: 456/461/456/404/518/483/428/323.
+// NOT kept: 323 grows native 1696 bytes to 1708 and adds a call; all other forms
+// regress. Original full body and includes restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

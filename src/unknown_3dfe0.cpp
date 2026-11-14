@@ -104,6 +104,9 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // (same code). On the update-first diagnostic (218, masked 15: retail's EBX object and homes, but the two timestamps
 // take EDI/ESI and the force arm has no reload): renaming update, elapsed or update_elapsed, `type` before `special`
 // and the update test's operands swapped all leave the first push EDI (218).
+// m3 lane 14 r92 (fast with 0x3d2c0, control 21): the elapsed clamp just before the force flag 172; force as
+// `initialized && valid ? false : true` 21 (same code); the update elapsed written at its test with no local 259
+// (802 bytes); elapsed renamed sample_elapsed 21; the object as `byte *const` 21.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

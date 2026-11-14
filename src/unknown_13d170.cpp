@@ -646,6 +646,8 @@ struct s_physical_block_iterator
 // local) 221 (1189 B); that with the predecessor also read at each use (no `before` local) 228 (1217 B: every frame slot moves,
 // first difference +0x2f, and the data is reloaded after the entry's first store where retail keeps it). Left on 221: the
 // walk's count/bit (ours EBX/EDI, retail EDI/EBX), the allocation result's register and the insertion's mixed data reload.
+// P472: Case-zero older/equal-time/smaller Boolean outcomes, subsets 1/2/4/3/5/6/7, then all byte outcomes: 201/201/201/201/201/201/201/201.
+// NOT kept: no native case-result/placement equality; original policies, observations, ring, iterator, linking and full body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
