@@ -1444,71 +1444,6 @@ bool function_2dba0(long tag, bool alternate, long c, long d, long e, point3f co
 extern bool g_4ba019;
 long function_baf80(long object_index);
 
-// score 12 (was 12): the parent lookup differs. Retail masks the parent index (`and eax, 0xffff`,
-// `lea`) before it loads g_4e0300, ours loads g_4e0300 first and uses movzx; the first model
-// load also goes through EDX in ours and EAX in retail. Tried: `long parent_slot = parent & 0xffff`
-// (22), the same with byte-offset addressing (22). Also tried: `[parent & 0xffff]` written directly (22,
-// 459 bytes: retail loads g_4e0300 into EAX after the mask, ours into ECX before it), the parent object
-// and definition in one expression (22), `(word)parent` inline (12), the model read without the
-// definition local (12), `model` reused for the parent's model (12), `object_index != parent` (13),
-// `parent` declared before the model test (12), definition/model declared at the top (12).
-// MiniMax H (11-12, second pass): no new form, no lower score (12); retail keeps the definition pointer in EAX and
-// reuses the dying register for the model load where ours routes it through EDX, and in the parent chain retail masks
-// the handle with `and eax, 0xffff` before it reloads g_4e0300 where ours loads the pool first and narrows with
-// movzx. This round took the object, the parent object and the definition through their own element pointers, read
-// both model values inline and spelled the object lookup as byte-pointer arithmetic; every one of them scores 12, so
-// the register roles do not follow from those spellings either.
-// MiniMax H (11-12): no new form, no lower score (12); retail keeps the definition pointer in EAX and reuses the dying
-// register for the model load where ours routes it through EDX, and in the parent chain retail masks the handle with
-// `and eax, 0xffff` before it reloads g_4e0300 where ours loads the pool first and narrows with movzx; this round
-// added the byte-pointer and the offset-in-a-local spellings of the parent lookup and they compile to the same bytes.
-// MiniMax H (11-11): no new form, no lower score (12); retail still masks the parent index with `and eax,0xffff` before it reloads g_4e0300, while ours loads the pool first and truncates with movzx, and the pool load is hoisted above the mask in every spelling tried, so retail's order stays out of reach; the body stands.
-// MiniMax B (11-11): no lower score (12): the dword-masked parent index 22 (the earlier round's form, re-measured),
-// the byte-pointer parent lookup 22 and the inline model read for both chains 12 with the same code; retail's dying
-// EAX reuse in the definition chain stays out of reach.
-// MiniMax I (11-11): no new form, no lower score (12); reading the definition and the model through a `long *`
-// and an index (`definition[14]`) compiles to the same four instructions, the parent mask written inline in the
-// subscript (22: the function grows to 459 bytes) and the mask in a `long` local (22: the pool is still loaded
-// before the mask) both fail; retail's order (the mask, then the pool load) is not reachable from the source, since
-// the pool load is hoisted above the mask in every spelling tried.
-// MiniMax I (11-10): no new form, no lower score (12); a dword-masked parent index (`long parent_slot = parent & 0xffff;`,
-// 22 — the mask reaches EAX but g_4e0300 still loads first and the function grows to 459 bytes) and a dword-indexed
-// model read (`dword *definition ... definition[14]`, 12 — no change).
-// MiniMax R (11-10): no new form, no lower score (12): retail reuses the dying definition's eax for the pool's mask before the pool is acquired, ours acquires the pool first; the forms the earlier rounds tried all left the score where it is.
-// MiniMax C (11-09): no new form, no lower score (12).
-// MiniMax R (11-06): no lower score (12); the dword-masked parent index 22, an inline parent mask 22, an inlined parent model 22 and an inlined first-chain definition 12 score no better; the parent mask written inline in the subscript gives 22 as well, so retail's order (mask, scale, then reload g_4e0300) is not reachable from the source.
-// MiniMax D (11-05): no new form, no lower score (12); retail masks the parent index before it loads g_4e0300 and keeps the definition pointer in EAX, ours loads the global first and goes through EDX; a dword truncation, a dword or long masked index, the mask inline in the subscript, a headers local, the model read without the definition local and a dword model all score 12 or worse.
-// MiniMax B (11-12): no new form, no lower score (12): our standalone copy of this body is a link-time clone (our
-// 0x3d7f0 expands the body instead of calling it), so its argument registers follow the call site in
-// src/unknown_133790.cpp - the index arrives in EDI and the distance on the stack - while retail's clone takes the
-// index in EBX and the distance in XMM1; that is where the frame (ret 0xc against 8) and the definition chain's
-// register roles (retail EAX, ours EDX) come from, so they are not reachable from this body.
-// Round 109: the first chain's definition also lands in EDX (retail EAX, reusing the dying register as the model
-// load does). Tried: the parent object as `long *` (as matched 0x17bab0 writes it) with `[parent & 0xffff]` 22,
-// a parent header pointer 22, `long parent_index = parent & 0xffff` 22, `if (model == NONE) return;` 12, a two-caller
-// inline model-index helper for the object and its parent 22.
-// Round 111: initial definition as `long *` 12; parent definition as `long *` 12; parent definition inlined 12;
-// parent slot as dword/long from the narrowed handle 12/12; a shared tag-table local 12; settings as a real
-// array 12; the read-only object/definition chain const 12; the parent slot masked again in its array subscript 12.
-// P362: Parent narrowed in place 22; shared definition receiver 12; initial/parent/both
-// load-chain scopes 12/12/12; single void exit 12; explicit limit tests 12; both model
-// handles immutable 12. NOT kept: no byte equality or gain; original body restored.
-// MiniMax A (11-11): no new form, no lower score (12); the definition and model reads written inline (the model twice) and the parent chain written inline all compile to the same code, and the permuter's fifty tries kept the baseline.
-// MiniMax R (11-11): no new form, no lower score (12): the parent lookup differs - retail masks the parent index
-// with `and eax, 0xffff` before it loads g_4e0300 and keeps the definition pointer in eax, ours loads the pool
-// first and truncates the index with movzx; the pool load is hoisted above the mask in every spelling tried.
-// P419: Existing typed model fields 12; test-produced opaque result 128;
-// chained output clear 14; scalar weight names 12; combined cutoff 37;
-// in-place level cap 23; settings selection expression 12; late second
-// weight 47. No byte gain; typed fields alone confirmed by plain check.
-// m3 lane 14 r89 (fast; control 12): our 0x3d7f0 calls this function at both sites, as retail does (the MiniMax B
-// 11-12 line above, which says it expands the body, is not so; the entry, index in EBX, distance in XMM1, ret 8,
-// and the frame agree with retail). New: the parent model defaulted to NONE and tested once after the parent test 12
-// (same code); every local renamed (a_ and z_ prefixes, descriptive names) 12 each (same code); the output clears
-// ahead of the object lookup 125; the flag's operands swapped 12 (same code); the 0xff stores chained 14.
-// Re-measured: the parent object, and both objects, through the existing inline getter object_default_placement_get
-// 22 (459 B, same code as `[parent & 0xffff]`). Matched 0x1e13f0 and 0x25b6b0 get the mask before the pool load by
-// passing the 0xbaf80 result straight into an inline getter with no compare in between.
 // @retail 0x4baf0
 void function_4baf0(long object_index, real distance, byte *first, byte *second)
 {
@@ -1523,19 +1458,16 @@ void function_4baf0(long object_index, real distance, byte *first, byte *second)
         return;
     }
     s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
-    long model = definition->model.tag_index;
-    if (model != NONE)
+    if (definition->model.tag_index != NONE)
     {
-        byte *settings = g_4e3b44[model & 0xffff].bytes + 0x28;
+        byte *settings = g_4e3b44[definition->model.tag_index & 0xffff].bytes + 0x28;
         long parent = function_baf80(object_index);
         if (parent != object_index)
         {
-            word parent_slot = (word)parent;
-            byte *local_be682a_2 = ((s_scalar_object_header *)g_4e0300->data)[parent_slot].object;
-            s_object_definition *parent_definition = (s_object_definition *)g_4e3b44[*(long *)local_be682a_2 & 0xffff].bytes;
-            long parent_model = parent_definition->model.tag_index;
-            if (parent_model != NONE)
-                settings = g_4e3b44[parent_model & 0xffff].bytes + 0x28;
+            byte *parent_object = ((s_scalar_object_header *)g_4e0300->data)[parent & 0xffff].object;
+            s_object_definition *parent_definition = (s_object_definition *)g_4e3b44[*(long *)parent_object & 0xffff].bytes;
+            if (parent_definition->model.tag_index != NONE)
+                settings = g_4e3b44[parent_definition->model.tag_index & 0xffff].bytes + 0x28;
         }
         long level = 4 - *(word *)(settings + 0x24);
         real width = *(real *)(object + 0x3c) * 7.0f;
