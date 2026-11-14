@@ -120,6 +120,13 @@ union s_6ec80
 // sort after the players pointer 225 (names move nothing).
 // A bool for "both blocks present" computed where the two blocks are fetched and tested at the guard, mask zeroed
 // inside 251 (985 bytes; it is materialised as a byte, not carried as the two pointer registers).
+// Round 115 (m3 lane 16, fast with 0x5b120; control 5), all with the mask scoped in the guard (alone 225: NONE in EDI,
+// the zero in ECX, the machines pointer spilled): 0-7 dead initialised locals at the top 225 each (no phase effect on
+// this allocation); the two block copies as aggregate assignments in place of memcpy 225; the members-equal bool
+// computed where the mode is chosen 219; the member count read at its test instead of a local 115 (the later code
+// recovers, the entry roles stay NONE EDI / zero ECX); the local machine read at its store instead of the copy 236.
+// Also: with the mask scoped, the member count at its test plus the members-equal bool at the mode choice 164, plus
+// the local machine read at its store 238 (960 bytes); unscoped, the member count read at its test 150.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

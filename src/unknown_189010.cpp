@@ -149,9 +149,19 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax D (11-14): no new form, no lower score (110): our build still expands the first 0x221810 lookup inline where
+// retail calls it out of line (that helper's inline-ness is set in src/unknown_221490.cpp), and the 0x21d110 call still
+// takes the play state by pointer on the stack where retail passes the state in a register (that callee's declaration is
+// in another file); the request is still copied field by field where retail copies the whole request and patches the
+// flags after. BLOCKED-BY 0x221810 and 0x21d110.
 // MiniMax E (11-11): no new form, no lower score (110): the request is still copied field by field
 // into the play state, where retail copies the whole request and patches the flags after.
 // MiniMax B (11-12): no new form, no lower score (110); our build still expands the first 0x221810 lookup inline where retail calls it out of line (that helper's inline-ness is set in src/unknown_221490.cpp, a file this lane may not edit), and the 0x21d110 call still takes the state by pointer on the stack where retail passes the state in a register (that callee's declaration is in another file); the header order, the flag word and the end-time publication were measured again and left as they are.
+// MiniMax A (11-13): no new form, no lower score (110); what still differs: the first 0x221810 class lookup is
+// expanded in the body here and called out of line in retail, so the flags and the request are forwarded across that
+// call where retail reloads them, and the 0x21d110 call passes the state by pointer on the stack where retail passes
+// it in a register; the lookup's inline-ness (src/unknown_221490.cpp) and 0x21d110's declaration
+// (include/sound_records.h) are outside this file: BLOCKED-BY 0x221810 and 0x21d110.
 // score 110 (was 110): BLOCKED-BY 0x221810 and 0x21d110 (callee side): LTCG inlines the first
 // 0x221810 call (retail calls both; its file is not this function's) and 0x21d110 (unmatched) takes the
 // tag in EAX and the state on the stack where retail passes the state in EAX; the forms that give 0x21d110
@@ -851,6 +861,14 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // the listed fall-through form); the projection products written `t * direction->i` 2 (same code). The retail
 // call graph has no cycle through this function or 0x1895f0 (0x1895f0 does not reach 0xf8eb0), so the context effect
 // is not a compile-order cycle through this function itself.
+// m3 lane 14 r92 (fast with 0x188180, control 2): the camera position through a const pointer used six times 2 (same
+// code); the distance as a float `(real)-sqrt(...)` 48 (659 B); the player test written `player_unit_index == unit_index`
+// 3; the three vectors declared projection, perpendicular, to_camera 2; the along bound written `0.0f <= along` 2.
+// Image search: of the 486 sources 0x188180's image adds, src/unknown_0350e0.cpp alone flips the order, and inside it
+// only 0x4ff50 and 0x37260 together (each alone, or 0x4ff50 with any of eleven other functions of that file, keeps
+// retail's `pop esi; mov al, 1`); 0x37260 still flips it with a one-line body. The same pair flips 0x4ff50's own
+// epilogue (pops interleaved with its last stores as retail without 0x37260, not with it), so the order is an
+// image-wide code-generation state, not this body's: no form here moves it.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

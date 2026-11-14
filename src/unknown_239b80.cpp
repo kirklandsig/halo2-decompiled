@@ -580,6 +580,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // 42, the fxch gone), plus `short current = count;` before the classifier call 150 (784 B), plus the departure as
 // `left_start = left_start || points2d_differ(next, first)` 150, or lowest_y declared before lowest_x 148 (masked 47 each).
 // Left in every family: retail caches the hull count in EBX at its top-tested loop head and reads the count from its home.
+// P485: First departing index/one-based position owns hull departure history,
+// short/word/long/dword 279/277/193/193 and 277/277/188/188. NOT kept: no byte
+// match; original Boolean-valued history, eager length, loops and whole body restored.
+// Native frame 0x14, count/departure argument reuse and scan bound remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -737,10 +741,32 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 	return fabs((double)a->x - b->x) < epsilon && fabs((double)a->y - b->y) < epsilon;
 }
 
+// MiniMax E (11-14): no new form, no lower score (129): retail still reads the count argument as a dword home and
+// sign-extends the low word, where this declaration's short count is read as a word home, and that parameter's type is
+// declared in src/unknown_17d9a0.cpp, which this lane may not edit; retail also keeps the previous side in memory where
+// this build keeps it in CL.
 // MiniMax B (11-12): no new form, no lower score (129, was 129): retail reads the count argument as a dword home
 // (`mov ecx, [ebp + 8]; movsx edi, cx`) where this declaration's short count is read as a word home, and that type
 // is declared in src/unknown_17d9a0.cpp, so the first difference stays; retail also keeps the previous side in
 // memory where this build keeps it in CL.
+// MiniMax G (11-13): no new form, no lower score (129): the SIMD homes carry the bulk of the score and
+// they are a pure renaming: retail holds the zero constant in xmm2 and the difference dy in xmm0 (the
+// dead loop temp), where this build holds dy in xmm2 and the zero in xmm4, so every instruction of the
+// clipped branch differs while the arithmetic is the same. The count's ECX home is reproducible only by
+// a third use of the count: the `count > 0` guard (211, wrong control flow) or moving
+// `previous_inside = inside;` to just before `if (inside)` (157); that second form reproduces retail's
+// general registers exactly (`mov ecx,[ebp+8]`, `movsx edi,cx`, `test cx,cx`, the loop head's
+// `mov ecx,[ebp+0xc]` and the `mov edi,edi` pad) but swaps the two side bytes (this build keeps the
+// previous side at [esp+0xc] and the current at [esp+0xd], retail the other way round) and keeps the
+// SIMD renaming. Declaring the side flags in retail's order (current, previous, positive, negative)
+// changes no code (157, same bytes).
+// MiniMax G (11-13): no new form, no lower score (129): retail materialises the count in ECX at the top of
+// the main path (mov ecx,dword ptr [ebp+8]; movsx edi,cx; test cx,cx), so the previous side has no register
+// and lives in the byte at [esp+0xd]; this build re-reads the count from its home (movsx edi,word ptr
+// [ebp+8]; cmp word ptr [ebp+8],0) and keeps the previous side in CL, and the loop head takes EDI where
+// retail takes ECX. The count stays a short in retail (the alias branch loads word ptr [ebp+8] and the
+// guard compares ax with word ptr [ebp+8]), so this is the count's lifetime inside the body and not its
+// width; the declaration that fixes its width lives in src/unknown_17d9a0.cpp, which is not mine to edit.
 // score 129 (was 129): Retail length and the mask update agree; retail keeps the previous side in memory
 // aligned frame and stride/prior homes agree; prior-side byte and SIMD homes differ.
 // MiniMax D (11-11): no new form, no lower score (129); retail reads the count argument as a dword home (`mov ecx, [ebp+8]; movsx edi, cx`) where this declaration's short count is read as a word, and that parameter type is declared in src/unknown_17d9a0.cpp, so the first difference stays.

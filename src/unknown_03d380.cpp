@@ -314,6 +314,9 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
+// MiniMax E (11-14): no new form, no lower score (36): the record's address is still built with an imul into ESI and an
+// add where retail multiplies into EAX and forms the address with a lea, so the type byte is tested in another value;
+// the layouts that put retail's special arm first need 0x221810 kept out of line, and that file is outside this lane.
 // score 36 (was 36): the address of the record is built here with an imul
 // into ESI and an add; retail multiplies into EAX and forms the address with a
 // lea, so the type byte that is tested afterwards is compared in another value.
@@ -558,6 +561,22 @@ void function_125a90(long value);
 // Real (no pragma): that whole 22 form 133 (468 bytes, 0x221810 inlined); the same with the class-type test written
 // inline as `||` (no named bool) and every element field read through the pool at each use (no element local, so no
 // mixed keep store) 47 (416 bytes).
+// m3 lane 6 r178 (one-file LTCG harness: this file, src/unknown_221490.cpp, src/unknown_124f90.cpp,
+// src/unknown_16b570.cpp and the build's ballast object; it gives 35 for this body where --fast gives 36, and
+// lab counts below are its instruction differences): LTCG inlines 0x221810 when the call site is hot enough,
+// and every test that guards the call halves its weight; the inline `||` puts the call two tests deep, the
+// named class-type bool one, which is why that form inlines it. On the named-bool layout (round 119's 25 form,
+// without its pragma) one more guarding test that folds away keeps the call out of line: `element &&` on the
+// kind test 25 in --fast (lab 11; most of the 25 are relocation shifts from one byte); `b &&` before the
+// getter call, `!special &&` there, `(short)type != 0x20 &&` on the kind test lab 11 each. Left: retail
+// computes the element address before the `b` test as `imul eax` + `lea esi` with `b` loaded after it; ours
+// loads `b` first and builds the address in ESI, and the type lookup's registers rotate (ours EAX/ECX/EDX,
+// retail EDX/EAX/ECX). On the guarded form (lab): the element at each use through the pool 10 (retail's type
+// registers and `imul eax` + `lea`, but the address sinks below the `b` test), through g_4e637c 33; mixed
+// local and pool reads 23 each; byte-offset element, `&elements[index]`, `index * 0xbc`, `sizeof * index` 11
+// each; `(word)datum` index 35; the type through sound_definition_get 11, as a char 43; `remove` declared
+// before the element 11; index and element declared before the loop 11; `if (!b) remove = true; else` 11.
+// The guards are implied tests, so none is kept without a match. Body unchanged.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

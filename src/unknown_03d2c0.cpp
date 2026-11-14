@@ -134,7 +134,7 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // form the coordinator reverted on 11-11 (a statement copied into both arms, kept only with a byte match), so the body
 // stays as it is; the walk's NONE exit spelled as a then-arm return 83, the allocation test inverted with the flag in the
 // else arm 83, the flag hoisted above the allocation 116, and the permuter over the 9 form found nothing better.
-// score 77 (was 77): round 116 (m3 lane 9, fast with 0x3db00 and 0x3dd10): lane 14 r84's `long result = NONE;` and
+// score 77 (was 77): m3 lane 4 r196 note at the end; round 116 (m3 lane 9, fast with 0x3db00 and 0x3dd10): lane 14 r84's `long result = NONE;` and
 // `if (result == NONE) { allocation; walk; }` skeleton with round 99's `if (result != NONE) initialize = true;` after the
 // walk (no walk return) 99 (491 B: the walk's NONE exit jumps to the end as retail, but the allocation and walk paths are
 // threaded over the merge test retail keeps); re-measured the 9 form (9, 519 B). Every spelling that keeps the merge test
@@ -276,6 +276,17 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // NONE)` 176 (488 bytes). Re-measured: the record pointer inside `if (initialize)` 132 (506 bytes, the listed joined-test 132).
 // Rebuilt for reading: 9, 83, 85, 86, 138, 145. VC folds `return result` after any NONE test of result (`or eax, esi` / `or
 // eax, -1`); retail's walk exit returns the register unfolded from a second epilogue, which no listed spelling gives.
+// M3 lane 4 r196 (fast with 0x3db00/0x3dd10, both stay matched). A two-function LTCG link harness (build/r196/h/h3dd.py and
+// gen3dd.py of m3-lane4, about 1 s a form; it reproduces this body's code and the listed 9 form's) screened 120 forms: found
+// arm (if/else, inverted, `result = NONE` then `if (result == NONE)`), walk exit (return, none, goto to the only return,
+// `if (result != NONE) initialize = true; else ...`), merge (guarded, `!initialize ||`, closed arm). Every goto form merges
+// the two epilogues on ESI and every explicit walk return folds to `or eax, esi`. Real: `result = NONE`, the found test only
+// setting result, `if (result == NONE) { allocation; walk; if (result == NONE) goto done; initialize = true; }` and the only
+// return at `done` 85 (504 B); main with the walk's return as that goto 85 (504 B); the first with the walk closing `if (result
+// != NONE) initialize = true; else goto done;` 100 (491 B); the first with no walk exit test 101 (491 B); main with that close
+// 85 (504 B).
+// P472: Byte/char/word/short initialization decision, integer negative-age normalization, promoted age/oldest/both: 77/77/74/74/140/160/136/164.
+// NOT kept: word/short gain three, below the threshold; other scalar-domain forms tie or regress. Original merge, scan and full body restored; cached-edge and trailing-return layout remain.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

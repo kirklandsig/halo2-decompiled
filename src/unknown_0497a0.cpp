@@ -374,6 +374,13 @@
 // and reused sequential position receivers: 522/692/687/522/692/687/693/693.
 // NOT kept: first-result forms recover frame 0x60 but grow five bytes and use
 // nonmatching one-use results; original helpers and complete body restored.
+// P465: Positive special-view result from native lazy tests, bool/byte/short/long,
+// false-default 548/548/668/561; exhaustive test-owned 644/644/657/651. NOT kept:
+// no native 0x60 frame/result recovery or equality; original complete body restored.
+// P468: Special defaults then ordinary overwrite for origin/view/projection/side,
+// origin-view/view-projection/basis/origin-basis: 716/686/701/718/720/731/787/815.
+// NOT kept: frame/basis/wave residence remains unmatched and all regress;
+// original complete body and helpers restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1132,6 +1139,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // fields with first/outer/both setters and native UV value publication:
 // 233/241/241/240/241/241/240/410. NOT kept: no native frame/spill equality;
 // original vertex fields, UV stores, helper declarations and complete body restored.
+// P469: Independent double U/U-step/V/V-endpoint/color-scale/current-width/next-width/transition
+// storage 422/631/575/601/670/583/363/604. NOT kept: extended scalar precision misses
+// native code and extent; original real producers, geometry and complete body restored.
+// T105: Read-only paired color bounds/persistent records/point chain,
+// seven subsets then complete current/next state inputs: eight at 233.
+// NOT kept: frame/spill homes unchanged; original complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

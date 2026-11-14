@@ -610,6 +610,11 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
+// MiniMax G (11-14): no new form kept, no lower score (34): the C form (the total inlined into the fild, the file
+// handle read into a local) scores 28, but that local is one-use - the same 28 form the 11-09 notes record as not
+// kept - and without it the same body scores 88. Still differs: the entry total lands in eax where retail keeps it
+// in edx, the hoisted body size in esi where retail keeps it in ecx, the signature position as a one-byte-shorter
+// add where retail uses lea, and the size/position pair is esi/edi where retail has edi/esi.
 // score 34 (was 34): round 103 unchanged; the scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
 // and size through pointers; with the `void *` parameters view and one function-scope byte count the
@@ -1052,6 +1057,14 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // natural form found (the `__assume` on the state at the dispatch is listed too). Body unchanged.
 // M3 lane 5 r179: no trial; the residue is register rotation only (masked 2), and the rounds above (lane 3 r231, lane 2
 // r77, lane 7 r156) list every natural total, size, position, clamp, getter, case and scope form. Body unchanged.
+// M3 lane 16 r116 (fast with 0x2adb10/0x2ada70, both matched throughout): the entry total folded into its conversion
+// re-measured 88 (entry retail's to +0x3f; the signature case then loads the file handle into ECX after the add where
+// retail loads it into EAX ahead of the pushes). On that folded form: no `default: __assume(0);` 220 (695 bytes); the
+// scratch clamp as an `if` 88; the signature position summed body size first 88; the two signatures declared ahead of the
+// position 88; the body case's position summed body offset first 88; the state store ahead of the folded conversion 231.
+// Reading: retail's direct arm computes the remaining count in ECX and jumps to the clamp's `mov edi, ecx` (the two arms'
+// `size = ...` tails are cross-jumped), so its hoisted body_size never joins size or position; ours coalesces them in ESI.
+// Body unchanged.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

@@ -492,6 +492,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // engine load above the stores (32). Left: the mask's word load and word spill, its one reload into ECX ahead of the
 // first jne, the playing teams in EDX and the engine index read at the head of the change block.
 // score 32 (was 32): the word mask, its one reload ahead of the first jne, and present's update in EBX remain.
+// D's form, not kept: score 29 (was 32): the old team mask is still zero-extended to a dword when it is loaded and spilled as a dword, where retail loads and spills a word; its reload into ECX ahead of the first jne also still differs.
+// MiniMax D (11-14), NOT kept (coordinator: the gain is a one-use `dword team_bit` local, kept only with a
+// byte match, and 3 points from 32 is under the keep bar; code back to main, 32): 29 (was 32), kept: a named team-bit carrier (dword team_bit = 1 << team; present_teams |= team_bit;) inside the team test makes the loop's bit build and the present update match retail's register choices and removes the loop's remaining differences; what is left is the old mask's word load and word spill, which retail does with `mov cx` and a word store while our build zero-extends into ECX and stores a dword, and the reload of that spill ahead of the first jne.
 // MiniMax D (11-11): 24 (was 32), NOT kept (coordinator 11-11: lane 14 r55's width cast on one side of the compare; retail compares dword; body stays at 32): the old team mask as a word local (retail's `mov cx` entry and its
 // word spill) with the present compare narrowed to a word (`(word)present_teams != old_team_mask`); the
 // present mask's high bits are always zero, so the narrowing keeps the behaviour. The compare is still
@@ -4875,6 +4878,15 @@ bool function_158eb0()
 // named player index with `flag ? 1 : 0` 5; the flag normalised at its read (`bool flag = g->flag1128 != 0`) and passed
 // directly 35. Diagnostics (removed): the iterator's data store written twice 5, the flag read twice 5 (copies removed before
 // allocation do not rotate the registers). Original body restored.
+// HELD (needs the owner's OK: src/unknown_23f260.cpp is a held file): m3 lane 6 r178, one-file LTCG harness
+// (this file with src/player_queries.cpp, src/unknown_23f260.cpp, src/unknown_16b570.cpp, src/unknown_15b2f0.cpp,
+// src/unknown_15d770.cpp, src/unknown_15e410.cpp and the build's ballast object; it reproduces the 5 exactly):
+// 0x23f260 declared `(long player, long excluded_team, long mode)`, with the definition, the three declarations and
+// the five calls changed together (build/r178/held-158f50.patch), gives 0 here with 0x23f260 itself still exact.
+// The swap is one scratch-register rotation step: with fewer callee files in the harness g_4e6948 is reloaded in
+// the loop and that extra temporary alone gives retail's setup. On main's order in the harness: the iterator data
+// through a named pool pointer 5, the iterator stores reordered 7, result declared before the count 7, `!= false`
+// on the iterator call 5, `(bool)` on the flag read 5, `count++` 5, `/ 2 >= 1` 7, `return count != 1 && result;` 11.
 // @retail 0x158f50
 bool function_158f50()
 {
@@ -5867,6 +5879,11 @@ void __stdcall function_d6bc0(long object_index);
 // (`entries` still in EDI, so no use-count threshold); `entries` in a by-value one-member parameter 172 (same code,
 // 0x15c150 229); the index test evaluated into a bool in the zero test's own block 172. Left: what holds EBX, or favours
 // EDI for the timer, between retail's first block and its countdown.
+// Round 119 (m3 lane 9, fast with 0x15c150, matched each time; base 29): the schedule test on entries[i].index with the
+// countdown block using the loop-top local (no re-read) 248 (887 B); the schedule test on the field with the object declared
+// before the index 167 (863 B); the object declared before the index alone 29 (same code); the delay block as a forceinline
+// called at each of the four schedule sites (index NONE, case 1 bit, case 0 bits, case 0 distance) 415 (1029 B: the four
+// inlined copies are not tail-merged); the case-0 distance test as `d <= 1.0f` 110 (877 B).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

@@ -990,6 +990,10 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // Round 192 (m3 lane 4, fast): the two angles as one `real facing[2]` member (the camera code's layout) 6, read through a
 // `real const *facing` 6, with `(real)cos`/`(real)sin` 6; a const flag pointer with the position named after the components
 // 6; a const scenario view local and the flag as `cutscene_flags + index` 6.
+// Round 119 (m3 lane 9, fast): components in j, i, k order 10, in j, k, i order 16; `__assume(cutscene_flag_index >= 0)` 6;
+// the flag from a forceinline (scenario, index) element getter 6; i and j through a forceinline (vector, angle, scale)
+// planar helper given the pitch cosine 13. Diagnostics (reverted): no up vector 11, k stored as zero 27 (the add still
+// issues one slot after the imul, ahead of `push esi`, in every form).
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {
