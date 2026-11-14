@@ -292,6 +292,11 @@ void function_1d56f0(s_havok_component *component)
 // Retail's 0x1d0c20 (fast listing) takes the component on the stack and loads it into EBX only just before the
 // 0x1d0cf0 call, so 0x1d0c20 (38) and this tail wait on the same EBX parameter. The flag5-first 0x1d0cf0 body (15
 // here) is not retail's test order and raises 0x1d0c20 and 0x1d3fc0 (avoid-listed this round), so it was not re-run.
+// m3 lane 2 r81: no trial (fast = plain here, 77 with 0x1d0cf0 65, 0x1d0c20 38, 0x1d1b60/0x115b10/0x1d56f0 matched). Read
+// against retail: the body is retail's but the lookup's base/index order and the 0x1d0cf0 call. Retail's 0x1d0cf0 copies the
+// transform with four movaps and takes the component in EBX without saving it (index in ECX moved to ESI); ours copies with
+// `rep movsd`, which needs ESI/EDI/ECX, and loads the component from [ebp + 0xc]. That body (set copy, m_fixed first) is the
+// listed lead that costs matched 0x1d1b60 and 0x115b10. Still BLOCKED-BY 0x1d0cf0.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)
