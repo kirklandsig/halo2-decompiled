@@ -3255,8 +3255,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
-// MiniMax H (11-14): the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A)
-// measures 91 at 337 bytes with the matched caller 0x176f60 still matching, and is kept; the same order with the
+// MiniMax H (11-14), NOT kept (coordinator: a 2-point gain on a function still above 30 is under the keep bar; code
+// back to main, 93): the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A)
+// measures 91 at 337 bytes with the matched caller 0x176f60 still matching; the same order with the
 // mode as a word or with the two colours exchanged gives 92, the mode as a short gives 92, the mode read again at
 // each call gives 108 and drops that caller to 25, the effect-location cursor moved into the block gives 95 and 103
 // (the latter also drops the caller), the particle cursor moved out of the block gives 103, the next index read at
@@ -3585,10 +3586,10 @@ long __stdcall function_177040(long particle_system_index, long effect_index)
 	if (definition->unknown0c != 0)
 	{
 		long particle_location_index = particle_system->location_index;
-		long location_mode = definition->location_mode;
-		dword color_b = effect->color_b;
 		dword color_a = effect->color_a;
+		dword color_b = effect->color_b;
 		s_effect_location_datum *location;
+		word location_mode = definition->location_mode;
 
 		{
 			c_type_4e7709 *particle_definition = function_137bd0(particle_system->function_1751d0()->tag_index);
