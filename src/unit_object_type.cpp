@@ -6131,6 +6131,10 @@ void function_cf040(long unit_index, short type)
    free, its seat group's partner friendly and willing, no enemy riding
    (outside state 2), and for players a clear line to the vehicle; also
    the seat's occupant and whether the seat is grouped */
+// MiniMax E (11-14): no new form, no lower score (1): the only difference left in the whole body is still the base and
+// index order of the weapon loop's header read (ours [eax+edi+8], retail [edi+eax+8]); the offset hoisted into a local
+// of its own and used at both lookups, the lookup written as a byte pointer sum and the offset-first integer sum all
+// compile to the same bytes, and hoisting the offset to the top of the function moves the prologue (23), so the body stands.
 // MiniMax D (11-14): no new form, no lower score (1): the whole body still agrees except the weapon loop header read, whose base and index order is the other way round (ours [eax+edi+8], retail [edi+eax+8]); the cast deref of the element address at offset eight, the offset-first integer sum and the masked-index helper all keep our order.
 // MiniMax H (11-12, third pass): no new form, no lower score (1); the only difference left in the whole body is the
 // base and index order of the header read inside the weapon loop (ours [eax+edi+8], retail [edi+eax+8]). This round
