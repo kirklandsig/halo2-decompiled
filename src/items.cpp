@@ -1639,6 +1639,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // impulse paths apart with the flag clear at a different point in each, so splitting ours that way
 // (223) and giving the clear a byte-unit bit field (206) both score worse.
 
+// MiniMax B (11-13): no new form, no lower score (140): retail clears the release flag with one byte read-modify-write (a narrower cast of the field's own address, a banned form) and keeps two separate copies of the release impulse, one clearing the flag before it and one after it, where a shared helper gives one copy and the two calls then merge.
 // MiniMax G (11-12): no new form, no lower score (140): nothing new this round; frame 0xac agrees; the return bytes +0xe/+0xf,
 // the release-byte read-modify-write and the tail still differ.
 // MiniMax G (11-12): no new form, no lower score (140): frame 0xac agrees; the return bytes +0xe/+0xf, the
