@@ -584,6 +584,11 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // short/word/long/dword 279/277/193/193 and 277/277/188/188. NOT kept: no byte
 // match; original Boolean-valued history, eager length, loops and whole body restored.
 // Native frame 0x14, count/departure argument reuse and scan bound remain.
+// M3 lane 15 r83 (fast, 0x239d50 matched each time): `__assume` on points, on indices, on both, and `count <=
+// MAXIMUM_POLYGON_POINTS` 161 each (same code); one hull counter (`while ((short)hull_count < count)`, `indices[(short)
+// hull_count] = current; hull_count++;`) with the closure as `if (!left_start || points2d_differ(...)) continue; goto
+// finished;` 331 (695 B). Compile-only: that closure on this body is the same code; the one-counter `while`, `for (; c; )`
+// and `for (;;) { if (!c) break; ...}` all rotate the pass loop (test copied to its foot).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -745,6 +750,13 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // sign-extends the low word, where this declaration's short count is read as a word home, and that parameter's type is
 // declared in src/unknown_17d9a0.cpp, which this lane may not edit; retail also keeps the previous side in memory where
 // this build keeps it in CL.
+// MiniMax B (11-14), NOT kept: 92 (was 129) with a `count > 0` guard in front of the loop (retail's count load
+// into ECX and its `test cx, cx` loop guard at 0x23a78b), the fraction as an if/else (retail's else arm that
+// materialises the zero at 0x23a887) and the products spelled `current->x * plane->n.i`. The guard repeats the
+// loop's own `i < count` test, so it is kept only with a byte match: without it the other two changes score 249,
+// and the guard around the `previous` setup and the loop together (where it would also protect the
+// points[count - 1] read) scores 271 (coordinator). At 92 what was left: the zero constant in XMM1 late where retail
+// creates it in XMM2 early, so the loop's float homes are one register out; 890 bytes against retail's 887.
 // MiniMax B (11-12): no new form, no lower score (129, was 129): retail reads the count argument as a dword home
 // (`mov ecx, [ebp + 8]; movsx edi, cx`) where this declaration's short count is read as a word home, and that type
 // is declared in src/unknown_17d9a0.cpp, so the first difference stays; retail also keeps the previous side in

@@ -258,6 +258,7 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
+// MiniMax B (11-14): no new form, no lower score (192): retail computes the ray direction first from the ray pointer and keeps the start's three components in xmm3-xmm5 while it forms the two edge vectors and the cross product in registers (frame 0x90), where ours forms each difference and spills it to a stack home (frame 0x84); the point-in-polygon query still needs the points before the point: BLOCKED-BY 0x23a220.
 // MiniMax C (11-14): no new form, no lower score (192): retail's frame is 0x90 and it loads the ray's and
 // the vertices' six components into xmm2-xmm7 before it forms the three edge vectors in registers, while
 // ours forms each difference and spills it to a stack home (frame 0x84); a permutation search over this

@@ -692,6 +692,12 @@ extern point2f *g_468778;
 // declared and cleared at the very top 409; the slot and the actor ahead of the settings call 413; the settings distance read
 // once into a local for its three later reads 406 (1533 bytes), with retail's entry 421 (1529 bytes). Declaration order and
 // position do not decide the tie. Body unchanged at 375.
+// Round 103 (m3 lane 10, fast with 0x1aab50 382): the rejection as an early `return false` and the end as `return !f14 && !f13 &&
+// !f2d;` on the settings-first order (no result byte) 425 (1532 bytes); the request's type-0x1a direction as a typed point2f
+// member at +8 of the request arguments (shared header; here and in 0x1aab50) 375/382 (same code, not kept); the velocity weight as
+// one conditional expression 388 (1556 bytes); the zero length local declared just before the facing test 379; the second
+// prediction vector declared at the top of the prediction arm 375 (same code). Register-masked, 249 lines still differ, all
+// homes: retail puts the weight and then the zero length in arg_1's home and keeps the zero length in the comparison's XMM0.
 // T105: Progressive final-result logical/bitwise refinement, bool/byte/short/long:
 // 375/395/404/406/375/373/406/407. NOT kept: two-point best is below the gate
 // and no native result/carrier equality; original result and complete body restored.
@@ -877,6 +883,7 @@ static __forceinline long real_to_long(real value);
 // contexts, since retail inlines those two callees) finds no rewrite that matches retail, so the body stays.
 // MiniMax E (11-11): no new form, no lower score (382): the frame and the length agree and the early false exit's place is right, but the object/magnitude and query scalar homes still differ, and the helper retail keeps out of line is expanded here (0x25d740, in another file): BLOCKED-BY 0x25d740.
 // MiniMax S (11-11): no new form, no lower score (382): the frame and the length agree, but the early false exit's place, the object/magnitude homes and the query scalar homes still differ.
+// MiniMax G (11-14): no new form, no lower score (382): an early `return false` for the three flags folds the result byte away (frame 0x54, 508); retail keeps the byte and puts its false exit at +0xe5.
 // score 382 (was 382): the frame and the length agree, and the early false exit's place, the
 // object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
 // b2G walk (r719): every block, field offset, constant and call argument (including 0xfa1a0's 3 register + 11 stack arguments, whose
