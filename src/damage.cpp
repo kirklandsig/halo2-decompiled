@@ -1523,6 +1523,10 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 
 /* damages an object with the globals' default damage (from +0x144), credited
    to an owner if one is given */
+// MiniMax G (11-14): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where
+// retail uses eax, ecx, edx, and the finished flags are still stored after the record's address is built where retail
+// stores them before `push edi`; a pointer to the record for the flags read and write, three dword copies of the
+// owner, a conditional expression for the three flag bits and a permuter run with annealing (20 tries) leave the same ten.
 // MiniMax B (11-13): no new form, no lower score (10): a copy through a local (10) and a cast destination (10) leave the same code; the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx.
 // MiniMax A (11-13): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after the damage record's address is built where retail stores them before.
 // MiniMax G (11-12): no new form, no lower score (10): nothing new this round; retail copies the owner through eax, ecx, edx
@@ -3103,6 +3107,14 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 /* the damage a damage event does to an object before armor: a random
    amount between the definition's bounds, scaled by the event, the owner's
    AI and the game engine; sets *friendly when the team scale applies */
+// MiniMax G (11-14): no new form, no lower score (5): the two cold exits keep this build's order (the stack reload
+// before the xmm1 copy) where retail copies first; the no-team case as an early return, the team test as an early
+// return, the no-team return in an else branch, a goto to a separate not-enemy return, the enemy logic inside the
+// test with the no-team return in an else (which merges the two exits, 24) and a nested state test with a return for
+// each of the team, state and not-enemy cases (505 bytes, same order) all leave the two blocks alone or make them
+// worse; the no-team return first with the not-enemy return last compiles to the same bytes (the early return is
+// folded back into the outer test) and two separate early returns put the not-enemy exit last but split the no-team
+// exit in two (28); a permuter run with annealing (31 tries) found nothing under 5.
 // MiniMax B (11-13): no new form, no lower score (5): the permuter with annealing (27 tries) found nothing below 5.
 // MiniMax B (11-12): no new form, no lower score (5): the two final return blocks keep this build's order - the stack reload before the register copy where retail puts the copy first; an inverted outer test with an early return (5), separate team and state returns (28), the not-enemy return hoisted (60) and a merged tail return (24) all fail to swap them.
 // MiniMax A (11-13): no new form, no lower score (5): the CFG is retail's (both arms of the team test reach the one no-team exit) and only the order of the two cold exits differs; an inverted outer test (with and without an else), an explicit else and a single shared return all leave the layout alone or move the reload earlier, and two separate early returns give 28.
@@ -4888,6 +4900,9 @@ dword function_db810(long object_index, long node_index)
 }
 
 /* the model node of the object's lowest ranked physics node */
+// MiniMax G (11-14): no new form, no lower score (4): the tag index is still masked after `push ebp` where retail
+// masks it before, and the tag entry is still loaded into edx where retail reuses eax; a permuter run with annealing
+// (31 tries) found nothing under 4.
 // MiniMax B (11-13): no new form, no lower score (4): the tag index in a local (4), the definition bytes in a local (4), the definition bytes local first (7), both locals (4), the short tag index (45) and the typed object definition's model tag read (4) all leave the same four instructions, and the permuter with annealing (23 tries) found nothing below 4.
 // MiniMax A (11-13): no new form, no lower score (4): the tag index is still masked after `push ebp` where retail masks it before, and the tag entry still goes into edx where retail reuses eax; a local for the masked index and a local for the tag entry leave the same four instructions, the permuter (307 s, 29 tries) found nothing under the baseline, and caching the masked index or the tag data pointer in a local changes neither difference.
 // MiniMax G (11-12): no new form, no lower score (4): nothing new this round; the tag index is still masked after `push ebp`
