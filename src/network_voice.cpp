@@ -3290,6 +3290,9 @@ finish:
 // P464: Comparison-test bool/raw signed result producers 146/205; signed/unsigned short
 // comparison ordinal 188/188; literal mismatch byte/word/long 2/2/2; success-continue 2.
 // NOT kept: no exact post-format reload recovery; original comparison and whole body restored.
+// P466: Empty identity long/byte/word storage with memset 2/2/2; aggregate-zero
+// dword/byte/word and read-only dword/byte 2/153/142/2/153 on the plain-copy graph.
+// NOT kept: no exact reload recovery; original empty input and complete body restored.
 // @retail 0x54590
 void function_54590(void)
 {

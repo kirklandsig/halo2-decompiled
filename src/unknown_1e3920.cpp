@@ -1217,6 +1217,10 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // MiniMax A (11-13): no new form, no lower score (252): the permuter (318 s) finds no try under the baseline; the squad
 // pointer still takes the slot at +0x1c where retail puts it at +0x10, and the two NONE sentinels still sit in EDI where
 // retail keeps them in ESI.
+// P466: Unit/perception/both defaults inside settings 354/324/374; defaults only
+// at complementary creation producers 365/362/370; both with branch-complete actor
+// outcome 392; actor outcome alone 304. NOT kept: all regress; original defaults,
+// result production and full body restored. Sentinel and squad/query homes remain.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

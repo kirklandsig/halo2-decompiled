@@ -451,6 +451,9 @@ long network_session_get_maximum_players(c_class_58d20 *session);
 // readiness field and read-only source field all reproduce reduced 0. Byte field plain 33
 // at 138 bytes; all file/provider controls unchanged. NOT kept: reduced-only equality;
 // original field declarations, observations and complete body restored.
+// P466: Index/variant/peer/primary identities and their independent read-only
+// bindings: eight reduced 0s; primary binding plain 33 at 138/134 bytes.
+// NOT kept: unchanged full-image helper order and EBP save; original body restored.
 // @retail 0x73360
 bool c_helper_b::v7()
 {
