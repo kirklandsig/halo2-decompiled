@@ -7538,6 +7538,14 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 	return result;
 }
 
+// MiniMax E (11-14), NOT kept (coordinator: steering casts and a union, never kept; the UNIT_GET body written out
+// through two copies of one pool pointer; `(char)zoom` also changes the value for zooms over 127): score 15 (was 244):
+// the two animation-slot results are compared as bytes, the trigger flags keep
+// a word view and a wide view of the same slot and the call takes the wide view, the zoom block's two header lookups
+// each read the pool's data through a pool local of their own, the zoom weapon is NONE and then an `if`, and the zoom's
+// scale takes the zoom's low byte. The function's extent is retail's 1470 bytes (it was 1454). Still differs: retail's
+// first shift of the flags is 16-bit (`shl cx, 1`) against our 32-bit `shl ecx, 1`, and three address operands are
+// ordered the other way round (`[ecx + eax + 8]` against retail's `[eax + ecx + 8]`).
 // MiniMax A (11-12): no new form, no lower score (253): the frame is still 0x24 against retail 0x28 (retail keeps the second loop first in a stack slot, the flags word in memory and the hand index spilled), the unit is still held in edx, and retail still looks the unit up again after 0x110ab0 and reloads the state offset and word for each of the three state-bit tests where ours reads them once; the byte compares of the 0x113da0 and 0x113df0 results reach retail test al, al for two points only, which is under the keep bar, so the body stands.
 /* the unit's control update: counts down its ragdoll (+0x1f5) and two
    short timers, crouches or stands by the control bits, keeps its weapon
