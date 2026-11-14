@@ -1240,6 +1240,8 @@ void function_143250(
 // locals declared at their conversion instead of at the constant load [1574]. Left: entry 8's term order (retail r3_r2,
 // r5_r1, r5_r0, r4_r2, r4_r0, r3_r1 unfactored), entry 25's four-term order, entry 28's subtracted pair, and the homes, which
 // retail orders by memory-reference count (r8 with 24 reads at +0, r5 with 20 at +4, r7 with 3 at +0x11c).
+// P476: Explicit-polynomial matrix accumulators in bands 2/3/both; coefficient accumulators in bands 2/3/both; immutable scalar captures; frequency lexical homes. Scores 1337/1535/1539/1439/1535/1539/1333/1333.
+// NOT kept: unmatched diagnostic source forms; original executable body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -1832,6 +1832,8 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // comparator minima at distance/radius: 553/547/579/562/568/588/562/568. NOT kept: no native frame-word
 // equality; original complete body, unordered selections and includes restored.
 // Apparent gains add out-of-line bound calls absent from the native inline selections.
+// P476: Standard typed airborne/turning/walking-mode predicates, masks 1/2/4/3/5/6/7, then root sentinel producer. Scores 646/640/620/702/626/675/726/764.
+// NOT kept: unmatched diagnostic source forms; original executable body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3683,6 +3685,8 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // then all with explicit plus/multiply: 381/427/355/409/369/430/405/596. NOT kept: no native frame/result
 // equality; original complete body, existing dots and include set restored.
 // The 355 reduction gains seven above 30; all other reduction forms regress.
+// P476: Current hit-tag/shared-direction graph: existing weighted-add/centroid-scale/impulse-scale producers, masks 1/2/4/3/5/6/7, then fallback scale. Scores 362/362/362/362/362/362/362/362.
+// NOT kept: unmatched diagnostic source forms; original executable body restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -4112,6 +4116,8 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // P473: Standard first-product-seeded wall-cosine/axial/planar reductions, masks 1/2/4/3/5/6/7,
 // then explicit operations: 696/679/678/687/701/689/693/778. NOT kept: no native result/flight-home
 // equality; original entire body, dots, planar tree and includes restored.
+// P476: Standard typed changed/special/left predicate-result contracts, masks 1/2/4/3/5/6/7, then wall-bit contract. Reduced control 612 versus full 548. Scores 660/673/702/662/727/722/738/782.
+// NOT kept: unmatched diagnostic source forms; original executable body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

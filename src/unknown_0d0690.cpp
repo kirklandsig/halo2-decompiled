@@ -1650,6 +1650,8 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // that graph with length before normal copy / early lightmap copy / shared bias / direct primary
 // output / early square / lightmap-first clamps 573/568/573/606/548/571. NOT kept: all regress
 // and lose 0x3db00; original body/helpers restored, frame 0x2c versus native 0x28 remains.
+// P476: Standard first-product-seeded input/normal/ambient magnitude reductions, masks 1/2/4/3/5/6/7, then explicit operations; normal/ambient forms lose matched 0x3db00. Scores 552/603/552/619/531/603/624/681.
+// NOT kept: unmatched diagnostic source forms; original executable body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
