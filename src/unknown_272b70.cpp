@@ -2921,6 +2921,10 @@ struct s_scenario_scripting_view
 // 117/120/110/112/89/98/93; complete direct/resolved coordinate transforms 99.
 // NOT kept: all regress; first form loses the exact wrapper. Original full search
 // restored; actor/counter/selector homes and delayed scripting-data observation remain.
+// P490: Standard first-product/full self products, implicit/explicit arithmetic, then
+// complete in-place coordinate products with scalar/first/full/explicit sums:
+// 104/136/98/128/127/129/125/154. NOT kept: all regress and lengthen away from
+// retail; original magnitude producer, short traversal and complete search restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
