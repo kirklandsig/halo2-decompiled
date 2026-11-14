@@ -1481,24 +1481,18 @@ void function_87d00(s_bitstream *stream, void *message);
 bool function_87e90(s_bitstream *stream, void *message);
 void function_847d0(s_simulation_controller *controller, s_player_action *input);
 
-// score 4 (was 3): the `standard` marker is used here by the maintainer's ruling (2026-11-13, PR #1160 by
-// @ccgman123), an exception to DECOMPILING.md's own-body-match rule on retail's evidence: retail takes
-// destination in edx (`push edi; mov edi, edx; mov edx, ecx`), which this build gives only with the
-// marker (without it, eax: `mov edx, ecx; push edi; mov edi, eax`, 3, in every form below), and with
-// it the caller 0x869a0 matches. Left: the stream.data store reads edx before `mov edx, ecx` (4); the
-// rest, including the late `mov [esp+4], edi` before rep stosd, is retail's. Remove the marker only
-// with a body that matches without it and keeps 0x869a0 matched. In retail an argument copied into a callee-saved register at entry arrives
-// in eax 873 times and in edx 6 when both are free, and only 0x685f0 has no visible reason.
-// Tried, about 1,000 builds (PR #959): every parameter order and convention 3; the data store
-// after the memset 30, through memset's return 39; the store inside memset's arguments, helpers,
-// constructors and Bungie's reset shape (0x95581) 3, or 4 with the marker; extra uses of
-// destination 39-53; /Oa /Ow /O1 /Os /G5-/G7, /d2 options and its own file 3. Only a call between
-// the store and the memset gives edx with the edi store (49).
-// @retail 0x685f0 standard
+// An otherwise unused large local gives retail's registers: with it, destination arrives in edx
+// (`push edi; mov edi, edx; mov edx, ecx`) instead of eax, and the caller 0x869a0 matches. The array
+// is optimized away and the frame stays 0x34. 0xfc0 bytes gives the old listing (3); 0xfc4 and up
+// match, consistent with the __chkstk page threshold once the other locals are counted (in retail,
+// none of 106 functions with a __chkstk prologue takes an argument in eax). The local's real type
+// and size are unknown; 0x4048 is the size of the block the decoder 0x68670 clears. See PR #1164.
+// @retail 0x685f0
 bool function_685f0(long capacity, byte *destination, void *block, long *size)
 {
  bool result = true;
  s_bitstream stream;
+ byte scratch[0x4048];
  stream.data = destination;
  stream.size_in_bytes = capacity;
  memset(destination, 0, capacity);
