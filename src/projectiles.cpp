@@ -389,6 +389,7 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 /* the rotation a spinning projectile makes each tick */
 // MiniMax A (11-14): no new form, no lower score (3): only the rotating flag's OR and store and the first axis load
 // are in the other order; the frame, the length and every other instruction agree.
+// MiniMax H (11-14): no new form, no lower score (3): the flag's OR and store still complete after this build hoists the axis's first word above them; copying the axis with memcpy gives the same bytes, and storing the rotation axis one component at a time measures 71.
 // MiniMax B (11-13): no new form, no lower score (3): retail still completes the rotating-flag OR and its store before the angle duplicate and the first axis load, while this build hoists that load above the flag OR and sinks the store below the duplicate; the shared normalizer takes its vector by pointer, so the axis copy's address escapes and the store cannot move, and letting the helper read its parameter through its address would give retail's tail but score 11 because the squared terms then come out in i, j, k order.
 // MiniMax H (11-12): no new form, no lower score (3): the flag OR and store still cross the angle duplicate and the first axis load differently - ours hoists the axis load above the flag store and sinks the store below the duplicate, retail does the opposite.
 // MiniMax G (11-11): no new form, no lower score (3); the three differences are one schedule: retail completes the rotating-flag
@@ -951,6 +952,7 @@ real function_30bf0(vector3f *v);
    falling back to the slowest arc when the speed can't reach it */
 // MiniMax A (11-14): no new form, no lower score (232): the frame is 0x28 against retail's 0x30, and the three
 // components are subtracted into xmm1, xmm0 and xmm4 where retail takes them in xmm7 and xmm3.
+// MiniMax H (11-14): no new form, no lower score (232): this round re-read the diff: retail holds the gravity pointer in EDX where this build holds it in EBX, and takes the horizontal root in SSE where we round through x87; the pointer's register belongs to the callers in other files, so the body cannot pick it.
 // MiniMax B (11-13): no new form, no lower score (232): the three components are still subtracted into xmm1, xmm0 and xmm4 where retail takes them in xmm7 and xmm3, the frame is 0x28 against retail's 0x30, and the x87 and SSE halves are split differently, so the body has to be respelled as a whole rather than one form at a time.
 // MiniMax H (11-12): no new form, no lower score (232): the x87 divisions, the register homes and the frame are unchanged; the two divisions cannot be had together with the callee convention, since the convention follows how two_a is produced.
 // MiniMax G (11-11): no new form, no lower score (232); the frame is 0x28 against retail's 0x30, the two pointer parameters stay
@@ -1286,6 +1288,7 @@ extern vector3f *g_4687ac;
    and for projectiles with a radius the two lines either side of it */
 // MiniMax A (11-14): no new form, no lower score (163): the frame is 0x48 against retail's 0x34, so the local homes do
 // not fit retail's shape, and the model entry and the collision point are taken in the other order afterwards.
+// MiniMax H (11-14): no new form, no lower score (163): this round re-read the diff: the zero test still compares against a memory constant where retail reuses a zeroed register for its negation, and the cross product's products are still multiplied in the other order, so the frame and the register plan have to move together.
 // MiniMax B (11-13): no new form, no lower score (163): the frame is 0x48 against retail's 0x34, so this build's local homes do not fit retail's shape, and the model entry and the collision point are taken in the other order afterwards; the frame follows from the locals, so the body has to be respelled together.
 // MiniMax H (11-12): no new form, no lower score (163): retail's return-true block still sits right after the first call and jumps back to it where ours puts the merged block last, and the collision pointer is still loaded into ebp.
 // MiniMax G (11-11): no new form, no lower score (163); the frame is 0x48 against retail's 0x34 and the three ray queries still
@@ -1746,6 +1749,7 @@ PRIVATE inline long projectile_object_root(long object_index)
 // MiniMax A (11-14): no new form, no lower score (296): retail expands 0xfbfd0 into this body while this build calls
 // it, so the body is 66 bytes short of retail's 1261 (BLOCKED-BY 0xfbfd0), and retail takes the model table's entry
 // before the collision subtraction where this build takes the subtraction first.
+// MiniMax H (11-14): no new form, no lower score (296): retail still expands the matched speed setter inline and this build still calls it; inlining it here was measured before at 313 with a longer body, and the model table's entry is still taken after the collision subtraction.
 // MiniMax B (11-13): no new form, no lower score (296): retail takes the model table's entry before the collision subtraction where this build takes the subtraction first, and the two then push their arguments in the other order; the frame's locals differ as well, so the block would have to be respelled together.
 // MiniMax H (11-12): no new form, no lower score (296); retail expands the speed update 0xfbfd0 inline after the
 // 0xfbd40 call and keeps index * 12 in EBP from entry, and that body is another lane's finished code which this
@@ -1979,6 +1983,7 @@ real function_17c900(short function_type, real input);
 // MiniMax A (11-14): no new form, no lower score (348): the frame agrees (0x30) but the entry register allocation
 // differs - retail takes the projectile index off the stack and forms the entry address itself, keeping the projectile
 // in esi where this build keeps the index in esi and the projectile on the stack - and the body is four bytes longer.
+// MiniMax H (11-14): no new form, no lower score (348): the shared cross-product helper's spelling still decides this block's shape and its other caller (0xfa580) is matched with the current one, so the helper cannot change; what is left is the product order and the stack slots inside it.
 // MiniMax B (11-13): no new form, no lower score (348): the cross product's products are still multiplied in the other order and the results land in other stack slots, so the block's shape differs rather than a single instruction, and the rest of the body follows that shape.
 // MiniMax H (11-12): no new form, no lower score (348); retail takes the projectile index off the stack and forms
 // the entry address itself, keeping the projectile in ESI, where we keep the index in ESI and the projectile in EBX
@@ -3011,6 +3016,7 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // MiniMax A (11-14): no new form, no lower score (1196): the frame is 0x220 against retail's 0x218, this build pushes
 // ebp where retail keeps the state in esi, and the tag's home is at esp+0x228 where retail has it at esp+0x220, so
 // every later offset is shifted.
+// MiniMax H (11-14): no new form, no lower score (1196): this round re-read the diff: the frame stays 0x220 against retail's 0x218 and the tag's home stays four bytes higher, and the collision count's width change was measured before at 1190 only by regressing the caller from 946 to 1037.
 // MiniMax B (11-13): no new form, no lower score (1196): the frame is 0x220 against retail's 0x218, this build pushes ebp where retail keeps the state in esi, and the tag's home is at esp+0x228 where retail has it at esp+0x220, so the body's register plan differs from the first instruction.
 // MiniMax H (11-12): no new form, no lower score (1196): the frame is still 0x220 against retail's 0x218, the velocity argument still arrives on the stack where retail takes it in eax and keeps it in a callee-saved register, and 0xfd7d0's register arguments still differ.
 // MiniMax S (11-11): no new form, no lower score (1220); retail's frame is eight bytes smaller and it keeps the biped in ebp where ours keeps it in ebx, and no form tried this round matches both, so the body stands as found.

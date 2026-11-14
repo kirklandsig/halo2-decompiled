@@ -1233,6 +1233,7 @@ bool function_108530(long device_index, long name)
 // MiniMax A (11-14): no new form, no lower score (121): retail takes the initial velocity in xmm6 with five stack
 // floats and returns with ret 0x14, while this build passes it on the stack and returns with ret 0x18, and the
 // six-float signature may not change; the clamp's register homes follow from that difference.
+// MiniMax H (11-14): no new form, no lower score (121): this round found no new spelling; the clamp's three values and the initial velocity keep the SSE registers the LTCG convention gives them, and the earlier rounds' ninety-six clamp variants all measured above 121.
 // MiniMax B (11-13): no new form, no lower score (121): the three clamped values are still taken in xmm5, xmm7 and xmm2 where retail takes them in xmm7, xmm1 and xmm2, and the first argument arrives in xmm6 under the custom LTCG convention, so the clamp's register choice is not ours to pick.
 // MiniMax H (11-12): no new form, no lower score (121): the initial velocity read into a local in the callee, passed through a local at the call site, both together and the formula reading the stored velocity back all measure 121, so the body stands.
 // MiniMax G (11-12): no new form, no lower score (121): nothing new this round; the initial velocity remains stack-passed
