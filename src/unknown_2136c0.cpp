@@ -3,6 +3,7 @@
 #include "language.h"
 #include "unknown_120d80.h"
 #include <string.h>
+#include "cache_copy_globals.h"
 
 struct s_cache_file
 {
@@ -17,44 +18,19 @@ struct s_cache_copy
     long state;
 };
 
-struct s_cache_copy_request
-{
-    char map_name[256];
-    long priority;
-};
 
-struct s_cache_copy_progress
-{
-    long completed;
-    dword total;
-};
 
-struct s_copy_header_view;
 extern s_cache_file g_557c90[6];
 extern long g_55aca8;
 extern s_cache_copy g_55acac[8];
-extern s_copy_header_view g_55b4f0;
-extern dword g_55bcf0;
-extern long g_55bcf4;
-extern s_cache_copy_progress g_55bcf8;
-extern long g_55bd00;
-extern long g_55bd04;
-extern long g_55bd08;
-extern bool g_55bd0c;
-extern long g_55bd10;
-extern s_file_handle g_55bd14;
-extern long g_55bd18;
-extern long g_55bd1c;
-extern bool g_55bd20;
-extern char g_55bd21[0x103];
-extern s_cache_copy_request g_55be24[2];
-extern dword g_55c02c;
 
 void __stdcall function_2138f0(long arg_0, long arg_1);
 void function_213970(void);
 
 #pragma optimize("s", on)
-// score 131 (was 131): retail clears two storage blocks; separate globals require separate clears and
+// score 44 (was 131; plain check, m3 lane 1 r99's cache-copy object, coordinator 11-13): the cache-copy globals are one
+// object now, cleared with one memset of the whole object (155 bytes, retail's length); member-wise clears were 131.
+// Earlier (131): retail clears two storage blocks; separate globals require separate clears and
 // cache-load scheduling differs. Tried language dirty first 145; version dirty first 145; current version
 // tail 152; reset enabled first 145; scalar reset phase 145; forced language inline 169.
 // Without the size pragma 172; stores in address order 145 (184 without the pragma); chained
@@ -240,24 +216,11 @@ void function_2136c0(void)
 {
     memset(g_557c90, 0, sizeof(g_557c90));
     memset(g_55acac, 0, sizeof(g_55acac));
-    memset(&g_55b4f0, 0, 0x800);
-    memset(g_55bd21, 0, sizeof(g_55bd21));
-    memset(g_55be24, 0, sizeof(g_55be24));
-    g_55bcf0 = 0;
-    g_55bcf4 = 0;
-    g_55bcf8.completed = 0;
-    g_55bcf8.total = 0;
-    g_55bd04 = 0;
-    g_55bd08 = 0;
-    g_55bd14.handle = NULL;
-    g_55bd18 = 0;
-    g_55bd1c = 0;
-    g_55bd20 = false;
-    g_55c02c = 0;
+    memset(&g_55b4f0, 0, sizeof(g_55b4f0));
     g_55aca8 = NONE;
-    g_55bd0c = true;
-    g_55bd00 = NONE;
-    g_55bd10 = NONE;
+    g_55b4f0.done = true;
+    g_55b4f0.task = NONE;
+    g_55b4f0.slot = NONE;
     long local_0 = get_current_language();
     if (global_preferences_globals.current.unknown18 != local_0)
     {
