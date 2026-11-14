@@ -1403,6 +1403,12 @@ done:
 // where retail keeps the product in eax and forms the actor with a lea; the shared getter is used by sixteen
 // matched functions of this file, so its spelling cannot change on its own account.
 // MiniMax H (11-11): no new form, no lower score (9); retail still builds the actor offset in EAX and forms the actor with a lea where ours keeps the scaled index in the pointer register and adds the base, and the shared getter cannot be respelled because sixteen matched callers depend on it.
+// MiniMax D (11-14): no new form, no lower score (9): only the prologue differs - retail loads the pool table into
+// EDX, computes the actor offset in EAX (`mov eax, ecx`, `and eax, 0xffff`, `imul eax, eax, 0x888`) and forms the
+// actor with `lea esi, [eax + edx]`, while this build keeps the scaled index in ESI and adds the base (`add esi, edx`);
+// the getter is shared with sixteen matched functions of this file, so its spelling cannot change on its own account,
+// and retail's only caller of this function, 0x1f38c0, has no body in this tree, so the call context that shapes the
+// allocation is missing here.
 // MiniMax B (11-11): no new form, no lower score (9): the getter is shared with sixteen matched callers, so no
 // spelling of it can be changed on its own account, and none of the subscript forms reaches retail's prologue.
 // MiniMax E (11-10, run 73): no new form, no lower score (9); retail builds the actor offset in EAX and forms the actor with lea esi,[eax+edx] where we build the offset in ESI and add the base, and the shared getter's spelling cannot change because sixteen matched functions depend on it.
