@@ -49,12 +49,15 @@ extern s_record_pool *g_51ec84;
 
 struct s_particle_2b96
 {
-    long id;
+    word identifier;
+    word flags;
     long next;
-    byte unknown08[0x1c - 8];
+    real unknown08;
+    byte unknown0c[0x1c - 0x0c];
     point3f position;
     vector3f velocity;
-    byte unknown34[12];
+    real unknown34;
+    byte unknown38[8];
 };
 
 // @retail 0x2b9670
@@ -711,7 +714,15 @@ real g_55e618;
 // there up and the twelve-byte length gap that follows differ: that is the frame's allocation order. The
 // permuter ran over this body for 600 s (fifteen tries) and never beat its baseline of 93 differing
 // instructions, so the statement order retail used is not what the search finds.
-// score 102 (was 102): frame 0x124 agrees; sweep/collision homes and projection spills differ.
+// MiniMax R (11-14): 57 (was 102): the particle record is typed (identifier and flags words at +0 and
+// +2, the reals at +8 and +0x34), the velocity is read through a pointer, the dot is written out in
+// each of the three perpendicular products and the position is set through the existing real_point3d_set.
+// The frame's homes now agree with retail's (the collision record at F+0xb0, the normal at F+0xd8, the
+// impact at F+0x110). Left: the order of the loads at the head of the reflection block and the last
+// argument's load, which retail takes after the three sums; the plain position stores instead of the
+// setter score 120, so the setter is kept.
+// score 57 (was 102): the frame's homes agree now; the reflection block's load order and the last
+// argument's load still differ.
 // Velocity snapshot argument 676; reflection loop 102; reflected value 241; sweep scale 129;
 // both scales 129; coefficient local 102; displacement scale 129; snapshot plus loop 676;
 // shared tangent 190; shared start 102; both shared differences 102. Original body retained.
@@ -1023,10 +1034,9 @@ void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void
     {
         s_particle_2b96 *particle = &((s_particle_2b96 *)g_51ec84->data)[next & 0xffff];
         next = particle->next;
-        word *flags = (word *)((byte *)particle + 2);
-        if ((*flags & 9) || !(*(real *)((byte *)particle + 8) <= 1.0f))
+        if ((particle->flags & 9) || !(particle->unknown08 <= 1.0f))
             continue;
-        word countdown = *flags >> 13;
+        word countdown = particle->flags >> 13;
         if (countdown == 0)
         {
             if (particle != cache.current_particle)
@@ -1052,7 +1062,7 @@ void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void
             if (collision_flags & 0x430) collision_flags |= 8;
             if (!(mode & 1) && !mode2 && !(mode & 4) && !(mode & 8))
             {
-                *flags &= ~2;
+                particle->flags &= ~2;
                 continue;
             }
             vector3f displacement;
@@ -1083,22 +1093,19 @@ void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void
                     }
                     vector3f const *normal = (vector3f const *)(collision.storage + 0x28);
                     real keep = 1.0f - coefficients[0];
-                    vector3f velocity;
-                    velocity.i = particle->velocity.i;
-                    velocity.j = particle->velocity.j;
-                    velocity.k = particle->velocity.k;
-                    real dot = velocity.i * normal->i + normal->k * velocity.k + normal->j * velocity.j;
+                    vector3f const *velocity = &particle->velocity;
                     vector3f perpendicular;
-                    perpendicular.i = dot * normal->i;
-                    perpendicular.j = dot * normal->j;
-                    perpendicular.k = dot * normal->k;
+                    perpendicular.i = (velocity->i * normal->i + normal->k * velocity->k + normal->j * velocity->j) * normal->i;
+                    perpendicular.j = (velocity->i * normal->i + normal->k * velocity->k + normal->j * velocity->j) * normal->j;
+                    perpendicular.k = (velocity->i * normal->i + normal->k * velocity->k + normal->j * velocity->j) * normal->k;
                     vector3f tangent;
-                    tangent.i = velocity.i - perpendicular.i;
-                    tangent.j = velocity.j - perpendicular.j;
-                    tangent.k = velocity.k - perpendicular.k;
-                    particle->position.x = normal->i * 0.005f + collision.value.point.x;
-                    particle->position.y = normal->j * 0.005f + collision.value.point.y;
-                    particle->position.z = normal->k * 0.005f + collision.value.point.z;
+                    tangent.i = velocity->i - perpendicular.i;
+                    tangent.j = velocity->j - perpendicular.j;
+                    tangent.k = velocity->k - perpendicular.k;
+                    real_point3d_set(&particle->position,
+                        normal->i * 0.005f + collision.value.point.x,
+                        normal->j * 0.005f + collision.value.point.y,
+                        normal->k * 0.005f + collision.value.point.z);
                     s_particle_impact impact;
                     impact.index = NONE;
                     /* retail copies the collision's value whole (`mov edx, [esp + x]; push edx`), so it is this class there */
@@ -1106,8 +1113,8 @@ void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void
                     particle->velocity.i = tangent.i * keep - perpendicular.i * coefficients[1];
                     particle->velocity.j = tangent.j * keep - perpendicular.j * coefficients[1];
                     particle->velocity.k = tangent.k * keep - perpendicular.k * coefficients[1];
-                    *(real *)((byte *)particle + 0x34) *= keep;
-                    if (!(*flags & 2))
+                    particle->unknown34 *= keep;
+                    if (!(particle->flags & 2))
                     {
                         if (((s_particle_system_datum *)system)->function_1751d0()->location_mode != 1 && material->tag_index() != NONE)
                         {
@@ -1124,24 +1131,24 @@ void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void
                                 }
                             }
                         }
-                        *flags |= 2;
+                        particle->flags |= 2;
                     }
-                    if (normal->k > 0.8f) *flags |= 0x10;
-                    else *flags &= ~0x10;
+                    if (normal->k > 0.8f) particle->flags |= 0x10;
+                    else particle->flags &= ~0x10;
                     if ((*(long *)collision.storage == 1 && material->stop_on_surface()) ||
                         (*(long *)collision.storage == 3 && material->stop_on_surface()) ||
                         (*(long *)collision.storage == 2 && material->stop_on_object()))
-                        *flags |= 1;
+                        particle->flags |= 1;
                 }
                 else
-                    *flags &= 0x1fff;
+                    particle->flags &= 0x1fff;
             }
             else
-                *flags = (*flags & 0x1ffd) | 0xa000;
+                particle->flags = (particle->flags & 0x1ffd) | 0xa000;
         }
         else
         {
-            *flags = (*flags & 0x1fff) | ((countdown - 1) << 13);
+            particle->flags = (particle->flags & 0x1fff) | ((countdown - 1) << 13);
         }
     }
 }

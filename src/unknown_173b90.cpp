@@ -472,6 +472,12 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax R (11-14): the emitter list test wrapped around the loop with the offset's zero store
+// inside it, and the scale declared before the multiplier, measure 39 (was 42) at 1130 bytes; not
+// kept, since the gain is under eight and the score stays above 30. Left: row i of both rotations
+// sums the up product before the forward one, the two saved registers are reloaded in the other
+// order after each property call, the copy's second and third components swap, and the branch
+// offsets and the two trailing bytes follow from those lengths.
 // score 42 (was 42): left: the offset's zero store before the list test, the 1.0 defaults' order, three
 // reload pairs and row i of both rotations. Round 176 (m3 lane 5, fast): on indexed emitter definitions with
 // scale first (re-measured 113 at 1136 B; every integer difference fixed, only the rotations differ: VC
@@ -1461,6 +1467,11 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
+// MiniMax R (11-14): no lower score (47): the availability's zero store still comes before the
+// second definition call and the availability is still made from the query result arithmetically;
+// moving the clear to just before the view read measures 125. Left: the availability's store order
+// and its arithmetic form against retail's branch, the view's reload after the attachment call, and
+// the two flag byte homes.
 // score 47 (was 47): availability clear/production and later view observation remain;
 // what still differs is the same-view flag: ours writes its true value to the stack byte
 // before the availability query, retail keeps the flag in BL and writes the true value only after the owner
