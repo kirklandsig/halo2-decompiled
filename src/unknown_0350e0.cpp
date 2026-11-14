@@ -274,6 +274,12 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // composition in the actual returned vector: 416/416/436/527/532/515/605/371. NOT kept: No byte equality;
 // computed vector storage and helper operand-order alternatives are exact-only. Both original private helpers,
 // concurrent angle observations, all arithmetic trees, matrix/vector phases and complete body restored.
+// P489 continued: Actual first/second/both matrix-output defaults as aggregates and memset,
+// paired value initialization and clearing at each producer: 379/336/378/334/334/334/334/334.
+// NOT kept: no native coefficient/storage equality. Original uninitialized matrices,
+// concurrent angles, both helpers, vector observations/publications and full body restored.
+// Full-transform backing at first/second/both actual matrix receivers: 349/367/373.
+// NOT kept: no exact native backing/allocation equality; original matrix types and full body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2241,6 +2247,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // P461: Shared zero-angle outcome bool/char/signed-char/byte/short/word/long/dword:
 // 528 each, 2267/2285 bytes, frame 0x90. NOT kept: no exact repeated-test/output-home
 // repair; original independent trig producers, APIs and complete body restored.
+// P489: Actual output alpha/amount/scale/all-scalars/position/direction/color/all defaults:
+// 515/514/518/555/551/524/498/604. NOT kept: no exact native output-storage repair.
+// Original uninitialized outputs, provider contract, APIs and complete body restored.
+// Frame 0x90 versus 0x94 and output homes remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -4203,6 +4213,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // repair; tested-result alternatives are equality-only. Original positive Boolean graph, ordinary kind, all
 // per-use fade observations, distance helper, recursion and full body restored. The missing native final-query
 // scratch remains.
+// P489 continued: Native final query outputs through scalar value initialization, real/byte/paired
+// memset, paired fill/fill-n/uninitialized-fill/uninitialized-fill-n: 70/70/70/70/70/70/70/70.
+// NOT kept: no full-context native scratch/frame equality. Original direct final field
+// clamp, positive result, recursive/query inputs, helpers and complete body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {

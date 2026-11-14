@@ -3073,7 +3073,9 @@ real g_47ff30 = 2.5f;
 // instructions against the 711 of the body, and its variants swap call arguments, so the file was restored; the column
 // alignment puts the first differences at the frame (0x100 against 0xfc), the top slot
 // (esp+0x108 against esp+0x104) and the first float home (esp+0x20 against esp+0x34).
-// score 682 (was 682): earlier 699; Complete projected-speed running sums recover retail length 3244;
+// score 672 (was 682): current transform position cleared as one twelve-byte region; native
+// has three consecutive four-byte zero stores. Frame 0x100 versus 0xfc and scalar/vector homes remain.
+// Earlier at 682 (was 682): earlier 699; Complete projected-speed running sums recover retail length 3244;
 // Earlier at 682 (was 699). Complete projected-speed running sums recover retail length 3244;
 // frame 0x100 versus retail 0xfc; scalar/vector/transform homes and force scheduling remain.
 // Earlier at 699 (was 713): complete angular error in the torque output, then the existing in-place scale;
@@ -3301,6 +3303,14 @@ real g_47ff30 = 2.5f;
 // native projection/frame repair. Grouping and operand alternatives require equality; original complete
 // running sums, all memory observations, three transforms, helpers, static initialization, torque gain and
 // full body restored.
+// P489 continued: Actual current/desired/both position-only zero producers through memset
+// and value initialization, then paired fill/fill-n: 672/676/731/673/674/730/717/714.
+// Kept only current position memset, 682 -> 672 plain, retail extent 3244 unchanged.
+// Desired memset gains six (below the bar); value forms store x/z/y instead of native x/y/z;
+// the other paired forms regress or change extent. All restored. Current memset clears the
+// native twelve-byte region in three ordered four-byte
+// stores; its GP zero register versus native SSE remains counted. No type, width, field, helper,
+// matrix owner, arithmetic tree or input/call role changes.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3486,9 +3496,7 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 	transform.scale = 1.0f;
 	transform.forward = vehicle->forward;
 	transform.up = vehicle->up;
-	transform.position.x = 0.0f;
-	transform.position.y = 0.0f;
-	transform.position.z = 0.0f;
+	memset(&transform.position, 0, sizeof(transform.position));
 	cross3f(&vehicle->up, &vehicle->forward, &transform.left);
 	desired.scale = 1.0f;
 	desired.forward = *facing;
@@ -6115,6 +6123,11 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // 2128/2130/2130/2109/2114/2601/2128/2595. NOT kept: All regress; frames remain 0xfc or grow to 0x104, and
 // every length moves away from retail 5094. Original complete body, helpers, matrix ownership, all original
 // arithmetic trees and calls restored. Native frame and allocation remain.
+// P489: Standard inner-product pitch/horizontal/desired-up/quaternion-axis/spin square
+// producers, drift/side projections, then complete graph: 1278/1017/1104/1210/1053/1060/1053/1523.
+// NOT kept: no exact native frame or reduction repair; original full body, arithmetic
+// association, matrix owners and shared helpers restored. Frame 0xfc versus 0xd8 remains.
+// Per-use tilt-angle field at both intrinsics, as native loads it: 978 (tie); restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
