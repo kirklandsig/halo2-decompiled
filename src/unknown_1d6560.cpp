@@ -100,6 +100,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
+// MiniMax G (11-14): no new form kept, no lower score (96): a single type read shared by both kind routes reaches 68
+// only with a one-use absolute-index local and a score-picked declaration order, and the one-use-free form scores 98
+// and demotes the matched caller 0x1d5bf0 to 213; retail keeps the object index in ecx (re-masking it in case 0) and
+// reads the type once.
 // score 96 (was 96): no local frame; retail reads the type once before the kind test (one type read shared by
 // both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
 // component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must
@@ -395,6 +399,15 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // with case 0 through `headers[object_index & 0xffff]` 141 at 212 B [213]; a byte type 95 at 256 B [0]; the rigid body
 // declared first 107 at 240 B [13]; `headers` declared first with case 0 through the component 96 at 256 B [2] (the component
 // arrives in EDX). Body unchanged.
+// m3 lane 1 r102 (fast, caller 0x1d5bf0 in brackets): one byte type read `headers[object_index & 0xffff].type` at entry and
+// case 0 through `headers[(word)object_index].object`, with object_index, headers, rigid body and type each used twice (a
+// spelling that keeps case 0's index off the type read's CSE) 36 at 256 B [13] (left: component ECX/index EAX flip, headers
+// ESI, object index EDX, rigid body ECX, `mov al` + `movzx` type); the two spellings swapped 53 [13]; headers declared first
+// 100 (260 B) [171]; rigid body first 100 [13]; the rigid-body local renamed `body` 36 (same code: names move no register).
+// P487: Twice-used body flag as bool/byte/short/long, repeated then shared type:
+// 100/97/97/97/89/116/116/116. NOT kept: best gains only seven and loses matched caller 0x1d5bf0 to 13.
+// Original late flag reads, type observations and caller convention restored.
+// Header-first acquisition, one type read and body/index allocation remain.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

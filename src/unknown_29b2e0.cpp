@@ -491,6 +491,16 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // as an aggregate initializer 176 (same code). On the lead retail's pitch, sine and cosine sit in arg_4's home, +0x10 and
 // arg_3's home where ours puts them at +0x10, arg_3's and arg_4's homes, and the acos temporary shares the yaw's +0xc in
 // retail but local_11's +0x10 here.
+// P485: Conditional input/axis/both/shared alias copies in the existing rotation:
+// 286/485/459/428; shared overlap decisions bool/byte/short/long 428 each.
+// NOT kept: no byte match; frames/extents regress, axis-only also loses the sibling.
+// Original alias-safe staging, helpers and whole body restored; unity/root/yaw homes remain.
+// M3 lane 15 r83 (fast, 0x29b990 matched each time; LCS-aligned plain/register-masked/stack-masked, control 153/95/74): any
+// `__assume` (definition, arg_3, arg_2, actor or arg_5 non-NULL) 289 (1724 B). Rotation helper: the projection sum without
+// its parentheses, all six term orders 178 (154/95/74; one code: an unparenthesized float sum is put in a fixed order, the
+// explicit `(i + k) + j` here is honoured and is retail's grouping); rows as `(a + b) - c`, either operand first, 178
+// (157/105/103); retail-ordered operands (axis-first cross terms and rows) 178; the cross product in a named vector3f 214
+// (1707 B, 193/128/61).
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

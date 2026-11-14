@@ -318,9 +318,19 @@ void function_f0fd0(long vehicle_index, bool set);
    unit's flags and are deleted */
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// MiniMax E (11-14): no new form, no lower score (122): retail opens a frame of 0x14 and keeps the pool in two stack
+// homes, while this build opens 0xc and forwards the pool in EDI for both the scan and the element; the lead of 99
+// needs a read/write barrier, which the rules forbid, so the iterator's own declaration stands.
+// MiniMax C (11-14): no new form, no lower score (122): the frame is still 0xc against retail's 0x14 and the pool is still forwarded into EDI for both reads; the form that matches retail's body needs the iterator step written out by hand, which this round does not use.
 // score 122 (was 122): frame 0xc against retail's 0x14; retail reads the pool from the iterator's home for
 // the scan (high water snapshot in ESI) and from a second stack copy for the element, and keeps the datum
 // index in EDI; ours forwards the pool into EDI for both.
+// M3 lane 8 r165 (fast): `unit` declared at function scope 122 and `finished` at function scope 122 (same code each);
+// the four-field iterator viewed through a cast as the step's iterator with a pool local 119 (MiniMax I's form,
+// re-measured; frame 0x14 but the pool still forwarded into EDI); the existing four-field iterator with
+// data_datum_iterator_next_inlined and the current datum read from the iterator, without/with the barrier 152/162.
+// Reading: retail's iterator stays in memory (its scan re-reads the iterator's pool each pass) and the element's
+// pool is a separate spilled local; every inline step here lets the pool be forwarded into one register.
 // MiniMax H (11-12) lead 99, NOT kept (coordinator): it needs a new `_ReadWriteBarrier()` (barriers are reverted) and
 // the iterator step's body written out by hand. With it the frame is retail's 0x14 and the body retail's 473 bytes, with the
 // prologue stores, the shared next-index scan and the element computation in retail's order; what is left is the

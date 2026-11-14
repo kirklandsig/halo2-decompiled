@@ -1021,7 +1021,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
-// score 347 (was 347; round 95 m3 lane 11 near the end, m3 lane 2 r79 at the end): before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
+// score 234 (was 347; m3 lane 1 r102 at the end; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
 // MiniMax G (11-12): the flag order flying, direct, damping, gravity reaches 343 (the damping bit then lands in ECX where
 // retail uses EDX), the direct arm's product sides and its speed load, the crosses' operand sides and the general arm's
 // history block are unchanged; a four-point gain is below the eight-point floor, so the body is restored.
@@ -1365,6 +1365,23 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // function_1f087b 469 (3048 B, masked 120). Re-measured on this base, same code (347): the general arm's bounded vector declared
 // before delta, or renamed to sort before it; retail's delta/bounded slots (0x2c/0x20, ours 0x20/0x2c) follow neither. Both
 // lengths through magnitude3d via the `input` pointer, re-measured, 585 (3027 B; the low arm then reschedules).
+// m3 lane 8 r164 (fast with 0x1f0450, MATCH each time; base 347): one `vector3f *velocity` for out + 0xc at all 15 uses 592
+// (3035 B); the general arm's three output rows as `limited.x + current->x` 347 (same code); the step read before the scaled
+// vector 360; the step test as `step < length` 347 (same code); `magnitude *= state->speed` 347 (same code). Diagnostic (reverted): without the gravity subtraction the
+// general arm's k row still adds into XMM2 (520, 3019 B), so the commuted `addss xmm2, [eax + 8]` is not caused by that
+// block. Retail computes that row into XMM0 like the j row, which lets the first arm's `movss [edi + 0x14], xmm0` jump into
+// it (0x1f09dc -> 0x1f0f58); ours keeps the store in each arm, and the one-instruction shift covers about 170 lines.
+// P472: Independent immutable rotation/planar raw/spatial raw/ground basis/projected/side/history difference/history offset producers
+// 347/347/347/347/347/347/347/347. NOT kept: no exact native producer ownership; original complete body restored. Damping carrier and raw/bounded homes remain.
+// m3 lane 1 r102 (fast unless marked; masked = aligned count with registers and offsets masked, base 68), kept 347 -> 234
+// (plain, 3047 B = retail's length): the direct and general arms' output rows through the existing vector3f_assign (the
+// existing real_point3d_set at the same sites gives the same 234). Masked rises to 80: retail stores each row as it is
+// formed in both arms, ours now forms the three sums first; the drop is the arms reaching retail's lengths, which realigns
+// the rest. Retail's first arm still shares its out.k store with the general arm's (retail's k row in XMM0). Tried: the
+// general arm only 543, the direct arm only 559 (3037 B); on 234: the flying arm's desired rows through vector3f_assign
+// 371 (3051 B), the history difference 505 (3057 B), the final output rows 234 (same score); magnitude3d(input) for the
+// input length 297 (3036 B, masked 109), magnitude3d(&change) for the history maximum 509 (3057 B), both 488 (3047 B,
+// masked 122).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -1404,9 +1421,8 @@ void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_con
         {
             limited = delta;
         }
-        ((vector3f *)(out + 0xc))->i = current->i + limited.x;
-        ((vector3f *)(out + 0xc))->j = current->j + limited.y;
-        ((vector3f *)(out + 0xc))->k = current->k - state->gravity * g_510c54->rate;
+        vector3f_assign((vector3f *)(out + 0xc), current->i + limited.x, current->j + limited.y,
+            current->k - state->gravity * g_510c54->rate);
     }
     else
     {
@@ -1511,9 +1527,7 @@ void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_con
         }
         if (gravity)
             limited.k -= state->gravity * g_510c54->rate;
-        ((vector3f *)(out + 0xc))->i = current->i + limited.i;
-        ((vector3f *)(out + 0xc))->j = current->j + limited.j;
-        ((vector3f *)(out + 0xc))->k = current->k + limited.k;
+        vector3f_assign((vector3f *)(out + 0xc), current->i + limited.i, current->j + limited.j, current->k + limited.k);
     }
     if (!(bool)((*(dword *)state->settings >> 2) & 1) && !(state->flags & 4))
     {

@@ -135,6 +135,9 @@ void function_254200(void)
 
 #undef program_words_254200
 
+// score 4 (was 4): in the two records that follow the second reservation retail loads the
+// 16777215 constant before it reloads the spilled y+h from the stack, ours reloads y+h
+// first; only that order differs, the pool address of the constant is masked by the check.
 // MiniMax G (11-12): no new form, no lower score (4): the constant through a named local used for both coordinates keeps 4, the point copy declared before the half size gives 15, the point's coordinates through parallel pointers give 341; only the order of the two loads after the second reservation differs.
 // MiniMax C (11-09): no new form, no lower score (4 in the full build; the fast check's reduced image carries a
 // caveat, one global reference unresolved, so the 80 it reports is not this function's score): the only difference
@@ -151,9 +154,6 @@ void function_254200(void)
 // retail's shape); the permuter did not reach a variant on this loaded machine, so it was stopped:
 // no lower score.
 // MiniMax I (11-01): the member 4f form and the swapped y operands keep 4, the constant as a helper parameter 8, the point and size swapped 15, the y sum as a named local 151, the point and size below the colour call 214 and the free 2s form 392; no new form, no lower score.
-// score 4 (was 4): in the two records that follow the second reservation retail loads the
-// 16777215 constant before it reloads the spilled y+h from the stack, ours reloads y+h
-// first; only that order differs, the pool address of the constant is masked by the check.
 // Round 34 (lane A, machine 3): the constant through a named local keeps 4, so the order is the
 // live-in order of the whole-program build (retail reloads ascending, ours descending) and not
 // reachable from here.
@@ -194,6 +194,14 @@ void function_254200(void)
 // free Begin 247 (1053 bytes); direct availability rejection 4; active-quad rejection 4;
 // explicit texture selection 4; separate availability failures 4. Original calls and body restored;
 // the two depth/top-coordinate reload pairs remain.
+// Round 115 (m3 lane 16, single-address fast, control 4; diagnostics reverted): 0-7 dead initialised locals at the top
+// 4 each (no phase effect); k distinct float stores to probe globals at the top of the drawing block flip the pair to
+// retail's order only at k = 7 (k = 1-6, 8, 9, 15 and 16 keep ours), so the order behaves like a hash-order tie, not a
+// period. Source forms: the size as `2.f * arg_2` 4 (same code); an early return when the draw flag is clear 4 (same
+// code); the two dimension stores reading the bitmap fields directly, without the two named locals 8 (the field reads
+// swap).
+// Also: the two readiness tests as nested ifs 4; the bitmap pointer declared in the if condition 4; the two
+// dimension locals declared width first 4 (all same code).
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -494,6 +502,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // depth in a non-const local 2; its corners in four non-const locals 18 (four more symbols, the y fold again); corners and depth 2;
 // a non-const zero priority local for the four bitmap calls 2; the scale parameter copied to a local 2; the half constant in a
 // non-const local 332 (2260 bytes). All restored.
+// Round 103 (m3 lane 10, fast, 0x254200 matched and 0x254490 4 throughout): the scale halved in place (`arg_1 *= 0.5f;`, then
+// `arg_1 + 0.5f` / `0.5f - arg_1`) 386 (2272 bytes); the second quad's colour as a non-const colour aggregate declared at the top
+// 2; the first quad's Begin and vertex calls through the IDirect3DDevice8_ wrappers with a NULL device (an extra inline level and an
+// unused parameter, no code) 2; the first block's texture-stage calls through IDirect3DDevice8_SetTextureStageState 465 (2236 bytes,
+// as with the reference casts dropped); the last quad through the IDirect3DDevice8_ wrappers 2. All restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

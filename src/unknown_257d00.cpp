@@ -1590,6 +1590,12 @@ bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
 #pragma inline_depth(2)
+// MiniMax B (11-14): no new form, no lower score (270): a permutation search over this body (68 tries in 1224 s, with the
+// reduced image allowed to agree with the full one) found a best of 191, but that variant needs a one-use bool local and
+// a swap of the arguments of the call to 0xcccd0 that puts the constant 1 where the unit index belongs; retail's call
+// sets the unit index in eax, the record's word in edx and the constant 1 on the stack, so the swapped call would change
+// what the function does. Measured without those two: the field or written as an assignment 270, the same with the bool
+// cast and the reversed comparison 270, and with the one-use local on top 272, so nothing of the search is kept.
 // MiniMax B (11-13): no new form, no lower score (270): retail's prologue loads the actor table global first and the
 // cs global later, while the cs lookup is the first statement here; the two initializers swapped measure 487 and the
 // output pointer declared first gives the same code, so the prologue is left as it is, and the table-first lookups in
@@ -2013,6 +2019,22 @@ void function_b7360(long object_index);
 // orientation default store 412; recording exhaustive stores 219; parent-owned moving result 270;
 // direct branch delay stores 290; orientation selector at every use 270. NOT kept: the 219
 // form moves the zero store away from retail and grows to 1852/1848; other forms tie or regress.
+// M3 lane 12 r121 (one-file LTCG harness with the callee files, 1848 bytes, 257 for the plain 270; fast where given): the
+// perception guard as one `&&` test with an early return 309 (1852 bytes); the 1/19 point arm through a named point pointer
+// 259 harness; round 91's lead (`field_3 |= 0x40` before the point copy) re-measured on this body 261: every instruction
+// from the prologue's end through the 1/19 arm is then retail's (arg_0 EBP, output ESI, +0x28 reloaded after 0x25ab50),
+// but it reverses retail's store order (retail reads the reference before any store through the output), so not kept;
+// that with the actor looked up first (retail's prologue order, as in 0x259430) 495 harness: ESI is then unused early and
+// the guard's `return 2` gets its own shrink-wrapped epilogue where retail jumps to the shared failure tail; both pools
+// read into locals first (0x259ec0's idiom) with the lead 495, without it 505. Diagnostics: the 1/19 reference read
+// through a dword or as two word halves 446/432 harness. Left: retail treats 0x25ab50 as opaque at the 1/19 site and case 5.
+// P467: Complete 17/15/16 validation-and-movement family before 4/7/8/10/5/9/13/20,
+// on the native-length result graph: 318/350/413/437/471/471/474/470. NOT kept:
+// all regress and grow to 1860 or 1856 bytes; original complete callback restored.
+// Complete point-validation family before cases 8/10/5/9/13/20/6 on the native-length
+// completion graph: 401/420/455/460/461/461/461; existing actual property-record
+// input for recording 270. NOT kept: no equality or gain; placements grow to
+// 1864 bytes. Original whole callback and includes restored; pool/actor/output homes remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2420,6 +2442,14 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// MiniMax C (11-14): no new form, no lower score (479 in the full build, 474 in the reduced one): the two
+// floats read from [actor+0x6d4] and [actor+0x6d8] go into [esp+0x10] and [esp+0x14] in ours through
+// eax/ecx with the store before the lea of the destination, in retail through ecx/edx with the lea first;
+// the twelve-byte copy from [edi+0xc] into [actor+0x458] rotates the same way (ours edx/ecx/eax, retail
+// eax/edx/ecx), and the case-2 dot product's first product is formed as the stack value times the field
+// in retail and as the field times the stack value here (that order measures 477 in the full build, below
+// the gain threshold). The body runs eight bytes longer than retail's, so the jump table lands later and
+// the branches after it differ.
 // MiniMax A (11-12): the case 2 dot product's terms in retail's order, `local_6.x * local_0->unknown290.i +
 // local_0->unknown290.j * local_6.y` (the x term first, the y term second): the full build goes 479 -> 477
 // (2404 bytes); the reduced image reads 474 before the change and 477 after it, so the gain holds in the
@@ -2728,6 +2758,27 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // 4 and 2 alone 636; on that set the state pointer declared first 636, the script and state ahead of the actor 640, the result
 // flag first 640; the state pointer declared first on this body 479 (same code). Each retail-shaped form of cases 2, 4 and 18
 // still exchanges the actor and state registers, and no declaration order brings the actor back to EBX.
+// P467: Sole-return success default with redundant success assignments removed,
+// short/long/byte/bool at entry 604/604/630/630, after lookups 605/605/631/631.
+// NOT kept: all regress; wide forms reach 2396 bytes but lose native entry allocation.
+// Existing actor Boolean observations/control publications/spatial inputs, seven
+// canonical-field subsets: 479/482/482/479/479/482/482; all with the existing
+// perception accessor 625. NOT kept: no equality or gain; publication forms grow
+// to 2408 bytes. Original complete callback restored; later copy and exit carriers remain.
+// m3 lane 3 r241 (fast with the file and 0x110ab0, which agrees with the full build here; all restored): case 6 with
+// g_5023fc read at each use (no local copy) 478 (2400 B: `or byte ptr [eax+0x22], 0x69` in place); on it case 7/8's
+// one-use flag folded into its `if` 473 (2396 B, retail's length; alone on main 478, but retail computes that flag as a
+// value before the bit-8 test, `mov al, 1` / `mov al, [ebx+0x264]`, so main's local is retail's shape and its removal
+// was not kept), with the listed `c ? true : byte` flag instead 474 (2396; alone 477, re-measured); on the 473 form the
+// `local_21` block's `unknown456 = true` before the 0x458 copy 471 (a statement order: match-only lead; retail stores the
+// byte between the copy's second and third dwords). On 471: the 0x454 store before the copy in the field_3 & 1 block 471,
+// in the `local_21` block 480, the 0x465 flag before the 0x464 byte 471, the 0x470 pair before the 0x468 pair 479, the
+// `field_3 |= 8` first 488 (2380 B). Also: case 6's flags through a named byte (`flags = x | 0x29`, two stores) 617
+// (actor and state exchange registers), the 0x48 set after the state flag and the global store 482 (two `or byte
+// ptr` RMWs, not retail's load / two stores), on the 478 form 482; case 5's tick reset as an if/else 618; the
+// post-switch bit pair as `(field_3 & 3) == 3` 598; case 0 as `!field_0`, case 20 as `!(ac || d0)`, case 18's global
+// at each use and the 0x1c/0x20 store order all the same code as their bases. A per-bit bitfield view for the 0x48
+// set still folds to `or 0x69` (same code).
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

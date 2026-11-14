@@ -712,9 +712,14 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // MiniMax S (11-11): no new form, no lower score (117): the frame stays 0x28 against retail's 0x20 because retail
 // loads the random-state pointer before the seed read, and the old direction's address is passed to cross3f and
 // dot3f here where retail keeps the old direction in registers.
+// m3 lane 5 r181 (fast with 0x118140, 0x117c80, 0x30bf0, all MATCH; control 117, aligned 68, masked 45; both sides end in a
+// plain `ret`): retail loads the random-state pointer into ESI before the definition's load and the time product. The
+// fraction drawn before the time product 193; the definition lookup moved after both draws 157 (882 B). Rounds 87, 109
+// and 148 above list every other opening, rotation and tail form; none is left untried. Body unchanged.
 // T104: Returned direction/axis/both snapshot destinations, mutable/readonly memcpy, then
 // complete memmove: 161/161/160/161/161/160/178/178. NOT kept: no equality or native frame/home
 // recovery; original full captures, shared products, draws, row trees and entire body restored.
+// MiniMax H (11-14): no new form, no lower score (117): retail keeps the old direction in xmm3-xmm5 and sums the dot as (axis.k*old.k + axis.j*old.j) + old.i*axis.i, an order the shared helpers cannot produce, and the frame stays 0x28 against retail's 0x20 while the old direction's address reaches them.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

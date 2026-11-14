@@ -1556,6 +1556,11 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // expands to `rep stosd` plus a byte tail here (164) while the index loop gives retail's clean
 // `rep stosd` but loses the allocation (172); the item_count and index_count homes stay swapped
 // whatever the declaration order is, and initialising item_count at the top gives 121.
+// MiniMax I (11-14): no new form, no lower score (83): the index fill still moves the mode to the
+// stack and the counter into EBX where retail keeps the mode in EBX and the counter in EDI; the count
+// form `for (i = 0; i < 16 - index_count; i++) indices[index_count + i] = NONE;` gives 155, a separate
+// counter for the tail fill compiles to the same code as the shared one, and the item_count and
+// index_count homes stay swapped whatever the declaration order or the initialisation.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2637,10 +2642,13 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// score 87 (was 87): the spilled locals sit one six-step cycle off retail's slots, retail reloads players[i]
+// after the 0x53b40 voice query (BLOCKED-BY 0x53b40's chain, whose bottom 0x59670/0x596a0 is a contributor's),
+// and the last loop keeps the screen in ebx where retail gives ebx to bitmap_a. Earlier rounds below.
 // MiniMax B (11-12): no new form, no lower score (95): the spill slots keep the next stack slot
 // round from retail's, the voice query still keeps the entry's address where retail reloads the
 // player, and the last loop still keeps the screen in ebx where retail gives ebx to bitmap_a.
-// score 87 (was 95): the locals live in the other stack slots (shown count, the first
+// Earlier at 87 (was 95): the locals live in the other stack slots (shown count, the first
 // loop's player, the second loop's four widget indices), retail reloads players[i] after the
 // voice-state query, and the last loop keeps the screen in edi and bitmap_a in ebx where
 // ours keeps the screen in ebx and false in edi.
@@ -2834,6 +2842,16 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // MiniMax G (11-13): no new form, no lower score (95): the reload of the player after the voice
 // query still needs a store through a pointer in the 0x53b40 chain, which lives in
 // src/network_voice.cpp and is not this round's file.
+// MiniMax I (11-14): no new form, no lower score (87): the reload of the player after the voice
+// query still needs a store through a pointer somewhere in the 0x53b40 chain, whose source lives in
+// src/network_voice.cpp, another lane's file.
+// m3 lane 12 r122 (fast, on the 87 body): a counter declared in each of the three loops 85 (the first loop's
+// element pointer moves to retail's -8; gain two, not kept); with it the default arm chained (`*text_a = *text_b
+// = NONE; *bitmap_b = *bitmap_a = NONE;`, retail's last-loop copies) 90; with it the default arm in the order
+// text_a, text_b, bitmap_a, bitmap_b (retail's second-loop store order) 93; with it `count` itself cleared and
+// counted in place of shown_count 288 (917 bytes); with it the four widget indices declared once at function
+// scope 84 (gain three, not kept; the slots stay one six-cycle off), plus the chained default arm 91.
+// Re-measured: the chained default arm alone 92.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

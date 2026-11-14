@@ -3546,6 +3546,10 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
+// MiniMax H (11-13): no new form, no lower score (101): still BLOCKED-BY 0x769a0, whose unread owner parameter
+// decides the call's register home and whose definition is in another file; the frame agrees (0x3c), the
+// announcement and identity loads still take other registers than retail's, and the permuter's 37 tries in 307 s found
+// nothing below its own baseline.
 // MiniMax B (11-13): no new form, no lower score (101); still BLOCKED-BY 0x769a0 in another file, whose unread owner parameter decides the call's register home.
 // score 101 (was 101): Frame 0x3c agrees; held timeout owner spill and identifier/reply allocation remain.
 // Earlier: frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
@@ -3677,6 +3681,14 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // in ecx and its first field in edx before the stack argument, and reaches the member state through a pointer to
 // the field, while this build's callee takes the table in ecx and the owner on the stack; the callee is declared
 // in src/unknown_075870.cpp.
+// MiniMax B (11-14, later): no new form, no lower score (101): the permuter (240 s, --anneal, 15 tries) got one
+// instruction below the baseline (90 against 91) and the variant it reports needs a volatile cast, a constant-only
+// local and a reordered announcement struct, so the body stands.
+// MiniMax B (11-14): no new form, no lower score (101): retail's timeout call still takes three values - the
+// session's +0x10 in EDX, the observer in ECX and the member state's field in EAX - with the member state's
+// address formed by a lea of the row and a load at +4, where this build folds the +4 into one displacement and
+// passes two values; the third one is the owner parameter 0x769a0 would have to declare, and that definition is in
+// src/unknown_075870.cpp, so the call cannot be settled from this file. The body stands.
 // MiniMax G (11-12): no new form, no lower score (101); the timeout owner still has no home, because the
 // callee that would read it (0x769a0, src/unknown_075870.cpp:312) is in another file; the announcement
 // id and member scheduling behind it are in this file and still differ.
@@ -3712,6 +3724,10 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // into ECX and spills it, then forms the member-state address with a separate lea; round 65's byte match needs the
 // unread owner parameter on 0x769a0, whose file (src/unknown_075870.cpp, held sort_4byte change) is avoid-listed
 // again. The forms on this side of the call are listed above (lane 11 r89). Still BLOCKED-BY 0x769a0.
+// m3 lane 2 r81: no trial. The listing still agrees up to the timed-out call (retail 0x5e466-0x5e477: the value10 load
+// stored to +0x14 and the split member-state lea), which round 65 matched only with an unread owner parameter on 0x769a0;
+// its definition is in src/unknown_075870.cpp, a held sort_4byte file this round too, and every form on this side is listed.
+// Still BLOCKED-BY 0x769a0.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -4390,6 +4406,9 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
+// MiniMax H (11-13): no new form, no lower score (305): the three boolean stack homes are still rotated (the
+// result byte at +0xa where retail keeps it at +0xb), and the same timeout spill as 0x5e3f0 needs 0x769a0, whose
+// definition is in another file.
 // MiniMax G (11-12): no new form, no lower score (305); the same timeout spill as 0x5e3f0 sits here and
 // needs 0x769a0, whose definition is in src/unknown_075870.cpp; what is left in this file is the
 // rotation of the three boolean stack homes (the result byte at +0xa where retail keeps it at +0xb).
@@ -4408,6 +4427,7 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa, and the two peer
 // bytes are zeroed at +0x11/+0x13 where retail zeroes its pair at +0x11/+0x12), and retail reads the acceptance byte
 // back where this build folds it to a constant.
+// MiniMax I (11-14): no new form, no lower score (305): the frame 0xd8 and the body length agree with retail's, but the three boolean homes stay a rotation from retail's (the acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa), retail reads the acceptance byte back where this build folds it to a constant, and the 0x769a0 and 0x62c20 call setups need files this lane may not edit.
 // score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
 // frame 0xd8 and length agree; result/identity/selection byte homes and
 // acknowledgement placement differ.

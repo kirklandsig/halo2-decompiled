@@ -447,6 +447,17 @@ long network_session_get_maximum_players(c_class_58d20 *session);
 // P462: Complementary rejection bool/char/signed-char/byte/short/word/long/dword
 // outcomes 58/58/58/58/63/63/61/61. NOT kept: each regresses and grows beyond
 // native extent; original success-only result and complete call graph restored.
+// Round 240 (m3 lane 3, plain checks): the comparison reversed 33 (the full image still calls 0x5b180 first, jl in
+// place of jg, so the order of the two pure calls is the compiler's, not the source's); the comparison nested in its
+// own if under the index/variant test, reversed, 33; the 0x193300 result named there 33; the peer re-read from
+// `source->other_game` for the 0x5b180 call 71; the variant tested before the index 33.
+// P464: Incoming readiness observation bool/byte/short/long, actual byte/char/signed-char
+// readiness field and read-only source field all reproduce reduced 0. Byte field plain 33
+// at 138 bytes; all file/provider controls unchanged. NOT kept: reduced-only equality;
+// original field declarations, observations and complete body restored.
+// P466: Index/variant/peer/primary identities and their independent read-only
+// bindings: eight reduced 0s; primary binding plain 33 at 138/134 bytes.
+// NOT kept: unchanged full-image helper order and EBP save; original body restored.
 // @retail 0x73360
 bool c_helper_b::v7()
 {
@@ -1296,6 +1307,15 @@ long function_1931a0(long count, s_surface_description *variant);
 // validity test written out 6 here (0x192e60 20, 0x7e210 906 at 2764 bytes, the top call still inlined), through the
 // out-of-line 0x192db0 6 (0x192e60 and 0x7e210 unchanged), early returns or one ternary 6 (0x192e60 35 at 60 bytes, 0x63220
 // 112, 0x73ca0 140), an element pointer local 6 (0x192e60 20). The top call inlines in every spelling.
+// Round 197 (m3 lane 4, fast control 8 / plain 6; trials in 0x7e210, all restored): 0x7e210's result flag declared first 8
+// (0x7e210 766, same code); the top lookup taking the getter's value directly with the loop reading the variant index from the
+// session getter again 8 (0x7e210 856, 2844 bytes); the opening test with `!variant` first 8 (766, same code); the type-5 scan's
+// exit as `return false` 8 (766, same code); the loop's written-out variant lookup replaced by the existing 0x192e60 called
+// inside `if (variant_index)` MATCH here (0x7e210 931 at 2732 bytes: the top lookup still inlines, but its pointer takes EBX and
+// the output pointer EBP, so the session takes EDI as in retail and arrives in EAX; not kept: a rise in 0x7e210; diff saved as
+// build/r197/lead-0x73530-loop-lookup.patch), plus `long histogram[16]` (retail clears 16 dwords) MATCH, 0x7e210 933 (2704
+// bytes). So the session's register needs no change to the inline choices, only to the first pass's register pressure.
+// Diagnostic (compiler setting, reverted at once): no inlining around only the top lookup statement MATCH here, 0x7e210 942.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {
@@ -1622,6 +1642,7 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// score 703 (was 703): earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax G (11-12): no new form, no lower score (703); the frame agrees (0xc0); the slot helper is the
 // static __forceinline function_74aa1 in this file (src/unknown_072db0.cpp:1588), whose null test is a
 // branch here against retail's cmovne, and the users cursor still rides in EBX where retail keeps it in
@@ -1643,7 +1664,6 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // by inlining the getter 0x647d0 in src/unknown_054fe0.cpp). Both forms stay at 703.
 // MiniMax H (11-11): no new form, no lower score (703); the users cursor still rides in EBX where retail keeps it in a stack slot at +0x18, and the logon-status test still lacks retail's decrement/branch.
 // MiniMax B (11-13): no new form, no lower score (703); the users cursor still sits at +0x14 where retail keeps it at +0x18, the member fields are read off the properties address where retail reads them off the element, and the logon-status test still lacks retail's decrement and branch (the element through a named pointer 777, the copy before the slot lookup 847, the status written as (status - 1 == 0) 823; all worse).
-// score 703 (was 703): earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax H (11-04): the logon-status test written as (status - 1 == 0) reaches retail's
 // `dec eax` and its exact 2862 bytes but scores 729; not kept, the original body is restored.
@@ -1953,9 +1973,20 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // retail re-reads g_47d8f4's count word at every users-loop iteration inside the inlined variant getter and counts that
 // loop down in EBX, where ours hoists the count into EBX and ends on the variant pointer; the request loop's state==1 flag
 // byte and the identity copy are the listed match-only flag/local forms. The slot test's cmovne still needs /arch:SSE.
+// P469: Actual 144-byte property payload char/signed-char/short/word/long/dword/real/double
+// element storage: 703/703/703/703/703/703/703/824. NOT kept: first seven leave native
+// cursor/home gaps; double drops the aligned frame (0xc4, 2929 bytes). Original full body restored.
 // T104: Advancing actual input-user records, counted/actual-end and independent/paired cache
 // cursors, mutable/readonly: 777/777/784/784/784/784/785/785. NOT kept: all regress;
 // original direct-user expressions, loops and full body restored. Native cursor/slot and later homes remain.
+// MiniMax B (11-14): no new form, no lower score (703): the slot test's conditional move is one byte shorter than this
+// build's jump and move, so the loop head lands on another offset and the counts after it run off; that conditional move
+// needs the SSE architecture flag this file's flags do not set, and the flags stay as they are, so the request builder's
+// body stands.
+// P488: Complete 144-byte property transfers through copy/copy-backward/uninitialized-copy/reverse-copy, byte
+// and char payloads: 827/867/827/884/809/867/827/884. NOT kept: Copy boundaries do not recover a native
+// keeper. Original payload, library copies, identity observations, helpers, task transitions and protected
+// builder inputs restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

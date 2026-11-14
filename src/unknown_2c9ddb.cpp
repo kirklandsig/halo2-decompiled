@@ -278,6 +278,15 @@ extern long g_55c154;
 // &g_54e4a0 use an immediate; ours has one load site, the inlined copy and the destination address in a register.
 // The two-arm forms (lane 5 r153's 32-form grid, R223, rounds 32-97) all flip the frame to unbiased with `this` out
 // of EBX, and the named-count form that keeps 0x13fac0 out of line is listed (88/179). Still BLOCKED-BY 0x13fac0.
+// m3 lane 2 r81: no trial (fast = plain, 61). Read against retail: after the second entry read retail tests `selected` with
+// `jne` straight to an out-of-line selected arm, so each arm has its own 0x212bc0 call with its index already in EDX and no
+// classification byte, as if the select and the later test were threaded through the call; both arms join at one 0x238c69
+// tail (ECX loaded last). The forms that produce two call sites are listed (two-arm grid, R223, rounds 32-153) and all flip
+// the frame; 0x212bc0 sits in a held sort_4byte file and 0x238c69's other caller in a held file. BLOCKED-BY 0x13fac0 for the copy.
+// MiniMax I (11-14): no new form, no lower score (61): the link still expands the name copy where
+// retail calls 0x13fac0 out of line (its own file, src/unicode_strings.cpp, is not this round's), and
+// the default/existing choice is still spilled to a byte slot where retail branches on the selected
+// index itself.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

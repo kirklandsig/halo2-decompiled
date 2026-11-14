@@ -143,6 +143,12 @@ union s_185be7
     vector2f field_8;
 };
 
+// MiniMax E (11-14): no new form, no lower score (590): the length is still two bytes over retail's 3777 (the
+// `xor bl, bl` of the bit-4 flag block, where retail branches straight to the clear arm), and the flag chain on
+// field_18 stays misaligned because retail keeps the flag condition in EDX across the stores and writes the word
+// inside each helper arm while ours re-tests the condition per call; the forms tried this round (nested if, a
+// second bool, a hoisted "local_11 != 0" flag) all scored worse, and the reload of the control global that would
+// free EBX for NONE lives in another file.
 // MiniMax H (11-11): no new form, no lower score (590): retail keeps NONE in EBX for its early uses and re-reads
 // the control global after the call to 0x24590, whose declaration lives in src/unknown_023540.cpp, so the reload
 // cannot be produced from this file; the forms tried here that would force a re-read score worse.
@@ -171,6 +177,9 @@ union s_185be7
 // MiniMax A (11-13): no new form, no lower score (590); retail still reads the control global a second
 // time into ecx at the flag test where this build carries it in ebx from the entry block, and retail still
 // keeps none in ebx for its early tests.
+// MiniMax B (11-14): no new form, no lower score (590); the extent is retail's 3777 bytes to within two, and the walk shows the
+// gap is in the block layout and the stack homes of the input/output records, not in the statements; the earlier rounds' counted
+// mask, selected-byte and input-copy forms are the only ones that moved the frame at all.
 // score 590 (was 590; earlier 622, the lane's mixed form 516): 3773/3777 B, masked aligned about 157 (stack offsets and registers masked; 233 at 622). Round 56 (m3 lane 15, plain): PIN on
 // yaw/pitch 608, plus settings 781, plus limit clamps 827, plus turn rates 602, turn rates alone 619, yaw/pitch + turn rates + settings 589 (kept);
 // a ternary on named yaw/pitch values 608. Flags: all 22 through a set-flag macro 614 (3760 B, masked 140: retail's threaded tests), with long selected

@@ -567,6 +567,19 @@ struct s_text_line_measurement
 // after `width`, 77 each (same code: names do not move the width/advance-copy XMM coloring); `width` declared last among the
 // entry locals 81 (the entry stores reorder); kerning/offset/advance declared at the top of the loop body and assigned in
 // place 77 (same code). Retail's width loads into XMM4 ahead of the products because the advance copy takes XMM3.
+// P485: One continue/stop/restore-break completion result, byte/char/signed-char
+// 123/123/123, short/word/int/long/dword 117/117/117/117/117. NOT kept: no byte
+// match; original two flags, float trees, loop and complete body restored. Native advance
+// copy and early width load remain.
+// M3 lane 15 r83 (fast): `__assume` non-NULL on bounds, position, iterator, all three 77 each (same code); on the header
+// inside `if (header)` 122 (399 B, the inlined lookup's NULL test folds). Compile-only screen (0.6 s a variant; it reproduces
+// this body's colouring: advance XMM0 for the test and the update, width XMM3, sum XMM4, bound XMM5), none with retail's
+// `movaps xmm3, xmm0` advance copy: `width += advance + offset + kerning`; the product written at the test or the update;
+// advance accumulated in place (`advance += offset; advance += kerning; width += advance` and `advance += offset + kerning +
+// width; width = advance`); `count &&` first; the test as `sum >= x1`; a named fits bool; the arms swapped; width-first and
+// advance-first test sums; a width-first update; 120 of the 720 orders of the six entry declarations; 1-12 dead long and
+// 1-8 dead real locals; 90 explicit-parenthesis shapes of the test and the update (the copy appears only where the test
+// and the update share a parenthesized partial sum, which then moves the update ahead of the test).
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

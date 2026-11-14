@@ -2909,6 +2909,10 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 	return result;
 }
 
+// MiniMax R (11-14): no lower score (389): retail opens with one four-byte slot and takes the table
+// entry into ebp, ours reserves eight bytes and keeps the weapon index in ebp with two pointers
+// spilled, so the prologue and the register homes downstream differ; the permuter found nothing
+// below its baseline.
 // MiniMax H (11-13): no new form, no lower score (389); retail opens with `push ecx` (one four-byte slot) and takes
 // the table entry into EBP, ours opens with `sub esp, 8`, keeps the weapon index in EBP and spills two pointers, so
 // the prologue and every register home downstream differ. The permuter was run on this function and reported only
@@ -3030,6 +3034,7 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // retail's `push ecx`, ours loads the definition table before the weapon where retail loads it after, and the
 // weapon sits in EDI where retail keeps it in EBP, so the prologue and the switch's entry layout differ before
 // any case body is reached.
+// MiniMax A (11-14): no new form, no lower score (389); a local copy of the weapon index compiles to the same bytes, and what is left is that ours opens with an eight-byte frame where retail opens with one four-byte slot, keeps the weapon in edi and the index in ebp where retail keeps them the other way round, loads the definition table before the weapon, and builds a jump table where retail builds a comparison tree whose root is `cmp esi, 0x10000573` and whose two activity names are ordinary cases.
 // @retail 0xff5f0
 bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *active)
 {
@@ -3237,6 +3242,7 @@ struct s_ammo_conversion_entry
     long definition_index;
 };
 
+// MiniMax G (11-14): no new form, no lower score (190): the type byte re-read at each of its three tests 212, the acquisition flag with retail's polarity 211 (715 bytes), the same with a found flag in the conversion scan 216, the destination magazine without its own pointer 207, both of those together 211 (743 bytes), the capacity minimum without its cast 190 (unchanged code, different allocation); a 300 s permuter run found nothing below 190.
 // MiniMax B (11-12): no new form, no lower score (190): the difference is in the homes and the
 // carriers only (retail holds the destination weapon in ebp and spills it around the conversion
 // scan, keeps the other weapon's definition index in edi, and stores the acquisition flag with
@@ -3392,6 +3398,10 @@ struct s_ammo_conversion_entry
 // round as well (`setg` against our `setle`). An annealed permuter run over this body (300 s) again
 // found only the argument swaps of `function_1896c0` and `function_a88a0`, which contradict those
 // declarations, so it was dropped.
+// MiniMax I (11-14): no new form, no lower score (190): both streams stay 215 instructions long and
+// the divergence starts in the prologue, where retail holds the destination weapon in EBP and the
+// other weapon in EBX while ours holds the destination in EDI and spills the other; the acquisition
+// flag is stored the other way round as well, and flipping it to retail's sense compiles worse.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3509,6 +3519,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // 0x1c60 and the weapon, barrel, definition and holder still live in different homes, so the prologue and the
 // register allocation of the barrel walk differ. Nothing here can be reshaped without touching the declarations
 // that other files own.
+// MiniMax R (11-14): no lower score (643 fast): the frame 0x1c64 differs from retail's 0x1c60 by four
+// bytes and the weapon, barrel and definition homes remain; the unit index without the volatile
+// measured 657, with it 637 and with the NONE at the declaration 640, so the kept form stands.
 // MiniMax G (11-10): no new form, no lower score (607).
 // MiniMax R (11-10): no new form, no lower score; the unit index without the volatile scores 657, with the volatile and the NONE at the declaration 637 and without the volatile and the NONE at the declaration 640, so the kept form stays the best.
 // MiniMax G (11-04): no new form, no lower score; the barrel pointer before the definition gives fast 638 (was 640), below the retention threshold.
@@ -3600,6 +3613,7 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // difference is at +0xb, where ours loads the actor argument and the definition table before the weapon and retail
 // loads the pool pointer and takes the argument into EBX, so the prologue's registers and the four extra frame bytes
 // differ before any case body is reached.
+// MiniMax A (11-14): no new form, no lower score (607 in the plain check, 643 in the fast one); retail's frame is four bytes shorter than ours and its homes for the weapon index, the definition and the two barrel offsets differ, so the prologue and the copy-out loop stay laid out differently.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {

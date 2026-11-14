@@ -275,6 +275,13 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // or one read at offset 0 of `point` or `record`, anywhere ahead of the add in source order (function entry or the
 // first-light arm) gives retail's in-place add at 821 bytes; two of them cancel; reads at +4, +8 or +0x10, and
 // statements after the loop or after either arm's strength assignment, change nothing. The ECX/EDI pair never moved.
+// Round 101 (m3 lane 1, fast): n = 0..7 `long dead_n = n;` placeholders at entry (the symbol-count phase lever) on
+// colour first 121 x8 and on strength first 30 x7, identical code at every n; `vector3f_add(&contribution, &direction,
+// ...)` 30/121 (strength/colour first, same code). Colour first with the contribution's fields assigned directly (no
+// vector3f_assign) 160 (825 bytes): the first-light arm and the post-call `addss xmm7, [ebp+0x10]` are retail's, but
+// all three x87 direction adds load the direction first; strength first so 170. On that body the accumulation through
+// the swapped vector3f_add, as `+=` rows, as `contribution + direction` rows 160/160/160; the no-lights arm first 191.
+// vector3f_assign with `+=` rows, colour/strength first 169/161.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -1369,7 +1376,7 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // result spills where retail keeps it in a register; the parameter order that would fix the swap is
 // retail's, and the callers' declarations are in files this lane may not edit.
 // MiniMax S (11-11): no new form, no lower score (529): retail hands this function its block in eax and its query in edx while this build swaps them, and its frame is 0x2c against retail's 0x28.
-// score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
+// score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (ours ends `ret 0xc` as retail).
 // MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
 // and its query in edx while ours swaps them, and the parameter order is not ours to change.
 // Earlier (529, was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (m3 lane 13 r77 too).
@@ -1650,6 +1657,16 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // that graph with length before normal copy / early lightmap copy / shared bias / direct primary
 // output / early square / lightmap-first clamps 573/568/573/606/548/571. NOT kept: all regress
 // and lose 0x3db00; original body/helpers restored, frame 0x2c versus native 0x28 remains.
+// M3 lane 4 r196 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, all unchanged): the second luminance in its own local
+// 530; the first luminance's products field-first 529 (same code); `real remainder = 1.0f - square;` for the three color2
+// rows 533; `real falloff = 1.0f - (0.1f * length + 0.6f);` ahead of scale0 541 (2175 B); the second luminance's products
+// field-first 529 (same code).
+// P476: Standard first-product-seeded input/normal/ambient magnitude reductions, masks 1/2/4/3/5/6/7, then explicit operations; normal/ambient forms lose matched 0x3db00. Scores 552/603/552/619/531/603/624/681.
+// NOT kept: unmatched diagnostic source forms; original executable body restored.
+// P490: Standard forward coordinate copies at input/secondary/ambient transfers,
+// masks 1/2/4/3/5/6/7, then backward complete transfers: 571/597/544/596/577/597/601/596.
+// NOT kept: all regress and shorten away from retail; secondary forms also lose the matched
+// caller. Original native copies, helpers and complete body restored; frame/result/carrier gaps remain.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1726,6 +1743,12 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax B (11-13): no new form, no lower score (378): aligned the two listings instruction by instruction: what is
+// left is the frame (0x4c against retail's 0x40, three stack slots against retail's), the flag byte that retail clears
+// in the entry block and this build clears after the first branch, the length's square that retail stores in its slot
+// before it multiplies and this build multiplies before it stores, and the 0xd37f0 call handing its block and query over
+// in the other order (retail's [eax + ecx + 8] against our [eax + edx + 8]); the parameter list is fixed, so the frame
+// difference stands.
 // MiniMax B (11-12): no new form, no lower score (378); re-walked retail's listing statement by statement:
 // the field offsets, the constants, the pin arguments, the call arguments and the final pin order all
 // agree, and what is left is the frame (0x4c against retail's 0x40), the rotation projection added as
@@ -1872,6 +1895,8 @@ real function_30bf0(vector3f *vector);
 // local) 379 (aligned 297, masked 186: closer in shape, one point up), the two colours unpacked lightmap first 378 (aligned
 // 325, different code), color0 formed as `lightmap.red * scale0` with no copy 470 (0x3db00 drops to 12), `value1c` stored
 // first in the fallback 475 (1891 bytes).
+// MiniMax G (11-14): no new form, no lower score (378): re-measured in the batch; the frame is 0x4c against retail's
+// 0x40, and the normal copy and the limited, rotation and colour homes still sit at other offsets.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -2222,6 +2247,10 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
+// MiniMax B (11-13): no new form, no lower score (542): aligned the two listings instruction by instruction: the frame is
+// retail's 0x90, but the status, mesh, colour and sample homes sit 0xc bytes lower than retail's, and the second arm's
+// 0x13da30 lookup expands here where retail calls it; moving the declarations does not move the homes, and that helper
+// lives in a file this lane may not edit.
 // MiniMax B (11-12): no new form, no lower score (542); the frame is retail's 0x90, but the status, mesh,
 // colour and sample homes sit 0xc bytes lower than retail's (the status at 0x24 against retail's 0x30 and
 // the sample pointer at 0x20 against retail's 0x2c), and the second arm's 0x13da30 lookup expands here where
@@ -2503,6 +2532,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // and offsets masked 110 against 302): left there are the frame homes and the two inlined helpers (13
 // extra instructions shift the tail).
 // MiniMax R (11-11): no new form, no lower score (542): the argument split and the body's block schedule still differ from retail's, and the two inlined helpers live in files this lane may not edit.
+// MiniMax G (11-14): no new form, no lower score (542): re-measured in the batch; the frame agrees at 0x90, but the
+// status, mesh, colour and sample homes still sit 0xc bytes below retail's, and the second arm's 0x13da30 lookup
+// still expands here where retail calls it.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

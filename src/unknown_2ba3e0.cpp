@@ -498,6 +498,10 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // Round 117 (m3 lane 12): the permuter (`--fast --anneal`, 600 s, 82 tries) best 10. The tree's statement-form i, j, k
 // squared sums are all file-local (path.cpp, unknown_1a58b0.cpp, impacts.cpp) and none reads k first; matched 0x2b8e10
 // keeps nothing in registers across its back edge, so it shows no reload order to follow.
+// Round 91 (m3 lane 14, fast): the EDX parameter system moved to the first, second, third or fourth position
+// (definition and the call together, stack unchanged) 10/10/10/10; the maximum test's square named where it is
+// computed 59 (1517 bytes). Phase scan (1-7 unused initialised locals) of the velocity normalizer in both
+// branches: 34/34/128/33/39/41/41/93; the minimum branch's inverse-first j/k pair appears at no phase.
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {
@@ -694,6 +698,12 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 
 real g_55e618;
 
+// score 102 (was 102): the sweep and collision homes sit twelve bytes below retail's (+0x38/+0xa4 against +0x44/+0xb0)
+// because the reflection block spills differently (retail copies dot for perp.i/j, multiplies perp.k in place and spills
+// tangent.i/j and perp.k). M3 lane 8 r165 (fast): perpendicular and tangent declared ahead of the dot 102 (same code);
+// the rebound coefficient named once for the three final rows 102 (same code); keep computed after the tangent 197
+// (1536 B, frame moves); the +0x34 scale ahead of the three rows 103; the normal pointer declared before the coefficient
+// loop 102 (same code).
 // MiniMax G (11-10): no new form, no lower score (102): the sweep vector and the collision record both sit twelve bytes lower here than in retail (sweep +0x38 against +0x44, record +0xa4 against +0xb0), so retail's frame holds twelve bytes more before the sweep; the aggregates this body declares do not account for that gap.
 // MiniMax S (11-09): no new form, no lower score (102); retail's sweep and collision homes
 // sit twelve bytes higher in the frame than ours (F+0x44 against F+0x38), the local handed to
@@ -711,7 +721,19 @@ real g_55e618;
 // there up and the twelve-byte length gap that follows differ: that is the frame's allocation order. The
 // permuter ran over this body for 600 s (fifteen tries) and never beat its baseline of 93 differing
 // instructions, so the statement order retail used is not what the search finds.
-// score 102 (was 102): frame 0x124 agrees; sweep/collision homes and projection spills differ.
+// MiniMax R (11-14), NOT kept (coordinator: the 102 -> 57 rests on the velocity-normal dot written out in full in each
+// of the three perpendicular products; retail computes that dot once (0x2b93fb-0x2b941c) and scales the normal by it,
+// so the repeated expression only steers the order; R's body with the dot computed once into a local measures 195.
+// LEAD: the typed record, the velocity pointer and real_point3d_set are natural; find the once-computed dot form
+// that keeps 57): 57 (was 102): the particle record is typed (identifier and flags words at +0 and
+// +2, the reals at +8 and +0x34), the velocity is read through a pointer, the dot is written out in
+// each of the three perpendicular products and the position is set through the existing real_point3d_set.
+// The frame's homes now agree with retail's (the collision record at F+0xb0, the normal at F+0xd8, the
+// impact at F+0x110). Left: the order of the loads at the head of the reflection block and the last
+// argument's load, which retail takes after the three sums; the plain position stores instead of the
+// setter score 120, so the setter is kept.
+// R's form, not kept: score 57 (was 102): the frame's homes agree now; the reflection block's load order and the last
+// argument's load still differ.
 // Velocity snapshot argument 676; reflection loop 102; reflected value 241; sweep scale 129;
 // both scales 129; coefficient local 102; displacement scale 129; snapshot plus loop 676;
 // shared tangent 190; shared start 102; both shared differences 102. Original body retained.
@@ -982,6 +1004,7 @@ real g_55e618;
 // vector sits at +0x44 and its collision record at +0xb0 where ours keeps the sweep at +0x38 and the record at
 // +0xa4, so every home from there up (and the twelve-byte length gap that follows) differs; that is the frame's
 // allocation order, which the rules bar me from reshaping.
+// MiniMax A (11-14): no new form, no lower score (102); retail's sweep vector and its collision record still sit twelve bytes higher in the frame than ours, and retail's dot product still adds its three terms in another order than ours; the permuter (5 tries, 311 s) found nothing below the baseline.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

@@ -580,6 +580,15 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // 42, the fxch gone), plus `short current = count;` before the classifier call 150 (784 B), plus the departure as
 // `left_start = left_start || points2d_differ(next, first)` 150, or lowest_y declared before lowest_x 148 (masked 47 each).
 // Left in every family: retail caches the hull count in EBX at its top-tested loop head and reads the count from its home.
+// P485: First departing index/one-based position owns hull departure history,
+// short/word/long/dword 279/277/193/193 and 277/277/188/188. NOT kept: no byte
+// match; original Boolean-valued history, eager length, loops and whole body restored.
+// Native frame 0x14, count/departure argument reuse and scan bound remain.
+// M3 lane 15 r83 (fast, 0x239d50 matched each time): `__assume` on points, on indices, on both, and `count <=
+// MAXIMUM_POLYGON_POINTS` 161 each (same code); one hull counter (`while ((short)hull_count < count)`, `indices[(short)
+// hull_count] = current; hull_count++;`) with the closure as `if (!left_start || points2d_differ(...)) continue; goto
+// finished;` 331 (695 B). Compile-only: that closure on this body is the same code; the one-counter `while`, `for (; c; )`
+// and `for (;;) { if (!c) break; ...}` all rotate the pass loop (test copied to its foot).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -737,10 +746,39 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 	return fabs((double)a->x - b->x) < epsilon && fabs((double)a->y - b->y) < epsilon;
 }
 
+// MiniMax E (11-14): no new form, no lower score (129): retail still reads the count argument as a dword home and
+// sign-extends the low word, where this declaration's short count is read as a word home, and that parameter's type is
+// declared in src/unknown_17d9a0.cpp, which this lane may not edit; retail also keeps the previous side in memory where
+// this build keeps it in CL.
+// MiniMax B (11-14), NOT kept: 92 (was 129) with a `count > 0` guard in front of the loop (retail's count load
+// into ECX and its `test cx, cx` loop guard at 0x23a78b), the fraction as an if/else (retail's else arm that
+// materialises the zero at 0x23a887) and the products spelled `current->x * plane->n.i`. The guard repeats the
+// loop's own `i < count` test, so it is kept only with a byte match: without it the other two changes score 249,
+// and the guard around the `previous` setup and the loop together (where it would also protect the
+// points[count - 1] read) scores 271 (coordinator). At 92 what was left: the zero constant in XMM1 late where retail
+// creates it in XMM2 early, so the loop's float homes are one register out; 890 bytes against retail's 887.
 // MiniMax B (11-12): no new form, no lower score (129, was 129): retail reads the count argument as a dword home
 // (`mov ecx, [ebp + 8]; movsx edi, cx`) where this declaration's short count is read as a word home, and that type
 // is declared in src/unknown_17d9a0.cpp, so the first difference stays; retail also keeps the previous side in
 // memory where this build keeps it in CL.
+// MiniMax G (11-13): no new form, no lower score (129): the SIMD homes carry the bulk of the score and
+// they are a pure renaming: retail holds the zero constant in xmm2 and the difference dy in xmm0 (the
+// dead loop temp), where this build holds dy in xmm2 and the zero in xmm4, so every instruction of the
+// clipped branch differs while the arithmetic is the same. The count's ECX home is reproducible only by
+// a third use of the count: the `count > 0` guard (211, wrong control flow) or moving
+// `previous_inside = inside;` to just before `if (inside)` (157); that second form reproduces retail's
+// general registers exactly (`mov ecx,[ebp+8]`, `movsx edi,cx`, `test cx,cx`, the loop head's
+// `mov ecx,[ebp+0xc]` and the `mov edi,edi` pad) but swaps the two side bytes (this build keeps the
+// previous side at [esp+0xc] and the current at [esp+0xd], retail the other way round) and keeps the
+// SIMD renaming. Declaring the side flags in retail's order (current, previous, positive, negative)
+// changes no code (157, same bytes).
+// MiniMax G (11-13): no new form, no lower score (129): retail materialises the count in ECX at the top of
+// the main path (mov ecx,dword ptr [ebp+8]; movsx edi,cx; test cx,cx), so the previous side has no register
+// and lives in the byte at [esp+0xd]; this build re-reads the count from its home (movsx edi,word ptr
+// [ebp+8]; cmp word ptr [ebp+8],0) and keeps the previous side in CL, and the loop head takes EDI where
+// retail takes ECX. The count stays a short in retail (the alias branch loads word ptr [ebp+8] and the
+// guard compares ax with word ptr [ebp+8]), so this is the count's lifetime inside the body and not its
+// width; the declaration that fixes its width lives in src/unknown_17d9a0.cpp, which is not mine to edit.
 // score 129 (was 129): Retail length and the mask update agree; retail keeps the previous side in memory
 // aligned frame and stride/prior homes agree; prior-side byte and SIMD homes differ.
 // MiniMax D (11-11): no new form, no lower score (129); retail reads the count argument as a dword home (`mov ecx, [ebp+8]; movsx edi, cx`) where this declaration's short count is read as a word, and that parameter type is declared in src/unknown_17d9a0.cpp, so the first difference stays.

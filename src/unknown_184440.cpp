@@ -191,6 +191,9 @@ __forceinline bool function_184448(long arg_0)
 // MiniMax A (11-13): no new form, no lower score (965); the frame is still 0x11d4 against retail's 0x11cc —
 // the two cached short axis locals cost those eight bytes — and the definition and surface records still sit
 // in each other's stack homes.
+// MiniMax B (11-14): no new form, no lower score (965); the gap opens in the first block, where retail loads the base pointer into
+// EDI and keeps the computed offset in EAX while ours uses ESI and EBX, and retail clears the frame dword with a single store
+// where ours zeroes a register first; the extent is retail's 4590 bytes, so only the block layout differs.
 // score 965 (s1A walk 11-06): the statement walk against retail found no behaviour difference; every condition, field,
 // callee and argument order agrees. Not kept, since together they score 976: two type changes retail's bytes show (1) no cached axis locals - retail
 // reloads g_440b94[idx][0/1] in the cell loop (0x185171/0x185178) and keeps the pre-scaled offsets only as loop-invariants in
@@ -356,6 +359,9 @@ __forceinline bool function_184448(long arg_0)
 // (4593 B); the first record as an element pointer before its field read 965 (same code); the bounds compare written
 // count first (retail loads the count into EBX before the compare) 966. The file-scope
 // inline_depth pragma pair around this function removed: identical code (kept as a cleanup).
+// MiniMax D (11-14): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc; dropping
+// the 2D sample array to seven entries matches the frame size but reaches only 964 and needs a declaration change,
+// and the remaining difference is set by the 0x48e70 call, whose definition is in another machine's file.
 // MiniMax D (11-11): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc and the
 // initial surface pointer is still held in ESI where retail holds it in EDI; the remaining difference is set by the
 // 0x48e70 call, whose definition is in another machine's file.

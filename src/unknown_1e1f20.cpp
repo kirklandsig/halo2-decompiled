@@ -592,6 +592,11 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// MiniMax E (11-14): no new form, no lower score (236): the first difference is still at +0x3, where the actor
+// pool goes into EAX and retail puts it in ECX; the slot loop is still rotated by a jump with an alignment pad
+// retail has not, retail's memory walk still indexes the record as actor base + 12*i in EDX and re-reads the slot
+// after the store, and the body still expands the callee at 0x26ed40 that lives in another file:
+// BLOCKED-BY 0x26ed40.
 // MiniMax B (11-11), NOT kept (coordinator): 236 to 216 (plain, 966 bytes) holds the definition bit in a byte flag set
 // by tests (`definition_counted`), a match-only form. The lead as written: the definition bit is now shifted and kept in
 // the dead parameter slot as retail does, and the counts loop and the tail follow it; still differs:
@@ -603,6 +608,9 @@ void swarm_leader_detach(long actor_index);
 // instead of being materialised and re-derived after the callback; the iterator compare reloads the
 // actor pointer instead of comparing against the cached one; and the second parameter becomes a
 // Boolean before the 0x203ed0 call where retail pushes the raw value.
+// MiniMax B (11-14): no new form, no lower score (236); retail's first slot loop builds the `slot_index < 4` argument with
+// setge/dec/and and its memory loop is a countdown over the actor base, while ours branches on the ternary and re-reads the
+// actor through the pool; a permuter run was stopped at its time limit without reporting a variant.
 // score 236 (was 281): frame 0x1c versus 0x20 (earlier body), entry actor displacement and cleanup stack homes remain;
 // at 236 the prologue registers, the memory walk (retail's inlined joint_decline: offset in EDX, count in a stack
 // slot) and the iterator compare against the cached actor differ.

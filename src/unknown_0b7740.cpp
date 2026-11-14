@@ -1029,6 +1029,25 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // input_matrices in EDX (stored late as final_matrices) with a separate EDI copy for the early exits and object_index in
 // ESI, pushes EBX only before the +0xb3 test (two separate early-test epilogues), and builds the header with
 // `lea [ecx + eax*4]`. Body unchanged.
+// M3 lane 16 r116 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout): bit 29/+0x34b through a fresh
+// table-lookup local declared ahead of the sample test (0xbd090's `current`) 240 (same code: merges with `object`); that
+// with the bit-30 clear through 0xbfe20 262 (813 B), with the mask as an aggregate copy 262 (same code), with the lookup
+// written inside the two tests (no local) 262; re-measured round 78's header->object lead 194 and round 179's 169 lead 169.
+// On the nested model test with `return result;` inside and after it (0xbfe20 clear): early tests through header->object,
+// bit 29/+0x34b through the fresh lookup written in the tests 297 (823 B), through header->object 297. Reading: retail's
+// three [header + 8] loads look like rematerialized reloads of one value (its first-test value sits in ECX, scratch, while
+// `object` needs EBP), and the EDX/EDI pair at entry is the parameter load kept for the late final_matrices store beside a
+// separate result copy; ours always coalesces the result with that load. A parameter reassigned in place of final_matrices
+// is ruled out: retail's sample arm stores final_matrices to its own slot. Body unchanged.
+// m3 lane 14 r93 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90, all matched throughout; control 240): in the sample loop
+// `if (index != 0xff) sample = function_0bfe60(...)` 253 (830 B); the parent index read without the render-node pointer 266
+// (806 B); the node byte read into a long 291; the two flag tests as `& (1 << 30)` / `& (1 << 29)` masks 292; the object-type
+// test as `definition->object_type != 0` 308 (813 B). Re-measured: the render-node count read in the loop test with no local 240
+// (the listed [45] form). Same code (not counted): the bit-30 clear as `&= ~(1 << 30)`, the model test read from the definition
+// ahead of the model-index local.
+// On round 179's 169 lead (re-measured 169, masked 37): what is left is the entry (retail loads input_matrices into EDX first
+// and copies it to EDI for the early exits, pushes EBX only before the +0xb3 test, forms the header with `lea [ecx + eax*4]`
+// and reuses the first test's object for +0xb3, where the lead re-derives the table lookup per test) and the fourth epilogue.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

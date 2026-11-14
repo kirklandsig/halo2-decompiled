@@ -490,6 +490,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // MiniMax H (11-13): no new form, no lower score (172): retail still saves ebx first and keeps the BSP global in ebx while this build keeps it in ebp and defers the ebp and esi saves, so the prologue's order and the frame's slot heights differ; the promoted 0x11e800 clone still hands its four pointers over in another register order (retail ecx, edx, eax, esi), and that callee lives in another file.
 // MiniMax I (11-11): no new form, no lower score (172): retail pushes ebx first and keeps the BSP pointer in ebx, we keep it in ebp and defer the ebp and esi pushes, and our frame's store slots sit one word lower than retail's; the callee's four argument registers (0x11e800) are outside this file.
 
+// MiniMax D (11-14): no new form, no lower score (172): the frame 0x58 agrees, but the BSP global still sits in ebp where retail keeps it in ebx, and the prologue still pushes two registers where retail pushes three.
 // MiniMax G (11-13): no new form, no lower score (172): the BSP global sits in ebp where retail
 // keeps it in ebx, the prologue's push order and the frame's slot heights differ, and the 0x11e800
 // clone hands its four pointers over in another register order: BLOCKED-BY 0x11e800.
@@ -692,6 +693,11 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // slots agree, and 0x11e800's argument registers are decided by that callee's body in another file; the permuter
 // (300 s, annealed) was stopped by the run's time limit without a result.
 // MiniMax B (11-13): no new form, no lower score (172): retail pushes ebx first and keeps the BSP global in ebx with the section in a stack home, ours keeps the BSP in ebp and the section in a register; the promoted clone of 0x11e800 takes its four pointers in another register order (retail ecx, edx, eax, esi), that callee being in another file.
+// MiniMax A (11-14): no new form, no lower score (172): retail still keeps the BSP global in ebx
+// and pushes ebx first while this build keeps it in ebp and defers the ebp and esi pushes, and the
+// zero flag's frame slot is exchanged with the global's; the only spelling left is a declaration
+// order change (the bsp assignment before the point copy), which the rules ask to be reported
+// rather than made.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
@@ -947,6 +953,7 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // declared (p, a, b, c, u, v) at its definition, this file's declaration and both calls, re-measured on the current base (fast,
 // restored at once): MATCH here, 0x11e800 129 -> 126, 0x14ac60 172 -> 172; the diff is in build/r88/held-14a8e0.patch.
 // BLOCKED-BY 0x11e800 (contributor).
+// Round 103 (m3 lane 10): listing re-read (fast 4), still only 0x11e800's four argument registers; BLOCKED-BY 0x11e800.
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)

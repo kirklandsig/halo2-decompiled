@@ -532,7 +532,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
-// score 238 (was 239; 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 at the end): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// MiniMax R (11-14): no lower score (238): retail reads the origin and the contact position with float moves into separate
+// slots, ours copies the two aggregates with dword moves; the origin as three real coordinate snapshots scores 308 in either
+// read order, member-wise origin copies 309, a member-wise hit copy 325 and both 362.
+// score 238 (was 238; 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // MiniMax A (11-13): no new form, no lower score (239); the frame is still 0x40 against retail's 0x44, the second
 // node's home is still +0x14 against retail's +0x20, retail still reads the shape's data word three times where
 // ours reads it once, and the plane index still leaves the frame as a short.
@@ -875,6 +878,21 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // Also: the hit by components in retail's y, x, z read order with aggregate publication 312 (1249 B), with main's setter
 // publication 325 (1262 B; each a different code from the x, y, z forms at the same scores). The accessor form is the same
 // code as the listed per-use reads and the plane_distance_to_point form the same as lane 14 r64's x, y, z origin (312).
+// m3 lane 8 r164 (fast with 0x183670, MATCH each time; base 238): one `s_query_batch_result *result = &results[key]` for
+// all 13 uses 438 (1148 B: retail forms results + key * 0x3c at each use); the hit distance as `radius + contact distance`
+// 238 (same code); hit and distance copied before origin 238 (same code); lane 11 r95's kind-24 `shape` local alone on
+// main 327 (1249 B); `component == component_index` 239. Diagnostic (reverted): the classifier reading the data word
+// through a `long const *` view 238 (same code: still one load where retail loads it three times).
+// P472: Overlap-safe origin/hit/paired-input/position/paired-plane-normal/origin+position/hit+position/all record transfers: 229/233/310/261/249/266/264/338.
+// NOT kept: origin transfer adds a call absent from retail; hit-only gains five. Other forms regress; original body/includes restored.
+// Frame, node and point homes remain.
+// m3 lane 14 r93 (fast with 0x1829b0/0x1821d0/0x182800/0x183670, all matched throughout; control 238, register-masked 109): on
+// the open helper-boundary lead, the 1..16 test as `limited = 1; if (!(limited > value)) { limited = 16; if (!(limited < value))
+// limited = value; }` 320 (1243 B, masked 97: the constants are preloaded into ECX and compared register to register, `cmp eax,
+// ecx; jl` for retail's `cmp ecx, edx; jg`, but the data is still copied to EAX and read once); the pointer test on the data
+// value (`(v < 1 ? 1 : v > 16 ? 16 : v) != v` on a `long` argument, both uses) 320 (1243 B, masked 117: no copy, one read).
+// A corpus scan of all matched retail code finds no other `mov reg, const; cmp reg, reg2; jg` clamp, so no matched source
+// shows retail's form. Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

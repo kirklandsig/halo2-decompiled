@@ -87,6 +87,15 @@ void function_1d56f0(s_havok_component *component)
     }
 }
 
+// MiniMax G (11-13): no new form, no lower score (77): retail's tail ends with the same inline
+// `_mm_setcsr(_mm_getcsr() & 0xffffffc0)` before `__clearfp` (the mxcsr scratch at [esp+0x10] and the two
+// control87 calls), so this source is right and the only difference there is the register of the mxcsr
+// temp (EAX here, ECX in retail); dropping that line loses the scratch slot and moves every other home
+// (85, 803 bytes against retail's 819).
+// MiniMax G (11-13): no new form, no lower score (77): the rigid-body lookup still reads `[eax + edx + 0x40]`
+// where retail reads `[edx + eax + 0x40]`, and the success tail still pushes what retail passes in EBX, ECX
+// and EAX: BLOCKED-BY 0x1d0cf0, whose extra push ebx (needed only because the component arrives on the
+// stack) is what makes its frame 0x84 against retail's 0x88 and shifts every esp offset.
 // score 77 (was 77): the lookup still reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`
 // and the success tail still pushes what retail passes in EAX/EBX/ECX: BLOCKED-BY 0x1d0cf0 (another file).
 // Earlier (score 77, was 77): every frame home and the body up to the success tail agree; left: the rigid-body
@@ -292,6 +301,11 @@ void function_1d56f0(s_havok_component *component)
 // Retail's 0x1d0c20 (fast listing) takes the component on the stack and loads it into EBX only just before the
 // 0x1d0cf0 call, so 0x1d0c20 (38) and this tail wait on the same EBX parameter. The flag5-first 0x1d0cf0 body (15
 // here) is not retail's test order and raises 0x1d0c20 and 0x1d3fc0 (avoid-listed this round), so it was not re-run.
+// m3 lane 2 r81: no trial (fast = plain here, 77 with 0x1d0cf0 65, 0x1d0c20 38, 0x1d1b60/0x115b10/0x1d56f0 matched). Read
+// against retail: the body is retail's but the lookup's base/index order and the 0x1d0cf0 call. Retail's 0x1d0cf0 copies the
+// transform with four movaps and takes the component in EBX without saving it (index in ECX moved to ESI); ours copies with
+// `rep movsd`, which needs ESI/EDI/ECX, and loads the component from [ebp + 0xc]. That body (set copy, m_fixed first) is the
+// listed lead that costs matched 0x1d1b60 and 0x115b10. Still BLOCKED-BY 0x1d0cf0.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

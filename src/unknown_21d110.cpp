@@ -319,6 +319,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // where retail calls 0x21dcf0; the one fresh form (the effect path's start through the sound module's
 // entry, so both paths expand it) scores 285 and unmatches 0x189fe0's eight matched callers: still
 // BLOCKED-BY 0x189fe0.
+// MiniMax H (11-14): no new form, no lower score (181): the exact form needs the request passed in EDX by
+// 0x189fe0, whose file belongs to another lane and cannot be changed from here, so the eight-byte frame, the
+// state/tag registers and the opposite start/delete expansion stay as they are.
 // score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // MiniMax E (11-10), not kept: 166 (was 181): the effect path starts the sound through the sound
@@ -518,6 +521,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // not its order and not kept); the effect pointer fetched before sound_start 179 (465 bytes, masked 87; two points and a moved
 // declaration, not kept); the priority stored without the `(short)` cast, the allocation tested inside the condition, the
 // sound index declared at the top: 181 each (same code).
+// MiniMax B (11-14): no new form, no lower score (181): retail's entry is push ecx, push ebx, push ebp with the state in EBX and ECX left alone, where this build takes the state in EDI and reserves eight bytes of frame; both take the state in EAX and the tag in the first stack slot, and the request convention is set by the caller 0x189fe0 in another lane's file: BLOCKED-BY 0x189fe0.
 // MiniMax A (11-13): no new form, no lower score (181): the entry takes its state in eax here and on the stack there, and the
 // argument order of the callee 0x189fe0 is fixed in another lane's file (BLOCKED-BY 0x189fe0).
 // @retail 0x21d110

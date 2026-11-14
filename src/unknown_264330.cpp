@@ -697,6 +697,8 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // decrement exit as `if (>= 0) break; goto release_tracking;` 433 (1616 B, frame 0xa0); the loop-tail state through the typed
 // `->unknown68` field 412 (same code); case 4's arms the other way round 443 (1644 B); sample/update declared after the 0x263670
 // call 412 (other code).
+// MiniMax C (11-14): no new form, no lower score (412); the actor/index/flag allocation and the
+// 0xa8-versus-0xa0 frame are unchanged.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
@@ -1012,6 +1014,11 @@ real function_296600(long actor_index, long prop_ref_index);
 // ours EAX/ECX, retail ECX/EAX, through the type-15 arm), the suppressed/current byte homes swapped, and the first 0x1c8df0 call, where retail
 // stores the root into the squad's slot at once, keeps current in AL and evaluates `!current` with `sete` among the pushes (CSE'd into the
 // second call through a stack slot), while ours computes the named not_current before the hit pointer and keeps the root in EAX.
+// M3 lane 8 r165 (plain; --fast gives 225 here): the game time through the existing function_146650 90 (same code); the head's
+// object through the existing ai_object_get (its argument is read before the pool global, retail's load order) 90 (same code:
+// ours still loads the pool global first), both together 90; a named object index used at its five uses 343 (1277 B); the
+// unit's NULL default declared after the two flags 346 (1240 B, the cmovne goes). Also read: ours puts not_current in the
+// squad's freed slot (+0x1c) and the root at +0x24, retail the root at +0x1c and `!current` at +0x24.
 // The two stacked notes below (first at 163, then at 90) are merged into this one.
 // Earlier at 163 (was 257): retail's length, frame 0x20, actor EBX. Left: the object and table registers (ours EAX/ECX, retail ECX/EAX, time read after the table pointer), the
 // suppression/current byte homes swapped, root and not_current in each other's slots with `!current` evaluated at the named local where retail evaluates it among the first
@@ -1186,6 +1193,8 @@ real function_296600(long actor_index, long prop_ref_index);
 // on the base both hit pointers as `not_current ? NULL : ...` 95 [28]; the root's argument as an object_index local set by an if (the
 // parent unit's index first) 260 [21], with `!current` in both calls 270 [26] (1277 B).
 // The actor through the existing actor_get 90 (same code, kept: it replaces the written-out lookup).
+// MiniMax C (11-14): no new form, no lower score (91 in the reduced image, the queue's 90); the actor
+// pointer still lives in edi where retail keeps it in ebx.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

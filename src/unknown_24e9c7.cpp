@@ -80,6 +80,7 @@ struct s_24e9c7_points
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
 // score 125 (was 125): round 112 (m3 lane 12) note at the end. The frame size, the bounds stores and the marker copy agree; what is
+// MiniMax G (11-14): no new form, no lower score (125, was 125): retail's early across-product spill at [ebp-8] still has no counterpart here, so the result, kind and bitmap homes stay eight bytes above retail's and the 1.0 constant stays in xmm4 where retail uses xmm5; the extra room comes from retail's scratch chain of summed values below the marker copy, which this build keeps in registers, and no form listed in the earlier rounds' notes produces that chain.
 // MiniMax B (11-12): no new form, no lower score (125, was 125): retail computes the two across products early and
 // spills the second one to [ebp-8], which it then reuses for the side vector's y, so its result home is [ebp-0x10];
 // this build sinks the products into the side computation, so they never get a stack home and the frame slots stay
@@ -459,6 +460,10 @@ struct s_24e9c7_points
 // (retail's early across-j spill at -8 sits above them). Lane 12 r112 above records that no untried natural form is left,
 // and every lead here (across/side/up/back as points, scalars, arrays, helpers, in-place scaling, corner orders, bounds and
 // alpha spellings, conversion domains) is listed; I found no code-changing form outside the note.
+// M3 lane 11 r99 (fast): the scale read from the placement at both uses (no `scale` local) 141 (740 B); the shader index
+// named once (`long shader_index`, test and call) 174 (742 B); the marker's kind named once for the bounds tests and the index
+// 130; the sequence index read from the kind at its four uses 125 (same code); the sequence's fields read through
+// `group->sequences[sequence_index]` at each use (no `sequence` pointer) 163 (747 B). Body unchanged.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

@@ -52,6 +52,12 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 
 /* the next recent player after the iterator's: a valid, online, known player
    with a name; iterator starts at the first entry and ends at NONE */
+// MiniMax H (11-14): no new form, no lower score (43): retail's entry pointer is the index scaled in place in
+// ESI, the successor is kept apart in EBX and the & 3 mask is hoisted into AL before the loop, while ours copies
+// the index into a second register for the entry pointer and keeps the successor in a general register; the forms
+// measured this round - the successor in its own local 51, the same with the successor stored at the loop's end
+// 52, the early-return shape 49 and the mask carried through the exclusion helper 49 - all score worse than the
+// kept 43, so the original body stands.
 // score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
 // retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
 // successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
@@ -395,6 +401,30 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // lazy identity-presence result / nullable early completion / sole-return goto 43/43/43/43/43;
 // memmove payload 53; explicit final Boolean return arms 52. NOT kept: no gain or equality;
 // original body/helpers restored. Native ESI entry, EBX successor and AL mask remain.
+// m3 lane 3 r241 (one-file LTCG harness = fast for every form; fast with 0x1a303b/0x2b393c, both stay matched unless noted):
+// match-only lead 33 (127 B): a `short` index in `while (!result && index != NONE)` with a long successor local and `else
+// index = next` (not kept: the index type picked by score). From the imul to the guest test it is retail's code exactly
+// (index scaled in place in ESI, successor EBX, mask hoisted into AL): the short index makes the back-edge `index = next` a
+// conversion, not a copy, so the index no longer coalesces with the successor. Left: the iterator read and compared as a
+// word with a `movsx esi, cx` at the head (retail: 32-bit load and compare, so a short index can never match), the loop
+// top-tested and EBX pushed first. On it: `index != NONE && !result` 56 (129 B, both callers lose), a guarded do-while 64
+// (138), `return true` in the found arm 52, the iterator stored in both arms 54 (128), a guarded `while (true)` with
+// `if (next == NONE) break;` 56 (132); the long index with the iterator stored in both arms 48. Harness only (long index,
+// all with `else index = next`): a guarded do-while 51, the iterator store after the tests with `if (!result) index =
+// next` 52, the locals declared before the loop 57, a short successor with the store from the field 57, `index =
+// *iterator` in the else 57, a found pointer 71, the field read again for the step 73 (108 B), the loop on `*iterator`
+// 79 (102). Index/successor types on the r213 shapes: dword or word index and dword/short/word successors 36-71; only the
+// short index separates the two. Entry-carried loops (a priming lookup, the next entry looked up at the loop's end) in
+// 108 guard/loop/exit/step/test combinations all 39 (the listed lead: the back-edge lookup is not cross-jumped).
+// MiniMax G (11-14): no new form, no lower score (43): the index and the successor still share one register, so the
+// & 3 mask stays an immediate where retail hoists it into AL; stepping the index from the entry's successor at the
+// loop's end (the successor read for the store and again for the back edge) measures 56, the same loop with the
+// success path returning true 52, and the store moved after the eligibility tests 57.
+// MiniMax G (11-14, later): no new form, no lower score (43): retail keeps the index in ESI (the register it scales
+// in place) and the successor in EBX, ours keeps the index in EDX and copies it into ESI each turn, so the two
+// listings stay one instruction apart; a short local for the successor measures 51, the same local with the mask test
+// written in the body, with a byte mask local and with the helper taking the mask all measure 51, and the mask test
+// written in the body on its own keeps the immediate and 43.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -1079,6 +1109,10 @@ void function_1537f0(s_profile_record *record);
 // 48 (still hoists, so that byte is not in the contest); the record member typed as the view's source under 4-byte
 // packing, or as 36 dwords, 46-49 (same code). Left: what gives the forwarded word one more use, or the -1 constant
 // fewer, in retail's loop.
+// M3 lane 12 r121 (one-file LTCG harness with 0x1537f0's object, exact on the control 18): the links as four `entry->`
+// statements in retail's store order 48 (NONE in EBP); the per-visit record at function scope 18 (same code); 0x1537f0
+// called before the identity is cleared 60 (271 bytes); a `short` loop index 63 (275 bytes); the flags and the word after
+// them in one chained assignment 18 (same code); the links as two chained pairs through `entry` with the flags chained 48.
 // @retail 0x7f930
 void function_7f930(void)
 {

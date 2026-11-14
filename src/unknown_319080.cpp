@@ -68,6 +68,16 @@ public:
 // Stored owner/kind references 16/16; immutable owner/kind links 16/16;
 // on the current first-owner reads: const kind call 16, enum result 16,
 // virtual query 16, Boolean constructor 16. All restored.
+// The retail function is a free __stdcall function taking the result byte
+// through a pointer: three stack words (`ret 0xc`), not a thiscall returning
+// the struct. The method also passes three words (a hidden result pointer,
+// `this`, a, b), so the length fits while the result role is wrong. With the
+// explicit pointer the length is exact (79) and the prologue matches; only the
+// first virtual receiver differs: retail loads the kind into EAX, its table
+// into EDX, then copies EAX to ECX, while VC loads it into ECX directly.
+// Caching the kinds (both or first only), binding a reference and an assignment
+// expression kept that form or cost bytes, and the explicit-pointer form scores
+// 22 against this method's 16, so it is not kept.
 // @retail 0x319230
 s_result_319230 c_query_319230::function_319230(s_operand_319230 const *a, s_operand_319230 const *b) const
 {

@@ -961,10 +961,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
-// score 143 (was 153; m3 lane 3 r239 C1, kept by the coordinator 11-13): case 11 sits in the first switch after case 24.
+// score 143 (was 153): m3 lane 3 r239 C1, kept by the coordinator 11-13; case 11 sits in the first switch after case 24.
 // Earlier (153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // MiniMax B (11-13): no new form, no lower score (153); the address and the message still keep different homes, and the caller that passes them lives in another file.
-// score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
+// Earlier 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // MiniMax G (11-12): no new form, no lower score (196); retail's convention is eax = the message type,
 // ecx = the message (copied to ebx), edx = the receiver and the address on the stack (copied to edi at
 // the entry), with the esi save delayed past the ja. Declaring the parameters in retail's order (the
@@ -1430,6 +1430,20 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // individual default-owned late cases 196/195; separate connection interval 197;
 // unsigned connection result / void call-return expressions / connection result name 196/196/196.
 // NOT kept: one-point best; native delayed ESI and outlined late-handler shape remain.
+// M3 lane 12 r121 (one-file LTCG harness with the caller's and callees' objects: it builds the plain 460 bytes, harness
+// 126 for the plain 143, where --fast builds 444 bytes and 196 here): both switches over `(dword)message_type`, the late 18
+// path as an early return, the connection index declared in case 5's block, the late 18 path as the first switch's default
+// arm: same code each; case 11 last in the first switch 130 harness (fast 195).
+// m3 lane 14 r93 (one-file LTCG harness: this file, 0x7afd0's, 0x92ef0's and 0x785d0's files and a stub entry; it builds the
+// kept two-switch body with retail's convention, 65 aligned rows against retail's code): the one retail-order switch (18 and
+// 11 placed after 24) 91 (type ECX, address EAX, message on the stack into EBX, as the notes say); with `break` 91 (same code);
+// with the address read once through its address 91 (address on the stack, type ECX, message EAX). The three connection
+// handlers given an unread address parameter (passed by this body, NULL from 0x93aa0) on both forms: 91 (same code): LTCG
+// drops the unread parameter before it chooses this function's convention, so it does not give the first pass the address
+// use across a call that retail's convention needs. Diagnostics only (no source kept); no unlisted natural form was found.
+// P488: Primary case 11 before cases 0/2/3/4/8/9/12/13 on the accepted single-late-case graph:
+// 194/194/195/195/195/195/196/196. NOT kept: Case-priority forms require equality; original primary/terminal
+// classifiers, every case body, lookup and call tuple restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
