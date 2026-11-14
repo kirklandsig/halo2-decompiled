@@ -2813,8 +2813,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // MiniMax E (11-11): no new form, no lower score (364); the entry block matches retail's, but our body is 54 bytes
 // longer than retail's (1597 against 1543), which moves every later jump target, and the extra code is not located.
 // MiniMax H (11-12): no new form, no lower score (364): the body is still 54 bytes longer than retail's, so the shared exit lands at +0x621 where retail's is at +0x5eb, and the inlined matrix copy still loads its values into registers before storing them where retail stores each value as it loads it.
-// score 364 (was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
-// score 401 (was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
+// score 330 (was 364; earlier 401, was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
 // made 0x4b5d0 175, long makes it 93); the structure global is read
@@ -2918,6 +2917,14 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // pairs against the wrong instruction all the way down; the frame agrees (0x200) and the two length checks on the
 // count are the same, so what is left is the layout of the blocks and the order of the reads.
 // MiniMax H (11-13): no new form, no lower score (364); the first difference is at +0x52, where this build's early exit jumps to a block that sits further from the function's start than retail's, so the body after that pairs against the wrong instruction; the three rotation calls also pass the rotation on the stack instead of in EAX, because that callee lives in another file.
+// M3 lane 5 r182 (fast with the file's functions, 0x73360 and 0xc2d00; 330 at 1591 B, 383 instructions as retail): the
+// allocation through render_memory.h's render_memory_allocate (the file's own aggregate declaration replaced by the header)
+// with the handle tested against NONE and the output pointer sign-tested, the handle stored after it 423 (1650 B; listed
+// form re-measured, 478 then): retail inlines that allocation and calls the second 0x235a0 copy, ours inlines both copies
+// and has no rounding/NONE/sign code, so the two cancel in length but shift everything between them. The bucket scan as a
+// while loop with the body under `if (available_samples)` 330 (same code); the second sample's source advanced in place
+// (`source += 12;`) 370; the level limit named 349 (re-measure; ESI/EDI swap at the entry); the coefficient pointer
+// formed after the clamp in one expression 336 (the pre-11-10 order).
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)

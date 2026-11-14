@@ -425,6 +425,12 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // seven subsets then explicit operators: 210/306/365/353/371/459/465/515.
 // NOT kept: all regress and grow; original four-use helper and complete body restored.
 // Forward late-k/reciprocal ownership and later magnitude/projection schedules remain.
+// M3 lane 16 r118 (fast, 0x1c4a80 matched each time): the file helper spelled as the out-of-line normalize 0x30bf0 (`i*i + j*j +
+// k*k`, then `i*inv; inv*j; inv*k`) 153: every normalization then sums k, j, i (retail's order for up, up and left) and forward
+// preloads k, j, i into xmm4-6, where retail's forward is that shape without the k preload (j xmm4, i xmm5, `mulss xmm6(inv), [k]`, k
+// reloaded on the short path), so the j-square form only buys forward's first two sum terms; with `i*inv; j*inv; inv*k` and an else
+// zero 153 (same code); with forward through normalize_inline 153 (i, k, j sum); forward through the header normalize3d 236 (836 B,
+// out of line under /Ob1); dot3f(up, forward) on the 0x30bf0 spelling 153 (same code).
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

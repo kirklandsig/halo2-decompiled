@@ -461,6 +461,10 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // its register use does not explain the caller's spills. The other single-point forms I found are already listed;
 // the larger causes are cross-file: the rolled scale loops (destructor blocker, include/unknown_1cec30.h) and
 // magnitude3d's `inline` (held).
+// MiniMax B (11-14, run 75): no new form, no lower score (902); the body is left as it was. What still differs: retail's scale helper is
+// unrolled into three `mulss` and keeps both vectors in memory, while this build's rolled loop walks a counter and leaves a 0x1f0 frame
+// against retail's 0x1d4; a by-value helper that returns the scaled vector (measured this round) is worse at 1555 (4795 bytes), and the
+// earlier unrolled pointer form is worse at 1199 (4008 bytes).
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

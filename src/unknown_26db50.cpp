@@ -898,6 +898,13 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // seven subsets then explicit operators: 238/277/265/311/295/314/331/407.
 // NOT kept: no eligible gain; original helper, radius reference and full body restored.
 // Radius scheduling, SSE ring conversion and rotation spill remain.
+// M3 lane 16 r118 (fast with the file's functions and 0x1ecf50, all matched each time): record_rotate_vector in 0x29c860's
+// rotation shape (j and k cross terms in a vector first, the i cross term in its row, in place, dot `a.i*v.i + v.j*a.j + a.k*v.k`)
+// 100 (1081 B, frame 0xd4: retail's rotation core, but the ring still converts by fild); with the angle's ring term first 100; with
+// the dot through dot3f and the original operand orders 100; on the listed 96 form (that rotation plus the named phase): the dot's
+// terms reordered 96 (identical code), 1..7 unused-local placeholders 96 each, the radius reference before the sector index 96, the
+// spoke counter initialised before its loop 96 (same code). On 96 a masked diff leaves 35 lines: the head's integer radius copy
+// and late sector load, the spoke/phase store order, the direction-load scheduling in the rotation setup and the 0x2104b0 setup.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
