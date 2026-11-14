@@ -1087,6 +1087,10 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // graph, long/dword/short/byte for then while: 150/150/217/217/150/150/217/217.
 // NOT kept: no native rotation-product equality; original complete body and all
 // helper/provider definitions and declarations restored.
+// P483: Initial input-vector memcpy families for frame/control/ground velocity,
+// seven subsets then all with default velocity: 126/126/196/101/114/114/111/112. NOT kept: 101 is
+// combination-only (both individual families 126); 111/112 gain only three/two.
+// Native rotation products/side dots/output loads remain; full body and headers restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

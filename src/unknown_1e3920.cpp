@@ -1228,6 +1228,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // successor, perception/unit/actor creation results, every final actor-unit field
 // and exclusive cleanup: 389/361/407/357/341/363/380/359. NOT kept: no native
 // sentinel/query-home equality; original predicates, body and include set restored.
+// P483: Complete forced/enabled short-circuit selection as disjunction/conjunction,
+// bool/byte/short/long result: 348/348/348/348/348/348/348/348. NOT kept: no native sentinel/squad/query
+// home repair; original query defaults, replacement producer and complete body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -2105,6 +2108,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // increased/probability-delay/first-three/all: 348/302/272/307/328/321/307/304.
 // NOT kept: precision/storage graphs regress and miss native actor/options/pool
 // residence; original real values, expression groups and complete body restored.
+// P483: Existing current/secondary getter results as actual-object references, mutable
+// current/secondary/both, readonly current/secondary/both, both full-width slots,
+// both byte slots: 251/251/251/251/251/251/272/251. NOT kept: native pool/actor/options
+// residence unchanged; original complete body and both private queries restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

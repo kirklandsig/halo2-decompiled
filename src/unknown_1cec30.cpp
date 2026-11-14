@@ -2521,6 +2521,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // P480 m3: Actual material const/mutable/end/ordered/consume cursors, native unsigned
 // ordinal, second-contact cursor and traversal-owned sample: 219/219/219/219/227/93/320/219.
 // NOT kept: no velocity j/k or property-zero repair; original full body and helpers restored.
+// P483: Actual normal-initial/fallback/velocity-initial memmove boundaries, seven
+// subsets then complete graph with failed sample: 440/374/235/441/463/413/463/450. NOT kept: native early
+// velocity j/k and property-zero residence not recovered; original whole body
+// and shared helpers restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

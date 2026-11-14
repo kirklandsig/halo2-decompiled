@@ -1280,6 +1280,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // family subsets then all by plain component loops: 556/676/699/909/583/642/944/567.
 // NOT kept: vector residence/rounding misses native code or frame/extent; original
 // scalar parts, signed loops and complete input-before-output rotation restored.
+// P483: Accepted endpoint memcpy start/end/both, memmove start/end/both, then
+// both endpoints plus fallback quad with either library: 535/535/535/748/749/736/535/810. NOT kept:
+// tag/count/plane homes persist or frame/extent regresses; original whole body
+// and every private helper restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
