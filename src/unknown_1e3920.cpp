@@ -1224,6 +1224,10 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // P469: Actual creation/request payload scalar element domains dword/long/word/real,
 // each independently: eight 252s. NOT kept: genuine buffer alignment/alias information
 // leaves sentinel EDI/ESI, squad/query homes and rotated entry unchanged; full body restored.
+// P471: Standard signed sentinel predicates at squad selection/admission, live
+// successor, perception/unit/actor creation results, every final actor-unit field
+// and exclusive cleanup: 389/361/407/357/341/363/380/359. NOT kept: no native
+// sentinel/query-home equality; original predicates, body and include set restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

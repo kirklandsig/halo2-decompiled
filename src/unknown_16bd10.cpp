@@ -1059,6 +1059,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // (only the distance dot's i product changes: forward.i loaded first, where retail loads position.x first; masked 45). With
 // the mode local dropped too (lane 5 r166 listed that alone at 331) 371 (1700 B). The point-type local is the same code as the
 // basis statement. On the kept body: the animation case's flags update after its distance and timer stores 333 (masked 43).
+// P471: Complete case orders first/pan/point/animation, first/pan/animation/point,
+// first/animation/point/pan; standard distance minimum, projection/timer/FOV nonzero
+// and FOV-completion predicates: 456/461/456/404/518/483/428/323.
+// NOT kept: 323 grows native 1696 bytes to 1708 and adds a call; all other forms
+// regress. Original full body and includes restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

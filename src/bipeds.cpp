@@ -1823,6 +1823,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // MiniMax A (11-13): no new form tried this round, no lower score (566): the frame is 0xf8 here and 0xfc in
 // retail, so the argument slots sit four bytes higher, this build loads the 1.0f constant before the first store
 // where retail stores first, and the body is 2816 bytes against retail's 2828.
+// P471: Complete grab/animation workspace cases before the small cases, orders
+// 6/1/2/3/45, 6/1/3/2/45, 6/2/1/3/45, 6/2/3/1/45, 6/3/1/2/45,
+// 6/3/2/1/45, 6/45/1/2/3, 45/6/1/2/3: 557/557/566/557/551/557/584/562.
+// NOT kept: workspace-first blocks differ from native initialization-before-grab
+// layout, and the frame stays 0xf8/0xfc; original cases and full body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3663,6 +3668,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // the unread `bool` second parameter of 0xe16b0 fed from a named local of `(flags_348 >> 9) & 1`, alone on this body,
 // 342 (1924 bytes, frame 0x4c as retail; 0xe16b0 and 0xe18d0 still match, 0xdd360 222). No other untried natural form
 // (lane 12 r112). Body unchanged.
+// P471: Standard array normalization/difference, maximum/minimum reductions, impulse/
+// fallback range products and hit/seed range copies: 527/396/381/518/519/503/346/349.
+// NOT kept: range copies add a call absent from the native inline transfers; hit
+// copy grows frame to 0x58 versus native 0x4c. Original body and includes restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -4085,6 +4094,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // MiniMax A (11-13): no new form tried this round, no lower score (548): the flag byte is still at [esp+0x12]
 // here and at [esp+0x11] in retail, the two cold exits still land at a different place in the body than
 // retail's, and the body is 2738 bytes against retail's 2712, so the block layout after the flag test differs.
+// P471: Standard range transfers for paired facing fallbacks, planar goal, turn input,
+// up reset, forward publication, final publications and planar clamp; existing consumer
+// orientation record: 648/577/611/662/562/581/626/612. NOT kept: apparent gains
+// add calls absent from native transfers or enlarge the frame; original body/includes restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
