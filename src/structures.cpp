@@ -947,6 +947,7 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // declared (p, a, b, c, u, v) at its definition, this file's declaration and both calls, re-measured on the current base (fast,
 // restored at once): MATCH here, 0x11e800 129 -> 126, 0x14ac60 172 -> 172; the diff is in build/r88/held-14a8e0.patch.
 // BLOCKED-BY 0x11e800 (contributor).
+// Round 103 (m3 lane 10): listing re-read (fast 4), still only 0x11e800's four argument registers; BLOCKED-BY 0x11e800.
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)
