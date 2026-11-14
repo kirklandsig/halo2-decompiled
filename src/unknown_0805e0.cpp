@@ -401,6 +401,15 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // lazy identity-presence result / nullable early completion / sole-return goto 43/43/43/43/43;
 // memmove payload 53; explicit final Boolean return arms 52. NOT kept: no gain or equality;
 // original body/helpers restored. Native ESI entry, EBX successor and AL mask remain.
+// MiniMax G (11-14): no new form, no lower score (43): the index and the successor still share one register, so the
+// & 3 mask stays an immediate where retail hoists it into AL; stepping the index from the entry's successor at the
+// loop's end (the successor read for the store and again for the back edge) measures 56, the same loop with the
+// success path returning true 52, and the store moved after the eligibility tests 57.
+// MiniMax G (11-14, later): no new form, no lower score (43): retail keeps the index in ESI (the register it scales
+// in place) and the successor in EBX, ours keeps the index in EDX and copies it into ESI each turn, so the two
+// listings stay one instruction apart; a short local for the successor measures 51, the same local with the mask test
+// written in the body, with a byte mask local and with the helper taking the mask all measure 51, and the mask test
+// written in the body on its own keeps the immediate and 43.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

@@ -1690,6 +1690,11 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // return gives retail's sentinel register but reorders the prologue and scores 979.
 // M3 lane 12 r120: see 0x1db170's note of this round (same code but for the array offset); the same three trials and the
 // diagnostic measured 828 on this body in the same checks.
+// MiniMax G (11-14): no new form, no lower score (828): re-measured in the batch; the frame agrees at 0x2c, but the
+// third iterator output still takes the dead `found_mode` argument slot instead of a frame slot, so retail's result
+// shorts sit at +0xc/+0xe where ours sit at +0x8/+0xa, and retail's EBP zero carrier in the second resource request
+// is still missing.
+// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
