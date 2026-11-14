@@ -319,6 +319,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // where retail calls 0x21dcf0; the one fresh form (the effect path's start through the sound module's
 // entry, so both paths expand it) scores 285 and unmatches 0x189fe0's eight matched callers: still
 // BLOCKED-BY 0x189fe0.
+// MiniMax H (11-14): no new form, no lower score (181): the exact form needs the request passed in EDX by
+// 0x189fe0, whose file belongs to another lane and cannot be changed from here, so the eight-byte frame, the
+// state/tag registers and the opposite start/delete expansion stay as they are.
 // score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // MiniMax E (11-10), not kept: 166 (was 181): the effect path starts the sound through the sound

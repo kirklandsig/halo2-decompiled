@@ -1882,6 +1882,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax H (11-14): no new form, no lower score (128): the frame is still 0x40 against retail's 0x44 and the
+// spawn record still sits two frame slots lower than retail's, and the particle system still takes EDI where retail
+// keeps it in ESI; the header's zone helper, whose zone block then matches retail's byte for byte, measures 165 on
+// its own and 161-166 combined with the 0x44 frame, so the kept body stands.
 // score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
 // MiniMax S (11-11): no new form, no lower score (128); retail spills colour A into a frame home at +0x10 right after set_location, and those four bytes are what make its frame 0x44 against our 0x40 and shift every stack reference; the tint also still reaches the colour call on the stack, because 0x175a80's register contract (ECX colour A, EDI colour B, AL tint) lives in another lane's file and cannot be changed from here.
 // MiniMax E (11-11): no new form, no lower score (128); reading both colours into locals before the type-query
@@ -3251,7 +3255,17 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
-// score 93 (was 93): unchanged this round: our frame is 0x4c against retail's 0x54 and the particle
+// MiniMax H (11-14): the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A)
+// measures 91 at 337 bytes with the matched caller 0x176f60 still matching, and is kept; the same order with the
+// mode as a word or with the two colours exchanged gives 92, the mode as a short gives 92, the mode read again at
+// each call gives 108 and drops that caller to 25, the effect-location cursor moved into the block gives 95 and 103
+// (the latter also drops the caller), the particle cursor moved out of the block gives 103, the next index read at
+// the end gives 107, the system declared before the effect gives 113 and the type query's locals lifted to the
+// function scope gives 91.
+// score 91 (was 93): our frame is 0x4c against retail's 0x54 and the particle system takes EDI where retail keeps
+// it in ESI, so the homes of the two pointers, of the definition and of the cached mode sit at other offsets than
+// retail's; retail spills the definition and reads the mode at each call, which needs the per-call form that drops
+// the matched caller.
 // system takes EDI where retail keeps it in ESI, so the homes of the two pointers and of the definition
 // sit at other offsets than retail's.
 // Earlier at 93 (was 93): frame 0x4c versus 0x54, the particle system in EDI (retail ESI) and the location mode cached
@@ -3571,10 +3585,10 @@ long __stdcall function_177040(long particle_system_index, long effect_index)
 	if (definition->unknown0c != 0)
 	{
 		long particle_location_index = particle_system->location_index;
-		dword color_a = effect->color_a;
+		long location_mode = definition->location_mode;
 		dword color_b = effect->color_b;
+		dword color_a = effect->color_a;
 		s_effect_location_datum *location;
-		word location_mode = definition->location_mode;
 
 		{
 			c_type_4e7709 *particle_definition = function_137bd0(particle_system->function_1751d0()->tag_index);
