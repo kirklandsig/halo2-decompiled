@@ -593,6 +593,13 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // 132; the flags read at entry 132 (546 B); the callback context as an aggregate initializer `{ arg_0, search }` after the
 // flags 120. Re-measured: the group as a named dword with the `& 0xffff` fallback 135; named element pointers with the
 // ordinals masked at their uses 117 (same code).
+// M3 lane 9 r118 (fast, 0x2243c0 and 0x224d90 matched each time; match-only screens on lane 6 r147's score-8 chain, main's
+// body unchanged): the chain rebuilt 8 (first +0x9e). Same-code spellings on it (not counted as trials): the pass element's tag read through the by-value long
+// accessor 8; the material tag for the definition lookup through that accessor 8; both 8 (combination, same code); one
+// forceinline pointer-at-offset tag helper for the record (+0x20) and material (+8) definitions 8; the pass element bound
+// as `byte const *const &` 8 (VC folds every accessor shape to the same tuples). New: the head and stage ordinals bound
+// as `word const &` straight into their elements 152 (first +0x0). No untried natural form is left (lane 13 r83 above). The pass definition (EDX, retail
+// EAX), material index (ECX, retail EDX) and material definition (EDX, retail EDI) do not move with accessor shapes.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

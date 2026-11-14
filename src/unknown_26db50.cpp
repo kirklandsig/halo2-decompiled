@@ -880,6 +880,11 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // the direction copy and the angle) 242 (1097 B); the rotation's cross terms written `sine * (..)` 90 (same code); the
 // pathfinding lookup ahead of the direction copy 163 (1092 B); the 0.1-offset point in its own point local in place of
 // reusing `point` 117 (1085 B: retail reuses the trace point's slot).
+// M3 lane 9 r118: no trial run. Every lead in this note was checked against the round's listing (first difference +0x1a is
+// the exit jump, shifted by the 4 missing bytes; then the x87 ring block and the rotation spill). Lane 15 r75 and lane 5
+// r177 above found no untried natural form; the coupled causes (an SSE use of `(real)ring` ahead of the distance gives
+// retail's cvtsi2ss but moves the radius copy into EDX and the sector read after `add ebp, ecx`) are covered by the 96/89
+// lead's listed variants (sector first, radius placement, plain/const/reference radius, object pointer, own record lookup).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

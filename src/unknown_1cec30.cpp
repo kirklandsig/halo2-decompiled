@@ -2506,6 +2506,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // P437: Fixed actual contact bound/normal magnitude/final speed, fixed/read-only contact
 // and surface receivers, and fixed body-index input: 91 each. NOT kept: early velocity j/k
 // and property-zero residence unchanged; original entire body and all helpers restored.
+// P457: material-table/material-count/other-contact/ordinal role names 91/91/91/91;
+// wide/byte duplicate result 91/91; unique-result complement 91; entry duplicate
+// workspace 91. NOT kept: no eligible gain; original complete body and all helpers restored;
+// early velocity j/k loads and property-zero residence still differ.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

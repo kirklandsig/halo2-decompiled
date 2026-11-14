@@ -531,6 +531,8 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // first product and tail C's edge/distance store order). On it, every early tail as a literal `return false;`/`return
 // true;` with `return success;` kept at the end 381 (1605 B). Retail's tail C is not cross-jumped into the next-is-target
 // tail although its stores and point computation are that tail's suffix (origin in EBX, `xor al, al`).
+// MiniMax A (11-13): no new form, no lower score (244): the permuter (302 s, six tries) splits the blocked-and-success chain
+// assignment into two stores, which the fast check puts at 243, one point short of the bar, so the body stands.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

@@ -478,6 +478,21 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // 572/572/572/572/576/577/577/657. NOT kept: four-point nonmatch gains are below the eight-point bar; original complete body restored.
 // P448: Uniform clamp lower/upper admissions, uniform normalization-zero decisions, four individual hit admissions, relational fixed-count termination:
 // 543/543/578/576/576/576/576/576. NOT kept: clamp comparison locals lack byte equality and native value evidence; original body/helpers restored.
+// M3 lane 10 r101 (fast; control 576, aligned 496, register-masked 341, with stack offsets masked too 203): nothing kept.
+// Frame homes, relative to ESP after the `sub`: retail remaining 0x0, point cursor 0x4, success 0xb, ray index 0xc, minimum 0x10,
+// hit flags 0x14, cross 0x18, hit cursor 0x24, range 0x28, forward copy 0x2c, input 0x38, origin 0x44, up copy 0x50; ours
+// remaining 0x0, success 0x7, minimum 0x8, ray index 0xc, cross 0x10, hit flags 0x1c, point cursor 0x20, hit cursor 0x30,
+// range 0x34, input 0x44; from the ray lengths at 0x5c upward both agree. 138 of the masked differences are those homes alone.
+// The ray index declared at function scope 576 (same code); success, index, minimum, hit flags and cross declared at the top in
+// retail's frame order 576 (same code); the hit flags, cross, minimum and success renamed to sort either way 576/576 (same
+// code): neither declaration order, scope nor names place these homes. The four offset points through a second inline helper
+// taking the definition and the array 567 (2859 bytes; a new one-caller helper, and the negated width is still held in a
+// register for points three and four where retail forms `0 - width` from memory for each). The two range products: a named
+// product ahead of both stores 577; the first grouped `(1/range) * (minimum * 0.7f)` 659 (2871 bytes, aligned 449: the
+// product is then not shared, as in retail, but in the wrong order); `0.3f + 0.7f * (...)` with the second product turned 575.
+// Diagnostics (removed): cross and the four points as members of one local aggregate 649 (2878 bytes; hit flags and input then
+// land on retail's 0x14 and 0x38, so the sizes of the address-taken locals do move the homes); float consistency on for this
+// body, the one setting diagnostic, 842 (3058 bytes), so retail's repeated width loads and unshared product are not that.
 // P450: Separate forward/side/up normalization-zero producers in bool/long: 572/570/572/570/572/570;
 // final publication mode in bool/long 576/576. NOT kept: one-consumer decisions lack byte equality;
 // best six-point gain is below the eight-point bar. Original body, helpers and in-place captures restored.

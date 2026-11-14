@@ -2408,6 +2408,7 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax B (11-13): no new form, no lower score (140): re-measured with the plain build (1729 bytes, as retail, first difference at +0x32b); what is left is the preserve_alpha load hoisted above the simple branch.
 // score 140 (was 140): frame and length agree; left: retail keeps both rectangle parameters as memory
 // variables (each chosen default is written into the parameter's home, `lea ecx; mov [home], ecx; mov ebx, ecx`)
 // and re-reads preserve_alpha after 0x131fc0 where ours hoists its load above the `simple` branch into CL.
@@ -2808,6 +2809,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // MiniMax E (11-11): no new form, no lower score (364); the entry block matches retail's, but our body is 54 bytes
 // longer than retail's (1597 against 1543), which moves every later jump target, and the extra code is not located.
 // MiniMax H (11-12): no new form, no lower score (364): the body is still 54 bytes longer than retail's, so the shared exit lands at +0x621 where retail's is at +0x5eb, and the inlined matrix copy still loads its values into registers before storing them where retail stores each value as it loads it.
+// score 364 (was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // score 401 (was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
@@ -2826,6 +2828,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // Earlier score 506 (was 530): frame 0x21c versus 0x200; order, coefficient and separate sample homes differ.
 // Earlier: Frame 0x20c versus 0x200; order, coefficient homes and sample paths remain.
 
+// MiniMax B (11-13): no new form, no lower score (364): the first difference is at +0x52, where this build's early exit jumps to a block that sits further from the function's start than retail's, so the body after that pairs against the wrong instruction; the three rotation calls also pass the rotation on the stack instead of in EAX, because that callee lives in another file.
 // Earlier score 530 (was 530): Frame 0x20c versus 0x200; order, coefficient homes and sample paths remain.
 // Round 73 (plain checks with 0x73360): the held round 90 body 401 and 0x73360 MATCH -> 33 again;
 // that body with the existing render-memory allocator, merged bool result, default light in the
@@ -3029,6 +3032,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// MiniMax B (11-13): no new form, no lower score (54): what is left is the scheduler's order inside the two corner sets, where this build places the x87 coordinate chains one slot earlier among the SSE ones than retail does (first difference +0x527); the corner rows in the other orders, the trig pairs as two statements and the point pairs all give 54 or worse.
 // score 54 (was 54): earlier 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
 // before; frame, bounds block, both trig sequences and every home retail's). Left: inside both corner sets
 // the scheduler places the x87 coordinate chains one slot earlier among the SSE ones than retail does
@@ -3820,6 +3824,12 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // selected gain alone shared. FILTER_PIN as a
 // force-inline function flips both pairs to span first, but only because mode one's colour clamps then read each
 // field once (other code); on the two gain clamps alone the pairs stay constant first in other registers.
+// Round 176 (m3 lane 6, fast; all restored at 9): on the no-shifted-local form (939: shift retail's, but small loaded once
+// into AL after fraction's move where retail loads CL first and copies it) `input` renamed 939 (names do not move it); the
+// two selectors ahead of `fixed` 31 (computed before the floor call); mode one's colour inputs through the matched sibling
+// 0x25e50's colour/scale references 11 (first.red's product operands swap; shift and pairs unchanged); the shifted word
+// declared before the clear and assigned after it 9; the alpha word through its own shifted local too 9; all four shifted
+// words (fraction, input, whole, alpha) named in parallel ahead of the first store 9.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

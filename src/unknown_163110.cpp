@@ -968,6 +968,14 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // through a named `vector3f const *normal` 247 (1867 B); the far plane's negated vector as an aggregate initializer 115
 // (same code); plane 0's near distance subtracted before the d negation (`d -= near_distance`, then `d = -d`) 151 (first
 // +0x60). Re-measured: `out = &cursor[k]` with the cursor stepped after the per-point loop 196.
+// M3 lane 9 r118: no trial run. The first difference (+0xbb) is still plane 0's camera-i load after the normal copy
+// (retail loads it with camera j and k ahead of the copy). Every lead in this note was checked: the i term's spellings
+// (named, referenced, pointer, cast groupings, j/k/i order, dot3f either order, negation orders), lane 6 r147's
+// match-only recipe (18 after a 1000-try climb, 21 on lane 14 r77's rebuild, 1600 compile-only clip forms by lane 3 r211
+// and 250+48 by lane 14 r77) and the tail's walker/total forms. Lane 14 r77's 21 form (its saved patch) rebuilt 21 (first
+// +0x28a; the head matches there): the classification j term in both loops, the clip deltas' XMM2/XMM5 roles and products,
+// and `total` in ECX (retail EAX, its store late). On it: `culled = false` after the cursor and source steps 21 (only that
+// store moves; total keeps ECX). No other code-changing form outside the lists above.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

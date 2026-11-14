@@ -1021,11 +1021,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
-// score 347 (was 347; round 95 m3 lane 11 at the end): before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
+// score 347 (was 347; round 95 m3 lane 11 near the end, m3 lane 2 r79 at the end): before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
 // MiniMax G (11-12): the flag order flying, direct, damping, gravity reaches 343 (the damping bit then lands in ECX where
 // retail uses EDX), the direct arm's product sides and its speed load, the crosses' operand sides and the general arm's
 // history block are unchanged; a four-point gain is below the eight-point floor, so the body is restored.
-// score 347 (was 347): before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
+// Earlier 347 (was 347): before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
 // 33 bytes equal retail's input-length block, and `magnitude3d(&change) + g_47ffb0` alone makes the history block
 // (0x1f0fd0-0x1f10ab) byte-exact, registers included: 573 (3038 B; aligned 152 -> 165, masked 64 -> 73), the product operand
 // orders in the crosses and the low arm flipping instead. With the input length as `magnitude3d(&state->input)` too, the input
@@ -1357,6 +1357,14 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // mutable 528/527/477/405; immutable 528/527/477/405. NOT kept: no exact native result;
 // original input observations and complete body restored. Damping carrier and
 // raw/bounded homes remain.
+// M3 lane 2 r79 (fast with the file's functions; base 347, register-masked aligned 127): the flying arm's desired vector
+// through vector3f_scale(&forward, input.i) and vector3f_add_scaled(&desired, &left, input.j) with `desired.k += input.k` 564
+// (3047 B but frame 0x28 for 0x30); the low-normal arm's projected and side vectors through vector3f_add_scaled (forward/left
+// plus normal times the plane offset) and vector3f_scale 429 (3057 B); one `normal` pointer for both ground branches 352 (3049
+// B); the final gravity bit as one ternary store 355 (3049 B); the flying arm's first cross through contact_cross in place of
+// function_1f087b 469 (3048 B, masked 120). Re-measured on this base, same code (347): the general arm's bounded vector declared
+// before delta, or renamed to sort before it; retail's delta/bounded slots (0x2c/0x20, ours 0x20/0x2c) follow neither. Both
+// lengths through magnitude3d via the `input` pointer, re-measured, 585 (3027 B; the low arm then reschedules).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

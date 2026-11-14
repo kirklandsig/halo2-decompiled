@@ -1702,6 +1702,9 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// MiniMax H (11-13): no new form, no lower score (339): the frame is still 0xa9c against retail's 0xaa8; retail's
+// conditional move for output->state needs /arch:SSE, which this file's flags do not set, and the inlined 0x5a680
+// twin is not allowed, so the state home and the frame stay as they are.
 // MiniMax H (11-12): no new form, no lower score (339); the frame is still 0xa9c against retail's 0xaa8, and the file's flags still keep retail's inlining of 0x5a680 and its cmovne out of reach.
 // MiniMax S (11-11): no new form, no lower score (339); retail holds the session pointer in ecx and the state
 // word in edx, ours holds the pointer in ebx and the state in ecx, and the frames differ by twelve bytes
