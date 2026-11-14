@@ -1611,6 +1611,9 @@ long function_2197f0(real gain);
 // and reloads [eax+0xc] with the registers numbered one lower; forcing the tree through a temp local leaves the same
 // code, a fade_out local for the product measures 98, and the eight forms tried this round (the parenthesised product,
 // the sum's addends swapped, the local fade-out with the scaled local) measure 94, 98, 144, 94, 98 and 98.
+// T108: Single common return with one completed/rejected-phase exit at disabled/same-ambience/composite/simple/hold/absent-current/rejected-same-attack/rejected-current-attack boundaries:
+// 94/94/94/94/94/94/94/94. NOT kept: no qualifying native-shape gain or equality; original complete source
+// and every provider declaration restored. Native frame and first storage/scheduling gap remain.
 // @retail 0x127010
 long function_127010(short class_index)
 {
