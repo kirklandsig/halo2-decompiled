@@ -726,6 +726,15 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // MiniMax G (11-13): no new form, no lower score (77): both streams are 846 bytes against retail's
 // 850 and the difference is inside the rotation expansion, which lives in src/unknown_1eb8a0.cpp
 // and is not this round's file.
+// M3 lane 13 r91 (fast with 0x1ecf50 and 0x2b400, both MATCH; control 77, difflib count with addresses masked 52): the
+// turned pair's length test against the pooled zero as `> g_45dbd8` 77 fast and plain (that compare line stays flagged
+// either way); the facing dot named ahead of the magnitude test 155 (862 B) [67]; the sine as `left ? 0.5f : -0.5f` 158
+// (833 B) [103]; the side as a named cross value with `(side > 0.0f ? 1 : -1) * 0.5f` 134 (833 B) [60]. Diagnostic, reverted:
+// the rotation's cosine passed as the zero global 164 (880 B) [58]; with this file alone in the reduced image (the rotation
+// then a call) it puts the tests' zero in XMM0 after the scale products exactly as retail, so the shared literal zero of the
+// three tests and the inlined rotation's cosine is the cause. BLOCKED-BY 0x1ecf50: rotate_direction's body in
+// src/unknown_1eb8a0.cpp is shared with src/flexible_surface.cpp and src/unknown_1e67a0.cpp, both held by other lanes this
+// round. Body unchanged.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {
