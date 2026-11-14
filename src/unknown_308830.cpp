@@ -84,7 +84,6 @@ void __cdecl function_308910(__m128 const *corners, float *out)
 	out[3] = 1.0f / first_term_308910(_mm_sqrt_ss(_mm_add_ss(_mm_shuffle_ps(squares, squares, 0xaa), _mm_add_ss(_mm_shuffle_ps(squares, squares, 0x55), squares))));
 }
 
-
 struct triangle_measures_308a50
 {
 	float inverse_edge_lengths[3];

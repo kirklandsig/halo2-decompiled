@@ -64,4 +64,3 @@ void rounded_segment_2de0f0::function_2de0f0(transform_2de0f0 const &transform, 
 	out.upper.set_max(points[0], points[1]);
 	out.upper.add(grow);
 }
-

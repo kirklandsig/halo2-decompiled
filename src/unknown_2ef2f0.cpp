@@ -143,7 +143,6 @@ void manifold_pair_2ef2f0::function_2ef3b0(description_2ed170 const *a, descript
 	timer_add_2ebc80("Et");
 }
 
-
 class box_pair_2ef4b0
 {
 public:
@@ -264,7 +263,6 @@ void box_pair_2ef6e0::function_2ef6e0(description_2ed170 const *a, description_2
 	timer_add_2ebc80("Et");
 }
 
-
 // the same as a function
 // the grown boxes and the query live in a block of their own, as in 0x2ef4b0
 // (without it the second radius is loaded after the first vector store)
@@ -291,4 +289,3 @@ void __cdecl function_2ef7f0(void const *a_, void const *b_, void const *input_,
 	}
 	timer_add_2ebc80("Et");
 }
-
