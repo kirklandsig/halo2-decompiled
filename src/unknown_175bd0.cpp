@@ -2615,6 +2615,17 @@ event_done:
 // widths) cover the caller-side spellings. Retail's 0x1794a0 call takes 0xbaf80's root index in EAX (a value
 // difference on this body, listed at 197 as a value correction). The lever is how LTCG summarises 0xbadc0/0xbaf80
 // (both matched; src/unknown_0bad50.cpp is avoid-listed this round).
+// MiniMax A (11-14): still no lower score (63): the object index named in a local of its own and used
+// for both the test and the call compiles to exactly the bytes we already have, and reading the object
+// index before the definition lookup scores 78; the listing shows why the register choice matters:
+// retail loads the object index into EAX after the definition lookup and reloads it from the effect
+// after 0xbadc0, because a value in EAX is clobbered by the call, while we keep it in ESI across the
+// call (a callee-saved register), so the else path reuses it instead of reloading it. Nothing in the
+// source can move a live value out of a callee-saved register, so the reload has to come from the
+// else path reading the effect again: BLOCKED-BY 0xbadc0, 0xbaf80.
+// MiniMax A (11-14): no new form, no lower score (63): the head's load still folds into the datum
+// address where retail forms the pointer first, and the object index is still cached across
+// 0xbadc0 where retail reloads it; both callees live in another file: BLOCKED-BY 0xbadc0, 0xbaf80.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {

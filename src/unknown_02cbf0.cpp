@@ -317,6 +317,24 @@ static __forceinline long floor_to_long_inline(real value)
 // global first; the OR chain itself is canonicalized by MSVC, so reordering the three terms of the
 // store, naming the kept bits or splitting the word's or into an assignment all give byte-identical
 // code and the same score, and the low word built in two steps was measured at 10 as well.
+// MiniMax A (11-14): still no lower score (10): the kind word's shift and the word's OR accumulator move
+// together. Retail shifts the call's result in EAX and copies it to ESI (shl eax, 0x1d; mov esi, eax) and
+// then accumulates the entry's masked bits into ESI; ours copies the result to ESI first and shifts the
+// copy (mov esi, eax; shl esi, 0x1d). With the kind word written as a variable the OR accumulates into it
+// but the shift folds into the copy, and with the shift written inline in the store the shift stays in EAX
+// but the OR accumulates into the entry's masked term instead (79 in both spellings, with the operands
+// swapped as well). The kind as a dword, the shift as a multiply by 0x20000000 and the entry's masked bits in
+// a named local all give the bytes we already have (10).
+// MiniMax A (11-14): still no lower score (10): the entry word's OR chain takes the flags term first
+// and the split form (the masked new bits in a named word, the store as the kept bits or-ed with it)
+// both compile to exactly the bytes we already have, which confirms that MSVC canonicalises the OR
+// operands and the statement split and that the term order in the source cannot be what puts retail's
+// flags term first.
+// MiniMax A (11-14): no new form, no lower score (10): the entry word's OR chain still takes its
+// masked terms in our order (the entry term first) where retail takes the flags term first, and the
+// kind word's shift still lands in esi before the copy where retail shifts eax and copies it;
+// swapping the OR operands changes nothing (10) and merging the kind word into one expression
+// scores 79.
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, short instance, dword flags,
     long tag, dword key, long category, long material, byte *object, short mask, byte mode,
