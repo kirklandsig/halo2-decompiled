@@ -700,6 +700,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // M3 lane 5 r179 (fast with 0x1fc660/0x1fc350/0x1fc2f0/0x1fc710/0x1fc620): re-measured round 508's vector setter for the
 // delta, now with the parameter-address read kept, 90 (352 bytes). No untried natural form (lane 1 r90, lane 2 r77,
 // lane 12 r113). Body unchanged.
+// M3 lane 16 r116 (fast with 0x1fc660): the existing vector3f_assign (unknown_0259d0.h) for the delta 90 (352 bytes; the
+// listed vector setter), for the correction output 32 (same code), both 94 (352 bytes); the timing globals through one
+// named pointer local for the rate, ticks, limit and root 46 (first difference +0x20); the squared length through
+// length_sq3f at both uses (no local, diagnostic) 46. Body unchanged.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

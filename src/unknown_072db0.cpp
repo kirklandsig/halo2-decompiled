@@ -447,6 +447,10 @@ long network_session_get_maximum_players(c_class_58d20 *session);
 // P462: Complementary rejection bool/char/signed-char/byte/short/word/long/dword
 // outcomes 58/58/58/58/63/63/61/61. NOT kept: each regresses and grows beyond
 // native extent; original success-only result and complete call graph restored.
+// Round 240 (m3 lane 3, plain checks): the comparison reversed 33 (the full image still calls 0x5b180 first, jl in
+// place of jg, so the order of the two pure calls is the compiler's, not the source's); the comparison nested in its
+// own if under the index/variant test, reversed, 33; the 0x193300 result named there 33; the peer re-read from
+// `source->other_game` for the 0x5b180 call 71; the variant tested before the index 33.
 // P464: Incoming readiness observation bool/byte/short/long, actual byte/char/signed-char
 // readiness field and read-only source field all reproduce reduced 0. Byte field plain 33
 // at 138 bytes; all file/provider controls unchanged. NOT kept: reduced-only equality;
@@ -1650,7 +1654,7 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // by inlining the getter 0x647d0 in src/unknown_054fe0.cpp). Both forms stay at 703.
 // MiniMax H (11-11): no new form, no lower score (703); the users cursor still rides in EBX where retail keeps it in a stack slot at +0x18, and the logon-status test still lacks retail's decrement/branch.
 // MiniMax B (11-13): no new form, no lower score (703); the users cursor still sits at +0x14 where retail keeps it at +0x18, the member fields are read off the properties address where retail reads them off the element, and the logon-status test still lacks retail's decrement and branch (the element through a named pointer 777, the copy before the slot lookup 847, the status written as (status - 1 == 0) 823; all worse).
-// score 703 (was 703; 709 before; 2910 bytes): Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
+// score 703 (was 703): earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax H (11-04): the logon-status test written as (status - 1 == 0) reaches retail's
 // `dec eax` and its exact 2862 bytes but scores 729; not kept, the original body is restored.
@@ -1963,6 +1967,13 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // P469: Actual 144-byte property payload char/signed-char/short/word/long/dword/real/double
 // element storage: 703/703/703/703/703/703/703/824. NOT kept: first seven leave native
 // cursor/home gaps; double drops the aligned frame (0xc4, 2929 bytes). Original full body restored.
+// T104: Advancing actual input-user records, counted/actual-end and independent/paired cache
+// cursors, mutable/readonly: 777/777/784/784/784/784/785/785. NOT kept: all regress;
+// original direct-user expressions, loops and full body restored. Native cursor/slot and later homes remain.
+// MiniMax B (11-14): no new form, no lower score (703): the slot test's conditional move is one byte shorter than this
+// build's jump and move, so the loop head lands on another offset and the counts after it run off; that conditional move
+// needs the SSE architecture flag this file's flags do not set, and the flags stay as they are, so the request builder's
+// body stands.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

@@ -423,6 +423,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // direct ratio/dot/both inputs 422/437/470; complete shared dot/normalizer
 // with delegated bounds 470/470. NOT kept: no exact unity/angle-home
 // repair; original caller clamps, inputs, helpers and whole body restored.
+// M3 lane 12 r121 (one-file LTCG harness with the callee files, 1692 bytes, 341 for the plain 382; fast where given): ours
+// returns with `ret 0x1c` as retail; candidate count `short` 520 (1638 bytes; EBX then goes unused and the caller 0x29a190
+// changes its own convention, 684); the near arm's rotation through a forceinline helper taking cosine and sine by value,
+// same code (parameters do not round); `cosf`/`sinf` with float angles 407; a short candidate count with a `long` outer
+// counter 420 harness (1627 bytes); the near arm's cosine and sine declared at loop scope, same code.
 // P467: Current ordinal consumed at first/second/both emission calls, byte count,
 // then both with char/short/word/long/dword count: 382/382/382/382/520/520/430/430.
 // NOT kept: no gain; short/word also lose the matched caller. Original whole body restored.
@@ -589,6 +594,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
+// MiniMax D (11-14): no new form, no lower score (569): the body is still 39 bytes shorter than retail's with the frame
+// at 0x114 as retail, and the radius and the trace and pivot homes still differ; the forms the earlier rounds measured
+// (the shared endpoint setters, the centre copy, the obstacle-radius observation and the trace-field sector forms) all
+// score 767 or more, so the body stands.
 // score 569 (was 569): earlier 621; 629, 733, 633 and 719 before that (the rise to 733 was the unrounded sine/cosine below); frame 0x114 as retail, 39 bytes short; radius and trace/pivot homes differ.
 // MiniMax S (11-06): Our frame is 0x120 against retail's 0x114, so every esp-relative home is four bytes
 // off; retail loads the scale factor into xmm1 after the first branch where ours loads xmm5 before it,
@@ -962,6 +971,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // result at entry 809/832/836/836, after sector acquisition 850/862/844/844.
 // NOT kept: all regress and shorten away from 3372; short/long frames grow to
 // 0x118. Original whole body restored; eager radius and pivot/trace homes remain.
+// T106: Whole-operation failure bool/byte/short/long 730/730/806/805;
+// actual sweep/obstacle failure reasons char/byte/short/long 730/730/806/805.
+// NOT kept: eager radius remains; narrow results shorten to 3300, wider forms
+// enlarge the frame. Original success result and complete body restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

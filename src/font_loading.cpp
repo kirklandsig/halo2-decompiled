@@ -507,6 +507,13 @@ static inline long font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax G (11-14): no new form, no lower score (59): the alpha parity is still masked in sixteen
+// bits (and cl, 1; movzx cx, cl) where retail widens it to thirty-two (xor ecx, ecx; mov cl, al; and
+// ecx, 1), the literal word is still built from two byte loads and a multiply (movzx eax, byte [edi+1];
+// movzx edx, byte [edi+2]; shl eax, 8; add eax, edx) where retail loads the low byte into ax and the
+// high byte into ch, the type 3 run is still folded to the constant 2 (add eax, 2; add esi, 2) where
+// retail adds the run register (add eax, ebx; add esi, ebx), and the body is eight bytes longer than
+// retail's.
 // MiniMax G (11-13): no new form, no lower score (85): the alpha parity is still masked in sixteen
 // bits (and cl, 1; movzx cx, cl) where retail widens it (xor ecx, ecx; mov cl, al; and ecx, 1); a
 // permuter run (165 tries) found nothing under the baseline and a thirty-two-bit parity local

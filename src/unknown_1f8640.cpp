@@ -777,6 +777,9 @@ struct s_1f8a70_actor
 // P466: Destination orders 263475/273645/273465/627345/362745/372645/632745/637245:
 // 367/380/380/387/368/363/373/378. NOT kept: all regress and shorten away from
 // native extent; original cases, shared unit output, two results and full body restored.
+// T107: Overlap-safe library transfers at direct/reference/state/fallback phases
+// 395/392/379/215; paired direct-reference/reference-state 417/408, all destinations
+// 448, with fallback 457. NOT kept: native transfer/layout mismatch; original body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

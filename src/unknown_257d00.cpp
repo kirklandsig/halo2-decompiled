@@ -2013,6 +2013,15 @@ void function_b7360(long object_index);
 // orientation default store 412; recording exhaustive stores 219; parent-owned moving result 270;
 // direct branch delay stores 290; orientation selector at every use 270. NOT kept: the 219
 // form moves the zero store away from retail and grows to 1852/1848; other forms tie or regress.
+// M3 lane 12 r121 (one-file LTCG harness with the callee files, 1848 bytes, 257 for the plain 270; fast where given): the
+// perception guard as one `&&` test with an early return 309 (1852 bytes); the 1/19 point arm through a named point pointer
+// 259 harness; round 91's lead (`field_3 |= 0x40` before the point copy) re-measured on this body 261: every instruction
+// from the prologue's end through the 1/19 arm is then retail's (arg_0 EBP, output ESI, +0x28 reloaded after 0x25ab50),
+// but it reverses retail's store order (retail reads the reference before any store through the output), so not kept;
+// that with the actor looked up first (retail's prologue order, as in 0x259430) 495 harness: ESI is then unused early and
+// the guard's `return 2` gets its own shrink-wrapped epilogue where retail jumps to the shared failure tail; both pools
+// read into locals first (0x259ec0's idiom) with the lead 495, without it 505. Diagnostics: the 1/19 reference read
+// through a dword or as two word halves 446/432 harness. Left: retail treats 0x25ab50 as opaque at the 1/19 site and case 5.
 // P467: Complete 17/15/16 validation-and-movement family before 4/7/8/10/5/9/13/20,
 // on the native-length result graph: 318/350/413/437/471/471/474/470. NOT kept:
 // all regress and grow to 1860 or 1856 bytes; original complete callback restored.
@@ -2427,6 +2436,14 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// MiniMax C (11-14): no new form, no lower score (479 in the full build, 474 in the reduced one): the two
+// floats read from [actor+0x6d4] and [actor+0x6d8] go into [esp+0x10] and [esp+0x14] in ours through
+// eax/ecx with the store before the lea of the destination, in retail through ecx/edx with the lea first;
+// the twelve-byte copy from [edi+0xc] into [actor+0x458] rotates the same way (ours edx/ecx/eax, retail
+// eax/edx/ecx), and the case-2 dot product's first product is formed as the stack value times the field
+// in retail and as the field times the stack value here (that order measures 477 in the full build, below
+// the gain threshold). The body runs eight bytes longer than retail's, so the jump table lands later and
+// the branches after it differ.
 // MiniMax A (11-12): the case 2 dot product's terms in retail's order, `local_6.x * local_0->unknown290.i +
 // local_0->unknown290.j * local_6.y` (the x term first, the y term second): the full build goes 479 -> 477
 // (2404 bytes); the reduced image reads 474 before the change and 477 after it, so the gain holds in the

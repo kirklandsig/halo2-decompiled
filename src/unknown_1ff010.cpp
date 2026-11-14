@@ -511,6 +511,10 @@ void __stdcall function_26c2d0(long prop_index);
 bool function_1fef40(s_type_c3b527 const *target, long actor_index);
 extern vector3f *g_4687b0;
 void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
+// MiniMax E (11-14): no new form, no lower score (77): retail still multiplies the scale into x and y as `scale * x` and
+// `y * scale` and keeps the test's zero in XMM0, while this build hoists the zero into XMM6 above the helper's products
+// and multiplies x * scale; the helper's body lives in include/unknown_11cc90.h and the turn in src/unknown_1eb8a0.cpp,
+// neither of which this lane may edit.
 // MiniMax D (11-10): no new form, no lower score (77); retail multiplies the scale into x and y as
 // `scale * x` and `y * scale` and keeps the test zero in XMM0 for the caller's magnitude test, ours hoists
 // the zero into XMM6 above the helper's products and multiplies x * scale; the normalisation helper is in

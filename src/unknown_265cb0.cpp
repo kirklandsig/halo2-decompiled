@@ -781,6 +781,7 @@ real function_30bf0(vector3f *vector);
 // bool/byte/short/long, on the native indexed-seat graph: eight 239 at 1270/1308 bytes.
 // NOT kept: tested outcome/result storage misses equality and moves frame/extent away;
 // original range branches, scalar homes, shared products and complete body restored.
+// MiniMax H (11-14): no new form, no lower score (84): the seat loop's two cross products are still computed by a helper that is private to another file, so their operand order is not this lane's to change.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2494,6 +2495,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 // positive then rejection-owned: 434/434/434/434/434/434/434/434. NOT kept:
 // shared failure/result storage misses equality and shortens extent to 2839/2880;
 // original guards, resets, iterators, searches, geometry and entire body restored.
+// MiniMax H (11-14): no new form, no lower score (168): the first difference is still the inlined 0x26be00 and the table load at +0x5c, whose helper is defined in another file.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

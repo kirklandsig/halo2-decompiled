@@ -1431,6 +1431,7 @@ struct s_item_flags_view_10b850
 // individuals, matrix/item pairs, all and paired forward outputs:
 // 821/838/843/821/830/823/841/824. NOT kept: three-/one-point best gains; frame remains 0x154.
 // Original private helper, four call sites, declaration set and complete body restored.
+// MiniMax H (11-14): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack slots where this build holds them in registers.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1972,6 +1973,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // byte/char/signed-char/short/word/int/long/dword: 251/251/251/252/252/251/251/251.
 // NOT kept: no return-byte/release/event-home repair and larger extents;
 // original Boolean result, spin capture, helpers and entire body restored.
+// T104: Returned contact-transform/origin-setter chains, mutable/readonly and actual filled
+// point-query outputs: 178/171/180/171/180/157/176/176. NOT kept: all regress; original
+// two-use spin, release helper, paired setters and full body restored. Return/release/event homes remain.
+// MiniMax H (11-14): no new form, no lower score (140): the release flag is still cleared with a load, an and and a store where retail clears the byte in place, and the return byte still sits at esp+0xe where retail puts it at esp+0xf.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
