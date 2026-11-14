@@ -5039,6 +5039,10 @@ void function_e4300(long arg_159e6d)
 // Round 214 (m3 lane 3, fast): TEST_FIELD_BIT on the flag test 98 (118 bytes); a named copy of the index 91. 0xe5930 body spellings as in 0xde4c0's note:
 // 91 while it still matches, 94 and 98 otherwise. 0xcaf00 stays 13 throughout. Still BLOCKED-BY 0xe5930.
 // MiniMax R (11-11): no new form tried this round, no lower score (91): retail keeps the index in ESI and pushes only the result pointer and the 1, this build saves the index in EBX and pushes it too, so the prologue saves three registers against retail's one.
+// MiniMax A (11-14): no new form, no lower score (91): our LTCG still expands the 0xe5930 reset
+// dispatch at this straight-line call site where retail keeps the call out of line (113 bytes
+// against 61); the callee's file is not mine, so the boundary cannot be recovered here:
+// BLOCKED-BY 0xe5930.
 // @retail 0xe4bd0
 void function_e4bd0(long arg_159e6d)
 {
