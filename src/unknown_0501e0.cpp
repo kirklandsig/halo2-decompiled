@@ -495,6 +495,8 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // (l8 * l8 + l7 * l7) * 4.f` 249 (at retail's 1136 bytes); the blend weights computed only in the `arg_1` arm 206 (the code
 // changes); the clamp in place on local_13 with two ifs 211. Same code: the else arm's 0.5 first, the width squares summed
 // l7 first, the halved fields first point first, the segment as an aggregate initializer, the depth limits `k * 4.f * k`.
+// M3 lane 9 r120 (fast): `local_4 = local_5 = 1.f;` and `local_5 = local_4 = 1.f;` 206/206; the scaled copy as
+// `vector3f scaled = *arg_1;` 330 (1198 B); `1.f != arg_0` 256 (1148 B); the depth signs as `0.f > k` 206.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

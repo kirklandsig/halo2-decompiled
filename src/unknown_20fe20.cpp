@@ -2656,6 +2656,9 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // sets both colours and schedule there; extra uses in the cases move neither) but not for the no-helper forms, so
 // screen those with --fast: about 1100 harness forms (outer-local placement, every definition/sum order and shape,
 // scalar and square helpers) gave nothing.
+// Round 120 (m3 lane 9, fast): the two point locals declared source first 3; the selector local as long 3; the helper's
+// locals renamed to sort y, z, x (diagnostic) 3; source_index used in place of the source copy 333; the outer x, y, z
+// declared ahead of the helper call and assigned after it 3.
 // Round 157 (m3 lane 8, fast): cases 6 and 7 through the existing dot3f with a local vector3f delta (cases 8/9 on its k)
 // 333 (case 7 loses its fold, the blocks move); the helper taking the points by value 557 (2044 bytes, copies); the existing
 // vector3d_from_points3d with dot3f for the square and the cases 59 (no hoist: x, y, z in definition order, colours x XMM0,

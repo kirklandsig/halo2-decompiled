@@ -2165,6 +2165,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // argument home instead of a new frame slot (frame 0x40 against 0x44, which shifts every stack offset), one scratch
 // register step from the first statement on (the definition's location index lands in ECX, retail reuses EAX), the
 // third zone product's operand order, and the order of the two loads ahead of the colour call.
+// M3 lane 9 r120 (fast): both type queries in the colour call's arguments 146 (552 B: definition in EDI for the loop
+// as retail, the loop entered through a jump to an aligned head); multiplied() alone in the call 135; colour locals in
+// the type-query block 178 (572 B); the spawn's location index stored first 128; colour locals after the spawn stores
+// 184 (572 B).
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
