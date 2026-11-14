@@ -1404,6 +1404,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // original/entry true default: 785/785/808/808/801/825/803/826 (control 766).
 // NOT kept: frame/ingress/lookup still differ and extents regress; original
 // early returns, result, helpers and complete executable body restored.
+// P484: Actual player-summary maximum/minimum/total/count scalar reductions
+// 824/808/878/890; paired extrema 867, total/count 890, first three 865, all four 858.
+// NOT kept: native per-player publications require equality; frames/extent/ingress
+// still differ. Original field reductions, selectors, observations and full body restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
