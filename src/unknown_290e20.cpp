@@ -509,6 +509,9 @@ struct s_ai_scene_assignment
 // test written at its use without the bool 105 (355 bytes). In the direct form our build reads the maximum into AX for
 // the head test and gives ESI to the role index across the scorer call; retail gives ESI to the maximum and reads the
 // role index from its slot twice.
+// Round 195 (m3 lane 4, fast, on the int copy): the leaf copy through memcpy 12; the recursion's assignment pointer as
+// `assignments + *assignment_count` 12; a long copy in place of the int copy 12 (the same movsx); `0.0f < local_7` 12;
+// `(*assignment_count)++` 12 (all the same code).
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

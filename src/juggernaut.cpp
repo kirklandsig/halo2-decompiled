@@ -229,6 +229,12 @@ void juggernaut_set(long player_index, bool juggernaut)
 // store and the increment in braces as two statements; the draw through random_next(), through a named seed pointer,
 // with the generator step written out, and with NULL/0 for the file and line; the players word through a pointer to the
 // field; the absolute index and the mask named.
+// Round 195 (m3 lane 4, fast): a named absolute index plus a `word flags` local read after waiting 75 (253 bytes); the
+// store and `count += 1` as two statements 20; the iterator's index set before its absolute index 22; the candidate test
+// as `waiting ? !(flags & 3) : unit != NONE || !(flags & 3)` 94 (263 bytes); a long waiting flag 20. Diagnostics: the
+// flags local alone (read after waiting) gives retail's count EBX and pointer EBP (75: waiting is then materialized in AL
+// and the flags word loaded into DX ahead of its test), so the pair follows the loop body's IL, not the draw alone; the
+// flags local read before waiting 102 (258 bytes); the store written in both arms of `if (...) else if (...)` 20 (merged).
 // @retail 0x192a30
 void function_192a30(long excluded_player_index)
 {
