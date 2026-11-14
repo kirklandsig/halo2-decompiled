@@ -2139,6 +2139,11 @@ void function_269250(long clump_index, long actor_index);
 // at once: `(void)&selected` and the improving arm writing `selected` through a pointer on the in-arm form 126 each (same code; the
 // address is propagated away, so retail's memory-only selection is not an address-taken local).
 // P460: Complementary readiness snapshot bool/char/byte/short/word/int/long/dword: 131/131/131/84/84/132/132/132. NOT kept: short/word gain only three at 480 bytes; native byte, pool/selection and x87 homes remain. Original body restored.
+// Round 103 (m3 lane 10, fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched): on
+// this body the score as one conditional expression (`team == ... ? function_268bb0(...) : best`) 128 (484 bytes); the score
+// declared at the actor-loop scope beside best 87 (same code); the creation arm reusing the walk's group pointer instead of
+// declaring a second one 87 (same code); a `dword` selection 87 (same code); the in-arm compare with the selection stored first
+// plus that group-pointer reuse 126 (480 bytes). All restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

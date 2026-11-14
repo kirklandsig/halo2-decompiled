@@ -321,6 +321,7 @@ extern "C" void _ReadWriteBarrier(void);
 // MiniMax E (11-14): no new form, no lower score (122): retail opens a frame of 0x14 and keeps the pool in two stack
 // homes, while this build opens 0xc and forwards the pool in EDI for both the scan and the element; the lead of 99
 // needs a read/write barrier, which the rules forbid, so the iterator's own declaration stands.
+// MiniMax C (11-14): no new form, no lower score (122): the frame is still 0xc against retail's 0x14 and the pool is still forwarded into EDI for both reads; the form that matches retail's body needs the iterator step written out by hand, which this round does not use.
 // score 122 (was 122): frame 0xc against retail's 0x14; retail reads the pool from the iterator's home for
 // the scan (high water snapshot in ESI) and from a second stack copy for the element, and keeps the datum
 // index in EDI; ours forwards the pool into EDI for both.

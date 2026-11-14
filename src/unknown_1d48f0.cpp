@@ -48,6 +48,7 @@ const dword g_455978[81] = {
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
 // MiniMax A (11-13): no new form, no lower score (298): the three-component planar copy (308), that copy with the same three length tests (369), the drop of the explicit epsilon test (321) and the component-wise copy of the two planar components (298) were all tried and restored, so the optional-state homes, the colouring and the 0x11bed0 and 0x279740 expansion stay as they are: BLOCKED-BY 0x11bed0's own file.
+// MiniMax C (11-14): no new form, no lower score (298): the two optional-state homes still sit four bytes below retail's and 0x11bed0 is still expanded here where retail calls it; the callee's own file fixes that boundary, so the webs behind it stay.
 // MiniMax H (11-12): no new form, no lower score (298): retail still expands 0x279740's range test at the
 // first release and calls 0x11bed0 out of line where this build does the opposite, and the caller-side
 // inline/noinline declarations the earlier rounds tried do not move it; the expansion boundary is set by

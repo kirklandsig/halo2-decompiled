@@ -79,6 +79,7 @@ void function_2232a0(void)
 // its own set): retail's call to 0x2b5d0 takes its two long parameters in another order than the stub's declaration in
 // src/stubs/lane_k.cpp allows, and the terminal stores still fold the record base into the displacement where this build
 // adds the base to the index register; the declaration's order may not change here, so the call stays as it is.
+// MiniMax C (11-14): no new form, no lower score (90): the outer pretest is still missing from our do-while (a pretested while measures 150) and the slot scan still holds its pointer and predicate in ECX and AL; the tail call still needs 0x2b5d0's own body, which is stubbed in another file.
 // MiniMax C (11-11): NOT kept (coordinator, 11-11): 0x2b5d0 called as (3, view_count, ...) 79 (was 90); both
 // parameters are long, so the swap passes different values: a possible fix to 0x2b5d0's parameter order, kept only
 // with a match. On that swapped form: no lower score (79): the terminal stores still fold the record base into the

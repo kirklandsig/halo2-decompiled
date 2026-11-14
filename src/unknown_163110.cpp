@@ -977,6 +977,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // +0x28a; the head matches there): the classification j term in both loops, the clip deltas' XMM2/XMM5 roles and products,
 // and `total` in ECX (retail EAX, its store late). On it: `culled = false` after the cursor and source steps 21 (only that
 // store moves; total keeps ECX). No other code-changing form outside the lists above.
+// M3 lane 15 r83 (fast, 0x1648d0 and 0x320b0 matched each time): `__assume(view != NULL)` at the top 145 (the e4.i load stays
+// after the copy; the classification's k and j terms swap operands in every row); `__assume(forward != NULL)` 145;
+// `__assume(plane != NULL)` in the pass loop 145; `__assume(point_count <= 32)` before the point memcpy 263 (1867 B);
+// `__assume(total >= 0)` before the return 247 (1867 B).
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

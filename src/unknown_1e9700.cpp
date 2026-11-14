@@ -75,6 +75,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 }
 
 // MiniMax H (11-14): no new form, no lower score (106): this round re-read the diff: the -1 default still lands in EAX where retail holds it in ECX, and the 15-bit counter is still read with movzx where retail clears EAX and loads a word; the two counts' registers come from the callers in another file, so the body's spelling cannot move them.
+// MiniMax G (11-14): no new form, no lower score (106): the enable reload is blocked by src/unknown_1967d0.cpp and the two maximum reads only duplicate 0x196960's body (105).
 // score 106 (was 106): no frame; enable observations and maximum/register homes differ.
 // M3 lane 8 r165 (fast, plain where noted): both maxima and the clamp store through the flat `all[index * 0x1b5 + 12]`
 // / `counters[0][team * 0x2d + 12]` indexing the two held helpers use 106/106/106 (same code); LEAD, match-only: the
@@ -563,6 +564,10 @@ struct s_object_damage_view
 // `&object->history[selected]` record pointer 454 (1583 bytes): `selected` then takes the reported team parameter's home,
 // where retail keeps `best`, so `best` needs a new slot (frame 0x54) and the killer sorts below the victim. No counted
 // trial: lane 1 r98's survey, round 163, lane 14 r79 and lane 12 r114 above cover the remaining killer-block spellings.
+// P487: Award prefixes through predicate find first/second/both, predicate count
+// first/second/both, both search-n and both first-of: 455/431/468/455/431/468/443/455.
+// NOT kept: all regress and grow; matched caller 0xd9640 becomes 61 in all eight trials.
+// Original body restored; scalar homes and the amount-biased cursor remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

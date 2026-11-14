@@ -2408,6 +2408,7 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax D (11-14): no new form, no lower score (140): frame and length agree, but the byte test load is still hoisted above the global store where retail keeps the store first; the preserve_alpha load that is hoisted instead comes from the callee 0x131fc0 in src/unknown_131e50.cpp: BLOCKED-BY the callee.
 // MiniMax B (11-13): no new form, no lower score (140): re-measured with the plain build (1729 bytes, as retail, first difference at +0x32b); what is left is the preserve_alpha load hoisted above the simple branch.
 // score 140 (was 140): frame and length agree; left: retail keeps both rectangle parameters as memory
 // variables (each chosen default is written into the parameter's home, `lea ecx; mov [home], ecx; mov ebx, ecx`)
@@ -3037,7 +3038,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 
 // MiniMax H (11-14): no new form, no lower score (54).
 // MiniMax B (11-13): no new form, no lower score (54): what is left is the scheduler's order inside the two corner sets, where this build places the x87 coordinate chains one slot earlier among the SSE ones than retail does (first difference +0x527); the corner rows in the other orders, the trig pairs as two statements and the point pairs all give 54 or worse.
-// score 54 (was 54): earlier 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
+// score 54 (was 54): earlier 54, 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
 // before; frame, bounds block, both trig sequences and every home retail's). Left: inside both corner sets
 // the scheduler places the x87 coordinate chains one slot earlier among the SSE ones than retail does
 // (first difference +0x527). Round 176 (m3 lane 5, fast = plain): the hand-written slot-12 shader call
@@ -3249,6 +3250,15 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // (same code), taking the angle and computing the pair itself 127; both corner buffers as one two-row array 54 (same code;
 // re-measure of the 211-era form). Left: in both corner sets our scheduler issues each x87 chain step one slot ahead of
 // retail's (first at +0x527: the c[3] `fstp` ahead of c[1]'s `subss`). Body unchanged.
+// m3 lane 2 r81 (fast = plain; a compile-only harness of this file without /GL reproduces our corner region exactly,
+// region diff 45 against retail, split 29/16 between the two sets, and nothing after the region differs): second set's
+// corner calls 0, 2, 1, 3 58, 2, 0, 1, 3 92, 1, 0, 3, 2 131 (harness: all 24 second-set orders, main's best); all helper
+// parameters but the output by const reference 326 (1934 B); the second trig pair computed before the first set 207
+// (1974 B). Harness only: the helper's 256 spellings (operand sides, term order, scale/bias/half placement, u/v order) give
+// two codes (main's and v-first, region 121); cosine/sine or scale by const reference, renamed trig locals, coordinate
+// array and scale names: same code; /G5, /G6, /G7, /GB, /Oy-, /Ob1: same region (diagnostic). Left: ours issues the
+// first set's coordinate-3 `fstp` ahead of coordinate 6's `subss` (retail after it) and orders the SSE chains 6, 7, 1
+// where retail has 7, 1, 6, with identical instructions and registers.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
