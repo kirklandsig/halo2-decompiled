@@ -74,13 +74,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
-// MiniMax S (11-11): no new form, no lower score (316); the four buffer homes can only be changed by moving the declarations, which review rejects, so the body stands as found.
-// MiniMax B (11-12): no new form, no lower score (316): the display name's buffer twice as long (638) and the
-// session and voice child pointers' slots exchanged (316, the same code) leave the score where it is; a 31-try
-// permuter found no variant below the baseline (351 on the reduced image, 313 in the full image).
-// MiniMax A (11-13): no new form, no lower score (316): the child, text, layout and suffix buffer homes differ from
-// retail's, and the suffix re-derivations differ with them.
-// score 316 (was 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
+// score 316 (was 316; earlier 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
 // MiniMax I (11-05): no new form, no lower score. Retail's null-datum `je` jumps to the function's
 // end (offset 0x920 of 2345) where ours jumps to a near block, and the child, text and layout stack
 // homes still differ (retail's suffix at -0x258 and its message at -0x458, ours at -0x2cc and -0x4cc).
@@ -254,6 +248,16 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // -0x458, message -0x258; ours title, display_name, suffix, layout, message (two adjacent pairs swapped).
 // MiniMax R (11-11): no new form, no lower score (316): the five string buffers' stack homes stay a rotation apart from retail's, the state switch's shift arm stays out of line and the join order differs.
 // MiniMax C (11-14): no new form, no lower score (316).
+// MiniMax S (11-11): no new form, no lower score (316); the four buffer homes can only be changed by moving the declarations, which review rejects, so the body stands as found.
+// MiniMax B (11-12): no new form, no lower score (316): the display name's buffer twice as long (638) and the
+// session and voice child pointers' slots exchanged (316, the same code) leave the score where it is; a 31-try
+// permuter found no variant below the baseline (351 on the reduced image, 313 in the full image).
+// MiniMax A (11-13): no new form, no lower score (316): the child, text, layout and suffix buffer homes differ from
+// retail's, and the suffix re-derivations differ with them.
+// M3 lane 3 r242 (fast, base 316): display_name's three loads as direct `get_screen()->function_230134(id, text)` calls 316
+// (same code); suffix's 20 loads so 330 (2334 B); message's nine loads so 316 (same code); all 32 loads so 330 (2334 B); the
+// explicit layout flags clear dropped (the inlined constructor clears it, as in matched 0x2b3a9d) 316 (same code). The buffer
+// homes do not follow how the loads are written. Body unchanged.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)
