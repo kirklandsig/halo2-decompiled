@@ -484,6 +484,19 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // regresses. Original Boolean state, selected/default homes, bitmaps and whole body restored.
 // M3 lane 15 r83 (fast, 0x29e730 and 0x29de20 matched each time): `__assume` non-NULL on local_11, local_10, arg_3,
 // arg_4 and local_10->field_84 382 each.
+// m3 lane 1 r103 (fast with 0x29e730/0x29de20, both MATCH unless noted): round 64's recipe (as saved by m3 lane 7 r146) rebuilt on
+// this body with the scenario global read at its two uses re-measures 155 at 1596 B (aligned 22, masked 11). All 22 aligned lines
+// follow from one choice: ours loads arg_0 into ESI before the third distance's index `lea` and reloads arg_3 into ECX at the
+// 0x29de20 call; retail keeps arg_3 in ESI from the range test to the call and loads arg_0 into EDX after the `lea` (`mov ecx,
+// esi; mov esi, edx`). On the recipe: arg_0/arg_3 renamed to sort either way 155 (same code); the first pair distance through a
+// helper taking (arg_0, point) with the same arithmetic 155 (same code); that distance named before the sum 426 (1612 B); arg_3
+// read once through its own address into a table local for the range test and the call 155 (same code; 0x29e730 then 6).
+// Diagnostics (value-changing): the first pair distance from the marker point, so arg_0 feeds only the call, 206, and with both
+// pair distances through the scalar helper too 209: arg_3 is still reloaded at the call (`mov esi, [arg_0]; mov ecx, [arg_3]`),
+// so our build never carries the range test's arg_3 to the call even with ESI free; both distances through the scalar helper
+// alone 182 (same arg_0/ESI choice).
+// Permuter on the recipe (600 s, seed 103, 40 tries): best 122, all from forbidden or steering edits (a volatile endpoint start
+// index, a volatile store of the marker flag, conditions split into flags, constant temporaries); nothing keepable.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

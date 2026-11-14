@@ -591,6 +591,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // enlarge frame to 0x4828. Original completion, observations and full body restored.
 // M3 lane 15 r83 (fast, 0x12e5e0 matched each time): `__assume` on arg_3, arg_1, `local_4 <= 512`, local_19 and local_13
 // 607 each.
+// m3 lane 1 r103: reviewed (aligned 487, register-masked 222 on this body). The first structural difference is still right after
+// the 0x130f60 call: retail moves the result to EDX, makes NONE in EAX and compares the palette byte in CL (`cmp cl, al`); ours
+// reads the short slot with `movsx bx` and keeps NONE in ECX, the result in EAX (the tag arm then compares `eax, ecx` where
+// retail has `edx, eax`). Every lever for that point is listed above; no untried natural form found, no trial run.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
