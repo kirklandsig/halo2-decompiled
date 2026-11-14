@@ -5282,6 +5282,15 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // sets 1..7: 179/183/178/169/174/183/178; all with disabled early result 185.
 // NOT kept: no match or gain; delayed up.i, native scalar/vector homes and x87
 // forward-scale residence remain. Original complete body and shared helpers restored.
+// Round 198 (m3 lane 4, fast; all restored): up and forward in an inner block ending after 0x1420f0 169 (same
+// code); with yaw and pitch as s_view_angles declared before the local vector 169, aligned 63 -> 41: every frame
+// slot is then retail's (angles over up at +0xc/+0x10, the local over forward at +0x20), and the 169 is the one-
+// instruction shift of the first cross product (one extra movaps: ours copies forward.j for up.k * forward.j,
+// retail copies up.k) running through the body plus the x87 forward term. On that: the first cross product
+// written out as forward.k * up.j - up.k * forward.j, up.k * forward.i - forward.k * up.i, up.i * forward.j -
+// up.j * forward.i 180 (774 B); `double forward_scale = cos(yaw) * cosine` 189 (the forward terms and the k row
+// become retail's `fld [m]; fmul st(n)`, but cosine is then rounded through a frame dword); also double cosine with
+// `(real)(sin(yaw) * cosine)` 191 (cosine spilled as a qword); the double scale as cos(yaw) * cos(pitch) 189.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -7235,7 +7244,7 @@ public:
    counting a held weapon in a multiplayer engine mode 7 with option 0x20,
    for the dropped weapon of a player on a flagged team; retail expands both
    counts in place */
-// score 492 (was 530): Frame 0x3c and length 1785 now agree. Early object/tag
+// score 492 (was 492; 530 before): Frame 0x3c and length 1785 now agree. Early object/tag
 // spills, magazine flags, later register/slot choices and the expanded
 // 0x106030 call remain. The indexed magazine pass gives native pointer steps
 // and a countdown, confirmed by the ordinary whole-file check.
@@ -7263,6 +7272,15 @@ public:
 // indexed magazines 492/1785; per-arm held sums 510/1809; direct empty answer
 // 506/1767; library zero initialization 530. NOT kept: the per-arm held sums
 // and direct empty answer; the indexed pass is confirmed by the plain check.
+// Round 198 (m3 lane 4, fast; all restored): the held index through the existing function_cbd50 (retail's
+// NONE-first `or eax,-1; cmp si,-1; je` shape in the hand loop) 498 (aligned 344 -> 299); on it, modes[hand] and
+// modes[hand + 2] set before the lookup (retail stores them first) 511 (1799 B, aligned 283); the second hand
+// loop's written-out 0x106030 test as a call to function_106030 539 (ours then inlines both sites and calls
+// 0x159dd0 at the second, retail calls 0x106030 at the first and inlines both at the second); empty/loaded
+// declared first 498; the magazine count read at each use 496. A __declspec(noinline) on this file's
+// declaration of 0x106030 (diagnostic, reverted at once) leaves it inlined (498). Ours keeps
+// weapon->definition_index and the pool data pointer in frame slots across the slot loop because the inlined
+// 0x106030 writes no memory; retail's call to it forces the reloads it shows.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
@@ -8980,7 +8998,7 @@ struct s_unit_melee_collision
    the attack's name (or the seat's, for a seat group), damages what it
    hit (through the player code when it asks), plays the impact and
    applies the second damage to the striker */
-// score 493 (was 504; 507 before): the melee damage and self damage are set only when the melee table entry exists
+// score 493 (was 493; 504 and 507 before): the melee damage and self damage are set only when the melee table entry exists
 // (retail reaches the weapon's defaults with NONE still in both), hit_t is not initialised (retail has no store
 // for it), and the damage data's material_index is set to NONE before 0xd6660 (retail order). Retail's tail
 // shapes (the controller as a long, the player pointer taken before the rounding) cost 7 through slot offsets
@@ -9009,6 +9027,27 @@ struct s_unit_melee_collision
 // Retail also loads g_4e3b44 and g_4e0300 into esi/edi up front and compares the weapon slot with `cmp cx, bp`.
 // Round 85 (m3 lane 11, fast): the self-damage controller's player index through the existing unit_get_player_index
 // (test and lookup, the form that helped 0xca0b0) 523 (2218).
+// Round 198 (m3 lane 4, fast; all restored): LEAD (match-only, a type and a mixed aim read): the material local
+// typed c_type_47f957 (impacts.h; every retail copy of it is a word move, ours were dword moves; `.m_index` at
+// its four reads) 487 (2229 B); with range read from the weapon definition at each use 478 (frame 0x17c as
+// retail); + TEST_FIELD_BIT at both seat tests 473; + `long player_index = NONE; if (object) ...` 475 (retail's
+// `or ecx,-1; test; je; mov` there); + height computed after the across scaling 534 (but the cross product and
+// scaling then schedule exactly as retail's); + the three ray sums reading unit->unknown168 while the aim
+// pointer serves 0x11d000 and the cross product 436 (2219 B, aligned 359 -> 194: EBX unit, EDI aim, ESI weapon
+// definition, both counters on the stack, as retail). That set with the plain short material 447. What the 436
+// form still differs in: the prologue (retail loads g_4e3b44 into ESI and g_4e0300 into EDI first and reloads
+// [edi+0x44] at the weapon and seat lookups; ours keeps the data pointer in ECX), the else arm's parent index
+// (ECX in retail, EDI here), and EDI/ESI swapped for the self damage index and unit index in the tail. Also: on
+// 487, aim read from unit->unknown168 everywhere (cross product written out) 551; on 478, the weapon index as
+// NONE then if 529; cross3f(&unit->unknown168, ...) with the unit read in the sums 540 (535 with the seat
+// macro; cross3f's schedule is not retail's); range-first products in ray.j/.k 436 (same code).
+// The weapon index through the existing function_cbd50 (retail inlines it here; it gives retail's NONE-first
+// `or eax,-1; cmp; je; movsx; mov`): alone 514, on the 436 lead 386 (the best form found). On that 386: the unit,
+// weapon and parent lookups through a pool local `objects = g_4e0300` (the file's matched pattern) 524 (the pool
+// lands in EBP, not EDI); the seat test and the flags test as one condition without the goto 386 (aligned 239;
+// retail still places the 0xcfc90 arm inline after 0xa9260, ours moves it to the end); the seat group byte as `byte`
+// 386 (same code); the parent index assigned after its two NONE tests 389. Without the class, the aim mix and the moved
+// declaration (only the 0xcbd50 call, range at each use and the seat macro) 538.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
