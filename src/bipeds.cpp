@@ -3406,9 +3406,14 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
-// score 362 (was 362): frame 0x48 against retail's 0x4c (retail's dead flag byte before the 0xe16b0 call, a HELD
+// score 324 (was 362): frame 0x48 against retail's 0x4c (retail's dead flag byte before the 0xe16b0 call, a HELD
 // contributor form below), the +0x34b state byte zero-extended, scalar, centre and result homes. Round 85 (m3 lane 13) at
 // the end of this note; the earlier first lines are kept below as "Earlier first line".
+// MiniMax R (11-14): the mass loop takes the body position into a local, scales it by the mass in place and then adds it
+// to the centre (324, 1908 bytes, retail's length; the other functions of this file unchanged). Still open: the frame is
+// 0x48 against retail's 0x4c (retail's dead flag byte before the 0xe16b0 call, the HELD contributor form below), the
+// +0x34b state byte is zero-extended where retail sign-extends it, and the total, the hit and the centre keep different
+// homes.
 // MiniMax G (11-13): no new form, no lower score (362): the diff re-read this round puts the first difference at the state byte at +0x34b, read zero-extended here and sign-extended in retail, and the second at the flags word at +0x348 that retail reads and shifts into a byte local before the 0xe16b0 call, which has no counterpart here, so the body stands.
 // MiniMax B (11-13): no new form, no lower score (362): our frame is 0x48 against retail's 0x4c, and this build reads the +0x34b byte unsigned where retail reads it signed; the signed form measures 361, under the eight-point bar for a function still above 30, so the body stands.
 // MiniMax H (11-12): no new form, no lower score (362): the only form this round - the state byte at +0x34b read with a signed cast - measures 361, under the keep gate, so the body stands.
@@ -3775,11 +3780,14 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 									for (i = 0; i < count; i++)
 									{
 										real mass = (real)(long)havok_component_rigid_body_mass_get(i, component);
-										point3f const *position = biped_rigid_body_position(component, i);
+										point3f weighted = *biped_rigid_body_position(component, i);
 
-										center.x += position->x * mass;
-										center.y += position->y * mass;
-										center.z += position->z * mass;
+										weighted.x *= mass;
+										weighted.y *= mass;
+										weighted.z *= mass;
+										center.x += weighted.x;
+										center.y += weighted.y;
+										center.z += weighted.z;
 										total += mass;
 									}
 									center.x *= 1.0f / total;
