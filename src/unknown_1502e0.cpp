@@ -1541,7 +1541,12 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// MiniMax E (11-14): no new form, no lower score (43): the length still matches retail's 210 bytes and every
+// difference is the same pairwise register rotation (retail: player esi, hand edi, unit index edx, primary cl,
+// sete al; ours: player edi, hand esi, unit index ecx, primary al, sete dl); the permuter ran 625 s over six tries
+// and reported no better than the baseline 43, and no source form tried this round moves the rotation.
 // MiniMax B (11-13): no new form, no lower score (43): the hand before the result (62), the result before the player (43), the unit pointer before the hand (70), the hand as an int (43) and the hand at the entry (86) all leave the register rotation - retail keeps the player in esi, the unit index in edx and the hand in edi, ours keeps them in edi, ecx and esi.
+
 // score 43 (was 43):
 // MiniMax B (11-14): no new form, no lower score (43); the gap is still the one register rotation (retail keeps
 // the player in esi, the hand in edi and the unit index in edx, ours keeps them in edi, esi and ecx) and both
