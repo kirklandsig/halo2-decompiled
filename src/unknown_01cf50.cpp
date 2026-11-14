@@ -6185,6 +6185,9 @@ dword g_4b8430;
 // copied by value 508 (2421 bytes). Re-measured: each single product's operands swapped in rows 12 and 13, 2
 // each (same code). Diagnostics: the basis or the size renamed 2 (same code: names do not order the reloads).
 // The two reloads keep their order whatever the model read's form (the 125 forms show the same pair).
+// MiniMax S (11-14), NOT kept: 125 (was 127) with an eight-byte model-entry struct read through for the
+// reference table and the index's two bound tests split into two `continue`s; a 2-point gain, under the
+// 8-point bar for a function above 30.
 // @retail 0x4e260
 void __stdcall function_4e260(long tag, long context, long first, long second,
     long third, dword handle, byte *material)
