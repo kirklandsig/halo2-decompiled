@@ -713,6 +713,9 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // calls 444 (1619 B); the asm helper as an out-of-line function in another file stays a call 393 (1633 B), and as a
 // `__forceinline` one there is not emitted (unresolved calls). No new source form found; the forms the note lists
 // cover the open leads (gate addressing, result/placement homes, in-loop tag lookup). Body unchanged.
+// MiniMax I (11-14): no new form, no lower score (334): the gate's byte is still read with the base and the index
+// in one operand where retail adds the index to the base first and reads the byte from it, and the flag byte and the
+// settings still sit in the frame's later slots where retail keeps them at +0x1b and +0x1c.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
