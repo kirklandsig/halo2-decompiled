@@ -226,6 +226,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
+// MiniMax G (11-14): no new form, no lower score (49): retail keeps the false result in bl and sets it only after the
+// attachment, ours keeps it in ebp; retail reloads the object table's data pointer and recomputes the scaled index
+// between the header flag test and the object read, ours shares one address between the two reads.
 // score 49 (was 49; m3 lane 2 r79 at the end): unchanged this round: retail keeps the false result in BL from before the creation
 // call and sets it only after the attachment, and it branches on the creation call's result instead of
 // materialising that comparison as a 0/1 value; retail also borrows EBP around the header flag test and
