@@ -2997,6 +2997,7 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // byte RMW clears share no constant. Body unchanged.
 // This round: retail passes the settling count to 0x1d5120 in EAX and takes six stack arguments, while this build passes seven
 // because 0x1d5120's declaration and definition live in another file, so the call site cannot be matched from here.
+// MiniMax H (11-14): no new form, no lower score (63): retail takes the settling count in EAX and passes six stack arguments where this build passes seven, and 0x1d5120's declaration and definition are in another file.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -5537,6 +5538,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // M3 lane 5 r179 (fast with 0x1ecf50/0x30bf0/0xe3c90): the axis local renamed (name order as a lever on the cross
 // products' operand order) 79 (same code). No further trial: the caller-side forms are exhausted (lane 12 r112/r115,
 // lane 1 r79, lane 13 r85) and rotate_direction's file was on this round's Avoid list again. Body unchanged.
+// MiniMax H (11-14): no new form, no lower score (79): the frame agrees (0x24) and the first difference is still at +0x107, inside the shared rotation helper, whose own file is not this lane's.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

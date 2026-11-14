@@ -1422,6 +1422,7 @@ struct s_item_flags_view_10b850
 // score 824 (was 824): the frame is 0x154 against retail's 0x12c, the entry's flag byte differs
 // (retail shifts the value and stores the parity byte where this build tests a bit of a shifted
 // register), and the walk still differs in the item table's own expressions.
+// MiniMax H (11-14): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack slots where this build holds them in registers.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1952,6 +1953,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // P442: Actual activity-derived accumulated result, bool/byte/short/long, positive then
 // complementary outcomes: 273/277/232/239/197/196/194/196. NOT kept: no exact result-home repair;
 // original parent, spin, release, event and full body restored. Return/release/contact homes remain.
+// MiniMax H (11-14): no new form, no lower score (140): the release flag is still cleared with a load, an and and a store where retail clears the byte in place, and the return byte still sits at esp+0xe where retail puts it at esp+0xf.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

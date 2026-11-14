@@ -712,6 +712,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // MiniMax S (11-11): no new form, no lower score (117): the frame stays 0x28 against retail's 0x20 because retail
 // loads the random-state pointer before the seed read, and the old direction's address is passed to cross3f and
 // dot3f here where retail keeps the old direction in registers.
+// MiniMax H (11-14): no new form, no lower score (117): retail keeps the old direction in xmm3-xmm5 and sums the dot as (axis.k*old.k + axis.j*old.j) + old.i*axis.i, an order the shared helpers cannot produce, and the frame stays 0x28 against retail's 0x20 while the old direction's address reaches them.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

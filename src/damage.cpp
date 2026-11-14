@@ -1057,6 +1057,7 @@ PRIVATE inline long damage_object_root(long object_index)
 // noinline ruling (MiniMax G 11-06). The rest of that round: the flag update through a local (load, or, store), the
 // outer radius added in two statements, the parent walk through an index-returning helper, the s_data_datum_iterator
 // player scan and a squared-distance helper called at both tests.
+// MiniMax H (11-14): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4 and the first 0xbadc0 use is still expanded here where retail calls it, and that callee's own file is not this lane's.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -1306,6 +1307,7 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // (0xd74b0 then matches: its plain indexed loop needs the component in ecx). Not kept (coordinator 11-13): a
 // convention is steered only by the `standard` marker (DECOMPILING.md), which 0xd74b0 now carries; with it 0xd74b0
 // matches and this function reads 38 (fast). What is left: the negate block's schedule and the else arm's k row.
+// MiniMax H (11-14): score 2 (was 38): the node direction's three components are reached through three separate pointers, and each negated value is stored into the surface normal before the node component is updated; the near block now matches retail line for line. Left: the else arm's first row still loads the direction and adds the destination where retail loads the destination and adds the direction.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -1351,6 +1353,9 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 			}
 
 			vector3f *node_direction = &data->node_direction;
+			real *node_i = &node_direction->i;
+			real *node_j = &node_direction->j;
+			real *node_k = &node_direction->k;
 
 			vector3d_from_points3d(origin, &node_center, node_direction);
 			function_30bf0(node_direction);
@@ -1364,18 +1369,18 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 				real negated_j = 0.0f - surface_normal.j;
 				real negated_k = 0.0f - surface_normal.k;
 
-				node_direction->i += negated_i;
 				surface_normal.i = negated_i;
-				node_direction->j += negated_j;
+				*node_i += negated_i;
 				surface_normal.j = negated_j;
-				node_direction->k += negated_k;
+				*node_j += negated_j;
 				surface_normal.k = negated_k;
+				*node_k += negated_k;
 			}
 			else
 			{
-				node_direction->i += direction->i;
-				node_direction->j += direction->j;
-				node_direction->k += direction->k;
+				*node_i += direction->i;
+				*node_j += direction->j;
+				*node_k += direction->k;
 				function_30bf0(node_direction);
 			}
 		}
@@ -1734,6 +1739,7 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 // Round 303: one initial clear of the three controlled bits, positive branches in abc/acb/bac/bca/cab/cba
 // order 51,51,52,52,52,52; combined/separate conditional contributions 67,67.
 // Original copy, flag graph and body restored; aggregate registers and final store schedule remain.
+// MiniMax H (11-14): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after the record's address is built; a copy through a local and a cast destination both leave the same ten.
 // @retail 0xdbfb0
 void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool b, bool c)
 {
@@ -2928,6 +2934,7 @@ struct s_unit_event
 // (the one-use region pointer dropped) gives 557, so the region pointer stays; the first difference is still at +0xc, where
 // the region index takes EBX and the permutation pointer EBP where retail keeps them the other way round, and retail's
 // constant 1 travels through the region argument's dead stack home.
+// MiniMax H (11-14): no new form, no lower score (517): the first difference is still at +0xc, where the region index takes EBX and the permutation pointer EBP where retail keeps them the other way round, and the region's stack home follows from the declaration's parameter order, which this lane may not change.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3301,6 +3308,7 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // allegiance predicate (74, frame 4), enemy assigned in the valid/invalid team arms (67, frame 4), one result
 // across both engine/team paths (42, frame 0xc), both paths scaling damage in place (5), the engine product
 // computed at return (52), a team result initialized from damage then multiplied (5), enemy live from entry (5).
+// MiniMax H (11-14): no new form, no lower score (5): only the order of the two cold exits differs (this build reloads the stack before it copies xmm1, retail copies first); a merged tail return measures 24 and an explicit else 5, so the block order stands.
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {
@@ -5080,6 +5088,7 @@ dword function_db810(long object_index, long node_index)
 // 39/34/34/34 twice (313/305 bytes). One scalar owns successive tag handles at four input boundaries,
 // mask at acquisition or traversal: eight trials 4 (305/305 bytes). Original body restored;
 // NOT kept: input lifetime/scalar ownership did not recover EAX reuse and the native save/mask schedule.
+// MiniMax H (11-14): no new form, no lower score (4): the four instructions that differ are the tag index's mask, the tag entry's two loads and the entry's field; retail masks the index before it pushes EBP and reuses EAX for the entry, and no spelling of them that this lane may write moves the mask ahead of the push.
 // @retail 0xdbb40
 long function_dbb40(long object_index)
 {

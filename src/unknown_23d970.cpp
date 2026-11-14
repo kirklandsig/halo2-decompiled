@@ -958,6 +958,7 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // cleared first 65; the else arm's k row first 56, its distance copied after the three rows (before 0x11d090) 64, the
 // pitch cosine written at each use 169 (1275 bytes). Re-measured: the common field of view/offset/velocity stores once
 // after the arms 246 (1211 bytes, Round 512's listed 246). Body unchanged.
+// MiniMax H (11-14): no new form, no lower score (45): what still differs is the register colour of the first product's operands and the else arm's forward stores, both of them inside the shared helpers (include/vector_products.h and src/unknown_1f03e0.cpp), whose bodies this lane may not change.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

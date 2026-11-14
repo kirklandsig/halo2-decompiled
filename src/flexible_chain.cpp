@@ -622,6 +622,7 @@ void __stdcall function_1160c0(real dt)
 // before the physics call 289 (1381 bytes); `++node->ticks` after the first-node/physics block 252; the target computed in
 // place in `delta` 190 (1360 bytes); the vertical declared at the loop's top 165 (same code). Left: segment EDX, mirrored homes.
 // MiniMax A (11-13): no new form, no lower score (171): the first real difference is still the segments base in edi and the segment in ecx where retail uses edx for both, and retail's homes run length, segment, axis upward where ours are reversed; the rotation's cross terms and their loads follow from those homes.
+// MiniMax H (11-14): no new form, no lower score (171): the segment pointer is still in EDI where retail keeps it in EDX, and retail still loads all six axis and offset components into registers where this build reads offset k from memory at the dot and at two later products.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
