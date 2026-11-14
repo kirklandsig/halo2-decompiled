@@ -3421,6 +3421,11 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
+// MiniMax E (11-14): no new form, no lower score (324): the frame is still 0x48 against retail's 0x4c, retail still
+// sign-extends the state byte at +0x34b where this build zero-extends it (the signed view measures 361, a gain of one
+// on a function still above 30, so it is not kept), and retail still keeps the flags bit 9 in a stack slot before the
+// 0xe16b0 call where this build computes the bit as part of the earlier held test; that slot needs a local whose
+// address is taken, a form this lane may not use, so the body stands.
 // score 324 (was 362): frame 0x48 against retail's 0x4c (retail's dead flag byte before the 0xe16b0 call, a HELD
 // contributor form below), the +0x34b state byte zero-extended, scalar, centre and result homes. Round 85 (m3 lane 13) at
 // the end of this note; the earlier first lines are kept below as "Earlier first line".

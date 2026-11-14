@@ -1882,6 +1882,11 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax E (11-14): no new form, no lower score (128): reading the location index into a local of its own makes the
+// head match retail's bytes but measures 124, a gain of four on a function still above 30, so it is not kept; reading
+// the zone byte from the cluster field instead of a copy makes the zone block match retail's bytes but measures 161,
+// since the definition reload and the alignment pad leave two extra instructions before the switch dispatch; the
+// particle system still takes EDI where retail keeps it in ESI, and the frame is still 0x40 against retail's 0x44.
 // MiniMax H (11-14): no new form, no lower score (128): the frame is still 0x40 against retail's 0x44 and the
 // spawn record still sits two frame slots lower than retail's, and the particle system still takes EDI where retail
 // keeps it in ESI; the header's zone helper, whose zone block then matches retail's byte for byte, measures 165 on
