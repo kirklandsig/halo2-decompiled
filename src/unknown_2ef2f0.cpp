@@ -126,30 +126,23 @@ void *__cdecl function_2ef2f0(long arg_0, long arg_1, long arg_2, long value)
 	return function_2ee390(arg_0, arg_1, arg_2, value);
 }
 
-// score 11 (was 11): frame 0x134 and extent 244 agree; second box acquisition and radius
-// carriers differ before growth. First extent at use 11; direct radii/all fields 13/13;
-// radius/extent references 13/11; scalar broadcast loads 89; late second radius 13;
-// staged vector broadcasts 64. NOT kept: tied or larger differences; original observations restored.
-// First radius before second shape 11; both radii before extent 11; both
-// extent snapshots 71; scalar-set/shuffle broadcasts 72; four-lane broadcasts
-// 157; immutable output vectors 11; aligned extent loads 11; copy then add 72.
-// NOT kept: no gain.
+// the grown boxes and the query live in a block of their own, as in 0x2ef4b0
 // @retail 0x2ef3b0
 void manifold_pair_2ef2f0::function_2ef3b0(description_2ed170 const *a, description_2ed170 const *b, input_2ef2f0 const *input, long arg_3)
 {
 	timer_add_2ebc80("TtBoxBox");
 	box_2ef3b0 const *first_box = (box_2ef3b0 const *)a->shape;
 	box_2ef3b0 const *second_box = (box_2ef3b0 const *)b->shape;
-	__m128 const first_half_extents = first_box->half_extents;
-	float const first_radius = first_box->radius;
-	float const second_radius = second_box->radius;
-	__m128 grown_first = _mm_add_ps(first_half_extents, _mm_set_ps1(first_radius));
-	__m128 grown_second = _mm_add_ps(second_box->half_extents, _mm_set_ps1(second_radius));
-	query_2ef260 query((long)a, (long)b, (long)input, field_8, arg_3, (long)a->placement + 0x20, grown_first,
-		(long)b->placement + 0x20, grown_second, input->tolerance);
-	query.function_3080a0(&manifold);
+	{
+		__m128 grown_first = _mm_add_ps(first_box->half_extents, _mm_set_ps1(first_box->radius));
+		__m128 grown_second = _mm_add_ps(second_box->half_extents, _mm_set_ps1(second_box->radius));
+		query_2ef260 query((long)a, (long)b, (long)input, field_8, arg_3, (long)a->placement + 0x20, grown_first,
+			(long)b->placement + 0x20, grown_second, input->tolerance);
+		query.function_3080a0(&manifold);
+	}
 	timer_add_2ebc80("Et");
 }
+
 
 class box_pair_2ef4b0
 {
@@ -248,46 +241,33 @@ public:
 
 // the two boxes grown by their radii, and the pair passed on when they
 // overlap
-// score 6 (was 6): the second radius load still follows the first vector store.
-// Second vector first 32; declarations before assignments 6; memory broadcasts 78;
-// shared broadcaster 72; first/second/both shape values 99/103/127;
-// four-lane value broadcasts 137.
-// Second-radius load remains late; second radius first 24, both radii first 24, first
-// extent with radii 24, separate splats 29, mutable extents 76, const extents 6, native scalar vector
-// load 62, extent role names 9.
-// Delayed second shape 25; direct shape reads 25; box references 6;
-// radius references 6; extent references 6; vector-return growth 6;
-// output-reference growth 6; aligned extent loads 6. NOT kept: no gain.
+// the grown boxes and the query live in a block of their own, as in 0x2ef4b0
+// (without it the second radius is loaded after the first vector store)
 // @retail 0x2ef6e0
 void box_pair_2ef6e0::function_2ef6e0(description_2ed170 const *a, description_2ed170 const *b, input_2ef2f0 const *input, pair_collector_2ef6e0 *collector)
 {
 	timer_add_2ebc80("TtBoxBox");
 	box_2ef3b0 const *first_box = (box_2ef3b0 const *)a->shape;
 	box_2ef3b0 const *second_box = (box_2ef3b0 const *)b->shape;
-	__m128 grown_first = _mm_add_ps(first_box->half_extents, _mm_set_ps1(first_box->radius));
-	__m128 grown_second = _mm_add_ps(second_box->half_extents, _mm_set_ps1(second_box->radius));
-	query_2ef260 query((long)a, (long)b, 0, 0, 0, (long)a->placement + 0x20, grown_first,
-		(long)b->placement + 0x20, grown_second, input->tolerance);
-	((box_pair_306400 *)&query)->function_306400();
-	answer_306580 overlap = ((class_306580 *)&query)->function_306580();
-	if (overlap.value)
 	{
-		collector->slot_1(a, b);
+		__m128 grown_first = _mm_add_ps(first_box->half_extents, _mm_set_ps1(first_box->radius));
+		__m128 grown_second = _mm_add_ps(second_box->half_extents, _mm_set_ps1(second_box->radius));
+		query_2ef260 query((long)a, (long)b, 0, 0, 0, (long)a->placement + 0x20, grown_first,
+			(long)b->placement + 0x20, grown_second, input->tolerance);
+		((box_pair_306400 *)&query)->function_306400();
+		answer_306580 overlap = ((class_306580 *)&query)->function_306580();
+		if (overlap.value)
+		{
+			collector->slot_1(a, b);
+		}
 	}
 	timer_add_2ebc80("Et");
 }
 
+
 // the same as a function
-// score 6 (was 6): the second radius load still follows the first vector store.
-// Second vector first 32; declarations before assignments 6; memory broadcasts 78;
-// shared broadcaster 72; first/second/both shape values 99/103/127;
-// four-lane value broadcasts 137.
-// Second-radius load remains late; second radius first 24, both radii first 24, first
-// extent with radii 24, separate splats 29, mutable extents 76, const extents 6, native scalar vector
-// load 63, extent role names 9.
-// Delayed second shape 25; direct shape reads 25; box references 6;
-// radius references 6; extent references 6; vector-return growth 6;
-// output-reference growth 6; aligned extent loads 6. NOT kept: no gain.
+// the grown boxes and the query live in a block of their own, as in 0x2ef4b0
+// (without it the second radius is loaded after the first vector store)
 // @retail 0x2ef7f0
 void __cdecl function_2ef7f0(void const *a_, void const *b_, void const *input_, void *collector_)
 {
@@ -297,15 +277,18 @@ void __cdecl function_2ef7f0(void const *a_, void const *b_, void const *input_,
 	timer_add_2ebc80("TtBoxBox");
 	box_2ef3b0 const *first_box = (box_2ef3b0 const *)a->shape;
 	box_2ef3b0 const *second_box = (box_2ef3b0 const *)b->shape;
-	__m128 grown_first = _mm_add_ps(first_box->half_extents, _mm_set_ps1(first_box->radius));
-	__m128 grown_second = _mm_add_ps(second_box->half_extents, _mm_set_ps1(second_box->radius));
-	query_2ef260 query((long)a, (long)b, 0, 0, 0, (long)a->placement + 0x20, grown_first,
-		(long)b->placement + 0x20, grown_second, input->tolerance);
-	((box_pair_306400 *)&query)->function_306400();
-	answer_306580 overlap = ((class_306580 *)&query)->function_306580();
-	if (overlap.value)
 	{
-		((pair_collector_2ef6e0 *)collector_)->slot_1(a, b);
+		__m128 grown_first = _mm_add_ps(first_box->half_extents, _mm_set_ps1(first_box->radius));
+		__m128 grown_second = _mm_add_ps(second_box->half_extents, _mm_set_ps1(second_box->radius));
+		query_2ef260 query((long)a, (long)b, 0, 0, 0, (long)a->placement + 0x20, grown_first,
+			(long)b->placement + 0x20, grown_second, input->tolerance);
+		((box_pair_306400 *)&query)->function_306400();
+		answer_306580 overlap = ((class_306580 *)&query)->function_306580();
+		if (overlap.value)
+		{
+			((pair_collector_2ef6e0 *)collector_)->slot_1(a, b);
+		}
 	}
 	timer_add_2ebc80("Et");
 }
+

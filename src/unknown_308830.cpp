@@ -61,39 +61,29 @@ inline float first_term_308910(__m128 v)
 // a point's weights in its plane: the edges' squared lengths and their dot
 // product over the determinant, then one over the length of their cross
 // product
-// score 15 (was 27): division and final scalar spill still run at different
-// points. Earlier: separate product 24, double inverse 15, vector memory
-// update 61, scalar root 46, late scalar 15, local renames 15, vector scopes
-// 15, direct lane 23, output scaling loop 59. This round: cross inputs by
-// value (both or either) 15, cross input order 15, dot inputs by value 15,
-// array-element reference 15, double product 15, outer result scope 15.
-// Further history: inverse/shuffle and final scalar extraction still differ.
-// Output dot storage a 70; b 65; a/b 88; a/dot 59; b/dot 51; all 87;
-// full output storage with cursor 84; original scalars with output cursor 39.
-// Existing scalar-return helpers 15/15; existing sum helpers 15/15; existing
-// cross helper 15; dot output reference 15; dot float return 15; helper sum
-// call 15. All restored.
+// (the parentheses around the products and the first result are kept: VC
+// schedules a parenthesised float term as written, and retail's divide and
+// first store follow that order)
 // @retail 0x308910
 void __cdecl function_308910(__m128 const *corners, float *out)
 {
+	float length_b_squared;
+	float edges_dot;
+	float length_a_squared;
 	__m128 const edge_a = _mm_sub_ps(corners[0], corners[1]);
 	__m128 const edge_b = _mm_sub_ps(corners[2], corners[1]);
-	float length_a_squared;
 	dot3_308830(&length_a_squared, edge_a, edge_a);
-	float length_b_squared;
 	dot3_308830(&length_b_squared, edge_b, edge_b);
-	float const squared_product = length_b_squared * length_a_squared;
-	float edges_dot;
 	dot3_308830(&edges_dot, edge_b, edge_a);
-	double const inverse = 1.0f / (squared_product - edges_dot * edges_dot);
+	double const inverse = 1.0f / ((length_b_squared * length_a_squared) - (edges_dot * edges_dot));
 	__m128 const normal = cross_308910(edge_a, edge_b);
+	out[0] = inverse * length_a_squared;
 	__m128 const squares = _mm_mul_ps(normal, normal);
-	__m128 const length = _mm_sqrt_ss(_mm_add_ss(_mm_shuffle_ps(squares, squares, 0xaa), _mm_add_ss(_mm_shuffle_ps(squares, squares, 0x55), squares)));
-	out[0] = length_a_squared * inverse;
-	out[1] = length_b_squared * inverse;
-	out[2] = edges_dot * inverse;
-	out[3] = 1.0f / first_term_308910(length);
+	out[1] = (inverse * length_b_squared);
+	out[2] = inverse * edges_dot;
+	out[3] = 1.0f / first_term_308910(_mm_sqrt_ss(_mm_add_ss(_mm_shuffle_ps(squares, squares, 0xaa), _mm_add_ss(_mm_shuffle_ps(squares, squares, 0x55), squares))));
 }
+
 
 struct triangle_measures_308a50
 {

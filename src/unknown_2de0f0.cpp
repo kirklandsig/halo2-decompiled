@@ -40,13 +40,8 @@ public:
 
 // both ends placed by the transform, the box around them grown by the radius
 // and the tolerance
-// score 7 (was 7): frame 0x40 and the point loop agree; upper/lower result registers,
-// output-pointer load and stores differ. Value inputs to maximum/minimum/both, growth/both
-// operations 7/7/7/7/7; indexed endpoints 39; minimum first 7; late growth 52; local
-// minimum/maximum/both 61/88/135; vector point records 7. NOT kept: ties or larger code.
-// Reference-return operations 7; aligned maximum/minimum/both stores 13/21/22;
-// aligned growth/all stores 18/22; aligned point loads 21; copy-assignable
-// point vectors 7; vector inputs to extrema 7. NOT kept: no gain.
+// (the lower corner is finished before the upper one is started: with the
+// four steps interleaved the compiler stores the corners in the other order)
 // @retail 0x2de0f0
 void rounded_segment_2de0f0::function_2de0f0(transform_2de0f0 const &transform, float tolerance, bounds_2de0f0 &out) const
 {
@@ -64,8 +59,9 @@ void rounded_segment_2de0f0::function_2de0f0(transform_2de0f0 const &transform, 
 		end++;
 		point++;
 	}
-	out.upper.set_max(points[0], points[1]);
 	out.lower.set_min(points[0], points[1]);
 	out.lower.subtract(grow);
+	out.upper.set_max(points[0], points[1]);
 	out.upper.add(grow);
 }
+

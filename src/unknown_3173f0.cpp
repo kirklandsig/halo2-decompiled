@@ -112,7 +112,12 @@ public:
 	void function_3175e0(void const *step, void const *input);
 };
 
-// score 48 (was 82): Frame 0x14 agrees; pointer/count transfer reaches
+// score 10 (was 48): the capacity sum and the released block are named
+// before use, the mask comes first in the released size, the dispatcher is
+// read once for the call, and the final size store follows the destination
+// read with the source advanced first. Left: the kept array's data loads
+// are scheduled earlier around the write store and the copy loop.
+// Earlier, at score 48 (was 82): Frame 0x14 agrees; pointer/count transfer reaches
 // extent 487. First +0x49 differs in the allocation argument carrier, with
 // further cursor publication and call setup differences. Pointer countdown 48;
 // restored dispatcher 82; increasing pointer count 73; named capacity 76;
@@ -143,14 +148,16 @@ void collector_3173f0::function_3173f0(pair_30d870 *added, long added_count, pai
 	}
 	function_372b50(added, added_count);
 	function_372b50(removed, removed_count);
-	vectors_30d9a0 kept(entries.size + added_count);
+	dword const capacity = entries.size + added_count;
+	vectors_30d9a0 kept(capacity);
 	read = entries.data;
 	end = entries.data + entries.size;
 	write = (entry_3173f0 *)kept.data;
 	tolerance = world->tolerance;
 	world->dispatcher->handler = &handler;
 	pair_listener_315a10 *listener = world->pair_listener;
-	world->dispatcher->function_3728c0(added, added_count, removed, removed_count, listener);
+	dispatcher_3728c0 *const dispatcher = world->dispatcher;
+	dispatcher->function_3728c0(added, added_count, removed, removed_count, listener);
 	world->dispatcher->handler = &world->dispatcher->own_handler;
 	while (read < end)
 	{
@@ -163,19 +170,20 @@ void collector_3173f0::function_3173f0(pair_30d870 *added, long added_count, pai
 	{
 		if ((entries.capacity_and_flags & 0x80000000) == 0)
 		{
-			g_memory_2d88a0->release_block(entries.data, (entries.capacity_and_flags & 0x7fffffff) * sizeof(entry_3173f0), 0x12);
+			entry_3173f0 *const block = entries.data;
+			g_memory_2d88a0->release_block(block, (0x7fffffff & entries.capacity_and_flags) * sizeof(entry_3173f0), 0x12);
 		}
 		entries.data = (entry_3173f0 *)g_memory_2d88a0->allocate_block(kept.size * sizeof(entry_3173f0), 0x12);
 		entries.capacity_and_flags = kept.size;
 	}
-	entries.size = kept.size;
 	entry_3173f0 *destination = entries.data;
+	entries.size = kept.size;
 	entry_3173f0 const *source = (entry_3173f0 const *)kept.data;
 	for (long remaining = kept.size; remaining > 0; --remaining)
 	{
 		*destination = *source;
-		destination++;
 		source++;
+		destination++;
 	}
 }
 
