@@ -2014,6 +2014,15 @@ void function_83000(s_simulation_world_owner *watcher);
 void function_195a40(void);
 
 #pragma intrinsic(_ReadWriteBarrier)
+// score 3: only the place of the mode read against the flag stores is left.
+// The two flags are adjacent bytes; this body's bool stores come out as two
+// byte writes. A `*(volatile bool *)&g_4cf771` cast on each forces retail's
+// stores and reaches a byte match, but docs/DECOMPILING.md forbids volatile on
+// a global (and the cast changes the type). Without the cast, naming the
+// pointer (`s_game_options_view *options`) and reading mode before the stores
+// matches the prologue but reorders the function_68c00 argument registers (10);
+// reading mode after the stores, as here, keeps the call and scores 3. Neither
+// an `int mode` nor a single-use `options` local changed that.
 // @retail 0x67ee0
 void function_67ee0(void)
 {
