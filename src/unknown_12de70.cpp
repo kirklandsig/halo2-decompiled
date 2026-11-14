@@ -612,6 +612,16 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // the physical block getter with a pool local or an allocator local gives the same load order. Retail's arm load is a
 // second read forwarded from the test's register: it needs a real second use of the block in the arm, ahead of the
 // base's loads.
+// Round 163 (m3 lane 8, fast with 0x12e210, which stays matched): LEAD, the loop arm reading the block at each use with
+// the tail reading it once into a block local (re-measured 51: tail exact, cache block and the index product swap
+// EDI/EBP), plus the task count named and stored after the arm's flag read (`long count = 120bf0(); bool linked =
+// block->runtime_linked; tasks_added = count; if (linked) ...`) 22 at 266 bytes: EDI/EBP, the flag read into EDX and the
+// tail test are retail's; left are the count store after that read (retail before it), the arm's own `mov esi, [edi +
+// 8]` after the pool data load (retail `mov esi, edx` before it) and the tail's two stores one rotation step off. Not
+// kept: one-use count and flag. On that form: the group read into a local ahead of the address 22, the store written in
+// both arms of the flag test 22, the contributor's release callee as (base, group) (diagnostic, put back) 22, all the same
+// code. Also: the store first with a named flag 51 (the two reads merge again); a block local in the arm with
+// `__assume(block != NULL)` 65.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

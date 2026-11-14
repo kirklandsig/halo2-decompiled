@@ -148,6 +148,14 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // succeeded declared volatile where the task type is declared, main's six volatile casts on them and 0x2acd60's one-use
 // pointer removed, every function of the nine files that use the type reads as before (fast and plain) and this one is 8:
 // build/r98/held-2162b0-task-flags.patch. Not applied here.
+// Round 163 (m3 lane 8, fast with 0x2161d0, which stays matched): `__assume(task != NULL)` between the path build and
+// the read 10, `__assume(path[0xff] == 0)` there 10 (neither leaves a block boundary: `mov edx, esi` stays); the path
+// declared before the location record 10 (same layout); `__assume(task != NULL)` ahead of the cached arm's stores 10
+// (`pop esi` still first); `result = helper && read(..., &path[0])` 23 (290 bytes). Retail's 0x216da0 recomputes its
+// buffer after 0x217a80 because that callee takes and changes ESI; 0x122810 keeps ESI, so the cause here is still a
+// block boundary with no code.
+// Also round 163: the path declared inside the read block and cleared there 102 (296 bytes; 0x2161d0 33); the record's
+// two clears as `display_name[0] = name[0] = 0` 10 (same code).
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {
