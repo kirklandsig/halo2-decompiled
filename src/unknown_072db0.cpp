@@ -1970,6 +1970,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // T104: Advancing actual input-user records, counted/actual-end and independent/paired cache
 // cursors, mutable/readonly: 777/777/784/784/784/784/785/785. NOT kept: all regress;
 // original direct-user expressions, loops and full body restored. Native cursor/slot and later homes remain.
+// MiniMax B (11-14): no new form, no lower score (703): the slot test's conditional move is one byte shorter than this
+// build's jump and move, so the loop head lands on another offset and the counts after it run off; that conditional move
+// needs the SSE architecture flag this file's flags do not set, and the flags stay as they are, so the request builder's
+// body stands.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

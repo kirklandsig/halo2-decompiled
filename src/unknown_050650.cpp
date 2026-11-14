@@ -1907,6 +1907,12 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax B (11-14): no new form, no lower score (442 plain, 548 on the reduced image): the entry block still differs
+// in its registers - retail loads the actor table into ECX, takes the row with `mov ebp, [ecx + A]`, keeps the actor
+// index in ESI and spills the scaled offset to the stack, and reads the member word with `movsx edx` and `mov di`,
+// where this build loads the table into EDX, keeps the index in EDI, scales it in ESI without a spill and reads the
+// word with `movsx ecx` and `mov dx`; the frame stays 0xd0 against retail's 0xc8 and 0x1fdd90 is still inlined here
+// where retail calls it, and that helper is defined in another file. The body stands.
 // MiniMax G (11-13): no new form, no lower score (442 plain, 548 on the reduced image): the diff re-read this round keeps the frame 0xd0 against retail's 0xc8 and the cached animation words without retail's homes, and 0x1fdd90 is still inlined here where retail keeps it out of line, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (442 plain, 548 on the reduced image).
 // score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only

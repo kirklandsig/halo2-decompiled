@@ -69,6 +69,12 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
+// MiniMax B (11-14, later): no new form, no lower score (334): the permuter (300 s, --anneal) was stopped at its
+// outer time limit with no result, so the body stands.
+// MiniMax B (11-14): no new form, no lower score (334): retail's rotation helper keeps the axis in xmm0, xmm3 and
+// xmm7 with its squares in xmm1, xmm4 and xmm6, and takes the cosine on the x87 stack before the cross terms, while
+// this build keeps the axis in xmm4, xmm5 and xmm6, forms the cross products (i*j, j*k, k*j) before the x87 cosine
+// and publishes the nine entries from xmm0, xmm1 and xmm2; the frame stays 0x98 against retail's 0x90. The body stands.
 // MiniMax G (11-12): no new form, no lower score (343): retail's angles are the x87 products of the step with 0.5 and 0.3 and its
 // axes are at 0x485624 and 0x485630, which the file's two helpers already take; the frame and the spill homes are what is left.
 // score 334 (was 343): round 80 at the end of this note. Earlier 343 (was 356): round 103 below. r136 lane 7 (at 356): a compile-only copy reproduces this build's register skeleton exactly; screened
