@@ -3607,6 +3607,13 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // MiniMax B (11-12): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail
 // keeps one 12-byte home for the previous camera position and one for each element's old position, reads the
 // delta from the stored view position and copies the scaled projection inputs into fresh registers in both arms.
+// MiniMax C (11-14): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail keeps
+// the entry pointer in edx and the view pointer in ebx, reuses the previous camera position's three homes for each
+// element's old position and walks five pointers with a countdown, while this build keeps the entry pointer in ebx,
+// the view pointer in edi and addresses the arrays through the index; writing the first store as retail does (the
+// entry base plus the index times 0xb8) rebuilds the body at 498, a 12-byte union for the velocity components shrinks
+// the frame to 0x5c but raises the score to 513, and the permuter (18 tries, 312 s, annealed) reached 484 only with a
+// volatile pointer, so all three were restored.
 // score 486 (was 486): frame 0x60 versus 0x38; retail keeps one 12-byte home for the previous camera position and
 // each element's old position, reads the delta from the stored view position, and copies the scaled projection
 // inputs into fresh registers in both arms; those forms lower the aligned count but shorten the body (below).
