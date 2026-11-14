@@ -1690,6 +1690,18 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // return gives retail's sentinel register but reorders the prologue and scores 979.
 // M3 lane 12 r120: see 0x1db170's note of this round (same code but for the array offset); the same three trials and the
 // diagnostic measured 828 on this body in the same checks.
+// m3 lane 1 r102 (fast, 0x1dc790/0x1dc8c0/0x2963f0 matched throughout; masked = aligned count with registers and offsets
+// masked, base 72): the three output stores after the two resource requests 1009 (2849 B, masked 218); the iterate call in a
+// `for` init and step with `break` on a found id 1015 (2839 B, masked 196); the bare inner block's braces dropped 828 (same
+// code); the output stores in type, class, mode order 829 (masked 72); `while ((entry = iterate(..)) != NULL)` with a break
+// on a found id 998 (2839 B, masked 92). Left as before: our frame gives iterator_mode the dead found_mode slot and the
+// candidate a frame slot (retail the other way round), then one inheritance counter lands in the frame and the EBP zero is
+// not formed.
+// MiniMax G (11-14): no new form, no lower score (828): re-measured in the batch; the frame agrees at 0x2c, but the
+// third iterator output still takes the dead `found_mode` argument slot instead of a frame slot, so retail's result
+// shorts sit at +0xc/+0xe where ours sit at +0x8/+0xa, and retail's EBP zero carrier in the second resource request
+// is still missing.
+// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

@@ -1039,6 +1039,15 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // `object` needs EBP), and the EDX/EDI pair at entry is the parameter load kept for the late final_matrices store beside a
 // separate result copy; ours always coalesces the result with that load. A parameter reassigned in place of final_matrices
 // is ruled out: retail's sample arm stores final_matrices to its own slot. Body unchanged.
+// m3 lane 14 r93 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90, all matched throughout; control 240): in the sample loop
+// `if (index != 0xff) sample = function_0bfe60(...)` 253 (830 B); the parent index read without the render-node pointer 266
+// (806 B); the node byte read into a long 291; the two flag tests as `& (1 << 30)` / `& (1 << 29)` masks 292; the object-type
+// test as `definition->object_type != 0` 308 (813 B). Re-measured: the render-node count read in the loop test with no local 240
+// (the listed [45] form). Same code (not counted): the bit-30 clear as `&= ~(1 << 30)`, the model test read from the definition
+// ahead of the model-index local.
+// On round 179's 169 lead (re-measured 169, masked 37): what is left is the entry (retail loads input_matrices into EDX first
+// and copies it to EDI for the early exits, pushes EBX only before the +0xb3 test, forms the header with `lea [ecx + eax*4]`
+// and reuses the first test's object for +0xb3, where the lead re-derives the table lookup per test) and the fourth epilogue.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

@@ -342,6 +342,13 @@ void function_2218f0(void)
 	g_502118 = NULL;
 }
 
+// score 9: the body is retail's except the SSE registers. Retail keeps the
+// pre-fade time in xmm0, current in xmm2 and divides delta in xmm0; ours keeps
+// current in xmm0 and the fraction in xmm5, so the subtraction is scheduled
+// before the division. Swapping the target/current declarations, a named
+// fraction local, an inline fraction, a separate initial-time local, the
+// commutative add and a _ReadWriteBarrier after the division all measured 9 to
+// 11. Permuter: 125 tries in 300 s (seed 999), no form below 9.
 // @retail 0x221900
 void function_221900(
 	real delta)

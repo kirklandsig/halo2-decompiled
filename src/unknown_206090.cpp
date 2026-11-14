@@ -551,6 +551,12 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // spill slots sit 4 bytes above retail's (one extra spill slot low in the frame, shared by a float and an int).
 // P477: Standard ordered first-loop/contact-normal/direction/tangent/friction/peak dots, retained-snapshot magnitude and mixed-precision normalizer reductions:
 // 1373/1487/1375/1404/1435/1372/1900/1449. NOT kept: 1373/1375/1372 add an arithmetic call absent from retail (15 versus 14); frame stays 0x5d0. Other forms regress; matched caller survives. Original helpers, captures, call tuples and complete body restored.
+// P490: Standard collected-prefix duplicate/membership find and count producers:
+// find/original, original/find, find/find, count/original, original/count, count/count,
+// find/count, count/find: 1410/1389/1452/1468/1372/1399/1452/1399.
+// NOT kept: 1372 adds a search call absent from retail (15 calls versus 14);
+// its frame is 0x5c8 and extent 6220 versus 0x58c/6238. Other forms regress or
+// gain only two. Original indexed searches, snapshots, helpers and complete body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

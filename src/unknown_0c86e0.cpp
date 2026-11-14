@@ -92,6 +92,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// score 107 (was 107): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, on the Avoid list): retail fetches the unit
+// again after the two 0xbadc0 calls (its link treats that callee as writing memory) and does the weapon lookup
+// through the second fetch; our link merges it into the entry fetch, so the entry saves, the unit index's
+// register and every later register differ. Earlier rounds below.
 // MiniMax B (11-13): no new form, no lower score (107): aligned the two listings instruction by instruction: retail keeps
 // the index times twelve in a register (shl esi, 2) where this build folds it into the address expression, and retail
 // keeps the unit index in EDI where this build keeps it in ESI; the bodies part company at the entry, because retail
@@ -105,7 +109,7 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // Still BLOCKED-BY 0xbadc0.
 // MiniMax H (11-11): no new form, no lower score (107); the unit is still fetched once across the two 0xbadc0 calls where retail fetches it again, so the entry saves and the later carriers stay as they are, and the callee's memory summary is in a file this lane may not edit. BLOCKED-BY 0xbadc0.
 // MiniMax C (11-11): no new form, no lower score (107); the unit fetch still merges into the entry fetch because of 0xbadc0's memory summary, and 0xbadc0 is in src/unknown_0bad50.cpp.
-// score 107 (was 107): Frameless entry saves, fresh unit lookup and late prior-state carrier remain.
+// Earlier at 107 (was 107): Frameless entry saves, fresh unit lookup and late prior-state carrier remain.
 // MiniMax E (11-10, run 73): no new form, no lower score (107); retail re-fetches the unit pointer and both pool globals after the two 0xbadc0 calls where we keep the entry fetch, and 0xbadc0's memory effects are unknown because that callee lives in another file.
 // MiniMax D (11-11): no new form, no lower score (107): the unit is still fetched once across the two 0xbadc0 calls where retail fetches it again, so the entry saves and the later carriers stay as they are; the callee's memory summary is in a file this lane may not edit.
 // MiniMax D (11-10): no new form, no lower score (107): the two 0xbadc0 calls still sit between one
@@ -303,6 +307,11 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // 113 (364 bytes, as round 183), the weapon helper taking a const unit 107 (as M399). Still BLOCKED-BY 0xbadc0: round 55's harness forms (long user index, the zoom flag declared
 // after the weapon flag, the `== NONE` weapon ternary and the early-return sound helper) are the recipe once its summary
 // lets the unit be fetched again after the calls.
+// m3 lane 12 r122 (fast; 0x103b10 matched each time): the weapon lookup through slot_handler.h's object_get()
+// 107 (same code: the two header reads still merge); the user index read through a 0x21c-byte player array
+// view 107 (same code); the user index declared long on its own 110 (359 bytes); the reset test written
+// `!(keep_weapon_zoom && weapon_zoomed)` 107 (same code); the user index as one conditional initializer 107
+// (same code).
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {
