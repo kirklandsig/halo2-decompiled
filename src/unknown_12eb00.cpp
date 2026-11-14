@@ -168,6 +168,12 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // local_2, zcluster, cluster or a_cluster 11 each (same code); an explicit walking cluster pointer stepped at the loop end,
 // named zcluster, cluster or local_2 and declared at the loop 15 each, declared at function scope before or after the result
 // 15 each. In every one the result keeps 0x18 and the pointer 0x1c: neither its name nor its declaration place orders the tie.
+// Round 163 (m3 lane 8, fast; ours ends `ret 8` like retail, the `ret 0xc` in the listing is 0x12efb0's, the same in both):
+// 1-7 initialised dead locals at the top (diagnostic phase scan) 11 at every count, the `[eax + edx]` address included, so
+// it does not follow the symbol count; the result as `dword` 11; the output index taken by a post-increment before the
+// previous-index store and used for the copy and blend 178 (1198 bytes); the two pin tests as nested ifs 11 (same code);
+// the pins written bound-first (`lo > x ? lo : hi < x ? hi : x`) 15.
+// Also round 163: the result as `short` 306 (1177 bytes); its increment as `local_1 = local_1 + 1` 11 (same code).
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

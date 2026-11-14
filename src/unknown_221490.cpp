@@ -1038,6 +1038,13 @@ extern "C" void _ReadWriteBarrier(void);
 // pinned-volume or outer-ternary helper 205/208, early returns or a PIN statement 210 (decibels EAX, the rest ours), the
 // helper returning `short` (a `movsx` per use, 204 lines) gives all three of retail's registers: a widening per conversion
 // is the kind of step retail has two more of.
+// Round 163 (m3 lane 8, fast; 0x220fd0 builds differently in the reduced image, so helper changes need the plain
+// check): a dead `= 0` initialiser on the helper's volume 21 (same code); the helper's clamp as two separate ifs 32; the
+// three aggregates declared ahead of the globals and voice pointers 21 (same code); the 0x12aff0 call made before the
+// memset 104 (672 bytes; decibels then takes EAX, as the rotation predicts); the first barrier moved to right after the
+// memset 41.
+// Also round 163: the filter declared ahead of the I3DL2 parameters (barriers kept) 21; the helper's product as
+// `2000.0f * log10(gain)` 21 (plain; 0x220fd0 and 0x220e00 stay matched).
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,
