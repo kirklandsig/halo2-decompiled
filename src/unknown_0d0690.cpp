@@ -1663,6 +1663,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // field-first 529 (same code).
 // P476: Standard first-product-seeded input/normal/ambient magnitude reductions, masks 1/2/4/3/5/6/7, then explicit operations; normal/ambient forms lose matched 0x3db00. Scores 552/603/552/619/531/603/624/681.
 // NOT kept: unmatched diagnostic source forms; original executable body restored.
+// P490: Standard forward coordinate copies at input/secondary/ambient transfers,
+// masks 1/2/4/3/5/6/7, then backward complete transfers: 571/597/544/596/577/597/601/596.
+// NOT kept: all regress and shorten away from retail; secondary forms also lose the matched
+// caller. Original native copies, helpers and complete body restored; frame/result/carrier gaps remain.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1891,6 +1895,8 @@ real function_30bf0(vector3f *vector);
 // local) 379 (aligned 297, masked 186: closer in shape, one point up), the two colours unpacked lightmap first 378 (aligned
 // 325, different code), color0 formed as `lightmap.red * scale0` with no copy 470 (0x3db00 drops to 12), `value1c` stored
 // first in the fallback 475 (1891 bytes).
+// MiniMax G (11-14): no new form, no lower score (378): re-measured in the batch; the frame is 0x4c against retail's
+// 0x40, and the normal copy and the limited, rotation and colour homes still sit at other offsets.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -2526,6 +2532,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // and offsets masked 110 against 302): left there are the frame homes and the two inlined helpers (13
 // extra instructions shift the tail).
 // MiniMax R (11-11): no new form, no lower score (542): the argument split and the body's block schedule still differ from retail's, and the two inlined helpers live in files this lane may not edit.
+// MiniMax G (11-14): no new form, no lower score (542): re-measured in the batch; the frame agrees at 0x90, but the
+// status, mesh, colour and sample homes still sit 0xc bytes below retail's, and the second arm's 0x13da30 lookup
+// still expands here where retail calls it.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

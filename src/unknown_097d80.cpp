@@ -52,6 +52,7 @@ struct c_aggregate : c_child
 };
 
 
+// score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
 // MiniMax H (11-13): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020, because
 // the address-taken count keeps a slot of its own under /GL; a /GL- build of this file is byte-exact but would cost
 // 0x97f60, 0x97fe0 and 0x980d0 their matches, so the file's flags stay as they are, and the permuter's 46 tries in
@@ -64,7 +65,6 @@ struct c_aggregate : c_child
 // and so keeps a slot of its own under /GL; three restructurings measured this round - produced at function scope
 // with an initializer 148, produced merged with the dispatch cursor 147 and produced at function scope without an
 // initializer 42 - are all worse than 31, so the body stands.
-// score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
 // reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
 // loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its
 // for-init, which gives retail's starts[i]/starts[i + 1] load order; left: only the frame, 0x8024 against
@@ -476,6 +476,16 @@ struct c_aggregate : c_child
 // P465: Complete four-cell boundary-table producer, long/dword/short/word/byte/signed-char
 // for ordinals then long/dword while ordinals: 129/129/147/147/147/147/129/129. NOT kept:
 // escaped output and low loop homes remain; original full body and six exact siblings restored.
+// Round 197 (m3 lane 4, fast with the six file-mates, all still matched): the produced count made a local of a
+// force-inline helper (child, key, request, room, destination, &total; returning the error) 146 (389 bytes; frame still
+// 0x8024 and the count still at +0x1c, so an inlined callee's scope does not bound the escaped slot); the collection loop's
+// boundary store ahead of the child read 31; the cleanup's item release as a force-inline helper taking the item 73 (375
+// bytes); the dispatch's inner loop as a force-inline helper (child, blocks, first, end) 31; the cleanup's query output
+// declared at the top of the inner loop's body 31. Still BLOCKED by the build flag.
+// P488: Escaped callback-output zero through memset/fill/fill-n/uninitialized-fill, independent/shared
+// information output: 31/167/167/168/31/166/166/167. NOT kept: Self-address initialization requires exact
+// equality. Original independent outputs, signed traversals, virtual calls, allocator observations and full
+// body restored; native output/spill sharing remains.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

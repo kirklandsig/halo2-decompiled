@@ -4,6 +4,8 @@
 #include "slot_handler.h"
 #include "unknown_11cc90.h"
 #include "normalize3d.h"
+#include "vector_products.h"
+#include "vector2f_products.h"
 #include <math.h>
 
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
@@ -56,14 +58,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
-PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const *arg_1)
-{
-	return arg_0->k * arg_1->k + arg_0->j * arg_1->j + arg_1->i * arg_0->i;
-}
 // MiniMax G (11-13): no new form, no lower score (715): the body is 3482 bytes against retail's
 // 3499 and the three-way branch and the float constants still differ from retail's own expression
 // trees.
-// score 715 (was 750): s1E walk against retail (3482 bytes, retail 3499; frame 0x88 agrees). Behaviour fixes: 0x29b2e0's
+// score 715 (was 715): earlier 750. s1E walk against retail (3482 bytes, retail 3499; frame 0x88 agrees). Behaviour fixes: 0x29b2e0's
 // third argument is the +0x290 pointer in EBX (0x29c2a4-0x29c2bb; was &local_5), and 0x1f9760's arg_4 (last_out) is the
 // stack byte tested at 0x29c7e5 (was arg_5). Forms kept: direct input (no reference local), shared normalize3d for the
 // private copy, MIN at both ratio clamps (retail divides twice, 0x29bfdf-0x29c015 and 0x29c3a3-0x29c3d0), float root
@@ -453,6 +451,19 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // negated j + one radial test + float squares + local_14 in its arm 775 (3444 bytes). Retail keeps local_14 as one 8-byte home at
 // the top of the frame (stored ahead of the two normalizes, read once in the far arm); the forms without the named double split it
 // into two 4-byte slots low in the frame here, which is their extra slot (frame 0x8c). Body unchanged.
+// m3 lane 2 r81 (plain each, with 0x1f9e70, 0x29b2e0 and 0x29b990; fast 648 builds differently; masked = aligned count with
+// registers and esp offsets masked, base 340). Kept at 715: the private k/j/i dot helper replaced by the existing dot3f
+// (same code), the hand-written cross product by the existing cross3f (715, masked 337), the two float dots by the existing
+// dot_product2d (same code each). Trials: the planar copy for 0x1f9e70 as `*(vector2f const *)&local_25` 766 (3470 B,
+// masked 326; retail copies it with integer moves); field_50 read into the scale before that planar normalize, then
+// `scale *= function_1f9e70(...)` 759 (3499 B: retail's spilled scale, `setne cl` and push order there); both 742 (masked
+// 323). In the 0x47c arm: the squared-speed floor as MAX(local_16 * local_16, 0.001f) 713 (retail's `jbe` floor shape);
+// on it `((1.0f - dot) * 0.5f) * ...` 759 (3499 B, retail's separate 0.5 multiply), `(half * half) / floor` 721 (3479 B,
+// retail's square-then-divide in retail's registers), both 730; the dot floor as MAX too 709 (masked 333, but retail keeps
+// the if form there: `ja; movaps`), the later `local_24` floor as MAX (same code). On 709: the side offset as an assignment
+// and an if 728 (3480 B). Same code: the 0.99 dot's products and operands written mirrored, local_17 declared before
+// local_15 (VC orders those operands itself). Left: retail re-reads arg_0 from its slot and holds local_2 and then the
+// saved vector's first component in ESI, where ours keeps arg_0 in ESI throughout; EBX is still saved at entry.
 // P481: Complete established/radial decision byte/char/word/long, original true
 // default then fully assigned leaves: 648/690/648/690/722/721/724/723 (fast control
 // 648, full 715). NOT kept: no native entry/home equality or gain; original full
@@ -532,7 +543,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 					local_21 = false;
 				else if (!(local_23 > local_27) && !*(bool *)(local_0 + 0x4ae) && local_18 > local_16)
 					local_21 = false;
-				else if (arg_2->j * local_17.j + arg_2->i * local_17.i > 0.0f)
+				else if (dot_product2d((vector2f const *)arg_2, &local_17) > 0.0f)
 					local_21 = true;
 				else
 				{
@@ -592,7 +603,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 					if (!(local_25 > 0.001f)) local_25 = 0.001f;
 					real local_26 = local_2->field_1c * 0.5f;
 					local_26 = local_26 * local_26 / local_25;
-					real local_27 = local_15.i * local_17.i + local_15.j * local_17.j;
+					real local_27 = dot_product2d(&local_15, &local_17);
 					if (!(local_27 > 0.0f)) local_27 = 0.0f;
 					local_24 = (1.0f - local_27) * 0.5f * (local_26 * 0.5f) * 4.0f;
 				}
@@ -638,13 +649,11 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 				{
 					vector3f const *local_28 = (vector3f const *)((byte *)local_1 + 0x7c);
 					vector3f local_29;
-					local_29.i = local_28->j * local_4->k - local_28->k * local_4->j;
-					local_29.j = local_28->k * local_4->i - local_28->i * local_4->k;
-					local_29.k = local_28->i * local_4->j - local_28->j * local_4->i;
+					cross3f(local_28, local_4, &local_29);
 					real local_30 = 1.0f / local_2->field_68;
-					real local_31 = local_6.i - local_30 * function_29bab4(&local_1->velocity, local_4);
-					real local_32 = local_6.j - local_30 * function_29bab4(&local_1->velocity, &local_29);
-					real local_33 = local_6.k - local_30 * function_29bab4(&local_1->velocity, local_28);
+					real local_31 = local_6.i - local_30 * dot3f(&local_1->velocity, local_4);
+					real local_32 = local_6.j - local_30 * dot3f(&local_1->velocity, &local_29);
+					real local_33 = local_6.k - local_30 * dot3f(&local_1->velocity, local_28);
 					local_6.i = function_29bab3(local_6.i, local_31, local_2);
 					local_6.j = function_29bab3(local_6.j, local_32, local_2);
 					local_6.k = function_29bab3(local_6.k, local_33, local_2);
@@ -663,7 +672,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 			if (*(bool *)(local_0 + 0x482) && *(bool *)(local_0 + 0x5d0) && !function_110ab0(arg_1) && local_10 > 0.0f && (local_22 == 2 || local_22 == 3))
 			{
 				function_ba1d0(*(long *)(local_0 + 0x18), &local_7, NULL);
-				if (function_30bf0(&local_7) > 0.0f && function_29bab4(&local_9, &local_7) > 0.85f)
+				if (function_30bf0(&local_7) > 0.0f && dot3f(&local_9, &local_7) > 0.85f)
 					function_1e4290(arg_0, true);
 			}
 			*(short *)(local_0 + 0x656) = local_22;

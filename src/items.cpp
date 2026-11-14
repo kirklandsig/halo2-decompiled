@@ -1427,6 +1427,10 @@ struct s_item_flags_view_10b850
 // NOT kept: ties/regressions; spin-axis copies grow to 4137 bytes. Original semantic fixes,
 // every record assignment, input observation, include, helper and complete body restored.
 // Frame 0x154/0x12c and entry Boolean/carrier/contact/rotation homes remain.
+// P486: Existing shared direction rotation at matrix forward/up and item forward/up,
+// individuals, matrix/item pairs, all and paired forward outputs:
+// 821/838/843/821/830/823/841/824. NOT kept: three-/one-point best gains; frame remains 0x154.
+// Original private helper, four call sites, declaration set and complete body restored.
 // MiniMax H (11-14): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack slots where this build holds them in registers.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
@@ -1965,6 +1969,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // P480 m3: Point lifetime through origin/pair publication, damage/expiry event storage,
 // mutable/readonly returned receiver: 140/140/140/140/140/140/140/140. NOT kept: no native
 // return-byte or event-home repair; original full body, helpers and interfaces restored.
+// P486: Actual last surface/attachment/spin/activation/timer update ordinal,
+// byte/char/signed-char/short/word/int/long/dword: 251/251/251/252/252/251/251/251.
+// NOT kept: no return-byte/release/event-home repair and larger extents;
+// original Boolean result, spin capture, helpers and entire body restored.
 // T104: Returned contact-transform/origin-setter chains, mutable/readonly and actual filled
 // point-query outputs: 178/171/180/171/180/157/176/176. NOT kept: all regress; original
 // two-use spin, release helper, paired setters and full body restored. Return/release/event homes remain.

@@ -1408,6 +1408,16 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 824/808/878/890; paired extrema 867, total/count 890, first three 865, all four 858.
 // NOT kept: native per-player publications require equality; frames/extent/ingress
 // still differ. Original field reductions, selectors, observations and full body restored.
+// M3 lane 13 r91 (fast with 0x73530 (8 throughout), 0x63220, 0x192e60 and 0x6e910, all unchanged; control 766): the capacity
+// helper's labels grouped with the loop's lookup through 0x192e60 at the loop body's top level 880 (2780 B: the capacity
+// switch inlines, but the top call inlines again and the loop call stays out of line); round 81's single-exit form (the
+// opening test and the excess test set `result = false`, the type-5 scan under `result &&`, the rest under `if (result)`)
+// with the player value through 0x63220 and grouped capacity labels 998 (2952 B: 0x63220 inlines with all four nested
+// callees, the top 0x192e60, both 0x1931a0 and 0x193250 inline too); the single-exit form with grouped labels and the
+// written-out loop 1016 (2984 B); the 998 form with the matched accessors 0x193440/0x1933d0/0x1933a0/0x1934d0/0x193400/
+// 0x1934b0/0x193470 for this file's copies (capacity kept as the grouped file helper) 956 (2928 B); that with the scan and
+// the body nested as `if (result) { scan; if (result) { body } }` 920 (2928 B: the second 0x1931a0 now stays a call as in
+// retail; the top 0x192e60 and 0x193250 still inline). Body unchanged.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
