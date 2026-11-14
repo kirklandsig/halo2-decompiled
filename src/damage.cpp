@@ -1307,7 +1307,10 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // (0xd74b0 then matches: its plain indexed loop needs the component in ecx). Not kept (coordinator 11-13): a
 // convention is steered only by the `standard` marker (DECOMPILING.md), which 0xd74b0 now carries; with it 0xd74b0
 // matches and this function reads 38 (fast). What is left: the negate block's schedule and the else arm's k row.
-// MiniMax H (11-14): score 2 (was 38): the node direction's three components are reached through three separate pointers, and each negated value is stored into the surface normal before the node component is updated; the near block now matches retail line for line. Left: the else arm's first row still loads the direction and adds the destination where retail loads the destination and adds the direction.
+// MiniMax H (11-14), NOT kept (coordinator: the gain rests on the three component pointers `real *node_i =
+// &node_direction->i;` (and j, k), each read once on either path: a steering form kept only with a byte match;
+// measured: the pointers with main's store order 6, H's store order without them 288. LEAD: this form is 2 from a
+// match; finishing it to MATCH would keep it): score 2 (was 38): the node direction's three components are reached through three separate pointers, and each negated value is stored into the surface normal before the node component is updated; the near block now matches retail line for line. Left: the else arm's first row still loads the direction and adds the destination where retail loads the destination and adds the direction.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -1353,9 +1356,6 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 			}
 
 			vector3f *node_direction = &data->node_direction;
-			real *node_i = &node_direction->i;
-			real *node_j = &node_direction->j;
-			real *node_k = &node_direction->k;
 
 			vector3d_from_points3d(origin, &node_center, node_direction);
 			function_30bf0(node_direction);
@@ -1369,18 +1369,18 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 				real negated_j = 0.0f - surface_normal.j;
 				real negated_k = 0.0f - surface_normal.k;
 
+				node_direction->i += negated_i;
 				surface_normal.i = negated_i;
-				*node_i += negated_i;
+				node_direction->j += negated_j;
 				surface_normal.j = negated_j;
-				*node_j += negated_j;
+				node_direction->k += negated_k;
 				surface_normal.k = negated_k;
-				*node_k += negated_k;
 			}
 			else
 			{
-				*node_i += direction->i;
-				*node_j += direction->j;
-				*node_k += direction->k;
+				node_direction->i += direction->i;
+				node_direction->j += direction->j;
+				node_direction->k += direction->k;
 				function_30bf0(node_direction);
 			}
 		}
