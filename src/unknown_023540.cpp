@@ -239,7 +239,7 @@ void function_146de0(void);
 void function_146b80(void);
 
 // Disabled retail 0x2b5d0; activation regresses an opening match.
-void function_2b5d0(long count, long mode, long players, long layout, s_223240 const *source)
+void function_2b5d0(long mode, long count, long players, long layout, s_223240 const *source)
 {
     long const *players_reference = &players;
     long const *layout_reference = &layout;

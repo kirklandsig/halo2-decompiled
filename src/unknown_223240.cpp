@@ -51,7 +51,7 @@ s_223240 g_47f0f8[6];
 
 void function_2f800(s_2f800_view *, s_2f800_source const *, s_2f800_size const *, s_2f800_size const *);
 void __stdcall function_2c8a0(byte const *);
-void function_2b5d0(long, long, long, long, s_223240 const *);
+void function_2b5d0(long mode, long count, long players, long layout, s_223240 const *source);
 void function_223080(long, long, long, s_223080 *, long, long, s_223081 const *);
 bool function_68290(void);
 void main_time_wait_for_vblank(void);
@@ -105,14 +105,19 @@ void function_2232a0(void)
 // src/unknown_023540.cpp: a local prototype that disagrees with the definition (and swaps the values passed). Lead:
 // retail passes 3 in ECX and the view count in EDX, so 0x2b5d0's real parameter order/convention is the question
 // (BLOCKED-BY 0x2b5d0).
-// score 79 (was 90; 109 before the shared view count): one shared view count now feeds terminal indexing and the
-// tail, whose call now passes the mode first as retail does; the outer pretest, loop-entry source zero and
-// terminal registers still differ. The tail call still needs 0x2b5d0's own body, which is disabled here and
-// stubbed in src/stubs/lane_k.cpp, a file this lane may not edit: BLOCKED-BY 0x2b5d0.
-// score 90 (was 90; 109 before the shared view count): one shared view count now feeds terminal indexing and the tail; the outer
+// score 79 (was 90; 109 before the shared view count): M3 lane 8 r165: 0x2b5d0's formals are now (mode, count, players,
+// layout, source) at its disabled definition and this call passes (3, view_count, ...): the same values as before, in the
+// order retail's own 0x2b5d0 body needs (with these formals it takes the count in EAX and the mode in ECX, lane 11 r50 and
+// lane 2 r55 below) and retail's setup implies (count set up first, mode last); plain 79, 0x223240 and 0x2232a0 match.
+// What is left: the outer pretest, the loop-entry source zero and the terminal record's folded addressing, and the tail
+// call needs 0x2b5d0's own body (the /Gr stub takes the count in EDX where retail passes EAX): BLOCKED-BY 0x2b5d0.
+// On 79 (fast): a pretested `for` 168; that with the view count formed after the loop 117 (retail's pretest and loop
+// registers); plus the source NULL at the loop top with no else arms 108; the loop-top NULL on the do-while 125; the found
+// arm as `g_4686c4 == NONE ? 0 : ...` 77 (two points, not kept).
+// Earlier (90, was 90; 109 before the shared view count): one shared view count now feeds terminal indexing and the tail; the outer
 // pretest, loop-entry source zero and terminal registers still differ. The tail call still needs 0x2b5d0's
 // own body (it takes the mode in EAX and the count on the stack), which is disabled here and stubbed in
-// src/stubs/lane_k.cpp, a file this lane may not edit: BLOCKED-BY 0x2b5d0.
+// src/stubs/lane_k.cpp: BLOCKED-BY 0x2b5d0.
 // Earlier (109): one-dword frame agrees; the count block, the count/layout join and the layout
 // arms now have retail's code: the clamp is the ternary the other player-count clamps use, and the
 // loop counter's zero assigned before the layout test keeps the join from being jump-threaded (with
@@ -390,7 +395,7 @@ void function_2234e0(void)
 		++local_0;
 	} while (local_0 < local_2);
 	function_2232a1(&g_47f0f8[view_count]);
-	function_2b5d0(view_count, 3, local_2, local_3, &g_47f0f8[1]);
+	function_2b5d0(3, view_count, local_2, local_3, &g_47f0f8[1]);
 }
 
 // @retail 0x223240
