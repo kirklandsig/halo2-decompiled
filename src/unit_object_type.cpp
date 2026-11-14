@@ -7573,7 +7573,9 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 	return result;
 }
 
-// MiniMax E (11-14): score 15 (was 244): the two animation-slot results are compared as bytes, the trigger flags keep
+// MiniMax E (11-14), NOT kept (coordinator: steering casts and a union, never kept; the UNIT_GET body written out
+// through two copies of one pool pointer; `(char)zoom` also changes the value for zooms over 127): score 15 (was 244):
+// the two animation-slot results are compared as bytes, the trigger flags keep
 // a word view and a wide view of the same slot and the call takes the wide view, the zoom block's two header lookups
 // each read the pool's data through a pool local of their own, the zoom weapon is NONE and then an `if`, and the zoom's
 // scale takes the zoom's low byte. The function's extent is retail's 1470 bytes (it was 1454). Still differs: retail's
@@ -7724,13 +7726,13 @@ bool __stdcall function_c58f0(long unit_index)
 
 			if (!(control & 0x8000000) && !((1 << unit->type) & 1 && control & 0x4000))
 			{
-				if (!(byte)function_113da0(unit_index))
+				if (!function_113da0(unit_index))
 				{
 					function_113d20(unit_index, 0.5f);
 					changed = true;
 				}
 			}
-			else if (!(byte)function_113df0(unit_index))
+			else if (!function_113df0(unit_index))
 			{
 				function_113d60(unit_index, 0.5f);
 				changed = true;
@@ -7790,23 +7792,15 @@ bool __stdcall function_c58f0(long unit_index)
 			{
 				unit->unknown26c = 0.0f;
 			}
-			s_record_pool *objects = g_4e0300;
-			s_record_pool *other_objects = g_4e0300;
-			s_unit *holder = ((s_unit_header *)objects->data)[unit_index & 0xffff].unit;
+			s_unit *holder = UNIT_GET(unit_index);
 			short index = holder->current_weapon_index;
-			long weapon_index = NONE;
-
-			if (index != NONE)
-			{
-				weapon_index = holder->weapon_object_indices[index];
-			}
+			long weapon_index = index != NONE ? holder->weapon_object_indices[index] : NONE;
 			real scale = 1.0f;
 			long sound;
 
-			if (weapon_index != NONE &&
-				*(short *)(UNIT_DEFINITION_GET(((s_unit_header *)other_objects->data)[weapon_index & 0xffff].unit) + 0x1fe) > 0)
+			if (weapon_index != NONE && *(short *)(UNIT_DEFINITION_GET(UNIT_GET(weapon_index)) + 0x1fe) > 0)
 			{
-				byte *local_67e06b = UNIT_DEFINITION_GET(((s_unit_header *)other_objects->data)[weapon_index & 0xffff].unit);
+				byte *local_67e06b = UNIT_DEFINITION_GET(UNIT_GET(weapon_index));
 
 				if (unit->unknown240 == NONE)
 				{
@@ -7819,7 +7813,7 @@ bool __stdcall function_c58f0(long unit_index)
 
 					if (levels > 1)
 					{
-						scale = (real)(char)zoom / (real)(levels - 1);
+						scale = (real)zoom / (real)(levels - 1);
 					}
 				}
 			}
@@ -7838,7 +7832,7 @@ bool __stdcall function_c58f0(long unit_index)
 
 					if (levels > 1)
 					{
-						scale = (real)(char)zoom / (real)(levels - 1);
+						scale = (real)zoom / (real)(levels - 1);
 					}
 				}
 			}
@@ -7877,35 +7871,31 @@ bool __stdcall function_c58f0(long unit_index)
 				held = true;
 			}
 			dword control = unit->unknown148;
-			union s_weapon_state_flags
-			{
-				word bits;
-				long wide;
-			} flags;
+			word flags;
 
 			if (first)
 			{
-				flags.bits = (word)((TEST_FIELD_BIT((control >> 16) & 1)) << 1);
-				flags.bits = TEST_FIELD_BIT((control >> 17) & 1) ? flags.bits | 4 : flags.bits & ~4;
-				flags.bits = TEST_FIELD_BIT((control >> 18) & 1) ? flags.bits | 8 : flags.bits & ~8;
-				flags.bits = TEST_FIELD_BIT((control >> 19) & 1) ? flags.bits | 0x10 : flags.bits & ~0x10;
-				flags.bits = TEST_FIELD_BIT((control >> 20) & 1) ? flags.bits | 1 : flags.bits & ~1;
-				flags.bits = TEST_FIELD_BIT((control >> 30) & 1) ? flags.bits | 0x80 : flags.bits & ~0x80;
+				flags = (word)((TEST_FIELD_BIT((control >> 16) & 1)) << 1);
+				flags = TEST_FIELD_BIT((control >> 17) & 1) ? flags | 4 : flags & ~4;
+				flags = TEST_FIELD_BIT((control >> 18) & 1) ? flags | 8 : flags & ~8;
+				flags = TEST_FIELD_BIT((control >> 19) & 1) ? flags | 0x10 : flags & ~0x10;
+				flags = TEST_FIELD_BIT((control >> 20) & 1) ? flags | 1 : flags & ~1;
+				flags = TEST_FIELD_BIT((control >> 30) & 1) ? flags | 0x80 : flags & ~0x80;
 			}
 			else
 			{
-				flags.bits = (word)((TEST_FIELD_BIT((control >> 21) & 1)) << 1);
-				flags.bits = TEST_FIELD_BIT((control >> 22) & 1) ? flags.bits | 4 : flags.bits & ~4;
-				flags.bits = TEST_FIELD_BIT((control >> 23) & 1) ? flags.bits | 8 : flags.bits & ~8;
-				flags.bits = TEST_FIELD_BIT((control >> 24) & 1) ? flags.bits | 0x10 : flags.bits & ~0x10;
-				flags.bits = TEST_FIELD_BIT((control >> 25) & 1) ? flags.bits | 1 : flags.bits & ~1;
-				flags.bits = TEST_FIELD_BIT((control >> 31) & 1) ? flags.bits | 0x80 : flags.bits & ~0x80;
+				flags = (word)((TEST_FIELD_BIT((control >> 21) & 1)) << 1);
+				flags = TEST_FIELD_BIT((control >> 22) & 1) ? flags | 4 : flags & ~4;
+				flags = TEST_FIELD_BIT((control >> 23) & 1) ? flags | 8 : flags & ~8;
+				flags = TEST_FIELD_BIT((control >> 24) & 1) ? flags | 0x10 : flags & ~0x10;
+				flags = TEST_FIELD_BIT((control >> 25) & 1) ? flags | 1 : flags & ~1;
+				flags = TEST_FIELD_BIT((control >> 31) & 1) ? flags | 0x80 : flags & ~0x80;
 			}
-			flags.bits = TEST_FIELD_BIT((control >> 29) & 1) ? flags.bits | 0x100 : flags.bits & ~0x100;
-			flags.bits = held ? flags.bits | 0x20 : flags.bits & ~0x20;
-			flags.bits = unit->unknown240 != NONE ? flags.bits | 0x40 : flags.bits & ~0x40;
+			flags = TEST_FIELD_BIT((control >> 29) & 1) ? flags | 0x100 : flags & ~0x100;
+			flags = held ? flags | 0x20 : flags & ~0x20;
+			flags = unit->unknown240 != NONE ? flags | 0x40 : flags & ~0x40;
 			real rate = first ? *(real *)&unit->unknown1c0 : *(real *)&unit->unknown1c4;
-			function_100430(weapon_index, flags.wide, rate);
+			function_100430(weapon_index, flags, rate);
 		}
 		function_d1540(unit_index);
 	}
