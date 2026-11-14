@@ -1108,6 +1108,9 @@ real normalize2d(point2f *v);
 // T104: Independent neutral request success, joined with unchanged trajectory result,
 // logical then bitwise bool/byte/short/long: 136/136/152/151/167/167/161/158.
 // NOT kept: no equality; native-length forms still miss DL/return transport. Original entire body restored.
+// T107: Original force/fast inputs kept independent until retry admission,
+// logical/reversed/bitwise/conditional forms 301/301/304/301/301/301/304/301.
+// NOT kept: all regress and shorten away; original fast merge and full body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

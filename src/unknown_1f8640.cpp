@@ -774,6 +774,9 @@ struct s_1f8a70_actor
 // call (diagnostic) 498 (frame 0x84, store and reload survive); the inverted test with a shared release tail 306 (four spellings,
 // same code); the mode switch's default as its own 0x1f8750 call and return 453 (the route test then sits behind case 6), with the
 // nonzero route first 477; validity flags 182 (same code). Body unchanged at 182.
+// T107: Overlap-safe library transfers at direct/reference/state/fallback phases
+// 395/392/379/215; paired direct-reference/reference-state 417/408, all destinations
+// 448, with fallback 457. NOT kept: native transfer/layout mismatch; original body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

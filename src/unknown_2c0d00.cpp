@@ -1801,6 +1801,9 @@ long function_1fa7f0(void);
 // the origin read y then x on the 369 form 467. Diagnostics: count declared volatile 474, with the second edge store 420, with
 // that and the side passed as `!side` and flipped at the loop end 433 (frame 0x10c): keeping count out of BX alone does not give
 // EBX to edge. Body unchanged at 400.
+// T107: First tangent orientation retained while persistent side advances before the
+// first call, bool/byte/short/long before center 452/465/466/469; before first tangent
+// 442/449/446/448. NOT kept: no native frame/extent/home equality; original body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
