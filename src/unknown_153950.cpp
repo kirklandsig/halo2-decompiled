@@ -406,6 +406,7 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 	slot->flags |= 1;
 }
 
+// MiniMax H (11-14): no new form, no lower score (13): exchanging the two draws scores 66, and a one-caller copy of the shared rotation that adds the projection term first in the j and k rows builds to the same bytes as the shared one.
 // MiniMax H (11-13): no new form, no lower score (13): the thirteen differences are all inside the inlined rotation - the load of the vector's j component and the store of its i component trade places, and the k component's two products land in the other pair of registers - and that text is the shared rotate helper's, in src/unknown_170d70.cpp, which this lane may not edit.
 // MiniMax H (11-11): no new form, no lower score (13): the only difference left is the j and k rows of the inlined rotation, whose helper (rotate_vector_170d70) lives in src/unknown_170d70.cpp and may not be edited from here.
 // MiniMax S (11-11): no new form, no lower score (13): only the rotation's j and k rows differ, and the shared rotate helper that produces them lives in src/unknown_170d70.cpp.
@@ -569,6 +570,11 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // MiniMax R (11-11): no new form, no lower score (13): the rotation's j and k rows still differ from retail's, and the shared rotation helper's text decides them while its file is held.
 // MiniMax R (11-10): no new form, no lower score (13): the rotation's j and k rows still differ from retail's,
 // and the shared rotate helper in the other file decides them.
+// score 13 (was 13): unchanged this round: only the j and k rows of the inlined rotation still differ, and the
+// rotate helper's own text decides the order of the two products; that helper is in src/unknown_170d70.cpp, which
+// this lane may not edit.
+// score 13 (was 13): unchanged this round: the inlined rotate helper computes the `projection * axis` term after the
+// `v * cosine` term in the j and k rows; the helper's text is in src/unknown_170d70.cpp.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {

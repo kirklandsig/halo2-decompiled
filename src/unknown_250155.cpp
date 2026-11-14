@@ -1556,6 +1556,11 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // expands to `rep stosd` plus a byte tail here (164) while the index loop gives retail's clean
 // `rep stosd` but loses the allocation (172); the item_count and index_count homes stay swapped
 // whatever the declaration order is, and initialising item_count at the top gives 121.
+// MiniMax I (11-14): no new form, no lower score (83): the index fill still moves the mode to the
+// stack and the counter into EBX where retail keeps the mode in EBX and the counter in EDI; the count
+// form `for (i = 0; i < 16 - index_count; i++) indices[index_count + i] = NONE;` gives 155, a separate
+// counter for the tail fill compiles to the same code as the shared one, and the item_count and
+// index_count homes stay swapped whatever the declaration order or the initialisation.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2834,6 +2839,9 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // MiniMax G (11-13): no new form, no lower score (95): the reload of the player after the voice
 // query still needs a store through a pointer in the 0x53b40 chain, which lives in
 // src/network_voice.cpp and is not this round's file.
+// MiniMax I (11-14): no new form, no lower score (87): the reload of the player after the voice
+// query still needs a store through a pointer somewhere in the 0x53b40 chain, whose source lives in
+// src/network_voice.cpp, another lane's file.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

@@ -253,6 +253,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // loop as a pointer walk 536 (2347 B). Retail's homes: display_name -0x8cc, title -0x6cc, layout -0x4cc, suffix
 // -0x458, message -0x258; ours title, display_name, suffix, layout, message (two adjacent pairs swapped).
 // MiniMax R (11-11): no new form, no lower score (316): the five string buffers' stack homes stay a rotation apart from retail's, the state switch's shift arm stays out of line and the join order differs.
+// MiniMax C (11-14): no new form, no lower score (316).
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

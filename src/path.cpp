@@ -389,6 +389,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // MiniMax G (11-12): no new form, no lower score (286): frame 0xe8 against retail's 0xe4; the acquisition, the flags
 // and the scalar homes remain, and the geometry now uses shared differences.
 
+// MiniMax A (11-14): no new form, no lower score (286): the frame is still 0xe8 against retail's 0xe4 (the extra dword
+// is the `previous` pointer) and the node depth is read at one address here and through a materialised node there;
+// dropping that pointer's initializer gives retail's frame but measures 357.
+// MiniMax H (11-14): no new form, no lower score (286): this round re-read the diff: our frame is four bytes larger, so every home below the first difference sits higher, and retail reaches the node entry through a lea where we use an indexed address; the earlier rounds' frame trials reached 0xe4 only by wrecking the traversal.
 // MiniMax B (11-13), NOT kept (coordinator: 4 points, under the 8-point bar; the two independent clamps also differ from the
 // else-if when margin > length - margin): 282 from 286 with the projection clamp as two minimum-style assignments, which gives retail's exact 1388-byte body; what still differs is the frame (0xe8 against retail's 0xe4), the entry depth read (this build folds the node's offset into the address where retail materialises the node with a lea and reads the depth through it), the previous-node and flag homes, and the scan loop's back-edge reload pair order; a short link count scores 365 and the node pointer at function scope 282 (the same code), and the two test-set flags that reach 16 are match-only.
 // MiniMax G (11-12): no new form, no lower score (286): nothing new this round; the frame 0xe8 against retail's 0xe4; the

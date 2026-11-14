@@ -548,6 +548,25 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 	return result;
 }
 
+// score 3 (was 3): with the callers' image, only the schedule differs: ours puts `or eax, -1` right after the
+// load of g_47d8e0 (before that value's store at +0x7c); retail stores it first, loads g_4686c4, then does the
+// `or`. Tried: unknown22 assigned right after unknown7c (11), g_4686c4 in a local (3, same code), both globals
+// in locals (28), team/player/object order swapped (5), unknown7c before definition_index (7), chained 1.0f
+// stores (5). A one-function check scores this differently (5); judge it on the 515-source set.
+// Also tried: +0x1c typed as s_location (3), the owner copied from the const NONE owner (42), unknown18 before
+// the location (7), `player_index = object_index = NONE` (3), `unknown1c = unknown14 = NONE` (3). The alias status
+// of both globals is retail's (g_47d8e0 address-taken there too, g_4686c4 not), so only the scheduler is left.
+// M272: complete long/short/both sentinel chains 9/14/18 fast; adjacent byte clear alone/with long
+// chain 18/18 fast (unchanged reduced preview 5 versus full 3). Short chain plus byte clear: Wine hang;
+// remaining two prepared forms not run. Original body restored; the full-image OR schedule remains.
+// R75: second global read after definition/before memset 3/3; both globals read early together 3; owner pointer 3;
+// mutable/const owner aggregate 54/54; aggregate member reads 3; definition parameter through its address 3.
+// Round 307: clear result reused 3; zero event aggregate copy 79; owner long/complete
+// payload memset 36/36; individual long/short sentinel memsets 3/3;
+// owner longs plus long sentinels 36; complete owner plus remaining sentinel memsets 35.
+// P422: Complete zero-clear partitions at flags/owner/handle/location/vector/scale/
+// material/tail boundaries 34/43/55/63/66/45/50/41, 111-133/104 bytes.
+// NOT kept: split bulk clearing adds stores or another clear and lengthens native code.
 // MiniMax G (11-12): no new form, no lower score (3): nothing new this round; ours still materialises `or eax,-1` right after the
 // load of g_47d8e0 where retail stores that word at +0x7c first, loads g_4686c4 and only then materialises
 // the sentinel.
@@ -569,25 +588,13 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // MiniMax B (11-06, run 42): no new form and no lower score (3); retail stores the g_47d8e0 word at +0x7c, then
 // loads g_4686c4 and only then materialises `or eax, -1`; ours materialises the -1 right after the
 // definition-index store, so the constant sits two instructions early.
-// score 3 (was 3): with the callers' image, only the schedule differs: ours puts `or eax, -1` right after the
-// load of g_47d8e0 (before that value's store at +0x7c); retail stores it first, loads g_4686c4, then does the
-// `or`. Tried: unknown22 assigned right after unknown7c (11), g_4686c4 in a local (3, same code), both globals
-// in locals (28), team/player/object order swapped (5), unknown7c before definition_index (7), chained 1.0f
-// stores (5). A one-function check scores this differently (5); judge it on the 515-source set.
-// Also tried: +0x1c typed as s_location (3), the owner copied from the const NONE owner (42), unknown18 before
-// the location (7), `player_index = object_index = NONE` (3), `unknown1c = unknown14 = NONE` (3). The alias status
-// of both globals is retail's (g_47d8e0 address-taken there too, g_4686c4 not), so only the scheduler is left.
-// M272: complete long/short/both sentinel chains 9/14/18 fast; adjacent byte clear alone/with long
-// chain 18/18 fast (unchanged reduced preview 5 versus full 3). Short chain plus byte clear: Wine hang;
-// remaining two prepared forms not run. Original body restored; the full-image OR schedule remains.
-// R75: second global read after definition/before memset 3/3; both globals read early together 3; owner pointer 3;
-// mutable/const owner aggregate 54/54; aggregate member reads 3; definition parameter through its address 3.
-// Round 307: clear result reused 3; zero event aggregate copy 79; owner long/complete
-// payload memset 36/36; individual long/short sentinel memsets 3/3;
-// owner longs plus long sentinels 36; complete owner plus remaining sentinel memsets 35.
-// P422: Complete zero-clear partitions at flags/owner/handle/location/vector/scale/
-// material/tail boundaries 34/43/55/63/66/45/50/41, 111-133/104 bytes.
-// NOT kept: split bulk clearing adds stores or another clear and lengthens native code.
+// Round 163 (m3 lane 8, plain; the fast check carries a CAVEAT here): the +0x7c store as the existing material-type
+// class (callers clear +0x7c to NONE as a default constructor would) built from the global 3 (same code); the same as an
+// aggregate copy of the global viewed as that type 3; as an unsigned 16-bit copy 3; a barrier after the definition
+// store (diagnostic) 12 (the 1.0 load sinks and `or eax, -1` still fills the load slot); the owner's three NONE stores
+// through a forced-inline helper 3. Ours fills the 16-bit load's latency with the `or`; retail stores right after it.
+// Also round 163 (plain): `data = (s_type_1e6529 *)memset(...)` 3 (same code); the +0x7e NONE store moved up beside +0x7c 15;
+// the +0x84 field typed `byte` and cleared with 0 3 (same code).
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {
@@ -1058,6 +1065,7 @@ PRIVATE inline long damage_object_root(long object_index)
 // noinline ruling (MiniMax G 11-06). The rest of that round: the flag update through a local (load, or, store), the
 // outer radius added in two statements, the parent walk through an index-returning helper, the s_data_datum_iterator
 // player scan and a squared-distance helper called at both tests.
+// MiniMax H (11-14): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4 and the first 0xbadc0 use is still expanded here where retail calls it, and that callee's own file is not this lane's.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -1559,6 +1567,9 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 // Round 303: one initial clear of the three controlled bits, positive branches in abc/acb/bac/bca/cab/cba
 // order 51,51,52,52,52,52; combined/separate conditional contributions 67,67.
 // Original copy, flag graph and body restored; aggregate registers and final store schedule remain.
+// MiniMax C (11-14): the flags read and stored through the dword alias of the four-byte field, and the owner
+// copy read through a named pointer and through a named value, each give 10 (unchanged); no new form, no lower score.
+// MiniMax H (11-14): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after the record's address is built; a copy through a local and a cast destination both leave the same ten.
 // @retail 0xdbfb0
 void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool b, bool c)
 {
@@ -2757,6 +2768,7 @@ struct s_unit_event
 // re-measure); that with the drop and 0x20000 blocks reading the datum through a local copy of the pool at each use
 // 523 (1900 bytes); the pool form alone 543 (1896 bytes); the drop values written at each call with no local 512 (1868
 // bytes). Kept: the seat reads through the typed unit definition (unit.seats.count / unit.seats.address, the local named definition) 517 (same code).
+// MiniMax H (11-14): no new form, no lower score (517): the first difference is still at +0xc, where the region index takes EBX and the permutation pointer EBP where retail keeps them the other way round, and the region's stack home follows from the declaration's parameter order, which this lane may not change.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3130,6 +3142,9 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // allegiance predicate (74, frame 4), enemy assigned in the valid/invalid team arms (67, frame 4), one result
 // across both engine/team paths (42, frame 0xc), both paths scaling damage in place (5), the engine product
 // computed at return (52), a team result initialized from damage then multiplied (5), enemy live from entry (5).
+// MiniMax C (11-14): the team test as an early return with the state test left in place 5, both tests as
+// early returns 28, and one enemy flag with a single final return (worse); no new form, no lower score.
+// MiniMax H (11-14): no new form, no lower score (5): only the order of the two cold exits differs (this build reloads the stack before it copies xmm1, retail copies first); a merged tail return measures 24 and an explicit else 5, so the block order stands.
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {
@@ -4902,6 +4917,9 @@ dword function_db810(long object_index, long node_index)
 // 39/34/34/34 twice (313/305 bytes). One scalar owns successive tag handles at four input boundaries,
 // mask at acquisition or traversal: eight trials 4 (305/305 bytes). Original body restored;
 // NOT kept: input lifetime/scalar ownership did not recover EAX reuse and the native save/mask schedule.
+// MiniMax C (11-14): the model tag read through the typed tag field, the tag index through a named local
+// and the definition through a named pointer all give 4 (unchanged); no new form, no lower score.
+// MiniMax H (11-14): no new form, no lower score (4): the four instructions that differ are the tag index's mask, the tag entry's two loads and the entry's field; retail masks the index before it pushes EBP and reuses EAX for the entry, and no spelling of them that this lane may write moves the mask ahead of the push.
 // @retail 0xdbb40
 long function_dbb40(long object_index)
 {
@@ -4992,11 +5010,14 @@ struct s_damage_object_creation
 	long unknownc0;
 };
 
+// MiniMax G (11-14): no new form, no lower score (156): the mask's zero store, the piece loop's guard order, the
+// search's entry test and the scratch registers of the last two lookups still differ.
 // MiniMax A (11-12): no new form, no lower score (156): the mask zero is still stored ahead of the states call where retail stores it in the node loop preheader, and the piece loop guard order, the search entry test and the scratch registers of the last two lookups still differ; storing the zero inside the block gives retail store but reallocates the frame (170), so the body stands.
 /* marks damage sections destroyed, and splits off the model nodes no
    longer joined to the object's root as new objects */
 // MiniMax B (11-12): no new form, no lower score (156): the mask's zero store, the piece loop's guard order, the search's entry test and the last two lookups' scratch registers still differ.
 // MiniMax H (11-12): no new form, no lower score (156): the node loop's guard, the search's entry test and the mask's zero placement are unchanged; the lane history's best form (the piece pointer with the piece loop as `!= 0`) is 157 and the retail guard order is 187.
+// MiniMax H (11-13): the mask's zero moved after the states call 154 (the store then lands ahead of the mask test, retail has it inside the mask block), the zero assigned after the 0xba690 call 170 and in the for-init 231 (both rebuild the function: the datum offset stays in ESI and the node count takes 0x18), so 156 stands.
 // score 156 (was 156): 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // mask in memory). Left: the mask's zero is stored ahead of the states call (retail: at the first node loop), the piece
 // loop's guard order and bottom test, the search's entry test, and the scratch registers of the last two lookups.

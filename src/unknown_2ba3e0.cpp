@@ -715,7 +715,19 @@ real g_55e618;
 // there up and the twelve-byte length gap that follows differ: that is the frame's allocation order. The
 // permuter ran over this body for 600 s (fifteen tries) and never beat its baseline of 93 differing
 // instructions, so the statement order retail used is not what the search finds.
-// score 102 (was 102): frame 0x124 agrees; sweep/collision homes and projection spills differ.
+// MiniMax R (11-14), NOT kept (coordinator: the 102 -> 57 rests on the velocity-normal dot written out in full in each
+// of the three perpendicular products; retail computes that dot once (0x2b93fb-0x2b941c) and scales the normal by it,
+// so the repeated expression only steers the order; R's body with the dot computed once into a local measures 195.
+// LEAD: the typed record, the velocity pointer and real_point3d_set are natural; find the once-computed dot form
+// that keeps 57): 57 (was 102): the particle record is typed (identifier and flags words at +0 and
+// +2, the reals at +8 and +0x34), the velocity is read through a pointer, the dot is written out in
+// each of the three perpendicular products and the position is set through the existing real_point3d_set.
+// The frame's homes now agree with retail's (the collision record at F+0xb0, the normal at F+0xd8, the
+// impact at F+0x110). Left: the order of the loads at the head of the reflection block and the last
+// argument's load, which retail takes after the three sums; the plain position stores instead of the
+// setter score 120, so the setter is kept.
+// R's form, not kept: score 57 (was 102): the frame's homes agree now; the reflection block's load order and the last
+// argument's load still differ.
 // Velocity snapshot argument 676; reflection loop 102; reflected value 241; sweep scale 129;
 // both scales 129; coefficient local 102; displacement scale 129; snapshot plus loop 676;
 // shared tangent 190; shared start 102; both shared differences 102. Original body retained.

@@ -1761,6 +1761,9 @@ void function_68f30(c_class_6a600 *world)
 void function_69a00(const byte *input, c_class_6a600 *world, dword mask);
 void function_69b50(c_class_6a600 *world, dword mask, const byte *input);
 
+// score 5: the state-2 call takes the world copy in edi here and in ecx in
+// retail, and the 0x69a00 argument setup loads the mask one step later.
+// Permuter (10 min, 123 tries, seed 999): no form below 5.
 // @retail 0x684e0
 void function_684e0(byte *block)
 {
