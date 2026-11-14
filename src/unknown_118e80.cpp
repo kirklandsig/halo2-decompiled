@@ -1102,6 +1102,11 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax B (11-13): no new form, no lower score (92): aligned the two listings instruction by instruction: the two
+// squares come out of the other two homes (retail reads 0x1f0 before 0x1e8, this build reads 0x1e8 before 0x1f0), and
+// retail keeps the 0x119bc0 result in a stack byte it stores and reloads around the three writes where this build keeps
+// it in al; that shape comes from 0x1c4b00's last parameter, which is a long in the files this lane may not edit.
+// MiniMax S (11-14): no new form, no lower score (92): the frame is retail's (0x1f0) and the squared length is still summed in the compiler's own order, the re-fetched object's copy still loads the object before the first component where retail loads the component first, and the 0x119bc0 result still travels in al where retail keeps it in a stack byte and pushes the containing dword; that shape needs 0x1c4b00's last parameter to be a bool in its definition and in its thirteen declarations, which live in files this lane may not edit. Still BLOCKED-BY 0x1c4b00.
 // MiniMax B (11-12): no new form, no lower score (92); re-read the listing against the body: the only
 // logical difference left is the 0x119bc0 result, which still travels in al where retail keeps it in a stack
 // byte and pushes the containing dword; that shape comes from 0x1c4b00's last parameter being a bool in its

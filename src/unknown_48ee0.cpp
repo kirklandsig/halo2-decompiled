@@ -279,6 +279,9 @@ extern real g_4c9798[36];
 // the matrix at each use 331 (1491 B); the border as `width / maximum * 0.75f` 174 (same code: both spellings divide
 // first, retail multiplies first). Most of the 174 is one byte of drift: retail's `mov eax, [flags]` is the 5-byte form
 // and ours `mov edx, [flags]` the 6-byte one, so every later address field sits one byte off and counts.
+// MiniMax C (11-14): no new form, no lower score (174); the mode flag still loads into edx where retail
+// keeps it in eax, and that one byte of drift offsets every later address field; a 300-second permuter
+// run (3 tries) found no better form.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

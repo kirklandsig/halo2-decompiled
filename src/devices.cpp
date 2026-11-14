@@ -1230,6 +1230,10 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax A (11-14): no new form, no lower score (121): retail takes the initial velocity in xmm6 with five stack
+// floats and returns with ret 0x14, while this build passes it on the stack and returns with ret 0x18, and the
+// six-float signature may not change; the clamp's register homes follow from that difference.
+// MiniMax H (11-14): no new form, no lower score (121): this round found no new spelling; the clamp's three values and the initial velocity keep the SSE registers the LTCG convention gives them, and the earlier rounds' ninety-six clamp variants all measured above 121.
 // MiniMax B (11-13): no new form, no lower score (121): the three clamped values are still taken in xmm5, xmm7 and xmm2 where retail takes them in xmm7, xmm1 and xmm2, and the first argument arrives in xmm6 under the custom LTCG convention, so the clamp's register choice is not ours to pick.
 // MiniMax H (11-12): no new form, no lower score (121): the initial velocity read into a local in the callee, passed through a local at the call site, both together and the formula reading the stored velocity back all measure 121, so the body stands.
 // MiniMax G (11-12): no new form, no lower score (121): nothing new this round; the initial velocity remains stack-passed
@@ -1696,6 +1700,11 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // render model the fstp is the eighth instruction after the branch, and in all of them except ours three instructions
 // separate it from the call (ours four, since the render model's reload opens the block); retail has both the reload
 // and three, as if that reload were not in the block when the store was placed.
+// M3 lane 12 r121 (fast, and a one-file LTCG harness with the callee files that reproduces the swap): the render model
+// declared at function scope 2; the animation and time read through a channel pointer local 2; the time computed first in
+// the flag block with the sampled matrix after it 2 (harness); the render model as `(long)(void *)` of the tag data 2; the
+// animation state fetched after the matrix copy 341 (harness positional; the prologue reorders). Diagnostics (harness,
+// reverted at once): the render model or the time address-exposed, or the render model volatile, same code.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
@@ -2251,11 +2260,29 @@ bool function_0b6760(s_index_pair const *pair);
 // P449: Power-change/position-activity, power preparation/advance, position preparation/advance,
 // position-change and lazy reversal decisions: eight 250s. NOT kept: no byte equality or native result-home repair.
 
+// MiniMax G (11-14), NOT kept (coordinator: the 250 -> 58 rests on the one-use `real rate = g_510c54->rate;` local
+// passed to function_11eed0, a form kept only with a byte match; measured on G's body without that local: 380, and
+// main without its volatile alone: 386; `== 0` for the `<= 0` byte test: 59; `bool increasing` for the reused
+// result: 58). G's three notes on that form follow.
+// G's form, not kept: score 58 (was 58): unchanged this round: the length is retail's 1495 bytes; the position-group arm keeps the
+// channel pointer in ecx where retail re-leads it in esi, and the flags-and-0x10 arm puts the state pointer in eax
+// where retail keeps it in ecx; the permuter (600 s) and the naming trials found no lower form.
+// G's form, not kept: score 58 (was 250): the acceleration products are named with the position term first, the 0xb3 byte test is `<= 0`
+// and the result is a bool, so the length is retail's 1495 bytes; left: the position-group arm keeps the channel
+// pointer in ecx (retail esi) and the state in eax/ecx across the 0xb6760 call (retail ebx); the permuter found none.
+// G's form, not kept: score 65 (was 250): the acceleration products are named with the position term first and the 0xb3 byte test is `<= 0`,
+// so the frame and the register roles now agree with retail up to +0x3f3; the position-group arm still keeps the
+// channel pointer in ecx (retail esi) and the state in eax/ecx across the 0xb6760 call (retail ebx), 3 bytes longer.
 // P453: outer manual output 250; outer interpolation results 250;
 // outer acceleration products 250; outer integration snapshots 250;
 // separate power/position group declarations at function scope 250/250;
 // outer first/second manual completions 250/250. NOT kept: no gain;
 // original observations, pointer qualifier and body retained.
+// P474: Standard typed products/sum/differences/quotient/ordered tests/
+// equality tests, complete arithmetic and complete scalar contracts.
+// Frame 0x20 agrees; saved-register and activity-byte homes remain.
+// Scores 386/360/462/392/448/432/532/659. NOT kept: ties/regressions;
+// original executable body and helper contracts restored.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

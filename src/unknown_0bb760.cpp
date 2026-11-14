@@ -446,12 +446,20 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// MiniMax S (11-14): no new form, no lower score (84): the permuter's search over this body (60 tries, 610 s) found nothing below the baseline's 84; the first scan still leaves on != where retail leaves on a signed jl, the blend still sits at esp+0x38 where retail keeps it at esp+0x1c with the choices pointer in the other slot, and the clamp entry's constant order and the not-found path's own copy of the one still differ.
 // MiniMax A (11-13): no new form, no lower score (84); with the inverse computed inside the found branch (the
 // two conversions first, then the inverse) the blend takes retail's slot, the found block matches retail's
 // code step by step and the clamp entry orders its zero and its one the way retail does, but the
 // not-found path joins the clamp entry's load instead of carrying its own copy of the one (132) and the count
 // test and the first scan's exit still differ, so the body stands; merging the second fabs into the fmod call
 // scores 86 and leaves the blend in the seed's slot.
+// MiniMax B (11-13): no new form, no lower score (84): aligned the two listings instruction by instruction: the first scan
+// leaves on a signed less-than bound (retail's jle and jl against this build's je and jne), and writing that scan with
+// the less-than bound unrolls it by four here (637); the blend keeps the seed's home (esp+0x38) where retail keeps it at
+// esp+0x1c and the choices pointer the other way round; the clamp's entry materialises the one before the zero where
+// retail materialises the zero first and lets its not-found path jump into the one-load; the five clamp spellings
+// measured before are all worse, so the body stands; the permuter searched 45 forms for five minutes over the
+// full image and the reduced image (which scores the same 84) and found nothing below 84.
 // MiniMax B (11-12): no new form, no lower score (84); re-read retail's listing: the clamp entry's constant
 // order, the blend's stack slot, the first scan's signed bound and the not-found exit's 1.0 reload are still
 // the four differences, and the spellings of the scan's bound that keep it rolled (less-than, the bound read

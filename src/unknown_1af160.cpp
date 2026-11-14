@@ -141,6 +141,9 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // slot four references each, the prop node and the bool output two each), and every natural use-count change is listed
 // above with its score. The levers left are outside this body: 0x260670 (score 440 at 3097 bytes against 3077) and the
 // output prototypes in the held src/unknown_261280.cpp.
+// Round 177 (m3 lane 6, `--fast 0x1af160 0x1e1f20`): the 0x261280 bool output initialised false 201 (979 bytes); its long
+// output initialised 0 235 (980 bytes); the 0x262b40 result as a const pointer 12; the 0x1e4be0 result kept `void *` 12; the
+// prop node as a const pointer 12. A compile-only lab is not faithful here (without LTCG the offset stays in EBP).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

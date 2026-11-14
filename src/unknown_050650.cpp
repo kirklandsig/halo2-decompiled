@@ -822,6 +822,9 @@ struct s_collision_result_buffer_1697c0
 // 303 (same code); its three rows computed into named locals before the stores 338 (1440 B, frame 0xb0, masked 82: nearer
 // retail's schedule, but 0x297d30 23 -> 153); its rows into a local vector and one aggregate copy back 432 (0x297660 1,
 // 0x297d30 203); `clear` cleared only on a hit, the miss branch tested on the call directly, 388 (0x297660 10).
+// P467: Direct blocked-state bool/byte/short/long at attempt entry
+// 369/369/357/354, after both rotations 374/374/359/356. NOT kept:
+// all regress and grow; original clear state, every draw and complete sampler restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1208,6 +1211,9 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // initialised declaration 260 (entry stores swap). Masked, what is left is the merged cafc0 blocks, the 0x1e3b00 setup
 // (ours loads the object before the pushes and copies the output address, `mov edi, ecx`; retail loads it after the
 // third push and recomputes `lea edi`, so case 1's copy can join case 2's) and the weapon call's actor reload.
+// P467: Missing-point true default, false at each original point producer,
+// bool/byte/char/short/word/int/long/dword: 343/343/343/382/382/382/382/382
+// (fast control 341; full 257). NOT kept: no equality or reduced gain; original decoder restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1397,6 +1403,12 @@ done:
 // where retail keeps the product in eax and forms the actor with a lea; the shared getter is used by sixteen
 // matched functions of this file, so its spelling cannot change on its own account.
 // MiniMax H (11-11): no new form, no lower score (9); retail still builds the actor offset in EAX and forms the actor with a lea where ours keeps the scaled index in the pointer register and adds the base, and the shared getter cannot be respelled because sixteen matched callers depend on it.
+// MiniMax D (11-14): no new form, no lower score (9): only the prologue differs - retail loads the pool table into
+// EDX, computes the actor offset in EAX (`mov eax, ecx`, `and eax, 0xffff`, `imul eax, eax, 0x888`) and forms the
+// actor with `lea esi, [eax + edx]`, while this build keeps the scaled index in ESI and adds the base (`add esi, edx`);
+// the getter is shared with sixteen matched functions of this file, so its spelling cannot change on its own account,
+// and retail's only caller of this function, 0x1f38c0, has no body in this tree, so the call context that shapes the
+// allocation is missing here.
 // MiniMax B (11-11): no new form, no lower score (9): the getter is shared with sixteen matched callers, so no
 // spelling of it can be changed on its own account, and none of the subscript forms reaches retail's prologue.
 // MiniMax E (11-10, run 73): no new form, no lower score (9); retail builds the actor offset in EAX and forms the actor with lea esi,[eax+edx] where we build the offset in ESI and add the base, and the shared getter's spelling cannot change because sixteen matched functions depend on it.
@@ -1901,6 +1913,12 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax B (11-14): no new form, no lower score (442 plain, 548 on the reduced image): the entry block still differs
+// in its registers - retail loads the actor table into ECX, takes the row with `mov ebp, [ecx + A]`, keeps the actor
+// index in ESI and spills the scaled offset to the stack, and reads the member word with `movsx edx` and `mov di`,
+// where this build loads the table into EDX, keeps the index in EDI, scales it in ESI without a spill and reads the
+// word with `movsx ecx` and `mov dx`; the frame stays 0xd0 against retail's 0xc8 and 0x1fdd90 is still inlined here
+// where retail calls it, and that helper is defined in another file. The body stands.
 // MiniMax G (11-13): no new form, no lower score (442 plain, 548 on the reduced image): the diff re-read this round keeps the frame 0xd0 against retail's 0xc8 and the cached animation words without retail's homes, and 0x1fdd90 is still inlined here where retail keeps it out of line, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (442 plain, 548 on the reduced image).
 // score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only

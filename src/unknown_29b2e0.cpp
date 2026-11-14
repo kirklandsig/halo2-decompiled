@@ -491,6 +491,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // as an aggregate initializer 176 (same code). On the lead retail's pitch, sine and cosine sit in arg_4's home, +0x10 and
 // arg_3's home where ours puts them at +0x10, arg_3's and arg_4's homes, and the acos temporary shares the yaw's +0xc in
 // retail but local_11's +0x10 here.
+// P485: Conditional input/axis/both/shared alias copies in the existing rotation:
+// 286/485/459/428; shared overlap decisions bool/byte/short/long 428 each.
+// NOT kept: no byte match; frames/extents regress, axis-only also loses the sibling.
+// Original alias-safe staging, helpers and whole body restored; unity/root/yaw homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

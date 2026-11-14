@@ -1567,6 +1567,7 @@ struct s_camera_clip_reference_16ebf0
 	plane3f plane;
 	byte field_14[4];
 };
+// MiniMax H (11-14): no new form, no lower score (87).
 // MiniMax H (11-13): no new form, no lower score (87): the cross block still gives retail's up.k to xmm0 and forward.j to xmm1 the other way round, the clip block still folds the cluster address into the load where retail materialises it, and the interpolated pair still loads [esp+0x20] before the store to [esp+0x24]; the cross helper is in a shared header and 0x171d00 is in another file, and the permuter over this body was stopped at the run's time limit without a result.
 // score 87 (was 87): unchanged this round: the cross product's colouring is swapped against retail's
 // (retail gives up.k to XMM0 and forward.j to XMM1 where ours gives them the other way round), and the
@@ -1766,6 +1767,13 @@ struct s_camera_clip_reference_16ebf0
 // xmm1, ours the other way round, with the same results stored to [esp+0x58] and [esp+0x5c]), and retail loads
 // [esp+0x20] before it stores the new value to [esp+0x24] where ours stores it first; the rest of the function
 // matches instruction for instruction.
+// score 87 (was 87): unchanged this round: the two products of the interpolation keep retail's operands but our
+// compiler hands them to the registers the other way round, and the clip block folds the cluster address into the
+// load where retail materialises it; the cross helper and 0x171d00 are in other files, which this lane may not edit.
+// score 87 (was 87): unchanged this round: the cross product's colouring is swapped against retail's (retail gives
+// up.k to XMM0 and forward.j to XMM1 where ours gives them the other way round), and the clip block folds the cluster
+// address into the load where retail materialises it; the addends of the clip sum and of the interpolation compile in
+// the same order either way, and the cross helper and 0x171d00 are in other files.
 // @retail 0x16ebf0
 void function_16ebf0(long user_index)
 {

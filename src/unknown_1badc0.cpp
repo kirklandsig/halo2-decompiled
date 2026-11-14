@@ -13,6 +13,9 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
+// MiniMax H (11-13): no new form, no lower score (171): the permuter's 41 tries in 311 s found nothing below 171,
+// and the difference still stands where retail computes the centre-minus-actor and the centre-minus-point differences
+// in the prologue and the point-minus-actor difference at its use, while ours forms the point-minus-actor difference first.
 // MiniMax C (11-11): no new form, no lower score (180); the length (1025) and the frame 0x90 agree, but the opening still forms the components in our order, and the copy schedule it needs is set by the query helper in src/unknown_1c20f0.cpp and the inline-ness of 0x30c60, both in other files this lane may not edit.
 // MiniMax G (11-12): no new form, no lower score (171): retail computes the centre-minus-actor and centre-minus-point differences in
 // the prologue and the point-minus-actor difference at its use, while ours still forms the point-minus-actor difference first; every
