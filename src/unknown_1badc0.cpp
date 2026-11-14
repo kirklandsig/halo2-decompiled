@@ -16,6 +16,11 @@ real normalize2d(point2f *arg_0);
 // MiniMax H (11-13): no new form, no lower score (171): the permuter's 41 tries in 311 s found nothing below 171,
 // and the difference still stands where retail computes the centre-minus-actor and the centre-minus-point differences
 // in the prologue and the point-minus-actor difference at its use, while ours forms the point-minus-actor difference first.
+// MiniMax C (11-14), NOT kept (coordinator: the 130 needs three statement moves together, the centre vector
+// before the radius read, `2.0f - local_11` inside the normalize block and `result = true` first; the two
+// natural changes alone, the point copy for both differences and the scaled radius named once, give 175,
+// and each move alone on them 232-239; at 130 the three differences' order, the products' registers and
+// the zero's home still differed): 130 (was 171): the actor-to-centre vector is formed before the radius read, both point differences come from the function's own copy of the point, the scaled radius is named once, 2.0f minus the length is computed inside the normalize block and the result is set ahead of the output store; this round the object lookup before the point copy measures 141, the dot product's two operands swapped measure 130 (the same code), and the permuter's 300 s search over the reduced image (31 tries) left the baseline where it was.
 // MiniMax C (11-11): no new form, no lower score (180); the length (1025) and the frame 0x90 agree, but the opening still forms the components in our order, and the copy schedule it needs is set by the query helper in src/unknown_1c20f0.cpp and the inline-ness of 0x30c60, both in other files this lane may not edit.
 // MiniMax G (11-12): no new form, no lower score (171): retail computes the centre-minus-actor and centre-minus-point differences in
 // the prologue and the point-minus-actor difference at its use, while ours still forms the point-minus-actor difference first; every
