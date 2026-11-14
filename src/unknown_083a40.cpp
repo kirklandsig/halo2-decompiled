@@ -777,6 +777,12 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // collection local in the whole second loop 294; one collection variable assigned in each branch 28, assigned only
 // after the conflict scan with the first branch's call given `&watcher->players` 28, the occupied key indexed by the
 // record's stored player index 28 (all three same code).
+// Round 176 (m3 lane 6, fast; all restored at 28): the occupied record's update as `&updates[*count]; ++*count;` 51 (1056 bytes);
+// the swap's update as `&updates[(*count)++]` 40 (1056); the last record's update as `&updates[*count]; ++*count;` 42 (1056);
+// `source` as `&((const s_simulation_session_player *)session->players)[i]` 28 (same code). Permuter (fast, anneal, context
+// 0x84e90/0x69260; reduced image agrees at 28): about 30 tries in 8 minutes, none better (stopped at the run's time limit).
+// The occupied record's apply-update given `&watcher->players` 28 (same code); the swap test as `slot != NONE && i != slot`
+// 29.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

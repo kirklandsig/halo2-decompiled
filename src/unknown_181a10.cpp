@@ -532,11 +532,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
-// score 238 (was 239; 238 in round 95's baseline, m3 lane 11 note at the end): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// score 238 (was 239; 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 at the end): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // MiniMax A (11-13): no new form, no lower score (239); the frame is still 0x40 against retail's 0x44, the second
 // node's home is still +0x14 against retail's +0x20, retail still reads the shape's data word three times where
 // ours reads it once, and the plane index still leaves the frame as a short.
-// score 239 (was 239): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// Earlier 239 (was 239): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // the plane); classifier clamp form, origin and hit copies, transformed-plane and output homes remain.
 // MiniMax H (11-11): no new form, no lower score (239); the frame is still 0x40 against retail's 0x44, retail still re-reads
 // the shape's data word three times in the clamp and ours copies it once, and the plane index still goes out as a short.
@@ -861,6 +861,20 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // real_point3d_set with aggregate publication and the material beside index/other_index 311 (1249 B); the exclusion test
 // split into `if (component, kind, data) { if (pointer && byte) return; }` 238 (same code: the data field still loads once).
 // The lead's diff is saved as build/r95/lead-0x1822f0-235.patch in m3-lane11's worktree.
+// M3 lane 2 r79 (fast with the file's functions, all MATCH; base 238, register-masked aligned 135). Retail's frame, as offsets from
+// the frame base: valid byte +3, first +4 (later origin.y, then the material), origin.z +8, index +0xc, other_index +0x10, second
+// +0x14 (later the kind-24 shape, then friction), distance +0x18, hit +0x1c, a 12-byte origin home at +0x28 of which only x is
+// stored (+0x2c/+0x30 never touched), plane +0x34. Tried: the data word through a small inline accessor 238 (same code: the three
+// retail loads are not accessor temps); origin by components from a position pointer with both side tests through
+// plane_distance_to_point(&plane, &origin) 312 (1248 B; origin keeps one home); on lane 11 r95's 235 lead (re-measured 235)
+// origin by components z, y, x 364 (1275 B); z, y, x origin with `short material` beside index/other_index 311 (frame 0x44,
+// masked 119; first/second at +8/+0xc); that plus the hit by components with aggregate publication 345. Diagnostic grid (origin
+// aggregate / x,y,z / z,y,x / setter, side tests hand-written / helper, hit aggregate / components): none below 238; z, y, x
+// components give retail's movss read sequence exactly (311) and plane_distance_to_point is the same code as the hand-written
+// tests every time. The root entity as `root->type == 1 ? root->entity : NULL` re-measured 238 (the type compare still folds).
+// Also: the hit by components in retail's y, x, z read order with aggregate publication 312 (1249 B), with main's setter
+// publication 325 (1262 B; each a different code from the x, y, z forms at the same scores). The accessor form is the same
+// code as the listed per-use reads and the plane_distance_to_point form the same as lane 14 r64's x, y, z origin (312).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
