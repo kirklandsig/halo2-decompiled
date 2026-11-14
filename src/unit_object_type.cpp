@@ -2398,6 +2398,9 @@ void function_cfec0(long unit_index)
 // dropped, so the prologue changes) and one final return 113 (the exits merge into one epilogue); a probe shows VC7
 // folds the -1 into every separate exit, for a parameter, a copy or a cast alike, and keeps the register copy only
 // when one return is reached from two paths, which merges the exits and moves the EDI push.
+// MiniMax G (11-13): no lower score (2): the last exit still returns the constant where retail moves the register copy;
+// dropping the unit-level return so that the NONE exit shares the final return gives retail's register copy but pushes
+// EDI ahead of the branch (12, 252 B), so the per-level epilogues are what keep the lazy pushes.
 // MiniMax G (11-12): no new form tried this round, no lower score (2): the only remaining difference is the last
 // exit, which returns the constant where retail moves the register copy, and no spelling of the copy avoids the fold.
 // score 2 (was 113): a return after each closing brace gives retail's per-level epilogues, lazy pushes and
@@ -3361,6 +3364,10 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 
 /* where the unit's camera sits and its camera data: its seat's marker on
    the parent (when the parent has it), else the unit itself */
+// MiniMax G (11-13): no new form tried this round, no lower score (91): the seat index's multiply
+// is scheduled before the parent lookup, the seats array comes back in ecx where retail uses esi,
+// the unit spill is read after the matrix copy, and the camera data is read at [ebp+0x24] where
+// retail copies the base up by 0x24.
 // MiniMax H (11-13): no new form, no lower score (91): the seat index's multiply is still scheduled before the parent
 // lookup, the seats array still comes back in ecx where retail uses esi, the unit spill is still read after the matrix copy
 // and the camera data is still read at [ebp+0x24] where retail copies the seat base up by 0x24; this round a named parent
@@ -3532,6 +3539,10 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // This round tried six more forms (the result local first, the NONE constant written as -1, a while loop for the root
 // walk, the byte offset in a local, the root read first and the result local last) and all of them score 12, so the
 // choice between the two registers does not follow from the source.
+// The sixteen-bit rigid-body index reaches retail's saved registers and its address order (mov ecx, dword ptr [edx +
+// edi + 0x40]) but the NONE test then narrows to sixteen bits (cmp ax, 0xffff) where retail sign-extends (movsx eax,
+// ax; cmp eax, -1), while the wide index keeps the thirty-two-bit test and swaps the registers again; a permuter run
+// (736 tries, 612 s) found only a one-use local for the pool data and a redundant test, which are not kept.
 // MiniMax H (11-12): no new form, no lower score (12): the root index still sits in edi where retail keeps it in ebp and the rigid body's byte offset in the other register; the short root index that gives retail's registers tests at 16 bits before extending.
 // MiniMax H (11-11): no new form, no lower score (12): the body is retail's length and the only difference is the
 // pair of saved registers: the root index sits in edi here and in ebp in retail, and the rigid body's byte offset
@@ -4404,6 +4415,9 @@ void function_c9e70(long unit_index, dword flags, s_type_1e6529 const *data, s_d
 	}
 }
 
+// MiniMax G (11-13): no lower score (139): the bit-field spelling of the 0x90005a1 pair reaches retail's shift-and-test
+// form but scores only 137, under the keep threshold, so the literal mask stays; the constant 1 that retail holds in bl
+// for the whole body still needs a local that holds nothing else.
 // MiniMax H (11-13): score 139 (was 163): the three binary cases now fall out of the switch instead of jumping over
 // the clamp, so the 0.0 and 1.0 results reach one shared store tail as retail does, and the body is 574 bytes against
 // retail's 578. Left: retail holds the constant 1 in bl for the whole body (its `test bl, al` bit tests and its
@@ -4928,6 +4942,10 @@ void __stdcall function_cc810(long vehicle_index)
 /* plans a motion over a distance from a velocity: accelerate, coast and
    decelerate (by the acceleration) without passing the speed limit when
    one is given; negative distances are planned mirrored */
+// MiniMax G (11-13): no new form tried this round, no lower score (162): the one-use discriminant
+// is still evaluated on the x87 stack where retail keeps it in SSE, so the frame stays eight
+// bytes, and retail keeps stop_time*0.5f*velocity*0.5f unfolded where this build folds it into one
+// multiply by 0.25.
 // MiniMax H (11-13): no new form, no lower score (162): the one-use discriminant is still evaluated on the x87 stack where
 // retail keeps it in SSE, so the frame stays eight bytes and retail's dead argument slots go unused; retail also keeps
 // stop_time*0.5f*velocity*0.5f unfolded where this build folds it into one multiply by 0.25, and it reads the acceleration
@@ -6176,6 +6194,10 @@ void function_cf040(long unit_index, short type)
 // Round 430: shared low-word slot 263; shared header offset 2; direct
 // loop fields 1; hand while 1; outer hand declaration 1; const holder 1;
 // empty-hand continue 1; typed seat-table field 1. No lower score.
+// MiniMax G (11-13): no lower score (1): the weapon loop's header lookup still takes the data pointer as the address
+// base where retail takes the byte offset; this round tried the offset-first integer sum, the element-pointer form and
+// the pool copy inside the loop, and a standalone compile of the same lookup puts the offset in the base slot only when
+// the base pointer is a global's own value, which this lookup is not (it reads the pool's data field).
 // MiniMax B (11-13): no new form, no lower score (1): one instruction is left, the SIB byte of the weapon loop's header
 // lookup, whose address operands retail orders the other way round; the same lookup written as a pointer to the header
 // or through the masked index keeps our order.
@@ -6328,6 +6350,9 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
    otherwise), takes its team from the creation data (in campaign, the
    definition's when unset), starts its animation and finds its two
    animation graph entries */
+// MiniMax G (11-13): no new form tried this round, no lower score (59): the first header read
+// takes the scaled offset as the address base where retail takes the data pointer, and the success
+// arm's scratch registers stay swapped.
 // MiniMax G (11-11): no new form, no lower score (59); the two header reads still take the byte offset as the base
 // where retail takes the data pointer (ours [esi+ecx+8], retail [ecx+esi+8]), and the success arm keeps the copy
 // source in EDX and the destination in ECX where retail has them the other way round; every spelling of the lookup
