@@ -1682,6 +1682,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 454; without the live axis and helper 567 and 0x3db00 lost (8). On 452: the normalize's j/k as `*=` 452 (same code);
 // lighting_rotate's projection (k, i, j) before the cross product 454 (masked 162; 0xd4080 433): retail's dot order differs
 // between the two functions ((k + j) + i here, (k + i) + j in 0xd4080), so the shared helper's order cannot give both.
+// P490: Standard forward coordinate copies at input/secondary/ambient transfers,
+// masks 1/2/4/3/5/6/7, then backward complete transfers: 571/597/544/596/577/597/601/596.
+// NOT kept: all regress and shorten away from retail; secondary forms also lose the matched
+// caller. Original native copies, helpers and complete body restored; frame/result/carrier gaps remain.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1922,6 +1926,8 @@ real function_30bf0(vector3f *vector);
 // 0x3db00 kept; 0xd37f0 606); + each scale applied as computed 452 (masked 74). Left at masked 67: 0xd37f0's convention
 // (block EAX, query EDX: BLOCKED-BY 0xd37f0's body), the table load retail hoists above the NONE test, the rotation's
 // sine/dot interleave, the normalize's j/k operand order and direction0 written through a pointer register.
+// MiniMax G (11-14): no new form, no lower score (378): re-measured in the batch; the frame is 0x4c against retail's
+// 0x40, and the normal copy and the limited, rotation and colour homes still sit at other offsets.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -2565,6 +2571,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // pointers) 641 at 3075 B, 27 calls, masked aligned 292 -> 84: retail's head-merged vertices[0] * 5 appears. Left there:
 // retail's EBX zero from the 0x24490 test through the per-path result/validity stores (result at +0x24, ours +0x30), the
 // luminance and normal homes, and the base length stored then compared from memory.
+// MiniMax G (11-14): no new form, no lower score (542): re-measured in the batch; the frame agrees at 0x90, but the
+// status, mesh, colour and sample homes still sit 0xc bytes below retail's, and the second arm's 0x13da30 lookup
+// still expands here where retail calls it.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

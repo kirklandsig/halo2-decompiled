@@ -1219,6 +1219,11 @@ bool function_14ed80(void)
 // in an else arm of the range test 61 (152 bytes; 0x14f2e0 272, 0x14f0f0 48), the same with globals declared between
 // the outputs 61. Diagnostic: without the clamp the function changes length and convention (140-142 bytes, 0x14f0f0
 // 40), so it does not isolate the ranking.
+// Round 197 (m3 lane 4, fast): the globals local assigned a second time before the bound test 54 (first EDX as retail,
+// third ESI, globals EDI, the player base folded into the add); the remap as `if (index == 0 || index == 1) index += 2;`
+// 42 (154 bytes); `short index` 52 (176 bytes); the outputs declared bare and set to NONE between the clamp and the remap 59
+// (155 bytes, 0x14f0f0 40); the sign test, clamp and remap as a force-inline helper taking only the player and reading the
+// global itself, a second globals local in the body for the bound test 54 (globals last, as the second assignment).
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {

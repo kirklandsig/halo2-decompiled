@@ -1567,6 +1567,10 @@ struct s_camera_clip_reference_16ebf0
 	plane3f plane;
 	byte field_14[4];
 };
+// MiniMax D (11-14): no new form, no lower score (87): the cross product's second product still takes
+// forward.j before up.k where the shared cross3f (include/vector_products.h, which this lane may not edit)
+// takes them the other way round, and the clip block still folds the cluster address into the load where
+// retail materialises it; a cluster pointer local and a pointer-arithmetic local both fold it again.
 // MiniMax H (11-14): no new form, no lower score (87).
 // MiniMax H (11-13): no new form, no lower score (87): the cross block still gives retail's up.k to xmm0 and forward.j to xmm1 the other way round, the clip block still folds the cluster address into the load where retail materialises it, and the interpolated pair still loads [esp+0x20] before the store to [esp+0x24]; the cross helper is in a shared header and 0x171d00 is in another file, and the permuter over this body was stopped at the run's time limit without a result.
 // score 87 (was 87): unchanged this round: the cross product's colouring is swapped against retail's
