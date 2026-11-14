@@ -676,6 +676,7 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// MiniMax G (11-14): no new form, no lower score (165): BLOCKED-BY src/unknown_175bd0.cpp, which needs "/Ob1" to keep 0x1765e0 out of line (with that flag this function scores 60).
 // score 165 (was 165): unchanged this round: retail calls 0x1765e0 out of line with the promoted
 // register split (ESI, EBX and EAX) while this build inlines it, so our frame is 0x16c against retail's
 // 0x48; retail's own parameter list differs from the declaration here (the forward vector is third and

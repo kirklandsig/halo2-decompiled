@@ -6302,6 +6302,7 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 // marker and the collision record do not share a home, and the material is still carried as a dword where retail keeps a
 // 16-bit value; the effect helper's parameter convention (src/unknown_187ec0.cpp) is not this lane's:
 // BLOCKED-BY 0x188180.
+// MiniMax G (11-14): no new form, no lower score (80): VC7.1 folds retail's redundant `jne` after the count test into one test, so its lea/test/jge/jne cannot be written.
 // score 80 (was 138; earlier 168, 154): the frame is retail's 0x94 now (the foot marker in its own block, the down vector copied
 // after the point offset through vector3f_assign, and the count test as count - 1 >= 0); what is left is register choice — the
 // contact point load lands in edx against retail's eax, the marker position copy rotates eax/ecx/edx, the flag byte test uses al

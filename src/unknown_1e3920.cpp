@@ -1821,6 +1821,7 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// MiniMax G (11-14): no new form, no lower score (251): the actor, options and pool registers rotate against retail and that rides on the opaque callee 0x1e53e0 in another file.
 // score 251 (was 251): frame 0x14 and the actor index in EBX agree; retail loads the pool global into EDI above the
 // options lookup's `je` and holds it across 0x1e5280 (actor ESI, options EBP); ours re-reads it (actor EDI, options ESI).
 // M3 lane 8 r159 (fast): the halved rounds as `rounds[0] *= 0.5f;` 251 (same code). Re-measured: the loop's weapon in a

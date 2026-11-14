@@ -74,6 +74,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax G (11-14): no new form, no lower score (106): the enable reload is blocked by src/unknown_1967d0.cpp and the two maximum reads only duplicate 0x196960's body (105).
 // score 106 (was 106): no frame; enable observations and maximum/register homes differ.
 // MiniMax B (11-12): no new form, no lower score (106): retail keeps the old maximum in ECX with the enable byte in AL and reads the 15-bit counter with the 16-bit idiom, ours keeps them in EAX and DL, and the enable reload needs one object for g_510ca0 and the counters: BLOCKED-BY include/globals.h and src/unknown_1967d0.cpp.
 // MiniMax H (11-10): no new form, no lower score (106): retail keeps the old maximum in ECX with the
