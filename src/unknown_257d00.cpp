@@ -1590,6 +1590,12 @@ bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
 #pragma inline_depth(2)
+// MiniMax B (11-14): no new form, no lower score (270): a permutation search over this body (68 tries in 1224 s, with the
+// reduced image allowed to agree with the full one) found a best of 191, but that variant needs a one-use bool local and
+// a swap of the arguments of the call to 0xcccd0 that puts the constant 1 where the unit index belongs; retail's call
+// sets the unit index in eax, the record's word in edx and the constant 1 on the stack, so the swapped call would change
+// what the function does. Measured without those two: the field or written as an assignment 270, the same with the bool
+// cast and the reversed comparison 270, and with the one-use local on top 272, so nothing of the search is kept.
 // MiniMax B (11-13): no new form, no lower score (270): retail's prologue loads the actor table global first and the
 // cs global later, while the cs lookup is the first statement here; the two initializers swapped measure 487 and the
 // output pointer declared first gives the same code, so the prologue is left as it is, and the table-first lookups in

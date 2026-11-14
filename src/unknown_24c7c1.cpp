@@ -556,6 +556,11 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
+// MiniMax B (11-14): no new form, no lower score (115): retail keeps the view at -0x44, the font at -0x50, the line
+// height at -0x14, the player at -0x40, the three message predicates as bytes at -0xf/-0xe/-0xd and `left` in a word at
+// -0x3c, while this build puts the view at -0x30, the font at -0x4c, the line height at -0x18, the player at -0x3c and
+// `left` in a dword at -0x50; the word needs 0x24ce9d to take a short, and that declaration may not change here:
+// BLOCKED-BY 0x24ce9d.
 // MiniMax C (11-14): no new form, no lower score (114 in the full build, 115 in the reduced one): retail's
 // homes are the view at -0x44, the font at -0x50, the line height at -0x14, the player at -0x40, the bounds
 // at -0xc, the text bounds at -0x24, the colour at -0x34 and the three message predicates as bytes at
