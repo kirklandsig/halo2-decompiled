@@ -684,6 +684,9 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // post-transform sum, age product and offset-probe constructor on native-entry code:
 // 354/334/341/344/359/335/334/343. NOT kept: none improves; original grouped storage, samples,
 // helpers, field observations and full body restored; native split-address/gate/settings homes remain.
+// P478: Standard link/time spans, inherited/blend producers, reverse normal/probe copies,
+// complete sample multiplies and age product: 440/373/379/456/335/370/548/385.
+// NOT kept: all regress; separate effect add, gate/settings homes and descriptor expansion remain; restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

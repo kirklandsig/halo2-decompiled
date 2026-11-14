@@ -1242,6 +1242,9 @@ void function_143250(
 // retail orders by memory-reference count (r8 with 24 reads at +0, r5 with 20 at +4, r7 with 3 at +0x11c).
 // P476: Explicit-polynomial matrix accumulators in bands 2/3/both; coefficient accumulators in bands 2/3/both; immutable scalar captures; frequency lexical homes. Scores 1337/1535/1539/1439/1535/1539/1333/1333.
 // NOT kept: unmatched diagnostic source forms; original executable body restored.
+// P478: First-consumer repeated scaled mixed/cubic/triple/pair/cubic products, paired cubic family,
+// complete reusable family and prepublication family: 1552/1509/1333/1759/1597/1623/1628/1619.
+// NOT kept: four products recover frame 0x300, but spill homes/schedules regress; original body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
