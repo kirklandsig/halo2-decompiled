@@ -1893,6 +1893,9 @@ bool __stdcall function_110ab0(long unit_index)
 // the true default at the entry; declaring the two flags before the pointers gives 446, and the entry default with the switch's default
 // arm dropped gives 489, so neither spelling reaches retail's frame.
 // MiniMax H (11-13): no new form, no lower score (445); retail's frame is 0xc with four pushes against our 8 with two, it keeps the globals pointer in ECX and the pool data in ESI where ours loads them into EAX and EDX, and it holds index times twelve in EDX where ours folds the index into the address.
+// MiniMax A (11-14): no new form, no lower score (445): retail keeps the pool pointer in ECX and the pool data
+// in ESI, writes the true default at the entry and re-derives the unit in both seat queries, while this build
+// loads the global into EAX and the data into EDX, so the frame's slots stay one dword off retail's.
 // score 445 (was 445): earlier 445 (was 453): retail keeps the result byte in the first argument's dead slot and re-derives the unit in both seat
 // MiniMax E (11-11): no new form, no lower score (445); the frame's slots sit at retail's offsets one dword off
 // and retail keeps its frame pointer and the early pointer where ours does not.
@@ -2366,6 +2369,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // first angle is still expanded where retail calls out of line, and retail's prologue chain of otherwise
 // unused tag loads is still missing.
 // MiniMax H (11-13): no new form, no lower score (776); the frame is short of retail's 0xd4, the unit and the state are in the opposite registers, the first angle conversion is a call here and expanded in retail, and retail does an extra model-linked lookup.
+// MiniMax A (11-14): no new form, no lower score (776): the frame is still 0xcc against retail's 0xd4 and
+// retail's prologue still holds the lookup chain this build lacks (the definition's model tag at +0x38 and
+// that tag's bytes), so every stack home sits below retail's.
 // score 776 (was 776): frame 0xcc versus 0xd4 and first angle expansion remain; retail calls channel_play
 // MiniMax D (11-11): no new form, no lower score (776); the frame is still 0xcc against retail's 0xd4, and
 // retail's prologue still holds the lookup chain ours does not have: the unit's definition index, then the
@@ -3856,6 +3862,9 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // force flag declared first, and the two flags declared ahead of the lookup, which rebuilds the function at
 // 682 bytes) all leave 12 or more, and the permuter found no candidate.
 // MiniMax H (11-13): no new form, no lower score (12); the definition and control stack slots are swapped and the two flag bytes are cleared after the test here and before it in retail.
+// MiniMax A (11-14): no new form, no lower score (12): the definition and control stack homes stay swapped
+// (retail 0x20 and 0x1c against our 0x1c and 0x20) and the two flag clears stay after the lookup's branch
+// where retail clears them before it (retail's 0x11 before its 0x10).
 // score 12 (was 12): earlier 12 (was 44): earlier BLOCKED-BY 0xe70b0 (its return type) for the frame 0x3c versus 0x38, lifted in lane 16 r97. Measured from
 // MiniMax b (11-06): no new form, no lower score; the action short's four-byte slot is the whole frame
 // difference, and it can only be a two-byte compiler temporary if 0xe70b0 returns its two-byte result

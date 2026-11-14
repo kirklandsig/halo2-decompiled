@@ -2630,6 +2630,9 @@ struct s_unit_event
 // EAX and reads the other five arguments off the stack with a 0x38 frame, ours takes the region index
 // and the permutation pointer in registers, and that argument set comes from this function's own first
 // pass, so it cannot be changed from here without a new parameter order.
+// MiniMax A (11-14): no new form, no lower score (517): retail's entry takes only the permutation index in EAX
+// and reads the region index once into EBP off the stack (`ret 0x14`), while this build hands the region index
+// over in EBX and the permutation pointer in EBP; that register-argument set follows the parameter order.
 // score 517 (was 517): 476 before m3 lane 7 r155's region read through its address, 472 before r94's walk; frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // r101: unchanged at 472; frame 0x38 agrees; permutation remains on the stack instead of EAX,
@@ -5040,8 +5043,11 @@ struct s_damage_object_creation
 // MiniMax B (11-12): no new form, no lower score (156): the mask's zero store, the piece loop's guard order, the search's entry test and the last two lookups' scratch registers still differ.
 // MiniMax H (11-12): no new form, no lower score (156): the node loop's guard, the search's entry test and the mask's zero placement are unchanged; the lane history's best form (the piece pointer with the piece loop as `!= 0`) is 157 and the retail guard order is 187.
 // MiniMax H (11-13): the mask's zero moved after the states call 154 (the store then lands ahead of the mask test, retail has it inside the mask block), the zero assigned after the 0xba690 call 170 and in the for-init 231 (both rebuild the function: the datum offset stays in ESI and the node count takes 0x18), so 156 stands.
-// score 156 (was 156): 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
+// MiniMax A (11-14): the piece loop's bottom test as `!= 0` and the first-node search scanning for the first set bit reach
+// 146, ten points and over the keep bar; the mask's zero and the guard order stay as they were.
+// score 146 (was 156): 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // mask in memory). Left: the mask's zero is stored ahead of the states call (retail: at the first node loop), the piece
+// loop's guard order, the section loop's count spill, and the scratch registers of the last two lookups.
 // loop's guard order and bottom test, the search's entry test, and the scratch registers of the last two lookups.
 // MiniMax C (11-01): the shared loop counter and the permuter's variant reach 217, four points and under the keep bar, so nothing is kept.
 // MiniMax E (11-06): no new form, no lower score; the mask's zero store, the piece loop's guard order
@@ -5249,19 +5255,15 @@ void function_dbc80(long object_index, short section_mask_a, short section_mask_
 			}
 			if (object_definition->crate_object.tag_index != NONE)
 			{
-				while (detached_nodes > 0)
+				while (detached_nodes != 0)
 				{
 					long first_node = NONE;
 					s_damage_object_creation creation;
 
-					for (i = 0; i < node_count; i++)
-					{
-						if (detached_nodes & (1 << i))
-						{
-							first_node = i;
-							break;
-						}
-					}
+					i = 0;
+					while (i < node_count && !(detached_nodes & (1 << i)))
+						i++;
+					first_node = i < node_count ? i : NONE;
 
 					dword piece_nodes = function_db810(object_index, first_node);
 
