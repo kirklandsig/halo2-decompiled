@@ -571,6 +571,10 @@ PRIVATE inline void decal_project_point_17d9a0(real const *point, long axis, boo
 // short/word/long/dword, 192/192/192/192/196/196/195/195 on the split producer.
 // NOT kept: mixed result/field residence fails equality and grows the extent;
 // original selectors, point helper, normal/edge math and complete body restored.
+// P464: Existing shared dot producer component-array first/second/both inputs 20/20/20;
+// all parallel product names 44; completed result 20; original-order accumulation
+// by fields/by arrays 54/54; plain direct-index accumulation 70. NOT kept: no exact
+// dot/plane/selector repair; original shared helper and complete body restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

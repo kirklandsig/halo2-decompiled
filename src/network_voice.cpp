@@ -3278,6 +3278,9 @@ finish:
 // build of lane 5 round 82 and network_voice.cpp has not changed since, so the reload order follows the
 // rest of the image. Mask declared first, logging call inside the loop, empty declared first, reason
 // declared first, `if (changed) log; else return;`: 2 each, same pair swapped.
+// P464: Comparison-test bool/raw signed result producers 146/205; signed/unsigned short
+// comparison ordinal 188/188; literal mismatch byte/word/long 2/2/2; success-continue 2.
+// NOT kept: no exact post-format reload recovery; original comparison and whole body restored.
 // @retail 0x54590
 void function_54590(void)
 {

@@ -447,6 +447,10 @@ long network_session_get_maximum_players(c_class_58d20 *session);
 // P462: Complementary rejection bool/char/signed-char/byte/short/word/long/dword
 // outcomes 58/58/58/58/63/63/61/61. NOT kept: each regresses and grows beyond
 // native extent; original success-only result and complete call graph restored.
+// P464: Incoming readiness observation bool/byte/short/long, actual byte/char/signed-char
+// readiness field and read-only source field all reproduce reduced 0. Byte field plain 33
+// at 138 bytes; all file/provider controls unchanged. NOT kept: reduced-only equality;
+// original field declarations, observations and complete body restored.
 // @retail 0x73360
 bool c_helper_b::v7()
 {

@@ -1207,6 +1207,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // omitting its wholly overwritten default on those forms: 250/250/250/250.
 // NOT kept: the two-point lead is below the gain threshold; original query
 // outputs, all defaults, separate decision and complete body restored.
+// P464: Independent equipment primary/secondary/grenade result, palette bound,
+// primary/secondary/grenade selector and creation-variant role names: eight 252s.
+// NOT kept: sentinel and squad/query homes unchanged; original complete body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

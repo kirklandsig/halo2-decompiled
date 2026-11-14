@@ -939,6 +939,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // long/dword/short/word/byte/signed-char for, long/short while,
 // 854/854/837/837/837/837/854/837. NOT kept: larger frame and shorter extent;
 // original independent traces, sector scalars, helpers and full body restored.
+// P464: Independent actor/settings/path-settings/origin/forward/side/radius/obstacle
+// parameter role names: eight 569s. NOT kept: eager radius and pivot/trace homes
+// unchanged; original parameter names, shared producers and complete body restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
