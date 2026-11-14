@@ -98,6 +98,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // blend still leaves XMM5 in the aspect block and the tint's home is still exchanged with the second UV set's bounds.
 // score 194 (was 194): earlier 211 (round 95 m3 lane 11 at the end) and 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
 // Earlier first line: score 194 (was 211; round 95 m3 lane 11 at the end): earlier 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
+// Earlier at 194 (was 211; round 95 m3 lane 11 at the end): earlier 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
 // Earlier 211 (was 211; round 95 m3 lane 11 at the end): earlier 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
 // spill homes (the dead `values`/`context` argument slots) are swapped too; the blend leaves XMM5 in the aspect block.
 // M3 lane 8 r159 (fast): the aspect defaults declared y first (`aspect_y=1.0f,aspect_x=1.0f`) 209 (the default stores
@@ -587,6 +588,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // a_tint/z_tint. Measured: geometry copied as its bounds member 194 (same code); the 0x10000 branch's copy as
 // `uv_b.bounds=uv_a.bounds` 194 (same code); `remaining_blend` computed before the extents 331 (1980 B); the tint scoped
 // to a block ending at the pack call 234 (frame 0x50); the frame blend as one ternary 276 (1953 B).
+// P475: Standard direct-geometry/encoded-secondary range transfers and ordered
+// full channel clamp, seven subsets then backward/upper-first: 461/344/494/451/491/506/482/482.
+// NOT kept: no exact native tint/UV/blend storage repair; original complete body restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

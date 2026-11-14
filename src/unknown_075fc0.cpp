@@ -70,6 +70,10 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
     return local_0;
 }
 
+// MiniMax H (11-13): no new form, no lower score (356): the frame is still 0x38 here against retail's 0x34 (the
+// later value still has a stack home where retail keeps it in ebp) and the callee-saved set still differs (retail
+// keeps the observer in edi and the channel index in ebp); the helper whose byte result retail tests is 0x75910, and
+// the permuter's 25 tries in 309 s found only the call 0x765c0's two first arguments swapped, worth one point.
 // MiniMax G (11-12): no new form, no lower score (356); the frame is still 0x38 here against retail's
 // 0x34 (local_18 still has a stack home where retail keeps it in EBP) and the callee-saved set differs
 // (retail keeps the connection in EDI and the channel index in EBP); the helper whose byte result retail
@@ -276,6 +280,11 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // and none in ESI, keeps the channel index in EBP, and spills into the argument area, ours reserves 0x38 and splits
 // the saves differently; retail also keeps the NONE state in ESI and forms the channel base right after the
 // connection.
+// MiniMax B (11-14): no new form, no lower score (356): retail's prologue still is `sub esp, 0x34; push ebx; push ebp;
+// push esi; or esi, -1; push edi; mov edi, ecx` - the connection in EDI, the NONE state in ESI and the channel index in
+// EBP - where this build reserves 0x38 and splits the register saves differently, and the timed-out check's result is
+// still tested as a byte in retail (`test al, al`) where this build's callee returns a long; that callee, 0x75910, is
+// defined in another file, so the call's shape cannot be settled here. The body stands.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

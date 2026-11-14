@@ -472,6 +472,12 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax R (11-14): the emitter list test wrapped around the loop with the offset's zero store
+// inside it, and the scale declared before the multiplier, measure 39 (was 42) at 1130 bytes; not
+// kept, since the gain is under eight and the score stays above 30. Left: row i of both rotations
+// sums the up product before the forward one, the two saved registers are reloaded in the other
+// order after each property call, the copy's second and third components swap, and the branch
+// offsets and the two trailing bytes follow from those lengths.
 // score 42 (was 42): left: the offset's zero store before the list test, the 1.0 defaults' order, three
 // reload pairs and row i of both rotations. Round 176 (m3 lane 5, fast): on indexed emitter definitions with
 // scale first (re-measured 113 at 1136 B; every integer difference fixed, only the rotations differ: VC
@@ -813,6 +819,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // alone): scale first 39 (left: three reload pairs, row i of both rotations, branch offsets); with both refresh masks inline 39;
 // the emitter definition formed before the emitter lookup 44; `+=` translation 39; the motion rotated first 89; the particle
 // loop as do/while under its `if` 39.
+// P484: Linked-list for successor with empty-emitter continue, byte offset/row ordinal
+// 212/235; nested admission 42/115; post-admission definition receivers 260/262;
+// pre-admission unity defaults on the continue graph 210/233. NOT kept: no equality/gain;
+// original observations, offset/default timing, shared alias-safe rotations and body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1483,6 +1493,11 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
+// MiniMax R (11-14): no lower score (47): the availability's zero store still comes before the
+// second definition call and the availability is still made from the query result arithmetically;
+// moving the clear to just before the view read measures 125. Left: the availability's store order
+// and its arithmetic form against retail's branch, the view's reload after the attachment call, and
+// the two flag byte homes.
 // score 47 (was 47): availability clear/production and later view observation remain;
 // what still differs is the same-view flag: ours writes its true value to the stack byte
 // before the availability query, retail keeps the flag in BL and writes the true value only after the owner
@@ -1880,6 +1895,17 @@ bool function_17afd0(long effect_index, long value);
 // (508 B); P with the owner if/else inverted 142; this body with it inverted 47 (same code); `long const` effect index and view
 // 47 (same code); P with the query tested `== 0` 138. In every P form NONE's register stays live through the view and owner
 // tests (`cmp esi, ebx`, `cmp edi, ebx`), where retail's ends at the owner default.
+// P468: Existing camera/draw result byte/short/long/dword storage domains:
+// 113/140/141/141/47/111/110/110. NOT kept: no equality for the native byte homes;
+// original availability, view snapshot, query gates and complete body restored.
+// P482: Six eager pure-scalar owner/view/availability conjunction orders, then two
+// mixed complete joins: 122/122/122/122/122/122/139/162. NOT kept: all regress;
+// full eager joins grow the frame to 0x18, final mix grows to 515 bytes. Original
+// Boolean graph, read/query phases and entire body restored; availability/view gaps remain.
+// P484: Shared three-relation view outcome (unavailable/available-other/available-owner),
+// byte/short/long/dword, original/producer-local zero lifetimes: 60/133/131/131/70/87/85/85.
+// NOT kept: no equality/gain; original availability, owner/view observations, query
+// gates, callback arguments, traversal and entire body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
