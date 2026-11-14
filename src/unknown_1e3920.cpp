@@ -1214,6 +1214,11 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // MiniMax A (11-13): no new form, no lower score (252): the permuter (318 s) finds no try under the baseline; the squad
 // pointer still takes the slot at +0x1c where retail puts it at +0x10, and the two NONE sentinels still sit in EDI where
 // retail keeps them in ESI.
+// Round 177 (m3 lane 6, fast with the eight matched callees): the flags lookup declared before the two NONE sentinels 267
+// (1274 bytes); the squad ternary written `squad_index != NONE ? ... : NULL` 353; the squad entry index as `(word)squad_index`
+// 237 (positional: `movzx ecx, si` where retail has `and eax, 0xffff`; not kept); the squad bit read before the flags test
+// 253, after the placement view 252. Diagnostics: the squad index read through its address 252 (folded); volatile reads at
+// its later uses 333, also in the guard 330 (the head still keeps it in ESI).
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

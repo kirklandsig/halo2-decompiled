@@ -861,6 +861,10 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // body 58 (195 bytes). Reading: retail 0x140900 saves EBX itself, so no callee convention keeps the font out of EBX;
 // in matched 0x13d950 the mask's EBX is the iterator index's own register, free during the scan, which this
 // function's index (EAX throughout) does not offer.
+// Round 177 (m3 lane 6; one-file LTCG harness with unknown_13e8a0.cpp and unknown_16b570.cpp, exact at 14): the existing
+// out-of-line iterator step (0x16bb70) 71 (it stays a call); the header's calling iterator copy 70 (0x16bc00 out of line); the
+// key wrapper's conversion returning `long const &` 14 (diagnostic, header restored); the match test as two mismatch
+// `continue`s 14; a local key aggregate for the call, the test and the stores 14 (the 14s are the same code).
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

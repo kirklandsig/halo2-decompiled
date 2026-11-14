@@ -522,6 +522,14 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // named local for the store and `v` 672 (2883 bytes); the first step count as a conditional expression 658 (2879
 // bytes); the duration sum as `n2 + (fast ? 7 : 1)` 636; the active block's `w` pin and scale as one expression 636
 // (same code); re-measured round 168's first `rem = MAX(0.f, rem)` 636.
+// m3 lane 6 r178 (fast with 0x1eb6f0, matched throughout): what decides d over q for EBX, by diagnostics (reverted):
+// six fewer d reads (settle and 0.866 dots off d) d still EBX (641, 0x20 frame); no reassignment of q 678 and six
+// extra top-level q reads 718, d still EBX in both; the parameters renamed to sort the other way (aq, zd) 636 (same
+// code: names do not break it); no d in the activation block: no EBX load at all (726). So neither reference
+// weight, names nor q's reassignment gives q the register. Forms: `q = counter == 0 ? g_4687a4 : q;` 636;
+// `if (!counter)` 636 (same code: ours branches and stores q's slot where retail does `cmove ebx`); the output
+// copy from q written per component 648 (2876 bytes); the 0.866 test with the constant on the right 636; `fail`
+// declared before the time globals 636. Body unchanged.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
