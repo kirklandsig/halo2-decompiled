@@ -847,6 +847,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // T104: Accepted-face selection/emission cursors, original-count then actual-end bounds,
 // separate/both/mixed phases: 667/535/682/660/539/679/671/671. NOT kept: no native
 // tag/count/plane-home recovery or equality; original indexed traversals and full body restored.
+// P491: Float axis-root/paired endpoint-absolute/length-admission API families, seven
+// subsets then complete standard overloads: 529/574/529/565/570/565/539/535. NOT kept: no native tag/count/plane
+// home equality; six-point best enlarges frame to 0x21e4 and misses the keep margin.
+// Original APIs, alias-safe rotation and complete body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
