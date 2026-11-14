@@ -808,6 +808,7 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // order (retail left*y, forward*x, up*z) is not a product-phase state, and the indexed form's rows differ in their sum
 // order as well, so the count is not the lever for this function. One placeholder on the indexed form gives retail's
 // copy order (y, x, z into EAX/EDX/ECX) with the sums still (up*z + forward*x) + left*y.
+// P460: Callback-only position/motion/both rotation-return receivers, mutable/read-only, then complete early lifetimes: 122/122/126/122/122/126/126/126. NOT kept: output aliases miss equality and add 6-8 bytes; original shared rotations and whole body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1848,6 +1849,10 @@ bool function_17afd0(long effect_index, long value);
 // bytes: NONE now shares EBX with the owner and the later NONE tests are immediates, as retail's EBP pair, but the second
 // definition takes EBP, the availability still spills and the camera flag's store moves ahead of the second definition call);
 // P with `view_pass == same_view` 138.
+// T102: Complete different-view/detached/skip-draw result graphs, seven subsets,
+// then all with direct camera-result production: 116/50/96/118/119/98/121/121.
+// NOT kept: no exact availability/Boolean-home repair; original observations,
+// predicates, query gates, draw tuple and complete traversal restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

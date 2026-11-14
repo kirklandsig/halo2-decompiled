@@ -226,7 +226,7 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
-// score 49 (was 49): unchanged this round: retail keeps the false result in BL from before the creation
+// score 49 (was 49; m3 lane 2 r79 at the end): unchanged this round: retail keeps the false result in BL from before the creation
 // call and sets it only after the attachment, and it branches on the creation call's result instead of
 // materialising that comparison as a 0/1 value; retail also borrows EBP around the header flag test and
 // loads the object table's data pointer again for the object read, where ours shares one address between
@@ -762,6 +762,13 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // whole lookup after the flag test (pool kept in EDX, data and index reloaded) with no store in between; only the match-only
 // forms above (join store with a local retest 36-38, a repeated entity store plus a word index 14) reproduce it.
 // 0 trials: no unlisted natural form (m3 lane 14 r84 above: "the other natural spellings are listed above").
+// M3 lane 2 r79 (fast with the file's functions, 0x108e10 and 0xbb780): no new form run; the int result re-measured 49 (same
+// code as the long result). Reading of retail's object lookup: the pool global stays in EDX while the data load and the
+// scaled index are both recomputed, and ECX still holds the scaled index when it is recomputed, so the second lookup was never
+// in the same CSE region as the header test; that is what a join in front of the object read gives when it is threaded away
+// only after CSE. Every natural spelling that adds such a join (bool or local retests, early returns, predicates, do/while,
+// getters) is threaded before CSE in this build, and the forms that keep it (a store at the join, a cleared field retested)
+// are match-only and leave the join itself in place.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

@@ -526,6 +526,13 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // (round 218's 36, same code: the store is dead, so its place does not matter; left the direction pointer in ECX for retail's
 // EAX), with it first 65 (round 137). Retail's tail C is an exact copy of tail A's suffix and still unmerged, so its source
 // differs from tail A's in something that leaves no code.
+// m3 lane 3 r239 (fast with 0x26c380/0x26c4e0/0x26ccb0/0x26d370/0x15f3a0, matched throughout; control 244): the held goto
+// form rebuilt on this body re-measured 34 at 1605 B (registers and stack offsets masked: 4 lines, the cross's row j
+// first product and tail C's edge/distance store order). On it, every early tail as a literal `return false;`/`return
+// true;` with `return success;` kept at the end 381 (1605 B). Retail's tail C is not cross-jumped into the next-is-target
+// tail although its stores and point computation are that tail's suffix (origin in EBX, `xor al, al`).
+// MiniMax A (11-13): no new form, no lower score (244): the permuter (302 s, six tries) splits the blocked-and-success chain
+// assignment into two stores, which the fast check puts at 243, one point short of the bar, so the body stands.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

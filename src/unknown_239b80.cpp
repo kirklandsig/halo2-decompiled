@@ -571,6 +571,15 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // a separate increment on its while body); the current-first form with the first departure call in retail's operand order
 // 264 (same score). Retail computes both departure differences as next - first (`fld [next]; fsub [first]`): the first call's
 // (first, next) order on main is not retail's, which costs 1-2 points here (round 171's 162/163).
+// m3 lane 3 r239 (fast with the file's functions; 0x239d50 matched throughout; control 161). Retail's closure test has no
+// fxch (`fld eps; fcompi st(1); jbe` on both coordinates, falling into the epilogue): a positive `fabs < eps && fabs < eps`
+// test, where `!points2d_differ(...)` compiles the second coordinate as `fxch; fcompi; jae`. On this body the closure as a
+// positive points2d_equal helper (N354's completion form re-measured on this base) 159 (784 B); `hull_count = pass + 1;`
+// after the candidate scan 204; one positive equality helper for both tests with `left_start || !points2d_equal(...)` 168.
+// Done-flag family (match-only; lane 16 r108's body re-measured 228 at 763 B): with the positive closure 229 (masked 45 ->
+// 42, the fxch gone), plus `short current = count;` before the classifier call 150 (784 B), plus the departure as
+// `left_start = left_start || points2d_differ(next, first)` 150, or lowest_y declared before lowest_x 148 (masked 47 each).
+// Left in every family: retail caches the hull count in EBX at its top-tested loop head and reads the count from its home.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
