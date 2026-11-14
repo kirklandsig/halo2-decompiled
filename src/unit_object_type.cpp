@@ -831,6 +831,11 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // byte_flags_set for the first clear too 10; all three existing helpers 10 (each 95 bytes: the mask temp takes EAX as in
 // retail and only the 0xe4bd0 tail call is left; 0xc2d00 flips to 2, the accepted link flip). Round 281's 9 adds a
 // named bool used once for the type test, which is kept only on a match. Still BLOCKED-BY 0xe4bd0 / 0xe5930.
+// M3 lane 11 r97 (fast with 0xe4bd0, 91 throughout): the type in a named local for the mask test 13; the unit as a byte
+// pointer with raw offsets 13; the mask spelled `(1 << 0)` 13; the animation-state offset in a named short 13; the type
+// test inverted with an early return ahead of the 0xe4bd0 call 13 (all the same code). Still BLOCKED-BY 0xe4bd0
+// (src/bipeds.cpp, held by another lane this round) and BLOCKED-BY 0xe5930: retail calls 0xe5930 from all six of its
+// callers, ours expands it inside 0xe4bd0 (113 bytes against 61), which gives 0xe4bd0 the EAX convention.
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {
@@ -3553,6 +3558,25 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // 12/12; standard point copy 46; entry point storage 12; setter result as
 // query input 12; post-root point storage 12. NOT kept: no match; wide
 // body comparison and original body restored; root/body saved-register pair remains.
+// M3 lane 11 r97 (fast; control 12): cause narrowed. The pair is a ranking of two saved-register values: the root
+// index (two definitions, one inside the walk) ranks above the rigid-body element offset here and below it in retail.
+// Diagnostics that give retail's pair (root EBP, offset EDI), all with other code changes: root left uninitialised 87
+// (298 bytes); a third element read after the query call 36 (305 bytes); the keyframed test ahead of the fixed test 48
+// (293 bytes, the index itself kept across the call); two extra early tests with their own loads 91, three 101; two
+// float tests before the query call 62; no loop, one conditional definition 102. Same pair as main (EDI/EBP): x through
+// a third lookup 38; short root 62; one extra early test 74 or 81; two more tests on the loaded flags byte 85; one, two,
+// six extra early stores 83/94/119; 1 to 8 unused locals 12 each (not a symbol-count phase). Natural forms: the masked
+// root in a named local 12; header flags byte in a named local 25 (294 bytes); component index assigned in the test 12;
+// typed `rigid_bodies[i].rigid_body->m_fixed` / `->m_motion` with or without `.data` 12/12; a named element offset
+// (index * sizeof element) 12; a reference to the array 12; an element reference for the first read only 12; a named
+// reference to the element for both reads 21 at 292 bytes (retail's pair, first difference +0x52, but the element
+// address is kept across the keyframed call where retail keeps the offset and reloads the array); the loop's parent
+// through unit_at_masked_index 12; the header through object_header_get 12; both 12; a local forceinline copy of the
+// walk 12. Splitting the root from the walk: a walk-local current index with the root assigned once after it, as a
+// while with a parent local 113, a guarded do/while 91, a guarded for 91 (retail's pair, but the walk's index takes EDX,
+// the pool pointer ESI and a `mov ebp, edx` follows the loop); a walk-local last index under no guard 12 (folds away);
+// the root's NONE in an else arm 95 / 86 (retail's pair, `or ebp, -1` after the loop). Permuter (fast, anneal, 600 s,
+// 71 tries): best 12.
 // @retail 0xcc460
 bool __stdcall function_cc460(long object_index)
 {
