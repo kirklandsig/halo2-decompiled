@@ -564,16 +564,16 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
-// MiniMax H (11-12): no new form, no lower score (45): what is left is the register colour of the first
-// product's operands (ours xmm1/xmm2, retail xmm2/xmm1), the second product's schedule and the else arm's
-// forward stores, all of them inside the shared helpers (include/vector_products.h and
-// src/unknown_1f03e0.cpp), whose bodies are not mine to change.
 // score 45 (was 45): the second product through the existing staged helper of src/unknown_1f03e0.cpp
 // (function_1f087b, every component computed before the stores, i first) gives retail's previous_up
 // loads (j, i, then k into xmm0 after the distance store) and folds forward's loads in the second
 // product. Left: the first product's right.i/right.j colours (ours xmm1/xmm2, retail xmm2/xmm1), the
 // second product's schedule (retail computes k, j, i) and the else branch's forward stores (through
 // edi here, ecx in retail).
+// MiniMax H (11-12): no new form, no lower score (45): what is left is the register colour of the first
+// product's operands (ours xmm1/xmm2, retail xmm2/xmm1), the second product's schedule and the else arm's
+// forward stores, all of them inside the shared helpers (include/vector_products.h and
+// src/unknown_1f03e0.cpp), whose bodies are not mine to change.
 // MiniMax R (11-11): no new form, no lower score (45); the reduced image the fast check builds compiles
 // this function differently from the full program (255 with 1224 bytes against the full build's 45 with
 // 1262 bytes), so the fast number no longer agrees with the full build and the plain check is the one to
@@ -952,6 +952,12 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // (43, one-use pointer); the existing direction_from_angles there is listed (156/224), as is 0x23d790's helper shape
 // (221/222). The first product's colours sit in cross3f (shared include/vector_products.h) and function_1f087b
 // (src/unknown_1f03e0.cpp, on this round's avoid list). Body unchanged.
+// M3 lane 13 r89 (`--fast 0x23de50 0x1f0870`, control 45): the product colours and the second product's schedule sit in
+// cross3f (shared include/vector_products.h) and function_1f087b (src/unknown_1f03e0.cpp, on lane 2's avoid list this
+// round), so only the code around them was tried: the camera arm's flags set before the field of view 63, its timer
+// cleared first 65; the else arm's k row first 56, its distance copied after the three rows (before 0x11d090) 64, the
+// pitch cosine written at each use 169 (1275 bytes). Re-measured: the common field of view/offset/velocity stores once
+// after the arms 246 (1211 bytes, Round 512's listed 246). Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
