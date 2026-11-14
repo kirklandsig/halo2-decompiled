@@ -1432,6 +1432,9 @@ struct s_item_flags_view_10b850
 // 821/838/843/821/830/823/841/824. NOT kept: three-/one-point best gains; frame remains 0x154.
 // Original private helper, four call sites, declaration set and complete body restored.
 // MiniMax H (11-14): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack slots where this build holds them in registers.
+// T108: Ordinary inline motion/marker-query/marker-publish/inverse-point metadata: eight at 824;
+// existing point-to-point query wrapper 857 (frame 0x148 versus native 0x12c), same 4096 bytes.
+// NOT kept: no qualifying gain; original complete body and every provider declaration restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1977,6 +1980,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // point-query outputs: 178/171/180/171/180/157/176/176. NOT kept: all regress; original
 // two-use spin, release helper, paired setters and full body restored. Return/release/event homes remain.
 // MiniMax H (11-14): no new form, no lower score (140): the release flag is still cleared with a load, an and and a store where retail clears the byte in place, and the return byte still sits at esp+0xe where retail puts it at esp+0xf.
+// T108: Ordinary inline metadata at existing node-transform/point/owner/point-transform providers, four isolated, three pairs and all:
+// 140/140/140/138/138/138/140/138. NOT kept: no qualifying native-shape gain or equality; original complete source
+// and every provider declaration restored. Native frame and first storage/scheduling gap remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
