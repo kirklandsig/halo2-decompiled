@@ -103,6 +103,8 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 	result->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
 }
 
+// score 6 (was 6): the entry loads the index before the radius constant where retail loads the constant first, and the
+// x store uses the formed vertex address where retail folds it into the store. Earlier notes:
 // MiniMax G (11-12): no new form, no lower score (6); the entry still loads the index before the radius constant where retail loads the constant first, and the x store still uses the formed vertex address where retail folds the address into the store's operands; the helper called with the array element scores 25 and with the array element for the w store as well 38.
 // MiniMax E (11-11): no new form, no lower score (6); the check's left column is ours and the right column is retail.
 // The entry still loads the index before the radius constant where retail loads the constant first, and the loop
@@ -210,6 +212,15 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // read-only edge pointer 6; post-transform point selection 6; memmove point copy 125 (459 bytes);
 // immutable output cursor 6; unsigned full-width edge ordinals 6; existing shared point transform
 // 323 (256 bytes). All restored; radius/index loads and the first vertex address/store remain.
+// Round 115 (m3 lane 16, fast with 0x1ee4d0 and 0x1ee500; control 6): the 6 is the entry load order (2) and the x store
+// (2) plus its knock-on rows: retail's `mov [eax + ecx], edx; add eax, ecx` is a byte longer than ours, which moves the
+// back-edge jne and the padding (2). A compile-only screen (CL without /GL) reproduces ours and gives retail's entry
+// order with the radius read from a .data global, but LTCG does not: the global defined here 6, defined in a /GL-
+// object and declared extern here 6 (the index is still loaded first). The x store through the array element with
+// y, z and w through the pointer folds the x address in the screen but copies y and z as dwords, 112 (the listed
+// form). first_edge declared first with edge_index copied from it 6; the w store through the point setter's
+// returned pointer 6 (same code).
+// Also: the radius written as a double literal 6 (same code); the vertex pointer taken before the transform 69.
 // @retail 0x1edd00
 c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, long index,
 	long user_data, const transform4x3f *matrix) : radius_shape_2de750(0.01f)
@@ -247,6 +258,11 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
+// MiniMax C (11-14): no new form, no lower score (192): retail's frame is 0x90 and it loads the ray's and
+// the vertices' six components into xmm2-xmm7 before it forms the three edge vectors in registers, while
+// ours forms each difference and spills it to a stack home (frame 0x84); a permutation search over this
+// body (33 tries) found no variant below the baseline, and the point-in-polygon query still needs the
+// points before the point: BLOCKED-BY 0x23a220.
 // MiniMax A (11-13): no new form, no lower score (192): the origin as an aggregate initialiser compiles to
 // the same bytes; the frame is still 0x84 against retail's 0x90 with the origin's x and y and the edge
 // vectors in stack homes, and the point-in-polygon query still needs the points before the point, which

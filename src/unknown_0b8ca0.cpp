@@ -679,6 +679,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// MiniMax S (11-14): no new form, no lower score (165): the 71-point form of round 11-12 rested on spellings that are not allowed, so the body stands; the frame is retail's (0xb4, 895 bytes) but the cluster bit table's base is read inside our loop where retail reads it once before the first query, the zoom argument is narrowed to a short where retail passes it in a full register, the angle's x87 sequence loads the radius before the distance and takes the cosine before the dot product where retail does the opposite, and the definition pointer sits in edx where retail holds it in eax.
 // MiniMax B (11-12): score 71 (was 165): the step helper now takes its result after the call, the cluster
 // loop ends on a visible flag instead of a second test on the cluster, the header's flags are read
 // through the root object, the range's zero is the model-NONE arm and the angle's sum is the float one
@@ -687,7 +688,13 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // MiniMax B (11-13): no new form, no lower score (165): the permuter cannot search this function on the reduced
 // image (248 differences there against the full image's 165), and the earlier 71-point form rested on match-only
 // forms, so the body stands as it is.
-// score 71 (was 165): the frame is retail's and the body is retail's length (895 bytes), but the cluster
+// score 165 (was 165): the body is main's again (the 71-point form was reverted, its shapes only hold with a
+// byte match); the frame is ours (0xac, unaligned) where retail realigns to eight bytes with a 0xb4 frame, the
+// result byte sits at [esp+0xf] where retail keeps it at [esp+0x13] and the link iterator at [esp+0x30] where
+// retail keeps it at [esp+0x40], so the first difference is at +0x1a and every later offset shifts with the
+// frame order; the alignment comes from the call chain of the two callers 0xbf2c0 and 0x268c90, whose files
+// are not mine to edit.
+// Earlier (the reverted 71-point form, was 165): the frame is retail's and the body is retail's length (895 bytes), but the cluster
 // bit table's base is read inside our loop where retail reads it once before the first query, the zoom
 // argument is narrowed to a short where retail passes it in a full register, the angle's x87 sequence
 // loads the radius before the distance and takes the cosine before the dot product where retail does the

@@ -2644,6 +2644,9 @@ dword __cdecl function_131fc0(real alpha);
 // MiniMax G (11-13): no new form, no lower score (140): this build still hoists the preserve_alpha load above
 // the `simple` branch (kept in cl across 0x131fc0) where retail loads it after the branch and again in bl; the
 // permuter run over this function found no usable form either.
+// MiniMax A (11-14): no new form, no lower score: this body's score moves with the reduced image's
+// source set (140 on a single-function image, 196 on the queue's image of 562 sources, where the
+// first difference is at +0x15); the difference itself is unchanged by the image.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -3032,6 +3035,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// MiniMax H (11-14): no new form, no lower score (54).
 // MiniMax B (11-13): no new form, no lower score (54): what is left is the scheduler's order inside the two corner sets, where this build places the x87 coordinate chains one slot earlier among the SSE ones than retail does (first difference +0x527); the corner rows in the other orders, the trig pairs as two statements and the point pairs all give 54 or worse.
 // score 54 (was 54): earlier 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
 // before; frame, bounds block, both trig sequences and every home retail's). Left: inside both corner sets

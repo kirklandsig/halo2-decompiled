@@ -611,6 +611,13 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // with a plain rdtsc helper 311 (frame 0x3c, the zero stores vanish); the retry as a `static inline` helper taking the stored
 // size 465 (909 bytes: it stays a call). The move is kept only with a match, so the file is as it was and the body below is
 // unchanged; the lead version is build/r99/body156_h3.cpp with build/r99/mk156.py.
+// P482: Actual selected 2/4 channel count reused by both audio calls, char/signed-char/byte/
+// short/word/int/long/dword: 284/284/284/290/290/281/281/281. NOT kept: every form
+// regresses and lengthens; original arrays, layout test, helpers and complete body restored.
+// Frame 0x3c/0x40, native zero/clock/output homes and instruction policy remain.
+// T105: Finite pump budget, long/dword/short/byte with positive/nonzero
+// guards: 272/272/272/284/272/272/272/284. NOT kept: native ordinal/frame
+// equality absent; original retry, clock producers and complete body restored.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {
