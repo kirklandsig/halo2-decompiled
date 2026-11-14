@@ -1904,6 +1904,17 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // 611/620/637/614/623/623/646/630. NOT kept: no native sum/zero/remainder repair; original geometry and helpers restored.
 // P446: Actual lower and upper endpoint admissions in bool/byte/short/long, preserving short-circuit edge-length evaluation;
 // 623/623/623/623/623/623/623/623. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// M3 lane 10 r101 (fast with 0xc2d00/0x17a380/0x16a440/0x2469b0/0x120790; brackets = difflib counts exact / registers masked /
+// registers and stack offsets masked, control 610 [584/398/285], 634 instructions against retail's 629): nothing kept. Lane 4's
+// composite re-measured on this body: the ray arms as `if (use_normal) { normal } else { edge }` 608 (2872 B) [497/327/209]; with
+// the next index named at the edge loop's top 595 (2903 B) [394/300/144]; with no outer count guard and `radius * radius` at its
+// use as well 547 (2888 B) [363/295/128], 629 instructions as retail. New: 0 to 7 unused longs ahead of that composite
+// (symbol-count phase scan) 547/593/593/593/582/585/585/585, and ahead of this body 610/623/623/623/613/614/614/614: phase 0 is
+// the best phase of both, so the remaining float rows are not a phase effect. Without 0xc2d00 and 0x17a380 in the fast list the
+// callee 0x16a440 changes convention (23 -> 187) and this function's call code with it. Frame homes relative to ESP after
+// the stack probe: retail face sum 0x44, nearest 0x50, edge sum 0x54, face count 0x84, edge radius 0x88, edge count 0x8c, face
+// radius 0x90; a no-link compile of this file (frame table from the assembly listing) puts ours as face sum, edge sum, edge
+// radius, edge count, face radius, face count, nearest in one run, whatever the names or declaration order.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
