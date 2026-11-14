@@ -1376,6 +1376,7 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // result spills where retail keeps it in a register; the parameter order that would fix the swap is
 // retail's, and the callers' declarations are in files this lane may not edit.
 // MiniMax S (11-11): no new form, no lower score (529): retail hands this function its block in eax and its query in edx while this build swaps them, and its frame is 0x2c against retail's 0x28.
+// MiniMax S (11-14): no new form, no lower score (529): re-measured this round; retail still hands this function its block in EAX and its query in EDX while this build swaps them, so the frame stays 0x2c against retail's 0x28 and the selection result still spills where retail keeps it in a register; the parameter order that would fix the swap is retail's, and the callers' declarations are in files this lane may not edit.
 // score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (ours ends `ret 0xc` as retail).
 // MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
 // and its query in edx while ours swaps them, and the parameter order is not ours to change.
