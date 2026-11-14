@@ -76,6 +76,13 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 
 // MiniMax H (11-14): no new form, no lower score (106): this round re-read the diff: the -1 default still lands in EAX where retail holds it in ECX, and the 15-bit counter is still read with movzx where retail clears EAX and loads a word; the two counts' registers come from the callers in another file, so the body's spelling cannot move them.
 // score 106 (was 106): no frame; enable observations and maximum/register homes differ.
+// M3 lane 8 r165 (fast, plain where noted): both maxima and the clamp store through the flat `all[index * 0x1b5 + 12]`
+// / `counters[0][team * 0x2d + 12]` indexing the two held helpers use 106/106/106 (same code); LEAD, match-only: the
+// clamp's store through `s_input_counter *counter = &g_511bf4.groups[index][12];` formed before the clamp (the setter
+// helper's own form) 70 plain (427 B): the counter's address is formed ahead of the clamp as in retail and the old
+// maximum then takes retail's `xor eax, eax; mov ax` read, leaving the enable byte held in BL (retail reloads it) and
+// the two maxima's NONE arms; on it the player maximum as a nested init/assign 100, the limits read before a nested
+// index test 106. A one-use pointer: kept only with a match, which the blocked enable reload prevents.
 // MiniMax B (11-12): no new form, no lower score (106): retail keeps the old maximum in ECX with the enable byte in AL and reads the 15-bit counter with the 16-bit idiom, ours keeps them in EAX and DL, and the enable reload needs one object for g_510ca0 and the counters: BLOCKED-BY include/globals.h and src/unknown_1967d0.cpp.
 // MiniMax H (11-10): no new form, no lower score (106): retail keeps the old maximum in ECX with the
 // enable byte in AL and reads the 15-bit counter with the 16-bit idiom, ours keeps them in EAX and DL;

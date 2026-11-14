@@ -324,6 +324,12 @@ extern "C" void _ReadWriteBarrier(void);
 // score 122 (was 122): frame 0xc against retail's 0x14; retail reads the pool from the iterator's home for
 // the scan (high water snapshot in ESI) and from a second stack copy for the element, and keeps the datum
 // index in EDI; ours forwards the pool into EDI for both.
+// M3 lane 8 r165 (fast): `unit` declared at function scope 122 and `finished` at function scope 122 (same code each);
+// the four-field iterator viewed through a cast as the step's iterator with a pool local 119 (MiniMax I's form,
+// re-measured; frame 0x14 but the pool still forwarded into EDI); the existing four-field iterator with
+// data_datum_iterator_next_inlined and the current datum read from the iterator, without/with the barrier 152/162.
+// Reading: retail's iterator stays in memory (its scan re-reads the iterator's pool each pass) and the element's
+// pool is a separate spilled local; every inline step here lets the pool be forwarded into one register.
 // MiniMax H (11-12) lead 99, NOT kept (coordinator): it needs a new `_ReadWriteBarrier()` (barriers are reverted) and
 // the iterator step's body written out by hand. With it the frame is retail's 0x14 and the body retail's 473 bytes, with the
 // prologue stores, the shared next-index scan and the element computation in retail's order; what is left is the
