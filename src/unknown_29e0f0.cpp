@@ -474,6 +474,11 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // scope, record ordinal at pass scope, earlier uninitialized group
 // receiver and output cursor declarations: eight 382s. NOT kept:
 // default/bitmap/pass homes remain; original body retained.
+// P474: Native standard group/point fixed-bitsets with test/set or indexed
+// proxy contracts, each alone and all four paired forms.
+// Selected-default, bitmap and pass homes remain.
+// Scores 424/458/404/546/416/511/461/570. NOT kept: ties/regressions;
+// original executable body and helper contracts restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

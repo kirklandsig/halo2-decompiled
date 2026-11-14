@@ -2256,6 +2256,11 @@ bool function_0b6760(s_index_pair const *pair);
 // separate power/position group declarations at function scope 250/250;
 // outer first/second manual completions 250/250. NOT kept: no gain;
 // original observations, pointer qualifier and body retained.
+// P474: Standard typed products/sum/differences/quotient/ordered tests/
+// equality tests, complete arithmetic and complete scalar contracts.
+// Frame 0x20 agrees; saved-register and activity-byte homes remain.
+// Scores 386/360/462/392/448/432/532/659. NOT kept: ties/regressions;
+// original executable body and helper contracts restored.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

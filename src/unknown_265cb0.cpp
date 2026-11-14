@@ -768,6 +768,11 @@ real function_30bf0(vector3f *vector);
 // with the squared distance, which is the merged form rounds 145 and 82 measured at 81.
 // P458: Complete initial mode admission/rejection outcomes, bool/byte/short/long:
 // 150/150/150/150/150/150/150/150. NOT kept: native result/range/projection homes and basis products not recovered; original complete body restored.
+// P474: Standard delta/motion/clipped coordinate producers, typed normal copy,
+// paired seeded magnitudes, y-seeded plane reduction, complete graph and
+// explicit reductions. Result/range/projection homes and basis schedules remain.
+// Scores 268/206/405/310/209/341/390/400. NOT kept: ties/regressions;
+// original executable body and helper contracts restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2468,6 +2473,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // sets 1..7: 621/419/621/338/632/607/649; complete conditional publications 652.
 // NOT kept: every form regresses; arithmetic/extra-store shapes do not match.
 // Original complete body restored; iterator, player-loop and SIMD residence remain.
+// P474: Standard k-seeded reverse-coordinate reductions at absolute, relative
+// and facing dots, seven subsets then explicit operation contracts.
+// Native iterator homes and normalized-direction SIMD residence remain.
+// Scores 506/494/593/559/645/639/696/775. NOT kept: ties/regressions;
+// original executable body and helper contracts restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

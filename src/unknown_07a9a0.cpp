@@ -1397,6 +1397,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // failure arm first for the opening test alone 815 each (the base's inline choices). Compiler-setting probe (reverted): the 900 form
 // without /arch:SSE 912, the same inline choices. Every form raises the score, so the body stays at 766;
 // build/r81/lead_7e210_rejsplit1.patch and build/r81/lead_7e210_w1split1.patch hold the 1034 and 843 forms.
+// P474: Standard player/machine/group identity copies forward 851/821/892;
+// backward 851/868/892; full-byte equality/mismatch 889/888. NOT kept:
+// regressions; frame/session/initial lookup remain. Original body restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
