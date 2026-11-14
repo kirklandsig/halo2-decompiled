@@ -247,6 +247,11 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
+// MiniMax C (11-14): no new form, no lower score (192): retail's frame is 0x90 and it loads the ray's and
+// the vertices' six components into xmm2-xmm7 before it forms the three edge vectors in registers, while
+// ours forms each difference and spills it to a stack home (frame 0x84); a permutation search over this
+// body (33 tries) found no variant below the baseline, and the point-in-polygon query still needs the
+// points before the point: BLOCKED-BY 0x23a220.
 // MiniMax A (11-13): no new form, no lower score (192): the origin as an aggregate initialiser compiles to
 // the same bytes; the frame is still 0x84 against retail's 0x90 with the origin's x and y and the edge
 // vectors in stack homes, and the point-in-polygon query still needs the points before the point, which

@@ -12,6 +12,11 @@ void function_1fe410(point3f *arg_0, real arg_1);
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax C (11-14): no new form, no lower score (373): retail keeps the pool pointer in the base register
+// and forms the actor with lea edi,[edx+esi] (actor EDI, object ESI), while ours loads the pool early
+// into EDX and ends with the actor in ESI and the object in EDI, so the frame is 0x4c against retail's
+// 0x48; a permutation search over this body (33 tries, 604 s, with the reduced image allowed to disagree
+// with the full one) found no variant below the baseline.
 // MiniMax A (11-13): no new form, no lower score (373): the timer result written straight into the
 // message field and the timer value folded into the conversion both compile to the same bytes; the frame
 // is still 0x4c against retail's 0x48, retail keeps the third settings pointer in esi from the entry where
