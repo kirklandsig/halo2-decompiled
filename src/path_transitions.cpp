@@ -919,6 +919,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // actor in EAX early (the flags held across the scale) and calls with it in place, so the entry load is the whole cause.
 // P477: Standard paired dot/difference, actor-direction capture, paired/actor/trace point publications, upper-limit and native-prefix reductions:
 // 393/409/281/358/346/347/405/442. NOT kept: all regress and none repairs native early root/actor ingress; sixteen matched controls survive. Original geometry, shared producers, caller roles, result qualifier and complete body restored.
+// P490: Standard actor/first-length/second-length/wide-edge/corner/both-length/full
+// admission producers, then reverse full predicates: 312/373/376/437/471/398/629/629.
+// NOT kept: all regress and enlarge away from retail; all matched file controls survive.
+// Original predicates, geometry, result qualifier, helpers and full body restored; early root/actor ingress remains.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

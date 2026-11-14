@@ -879,7 +879,6 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // are grouped the way retail groups them (the three right-hand products first, then the three left-hand ones); declaring
 // the normal vector before the left one does not move either home (92), so the frame stays a permutation the declaration
 // order does not reach.
-// score 92 (was 92): 152 before m3 lane 14 r83; earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
 // MiniMax H (11-12): no new form, no lower score (92); the permuter over the function managed 17 tries in 301.7 s and found nothing (best 89, baseline 89, no confirming build), so the slot layout stands; this round added the player block's forward vector declared before the origin (92), copied in its declaration (100), and as a function local at the top of the function, above the projectile index and below the grenade type (92 each), which all leave the player's forward at the same home, so retail's forward at 0x20, grenade type at 0x2c and projectile index at 0x30 against our 0x28, 0x20 and 0x24 stands.
 // MiniMax G (11-12): no new form, no lower score (92): the seat index and the direction sit 0xc below retail's slots and the
 // shared block-vector slot 0xc above them, so the whole frame is a permutation of retail's; the permuter (killed at its time
@@ -1120,6 +1119,9 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // P473: Immutable/native-component player forward, then mutable components, original-boundary
 // override-origin/direction, fallback-direction/axis setters and immutable vehicle forward:
 // 92/291/291/286/337/343/234/92. NOT kept: input ownership does not match; original complete body restored.
+// P488: Complete coordinate algorithms at original velocity scale, aim scale and projectile subtraction, seven
+// subsets, then parent sum: 362/307/165/348/374/297/341/378. NOT kept: All regress and change extent away from
+// native. Original copies, helper calls, grouping, branch origins and complete body restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -2731,6 +2733,10 @@ __forceinline char unit_action_round(real value)
 // P473: Whole mode-dependent selection group interleaved with the four original
 // continuation groups, EABCD/AEBCD/ABECD/ABCED/EDCBA/DECBA/DCEBA/DCBEA:
 // 234/234/234/234/234/234/234/234. NOT kept: no native register/result-home equality; original full body restored.
+// P488: Complete longitudinal inner-product/accumulated-product producers, forward/reverse traversal,
+// default/explicit operators and direct/staged products: 234/309/255/323/272/307/280/315. NOT kept: No native
+// equality; reordered float groups and staged products are exact-only. All original observations, float
+// grouping, helpers, result graph and full body restored.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

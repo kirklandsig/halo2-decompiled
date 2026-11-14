@@ -533,6 +533,13 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // tail although its stores and point computation are that tail's suffix (origin in EBX, `xor al, al`).
 // MiniMax A (11-13): no new form, no lower score (244): the permuter (302 s, six tries) splits the blocked-and-success chain
 // assignment into two stores, which the fast check puts at 243, one point short of the bar, so the body stands.
+// M3 lane 11 r99 (fast; control 244): the outer sector loop as `do { ... } while (NONE != next_sector_index);` 391 (1590 B);
+// `else hit = false;` under the crossing test 244 (same code); `iterator.forward` read at each of its three uses (no `forward`
+// local) 299 (1600 B); the edge loop as `while ((edge = function_1fa720(&iterator)) != NULL)` with one iterator call 244 (same
+// code). Diagnostic dead-local scans (`long dead_k = k;` at the top, n = 0..7, removed): on the held goto form 34/305/305/305/
+// 305/305/304/305, on this body 244/305/305/305/305/305/310/305; every added local breaks the edge loop's in-place
+// `mulss xmm3, [edx]` fold, and the cross's row j operand and the magnitude's j/i order stay wrong at every n, so they are not
+// a symbol-count phase. Body unchanged.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
