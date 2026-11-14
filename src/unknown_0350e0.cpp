@@ -1836,6 +1836,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 }
 // MiniMax I (11-11): no new form, no lower score (193): the body is 20 bytes shorter than retail's 812; the known form that reaches 177 raises 0x2e9e0 to 573, and 0x2e9e0's 492 body is tuned against the callee this one calls, so the two cannot be moved apart.
 
+// MiniMax B (11-13): no new form, no lower score (193): retail's four cases still compute their cross products with their own temporaries (its frame is 0x18 against this build's 0x14 and it stores the zero result to its slot before the jump table), so the bodies would have to be respelled one case at a time.
 // MiniMax H (11-12): no new form, no lower score (193); the three cross terms' order and the place of the case 1
 // reference copy still differ, and the helper forms that reach 177 and 182 still raise the caller to 573, so the body
 // stays as it is.
@@ -2074,6 +2075,7 @@ PRIVATE inline real clamp_2e9e0(real value)
 real game_time_get_seconds();
 void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 
+// MiniMax B (11-13): no new form, no lower score (492): the frame is 0x90 against retail's 0x94 and the x87 block's locals land in the other slots (retail's ratio is at esp+0x10 where this build has it at esp+0xc), so the body's shape is different from the first block.
 // MiniMax I (11-11): no new form, no lower score (492): the body is retail's length (2285) and the first difference is at +0x2; the body is tuned against the callee 0x2f2d0 calls, and the form that would take 0x2f2d0 to 177 raises this one to 573.
 // MiniMax G (11-12): no new form, no lower score (492): the frame is still 0x90 against retail's 0x94, so the definition, source,
 // scale and vertex homes sit four bytes below retail's, and retail's tag, position, direction, colour, alpha, amount and scale
@@ -2729,6 +2731,7 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
+// MiniMax B (11-13): no new form, no lower score (170): the products of each cross product are still multiplied in the other order (this build takes the direction's components into xmm4 and xmm3 where retail takes them in xmm1 and xmm3), and the dot product helper's body may not be written out by hand, so the order is not ours to choose.
 // MiniMax H (11-12): no new form, no lower score (170); retail keeps the raw current length in its own slot at +0xc
 // and the pinned value at +4, while ours reuses one slot for both, and the later homes (the dot's float, the axis)
 // still take the other register roles.
@@ -3306,6 +3309,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 	entry->initial = entry->initial < 0.0f ? 0.0f : entry->initial > *maximum ? *maximum : entry->initial;
 }
 
+// MiniMax B (11-13): no new form, no lower score (317): retail zeroes edx and keeps the block's base in ebp where this build zeroes ebp and keeps it in edx, and the two then read the stack slots in the other order; the frame's shape and the register plan have to change together.
 // MiniMax G (11-12): no new form, no lower score (317); both builds spill the counter and the entries
 // base to stack homes, so only the two registers differ (retail: the counter in edx and the base in ebp;
 // ours the other way round), and the base is a load of state->entries rather than a local, so declaring
@@ -3611,6 +3615,7 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
+// MiniMax B (11-13): no new form, no lower score (486): the frame is 0x60 against retail's 0x38 and retail multiplies the mode's short by 0xb8 where this build takes a hoisted constant, so the locals and the register plan differ from the start.
 // MiniMax H (11-12): no new form, no lower score (486); the frame is still 0x60 against retail's 0x38 - retail keeps
 // one 12-byte home for the previous camera position and each element's old position, reads the delta from the stored
 // view position and copies the scaled projection inputs into fresh registers in both arms, and those forms shorten
