@@ -584,6 +584,11 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // short/word/long/dword 279/277/193/193 and 277/277/188/188. NOT kept: no byte
 // match; original Boolean-valued history, eager length, loops and whole body restored.
 // Native frame 0x14, count/departure argument reuse and scan bound remain.
+// M3 lane 15 r83 (fast, 0x239d50 matched each time): `__assume` on points, on indices, on both, and `count <=
+// MAXIMUM_POLYGON_POINTS` 161 each (same code); one hull counter (`while ((short)hull_count < count)`, `indices[(short)
+// hull_count] = current; hull_count++;`) with the closure as `if (!left_start || points2d_differ(...)) continue; goto
+// finished;` 331 (695 B). Compile-only: that closure on this body is the same code; the one-counter `while`, `for (; c; )`
+// and `for (;;) { if (!c) break; ...}` all rotate the pass loop (test copied to its foot).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
