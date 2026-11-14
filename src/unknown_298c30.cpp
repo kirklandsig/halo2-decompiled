@@ -967,6 +967,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // result at entry 809/832/836/836, after sector acquisition 850/862/844/844.
 // NOT kept: all regress and shorten away from 3372; short/long frames grow to
 // 0x118. Original whole body restored; eager radius and pivot/trace homes remain.
+// T106: Whole-operation failure bool/byte/short/long 730/730/806/805;
+// actual sweep/obstacle failure reasons char/byte/short/long 730/730/806/805.
+// NOT kept: eager radius remains; narrow results shorten to 3300, wider forms
+// enlarge the frame. Original success result and complete body restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

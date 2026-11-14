@@ -641,6 +641,11 @@ static inline bool teams_enabled_19e1c0()
 // frame 0x20c); in the second compare's condition 588, in the first arm 621, before the return 687, in the last compare's condition
 // 687, one in each of 2/4/5/9 arms 642/671/445/421: the homes never move. No count of reads in the arms gives `remaining` a
 // register; only a read in the entry block does, and retail's entry block shows none.
+// T106: Actual entry-owned capacity consumed by name/formatter/engine families,
+// seven ordinary-result graphs then complete inherited-result graph:
+// 458/701/458/701/458/701/458/434. Name forms recover token preload and
+// early capacity EBP but retain frame 0x208 and merge name tails. NOT kept:
+// no native frame/result/copy-tail equality; original full body restored.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

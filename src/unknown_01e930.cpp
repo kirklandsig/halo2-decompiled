@@ -615,6 +615,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // short/word/int/long/dword: 284/284/284/290/290/281/281/281. NOT kept: every form
 // regresses and lengthens; original arrays, layout test, helpers and complete body restored.
 // Frame 0x3c/0x40, native zero/clock/output homes and instruction policy remain.
+// T105: Finite pump budget, long/dword/short/byte with positive/nonzero
+// guards: 272/272/272/284/272/272/272/284. NOT kept: native ordinal/frame
+// equality absent; original retry, clock producers and complete body restored.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

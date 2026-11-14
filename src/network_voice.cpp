@@ -1865,6 +1865,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // entry extent, emitted count, retained mask and both real scan ordinals:
 // 177/177/212/226/203/180/197/261. NOT kept: native ingress/frame or extent regress;
 // original 32-bit scalarization, matched caller contract and complete body restored.
+// T105: Serializer channel/recipient moves and payload-return subsets 1..7:
+// 185/181/216/60/185/181/216; complete move pipeline 202. NOT kept: no
+// native zero/bit/size equality; copy forms lose the caller; original body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -3960,6 +3963,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // bool/byte/short/long: indexed 138/138/160/163, independent cursor 158/158/158/159.
 // NOT kept: one-count leads fail the gain gate and change the native frame; no
 // predicate carrier matches. Original complete body, live counts and masks restored.
+// T107: Ordinary inline call metadata on settings/forwarding-route/XHV-query providers,
+// seven subsets 139 each, complete native packet cursor 164. NOT kept: no gain;
+// original provider declarations, independent call boundaries and full body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

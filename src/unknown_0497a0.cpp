@@ -1142,6 +1142,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // P469: Independent double U/U-step/V/V-endpoint/color-scale/current-width/next-width/transition
 // storage 422/631/575/601/670/583/363/604. NOT kept: extended scalar precision misses
 // native code and extent; original real producers, geometry and complete body restored.
+// T105: Read-only paired color bounds/persistent records/point chain,
+// seven subsets then complete current/next state inputs: eight at 233.
+// NOT kept: frame/spill homes unchanged; original complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

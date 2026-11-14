@@ -497,6 +497,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // 948 (kept out of line even when forced). Diagnostics: 0x44a0b4 as an `extern const real` under a scratch name 866 (same code, 5
 // reads), a file-local constant 866, a scratch global with its address stored 938 (3405 bytes, 14 reads). build/r114/lead-18ae80.patch
 // holds the 955 body; next: the two extra temporaries (frame 0x4e8 against 0x4e0), then the first loop's registers.
+// T106: Strict open near-zero intervals at range/paired fade times/completion gain,
+// seven families then continuing-output-first completion: 880/894/962/904/886/885/955/955.
+// NOT kept: native absolute-value shape and byte equality unrecovered; every form
+// lengthens the body. Original predicates, helpers and complete body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

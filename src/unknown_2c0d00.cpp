@@ -472,6 +472,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // P465: Existing actor/query-buffer/query-count/location/motion/physics/transform/radius
 // identities independently named by role on the separate-location graph: eight 926 reduced
 // (control 926, full 920). NOT kept: frame remains 0x2cb4 versus 0x2cac; original full body restored.
+// T106: Common unit-relationship completion with bool/byte/short/long presence
+// and absence results: eight 1001 reduced (control 926, full 920).
+// NOT kept: test-owned completion misses equality, frame and native classification
+// tail placement; original complete body, qualifiers and call tuples restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1804,6 +1808,9 @@ long function_1fa7f0(void);
 // first trace: 440/441/441/441/441/441; early producer with first-tangent commit
 // 441/443. NOT kept: frame remains 0x114 and all regress; original side ownership,
 // both radii, calls and full body restored. Edge/count homes remain.
+// T107: First tangent orientation retained while persistent side advances before the
+// first call, bool/byte/short/long before center 452/465/466/469; before first tangent
+// 442/449/446/448. NOT kept: no native frame/extent/home equality; original body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

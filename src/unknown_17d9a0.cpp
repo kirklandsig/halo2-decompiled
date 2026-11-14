@@ -841,6 +841,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // both endpoints plus fallback quad with either library: 535/535/535/748/749/736/535/810. NOT kept:
 // tag/count/plane homes persist or frame/extent regresses; original whole body
 // and every private helper restored.
+// T104: Accepted-face selection/emission cursors, original-count then actual-end bounds,
+// separate/both/mixed phases: 667/535/682/660/539/679/671/671. NOT kept: no native
+// tag/count/plane-home recovery or equality; original indexed traversals and full body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

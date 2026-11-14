@@ -1964,6 +1964,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // P480 m3: Point lifetime through origin/pair publication, damage/expiry event storage,
 // mutable/readonly returned receiver: 140/140/140/140/140/140/140/140. NOT kept: no native
 // return-byte or event-home repair; original full body, helpers and interfaces restored.
+// T104: Returned contact-transform/origin-setter chains, mutable/readonly and actual filled
+// point-query outputs: 178/171/180/171/180/157/176/176. NOT kept: all regress; original
+// two-use spin, release helper, paired setters and full body restored. Return/release/event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
