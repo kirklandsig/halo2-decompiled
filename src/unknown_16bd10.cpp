@@ -727,7 +727,7 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
-// score 331 (was 331; 331 before): m3 lane 2 r79 note at the end; round 95 (m3 lane 11) before it; round 112 (m3 lane 12) before that. Earlier at 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
+// score 331 (was 331; 331 before): m3 lane 8 r164 and m3 lane 2 r79 notes at the end; round 95 (m3 lane 11) before it; round 112 (m3 lane 12) before that. Earlier at 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
 // MiniMax H (11-11): no new form, no lower score (331); retail keeps the point case's normal in XMM3/4/5 with the zero in
 // XMM0 and ends case 2 with a read-modify-write `or [ebp], 0x40`, while ours splits the flag updates and keeps the zero in XMM1.
 // MiniMax C (11-11): no new form, no lower score (331): the length agrees (1696 bytes); case 2 still
@@ -1059,6 +1059,17 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // (only the distance dot's i product changes: forward.i loaded first, where retail loads position.x first; masked 45). With
 // the mode local dropped too (lane 5 r166 listed that alone at 331) 371 (1700 B). The point-type local is the same code as the
 // basis statement. On the kept body: the animation case's flags update after its distance and timer stores 333 (masked 43).
+// m3 lane 8 r164 (fast with 0x23d090, MATCH each time; base 331): the squared length as length_sq3f(&plane.n) 373 (round 60's
+// 265 was before the timer fix) and as dot3f(&camera->point.left, &plane.n) with no direction local 372 (1700 B);
+// length_sq3f(&camera->point.left) re-measured 480; the point case reading camera->object_index at each of its three uses
+// (no object_index local) 372 (1700 B); the timer reading game_time->scale at both uses (no time_scale local) 410 (1700 B);
+// the projected point offset along `&plane.n` (the copy of the same left vector) 449. Retail's default arm carries the
+// 0.0f of case 2 into the timer test in XMM0 (its own xorps splits the `|= 0x40` into load/or/store); ours re-zeroes XMM1.
+// P471: Complete case orders first/pan/point/animation, first/pan/animation/point,
+// first/animation/point/pan; standard distance minimum, projection/timer/FOV nonzero
+// and FOV-completion predicates: 456/461/456/404/518/483/428/323.
+// NOT kept: 323 grows native 1696 bytes to 1708 and adds a call; all other forms
+// regress. Original full body and includes restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

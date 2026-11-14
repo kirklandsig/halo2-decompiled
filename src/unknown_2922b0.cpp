@@ -76,7 +76,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
-// score 576 (was 592): earlier 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
+// score 558 (was 576): earlier 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// the minimum now has retail's +0x18, the input copy and hit flags sit 4 bytes off retail's.
+// Earlier score 576 (was 592): earlier 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // Earlier score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // M3 lane 8 r150 (fast; aligned 406, register-masked 216 on this body): retail forms 1/range once and multiplies it by
 // the minimum twice with the minimum held in XMM2 (no reload, so not an aliasing effect). Tried: the third and fourth
@@ -501,6 +503,14 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // P454: Isolated function storage for forward/up/side scratch, center, origins, ray-length scalar,
 // hit-distance scalar and collision output on the retained affine-tail graph: 576/576/576/576/648/576/576/576.
 // NOT kept: none improves; original producer points, helper inputs and in-place captures restored.
+// m3 lane 7 r159 (fast; plain 558 confirmed): kept, the four hit flags as an aggregate initializer `{ false, false,
+// false, false }` 558 (2868 B). Tried: the minimum declared at the top of the active branch 570 (on the original body),
+// 552 (on the initializer; a moved declaration, 6 under the bar); `{ false }` 689 (2819 B); the early exit as the else
+// arm of `range > 0` 669; the output vector zeroed by one chained assignment 611; the ray-length sum named once for the
+// four elements 553 (2880 B). Retail computes 1/range once but (1/range)*minimum twice (no shared product). A plain
+// `for (i = 0; i < 4; i++)` loses retail's spilled down-counter (frame 0x100, /GL harness of this file).
+// P477: Independent standard hit-fill/input-copy/output-fill/forward-copy/fallback-copies/center-copy/final-copy/length-fill boundaries:
+// 700/681/656/573/693/575/613/668. NOT kept: best gain is three, with no native low-frame repair; several forms move the frame or shrink away from retail. Original arrays, complete in-place captures, helpers and body restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
@@ -511,11 +521,7 @@ bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f local_3 = *arg_2;
 	real local_4 = 3.402823466e38f;
 	*arg_5 = 0.0f;
-	bool local_5[4];
-	local_5[0] = false;
-	local_5[1] = false;
-	local_5[2] = false;
-	local_5[3] = false;
+	bool local_5[4] = { false, false, false, false };
 	if (!(local_2->field_48 > 0.0f))
 		return true;
 	else

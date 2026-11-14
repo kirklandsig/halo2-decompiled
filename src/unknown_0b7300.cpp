@@ -192,6 +192,11 @@ PRIVATE inline s_scenario_block *function_x6e4ccb(void *scenario, long type)
 }
 
 /* a scenario object of a type, NULL out of range */
+// The body is retail's up to registers: retail takes `type` in edx and keeps
+// NONE in edi, ours takes it in eax and keeps NONE in edx. The choice follows
+// the only caller, 0xd4e60 (score 74), whose call site loads the type into edx
+// in retail and eax here. Permuter (17 min, 262 tries, seed 999): no form
+// below 10.
 // @retail 0xd5260
 s_type_4f0dcc *function_d5260(long type, long index)
 {

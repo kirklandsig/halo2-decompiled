@@ -69,6 +69,15 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
+// MiniMax A (11-13): no new form, no lower score (49); what still differs: retail calls function_26f060 with the
+// actor index in ECX and the invitation type in EDI where this build passes them in EAX and ESI, and that moves the
+// actor and the node between EBX and EBP through the body; the busy test then becomes a numeric select
+// (neg/sbb/not/and) where retail branches into the success epilogue; the convention is set by the callee
+// (src/unknown_26e370.cpp): BLOCKED-BY 0x26f060.
+// MiniMax D (11-14): no new form, no lower score (49): retail passes the actor index to 0x26f060 in ecx and the
+// invitation type in edi where this build passes them in eax and esi, and that convention is set by 0x26f060 in
+// src/unknown_26e370.cpp, which this lane may not edit, so the busy selection and the zero and success epilogues
+// still differ. BLOCKED-BY 0x26f060.
 // score 49 (was 49): frame and actor/node homes agree; busy selection and zero/success epilogues differ.
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
 // (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.
@@ -311,6 +320,13 @@ bool function_25d9b0(long prop_index);
 // busy test's fall-through where retail falls into the shared `xor eax, eax` exit and returns the priority last); on
 // that form the node or the actor local renamed to sort first or last 65 each, byte-identical (local names do not break
 // the actor/node register tie); the busy call reading `actor_get(actor_index)->prop_index` 213 (610 bytes).
+// m3 lane 6 r178 (--fast with the file and 0x25d690/0x25d740/0x25d810/0x25d9b0, faithful 49; a one-file LTCG
+// harness is not faithful here, 87): the busy call joined into the `&&` chain with `return priority` 65
+// (re-measured: no select; actor/node in EBP/EBX, the zero exit last as `xor ax, ax`); on that form a folded
+// `actor &&` before the busy call 65 and a folded `node &&` heading the chain 65 (same code: the actor/node tie
+// does not follow these block weights); that with `short result = 0;` after the label, `result = priority;` and
+// one `return result;` 91 (554 bytes). On this body: the busy test as `if (!actor || busy)` 49 and
+// `if (actor && busy)` 49 (still the select). Body unchanged.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
@@ -375,6 +391,18 @@ evaluate:
 	return 0;
 }
 
+/* the slot's status: 0x10 when the prop node's distance is under 0.8; continue (g_46fbe8)
+   when the prop's object moves slower than 1, the view's unknown54 is under 0.31 and the
+   distance is at most 15; finished (g_46fbe4) otherwise. Retail calls the view getter out
+   of line here; LTCG inlines it unless the node test guards the call. */
+// MiniMax A (11-13): no new form, no lower score (73); what still differs: retail calls function_25d740 out of line
+// and sinks the ESI/EDI saves into three separate default exits, where this build expands the call at this site and
+// keeps one exit and the saves in the prologue; the inline-ness of that helper is set in src/unknown_25d690.cpp:
+// BLOCKED-BY 0x25d740.
+// MiniMax D (11-14): no new form, no lower score (73): our build still expands the call to 0x25d740 at this
+// site, so the prologue still saves esi and edi before the seat count test where retail tests the count first and
+// keeps that call out of line; the inline-ness of that helper is declared in src/unknown_25d690.cpp, which this
+// lane may not edit. BLOCKED-BY 0x25d740.
 // score 73 (was 73): retail calls function_25d740 out of line and sinks the ESI/EDI saves; our
 // build inlines it, so the prologue differs at +0x13. This round: reading the slot's expected
 // index into a local before the actor lookup, the reversed compare, a named actor local and the
@@ -604,24 +632,24 @@ short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 
 	if (state->unknown20 > 0)
 	{
-		long prop_index = actor_get(actor_index)->prop_index;
+		long expected_prop_index = state->unknown1c;
+		s_actor_view *actor = actor_get(actor_index);
 
-		if (prop_index == state->unknown1c)
+		if (actor->prop_index == expected_prop_index)
 		{
-			s_prop_node_view *node = prop_node_get(prop_index);
+			s_prop_node_view *node = prop_node_get(actor->prop_index);
 
 			if (0.8f > node->unknown28)
-			{
 				result = 0x10;
-				return result;
+			else
+			{
+				s_prop_view_fields *view = node ? prop_node_view(node) : NULL;
+				vector3f velocity;
+
+				function_ba1d0(node->object_index, &velocity, NULL);
+				if (view && sqrt(length_sq3f(&velocity)) < 1.0f && view->unknown54 < 0.31 && node->unknown28 <= 15.0f)
+					result = g_46fbe8;
 			}
-
-			s_prop_view_fields *view = prop_node_view(node);
-			vector3f velocity;
-
-			function_ba1d0(node->object_index, &velocity, NULL);
-			if (view && sqrt(length_sq3f(&velocity)) < 1.0f && view->unknown54 < 0.31 && node->unknown28 <= 15.0f)
-				return g_46fbe8;
 		}
 	}
 	return result;

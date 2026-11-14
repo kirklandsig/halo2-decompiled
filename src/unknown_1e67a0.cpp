@@ -1083,6 +1083,19 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // NOT kept: Native rotation j/k products, side dots and eager output loads remain. Original complete body restored.
 // P458: Complete rotation/small-angle outcomes, bool/byte/short/long:
 // 144/144/144/144/144/144/144/144. NOT kept: native rotation j/k products, side dots and eager output copies not recovered; original complete body restored.
+// Round 177 (m3 lane 6, fast with 0x24590/0x1cd6c0/0x1ecf50): the rotated copy from the `forward` parameter 194 (1395 bytes);
+// the rotation axis from the `up` parameter 277 (1396); rotate_direction (body restored) with its dot as dot3f(axis, vector),
+// its cross rows axis-first, or its rows projected-first 114 each (same code; 0x1ecf50 MATCH, 0xe3910 79, 0xd0080 58). A
+// compile-only copy with rotate_direction pasted into the file reproduces this rotation exactly; in it the state pointer as
+// the parameter itself, the crosses before the dot and a named versine do not give retail's dot j/k operand order.
+// P468: Plain sampled-movement/output coordinate loops on current shared-rotation
+// graph, long/dword/short/byte for then while: 150/150/217/217/150/150/217/217.
+// NOT kept: no native rotation-product equality; original complete body and all
+// helper/provider definitions and declarations restored.
+// P483: Initial input-vector memcpy families for frame/control/ground velocity,
+// seven subsets then all with default velocity: 126/126/196/101/114/114/111/112. NOT kept: 101 is
+// combination-only (both individual families 126); 111/112 gain only three/two.
+// Native rotation products/side dots/output loads remain; full body and headers restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

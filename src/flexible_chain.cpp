@@ -627,6 +627,10 @@ void __stdcall function_1160c0(real dt)
 // the loop's top 171, declared ahead of the loop 171 (all three the same code). In the loop the low homes are {axis
 // 0x10-0x18, segment/scale 0x1c, cosine 0x20} where retail has {cosine 0x10, segment/scale 0x14, axis 0x18-0x20}: the
 // 12-byte axis home and the two scalar slots trade ends whatever the axis declaration's place.
+// P475: Standard target/velocity/interpolation coordinate contracts, seven subsets,
+// then complete graph with forward seeded distance reduction: 331/309/425/333/411/420/395/437.
+// NOT kept: no exact native segment/vector-home repair; original complete body restored.
+// MiniMax H (11-14): no new form, no lower score (171): the segment pointer is still in EDI where retail keeps it in EDX, and retail still loads all six axis and offset components into registers where this build reads offset k from memory at the dot and at two later products.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
