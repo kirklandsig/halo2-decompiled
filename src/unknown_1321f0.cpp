@@ -609,6 +609,10 @@ struct s_visibility_object_header
 	s_visibility_object *object;
 };
 
+// score 4: only the two bool locals' stack slots differ (behind/in_front at
+// esp+0x17 and esp+0x38). Permuter: 280 tries in 600 s, best 2 — but that form
+// swaps the two pointer arguments at the matched 0x132fd0 and leaves `index`
+// uninitialized, so it was not kept.
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {

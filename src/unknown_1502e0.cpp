@@ -1088,6 +1088,9 @@ struct s_tail_transfer_traits
 // T102: Complete primary-traits selection polarity in bool/byte/char/signed-char/
 // short/word/long/dword: 156/156/156/156/255/255/242/242. NOT kept: no exact
 // selected-traits/unit/NONE-home repair; original selector and complete body restored.
+// P495: Actual minimum-scan age/weapon/per-pass-clock workspace subsets, then actual shortest
+// workspace on the complete graph: eight 144 at 826 bytes. NOT kept: selected-traits/unit/NONE
+// ownership unchanged; original producer timing, no-seat pool copy, ties and complete body restored.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1383,6 +1386,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // P458: Retained slot-provider count char/short/word/dword, entry then count-phase lifetime:
 // 293/216/216/215/292/274/274/273. NOT kept: late count restores frame 0x18 but regresses length; player/pool/tag homes remain; original complete body restored.
 // P460: Complete count-admission/retained-pair outcomes in bool/byte/short/long on the retained slot-provider graph: eight 215. NOT kept: extra frame word and player/pool/tag homes unchanged; complete body restored.
+// P495: Actual count-pass flag/weapon workspaces and shared three-phase hand induction, seven subsets,
+// then both signed-short slot transports on that graph: eight 215 at 1006 bytes. NOT kept: no native
+// frame/player/pool/tag recovery; every producer, observation, slot provider and complete body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1762,6 +1768,13 @@ void function_150820(dword *bits, bool local_only)
 // effect of that expansion.
 // P458: Initial unit/selected-slot presence outcomes, bool/byte/short/long:
 // 43/43/43/43/43/43/43/43. NOT kept: native saved player/hand and entry scratch roles not recovered; original complete body restored.
+// P495: Public selector char/byte/short/long with bool return 43/43/67/43;
+// byte return 43/43/67/43. NOT kept: no byte match or native saved-role recovery;
+// original Boolean contract, sole caller declaration, body and callee tuples restored.
+// MiniMax B (11-14, run 75): no new form, no lower score (43); the whole difference is still one register rotation - retail keeps the player record
+// in esi, the hand in edi and the unit index in edx, this build keeps them in edi, esi and ecx - and both bodies are 210 bytes. The rotation starts at
+// the entry block: retail reuses edx (the pool data pointer's register) for the unit index and leaves ecx free for the policy byte, this build reuses
+// ecx (the table's register) and takes the policy byte in al; no declaration order, hand width or result form moves it.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

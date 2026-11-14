@@ -1245,7 +1245,7 @@ bool function_108530(long device_index, long name)
 // first float compare is in xmm5 where this build's is in xmm7; the caller's argument registers come from the callee's
 // definition, which this lane may not edit.
 // MiniMax I (11-14): no new form, no lower score (121): the initial velocity is still passed on the stack where retail passes it in xmm6, a convention the callee's own definition sets, and the third zero clamp written as an if-statement scores the same 121 (same code), so the body stands.
-// score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
+// score 121 (was 121; m3 lane 8 r166 at the end): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // MiniMax C (11-09): no new form, no lower score (121); the initial velocity is still passed on the stack where
 // retail keeps it in xmm6 and takes five stack floats, so the whole register assignment after the entry differs.
 // MiniMax A (11-06, run 52): no new form, no lower score (121) - retail keeps the initial velocity in
@@ -1510,6 +1510,11 @@ bool function_108530(long device_index, long name)
 // 128; that with the ramp-down clamps as one PIN after `remaining` 133 (510 B); the distance taken as `fabs(delta)` at its
 // declaration (no later fabs) 134 (first difference +0x0, callers 26/28); the ramp-down zero clamp alone as
 // `x < 0.0f ? 0.0f : x` 122; the ramp-up clamps as one nested ternary with the minimum outside 127.
+// m3 lane 8 r166 (fast with the file's 30 functions, control 121; aligned 140): no trial run. Seen in the listing: retail
+// never caches the ramp-down time in a register (its zero clamp is a conditional store of the zero to the slot, the minimum
+// compares the slot), and in the acceleration block it squares the velocity in place (`mulss xmm4, xmm2`), so the deceleration
+// block reloads the cruise velocity from motion+0x18; both follow from XMM6 holding the initial velocity. The note's screens
+// (about 2000 forms, 96 clamp-phase variants, every parameter position) cover each lead I had.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

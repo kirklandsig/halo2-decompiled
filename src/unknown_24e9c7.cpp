@@ -460,6 +460,14 @@ struct s_24e9c7_points
 // (retail's early across-j spill at -8 sits above them). Lane 12 r112 above records that no untried natural form is left,
 // and every lead here (across/side/up/back as points, scalars, arrays, helpers, in-place scaling, corner orders, bounds and
 // alpha spellings, conversion domains) is listed; I found no code-changing form outside the note.
+// M3 lane 2 r82 (fast with 0x24e59f/0x22a664, both matched; control 125): retail's [ebp-0xc..-8] is the side point computed
+// in place (y holds across j, then side y, reloaded for back and the corners; x stays in XMM) and one forward_i load serves
+// side y and up x. The four corner base copies right after the result 129 (the across products still come after the
+// height, so a store to the corner array does not hold them). Re-measured the in-place side with `size * (0.0f -
+// forward_j)` 139 (742 B): there the across products are computed before the height as retail, but ours multiplies into
+// the loaded operand where retail multiplies into a copy of size, keeps 1.0 in XMM1 and reloads forward_i. On that form:
+// both products written operand-swapped, only x, only y 139/139/139 (same code); forward_i read once into a named local
+// for side y and up x 141 (741 B). Diagnostic: one to seven unused `long` locals 139 each (same code, no phase effect).
 // M3 lane 11 r99 (fast): the scale read from the placement at both uses (no `scale` local) 141 (740 B); the shader index
 // named once (`long shader_index`, test and call) 174 (742 B); the marker's kind named once for the bounds tests and the index
 // 130; the sequence index read from the kind at its four uses 125 (same code); the sequence's fields read through

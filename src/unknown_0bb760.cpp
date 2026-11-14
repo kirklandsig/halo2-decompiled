@@ -503,6 +503,9 @@ void function_3dd10(long object_index, bool force);
 // MiniMax I (11-08): no new form, no lower score (84): the first scan's signed `<` (which unrolls by
 // four), the blend's stack slot, the inverse subtraction in the blend block and the 1.0/0.0 load order
 // still differ, and every counter, bound and accumulator spelling keeps the unroll.
+// MiniMax A (11-14): no new form, no lower score (84): the first scan still leaves on inequality where retail
+// leaves on a signed less-than; a `for` loop with `<` unrolls by four here (637 at 1310 bytes) and a do-while
+// with `<` gives retail's `jle` and `jl` but moves every stack home four bytes down (221 at 1006 bytes).
 // score 84 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
 // for/while/field/shared-counter form, 637-647; short counter 252; a compile-only probe shows the
 // unroll comes from the float weight sum and survives every counter, bound and accumulator

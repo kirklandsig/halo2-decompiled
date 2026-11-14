@@ -1187,6 +1187,9 @@ struct s_item_flags_view_10b850
 // MiniMax E (11-11): no new form, no lower score (824); our frame is 0x154 bytes where retail's is 0x12c, so every
 // stack slot sits 0x28 higher, and the entry flag test reads the definition's byte in the other order.
 // MiniMax H (11-12): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, and the entry Boolean and the carrier, collision and rotation homes still differ.
+// MiniMax S (11-14): no new form, no lower score (824): the frame here is 0x154 against retail's 0x12c, but the
+// marker's address and the block copy's source sit at the same distance from the entry stack pointer in both, so
+// the forty spare bytes lie below the homes and the rest of the gap is in the block bodies.
 // score 824 (was 813): statement-by-statement walk against retail (s1B, 11-06). Behaviour fixes, all kept even though
 // the score rose 11: (1) the byte at [esp+0x12] is ONE flag: the definition's +0xbc bit 2 (skips gravity), set to true
 // before the ray query (0x10ba18) and cleared only by the settle branch (0x10bcf8); the draft's separate
@@ -1432,6 +1435,9 @@ struct s_item_flags_view_10b850
 // 821/838/843/821/830/823/841/824. NOT kept: three-/one-point best gains; frame remains 0x154.
 // Original private helper, four call sites, declaration set and complete body restored.
 // MiniMax H (11-14): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack slots where this build holds them in registers.
+// T108: Ordinary inline motion/marker-query/marker-publish/inverse-point metadata: eight at 824;
+// existing point-to-point query wrapper 857 (frame 0x148 versus native 0x12c), same 4096 bytes.
+// NOT kept: no qualifying gain; original complete body and every provider declaration restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1668,6 +1674,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // MiniMax S (11-10): no new form, no lower score (140): the return byte sits at esp+0xe where retail puts it at esp+0xf, the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write, our frame carries an extra byte local at 0x12, and the damage data block sits twelve bytes below retail's.
 // MiniMax I (11-10): no new form, no lower score (140); the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write, and the return byte still sits at esp+0xe where retail puts it at esp+0xf.
 // MiniMax D (11-05): no new form, no lower score.
+// MiniMax S (11-14): no new form, no lower score (140): the release helper was respelled so that the rate is
+// loaded into a local of its own before the direction pointer, which compiles to the same code; retail's spin
+// branch writes the flag byte directly and keeps no home of its own for the spin bit, and retail keeps two
+// separate copies of the release impulse where this build merges them into one.
 // score 140 (was 140): frame 0xac agrees; return byte +0xe/+0xf, release-byte RMW/tail,
 // event/point homes and location-call setup remain. Paired existing point setters kept.
 // Earlier: the frame 0xac agrees; the release byte's read-modify-write,
@@ -1977,6 +1987,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // point-query outputs: 178/171/180/171/180/157/176/176. NOT kept: all regress; original
 // two-use spin, release helper, paired setters and full body restored. Return/release/event homes remain.
 // MiniMax H (11-14): no new form, no lower score (140): the release flag is still cleared with a load, an and and a store where retail clears the byte in place, and the return byte still sits at esp+0xe where retail puts it at esp+0xf.
+// T108: Ordinary inline metadata at existing node-transform/point/owner/point-transform providers, four isolated, three pairs and all:
+// 140/140/140/138/138/138/140/138. NOT kept: no qualifying native-shape gain or equality; original complete source
+// and every provider declaration restored. Native frame and first storage/scheduling gap remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

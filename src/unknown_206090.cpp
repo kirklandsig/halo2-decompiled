@@ -557,6 +557,20 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // NOT kept: 1372 adds a search call absent from retail (15 calls versus 14);
 // its frame is 0x5c8 and extent 6220 versus 0x58c/6238. Other forms regress or
 // gain only two. Original indexed searches, snapshots, helpers and complete body restored.
+// m3 lane 15 r84 (plain each, 0x2056e0 matched throughout; control 1391). Phase regime: one statement or local name added
+// or removed flips commutative operand orders and same-size stack homes across the whole body, swinging the count by
+// about +-40 with no local change, so single forms here cannot be judged by count. Examples: `__assume(count <= 16)` ahead of
+// the wheel loop or of the contact loop 1374/1374 (6238 B, different operand orders each); the two threshold fields
+// (+0x18/+0x1c of the wheel definition) read at each use 1355 (6238 B), the wheel +0x24 field at each use 1363 (6211 B),
+// both together 1474 (6291 B); none kept. Other forms: one counter shared by the wheel and contact loops 1388 (the contact
+// loop is still strength-reduced; retail recomputes `imul i, 0xd8/0x4c/0x3c` each pass, counter in one stack slot shared
+// with the wheel loop); the skipped-contact arm first with `continue` 1371 (6243 B, skip call moved to the loop top, not
+// retail's layout; arms swapped, not kept); the threshold ratio's nested ternaries as if/else 1423 (6275 B); the mass
+// factor `(k + 1) * 0.5f` named 1434 (retail multiplies by 0.5 before the divide; `0.5f * (k + 1)` and `/ 2.0f` same code);
+// the tangent dot reading the contact field instead of its copy 1375 (a copy/field mix, not kept); the rigid-body index
+// at each use 1423; the impact strength at each use 1456 (6281 B); the field_70 update as one ternary add 1391.
+// Same code: local_27 and local_15 as if/else. Re-measured: the 0.2 s conversion inside the test 1398 (6265 B); the direct
+// `return a && b && c && d;` 1413 (6275 B; retail's exit shape, pops ahead of the last tests).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

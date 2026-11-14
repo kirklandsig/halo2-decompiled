@@ -1444,6 +1444,8 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // P488: Primary case 11 before cases 0/2/3/4/8/9/12/13 on the accepted single-late-case graph:
 // 194/194/195/195/195/195/196/196. NOT kept: Case-priority forms require equality; original primary/terminal
 // classifiers, every case body, lookup and call tuple restored.
+// P497: Connection completion at the primary join on the accepted primary-11/terminal-18 graph, seven subsets then all primary operations: 196/196/196/196/196/196/196/196 (reduced control 196; full 143).
+// NOT kept: no delayed ESI save or outlined terminal-handler repair; original complete dispatcher and all call tuples restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
