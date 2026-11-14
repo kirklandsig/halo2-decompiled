@@ -75,6 +75,10 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
+// MiniMax E (11-14): no new form, no lower score (90 in this lane's measurement set; the earlier note records 79 under
+// its own set): retail's call to 0x2b5d0 takes its two long parameters in another order than the stub's declaration in
+// src/stubs/lane_k.cpp allows, and the terminal stores still fold the record base into the displacement where this build
+// adds the base to the index register; the declaration's order may not change here, so the call stays as it is.
 // MiniMax C (11-11): NOT kept (coordinator, 11-11): 0x2b5d0 called as (3, view_count, ...) 79 (was 90); both
 // parameters are long, so the swap passes different values: a possible fix to 0x2b5d0's parameter order, kept only
 // with a match. On that swapped form: no lower score (79): the terminal stores still fold the record base into the

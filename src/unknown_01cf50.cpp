@@ -2407,6 +2407,10 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 	return comparison > 0;
 }
 
+// MiniMax E (11-14): no new form, no lower score (4): the stream count's subtraction still comes after the sorter's last
+// push here and before it in retail, and the stipple stride's add still lands before the inlined device call's second rep
+// movsd where retail puts it after; the sorter's argument order is fixed by its own declaration in src/array_sort.cpp and
+// the stipple block lies inside the XDK inline, so both stay as they are.
 // MiniMax B (11-13): no new form, no lower score (4): the stream count's subtraction still comes after the sorter's last push here and before it in retail, and the stipple stride's add still lands before the inlined device call's second rep movsd where retail puts it after.
 // MiniMax H (11-12): no new form, no lower score (4): the count hoisted into a local before the call still has its subtraction placed after the sorter's last push where retail has it before, the permuter's 39 tries found no better variant, and the stipple stride's add still sits before the block copy that lies inside the XDK device call.
 // MiniMax I (11-11): no new form, no lower score (4): the count read from the global and the count as an unsigned local both keep the subtraction after the sorter's last push, and the stipple stride's add still sits before the block copy, which lies inside the XDK device call.
@@ -2482,6 +2486,10 @@ void function_1e370(void)
 	}
 }
 
+// MiniMax E (11-14): no new form, no lower score (8): the record table's base still rides in EDI here and in EBP in
+// retail, and the payload copy then saves the other register. This round: calling the matched 0x1e2d0 is not inlined
+// under this file's /Ob1 and the helper's base and count as locals are both worse, so the shared helper
+// cache_record_new keeps its body and the base stays in EDI.
 // MiniMax B (11-13): no new form, no lower score (8): the record table's base still rides in EDI here and in EBP in retail, and the payload copy then saves the other register; the base comes from the shared helper cache_record_new, whose body the rules forbid writing out by hand.
 // MiniMax H (11-12): no new form, no lower score (8): the record pool's base still rides in edi where retail keeps it in ebp, and the payload copy still needs the other register; the base comes from the shared helper cache_record_new, whose body the rules forbid writing out by hand.
 // MiniMax H (11-11): no new form, no lower score (8): the body is retail's length and the only difference is the pair of saved registers: the record pool's base rides in edi here and in ebp in retail, and the payload copy then needs the other register; the base comes from the shared helper cache_record_new, whose body the rules forbid writing out by hand.
@@ -2795,6 +2803,10 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
     return result;
 }
 
+// MiniMax E (11-14): no new form, no lower score (26): the sibling 0x174f80 in src/unknown_173b90.cpp carries retail's
+// exact shape for the same source pattern - the maximum's compare, the explicit multiply and the repeated call setup -
+// and that file only reaches the shape under a per-function optimisation switch which the rules forbid adding here;
+// without the divisor's round trip through the stack this build folds the reciprocal into a division and scores 47.
 // MiniMax B (11-13): no new form, no lower score (26): the comparison against 0.0001f still has its operands the other way round and its result in the other register, the divisor still makes a round trip through the stack where retail keeps it in a register, and both arms still share one call setup; the body's volatile anchor is the only thing that keeps the reciprocal's explicit mulss, and the body without it folds into a division and scores 47.
 // MiniMax H (11-12): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the divisor still makes a round trip through the stack where retail multiplies by g_4b9ff8 with an explicit mulss, and both branches still share one call setup; the body also still carries a volatile cast on the stack temporary, which the rules forbid.
 // MiniMax H (11-11): no new form, no lower score (26): retail keeps the maximum in the second loaded register and compares the first loaded against it, multiplies g_4b9ff8 by the reciprocal with an explicit mulss and repeats the call setup in each branch; without the divisor's round trip through the stack the reciprocal is folded into a division (47) and with the multiply's operands reversed the body grows to 173 bytes (37), so the body stands.
@@ -3069,6 +3081,9 @@ struct s_429a0_payload
     vector3f first, second;
 };
 
+// MiniMax E (11-14): no new form, no lower score (16): retail still folds the record base into the payload pointer one
+// store earlier than this build does; the base comes from the shared helper cache_record_take, whose body the rules
+// forbid writing out by hand and whose two callers keep it as it is.
 // MiniMax B (11-13): no new form, no lower score (16): retail still folds the record base into the payload pointer one store earlier than this build does; the base comes from the shared helper cache_record_take, whose body the rules forbid writing out by hand.
 // MiniMax H (11-12): no new form, no lower score (16): retail still folds the record base into the payload pointer before the store at +0x28 where we store through [eax + ebx + 0x28] and add ebx afterwards, and the count's store still comes after the index's move; the fold comes from the shared helper cache_record_take, whose two callers keep it as it is.
 // MiniMax H (11-11): no new form, no lower score (16): retail folds the record base into the payload pointer before the store at +0x28 where ours stores through [eax + ebx + 0x28] and adds ebx afterwards, and the count's store comes after the index's move where retail has it before; the fold comes from the shared helper cache_record_take, whose two callers keep it as it is.
@@ -3542,6 +3557,13 @@ void function_13d80()
 
 extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 
+// MiniMax E (11-14): no new form, no lower score (2): retail's callee 0x15a60 reads the format from AX, the usage index
+// from ECX and the out pointer from EBX, the same homes as here, and the two setups hold the same values in the same
+// registers; retail emits the format's load before the usage index's zeroing and this build emits them the other way
+// round. The plain check gives the same 2, so it is not an artefact of the reduced image, and the order is the callee's
+// to decide - its source lives in src/unknown_0158f0.cpp, which this lane may not edit. This round: the format through
+// a local and the result assigned after its declaration both keep the order, and the permuter's 8 tries found no
+// better variant.
 // MiniMax B (11-13): no new form, no lower score (2): the setup of the call to 0x15a60 still zeroes ECX after it loads 9 into EAX here, retail does the reverse; that register home belongs to the callee 0x15a60, which lives in another file.
 // MiniMax G (11-13): no new form tried this round, no lower score: the whole difference is still the 0x15a60 call's
 // setup, where retail loads 9 into eax before it zeroes ecx and we zero ecx first; the callee 0x15a60 and its
@@ -3890,6 +3912,9 @@ bool function_14600()
     return result;
 }
 
+// MiniMax E (11-14): no new form, no lower score (32 in this lane's measurement set; the earlier note records 40 under
+// its own set): the XDK's device-call inline still takes the width difference in dx and the width quotient in xmm0 where
+// retail takes them in ax and xmm2, and retail's four shader programs still come from tables this project does not have.
 // MiniMax B (11-13): no new form, no lower score (32): the XDK's D3DDevice_SetVertexShaderConstant hoists its flag byte into al, so this build takes the width difference in dx and the width quotient in xmm0 where retail takes them in ax and xmm2, and retail's four shader programs still come from tables this project does not have.
 // MiniMax H (11-12): no new form, no lower score (32): retail still takes the width difference in ax and the height difference in ecx and turns both into floats before the divisions where we take the width difference in dx and turn them into floats after the first division; retail's four shader programs also come from tables this project does not have.
 // MiniMax H (11-11): no new form, no lower score (32): retail takes the width difference in ax and the height difference in ecx and turns both into floats before the divisions, ours takes the width difference in dx and turns the two into floats after the first division; retail's four shader programs also come from tables this project does not have, and an XDK inline helper hoists the flag byte into al here where retail tests it in memory.
@@ -3996,6 +4021,9 @@ void function_1eb00()
 // into its own locals in a different order.
 // MiniMax A (11-12): no new form, no lower score (79): retail body builds four shader programs from tables and caches that this project does not have, and the ratio of the two counters is still divided into xmm3 and multiplied into xmm4 where retail divides into xmm2 and multiplies into xmm0, so what is left is a knowledge difference rather than a local form and the body stands.
 
+// MiniMax E (11-14): no new form, no lower score (79): retail's body still builds four shader programs from tables and
+// caches that this project does not have, and the ratio of the two counters is still divided into xmm3 and multiplied
+// into xmm4 where retail divides into xmm2 and multiplies into xmm0, so what is left is a knowledge difference.
 // MiniMax H (11-13): no new form, no lower score (79).
 // MiniMax H (11-12): no new form, no lower score (79); retail's body builds four shader programs from tables and
 // caches that this project does not have, and the ratio of the two counters is still divided into xmm3 and multiplied
@@ -5546,6 +5574,10 @@ void __stdcall function_352e0(long target, bool multiple);
 long function_35510(long format);
 void function_1bd50(void *state);
 
+// MiniMax E (11-14): no new form, no lower score (13): the fallback index is still masked to a long here and loaded as a
+// word and widened in retail, and the element's argument is still pushed after the branch here and before it in retail;
+// the shared global's type may not change here and reading it as a word would need a cast of its own address, which the
+// rules forbid.
 // MiniMax B (11-13): no new form, no lower score (13): the fallback index is still masked to a long here and loaded as a word and widened in retail, and the element's argument is still pushed after the branch here and before it in retail; the shared global's type may not change and a cast of its own address is a banned form.
 // MiniMax H (11-12): no new form, no lower score (13): the fallback index is still loaded as a masked long where retail loads a word and widens it with an xor, and the element argument is still pushed after the branch where retail pushes it before; the matched 0x2dd30 and 0x32ac0 show that the xor-and-word form comes from a 16-bit lvalue or a (short) cast of the global passed straight to function_14bc0, while inside a ternary the conversion to the common type folds into movzx or movsx and if-converts to a cmove (15 and 16).
 // MiniMax H (11-11): no new form, no lower score (13): retail loads the fallback index as a word and widens it with an xor (xor eax, eax; mov ax, word ptr [0x4858b8]) while ours loads the long global g_4858b8 and masks it, and retail pushes the element argument before the branch where we push it after; the global's declared type is not mine to change and reading it as a word needs a cast of its own address.
