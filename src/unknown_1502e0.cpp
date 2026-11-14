@@ -931,6 +931,7 @@ struct s_tail_transfer_traits
 // slot lookups go through a pool copy that stays a real variable, which brings back retail's object-table
 // reloads and the native home of that weapon: 144 (was 153), the length stays retail's 826 bytes.
 // MiniMax I (11-14): the permuter (12 tries, 66 s) finds no better form for this function than the 144 above.
+// Earlier, at score 153 (was 153): the first 0x11c bytes agreed with retail; from the
 // selection loop on, the traits pointer comes back in EBP where retail keeps it in EAX, and our three
 // NONE homes sit at +0x18/+0x20/+0x28 against retail's two at +0x1c/+0x24.
 // MiniMax S (11-11): no new form, no lower score (153): the traits pointer comes back from the selection loop in ebp where retail keeps it in eax, and our three NONE homes sit at +0x18/+0x20/+0x28 against retail's two at +0x1c/+0x24.
