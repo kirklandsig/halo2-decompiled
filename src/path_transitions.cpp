@@ -903,6 +903,15 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // has the same two homes as that graph (actor EAX from the entry, pathfinding EBX) but its pathfinding arrives in EAX and
 // is copied to EBX ahead of the actor load, where ours is handed over in EDX because the actor load is placed first; no
 // parameter order, definition order or case spelling changes which register link-time code generation picks for it.
+// P450: Separate first/second positive-length continuations, positive/complementary bool/long:
+// eight 218s at 1280 bytes. NOT kept: native early root/actor ingress stays different;
+// one-consumer decisions do not match. Original geometry, result qualifier and full body restored.
+// P452: Separate paired-start/end, actor-success/fallback and trace-initial/recovered point memmoves, then complete paired/actor endpoint contracts:
+// 357/354/341/319/335/245/359/400. NOT kept: all regress; native early root/actor ingress remains. Original record publications, result qualifier, helpers, caller roles and full body restored.
+// P454: Existing point producer returns pointer/const-pointer/reference/const-reference/value,
+// then forced pointer/reference/value: 218/218/218/218/219/218/218/219.
+// NOT kept: no native early root/actor ingress repair; value returns also raise the other helper user to 66.
+// Original shared producer and complete body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

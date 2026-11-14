@@ -10,6 +10,7 @@
 #include "globals.h"
 #include <xtl.h>
 #include "main_messages.h"
+#include "cache_copy_globals.h"
 
 /* unknown_12de70.cpp: the geometry cache's pending loads */
 extern long g_4e64a0;
@@ -21,8 +22,6 @@ bool g_4ed39e;
 dword g_4ed3a0;
 long g_4e6470;
 
-long g_55bd04;
-long g_55bd08;
 bool g_55c14c;
 
 void function_593e0(void);
@@ -120,10 +119,10 @@ void function_12bf00(void)
 // @retail 0x12bf40
 void function_12bf40(void)
 {
-	if (g_55bd04 && g_55bd04 < 0x11)
+	if (g_55b4f0.state && g_55b4f0.state < 0x11)
 	{
-		g_55bd08 = 2;
-		g_55bd04 = 0x11;
+		g_55b4f0.result = 2;
+		g_55b4f0.state = 0x11;
 	}
 	function_120d50(&g_55c14c, true);
 }

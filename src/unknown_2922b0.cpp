@@ -493,6 +493,14 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // Diagnostics (removed): cross and the four points as members of one local aggregate 649 (2878 bytes; hit flags and input then
 // land on retail's 0x14 and 0x38, so the sizes of the address-taken locals do move the homes); float consistency on for this
 // body, the one setting diagnostic, 842 (3058 bytes), so retail's repeated width loads and unshared product are not that.
+// P450: Separate forward/side/up normalization-zero producers in bool/long: 572/570/572/570/572/570;
+// final publication mode in bool/long 576/576. NOT kept: one-consumer decisions lack byte equality;
+// best six-point gain is below the eight-point bar. Original body, helpers and in-place captures restored.
+// P452: Separate real forward/side/up return values, exhaustive angle-limit production, real countdown for, retained-input/forward-input/final-publication memmoves:
+// 570/570/570/576/570/689/662/576. NOT kept: best six-point gain is below the bar; transfers regress. Original helpers, four queries and every in-place input/result copy restored.
+// P454: Isolated function storage for forward/up/side scratch, center, origins, ray-length scalar,
+// hit-distance scalar and collision output on the retained affine-tail graph: 576/576/576/576/648/576/576/576.
+// NOT kept: none improves; original producer points, helper inputs and in-place captures restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

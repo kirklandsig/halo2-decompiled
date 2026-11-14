@@ -1915,6 +1915,14 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // the stack probe: retail face sum 0x44, nearest 0x50, edge sum 0x54, face count 0x84, edge radius 0x88, edge count 0x8c, face
 // radius 0x90; a no-link compile of this file (frame table from the assembly listing) puts ours as face sum, edge sum, edge
 // radius, edge count, face radius, face count, nearest in one run, whatever the names or declaration order.
+// P449: Face/edge radius-improvement and final face/edge count-admission results in bool/long:
+// eight 623s. NOT kept: no native accumulator-home repair or byte equality; full original body restored.
+
+// P452: Conditional endpoint value, face/edge real divisors, closest/clamped/query-position/normal-input memmoves, native prism endpoint traversal:
+// 620/623/623/719/682/649/610/641. NOT kept: no gain; native accumulator/query-zero homes remain. Original record copies, counts, geometry, helpers and full body restored.
+// P454: Isolated function storage for side/perpendicular/candidate/clamped/difference/direction/middle/half
+// on the retained long-count/shared-cross graph: eight 610s. NOT kept: no sum/zero/remainder repair;
+// every original producer, declaration and helper restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
