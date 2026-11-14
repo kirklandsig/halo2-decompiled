@@ -1014,6 +1014,11 @@ real function_296600(long actor_index, long prop_ref_index);
 // ours EAX/ECX, retail ECX/EAX, through the type-15 arm), the suppressed/current byte homes swapped, and the first 0x1c8df0 call, where retail
 // stores the root into the squad's slot at once, keeps current in AL and evaluates `!current` with `sete` among the pushes (CSE'd into the
 // second call through a stack slot), while ours computes the named not_current before the hit pointer and keeps the root in EAX.
+// M3 lane 8 r165 (plain; --fast gives 225 here): the game time through the existing function_146650 90 (same code); the head's
+// object through the existing ai_object_get (its argument is read before the pool global, retail's load order) 90 (same code:
+// ours still loads the pool global first), both together 90; a named object index used at its five uses 343 (1277 B); the
+// unit's NULL default declared after the two flags 346 (1240 B, the cmovne goes). Also read: ours puts not_current in the
+// squad's freed slot (+0x1c) and the root at +0x24, retail the root at +0x1c and `!current` at +0x24.
 // The two stacked notes below (first at 163, then at 90) are merged into this one.
 // Earlier at 163 (was 257): retail's length, frame 0x20, actor EBX. Left: the object and table registers (ours EAX/ECX, retail ECX/EAX, time read after the table pointer), the
 // suppression/current byte homes swapped, root and not_current in each other's slots with `!current` evaluated at the named local where retail evaluates it among the first

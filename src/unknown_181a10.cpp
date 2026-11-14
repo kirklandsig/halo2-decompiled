@@ -532,6 +532,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
+// MiniMax R (11-14): no lower score (238): retail reads the origin and the contact position with float moves into separate
+// slots, ours copies the two aggregates with dword moves; the origin as three real coordinate snapshots scores 308 in either
+// read order, member-wise origin copies 309, a member-wise hit copy 325 and both 362.
 // score 238 (was 238; 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // MiniMax A (11-13): no new form, no lower score (239); the frame is still 0x40 against retail's 0x44, the second
 // node's home is still +0x14 against retail's +0x20, retail still reads the shape's data word three times where

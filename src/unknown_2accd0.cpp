@@ -1065,6 +1065,11 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Reading: retail's direct arm computes the remaining count in ECX and jumps to the clamp's `mov edi, ecx` (the two arms'
 // `size = ...` tails are cross-jumped), so its hoisted body_size never joins size or position; ours coalesces them in ESI.
 // Body unchanged.
+// m3 lane 7 r160 (fast with 0x2ada70 and 0x2adb10, control 34): no total local 88 (re-measure: the entry is retail's to
+// +0x3f, then the signature case's scratch registers rotate by one); that with the sum written body first 88; with the
+// signature buffers at function scope 177 (688 bytes); with the signature case's own byte count 89; on this body,
+// `body_size > body_offset` for the body test 162 (689 bytes). The `fadd` 2^32 and 1.0f constant lines (3) are flagged
+// as differing targets here, where 0xdaaa0's identical constant fields verify.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

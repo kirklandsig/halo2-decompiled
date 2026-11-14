@@ -76,7 +76,7 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
-// score 558 (was 576): earlier 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// score 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // the minimum now has retail's +0x18, the input copy and hit flags sit 4 bytes off retail's.
 // Earlier score 576 (was 592): earlier 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // Earlier score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
@@ -511,6 +511,15 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // `for (i = 0; i < 4; i++)` loses retail's spilled down-counter (frame 0x100, /GL harness of this file).
 // P477: Independent standard hit-fill/input-copy/output-fill/forward-copy/fallback-copies/center-copy/final-copy/length-fill boundaries:
 // 700/681/656/573/693/575/613/668. NOT kept: best gain is three, with no native low-frame repair; several forms move the frame or shrink away from retail. Original arrays, complete in-place captures, helpers and body restored.
+// M3 lane 6 r179 (fast; control 558): a symbol-count phase scan (1-7 unused long locals at the top, diagnostic, removed)
+// 559/580/589/617/598/574/574, so phase 0 is best; at 4 and 5 the success byte and the input copy take retail's homes
+// (+0x17, +0x40) but the minimum and hit flags move away, and the cross rows' operand order never moves with the phase.
+// The positive range test with the exit last and the range read first inside the body, on this body, 646 (2865 bytes:
+// retail's jbe and the range kept from the compare, but zero still in XMM1 and loaded early); the angle limit declared
+// ahead of the two angle sums 558 (same code); `*arg_5 = 0` ahead of the FLT_MAX minimum 559; the arg_6 cross called on
+// the forward and up fields before the two axis pointers are set 654 (2871 bytes); `local_4 < FLT_MAX` 558 (same code).
+// Retail also reloads the half-width after each offset point's stores (`0 - [ebp+0x14]` for points 3 and 4), as if the
+// point stores could alias the definition; ours keeps the width and its negation in registers across them.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

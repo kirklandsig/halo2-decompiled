@@ -105,6 +105,10 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
+// MiniMax E (11-14): no new form, no lower score (902): the frame is still 0x1f0 against retail's 0x1d4, so every
+// stack home differs; retail pushes EBX, forms the element pointer with `shl eax,3; add esi,eax` and keeps the
+// object index in EDI across the call to 0xbadc0, whose own file is off-limits here, so the loop head's shape and
+// the extra frame slots stay as they are.
 // MiniMax E (11-11): no new form, no lower score (902): the frame, the entry/second activity and the record/vector homes remain; the loop head's shape is decided by the callee 0xbadc0, which lives in another file: BLOCKED-BY 0xbadc0.
 // MiniMax S (11-11): no new form, no lower score (902): the frame is 0x1f0 against retail's 0x1d4, and retail walks the element array through a computed pointer kept at [esp+0x64] where this build uses indexed addressing.
 // MiniMax G (11-12): no new form, no lower score (902): the frame is still 0x1f0 against retail's 0x1d4, the entry flag byte

@@ -641,6 +641,12 @@ static inline bool teams_enabled_19e1c0()
 // frame 0x20c); in the second compare's condition 588, in the first arm 621, before the return 687, in the last compare's condition
 // 687, one in each of 2/4/5/9 arms 642/671/445/421: the homes never move. No count of reads in the arms gives `remaining` a
 // register; only a read in the entry block does, and retail's entry block shows none.
+// M3 lane 11 r99 (fast with 0x19e0f0, which stays matched): retail passes `remaining` to the formatter in EDX from EBP and
+// shares one formatter call site among the `%s`/`%d` cases. The four name/team copies through a named `long length` (clamp,
+// copy, then `result = length;`) on the volatile result 620 (1237 B: the tails merge), on the plain result 691 (same code
+// as the plain result); every formatter failure as `return remaining;` (seven sites) on the volatile result 439 (1416 B);
+// the named lengths with those returns on the plain result 696 (1167 B); the four copies ending in `return result;` on the
+// plain result 691. Body unchanged.
 // T106: Actual entry-owned capacity consumed by name/formatter/engine families,
 // seven ordinary-result graphs then complete inherited-result graph:
 // 458/701/458/701/458/701/458/434. Name forms recover token preload and
