@@ -894,6 +894,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // masked 32); that with trace.distance read at each use 87 (1089 B, masked 35); that with the sector read ahead of the radius
 // 264 (1073 B); with the phase after the distance 87 (same code); with one named `(real)ring` for the phase and the distance 87
 // (same code). The named phase is a one-use value ahead of the spoke loop, so none is kept without a match.
+// P487: Standard rotation-dot/trace-point/collision-point coordinate producers,
+// seven subsets then explicit operators: 238/277/265/311/295/314/331/407.
+// NOT kept: no eligible gain; original helper, radius reference and full body restored.
+// Radius scheduling, SSE ring conversion and rotation spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

@@ -421,6 +421,10 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // rows 156 (929 B, masked 11); the cross through the existing cross3f_staged 179 (929 B, masked 39); the third
 // normalization on `&local_1[0].up` in place of `up` 110 (same code); the projection through the existing vector3f_assign(up, ..)
 // 188 (937 B, masked 11).
+// P487: Standard dot/magnitude/scaling on the original j-square/returned-axis graph,
+// seven subsets then explicit operators: 210/306/365/353/371/459/465/515.
+// NOT kept: all regress and grow; original four-use helper and complete body restored.
+// Forward late-k/reciprocal ownership and later magnitude/projection schedules remain.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
