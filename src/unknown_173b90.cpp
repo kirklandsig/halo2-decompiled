@@ -823,6 +823,13 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // 212/235; nested admission 42/115; post-admission definition receivers 260/262;
 // pre-admission unity defaults on the continue graph 210/233. NOT kept: no equality/gain;
 // original observations, offset/default timing, shared alias-safe rotations and body restored.
+// M3 lane 13 r91 (fast, control 42; difflib count with addresses masked in brackets, base [22]): the definition's transform
+// flag read once into a bool used by both loops 326 (1156 B); the emitter definitions walked by a pointer started before the
+// loop and stepped at the latch 270 (1111 B); the three cache updates as inline member functions of the value cache shared with
+// 0x175270 (which stays matched) 77 [58], with 1/2/3 unused locals 117/53/53; rotation, origin and their result pointers
+// declared at the function top 42 (same code). Re-measured: indexed definitions 115 (1136 B); the unused-local scan of line
+// 338's four structures plus scale-first alone gives nothing under 40 (scale first 40/107/51/51/55/55/55/68 for n = 0..7).
+// Body unchanged.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1906,6 +1913,11 @@ bool function_17afd0(long effect_index, long value);
 // byte/short/long/dword, original/producer-local zero lifetimes: 60/133/131/131/70/87/85/85.
 // NOT kept: no equality/gain; original availability, owner/view observations, query
 // gates, callback arguments, traversal and entire body restored.
+// M3 lane 13 r91 (fast, control 47; difflib count with addresses masked in brackets, base [5]): the availability as
+// `function_155760(view) == 0` 47 [5] (same code); `bool available = false;` at the loop body's top 136 (500 B) [17]; the
+// camera test reading the view global (view local elsewhere) with the `== 0` availability 110 (500 B) [5]; the camera test on
+// the global with the early clear at the loop body's top 143 (506 B) [17], with the `== 0` availability as well 143. Body
+// unchanged.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

@@ -1571,7 +1571,7 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
-// score 606 (was 610): earlier 637, 640 and 552; frame 0xb964 agrees and the prism cursor now has retail's plane.j anchor; sum/zero homes, axis re-read and early idiv remain.
+// score 606 (was 606): earlier 610, 637, 640 and 552; frame 0xb964 agrees and the prism cursor now has retail's plane.j anchor; sum/zero homes, axis re-read and early idiv remain.
 // Earlier first line: score 610 (was 610), the same status.
 // b2C (11-06) retail walk, statement by statement against 0x16a8e0: every condition, field, constant, callee and argument order agrees (entry `radius > 0`, signed clamp to 8 and
 // signed `% point_count`, side/perpendicular/along/separation sums in retail's order, inside and 0.01/0.0001 tests, normal path when the length is <= 0.01, ray hits at +0x14, `0 - radius` opposite ray,
@@ -1932,6 +1932,19 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // local for both branches 627 (frame changes). The zero carrier stays EBX (retail ESI) and the sums sit 4 bytes off.
 // P477: Standard first-product-seeded side/amount/edge-length/separation/direction-root/available-root reductions, paired minima and paired sum transforms:
 // 661/751/681/697/644/673/639/637. NOT kept: all regress and lengthen, with no native accumulator/zero repair; all four matched controls survive. Original observations, kernels, geometry and complete body restored.
+// M3 lane 6 r179 (fast with 0x16a440, 0x120790, 0xc2d00, 0x17a380, 0x2469b0; control 606). LEAD, match-only: the second
+// vertex's address taken ahead of the first reconstruction, `real const *second_vertex = (real const *)&prism->points[(edge_index
+// + 1) % prism->point_count];` used in the second call, 544 (2876 bytes): ESI becomes the zero carrier with retail's push order,
+// the clamp becomes retail's `mov ecx, 8; jg; mov ecx, eax`, the edge index lives in EAX (`xor eax, eax; test ecx, ecx`), the
+// `%` runs at the loop top and the axis is read again for the second point, all as retail (a one-use pointer ahead of a store,
+// so kept only with a match). Both vertex pointers named 544, with a named next index too 544 (same code); the next index alone
+// named 610 (2912 bytes, the frame grows), with the first vertex pointer 610. On the 544 form, `radius * radius` at its one use
+// 556 at retail's 2882 bytes (the square moves after the loop-entry test as retail, the plane-distance sum's terms reorder);
+// 1-7 unused longs on that (phase scan, diagnostic) 542/542/543/543/543/538/538. Left there: frame homes (first point 0x3c,
+// second 0x98 for retail's 0x70, 0x9c, the edge cursor not spilled at 0x98), the axis read after the `%` (retail first), the
+// second vertex kept as a pointer in EDI (retail keeps the `%` result in EDX), and the reconstruction's two `out[axis]` stores
+// not merged (retail copies the zero into XMM0 and shares one store). Also: `radius * radius` at its use on this body 612 (2895
+// bytes); the clamp as `point_count < 8 ? point_count : 8` 606 (same code).
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

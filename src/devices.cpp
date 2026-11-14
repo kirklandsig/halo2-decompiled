@@ -1244,6 +1244,7 @@ bool function_108530(long device_index, long name)
 // it in xmm6, a whole-program convention the callee sets, so the whole XMM allocation after the entry differs - retail's
 // first float compare is in xmm5 where this build's is in xmm7; the caller's argument registers come from the callee's
 // definition, which this lane may not edit.
+// MiniMax I (11-14): no new form, no lower score (121): the initial velocity is still passed on the stack where retail passes it in xmm6, a convention the callee's own definition sets, and the third zero clamp written as an if-statement scores the same 121 (same code), so the body stands.
 // score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // MiniMax C (11-09): no new form, no lower score (121); the initial velocity is still passed on the stack where
 // retail keeps it in xmm6 and takes five stack floats, so the whole register assignment after the entry differs.
@@ -1923,6 +1924,16 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
+// MiniMax S (11-14), NOT kept (coordinator: the one-use tick-rate local, as G's 11-14 form): 58 (was 250): the
+// acceleration and the speed are each one product added into a running value (the 0xcc
+// term opens the acceleration and the 0xc8 term opens the speed, with the 0xd4 and 0xd0 terms added into them), the
+// definition pointer's `volatile` is dropped, `bool result = false;` follows the definition read, the 0xb3 byte is
+// tested as `<= 0`, and the tick rate is read into a local just before the power 0x11eed0 call; 1495 bytes, as retail,
+// and every other function in this file is unchanged. Left: the position arm's channel pointer (ours in ECX with a
+// copy into ESI, retail's in ESI), the state slot read into EAX where retail reads it into ECX, and the order in
+// which the position arm's 0x11eed0 sets its arguments up (retail takes the definition pointer into EDX and reads
+// the 0xc4 and 0xc0 terms early). The gain rests on the one-use rate local (coordinator 11-11: match-only): dropping
+// that one element alone gives 380, so this change stands or falls as a whole.
 // score 250 (was 250): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI where retail has
 // ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads (match-only leads at 58 and 69 below).
 // MiniMax H (11-12): no new form, no lower score (250): the acceleration and the speed each written as one product added into a running value measure 359, and the same form without the volatile measures 382, so the body stands.

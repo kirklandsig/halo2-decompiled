@@ -502,6 +502,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // depth in a non-const local 2; its corners in four non-const locals 18 (four more symbols, the y fold again); corners and depth 2;
 // a non-const zero priority local for the four bitmap calls 2; the scale parameter copied to a local 2; the half constant in a
 // non-const local 332 (2260 bytes). All restored.
+// Round 103 (m3 lane 10, fast, 0x254200 matched and 0x254490 4 throughout): the scale halved in place (`arg_1 *= 0.5f;`, then
+// `arg_1 + 0.5f` / `0.5f - arg_1`) 386 (2272 bytes); the second quad's colour as a non-const colour aggregate declared at the top
+// 2; the first quad's Begin and vertex calls through the IDirect3DDevice8_ wrappers with a NULL device (an extra inline level and an
+// unused parameter, no code) 2; the first block's texture-stage calls through IDirect3DDevice8_SetTextureStageState 465 (2236 bytes,
+// as with the reference casts dropped); the last quad through the IDirect3DDevice8_ wrappers 2. All restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
