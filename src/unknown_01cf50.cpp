@@ -6125,6 +6125,14 @@ dword g_4b8430;
 // copied by value 508 (2421 bytes). Re-measured: each single product's operands swapped in rows 12 and 13, 2
 // each (same code). Diagnostics: the basis or the size renamed 2 (same code: names do not order the reloads).
 // The two reloads keep their order whatever the model read's form (the 125 forms show the same pair).
+// The model reference table holds eight byte entries; the second half of each
+// entry names the model the part's geometry block is built from.
+struct s_4e260_model_entry
+{
+    long field_0;
+    long model;
+};
+
 // @retail 0x4e260
 void __stdcall function_4e260(long tag, long context, long first, long second,
     long third, dword handle, byte *material)
@@ -6143,7 +6151,8 @@ void __stdcall function_4e260(long tag, long context, long first, long second,
     byte *table = *(byte **)((byte *)g_4e0348 + 0x238);
     byte *references = *(byte **)((byte *)g_4e0350 + 0x37c);
     byte *record = *(byte **)(table + 0x1c) + ((handle >> 8) & 0x3fffff) * 24;
-    long model = *(long *)(references + (signed char)record[0] * 8 + 4);
+    s_4e260_model_entry const *const entry = &((s_4e260_model_entry const *)references)[(signed char)record[0]];
+    long model = entry->model;
     byte *definition = g_4e3b44[model & 0xffff].bytes;
     byte *block = *(byte **)(table + 0x14) + *(short *)(record + 6) * 0x2c;
     word const *indices = *(word **)(definition + 0x2c);
@@ -6168,8 +6177,9 @@ void __stdcall function_4e260(long tag, long context, long first, long second,
         for (long part = 0; part < *(short *)(record + 0xa); ++part)
         {
             long index = *(short *)(record + 8) + part;
+            if (index < 0) continue;
             byte *geometry = *(byte **)(block + 0x28);
-            if (index < 0 || index >= *(long *)geometry) continue;
+            if (index >= *(long *)geometry) continue;
             byte *vertex = *(byte **)(geometry + 4) + index * 24;
             dword packed = *(dword *)vertex;
             byte *group = *(byte **)(definition + 0x14) + (packed & 7) * 20;
