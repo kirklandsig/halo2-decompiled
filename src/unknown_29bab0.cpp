@@ -436,6 +436,20 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // local_22 ? local_21 : !local_21;` 715 (same code), as `(dot > 0.0f) != !local_22` 765 (3499 B, masked 184), as
 // `local_21 ^= !local_22;` 725 (3480 B). Retail ends that arm with `test cl, cl; jne; test al, al; sete al; test al,
 // al; setne al`: the flipped value is converted to bool once more at the join, so its type there is not bool.
+// Round 81 (m3 lane 15; fast with 0x1f9e70, 0x110ab0, 0x29b990 and 0x29b2e0 listed gives the plain build's code on this base: 715,
+// EBX pushed at entry; aligned 394, stack-masked 279, stack-and-register-masked 170). New: retail's side arm ends with `test al, al;
+// setne al` after the optional `sete` (0x29bf27), so the flag there is a byte-sized value that is not a bool, converted to bool at
+// the join. Written `byte side = cross > 0.0f; if (!local_22) side = !side; local_21 = side != 0;` it gives exactly those two
+// instructions (3487 bytes, stack-masked 277) but 772, everything behind sitting two lines later; `char` the same code; `long` 765
+// at 3499 bytes (dword tests, not retail's); the bool compared with false 772. The grid's singles re-measured on this base:
+// local_15 as a planar copy 717, local_17 723, the negated j named 774 (`-x` and `0.0f - x` give the same code), float squares
+// 780, one radial test with the root in it 778 (3460 bytes, frame 0x8c, EBX pushed at retail's place), that with float squares
+// 789. Combined: side byte + named negated j + one radial test + float squares + both planar copies 755 (3468 bytes, frame 0x8c,
+// EBX as retail, masked 163); that with local_14 computed in its arm 790 (3431 bytes, frame 0x88, EBX as retail, aligned 365); one
+// radial test + float squares + local_14 in its arm 783; one radial test + local_14 in its arm 778 (3442 bytes); side byte + named
+// negated j + one radial test + float squares + local_14 in its arm 775 (3444 bytes). Retail keeps local_14 as one 8-byte home at
+// the top of the frame (stored ahead of the two normalizes, read once in the far arm); the forms without the named double split it
+// into two 4-byte slots low in the frame here, which is their extra slot (frame 0x8c). Body unchanged.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

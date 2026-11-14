@@ -96,8 +96,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 
 // MiniMax B (11-13): the width product is computed before the inverse sums, which lowers the score to 194; the
 // blend still leaves XMM5 in the aspect block and the tint's home is still exchanged with the second UV set's bounds.
-// score 194 (was 211; round 95 m3 lane 11 at the end): earlier 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
-// score 211 (was 211; round 95 m3 lane 11 at the end): earlier 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
+// score 194 (was 194): earlier 211 (round 95 m3 lane 11 at the end) and 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
 // spill homes (the dead `values`/`context` argument slots) are swapped too; the blend leaves XMM5 in the aspect block.
 // M3 lane 8 r159 (fast): the aspect defaults declared y first (`aspect_y=1.0f,aspect_x=1.0f`) 209 (the default stores
 // then run in retail's order, but aspect_x still takes the context slot +0x8c and aspect_y the values slot +0x78, where
@@ -557,6 +556,22 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // geometry stores (the existing UV encoder's body with flip 0) as `box2f corners = {x0, x1, y0, y1};
 // function_x0ec080(&corners, 0, geometry.values);` 512 (1899 B: the extra box changes the frame); the second set encoded
 // before the first 271. Body restored.
+// Round 81 (m3 lane 15, fast = plain 194; aligned 133, stack-masked 86, stack-and-register-masked 35). Diagnostics on the
+// tint/second-UV homes (wrong code, reverted): this build orders the two by stack references (reads, writes and address
+// uses, each counted once in the final code; more references sit lower, a tie puts the tint lower): the tint has 20, the
+// second set 29. The second set's flip cut to x only (9 fewer) or removed (12 fewer) gives retail's order; x and dx, x
+// and y, or x, y and dx (6, 6, 3 fewer) do not; 4 or 8 extra tint reads after the pack do not, 16 do (the tint then
+// sits between the two UV sets, as in retail). Retail's final code has the same 20 and 29, so its order does not come
+// from these counts. The tint and the second set as the two members of one 32-byte record: retail's homes (tint +0x50,
+// second set +0x60, first difference +0x18c) but 353, because stores into the record then reload the definition flags,
+// which retail keeps in EDX across the second set's stores (so the two are separate objects there). No effect (194,
+// same code): 1 to 7 unused initialised locals (constant, pointer-valued or float; this function has no operand-order
+// phase), the second set or the tint declared as a plain four-real array, library copies for the second set's two bounds
+// copies; the seed scratch widened to 16 bytes 195. The UV encode taking the named extents for its unflipped arms (one
+// value per extent, as retail stores each once) 304 at 1917 bytes, frame 0x58: the code of round 60's extents-at-each-use
+// form. Left as before: the home swap, and retail spilling ax, ay, the first set's two reciprocals and the aspect pair
+// while the blend, the second set's reciprocals and its extents hold registers (ours keeps ax and ay in registers down
+// to the flip and stores bx and by twice).
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
