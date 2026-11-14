@@ -2035,6 +2035,10 @@ void function_b7360(long object_index);
 // completion graph: 401/420/455/460/461/461/461; existing actual property-record
 // input for recording 270. NOT kept: no equality or gain; placements grow to
 // 1864 bytes. Original whole callback and includes restored; pool/actor/output homes remain.
+// P494: existing shared byte-bit interface at complete orientation/moving/directed
+// payloads, masks 1/2/4/3/5/6/7: 410/390/343/342/423/392/422; point flag 277.
+// NOT kept: all regress; most payload forms grow past 1848 bytes. Original callback
+// and includes restored; native pool/actor/output homes and retained reference remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

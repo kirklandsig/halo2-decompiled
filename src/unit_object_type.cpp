@@ -6631,7 +6631,7 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // register homes (weapon EDI, mode BX) and retail's length (1052 bytes); what still differs is retail's flag-7 bit materialised
 // with `and cl,1` and stored in the ready byte, retail's frame order (unit 0x14, weapon 0x18, hands 0x1c), the mode-2 path's
 // `xor esi,esi` and the duplicated epilogue.
-// score 280 (was 333): the single exit with `default: __assume(0)` gives retail's stack convention
+// Earlier 280 (was 333): the single exit with `default: __assume(0)` gave the stack convention.
 // MiniMax D (11-14): no new form, no lower score (300): the frame 0x50 and the single exit with the stack convention agree, but the weapon and mode still take EBX and EDI the other way round, and the two weapon flag tests are still not stored in the ready byte as in retail.
 // score 300 (was 333; 280 only with the unkept `hand = 0; if (...) hand = 1;` form below): the single exit with `default: __assume(0)` gives retail's stack convention
 // (all three arguments pushed), which matches 0xc4820, 0xccab0, 0xcce00 and 0x19ef40; current frame 0x50
@@ -6681,6 +6681,10 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // buffer still take each other's frame slots (ours: the flag at 0x64 and the buffer at 0x10; retail:
 // the flag at 0x13 and the buffer at 0x64), and swapping the two declarations changes nothing.
 // NOT kept (coordinator screen, MiniMax A 11-14): a goto the function on main does not have (kept only with a byte match): `goto done;`; the body is main's again.
+// P494: unit-first acquisition 303; immutable receivers 300; entry readiness declaration 300;
+// nested secondary admission 300; separate missing-primary rejection 300; conditional mode-four
+// readiness 300; final hand query through readiness 300; success from readiness 295.
+// NOT kept: final result gains five, below eight; other forms tie or regress. Original body restored.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -6908,6 +6912,11 @@ done:
 // successful-turn/final-identity library point copies 250/250; point-role names,
 // entry side workspace and byte turn result 250 each. NOT kept: ties or regressions;
 // native zero SIMD carrier, dead flag stores and state home remain.
+// score 250 (was 254): frame 0x24 agrees; native zero, dead flag stores, state home and facing tail differ.
+// P494: complete existing inline normalizer 242, immutable length 250, named squared sum 250,
+// both squared components 251, complete turn result 225, duration ticks named 250,
+// paired duration bounds 250, state receiver name 250. NOT kept: normalizer plain 242
+// loses matched 0xc2d00 (0 -> 2); turn result grows to 1120/1112 bytes. Original body restored.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -7671,6 +7680,11 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // wide/byte changed result 398/237 (byte gives native 1470 bytes, gain seven below eight);
 // held countdown as complete outcome 239; sound-request/flag-word role names 244/244.
 // NOT kept: ties, regressions or subthreshold gains; native flag dword transfer remains.
+// score 244 (was 253): frame 0x24 versus retail 0x28; native word flags use a dword stack transfer.
+// P494: result before lookups 245; positive crouch admission 244; direct held outcome 236;
+// requested zoom initialized before its test 290; complete rate producers 244;
+// sound aggregate 244; both last-level divisors named 244; full-scope sound request 278.
+// NOT kept: held outcome shortens to 1448/1470 bytes; other forms tie or regress.
 // @retail 0xc58f0
 bool __stdcall function_c58f0(long unit_index)
 {
