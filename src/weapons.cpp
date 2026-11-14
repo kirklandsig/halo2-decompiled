@@ -3241,6 +3241,7 @@ struct s_ammo_conversion_entry
     long definition_index;
 };
 
+// MiniMax G (11-14): no new form, no lower score (190): the type byte re-read at each of its three tests 212, the acquisition flag with retail's polarity 211 (715 bytes), the same with a found flag in the conversion scan 216, the destination magazine without its own pointer 207, both of those together 211 (743 bytes), the capacity minimum without its cast 190 (unchanged code, different allocation); a 300 s permuter run found nothing below 190.
 // MiniMax B (11-12): no new form, no lower score (190): the difference is in the homes and the
 // carriers only (retail holds the destination weapon in ebp and spills it around the conversion
 // scan, keeps the other weapon's definition index in edi, and stores the acquisition flag with
