@@ -768,6 +768,20 @@ real function_30bf0(vector3f *vector);
 // with the squared distance, which is the merged form rounds 145 and 82 measured at 81.
 // P458: Complete initial mode admission/rejection outcomes, bool/byte/short/long:
 // 150/150/150/150/150/150/150/150. NOT kept: native result/range/projection homes and basis products not recovered; original complete body restored.
+// P474: Standard delta/motion/clipped coordinate producers, typed normal copy,
+// paired seeded magnitudes, y-seeded plane reduction, complete graph and
+// explicit reductions. Result/range/projection homes and basis schedules remain.
+// Scores 268/206/405/310/209/341/390/400. NOT kept: ties/regressions;
+// original executable body and helper contracts restored.
+// P482: Standard scalar range/facing-copy/conditional-improvement transfers, subsets
+// 1..7, then all with nonfacing primary: 198/168/203/148/198/178/203/252. NOT kept:
+// all regress; range+improvements reaches 1308 bytes and the native result slot but uses
+// a nonnative GPR range load. Original producers, observations, helpers and body restored.
+// P484: Complete optional range-failure publication, rejection/success outcomes
+// bool/byte/short/long, on the native indexed-seat graph: eight 239 at 1270/1308 bytes.
+// NOT kept: tested outcome/result storage misses equality and moves frame/extent away;
+// original range branches, scalar homes, shared products and complete body restored.
+// MiniMax H (11-14): no new form, no lower score (84): the seat loop's two cross products are still computed by a helper that is private to another file, so their operand order is not this lane's to change.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2468,6 +2482,20 @@ real function_2683f0(long actor_index, long node_index, short type)
 // sets 1..7: 621/419/621/338/632/607/649; complete conditional publications 652.
 // NOT kept: every form regresses; arithmetic/extra-store shapes do not match.
 // Original complete body restored; iterator, player-loop and SIMD residence remain.
+// P474: Standard k-seeded reverse-coordinate reductions at absolute, relative
+// and facing dots, seven subsets then explicit operation contracts.
+// Native iterator homes and normalized-direction SIMD residence remain.
+// Scores 506/494/593/559/645/639/696/775. NOT kept: ties/regressions;
+// original executable body and helper contracts restored.
+// P481: Actual point/absolute/relative scratch final-consumer scope ends, seven
+// subsets, then all with read-only unit receiver: eight 168s at 2880/2880.
+// NOT kept: no native iterator/search/SIMD equality or gain; original scopes,
+// producers, helpers and complete executable body restored.
+// P484: One complete actor/vehicle eligibility result bool/byte/short/long,
+// positive then rejection-owned: 434/434/434/434/434/434/434/434. NOT kept:
+// shared failure/result storage misses equality and shortens extent to 2839/2880;
+// original guards, resets, iterators, searches, geometry and entire body restored.
+// MiniMax H (11-14): no new form, no lower score (168): the first difference is still the inlined 0x26be00 and the table load at +0x5c, whose helper is defined in another file.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

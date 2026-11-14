@@ -150,6 +150,8 @@ void __stdcall function_187510(long arg_0, real arg_1, real arg_2);
 void player_action_initialize(s_player_action *arg_0);
 
 #pragma inline_depth(0)
+// MiniMax A (11-13): no new form, no lower score (134): retail's flag block, the tail pair copied as two single floats and the latch with the else arm first each scored 164 and were restored, so the counted byte is still read without retail's sign extension, the selection compare keeps our operand order and the inlined count read keeps our [edx + edi] against retail's [edi + edx], which is fixed by the helper body in another file.
+// MiniMax H (11-14): no new form, no lower score (134).
 // MiniMax H (11-11): no new form, no lower score (134): the edits tried this round - the field-first
 // comparison and the two single-float stores - scored 136, 164 and 166 and were restored, and the remaining
 // difference is the operand order of the inlined 0xcbec0, whose body lives in another file.

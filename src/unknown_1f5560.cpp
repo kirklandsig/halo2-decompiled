@@ -1105,6 +1105,12 @@ real normalize2d(point2f *v);
 // MiniMax G (11-13): no new form, no lower score (135): retail's short exit hands the validity flag
 // back in BL (`mov al, bl`) and ours folds that exit to `xor al, al`, because MSVC folds a returned
 // bool that was tested against zero; the trajectory result stays on the stack instead of in DL.
+// T104: Independent neutral request success, joined with unchanged trajectory result,
+// logical then bitwise bool/byte/short/long: 136/136/152/151/167/167/161/158.
+// NOT kept: no equality; native-length forms still miss DL/return transport. Original entire body restored.
+// T107: Original force/fast inputs kept independent until retry admission,
+// logical/reversed/bitwise/conditional forms 301/301/304/301/301/301/304/301.
+// NOT kept: all regress and shorten away; original fast merge and full body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1357,6 +1363,12 @@ real function_50650(real cosine);
 // the LEA against the ADD, and the two entry stores of the 1.0 factors come out in the opposite order
 // (ours `[esp + 0x10]` then `[esp + 0x1c]`, retail `[esp + 0x1c]` then `[esp + 0x10]`); the actor and
 // object pointers as const pointers change nothing (137).
+// MiniMax C (11-14): no new form, no lower score (137): retail masks the actor index and multiplies it
+// before it loads the pool, then forms the actor with lea edi,[edx+esi] (actor EDI, object ESI); ours
+// loads the pool first and leaves the actor in ESI, so the prologue is two bytes longer and the rows pair
+// wrongly; the offset-first expression and the scaled-offset local both give the same code. The normalize
+// block still differs in the pre-load of the velocity's j before fsqrt and in the product order (that
+// helper is shared in include/unknown_11cc90.h), and the two 1.0f scale stores are swapped against retail.
 // MiniMax S (11-10): no new form, no lower score (137): the actor and object pointers still take the other way round (ours actor in esi / object in edi, retail actor in edi / object in esi), so the prologue is one byte shorter and every later row pairs with the wrong row.
 // MiniMax C (11-09): no new form, no lower score (137); the body differs only by the actor/object pointer pair (ours actor ESI / object EDI, retail actor EDI / object ESI), so the prologue is one byte shorter and every later row pairs with the wrong row.
 // Round 16: retail passes the object index in EAX and the actor index in ECX, ours passes the
@@ -1695,6 +1707,12 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax C (11-14): no new form, no lower score (238): with the side test written as a flag
+// (bool left = <dot> > 0.0f) every stack home lines up with retail (the direction at +0x1c/+0x20, the
+// radius at +0x14, the length in the dead origin slot at +0x54) but it scores 239, because the flag stays
+// live from the test while retail materialises it at the comparison; with the flag in its original form the
+// only difference left is the SSE allocation: retail zeroes with xorps xmm1 and movaps xmm0,xmm1 so the
+// 0.0f result stays in xmm0, this build keeps it in xmm2.
 // MiniMax A (11-13): no new form, no lower score (238): retail's and our prologue agree byte for byte
 // (the actor index in ECX, the object index in EAX, the target in EDX and the type in the first stack
 // slot), so the argument order is not what differs; what differs is the vector arithmetic's allocation

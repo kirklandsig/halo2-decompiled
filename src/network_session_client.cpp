@@ -1157,6 +1157,9 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // then the destination copy, `inc ebx` after the last store) is the two-statement order, not `[count++]` (which captures
 // the destination first and steps the count before the last store), and 0x6fa60's matched loop is the same two-statement
 // shape on a field count.
+// M3 lane 7 r158 (fast): identities as a flat byte array with a byte destination stepped by 12 9; the NONE arrays declared at the
+// top 9; identities declared before the count 9; the else arm's copy into `dest` 9; the source as `&current->players[i].user_id`
+// 9 (all the same code).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

@@ -934,6 +934,15 @@ void function_1d1540(s_havok_component *component);
 // with a plain ret, and the transform copy still uses rep movsd in a 0x84 frame where retail copies with
 // four movaps in 0x88; the component's EBX home is decided across the call cycle in other files.
 // MiniMax E (11-11): no new form, no lower score (65): frame 0x84 against 0x88, the component still arrives on the stack where retail has it in EBX, and the entry copy is rep movsd where retail uses four movaps; every form that makes the component a register argument puts it in EDI and costs matched 0x1d1b60: BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
+// MiniMax G (11-13): no new form, no lower score (65): retail's frame is 0x88 with the transform local at
+// esp+8 and the inverse at esp+0x48, both 16-byte aligned, and esp is 16-byte aligned at the call to
+// 0x2da3f0 (esi and edi pushed); this build's extra push ebx alone makes the frame 0x84 with the local at
+// esp+4, so the component's EBX home is the one lever for the frame, the offsets and the plain ret.
+// Retail's entry copy is the member-wise one (four movaps, as the matched 0x1d08e0 in this file), and
+// rep movsd clobbers ECX, which is why the index cannot travel in ECX while the copy is a block copy.
+// Matched precedents for a register argument in an aligned frame exist (0x1c59a0, 0x39780, 0x5b650,
+// 0x62300, 0x70280, 0x93100, 0x93fa0, 0x136df0, 0x1523c0, 0x19d650, 0x1ce010), but none of them also
+// stores an aligned SSE value, which is the shape 0x1d0cf0 needs.
 // score 65 (was 65): frame 0x84 versus 0x88; the index/component still arrive on the stack rather
 // than ECX/EBX, and the constructor copy uses rep movsd rather than aligned SIMD. The two-use body
 // slot receiver recovers the fixed-first guard and ordinary-path body lifetime; the post-reset
@@ -1143,6 +1152,15 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // the whole 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other files:
 // BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
 // MiniMax E (11-11): no new form, no lower score (38): the frame and the callee's convention are the only differences (retail keeps the component in EBX, ours pushes it); that choice is made by LTCG over the whole 0x1d0cf0 -> 0x1d1260 -> 0x278f00 cycle, whose bodies are in other files: BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
+// MiniMax G (11-13): no new form, no lower score (38): retail's body is this body's twelve movss stores
+// and one movaps in the same order, with the frame's local at esp+0x20 and the 16-byte translation temp
+// at esp+0x10 (twelve bytes of slack below them), where this build has the local at esp+0x10 and the
+// temp at esp+0x00, so every store offset differs by 0x10; the frame's size follows from the same
+// convention that makes this build push the component and the index.
+// MiniMax G (11-13): no new form, no lower score (38): retail loads the component into EBX at the call
+// (mov ebx,[ebp+8]) after a push ebx in the prologue and passes the index in ECX, this build pushes the
+// component and the index; the frame 0x50 against retail's 0x5c follows from that alone, so this function
+// is BLOCKED-BY 0x1d0cf0's convention and needs no change of its own.
 // score 38 (was 38): BLOCKED-BY 0x1d0cf0: retail passes it the component in EBX (loaded here from the
 // stack after `push ebx`); ours pushes the component, so the frame and every store offset differ. The
 // body is otherwise retail's instruction for instruction. Tried here: zero transform/translation/both
@@ -2510,6 +2528,21 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // wide/byte duplicate result 91/91; unique-result complement 91; entry duplicate
 // workspace 91. NOT kept: no eligible gain; original complete body and all helpers restored;
 // early velocity j/k loads and property-zero residence still differ.
+// P468: Duplicate-search exhaustion ordinal instead of found flag, long/dword/int/
+// unsigned-int/short/word/byte/signed-char: 377/379/377/379/425/425/425/425.
+// NOT kept: all regress and disturb the matching contact prefix; original complete
+// body, normalizer, shared helpers and property updates restored.
+// P478 m3: Standard material find, complete velocity/contact-normal transforms,
+// normal/fallback/sample/velocity coordinate copies and ordered contact-dot reduction:
+// 353/209/428/449/376/136/242/731. NOT kept: no native velocity or zero-home repair;
+// original helpers and complete body restored, early velocity j/k and property-zero residence remain.
+// P480 m3: Actual material const/mutable/end/ordered/consume cursors, native unsigned
+// ordinal, second-contact cursor and traversal-owned sample: 219/219/219/219/227/93/320/219.
+// NOT kept: no velocity j/k or property-zero repair; original full body and helpers restored.
+// P483: Actual normal-initial/fallback/velocity-initial memmove boundaries, seven
+// subsets then complete graph with failed sample: 440/374/235/441/463/413/463/450. NOT kept: native early
+// velocity j/k and property-zero residence not recovered; original whole body
+// and shared helpers restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
