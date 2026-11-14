@@ -4002,6 +4002,10 @@ vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vec
 // MiniMax E (11-11): no new form, no lower score (101); the lookup of the object type is still expanded by the
 // compiler where retail calls it out of line, and that expansion shifts the rest of the listing; the depth pair
 // that would keep it out of line is ruled out, so the difference stays here.
+// MiniMax C (11-14): no new form, no lower score (101): the class lookup 0x221810 is still expanded where retail
+// calls it out of line, and that expansion accounts for about 97 of the 101; the two smaller differences (the flag
+// byte's or against a store, and the fade gain sum's load order) stay, and keeping the call out of line needs a
+// declaration in another lane's file, which the rules exclude.
 // score 101 (was 101): unchanged this round: the class lookup 0x221810 is still expanded where retail calls it
 // out of line, which shifts the rest of the listing; 0x221810 lives in src/unknown_221490.cpp, which this lane
 // may not edit, and the depth pair that would keep it out of line is ruled out.
@@ -4626,6 +4630,9 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 }
 
 // MiniMax H (11-12): no new form, no lower score (535); retail still expands 0x1420f0 and 0x11c120, which carry noinline declarations on main.
+// MiniMax C (11-14): no new form, no lower score (535): the frame is still 0x134 against retail's 0xe8 and
+// 0x16f3a0, 0x1420f0 and 0x11c120 are still expanded where retail calls them out of line; keeping them out of line
+// needs declarations in other files, which this lane may not edit.
 // score 535 (was 535): Frame 0x130 versus 0xe8; native rotation, environment and listener-index homes remain.
 // MiniMax B (11-11): no new form, no lower score (535); the body is unchanged, and the forms listed above are exhausted.
 // MiniMax C (11-11): no new form, no lower score (535); our frame is 0x134 against retail's 0xe8, the fallback reverb constant's linkage lives in another file, and every form tried here lengthens the body and regresses.
