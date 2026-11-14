@@ -1371,6 +1371,32 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // defaults 851 (2804 B); the player loop's second-rating copy ahead of the first 766 (masked 353); the group loop's
 // identity copy ahead of the three counter clears 766 (aligned 747, masked 340); the add loop leaving with `if (count >
 // available) break;` 766 (same code). The inline choices above stay the cause.
+// MiniMax A (11-13): no new form, no lower score (766): the first difference is still the stack ingress and the capacity switch, which retail expands as a jump table and this link keeps as a call, and the player loop, which retail inlines (0x63220 with its 0x192e60 call) and this link does not; the register homes follow from that choice.
+// Round 81 (m3 lane 15, fast with 0x73530, 0x63220, 0x192e60, 0x1934f0, 0x1931a0, 0x631f0, 0x6e910 and the accessors, all unchanged;
+// control 766, aligned 515). New cause: this link's inline choices follow each call site's static frequency, and every early exit
+// ahead of a site halves it. Measured on this body: a small same-file helper called from the player loop inlines only when nothing
+// in it would inline in turn (a trivial body, or one call to 0x1931d0 or 0x193250: 1109/1096/1098); with a four-test body, or one
+// call to 0x1931a0, 0x1932c0, 0x193300, 0x1933d0, 0x193440 or 0x1934d0, it stays a call (1097 each), and so does the real 0x63220
+// (1097; plain or `inline` same-file copy of its shape 1079, forced 1033 with its four calls left out of line). That helper called
+// ahead of the opening test inlines (948), after the player loop it does not (868). The opening test cut to n cheap early exits
+// (diagnostic): n = 0 or 1 inlines the real 0x63220 in the loop together with its 0x192e60, 0x631f0 and both 0x1931a0 (889/918),
+// n = 2 or 3 does not (1027/976); in the written-out body n <= 3 inlines 0x1931a0 and 0x193250 (958), n = 4, 5, 6 do not
+// (932/778/830). So retail's body cannot sit behind early returns, and retail's two failure exits do store false to the result
+// byte and reload it (0x7e2ea, 0x7ea9a): `result = false;` joined to the one `return result;`. Written so (the opening test and the
+// excess test set result = false, the type-5 scan under `result &&`, the rest under `if (result)`): 984 at 2948 bytes, 0x1931a0
+// and 0x193250 inline; with the player value through the real 0x63220 947 (2920): it inlines with all four nested callees; with
+// this file's copies replaced by the real 0x193300, 0x193440, 0x1933d0, 0x1933a0, 0x1934d0, 0x193400, 0x1934b0 and 0x193470, which
+// then inline too, 900 (2896 bytes, aligned 566). That form still inlines the top 0x192e60, the second 0x1931a0 and 0x193250 where
+// retail calls them, and calls 0x193300. The opening test split into `if (!summary || ... || !variant) result = false;` and
+// `if (result && (capacity > 0x193300 || capacity < 0x1932c0)) result = false;` inlines both lookups (1034, 2984 bytes); as an
+// else-if 900; with `!variant` moved to the second test 986. Diagnostic: the whole body under a constant-true test (every site
+// halved once more) with that split gives retail's call set but for 0x631f0 (called here, inlined in retail) and 0x193250 (inlined
+// here, called in retail): 843 at 2816 bytes, 0x73530 MATCH. Here 0x631f0 and the second 0x1931a0 always flip together, so one of
+// them weighs differently in retail. No budget effect: 16 extra accessor expansions change no other choice. On the early-return
+// body the loop lookup without its 0x1934f0 call 862, through 0x192e60 857, with no validity test 892; positive nesting or the
+// failure arm first for the opening test alone 815 each (the base's inline choices). Compiler-setting probe (reverted): the 900 form
+// without /arch:SSE 912, the same inline choices. Every form raises the score, so the body stays at 766;
+// build/r81/lead_7e210_rejsplit1.patch and build/r81/lead_7e210_w1split1.patch hold the 1034 and 843 forms.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

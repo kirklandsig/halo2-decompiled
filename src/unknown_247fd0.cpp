@@ -658,6 +658,32 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // 406/395/446/465/446/446/446/447. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // P448: Immutable incoming system/settings/publication/fraction/duration/scale/placement/cache bindings:
 // 334/334/334/334/334/334/334/334. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// M3 lane 10 r101 (fast with 0x247fd0 and 0x248cc0, both stay matched; aligned/register-masked in brackets): nothing kept.
+// Round 73's recipe rebuilt on this tree 415 [79/45] at 1652 bytes, 430 instructions as retail. On it: the gate through a named
+// effect pointer read twice 243 [102/52] (431 instructions: the record address is then formed with a separate `add`, as retail,
+// but with the base in EBP and the byte in AL); the motion kind read into its named short ahead of the field_08 statement 409
+// [88/54] (retail's `mov ax, [edi+0xc]; test ax, ax` exactly; the field_08 product turns), ahead of the scaled stores 423
+// (1666 bytes); with that, the gate through a one-byte wrapper type returned by value from an inline helper taking the record
+// pointer 315 [107/62] (dead store with no volatile, address still folded, flag still at +0x1f); the effect pointer declared
+// at function scope for the velocity 415 (same code); 0 to 7 unused longs ahead of the body 409 each [88-90/54-56] (the
+// symbol-count phase moves two float rows and none of the address sites). Lead, not a source form: retail's body holds five
+// `add reg, reg` and no base+index operand at all, while the matched sibling 0x247fd0 folds `[eax + edx]` in the very same
+// inlined tag-group lookup (same three registers live) and `lea esi, [ebx + edx]` for the same child record; so the unfolded
+// sites (gate, velocity, tag lookup), the short loaded before its test and the `movss` copy of field_10 are a property of how
+// this one function was compiled, not of its spelling. Its caller 0x247470 only matches built without optimisation (its own
+// file, on main), so the original source had an optimisation pragma region next to this function. Diagnostic (compiler
+// setting, reverted at once): an `optimize("", off)` / `optimize("", on)` pair placed ahead of this function 334, same code,
+// so a plain restore is exact; a state with global optimisation and frame-pointer omission on but no speed preference was
+// not measured (one setting diagnostic per round) and is the next thing to try, as a build-flag question for the maintainer.
+// P450: Original contact-mode request decision, positive/complementary bool/byte/short/long:
+// eight 334s at 1652 bytes. NOT kept: one-consumer results lack byte equality; native
+// split effect addressing and gate/settings homes remain. Original complete body restored.
+// P452: Real 0x5c collision extent on native-entry code, query scope, first sample, blend, probes, placement, all entry and all producer scopes:
+// 337/337/395/406/336/337/444/445. NOT kept: all regress (best 336 versus 334); no native gate/address repair. Original shared type, complete body, grouped storage, random steps, qualifier and helpers restored.
+// P454: Initial scale, blend setter, inherited-velocity sum, probe copy, contact-normal setter,
+// post-transform sum, age product and offset-probe constructor on native-entry code:
+// 354/334/341/344/359/335/334/343. NOT kept: none improves; original grouped storage, samples,
+// helpers, field observations and full body restored; native split-address/gate/settings homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

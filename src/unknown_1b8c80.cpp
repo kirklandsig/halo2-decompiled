@@ -303,6 +303,13 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // back for the object argument, 17 (the store moves ahead of the object read at the loop top, the reload still ECX).
 // tools/permute.py with the eight callers and callees as `--context` (its reduced image then scores 3, not round 169's
 // 112): 78 tries in 900 s, 17 at 3, none below.
+// Round 176 (m3 lane 6, fast, base fast 3): a loop-top `&seats[i]` pointer used only for the 0xc8200 seat argument 73
+// (380 bytes), only for the 0x1b8d80 arguments 74, only for the 0xc8f60 arguments 94, only for the object test, lookup
+// and store 102 (392 bytes), for the object arguments of both unoccupied-arm calls 94 (382 bytes). Also: 0xc8200 nested
+// under the 0x1b8d80 test with the unit read into a block-scoped local just before the call 3 (the seat-pointer reload now
+// takes EAX and the seat loads between it and the object read, as retail, but the unit load moves first: `mov ecx,
+// [edi + 0x18]` ahead of the seat); the occupied-object rejection alone as `return false` 102 (391 bytes); the hostile-team
+// rejection alone as `return false` 118 (391 bytes). Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -466,6 +473,10 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // MiniMax R (11-10): no new form, no lower score (8); the body is unchanged, and the seat scan's inclusive
 // bound still needs the decremented count and the separate zero that retail does not.
 // MiniMax A (11-11): no new form, no lower score (8); the seat scan preamble is the whole difference: retail keeps the count in ESI and the index in EBP, tests the count against the index own zero register (cmp esi,ebp) and stores the selected pointers NULL from that register, while our build materialises a second zero in EAX for both the test and the store; every exclusive spelling (for, while, the count in a local, the index declared first, the count compared with the index) moves the count to EBP and the index to ESI (11 or 12), and a seat-count test around the scan keeps retail registers and the native cmp/jl but our build still materialises the EAX zero (6, not kept: the test repeats the loops own bound).
+// P453: index-plus-one bound 39; position/forward/direction output objects
+// at function scope 8/8/8, all three 8; earlier angle declaration 8;
+// direction aggregate initialization 8; position/forward declarations
+// exchanged 8. NOT kept: no gain; original scan and callee inputs retained.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {

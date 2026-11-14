@@ -201,6 +201,7 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax B (11-13): no new form, no lower score (32): retail's tick products run j, i, k while its velocity stores run i, j, k, and the inlined scaled-difference helper keeps the two together (the deltas written i, j, k give retail's stores and its (k + j) + i sum but move the products to i, j, k, 79); the deltas in the order k, i, j measure 30 and the copy-then-subtract form 29, but both are statement orders picked by score and were reverted by the coordinator on 11-09, and the permuter (fast, 7 tries in 390 s) found nothing below the 32 differing instructions of the reduced image, so the body is the original one.
 // score 32 (was 32): frame 0x10 and the prediction prefix agree; first difference at +0x65: the velocity stores
 // and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
 // MiniMax G (11-12): no new form, no lower score (32); the deltas written i, j, k give retail's velocity stores (i, j, k)
@@ -696,6 +697,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // i, k, j 64, k, i, j 38, j, k, i 59, k, j, i 54; the squared length through the existing out-of-line distance_sq3f
 // (0x24550, inlined) of state->velocity and velocity with the deltas j, i, k kept 103 (386 B: the differences are formed
 // twice), the deltas formed in the then-branch only 83 (374 B), the deltas i, j, k 98 (382 B). Body unchanged.
+// M3 lane 5 r179 (fast with 0x1fc660/0x1fc350/0x1fc2f0/0x1fc710/0x1fc620): re-measured round 508's vector setter for the
+// delta, now with the parameter-address read kept, 90 (352 bytes). No untried natural form (lane 1 r90, lane 2 r77,
+// lane 12 r113). Body unchanged.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

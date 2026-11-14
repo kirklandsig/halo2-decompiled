@@ -581,6 +581,11 @@ s_1a8a10 g_4453c0[] =
 // aggregate 29-35. Diagnostic: the barrier with the perpendicular forms (9) 16-93. Reading: the numbering puts the
 // perpendicular's j ahead of x and y whenever it is a named value assigned ahead of the first sum; retail numbers
 // that copy last, as the compiler's own copy of a twice-used i, while still evaluating the negated j as a late leaf.
+// Round 162 (m3 lane 8, fast with 0x1f5390 0x1f57a0 0x1f57f0 0x1a8c30; control 17): retail's left sum is the 2D dot product
+// of the point with the facing's perpendicular (`(0 - j) * x + i * y`) and its forward sum the dot product with the facing,
+// the transform src/unknown_0de080.cpp writes with dot_product2d; the inline_depth(0) pragma keeps any helper out of line
+// here. Diagnostic (not keepable): the pragma dropped, the three callees declared noinline, both sums through dot_product2d
+// with a perpendicular local 214 (592 bytes; the function's own convention changes, arg_0 no longer in EBX; 0x1a8c30 49).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

@@ -1979,305 +1979,42 @@ void function_204450(long definition_index, long squad_index)
 
 bool function_1e11b0(long actor_index, bool active);
 
-#pragma inline_depth(0)
-// score 64 (was 64): round 116 (m3 lane 9, fast with 0x203d70 and 0x201ea0): re-read only; the listing is the one
-// described below (the index stays in its stack home, the squad takes EBX and next EBP, the loop is rotated, and the
-// flag store and the return are byte-wide). No untried natural form is left under the function-level `inline_depth(0)`.
-// Earlier at 64 (was 64): frame 0xc agrees; the squad address stays in EBX instead of
-// retail's spilled ESI pointer and EBP handle. The common loop head and
-// full-width return mask still differ.
-// MiniMax D (11-11): no lower score (64): the form that reaches 13 needs the inline_depth pair inside the body, which is not
-// allowed here, so the body stands.
-// MiniMax S (11-10): no new form, no lower score (64); the squad address still stays in EBX where retail keeps it in ESI and the
-// parameter in EBP, the loop is still rotated, and the returned flag is still narrowed to a byte.
-// Earlier (64, was 64): EBP handle/receiver spill, common loop head and return width remain;
-// Earlier (64): EBP handle/receiver spill, common loop head and return width remain;
-// MiniMax H (11-07): no new form, no lower score (64); the squad address is still kept in EBX
-// where retail keeps the parameter in EBP and the squad address in ESI (spilled into the slot above
-// the argument), the loop is still rotated with its test at the bottom, and the flag store still
-// reads the byte into a register where retail updates the byte in memory and reads it back.
-// Earlier (64, was 64): frame 0xc agrees; the squad address stays in EBX instead of
-// retail's spilled ESI pointer and EBP handle. The common loop head and
-// full-width return mask still differ.
-// byte record 64; native absolute index 64 (caller loss); record field types 64.
-// record flag bitfield 64; existing actor step 100 (caller loss); existing actor getter 84.
-// frame pointer 74; size preference 82; native index stdcall 69.
-// byte record stdcall 64; record fields stdcall 64; record bit stdcall 64.
-// Iterator current handle 64; scalar next handle 64; zero iterator 76;
-// invalid iterator 80; tick snapshot 62; initial flags 64; current handle
-// with tick 62; scalar cursor with tick 62. Two-point gains rejected.
-// Actual squad/actor/both record references 64/64/64;
-// result from update 79; retained Boolean guard/result 70; proven success exit 79;
-// update result with squad reference 79; Boolean result with actor reference 70.
-// Earlier: the squad pointer stays in EBX where retail keeps the handle in EBP and spills
-// the pointer to the handle's argument slot; loop rotation and return width as above. Inlined
-// actor step under the depth-zero pragma (stays a call) 100; the step inlined with the pragma
-// dropped and the two callees declared noinline 78 (184 bytes; unrotated loop and the or-byte
-// flag store as in retail, structural 16 against 19); that with no parameter address 78, an actor
-// index local 78, both 78, the squad getter 78, the iterator's handle stored 85, the squad
-// re-fetched after the loop 76.
-// Round 407: uniform live squad lookup with native flag test/store and initializer-owned
-// handle combinations 84/89/78/83/88/93/82/87. Receiver refresh grows the body; all restored.
-// Round 41: the `(void)&squad_index;` statement removed 64 (identical code, so dropped), the
-// index read once through its address at the lookup or at the iterator call 64/64; the actor
-// index kept in the iterator as the header step does 64; the header step itself 97 (the
-// depth-zero pragma keeps it out of line). Retail gives the index EBP for the whole body and
-// splits the squad pointer around the loop (ESI outside, reloaded from the index's home at the
-// loop's back edge); ours keeps the pointer in EBX across the loop and reads the index from its
-// home inside it.
-// Round 86: existing squad_actor_next_inline step with 0x203d70's statement-level inline-depth pair
-// around the 0x203f60 call (function-level pragma dropped) 78 at 184 bytes (retail's unrotated loop and
-// `or byte` flag store), with the return as 0x203d70's `(((dword)*(short *)(squad + 2)) >> 7) & 1` 71
-// (retail's full-width return exactly); on that body squad_get, parameter address taken, parameter read
-// through its address, squad re-fetched after the loop, extra parameter uses 71-95: the parameter never
-// gets a callee-saved register, so the pointer is never split.
-// Round 30 (lane 10, one-file harness exact): a diagnostic extra read of the parameter at the top of
-// the loop body (every pass) gives it a callee-saved register and splits the squad pointer around the
-// loop as retail does; the same read beside the conditional store does not, so retail's parameter
-// outweighs the pointer without any every-pass use. Word flag store as 0x203d70 62 (199 bytes); that
-// with 0x203d70's short-view flag test 61; the existing step with the statement pragma 71 (191);
-// existing squad_get with the word store 62; squad re-fetched after the loop 79 (212). A 32-form
-// screen of loop form, flag store width, return spelling, pragma placement and lookup: 62 or more.
-// Round 51 (lane 9): 0x203d70's loop (`while ((actor = squad_actor_next_inline(&iterator)) != NULL)`, the
-// statement-level depth pair, word flag store, full-width return) 71 (191); with the function-level pair 109
-// (152); byte squad pointer 71; actor index read from the iterator at each use 71; header squad_actors_next
-// 71; `if (...) continue;` body 71, on the current body 64; iterator declared first 71; result local 74
-// (188). Word flag store on the current body 62 (199/199), with the word flag test 62, with a word return 65.
-// Round 54 (lane 9): the return spelled `(((dword)*(short *)(squad + 2)) >> 7) & 1` (0x203d70's flag read) gives
-// retail's `and eax, 0x80; shr eax, 7` exactly (75 alone, 210 bytes); with the word flag store 65 (206; store and
-// return as retail, the loop still rotated); with 0x203d70's loop and statement-level pair 71 (191: retail's
-// unrotated loop, missing only the squad pointer's spill into the parameter's home and its back-edge reload);
-// that with actor/actor_index declared first 71, the parameter copied into a local 71, the word flag test 71.
-// File-local word/dword bitfield views of bit 7 72/69 (shift-then-mask). The same read matched 0x202e90.
-// Round 119 (lane 5): word flag store with the full-width return 65 (206); that with 0x203d70's loop 98 (165);
-// game time stored before the flag 64; squad_get with the word flag store 84 (179); word flag store and word
-// flag test 62 (199).
-// Round 125 (lane 5): actor index assigned in the loop test 64; actor and actor index declared at the top 64;
-// iterator declared at the top, before or after the squad pointer, 64/64; flag test as a signed char 64;
-// flag test with an empty then-arm 64; the 0x1e11b0 test as `== false`, with an empty then-arm, through a
-// named bool 64/64/64; game time stored first 64. Diagnostics: pointer renamed (name order) 64; iterator's
-// squad index field stored in the loop 65 (the index becomes a register argument). Flags lead (not
-// applied): with `/Ob1` file flags and no pragma, the existing step helper gives 71 at 191 bytes exactly as
-// the statement-level pragma does, so /Ob1 alone accounts for retail's out-of-line 0x204d30/0x203f60 and
-// unrotated loop; the squad index still never gets a register there (byte return 78).
-// Round 63 (lane 12; an LTCG env link reproduces the build): on 0x203d70's loop (71) an early `return` when the
-// +0x7e test fails 89 (220 bytes); the store from `iterator.squad_index` 78 (185, 0x203d70 drops to 34); a named
-// flag local before the tests 71; iterator/actor declared at the top 71. Same code as the 71 form (env): the
-// `continue` and `== false` tests, squad_get, an actor index local, the header step, `(void)&` or one read through
-// the parameter's address at the lookup, the call or the store. Diagnostics: with the squad dead after the loop the
-// parameter takes EBP (loaded from the stack, so retail's stack convention follows from EBP) and the loop gets
-// retail's EBX/EDI/ESI; with the squad live, only a parameter use ahead of the 0x1e11b0 call each pass gives it a
-// register (then EBX, passed in EBX) and splits the squad pointer as retail does; two uses after the call do not.
-// Round 37 (m3 lane 14, fast), on 0x203d70's inline-step loop with the word flag store and full-width
-// return (71, 191 bytes): iterator declared at function scope 71; actor index declared at function scope
-// 71; loop pointer declared in the while condition 71; squad_get(squad_index) at every squad use 92 (224);
-// early return for the tick test 89 (220).
-// Round 31 (lane 15, fast): return as `(squad[2] & 0x80) != 0` 65 (204); bit-7 test as `(char)squad[2] >= 0`
-// 64 (same length); actor index declared at loop scope 64; iterator.actor_index stored by the step 64; word
-// flag store with the short-view return 65 (206).
-// Round 51 (lane 1, fast): on 0x203d70's loop (step helper, statement-level pair around 0x203f60, word flag
-// store, short-view return; 71 at 191 bytes, everything but the squad pointer's split around the loop and the
-// index in EBP): squad_get for the squad 71; an actor index local for the three loop calls 71; the game time
-// stored before the flag 71; the squad as a byte pointer through squad_get 71; the actor initialised NULL 71
-// (identical register roles: the squad keeps EBX, the index stays in its stack home).
-// Round 73 (fast, current body): `squad_get` for the squad 80 (183 bytes: the depth-zero pragma keeps the header
-// getter out of line), with `actor_datum_get` too 102 (161 bytes); `iterator.actor_index` stored in the loop 64; the
-// loop as `for (;;)` with a break test 64; the +0x34 store from `iterator.squad_index` 65 (199 bytes).
-// Round 509: Actual flags/tick/stamp field-address lifetimes, subsets 1/2/4/3/5/6/7,
-// 64/64/64/64/64/64/64; all three with word flags 64 (201 bytes). No gain;
-// original complete body restored; squad spill, EBP handle and common loop head remain.
-// Round 56 (lane 11, fast; on 0x203d70's loop, 71 at 191 bytes, the eight missing bytes are the squad's spill into the
-// parameter's home and its back-edge reload, aligned 56): the post-loop flag and tick stores through a forceinline
-// helper on the squad 71; those and the return through helpers 71; a named index copy for both uses 71; the arm's
-// store and two calls as a forceinline helper with the actor passed 71, with the actor fetched again 79 (213 bytes).
-// All restored; the index still loses EBP to the squad pointer.
-// On the current body (fast): the actor looked up before the index copy 64; a field pointer for the +0x34 store 64;
-// the flag byte in a named local for the test 64; the iterator's next through a named reference 64; the next actor
-// read into a local before its store 64 (all same code).
-// Round 479: Retained squad-array/pool bases with long/word absolute ordinals, base-first/ordinal-first
-// acquisition: 65/59/65/65/97/92/107/107. Array ordinal-first long reaches 59/199 with frame 0x10
-// and a register handle, but loses 0x203d70. Original receiver, index, guard and body
-// restored; EBP handle, receiver spill and full-width return remain.
-// Round 119 (lane 7, fast): 0x203d70's loop with the statement-level pair re-measured 71 (191); squad_get for the
-// squad 71; `squad = squad_get(index)` plus a second squad_get in the +0x7e test 63 at retail's 199 bytes, aligned 24:
-// retail's body and the split squad pointer, but the index becomes a register parameter in EBX (0x203d70 105); a third
-// squad_get in the flag test 63 (200); that second lookup with one masked-index local 63, a pool local 62, an offset
-// local 63; `(void)&squad_index` 63; a field pointer on one lookup 71. With one plain read of the parameter through its
-// address (keeps it on the stack, 0x203d70 back to 0) 15, at any of the four uses 15; game time stored before the flag
-// 13 at 199 bytes, aligned 13: only EBX/EBP exchanged between the index and next (retail: index EBP, next EBX). On the
-// 13 form: actor index per use, late or loop-scoped 13; written-out loops 68/72/72. Standard marker (diagnostic) 30.
-// None kept: the address read and the in-body pair are only keepable on a match.
-// Round 140 (m3 lane 6, fast): rebuilt the 13 form (0x203d70's loop with the statement-level pair, squad_get
-// for the squad and again in the +0x7e test, one read of the index through its address, game time before a
-// word flag store; 199 B, only EBX/EBP exchanged between the index and next); byte flag store 40 (207 B),
-// without the address read 59 (0x203d70 105); on the 13 form: the +0x34 store from iterator.squad_index 79
-// (215 B), `(void)&squad_index;` 13, the address read at the 0x204d30 call 13, a copy `long index =
-// *&squad_index` 63 (0x203d70 105), iterator.actor_index at each use 13, a compiled-out `do {} while (false);`
-// after the loop or at the loop body's end 13/13; the permuter (anneal, 600 s, 51 variants) none below 13.
-// Round 63 (m3 lane 1, fast): squad_get plus a second squad_get in the +0x7e test 70 (0x203d70 105, 0x201ea0
-// 300: the index becomes a register argument); with one parameter read through its address at the 0x204d30 call
-// 61 (199 bytes, callers restored; match-only form); with the game time stored first 61; the 0x203d70 shift-form
-// return 75 (210), on the 61 form 70 (205).
-// Also round 63: the game time read into a local before the loop 75 (211); the +0x34 store through
-// actor_datum_get(actor_index) 71 (191, 0x203d70 105); the loop test with the NONE test first 66 (199).
-// Round 78 (m3 lane 9, fast; on the 13 form: squad_get plus a second squad_get in the +0x7e test, the
-// parameter read once through its address at the 0x204d30 call, 0x203d70's step loop with the statement
-// pair, game time before the word flag store, full-width return; 199 bytes, only index EBX/next EBP for
-// retail's EBP/EBX): the byte flag store 40 (207); the address read at the loop store, the first or the
-// second lookup 13/13/13; iterator, actor or the address local declared elsewhere 13/13/13; `(void)&` for
-// the read 63 (0x203d70 105); the store from iterator.squad_index 79 (215); one lookup 71 (191); a third
-// lookup in the flag test 75 (215); squad_get at every use 93 (225); the step written out 68 (214); the
-// header squad_actors_next 13; iterator.actor_index at each use 13; two address reads (diagnostic) 13; the
-// permuter (anneal, 600 s, 49 variants) nothing below 13.
-// Round 143 (m3 lane 6, fast): the 13 form rebuilt with retail's short-view shift return 13 (199 B; with the
-// byte full-width return 27, 192 B). On 13: word flag test 13; 0x1e11b0 given iterator.actor_index 13; the address
-// local declared after the squad 13; the depth pair around both 0x203ed0 and 0x203f60 13; `(void)&actor_index` 13;
-// the second lookup in the flag test instead of the +0x7e test 13, with the address read at the +0x34 store 13;
-// the squad re-fetched for the return 80 (218 B: any index use after the loop ends the pointer's liveness there).
-// P314: Formal/current-handle/walk lexical identities on the original receiver graph, seven
-// subsets and the complete actor receiver roles: 64 each. Original names and body restored;
-// EBP handle, receiver spill/common loop head and full-width return remain.
-// Y595: Full-width long/dword/int/unsigned-int result contracts, Boolean/direct zero-one mask production:
-// 65/65/65/65/65/65/65/65. NOT kept: no byte equality; original complete body restored.
-// DL262: Coherent matched predicate/removal/return-provider inline declaration subsets, then
-// explicit predicate expansion on the complete graph: 64/64/64/64/64/64/64/64.
-// NOT kept: no exact native form; original complete body and all provider contracts restored.
-// Round 53 (m3 lane 2, fast; on the 13 form, index EBX/next EBP against retail's EBP/EBX): `do { } while (false)` around
-// the loop or the flag arm 13/13; one masked-index local for both lookups 14; a squads-array local 43 (205 B); a plain
-// local for the walk's next index 68 (214 B); that with 2/6/12 extra uses of next (diagnostic) 80/88/89, four extra
-// iterator reads (diagnostic) 62: next stays EBP, so its weight does not decide it; flag-store and return spellings,
-// 18 forms with and without the address read, 13-73, same roles. Diagnostics without the address read: with only two
-// squad references after the loop (stamp store + return) the index takes EBP, next EBX and the argument stays on the
-// stack with no address read, 0x203d70 keeps its match (50, 199 B; the squad is then reloaded into EAX past the loop);
-// a third reference (flag store, or a word flags pointer) sends the squad to ESI with the split and the index to EBX
-// as a register argument. Lead: retail's squad holds ESI with its split yet the index stays EBP; no form reaches both.
-// Round 151 (m3 lane 5, fast; on the 13 form): word mask return 23; written-out loop with the lookup before the copy, with or
-// without the current store 72/72 (216 B); address read at the +0x34 store 13; flag before stamp 15; both calls in the
-// depth pair 13; dead read of next or current, a named copy of next (diagnostics) 13 each; squad assigned apart from its
-// declaration, iterator at function scope, address local late or const, dword parameter 13 each. Rank never moves the swap.
-// MiniMax R (11-08): no new form, no lower score (64); the squad and the loop index still swap roles against
-// retail's EBP/EBX, and the return is still narrowed to a byte.
-// MiniMax C (11-05): no new form, no lower score: the squad and loop index still swap roles here, the
-// argument is still not materialised in a register and the return is still narrowed to a byte.
-// Round 76 (m3 lane 1, fast; on the 13 form, index EBX/next EBP against retail's EBP/EBX): the +0x34 store
-// through a second actor_datum_get 95 (232 B); the stamp and flag stores written in both arms of the flag
-// test 83 (217 B, not merged); the existing next_actor_204390 step 13 (same code); the second lookup as
-// squad_get((word)squad_index) 69 (205 B, not combined); the squad re-fetched after the loop through the
-// address read 75 (212 B). Our 0x201ea0 also passes the index from EDI, so no caller preference differs.
-// Round 43 (m3 lane 18, fast; on the 13 form rebuilt: no function-level pragma, squad_get plus a second squad_get
-// in the +0x7e test, one parameter read through its address, the file's step loop with the statement pair, stamp
-// before the word flag store, short-view return; index EBX/next EBP against retail's EBP/EBX): a `bool result`
-// assigned from the return expression 18 (the return becomes `shr eax, 7; and al, 1`); a `long const &` to the
-// index at every use 13; const squad pointer and const actor index 13; the first lookup as `squad_get((word)...)`
-// 69 (205 B); the +0x7e comparison with its operands swapped 23. None kept; the current body restored.
-// P387: Actual actor publication field as long/int/dword/unsigned-int: four 64s;
-// the same domains sourced from the initialized iterator full handle: four 65s at
-// 199 bytes, losing both matched callers. NOT kept: native EBP handle/receiver spill
-// and return mask remain; original real record, parameter store and whole body restored.
-// T80: Signed-word current/stale stamp admission in bool/byte/short/long: 64/64/64/64/64/64/64/64.
-// Native EBP handle, receiver spill, common loop head and full-width return remain.
-// NOT kept: no byte equality or qualifying gain; original complete body restored.
-// P401: Complete loop admission/exhaustion carried by bool/byte/short/long in the
-// ordinary for predicate: eight 81s at 214 bytes. Full-width value argument alone/with
-// word flag publication and full mask 64/65, both lose the two matched callers.
-// NOT kept: no native EBP handle/receiver spill or common loop head; original
-// scalar parameter, every interface, direct condition and complete body restored.
-// Round 162 (m3 lane 6, fast): the 13 form rebuilt (no function-level pragma, squad_get plus a second squad_get in the +0x7e
-// test, the parameter read once through its address at the 0x204d30 call, the forceinline step with the statement pair, stamp
-// before the word flag store, short-view return) 13 at 199 bytes: only the index EBX/next EBP against retail's EBP/EBX. Retail
-// saves EBP (index) and ESI (squad) at entry and EBX (next) and EDI (actor index, 0x203ed0's register argument) only around the
-// loop, and spills the squad into the parameter's own stack slot, as the 13 form does. On it: one lookup, with or without the
-// address read 71/71 (191 B: the squad keeps EBX, the index stays in memory); the plain argument 63 (0x203d70 105, 0x201ea0 24: the
-// index becomes a register argument); diagnostics: the +0x34 store of a constant 68 (203 B, the index leaves its register), the
-// store moved after both calls 16, a fourth index use after the loop 37 (205 B): the index keeps EBX in each. So the index takes
-// EBX whenever it has a register at all, whatever its use count; retail's order fits the loop's values (next, actor, actor
-// index) being given registers ahead of the index.
-// Round 84 (m3 lane 10, fast): the 13 form rebuilt (no function-level pragma, 0x203d70's loop with the statement-level
-// pair, squad_get twice, one read of the index through its address at the +0x34 store, game time before a word flag
-// store, short-view return) 13 at 199 B, 0x203d70/0x201ea0 still matched, only index EBX/next EBP against retail's
-// EBP/EBX; on it: the actor declared in the while condition 13, the parameter renamed 13, the 0x1e11b0 test as
-// `if (...) continue;` 13, its result in a named bool 13 (all same code). Without the address read the index is
-// homed in EBX and LTCG passes it in a register; retail homes it in EBP, which keeps the stack convention.
-// Round 179 (m3 lane 4, fast with 0x202be0, 0x203d70, 0x201ea0, 0x202720 and 0x202a00; on the current body, the
-// function-level depth pragma kept): the squad as `&array[index & 0xffff]` 64 (same code); the squad offset by
-// `(word)squad_index` 64 at retail's 199 bytes, but the index becomes a register argument in EBX (0x203d70 105,
-// 0x201ea0 24); a const parameter 64 (same code); the flag test as a word read with the byte store 64 (same code);
-// the return through a word view `((dword)*(word *)(squad + 2) & 0x80) >> 7` 69 (205 bytes). Diagnostic, match-only
-// form: the `(word)` offset with one read of the index through its address (at the 0x204d30 call, the +0x34 store or
-// the lookup) 69 at 204 bytes, masked 18: the index stays a stack argument in EBX, the squad takes ESI with its spill
-// into the parameter's home and the back-edge reload as retail; left: index EBX/next EBP against EBP/EBX, `movzx`
-// for retail's `and 0xffff`, the rotated loop, the byte flag store and the byte return.
-// Round 68 (m3 lane 15, fast): the 13 form rebuilt (no function-level pragma, squad_get plus a second squad_get in the
-// +0x7e test, the index read once through its address at the 0x204d30 call, 0x203d70's step loop with the statement-level
-// pair, game time before the word flag store, short-view return) 13 at 199 B, 0x203d70/0x201ea0 matched, index EBX/next
-// EBP. On it: the index read through its address into a loop-local copy each pass (ahead of the 0x1e11b0 call) 13; a
-// local copy `long index = *index_reference;` at the top used for both lookups, the call and the store 13; that copy
-// made just before the iterator call 13; the address read in both lookups with the plain parameter at the call 13.
-// Round 168 (m3 lane 5, fast with 0x203d70 and 0x201ea0, both matched in each; masked = difflib count with registers and
-// stack offsets masked, 23 at 64): the return as `(bool)(((byte *)squad)[2] >> 7)` 64; the actor lookup as
-// `&((s_actor_datum *)g_4f55f0->data)[actor_index & 0xffff]` 64; the flag test as `(... & 0x80) == 0` 64; the return as
-// `(... & 0x80) == 0x80` 76 (209 B); the flag store as `((byte *)squad)[2] = (byte)(((byte *)squad)[2] | 0x80)` 64. The
-// 13 form needs an inline_depth pair inside the body, which is never kept, and without the function-level pragma the
-// three callees inline, so only spellings under that pragma are open here.
-// Round 70 (m3 lane 15, fast; current body, function-level pragma kept): `long actor_index;` beside the iterator 64 (same
-// code); the tick comparison's operands swapped 64; the word flag store with the iterator at function scope 62 (same code as
-// the word store alone). Re-measured, same numbers as round 51/54: the word flag store (here after the game-time store) 62,
-// with the word flag test 62, with the short-view return 65 (206 B). No untried natural form is left under the function-level
-// `inline_depth(0)`: the unrotated loop and the parameter's EBP need the statement-level pair or /Ob1 file flags, both
-// compiler settings (not keepable); every other lever (lookups, flag widths, return spellings, loop forms, declaration
-// places, the parameter read through its address) is listed above.
-// Round 153 (m3 lane 8, fast): matched 0x203cc0 shows retail's unrotated loop comes from the forceinline step, which the
-// function-level depth-zero pragma blocks. 0x203ed0/0x203f60 moved after 0x203d70 (retail's order) 64 (same code), the same
-// without the pragma 169 (287 B, 0x203f60 inlined); 0x203f60 in the /Ob1 file holding 0x204d30, no pragma, and 0x203cc0's step loop 78
-// (184 B, as with the statement pair) but matched 0x1c7bb0 stops inlining it (612 B); 0x203f60 alone in a file with this
-// file's flags, no pragma 161 (284 B, inlined again). Only /Ob1 (a flags decision) or a depth pragma keeps 0x203f60 out of
-// line here (the three pragma-dropped measurements are compiler-setting diagnostics). On the current body: the return as
-// `(bool)(squad[2] >> 7)` 64 (same code); 0x203d70's word flag test, game time first, word flag store and short-view return
-// together 65 (206 B); the return as `(squad[2] & 0x80) == 0x80` 76 (209 B); one byte pointer to the flags for the test, the
-// store and the return 64 (same code).
-// Round 155 (m3 lane 8, fast with 0x203f60's callers): the callee side. Retail keeps 0x203f60 out of line in this loop and
-// in 0x203d70's but inlines it in 0x1c7bb0's double loop. With no function-level pragma and the body on existing helpers
-// (squad_get, the forceinline step, iterator.actor_index) 161 (284 B, 0x203f60 inlined; re-measure of round 153's 161).
-// On that base: 0x275380's hand copy of 0x203f60 replaced by a call 161 (0x275380 still matches); 0x203f60 reading the
-// stamp through the existing getter 0x146650 161 (0x203f60 still matches); 0x203f60 with g_4f55d0 in a local 161 (0x203f60
-// 9); with an early return when inactive 161 (same code); with the time in a named local 161 (same code); with the list
-// head read into a local and stored after the head update 154 (279 B; 0x203f60 4, 0x1c7bb0 55). Diagnostic: 0x203f60 with
-// an actor lookup at each store (84 B) stays out of line here, 78 at 184 B (masked 17 against 23). So LTCG's choice
-// follows 0x203f60's optimised size, and no same-code spelling of it moves the choice.
-// Round 75 (m3 lane 2, fast with 0x203d70 and 0x201ea0): the return as `(squad[2] & 0x80) ? true : false` 64 (same
-// code); the loop guarded by `&& g_4f55d0->active` on the flag test 66 (202 B); the actor looked up by `(word)actor_index`
-// 64 at 199 B, but the index becomes a register argument (0x203d70 105, 0x201ea0 24); `return true;` closing the tick arm
-// 79 (212 B); the actor index typed dword 64 (same code). Re-measured: `!= 0` return 65, the +0x34 store from
-// iterator.squad_index 65 (callers lost). Retail evidence for the flags lead: 0x1c7bb0 (another file) has the bodies
-// of 0x203f60 and 0x204d30 inline, while every caller in this file keeps both out of line.
-// MiniMax A (11-12): no new form, no lower score (64); the frame, the argument's register and the unrotated step loop still need the statement-level inline pair or /Ob1, which are compiler settings this lane may not add.
+/* 0x203f60 stays out of line here as in 0x203d70's walk; the flag word is tested and returned
+   through one pointer, and the tick is read through its own lookup as 0x203d70 reads it */
+// score 0 (was 64): matches retail (m3 lane 11 r96, Fable 5.2 xhigh). The statement-level inline_depth pair
+// around the 0x203f60 call is an exception the maintainer ruled on (2026-11-13) to DECOMPILING.md's rule against
+// pragmas inside a body: it replaces the function-scope inline_depth(0) this function had, and it is the same pair
+// around the same call that the matched 0x203d70 has carried since 10-14; the plain check of all 55 functions of
+// this file is unchanged with it. Other in-body pragmas still need the maintainer's word.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
-    s_squad_datum *squad = (s_squad_datum *)g_51e9d8->data + (squad_index & 0xffff);
-    if (*(short *)((byte *)squad + 0x7e) == g_4686c4)
+    s_squad_datum *squad = squad_get(squad_index);
+    short *flags = (short *)((byte *)squad + 2);
+    if (*(short *)((byte *)squad_get(squad_index) + 0x7e) == g_4686c4)
     {
-        if (!(((byte *)squad)[2] & 0x80))
+        if (!(*flags & 0x80))
         {
             s_squad_actor_iterator iterator;
             function_204d30(&iterator, squad_index);
-            while (g_4f55d0->active && iterator.next_actor_index != NONE)
+            s_actor_datum *actor;
+            while ((actor = squad_actor_next_inline(&iterator)) != NULL)
             {
-                long actor_index = iterator.next_actor_index;
-                s_actor_datum *actor = (s_actor_datum *)g_4f55f0->data + (actor_index & 0xffff);
-                iterator.next_actor_index = actor->next_actor_index;
+                long actor_index = iterator.actor_index;
                 if (!function_1e11b0(actor_index, true))
                 {
                     *(long *)((byte *)actor + 0x34) = squad_index;
                     function_203ed0(actor_index, false);
+                    #pragma inline_depth(0)
                     function_203f60(actor_index);
+                    #pragma inline_depth()
                 }
             }
         }
-        ((byte *)squad)[2] |= 0x80;
         *(long *)((byte *)squad + 0x78) = g_510c54->game_time;
+        *(word *)((byte *)squad + 2) |= 0x80;
     }
-    return (bool)(((dword)((byte *)squad)[2] & 0x80) >> 7);
+    return (bool)((((dword)*flags) >> 7) & 1);
 }
 #pragma inline_depth(255)
 
@@ -3205,6 +2942,24 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // `short local_3 = NONE;` 169 (578 B); the delay test as `< 1` 51 (579 B); the delay in a named short 50 and `byte *const
 // local_1` 50 (same code each). The first follow-up still reloads the index from its home.
 // MiniMax A (11-12): no new form, no lower score (50); every instruction agrees with retail except the argument of the first 0x1fb8a0 call, where ours reloads the squad index from its stack home and retail keeps the EBP copy; a local copy of the parameter is propagated back, so the reload stays.
+// M3 lane 11 r96 (fast with 0x202e90 and 0x203bf0; control 50): a `byte *flags` for both 0x40 tests 50; a `short *` to the
+// +0x2a index for all six reads 50, for the four first-half reads 50, both pointers together 50/50 (all the same code),
+// the index pointer for three reads only 162 (578 B). A second squad_get(arg_1) at one first-half read gives the follow-up
+// retail's `mov eax, ebp` but the two-lookup entry (data loaded first, `lea`) with the squad spilled: first flag test 134
+// (581 B), first index test 157 (576 B), lock index 157, else-if flag 134, pending word 134; the else-if index 182 (578 B,
+// index and squad swap ESI/EBP). Diagnostics (not forms): one extra test in the second half ahead of the trigger
+// definition, or in the first arm's chain, gives `mov eax, ebp` with every earlier byte as retail; an extra test between
+// the task test and the second 0x202e90 call keeps the reload. So the reload is the last block of the index register
+// range being dropped when the range is cut for the second half's EBP; one more index reference, or one block more or
+// less off the follow-up path, keeps it. No code-neutral form found that adds either.
+// P463: Actual optional-follow-up presence before application in bool/byte/short/long,
+// then absence in those domains: 50/50/50/50/50/50/50/50. NOT kept:
+// no byte match; first-event EBP reload and actor-loop padding remain.
+// Original complete body, direct scalar test and every call restored.
+// MiniMax A (11-13): no new form tried this round, no lower score (50): the first 0x1fb8a0 call still reloads
+// the squad index from the stack into EAX where retail keeps it in EBP, and the jumps after it land two bytes
+// further in this body, so the block after the call is laid out differently and the body is 579 bytes against
+// retail's 578.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

@@ -1052,6 +1052,11 @@ PRIVATE inline long damage_object_root(long object_index)
 // bytes, a second test retail lacks, the same extra test the out-of-line site needs) and a for-form player scan gives
 // 396; the frame stays 0x1a4 against retail's 0x1b4 and the first verifier call is still expanded in ours, and the
 // sixteen frame bytes retail leaves unused have no spelling that recovers them.
+// MiniMax H (11-13), NOT kept (coordinator): 206 -> 80 came with the three object lookups calling
+// object_get_175d70, 0x175d70's file-local noinline copy of 0xbadc0, from this file: the same steer held under the
+// noinline ruling (MiniMax G 11-06). The rest of that round: the flag update through a local (load, or, store), the
+// outer radius added in two statements, the parent walk through an index-returning helper, the s_data_datum_iterator
+// player scan and a squared-distance helper called at both tests.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -2919,6 +2924,10 @@ struct s_unit_event
 // the drop blocks reading the datum through the pool at each use 523 (1900 bytes, the pool global reloaded per block); a local
 // copy of the pool for them 523 (masked 80: the global reloaded rather than kept, the offset in EBX); the destroy block
 // written in each arm of the destroy test 530 (masked 73, retail's shared 0xdb110 call shape).
+// MiniMax A (11-13): no new form, no lower score (517): taking the permutation pointer straight from the info's region array
+// (the one-use region pointer dropped) gives 557, so the region pointer stays; the first difference is still at +0xc, where
+// the region index takes EBX and the permutation pointer EBP where retail keeps them the other way round, and retail's
+// constant 1 travels through the region argument's dead stack home.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)

@@ -366,6 +366,14 @@
 // against native zero while retaining frame 0x54 versus 0x60.
 // P441: Existing selected v2/v3/v4 setter producers, singles/pairs/all then point setter: 693/713/646/734/701/698/758/719.
 // NOT kept: Native 0x60 frame, selected-basis homes and late x87 factor pops remain. Original complete body restored.
+// P462: Ordinary defaults then special overwrite for origin/view/projection/side/
+// cross-output, then basis/origin-basis/all: 739/699/698/689/678/805/784/803.
+// Cross-output default recovers frame 0x60 and extent 2622, first +6, but regresses.
+// NOT kept: no equality; original selections, helpers, math and full body restored.
+// T103: Actual first/second/both wave-position results, point then vector receivers,
+// and reused sequential position receivers: 522/692/687/522/692/687/693/693.
+// NOT kept: first-result forms recover frame 0x60 but grow five bytes and use
+// nonmatching one-use results; original helpers and complete body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1104,8 +1112,26 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // remain with no byte change; original complete tuning body restored.
 // P436: Existing object-tag attachments.address replaces the raw +0x98 read;
 // fast and ordinary checks both preserve 233 and 2592/2596 bytes.
+// M3 lane 11 r96 (fast with 0x42c50, 0x42b20, 0x43740, all MATCH; control 233, aligned 149). Frame map: retail has 37 dword
+// homes and three 8-byte homes at the top (u step +0xa4, V end +0xac, first.y spill +0xb4); ours has 40 dword homes (the u step,
+// the V end and one more) and one 8-byte home (the first.y spill, a promoted aggregate field). The loop and tail in a forceinline
+// helper taking the negated step and the V end as argument expressions 527 (2588 bytes, frame still 0xa8: argument temporaries
+// take dword homes too); the three scalars renamed (V end, U advance, V start, and two names at the ends of the alphabet) 233
+// each (same code: names do not move these spill homes); `point3f second, first;` 233 (same code); case 0 with the second edge
+// assigned first 458 (2584 bytes), that with the declarations swapped 458; case 0's first edge copied from the second's x and y
+// 439 (2584 bytes); case 0 as two aggregate copies of the position with the z offsets applied after, second first or first
+// first 698 / 698 (2680 bytes). Retail loads x and y once into XMM0/XMM1 for the second edge and copies them to XMM6/XMM5 for
+// the first; ours loads them for the first and copies down.
 // P441: Current/next/both/complete width-product branches, original then output-owned initial width: 510/511/545/558/576/572/584/590.
 // NOT kept: Native 0xac frame, first-edge Y and texture/color spill homes remain. Original complete body restored.
+// P463: Paired U/V scale-admission positive bool/byte/short/long 627/627/238/238;
+// complementary outcomes 634/634/634/634 reduced (control/full 233).
+// NOT kept: one-use results lack equality and native frame/spill homes;
+// original texture producers, observations and complete body restored.
+// T103: Actual output UV point record direct/first/outer/both setters, then original
+// fields with first/outer/both setters and native UV value publication:
+// 233/241/241/240/241/241/240/410. NOT kept: no native frame/spill equality;
+// original vertex fields, UV stores, helper declarations and complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

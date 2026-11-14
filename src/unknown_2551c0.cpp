@@ -498,6 +498,7 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // sum, length and projection homes.
 // MiniMax G (11-11), NOT kept (coordinator 11-11: 87 -> 20 by the unit index assigned inside the guard plus local_1 declared ahead of local_3, both match-only; a plain one-use local before the guard 68, the local at all four reads 241; body at 87): the guard's unit index travels in a named local and the object lookup comes
 // before the two vector copies, so the whole prologue and the guard now match retail's bytes.
+// MiniMax B (11-13): no new form, no lower score (87): the 0x110ab0 argument is loaded into ECX where retail uses EAX, and retail loads the unit-pool global and looks the object up before either vector is copied, so its scaled index takes EDX while ECX still holds the global; here the global is loaded between the two copies and ECX takes both the argument and the index. Moving the lookup ahead of the copies measures 94 and was left alone.
 // score 87 (was 87): frame 0x54 and length 963 agree; the unit argument uses ECX
 // instead of EAX, followed by target/vector scheduling and sum/length/projection/query homes.
 // Earlier 20: the frame is 0x54 and the length matches retail's, and the prologue, the
@@ -822,6 +823,15 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // native frame; other scopes canonicalize. All original workspaces restored.
 // P448: Original-site normalization/projection/type/complete first-probe/complete second-probe/clearance/side-score/animation-distance decisions:
 // 87/87/87/87/87/87/161/87. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// M3 lane 12 r120 (fast with the file's functions, 0x30bf0, 0x110ab0, 0x1e4a50, 0x26bfa0, 0xe6900): lane 17's match-only 17 form
+// rebuilt 17 (same 17 lines: sum 0x10 for retail's 0x14, length 0x14 for 0x18, adjusted 0x1c for 0x18, index 0x18 for 0x1c,
+// lateral XMM3 and maximum XMM2 for XMM2 and XMM3). On it: the location index declared ahead of the two side outputs 17 (same
+// code); the side outputs declared without initializers and zeroed just ahead of the location query 17 (same code); the side
+// outputs declared second first 19; the named size in the final subtraction 185 (970 bytes; the listed form, re-measured).
+// Reading of the homes: retail packs the adjusted projection into the first length's dead slot and the second side output
+// into the sum's, which needs length, sum and adjusted placed ahead of the side outputs; ours places the side outputs and the
+// index first (sum then joins the first side, length the second, adjusted is left alone at the top). No form found that
+// changes that order. Body unchanged at 87.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

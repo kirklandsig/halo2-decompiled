@@ -1644,6 +1644,8 @@ struct s_looping_detail_request
 // known match needs the ruled-out implied test.
 // M3 lane 3 r238 (fast with 0x21b0e0, 0x14dde0, 0x219ed0): the flag7 store before the requested-audible copy at the end
 // 110 (other code, aligned 33 -> 35); the query stays inlined. I found no other caller-side form these notes do not list.
+// P459: Raw source-mode char/short/long/byte payloads at the original attached guard, original/native temporary output:
+// 110/110/110/110/127/127/127/127. NOT kept: native first-player call and detail/offset transport not recovered; original complete body restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -2204,11 +2206,25 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 434 (1939 B: the copy is retail's, but the pool data is reloaded
 // after the store and the index product is shared); an entry pointer for the byte with the s_decibels store through a
 // second getter 465 (1939 B: the block is retail's but for the one shared index product).
+// M3 lane 11 r96 (plain, with 0x21b940, 0x1269f0, 0x125920, 0x126660 MATCH each time; second number the aligned count, control
+// 305 / 216): retail reads both short pairs through a pointer to the pair (`lea ..+8` for the pitch bounds, `lea ..+2` for the
+// range's minimum/maximum). The range pair through `s_short_bounds const *range = (s_short_bounds const *)&bounds->minimum` 418 /
+// 221 (the gain approach's add flips, as with every form that names part of the pitch block); that with the pitch bounds pointer
+// 418 / 218; a block-level `long range_count = playback->pitch_range_count;` ahead of the second pitch loop 375 / 193 (frame 0x128
+// and the whole update head as retail: first difference +0x39, homes off by 4 or 8); that with a `long count` ahead of the first
+// loop too 365 / 216; a `short track_index` loop variable 465 / 230 (1891 bytes). On the second-loop count form the second loop
+// still loads the datum index and the track index into EBX/EBP (one use each, in the creation call) and the sounds[i] address into
+// EDI with `active` in a slot, where retail holds NONE, track_definition and `active` there and indexes sounds[i] at each use:
+// those 14 bytes are what every natural combination listed above is short of.
 // P444: first signed-short range ordinal 420f; second signed-short range ordinal 464f; native previous-range value 464f; exhaustive seed result 454f; preparation result 479f; pitch-bounds pointer only 479f; pitch-bounds record lvalue 479f; real request flag field 479f.
 // NOT kept: no byte match or supported native frame/result recovery; original complete body restored.
 // MiniMax G (11-13): no new form, no lower score (305): the frame is 0x11c against retail's 0x128, and the
 // outer index, the definition and the ring homes still differ; the forms in the note below all score 305 or
 // more, so the body stands.
+// T103: Actual permutation-table input cursor alone, with per-pass counts, sound/gain/
+// both local input cursors, gain output, all cursors and complete request storage:
+// 466/482/417/436/431/433/515/517 (fast control 305). NOT kept: no byte equality;
+// native indexed input observations, request, range/ring homes and full body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -3058,6 +3074,8 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // the state in ebx, NONE in esi and the track in ebp with the index and the track definition in memory, while
 // this build holds NONE in ebx, the index in esi and the track definition in ebp; the forms in the note below
 // all score 596 or more.
+// P459: Independent update-on-start and two publication request-bit outcomes, seven subsets and all fixed Boolean producers:
+// 735/767/781/769/780/777/776/776. NOT kept: native true/raw-flags ownership and record/track homes not recovered; original complete body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

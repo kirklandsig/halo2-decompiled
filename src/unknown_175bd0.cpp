@@ -2148,6 +2148,23 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // 564 B (frame 0x44 as retail, register-masked aligned 41 -> 31, but the bool takes the effect argument's home and the
 // location index the frame slot, retail the reverse); round 184's lead re-measured 166 fast (552 B); the lead with that
 // named bool 172 (560 B, masked 21). Body unchanged at 128.
+// M3 lane 11 r97 (fast with 0x178eb0/0x179020, matched throughout): re-measured the lead (existing
+// location_point_in_zone_inline, both queries in the colour call's arguments) 166 at 552 bytes; with both colours read
+// into locals after the spawn stores 184 at 568 bytes. On that form frame 0x44, the location cursor in the effect
+// argument's home, colour A's slot at +0x10, the tint in BL and the type object in ESI are all retail's; the one
+// difference left ahead of the loop is the system kept in EDI through the queries (retail drops it when the type object
+// takes ESI and reloads it from its argument home for the colour call), which leaves colour B without EDI. On it: colour
+// B read first 184; the colours ahead of the spawn stores 190; colour B first and ahead 190; the location store first,
+// then the colours, then scale and unknown 190; the system read once through its own address for the colour call 184,
+// for the colour call and the loop call 184 (both fold away); a named tint with `multiplied()` as the argument 181 (572
+// bytes). Diagnostics: no system argument in the loop's 0x175270 call 65 at 552 bytes (colour B takes EDI, the system
+// moves to EBX, the tint spills); no set_location call 178 (540 bytes); the type looked up from the definition argument
+// 153 (552 bytes, system still EDI). Locating diagnostic only (a forced re-read of the system parameter at the colour
+// call on the early-colour lead; forbidden form, reverted at once): 40 at 552 bytes, the same with the loop call re-read
+// 40; the system then sits in ESI and is reloaded, colour B takes EDI. Left on it: colour A spills to the dead `unknown`
+// argument home instead of a new frame slot (frame 0x40 against 0x44, which shifts every stack offset), one scratch
+// register step from the first statement on (the definition's location index lands in ECX, retail reuses EAX), the
+// third zone product's operand order, and the order of the two loads ahead of the colour call.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3535,6 +3552,13 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // the mode and colour A and the tint and colour B swapped in the colour call (wrong values); not used.
 // M3 lane 3 r238 (fast with 0x176f60/0x178bc0/0x178c80/0x178eb0/0x179020): re-measured the mode read per call 108 (0x176f60
 // 25: both indices register arguments, the system in EDI, the definition in EBX); no untried natural form found.
+// M3 lane 11 r97 (fast with 0x176f60, matched unless given): re-measured the spawn-record cursor with a long cached mode
+// (cursor, mode, colour B, colour A) 87 at 337 bytes; on it the loop step (particle-location lookup, 0x248c60, cursor
+// advance) as a forceinline helper taking system, spawn record, matrix and node flag 87 (same code), with the node flag
+// as its argument 87, with the mode read at each call 109 (338 bytes, 0x176f60 25); the whole `unknown0c` body as a
+// forceinline helper taking effect, system, definition and the location cursor 92. Both swapped pairs follow from one
+// choice: retail's system takes ESI at the entry (ESI and EDI are the 0x175a80 call's own registers for the system and
+// colour B) where ours gives ESI to the type object first; a helper around the loop does not split the system's range.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

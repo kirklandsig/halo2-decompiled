@@ -678,6 +678,16 @@ extern point2f *g_468778;
 // the one-use clock read at its use 391, the facing pointer straight from the 0x25d740 call 375, the actor first 413,
 // constant exits 440, the prediction pipelines through the point helpers 375-377, a separate second prediction time 375,
 // the slot pointer declared first 375, the prop lookup before the clock 380.
+// M3 lane 1 r99 (fast with the file's 17 functions and 0x265d30, all MATCH throughout; base 375). Reading of the listing: retail
+// gives EBX to the prop, so arg_0 takes EDI and is copied to EBX for 0x1e4f90, and the settings pointer is the one left in memory;
+// ours loads arg_0 straight into EBX (the register 0x1e4f90 takes it in), keeps the settings in ESI and leaves the prop in arg_1's
+// home, so the question is why the prop outranks the settings in retail (both have six reads). The prop pointer declared first at
+// function scope and cleared where it was 375 (same code); that with the actor looked up first 413 (same code as actor first
+// alone, re-measured 413); retail's entry read literally (actor, settings tested at once with `return false`, then the slot and
+// its three flags, the result returned as the expression) 410 (1549 bytes); that with the prop declared first 410, with the prop
+// declared and cleared at the very top 409; the slot and the actor ahead of the settings call 413; the settings distance read
+// once into a local for its three later reads 406 (1533 bytes), with retail's entry 421 (1529 bytes). Declaration order and
+// position do not decide the tie. Body unchanged at 375.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

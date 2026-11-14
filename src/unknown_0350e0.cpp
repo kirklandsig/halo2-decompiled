@@ -40,10 +40,8 @@ matrix3x3 g_467104 = {
     { 0.0f, 0.0f, 1.0f }
 };
 
-PRIVATE __forceinline void rotation_from_axis(vector3f const *axis, real angle, matrix3x3 *matrix)
+PRIVATE __forceinline void rotation_from_axis(vector3f const *axis, real cosine, real sine, matrix3x3 *matrix)
 {
-    real sine = (real)sin(angle);
-    real cosine = (real)cos(angle);
     real xx = axis->i * axis->i;
     real yy = axis->j * axis->j;
     real zz = axis->k * axis->k;
@@ -73,7 +71,7 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 
 // MiniMax G (11-12): no new form, no lower score (343): retail's angles are the x87 products of the step with 0.5 and 0.3 and its
 // axes are at 0x485624 and 0x485630, which the file's two helpers already take; the frame and the spill homes are what is left.
-// score 343 (was 356): round 103 below. r136 lane 7 (at 356): a compile-only copy reproduces this build's register skeleton exactly; screened
+// score 334 (was 343): round 80 at the end of this note. Earlier 343 (was 356): round 103 below. r136 lane 7 (at 356): a compile-only copy reproduces this build's register skeleton exactly; screened
 // there, then built: `sinf(angle)` 357, `cosf(angle)` 357, matrix entries in retail's computation order (forward.i,
 // forward.j, left.i, left.j, forward.k, up.i, up.k, left.k, up.j) 381 (1750 bytes), caller-computed sine/cosine with
 // both angles and all four trig values first 370 (1796 bytes), the same with double angles 371.
@@ -240,12 +238,40 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // subsets 1/2/4/3/5/6/7, then axis capture after trigonometry: 365/454/343/490/365/454/490/373.
 // NOT kept: no native concurrent-angle/publication recovery; original helper
 // input observations and full body restored. Current frame 0x90 agrees.
+// Round 80 (m3 lane 15, fast with 0x137ed0, confirmed plain; al = LCS-aligned unmatched lines with registers and
+// stack slots masked, control 231): retail forms both angle products on the x87 stack before the first sine and takes
+// the sine before the cosine. Kept, 343 -> 334 (1781 bytes, frame 0x90, al 209, 0x137ed0 still matched): the two
+// angles as double locals of the function, each used twice, with the sine and cosine taken at the calls and the
+// builder receiving (axis, cosine, sine, matrix); arguments are evaluated right to left, so the sine parameter
+// follows the cosine. This gives retail's opening x87 lines (two fld/fmul pairs, `fld st(1)`, fsin, fxch, fcos).
+// The other ways to hold the angles: named real locals 353 (the 0.3 product goes to SSE); double locals cast to the
+// builder's real angle 332 at 1779 bytes (the products are forwarded to the calls, the second still late; the cast
+// only steers, not kept); a double angle parameter on the builder 334 with 0x137ed0 at 42 (the caller pads the
+// stack); the builder as (axis, sine, cosine, matrix) 335 (cosine first). On the kept form: one-use named sine and
+// cosine locals 342, with all four ahead of the builders 349; the builder in retail's computation order (squares,
+// sine products, each cross term before its pair) with named trig locals 332 (frame 0x8c, al 225, one-use locals)
+// and without them 348/354; cross terms stored in their matrix entry and adjusted in place 346/363; sine products
+// first 336; retail's second-matrix order 363; first-matrix order with the sine products i, k, j 345; the diagonal
+// between the pairs 341; the complement ahead of the diagonal 351; named sine products in the old order 388 (1821
+// bytes); the complement written in each cross product 348; stores in retail's entry order 351; the complement
+// declared first 332 (a moved declaration, -2, not kept); the cross products as `i * j * inverse` 334 (same code).
+// In-place row rotation (i and j saved, k read again), which is retail's shape for both passes: 413 to 415 at 1694
+// to 1701 bytes with frame 0x60 (al 191, the closest aligned form), with named trig locals 336/343 (frame 0x64).
+// Left: retail keeps the first matrix's squares in registers and multiplies the sine into the registers holding i
+// and k, re-reading the axis from memory for the cross terms; ours stores the squares and forms j*i and k*i early.
+// Retail's frame also has 0x20 bytes no instruction touches (after each matrix and at +0x28), which the in-place
+// forms lose.
+// P461: Builder-owned sine/cosine/both real conversions 335/334/337; consumed
+// builder matrix identities first/second/both/readonly/reference 334 each. NOT kept:
+// no exact repair; double-input forms also lose the caller. Original helpers/body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
     matrix3x3 first, second;
-    rotation_from_axis(&g_485618.forward, step * 0.5f, &first);
-    rotation_from_axis(&g_485618.up, step * 0.3f, &second);
+    double forward_angle = step * 0.5f;
+    double up_angle = step * 0.3f;
+    rotation_from_axis(&g_485618.forward, (real)cos(forward_angle), (real)sin(forward_angle), &first);
+    rotation_from_axis(&g_485618.up, (real)cos(up_angle), (real)sin(up_angle), &second);
     vector3f forward = rotate_axis_vector(&first, &g_467104.forward);
     vector3f left = rotate_axis_vector(&first, &g_467104.left);
     vector3f up = rotate_axis_vector(&first, &g_467104.up);
@@ -1421,71 +1447,6 @@ bool function_2dba0(long tag, bool alternate, long c, long d, long e, point3f co
 extern bool g_4ba019;
 long function_baf80(long object_index);
 
-// score 12 (was 12): the parent lookup differs. Retail masks the parent index (`and eax, 0xffff`,
-// `lea`) before it loads g_4e0300, ours loads g_4e0300 first and uses movzx; the first model
-// load also goes through EDX in ours and EAX in retail. Tried: `long parent_slot = parent & 0xffff`
-// (22), the same with byte-offset addressing (22). Also tried: `[parent & 0xffff]` written directly (22,
-// 459 bytes: retail loads g_4e0300 into EAX after the mask, ours into ECX before it), the parent object
-// and definition in one expression (22), `(word)parent` inline (12), the model read without the
-// definition local (12), `model` reused for the parent's model (12), `object_index != parent` (13),
-// `parent` declared before the model test (12), definition/model declared at the top (12).
-// MiniMax H (11-12, second pass): no new form, no lower score (12); retail keeps the definition pointer in EAX and
-// reuses the dying register for the model load where ours routes it through EDX, and in the parent chain retail masks
-// the handle with `and eax, 0xffff` before it reloads g_4e0300 where ours loads the pool first and narrows with
-// movzx. This round took the object, the parent object and the definition through their own element pointers, read
-// both model values inline and spelled the object lookup as byte-pointer arithmetic; every one of them scores 12, so
-// the register roles do not follow from those spellings either.
-// MiniMax H (11-12): no new form, no lower score (12); retail keeps the definition pointer in EAX and reuses the dying
-// register for the model load where ours routes it through EDX, and in the parent chain retail masks the handle with
-// `and eax, 0xffff` before it reloads g_4e0300 where ours loads the pool first and narrows with movzx; this round
-// added the byte-pointer and the offset-in-a-local spellings of the parent lookup and they compile to the same bytes.
-// MiniMax H (11-11): no new form, no lower score (12); retail still masks the parent index with `and eax,0xffff` before it reloads g_4e0300, while ours loads the pool first and truncates with movzx, and the pool load is hoisted above the mask in every spelling tried, so retail's order stays out of reach; the body stands.
-// MiniMax B (11-11): no lower score (12): the dword-masked parent index 22 (the earlier round's form, re-measured),
-// the byte-pointer parent lookup 22 and the inline model read for both chains 12 with the same code; retail's dying
-// EAX reuse in the definition chain stays out of reach.
-// MiniMax I (11-11): no new form, no lower score (12); reading the definition and the model through a `long *`
-// and an index (`definition[14]`) compiles to the same four instructions, the parent mask written inline in the
-// subscript (22: the function grows to 459 bytes) and the mask in a `long` local (22: the pool is still loaded
-// before the mask) both fail; retail's order (the mask, then the pool load) is not reachable from the source, since
-// the pool load is hoisted above the mask in every spelling tried.
-// MiniMax I (11-10): no new form, no lower score (12); a dword-masked parent index (`long parent_slot = parent & 0xffff;`,
-// 22 — the mask reaches EAX but g_4e0300 still loads first and the function grows to 459 bytes) and a dword-indexed
-// model read (`dword *definition ... definition[14]`, 12 — no change).
-// MiniMax R (11-10): no new form, no lower score (12): retail reuses the dying definition's eax for the pool's mask before the pool is acquired, ours acquires the pool first; the forms the earlier rounds tried all left the score where it is.
-// MiniMax C (11-09): no new form, no lower score (12).
-// MiniMax R (11-06): no lower score (12); the dword-masked parent index 22, an inline parent mask 22, an inlined parent model 22 and an inlined first-chain definition 12 score no better; the parent mask written inline in the subscript gives 22 as well, so retail's order (mask, scale, then reload g_4e0300) is not reachable from the source.
-// MiniMax D (11-05): no new form, no lower score (12); retail masks the parent index before it loads g_4e0300 and keeps the definition pointer in EAX, ours loads the global first and goes through EDX; a dword truncation, a dword or long masked index, the mask inline in the subscript, a headers local, the model read without the definition local and a dword model all score 12 or worse.
-// MiniMax B (11-12): no new form, no lower score (12): our standalone copy of this body is a link-time clone (our
-// 0x3d7f0 expands the body instead of calling it), so its argument registers follow the call site in
-// src/unknown_133790.cpp - the index arrives in EDI and the distance on the stack - while retail's clone takes the
-// index in EBX and the distance in XMM1; that is where the frame (ret 0xc against 8) and the definition chain's
-// register roles (retail EAX, ours EDX) come from, so they are not reachable from this body.
-// Round 109: the first chain's definition also lands in EDX (retail EAX, reusing the dying register as the model
-// load does). Tried: the parent object as `long *` (as matched 0x17bab0 writes it) with `[parent & 0xffff]` 22,
-// a parent header pointer 22, `long parent_index = parent & 0xffff` 22, `if (model == NONE) return;` 12, a two-caller
-// inline model-index helper for the object and its parent 22.
-// Round 111: initial definition as `long *` 12; parent definition as `long *` 12; parent definition inlined 12;
-// parent slot as dword/long from the narrowed handle 12/12; a shared tag-table local 12; settings as a real
-// array 12; the read-only object/definition chain const 12; the parent slot masked again in its array subscript 12.
-// P362: Parent narrowed in place 22; shared definition receiver 12; initial/parent/both
-// load-chain scopes 12/12/12; single void exit 12; explicit limit tests 12; both model
-// handles immutable 12. NOT kept: no byte equality or gain; original body restored.
-// MiniMax A (11-11): no new form, no lower score (12); the definition and model reads written inline (the model twice) and the parent chain written inline all compile to the same code, and the permuter's fifty tries kept the baseline.
-// MiniMax R (11-11): no new form, no lower score (12): the parent lookup differs - retail masks the parent index
-// with `and eax, 0xffff` before it loads g_4e0300 and keeps the definition pointer in eax, ours loads the pool
-// first and truncates the index with movzx; the pool load is hoisted above the mask in every spelling tried.
-// P419: Existing typed model fields 12; test-produced opaque result 128;
-// chained output clear 14; scalar weight names 12; combined cutoff 37;
-// in-place level cap 23; settings selection expression 12; late second
-// weight 47. No byte gain; typed fields alone confirmed by plain check.
-// m3 lane 14 r89 (fast; control 12): our 0x3d7f0 calls this function at both sites, as retail does (the MiniMax B
-// 11-12 line above, which says it expands the body, is not so; the entry, index in EBX, distance in XMM1, ret 8,
-// and the frame agree with retail). New: the parent model defaulted to NONE and tested once after the parent test 12
-// (same code); every local renamed (a_ and z_ prefixes, descriptive names) 12 each (same code); the output clears
-// ahead of the object lookup 125; the flag's operands swapped 12 (same code); the 0xff stores chained 14.
-// Re-measured: the parent object, and both objects, through the existing inline getter object_default_placement_get
-// 22 (459 B, same code as `[parent & 0xffff]`). Matched 0x1e13f0 and 0x25b6b0 get the mask before the pool load by
-// passing the 0xbaf80 result straight into an inline getter with no compare in between.
 // @retail 0x4baf0
 void function_4baf0(long object_index, real distance, byte *first, byte *second)
 {
@@ -1500,19 +1461,16 @@ void function_4baf0(long object_index, real distance, byte *first, byte *second)
         return;
     }
     s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
-    long model = definition->model.tag_index;
-    if (model != NONE)
+    if (definition->model.tag_index != NONE)
     {
-        byte *settings = g_4e3b44[model & 0xffff].bytes + 0x28;
+        byte *settings = g_4e3b44[definition->model.tag_index & 0xffff].bytes + 0x28;
         long parent = function_baf80(object_index);
         if (parent != object_index)
         {
-            word parent_slot = (word)parent;
-            byte *local_be682a_2 = ((s_scalar_object_header *)g_4e0300->data)[parent_slot].object;
-            s_object_definition *parent_definition = (s_object_definition *)g_4e3b44[*(long *)local_be682a_2 & 0xffff].bytes;
-            long parent_model = parent_definition->model.tag_index;
-            if (parent_model != NONE)
-                settings = g_4e3b44[parent_model & 0xffff].bytes + 0x28;
+            byte *parent_data = ((s_scalar_object_header *)g_4e0300->data)[parent & 0xffff].object;
+            s_object_definition *parent_definition = (s_object_definition *)g_4e3b44[*(long *)parent_data & 0xffff].bytes;
+            if (parent_definition->model.tag_index != NONE)
+                settings = g_4e3b44[parent_definition->model.tag_index & 0xffff].bytes + 0x28;
         }
         long level = 4 - *(word *)(settings + 0x24);
         real width = *(real *)(object + 0x3c) * 7.0f;
@@ -1813,6 +1771,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 }
 // MiniMax I (11-11): no new form, no lower score (193): the body is 20 bytes shorter than retail's 812; the known form that reaches 177 raises 0x2e9e0 to 573, and 0x2e9e0's 492 body is tuned against the callee this one calls, so the two cannot be moved apart.
 
+// MiniMax B (11-13): no new form, no lower score (193): retail's four cases still compute their cross products with their own temporaries (its frame is 0x18 against this build's 0x14 and it stores the zero result to its slot before the jump table), so the bodies would have to be respelled one case at a time.
 // MiniMax H (11-12): no new form, no lower score (193); the three cross terms' order and the place of the case 1
 // reference copy still differ, and the helper forms that reach 177 and 182 still raise the caller to 573, so the body
 // stays as it is.
@@ -2051,6 +2010,7 @@ PRIVATE inline real clamp_2e9e0(real value)
 real game_time_get_seconds();
 void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 
+// MiniMax B (11-13): no new form, no lower score (492): the frame is 0x90 against retail's 0x94 and the x87 block's locals land in the other slots (retail's ratio is at esp+0x10 where this build has it at esp+0xc), so the body's shape is different from the first block.
 // MiniMax I (11-11): no new form, no lower score (492): the body is retail's length (2285) and the first difference is at +0x2; the body is tuned against the callee 0x2f2d0 calls, and the form that would take 0x2f2d0 to 177 raises this one to 573.
 // MiniMax G (11-12): no new form, no lower score (492): the frame is still 0x90 against retail's 0x94, so the definition, source,
 // scale and vertex homes sit four bytes below retail's, and retail's tag, position, direction, colour, alpha, amount and scale
@@ -2263,6 +2223,9 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // MiniMax G (11-13): no new form, no lower score (492): the frame is still 0x90 against retail's 0x94, and the
 // vertex data call is expanded here where retail calls it; the member form reaches retail's length but scores
 // worse, so the body stands.
+// P461: Shared zero-angle outcome bool/char/signed-char/byte/short/word/long/dword:
+// 528 each, 2267/2285 bytes, frame 0x90. NOT kept: no exact repeated-test/output-home
+// repair; original independent trig producers, APIs and complete body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2706,6 +2669,7 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
+// MiniMax B (11-13): no new form, no lower score (170): the products of each cross product are still multiplied in the other order (this build takes the direction's components into xmm4 and xmm3 where retail takes them in xmm1 and xmm3), and the dot product helper's body may not be written out by hand, so the order is not ours to choose.
 // MiniMax H (11-12): no new form, no lower score (170); retail keeps the raw current length in its own slot at +0xc
 // and the pinned value at +4, while ours reuses one slot for both, and the later homes (the dot's float, the axis)
 // still take the other register roles.
@@ -2965,6 +2929,10 @@ extern s_record_pool *g_4e030c;
 void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, long count);
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
+// MiniMax H (11-13): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 - retail spills
+// the input list and reloads it at the loop top, keeps the total on the stack and the index in EBX with the cursor in
+// EBP, where ours holds the total in EBP; the index's register is fixed by the unmatched callee 0x31590.
+// MiniMax G (11-13): no new form, no lower score (113): a named list local for the pool's filtered list (plain 132), an explicit output cursor (113, the same code), the view declared before the count (113, the global load moves above the frame) and the cursor with the list local (133) all measure at or above the body, so the body stands.
 // MiniMax I (11-11): no new form, no lower score (147 in the reduced image, 113 in the full build): the body is 16 bytes shorter than retail's 548 and the first difference is at +0x2; the reduced image's score is inflated because the globals it leaves out are not masked.
 
 // MiniMax H (11-12): no new form, no lower score (113); the frame is still 0x9c against retail's 0xa0 - retail spills
@@ -3166,6 +3134,19 @@ s_cached_input_list g_5234e8[4];
 // M3 lane 2 r77 (fast with round 64's callee chain plus 0x241620, control 113): new: the 0x31590 call through an inline
 // wrapper taking the index by value 113, the entry through an inline getter taking it by value 113, both 113 (same code each:
 // inlined parameters are propagated, so a parameter copy does not move the index off 0x31590's EDI argument). Body unchanged.
+// Round 80 (m3 lane 15, fast with round 64's callee chain plus 0x241620 and 0x4ac30, control 113 as the full check):
+// `inline` on 0x31590's definition 146 (550 bytes; the index still rides EDI across the call, so the keyword does not
+// hide the callee's register summary; restored); the counter, list and total as fields of a local iterator record 133
+// (frame 0xa0 and retail's three adjacent slots, but the fields are still enregistered: list EBP); the admission
+// (`index != NONE && 0x31590`) in a named bool 113 (same code); `i`, a once-read list and the total declared in that
+// order ahead of the loop 132; that with the object read before the definition, `!(depth >= 0.0f)` and
+// `&g_5234e8[view]` at both calls 129. Diagnostics: two more uses of the entry pointer 164 (registers unchanged);
+// a dead assignment to 0x31590's index parameter 113 (the caller still keeps the index in EDI). Reading of retail:
+// the save order (ESI, EBX, EBP, EDI) is the order its registers were handed out: counter ESI, index EBX, cursor EBP,
+// object EDI, and the entry then displaces the counter from ESI; the object is defined before the entry (its load uses
+// the unformed address). Ours hands the index EDI, 0x31590's argument register, first, which leaves EBX to the cursor
+// and EBP to the total or list. Retail copies EBX to EDI at the call although 0x31590 never writes EDI, so its
+// allocator did not tie the index to the argument register; no source form found here unties it.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3269,6 +3250,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 	entry->initial = entry->initial < 0.0f ? 0.0f : entry->initial > *maximum ? *maximum : entry->initial;
 }
 
+// MiniMax B (11-13): no new form, no lower score (317): retail zeroes edx and keeps the block's base in ebp where this build zeroes ebp and keeps it in edx, and the two then read the stack slots in the other order; the frame's shape and the register plan have to change together.
 // MiniMax G (11-12): no new form, no lower score (317); both builds spill the counter and the entries
 // base to stack homes, so only the two registers differ (retail: the counter in edx and the base in ebp;
 // ours the other way round), and the base is a load of state->entries rather than a local, so declaring
@@ -3574,6 +3556,7 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
+// MiniMax B (11-13): no new form, no lower score (486): the frame is 0x60 against retail's 0x38 and retail multiplies the mode's short by 0xb8 where this build takes a hoisted constant, so the locals and the register plan differ from the start.
 // MiniMax H (11-12): no new form, no lower score (486); the frame is still 0x60 against retail's 0x38 - retail keeps
 // one 12-byte home for the previous camera position and each element's old position, reads the delta from the stored
 // view position and copies the scaled projection inputs into fresh registers in both arms, and those forms shorten

@@ -116,12 +116,18 @@ short function_120850(vector3f const *v);
 
 inline void point2f_set(point2f *point, real x, real y);
 
-PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, real const *x, real const *y, long axis, bool side, point2f *out)
+/* the quad corner at (bounds[x], bounds[y]) on the matrix's forward/left plane */
+PRIVATE inline real *decal_corner_point_17d9a0(transform4x3f const *matrix, real const *bounds, long x, long y, real *point)
 {
-	real point[3];
-	point[0] = matrix->forward.i * *x + matrix->left.i * *y + matrix->position.x;
-	point[1] = matrix->left.j * *y + matrix->forward.j * *x + matrix->position.y;
-	point[2] = matrix->forward.k * *x + matrix->left.k * *y + matrix->position.z;
+	point[0] = matrix->forward.i * bounds[x] + matrix->left.i * bounds[y] + matrix->position.x;
+	point[1] = matrix->left.j * bounds[y] + matrix->forward.j * bounds[x] + matrix->position.y;
+	point[2] = matrix->forward.k * bounds[x] + matrix->left.k * bounds[y] + matrix->position.z;
+	return point;
+}
+
+/* drops the axis the plane faces: the two remaining coordinates, in the table's order */
+PRIVATE inline void decal_project_point_17d9a0(real const *point, long axis, bool side, point2f *out)
+{
 	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
 
@@ -134,7 +140,12 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // keeps the short axis in AX and the flag in CL, ours signs the axis into ECX and puts the flag in AL); this
 // round a short axis local with the field stored straight from it measures 162, though the length then
 // matches retail's 983 bytes; the fast image measures this body only with 0x120850 and 0x22bbca beside it.
-// score 46 (was 46): retail's length and every lookup, store and the tail; left are the products' load/memory sides (retail's
+// score 20 (was 46): m3 lane 11 r96: the point rows read bounds[x]/bounds[y] directly (a point builder taking the array and two
+// constant indices) and the builder is the first argument of a two-lookup projection inline, so axis and side are evaluated
+// first: all 24 corner products then take retail's load/memory sides. Left (aligned 20): the dot's i term sides, the plane
+// store base, the axis stored from CX with the flag in AL and the first corner's merged extension, the j row's two products
+// in the other order in corners 1 and 2, and the determinant's second product sides. Before this round (46): retail's
+// length and every lookup, store and the tail; left were the products' load/memory sides (retail's
 // ranks: j fields > bounds[1,2] > i fields > bounds[0,3] > k fields; ours differ and move with symbol count), the plane store base
 // and the first corner's registers (the axis stays live in ECX, so the flag takes EAX). Earlier at 138: frame 0xc and matrix/dot
 // prefix agree; plane-store base, projection operands/publication and inverse schedule remain.
@@ -536,9 +547,38 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // (975 bytes). No other unlisted natural form found: axis and side types and locals, plane pointer and helper forms, dot
 // sides, corner helper shapes and signatures, edge and inverse forms, copy orders and spellings are all listed above.
 // Body unchanged.
+// M3 lane 11 r96 (`--fast 0x17d9a0 0x120850 0x22bbca 0x120810`, control 46 = the plain check; "aligned" = difflib count of differing
+// lines; pattern = which operand each of the 24 corner products loads). Retail's sides follow one order for all four corners
+// (j fields > bounds[1], bounds[2] > i fields > bounds[0], bounds[3] > k fields); with pointer arguments (`&bounds[n]`) ours decides
+// each call site by itself and moves with the symbol count (0-7 unused locals: 42-58 aligned, never retail's), with direct operands
+// it is one order and no longer moves with unused locals, names or term order. Forms: bounds array + two indices in the old
+// one-piece helper 42 (the bounds[1] products wrong; rows forward-first, left-first, position-first, short indices, named
+// coordinates all the same code); that helper's parameters reordered 42; the function's own parameters as (bounds, matrix, quad)
+// 44 (a different order again; needs a call line in a contributor's 0x17ef10, measured only); the corners written through a
+// macro 148 positional / aligned 46 (the bounds[3] products wrong); macro + the existing 0x120810 149 / 39 (all 24 sides
+// retail's, but the side byte is read late); 0x120810 inside the one-piece helper 159-165 (sides scrambled), with a short axis
+// parameter 989-992 bytes; a point builder returning its point as 0x120810's first argument 151 / 41 (all 24 right, side read
+// late); the same builder as the first argument of a two-lookup projection inline with (long axis, bool side): 20 (kept), with
+// (short axis, bool side) 24, with (short axis, byte side) and direct stores 124 (964 bytes); a pointer-argument builder there
+// 153; a by-value builder 191-201. On the kept form: `short axis` local 165 positional / aligned 23 (AX store as retail, the
+// flag still in AL); the field stored straight from the call 177 (sides scrambled); a plane pointer for copy, dot, store and
+// axis call 72, for copy, dot and store 45 (store base as retail, sides scrambled); position-first dot 22; the j row
+// forward-first 20, a typed point3f point 20, the projection defined first 20, the point declared at the corners 20 (all the
+// same code); a named table row pointer 175 (1006 bytes); the side test indexed by the stored field, with a short or a long axis
+// local, 177 / 179 (sides scrambled); the first corner given a short axis local and a `positive` local, corners 1-3 the fields,
+// 171 positional / aligned 30 (the bounds[1] products wrong again); `quad->plane.n.n[axis]` with the short local 165 / 23.
+// P462: Complementary first-corner side outcome, bool/char/signed-char/byte/
+// short/word/long/dword, 192/192/192/192/196/196/195/195 on the split producer.
+// NOT kept: mixed result/field residence fails equality and grows the extent;
+// original selectors, point helper, normal/edge math and complete body restored.
+// T103: Split point-builder stable horizontal/vertical/basis-subobject sets 1/2/4/3/5/6/7,
+// then all with the actual position subobject: 117/125/52/136/197/194/213/212.
+// NOT kept: no byte equality or native dot/selector/product-side repair; all four-use
+// helper inputs and the complete body restored on the retained 20-point graph.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
+	real point[3];
 	quad->matrix = *matrix;
 	quad->bounds = *(box2f const *)bounds;
 	quad->plane.n = matrix->up;
@@ -546,10 +586,10 @@ void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_qu
 	long axis = function_120850(&quad->plane.n);
 	quad->axis = (short)axis;
 	quad->positive = ((real const *)&quad->plane.n)[axis] > 0.0f;
-	decal_project_corner_17d9a0(matrix, &bounds[0], &bounds[2], quad->axis, quad->positive, &quad->corners[0]);
-	decal_project_corner_17d9a0(matrix, &bounds[1], &bounds[2], quad->axis, quad->positive, &quad->corners[1]);
-	decal_project_corner_17d9a0(matrix, &bounds[1], &bounds[3], quad->axis, quad->positive, &quad->corners[2]);
-	decal_project_corner_17d9a0(matrix, &bounds[0], &bounds[3], quad->axis, quad->positive, &quad->corners[3]);
+	decal_project_point_17d9a0(decal_corner_point_17d9a0(matrix, bounds, 0, 2, point), quad->axis, quad->positive, &quad->corners[0]);
+	decal_project_point_17d9a0(decal_corner_point_17d9a0(matrix, bounds, 1, 2, point), quad->axis, quad->positive, &quad->corners[1]);
+	decal_project_point_17d9a0(decal_corner_point_17d9a0(matrix, bounds, 1, 3, point), quad->axis, quad->positive, &quad->corners[2]);
+	decal_project_point_17d9a0(decal_corner_point_17d9a0(matrix, bounds, 0, 3, point), quad->axis, quad->positive, &quad->corners[3]);
 	vector2d_from_points2d(&quad->corners[0], &quad->corners[1], (point2f *)&quad->edges[0]);
 	vector2d_from_points2d(&quad->corners[0], &quad->corners[3], (point2f *)&quad->edges[1]);
 	if (quad->edges[0].i * quad->edges[0].i + quad->edges[0].j * quad->edges[0].j > 0.0001f &&

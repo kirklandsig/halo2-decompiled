@@ -893,6 +893,25 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // 218/218/368/218/218/219/219/228. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // P447: Immutable paired lengths/projections/reciprocal/distances/corner pointers/actor-trace receivers; original-site lower/upper margin admissions:
 // 218/218/218/218/218/218/218/218. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// M3 lane 10 r101 (fast with 0x270d90 at 286 and 0x270400 MATCH; base 218): nothing kept. The function defined ahead of its
+// callee 0x270400 in the file (a prototype added) 218 (same code: definition order moves nothing). Corners a, b, c, d
+// re-measured 287 (1284 bytes; entry `mov eax, [actor]; push ebx; push ebp; mov ebp, [out]; mov ebx, edx; mov edx, [ebx+0x3c]`,
+// and from the switch on case 1/6 reads as retail). On that graph: surface_index moved to the end of the parameter list
+// (definition, declaration and the one call together) 287 (same code); case 5 reading its vertices through the state's
+// pathfinding 325 (1296 bytes: the parameter then stays on the stack, 0x270d90 334); a `short type` local read ahead of the
+// result for the switch 295; case 5's actor test as an outer if around the call 287 (same code). Reading of the entry: retail
+// has the same two homes as that graph (actor EAX from the entry, pathfinding EBX) but its pathfinding arrives in EAX and
+// is copied to EBX ahead of the actor load, where ours is handed over in EDX because the actor load is placed first; no
+// parameter order, definition order or case spelling changes which register link-time code generation picks for it.
+// P450: Separate first/second positive-length continuations, positive/complementary bool/long:
+// eight 218s at 1280 bytes. NOT kept: native early root/actor ingress stays different;
+// one-consumer decisions do not match. Original geometry, result qualifier and full body restored.
+// P452: Separate paired-start/end, actor-success/fallback and trace-initial/recovered point memmoves, then complete paired/actor endpoint contracts:
+// 357/354/341/319/335/245/359/400. NOT kept: all regress; native early root/actor ingress remains. Original record publications, result qualifier, helpers, caller roles and full body restored.
+// P454: Existing point producer returns pointer/const-pointer/reference/const-reference/value,
+// then forced pointer/reference/value: 218/218/218/218/219/218/218/219.
+// NOT kept: no native early root/actor ingress repair; value returns also raise the other helper user to 66.
+// Original shared producer and complete body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

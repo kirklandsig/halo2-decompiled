@@ -98,6 +98,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // difference vector stays at +0x3c/+0x40, and the sine argument is negated in double, which is retail's `fld` of the wrapped
 // angle followed by `fchs`. The frame is now 0x64 as retail's and the score falls to 382. Still differs: the entry schedule,
 // the normalized XY/magnitude homes and 40 bytes of length.
+// MiniMax B (11-13): no new form, no lower score (382): the first difference is the carrier of the constant at +0x57
+// (xmm1 here, xmm2 in retail), which then swaps the product registers, and the function is 40 bytes short of retail;
+// the normalizer's two products follow the source order (x then y, as here) and swapping them moves the x product into
+// the copy register for 384, so the difference is the register choice alone; the entry schedule, the normalized XY and
+// magnitude homes and the candidate width are the rest.
 // score 382 (was 382; 393, 408, and 395 before the two retail-evidenced fixes of b3C below): first +0x57 uses a different SIMD carrier; inner cursor/wrapped-angle homes and candidate width differ,
 // frame 0x64 as retail's, 1692 bytes against retail's 1732.
 // Earlier 393 (was 393; 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
@@ -410,6 +415,14 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // T97: Complete upper-turn wrap truth in bool/byte/char/signed-char/short/word/int/long:
 // eight at 382. NOT kept: byte-neutral decision lifetimes; original array wrap,
 // shared producers, all call tuples and whole body restored. Unity/XY/wrapped-angle homes remain.
+// P455: Isolated function storage for evaluation output, endpoint array, fixed
+// cosine/sine, endpoint distance, projection ratio, directional/wrapped angle:
+// eight at 382. NOT kept: no match or native unity/angle-home repair; all
+// producers, shared helpers, call inputs and original complete body restored.
+// T102: Delegated radius/direction/both caller clamps 422/437/470;
+// direct ratio/dot/both inputs 422/437/470; complete shared dot/normalizer
+// with delegated bounds 470/470. NOT kept: no exact unity/angle-home
+// repair; original caller clamps, inputs, helpers and whole body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -920,6 +933,20 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // bool/byte/short/long: 780/783/781/785/792/792/783/798.
 // NOT kept: no equality or native radius/trace-home recovery; original independent
 // center result, complete sweep, every helper and all geometry restored.
+// P455: Isolated function storage for initial endpoint, transformed side, pivot,
+// reverse direction, forward/reverse/center offsets and persistent center,
+// eight at 569. Producers and reads stayed fixed. NOT kept: no match or native
+// radius/trace/pivot-home repair; original complete body and helpers restored.
+// P459: Existing pivot, mutable/reverse direction, previous/current sample, offset and complete geometry role names on the native-size frame:
+// 569/569/569/569/569/569/569/569. NOT kept: native radius retention and pivot/trace homes unchanged; original complete body restored.
+// P462: Initial two-edge trace loop with real direction/output tables and sector pair:
+// long/dword/short/word/byte/signed-char for, long/short while,
+// 854/854/837/837/837/837/854/837. NOT kept: larger frame and shorter extent;
+// original independent traces, sector scalars, helpers and full body restored.
+// T102: Explicit zero subtraction at offset/negative-scale/reverse-distance phases,
+// seven subsets 569 each; shared rotation point-setter publication 569.
+// NOT kept: no byte equality or radius/trace/pivot-home repair; original whole body
+// and three-use rotation producer restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

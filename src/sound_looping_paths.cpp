@@ -478,6 +478,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // lifetimes); helper routes for the pin/log/linear conversions and getters; grouping a count with its array would only move
 // homes (an aggregate made up to steer), so it is not a candidate.
 // MiniMax B (11-13): no new form, no lower score (866): retail keeps the entry zero in esi and the constant g_44a0b4 in xmm4 across the two scans, ours keeps the zero in ebp and the constant in xmm5; g_44a0b4 has to be a const global and its declaration is in src/sound_portal_paths.cpp, outside this file.
+// MiniMax A (11-13): no new form, no lower score (866): the first difference is still the stack ingress and the capacity switch, which retail expands as a table and this link keeps as a call; the two pool scans and the register homes that follow them depend on that choice.
 // M3 lane 16 r114 (fast with the file, 0x2197b0's file, 0x18d730 and 0x18dc90; control 866, aligned 1116 lines): retail's frame
 // keeps each count directly ahead of its array (choice count +0x34, choices +0x38; target count +0x88, targets +0x8c; existing
 // count +0xec, existing +0xf0), loads, increments and stores the count at each add, and forms the new element's address from the

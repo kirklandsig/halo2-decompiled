@@ -546,6 +546,10 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // game-time load and the result, not the NONE constant (it only rides in the pointer's register); one extra read
 // through the result 88: the result takes EDI, the pointer EBX, ticks EBP; the unit index read at the top 107: it takes
 // EBP until the result is set, NONE and the pointer stay EBX. Retail = the result ahead of the shared load.
+// m3 lane 14 r90 (fast with 0x110ab0): the 0.5 override as a ternary over a named chance local 59 (419 bytes); the
+// node pointer `const` 15 (same code); the override's state and flag tests as nested ifs 15 (same code); the
+// unknown225 test ahead of the prop-index test 31; the cooldown product as a call result then `*=` the field 78 (417
+// bytes). Re-measured: the elapsed compare written `local_4 <= elapsed * rate` 15 (same code).
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

@@ -1065,7 +1065,7 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
     result->y = scale * transformed.j;
 }
 
-// score 290 (was 290; 315 before round 79; 482 before round 68): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
+// score 290 (was 290; 315 before round 79; 482 before round 68; m3 lane 2 r79 note at the end): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
 // now agree; retail stores the +radius vertex group first (so 1.0 lands in XMM2, not XMM1) and
 // computes each projection's forward row first. Kept: the file's cross helper for both crosses
 // (it sets the +0x4c base; the shared cross3f for the forward one gives +0x50), normalize3d for
@@ -1266,6 +1266,13 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // code). In the forward cross retail loads the left vector's component first in every product except those with left.i,
 // and reloads left.i after the normalize where ours keeps it in XMM5 from the first cross. The direction table declared
 // before the face table 322, declared first of the three 367.
+// M3 lane 2 r79 (fast with the file's functions, 28 MATCH unchanged; base 290): retail's left normalization is 0x30bf0's own code
+// (loads k, j, i, sums (i*i + k*k) + j*j, then `v->i * inv`, `inv * v->j`, `inv * v->k`), but that function's file is /Ob1 and
+// LTCG keeps it a call here: function_30bf0 with a `__forceinline` redeclaration 701 (2730 B, still called); a private inline
+// copy of its exact text 290 (same code as normalize3d: the x87 order follows the context, not the text). Also: the count test
+// without its `(short)` cast 598 (2815 B, a dword compare for retail's word neg/sbb); the face and direction tables `const` 290
+// (same code); one `vector3f const *` for frame->forward in the cone arm 579 (2797 B); the cone half extents as one point2f
+// 480 (2813 B). Lane 1 r84's lead re-measured 288; the private normalize is round 148's listed form (290).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

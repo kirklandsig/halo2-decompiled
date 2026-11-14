@@ -130,6 +130,10 @@ s_lighting_record *function_3db00(long object_index, real priority)
     function_d4080(*(short *)definition, &query, special, &g_55ee60);
     return &g_55ee60;
 }
+// MiniMax G (11-13): no lower score (77); the flag set in both arms of the allocation test reaches 9 again, but that is the
+// form the coordinator reverted on 11-11 (a statement copied into both arms, kept only with a byte match), so the body
+// stays as it is; the walk's NONE exit spelled as a then-arm return 83, the allocation test inverted with the flag in the
+// else arm 83, the flag hoisted above the allocation 116, and the permuter over the 9 form found nothing better.
 // score 77 (was 77): round 116 (m3 lane 9, fast with 0x3db00 and 0x3dd10): lane 14 r84's `long result = NONE;` and
 // `if (result == NONE) { allocation; walk; }` skeleton with round 99's `if (result != NONE) initialize = true;` after the
 // walk (no walk return) 99 (491 B: the walk's NONE exit jumps to the end as retail, but the allocation and walk paths are
@@ -265,6 +269,13 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // the negative-age reset as a ternary 77 (same code); the found test written `!(cache_index == NONE || owner !=
 // object_index)` 77 (same code). Re-measured: the walk's NONE exit returning cache_index 77. As round 116 found, no
 // untried natural form changes the layout from +0x54.
+// M3 lane 13 r89 (fast with 0x3db00 and 0x3dd10, both matched; control 77): the flag computed from the found test, `bool
+// initialize = cache_index == NONE || owner != object_index;`, then `if (initialize) { allocation } else result = cache_index;`
+// 157 (498 bytes), with the arms the other way round 148 (495 bytes); the cache index stored into the object before the four
+// state copies 107; `state_count`/`states` declared at the top 77 (the code changes); the tail as `if (initialize && result !=
+// NONE)` 176 (488 bytes). Re-measured: the record pointer inside `if (initialize)` 132 (506 bytes, the listed joined-test 132).
+// Rebuilt for reading: 9, 83, 85, 86, 138, 145. VC folds `return result` after any NONE test of result (`or eax, esi` / `or
+// eax, -1`); retail's walk exit returns the register unfolded from a second epilogue, which no listed spelling gives.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

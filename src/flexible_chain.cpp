@@ -234,14 +234,14 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
-// MiniMax B (11-12): no new form, no lower score (171): the body is retail's length (1368 bytes) and the first difference
-// is the register pair at the segment's axis load, retail keeping the value in EDX where this build keeps it in EDI and
-// then in ECX; the permuter on this address was killed by its time limit without a result.
-// MiniMax H (11-12): no new form, no lower score (171): the rotation's y and z cross terms are still scheduled after the x row where retail puts them right after the dot, and retail loads all six axis and offset components into registers first where this build reads offset k from memory at the dot and at two later products.
 // score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // seven local-name sets, declaration reversals and entry/loop scopes 194;
 // shared cross 207, both point differences 286, both helpers 280;
 // scaled difference 212, all vector helpers 285.
+// MiniMax B (11-12): no new form, no lower score (171): the body is retail's length (1368 bytes) and the first difference
+// is the register pair at the segment's axis load, retail keeping the value in EDX where this build keeps it in EDI and
+// then in ECX; the permuter on this address was killed by its time limit without a result.
+// MiniMax H (11-12): no new form, no lower score (171): the rotation's y and z cross terms are still scheduled after the x row where retail puts them right after the dot, and retail loads all six axis and offset components into registers first where this build reads offset k from memory at the dot and at two later products.
 // frame 0xa4 agrees; attachment homes now agree. Retail keeps the rest offset
 // below previous and the scalar temporaries below the axis; those still differ. The segment
 // pointer lives in edx (ours edi) and the rotation's products are scheduled in another order.
@@ -611,6 +611,17 @@ void __stdcall function_1160c0(real dt)
 // (`real length = normalize3d(&axis); if (length == 0.f)`) 178 [160], first difference +0xc1; the physics index in a named
 // local for its test and the tag lookup 171; the target point declared with the loop's other locals 171; the direction
 // declared before the position 171; the delta's squared length through dot3f(&delta, &delta) 171 (all four the same code).
+// M3 lane 13 r89 (fast with 0x116750/0x73360/0x54590, all matched; control 171): `previous = position;` ahead of the velocity
+// rows 184; the guard as `dt > 0.f && !record->fixed` 176; the rotation into a `rotated` vector, then `predicted = rotated +
+// position` per row, 165 (aligned 187 -> 156: the rest offset's home moves to retail's +0x50; the same count as Round 130's
+// helper 165; one-use named parts, so match-only, and under 8 points). On that: the cross terms through cross3f(&offset,
+// &axis, &cross) 270 (1390 bytes); the rows reading the rest offset through the segment 342 (1329 bytes); same code (165):
+// vector3f_add for `predicted`, an aggregate initializer, `position + rotated`, `previous = position` first, the cosine
+// products first, the three cross terms named after the dot or in 0x170d70's order, the rotation written into `predicted`
+// and then `predicted.c += position.c` (no named local), the sine as each cross term's first factor; the segment length read
+// before the physics call 289 (1381 bytes); `++node->ticks` after the first-node/physics block 252; the target computed in
+// place in `delta` 190 (1360 bytes); the vertical declared at the loop's top 165 (same code). Left: segment EDX, mirrored homes.
+// MiniMax A (11-13): no new form, no lower score (171): the first real difference is still the segments base in edi and the segment in ecx where retail uses edx for both, and retail's homes run length, segment, axis upward where ours are reversed; the rotation's cross terms and their loads follow from those homes.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

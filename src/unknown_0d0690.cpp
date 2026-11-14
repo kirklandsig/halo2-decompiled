@@ -1631,6 +1631,25 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // (masked 263); `bool result = false;` first with `result = true;` last 573 (block EBX and query EDI as retail, record ESI,
 // 0x3db00 lost).
 // MiniMax R (11-11): no new form, no lower score (529): the entry convention and the loop's homes stay rotated against retail's, and the parameter order that would fix the entry is not ours to change.
+// M3 lane 12 r120 (fast with 0xd4080, 0x3db00, 0x3dfe0, 0xd1e10; control 529, aligned 521, register/stack-masked 275; callers
+// 378 / MATCH / 21): combinations of the listed retail forms, measured together for the first time. Letters: R `bool result =
+// false;` first with `return true;` closing the found block, T `result = true;` there instead, B one count test, C
+// parameters as (type, query, block), M the mask written in the loop test, D1 square right after the direction1 negate, D2
+// lightmap pin ahead of the base pin, E length through magnitude3d ahead of the copies, S1 normal as an aggregate copy, S2
+// lightmap copied whole with a named bias added in place, Q the query's three leading reals typed as a vector member (0xd1e10's
+// three stores renamed with it). Positional/aligned/masked: R B C 566/491/272; R B C D1 D2 570/447/225; R B C D1 D2 E
+// 570/438/218 (frame 0x28, `ret 0xc`, retail's entry up to +0xc, callers 380 / MATCH / 21: the closest form that keeps the
+// convention, 2168 bytes); R B C M D1 D2 E 575/457/219 (0xd4080 455); R B C D1 D2 E Q 573/448/224. Every form with S1 or S2
+// makes record a register argument (`ret 8`, parameters in EBP and record in ESI where retail has ESI and EBP) and loses
+// 0x3db00 (8), with or without Q: R B C D1 D2 E S1 572/555/207, + S2 578/607/227, R B C E S1 S2 573/599/277, R B C D1 D2 E S2
+// 587/589/209, R B C M D1 D2 E S1 583/555/206, R B D1 D2 E S1 574, R D1 D2 E S1 562, R T B C D1 D2 E S1 573, B C D1 D2 E S1
+// 552 (frame 0x30), D1 D2 E S1 564; R T D1 D2 E S1 574 keeps `ret 0xc` but takes block in ECX and type from the stack (0x3db00
+// lost). With S1 and E the x87 length and the interleaved normal copy are retail's instruction for instruction; what is left
+// is which of parameters and record gets ESI. None kept (every positional score is above 529).
+// P451: Count admission enclosing scan and consumer 573; selected pointer scoped inside 574;
+// that graph with length before normal copy / early lightmap copy / shared bias / direct primary
+// output / early square / lightmap-first clamps 573/568/573/606/548/571. NOT kept: all regress
+// and lose 0x3db00; original body/helpers restored, frame 0x2c versus native 0x28 remains.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

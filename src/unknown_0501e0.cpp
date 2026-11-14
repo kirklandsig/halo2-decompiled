@@ -33,6 +33,7 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products.
+// MiniMax G (11-13): no new form, no lower score (206): the diff re-read this round puts the first difference in the frame size (ours 0x20, retail's 0x14), and the forms that change the two offset loops' order or the scale step measure at or above the body, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (206).
 // MiniMax I (11-11): no new form, no lower score (206): retail computes the second point's offsets first, spills all three and keeps the camera coefficients in registers; taking the two offset loops in retail's order scores 208, so the body keeps its own order.
 // MiniMax B (11-11): no new form, no lower score (206); the body is unchanged, and the forms listed above are exhausted.
@@ -489,6 +490,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // helper's scaled copy as an aggregate copy of the input (`vector3f scaled = *arg_1;`) 330 (1198 B); same code (206): the
 // offsets renamed start/end so their names sort the other way, the view outputs renamed the same way, the blend scale and
 // orthographic length renamed, the two blend weights renamed.
+// M3 lane 13 r89 (fast with 0x30290, 0x30bf0, 0x142640; control 206): the clamp as `l13 > 1 ? 1 : l13 < 0 ? 0 : l13` 213; the
+// helper's scaled copy made in an else arm (`else scaled = *arg_1;`) 327 (1198 bytes); the widths undoubled with `local_9 =
+// (l8 * l8 + l7 * l7) * 4.f` 249 (at retail's 1136 bytes); the blend weights computed only in the `arg_1` arm 206 (the code
+// changes); the clamp in place on local_13 with two ifs 211. Same code: the else arm's 0.5 first, the width squares summed
+// l7 first, the halved fields first point first, the segment as an aggregate initializer, the depth limits `k * 4.f * k`.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
