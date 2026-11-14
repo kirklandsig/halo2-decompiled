@@ -308,19 +308,15 @@ static inline bool kind_moves_311e40(int kind)
 	return !(kind == 7 || kind == 6);
 }
 
-// score 103 (was 103): ours merges the delete that ends the kind-change
-// branch into the delete that ends the non-moving branch, where retail keeps
-// both (one through edx, one through eax); retail also allocates the
-// 0xd0-byte part before testing for kind 7 (a ternary for the two news scores
-// the same).
 // the body's part changed to one of another kind: a moving part is replaced
 // by one of the new kind built from its state, a part that does not move
 // gets a part of its own over the moving one, and leaving kind 6 or 7 goes
 // back to the part underneath (when there is one); the world is told when
 // the body stops or starts being of kind 7
-// Delete member and predicate forced inline 103/103; flat transition chain 103;
-// non-moving arm first 214; independent before/after world guards 103/103;
-// conditional predicate 113; earlier flag declarations 103. NOT kept: no gain.
+// The part is read into a local of its own before each of the last three
+// uses (the old part's new partner, the created part's previous one and the
+// field_14 pointer): read in place, the compiler picks other registers and
+// merges the two delete tails that retail keeps apart.
 // @retail 0x311e40
 void class_3115a0::function_311e40(int kind)
 {
@@ -373,8 +369,8 @@ void class_3115a0::function_311e40(int kind)
 			body->part = (part_311940 *)((class_30c180 *)old)->function_30c180();
 			if (body->part->slot_6() != kind && kind != 1)
 			{
-				part_311940 *underneath = body->part;
 				inertia_311e40 inertia;
+				part_311940 *underneath = body->part;
 				underneath->slot_9(&inertia);
 				part_311940 *created = function_311940(kind, underneath->field_b0, underneath->field_30,
 					((s_scale_holder const *)underneath)->get_inverse_scale(), (matrix_311940 const *)&inertia, underneath->field_20);
@@ -383,7 +379,8 @@ void class_3115a0::function_311e40(int kind)
 				body->part = created;
 				underneath->delete_311e40();
 			}
-			old->slot_30(body->part);
+			part_311940 *const replacement = body->part;
+			old->slot_30(replacement);
 			old->slot_31(0);
 			old->delete_311e40();
 		}
@@ -401,7 +398,8 @@ void class_3115a0::function_311e40(int kind)
 		}
 		if (moved)
 		{
-			created->slot_31(body->part);
+			part_311940 *const previous = body->part;
+			created->slot_31(previous);
 			body->part = created;
 		}
 		else
@@ -416,7 +414,8 @@ void class_3115a0::function_311e40(int kind)
 			delete old;
 		}
 	}
-	body->field_14 = (char *)body->part + 0x60;
+	char *const placed = (char *)body->part;
+	body->field_14 = placed + 0x60;
 	body->kind_7 = kind == 7;
 	if (world)
 	{
