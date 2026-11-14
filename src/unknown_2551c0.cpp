@@ -832,6 +832,15 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // into the sum's, which needs length, sum and adjusted placed ahead of the side outputs; ours places the side outputs and the
 // index first (sum then joins the first side, length the second, adjusted is left alone at the top). No form found that
 // changes that order. Body unchanged at 87.
+// M3 lane 16 r116 (fast with 0x2556b0, which stays matched): lane 17's match-only 17 form rebuilt 17. The adjusted
+// projection as the field subtraction written into the length local 17 (groups retail's: {length, adjusted} 0x14 and
+// {sum, second side, timing} 0x18, retail the reverse; index 0x1c as retail); with the size local in that subtraction
+// 185 (the listed form). New: the adjusted projection as a new local from the last subtraction 17 (same homes as the 17
+// form: the new local does not join the length's slot); the two length guards joined (no heading_length) on the
+// length-local form 17 and on the new-local form 17 (homes unchanged); the reversed probe direction as an aggregate of
+// negations 130 (948 bytes); the radius first in both sums on the length-local form 17. Body unchanged at 87.
+// P477: Standard first-product-seeded forward/lateral/alignment reductions, seven producer subsets, then complete reverse-coordinate transform:
+// 259/248/142/270/251/239/261/281. NOT kept: all regress, with no native unit-argument/scalar-home repair; thirteen matched controls survive. Original reductions, typed radius, observations, helpers and complete body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

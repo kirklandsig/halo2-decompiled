@@ -445,6 +445,14 @@ static inline real interpolate_linear(real a, real b, real t)
 // a store through a loaded pointer inside the loop. Stores through `this`, an address folded away by an inlined
 // helper, an array element or aggregate member for restart, always-false start expressions, and /O2, /Oa, /Ow,
 // /Op, /G7 (one settings diagnostic) do not stop it. Retail shows none of the forms that do, so the cause is open.
+// Round 163 (m3 lane 8, fast): diagnostics, the thread stays with the inactive arm's flags dropped and with the post-loop
+// interpolation dropped, so it is the loop's own. A per-pass `bool` declared in the loop body, set only in the two
+// boundary blocks and tested in place of restart (`restart = it; break;` on true) 154 (659 bytes): the plain-frame path
+// then lands on the test as retail's does, but the flag takes its own slot ([ebp-1], restart [ebp-2]); that flag copied
+// into restart ahead of the test 147 (661 bytes, the copy stays); the flag at function scope, uninitialised, with
+// `restart = true; break;` 142 (659 bytes); restart cleared by a one-byte memset (diagnostic) 223 (a `stosb`); both
+// boundaries grouped under `if (frame < 0 || frame == value8)` with an inner if/else 60 (661 bytes).
+// Also round 163: the boundary restart as `if (type != 0) false; else if (bit 0) true; else bit 1` in both blocks 219 (665 bytes).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

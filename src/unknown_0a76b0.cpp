@@ -865,9 +865,20 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// score 92 (was 92): 152 before m3 lane 14 r83; earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
+// MiniMax I (11-14): no new form, no lower score (92): the throw path's origin split from the release point's (the
+// override copy and the first 0xcafc0 point in a local of their own) 116, and the spread blend with the velocity term
+// first is the same code; the permuter over this function found nothing (4 tries, best 89 against a baseline of 89), so
+// the origin and direction homes stay swapped and the forward, grenade type and projectile index keep their homes.
 // MiniMax B (11-13): no new form, no lower score (92): the origin and direction homes stay swapped and the forward,
 // grenade type and projectile index keep their homes (retail 0x20, 0x2c and 0x30 against our 0x28, 0x20 and 0x24);
 // the permuter over this function found no form either.
+// MiniMax B (11-13): no new form, no lower score (92): aligned the two listings instruction by instruction: the two
+// vector groups are exchanged (retail keeps the left vector at 0x54 and the normal one at 0x48, this build keeps them the
+// other way round), the grenade type and the projectile index sit 0xc below retail's homes, and the three blend products
+// are grouped the way retail groups them (the three right-hand products first, then the three left-hand ones); declaring
+// the normal vector before the left one does not move either home (92), so the frame stays a permutation the declaration
+// order does not reach.
 // score 92 (was 92): 152 before m3 lane 14 r83; earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
 // MiniMax H (11-12): no new form, no lower score (92); the permuter over the function managed 17 tries in 301.7 s and found nothing (best 89, baseline 89, no confirming build), so the slot layout stands; this round added the player block's forward vector declared before the origin (92), copied in its declaration (100), and as a function local at the top of the function, above the projectile index and below the grenade type (92 each), which all leave the player's forward at the same home, so retail's forward at 0x20, grenade type at 0x2c and projectile index at 0x30 against our 0x28, 0x20 and 0x24 stands.
 // MiniMax G (11-12): no new form, no lower score (92): the seat index and the direction sit 0xc below retail's slots and the
@@ -1106,6 +1117,9 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // 270/312/308/130/313/171/270/313. NOT kept: range transfers do not recover native
 // saved-handle/type and shared-vector homes; each adds a copy call (21 versus 20).
 // Original copies and full body restored.
+// P473: Immutable/native-component player forward, then mutable components, original-boundary
+// override-origin/direction, fallback-direction/axis setters and immutable vehicle forward:
+// 92/291/291/286/337/343/234/92. NOT kept: input ownership does not match; original complete body restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -2007,6 +2021,12 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // 65/67/65/67; const pool root 11/11; const pool/table 65/67. Existing object getter
 // boundaries, expression/unit receiver: 11/90 twice. All original calls restored.
 // NOT kept: table sharing adds a spill; input scheduling remains at 11.
+// Round 240 (m3 lane 3, fast): the active test through the file's UNIT_ACTION_ACTIVE macro 29; `bool const primary`
+// 11; a file-local inline helper taking (unit_index, type) with unit and actions locals (0xe6fe0's shape), inline or
+// forceinline, 95/95, the same helper without the unit local 11; primary started false and set by `if (type == 8)` 87.
+// Diagnostics (reverted): with a constant primary the type loads at the bit test, after the movsx (133); with a
+// constant bit the compare reads the argument from memory ahead of the lookup (100). Permuter (fast, anneal, 600 s):
+// 27 tries, best 11.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {
@@ -2545,11 +2565,15 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
+// MiniMax I (11-14): no new form, no lower score (234): the melee name's selection declared before the weapon getter
+// 315 and a function-top pool local for both unit lookups 311, while the selection as an if/else instead of a ternary
+// is the same code; the permuter over this function found nothing (2 tries, best 227 against a baseline of 227), so the
+// pool and the index keep their register homes and the completion byte's home stays.
 // MiniMax B (11-13): reading the weapon index as a 16-bit short, so that the compare is retail's 16-bit one (movsx
 // ax, byte / cmp ax, bx against our 8-bit cmp dl, 0xff), scores 297 - the register allocation shifts - so the byte
 // compare stays; the pool header is still in edi where retail keeps it in ebp and the index in eax where retail keeps
 // it in edi.
-// score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // MiniMax H (11-12): no new form, no lower score (234); the tail's register homes and the 0x1b bit test are unchanged.
 // MiniMax I (11-11): no new form, no lower score (234): the pool's and the offset's register homes are still ebp and edi where retail has edi and ebx, the NONE sentinel still rides in ebp where retail keeps it in ebx, and the lunge's divide still comes from memory.
 // MiniMax B (11-11): no new form, no lower score (234); the frame is retail's 0x14 but the pool, index, type and name
@@ -2704,6 +2728,9 @@ __forceinline char unit_action_round(real value)
 // the 0x1b test on the `actions` already fetched 343 (1167 B; 0xe9ed0 MATCH -> 27, 0xea090 MATCH -> 3); the mode selection
 // as `switch (mode)` 244 (1193 B); `target_index != NONE && is_biped` 234 (3 lines differ); `first_person_name != NONE &&
 // weapon_index != NONE` 234 (2 lines differ).
+// P473: Whole mode-dependent selection group interleaved with the four original
+// continuation groups, EABCD/AEBCD/ABECD/ABCED/EDCBA/DECBA/DCEBA/DCBEA:
+// 234/234/234/234/234/234/234/234. NOT kept: no native register/result-home equality; original full body restored.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

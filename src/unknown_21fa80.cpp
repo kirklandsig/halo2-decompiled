@@ -359,6 +359,10 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // and jumping into case 0's), and it pushes zeros as `xor eax, eax; push eax` and zero-extends bytes as `xor; mov reg8`
 // where ours has `push 0` and movzx: two more settings leads beside /Op. Lane 13 r82's finding stands: no untried
 // natural form is left, and the file's flags are the cause.
+// P481: Existing bit-value constructors at zero/selected/send volume boundaries,
+// masks 1..7, then the original append boundary: 548/536/548/536/547/536/547/536
+// (fast control 536, full 544). NOT kept: no native frame/role recovery or equality;
+// original constructors, helpers and complete body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

@@ -2909,6 +2909,10 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 	return result;
 }
 
+// MiniMax R (11-14): no lower score (389): retail opens with one four-byte slot and takes the table
+// entry into ebp, ours reserves eight bytes and keeps the weapon index in ebp with two pointers
+// spilled, so the prologue and the register homes downstream differ; the permuter found nothing
+// below its baseline.
 // MiniMax H (11-13): no new form, no lower score (389); retail opens with `push ecx` (one four-byte slot) and takes
 // the table entry into EBP, ours opens with `sub esp, 8`, keeps the weapon index in EBP and spills two pointers, so
 // the prologue and every register home downstream differ. The permuter was run on this function and reported only
@@ -3392,6 +3396,10 @@ struct s_ammo_conversion_entry
 // round as well (`setg` against our `setle`). An annealed permuter run over this body (300 s) again
 // found only the argument swaps of `function_1896c0` and `function_a88a0`, which contradict those
 // declarations, so it was dropped.
+// MiniMax I (11-14): no new form, no lower score (190): both streams stay 215 instructions long and
+// the divergence starts in the prologue, where retail holds the destination weapon in EBP and the
+// other weapon in EBX while ours holds the destination in EDI and spills the other; the acquisition
+// flag is stored the other way round as well, and flipping it to retail's sense compiles worse.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3509,6 +3517,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // 0x1c60 and the weapon, barrel, definition and holder still live in different homes, so the prologue and the
 // register allocation of the barrel walk differ. Nothing here can be reshaped without touching the declarations
 // that other files own.
+// MiniMax R (11-14): no lower score (643 fast): the frame 0x1c64 differs from retail's 0x1c60 by four
+// bytes and the weapon, barrel and definition homes remain; the unit index without the volatile
+// measured 657, with it 637 and with the NONE at the declaration 640, so the kept form stands.
 // MiniMax G (11-10): no new form, no lower score (607).
 // MiniMax R (11-10): no new form, no lower score; the unit index without the volatile scores 657, with the volatile and the NONE at the declaration 637 and without the volatile and the NONE at the declaration 640, so the kept form stays the best.
 // MiniMax G (11-04): no new form, no lower score; the barrel pointer before the definition gives fast 638 (was 640), below the retention threshold.

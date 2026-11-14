@@ -421,6 +421,10 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// score 8 (was 8; 11 earlier): native 0x2c frame and 541-byte length; first +0x79.
+// Count and index now occupy ESI/EBP as retail; the inclusive last-index bound
+// decrements the count and uses js/jle instead of native cmp/jle and cmp/jl.
+// The selected pointer's NULL store still uses a separate EAX zero.
 // MiniMax C (11-11): 6 (was 8), NOT kept (coordinator 11-11: a guard the loop test already implies is match-only; body at 8): the seat count test around the scan keeps the count in ESI and the index in EBP as retail does and brings the native cmp/jl with it; the exclusive bound without that test still gives 11 with the count in EBP and the index in ESI, and the seat pointer's zero still lands in EAX where retail reuses the index's zero. Swapping the two declarations compiles byte-identically, the index declared in the for statement gives 11 with the count in EBP and the index in ESI, and writing the test the other way round (index against count) gives the same 11 with the count in EBP. This round also tried: the seat pointer held as a dword and as an int with the address cast at the use, the seat pointer initialised from the index, the count test written against the literal zero, the scan written as a while loop with the increment at the bottom, and the NULL store split from the declaration with the index declared first — every one of them gives the same six differences, with the count test still against a second zero in EAX; the index declared inside the count test moves the seat pointer's stack slot and scores 135. A permuter run with annealing over the function (146 tries) found nothing below the baseline.
 // MiniMax H (11-11): no new form, no lower score (8); the body is unchanged, because a seat-count test with the
 // index declared before it reaches 6 by putting the count in ESI and the index in EBP, but that test repeats the
@@ -437,10 +441,6 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // exclusive while loop 11 and a neq bound 12: every exclusive bound moves the
 // count to EBP and the index to ESI, so retail's ESI count and EBP index stay
 // out of reach while the inclusive bound keeps them and loses the cmp/jl.
-// score 8 (was 11): native 0x2c frame and 541-byte length; first +0x79.
-// Count and index now occupy ESI/EBP as retail; the inclusive last-index bound
-// decrements the count and uses js/jle instead of native cmp/jle and cmp/jl.
-// The selected pointer's NULL store still uses a separate EAX zero.
 // Earlier forms: a seat-count-minus-one local 8, not kept (one-use local);
 // explicit positive-count guard 6, not kept (redundant test), and 135;
 // index declared before the loop 8/11; reversed comparison 9; seat pointer
@@ -477,6 +477,11 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // at function scope 8/8/8, all three 8; earlier angle declaration 8;
 // direction aggregate initialization 8; position/forward declarations
 // exchanged 8. NOT kept: no gain; original scan and callee inputs retained.
+// Round 240 (m3 lane 3, fast): the exclusive bound with 1..8 unused locals at the top 11 each (no numbering phase);
+// a per-iteration element pointer with the exclusive/inclusive bound 11/8; the seat block typed as the tag array
+// (`s_tag_array seats`, the element read from its address, 0x1ba090/0x1bb570 updated) exclusive/inclusive 11/8;
+// the bit test as `if (!bit3) continue;` inclusive/exclusive 8/11. Every exclusive form keeps the count in EBP,
+// the index in ESI and the zero web (guard, NULL store, first index) in EAX.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
@@ -752,6 +757,10 @@ extern "C" void _ReadWriteBarrier(void);
 // stays in memory because ECX already holds the slot and EDX the base when the add is made; the data-block forms
 // instead keep the early load and move the base to ESI (pushed at entry), so the cause is a real entry-block use of
 // the slot ahead of the compare, not the block pointer.
+// Round 240 (m3 lane 3, fast): the parameter typed as the 0x4c slot view in the definition (the table entry cast) 6,
+// the same without the barrier 44; the 0x86/0x50c tests nested in an else block 6; the flags arm's point copy before
+// the 0x420/0x41c stores 40, its 0x44d store before the copy 14. Diagnostics (reverted): without the barrier, one or
+// three more slot reads in the flags arm 44/111, the slot is still loaded after the branch.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -1455,6 +1464,13 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
+// MiniMax A (11-13): no new form, no lower score (134); what still differs: the frame is 0x10 here and 0x14 in
+// retail (retail spills the 0x20 mask byte to the stack where this build keeps it in bl), the actor index stays in
+// ecx where retail keeps it in edx, and retail keeps the iterator result in ebx and pushes it where this build keeps
+// it in eax; the memory summary of 0xbaf40 (src/unknown_0bad50.cpp) decides the register split around the two calls
+// in the loop: BLOCKED-BY 0xbaf40. The permuter's only lower form (122) swaps joint_decline's two arguments, and
+// the callee reads its first parameter as the actor index (retail puts the actor index in EAX at that call), so the
+// swap is not kept.
 // score 134 (was 134): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
@@ -1822,6 +1838,13 @@ void function_1f86a0(long actor_index);
 // dword joint index compared as signed (MiniMax C's 133 and 132 forms combined) 132, two points and both steering, not kept;
 // `joint_index == NONE &&` in the while condition with no break 256 (874 B); the tail without gotos (one success bool, the
 // cleanup and `return NONE` in an `if (!success)`) 201; the root compare's operands swapped (selection's root first) 134.
+// Round 240 (m3 lane 3, fast): the seat block typed as the tag array (with 0x1b9200) 134; the body after the parent test
+// wrapped in `if (parent == NONE) { ... return joint_index; } return NONE;` with the joint index declared first 134; the
+// iterator's actor index stored after both reference fields 134, the three stores fully reversed 134, the actor index
+// between the reference fields 134. Diagnostics (reverted): 1..8 unused locals at the top 134 each (no numbering phase);
+// the two root calls to an undefined stand-in: with the mask local 134 (mask still in BL), with no mask local 229 (the
+// entry then takes EBX with its F+4 home and the reload after the roots as retail, but the flags byte is re-read for
+// both tests and nothing lands at F+3), against 244 for no mask local with the real roots.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
