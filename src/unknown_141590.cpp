@@ -1248,6 +1248,9 @@ void function_143250(
 // P478 m3: Cross-band square/mixed/all/axial-square/transverse-square retained products,
 // then all/square/mixed shared receivers with original second producers: 1918/1843/2010/1811/1827/1538/1529/1501.
 // NOT kept: lifetimes regress and shorten away from retail; original polynomial restored. Frame and homes remain.
+// P480 m3: Complete third-band row-producer lifetimes 0/1/2/3/4, second-band square/all
+// product first-consumer declarations and all third-band products: 1810/1643/1742/1648/1627/1672/1707/1789.
+// NOT kept: native frame/homes unrecovered; original polynomial and complete body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

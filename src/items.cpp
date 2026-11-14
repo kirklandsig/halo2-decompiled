@@ -1956,6 +1956,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // complementary/logical Boolean spin joins, parent predicates and countdown predicates:
 // 231/165/164/181/212/170/195/195. NOT kept: no native return/release/event home repair;
 // original complete body and helpers restored. Unsupported bitwise-OR functor did not compile, uncredited.
+// P480 m3: Point lifetime through origin/pair publication, damage/expiry event storage,
+// mutable/readonly returned receiver: 140/140/140/140/140/140/140/140. NOT kept: no native
+// return-byte or event-home repair; original full body, helpers and interfaces restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

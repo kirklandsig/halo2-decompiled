@@ -499,6 +499,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // projected sum, standard clamp, uncaptured-origin segment transform and reciprocal:
 // 303/400/324/308/275/230/260/343. NOT kept: all regress; original helper/body restored.
 // Direct-global scalar kernel 295 excluded because its operands bind references; not a credited trial.
+// P480 m3: Raw offsets with common/first/second lexical ends, separate endpoint scopes in
+// either order, then common-region view/raw/both declaration pairs reversed: 206/206/206/305/320/206/206/206.
+// NOT kept: native extent/homes unrecovered; original helper and complete body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

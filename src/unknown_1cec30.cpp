@@ -2518,6 +2518,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // normal/fallback/sample/velocity coordinate copies and ordered contact-dot reduction:
 // 353/209/428/449/376/136/242/731. NOT kept: no native velocity or zero-home repair;
 // original helpers and complete body restored, early velocity j/k and property-zero residence remain.
+// P480 m3: Actual material const/mutable/end/ordered/consume cursors, native unsigned
+// ordinal, second-contact cursor and traversal-owned sample: 219/219/219/219/227/93/320/219.
+// NOT kept: no velocity j/k or property-zero repair; original full body and helpers restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
