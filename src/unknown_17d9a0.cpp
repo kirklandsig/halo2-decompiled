@@ -493,6 +493,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
+// MiniMax A (11-14): no new form, no lower score (793 on the reduced image): the frame is 0x21d8 against retail's
+// 0x21dc, and the entry register roles differ - retail takes the object pointer in edx and the table global in ecx,
+// while this build reads the second argument into ecx and a global into edx - so every later home sits one slot off.
 // score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // MiniMax E (11-11): no new form, no lower score (535 on the full build, 834 on the reduced image):
 // the frame is still 0x21d8 against retail's 0x21dc and the locals still sit in other stack homes.

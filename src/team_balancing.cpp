@@ -569,6 +569,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 /* whether the players and the extra players joining them can be balanced
    into the teams within the given imbalance; each extra player is a party
    of its own */
+// MiniMax A (11-14): no new form, no lower score (34): the player count is tested in edx here and in eax in retail, and
+// the copy, the fill, the call setup and the clamp all follow from that one register; retail's caller 0x7e210
+// (src/unknown_07a9a0.cpp) hands over the player count in eax, the extra count in edx and the parties pointer in
+// ecx: BLOCKED-BY the caller.
 // MiniMax B (11-13): no new form, no lower score (34): the player count is tested in EDX here and in EAX in retail, and the copy, the fill, the call setup and the clamp all follow from that one register, which the caller's setup in another file decides.
 // MiniMax H (11-12): no new form, no lower score (34); whole-program optimisation passes the player count in EDX
 // where retail's only caller (0x7e210, src/unknown_07a9a0.cpp) loads it into EAX, and the copy loop, the rep stosd
