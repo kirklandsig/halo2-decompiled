@@ -1939,6 +1939,17 @@ bool function_0b6760(s_index_pair const *pair);
 // which the position arm's 0x11eed0 sets its arguments up (retail takes the definition pointer into EDX and reads
 // the 0xc4 and 0xc0 terms early). The gain rests on the one-use rate local (coordinator 11-11: match-only): dropping
 // that one element alone gives 380, so this change stands or falls as a whole.
+// MiniMax I (11-14): no new form, no lower score (250): the 58 lead reproduces on this body (no volatile, the result after
+// the definition read, the 0xb3 byte as `<= 0`, the acceleration and the speed as one product added into a running value,
+// and the rate read into a local just before the power 0x11eed0 call) with retail's 1495 bytes and retail's prologue (the
+// index in esi, index * 12 in ebx, the device in ebp, the definition in edx, the result byte at +0xf); dropping its one-use
+// rate local gives 380 and no two-use spelling reproduces that allocation (the rate local before the delay test 250 with
+// the running-value products and 268 with them named, the function-level two-use local 281, that one with the delay test too
+// 381, the rate local alone on this body 256, the products as running sums 354, the volatile dropped 249, the result after
+// the definition read 247); `byte result` gives 245 and `byte result` with the reordered result and `<= 0` 245, both under
+// the eight-point gate, and a 300 s permuter run found nothing below 250. What is left of the 58 sits at the two channel-1
+// 0xb6760 calls, where retail has the channel pointer in esi and the state in ebx and ours has them in ecx and eax: retail
+// inlined 0xb6760 at the channel-0 sites and our /Ob1 leaf is no inline candidate, so that part is blocked by the flags.
 // score 250 (was 250): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI where retail has
 // ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads (match-only leads at 58 and 69 below).
 // MiniMax H (11-12): no new form, no lower score (250): the acceleration and the speed each written as one product added into a running value measure 359, and the same form without the volatile measures 382, so the body stands.

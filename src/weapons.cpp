@@ -3269,6 +3269,12 @@ struct s_ammo_conversion_entry
 // MiniMax A (11-04): no new form, no lower score; the acquisition flag with retail's polarity 202, the
 // conversion path's flag before its minimum 205, the transfer's second minimum as a long 191.
 // MiniMax H (11-03): no new form, no lower score; retail saves ebx and ebp and keeps the weapon in ebp where ours saves ebx, esi and edi and keeps it in edi, so the stack slots and the loop's registers differ.
+// MiniMax I (11-14): no new form, no lower score (190): the destination weapon is in edi where retail has ebp and the loop
+// index in edi where retail has eax, and that one-register swap shifts the whole stream; the conversion entry used in place
+// (a goto out of the scan, so no null test) measures 206, that same body with retail's acquisition polarity and the
+// transfer's two accumulators as long 214, the goto body as it stands 206, `int` for the loop index 278 (785 bytes), the
+// transfer's accumulators as int 191 and the acquisition flag with retail's polarity 211; a 300 s permuter run found
+// nothing below 190, and the frame, the length and every other function in this file are unchanged.
 // score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier: Frame 0x24 versus 0x20; destination/tag homes and conversion staging remain.
