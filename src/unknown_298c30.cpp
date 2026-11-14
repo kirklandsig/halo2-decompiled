@@ -94,6 +94,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 	g_5047f8[arg_0].field_18 = arg_0;
 }
 
+// MiniMax B (11-14): no new form, no lower score (382): retail carries the constant at +0x57 in xmm2 where this build
+// carries it in xmm1, which then swaps the product registers, retail's counter is in BX where this build's is in BP, and
+// the body is still 40 bytes shorter than retail's (1692 against 1732); the normalizer's two products follow the source
+// order (x then y), and swapping them moves the x product into the copy register for 384, so the register choice is the
+// whole difference there.
 // MiniMax S (11-11): the far arm's rotated point now has storage of its own, as retail keeps it at +0x44/+0x48 while the
 // difference vector stays at +0x3c/+0x40, and the sine argument is negated in double, which is retail's `fld` of the wrapped
 // angle followed by `fchs`. The frame is now 0x64 as retail's and the score falls to 382. Still differs: the entry schedule,
