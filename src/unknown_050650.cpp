@@ -465,7 +465,7 @@ PRIVATE bool function_2982f0(long actor_index)
 
 static inline real actor_looking_normalize3d(vector3f *vector)
 {
-	real magnitude = (real)sqrt(vector->i * vector->i + vector->j * vector->j + vector->k * vector->k);
+	real magnitude = magnitude3d(vector);
 	if (!(fabs(magnitude) < 0.0001f))
 	{
 		real scale = 1.f / magnitude;
@@ -822,6 +822,12 @@ struct s_collision_result_buffer_1697c0
 // 303 (same code); its three rows computed into named locals before the stores 338 (1440 B, frame 0xb0, masked 82: nearer
 // retail's schedule, but 0x297d30 23 -> 153); its rows into a local vector and one aggregate copy back 432 (0x297660 1,
 // 0x297d30 203); `clear` cleared only on a hit, the miss branch tested on the call directly, 388 (0x297660 10).
+// m3 lane 5 r181 (fast with 0x297660 and 0x297d30; control 303, aligned 175, masked 85): kept (same code, plain check):
+// the normalizer's length through the existing magnitude3d (0x24590), which replaces its hand-written body. New: the
+// normalizer's test as `fabs(magnitude) >= 0.0001f` 343 (1439 B); the rotate wrapper's angle as a double 369 (1451 B,
+// 0x297d30 23 -> 120); both draws through the existing slot_random_range 365 (1449 B, 0x297660 1). Every other
+// rotation, normalizer, draw, collision and exit form this round considered is already listed above, so no untried
+// natural form is left; the open lead stays lane 14 r84's named sine/cosine pairs (match-only).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1208,6 +1214,28 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // initialised declaration 260 (entry stores swap). Masked, what is left is the merged cafc0 blocks, the 0x1e3b00 setup
 // (ours loads the object before the pushes and copies the output address, `mov edi, ecx`; retail loads it after the
 // third push and recomputes `lea edi`, so case 1's copy can join case 2's) and the weapon call's actor reload.
+// m3 lane 5 r181 (plain checks; 0x297a50, 0x297660 and 0x2980d0 MATCH in every form; base 257, aligned 68, masked 55).
+// Lead (match-only, not kept): case 1's player test inverted (`if (object->player_index == NONE) caf60; else cafc0;`)
+// 177 at 1424 B (aligned 27, masked 11): the direction chain then follows case 2's remembered 0x1e3b00 block and case 2
+// keeps its own 0xcafc0 block as in retail, but case 1's 0xcafc0 block cross-jumps into case 2's (retail keeps it as case
+// 1's fall-through, `je` to caf60); on it `result = false;` before the two trailing case `goto done`s 170 (aligned 18: the
+// result/point_valid homes are then retail's), with `point_valid = result = false` 168 (1428 B, aligned 17, masked 11;
+// diff in build/r181/lead-2967b0.patch of that round). Left on 168: case 1's merged 0xcafc0 block and the weapon block
+// (retail loads the direction into EDI and reloads the actor index from its home for 0x1ffbd0; ours uses EBX and keeps
+// the actor index in EDI). On 177/168: case 1's object arm ending in `goto aim_at_point`, its inner if/else as two ifs
+// with their own gotos, case 2's player arm as its own block, case 2's player test inverted: all the same code; case 6's
+// player test inverted 175; case 1's or case 2's or both object arms with their own vector3d_from_points3d and `goto
+// normalize_direction` 168 (same code); the weapon calls through a forceinline helper taking a copy of the actor index
+// (diagnostic) 168 (same code). Without the inversion (case 1 original): the result stores with `point_valid = result =
+// false` 254; on that, case 1's 0x1caa40 path first, the own-direction arms and case 1's locals renamed 254 each (all the
+// same code): only that test's polarity moves the layout. Case 6's player test inverted alone 257. Retail's two 0xcafc0 blocks are
+// byte-identical (8d 44 24 14 8b cb e8), so the merge is decided by the block layout, not by the bytes.
+// Later on the 168 form: case 6's player test inverted 166 (aligned 22: case 6's 0xcafc0 block moves out of line, a positional
+// drop); the weapon block as `if (weapon_index == NONE) goto direction_from_actor;` 234 (1444 B, the chain moves back to the
+// end); case 1 written before case 2 333; case 1 as a `state < 1` exit, then its remembered branch, then the object arm 194;
+// the flags cleared in two statements 170; case 1's remembered test with its operands swapped 172. Same code as 168: case 1's
+// 0x1caa40 path first, the aim test as `if (aiming) goto local_254539;`, a `failure:` label for the two result stores, the
+// origin declared in the weapon block, case 2's remembered branch first, case 1's object test as nested ifs.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

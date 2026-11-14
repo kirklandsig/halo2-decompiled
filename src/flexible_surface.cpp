@@ -712,6 +712,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // MiniMax S (11-11): no new form, no lower score (117): the frame stays 0x28 against retail's 0x20 because retail
 // loads the random-state pointer before the seed read, and the old direction's address is passed to cross3f and
 // dot3f here where retail keeps the old direction in registers.
+// m3 lane 5 r181 (fast with 0x118140, 0x117c80, 0x30bf0, all MATCH; control 117, aligned 68, masked 45; both sides end in a
+// plain `ret`): retail loads the random-state pointer into ESI before the definition's load and the time product. The
+// fraction drawn before the time product 193; the definition lookup moved after both draws 157 (882 B). Rounds 87, 109
+// and 148 above list every other opening, rotation and tail form; none is left untried. Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

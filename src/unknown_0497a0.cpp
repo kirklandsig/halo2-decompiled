@@ -374,6 +374,13 @@
 // and reused sequential position receivers: 522/692/687/522/692/687/693/693.
 // NOT kept: first-result forms recover frame 0x60 but grow five bytes and use
 // nonmatching one-use results; original helpers and complete body restored.
+// m3 lane 5 r181 (fast = plain 536; aligned 420, masked 104): no new form. The mid-body code matches retail apart from
+// stack offsets: retail keeps nine dwords below v1 (+0x34: inv, shape0, s0's and s1's own float homes, the cross
+// terms) where ours keeps six (+0x28: inv, one shared x87 transfer temp, shape0, three cross terms), and retail
+// evaluates s1 first and stores both sines before scaling them in SSE. The wave scales written `0.03f * s0` /
+// `0.025f * s1` and s1's sum written `y + (double)(x * 5.6f)` are the same code. Rounds 75 (lane 12) and 170 (lane 4)
+// above trace the stored sines and the late x87 pops to a removed third wave term; the forms that reproduce it are
+// dead stores, so no untried natural form is left.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1132,6 +1139,15 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // fields with first/outer/both setters and native UV value publication:
 // 233/241/241/240/241/241/240/410. NOT kept: no native frame/spill equality;
 // original vertex fields, UV stores, helper declarations and complete body restored.
+// m3 lane 5 r181 (fast with 0x42c50, 0x42b20, 0x43740, all MATCH; control 233, aligned 135, masked 30): case 4's side
+// length through the existing magnitude3d (0x24590) 715 fast (a call in the reduced image), 357 plain (2576 bytes, inlined);
+// the state scale as `(flags & 0x20) ? point->scale : 1.0f` with the state width as a ternary too 333 (2600 bytes); the scale
+// ternary alone 504 (2600 bytes); the state width ternary alone 510; `width = state_width` moved to an else arm of the
+// transition test 469; case 1/2's add rows written product-first 233 (same code). Diagnostic (listed form, frame map only):
+// the V sum formed at the outer store 235, the hoisted sum takes a 4-byte home (+0x98), not one of retail's 8-byte homes.
+// Retail's homes after the pushes: asm channel a +0x84, colour pointer +0x88, v +0x90, r +0x94, scale +0x98, g +0x9c, b
+// +0xa0, then 8-byte homes for the negated u step (+0xa4), the V end (+0xac) and first.y (+0xb4); ours interleaves the u
+// step (+0x90), the V end (+0x98) and v (+0xa0) with the channels. Body unchanged.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
