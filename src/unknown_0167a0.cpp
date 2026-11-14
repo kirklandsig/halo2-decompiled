@@ -74,9 +74,9 @@ PRIVATE inline byte const *material_parameters(long tag)
     return *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
 }
 
-// MiniMax A (11-03): the chain-local forms tried here all regress; no lower score.
 // score 5 (was 5): the 0x18a90 tail below is solved (round 126: 0x18a90's body rewritten with each binding
 // byte read at every use gives retail's EBX state convention and 972 bytes); left is the restore block's schedule.
+// MiniMax A (11-03): the chain-local forms tried here all regress; no lower score.
 // Earlier: BLOCKED-BY 0x18a90 (src/unknown_01cf50.cpp, contributor file: retail passes the state
 // in EBX, ours pushes it; that tail is about 42 of the 47 lines and the extra byte, the later calls shifting
 // by one instruction) and the restore block's schedule: retail reloads the table field before the entry
@@ -263,6 +263,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // lea, retail after the two table loads); the chain lookup as word-pointer arithmetic (0x174d0's spelling) on the reference
 // form 5, on the direct form 5, in both blocks 5/5. Diagnostics (not kept): on the direct form `second` read through a
 // plain pointer to it 5; through a pointer kept in memory 304 (the convention changes).
+// Round 194 (m3 lane 4, fast; the reference form 5 at +0x19e, where only the tables-field reload follows the entry store; the
+// direct entry store 5 at +0x1a7, where the reload hoists as retail but `second` loads right after the entry lea): the four
+// index parameters `long const` 5 (same code); the direct store and its read as pointer-array elements of the state
+// (`((byte **)state)[5] = ((byte **)((byte **)state)[4])[1] + first * 10`) 5 (+0x1a7); the entry reference bound to
+// `((byte **)state)[5]` 5 (+0x19e); the direct store with both index sums operand-swapped together 5 (+0x1a7); the direct
+// store with long packed/next carriers in the restore block 5 (+0x1a7). Body unchanged.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

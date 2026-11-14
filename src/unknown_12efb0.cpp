@@ -571,6 +571,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // corresponding conditional selections 604/608/605; direct rejecting palette/alternate
 // chains 606/607. NOT kept: the three-point 604 lead is below the gate; first palette
 // carrier and zero/SIMD allocation remain. Original range expressions and body restored.
+// P456: unified actual 0xb0-stride source/provider-owner type, mutable/readonly short palette 607/607;
+// native char 700/700; uniform per-use byte 666/666; promoted long 706; actual readonly element
+// reference 607. NOT kept: ties or regressions; original opaque input type, all observations, helpers
+// and complete executable source restored. Native provider-result/NONE, palette/selected-record and
+// zero/SIMD carriers remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

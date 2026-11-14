@@ -280,6 +280,11 @@ long g_55e6c0;
 // clamped in place by if / else-if 166 (497: the count takes EBP), the copy read right after the kind store 166, its
 // store written after the packing 166. Diagnostics, not retail's code: one or two more uses of the height in the top
 // block 165/163 (495: the height then takes a callee-saved register).
+// m3 lane 14 r90 (fast with 0x1dc40, on the round-51 signed pitch/packed lead, re-measured 29 at 484 bytes): the entry
+// pointer `*const` 29, pitch and packed `long const` 29, the pitch as `(width * sizeof(dword)) >> 6` 29 (all three the
+// lead's code); the offset declared after the width and height stores 31; the offset declared just before the level
+// loop 147 (493 bytes). Retail loads the count and hoists its compare above the kind store, then loads the height into
+// EAX after it; ours loads the height (EDX) first and the count into EAX after the kind store.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

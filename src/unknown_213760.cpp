@@ -1682,6 +1682,15 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // initializer, the cleanup flag) is listed above. Lane 4 r190's lead (the in-block write count with round 53's forms) is
 // measured at 7 by round 56 (m3 lane 1) and round 80 (m3 lane 12). Lane 2 r77's open lead (member objects with
 // constructors in the shared header type) changes a shared header and a global's initialization. Body unchanged.
+// M3 lane 13 r89 (fast with 0x2138f0, 0x213800, 0x2149c0; control 33): the range bounds read from an extern const pair
+// defined in another file, so only the link-time compile can fold them (diagnostic) 33: LTCG still folds them to the
+// immediate and merges the two compares, so retail's ESI 1 is not a late-folded bound (it is the `valid = true` constant
+// of the listed set-in-test form, shared with the compares); the not-resized arm first (`if (!resized) bytes_written =
+// 0; else { ... }`) 123. Re-measured: the zero as a statement ahead of `if (resized)` 85 (the listed zero-at-declaration
+// 85), `expected_size != size` on this body 33 (same code). The header-read result normalised, `valid =
+// cache_file_header_read(index) ? true : false;` 105 (932 bytes: a `setne` that is tested again, no threaded continue),
+// `!= false` 105 (same code); the close test with the handle test first 68; the cleanup's slot switch ahead of the header
+// memset 49; `remove_later = false;` ahead of the remove call 35. Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {
