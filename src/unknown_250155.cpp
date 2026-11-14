@@ -1362,6 +1362,10 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
+// MiniMax E (11-14): no new form, no lower score (83, was 83): retail fills the tail with a guarded rep stosd of
+// 16 - index_count dwords and keeps index_count at ebp-8 and item_count at ebp-0xc; this build walks the tail with a
+// pointer and keeps the two counts in the exchanged homes. The index loop that produces the fill moves the mode to its
+// stack slot and the counter into EBX (172).
 // MiniMax B (11-12): no new form, no lower score (83): the two count homes stay exchanged against retail's (retail keeps index_count at ebp-8 and item_count at ebp-0xc) and the tail fill stays a pointer walk where retail's is a guarded rep stosd of 16 - index_count dwords.
 // MiniMax G (11-10): no new form, no lower score (83): retail's fill is a rep stosd of 16 - index_count dwords and the two scalar homes are swapped against ours (retail keeps item_count at -0xc and index_count at -8, ours keeps them the other way round). The fill written as an index loop (with its own counter, or with the loop counter reused) gives 172, the mode spilling to its stack slot and the code losing 16 bytes; the counted fill written from zero gives 155; declaring item_count before index_count changes nothing, because the homes follow the first definition and not the declaration; initialising item_count at the top gives 121 (432 bytes, frame 0x58) and dropping the in-branch zeroing as well gives 142. The pointer walk is kept.
 // MiniMax C (11-10): the score is 83 (was 83); the two counts sit in exchanged homes (item_count at ebp-8 where retail has index_count) and the tail rows are filled by a pointer walk where retail fills them with a guarded word store.
