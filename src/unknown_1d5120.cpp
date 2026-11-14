@@ -87,6 +87,15 @@ void function_1d56f0(s_havok_component *component)
     }
 }
 
+// MiniMax G (11-13): no new form, no lower score (77): retail's tail ends with the same inline
+// `_mm_setcsr(_mm_getcsr() & 0xffffffc0)` before `__clearfp` (the mxcsr scratch at [esp+0x10] and the two
+// control87 calls), so this source is right and the only difference there is the register of the mxcsr
+// temp (EAX here, ECX in retail); dropping that line loses the scratch slot and moves every other home
+// (85, 803 bytes against retail's 819).
+// MiniMax G (11-13): no new form, no lower score (77): the rigid-body lookup still reads `[eax + edx + 0x40]`
+// where retail reads `[edx + eax + 0x40]`, and the success tail still pushes what retail passes in EBX, ECX
+// and EAX: BLOCKED-BY 0x1d0cf0, whose extra push ebx (needed only because the component arrives on the
+// stack) is what makes its frame 0x84 against retail's 0x88 and shifts every esp offset.
 // score 77 (was 77): the lookup still reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`
 // and the success tail still pushes what retail passes in EAX/EBX/ECX: BLOCKED-BY 0x1d0cf0 (another file).
 // Earlier (score 77, was 77): every frame home and the body up to the success tail agree; left: the rigid-body
