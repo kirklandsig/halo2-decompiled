@@ -1960,6 +1960,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // retail re-reads g_47d8f4's count word at every users-loop iteration inside the inlined variant getter and counts that
 // loop down in EBX, where ours hoists the count into EBX and ends on the variant pointer; the request loop's state==1 flag
 // byte and the identity copy are the listed match-only flag/local forms. The slot test's cmovne still needs /arch:SSE.
+// P469: Actual 144-byte property payload char/signed-char/short/word/long/dword/real/double
+// element storage: 703/703/703/703/703/703/703/824. NOT kept: first seven leave native
+// cursor/home gaps; double drops the aligned frame (0xc4, 2929 bytes). Original full body restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

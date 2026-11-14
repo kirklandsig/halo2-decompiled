@@ -949,7 +949,6 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // MiniMax A (11-13): no new form, no lower score (535 plain, 834 on the reduced image); the frame and the
 // length still agree, the tag still spills at +0xb4 against retail's +0x94, and the count, plane and
 // rotation homes still differ.
-// score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // Frame 0x21dc and length 3647 agree; tag/count/plane homes and rotation spills remain.
 // Earlier: 552 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // at +0xb4 versus retail +0x94. Count/plane homes, initial face-call scheduling and rotation spills remain.
@@ -1277,6 +1276,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // homes (names and scopes do not move them) and the rotation block's schedule; rounds 10-12, 56, 92, 108, 187, 225,
 // T59 and DH383 above list its statement orders, named products, helpers and in-place forms, and no untried natural
 // form was found beyond these.
+// P469: Complete cosine-weight/sine-weight/squared-axis vector producers, seven
+// family subsets then all by plain component loops: 556/676/699/909/583/642/944/567.
+// NOT kept: vector residence/rounding misses native code or frame/extent; original
+// scalar parts, signed loops and complete input-before-output rotation restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

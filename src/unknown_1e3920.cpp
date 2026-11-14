@@ -1221,6 +1221,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // at complementary creation producers 365/362/370; both with branch-complete actor
 // outcome 392; actor outcome alone 304. NOT kept: all regress; original defaults,
 // result production and full body restored. Sentinel and squad/query homes remain.
+// P469: Actual creation/request payload scalar element domains dword/long/word/real,
+// each independently: eight 252s. NOT kept: genuine buffer alignment/alias information
+// leaves sentinel EDI/ESI, squad/query homes and rotated entry unchanged; full body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

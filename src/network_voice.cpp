@@ -1861,6 +1861,10 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // frame 0x10/0x14, ret 0x10/0xc and caller 0x56380 at 13 reject all forms. Original body restored.
 // P458: Entry active byte/short/long/dword and inactive bool/byte/short/long outcomes, original separate result:
 // 60/60/60/60/60/60/60/60. NOT kept: native zero retention, bit/size allocation and capacity epilogue not recovered; original complete body restored.
+// P469: Independent 64-bit result signed/unsigned, recipient bit, clamped player,
+// entry extent, emitted count, retained mask and both real scan ordinals:
+// 177/177/212/226/203/180/197/261. NOT kept: native ingress/frame or extent regress;
+// original 32-bit scalarization, matched caller contract and complete body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
