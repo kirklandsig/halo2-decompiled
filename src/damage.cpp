@@ -1066,6 +1066,12 @@ PRIVATE inline long damage_object_root(long object_index)
 // outer radius added in two statements, the parent walk through an index-returning helper, the s_data_datum_iterator
 // player scan and a squared-distance helper called at both tests.
 // MiniMax H (11-14): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4 and the first 0xbadc0 use is still expanded here where retail calls it, and that callee's own file is not this lane's.
+// m3 lane 7 r160 (fast with 0xd74e0, 0x14de90 and 0xbadc0, control 206): retail's first and third sites are exactly
+// 0x14de90 (unit_get_player_index) inlined with its 0xbadc0 call kept (`call; test eax, eax; je; cmp [eax + 0x13c], -1`);
+// that existing getter at both sites 314 (874 bytes: our link inlines 0xbadc0 inside it too, at site 1); the copy as
+// memcpy 206 (same code); `last_object_index` declared first 205; with the query mask named before 0xbb050 205; with the
+// players walked by an s_record_pool_iterator and data_iterator_next_inlined 201 (787 bytes, frame still 0x1a4). BLOCKED-BY
+// 0xbadc0 (its inline decision at site 1; src/unknown_0bad50.cpp is not this lane's).
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -2069,6 +2075,12 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 // pending field in 0xdae60's mask forms, all four uses 45, test and argument only 45 (same code); the pending permutation
 // stored after the delay product 33 (not kept: retail stores it first, the gain is the branch targets realigning); the pending
 // permutation named before the test 109; `seconds` and `ticks` declared at the delay block's top 45.
+// m3 lane 7 r160 (fast with 0xda110 and 0xdae60, control 45): the permuter (--fast --anneal, 23 tries in 600 s) found nothing
+// below 45; the pending delay product as `delay * field_2_3` 45 (same code); the delay test's arms swapped (direct call first)
+// 84 (that call's setup becomes retail's, the delay block keeps its rotation); one `seconds`/`ticks` pair for both roundings
+// 59; `destroy` declared before `blocked` 63; `i != state->pending_permutation` 46. The delay block's temporaries are
+// retail's rotated by one (retail g_510c54 ECX, byte EAX, sum EDX; ours EAX, EDX, ECX) and its first load is the one-byte
+// shorter `mov eax, [moffs]`, which moves the nine later branch targets.
 // @retail 0xdaaa0
 void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	real damage, s_damage_region_accumulator *accumulator)
@@ -2769,6 +2781,11 @@ struct s_unit_event
 // 523 (1900 bytes); the pool form alone 543 (1896 bytes); the drop values written at each call with no local 512 (1868
 // bytes). Kept: the seat reads through the typed unit definition (unit.seats.count / unit.seats.address, the local named definition) 517 (same code).
 // MiniMax H (11-14): no new form, no lower score (517): the first difference is still at +0xc, where the region index takes EBX and the permutation pointer EBP where retail keeps them the other way round, and the region's stack home follows from the declaration's parameter order, which this lane may not change.
+// m3 lane 7 r160 (fast with 0xdaaa0, 0xdae60 and 0xdb760, control 517): both drop values as long 511 (1868 bytes, re-measure);
+// on that: the destroy block written in each arm of the destroy test 530 (1848 bytes); region and permutation pointers
+// `const` 511 (same code); the drop and 0x20000 blocks reading the pool at each use 523 (1900 bytes); a local copy of the
+// pool for them 523 (1900: the local is rematerialised from g_4e0300 after each drop call, and the datum offset then takes
+// EBX with the datum address CSE'd into EDI; retail keeps g_4e0300 in EDI, the offset in ESI and re-reads `data` per use).
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -4388,7 +4405,7 @@ bool function_138880();
 /* an object's damage per tick: delayed permutations, stun timers, shield
    and body recharge, the regions' damage levels and the recent damage;
    returns whether anything changed */
-// score 229 (was 400): 402, 607 before that; at r94's start 2148 bytes against 2170, frame 0x70. Round 75 (b4E) walked every block against retail 0xd5de0-0xd6657:
+// score 194 (was 229): 229 before m3 lane 7 r155's 0xda110 convention; 400, 402, 607 before that; at r94's start 2148 bytes against 2170, frame 0x70. Round 75 (b4E) walked every block against retail 0xd5de0-0xd6657:
 // one behaviour fix (the region decay else arm also runs when `info->region_count <= i`, retail 0xd6518 jle -> 0xd6571); every other test,
 // field, callee, argument order and float op agrees. `if (shield > max) {clamp} else {changed}` arm order: no change (393 alone, 400 with the callers, the same as without it). Left: flag pairs that cross the word's bytes merge into one `and word` (three
 // sites, each a line short, which shifts what follows), retail takes the 0xda110 permutation in EAX (`mov eax, esi`, BLOCKED-BY 0xda110's
@@ -4415,6 +4432,11 @@ bool function_138880();
 // 229, the two 0xd8b50 flags read through the word view 229 (all same code). Left (masked 38): 0xda110's convention at its
 // call (ours region EAX + permutation ECX, retail permutation EAX), `xor ecx, ecx` before both team calls, the clamp arm
 // order, the second 0x138880 inlined (retail calls it, so its stun count sits in SI), the 0xd8b50 flag temps.
+// m3 lane 7 r160 (fast with 0x192950, 0xd9f70 and 0xd8b50, control 194): the clamp test positive with the clamp arm first 251
+// (2158 bytes); the permutation index named before the owner copies 245; read through the `pending_permutation` bitfield 194
+// (same code); the team passed as `(word)object->team` 194 (no `xor ecx, ecx`); a one-use `word team` local at both 0x1e9720
+// calls 159 (retail's `xor ecx, ecx; mov cx` at both; not kept, one-use locals): retail's team argument is a zero-extended
+// 16-bit variable, where 0xd5d20 and 0xd5d80 sign-extend a short one.
 // @retail 0xd5de0
 bool function_d5de0(long object_index)
 {
@@ -5163,6 +5185,11 @@ struct s_damage_object_creation
 // head reallocates, positional only); the tag test as `if (tag == NONE) break;` inside the piece loop 188 (776 bytes);
 // one function-scope `long i` for the section, node and search loops 156 (same code); piece_nodes as long 156. Kept:
 // the object definition read through the typed header (model_tag_index, crate_object.tag_index) 156 (same code).
+// m3 lane 7 r160 (fast with 0xdb810 and 0xdbb40, control 156): the node loop as an inline helper returning the mask 288
+// (724 bytes: not inlined, a call); retail's guard (`detached > 0 && tag != NONE`) around `while (detached != 0)` 187
+// (777 bytes: the search loses its entry test and its head pad as retail, but the mask takes ESI and node_count EBX
+// with object_index left in memory); on that, the search as an inline helper taking the mask by value 187 (same code),
+// the search with its own counter 187, the zero declared in the mask block before 0xba690 229 (784 bytes).
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

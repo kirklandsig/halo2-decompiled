@@ -25,6 +25,7 @@ struct s_visibility_bound_record
 // the head, where retail forms the entry address with a lea into EBX from an index in EAX before the register
 // saves and we form it with an add into EDI after them; the entry's flags are read ahead of the tag test here
 // and in each arm there.
+// MiniMax I (11-14): no new form, no lower score (443): the first difference is still at +0x10, where retail forms the entry address as a sign-extended index scaled by the entry size and added to the entry table (`movsx eax, word [ebp + 8]`, `shl eax, 5`, `lea ebx, [eax + 0x4ba138]`) and we form it as a shifted copy added to the same table (`shl edi, 5`, `add edi, ...`); retail keeps the tag table in esi and spills the entry at [esp+0x30], we keep the entry in a register, and the part centre's body is inlined from 0x142570 in another file.
 // score 443 (was 443): earlier 476; plain, 1760 B: the releases through the existing release_visibility_list (moved from
 // earlier 443 was 476 (plain, 1760 B); the releases through the existing release_visibility_list (moved from
 // score 443 (was 443; 476 before; plain, 1760 B): the releases through the existing release_visibility_list (moved from

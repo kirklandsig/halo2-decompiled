@@ -1725,6 +1725,10 @@ struct s_summary_player_sort_entry
 // and ecx), and retail's conditional move for output->state needs the SSE architecture flag this file's flags do
 // not set.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
+// M3 lane 8 r165 (fast; the score is positional behind the 12-byte prologue gap): the id copied with memcpy 339 (same
+// code); the variant pointer declared first 339 (same code); the full-session arm's player count read once into a
+// `long used` (retail loads it once before the mode tests) 356 at retail's 1291 bytes; the team mask declared at the
+// player loop 375; the sort entries written through `entries[count]` with no entry pointer 356 (1291 bytes).
 // MiniMax R (11-10): no new form, no lower score (339): retail writes output->state with a conditional move, which needs /arch:SSE that this file's flags do not set, and the frame is 0xa9c against retail's 0xaa8 with the type, membership and member-index homes still different.
 // MiniMax D (11-10): no new form, no lower score (339).
 // Walk vs retail 0x64d70-0x65278 (b3G, 11-06, statement by statement): no behaviour difference found. Checked: state/value18/live

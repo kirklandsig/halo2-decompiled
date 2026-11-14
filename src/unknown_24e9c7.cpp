@@ -460,6 +460,10 @@ struct s_24e9c7_points
 // (retail's early across-j spill at -8 sits above them). Lane 12 r112 above records that no untried natural form is left,
 // and every lead here (across/side/up/back as points, scalars, arrays, helpers, in-place scaling, corner orders, bounds and
 // alpha spellings, conversion domains) is listed; I found no code-changing form outside the note.
+// M3 lane 11 r99 (fast): the scale read from the placement at both uses (no `scale` local) 141 (740 B); the shader index
+// named once (`long shader_index`, test and call) 174 (742 B); the marker's kind named once for the bounds tests and the index
+// 130; the sequence index read from the kind at its four uses 125 (same code); the sequence's fields read through
+// `group->sequences[sequence_index]` at each use (no `sequence` pointer) 163 (747 B). Body unchanged.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

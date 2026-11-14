@@ -782,6 +782,11 @@ real function_30bf0(vector3f *vector);
 // NOT kept: tested outcome/result storage misses equality and moves frame/extent away;
 // original range branches, scalar homes, shared products and complete body restored.
 // MiniMax H (11-14): no new form, no lower score (84): the seat loop's two cross products are still computed by a helper that is private to another file, so their operand order is not this lane's to change.
+// M3 lane 13 r91 (fast with 0x263740, 0x25c9d0 and 0x26d370, all MATCH; control 84): the occupant's forward pointer declared
+// right after the object lookup, ahead of the player test, 96 at retail's 1308 bytes (the forward base is formed ahead of the
+// test and the first cross then reads fwd.k/fwd.j through it, not through the object); side/up and a/b declared at the seat
+// loop body's top 84 (same code); both together 96 (1308 B). Diagnostics, reverted: the seat loop never entered 189 (1314 B);
+// the forward-early form with the clip amount and the squared distance as one scalar 93 (1308 B). Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2496,6 +2501,19 @@ real function_2683f0(long actor_index, long node_index, short type)
 // shared failure/result storage misses equality and shortens extent to 2839/2880;
 // original guards, resets, iterators, searches, geometry and entire body restored.
 // MiniMax H (11-14): no new form, no lower score (168): the first difference is still the inlined 0x26be00 and the table load at +0x5c, whose helper is defined in another file.
+// M3 lane 13 r91 (fast with 0x25d810, control 168; difflib-aligned counts with addresses masked in brackets, base [80]): no
+// `positive` flag, the far-and-slow case written `else if (distance > 3.5f && approach < 0.5f) score = 0.0f;` under the
+// established block and the arms chosen by `if (score > 0.0f)` 168 [80] (same code); the far-and-slow zeroing moved into the
+// visible arm (`if (!established && distance > 3.5f && approach < 0.5f) score = 0.0f;`) with the outer test reduced to
+// `distance < 15.0f` 243 [68] at 2890 B: the scoring block then takes retail's block order (visible arm first, the far-and-slow
+// exit inline, the not-visible arm entering the established block) with no flag; the same keeping `(visible || established)`
+// in the outer test 242 [79]; that 243 form with round 65's recipe (other-object pointer, ai_player_get/ai_player_index_get,
+// `inline` on 0x1c8180, a __forceinline object_get_forward declaration; all 15 helper users matched) 300 [59] at 2886 B, 695
+// instructions as retail: what is left there is the iterator's table pointer register, the direction residence across the
+// two dots and the positive arm's merge direction. Re-measured: player NULL first 373 [92], long slot counter 169 [84], both
+// 376 [87]. Diagnostics, reverted: n = 0..7 unused long locals at the top 168 each (the base/index order and the table
+// register do not follow the symbol count); the recipe with the scoring block removed still loads the table pointer into
+// ECX with NONE in EAX, so that choice is local to the iterator start. Body unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

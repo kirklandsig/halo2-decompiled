@@ -2078,6 +2078,9 @@ void function_22c390(c_havok_abstract_allocator *memory, s_fixed_memory_statisti
 void function_22cb00(c_havok_abstract_allocator *memory, s_physics_pool_statistics *statistics);
 long function_1d3880(s_havok_component const *component, long *constraints, long *bodies, long *contacts, long *other);
 
+// score 6: only the argument-setup order at four havok_printf calls differs;
+// retail issues the fild before the integer push, ours after. Permuter: 299
+// tries in 600 s, no lower form.
 // @retail 0x1c4590 standard
 void __stdcall function_1c4590(long flags)
 {
