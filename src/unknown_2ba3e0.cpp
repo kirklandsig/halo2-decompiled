@@ -498,6 +498,10 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // Round 117 (m3 lane 12): the permuter (`--fast --anneal`, 600 s, 82 tries) best 10. The tree's statement-form i, j, k
 // squared sums are all file-local (path.cpp, unknown_1a58b0.cpp, impacts.cpp) and none reads k first; matched 0x2b8e10
 // keeps nothing in registers across its back edge, so it shows no reload order to follow.
+// Round 91 (m3 lane 14, fast): the EDX parameter system moved to the first, second, third or fourth position
+// (definition and the call together, stack unchanged) 10/10/10/10; the maximum test's square named where it is
+// computed 59 (1517 bytes). Phase scan (1-7 unused initialised locals) of the velocity normalizer in both
+// branches: 34/34/128/33/39/41/41/93; the minimum branch's inverse-first j/k pair appears at no phase.
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {
