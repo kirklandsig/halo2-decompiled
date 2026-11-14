@@ -1205,6 +1205,9 @@ void function_2118c0(void)
 // static, an extern const or a parameter, an output pointer stepped by 64 or passed in, and extra loop-carried
 // arrays (no register budget) all reduce every row; every short/word/byte row, product cast or sum cast keeps one
 // extension; a row carried from the previous pass (`row = b * 8` in the increment) gives a 0x300 byte offset.
+// M3 lane 7 r158 (fast): the knot rows from `b * 8` with p1/out from the shifted row 144; the knot indices as `dword` holding the
+// word value 170 (761 B), as `byte` 157; p1/out from the shifted row too 175 (745 B); the row declared at the sample loop's level
+// 10 (same code).
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -2656,6 +2659,9 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // sets both colours and schedule there; extra uses in the cases move neither) but not for the no-helper forms, so
 // screen those with --fast: about 1100 harness forms (outer-local placement, every definition/sum order and shape,
 // scalar and square helpers) gave nothing.
+// Round 120 (m3 lane 9, fast): the two point locals declared source first 3; the selector local as long 3; the helper's
+// locals renamed to sort y, z, x (diagnostic) 3; source_index used in place of the source copy 333; the outer x, y, z
+// declared ahead of the helper call and assigned after it 3.
 // Round 157 (m3 lane 8, fast): cases 6 and 7 through the existing dot3f with a local vector3f delta (cases 8/9 on its k)
 // 333 (case 7 loses its fold, the blocks move); the helper taking the points by value 557 (2044 bytes, copies); the existing
 // vector3d_from_points3d with dot3f for the square and the cases 59 (no hoist: x, y, z in definition order, colours x XMM0,

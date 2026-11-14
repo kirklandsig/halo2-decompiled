@@ -163,6 +163,16 @@ long function_1469f0(real seconds);
 // immediate conversion results and direct action-failure arm 13 each;
 // low-readiness arm first 62; separate countdown update/test 13; double
 // random-result locals 116. All forms restored; both load regions remain.
+// Round 115 (m3 lane 16, fast with 0x1bf230 and 0x1befd0; control 13): both load regions are ours hoisting a global
+// load where retail does not: without the barrier the NONE reference global is loaded at the top into ECX (90), and in
+// the inlined action lookup the unit table base is loaded ahead of the index arithmetic (retail's matched 0x1afb30 has
+// the index first only because no third register is free there). Diagnostics, reverted: the NONE reference global
+// defined in a /GL- object instead of src/globals.cpp, barrier-free, 90 (so it is not the link-time view of the global);
+// barrier-free with the branch's final store of the global removed 90 (not a common value with that store); 0-7 dead
+// initialised locals 13 each (no phase effect). Forms: the state test through a fresh actor lookup 106; the unit index
+// read through a fresh actor lookup 106 (328 bytes each).
+// Also: the reference read through a pointer to the field 13 (same code); barrier-free with the reference compared
+// through the slot's data bytes 90; barrier-free with a const copy of the NONE reference compared 103 (325 bytes).
 // @retail 0x1bf0f0
 short __stdcall function_1bf0f0(long actor_index, s_slot *slot, bool active)
 {

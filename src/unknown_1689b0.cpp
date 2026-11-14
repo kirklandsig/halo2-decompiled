@@ -1571,7 +1571,8 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
-// score 610 (was 610): earlier 637, 640 and 552; frame 0xb964 agrees and the prism cursor now has retail's plane.j anchor; sum/zero homes, axis re-read and early idiv remain.
+// score 606 (was 610): earlier 637, 640 and 552; frame 0xb964 agrees and the prism cursor now has retail's plane.j anchor; sum/zero homes, axis re-read and early idiv remain.
+// Earlier first line: score 610 (was 610), the same status.
 // b2C (11-06) retail walk, statement by statement against 0x16a8e0: every condition, field, constant, callee and argument order agrees (entry `radius > 0`, signed clamp to 8 and
 // signed `% point_count`, side/perpendicular/along/separation sums in retail's order, inside and 0.01/0.0001 tests, normal path when the length is <= 0.01, ray hits at +0x14, `0 - radius` opposite ray,
 // face sum below edge sum). Two fidelity fixes, both with retail evidence: the point reconstructions call the existing 0x120790 (retail inlines it: the two word table loads at 0x16aab5/0x16aabc and
@@ -1923,6 +1924,14 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // P454: Isolated function storage for side/perpendicular/candidate/clamped/difference/direction/middle/half
 // on the retained long-count/shared-cross graph: eight 610s. NOT kept: no sum/zero/remainder repair;
 // every original producer, declaration and helper restored.
+// m3 lane 7 r159 (plain; fast prints a reduced-image CAVEAT here): kept, the `shapes.counts[2] > 0` guard that repeated the
+// prism loop's own test removed 606 (aligned 584 -> 574). Tried on that: the nearest-distance local declared where the prism
+// loop sets it 610 (same code, on the original body); the two sums declared with their initializers 606 (same code); the reach
+// test as `separation < radius_squared` 606 (same code); the one-use `opposite` folded into its vector3f_scale call 610 (2895 B);
+// the two counts declared after the shape-query call 590 (2874 B; a moved declaration, not kept without a match); one ray-result
+// local for both branches 627 (frame changes). The zero carrier stays EBX (retail ESI) and the sums sit 4 bytes off.
+// P477: Standard first-product-seeded side/amount/edge-length/separation/direction-root/available-root reductions, paired minima and paired sum transforms:
+// 661/751/681/697/644/673/639/637. NOT kept: all regress and lengthen, with no native accumulator/zero repair; all four matched controls survive. Original observations, kernels, geometry and complete body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
@@ -1941,161 +1950,158 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 		real edge_radius = radius;
 		real face_radius = radius;
 		function_16a440(flags, point, radius, 0.0f, 0.0f, ignore_object, ignore_parent, (s_shapes *)&shapes);
-		if (shapes.counts[2] > 0)
+		real radius_squared = radius * radius;
+		for (long index = 0; index < shapes.counts[2]; ++index)
 		{
-			real radius_squared = radius * radius;
-			for (long index = 0; index < shapes.counts[2]; ++index)
+			s_prism *prism = &shapes.prisms[index];
+			real distance = point->x * prism->plane.i + point->y * prism->plane.j +
+				prism->plane.k * point->z - prism->plane.d;
+			point3f projected;
+			projected.x = (0.0f - distance) * prism->plane.i + point->x;
+			projected.y = prism->plane.j * (0.0f - distance) + point->y;
+			projected.z = (0.0f - distance) * prism->plane.k + point->z;
+			nearest_squared_local = 3.4028234663852886e+38f;
+			bool inside = true;
+			long count = prism->point_count > 8 ? 8 : prism->point_count;
+			point3f closest;
+			for (long edge_index = 0; edge_index < count; ++edge_index)
 			{
-				s_prism *prism = &shapes.prisms[index];
-				real distance = point->x * prism->plane.i + point->y * prism->plane.j +
-					prism->plane.k * point->z - prism->plane.d;
-				point3f projected;
-				projected.x = (0.0f - distance) * prism->plane.i + point->x;
-				projected.y = prism->plane.j * (0.0f - distance) + point->y;
-				projected.z = (0.0f - distance) * prism->plane.k + point->z;
-				nearest_squared_local = 3.4028234663852886e+38f;
-				bool inside = true;
-				long count = prism->point_count > 8 ? 8 : prism->point_count;
-				point3f closest;
-				for (long edge_index = 0; edge_index < count; ++edge_index)
+				point3f first;
+				point3f second;
+				function_120790(first.n, prism->plane.n.n, (real const *)&prism->points[edge_index], prism->axis, prism->side);
+				function_120790(second.n, prism->plane.n.n, (real const *)&prism->points[(edge_index + 1) % prism->point_count], prism->axis, prism->side);
+				vector3f relative;
+				relative.i = projected.x - first.x;
+				relative.j = projected.y - first.y;
+				relative.k = projected.z - first.z;
+				vector3f edge;
+				edge.i = second.x - first.x;
+				edge.j = second.y - first.y;
+				edge.k = second.z - first.z;
+				vector3f side;
+				cross3f(&edge, &relative, &side);
+				if (dot3f(&prism->plane.n, &side) < 0.0f)
 				{
-					point3f first;
-					point3f second;
-					function_120790(first.n, prism->plane.n.n, (real const *)&prism->points[edge_index], prism->axis, prism->side);
-					function_120790(second.n, prism->plane.n.n, (real const *)&prism->points[(edge_index + 1) % prism->point_count], prism->axis, prism->side);
-					vector3f relative;
-					relative.i = projected.x - first.x;
-					relative.j = projected.y - first.y;
-					relative.k = projected.z - first.z;
-					vector3f edge;
-					edge.i = second.x - first.x;
-					edge.j = second.y - first.y;
-					edge.k = second.z - first.z;
-					vector3f side;
-					cross3f(&edge, &relative, &side);
-					if (dot3f(&prism->plane.n, &side) < 0.0f)
-					{
-						inside = false;
-					}
+					inside = false;
+				}
+				else
+				{
+					vector3f perpendicular;
+					cross3f(&edge, &prism->plane.n, &perpendicular);
+					real amount = 0.0f - dot3f(&perpendicular, &relative);
+					point3f candidate;
+					candidate.x = perpendicular.i * amount + projected.x;
+					candidate.y = perpendicular.j * amount + projected.y;
+					candidate.z = perpendicular.k * amount + projected.z;
+					real along = (candidate.x - first.x) * edge.i +
+						(candidate.z - first.z) * edge.k + (candidate.y - first.y) * edge.j;
+					point3f clamped;
+					if (along <= 0.0f)
+						clamped = first;
+					else if (along >= length_sq3f(&edge))
+						clamped = second;
 					else
+						clamped = candidate;
+					vector3f difference;
+					difference.i = clamped.x - projected.x;
+					difference.j = clamped.y - projected.y;
+					difference.k = clamped.z - projected.z;
+					real separation = length_sq3f(&difference);
+					if (nearest_squared_local > separation)
 					{
-						vector3f perpendicular;
-						cross3f(&edge, &prism->plane.n, &perpendicular);
-						real amount = 0.0f - dot3f(&perpendicular, &relative);
-						point3f candidate;
-						candidate.x = perpendicular.i * amount + projected.x;
-						candidate.y = perpendicular.j * amount + projected.y;
-						candidate.z = perpendicular.k * amount + projected.z;
-						real along = (candidate.x - first.x) * edge.i +
-							(candidate.z - first.z) * edge.k + (candidate.y - first.y) * edge.j;
-						point3f clamped;
-						if (along <= 0.0f)
-							clamped = first;
-						else if (along >= length_sq3f(&edge))
-							clamped = second;
-						else
-							clamped = candidate;
-						vector3f difference;
-						difference.i = clamped.x - projected.x;
-						difference.j = clamped.y - projected.y;
-						difference.k = clamped.z - projected.z;
-						real separation = length_sq3f(&difference);
-						if (nearest_squared_local > separation)
-						{
-							nearest_squared_local = separation;
-							closest = clamped;
-						}
+						nearest_squared_local = separation;
+						closest = clamped;
 					}
 				}
-				real separation = 0.0f;
-				if (inside)
-					closest = projected;
-				else
-					separation = nearest_squared_local;
-				if (radius_squared > separation)
+			}
+			real separation = 0.0f;
+			if (inside)
+				closest = projected;
+			else
+				separation = nearest_squared_local;
+			if (radius_squared > separation)
+			{
+				vector3f direction;
+				point3f positive;
+				point3f negative;
+				s_ray_shape_result hit;
+				s_ray_shape_result face_hit;
+				bool use_normal = true;
+				if (!(fabs(distance) < 0.01f && inside))
 				{
-					vector3f direction;
-					point3f positive;
-					point3f negative;
-					s_ray_shape_result hit;
-					s_ray_shape_result face_hit;
-					bool use_normal = true;
-					if (!(fabs(distance) < 0.01f && inside))
+					direction.i = closest.x - point->x;
+					direction.j = closest.y - point->y;
+					direction.k = closest.z - point->z;
+					real magnitude = (real)sqrt(length_sq3f(&direction));
+					if (!(fabs(magnitude) < 0.0001f))
 					{
-						direction.i = closest.x - point->x;
-						direction.j = closest.y - point->y;
-						direction.k = closest.z - point->z;
-						real magnitude = (real)sqrt(length_sq3f(&direction));
-						if (!(fabs(magnitude) < 0.0001f))
-						{
-							real inverse = 1.0f / magnitude;
-							vector3f_scale(&direction, inverse, &direction);
-							if (magnitude > 0.01f)
-								use_normal = false;
-						}
+						real inverse = 1.0f / magnitude;
+						vector3f_scale(&direction, inverse, &direction);
+						if (magnitude > 0.01f)
+							use_normal = false;
 					}
-					if (!use_normal)
-					{
-						vector3f ray;
-						vector3f_scale(&direction, radius, &ray);
-						if (function_2469b0((s_shapes *)&shapes, point, &ray, &hit))
-							positive = hit.position;
-						else
-						{
-							positive.x = point->x + ray.i;
-							positive.y = point->y + ray.j;
-							positive.z = ray.k + point->z;
-						}
-						real opposite = 0.0f - radius;
-						vector3f_scale(&direction, opposite, &ray);
-						if (function_2469b0((s_shapes *)&shapes, point, &ray, &hit))
-							negative = hit.position;
-						else
-						{
-							negative.x = point->x + ray.i;
-							negative.y = point->y + ray.j;
-							negative.z = ray.k + point->z;
-						}
-					}
+				}
+				if (!use_normal)
+				{
+					vector3f ray;
+					vector3f_scale(&direction, radius, &ray);
+					if (function_2469b0((s_shapes *)&shapes, point, &ray, &hit))
+						positive = hit.position;
 					else
 					{
-						vector3f ray;
-						vector3f_scale(&prism->plane.n, radius, &ray);
-						if (function_2469b0((s_shapes *)&shapes, point, &ray, &face_hit))
-							positive = face_hit.position;
-						else
-						{
-							positive.x = point->x + ray.i;
-							positive.y = point->y + ray.j;
-							positive.z = ray.k + point->z;
-						}
-						negative = *point;
+						positive.x = point->x + ray.i;
+						positive.y = point->y + ray.j;
+						positive.z = ray.k + point->z;
 					}
-					point3f middle;
-					middle.x = (negative.x + positive.x) * 0.5f;
-					middle.y = (negative.y + positive.y) * 0.5f;
-					middle.z = (negative.z + positive.z) * 0.5f;
-					vector3f half;
-					half.i = middle.x - positive.x;
-					half.j = middle.y - positive.y;
-					half.k = middle.z - positive.z;
-					real available = (real)sqrt(length_sq3f(&half));
-					if (use_normal)
-					{
-						face_sum.x += middle.x;
-						face_sum.y += middle.y;
-						face_sum.z += middle.z;
-						if (face_radius > available) face_radius = available;
-						++face_count;
-					}
+					real opposite = 0.0f - radius;
+					vector3f_scale(&direction, opposite, &ray);
+					if (function_2469b0((s_shapes *)&shapes, point, &ray, &hit))
+						negative = hit.position;
 					else
 					{
-						edge_sum.x += middle.x;
-						edge_sum.y += middle.y;
-						edge_sum.z += middle.z;
-						if (edge_radius > available) edge_radius = available;
-						++edge_count;
+						negative.x = point->x + ray.i;
+						negative.y = point->y + ray.j;
+						negative.z = ray.k + point->z;
 					}
+				}
+				else
+				{
+					vector3f ray;
+					vector3f_scale(&prism->plane.n, radius, &ray);
+					if (function_2469b0((s_shapes *)&shapes, point, &ray, &face_hit))
+						positive = face_hit.position;
+					else
+					{
+						positive.x = point->x + ray.i;
+						positive.y = point->y + ray.j;
+						positive.z = ray.k + point->z;
+					}
+					negative = *point;
+				}
+				point3f middle;
+				middle.x = (negative.x + positive.x) * 0.5f;
+				middle.y = (negative.y + positive.y) * 0.5f;
+				middle.z = (negative.z + positive.z) * 0.5f;
+				vector3f half;
+				half.i = middle.x - positive.x;
+				half.j = middle.y - positive.y;
+				half.k = middle.z - positive.z;
+				real available = (real)sqrt(length_sq3f(&half));
+				if (use_normal)
+				{
+					face_sum.x += middle.x;
+					face_sum.y += middle.y;
+					face_sum.z += middle.z;
+					if (face_radius > available) face_radius = available;
+					++face_count;
+				}
+				else
+				{
+					edge_sum.x += middle.x;
+					edge_sum.y += middle.y;
+					edge_sum.z += middle.z;
+					if (edge_radius > available) edge_radius = available;
+					++edge_count;
 				}
 			}
 		}

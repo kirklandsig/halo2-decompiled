@@ -434,6 +434,10 @@ void function_11bed0(s_location *location, point3f const *point);
 // MiniMax G (11-13): no new form, no lower score (93): the location query is still expanded here while retail
 // calls it out of line, and that callee's inline eligibility is fixed in another file, so the call boundary
 // and the register homes that follow it stand. BLOCKED-BY 0x11bed0.
+// score 93 (was 93): unchanged this round: the location query is still expanded here while retail calls it out of
+// line, and that callee's inline eligibility is fixed in another file. BLOCKED-BY 0x11bed0.
+// score 93 (was 93): unchanged this round: the location query 0x11bed0 is still expanded where retail calls it
+// out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may not edit.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -2656,6 +2660,19 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // MiniMax G (11-13): no new form, no lower score (339): the frame is 0x4b4 against retail's 0x4bc, and the
 // early scalar, primary and last-chunk homes still differ; the forms in the note below all score 339 or more,
 // so the body stands.
+// MiniMax G (11-14), NOT kept (coordinator: the 339 -> 321 comes from a bool set by the loop-flag test and read by
+// the next `if` (`flag0`), a form kept only with a byte match; main's `&&` chain already calls "has next sound" only
+// when the flag is clear and primary is set). G's two notes on that form follow.
+// G's form, not kept: score 321 (was 339): unchanged this round: the frame is still 0x4b4 against retail's 0x4bc and the properties
+// aggregate is still cleared in one piece where retail clears the base and the effects separately; taking the
+// source scale and the track value into locals early makes our length retail's 1929 bytes but moves every stack
+// slot (476), and adding the gain copy with them gives 471 at 1931 bytes; the permuter (964 s, 14 tries) found
+// nothing lower.
+// G's form, not kept: score 321 (was 339): the loop-flag test now calls "has next sound" only when the flag is clear, which is what
+// retail does; the frame is still 0x4b4 against retail's 0x4bc and the early scalar, primary and last-chunk homes
+// still differ.
+// score 339 (was 339): unchanged this round: the frame is 0x4b4 against retail's 0x4bc, and the early scalar,
+// primary and last-chunk homes still differ.
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {

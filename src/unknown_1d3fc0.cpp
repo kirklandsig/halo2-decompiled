@@ -30,6 +30,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
+// MiniMax G (11-14): no new form, no lower score (110): the frame 0x13c and the 922-byte length agree; the axis
+// block's dot product still multiplies up's i first where retail multiplies forward's i first, and the shapes that
+// flip that need the existing dot3f body written out by hand.
 // score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
 // MiniMax B (11-12): no new form, no lower score (110, was 110): the frame 0x13c and the 922-byte length agree; the

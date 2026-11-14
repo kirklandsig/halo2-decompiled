@@ -285,6 +285,8 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // return at `done` 85 (504 B); main with the walk's return as that goto 85 (504 B); the first with the walk closing `if (result
 // != NONE) initialize = true; else goto done;` 100 (491 B); the first with no walk exit test 101 (491 B); main with that close
 // 85 (504 B).
+// P472: Byte/char/word/short initialization decision, integer negative-age normalization, promoted age/oldest/both: 77/77/74/74/140/160/136/164.
+// NOT kept: word/short gain three, below the threshold; other scalar-domain forms tie or regress. Original merge, scan and full body restored; cached-edge and trailing-return layout remain.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

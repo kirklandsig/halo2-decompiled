@@ -928,7 +928,7 @@ void function_143250(
 	}
 }
 
-// score 1333 (was 1766): frame 0x2fc versus retail 0x300 and 10752 of 10773 bytes; `ret 4` with rotation in EAX as retail. 80 of the 83
+// score 1333 (was 1333): frame 0x2fc versus retail 0x300 and 10752 of 10773 bytes; `ret 4` with rotation in EAX as retail. 80 of the 83
 // matrix entries have retail's value tree; band three's entries 8, 25 and 28 and the stack homes (140 of 216 stores) differ.
 // g1A walk (symbolic): retail 0x143600-0x146012 executed as an expression DAG (SSE/x87, f32/f64 and (real) points, association and
 // constants from the XBE kept) against this body: all 83 values handed to the three function_143250 calls (3x3, 5x5, 7x7) are identical,
@@ -1240,6 +1240,29 @@ void function_143250(
 // locals declared at their conversion instead of at the constant load [1574]. Left: entry 8's term order (retail r3_r2,
 // r5_r1, r5_r0, r4_r2, r4_r0, r3_r1 unfactored), entry 25's four-term order, entry 28's subtracted pair, and the homes, which
 // retail orders by memory-reference count (r8 with 24 reads at +0, r5 with 20 at +4, r7 with 3 at +0x11c).
+// M3 lane 9 r120 (fast unless given): retail's scalar homes are ordered by reference count, and its extra home comes from two
+// band-three products (stored at retail 0x144008 and 0x1444eb) that keep their own two-reference homes where ours packs them into slots
+// shared with other values, so the frame follows the band-three schedule. Entry 8's first two terms swapped 1333 (same code:
+// the sum is re-sorted, later-declared operand first); r3_r2 declared after r5_r1 (entry 8 then has retail's term order) 939 at
+// 10777 bytes, plain 939 with 0x22850 226, 0x23690 330 and 0x143250 matched (a declaration-order change, kept only with a
+// match: restored, diff in that round's held patch); on it entry 25's four operand products in the 23 other declaration
+// orders 943-1474, entry 28 as T1 - (T2 + T3) 940; that grouping on this body 1330. Left on the 939 form: band three's
+// preamble (the copies of band-two products into band-three homes, through xmm7 where retail uses xmm6, in another order),
+// entries 25-28, and band two's entries 18, 19 and 22. A hill climb of dependency-safe adjacent declaration swaps on
+// the 939 form (fast, 290 swaps) then took s105_r0_r0_r6 after r1_r0_r7 866, r7_r7_r0 after r0_r0_r0 865, r3_r3_r0
+// after r1_r1_r0 854 and r2_r1 after r5_r4 853 (plain 853 at 10777 bytes with frame 0x300 as retail, first difference
+// +0x3b; 0x22850 226, 0x23690 330, 0x143250 matched); every other single swap 858-1500. Restored like the 939 form.
+// P476: Explicit-polynomial matrix accumulators in bands 2/3/both; coefficient accumulators in bands 2/3/both; immutable scalar captures; frequency lexical homes. Scores 1337/1535/1539/1439/1535/1539/1333/1333.
+// NOT kept: unmatched diagnostic source forms; original executable body restored.
+// P478: First-consumer repeated scaled mixed/cubic/triple/pair/cubic products, paired cubic family,
+// complete reusable family and prepublication family: 1552/1509/1333/1759/1597/1623/1628/1619.
+// NOT kept: four products recover frame 0x300, but spill homes/schedules regress; original body restored.
+// P478 m3: Cross-band square/mixed/all/axial-square/transverse-square retained products,
+// then all/square/mixed shared receivers with original second producers: 1918/1843/2010/1811/1827/1538/1529/1501.
+// NOT kept: lifetimes regress and shorten away from retail; original polynomial restored. Frame and homes remain.
+// P480 m3: Complete third-band row-producer lifetimes 0/1/2/3/4, second-band square/all
+// product first-consumer declarations and all third-band products: 1810/1643/1742/1648/1627/1672/1707/1789.
+// NOT kept: native frame/homes unrecovered; original polynomial and complete body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
