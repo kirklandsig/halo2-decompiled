@@ -2169,6 +2169,9 @@ static inline dword voice_get_player_mask_inlined(void);
 // through a three-bit bitfield view. Diagnostic: a repeated availability test inside 0x53bb0 (more IL; 0x53bb0 itself
 // 31) keeps its call out of line in 0x53a20 (0) while 0x54890 still inlines it (119), so the per-site choice follows
 // the callee cost, but no same-code form of 0x53bb0 reaches that threshold.
+// MiniMax H (11-13), NOT kept (coordinator): 85 -> 74 came from two new __forceinline twins of voice_port_flag1/2
+// (voice_port_flag1_inlined / voice_port_flag2_inlined) called at the inner loop's tests: new _inline twins of
+// existing functions are not kept (noinline ruling, 10-30).
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
