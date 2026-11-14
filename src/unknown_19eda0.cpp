@@ -395,6 +395,9 @@ PRIVATE inline long polygon_round_19f(real value)
 // against retail's 0x30, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX
 // from src/unknown_01cf50.cpp, which this lane may not edit.
 // MiniMax G (11-14): no new form, no lower score (370): retail's 1.5 factor lives in a writable .data float this lane may not add, and 0x4b2d0's EDX/ECX/EAX argument order is set in another lane's file.
+// MiniMax H (11-14): no new form, no lower score (370): the frame is still 0x34 against retail's 0x30, retail
+// still reads its 1.5 factor from its own writable .data float at 0x47ff94 and still expands two contributor
+// helpers in place, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX.
 // score 370 (was 316; earlier 379, 393): see the round 170 line at the end of this note.
 // MiniMax G (11-10): no new form, no lower score (370); retail's 1.5 factor still comes from a writable .data float at 0x47ff94 that only this function reads, the frame is still 0x34 against retail's 0x30, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX from a file this lane may not edit.
 // MiniMax E (11-10): no new form, no lower score (370); the frame is still 0x34 against retail's 0x30 and retail still makes its two 1.5 multiplies from the factor in its .data (the centre distance in single precision 379, the fade limit written out 402, a writable global factor 389 and the parameter read without its alias 419 all score worse).

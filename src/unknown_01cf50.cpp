@@ -8035,6 +8035,10 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // MiniMax B (11-13): no new form, no lower score (299): the group index is still sixteen bits wide where retail
 // moves the 32-bit index, the while-loop form keeps retail's 0x1894 frame, and retail's stride is still an imul of
 // the 0x98 against this build's strength reduction into a second counter.
+// MiniMax H (11-14): no new form, no lower score (299): retail's entry loads the count into a register and tests
+// it, this build compares the count in memory with one, the group index is still sixteen bits wide where retail
+// moves the thirty-two bit index, and the index slot sits at [esp+0x3c] against retail's [esp+0x58]; the
+// thirty-two bit counter reads 514 and the "<= 0" count test reads 313.
 // score 299 (was 310): fast score; our group index is sign-extended (movsx esi, ax) where retail moves the
 // 32-bit index, the index slot sits at [esp+0x3c] against retail's [esp+0x58], an extra mov edi, edi stands in
 // the loop head, and the body is 3 bytes longer than retail's.
@@ -9749,6 +9753,10 @@ __declspec(noinline) void function_016a30(real scale, short y, short x);
 // registers of 0x16a30 and passes the palette global itself as the out-parameter, while the callee here takes
 // shorts and the palette is reached through a local; the callee's declaration lives in src/unknown_0167a0.cpp.
 // MiniMax H (11-12): no new form, no lower score (171): the two offsets still reach 0x16a30 in the other order than retail's, and the callee takes short offsets here where retail's took ints; the callee's declaration lives in another file this lane may not edit.
+// MiniMax H (11-14): no new form, no lower score (171): retail sign-extends the two offsets into the argument
+// registers of 0x16a30 and hands the palette global over as the out-parameter, this build passes the offsets as
+// sixteen bit values in the other order and reaches the palette through a local; the callee's declaration is in
+// src/unknown_0167a0.cpp, which this lane may not edit.
 // score 171 (was 171): the two offsets passed to 0x16a30 still sit in the other order, and the palette
 // is still reached through a different call sequence than retail's.
 // MiniMax D (11-05): no new form, no lower score - retail passes the two offsets to 0x16a30 in its own order and reaches the palette through a different call sequence, so the difference is in the call order rather than in a local form.
