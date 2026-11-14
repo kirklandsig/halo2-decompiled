@@ -744,6 +744,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // the vector components first (forward and blend in XMM0/XMM1), then the two-use scalars (reciprocal and blend weight XMM2,
 // 1.0 XMM3); ours colours the scalars first (reciprocal XMM0, 1.0 XMM2, forward XMM4/XMM7, heading XMM3/XMM5). The 1.0 load's
 // place, each normalize's y loaded ahead of the divide and `forward * k` against `k * forward` all follow from that order.
+// Round 121 (m3 lane 9, fast), at 126: every 2-D work vector typed vector2f (i/j members) with a vector2f normalize 126
+// (same code); the gear written only when there is input (`if (length_sq3f(...) != 0.0f) vehicle->gear = !reversing;`)
+// 195 (1133 bytes); `angle += offset` 126 (same code).
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1083,6 +1086,9 @@ __forceinline long vehicle_round(real value)
 // orders, so the order is register pressure and not the source, and round 192's match needed three invented
 // one-caller helpers that the coordinator rejected; the lead is an existing helper or inline that declares the
 // same locals.
+// Round 121 (m3 lane 9, fast), at 6: the two-second tick count through the codebase's two-local seconds-to-ticks
+// rounding helper shape (ticks_real, ticks), used at all three vehicle_round sites (here, 0xf5e00, 0xf4800) 6 (same
+// code in all three: helper locals inside the condition do not move the products).
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -1545,6 +1551,11 @@ long function_10f5f0(long object_index);
 // keep retail's different shape; the frame needs a different set of locals in the body.
 // MiniMax C (11-14): no new form, no lower score (561); retail still materialises the word flag's bit 12
 // as a byte at [esp+0x13], written and never read, where this build tests it in place.
+// Round 121 (m3 lane 9, fast), at 561: diagnostic, a noinline declaration of 0x113e40 (reverted at once) 634 at 2204
+// bytes with frame 0x198c, so our inlined 0x113e40 accounts for 4 of the 12 extra frame bytes (retail calls 0x113e40 and
+// inlines 0x10f5f0; this build the reverse, from the two files' /Ob settings: a flags lead). The point-sum loop with a
+// `short` index 633 (2196 bytes: the loop stays rolled with retail's `addss [edx]`, but counts up with movsx/cmp where
+// retail counts a copy of the bound down).
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2030,6 +2041,9 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // vehicle_cross for the left vector 9 (all four the same code). Diagnostics: 1/2/3 dead inline-helper locals at the top or
 // before the state lookup 13/13/17 (only the cross and forward-speed products move; the SIB pair and the three reloads
 // never do, so they are not a numbering phase).
+// Round 121 (m3 lane 9, fast), at 9: the update test split into nested ifs (graph index first, then both ids) 9 (same
+// code); a named `period` local for the definition's +0x20c read in each engine-overlay arm 133; the function channel's
+// byte read into a `long value` 92. No other untried natural form found for the header SIB pair or the three reloads.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2946,6 +2960,10 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // parameter) 183 (934 bytes); fmodf in the wrap helper 10. Diagnostics: 1 or 2 dead inline-helper locals at the top, before
 // the contact loop or before the spin 65/24 at each (the torque and loop-offset slots never move; only the spin tail's add
 // operands do), so the slot swap is not a numbering phase.
+// Round 121 (m3 lane 9, fast), at 10: the braking test as a call of 0xf5d70 (whose body it is) with that function marked
+// plain `inline` 10 (same code here, but our inliner then expands 0xf5d70 at every site, as the forced form did:
+// 0xf1950 175 and 0xf5ee0 113 unmatch, 0xf6d10 821; retail expands it only here). Every other torque/loop-offset reference
+// change named above is listed with its score and none moves the pair; the packer's order between them is the open cause.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -5404,6 +5422,12 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // body's register plan differs from the first difference on.
 // MiniMax C (11-14): no new form, no lower score (749); the frame agrees (0x18) and the first difference
 // is still the zero/result SSE allocation.
+// Round 121 (m3 lane 9, fast), at 749: the case ids' low indices (0x57a, 0x57b, ...) suggest a source order by string
+// table; with 0xf78e0 marked `inline`, the 15 hand-written limit sites calling it and the cases in that order (the
+// generic ids 0x00e/0x00f/0x01a/0x01b and 0x713 first, then 0x57a upward) our inliner keeps exactly retail's nine 0xf78e0
+// calls: 883 (3091 bytes; 22 f78b0 calls where retail cross-jumps its tails to 14), and with an entry definition pointer
+// for the 0x264/0x1f0/0x20c fields 736 (3011 bytes, aligned 347 -> 150, register-masked 214 -> 81: round 180's partition
+// without a score-picked order; still a case reorder, so kept only on a match).
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
