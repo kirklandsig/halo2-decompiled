@@ -1364,6 +1364,18 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 // The grenade condition as `!(grenade && count > 0)` 19 (same code), as `grenade == NULL || count < 1` 48 (965 bytes,
 // `cmp ax, 1`), as two nested tests jumping over the notice block 19 (same code), held in a named bool 176, as an
 // empty then-arm with the notice in the else 19 (same code).
+// Round 118 (m3 lane 9, fast; same-code spellings, not counted as trials): the seat flag and the 0xee8a0 result as two bools 19; the hand
+// weapon read through a fresh UNIT_ACTION_UNIT_GET (0xe8460's spelling) 19; actions through
+// UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index)) (0xe8980's spelling) 19; the busy test with `if (!immediate) goto done;`
+// nested inside it 19; the success code inside a positive `if ((animate && ...) || ...)` 19. Diagnostics: the notice block
+// cut to one unconditional call (295, 885 B), the active and animation tests dropped (245, 892 B), the grenade test as an
+// integer compare (19, same code) and round 156's forced-inline notice helper (74) all keep our block order (the success
+// path carries an exit copy and the notice falls into the last exit), so neither the notice's own tests, the success
+// path's tests, the pointer type nor an inlined helper body sets it. Matched 0xe8460 and 0xe8720 use the `objects` pool
+// local (round 78's 16 form) once beside the macro, so that form is the file's idiom once the exit order is found. No
+// untried code-changing form is left for the exit order (rounds 21, 75, 153 and 156 above). New (counted): the notice as a
+// post-check after `done:` gated by a `no_grenades` flag set in the grenade test 112 (989 B: VC threads the flag, so the
+// grenade test still jumps straight to the notice, the block order stays ours, and 0x14de90 then inlines twice).
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {

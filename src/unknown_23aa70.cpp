@@ -114,6 +114,8 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // does not fall; so our convention more likely follows 0x17e670's unmatched body, and the reorder is a measurement, not
 // evidence. The definition line sits in contributor code (src/unknown_17d9a0.cpp), so the patch is held and the code
 // here stays as on main.
+// Round 194 (m3 lane 4, fast): no trial; from +0xba every difference is still the 0x17e670 call's register pair (ours the
+// source in EDX and the point in ECX, retail the source in ECX and the point in EDX), contributor code. Held patch unchanged.
 // @retail 0x23aad0
 void __stdcall function_23aad0(long previous_address, long current_address, long count)
 {

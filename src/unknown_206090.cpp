@@ -521,6 +521,18 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // NOT kept: no byte match or supported native frame/result recovery; original complete body restored.
 // P446: Actual slip, force-transfer, movable-body, impact-record, append, collected-member, compatible-contact and created-impact producers;
 // 1388/1388/1388/1388/1388/1388/1414/1388. NOT kept: three-point nonmatch gains are below the eight-point bar; original complete body restored.
+// M3 lane 10 r101 (fast with 0x2056e0, which stays matched; fast = plain here, 1391; brackets = difflib counts exact / registers
+// masked / registers and stack offsets masked, control [1384/1148/966]). NOT kept (coordinator: 5 points, under the 8-point bar): the contact velocity formed in
+// place (the cross written straight into the contact's field_4c and local_4 added there, the `contact_velocity` local copy
+// dropped) 1391 -> 1386 (6249 bytes, frame 0x5c8) [1487/1216/980]: retail stores that cross into the field and re-adds in
+// memory (`movss [ebx], xmm3; addss xmm0, xmm3; movss [ebx], xmm0`). Before it: 0 to 7 unused longs ahead of the body
+// (symbol-count phase scan) 1391 each, same code (no phase effect here); the magnitude helper reading its input directly
+// re-measured 1623 (6022 bytes, frame 0x590) [1444/1080/915]; that with the in-place velocity 1639 (5964 bytes, frame 0x588)
+// [1541/1111/880]. On that form: a `contact` pointer local for the whole contact loop 1443 (6166 bytes, frame 0x5c0)
+// [1379/1464/905], the pointer without the in-place velocity 1430 (6195 bytes); the impact position written straight by
+// vector3f_add_scaled 1448 (6163 bytes); the wheel force through the existing vector3f_add_scaled (no scaled temporary) 1395;
+// the stored length read back from field_90 1437. Retail keeps the contact pointer in EDI, reads field_40 from memory at each
+// cross product use and reloads field_40.k right after storing it.
 // P449: Dominant-force/positive-force, moving-surface and friction-sign outcomes in bool/long:
 // eight 1364 fast (control 1367; full 1391). NOT kept: three-point context-relative gain; no exact frame/result repair.
 

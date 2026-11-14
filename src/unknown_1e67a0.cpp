@@ -1081,6 +1081,8 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // helper stays.
 // P440: Plain coordinate-copy loops at goal/turned/initial boundaries, seven subsets then word ordinals: 161/207/215/172/206/206/205/155.
 // NOT kept: Native rotation j/k products, side dots and eager output loads remain. Original complete body restored.
+// P458: Complete rotation/small-angle outcomes, bool/byte/short/long:
+// 144/144/144/144/144/144/144/144. NOT kept: native rotation j/k products, side dots and eager output copies not recovered; original complete body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

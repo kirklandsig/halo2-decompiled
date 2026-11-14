@@ -634,11 +634,16 @@ struct s_device_machine_view
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
+// score 2 (was 2): the group's flags still load through the combined address
+// (`mov ax, [eax + edx*4 + 2]`) where retail computes the address first
+// (`lea eax, [eax + edx*4]`, then `mov ax, [eax + 2]`), and ours still masks the byte
+// with 3, an instruction retail does not have; between the two the code is retail's
+// shifted by one. Plain masks plus the zero store leave only the group pointer's register.
 // MiniMax E (11-11): no new form, no lower score (34); retail loads the group's flags as a word sharing the group
 // pointer's EAX (mov ax, [eax+2]) and tests bit 1 then bit 2, ours loads a byte and masks it with 3, and dropping
 // the mask gives retail's word load but moves the group pointer into a pushed ESI; case 0x1200055f's zero store is
 // still missing.
-// score 34 (was 34): group-word load/EAX sharing and velocity-zero join remain;
+// Earlier (34, was 34): group-word load/EAX sharing and velocity-zero join remain;
 // the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
 // retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
@@ -665,11 +670,6 @@ struct s_device_machine_view
 // machine test 123 and the flags read in both arms of the machine test 123 (the group base is then
 // loaded late and the index is folded into the load); the permuter was started over the body twice
 // (with and without --fast) and stopped without a result.
-// score 2 (was 34): the group's flags still load through the combined address
-// (`mov ax, [eax + edx*4 + 2]`) where retail computes the address first
-// (`lea eax, [eax + edx*4]`, then `mov ax, [eax + 2]`), and ours still masks the byte
-// with 3, an instruction retail does not have; between the two the code is retail's
-// shifted by one. Plain masks plus the zero store leave only the group pointer's register.
 // MiniMax E (11-10): no new form, no lower score (34); retail loads the group's flags as a word into AX with the
 // group pointer still in EAX and tests bits 1 and 2, ours loads a byte and masks it with 3 - every word form moves
 // the pointer into ESI (120) or folds the index into the load's address (117), and the nested and compared tests
@@ -1005,6 +1005,13 @@ struct s_device_machine_view
 // declared ahead of the pointer and assigned after the machine test 122; a file-local inline bit test taking the flags
 // word and a bit number 122; the word assigned inside the first test 122; `if (!(f & 1)) {} else if (f & 2)` 122; a
 // `short` local with `!= 0` masks 122.
+// Round 176 (m3 lane 6, fast; each on the group-pointer form, re-measured 122 with the pointer in a pushed ESI): the group
+// test as a ternary on function_value 122; the machine test as a ternary 122; the bit tests nested 122; a `locked` bool from
+// the machine bits set by the group test and tested once 88 (654 bytes: with no branch between the lea and the word load
+// the pointer takes EAX and the load is retail's `mov ax, [eax + 2]`, but the bool takes BL through setne); a group-locked
+// bool computed ahead of the machine test 129 (664 bytes). On the lane S form: the type/index test as an early `break`
+// with the rest unnested 2 (same code); the byte as `(byte)group_flags & 3` 2 (same code); a word mask carrier 14 (655
+// bytes). Lane S form restored.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1223,6 +1230,7 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax B (11-13): no new form, no lower score (121): the three clamped values are still taken in xmm5, xmm7 and xmm2 where retail takes them in xmm7, xmm1 and xmm2, and the first argument arrives in xmm6 under the custom LTCG convention, so the clamp's register choice is not ours to pick.
 // MiniMax H (11-12): no new form, no lower score (121): the initial velocity read into a local in the callee, passed through a local at the call site, both together and the formula reading the stored velocity back all measure 121, so the body stands.
 // MiniMax G (11-12): no new form, no lower score (121): nothing new this round; the initial velocity remains stack-passed
 // instead of xmm6, and the ramp-down residency and the return size differ.

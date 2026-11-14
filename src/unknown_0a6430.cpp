@@ -86,6 +86,16 @@ PRIVATE byte *update_object_0a6430(long index)
 // Diagnostic:
 // a second read through the 0x100 object 74 (the object then ECX as a variable, the level EDX; the 0x200 head becomes
 // index-first with idx ECX, not retail's EDX).
+// m3 lane 14 r90 (fast; plain where noted): the existing OBJECT_DATUM_GET (object_dispatch.h) for the 0x200 lookup
+// with a typed object local, folded into the definition read, for the 0x100 lookup, for both 16/16/16/16 (same code).
+// NOT kept (a one-use reference, kept only on a match): the 0x100 object bound as `byte *const &object` 12 at 548
+// bytes (plain 12): the object then takes EAX as retail and the 0x200 head turns index-first with the pool in EAX, so
+// the extra byte goes; left are the 0x100 compare (our quotient in ECX and the state byte loaded into EDX after it,
+// retail loads the byte into ECX right after the imul and forms the quotient in EAX) and the 0x200 head's ECX/EDX
+// pair. On that form: the 0x200 object bound the same way 12, the compare's operands swapped 12, a named short level
+// 12, a long quotient local 12, the state byte read into a local just before the compare 12 and ahead of the object
+// 12, the typed 0x200 lookup 12; the 0x200 object alone bound as a reference 16 (same code). Lead: the natural form
+// that keeps the 0x100 object as a value of its own, with the byte load ahead of the quotient.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {

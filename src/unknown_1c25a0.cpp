@@ -1004,6 +1004,11 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // first reached, provided the cycle is entered at 0x146bf0 while 0x278f00 is still unvisited. Retail enters there
 // through 0xb7b40, whose body is disabled here; every other caller of 0x146bf0 is reached only after 0x278f00.
 // BLOCKED-BY 0xb7b40 (and the bodies its walk needs, see function_1c4040's note).
+// Round 194 (m3 lane 4, fast over 19 cycle members): in src/unknown_0b7740.cpp, off limits in the earlier walk rounds, 0xb8890
+// defined ahead of 0xb8840 1 and function_1d1540 declared before function_1d1260 1 (nothing moves); function_1d1540 declared
+// ahead of function_1d1260 in src/unknown_1cec30.cpp (0x1d0cf0 visits 0x1d1540 first) with function_278f00 declared before
+// function_1c51c0 in src/unknown_1c39c0.cpp 2 (0x1c4040 55; lost 0xe16b0 10, 0xb8840 15, 0x1c3770 41, 0x1c54b0 89, 0x1d1260
+// 220, 0x278f00 245, 0xf0fd0 33); with either src/unknown_0b7740.cpp move added the same. All restored.
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
@@ -1718,6 +1723,13 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // must keep, when this function is compiled, a call or intrinsic that takes the velocity pointer and may store, yet
 // end with retail's bytes: not found. With it the recipe is this record, 0x1d10b0 as a component member (index,
 // velocity) and that callee form.
+// Round 194 (m3 lane 4, fast with 0x1d10b0, 0x1d1160, 0x1d1010 and 0xe5300): 0x1d10b0 as an s_havok_component member (index,
+// velocity) re-measured 1 with 0x1d10b0 matched (not kept: two points without a match). Diagnostic on it: no `i = local_0;`
+// reload in the impulse arm still gives `cmp eax, ebx` (107, 864 B), so the entry compare comes from the mirror's zero store
+// sharing EBX, not from the index's induction status. On the member form: no mirror with the two changes as one
+// `vector3f changes[2]` 126 (858 B); the mirror kept with `changes[2]` 1 (same code); `long i = 0; while (i < count)` 1
+// (re-measure of round 124's member-form while, 3); an
+// `if (count > 0)` guard around the for 1; the mirror declared with count and zeroed in each selection arm 34 (872 B). Restored.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)
