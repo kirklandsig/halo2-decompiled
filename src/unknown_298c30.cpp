@@ -975,6 +975,14 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // actual sweep/obstacle failure reasons char/byte/short/long 730/730/806/805.
 // NOT kept: eager radius remains; narrow results shorten to 3300, wider forms
 // enlarge the frame. Original success result and complete body restored.
+// m3 lane 3 r241 (fast with 0x29a190, which stays MATCH, 0x298d90, 0x298c30, 0x29cbb0; all restored): ours keeps the radius
+// parameter in XMM5 from entry across the 0x2108a0 and 0x210770 calls, retail reloads it; neither callee (nor 0x1427f0 and
+// 0x210d10 below 0x210770, all matched) touches XMM5 in retail. Diagnostic, reverted at once: src/unknown_20fe20.cpp without
+// /Ob1 leaves this body at 569 (the calls stay, XMM5 is still hoisted), so the callee file's flags are not the cause here.
+// Tried: the angle step as `(field_4 < 0 ? -i : i) * pi/4` 817 (3317 B); the forward sweep scale as `distance - radius`
+// 817 (3317 B); the step chosen by if/else with the last step first 816 (3317 B); the sector index read once before
+// 0x2108a0 into the local the NONE test uses 768 (3320 B); the two result flags declared after the NONE return 569 (other
+// code). Same code: either sweep sum with its operands swapped.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

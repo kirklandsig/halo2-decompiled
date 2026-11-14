@@ -1096,6 +1096,12 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // seven subsets then all with default velocity: 126/126/196/101/114/114/111/112. NOT kept: 101 is
 // combination-only (both individual families 126); 111/112 gain only three/two.
 // Native rotation products/side dots/output loads remain; full body and headers restored.
+// m3 lane 3 r241 (fast with 0x24590/0x1cd6c0/0x1ecf50, which stay MATCH; control 114, register-masked aligned 37; all
+// restored): the velocity rows scaled by the `speed_scale` parameter in place of the state's copy 361 (1373 B); the rotation
+// angle as `rate * angle` 114 (other code, the rotation still recoloured); the 64 flag tested as `!(word & 2)` without the
+// shift-and-bool cast 367 (1356 B); `moved_away` computed before the two crosses 190 (1343 B); the alignment dot from the
+// `forward` parameter in place of the state's copy 256 (1395 B). Re-measured (listed): vector3f_scale for the velocity rows
+// 166, the alignment as (forward, goal) 116, the rotated copy from the `forward` parameter 194.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

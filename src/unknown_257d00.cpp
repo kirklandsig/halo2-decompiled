@@ -2759,6 +2759,20 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // canonical-field subsets: 479/482/482/479/479/482/482; all with the existing
 // perception accessor 625. NOT kept: no equality or gain; publication forms grow
 // to 2408 bytes. Original complete callback restored; later copy and exit carriers remain.
+// m3 lane 3 r241 (fast with the file and 0x110ab0, which agrees with the full build here; all restored): case 6 with
+// g_5023fc read at each use (no local copy) 478 (2400 B: `or byte ptr [eax+0x22], 0x69` in place); on it case 7/8's
+// one-use flag folded into its `if` 473 (2396 B, retail's length; alone on main 478, but retail computes that flag as a
+// value before the bit-8 test, `mov al, 1` / `mov al, [ebx+0x264]`, so main's local is retail's shape and its removal
+// was not kept), with the listed `c ? true : byte` flag instead 474 (2396; alone 477, re-measured); on the 473 form the
+// `local_21` block's `unknown456 = true` before the 0x458 copy 471 (a statement order: match-only lead; retail stores the
+// byte between the copy's second and third dwords). On 471: the 0x454 store before the copy in the field_3 & 1 block 471,
+// in the `local_21` block 480, the 0x465 flag before the 0x464 byte 471, the 0x470 pair before the 0x468 pair 479, the
+// `field_3 |= 8` first 488 (2380 B). Also: case 6's flags through a named byte (`flags = x | 0x29`, two stores) 617
+// (actor and state exchange registers), the 0x48 set after the state flag and the global store 482 (two `or byte
+// ptr` RMWs, not retail's load / two stores), on the 478 form 482; case 5's tick reset as an if/else 618; the
+// post-switch bit pair as `(field_3 & 3) == 3` 598; case 0 as `!field_0`, case 20 as `!(ac || d0)`, case 18's global
+// at each use and the 0x1c/0x20 store order all the same code as their bases. A per-bit bitfield view for the 0x48
+// set still folds to `or 0x69` (same code).
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
