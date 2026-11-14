@@ -6,6 +6,26 @@ The newest entry comes first.
 
 ```
 matched 10620 of 11326 game functions (2036228 of 2786206 bytes, 73.08%)
+matched 1352 of 1436 Havok functions (200891 of 290362 bytes, 69.19%)
+```
+
+7 new matches, none lost:
+- @andrewnakas's #1172: `0x2de0f0`, `0x2ef3b0`, `0x2ef6e0`, `0x2ef7f0`, `0x308910`, `0x311e40` and `0x315950` match.
+
+## 2026-11-14: 10620 functions match
+
+```
+matched 10620 of 11326 game functions (2036228 of 2786206 bytes, 73.08%)
+matched 1345 of 1436 Havok functions (198690 of 290362 bytes, 68.43%)
+```
+
+0 new matches, none lost:
+- @ccgman123's #1176: closer scores and notes, no new match.
+
+## 2026-11-14: 10620 functions match
+
+```
+matched 10620 of 11326 game functions (2036228 of 2786206 bytes, 73.08%)
 matched 1345 of 1436 Havok functions (198690 of 290362 bytes, 68.43%)
 ```
 
