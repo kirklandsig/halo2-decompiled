@@ -741,6 +741,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 	return fabs((double)a->x - b->x) < epsilon && fabs((double)a->y - b->y) < epsilon;
 }
 
+// MiniMax E (11-14): no new form, no lower score (129): retail still reads the count argument as a dword home and
+// sign-extends the low word, where this declaration's short count is read as a word home, and that parameter's type is
+// declared in src/unknown_17d9a0.cpp, which this lane may not edit; retail also keeps the previous side in memory where
+// this build keeps it in CL.
 // MiniMax B (11-12): no new form, no lower score (129, was 129): retail reads the count argument as a dword home
 // (`mov ecx, [ebp + 8]; movsx edi, cx`) where this declaration's short count is read as a word home, and that type
 // is declared in src/unknown_17d9a0.cpp, so the first difference stays; retail also keeps the previous side in
