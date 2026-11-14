@@ -213,7 +213,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 920 (was 923): earlier 923 (was 923), 901 (was 901), 882 (was 882); frame 0x2cb4 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
+// score 920 (was 920): earlier 920 (was 923), 923 (was 923), 901 (was 901), 882 (was 882); frame 0x2cb4 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
 // frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
 // point workspace names 866; initial actor value 869; query index value 916;
 // conditional self-unit 911; wide initial predicates 1011; native location copy 911.
@@ -478,6 +478,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // tail placement; original complete body, qualifiers and call tuples restored.
 // MiniMax C (11-14): no new form, no lower score (920); the frame still reserves 0x2cb8 against
 // retail's 0x2cac.
+// M3 lane 14 r94 (plain; base 920): one `enemy` local at the type-0 arm's scope, assigned in both branches, 927 (3724 bytes);
+// the skip flag declared at function scope 920 (same code); the other-actor branch's `if (actor)` wrapper folded into its first
+// inflation test 920 (one jump target moves); a `char` type local 949 (3692 bytes); the second branch's condition nested as
+// `else if (actor) { if (...) }` 920 (same code); the actor read once into a local in the other-actor branch 958 (3683 bytes;
+// aligned exact 680 -> 637, retail too reads the actor's slot once per branch, into EBP), in every arm 973 (3672 bytes,
+// aligned 619). Retail's other-actor branch falls into the distance test through one shared inflation/skip tail (skip at
+// [esp+0x12]); ours ends each inflation path with `sete bl; jmp` and keeps the remaining arms in source order.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1338,7 +1345,7 @@ long function_1fa7f0(void);
 // MiniMax A (11-13): no new form, no lower score (400); the frame is still 0x114 against retail's 0x10c, the
 // source radius still sits at +0x30 against retail's +0x2c, the expanded radius at +0x44 against retail's
 // +0x34, and retail keeps the count in ebx where this build holds it in esi.
-// score 400 (was 400): earlier 418; the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
+// score 400 (was 400): earlier 400, 418; the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // MiniMax E (11-10): no new form, no lower score (400); the frame is 0x114 here and 0x10c there, because the edge value and the other-side flag are kept in stack slots here and in ebx and bl there, which moves every other home by eight bytes.
 // MiniMax lane E (11-01): reading the step through a pointer instead of copying it, as retail does,
@@ -1813,6 +1820,9 @@ long function_1fa7f0(void);
 // T107: First tangent orientation retained while persistent side advances before the
 // first call, bool/byte/short/long before center 452/465/466/469; before first tangent
 // 442/449/446/448. NOT kept: no native frame/extent/home equality; original body restored.
+// M3 lane 14 r94 (fast, file all MATCH but 0x2c0c40/0x2c1d90/0x2c0d60 as before; base 400, aligned 350, fully masked 103): no new
+// form run. Every lead from the listing (edge in EBX with its second 0xffff store at the scan hit, the other-side flag in BL,
+// the count read from [ebp+0xc] with NONE in ESI, the source radius out of EBX) is already listed above with its score.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
