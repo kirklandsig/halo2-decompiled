@@ -1603,6 +1603,10 @@ void function_108600(long device_index, real target, real duration, real ramp_up
 }
 
 /* starts a device's position motion (if the device takes position changes) */
+// score 13: retail's body is this one plus `xorps xmm6, xmm6` before the
+// 0x107ab0 call, which takes the initial velocity in xmm6 where ours takes it
+// on the stack, so this call pushes one zero more. Blocked by 0x107ab0's
+// convention (see the notes there and at 0x108600).
 // @retail 0x108670
 void function_108670(long device_index, real target, real duration, real ramp_up_time, real ramp_down_time)
 {
