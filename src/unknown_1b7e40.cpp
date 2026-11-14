@@ -69,6 +69,11 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
+// MiniMax A (11-13): no new form, no lower score (49); what still differs: retail calls function_26f060 with the
+// actor index in ECX and the invitation type in EDI where this build passes them in EAX and ESI, and that moves the
+// actor and the node between EBX and EBP through the body; the busy test then becomes a numeric select
+// (neg/sbb/not/and) where retail branches into the success epilogue; the convention is set by the callee
+// (src/unknown_26e370.cpp): BLOCKED-BY 0x26f060.
 // score 49 (was 49): frame and actor/node homes agree; busy selection and zero/success epilogues differ.
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
 // (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.
@@ -375,6 +380,10 @@ evaluate:
 	return 0;
 }
 
+// MiniMax A (11-13): no new form, no lower score (73); what still differs: retail calls function_25d740 out of line
+// and sinks the ESI/EDI saves into three separate default exits, where this build expands the call at this site and
+// keeps one exit and the saves in the prologue; the inline-ness of that helper is set in src/unknown_25d690.cpp:
+// BLOCKED-BY 0x25d740.
 // score 73 (was 73): retail calls function_25d740 out of line and sinks the ESI/EDI saves; our
 // build inlines it, so the prologue differs at +0x13. This round: reading the slot's expected
 // index into a local before the actor lookup, the reversed compare, a named actor local and the

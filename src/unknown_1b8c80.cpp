@@ -1455,6 +1455,13 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
+// MiniMax A (11-13): no new form, no lower score (134); what still differs: the frame is 0x10 here and 0x14 in
+// retail (retail spills the 0x20 mask byte to the stack where this build keeps it in bl), the actor index stays in
+// ecx where retail keeps it in edx, and retail keeps the iterator result in ebx and pushes it where this build keeps
+// it in eax; the memory summary of 0xbaf40 (src/unknown_0bad50.cpp) decides the register split around the two calls
+// in the loop: BLOCKED-BY 0xbaf40. The permuter's only lower form (122) swaps joint_decline's two arguments, and
+// the callee reads its first parameter as the actor index (retail puts the actor index in EAX at that call), so the
+// swap is not kept.
 // score 134 (was 134): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
