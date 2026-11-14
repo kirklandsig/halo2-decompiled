@@ -543,6 +543,9 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // places the heaviest spilled local first: the cursor takes the dead mode home in both builds, and first shares it only
 // when its last read (the index start) comes before the cursor's start; in retail first still overlaps the cursor, so
 // it takes a frame slot, which material then shares.
+// Round 195 (m3 lane 4, fast): the entry test split into two nested ifs (mask and bit, then table and flags) 2; the
+// part-loop test as two nested ifs 2; a long weight passed as `(byte)weight` 97; the geometry result as `long const *`
+// with the part test `*geometry` 2; a `dword` index 2 (all the 2s the same code). Re-measured: const first and index 2.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

@@ -1594,6 +1594,9 @@ void function_2422d0(long slot)
 // takes EDI as in retail, but the index takes EBX and the team walker EBP); a header pointer local between the
 // index and the object 7 (same code); the absolute index as a named `word` local 81; the entry held as an
 // index/salt pair with the pair's index for the lookup 81.
+// Round 195 (m3 lane 4, fast): no index local, the team entry read for the lookup and both stores 104 (267 bytes, the
+// stores reload the entry after the call); a const object pointer and a const slot 7; the index assigned inside the
+// getter's argument 7; loop 3's result store ahead of the 0x2422d0 call 9; a short slot with `NONE == ...` 7.
 // @retail 0x2423f0
 bool function_2423f0()
 {

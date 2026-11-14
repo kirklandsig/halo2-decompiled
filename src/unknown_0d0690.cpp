@@ -1376,7 +1376,7 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // result spills where retail keeps it in a register; the parameter order that would fix the swap is
 // retail's, and the callers' declarations are in files this lane may not edit.
 // MiniMax S (11-11): no new form, no lower score (529): retail hands this function its block in eax and its query in edx while this build swaps them, and its frame is 0x2c against retail's 0x28.
-// score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
+// score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (ours ends `ret 0xc` as retail).
 // MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
 // and its query in edx while ours swaps them, and the parameter order is not ours to change.
 // Earlier (529, was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (m3 lane 13 r77 too).
@@ -1657,6 +1657,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // that graph with length before normal copy / early lightmap copy / shared bias / direct primary
 // output / early square / lightmap-first clamps 573/568/573/606/548/571. NOT kept: all regress
 // and lose 0x3db00; original body/helpers restored, frame 0x2c versus native 0x28 remains.
+// M3 lane 4 r196 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, all unchanged): the second luminance in its own local
+// 530; the first luminance's products field-first 529 (same code); `real remainder = 1.0f - square;` for the three color2
+// rows 533; `real falloff = 1.0f - (0.1f * length + 0.6f);` ahead of scale0 541 (2175 B); the second luminance's products
+// field-first 529 (same code).
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

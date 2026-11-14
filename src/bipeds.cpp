@@ -1534,7 +1534,7 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
 // MiniMax B (11-13): no new form, no lower score (566); the frame is still 0xf8 against retail's 0xfc, and the call to 0x1e5bb0 still passes 17 values where retail passes 21, which the callee's own declaration decides.
-// score 566 (was 585): earlier 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
+// score 566 (was 566): earlier 585, 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
 // material and animation homes differ.
 // MiniMax I (11-09): no new form, no lower score (588); our call to 0x1e5bb0 passes 17 values where retail passes 21
 // (our callee reads fewer parameters, so link-time code generation drops the rest), and the frame stays 0xf8 against
@@ -1823,6 +1823,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // MiniMax A (11-13): no new form tried this round, no lower score (566): the frame is 0xf8 here and 0xfc in
 // retail, so the argument slots sit four bytes higher, this build loads the 1.0f constant before the first store
 // where retail stores first, and the body is 2816 bytes against retail's 2828.
+// M3 lane 4 r196 (fast, which agrees here): airborne declared after speed_scale and material 566 (same code); material
+// declared first 565; speed_scale ahead of airborne 566 (same code); boost as `boost = 1.0f; if (control_flags & 0x800)
+// boost = ...;` 579 (2812 B); the facing select with the negated test and the arms swapped 570.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3889,7 +3892,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
 // MiniMax B (11-13): no new form, no lower score (548); the frame agrees, but the flight-call homes, the state bytes and the vector scheduling still differ.
-// score 548 (was 561): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
+// score 548 (was 548): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // MiniMax S (11-09): no new form, no lower score (605 in the reduced build); retail keeps the biped
 // index in EBP and the definition pointer in ECX with a home at +0x18, ours keeps the definition in
 // EBP and the index in EBX with a home at +0x1c, and retail's changed-result byte sits at +0x11
@@ -4085,6 +4088,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // MiniMax A (11-13): no new form tried this round, no lower score (548): the flag byte is still at [esp+0x12]
 // here and at [esp+0x11] in retail, the two cold exits still land at a different place in the body than
 // retail's, and the body is 2738 bytes against retail's 2712, so the block layout after the flag test differs.
+// M3 lane 4 r196 (plain): `bool special` (direct compare) 610 (2734 B); `bool wall` declared ahead of `long special` 575
+// (2746 B); the overshoot test as `left ? overshoot < 0.0f : overshoot > 0.0f` 548 (same code); the 0.98 test's products
+// turned-first 548 (same code); the flight rate as `rate = 0.99f; if (!(control_flags & 8)) rate = threshold;` (retail loads
+// 0.99 first) 613 (2747 B).
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4339,7 +4346,8 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // matrix, the second property/limit and the placed homes are still in another order.
 // MiniMax G (11-12): no new form, no lower score (356): the origin, the first property/distance, the matrix, the
 // second property/limit and the placed homes are still in another order.
-// score 356 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
+// score 336 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
+// (round 196 of m3 lane 4: the world-pivot group and target also swap, see its note at the end)
 // (retail 0x40/0x4c/0x50/0x84/0x88, ours 0x44/0x40/0x60/0x5c/0x50), the pivot select and the materialized travel test.
 // Round 85 (m3 lane 13) at the end; the earlier first lines are kept below as "Earlier first line".
 // MiniMax D (11-11): no new form, no lower score (371); the frame still agrees at 0x12c and the length still
@@ -4592,6 +4600,19 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // NOT kept: matrix/origin/property homes unchanged; complete body and helper restored.
 // MiniMax A (11-13): no new form, no lower score (356): the frame agrees (0x12c) and the first difference is at +0x71, where the
 // register choice in the entry block differs; the body is one byte longer than retail's.
+// M3 lane 4 r196 (fast with 0xe1b60/0xe23e0, both stay matched; plain agrees). KEPT 356 -> 336 (1924 B): the pivot select as
+// defaults `parent_pivot = &pivot_a; child_pivot = &pivot_b;` then `if (property_a != parent_body_index)` swapping them (retail
+// copies pivot_a's register into the parent register before the compare, `mov ecx, edi; je`); the pivots then take retail's
+// +0xc8/+0xd4 (the first reference in the select orders them). Diagnostics: the select as `==` with both arms 364 (pivots
+// right too), the target and world-pivot names swapped 336 (same code), the pivot declarations swapped 336 (same code), the
+// rotated pivot named aaa_/zzz_ 336 (same code). On 336: rotated_pivot declared with the other parent-arm locals 336,
+// back/direction declared at the parent-arm top 336, target declared at function scope 336 (all the same code), the first
+// collision arm as `t * offset.i` 336 (same code), the first arm through vector3f_add_scaled 336 (same code). Cause found
+// (diagnostic, not kept: a name reused): the rotation written into `delta` 331, the world-pivot group then takes retail's
+// +0x10 and the matrix +0x54: retail packs the rotated pivot and the alias-safe helper's copy into the world-pivot/delta/
+// back slot, ours into placed's slot (a compile-only TU harness, build/r196/h/cb.py of m3-lane4, shows the same packing;
+// names, declaration places and scopes do not move it). Next: a natural form that ends placed's memory life after the
+// rotation or starts the rotated pivot's earlier.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4628,15 +4649,12 @@ bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value,
 			havok_component_rigid_body_matrix_get(parent_body_index, component, &parent);
 			function_1cff80(&component->unknown7c.data[contact_index], &pivot_a, &pivot_b);
 			havok_component_contact_properties_get(component, contact_index, &property_a, &property_b);
+			parent_pivot = &pivot_a;
+			child_pivot = &pivot_b;
 			if (property_a != parent_body_index)
 			{
 				parent_pivot = &pivot_b;
 				child_pivot = &pivot_a;
-			}
-			else
-			{
-				parent_pivot = &pivot_a;
-				child_pivot = &pivot_b;
 			}
 			biped_matrix_transform(&parent, parent_pivot, &world_pivot);
 			biped_matrix_transform(&matrix, child_pivot, &child_world);
