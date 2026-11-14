@@ -933,6 +933,8 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // reverse direction, forward/reverse/center offsets and persistent center,
 // eight at 569. Producers and reads stayed fixed. NOT kept: no match or native
 // radius/trace/pivot-home repair; original complete body and helpers restored.
+// P459: Existing pivot, mutable/reverse direction, previous/current sample, offset and complete geometry role names on the native-size frame:
+// 569/569/569/569/569/569/569/569. NOT kept: native radius retention and pivot/trace homes unchanged; original complete body restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

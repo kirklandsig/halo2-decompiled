@@ -2070,6 +2070,8 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // (slot read from a fresh lookup) 279.
 // P440: First-phase actor/unit/slot failure scopes, seven subsets then exhaustive success arms: 349/353/349/315/353/349/347/347.
 // NOT kept: Phase exits regress; actor/options/pool homes remain. Original complete body restored.
+// P459: Complete boost-admission/rejection outcomes, bool/byte/short/long:
+// 251/251/251/251/252/252/252/252. NOT kept: native actor/options/pool residence not recovered; original complete body restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
