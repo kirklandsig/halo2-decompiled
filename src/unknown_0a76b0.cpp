@@ -865,6 +865,10 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// MiniMax I (11-14): no new form, no lower score (92): the throw path's origin split from the release point's (the
+// override copy and the first 0xcafc0 point in a local of their own) 116, and the spread blend with the velocity term
+// first is the same code; the permuter over this function found nothing (4 tries, best 89 against a baseline of 89), so
+// the origin and direction homes stay swapped and the forward, grenade type and projectile index keep their homes.
 // MiniMax B (11-13): no new form, no lower score (92): the origin and direction homes stay swapped and the forward,
 // grenade type and projectile index keep their homes (retail 0x20, 0x2c and 0x30 against our 0x28, 0x20 and 0x24);
 // the permuter over this function found no form either.
@@ -2545,6 +2549,10 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// MiniMax I (11-14): no new form, no lower score (234): the melee name's selection declared before the weapon getter
+// 315 and a function-top pool local for both unit lookups 311, while the selection as an if/else instead of a ternary
+// is the same code; the permuter over this function found nothing (2 tries, best 227 against a baseline of 227), so the
+// pool and the index keep their register homes and the completion byte's home stays.
 // MiniMax B (11-13): reading the weapon index as a 16-bit short, so that the compare is retail's 16-bit one (movsx
 // ax, byte / cmp ax, bx against our 8-bit cmp dl, 0xff), scores 297 - the register allocation shifts - so the byte
 // compare stays; the pool header is still in edi where retail keeps it in ebp and the index in eax where retail keeps
