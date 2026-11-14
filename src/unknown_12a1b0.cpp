@@ -2660,12 +2660,15 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // MiniMax G (11-13): no new form, no lower score (339): the frame is 0x4b4 against retail's 0x4bc, and the
 // early scalar, primary and last-chunk homes still differ; the forms in the note below all score 339 or more,
 // so the body stands.
-// score 321 (was 339): unchanged this round: the frame is still 0x4b4 against retail's 0x4bc and the properties
+// MiniMax G (11-14), NOT kept (coordinator: the 339 -> 321 comes from a bool set by the loop-flag test and read by
+// the next `if` (`flag0`), a form kept only with a byte match; main's `&&` chain already calls "has next sound" only
+// when the flag is clear and primary is set). G's two notes on that form follow.
+// G's form, not kept: score 321 (was 339): unchanged this round: the frame is still 0x4b4 against retail's 0x4bc and the properties
 // aggregate is still cleared in one piece where retail clears the base and the effects separately; taking the
 // source scale and the track value into locals early makes our length retail's 1929 bytes but moves every stack
 // slot (476), and adding the gain copy with them gives 471 at 1931 bytes; the permuter (964 s, 14 tries) found
 // nothing lower.
-// score 321 (was 339): the loop-flag test now calls "has next sound" only when the flag is clear, which is what
+// G's form, not kept: score 321 (was 339): the loop-flag test now calls "has next sound" only when the flag is clear, which is what
 // retail does; the frame is still 0x4b4 against retail's 0x4bc and the early scalar, primary and last-chunk homes
 // still differ.
 // score 339 (was 339): unchanged this round: the frame is 0x4b4 against retail's 0x4bc, and the early scalar,
@@ -2752,10 +2755,7 @@ void function_21c400(short voice_index, real gain, s_looping_channel_spatializat
 				else
 					next_chunk = NONE;
 				bool last_chunk = next_chunk == NONE;
-				bool flag0 = false;
-				if (!(playing->loop.flags & 1))
-					flag0 = primary && (byte)looping_sound_track_has_next_sound(track, track_definition);
-				if (flag0)
+				if (!(playing->loop.flags & 1) && primary && (byte)looping_sound_track_has_next_sound(track, track_definition))
 				{
 					if (last_chunk || (looping_sound_track_transition_requires_stop(track) &&
 						TEST_FIELD_BIT(((s_looping_chunk_tables *)g_51ebd4)->chunks[permutation->first_chunk + playing->current_chunk_index].transition_boundary)))

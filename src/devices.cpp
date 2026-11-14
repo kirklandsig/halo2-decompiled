@@ -2251,13 +2251,17 @@ bool function_0b6760(s_index_pair const *pair);
 // P449: Power-change/position-activity, power preparation/advance, position preparation/advance,
 // position-change and lazy reversal decisions: eight 250s. NOT kept: no byte equality or native result-home repair.
 
-// score 58 (was 58): unchanged this round: the length is retail's 1495 bytes; the position-group arm keeps the
+// MiniMax G (11-14), NOT kept (coordinator: the 250 -> 58 rests on the one-use `real rate = g_510c54->rate;` local
+// passed to function_11eed0, a form kept only with a byte match; measured on G's body without that local: 380, and
+// main without its volatile alone: 386; `== 0` for the `<= 0` byte test: 59; `bool increasing` for the reused
+// result: 58). G's three notes on that form follow.
+// G's form, not kept: score 58 (was 58): unchanged this round: the length is retail's 1495 bytes; the position-group arm keeps the
 // channel pointer in ecx where retail re-leads it in esi, and the flags-and-0x10 arm puts the state pointer in eax
 // where retail keeps it in ecx; the permuter (600 s) and the naming trials found no lower form.
-// score 58 (was 250): the acceleration products are named with the position term first, the 0xb3 byte test is `<= 0`
+// G's form, not kept: score 58 (was 250): the acceleration products are named with the position term first, the 0xb3 byte test is `<= 0`
 // and the result is a bool, so the length is retail's 1495 bytes; left: the position-group arm keeps the channel
 // pointer in ecx (retail esi) and the state in eax/ecx across the 0xb6760 call (retail ebx); the permuter found none.
-// score 65 (was 250): the acceleration products are named with the position term first and the 0xb3 byte test is `<= 0`,
+// G's form, not kept: score 65 (was 250): the acceleration products are named with the position term first and the 0xb3 byte test is `<= 0`,
 // so the frame and the register roles now agree with retail up to +0x3f3; the position-group arm still keeps the
 // channel pointer in ecx (retail esi) and the state in eax/ecx across the 0xb6760 call (retail ebx), 3 bytes longer.
 // P453: outer manual output 250; outer interpolation results 250;
@@ -2269,8 +2273,8 @@ bool function_0b6760(s_index_pair const *pair);
 bool __stdcall function_106790(long device_index)
 {
 	s_device *device = DEVICE_GET(device_index);
-	byte const *saved_definition = g_4e3b44[device->definition_index & 0xffff].bytes;
 	bool result = false;
+	byte const *volatile saved_definition = g_4e3b44[device->definition_index & 0xffff].bytes;
 	s_animation_state *state = NULL;
 	if (device_has_animation_state(device_index))
 		state = device_get_animation_state(device);
@@ -2305,11 +2309,11 @@ bool __stdcall function_106790(long device_index)
 			if (state && device_channel_valid(&device->channels[0]))
 				device->channels[0].set_frame_ratio(device->power);
 			real position_acceleration = *(real const *)(saved_definition + 0xcc) * device->position;
-			real acceleration = position_acceleration +
-				*(real const *)(saved_definition + 0xd4) * (1.0f - device->position);
-			real position_speed = *(real const *)(saved_definition + 0xc8) * device->position;
-			real speed = position_speed + *(real const *)(saved_definition + 0xd0) * (1.0f - device->position);
-			result = device->power_velocity > 0.0f;
+			real remaining_acceleration = *(real const *)(saved_definition + 0xd4) * (1.0f - device->position);
+			real acceleration = position_acceleration + remaining_acceleration;
+			real speed = *(real const *)(saved_definition + 0xc8) * device->position +
+				*(real const *)(saved_definition + 0xd0) * (1.0f - device->position);
+			bool increasing = device->power_velocity > 0.0f;
 			device->flags = acceleration > 0.0f && speed > 0.0f ?
 				device->flags | 0x100 : device->flags & ~0x100;
 			if (!((real)device->delay_ticks * g_510c54->rate >= *(real const *)(saved_definition + 0x10c)) &&
@@ -2324,13 +2328,12 @@ bool __stdcall function_106790(long device_index)
 				real local_c01284_2 = device->power_velocity;
 				real previous = device->power;
 				if (fabs(local_c01284_2) > speed)
-					device->power_velocity = result ? speed : 0.0f - speed;
-				real rate = g_510c54->rate;
+					device->power_velocity = increasing ? speed : 0.0f - speed;
 				bool reached = function_11eed0(&device->power, &device->power_velocity,
-					group->value, rate, speed, acceleration,
+					group->value, g_510c54->rate, speed, acceleration,
 					(*(byte const *)(saved_definition + 0xbc) & 1) != 0, 0.0f, 1.0f);
 				if (reached)
-					function_107980(device_index, result ? *(long const *)(saved_definition + 0xf0) : *(long const *)(saved_definition + 0xf8));
+					function_107980(device_index, increasing ? *(long const *)(saved_definition + 0xf0) : *(long const *)(saved_definition + 0xf8));
 				else if (device->power_velocity != 0.0f && device->power_velocity * local_c01284_2 <= 0.0f)
 					function_107980(device_index, device->power_velocity > local_c01284_2 ? *(long const *)(saved_definition + 0xe0) :
 						*(long const *)(saved_definition + 0xe8));
@@ -2386,7 +2389,7 @@ bool __stdcall function_106790(long device_index)
 			function_bd020(device_index);
 			machine_keyframe_rigid_bodies(device_index, true);
 		}
-		if (device_index == NONE || *((byte *)DEVICE_GET(device_index) + 0xb3) <= 0)
+		if (device_index == NONE || *((byte *)DEVICE_GET(device_index) + 0xb3) == 0)
 			device->flags &= ~0x80;
 		return true;
 	}
