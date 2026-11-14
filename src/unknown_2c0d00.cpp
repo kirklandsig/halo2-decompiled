@@ -469,6 +469,8 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // complementary restricted-sphere admission 926/926/924/924 reduced (control 926, full 920).
 // NOT kept: native positive-byte results and frame 0x2cac are unrecovered;
 // all original classifications, buffers, qualifiers and complete body restored.
+// MiniMax C (11-14): no new form, no lower score (920); the frame still reserves 0x2cb8 against
+// retail's 0x2cac.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

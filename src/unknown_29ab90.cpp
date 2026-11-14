@@ -437,6 +437,8 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // local_20 as `*(vector2f const *)&local_27` 294 (1882 bytes, aligned 161, register-masked 113; match-only, the
 // closest shape so far). No other untried natural form is left for the slot homes (names, declaration orders and
 // whole copies are all listed above).
+// MiniMax C (11-14): no new form, no lower score (286); the stack homes still sit 8 and 4 bytes above
+// retail's (ours at +0x24 against retail's +0x1c, ours at +0x14 against retail's +0x10).
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

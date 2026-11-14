@@ -1734,6 +1734,8 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 // Round 303: one initial clear of the three controlled bits, positive branches in abc/acb/bac/bca/cab/cba
 // order 51,51,52,52,52,52; combined/separate conditional contributions 67,67.
 // Original copy, flag graph and body restored; aggregate registers and final store schedule remain.
+// MiniMax C (11-14): the flags read and stored through the dword alias of the four-byte field, and the owner
+// copy read through a named pointer and through a named value, each give 10 (unchanged); no new form, no lower score.
 // @retail 0xdbfb0
 void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool b, bool c)
 {
@@ -3301,6 +3303,8 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // allegiance predicate (74, frame 4), enemy assigned in the valid/invalid team arms (67, frame 4), one result
 // across both engine/team paths (42, frame 0xc), both paths scaling damage in place (5), the engine product
 // computed at return (52), a team result initialized from damage then multiplied (5), enemy live from entry (5).
+// MiniMax C (11-14): the team test as an early return with the state test left in place 5, both tests as
+// early returns 28, and one enemy flag with a single final return (worse); no new form, no lower score.
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {
@@ -5080,6 +5084,8 @@ dword function_db810(long object_index, long node_index)
 // 39/34/34/34 twice (313/305 bytes). One scalar owns successive tag handles at four input boundaries,
 // mask at acquisition or traversal: eight trials 4 (305/305 bytes). Original body restored;
 // NOT kept: input lifetime/scalar ownership did not recover EAX reuse and the native save/mask schedule.
+// MiniMax C (11-14): the model tag read through the typed tag field, the tag index through a named local
+// and the definition through a named pointer all give 4 (unchanged); no new form, no lower score.
 // @retail 0xdbb40
 long function_dbb40(long object_index)
 {

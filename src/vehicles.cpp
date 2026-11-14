@@ -1538,6 +1538,8 @@ long function_10f5f0(long object_index);
 // MiniMax A (11-13): no new form tried this round, no lower score (561): our frame is 0x1990 where retail's is
 // 0x1984, so every stack reference sits a dword higher, and the point-sum loop's unrolling and the flag stores
 // keep retail's different shape; the frame needs a different set of locals in the body.
+// MiniMax C (11-14): no new form, no lower score (561); retail still materialises the word flag's bit 12
+// as a byte at [esp+0x13], written and never read, where this build tests it in place.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -3287,6 +3289,8 @@ real g_47ff30 = 2.5f;
 // MiniMax A (11-13): no new form tried this round, no lower score (682): the frame is 0x100 here and 0xfc in
 // retail, so every local sits four bytes higher, and this build loads two constants at the top where retail
 // loads one.
+// MiniMax C (11-14): no new form, no lower score (682); the frame still reserves 0x100 against retail's
+// 0xfc, and the boost scale still lives in xmm5/xmm6 where retail uses xmm6/xmm7.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3691,6 +3695,8 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // MiniMax A (11-13): no new form tried this round, no lower score (1000): the frame is 0x78 here and 0x74 in
 // retail, and retail keeps the matrix products in the XMM registers where this build spills them to the stack
 // and reads the parity flags with lahf, so the two bodies have different shapes from the first difference on.
+// MiniMax C (11-14): no new form, no lower score (1000); the frame still reserves 0x78 against retail's
+// 0x74, so every stack home sits four bytes higher.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -5382,6 +5388,8 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // MiniMax A (11-13): no new form tried this round, no lower score (749): the zero register at the top is still
 // xmm4 here and xmm2 in retail, and the constant load and the pushes around it are in the other order, so the
 // body's register plan differs from the first difference on.
+// MiniMax C (11-14): no new form, no lower score (749); the frame agrees (0x18) and the first difference
+// is still the zero/result SSE allocation.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
