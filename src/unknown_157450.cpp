@@ -4875,6 +4875,15 @@ bool function_158eb0()
 // named player index with `flag ? 1 : 0` 5; the flag normalised at its read (`bool flag = g->flag1128 != 0`) and passed
 // directly 35. Diagnostics (removed): the iterator's data store written twice 5, the flag read twice 5 (copies removed before
 // allocation do not rotate the registers). Original body restored.
+// HELD (needs the owner's OK: src/unknown_23f260.cpp is a held file): m3 lane 6 r178, one-file LTCG harness
+// (this file with src/player_queries.cpp, src/unknown_23f260.cpp, src/unknown_16b570.cpp, src/unknown_15b2f0.cpp,
+// src/unknown_15d770.cpp, src/unknown_15e410.cpp and the build's ballast object; it reproduces the 5 exactly):
+// 0x23f260 declared `(long player, long excluded_team, long mode)`, with the definition, the three declarations and
+// the five calls changed together (build/r178/held-158f50.patch), gives 0 here with 0x23f260 itself still exact.
+// The swap is one scratch-register rotation step: with fewer callee files in the harness g_4e6948 is reloaded in
+// the loop and that extra temporary alone gives retail's setup. On main's order in the harness: the iterator data
+// through a named pool pointer 5, the iterator stores reordered 7, result declared before the count 7, `!= false`
+// on the iterator call 5, `(bool)` on the flag read 5, `count++` 5, `/ 2 >= 1` 7, `return count != 1 && result;` 11.
 // @retail 0x158f50
 bool function_158f50()
 {

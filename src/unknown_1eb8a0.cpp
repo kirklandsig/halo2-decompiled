@@ -516,6 +516,14 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // masked 254, frame 0x20, `ret 0x18`, caller 22); the first site only 716; the first two 698; the output site only 636
 // (same score, masked 270, caller kept); arguments as (factor, distance) at all three 697 (same code). It is the listed
 // factor-first form in another spelling: the first site's flag read still takes CL and moves `a` out of ECX. None kept.
+// m3 lane 6 r178 (fast with 0x1eb6f0, matched throughout): what decides d over q for EBX, by diagnostics (reverted):
+// six fewer d reads (settle and 0.866 dots off d) d still EBX (641, 0x20 frame); no reassignment of q 678 and six
+// extra top-level q reads 718, d still EBX in both; the parameters renamed to sort the other way (aq, zd) 636 (same
+// code: names do not break it); no d in the activation block: no EBX load at all (726). So neither reference
+// weight, names nor q's reassignment gives q the register. Forms: `q = counter == 0 ? g_4687a4 : q;` 636;
+// `if (!counter)` 636 (same code: ours branches and stores q's slot where retail does `cmove ebx`); the output
+// copy from q written per component 648 (2876 bytes); the 0.866 test with the constant on the right 636; `fail`
+// declared before the time globals 636. Body unchanged.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
