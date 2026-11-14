@@ -947,6 +947,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // seven subsets 569 each; shared rotation point-setter publication 569.
 // NOT kept: no byte equality or radius/trace/pivot-home repair; original whole body
 // and three-use rotation producer restored.
+// T106: Whole-operation failure bool/byte/short/long 730/730/806/805;
+// actual sweep/obstacle failure reasons char/byte/short/long 730/730/806/805.
+// NOT kept: eager radius remains; narrow results shorten to 3300, wider forms
+// enlarge the frame. Original success result and complete body restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

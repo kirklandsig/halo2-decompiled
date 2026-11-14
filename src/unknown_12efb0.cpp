@@ -576,6 +576,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // reference 607. NOT kept: ties or regressions; original opaque input type, all observations, helpers
 // and complete executable source restored. Native provider-result/NONE, palette/selected-record and
 // zero/SIMD carriers remain.
+// T106: Actual weighted contribution real/double and source-tag long/dword receipts,
+// retained short palette 688/811/748/748; uniform native byte reads 760/787/744/744.
+// NOT kept: no native provider/NONE or accumulator-home recovery; double receipts
+// enlarge frame to 0x4828. Original completion, observations and full body restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
