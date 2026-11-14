@@ -1880,6 +1880,7 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
+// MiniMax S (11-14): no new form, no lower score (445): retail's frame is 0xc against our 8, it keeps the pool pointer in ECX and the pool data in ESI where ours loads the global into EAX and the data into EDX, it forms the control pointer as base+offset where ours stores the bare offset, and it writes the true default at the entry where ours starts from the switch; declaring the two flags before the pointers gives 446 and dropping the switch's default arm gives 489, so neither spelling reaches retail's frame.
 // MiniMax G (11-12): no new form, no lower score (445): the frame is still 0x8 against retail's 0xc — retail keeps the result byte in
 // the first argument's dead slot, the two flag bytes at the frame bottom and the control and controlling words above them, and it writes
 // the true default at the entry; declaring the two flags before the pointers gives 446, and the entry default with the switch's default
@@ -2345,6 +2346,7 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 	result->k = up->k * input_direction.k + up->j * input_direction.j + up->i * input_direction.i;
 }
 
+// MiniMax S (11-14): no new form, no lower score (776): the body is 3418 bytes against retail's 3403 and our frame is 0xcc against retail's 0xd4, the unit and the state are in the opposite registers, the first angle conversion is expanded here and called out of line in retail, and retail's prologue still holds a chain of otherwise unused tag loads that ours does not have; the entry-default spelling that would take 0x1103a0's frame to retail's shape costs 0x10ff40 its 12.
 // MiniMax A (11-13): no new form, no lower score (776); our frame is still 0xcc against retail's 0xd4, the
 // first angle is still expanded where retail calls out of line, and retail's prologue chain of otherwise
 // unused tag loads is still missing.
@@ -3819,6 +3821,7 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
     return elapsed;
 }
 
+// MiniMax S (11-14): no new form, no lower score (12): the definition and the control still take each other's stack homes (retail keeps the control at +0x1c and the definition at +0x20) and the two flag bytes are still cleared after the set test where retail clears them in the entry block; declaring the definition before the control gives 20, moving the two flags ahead of the lookup rebuilds the function at 682 bytes and takes the neighbouring 0x112070 to 3418, and the permuter (15 tries) found no candidate, so the body stands.
 // MiniMax A (11-12): no new form, no lower score (12); the definition and the control still take each
 // other's homes (retail keeps the control at +0x1c and the definition at +0x20, ours the other way round) and
 // the two flag bytes are still cleared after the set test where retail clears them in the entry block; this
