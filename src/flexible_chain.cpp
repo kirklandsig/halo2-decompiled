@@ -622,6 +622,9 @@ void __stdcall function_1160c0(real dt)
 // before the physics call 289 (1381 bytes); `++node->ticks` after the first-node/physics block 252; the target computed in
 // place in `delta` 190 (1360 bytes); the vertical declared at the loop's top 165 (same code). Left: segment EDX, mirrored homes.
 // MiniMax A (11-13): no new form, no lower score (171): the first real difference is still the segments base in edi and the segment in ecx where retail uses edx for both, and retail's homes run length, segment, axis upward where ours are reversed; the rotation's cross terms and their loads follow from those homes.
+// P475: Standard target/velocity/interpolation coordinate contracts, seven subsets,
+// then complete graph with forward seeded distance reduction: 331/309/425/333/411/420/395/437.
+// NOT kept: no exact native segment/vector-home repair; original complete body restored.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

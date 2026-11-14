@@ -3006,6 +3006,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // byte RMW clears share no constant. Body unchanged.
 // This round: retail passes the settling count to 0x1d5120 in EAX and takes six stack arguments, while this build passes seven
 // because 0x1d5120's declaration and definition live in another file, so the call site cannot be matched from here.
+// P475: Standard signed settling/lower/upper admission contracts, seven subsets
+// then all complementary: 111/131/126/155/149/153/174/174. NOT kept: no exact
+// EBP/count/body/flag repair; original predicates and complete body restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -4616,6 +4619,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // NOT kept: matrix/origin/property homes unchanged; complete body and helper restored.
 // MiniMax A (11-13): no new form, no lower score (356): the frame agrees (0x12c) and the first difference is at +0x71, where the
 // register choice in the entry block differs; the body is one byte longer than retail's.
+// P475: Whole-coordinate standard range origin/target/direction producers, seven subsets
+// then all backward: 399/440/390/496/411/438/488/485. NOT kept: native
+// matrix/origin/pivot homes not recovered; original transfers and complete body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -5561,6 +5567,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // M3 lane 5 r179 (fast with 0x1ecf50/0x30bf0/0xe3c90): the axis local renamed (name order as a lever on the cross
 // products' operand order) 79 (same code). No further trial: the caller-side forms are exhausted (lane 12 r112/r115,
 // lane 1 r79, lane 13 r85) and rotate_direction's file was on this round's Avoid list again. Body unchanged.
+// P475: Original axis/up snapshot ranges through native/forward/backward transfers,
+// excluding native/native: 204/204/218/248/248/218/248/248. NOT kept: no exact
+// first-rotation/final-cross operand repair; original snapshots and full body restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

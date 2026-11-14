@@ -97,7 +97,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // MiniMax B (11-13): the width product is computed before the inverse sums, which lowers the score to 194; the
 // blend still leaves XMM5 in the aspect block and the tint's home is still exchanged with the second UV set's bounds.
 // score 194 (was 194): earlier 211 (round 95 m3 lane 11 at the end) and 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
-// score 194 (was 211; round 95 m3 lane 11 at the end): earlier 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
+// Earlier at 194 (was 211; round 95 m3 lane 11 at the end): earlier 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
 // Earlier 211 (was 211; round 95 m3 lane 11 at the end): earlier 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
 // spill homes (the dead `values`/`context` argument slots) are swapped too; the blend leaves XMM5 in the aspect block.
 // M3 lane 8 r159 (fast): the aspect defaults declared y first (`aspect_y=1.0f,aspect_x=1.0f`) 209 (the default stores
@@ -578,6 +578,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // then all with cache reference: 194/194/194/194/194/194/194/194. NOT kept: no byte
 // equality or tint/secondary-UV/blend-home repair; complete callback and sole
 // external declaration restored, including all alias-safe encoder captures.
+// P475: Standard direct-geometry/encoded-secondary range transfers and ordered
+// full channel clamp, seven subsets then backward/upper-first: 461/344/494/451/491/506/482/482.
+// NOT kept: no exact native tint/UV/blend storage repair; original complete body restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
