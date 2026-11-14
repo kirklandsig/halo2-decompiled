@@ -447,6 +447,10 @@ long network_session_get_maximum_players(c_class_58d20 *session);
 // P462: Complementary rejection bool/char/signed-char/byte/short/word/long/dword
 // outcomes 58/58/58/58/63/63/61/61. NOT kept: each regresses and grows beyond
 // native extent; original success-only result and complete call graph restored.
+// Round 240 (m3 lane 3, plain checks): the comparison reversed 33 (the full image still calls 0x5b180 first, jl in
+// place of jg, so the order of the two pure calls is the compiler's, not the source's); the comparison nested in its
+// own if under the index/variant test, reversed, 33; the 0x193300 result named there 33; the peer re-read from
+// `source->other_game` for the 0x5b180 call 71; the variant tested before the index 33.
 // @retail 0x73360
 bool c_helper_b::v7()
 {
