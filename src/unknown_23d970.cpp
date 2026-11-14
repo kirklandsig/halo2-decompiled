@@ -966,6 +966,11 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // kernels 258/300/417. NOT kept: all regress; native right i/j, forward.k reuse and angle bases
 // remain. Original copies, arithmetic, shared products and complete body restored.
 // MiniMax H (11-14): no new form, no lower score (45): what still differs is the register colour of the first product's operands and the else arm's forward stores, both of them inside the shared helpers (include/vector_products.h and src/unknown_1f03e0.cpp), whose bodies this lane may not change.
+// M3 lane 11 r100 (`--fast 0x23de50 0x1f0870`, 45 as the full check): the code ahead of the products is retail's; the
+// first product's right.i/right.j land in xmm1/xmm2 where retail has xmm2/xmm1. The else arm's forward pointer (retail's
+// `lea ecx` stores) re-measured 43; on it, `right` declared before `direction` 43, the cosine before the pointer 43, the
+// pointer for the three stores only (the call through the field) 43, and `right` renamed to sort the other way 43 (same
+// code: the name does not decide the colour tie). Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

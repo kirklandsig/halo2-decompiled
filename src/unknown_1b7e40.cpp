@@ -327,6 +327,9 @@ bool function_25d9b0(long prop_index);
 // does not follow these block weights); that with `short result = 0;` after the label, `result = priority;` and
 // one `return result;` 91 (554 bytes). On this body: the busy test as `if (!actor || busy)` 49 and
 // `if (actor && busy)` 49 (still the select). Body unchanged.
+// MiniMax B (11-14, run 75): no new form, no lower score (49); the body is left as it was. What still differs: retail branches on the
+// busy call's result to its own priority epilogue and keeps the shared zero exit ahead of the fallback block, while this build if-converts
+// the two returns into a mask select and puts the zero exit last, which is why this build is 6 bytes longer than retail's 551.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
