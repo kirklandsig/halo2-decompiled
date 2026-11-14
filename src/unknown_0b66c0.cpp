@@ -450,6 +450,12 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // and stays in EDX, the walk in EDI); `start += (long)string` after the clamp 40 [match] (start stays in its arrival
 // ECX, `add ecx, [string]`, the walk in EDI). In retail start is moved to EDI at entry and the two loop values take
 // ECX/EDX, so start is coloured after them; here it keeps a scratch register unless the early source is present.
+// Round 119 (m3 lane 9, fast with 0xb5f10/0xb61d0; [0xb5f10]): the length helper walking a local copy declared after
+// the counter, with the natural body (source at the call) 40 [35] (0xb61d0 2): the body then has retail's start EDI,
+// walk EDX, count ECX, but start arrives directly in EDI (no entry move); the same helper on the kept 21 form 21 [match]
+// (0xb61d0 2: its retail sets the walk before the counter, so the helper's order is right). Natural body with
+// `__assume(start >= 0)` inside the guard 28 [6]; with `count + start <= length` 28 [6]; the length taken before the
+// sign tests 50 (92 bytes) [35].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

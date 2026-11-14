@@ -5867,6 +5867,11 @@ void __stdcall function_d6bc0(long object_index);
 // (`entries` still in EDI, so no use-count threshold); `entries` in a by-value one-member parameter 172 (same code,
 // 0x15c150 229); the index test evaluated into a bool in the zero test's own block 172. Left: what holds EBX, or favours
 // EDI for the timer, between retail's first block and its countdown.
+// Round 119 (m3 lane 9, fast with 0x15c150, matched each time; base 29): the schedule test on entries[i].index with the
+// countdown block using the loop-top local (no re-read) 248 (887 B); the schedule test on the field with the object declared
+// before the index 167 (863 B); the object declared before the index alone 29 (same code); the delay block as a forceinline
+// called at each of the four schedule sites (index NONE, case 1 bit, case 0 bits, case 0 distance) 415 (1029 B: the four
+// inlined copies are not tail-merged); the case-0 distance test as `d <= 1.0f` 110 (877 B).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
