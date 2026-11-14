@@ -6908,6 +6908,9 @@ void function_22850(void);
 // four-byte global at 0x4858a0 and keeps five more dword globals after it, while the shared global here is a double
 // declared in include/timed_effect.h and defined in src/unknown_01fbb0.cpp, so the copy goes through x87 and the
 // second field cannot be reached.
+// MiniMax I (11-14): no new form, no lower score (153); the timestamp copy would need a dword-wise
+// write into the global that include/timed_effect.h declares as a double, and the gamma ramp still
+// goes through D3DDevice_SetGammaRamp where retail uploads it inline against the device's ramp buffers.
 // @retail 0x12a50
 void function_12a50(s_frame_parameters_12a50 const *parameters)
 {

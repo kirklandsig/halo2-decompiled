@@ -3392,6 +3392,10 @@ struct s_ammo_conversion_entry
 // round as well (`setg` against our `setle`). An annealed permuter run over this body (300 s) again
 // found only the argument swaps of `function_1896c0` and `function_a88a0`, which contradict those
 // declarations, so it was dropped.
+// MiniMax I (11-14): no new form, no lower score (190): both streams stay 215 instructions long and
+// the divergence starts in the prologue, where retail holds the destination weapon in EBP and the
+// other weapon in EBX while ours holds the destination in EDI and spills the other; the acquisition
+// flag is stored the other way round as well, and flipping it to retail's sense compiles worse.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
