@@ -476,6 +476,12 @@ struct c_aggregate : c_child
 // P465: Complete four-cell boundary-table producer, long/dword/short/word/byte/signed-char
 // for ordinals then long/dword while ordinals: 129/129/147/147/147/147/129/129. NOT kept:
 // escaped output and low loop homes remain; original full body and six exact siblings restored.
+// Round 197 (m3 lane 4, fast with the six file-mates, all still matched): the produced count made a local of a
+// force-inline helper (child, key, request, room, destination, &total; returning the error) 146 (389 bytes; frame still
+// 0x8024 and the count still at +0x1c, so an inlined callee's scope does not bound the escaped slot); the collection loop's
+// boundary store ahead of the child read 31; the cleanup's item release as a force-inline helper taking the item 73 (375
+// bytes); the dispatch's inner loop as a force-inline helper (child, blocks, first, end) 31; the cleanup's query output
+// declared at the top of the inner loop's body 31. Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

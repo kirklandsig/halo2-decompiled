@@ -1295,6 +1295,8 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// score 94 (was 94): left: the arm-3/arm-4 join (ours carries the gain in XMM0 across it, retail re-reads its home in arm 4)
+// and arm 1's product order and XMM colours (fade_out multiplied from memory before the reciprocal, elapsed in XMM2).
 // MiniMax B (11-12): no new form, no lower score (94); a fade-in local with the scaled local reaches 87, but each holds a
 // value used once, so the body stays as it is; the division written out of the branch scores 160 and the product inlined 94.
 // MiniMax G (11-11): no new form, no lower score (94): the arm-1 clamp's divisor re-spelled through the class 99 and a
@@ -1304,11 +1306,11 @@ long function_2197f0(real gain);
 // the sum's addends swapped 87 (both the same code). The permuter (907 s, 201 tries) found no better form at all.
 // MiniMax B (11-11): no new form, no lower score (94); the only lower form listed needs a one-use copy of a field, which
 // this lane may not keep, so the body is unchanged.
-// score 94 (was 94): unchanged this round: retail keeps the elapsed time in xmm3 and the reciprocal in xmm2 where
+// Earlier at 94 (was 94): unchanged this round: retail keeps the elapsed time in xmm3 and the reciprocal in xmm2 where
 // ours keeps them in xmm2 and xmm1, and retail divides the clamped time by the fade-in time where our build
 // multiplies by the reciprocal; splitting the product into a named factor and naming the fade-out time (94 and
 // 98) both leave the arm's registers as they are.
-// score 94 (was 94): 177 before lane 10 round 69. Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
+// Earlier at 94 (was 94): 177 before lane 10 round 69. Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
 // 1.0, fade-out), and the gain value carried into the last arm.
 // MiniMax E (11-10): no new form, no lower score (94).
@@ -1595,8 +1597,15 @@ long function_2197f0(real gain);
 // 153 (682). Re-measured: interpolation first in arm 1 156 (687; the gain's by-value copy is stored from EDI to a new
 // slot and added from memory), the division form 125 (678, al 55), both 150 (682), the division form with a fade_out
 // local 128 (678).
-// score 94 (was 94): unchanged this round: our link-time inlining expands 0x221810 (src/unknown_221490.cpp) where
+// Earlier at 94 (was 94): unchanged this round: our link-time inlining expands 0x221810 (src/unknown_221490.cpp) where
 // retail calls it out of line; that callee's inline eligibility is fixed in another file.
+// Round 197 (m3 lane 4, fast with 0x1251e0/0x1295e0/0x221810): arms 3 and 4 each naming their interpolation
+// (`s_decibels fade = ...; gain = gain + fade;`) 94 (same code); a pointer to the class's fade record for the gain copy
+// and the flag test 172 (681 bytes); arm 1's time sum with explicit grouping `(fade - elapsed) + (((elapsed - hold) *
+// inverse) * fade_out)` 94 (same code); no inverse local, the reciprocal written inline in the product and the clamp test
+// (`1.0f > time * (1.0f / fade_in) ? time / fade_in : 1.0f`) 125 (678 bytes: retail's clamp branch, but fade_out still
+// multiplied from memory first and the join unchanged); the clamps of arms 2 and 4 as `1.0f > time ? time : 1.0f` 101.
+// Re-measured: arm 4 alone written interpolation first 120 (round 160 had 178 on an older body).
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3033,6 +3042,8 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// score 96 (was 96): left: the result byte in a stack slot where retail keeps it in AL (true at the entry) and BL
+// (false across the failure calls), and the block layout that follows from it; the closest form (15) is match-only.
 // MiniMax B (11-12): no new form, no lower score (96); a bool result gives 113 at retail's length, the success path
 // returning early 133 and the failure path returning false with two other exits 135, so the shared exit with the result
 // byte in its stack slot stays closest.
@@ -3045,10 +3056,10 @@ static inline short sound_voice_find_available_channel(char type)
 // swapping two declarations, so the body stays.
 // MiniMax B (11-11): no new form, no lower score (96); the goto-free forms repeat earlier rounds' 131 and 139, so the
 // result still lives in a stack byte where retail splits it between al and bl.
-// score 96 (was 96): unchanged this round: the result still lives in a stack byte where retail keeps it in al
+// Earlier at 96 (was 96): unchanged this round: the result still lives in a stack byte where retail keeps it in al
 // and clears it through bl on the failure path, and our frame is twelve bytes against retail's eight; the lower
 // forms listed need a moved declaration or a goto into an arm, which this lane may not keep.
-// score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
+// Earlier at 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
 // through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
 // keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
 // and its channel search keeps the channel in EDI with one `or ebp, -1` shared between the channel
@@ -3345,8 +3356,14 @@ static inline short sound_voice_find_available_channel(char type)
 // from the entry); the search returning from its loop gives the same code as the break form with `long type`, the
 // condition-controlled scan 127-129 (442 bytes).
 // On the lead with flat gotos, the early path as its own `return result;` or `return true;` 135 (431 bytes).
-// score 96 (was 96): unchanged this round: the allocator keeps the result in BL where retail splits it (AL at the
+// Earlier at 96 (was 96): unchanged this round: the allocator keeps the result in BL where retail splits it (AL at the
 // entry, BL in the failure block) and holds the sound in EBX.
+// Round 197 (m3 lane 4, fast with 0x127010/0x1251e0/0x129100/0x127320/0x12a5d0/0x21de90/0x221810): lane 5 r178's
+// match-only 15 form rebuilt on the current tree, 15 at 430 bytes (unchanged: the early exits jump into the commit
+// block's epilogue where retail's jump into the failure block's). On it: the commit arm's `result = true;` at the arm's
+// start 111 (433 bytes); the failure arm's `result = false;` after the two calls 49; `byte result` 119 (439 bytes);
+// `bool result = true;` declared between the voice and the sound 93; the requested-buffer local dropped (the byte read at
+// its test and its index) 15 (same code). A 600 s permuter run on it (66 tries) found none below 15. Main's body restored.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
