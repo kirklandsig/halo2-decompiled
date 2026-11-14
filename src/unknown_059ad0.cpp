@@ -4423,6 +4423,7 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa, and the two peer
 // bytes are zeroed at +0x11/+0x13 where retail zeroes its pair at +0x11/+0x12), and retail reads the acceptance byte
 // back where this build folds it to a constant.
+// MiniMax I (11-14): no new form, no lower score (305): the frame 0xd8 and the body length agree with retail's, but the three boolean homes stay a rotation from retail's (the acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa), retail reads the acceptance byte back where this build folds it to a constant, and the 0x769a0 and 0x62c20 call setups need files this lane may not edit.
 // score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
 // frame 0xd8 and length agree; result/identity/selection byte homes and
 // acknowledgement placement differ.

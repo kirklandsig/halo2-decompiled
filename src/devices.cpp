@@ -1244,6 +1244,7 @@ bool function_108530(long device_index, long name)
 // it in xmm6, a whole-program convention the callee sets, so the whole XMM allocation after the entry differs - retail's
 // first float compare is in xmm5 where this build's is in xmm7; the caller's argument registers come from the callee's
 // definition, which this lane may not edit.
+// MiniMax I (11-14): no new form, no lower score (121): the initial velocity is still passed on the stack where retail passes it in xmm6, a convention the callee's own definition sets, and the third zero clamp written as an if-statement scores the same 121 (same code), so the body stands.
 // score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // MiniMax C (11-09): no new form, no lower score (121); the initial velocity is still passed on the stack where
 // retail keeps it in xmm6 and takes five stack floats, so the whole register assignment after the entry differs.

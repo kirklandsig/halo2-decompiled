@@ -943,6 +943,7 @@ void function_1d1540(s_havok_component *component);
 // Matched precedents for a register argument in an aligned frame exist (0x1c59a0, 0x39780, 0x5b650,
 // 0x62300, 0x70280, 0x93100, 0x93fa0, 0x136df0, 0x1523c0, 0x19d650, 0x1ce010), but none of them also
 // stores an aligned SSE value, which is the shape 0x1d0cf0 needs.
+// MiniMax I (11-14): no new form, no lower score (65): the frame is still 0x84 against retail's 0x88, the component still arrives on the stack where retail keeps it in EBX, and the entry copy is still rep movsd where retail uses four movaps; the component's EBX home is decided by LTCG over the whole 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other files.
 // score 65 (was 65): frame 0x84 versus 0x88; the index/component still arrive on the stack rather
 // than ECX/EBX, and the constructor copy uses rep movsd rather than aligned SIMD. The two-use body
 // slot receiver recovers the fixed-first guard and ordinary-path body lifetime; the post-reset
@@ -1161,6 +1162,7 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // (mov ebx,[ebp+8]) after a push ebx in the prologue and passes the index in ECX, this build pushes the
 // component and the index; the frame 0x50 against retail's 0x5c follows from that alone, so this function
 // is BLOCKED-BY 0x1d0cf0's convention and needs no change of its own.
+// MiniMax I (11-14): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the component still travels on the stack where retail keeps it in EBX; that convention is chosen by LTCG across the 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other files: BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
 // score 38 (was 38): BLOCKED-BY 0x1d0cf0: retail passes it the component in EBX (loaded here from the
 // stack after `push ebx`); ours pushes the component, so the frame and every store offset differ. The
 // body is otherwise retail's instruction for instruction. Tried here: zero transform/translation/both
