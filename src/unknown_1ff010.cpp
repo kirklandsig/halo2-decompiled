@@ -515,6 +515,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // `y * scale` and keeps the test's zero in XMM0, while this build hoists the zero into XMM6 above the helper's products
 // and multiplies x * scale; the helper's body lives in include/unknown_11cc90.h and the turn in src/unknown_1eb8a0.cpp,
 // neither of which this lane may edit.
+// MiniMax C (11-14): no new form, no lower score (77): the turn is still expanded here and the test zero is still the one XMM register held from above the divide; the turn helper and the normalisation helper are in other files, so the register homes around them stand.
 // MiniMax D (11-10): no new form, no lower score (77); retail multiplies the scale into x and y as
 // `scale * x` and `y * scale` and keeps the test zero in XMM0 for the caller's magnitude test, ours hoists
 // the zero into XMM6 above the helper's products and multiplies x * scale; the normalisation helper is in
