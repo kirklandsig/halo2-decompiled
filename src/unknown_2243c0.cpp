@@ -601,6 +601,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // as `byte const *const &` 8 (VC folds every accessor shape to the same tuples). New: the head and stage ordinals bound
 // as `word const &` straight into their elements 152 (first +0x0). No untried natural form is left (lane 13 r83 above). The pass definition (EDX, retail
 // EAX), material index (ECX, retail EDX) and material definition (EDX, retail EDI) do not move with accessor shapes.
+// m3 lane 1 r102 (fast, 0x2243c0 and 0x224d90 matched each time; masked = aligned count with registers and offsets masked,
+// base 30): the two block indices written `arg_3 + local_7` / `arg_4 + local_8` 117 (same code); the 0x1ff masks moved into
+// the index expressions (raw ordinals in the locals) 117 (same code); the four cache zeros together after local_11 120
+// (masked 27); local_7/local_8 as `short` 117 (same code); the flags local ahead of the context's arg_0 store 120 (masked 32).
+// Re-measured: the tag-data ternary 117, the material tag named for both uses 146 (524 B).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
