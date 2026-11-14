@@ -2952,6 +2952,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // the task test and the second 0x202e90 call keeps the reload. So the reload is the last block of the index register
 // range being dropped when the range is cut for the second half's EBP; one more index reference, or one block more or
 // less off the follow-up path, keeps it. No code-neutral form found that adds either.
+// P463: Actual optional-follow-up presence before application in bool/byte/short/long,
+// then absence in those domains: 50/50/50/50/50/50/50/50. NOT kept:
+// no byte match; first-event EBP reload and actor-loop padding remain.
+// Original complete body, direct scalar test and every call restored.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

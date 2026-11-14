@@ -1120,6 +1120,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // the first; ours loads them for the first and copies down.
 // P441: Current/next/both/complete width-product branches, original then output-owned initial width: 510/511/545/558/576/572/584/590.
 // NOT kept: Native 0xac frame, first-edge Y and texture/color spill homes remain. Original complete body restored.
+// P463: Paired U/V scale-admission positive bool/byte/short/long 627/627/238/238;
+// complementary outcomes 634/634/634/634 reduced (control/full 233).
+// NOT kept: one-use results lack equality and native frame/spill homes;
+// original texture producers, observations and complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
