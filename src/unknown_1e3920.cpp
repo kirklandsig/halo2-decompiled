@@ -2094,6 +2094,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // MiniMax A (11-13): no new form, no lower score (251): the permuter reaches 246 after five tries, five points short of the
 // bar, so the body stands; the actor, the weapon options and the object-pool global still rotate against retail the way the
 // notes above say, and the pool global is still re-read at each lookup instead of held in EDI across the callees.
+// P468: Double probability/delay/fraction/increased result storage, then probability-
+// increased/probability-delay/first-three/all: 348/302/272/307/328/321/307/304.
+// NOT kept: precision/storage graphs regress and miss native actor/options/pool
+// residence; original real values, expression groups and complete body restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

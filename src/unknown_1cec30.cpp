@@ -2510,6 +2510,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // wide/byte duplicate result 91/91; unique-result complement 91; entry duplicate
 // workspace 91. NOT kept: no eligible gain; original complete body and all helpers restored;
 // early velocity j/k loads and property-zero residence still differ.
+// P468: Duplicate-search exhaustion ordinal instead of found flag, long/dword/int/
+// unsigned-int/short/word/byte/signed-char: 377/379/377/379/425/425/425/425.
+// NOT kept: all regress and disturb the matching contact prefix; original complete
+// body, normalizer, shared helpers and property updates restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

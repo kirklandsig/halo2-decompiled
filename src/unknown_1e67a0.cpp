@@ -1083,6 +1083,10 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // NOT kept: Native rotation j/k products, side dots and eager output loads remain. Original complete body restored.
 // P458: Complete rotation/small-angle outcomes, bool/byte/short/long:
 // 144/144/144/144/144/144/144/144. NOT kept: native rotation j/k products, side dots and eager output copies not recovered; original complete body restored.
+// P468: Plain sampled-movement/output coordinate loops on current shared-rotation
+// graph, long/dword/short/byte for then while: 150/150/217/217/150/150/217/217.
+// NOT kept: no native rotation-product equality; original complete body and all
+// helper/provider definitions and declarations restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

@@ -377,6 +377,10 @@
 // P465: Positive special-view result from native lazy tests, bool/byte/short/long,
 // false-default 548/548/668/561; exhaustive test-owned 644/644/657/651. NOT kept:
 // no native 0x60 frame/result recovery or equality; original complete body restored.
+// P468: Special defaults then ordinary overwrite for origin/view/projection/side,
+// origin-view/view-projection/basis/origin-basis: 716/686/701/718/720/731/787/815.
+// NOT kept: frame/basis/wave residence remains unmatched and all regress;
+// original complete body and helpers restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

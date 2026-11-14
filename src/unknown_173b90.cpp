@@ -1853,6 +1853,9 @@ bool function_17afd0(long effect_index, long value);
 // then all with direct camera-result production: 116/50/96/118/119/98/121/121.
 // NOT kept: no exact availability/Boolean-home repair; original observations,
 // predicates, query gates, draw tuple and complete traversal restored.
+// P468: Existing camera/draw result byte/short/long/dword storage domains:
+// 113/140/141/141/47/111/110/110. NOT kept: no equality for the native byte homes;
+// original availability, view snapshot, query gates and complete body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
