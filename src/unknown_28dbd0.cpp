@@ -450,6 +450,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // retail's length, frame 0x114: the x87 order and the phases are retail's, the XMM colouring and the heading/cosine homes are not);
 // those with the heading's zero k written as the constant 0.0f in the rotation terms 251/231 (the same code: the zero is already
 // known); the in-place form with one or three unused locals 231 (same code). Body unchanged at 173.
+// M3 lane 11 r99 (fast): `long local_1;` without the dead NONE initialiser 173 (same code); the velocity products written
+// scale first (`local_3 * local_2.i`) 173 (same code); the jitter written `x = x + local_3; y = y + local_4; z = z;` 173 (same
+// code: the z self-copy is dropped, unlike retail's); the creation owner as one conditional expression 175; the heading
+// vector declared ahead of its angle draw 173 (same code). Body unchanged.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

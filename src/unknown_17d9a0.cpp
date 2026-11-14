@@ -945,7 +945,7 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // MiniMax A (11-13): no new form, no lower score (535 plain, 834 on the reduced image); the frame and the
 // length still agree, the tag still spills at +0xb4 against retail's +0x94, and the count, plane and
 // rotation homes still differ.
-// score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
+// Earlier status line (merged, was a second score line): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // Frame 0x21dc and length 3647 agree; tag/count/plane homes and rotation spills remain.
 // Earlier: 552 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // at +0xb4 versus retail +0x94. Count/plane homes, initial face-call scheduling and rotation spills remain.
@@ -1273,6 +1273,13 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // homes (names and scopes do not move them) and the rotation block's schedule; rounds 10-12, 56, 92, 108, 187, 225,
 // T59 and DH383 above list its statement orders, named products, helpers and in-place forms, and no untried natural
 // form was found beyond these.
+// M3 lane 11 r99 (plain; the fast check gives 834 here): the group search's test as `i < secondary_count && !group_count` 766
+// (3628 B); the empty-slot `continue` as a nested `if (first_face != NONE) { ... }` 535 (same code); the edge side as
+// `face == edge->faces[1]` 536; the endpoint distance test as `db < da` 535; the candidate loop's empty-slot test as
+// `if (face == NONE) continue;` 535. Code is the same as retail's apart from frame homes and the XMM zero register (ours XMM1,
+// retail XMM2) in the group pass; mapped homes ours -> retail: group count 0xc -> 0x14, first face 0x1c -> 0x10, face count
+// 0x18 -> 0x20, first plane 0x30 -> 0x44, secondary count 0x4c -> 0x54, mesh field spill 0x50 -> 0x68, angle temporary 0x40
+// -> 0x6c, edge base 0xb8 -> 0x90, tag 0xb4 -> 0x94, outer index 0xbc -> 0x88; the candidate plane at 0x70 agrees. Body unchanged.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
