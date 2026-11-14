@@ -455,6 +455,10 @@ struct s_24e9c7_points
 // `-result * forward_j` 139 (738 B); across i as `-(size * forward_j)` 125 (same code); the bitmap index read inside
 // the bitmap/shader test (the test reading the field) 125 (same code); corner 3 before corner 2 125 (masked 60 for 61:
 // stores only); the kind pointer `const` 125 (same code).
+// M3 lane 9 r118: no trial run. First difference +0x17 is still the result, kind and bitmap homes eight bytes above retail's
+// (retail's early across-j spill at -8 sits above them). Lane 12 r112 above records that no untried natural form is left,
+// and every lead here (across/side/up/back as points, scalars, arrays, helpers, in-place scaling, corner orders, bounds and
+// alpha spellings, conversion domains) is listed; I found no code-changing form outside the note.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
