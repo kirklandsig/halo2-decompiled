@@ -174,6 +174,9 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // holds it in esi, which the callees in the other files decide.
 // MiniMax B (11-13): the getter's table and result declarations swapped (118, same code); the difference is still a register rotation, which the parameter order of 0xd0590 in another file decides.
 // MiniMax G (11-14): no new form, no lower score (118): retail's getter loads the table into ECX (6 bytes) where ours uses EAX (5), and the rotation is decided by 0xd0590's parameter order in another file.
+// MiniMax H (11-14): no new form, no lower score (118): every instruction but a register rotation among EAX, ECX
+// and EDX differs, and it starts at the entry getter, where retail keeps the table in ECX and the result in EAX;
+// the rotation is decided by 0xd0590's parameter order, which is in another file.
 // score 118 (was 118): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
 // getter (retail table ECX, result EAX; ours the reverse) and runs through the later temporaries.
 // MiniMax I (11-09): no new form, no lower score (118); the aligned view (build/mm/align.py) shows that every

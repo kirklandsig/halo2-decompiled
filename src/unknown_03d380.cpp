@@ -577,6 +577,11 @@ void function_125a90(long value);
 // each; `(word)datum` index 35; the type through sound_definition_get 11, as a char 43; `remove` declared
 // before the element 11; index and element declared before the loop 11; `if (!b) remove = true; else` 11.
 // The guards are implied tests, so none is kept without a match. Body unchanged.
+// MiniMax B (11-14, run 75): no new form, no lower score (36): a permuter run (35 tries, best 36) and four hand-written
+// forms (88, 51, 51, 46) all score above the baseline, and the body is left as it was. What still differs: retail forms
+// the element address with `imul eax` + `lea esi` before it loads the policy byte, keeps the type lookup's registers in
+// edx/eax/ecx and lays the special, remove, ordinary and keep blocks out of line; that block order needs 0x221810 to
+// stay out of line, which is another file's getter: BLOCKED-BY 0x221810.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

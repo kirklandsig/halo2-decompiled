@@ -574,6 +574,10 @@ union s_185be7
 // known-false edge of the `local_3[11]` latch into the bit-4 clear arm (its own `[edi + 0x1c]` load); ours hoists the
 // load and keeps `~4` in ESI. No retail code or data takes 0x4ed284's address (58 plain memory operands), yet retail
 // re-reads it after the stores through arg_5.
+// MiniMax B (11-14, run 75): no new form, no lower score (590); the body is left as it was. What still differs: retail keeps the root
+// global in ECX and gives EBX to NONE, this build keeps the root global in EBX and gives ECX to NONE, and retail stores the first local
+// after `push ebp` while this build stores it before, so every later use of the root and of NONE lands in the other register; the
+// remaining register pressure comes from retail's out-of-line calls, which this build inlines.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
