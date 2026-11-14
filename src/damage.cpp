@@ -867,137 +867,27 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 	return result;
 }
 
-/* whether any entry of the block at +0x70 (0x60 byte entries) has the flag
-   at +0x40 of the structure it points to */
-// MiniMax G (11-12): no new form, no lower score (2): a separate increment statement gives retail's order (inc edx before add
-// ecx) but puts the index in ecx and the entry pointer in edx - the two registers are swapped against
-// retail - while the fused form keeps retail's registers and only swaps the two instructions; a permuter
-// run with annealing (26 tries) found nothing below 2.
-// MiniMax G (11-12): no new form, no lower score (2): the counter's increment and the entry pointer's 0x60 bump are
-// still in the other order (retail increments edx before the add). A separate increment statement gives retail's
-// order but moves the owner into edx and the index into ecx (8), and every declaration order, the for-loop forms and
-// the guarded index give the same two results.
-// MiniMax H (11-12): no new form, no lower score (2): twenty source forms (the fused and the separate index increment, an inner-scope index, while forms, comma conditions, several index and count widths and declaration orders) all leave the index increment and the cursor advance in the opposite order.
-// MiniMax A (11-12): no lower score (2); the only source that reaches retail's latch order (inc before add) with retail's register pair is a for loop whose step is `++i, entry += 0x60` inside the count guard, and it repeats the count test and zeroes the index inside the guarded block (30), while an increment written as its own statement before the advance keeps retail's whole shape but moves the owner into edx and the index into ecx (8).
-// MiniMax G (11-11): no new form, no lower score (2); the one difference left is that retail increments the index before it
-// advances the entry pointer, and every form with the increment written as its own statement in the body gives retail's
-// instruction order but swaps the owner and index registers (8); the index types, the comparison order and the loop shapes
-// (do-while, while, for) all leave the current code or score higher.
-// MiniMax H (11-11): no lower score (2); retail increments the index before it advances the entry pointer, and every
-// spelling that puts the increment in the body first (a separate `i++` statement, a while loop with the increment in
-// the body) either swaps the owner and index registers (8) or keeps the index's zeroing inside the count guard (5);
-// an increment as the last statement of the body (2) fuses it with the compare and leaves the order as it is, and a
-// comma expression that advances the entry inside the comparison keeps retail's registers but still emits the advance
-// before the increment, because the comparison's right operand is evaluated first.
-// MiniMax I (11-10): no lower score (2 kept); the only difference left is that retail increments the index before it
-// advances the entry pointer, and every form that puts the increment in the body before the advance (a `++i` statement
-// before `entry += 0x60`, a comma statement `++i, entry += 0x60`, or the index-based address `entries + 0x40 + i * 0x60`)
-// makes LTCG treat the index as an induction variable, which swaps the owner into edx and the index into ecx (8 in all
-// three spellings); declaring the index inside the count guard keeps the index out of the induction-variable treatment
-// and restores retail's order, but the index's zeroing then lands after the base load (6 with the index declared after
-// the entry pointer, 6 with it declared inside the guard and assigned there, 5 with it declared before the entry pointer);
-// the while-loop and for-loop spellings and a goto out of the loop each duplicate the count guard (31, 31, 31) and a
-// `&&`-fused condition rotates the loop body (28).
-// MiniMax I (11-10): the index's zeroing moves into the entry block when the increment is fused into the loop
-// condition (`while (++i < count)`), which keeps the owner in ecx and the index in edx like retail: score 2.
-// Left: retail increments the index before it advances the entry pointer, ours advances it first and increments
-// afterwards; every form that increments in the body (two reads of the index) swaps the owner and index registers
-// (8), and the fused condition with the pointer advance in the same expression gives the same order as retail but
-// the swap again (8). A for loop with the increment in its own clause (31) and a post-test increment (18) are worse.
-// A permuter run (5 tries) found nothing below 2.
-// the swap again (8).
-// MiniMax A (11-11): the two remaining instructions cannot both be satisfied by the source alone: retail increments
-// the index before it advances the entry pointer, ours advances first. The increment as a statement of the loop body
-// gives retail's order but the owner moves to edx and the index takes ecx (8), and a comma expression that fuses the
-// increment with the comparison (`while ((++i, entry += 0x60, i) < count)`) gives the same order and the same swap (8),
-// and so does an entry the compiler strength-reduces from the index (`base + 0x40 + i * 0x60`, 8).
-// The fused condition keeps retail's registers and pays with the swapped pair (2); the original body is kept.
-// MiniMax A (11-11): the register pair follows the index's definition site, not the increment's spelling: with the
-// increment as a separate statement before the entry advance, `++i` and `i = i + 1` both score 8 (owner in edx, index
-// in ecx), and moving the index's zeroing into the guarded block scores 5 (index declared before the entry pointer) or
-// 6 (after) with retail's register pair and retail's order but our `xor edx, edx` after the base load. A for-header
-// over the entries keeps retail's registers but lifts the entry load above the guard (30); an early `return` on an
-// empty count rebuilds the exits (28). The original body (2) is kept: the increment, the zeroing site and the register
-// pair cannot all be satisfied at once.
-// MiniMax C (11-09): hoisting the index above the guard scores 8 in three declaration orders, a base-pointer split 8, `count - count` 8, an int index 8, a while-loop form 7 and a local pointing at the element 9; no lower score (5).
-// MiniMax E (11-09): no new form, no lower score (5); retail zeroes the index before the count guard and adds 0x40 to the base before `push edi`, ours does both inside the guarded block; every form that hoists the zeroing to function scope swaps the owner and index registers (8), a for-loop over the entries lifts the entry load above the guard (9), and an early `return true` in the loop rebuilds the exits (26).
-// MiniMax D (11-06, run 49): no new form, no lower score (5); the index is still zeroed inside the guarded block, so our `xor edx, edx` lands after the base load where retail zeroes it before the guard.
-// MiniMax B (11-06, run 42): no new form and no lower score (5); the only difference left is the index's zeroing:
-// retail does `xor edx,edx` in the entry block before the count test, ours does it inside the guarded block after
-// `push ebx`; every placement that moves the zeroing into the entry block takes the index register away from the
-// owner parameter and renames it to edx.
-// MiniMax I (11-11): no new form, no lower score (2); the index incremented before the advance in the body (8), the
-// entry declared before the index with the index incremented first (7), a for loop whose step is `++i, entry += 0x60`
-// (7: retail's latch, but the base load stays above the guard), the same for loop inside a count guard (30) and a
-// comma in the do/while condition (8) all fail. The register pair follows the order in which the values are defined,
-// so the base load has to come after the guard and the index has to be defined after it, which puts the zeroing
-// inside the guard. Also tried: the index incremented in the body with the index declared inside the guard (6: the
-// latch and the registers agree, only the zeroing is late), the index declared first (9), the count declared first
-// (9), the entry assigned inside the guard with the index at function scope (8), the advance in the condition
-// (`++i < (entry += 0x60, count)`, 2: the fused increment goes back next to the compare) and a for loop with the
-// index inside the guard (30: the guard's test is repeated). The index takes edx only when the increment is fused
-// with the compare, and a fused increment is always emitted immediately before the compare.
-// score 2 (was 5): the count guard, the base load and the entry walk now sit in retail's order and the registers
-// agree (owner in ecx, the index in edx). Left: the index is zeroed before the guard like retail, but retail
-// increments the index before it advances the entry pointer and ours advances it first.
-// agree (owner in ecx, the index in edx). Left: the index is zeroed inside the guarded block instead of before
-// the guard, so our `xor edx, edx` lands after the base load.
-// MiniMax A (11-04, run 41): an explicit `count > 0` guard around a do/while, with the index and the entry
-// pointer inside it, puts the base load after the guard like retail and drops the score from 7 to 5. Tried and
-// reverted: the index declared before the guard (8) and `if (i < count)` (8) both make LTCG swap the owner
-// argument into edx. Also this round: the index hoisted before the guard with the count read first, with the
-// index read first, and assigned in the guard's condition (`(i = 0, count > 0)`) all give 8 with the same
-// edx owner and ecx index, so the zeroing cannot move up without losing the register pair.
-// MiniMax A (11-04): reading the count into a named local and walking an entry pointer by 0x60 gives retail's
-// register pair (owner in ecx, index in edx) and drops the score from 8 to 7; the base load is still hoisted above
-// the guard. Tried and reverted: an explicit `count > 0` guard with do/while (8), the same body as a while loop
-// (7, no better) and the base read inline in the loop body (8).
-// Earlier forms: count in a local (8), pointer-stepping loop (11), while loop (8), index declared
-// owner in ecx and the index in edx (retail's only caller, 0xd74e0 at 0xd7603, does `mov ecx, edi`; that caller
-// is still unmatched). Tried: count in a local (8), pointer-stepping loop (11), while loop (8), index declared
-// first (8), entry pointer local (8), early `return true` (26, owner moves to eax), typed struct view (8).
-// Earlier still: retail takes owner in ecx and the index in edx (retail's only caller, 0xd74e0 at 0xd7603, does
-// `mov ecx, edi`; that caller is still unmatched).
-// Also tried: the parameter named `component` (8), `break` + `return i < count` with no flag (27), a walking
-// pointer declared before the index with `i++, rigid_body += 0x60` (11), that with the count read first (12),
-// named count and element-array locals (12). The parameter takes ECX whenever its last use comes before the
-// loop guard (27, 12, 12), but retail also reads the element array after the guard.
-// Further forms: byte/short/long result 30/36/34; assigning the flag test to result 18 (entry registers
-// agree, loop/exit differ); existing typed array/getter with bool/byte/short/long result 8/30/36/34;
-// private linkage, cdecl and stdcall declarations 8/8/8; a zero-flag continue before setting result 8.
-// Round 69 (lane 1): count on the left of the loop test 9, named count + that 9, element local 8, flag byte local 8,
-// `!= 0` 8, `while (i < count && !result)` 25. Parameter stays EDX.
-// Round 114: count/index/result declarations 9; hoisted index with const count 8; inline indexed element 8;
-// register index 8; const owner 8; single-exit guard 8; index in the pretest 8; plain pre-tested indexed loop 8;
-// fastcall declaration 8; outer index declaration with inner initialization 5; count/result/index declarations 8.
-// P338: complementary all-clear outcome bool/byte/short/long with guarded index:
-// 38/38/47/45; unconditional index 37/37/42/40 (57-66/47 bytes). Cursor declaration before
-// result/count/guard or inside guard with original result: guarded index 5/5/5/5, unconditional
-// index 8/8/8/8 (47/47 bytes). Original body restored; NOT kept: result conversion and cursor
-// ownership do not recover both native zero scheduling and the owner/index register pair.
-// P422: Typed walking cursor with fused/separate/unequal/captured-result forms
-// 8/8/9/17; pointer-valued cursor with those forms 2/8/3/17 (all 47/47).
-// NOT kept: no equality; the latch order and register pair remain coupled.
-// @retail 0xd74b0
+/* whether any rigid body of the havok component (the 0x60 byte entries of the
+   array at +0x70, counted at +0x74) is fixed: the byte at +0x40 of the Havok
+   body each entry points to at +0x40 */
+// Standard convention (DECOMPILING.md evidence): (1) this body matches retail byte for byte only with the
+// standard convention (the component in ecx); with LTCG's own convention a direct call moves it to edx (8).
+// (2) Retail holds no absolute reference to 0xd74b0 and has one call, 0xd7603 in 0xd74e0 (LTCG code,
+// `mov ecx, edi`). (3) Tried (m3 lane 16 r114): `inline` on the definition and the declaration 8, PRIVATE 8,
+// a member function of a probe aggregate 8 (`this` moves to edx too), one to eight probe locals 8.
+// @retail 0xd74b0 standard
 bool function_d74b0(byte const *owner)
 {
 	bool result = false;
 	long count = *(long const *)(owner + 0x74);
-	long i = 0;
 
-	if (count > 0)
+	for (long i = 0; i < count; i++)
 	{
-		byte const *entry = *(byte const *const *)(owner + 0x70) + 0x40;
-
-		do
+		if ((*(byte const *const *)(*(byte const *const *)(owner + 0x70) + i * 0x60 + 0x40))[0x40])
 		{
-			if ((*(byte const *const *)entry)[0x40])
-			{
-				result = true;
-				break;
-			}
-			entry += 0x60;
-		} while (++i < count);
+			result = true;
+			break;
+		}
 	}
 	return result;
 }
@@ -1407,6 +1297,10 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // MiniMax B (11-13): no new form, no lower score (38): the near block still computes its second and third negations
 // before it stores the destination's first row, where retail finishes each row before it starts the next, and the else
 // arm's i and k rows still add the direction to the destination where retail adds the destination to the direction.
+// M3 lane 16 r114 (plain): 38 -> 36 with the 0xd74b0 call made through a `__fastcall *const` function-pointer local
+// (0xd74b0 then matches: its plain indexed loop needs the component in ecx). Not kept (coordinator 11-13): a
+// convention is steered only by the `standard` marker (DECOMPILING.md), which 0xd74b0 now carries; with it 0xd74b0
+// matches and this function reads 38 (fast). What is left: the negate block's schedule and the else arm's k row.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -1440,7 +1334,6 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 		{
 			byte *node = g_51e9b8->data + (node_index & 0xffff) * 0xa0;
 			point3f node_center;
-
 			if (node && *(long *)(node + 0x74) && !function_d74b0(node))
 			{
 				point3f *body_center = (point3f *)(*(byte **)(*(byte **)(*(byte **)(node + 0x70) + 0x40) + 0x3c) + 0x70);
@@ -2147,6 +2040,13 @@ long function_1e4a10(long index);
 // NOT kept (coordinator, lane 6 r172): 8 -> 4 needs all six named locals together (shield_vitality, absorbed,
 // actor_index, damaged, deficit, inverse_multiplier; five give 8). deficit and inverse_multiplier are one-use, and the
 // gain comes from the symbol count, so the set is match-only: re-apply it only with a form that reaches a byte match.
+// M3 lane 16 r114 (fast): the shield default as `shield_damage = body_damage; if (!(shield_damage > 0.0f)) shield_damage = 0.0f;` 8 (same
+// code); the actor stun-bounds lookup as an inline shared with 0xd8cb0 (the same lookup stands in both and in 0xd5de0): plain inline
+// 270 (834 bytes: kept out of line; shield then reloads before zero), forced inline 8 (same code). Diagnostics re-run (probe locals
+// `long p = object_index;`, k = 1..16): 8 8 8 8 8 4 4 7 7 8 8 8 8 8 8 8, shield/zero never flips; unreferenced locals count for nothing;
+// an `info` local for the five reads 220 (declared first) / 216 (after the shield default). The order after function_d5bc0 permutes
+// among the four values as the count changes (zero, maximum, inverse, 1.0f tie), while zero stays ahead of the shield damage at every
+// count, so that pair is not a tie in our build.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2601,6 +2501,20 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // entry-first/named-admission guards: 228/228/167/228 twice (870/870).
 // NOT kept: typed entry ownership changes the incoming convention and saved roles.
 // P422: The required typed biped effect-tag field preserves 3/870 in the calibrated preview.
+// M3 lane 16 r114 (fast): retail's form is the region entry read ahead of the guard: a two-use `entry` local (228, 870 bytes) or
+// an inline guard taking (info, entry) (228) gives retail's hoisted `mov eax, [edi]`, and the inline also gives [index + regions + 4];
+// what then differs is one choice: our build keeps `info` in EBP for its whole life and stores the object at entry (loaded into EBX
+// after the definition's last use), retail the mirror image (object EBP, info stored at entry and loaded into EBX at the guard).
+// Diagnostics on the entry local (reverted): one more read of `object` anywhere restores retail's registers with all five `info` uses
+// (the player test through `object` 196 / aligned 5 lines; an extra field test in the last block 47 / aligned 3; one after 0xdb090
+// 145 / aligned 4), as does one `info` use fewer (0xdb090's first argument through the field 24, aligned 3); k probe locals, k = 1..8,
+// 228 each, and k = 1..16 on this body 3 each. Tried on the entry local or the inline guard, none tips it: the subtraction written out
+// 228; the stun block's two field reads through a two-use pointer 228; the notify handle in a two-use local 227 (38 on this body);
+// both 227; the guard taking the definition too 228; taking the object and its index as well (the player test inside) 318 (770 bytes,
+// kept out of line); the guard with early returns 220, with a result flag 204, returning the flag test 220, parameters swapped 228;
+// the count and elements read through a pointer to the pair 228; the shared actor stun-bounds inline (see 0xd9110) forced 228 with
+// the entry local and 3 without. Lead: a natural form that gives `object` one more use (or `info` one fewer) on the inline-guard
+// body should match; build/r114/lead-d8cb0.patch has that body.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
