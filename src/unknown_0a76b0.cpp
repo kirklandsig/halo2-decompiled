@@ -2007,6 +2007,12 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // 65/67/65/67; const pool root 11/11; const pool/table 65/67. Existing object getter
 // boundaries, expression/unit receiver: 11/90 twice. All original calls restored.
 // NOT kept: table sharing adds a spill; input scheduling remains at 11.
+// Round 240 (m3 lane 3, fast): the active test through the file's UNIT_ACTION_ACTIVE macro 29; `bool const primary`
+// 11; a file-local inline helper taking (unit_index, type) with unit and actions locals (0xe6fe0's shape), inline or
+// forceinline, 95/95, the same helper without the unit local 11; primary started false and set by `if (type == 8)` 87.
+// Diagnostics (reverted): with a constant primary the type loads at the bit test, after the movsx (133); with a
+// constant bit the compare reads the argument from memory ahead of the lookup (100). Permuter (fast, anneal, 600 s):
+// 27 tries, best 11.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {

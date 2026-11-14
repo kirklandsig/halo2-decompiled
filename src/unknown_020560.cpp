@@ -129,6 +129,9 @@ PRIVATE __forceinline long texture_floor(real value)
 // one or two copies between globals ahead of the 0x143c0 call leave the clear in EDX; one after the call takes ECX and
 // the clear EDX; two after the call take ECX and EDX and the clear takes EAX. So the rotation restarts at the call (its
 // result's EAX) and retail has two more steps than ours between the call and the clear, with no code left for them.
+// Round 240 (m3 lane 3, fast with 0x143c0 and 0x16b90): the entry as `state + (index << 6) + 0x1320` 4; the clear as a
+// plain assignment 4, with a `1L` shift 4; `level` declared at loop scope after the entry 4; the mask declared in a
+// `for` header with an empty step 4.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
