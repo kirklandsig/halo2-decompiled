@@ -914,6 +914,19 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
+// MiniMax A (11-14, second pass): score 168 (was 177): the two flags are cleared in the order retail uses (the
+// presence byte first), and the two trailing case exits clear both flags before leaving, which gives retail's
+// byte homes (the returned flag at +0xa, the presence byte at +0x13). Left: retail keeps case 1's and case 2's
+// byte-identical 0xcafc0 blocks apart where this build tail-merges them into one, so the body is 16 bytes short,
+// and the 0x1e3b00 call of the direction chain still loads the object before its pushes and copies the output
+// address, where retail loads the object after the third push and recomputes the address.
+// MiniMax A (11-14): score 177 (was 257): case 1's player test inverted, so the NONE arm comes first, restores
+// retail's case-1 block layout; the frame is 0x8c as retail's, the byte homes still differ (retail's returned
+// flag at +0xa and its presence byte at +0x13, ours the other way round) and the two 0xcafc0 blocks are still
+// merged into one. Forms tried and rejected this round: declaring the two bools in the other order and
+// initialising them in the other order both leave the byte homes as they were (the compiler picks the homes
+// itself), and the polarity retail uses (the non-NONE arm first, which keeps the two 0xcafc0 blocks apart)
+// scores 257 at 1448 bytes, so the merged form stays.
 // MiniMax G (11-13): no new form, no lower score (257): the diff re-read this round puts the first difference at the 0x1ffe00 call, which retail makes with both arguments on the stack where this build passes the first in a register; that callee is defined in src/unknown_1ff010.cpp, a file this lane may not edit, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (257).
 // score 257 (was 257): frame 0x8c agrees; left: the result/point-valid byte homes and the direction chain's
@@ -1242,6 +1255,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // P467: Missing-point true default, false at each original point producer,
 // bool/byte/char/short/word/int/long/dword: 343/343/343/382/382/382/382/382
 // (fast control 341; full 257). NOT kept: no equality or reduced gain; original decoder restored.
+// MiniMax A (11-14), NOT kept: 335 (was 341), a 6-point gain, under the 8-point bar for a function above 30.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

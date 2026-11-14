@@ -3546,6 +3546,12 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
+// MiniMax A (11-14): no new form, no lower score (101). Putting the reply member-state pointer before the
+// reply identifier drops the listing to 94 (the reply block then matches row for row) but the keep-bar sends
+// that body back. Retail still loads session+0x10 into ecx, stores it to frame +0x04 and splits the
+// member-state lea into two steps before the timeout call, and it reaches the observer through edx; the
+// value10 spill needs an unread owner parameter on 0x769a0, whose definition is in another file, and the
+// announcement loads both identifier halves after the memset while this build splits them around the push.
 // MiniMax H (11-13): no new form, no lower score (101): still BLOCKED-BY 0x769a0, whose unread owner parameter
 // decides the call's register home and whose definition is in another file; the frame agrees (0x3c), the
 // announcement and identity loads still take other registers than retail's, and the permuter's 37 tries in 307 s found
