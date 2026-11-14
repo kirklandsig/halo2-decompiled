@@ -1763,6 +1763,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // hand)` helper in another file 330 (LTCG inlines and merges it). The header array as a named local inside 0xcbd50's
 // own lookup (contributor file, measured and restored) changes nothing. Retail's second query needs a lookup that none
 // of these spellings give. Body unchanged.
+// P496: Signed first/second count expression parts and serial slot workspace in seven subsets, then shared count storage:
+// 314/327/164/327/314/327/327/327. NOT kept: no exact native storage/producer recovery; pool/state, first signed-count materialization and result normalization remain.
+// Original complete executable body restored.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -2139,6 +2142,9 @@ bool __stdcall function_110ab0(long unit_index)
 // native instruction/frame equality. Original sets, switch/defaults, signed counts, status domains, field
 // observations, query/provider tuples, Boolean interface and complete body restored. No decoded table-tail-
 // only gain retained.
+// P496: Serial held handle/slot/count workspaces in seven subsets, then all at entry:
+// 445/445/445/445/445/445/445/445. NOT kept: no exact native storage/producer recovery; frame eight versus twelve and pool/state/request/result homes remain.
+// Original complete executable body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2647,6 +2653,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // MiniMax B (11-13): no new form, no lower score (776): the frame is retail's 0xd4 against our 0xcc and the first angle
 // expansion still differs; the forms listed above are exhausted, and the retail-shaped ones measured before either
 // restructured the function or left the score unchanged.
+// P496: Complete serial ID/weight/screen workspaces in seven subsets, then all before lookups:
+// 837/771/776/846/837/771/847/847. NOT kept: no exact native storage/producer recovery; frame 0xcc versus 0xd4 and first-angle/overlay expansion remain.
+// Original complete executable body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
