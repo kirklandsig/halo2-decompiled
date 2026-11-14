@@ -1434,6 +1434,13 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // 126 for the plain 143, where --fast builds 444 bytes and 196 here): both switches over `(dword)message_type`, the late 18
 // path as an early return, the connection index declared in case 5's block, the late 18 path as the first switch's default
 // arm: same code each; case 11 last in the first switch 130 harness (fast 195).
+// m3 lane 14 r93 (one-file LTCG harness: this file, 0x7afd0's, 0x92ef0's and 0x785d0's files and a stub entry; it builds the
+// kept two-switch body with retail's convention, 65 aligned rows against retail's code): the one retail-order switch (18 and
+// 11 placed after 24) 91 (type ECX, address EAX, message on the stack into EBX, as the notes say); with `break` 91 (same code);
+// with the address read once through its address 91 (address on the stack, type ECX, message EAX). The three connection
+// handlers given an unread address parameter (passed by this body, NULL from 0x93aa0) on both forms: 91 (same code): LTCG
+// drops the unread parameter before it chooses this function's convention, so it does not give the first pass the address
+// use across a call that retail's convention needs. Diagnostics only (no source kept); no unlisted natural form was found.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

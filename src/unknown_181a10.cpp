@@ -883,6 +883,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // P472: Overlap-safe origin/hit/paired-input/position/paired-plane-normal/origin+position/hit+position/all record transfers: 229/233/310/261/249/266/264/338.
 // NOT kept: origin transfer adds a call absent from retail; hit-only gains five. Other forms regress; original body/includes restored.
 // Frame, node and point homes remain.
+// m3 lane 14 r93 (fast with 0x1829b0/0x1821d0/0x182800/0x183670, all matched throughout; control 238, register-masked 109): on
+// the open helper-boundary lead, the 1..16 test as `limited = 1; if (!(limited > value)) { limited = 16; if (!(limited < value))
+// limited = value; }` 320 (1243 B, masked 97: the constants are preloaded into ECX and compared register to register, `cmp eax,
+// ecx; jl` for retail's `cmp ecx, edx; jg`, but the data is still copied to EAX and read once); the pointer test on the data
+// value (`(v < 1 ? 1 : v > 16 ? 16 : v) != v` on a `long` argument, both uses) 320 (1243 B, masked 117: no copy, one read).
+// A corpus scan of all matched retail code finds no other `mov reg, const; cmp reg, reg2; jg` clamp, so no matched source
+// shows retail's form. Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

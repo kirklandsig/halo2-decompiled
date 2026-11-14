@@ -1205,6 +1205,18 @@ extern long *g_51e9cc;
 // first, as with 0xb77d0 itself expanded); in that function length_sq3f, dot3f, a `moving` flag set by two tests or the terms
 // written k, j, i give the same code, 4 each, and 1-8 dead locals in the caller 4 each. So neither the sum's term order nor the
 // crouch pair follows a spelling of that body or a symbol count; retail's copy of 0xb77d0 here is still not reproduced.
+// M3 lane 14 r93 (diagnostics only, no new natural form run; base 10). Compile-only map of the crouch add (the screen gives
+// the field-first pair): with the inner test kept, the change loads first only when a float computed before an unconditional
+// call is tested after it (the speed sum, then 0xb9b90, then `if (speed)` around the other two calls), or when only the last
+// call (0xbba20) stays conditional; the test around all three calls, around 0xb9b90 alone, an if/else around two of them, a
+// call after the test, a bool flag tested after the block, an int or a float spilled across a call and tested, and the
+// speed declared at the block's top all keep the field first. One-expression sums always put the component written last
+// (k after `k -= height_change`) last and order the other two by the written order (j first gives i, j; else j, i), so
+// retail's i, k, j has no one-expression form here; the same sum through a `vector3f const *` to the velocity (also with the
+// body's NULL angular pointer and its `||` test) always comes out i, j, k. Link-inlined 0xb77d0 (diagnostic: its /Ob1 and
+// its parameter-address read both dropped, the block as a call): 13, the sum i, j, k, the add field first and one
+// `mov eax, esi` for retail's `mov edi, esi` before 0xe4680 (0x2056e0 544). So retail's inlined copy is still not
+// reproduced by that body under link inlining either.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
