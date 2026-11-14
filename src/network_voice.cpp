@@ -1861,6 +1861,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // frame 0x10/0x14, ret 0x10/0xc and caller 0x56380 at 13 reject all forms. Original body restored.
 // P458: Entry active byte/short/long/dword and inactive bool/byte/short/long outcomes, original separate result:
 // 60/60/60/60/60/60/60/60. NOT kept: native zero retention, bit/size allocation and capacity epilogue not recovered; original complete body restored.
+// T105: Serializer channel/recipient moves and payload-return subsets 1..7:
+// 185/181/216/60/185/181/216; complete move pipeline 202. NOT kept: no
+// native zero/bit/size equality; copy forms lose the caller; original body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

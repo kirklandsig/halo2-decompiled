@@ -688,6 +688,9 @@ extern point2f *g_468778;
 // declared and cleared at the very top 409; the slot and the actor ahead of the settings call 413; the settings distance read
 // once into a local for its three later reads 406 (1533 bytes), with retail's entry 421 (1529 bytes). Declaration order and
 // position do not decide the tie. Body unchanged at 375.
+// T105: Progressive final-result logical/bitwise refinement, bool/byte/short/long:
+// 375/395/404/406/375/373/406/407. NOT kept: two-point best is below the gate
+// and no native result/carrier equality; original result and complete body restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

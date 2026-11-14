@@ -1132,6 +1132,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // fields with first/outer/both setters and native UV value publication:
 // 233/241/241/240/241/241/240/410. NOT kept: no native frame/spill equality;
 // original vertex fields, UV stores, helper declarations and complete body restored.
+// T105: Read-only paired color bounds/persistent records/point chain,
+// seven subsets then complete current/next state inputs: eight at 233.
+// NOT kept: frame/spill homes unchanged; original complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
