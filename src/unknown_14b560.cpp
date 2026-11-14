@@ -920,6 +920,13 @@ bool function_e4050(long object_index);
 // 43; the iterator set-up with the datum index first 43; the parent walk as a do-while guarded by the unit object's parent
 // field 43 (aligned 28); `long const unit` 43; the unit object pointer declared at function scope 43 (same code). Body
 // unchanged.
+// Round 101 (m3 lane 1, fast; control 44, plain 43): in the dword-walk family (`dword current` from the unit, NONE
+// root, 171 at 405 bytes) the unit and the parent read after the walk both want EAX (0xe4050's and 0xbaf40's
+// argument); ours gives it to the unit (the parent then sits in ECX and is moved to EAX before 0xbaf40), which frees
+// EBX for the iterator index, so the frame goes; retail gives EAX to the parent. On that family: 0xe4050 passed the
+// unit field 171 (same code: the load is CSEd across the walk); a named parent local declared at function top, before
+// the unit, or first in the loop body 171/171/171 (same code each); the unit and the walk both `dword` 109 (431 bytes,
+// entry test threaded away again: only a signed/unsigned mismatch keeps it). Body unchanged.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2641,6 +2648,15 @@ static __forceinline long player_round_ticks(real value)
 // MiniMax G (11-13): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and
 // this build inlines 0xccd20 and the first 0x151b80 call where retail calls them; those callees' inline
 // eligibility is fixed in other files, so the body stands.
+// Round 101 (m3 lane 1, fast; control 701): 0x151b80's only caller is this function, and retail passes constants at
+// both calls (`xor cl, cl`, `mov cl, 1`). Diagnostic `inline_depth(0)` around the 0x80 site (reverted): the first
+// 0x151b80 stays a call, 775 at 2636 bytes; 0xccd20 still expands and the second 0x151b80 stays a call (so not a
+// simple per-caller inline budget); without the expansion our own code is 104 bytes short of retail's. Activity tail:
+// `idle = (short)(ticks < 0 ? 0 : ticks)` 701; with `if (first_activity) idle = (short)(idle > first ? first : idle)`
+// 700 (retail's exact `mov ecx, 0; sets cl; dec ecx; and ecx, edi` and `cmp; cmovg`; gain 1, not kept); the clamp
+// alone 702 (2741 bytes); both with the activity bools as `|` of `(bool)((activity >> n) & 1)` 714 (2743 bytes;
+// retail's exact shr/or chains, but first_activity spills and the buttons word takes EBX where retail has ESI); the
+// `|` bools alone 719 (round 50's form re-measured).
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3240,6 +3256,10 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // trial: round 71's NONE test on the field with the unit read after it, 103 again.
 // BLOCKED-BY 0xb8540 and 0xb7b40 (stubs, so nothing on loop 2's call tree is seen to write g_4e8c20) and 0xe4050 stand.
 // Body unchanged.
+// Round 101 (m3 lane 1, fast in round 34's widened image, control 103): loop 1's busy test with the vehicle arm first
+// (`root != unit`) 117; busy as two conditional expressions (`badc0 ? e4050 : false`, `vehicle ? [0x34c] > 0 : false`)
+// 103 (same code); busy set by `&&` tests 117; loop 2's flags word in a named local used twice 103 (same code). Kept:
+// the 0x1121 flag read through the typed `g_4e6948->flag1121` 103 (same code, no raw offset cast).
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {
@@ -3251,7 +3271,7 @@ void function_14cdd0(void)
     else if (!globals->unknown9f)
     {
         if (globals->unknowna0 > 0) globals->unknown9c = 3;
-        else if (((byte *)g_4e6948)[0x1121]) globals->unknown9c = 8;
+        else if (g_4e6948->flag1121) globals->unknown9c = 8;
         else
         {
             long value;

@@ -275,6 +275,13 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // or one read at offset 0 of `point` or `record`, anywhere ahead of the add in source order (function entry or the
 // first-light arm) gives retail's in-place add at 821 bytes; two of them cancel; reads at +4, +8 or +0x10, and
 // statements after the loop or after either arm's strength assignment, change nothing. The ECX/EDI pair never moved.
+// Round 101 (m3 lane 1, fast): n = 0..7 `long dead_n = n;` placeholders at entry (the symbol-count phase lever) on
+// colour first 121 x8 and on strength first 30 x7, identical code at every n; `vector3f_add(&contribution, &direction,
+// ...)` 30/121 (strength/colour first, same code). Colour first with the contribution's fields assigned directly (no
+// vector3f_assign) 160 (825 bytes): the first-light arm and the post-call `addss xmm7, [ebp+0x10]` are retail's, but
+// all three x87 direction adds load the direction first; strength first so 170. On that body the accumulation through
+// the swapped vector3f_add, as `+=` rows, as `contribution + direction` rows 160/160/160; the no-lights arm first 191.
+// vector3f_assign with `+=` rows, colour/strength first 169/161.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
