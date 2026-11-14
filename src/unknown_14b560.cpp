@@ -920,6 +920,11 @@ bool function_e4050(long object_index);
 // 43; the iterator set-up with the datum index first 43; the parent walk as a do-while guarded by the unit object's parent
 // field 43 (aligned 28); `long const unit` 43; the unit object pointer declared at function scope 43 (same code). Body
 // unchanged.
+// score 43 (was 43): unchanged this round: the datum iterator's register use (EBX against retail's EDI) comes from
+// include/data_iterator.h and src/unknown_0bad50.cpp.
+// score 43 (was 43): unchanged this round: the datum iterator's data pointer still takes EBX where retail takes
+// EDI; the helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane
+// may not edit.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2641,6 +2646,10 @@ static __forceinline long player_round_ticks(real value)
 // MiniMax G (11-13): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and
 // this build inlines 0xccd20 and the first 0x151b80 call where retail calls them; those callees' inline
 // eligibility is fixed in other files, so the body stands.
+// score 701 (was 701): unchanged this round: the frame is still 0x4c against retail's 0x74, and this build inlines
+// 0xccd20 and the first 0x151b80 call where retail calls them.
+// score 701 (was 701): unchanged this round: the frame is 0x4c against retail's 0x74, and 0xccd20 and the first
+// 0x151b80 call are still expanded here where retail calls them; both callees live in other files.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3240,6 +3249,11 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // trial: round 71's NONE test on the field with the unit read after it, 103 again.
 // BLOCKED-BY 0xb8540 and 0xb7b40 (stubs, so nothing on loop 2's call tree is seen to write g_4e8c20) and 0xe4050 stand.
 // Body unchanged.
+// score 193 (was 193): unchanged this round: our build keeps the players-globals pointer in EDI across both loops
+// where retail has ESI and late reloads; the same source scores 103 on its own.
+// score 193 (was 193): unchanged this round: the players-globals pointer is still kept in EDI across both loops
+// where retail keeps it in ESI and reloads it late, and retail inlines the status test that this build calls
+// out of line; that callee lives in src/unknown_13bf00.cpp, which this lane may not edit.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {
