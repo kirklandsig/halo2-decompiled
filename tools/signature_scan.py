@@ -1,11 +1,15 @@
 """Compares the calling signature of each unmatched decompiled function with
-retail's: the stack bytes its `ret` pops and which of EAX, ECX and EDX it reads
-before writing.
+retail's: the stack bytes its `ret` pops and which of EAX, ECX, EDX, EBX, ESI,
+EDI and XMM0-XMM7 it reads before writing.
 
 A different total of stack bytes plus register arguments means the source's
 parameter list is wrong. The same total split differently between registers and
 the stack is only how LTCG passes the arguments: the callers decide it, not the
 function's own source.
+
+Registers are followed from the entry to the first `ret`, and the usual
+zeroing and constant idioms are not counted as reads; an argument can be read
+late, after a long set-up.
 
 One shape it cannot see: a struct returned by value passes a hidden result
 pointer as a stack argument, so its total matches retail's when retail takes the
@@ -28,7 +32,12 @@ import os
 import sys
 
 from capstone import CS_ARCH_X86, CS_MODE_32, Cs
-from capstone.x86 import X86_OP_IMM, X86_REG_EAX, X86_REG_ECX, X86_REG_EDX
+from capstone.x86 import (
+    X86_OP_IMM, X86_OP_REG, X86_REG_EAX, X86_REG_EBX, X86_REG_ECX, X86_REG_EDX,
+    X86_REG_ESI, X86_REG_EDI,
+    X86_REG_XMM0, X86_REG_XMM1, X86_REG_XMM2, X86_REG_XMM3,
+    X86_REG_XMM4, X86_REG_XMM5, X86_REG_XMM6, X86_REG_XMM7,
+)
 
 import build
 import check
@@ -37,26 +46,60 @@ from linkmap import LinkMap
 from pe import Pe
 from xbe import FUNCTIONS_CSV, ROOT, Xbe, retail_xbe_path
 
-ENTRY_LIMIT = 24  # instructions examined for register arguments
-REGISTERS = (X86_REG_EAX, X86_REG_ECX, X86_REG_EDX)
+# LTCG passes float arguments in XMM registers as readily as integer ones in
+# EAX/ECX/EDX, and callee-saved registers as well (0x1d0cf0 gets its component
+# in EBX). A push of a callee-saved register is its save, not a read of an
+# incoming value, so pushes are excluded for those three.
+REGISTERS = (X86_REG_EAX, X86_REG_ECX, X86_REG_EDX,
+             X86_REG_EBX, X86_REG_ESI, X86_REG_EDI,
+             X86_REG_XMM0, X86_REG_XMM1, X86_REG_XMM2, X86_REG_XMM3,
+             X86_REG_XMM4, X86_REG_XMM5, X86_REG_XMM6, X86_REG_XMM7)
+CALLEE_SAVED = (X86_REG_EBX, X86_REG_ESI, X86_REG_EDI)
 REPORT = os.path.join(ROOT, 'build', 'report.json')
+# Register zeroing/constant idioms that capstone reports as a read of the
+# destination although the old value is discarded.
+SELF_ZERO = ('xor', 'xorps', 'xorpd', 'pxor', 'sub')
+
+
+def _reads_and_writes(insn):
+    """Capstone's reads and writes, with `xor edx, edx`, `xorps xmm6, xmm6`,
+    `or edx, -1` and `and edx, 0` counted as writes only: they read their
+    destination only to discard it."""
+    reads, writes = insn.regs_access()
+    ops = insn.operands
+    if len(ops) == 2 and ops[0].type == X86_OP_REG:
+        same = ops[1].type == X86_OP_REG and ops[0].reg == ops[1].reg
+        constant = ops[1].type == X86_OP_IMM and (
+            (insn.mnemonic == 'or' and (ops[1].imm & 0xffffffff) == 0xffffffff)
+            or (insn.mnemonic == 'and' and ops[1].imm == 0))
+        if (same and insn.mnemonic in SELF_ZERO) or constant:
+            reads = tuple(r for r in reads if r != ops[0].reg)
+    if (insn.mnemonic == 'push' and len(ops) == 1 and ops[0].type == X86_OP_REG
+            and ops[0].reg in CALLEE_SAVED):
+        reads = tuple(r for r in reads if r != ops[0].reg)
+    return reads, writes
 
 
 def signature(md, data, base):
-    """(stack bytes the last ret pops, base registers read before written at
-    entry) of the machine code data, addressed at base."""
+    """(stack bytes the first ret pops, base registers read before written
+    anywhere in the body) of the machine code data, addressed at base."""
     ret = 0
     names = []
     written = set()
-    for n, insn in enumerate(md.disasm(data, base)):
-        if n < ENTRY_LIMIT and insn.mnemonic != 'call':
-            reads, writes = insn.regs_access()
+    for insn in md.disasm(data, base):
+        if insn.mnemonic != 'call':
+            reads, writes = _reads_and_writes(insn)
             for r in REGISTERS:
                 if r in reads and r not in written and md.reg_name(r) not in names:
                     names.append(md.reg_name(r))
             written.update(writes)
         if insn.mnemonic == 'ret':
+            # A function's epilogues pop the same stack bytes, so the first ret
+            # is representative. Stopping there also keeps jump tables and other
+            # trailing data from being disassembled as instructions (they can
+            # contain byte sequences that look like a different ret).
             ret = insn.operands[0].imm if insn.operands and insn.operands[0].type == X86_OP_IMM else 0
+            break
     return ret, tuple(names)
 
 

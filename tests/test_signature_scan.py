@@ -34,6 +34,40 @@ def test_push_counts_as_a_register_read():
     assert sig('50c3') == (0, ('eax',))  # push eax; ret
 
 
+def test_xmm_arguments_count():
+    """LTCG passes floats in XMM registers; `movaps xmm0, xmm5` reads XMM5
+    before writing XMM0, so XMM5 is an argument."""
+    ret, registers = sig('0f28c5'    # movaps xmm0, xmm5
+                         'c3')       # ret
+    assert (ret, registers) == (0, ('xmm5',))
+
+
+def test_zeroing_idioms_are_writes_not_reads():
+    """`xorps xmm6, xmm6` and `or edx, -1` discard their destination, and
+    `xor ecx, ecx` is a write; none of them makes an argument."""
+    assert sig('0f57f6c3') == (0, ())          # xorps xmm6, xmm6; ret
+    assert sig('83caffc3') == (0, ())          # or edx, -1; ret
+    assert sig('33c9c3') == (0, ())            # xor ecx, ecx; ret
+
+
+def test_first_ret_wins():
+    """Trailing data can decode as a different ret; the first ret is the
+    function's own and is the one whose pop count matters."""
+    ret, registers = sig('8bc1'      # mov eax, ecx
+                         'c20400'    # ret 4
+                         'c21800')   # ret 0x18 (data after the function)
+    assert (ret, registers) == (4, ('ecx',))
+
+
+def test_register_read_after_many_instructions_counts():
+    """A register argument may be read late, after lots of set-up."""
+    ret, registers = sig('8b442404'  # mov eax, [esp + 4]
+                         + '90' * 30  # 30 nops
+                         + '03d1'     # add edx, ecx
+                         + 'c3')      # ret
+    assert (ret, registers) == (0, ('ecx', 'edx'))
+
+
 def test_total_adds_stack_words_and_register_arguments():
     assert signature_scan.total(0xc, ('eax', 'ecx', 'edx')) == 6
     assert signature_scan.total(8, ('eax',)) == 3
