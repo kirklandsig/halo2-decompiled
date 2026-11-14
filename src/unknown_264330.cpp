@@ -699,6 +699,9 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // call 412 (other code).
 // MiniMax C (11-14): no new form, no lower score (412); the actor/index/flag allocation and the
 // 0xa8-versus-0xa0 frame are unchanged.
+// MiniMax I (11-14): no new form, no lower score (412): the record pointer is still copied into edi and read with
+// edi plus the index where retail keeps it in eax, and the frame is still four bytes larger with its pushes in a
+// different order.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

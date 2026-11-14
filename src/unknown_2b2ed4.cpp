@@ -254,6 +254,9 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // -0x458, message -0x258; ours title, display_name, suffix, layout, message (two adjacent pairs swapped).
 // MiniMax R (11-11): no new form, no lower score (316): the five string buffers' stack homes stay a rotation apart from retail's, the state switch's shift arm stays out of line and the join order differs.
 // MiniMax C (11-14): no new form, no lower score (316).
+// MiniMax I (11-14): no new form, no lower score (316): the title still takes the frame's lower block where retail
+// keeps the display name there, the two of them still trade their slots, and the flag test's shift and test are still
+// laid out before the branch where retail moves them out of line.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

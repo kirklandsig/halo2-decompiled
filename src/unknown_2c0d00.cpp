@@ -478,6 +478,8 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // tail placement; original complete body, qualifiers and call tuples restored.
 // MiniMax C (11-14): no new form, no lower score (920); the frame still reserves 0x2cb8 against
 // retail's 0x2cac.
+// MiniMax I (11-14): no new form, no lower score (926): the frame is still twelve bytes larger than retail's (0x2cb4
+// against 0x2cac), and the locals are still cleared at the frame's later offsets where retail clears them earlier.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

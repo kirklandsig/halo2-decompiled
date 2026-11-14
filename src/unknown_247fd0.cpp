@@ -702,6 +702,9 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // P478: Standard link/time spans, inherited/blend producers, reverse normal/probe copies,
 // complete sample multiplies and age product: 440/373/379/456/335/370/548/385.
 // NOT kept: all regress; separate effect add, gate/settings homes and descriptor expansion remain; restored.
+// MiniMax I (11-14): no new form, no lower score (334): the gate's byte is still read with the base and the index
+// in one operand where retail adds the index to the base first and reads the byte from it, and the flag byte and the
+// settings still sit in the frame's later slots where retail keeps them at +0x1b and +0x1c.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

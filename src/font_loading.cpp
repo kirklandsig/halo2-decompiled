@@ -807,6 +807,10 @@ static inline long font_character_pixel(long alpha, long color)
 // workspaces at iteration/entry and consumed-span entry lifetime, eight forms all 59.
 // NOT kept: no native parity/literal/run-two recovery; original helper, runs,
 // pixels, span and complete executable body restored.
+// MiniMax I (11-14): no new form, no lower score (59): the alpha's parity is still masked in sixteen bits at the
+// three pixel sites where retail masks it in thirty-two, the colour literal is still built with a shift and an add
+// where retail keeps its two bytes in separate registers, and the run of two is still folded into the count and the
+// cursor as an immediate where retail adds the register.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
