@@ -1517,6 +1517,14 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// MiniMax R (11-14): no lower score (60): retail's entry size comes from a compare and setne on the include_mask byte, a
+// value whose range it does not know, where this build zero-extends it - with a bool parameter MSVC always knows the
+// range is 0 or 1, so retail's form needs the parameter declared as a byte, a signature change this lane may not make.
+// Reading the parameter's byte through its address instead copies the parameter into a new frame slot (the byte then
+// lands at esp+0x28 and the whole frame shifts, 146), and decrementing the capacity through its address still promotes
+// it to a register (60, the same code). The player bit in EBX against retail's EBP, the kept mask in EAX against
+// retail's EBX, the capacity taken through a register against retail's in-place decrement and the capacity-fail exit's
+// own epilogue (460 bytes against retail's 449) stand.
 // MiniMax A (11-14): no new form, no lower score (60): the player bit stays in ebx where retail keeps it in ebp, the
 // entry size comes from a zero-extended mask byte here and from a compare and setne there, and the capacity-fail exit
 // keeps its own epilogue (460 bytes against retail's 449).
