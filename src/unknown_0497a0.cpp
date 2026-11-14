@@ -366,6 +366,10 @@
 // against native zero while retaining frame 0x54 versus 0x60.
 // P441: Existing selected v2/v3/v4 setter producers, singles/pairs/all then point setter: 693/713/646/734/701/698/758/719.
 // NOT kept: Native 0x60 frame, selected-basis homes and late x87 factor pops remain. Original complete body restored.
+// P462: Ordinary defaults then special overwrite for origin/view/projection/side/
+// cross-output, then basis/origin-basis/all: 739/699/698/689/678/805/784/803.
+// Cross-output default recovers frame 0x60 and extent 2622, first +6, but regresses.
+// NOT kept: no equality; original selections, helpers, math and full body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

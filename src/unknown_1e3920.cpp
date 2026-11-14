@@ -1202,6 +1202,11 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // enabled/forced/probability workspaces 252 each; existing complete direction setter
 // and actor-state library clear 252/252. NOT kept: ties or regression; required query
 // defaults retained and original complete body restored; sentinel and query homes remain.
+// P462: Actual enabled-query output also owns the final replacement decision,
+// guarded/conditional producers, inner/outer output storage: 348/348/348/348;
+// omitting its wholly overwritten default on those forms: 250/250/250/250.
+// NOT kept: the two-point lead is below the gain threshold; original query
+// outputs, all defaults, separate decision and complete body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
