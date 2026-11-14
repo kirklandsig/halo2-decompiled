@@ -676,6 +676,12 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// score 159 (was 165): the scan over the first values keeps a dword index like retail's, which drops
+// one instruction from the scan; the rest is unchanged: retail calls 0x1765e0 out of line with the
+// promoted register split (ESI, EBX and EAX) while this build inlines it, so our frame is 0x16c
+// against retail's 0x48. That call is not in this file: 0x1765e0's own code and its three callees
+// match retail byte for byte, so the inlining is a whole-program decision of the LTCG group that the
+// other call sites in src/unknown_050690.cpp, src/unknown_1c25a0.cpp and src/unknown_29f5b0.cpp fix.
 // score 165 (was 165): unchanged this round: retail calls 0x1765e0 out of line with the promoted
 // register split (ESI, EBX and EAX) while this build inlines it, so our frame is 0x16c against retail's
 // 0x48; retail's own parameter list differs from the declaration here (the forward vector is third and
@@ -817,7 +823,7 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 	position.compressed_forward = vector3d_compress(forward);
 	position.velocity = *g_4687a4;
 	position.location = *location;
-	for (short j = 0; j < sizeof(first_values) / sizeof(first_values[0]); j++)
+	for (dword j = 0; j < sizeof(first_values) / sizeof(first_values[0]); j++)
 	{
 		if (first_values[j] != NONE)
 		{
