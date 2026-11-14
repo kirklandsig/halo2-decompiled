@@ -1953,6 +1953,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // retail re-reads g_47d8f4's count word at every users-loop iteration inside the inlined variant getter and counts that
 // loop down in EBX, where ours hoists the count into EBX and ends on the variant pointer; the request loop's state==1 flag
 // byte and the identity copy are the listed match-only flag/local forms. The slot test's cmovne still needs /arch:SSE.
+// MiniMax B (11-14): no new form, no lower score (703): the slot test's conditional move is one byte shorter than this
+// build's jump and move, so the loop head lands on another offset and the counts after it run off; that conditional move
+// needs the SSE architecture flag this file's flags do not set, and the flags stay as they are, so the request builder's
+// body stands.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

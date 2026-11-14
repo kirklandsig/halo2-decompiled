@@ -8017,6 +8017,32 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // MiniMax A (11-12): no new form, no lower score (299); the count test written as `<= 0` gives retail's load, test
 // and jle instead of a compare against 1, but the length that changes makes the rest of the body pair against the
 // wrong instruction and the score rises to 313, so the original stands.
+// MiniMax B (11-14): no new form, no lower score (299): retail increments the group counter on the path that skips
+// the entry body, and this build increments it only inside the body, so moving the increment out (the for-loop form)
+// gives 298 with retail's exact 2000-byte size and 0x1894 frame, but the counter still lives in a stack slot and the
+// zero register is EBP where retail has EAX, so the body stays one instruction out of step; a thirty-two bit counter
+// puts it in EAX but the compiler strength-reduces the 0x98 stride into a second counter (506, 507, 508). The body
+// stands.
+// MiniMax B (11-14, third pass): no new form, no lower score (299): retail's entry holds four instructions - the
+// load of the count, the test, the store of the definition pointer and the branch - where the compare against 1
+// gives three, and the checker pairs the two sides by instruction, so the pair after the entry no longer lines up;
+// the count test written as `<= 0` gives retail's four, and then the body agrees with retail instruction for
+// instruction from the entry to the group loop head, where retail moves its thirty-two bit group counter into esi
+// and this build widens its sixteen bit one with movzx. The increment of the group counter stands where this build
+// has it, inside the body, while retail counts every group: retail's increment is in the block that the skipped
+// groups also reach (0x4f7a2), and this build's counter would stand still on a group with no points. Moving the
+// increment out gives retail's exact 2000-byte length and 300, and with it the count test has to be `<= 0` as well,
+// which then puts the zero register in ebp (452) where retail has eax (313). A thirty-two bit group counter gives
+// retail's imul of the 0x98 stride its own counter at [esp+0x40] and a frame of 0x1898 (514).
+// MiniMax B (11-14, second pass): no new form, no lower score (299): the count test written as `<= 0` does give
+// retail's own load, test and jle, so the block matches instruction for instruction from `mov ecx, [g_4e3b44]` to the
+// branch, but the three bytes it takes off the entry make the rest of the body pair against the wrong instruction and
+// the score rises to 313, so the compare against 1 stays; a named count local makes no difference (313). What still
+// differs: retail's group counter is a thirty-two bit value in EAX, compared against the count in EAX, while this build
+// keeps the counter sixteen bits wide in a stack slot and widens it with movzx before the imul of the 0x98 stride;
+// retail keeps that counter at [esp+0x54] and the facing float at [esp+0x50] under its `push ebp` around the loop,
+// where this build keeps the counter at [esp+0x3c] and the facing at [esp+0x4c] without the push; and retail pads the
+// loop head with `push ebp; nop` where this build pads it with `push ebp; mov edi, edi`.
 // @retail 0x4f010
 void __stdcall function_4f010(void *payload)
 {

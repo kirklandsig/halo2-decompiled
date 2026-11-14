@@ -1702,6 +1702,10 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// MiniMax B (11-14): no new form, no lower score (339): retail's conditional move for the state store is still out of
+// reach - it needs the SSE architecture flag this file's flags do not set, and the flags stay as they are - and the
+// frame stays 0xa9c against retail's 0xaa8, so the type, membership and member-index homes keep their different
+// offsets. The body stands.
 // MiniMax H (11-13): no new form, no lower score (339): the frame is still 0xa9c against retail's 0xaa8; retail's
 // conditional move for output->state needs /arch:SSE, which this file's flags do not set, and the inlined 0x5a680
 // twin is not allowed, so the state home and the frame stay as they are.
