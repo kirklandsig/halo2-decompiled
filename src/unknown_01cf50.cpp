@@ -2618,8 +2618,7 @@ long function_4b220(long count, long mode, long primitive, long stride, t_4b220_
 	(void)&context;
 	if (!*mode_reference)
 	{
-		long bytes = count * stride;
-		dword words = (dword)bytes >> 2;
+		dword words = (dword)(count * stride) >> 2;
 		long requested = words + 5;
 		if (requested < 2048)
 		{
@@ -2628,7 +2627,7 @@ long function_4b220(long count, long mode, long primitive, long stride, t_4b220_
 			*push++ = D3DPUSH_ENCODE(D3DPUSH_SET_BEGIN_END, 1);
 			*push++ = g_43fdc0[primitive];
 			*push++ = D3DPUSH_ENCODE(D3DPUSH_INLINE_ARRAY | D3DPUSH_NOINCREMENT_FLAG, words);
-			fill(push, bytes, context);
+			fill(push, count * stride, context);
 			push += words;
 			*push++ = D3DPUSH_ENCODE(D3DPUSH_SET_BEGIN_END, 1);
 			*push++ = 0;
