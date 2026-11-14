@@ -329,6 +329,8 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // that takes the member itself changes nothing); the pair through a helper taking a pointer to the pair 54 (1409 bytes, the
 // round 162 pointer effect). Retail keeps the ten stores in source order and reloads the argument right after the +0x18
 // store; ours moves that store and the reload above the four flag and zero stores.
+// Round 162 (m3 lane 8, fast with 0x2936b0 0x259d0 0xb7930; control 30): the record's range test as `field_24 > 0 &&
+// field_20 > 0` 32 (the first difference moves to +0x234: forms ahead of the rotation break the matched entry code).
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

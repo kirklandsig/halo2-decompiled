@@ -813,6 +813,10 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // propagated back, ESI); `for` copy + variant and summary just before the player loop 134 (479 bytes, EBX, callers
 // match); `for` copy + mask stored after the copy loop 133 (495 bytes, EBX); the same on the preset pair 137 (ESI);
 // preset pair + `for` copy + the count read at each use 132 (495 bytes, ESI).
+// Round 162 (m3 lane 8, fast with the inlined callees and both callers; control 22, register-masked 4, all in the opening):
+// diagnostics only, the variant fetched under the live-state test (0x6ec80's idiom; implied by `state == 5`, so it folds)
+// before the summary getter or at the top of the state block 22/22 (same code). Reading: the copy loop's early count spill is
+// part of the scratch rotation (our destination takes ECX, which holds the count; retail's takes EDX).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

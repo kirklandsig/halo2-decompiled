@@ -1010,6 +1010,25 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // final_matrices declared at the top 262 (same code); `object` read as header->object 325 (798 B); both early tests through
 // object_get() 282 (834 B); the awake test through the existing 0xbfc90 259 (813 B); the early tests as two ifs 317 (804 B); the 0xbfc90 awake
 // test with `object` read as header->object 307 (814 B). Body unchanged.
+// M3 lane 5 r179 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90; all stay matched). Re-measured: the bit-30 clear
+// through the existing 0xbfe20 (the call 0xbd090 in this file uses for the same bit) 262 (813 bytes, frame 0x4c,
+// orientations in ESI), round 168's 287 lead 287. On the 0xbfe20 form: one `dword *` to the object flags for both tests
+// and the clear 240 (the same code as this body: the flags value is held in ESI across the sample loop again, so
+// orientations returns to a frame slot); 0xbd090's pairing (`object = header->object`, bit 29/+0x34b through a
+// fresh-lookup local) 305 (814 bytes); the early tests through the fresh table lookup, `object` from object_get() and bit
+// 29/+0x34b through header->object 287 (831 bytes: the bit-29 test reloads the header from the frame and reads +8 as
+// retail, the +0xb3 byte takes BL as retail); that with the early exits returning input_matrices 288; with the model test
+// nested and one `return result;` 181; with `return result;` both inside the nested block and after it 169 (843 bytes,
+// plain 169; the main and model-NONE epilogues split as retail) - the lead, match-only (mixed object spellings and a
+// repeated return). On 169: final_matrices declared at the top 169 (other code), result before the header 199, early
+// exits returning input_matrices 198; with the early-test object as one fresh-lookup local 288 (827 bytes, the closest
+// register-masked shape), and `object = header->object` there 297 (the object and bit-29 loads merge); the early-test
+// local with the single exit 301 (815 bytes), with the model early return 281; on 169 `result`, `final_matrices` or both
+// typed `transform4x3f *` (from a cast) 169 (same code); `object` through the early-test local's table-lookup spelling
+// 288 (the same code as object_get()). Left on the lead: retail holds
+// input_matrices in EDX (stored late as final_matrices) with a separate EDI copy for the early exits and object_index in
+// ESI, pushes EBX only before the +0xb3 test (two separate early-test epilogues), and builds the header with
+// `lea [ecx + eax*4]`. Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
