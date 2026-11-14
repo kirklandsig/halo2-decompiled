@@ -1122,6 +1122,9 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // P488: Complete coordinate algorithms at original velocity scale, aim scale and projectile subtraction, seven
 // subsets, then parent sum: 362/307/165/348/374/297/341/378. NOT kept: All regress and change extent away from
 // native. Original copies, helper calls, grouping, branch origins and complete body restored.
+// P495: Corresponding blend products named in all rows: row-local aim/velocity/both 92/139/142;
+// full aim/velocity/both-aim-first/both-velocity-first phases 92/139/139/92; immutable complement on last 92.
+// NOT kept: ties or regressions; original vector homes, full arithmetic and body restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
