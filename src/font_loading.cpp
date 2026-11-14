@@ -507,6 +507,13 @@ static inline long font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax G (11-14): no new form, no lower score (59): the alpha parity is still masked in sixteen
+// bits (and cl, 1; movzx cx, cl) where retail widens it to thirty-two (xor ecx, ecx; mov cl, al; and
+// ecx, 1), the literal word is still built from two byte loads and a multiply (movzx eax, byte [edi+1];
+// movzx edx, byte [edi+2]; shl eax, 8; add eax, edx) where retail loads the low byte into ax and the
+// high byte into ch, the type 3 run is still folded to the constant 2 (add eax, 2; add esi, 2) where
+// retail adds the run register (add eax, ebx; add esi, ebx), and the body is eight bytes longer than
+// retail's.
 // MiniMax G (11-13): no new form, no lower score (85): the alpha parity is still masked in sixteen
 // bits (and cl, 1; movzx cx, cl) where retail widens it (xor ecx, ecx; mov cl, al; and ecx, 1); a
 // permuter run (165 tries) found nothing under the baseline and a thirty-two-bit parity local
@@ -792,6 +799,14 @@ static inline long font_character_pixel(long alpha, long color)
 // helper scores 105 (byte cast) and 212 (no cast); swapping case 1's two statements gives 83, below the gain
 // needed to keep it.
 // MiniMax R (11-11): no new form tried this round, no lower score (85): the body's first branch is at +0x24, the first argument's zero test, and it leaves for a different place than retail's, which jumps into the shared exit further down; the body is 8 bytes longer than retail's.
+// P465: On the long-result/multiplied-literal graph, numeric parity 203; unsigned alpha 203;
+// expanded opacity 239; named parity 239; split numeric bands 203; scaled byte-parity field 62;
+// disjoint addition 228; split byte-parity bands 59. NOT kept: no native parity/run/literal
+// equality; original helper and complete decoder restored.
+// P481: On the long-result/multiplied-literal graph, shared actual fill-pixel/run
+// workspaces at iteration/entry and consumed-span entry lifetime, eight forms all 59.
+// NOT kept: no native parity/literal/run-two recovery; original helper, runs,
+// pixels, span and complete executable body restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

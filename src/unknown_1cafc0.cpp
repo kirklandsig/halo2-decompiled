@@ -747,6 +747,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // NOT kept: Native graph/base reloads and final return-byte normalization remain. Original complete body restored.
 // P459: Immutable fallback type/class/mode snapshots, seven subsets and complete fixed graph receiver on the twelve-byte expansion:
 // 348/348/348/348/348/348/348/348. NOT kept: native destructive graph-base/reload ownership and byte normalization remain; original complete body restored.
+// T107: Paired alternate/fallback permission results after resolution or found copy,
+// bool/byte/short/long: 592/592/600/536 at both boundaries. NOT kept: all regress;
+// wider forms also lose seven matched callers. Original full body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

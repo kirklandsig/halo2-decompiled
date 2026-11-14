@@ -1302,6 +1302,9 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax G (11-14): no new form, no lower score (94): the identity flag still lands in bl where retail keeps it in
+// al, retail sets the total to two and the channel pointer after the flag's compare where this build sets them
+// before it, and the inner channel blocks are still not unrolled.
 // MiniMax G (11-13): no new form, no lower score (94): the identity flag stays in bl where retail
 // keeps it in al, so the loop temporaries take eax/al where retail uses ebx/cl, and the inner
 // channel blocks are not unrolled.
@@ -1584,6 +1587,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// MiniMax A (11-14): no new form, no lower score (60): the player bit stays in ebx where retail keeps it in ebp, the
+// entry size comes from a zero-extended mask byte here and from a compare and setne there, and the capacity-fail exit
+// keeps its own epilogue (460 bytes against retail's 449).
 // MiniMax A (11-13): no new form, no lower score (60): the membership helper's mask and shift operands swapped compile to the same code (all four network-voice scores unchanged), and the register split stands (the player bit in EBX and the entry size in EBP where retail has EBP and EBX).
 // score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
@@ -1861,6 +1867,13 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // frame 0x10/0x14, ret 0x10/0xc and caller 0x56380 at 13 reject all forms. Original body restored.
 // P458: Entry active byte/short/long/dword and inactive bool/byte/short/long outcomes, original separate result:
 // 60/60/60/60/60/60/60/60. NOT kept: native zero retention, bit/size allocation and capacity epilogue not recovered; original complete body restored.
+// P469: Independent 64-bit result signed/unsigned, recipient bit, clamped player,
+// entry extent, emitted count, retained mask and both real scan ordinals:
+// 177/177/212/226/203/180/197/261. NOT kept: native ingress/frame or extent regress;
+// original 32-bit scalarization, matched caller contract and complete body restored.
+// T105: Serializer channel/recipient moves and payload-return subsets 1..7:
+// 185/181/216/60/185/181/216; complete move pipeline 202. NOT kept: no
+// native zero/bit/size equality; copy forms lose the caller; original body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -2004,6 +2017,9 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax G (11-14): no new form, no lower score (85): the availability bytes read into locals for the muted test
+// and the mode helpers parameterised on them leave the second byte loading lazily inside the muted test, where
+// retail loads both before it and keeps the remote mask in esi.
 // MiniMax G (11-13): no new form, no lower score (85): the second availability byte loads lazily
 // where retail loads both before the muted test, and the second port-flag query is called out of
 // line: BLOCKED-BY 0x59670/0x596a0.
@@ -3287,6 +3303,12 @@ finish:
 // build of lane 5 round 82 and network_voice.cpp has not changed since, so the reload order follows the
 // rest of the image. Mask declared first, logging call inside the loop, empty declared first, reason
 // declared first, `if (changed) log; else return;`: 2 each, same pair swapped.
+// P464: Comparison-test bool/raw signed result producers 146/205; signed/unsigned short
+// comparison ordinal 188/188; literal mismatch byte/word/long 2/2/2; success-continue 2.
+// NOT kept: no exact post-format reload recovery; original comparison and whole body restored.
+// P466: Empty identity long/byte/word storage with memset 2/2/2; aggregate-zero
+// dword/byte/word and read-only dword/byte 2/153/142/2/153 on the plain-copy graph.
+// NOT kept: no exact reload recovery; original empty input and complete body restored.
 // @retail 0x54590
 void function_54590(void)
 {
@@ -3950,6 +3972,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // bool/byte/short/long: indexed 138/138/160/163, independent cursor 158/158/158/159.
 // NOT kept: one-count leads fail the gain gate and change the native frame; no
 // predicate carrier matches. Original complete body, live counts and masks restored.
+// T107: Ordinary inline call metadata on settings/forwarding-route/XHV-query providers,
+// seven subsets 139 each, complete native packet cursor 164. NOT kept: no gain;
+// original provider declarations, independent call boundaries and full body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

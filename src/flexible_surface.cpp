@@ -437,7 +437,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // on the const staged graph 181 each; const staged inputs with shared random_index draws 160.
 // Original body restored.
 // DL210: native tail producer/clamp result/component output, masks 1-7, then all with existing vector setter; component-output frame with staged cross/projection-first/both/both and readonly inputs;
-// score 117 (was 117): earlier scores 139/139/139/169/169/169/169/143/169/165/165/165. Original source forms restored.
+// DL210 earlier scores 139/139/139/169/169/169/169/143/169/165/165/165. Original source forms restored.
 // Round 96 (one-link harness of this file with 0x30bf0's, exact at 139; the full build already passes wind in
 // EBX with a plain ret as retail): cross3f(&axis, &old, &cross) with `+ cross*sine` rows 166, with the
 // projection first 167 (864 bytes); rows as sine*cross / projection*axis / cosine*old 139 each (same code);
@@ -716,6 +716,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // plain `ret`): retail loads the random-state pointer into ESI before the definition's load and the time product. The
 // fraction drawn before the time product 193; the definition lookup moved after both draws 157 (882 B). Rounds 87, 109
 // and 148 above list every other opening, rotation and tail form; none is left untried. Body unchanged.
+// T104: Returned direction/axis/both snapshot destinations, mutable/readonly memcpy, then
+// complete memmove: 161/161/160/161/161/160/178/178. NOT kept: no equality or native frame/home
+// recovery; original full captures, shared products, draws, row trees and entire body restored.
+// MiniMax H (11-14): no new form, no lower score (117): retail keeps the old direction in xmm3-xmm5 and sums the dot as (axis.k*old.k + axis.j*old.j) + old.i*axis.i, an order the shared helpers cannot produce, and the frame stays 0x28 against retail's 0x20 while the old direction's address reaches them.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

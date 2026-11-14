@@ -912,6 +912,13 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // then forced pointer/reference/value: 218/218/218/218/219/218/218/219.
 // NOT kept: no native early root/actor ingress repair; value returns also raise the other helper user to 66.
 // Original shared producer and complete body restored.
+// m3 lane 14 r92 (fast with 0x270d90 at 286 and 0x270400 MATCH, control 218): case 5's fallback as the one block under
+// `actor == NONE || !call` with the out stores shared 399 (1224 bytes; 0x270d90 372); a named `has_actor` test at the top 352
+// (1288 bytes, the entry loads it first); case 5 as if/else with one `result = true` 218 (same code); case 2 without
+// the vertices local 218; the radius test written `radius * 2.f < first_length` 218. Retail's case 5 compares the
+// actor in EAX early (the flags held across the scale) and calls with it in place, so the entry load is the whole cause.
+// P477: Standard paired dot/difference, actor-direction capture, paired/actor/trace point publications, upper-limit and native-prefix reductions:
+// 393/409/281/358/346/347/405/442. NOT kept: all regress and none repairs native early root/actor ingress; sixteen matched controls survive. Original geometry, shared producers, caller roles, result qualifier and complete body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

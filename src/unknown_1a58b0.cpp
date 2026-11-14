@@ -706,6 +706,9 @@ void function_1a6d80(void)
 // same code), after it 27 (the pool load moves to ESI, so ECX is free when `id` is first loaded and `id` becomes a
 // register argument). Retail's tail needs one more value ahead of the table reads; its head needs the group read after
 // the handler read with ECX taken by the pool load.
+// Round 91 (m3 lane 14, fast): parameters (id, owner_index, valid, count), (id, valid, owner_index, count) and
+// (id, valid, count, owner_index) with the three calls 6/6/6; the node list as `g_4f0a60 + index` alone 6 (same code);
+// the valid store as `? true : false` 15 (106 bytes). Unused locals between the table reads and the call 6 (dropped).
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {

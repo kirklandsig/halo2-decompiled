@@ -94,6 +94,9 @@ bool function_1946f0(s_bitstream *stream)
 // the pop as a decrement statement then the read 2. Compile-only screens (diagnostic): 0 to 40 unused locals at the top and
 // 1 to 8 dead inline-helper locals at the top, the mode block, before the bound test or before the count: both LEAs stay
 // data-first.
+// Round 119 (m3 lane 9, fast): the index bound to a `long const &` 2; `int saved` 2; `register` on the index 2; a
+// `s_bitstream *const` parameter 2; the index incremented after the mask with count and clear from it, as a statement
+// or as `size - ++byte_index`, 11 each (first difference +0x15: `inc edx` then `add edi, edx`, no clear LEA).
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

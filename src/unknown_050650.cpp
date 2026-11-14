@@ -828,6 +828,9 @@ struct s_collision_result_buffer_1697c0
 // 0x297d30 23 -> 120); both draws through the existing slot_random_range 365 (1449 B, 0x297660 1). Every other
 // rotation, normalizer, draw, collision and exit form this round considered is already listed above, so no untried
 // natural form is left; the open lead stays lane 14 r84's named sine/cosine pairs (match-only).
+// P467: Direct blocked-state bool/byte/short/long at attempt entry
+// 369/369/357/354, after both rotations 374/374/359/356. NOT kept:
+// all regress and grow; original clear state, every draw and complete sampler restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1236,6 +1239,9 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // the flags cleared in two statements 170; case 1's remembered test with its operands swapped 172. Same code as 168: case 1's
 // 0x1caa40 path first, the aim test as `if (aiming) goto local_254539;`, a `failure:` label for the two result stores, the
 // origin declared in the weapon block, case 2's remembered branch first, case 1's object test as nested ifs.
+// P467: Missing-point true default, false at each original point producer,
+// bool/byte/char/short/word/int/long/dword: 343/343/343/382/382/382/382/382
+// (fast control 341; full 257). NOT kept: no equality or reduced gain; original decoder restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1425,6 +1431,12 @@ done:
 // where retail keeps the product in eax and forms the actor with a lea; the shared getter is used by sixteen
 // matched functions of this file, so its spelling cannot change on its own account.
 // MiniMax H (11-11): no new form, no lower score (9); retail still builds the actor offset in EAX and forms the actor with a lea where ours keeps the scaled index in the pointer register and adds the base, and the shared getter cannot be respelled because sixteen matched callers depend on it.
+// MiniMax D (11-14): no new form, no lower score (9): only the prologue differs - retail loads the pool table into
+// EDX, computes the actor offset in EAX (`mov eax, ecx`, `and eax, 0xffff`, `imul eax, eax, 0x888`) and forms the
+// actor with `lea esi, [eax + edx]`, while this build keeps the scaled index in ESI and adds the base (`add esi, edx`);
+// the getter is shared with sixteen matched functions of this file, so its spelling cannot change on its own account,
+// and retail's only caller of this function, 0x1f38c0, has no body in this tree, so the call context that shapes the
+// allocation is missing here.
 // MiniMax B (11-11): no new form, no lower score (9): the getter is shared with sixteen matched callers, so no
 // spelling of it can be changed on its own account, and none of the subscript forms reaches retail's prologue.
 // MiniMax E (11-10, run 73): no new form, no lower score (9); retail builds the actor offset in EAX and forms the actor with lea esi,[eax+edx] where we build the offset in ESI and add the base, and the shared getter's spelling cannot change because sixteen matched functions depend on it.
@@ -1929,6 +1941,12 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax B (11-14): no new form, no lower score (442 plain, 548 on the reduced image): the entry block still differs
+// in its registers - retail loads the actor table into ECX, takes the row with `mov ebp, [ecx + A]`, keeps the actor
+// index in ESI and spills the scaled offset to the stack, and reads the member word with `movsx edx` and `mov di`,
+// where this build loads the table into EDX, keeps the index in EDI, scales it in ESI without a spill and reads the
+// word with `movsx ecx` and `mov dx`; the frame stays 0xd0 against retail's 0xc8 and 0x1fdd90 is still inlined here
+// where retail calls it, and that helper is defined in another file. The body stands.
 // MiniMax G (11-13): no new form, no lower score (442 plain, 548 on the reduced image): the diff re-read this round keeps the frame 0xd0 against retail's 0xc8 and the cached animation words without retail's homes, and 0x1fdd90 is still inlined here where retail keeps it out of line, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (442 plain, 548 on the reduced image).
 // score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only

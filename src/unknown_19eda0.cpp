@@ -385,6 +385,11 @@ PRIVATE inline long polygon_round_19f(real value)
     return result;
 }
 
+// MiniMax A (11-13): no new form, no lower score (370); what still differs is unchanged: retail keeps the
+// third argument of this call in a register where ours keeps it on the stack, so retail's frame is 0x30 and
+// ours is 0x34, and the order of the three register arguments is fixed by the callers and by the callee in
+// another file, which this lane may not edit; retail also still reads its 1.5 factor from its own writable
+// .data float and still expands two contributor helpers in place.
 // MiniMax H (11-11): no new form, no lower score (370); the body is unchanged, because retail's 1.5 factor
 // still comes from a writable .data float at 0x47ff94 that only this function reads, the frame is still 0x34
 // against retail's 0x30, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX
