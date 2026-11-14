@@ -1154,6 +1154,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
+// MiniMax G (11-14): no new form, no lower score (33): the query-size and write-count homes stay four bytes off (ours
+// at [esp + 0x34] where retail keeps [esp + 0x30]); retail loads the write's handle before its pushes and compares
+// against esi (1) where ours compares against ecx; the call-target difference (our 0x403320 against retail's 0x1a1050)
+// is the same function in the reduced map and is not a source difference.
 // score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
 // checksum register and header-validation joins remain.
 // checksum register and header-validation joins remain. Earlier diagnosis before native handles:

@@ -1839,6 +1839,9 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// MiniMax G (11-14): no new form this round, unchanged (87; 89 on this build's reduced image): retail hoists the
+// walk's pool load into ebx and keeps the selection on the stack, ours keeps the pool in memory and the selection in
+// edi; the two walk helpers are shared with four matched functions and were left as they are.
 // score 87 (was 87): round 112 (m3 lane 12) note at the end. Retail hoists the walk's pool load into ebx and keeps the selection
 // only on the stack (stored from esi, best stored in a tail shared with the initialisation);
 // ours keeps the pool in memory and the selection in edi.

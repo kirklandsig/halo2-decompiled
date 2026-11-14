@@ -610,6 +610,11 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
+// MiniMax G (11-14): no new form kept, no lower score (34): the C form (the total inlined into the fild, the file
+// handle read into a local) scores 28, but that local is one-use - the same 28 form the 11-09 notes record as not
+// kept - and without it the same body scores 88. Still differs: the entry total lands in eax where retail keeps it
+// in edx, the hoisted body size in esi where retail keeps it in ecx, the signature position as a one-byte-shorter
+// add where retail uses lea, and the size/position pair is esi/edi where retail has edi/esi.
 // score 34 (was 34): round 103 unchanged; the scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
 // and size through pointers; with the `void *` parameters view and one function-scope byte count the
