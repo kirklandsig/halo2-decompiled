@@ -567,6 +567,10 @@ PRIVATE inline void decal_project_point_17d9a0(real const *point, long axis, boo
 // same code); a named table row pointer 175 (1006 bytes); the side test indexed by the stored field, with a short or a long axis
 // local, 177 / 179 (sides scrambled); the first corner given a short axis local and a `positive` local, corners 1-3 the fields,
 // 171 positional / aligned 30 (the bounds[1] products wrong again); `quad->plane.n.n[axis]` with the short local 165 / 23.
+// P462: Complementary first-corner side outcome, bool/char/signed-char/byte/
+// short/word/long/dword, 192/192/192/192/196/196/195/195 on the split producer.
+// NOT kept: mixed result/field residence fails equality and grows the extent;
+// original selectors, point helper, normal/edge math and complete body restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

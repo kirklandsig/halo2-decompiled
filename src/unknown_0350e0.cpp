@@ -261,6 +261,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // and k, re-reading the axis from memory for the cross terms; ours stores the squares and forms j*i and k*i early.
 // Retail's frame also has 0x20 bytes no instruction touches (after each matrix and at +0x28), which the in-place
 // forms lose.
+// P461: Builder-owned sine/cosine/both real conversions 335/334/337; consumed
+// builder matrix identities first/second/both/readonly/reference 334 each. NOT kept:
+// no exact repair; double-input forms also lose the caller. Original helpers/body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2218,6 +2221,9 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // MiniMax G (11-13): no new form, no lower score (492): the frame is still 0x90 against retail's 0x94, and the
 // vertex data call is expanded here where retail calls it; the member form reaches retail's length but scores
 // worse, so the body stands.
+// P461: Shared zero-angle outcome bool/char/signed-char/byte/short/word/long/dword:
+// 528 each, 2267/2285 bytes, frame 0x90. NOT kept: no exact repeated-test/output-home
+// repair; original independent trig producers, APIs and complete body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
