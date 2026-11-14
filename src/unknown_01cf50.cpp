@@ -5991,6 +5991,10 @@ vector3f *function_11d000(vector3f const *vector, vector3f *perpendicular);
 void function_141ce0(real first, real second, real third, transform4x3f *out);
 real g_5259b4;
 dword g_4b8430;
+// score 127 (was 127): main's body. On the reference form (the model entry's address bound to a const
+// reference, the index < 0 test ahead of the geometry load: 2 in the plain check, kept only on a match) the
+// only difference left is two independent float reloads after the second SetVertexData4f grow call (retail
+// loads [esp+0xd8] into xmm2 and then [esp+0x54] into xmm3, ours the other way round).
 // MiniMax H (11-13): no new form kept, no lower score (127): the plain forms tried this round (typed index,
 // typed table pointer, the entry pointer advanced by the index, the field read through a byte offset, the
 // 0x41640-shaped lookup through a definitions local, a second masked read of the field, a compare on the
@@ -6015,7 +6019,7 @@ dword g_4b8430;
 // separate load, as retail reads it, and the sign check on the part index comes before the geometry
 // load, as retail has it; what is left is the order of two independent float reloads after the
 // second SetVertexData4f call.
-// score 2 (was 127): the model's two reads are combined and the part index's sign check comes first;
+// Reference form, not kept: 2 (from 127): the model's two reads are combined and the part index's sign check comes first;
 // what still differs is the order of two independent float reloads after the second SetVertexData4f call.
 // MiniMax E (11-11, run 80): no new form, no lower score (127): retail reads the model with a lea plus a
 // separate load where ours folds the address into one instruction; this round typed the reference table as
@@ -6043,7 +6047,7 @@ dword g_4b8430;
 // xmm3), and none of the perturbations tried here (the vertex data's products written the other way round, the position
 // and light statements reordered or split, the size and alpha computed at another point) moved that order.
 // MiniMax H (11-12): no new form kept, no lower score (127): the model's read is still one fused load where retail takes a lea and a separate load, and the only forms that reproduce retail's addressing are the ones the rules keep only on a byte-for-byte match (a reference to the entry scores 2, a plain typed index with the split test scores 125); a 900 s permuter run from the reference form found nothing below 2.
-// score 127 (was 544), Round 1 of #1066: same size as retail (2406). What changed: the rotation is one
+// Round 1 of #1066: 127 (from 544), same size as retail (2406). What changed: the rotation is one
 // transform4x3f (forward/left/up filled by either branch, then position stored into it, so retail's
 // copy of the position after the branch appears), the angle is computed inside each branch (the sin/cos
 // one keeps it unrounded on the x87 stack), the draw count is a word tested `<= 0` and read into word
@@ -6058,7 +6062,7 @@ dword g_4b8430;
 // `fraction`/`size` agree with retail: no behaviour difference. The cross product is cross3f's body written out; calling
 // cross3f (vector_products.h) scores 128, since it puts `sine` in retail's shared temp [esp+0x14], but the full build then
 // loses the matched 0xc2d00 (its scheduling tie), so the written-out form stays. The alpha clamp is PIN's body written out.
-// MiniMax I (11-11), NOT kept (coordinator 11-11): 127 -> 2 with the reference entry bound as `s_4e260_model_entry const *const &entry = &((s_4e260_model_entry const *)references)[index]` (a reference to a one-use pointer: match-only) and the index < 0 test ahead of the geometry load; the same struct read as a plain typed index with the split test is 125 (under the keep bar). Lead: retail keeps the entry's address before reading its model; find the plain form that does that.
+// MiniMax I (11-11), NOT kept (coordinator 11-11): 127 -> 2 with the reference entry bound as `s_4e260_model_entry const *const &entry = &((s_4e260_model_entry const *)references)[index]` (a reference to a one-use pointer: match-only) and the index < 0 test ahead of the geometry load; the same entry type read as a plain typed index with the split test is 125 (under the keep bar). Lead: retail keeps the entry's address before reading its model; find the plain form that does that.
 // MiniMax E (11-12), NOT kept (coordinator 11-12): 127 -> 2 again, this time by reading the entry's model twice and AND-ing the copies (`model &= model_copy`, a no-op steer) with the index < 0 test first; together with MiniMax I's reference form above, retail evidently loads the model field twice from the entry's address. Find the plain source that uses entry->model twice.
 // MiniMax B (11-13), NOT kept (coordinator 11-13): 127 -> 2 a third time with MiniMax I's reference form (the entry's
 // address bound to `s_4e260_model_entry const *const &`, as in 0x273040, where it is kept because that function matches)
@@ -6066,6 +6070,15 @@ dword g_4b8430;
 // What is left at 2: the order of two independent float reloads after the second SetVertexData4f call (retail loads
 // [esp+0xd8] and then [esp+0x54], ours the other way round); a 900 s permuter run and a hand sweep of the products'
 // order could not move it. Lead: with the reference form, find what orders those reloads; a match keeps the form.
+// m3 lane 14 r90 (all on the reference form, 2 in the plain check; fast checks): the rows' C-API
+// D3DDevice_SetVertexData4f spelling 710 (1999 bytes: not inlined); the rows read through basis.rotation 2
+// (same code); the cross and perpendicular declarations swapped 2 (same code); the basis declared at loop scope
+// beside the colours 2 (same code); the alpha clamp ahead of the position copy 187 (2408 bytes); the position
+// copied field by field 68 (2418 bytes); the size computed after the basis 374 (2388 bytes); the entry as a
+// const element reference 125, its model as a long const reference 125 (both fold the model read); the entry
+// copied by value 508 (2421 bytes). Re-measured: each single product's operands swapped in rows 12 and 13, 2
+// each (same code). Diagnostics: the basis or the size renamed 2 (same code: names do not order the reloads).
+// The two reloads keep their order whatever the model read's form (the 125 forms show the same pair).
 // @retail 0x4e260
 void __stdcall function_4e260(long tag, long context, long first, long second,
     long third, dword handle, byte *material)
