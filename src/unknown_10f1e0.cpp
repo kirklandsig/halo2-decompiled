@@ -411,6 +411,10 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // code). The pair's target name is still re-read into its local before the second lookup; round 163's lead below
 // replaces that with an inline wrapper (build/r163/113980-wrapper.patch, 2, needs a ruling: a new helper called
 // from this function only). The stacked notes below are in the order they were written.
+// M3 lane 6 r180 (fast): the state parameter renamed to sort ahead of the table global (`animation_state`,
+// `animation`; a test of name order for the reloads) 2 / 2; the graph local declared at the function's top 2; the
+// node-count test joined into the entry guard 2; visited, target and marker declared in reverse order 2 (all the
+// same code: the back edge still reloads the table first).
 // MiniMax b (11-06): 2 with the pair's target name as a two-use local, re-read from the iterator just before the
 // second lookup, and the mask test (bit_vector_test) in nested ifs; not kept: the re-read is a no-op that only
 // steers registers (without it 49; without the local, or the local only in the test, 42). On that form the
