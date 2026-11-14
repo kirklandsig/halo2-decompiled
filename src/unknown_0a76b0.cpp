@@ -868,6 +868,12 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // MiniMax B (11-13): no new form, no lower score (92): the origin and direction homes stay swapped and the forward,
 // grenade type and projectile index keep their homes (retail 0x20, 0x2c and 0x30 against our 0x28, 0x20 and 0x24);
 // the permuter over this function found no form either.
+// MiniMax B (11-13): no new form, no lower score (92): aligned the two listings instruction by instruction: the two
+// vector groups are exchanged (retail keeps the left vector at 0x54 and the normal one at 0x48, this build keeps them the
+// other way round), the grenade type and the projectile index sit 0xc below retail's homes, and the three blend products
+// are grouped the way retail groups them (the three right-hand products first, then the three left-hand ones); declaring
+// the normal vector before the left one does not move either home (92), so the frame stays a permutation the declaration
+// order does not reach.
 // score 92 (was 92): 152 before m3 lane 14 r83; earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
 // MiniMax H (11-12): no new form, no lower score (92); the permuter over the function managed 17 tries in 301.7 s and found nothing (best 89, baseline 89, no confirming build), so the slot layout stands; this round added the player block's forward vector declared before the origin (92), copied in its declaration (100), and as a function local at the top of the function, above the projectile index and below the grenade type (92 each), which all leave the player's forward at the same home, so retail's forward at 0x20, grenade type at 0x2c and projectile index at 0x30 against our 0x28, 0x20 and 0x24 stands.
 // MiniMax G (11-12): no new form, no lower score (92): the seat index and the direction sit 0xc below retail's slots and the
