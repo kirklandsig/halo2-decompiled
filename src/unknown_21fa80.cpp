@@ -74,7 +74,7 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 }
 
 // MiniMax B (11-13): no new form, no lower score (544); the permuter refuses the reduced image for this function, and the full-image search over the declaration and statement forms found nothing better.
-// score 544 (was 545): full build; b2D 11-06 statement walk against retail found no logic difference
+// score 544 (was 544): earlier 545. full build; b2D 11-06 statement walk against retail found no logic difference
 // (every branch, field offset, callee and argument agrees). Precision fix kept: log10 taken of a double (fyl2x then fmul 20 unrounded, 0x21fe2f-0x21fe37).
 // MiniMax A (11-12): no new form, no lower score (544); the file's fixed /Op still decides the mixed
 // arithmetic: the gain difference is computed on the x87 stack where retail subtracts in SSE and takes the
@@ -359,6 +359,15 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // and jumping into case 0's), and it pushes zeros as `xor eax, eax; push eax` and zero-extends bytes as `xor; mov reg8`
 // where ours has `push 0` and movzx: two more settings leads beside /Op. Lane 13 r82's finding stands: no untried
 // natural form is left, and the file's flags are the cause.
+// m3 lane 2 r81 (plain each with 0x21f8a0; masked = aligned count with registers and esp offsets masked, base 328): the send
+// counter as `char` 608 (1948 B; matched 0x21f8a0 lost at 66, reverted at once); the voice guard as `mode >= 0 && mode <= 1`
+// 544 (masked 332); the gain change as stored minus gain 544 (same count, operands swapped); the 0 dB volume as
+// `sound_decibels_to_volume(s_decibels(0ul))`, the header's bits idiom for constant levels, 542 (retail's `xor eax, eax;
+// push eax; push eax`, and the mode reload and loop `nop` go; two under the bar, not kept); on it the else-branch volume
+// from `*(s_decibels const *)&gain_bits` (same code) and the case-1-into-case-0 send switch re-measured 545. Retail also
+// copies every float it only moves with integer moves (`mov ecx, 0xc2800000` for the -64 level, `mov ecx, [edi + 0x14]`
+// for level_offset) where this /Op file moves them through SSE registers, and it stores each flag test's bool (the send
+// bits, `sends.flags & 1/2/0x20`, `input->field_30 & 1`) to the dead byte at +0xe after `direct` moves to DL.
 // P481: Existing bit-value constructors at zero/selected/send volume boundaries,
 // masks 1..7, then the original append boundary: 548/536/548/536/547/536/547/536
 // (fast control 536, full 544). NOT kept: no native frame/role recovery or equality;

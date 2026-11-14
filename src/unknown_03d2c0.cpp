@@ -287,6 +287,10 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // 85 (504 B).
 // P472: Byte/char/word/short initialization decision, integer negative-age normalization, promoted age/oldest/both: 77/77/74/74/140/160/136/164.
 // NOT kept: word/short gain three, below the threshold; other scalar-domain forms tie or regress. Original merge, scan and full body restored; cached-edge and trailing-return layout remain.
+// M3 lane 6 r179 (fast with 0x3db00 and 0x3dd10, both stay matched; control 77): the cached record's address named ahead of the
+// found test 77 (same code); `initialize` declared first 79 (first difference +0x19); the walk's best index stored before its
+// age 79; the walk's first index declared ahead of the oldest age 91; the negative-age test as `0.0f > age` 77 (same code); the
+// record pool read once into a function-scope local used for all six pool accesses 77 (same code).
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

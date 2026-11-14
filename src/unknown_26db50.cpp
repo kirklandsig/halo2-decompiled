@@ -886,6 +886,18 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // r177 above found no untried natural form; the coupled causes (an SSE use of `(real)ring` ahead of the distance gives
 // retail's cvtsi2ss but moves the radius copy into EDX and the sector read after `add ebp, ecx`) are covered by the 96/89
 // lead's listed variants (sector first, radius placement, plain/const/reference radius, object pointer, own record lookup).
+// m3 lane 1 r102 (fast, 0x1ecf50, 0x26dde0, 0x26d3f0 and 0x26d100 matched each time; masked = aligned count with registers
+// and offsets masked): the existing rotate_direction plus the ring phase named in the outer loop rebuilt 96 (1090 B, masked 34;
+// its rotation is retail's apart from the dot's (k + j) + i and the XMM3/4/5 permutation, and its head reads the sector after
+// `add ebp, ecx` and copies the radius through EDX, where the current body's head is retail's). Stacking the listed residual
+// fixes on it: the spoke counter zeroed before the phase with the collision marker stored before the entry pointer 94 (1090 B,
+// masked 32); that with trace.distance read at each use 87 (1089 B, masked 35); that with the sector read ahead of the radius
+// 264 (1073 B); with the phase after the distance 87 (same code); with one named `(real)ring` for the phase and the distance 87
+// (same code). The named phase is a one-use value ahead of the spoke loop, so none is kept without a match.
+// P487: Standard rotation-dot/trace-point/collision-point coordinate producers,
+// seven subsets then explicit operators: 238/277/265/311/295/314/331/407.
+// NOT kept: no eligible gain; original helper, radius reference and full body restored.
+// Radius scheduling, SSE ring conversion and rotation spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
