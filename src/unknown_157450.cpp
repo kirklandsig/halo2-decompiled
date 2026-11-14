@@ -491,8 +491,10 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // 0xc (129), the same with an early engine-index read (129), and an early engine local only moves the index and the
 // engine load above the stores (32). Left: the mask's word load and word spill, its one reload into ECX ahead of the
 // first jne, the playing teams in EDX and the engine index read at the head of the change block.
-// score 29 (was 32): the old team mask is still zero-extended to a dword when it is loaded and spilled as a dword, where retail loads and spills a word; its reload into ECX ahead of the first jne also still differs.
-// MiniMax D (11-14): 29 (was 32), kept: a named team-bit carrier (dword team_bit = 1 << team; present_teams |= team_bit;) inside the team test makes the loop's bit build and the present update match retail's register choices and removes the loop's remaining differences; what is left is the old mask's word load and word spill, which retail does with `mov cx` and a word store while our build zero-extends into ECX and stores a dword, and the reload of that spill ahead of the first jne.
+// score 32 (was 32): the word mask, its one reload ahead of the first jne, and present's update in EBX remain.
+// D's form, not kept: score 29 (was 32): the old team mask is still zero-extended to a dword when it is loaded and spilled as a dword, where retail loads and spills a word; its reload into ECX ahead of the first jne also still differs.
+// MiniMax D (11-14), NOT kept (coordinator: the gain is a one-use `dword team_bit` local, kept only with a
+// byte match, and 3 points from 32 is under the keep bar; code back to main, 32): 29 (was 32), kept: a named team-bit carrier (dword team_bit = 1 << team; present_teams |= team_bit;) inside the team test makes the loop's bit build and the present update match retail's register choices and removes the loop's remaining differences; what is left is the old mask's word load and word spill, which retail does with `mov cx` and a word store while our build zero-extends into ECX and stores a dword, and the reload of that spill ahead of the first jne.
 // MiniMax D (11-11): 24 (was 32), NOT kept (coordinator 11-11: lane 14 r55's width cast on one side of the compare; retail compares dword; body stays at 32): the old team mask as a word local (retail's `mov cx` entry and its
 // word spill) with the present compare narrowed to a word (`(word)present_teams != old_team_mask`); the
 // present mask's high bits are always zero, so the narrowing keeps the behaviour. The compare is still
@@ -827,9 +829,7 @@ void function_158140(void)
 
 		if (team != NONE)
 		{
-			dword team_bit = 1 << team;
-
-			present_teams |= team_bit;
+			present_teams |= 1 << team;
 			if (!(player->flags & 2))
 			{
 				playing_teams |= 1 << player->team;
