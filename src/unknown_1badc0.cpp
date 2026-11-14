@@ -16,15 +16,17 @@ real normalize2d(point2f *arg_0);
 // MiniMax H (11-13): no new form, no lower score (171): the permuter's 41 tries in 311 s found nothing below 171,
 // and the difference still stands where retail computes the centre-minus-actor and the centre-minus-point differences
 // in the prologue and the point-minus-actor difference at its use, while ours forms the point-minus-actor difference first.
-// MiniMax C (11-14): improved to 130 (was 171): the actor-to-centre vector is formed before the radius read, both point differences come from the function's own copy of the point, the scaled radius is named once, 2.0f minus the length is computed inside the normalize block and the result is set ahead of the output store; this round the object lookup before the point copy measures 141, the dot product's two operands swapped measure 130 (the same code), and the permuter's 300 s search over the reduced image (31 tries) left the baseline where it was.
+// MiniMax C (11-14), NOT kept (coordinator: the 130 needs three statement moves together, the centre vector
+// before the radius read, `2.0f - local_11` inside the normalize block and `result = true` first; the two
+// natural changes alone, the point copy for both differences and the scaled radius named once, give 175,
+// and each move alone on them 232-239; at 130 the three differences' order, the products' registers and
+// the zero's home still differed): 130 (was 171): the actor-to-centre vector is formed before the radius read, both point differences come from the function's own copy of the point, the scaled radius is named once, 2.0f minus the length is computed inside the normalize block and the result is set ahead of the output store; this round the object lookup before the point copy measures 141, the dot product's two operands swapped measure 130 (the same code), and the permuter's 300 s search over the reduced image (31 tries) left the baseline where it was.
 // MiniMax C (11-11): no new form, no lower score (180); the length (1025) and the frame 0x90 agree, but the opening still forms the components in our order, and the copy schedule it needs is set by the query helper in src/unknown_1c20f0.cpp and the inline-ness of 0x30c60, both in other files this lane may not edit.
 // MiniMax G (11-12): no new form, no lower score (171): retail computes the centre-minus-actor and centre-minus-point differences in
 // the prologue and the point-minus-actor difference at its use, while ours still forms the point-minus-actor difference first; every
 // reordering of the three difference blocks regresses (219, 219, 221, 231, 231) and the squared length's sum order makes no difference.
-// score 130 (was 171): the centre is copied before the radius and both projections now go through
+// score 171 (was 180): the centre is copied before the radius and both projections now go through
 // dot_product2d on a named actor-to-centre vector, and the squared length sums its j term first as
-// retail does; what still differs is the order the three differences are formed in, the registers the
-// two products take, and the zero the tests compare against (ours in a register, retail in the pool).
 // retail does; the opening still hoists the point's y difference above the copy.
 // MiniMax H (11-11): round 66's other two changes re-measured here - `result = true` ahead of the
 // output store and `2.0f - local_11` inside the normalize block give 238 and 242 alone, 226 with
@@ -448,13 +450,13 @@ bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
         point3f local_1 = *arg_2;
         byte *local_2 = (byte *)object_get(arg_1);
         point3f local_3 = *(point3f *)(local_2 + 0x30);
-        vector3f local_centre;
-        vector3d_from_points3d(&local_0->position, &local_3, &local_centre);
         real local_4 = *(real *)(local_2 + 0x3c);
         vector3f local_5;
-        vector3d_from_points3d(&local_0->position, &local_1, &local_5);
-        vector3f local_6 = *(vector3f const *)&local_1;
+        vector3d_from_points3d(&local_0->position, arg_2, &local_5);
+        vector3f local_6 = *(vector3f const *)arg_2;
         vector3d_from_points3d((point3f const *)&local_6, &local_3, &local_6);
+        vector3f local_centre;
+        vector3d_from_points3d(&local_0->position, &local_3, &local_centre);
         real local_7 = local_5.i * local_5.i + local_5.j * local_5.j;
         if (local_7 > 0.0f)
         {
@@ -473,9 +475,8 @@ bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
                 }
                 if (normalize2d(&local_9) > 0.0f)
                 {
-                    real local_scaled_radius = local_4 * 1.1f;
-                    local_1.x = local_9.x * local_scaled_radius + local_3.x;
-                    local_1.y = local_9.y * local_scaled_radius + local_3.y;
+                    local_1.x = local_9.x * (local_4 * 1.1f) + local_3.x;
+                    local_1.y = local_9.y * (local_4 * 1.1f) + local_3.y;
                     vector3f local_10;
                     vector3d_from_points3d(&local_0->position, &local_1, &local_10);
                     real local_11 = local_10.k * local_10.k + local_10.j * local_10.j + local_10.i * local_10.i;
@@ -491,9 +492,9 @@ bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
                             local_12.j = 0.0f - local_12.j;
                         }
                         local_12.k = 0.0f;
+                        real local_13 = 2.0f - local_11;
                         if (normalize2d((point2f *)&local_12) > 0.0f)
                         {
-                            real local_13 = 2.0f - local_11;
                             local_1.x += local_12.i * local_13;
                             local_1.y += local_12.j * local_13;
                             local_1.z += local_12.k * local_13;
@@ -513,9 +514,9 @@ bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
         long local_17 = function_26d100(g_4687b0, &local_1, (long *)arg_3, (s_collision_result_1697c0 *)&local_16);
         if (local_17 != NONE)
         {
-            result = true;
             if (arg_4)
                 *arg_4 = local_17;
+            result = true;
         }
     }
     else
