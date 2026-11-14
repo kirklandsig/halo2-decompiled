@@ -1345,6 +1345,18 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // bytes, masked 83: only loop-alignment padding moves, retail's `jmp` over padding in the first request is lost; a constant-only
 // local, not kept), for the second only 826, `bool const urgent` 828 (the base code), both locals in both requests 1050 (2724 bytes);
 // 0x1dd9d0 after the requests 1030 (2853); the requests in reverse order 980 (diagnostics).
+// M3 lane 12 r120 (fast with the file's 37 functions, 0x2963f0, 0x1dd560, 0x1236f0; control 828/828, 39 matched): slot counts
+// (build/r120/slots.py) explain found_mode's dead home: the compiler gives a dead parameter home to the heaviest value that can
+// live there. Retail's is the shared +0x34 table pointer with the per-pass candidate (14 references at +0x54 after the pushes; the
+// three iterator outputs have 8, 8 and 7 and stay in the frame); ours is iterator_mode with 12 (one store, one address, ten
+// reads), because our second request reads the mode from memory at each of its kinds, keeps the table pointer in EBX and
+// loads `this` into EBP once per kind, where retail loads `this` into EBX and the mode into EBP once at the request's start
+// (as both builds do for the first request). Diagnostic (reverted, changes behaviour): the second request keyed by the `mode`
+// parameter 829/828: iterator_mode (3 references) then sits in the frame and the candidate and table pointer take a dead
+// parameter home, as the rule predicts. Trials: 0x1dd9d0 declared `inline` (callers of an out-of-line `inline` callee assume
+// the standard registers clobbered) 828 (same code); the request helper's three keys as `long const &` 828 (same code); a fresh
+// `graph` and `found` local declared just ahead of the second request 828 (same code: both copies still coalesce with the
+// homes). Left as before: the second request's register roles, hence the dead-home owner and the EBP zero.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1666,6 +1678,8 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // argument slot instead of a frame slot, so retail's result shorts sit at +0xc/+0xe and ours at +0x8/+0xa, and retail's
 // EBP zero carrier in the second resource request is still missing; declaring the three NONE locals ahead of the early
 // return gives retail's sentinel register but reorders the prologue and scores 979.
+// M3 lane 12 r120: see 0x1db170's note of this round (same code but for the array offset); the same three trials and the
+// diagnostic measured 828 on this body in the same checks.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

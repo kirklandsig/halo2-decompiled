@@ -1055,6 +1055,9 @@ struct s_tail_transfer_traits
 // P438: Original scenario/unit-index/unit/first/second and per-pass clock/age/weapon
 // bindings fixed independently: eight 153. NOT kept: selected-traits/unit/NONE homes
 // and no-seat reloads unchanged; original complete body restored.
+// T102: Complete primary-traits selection polarity in bool/byte/char/signed-char/
+// short/word/long/dword: 156/156/156/156/255/255/242/242. NOT kept: no exact
+// selected-traits/unit/NONE-home repair; original selector and complete body restored.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1331,6 +1334,13 @@ long function_cbd50(long unit_index, short weapon_index);
 // and native pool/player/tag homes unchanged; original complete body and helpers restored.
 // P440: First-loop do/while with the existing slot provider, and held/pending/paired/output/held-output/all walks: 215/215/330/329/313/215/330/313.
 // NOT kept: Native player/pool/tag homes remain; direct entry ties and genuine producer cursors regress. Original complete body restored.
+// P456: standard one-element zero clears across initial/attached/final output phases, all seven
+// complete phase families 215 each; one complete attached four-Boolean clear 309 at 988/1006 bytes.
+// NOT kept: no gain; original Boolean stores, all slot providers and complete body restored. The tag
+// table still hoists, player/pool homes remain nonnative and frame stays 0x1c versus 0x18.
+// P458: Retained slot-provider count char/short/word/dword, entry then count-phase lifetime:
+// 293/216/216/215/292/274/274/273. NOT kept: late count restores frame 0x18 but regresses length; player/pool/tag homes remain; original complete body restored.
+// P460: Complete count-admission/retained-pair outcomes in bool/byte/short/long on the retained slot-provider graph: eight 215. NOT kept: extra frame word and player/pool/tag homes unchanged; complete body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1683,6 +1693,8 @@ void function_150820(dword *bits, bool local_only)
 // Flags diagnostic, reverted (the one compiler-setting trial): this file built with /Ob1 leaves both functions as they are
 // (43 / 17) and stops the 0x151b80 expansion in 0x14f820 (2636 bytes there against 2740, 775), so the exchange is not an
 // effect of that expansion.
+// P458: Initial unit/selected-slot presence outcomes, bool/byte/short/long:
+// 43/43/43/43/43/43/43/43. NOT kept: native saved player/hand and entry scratch roles not recovered; original complete body restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

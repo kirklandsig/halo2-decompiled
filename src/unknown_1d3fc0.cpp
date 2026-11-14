@@ -30,11 +30,11 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
+// score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
+// magnitude/projection schedules remain. Both axis receivers begin after normalization.
 // MiniMax B (11-12): no new form, no lower score (110, was 110): the frame 0x13c and the 922-byte length agree; the
 // axis block's dot product still multiplies up's i first where retail multiplies forward's i first, and the only
 // shapes that flip it need the existing dot3f body written out by hand and a second access path to one field.
-// score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
-// magnitude/projection schedules remain. Both axis receivers begin after normalization.
 // MiniMax R (11-11): no new form, no lower score (110); the axis block's dot product still multiplies up's i
 // first where retail multiplies forward's i first, and the only shapes that flip it need the existing dot3f
 // body written out by hand and a second access path to one field, so they stay dropped; swapping the dot's
@@ -408,6 +408,10 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // reciprocal's register. Body unchanged.
 // M3 lane 3 r238 (fast, 0x1c4a80 matched): round 150's 2 form re-measured 2 (922 B; the dot's i product copies up.i where
 // retail copies forward.i). No untried natural form found. Body unchanged at 110.
+// Round 194 (m3 lane 4, fast, 0x1c4a80 matched): the projection through the existing helpers with a named offset vector,
+// `vector3f_scale(forward, -local_10, &offset); vector3f_add(up, &offset, up);` 156 (929 B), with `0.0f - local_10` 156;
+// `vector3f_scale(forward, local_10, &offset)` then `up->x -= offset.x` rows 110 (same code); each with the normalizer's
+// squared length through dot3f 155 (925 B) and 154 (922 B). Body unchanged.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

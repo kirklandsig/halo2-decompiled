@@ -939,6 +939,20 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // for the index helper (`&stream->m_message_window`) or for the bound 89 each (the copy propagates away: the listed
 // all-member code); `message` declared after the index with its zero initializer 60, `short flags` 60, the bound declared
 // in the for initializer after `next` (`for (long next = ..., newest = window->newest; ...)`) 60 (all three the same code).
+// M3 lane 13 r89 (fast with 0x96510/0x94df0, control 60): the found path's flag update through the flags local (`message->flags
+// = flags | 2;`) 68 (231 bytes); the window helpers `__forceinline` 60 (same code); re-measured: the send and count tests as
+// an early `if (get_next_send(...) || !count) return type;` 79 (213 bytes, the listed early return), the count alone as an early
+// return inside the send test 79 (same code); the send result in a named bool 60; the start as `long next = m_next_sequence; for (next++; ...)` 60 (both the
+// same code); the flag test with bit 2 first 60, `*time` stored before `*size` 60 (both change the code within lines that already
+// differ); the flag update ahead of the found path's three stores 62; `*sequence` stored last 62. Diagnostics (behaviour
+// changed, reverted): two values kept live across the loop 113/145 (they spill and the second
+// counter stays: not register pressure); the loop started from `window->oldest + 1` 73 (still reduced). With the member window
+// at the index, the loop's hoisted oldest is never merged with the count's read: a store of oldest before the loop 88, the start
+// from oldest 101 (also with the bound in the test, 0x94df0's loop shape), the found path after the loop 86 (no stores in the
+// loop), that with the start from oldest 86 and the bound in the test 111. Only a read of oldest in the loop's own preheader
+// block (a clamp of the start against oldest, 79) merges with it. So the window pointer merges early and reduces, the member
+// view never merges; retail (and matched 0x94df0) merge without reducing, which no view, loop shape or found-path placement
+// here reproduces.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

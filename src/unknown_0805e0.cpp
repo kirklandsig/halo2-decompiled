@@ -388,6 +388,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // `*iterator = entry->next` with `index = *iterator` at the loop's end and early returns 49; early returns with the successor
 // read through the table ahead of the entry pointer 53 (134 bytes); early returns with a successor local and the copy as an
 // aggregate assignment 49; the same with the guest test as `XOnlineIsUserGuest` on the flags dword 49. Original body restored.
+// m3 lane 3 r239: no trial run. Checked against this note and listed: early returns, a successor local stepped at the
+// end, per-pass result, `continue` filters, priming lookups, the iterate helper, typed XUID tests, the null-identity
+// validity, two-use flags/XUID locals, split eligibility scopes, result/index/successor widths and every loop shape.
 // P451: Whole-loop long result 59; final name-word pointer / lazy offline result /
 // lazy identity-presence result / nullable early completion / sole-return goto 43/43/43/43/43;
 // memmove payload 53; explicit final Boolean return arms 52. NOT kept: no gain or equality;
