@@ -171,6 +171,9 @@ void function_22fba9(c_class_1473c9 *screen)
 // the whole allocation (screen kept in EBX). Reading: `and [slot], reg` is a constant-zero store whose immediate a late
 // pass replaced by a zero register, `mov [slot], reg` a store the optimizer already tied to the counter; retail has
 // the first in the text loop only.
+// Round 157 (m3 lane 7, fast): the model loop walking a definition pointer (incremented in the call) 150 (421 bytes);
+// the text loop walking one 46 (419 bytes); 0x22fa5b's parent parameter typed as the screen class, as 0x22f9bf's, 23 (same
+// code). Stopped there: round 51's 15 counter combinations and round 86's diagnostics cover the counter and loop spellings.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
