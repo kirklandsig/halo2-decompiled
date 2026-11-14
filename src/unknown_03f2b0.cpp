@@ -1541,6 +1541,11 @@ struct s_133f70;
 // last full build (its fast score is 355, not 93), so a fast measurement of it is only a screen; what the fast diff
 // shows is that this build's frame is 0x3400 bytes against retail's 0x33f8 and that it returns with `ret 4` where
 // retail returns with `ret 0x18`, so the callee's argument count is one short here.
+// M3 lane 13 r92 (plain; control 93): a named `forced` flag pointer for the 0x4bcc0 argument and the first flag test 93
+// (same code); the loop index declared at function scope 93; `success` declared first in the loop 91 (two points, not kept);
+// the 0x4ed284 test through a one-caller inline entry getter 93 (it folds: no dead lea); that getter with `success` first 91.
+// Retail's 0x3e380-like allocate-and-fill sequence (count, bytes, render_memory_allocate, 0x137800) is one inlined helper in
+// retail; the existing 0x3e380 differs (NONE object, extra bytes), so no existing helper fits.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

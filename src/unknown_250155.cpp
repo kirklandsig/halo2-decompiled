@@ -1561,6 +1561,11 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // form `for (i = 0; i < 16 - index_count; i++) indices[index_count + i] = NONE;` gives 155, a separate
 // counter for the tail fill compiles to the same code as the shared one, and the item_count and
 // index_count homes stay swapped whatever the declaration order or the initialisation.
+// M3 lane 13 r92 (fast): `inline` on 0x5a680's definition (to hide its summary from the 0x19a9b4 chain) 83, but LTCG then
+// expands 0x5a680 into its callers and six matched callers lose (0x19a9b4 55, 0x19a951 55, 0x199ebc 32 ...), restored; the
+// three qsort calls written out with pointer `<` fills in both branches 149; the qsort calls written out with branch one's index
+// fill 163 (420 bytes); pointer `<` fill in branch two only 132 (443 bytes); pointer `<` fill in branch one with branch two's
+// index fill 137 (442 bytes).
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
