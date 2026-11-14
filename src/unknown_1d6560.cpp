@@ -100,12 +100,6 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
-// MiniMax B (11-12): no new form kept, no lower score (96, was 96): case 0 through the object_index local (the object
-// read through the index already in hand instead of a second read of the component) gives 91 at 256 bytes, but it
-// moves the component off the register the caller passes it in, and the caller 0x1d5bf0 then differs at 146 (it
-// matches with this body), so the original body is kept. The one type read at the entry (a byte local) gives 117 at
-// 236 bytes; the header array local gives 92; the headers, rigid body and object index declared in that order gives
-// 92 at 256 bytes. Retail's own convention is component EAX, rigid index ECX, kind EDI, owner and level on the stack.
 // score 96 (was 96): no local frame; retail reads the type once before the kind test (one type read shared by
 // both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
 // component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must
@@ -114,6 +108,12 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // 117, after headers/body/index 94 (caller 13), body then type 136, kind 7 as a ternary 104;
 // case 0 through the object_index local 91 at 256 bytes (caller 146), with the one-read type
 // 132-133; parameters reordered (rigid index first, component last) 96 / 94 (caller 13).
+// MiniMax B (11-12): no new form kept, no lower score (96, was 96): case 0 through the object_index local (the object
+// read through the index already in hand instead of a second read of the component) gives 91 at 256 bytes, but it
+// moves the component off the register the caller passes it in, and the caller 0x1d5bf0 then differs at 146 (it
+// matches with this body), so the original body is kept. The one type read at the entry (a byte local) gives 117 at
+// 236 bytes; the header array local gives 92; the headers, rigid body and object index declared in that order gives
+// 92 at 256 bytes. Retail's own convention is component EAX, rigid index ECX, kind EDI, owner and level on the stack.
 // MiniMax I (11-09): no new form, no lower score; retail takes the owner and the level on the stack and returns with `ret 8`, ours keeps the owner in ECX and returns with `ret 4`, so the body cannot match while the caller keeps its matched form: BLOCKED-BY the caller 0x1d5bf0 (src/unknown_1d5bf0.cpp).
 // MiniMax R (11-09): no new form, no lower score (96); retail reads the object type once at the entry and dispatches it through a byte-indexed table, ours reads the type again in each branch, and the one-read forms move the caller's argument setup.
 // MiniMax A (11-06): no new form, no lower score; retail loads the object-header pool and its data at the
@@ -389,6 +389,12 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // flag selections as ternaries 98 (272 B). Re-measured: round 60's 24 form 24 (256 B), with a long type 89 (aligned 24,
 // masked 12: the type then loads with retail's one movzx; left is the entry's register choice, headers ESI loaded after
 // the bodies, object index EDX, rigid body in ECX, where retail loads the headers first into EDX and uses ECX, ESI).
+// Round 194 (m3 lane 4, fast, caller 0x1d5bf0 in brackets), on round 56's one-read base (object_index, type, rigid body, the
+// kind-7 ternary; re-measured 96 at 256 B [0]): a `headers` local for the type read with case 0 through
+// `headers[component->object_index & 0xffff]` 96 at 256 B [0] (headers loaded after the bodies into ESI, object index EDX);
+// with case 0 through `headers[object_index & 0xffff]` 141 at 212 B [213]; a byte type 95 at 256 B [0]; the rigid body
+// declared first 107 at 240 B [13]; `headers` declared first with case 0 through the component 96 at 256 B [2] (the component
+// arrives in EDX). Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

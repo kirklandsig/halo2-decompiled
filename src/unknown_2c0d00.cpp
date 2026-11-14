@@ -465,6 +465,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // to 3702/3731 and misses native frame 0x2cac. Original complete body restored.
 // MiniMax B (11-13): no new form, no lower score (920): the frame is 0x2cb4 against retail's 0x2cac, and the actor,
 // unit, priority and query homes still differ; the byte homes do not follow the order of the source's object scan.
+// P463: Complementary device-sphere admission bool/byte/short/long 917/917/918/920;
+// complementary restricted-sphere admission 926/926/924/924 reduced (control 926, full 920).
+// NOT kept: native positive-byte results and frame 0x2cac are unrecovered;
+// all original classifications, buffers, qualifiers and complete body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

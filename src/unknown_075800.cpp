@@ -961,6 +961,8 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// score 143 (was 153; m3 lane 3 r239 C1, kept by the coordinator 11-13): case 11 sits in the first switch after case 24.
+// Earlier (153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // MiniMax B (11-13): no new form, no lower score (153); the address and the message still keep different homes, and the caller that passes them lives in another file.
 // score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // MiniMax G (11-12): no new form, no lower score (196); retail's convention is eax = the message type,
@@ -1415,6 +1417,15 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // getters, forced-inline helpers), round 150 (const reference to a cast temporary, file-local handlers), round 139 (address
 // declared long or as a reference), m3 lane 1 r88 (address copied at entry), round 85 (link read once), round 74 (0x92ef0's
 // parameter orders); no unlisted member was found, so no trial was run (0 trials: no unlisted natural form).
+// m3 lane 3 r239 (all plain with 0x7afd0, 0x93aa0, 0x94420, 0x94270, 0x92ef0, 0x92d10, all MATCH unless noted; control 153).
+// Kept (coordinator 11-13; the lane held it as a score-picked case order): case 11 moved from the late switch into the
+// first, after case 24. That follows retail, whose jump table dispatches 11 itself
+// and its block follows 24 there), the late switch keeping only 18 (as a plain `if (message_type == 18)`, the same code),
+// 143 at 460 B (aligned 89 -> 77, register-masked 53 -> 35; build/r239/lead-0x938e0-143-if.patch). The same with case 11 in
+// numeric place (after 10) 157 (masked 35: only the block layout moves): the case's position is retail's block order,
+// which the source order gives (no code runs between the two switches, so behaviour is unchanged). Also: 18 in the first switch with 11 alone late 213 (424 B, 0x7afd0 3: 0x94420 stops inlining and
+// the convention moves); on the lead, 18 tested ahead of the switch with its own return 216, `case 18: break; default: return;`
+// with the call after the switch 217 (420 B, 0x7afd0 3), `case 18:` labelled onto `default: break;` 143 (same code as the lead).
 // P451 (full 153, reduced control 196): Individual late cases in the primary root 216/196;
 // individual default-owned late cases 196/195; separate connection interval 197;
 // unsigned connection result / void call-return expressions / connection result name 196/196/196.
@@ -1464,6 +1475,9 @@ void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_ty
 	case 24:
 		function_945f0((const s_session_id *)message, address);
 		return;
+	case 11:
+		function_94270((const s_session_id *)message, address);
+		return;
 	case 5:
 		connection_index = network_link_find_connection(field_4_5, 0, address);
 		if (connection_index != NONE)
@@ -1485,9 +1499,6 @@ void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_ty
 	{
 	case 18:
 		function_94420((const s_session_id *)message, address);
-		break;
-	case 11:
-		function_94270((const s_session_id *)message, address);
 		break;
 	}
 }

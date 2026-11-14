@@ -231,6 +231,15 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // vector loads as minuends (arg_1->y, arg_4->x); retail adds arg_1->x, its second subtrahend. Side vector forms on that
 // lead: i as `-(arg_4->y - arg_1->y)` 260 (1183 bytes, a real negation), j as `-(arg_1->x - arg_4->x)` 259, as
 // `0.0f - (arg_1->x - arg_4->x)` 259, both from named differences (dy, -dx) 259; j assigned then `-=` 20 (same code).
+// Round 162 (m3 lane 8, fast with 0x1e55d0 and the five callers; control 20, identical listings checked): re-measured round 188's
+// orders with arg_4 after arg_8: (arg_2, arg_3, arg_1, arg_5 .. arg_9, arg_4, arg_0) MATCH with 0x1b0400 38 and 0x25f7b0 12;
+// (arg_2, arg_3, arg_1, arg_0, arg_5 .. arg_9, arg_4) and (arg_2, arg_3, arg_1, arg_0, arg_5 .. arg_8, arg_4, arg_9) MATCH with
+// 0x1b0400 38, 0x1b2770 2, 0x25f7b0 12. Reading: 0x1b0400's retail call computes the arg_7 compare (`cmp [ebx+0x26c], -1`) before
+// `state + 0x30` (arg_4) and arg_0's `mov ebx, eax`, which right-to-left evaluation gives only with arg_4 and arg_0 declared
+// before arg_7, while this body folds the x row only with arg_4 after arg_8: the two want contradictory orders. On the first
+// order, 0x1b0400's compare named before the call 52 (a stack slot). New body forms: the mode parameter declared `short` at the
+// definition and every declaration (casts dropped) 20 (identical); the side vector through the existing vector3f_assign 20 (same
+// code); the 0x10000000 probe bit set before the side vector 36; `hit` initialised false with the final else dropped 20 (identical).
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

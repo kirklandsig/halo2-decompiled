@@ -1585,6 +1585,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // P442: Complete direct-lvalue seat-priority leaf producers, eight branch orientations:
 // 33/113/108/113/32/113/108/113. NOT kept: no exact iterator/request-home repair; original
 // priority, flag observations, selection, requests and complete body restored.
+// P463: Caller-owned submit-test success bool/byte/short/long 29/29/29/29;
+// submit-test failure counterparts 73/73/73/73 reduced (control/full 32).
+// NOT kept: test-set results lack equality; success repairs candidate-handle
+// scheduling only, leaving departure/request/slot homes. Original full body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2902,6 +2906,10 @@ struct s_scenario_scripting_view
 // paired bindings, then paired field pointers: eight at 80, 367/367 bytes.
 // NOT kept: no exact field-storage form; original complete search restored.
 // Actor/counter/set and guarded scripting-data homes remain.
+// P463: Existing geometric helpers' complete native union-coordinate nodes
+// start/end/output/self-product/start-end/start-output/end-output/all:
+// 80/80/80/80/80/80/80/80. NOT kept: no equality or native actor/counter/data
+// home repair; shared header and original complete search restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
