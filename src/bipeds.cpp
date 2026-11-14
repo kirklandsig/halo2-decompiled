@@ -2821,6 +2821,7 @@ bool function_1d5120(s_havok_component *component, long rigid_body_index, long a
 void __stdcall function_1c3770(long object_index, dword flags);
 
 /* steps a dead biped's ragdoll settling (+0x3aa) toward rest */
+// MiniMax I (11-14): no new form, no lower score (63): retail still tests the +0x3aa byte in place where this build sign-extends it into a long, and retail clears +0x349 with a byte read-modify-write where this build hoists 0x9fff into a register and does word clears (the struct has no byte field at +0x349); the settling count still travels to 0x1d5120 as a stack argument, whose declaration lives in another file.
 // score 63 (was 63): extra EBP (the Havok base loaded early), count transport and the hoisted 0x9fff flag clears differ.
 // MiniMax H (11-12): no new form, no lower score (63): byte-typed flag bitfields (103), a byte view of +0x349 clearing through the high byte (103), the count read again at the call through BIPED_GET (76) or in place (87) and the char body with a short selection (76) all measure worse; the extra EBP, the widened count test and the hoisted 0x9fff word clears remain.
 // MiniMax G (11-12): no new form, no lower score (63): nothing new this round; the extra EBP (the Havok base loaded early), the
@@ -5353,6 +5354,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// MiniMax I (11-14): no new form, no lower score (79): the first difference is still inside the shared rotation helper, whose own file this lane may not edit, and the operand orders measured in the earlier rounds all sit at or above the body.
 // score 79 (was 79): first rotation and staged cross product operands (load-first where retail copies the axis
 // register), 894 against 887 bytes. Round 112 (m3 lane 12) note at the end.
 // MiniMax G (11-13): no new form, no lower score (79): the diff re-read this round finds the same first difference, inside the shared rotation helper whose own file this lane may not edit, and the operand orders listed above still measure at or above the body, so the body stands.

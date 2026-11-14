@@ -105,6 +105,7 @@ void __stdcall function_1c710(void *state);
 // MiniMax A (11-12): no new form, no lower score (188); the body is 35 bytes longer than retail's 1422 and the first
 // difference is at +0x335, where retail inlines only the first of the four SetVertexData2s and calls the other three
 // out of line, and the only lever for that (an inline_depth pair) may not be added.
+// MiniMax I (11-14): no new form, no lower score (188): the permuter (300 s, three tries) found nothing below its 161 differing-instruction baseline, and the first difference stays at +0x335, where retail inlines only the first of the four SetVertexData2s and calls the other three out of line - the only lever for that is an inline_depth pair, which may not be added.
 // score 188 (was 188): the body is 35 bytes longer than retail's 1422 and the first difference is at +0x335, where
 // retail inlines only the first of the four SetVertexData2s and calls the other three out of line; the only lever for
 // that is an inline_depth pair, which may not be added.
@@ -4053,6 +4054,7 @@ void function_1eb00()
 // MiniMax H (11-03): no new form, no lower score; SDK SetPixelShaderProgram inline: 763 bytes but merges the flag's 1 with the render-state argument into ebx (155), cross-module helper 155, helper call 167.
 // MiniMax E (11-01): no new form, no lower score; retail's body builds four shader programs from
 // tables and caches that this project does not have.
+// MiniMax I (11-14): no new form, no lower score (79): replacing the zeroed 24-float array's initializer with an explicit memset scores 119 (the body shrinks to 732 bytes against retail's 763), so the initializer stays; the rest of the difference is retail's four shader programs, which are built from tables this project does not have.
 // score 79 (was 79): this round found no gain - retail's body builds four shader programs from tables and
 // caches that this project does not have, so the difference is a knowledge difference, not a local form.
 // MiniMax C (11-08): no new form, no lower score.
@@ -4309,6 +4311,7 @@ extern long g_485898;
 // xmm3) before the three byte conversions and keeps the conversions in xmm0..xmm2, so the constant and the
 // conversion registers are the compiler's own order and not the source's; the frame is still 0x38 against retail's
 // 0x34 because retail reuses the position's slots for the four corners.
+// MiniMax I (11-14): no new form, no lower score (285): the frame is still 0x38 against retail's 0x34, because retail reuses the position's slots for the four corners, and the definition's flag byte is still copied into a register here where retail tests it where it lies.
 // score 285 (was 285): retail's frame is 0x34 bytes and ours 0x38, because retail reuses the
 // position's stack slots for the corner coordinates while we keep two slots of our own, and
 // retail tests the definition's flag byte where it lies while we copy the byte into bl.
@@ -4882,6 +4885,7 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
 // vertex calls and so draws something else, not kept. MiniMax D (11-01): no new form tried, no lower score.
 // Permuter (25 min on #1066, about 650 variants, on its own rendering that loses the round 2 order): best 142, above
 // this source's 125; nothing kept.
+// MiniMax I (11-14): no new form, no lower score (125): the body is still five bytes longer than retail's 1027, which moves the two early skips' branch targets, and the four screen values are still loaded in another register order (ours xmm1/xmm3/xmm2/xmm5 against retail's xmm6/xmm3/xmm2/xmm7); taking the four products in retail's machine order (width*cosine, height*cosine, width*sine, height*sine) scores 213 and grows the body to 1045 bytes, and the earlier permuter run over this body found nothing below 142.
 // score 125 (was 125): our body is five bytes longer than retail's 1027, so the two early skips branch to a near block
 // here and to the end of the body in retail, and the four screen values are loaded in another register order (ours
 // xmm1/xmm3/xmm2/xmm5 against retail's xmm6/xmm3/xmm2/xmm7) and in another slot order; retail multiplies
@@ -5013,6 +5017,7 @@ void function_48010(real const *color);
 // MiniMax D (11-10): no new form, no lower score (244).
 // MiniMax D (11-01): no new form tried, no lower score.
 // MiniMax H (11-12): no new form, no lower score (244): retail still copies the mode parameter into ebp in the prologue and keeps six of its function_0222d0 calls out of line where this build inlines all six, and the switch on the mode still writes its states in the other order.
+// MiniMax I (11-14): no new form, no lower score (244): retail still copies the mode parameter into ebp in the prologue where this build loads it later, and retail still keeps its function_0222d0 calls out of line where this build inlines all six; that helper's inline-ness is set in another file.
 // score 244 (was 244): retail copies the mode parameter into ebp in the prologue and keeps the
 // flag scratch in esi, while we keep the flag scratch in ebp and load the mode into esi later;
 // retail is also 17 instructions longer than ours, and the two drift apart in the mode branch.
@@ -6026,6 +6031,7 @@ vector3f *function_11d000(vector3f const *vector, vector3f *perpendicular);
 void function_141ce0(real first, real second, real third, transform4x3f *out);
 real g_5259b4;
 dword g_4b8430;
+// MiniMax I (11-14): no new form, no lower score (127): the reference entry form reaches 2 with the split index test and 4 with the combined one, but both keep the one-use reference, which the rules keep only on a byte match; the row 12 products written into named locals give 13 (they change the product order), the same products hoisted above the row 11 call give 210 (the frame grows), a reference to the whole reference table gives 487, hoisting the loop's part count gives 435, and the split index test on its own gives 125; the order of the [esp+0xd8] and [esp+0x54] reloads after the grow call survives every form tried.
 // score 127 (was 127): main's body. On the reference form (the model entry's address bound to a const
 // reference, the index < 0 test ahead of the geometry load: 2 in the plain check, kept only on a match) the
 // only difference left is two independent float reloads after the second SetVertexData4f grow call (retail
@@ -7064,6 +7070,7 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // a double, so the values agree with ours and only the arithmetic differs: retail adds and subtracts dword constants
 // on the x87 stack where this build does the same in SSE with other constants; the double form of last round cannot
 // match because the double constants it needs are not in retail's data.
+// MiniMax I (11-14): no new form, no lower score (576): the three direction components still sit four bytes higher in the frame than retail's (ours at frame+0x18, retail's at frame+0x14, so every slot above them is four bytes out) and the dot product's three products are still summed in a rotated order; retail keeps the second rounded screen coordinate on the x87 stack and narrows each bound through a temporary.
 // score 576 (was 695), Round 1 of #1066: 2436 bytes against retail 2507. Fixed: the 2nd quad and the
 // loop begin with D3DDevice_Begin (retail calls it; ::Begin inlined it), the 1st quad uses the member
 // D3DDevice::SetVertexData4f (inlined, as retail), the first ten stage states go through
@@ -8859,6 +8866,7 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
 // MiniMax B (11-13): no new form, no lower score (328): the frame is still 0x201c against retail's 0x2020 and the
 // 41 missing bytes stand; retail reads the stack parameter into ebx with the -1 sentinel in ebp where ours uses esi
 // and ebx, and loads the font pool before its first test.
+// MiniMax I (11-14): no new form, no lower score (328): retail's frame is 0x2020 against our 0x201c and retail's two small locals sit four bytes higher than ours (the header at frame+0x1c and the scaled character offset at frame+0x18, against ours at frame+0x18 and frame+0x14), so retail's frame carries four bytes of extra word-sized locals that this body does not declare; the parameter still arrives in esi where retail keeps it in ebx with the -1 sentinel in ebp.
 // score 328 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
 // MiniMax B (11-12): no new form, no lower score (328): retail loads the font pool before its first test and keeps
 // it in eax, reads the stack parameter into ebx with the -1 sentinel in ebp, keeps the header at [esp+0x10] and the
