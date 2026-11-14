@@ -1105,6 +1105,9 @@ real normalize2d(point2f *v);
 // MiniMax G (11-13): no new form, no lower score (135): retail's short exit hands the validity flag
 // back in BL (`mov al, bl`) and ours folds that exit to `xor al, al`, because MSVC folds a returned
 // bool that was tested against zero; the trajectory result stays on the stack instead of in DL.
+// T104: Independent neutral request success, joined with unchanged trajectory result,
+// logical then bitwise bool/byte/short/long: 136/136/152/151/167/167/161/158.
+// NOT kept: no equality; native-length forms still miss DL/return transport. Original entire body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

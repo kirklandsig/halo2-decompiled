@@ -1943,6 +1943,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // P442: Actual activity-derived accumulated result, bool/byte/short/long, positive then
 // complementary outcomes: 273/277/232/239/197/196/194/196. NOT kept: no exact result-home repair;
 // original parent, spin, release, event and full body restored. Return/release/contact homes remain.
+// T104: Returned contact-transform/origin-setter chains, mutable/readonly and actual filled
+// point-query outputs: 178/171/180/171/180/157/176/176. NOT kept: all regress; original
+// two-use spin, release helper, paired setters and full body restored. Return/release/event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
