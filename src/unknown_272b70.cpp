@@ -1589,6 +1589,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // submit-test failure counterparts 73/73/73/73 reduced (control/full 32).
 // NOT kept: test-set results lack equality; success repairs candidate-handle
 // scheduling only, leaving departure/request/slot homes. Original full body restored.
+// P479: Standard actor/capacity/iterator/positive-seat/strict-score/busy/winner/departure
+// predicate producers 253/230/249/215/175/201/197/175. NOT kept: all regress and grow
+// beyond 846 bytes; original iterator, geometry, requests, memset and full body restored.
+// Native handle-before-scaling, departure selector and request/slot homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2910,6 +2914,10 @@ struct s_scenario_scripting_view
 // start/end/output/self-product/start-end/start-output/end-output/all:
 // 80/80/80/80/80/80/80/80. NOT kept: no equality or native actor/counter/data
 // home repair; shared header and original complete search restored.
+// P479: Standard data-count/lower/upper/loop/metric/source/commit predicates
+// 117/120/110/112/89/98/93; complete direct/resolved coordinate transforms 99.
+// NOT kept: all regress; first form loses the exact wrapper. Original full search
+// restored; actor/counter/selector homes and delayed scripting-data observation remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

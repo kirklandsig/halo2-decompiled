@@ -958,6 +958,10 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // cleared first 65; the else arm's k row first 56, its distance copied after the three rows (before 0x11d090) 64, the
 // pitch cosine written at each use 169 (1275 bytes). Re-measured: the common field of view/offset/velocity stores once
 // after the arms 246 (1211 bytes, Round 512's listed 246). Body unchanged.
+// P479: Standard prior-up/displacement/target/fallback/saved-position coordinate producers
+// 322/250/329/324/333; paired angle multiply, complete time subtraction and reset multiply
+// kernels 258/300/417. NOT kept: all regress; native right i/j, forward.k reuse and angle bases
+// remain. Original copies, arithmetic, shared products and complete body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
