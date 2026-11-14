@@ -85,6 +85,9 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // MiniMax B (11-13): no new form, no lower score (356): the prologue still differs in its frame split (ours 0x38
 // with three register saves against retail's 0x34 with four), this sits in ebp where retail keeps the connection in
 // edi, and the -1 sentinel is ebx where retail keeps it in esi.
+// MiniMax S (11-14): no new form, no lower score (356): the extra frame bytes come from the homes the named
+// locals still take, and dropping a home means writing that local's expression out at each of its uses, which
+// this lane's rules forbid; the goto/label shape that carries the result is kept, and the body stands.
 // score 356 (was 371): frame 0x38 versus 0x34 (local_18 still has a stack home, retail EBP); observer/channel/result
 // and counter homes remain.
 // MiniMax R (11-10): no new form, no lower score (356); the frame is still 0x38 here against retail's 0x34, this
