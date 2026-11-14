@@ -179,10 +179,10 @@ struct s_physical_block_iterator
 	s_record_pool_iterator iterator;
 };
 
-// score 201 (was 201; round 95 m3 lane 11 at the end): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
+// score 201 (was 201; round 95 m3 lane 11 near the end, m3 lane 2 r79 at the end): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
 // MiniMax A (11-13): no new form, no lower score (201); the take test still jump-threads the case blocks past the
 // loop and the second age's clamp still folds away, and the only form that reaches 98 needs a policy helper with one caller.
-// score 201 (was 201): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
+// Earlier 201 (was 201): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
 // and falls into the join), the second age's clamp folds, the walk's EBX/EDI roles and the link order differ.
 // M3 lane 8 r159 (fast, 0x13d320 MATCH each time; base 201, masked 56): the first candidate taken in an `if (!have_best)` arm
 // with the switch and `if (better) best = *candidate;` in the else arm 224 (1216 bytes; case 0 still threaded); the block
@@ -623,6 +623,19 @@ struct s_physical_block_iterator
 // clamp 208 (1221 B, masked 57); case 0 as `if (older) { better = true; break; } if (same time && fewer pages) better =
 // true;` 201 (same code, still threaded); `bool better;` with no initializer 201 (same code). What keeps the count up on
 // every form is case 0 threaded into the take test, which moves cases 0 and 1 past the loop. Body restored.
+// M3 lane 2 r79 (fast with the file's functions and 0x13d320, all MATCH; base 201, register-masked aligned 88), case 0 spellings
+// with the same truth table: `better = time <= best.time && (time < best.time || pages < best.pages)` 222 (1220 B); `if (time !=
+// best.time) better = time < best.time; else if (pages < best.pages) better = true;` 200 (1213 B, retail's length, but case 0 still
+// past the loop: setb, then its pages test threaded; masked 96; a one-point gain and a bool set by if/else-if, not kept), that with
+// the second age as `MAX(physical->time - best.time, 0)` 200 (1222 B); nested `if (time <= best.time) { if (time < best.time ||
+// pages < best.pages) better = true; }` 222; the whole test in an if/else with constant arms 201 (same code); equal time first
+// (`if (time == best.time) { if (pages < best.pages) better = true; } else better = time < best.time;`) 232 (1180 B: the three
+// cases then sit before the take test in retail's default/1/0 order, masked 69, but the pages test still jumps straight to the
+// take and skip blocks); `if (time > best.time) break;` then the older-or-smaller test 222. Equal time first with both arms
+// setting true (`if (time == best.time) { if (pages < best.pages) better = true; } else if (time < best.time) better = true;`)
+// 206 (1219 B); equal time first with `better = pages < best.pages` there, else `if (time < best.time) better = true;` 200 (1213
+// B, a different code from the 200 above); unequal time first, both arms setting true, 206 (1219 B). The nested and break forms
+// are the same code as the first form (222); the constant-arm if/else the same code as main.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
