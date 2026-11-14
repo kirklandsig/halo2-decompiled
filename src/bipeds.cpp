@@ -1534,6 +1534,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
 // MiniMax B (11-13): no new form, no lower score (566); the frame is still 0xf8 against retail's 0xfc, and the call to 0x1e5bb0 still passes 17 values where retail passes 21, which the callee's own declaration decides.
+// MiniMax B (11-14): no new form, no lower score (566); retail's frame is 0xfc against our 0xf8 (one dword more) and its
+// definition pointer sits at the top of the frame where ours sits mid-frame, so every stack home after the prologue is four
+// bytes out; the speed-scale block also computes `1.0f - a*b` before the helper's multiply where ours multiplies first.
 // score 566 (was 585): earlier 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
 // material and animation homes differ.
 // MiniMax I (11-09): no new form, no lower score (588); our call to 0x1e5bb0 passes 17 values where retail passes 21
@@ -3889,6 +3892,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
 // MiniMax B (11-13): no new form, no lower score (548); the frame agrees, but the flight-call homes, the state bytes and the vector scheduling still differ.
+// MiniMax B (11-14): no new form, no lower score (548); the prologue already differs - retail computes the pool offset in EBP
+// (pushing EBP before the shift) and keeps it there, while ours computes it in EBX and pushes EBP later, so the first field load
+// and every call argument after it are one register out.
 // score 548 (was 561): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // MiniMax S (11-09): no new form, no lower score (605 in the reduced build); retail keeps the biped
 // index in EBP and the definition pointer in ECX with a home at +0x18, ours keeps the definition in

@@ -6775,12 +6775,27 @@ done:
    fell toward (front, back, left, right), plays its death (0x10ff40) and,
    from type 3, sets its ragdoll timer +0x1f5, its flags and (when the
    death had no animation) its deadness; a free biped turns to face it */
+// MiniMax B (11-14): lower score (209, was 250): the face switch's `default: __assume(0)` drops the jump table's range
+// check (retail has none) and realigns the two instruction streams; the nested `length > 0.0f` test (retail defers the
+// jbe past the multiplies) and the bit-9 bool local (retail's shr/and form) are kept. Still differing: the y scale
+// multiply - retail keeps the scale's register live and does `movss xmm3,[y]; mulss xmm3,xmm0`, ours folds the scale
+// into the multiply (`mulss xmm0,[y]`) and sinks both stores, which shifts every later instruction. The dword facing
+// copy (`facing = *(point2f const *)&unit->forward`) gives retail's four dword moves but leaves the body 12 bytes short
+// (215), and the side chain with `side = 2` hoisted into a register also scores 215. This round: both components with
+// the scale on the left, both with the scale on the right, the two mixed compound assignments and the dword copy
+// together with the left-hand spelling all fold the same way (209); `/fp:precise` changes nothing, `/GL-` is worse
+// (298), and the permuter (300 s, 7 tries) finds nothing below the 209 baseline. Later this round: the x multiply
+// already matches retail (`movaps xmm3,xmm0; mulss xmm3,[x]`) and only the y multiply differs, so the scale's register
+// has to stay live across it; the y multiply first (210), the y value through a temporary, both components through a
+// scaled copy (307), the compound assignments, the scale on the left of both and the multiplies inside the length test
+// (210) all fold the same way. The scale's register is therefore still live in retail's tree, and no third use of it
+// appears in retail's bytes, so the ingredient is still unidentified.
 // MiniMax B (11-13): no new form, no lower score (250): retail's scale block multiplies the x component in place and the y
 // component into a fresh register, which no single expression form gives; the facing copy, the split length test, the
 // __assume and the duration forms were measured again on the committed convention and none of them reached the 250
 // baseline, and the permuter (300 s, 7 tries) found 243 against a 244 reduced-image baseline, below the eight-point bar,
 // so the body is the committed one.
-// score 250 (was 254): Frame 0x24 agrees; retail takes the direction in ECX (round 82: now ours too) and keeps
+// score 209 (was 250): Frame 0x24 agrees; retail takes the direction in ECX (round 82: now ours too) and keeps
 // the unit pointer in EBX, the definition on the stack. Round 5 of #1049: retail's epilogue clears AL (`xor al,
 // al` on every path, including the early return), so the function returns bool false (256 -> 254). The
 // convention is coupled to 0xd6800's: declaring this function after 0xbd020 (forward declarations) WITHOUT
@@ -6840,21 +6855,25 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 		facing.y = unit->forward.j;
 		real length = (real)sqrt(toward.x * toward.x + toward.y * toward.y);
 
-		if (!(0.0001f > (real)fabs(length)) && length > 0.0f)
+		if (!(0.0001f > (real)fabs(length)))
 		{
 			real scale = 1.0f / length;
 
 			toward.x = scale * toward.x;
 			toward.y = toward.y * scale;
-			if (normalize2d(&facing) > 0.0f)
+			if (length > 0.0f)
 			{
-				angle = function_11cc90((vector2f const *)&toward, (vector2f const *)&facing);
-				if (!((definition->unit.flags >> 9) & 1) && unit->type == 0 && unit->parent_index == NONE)
+				if (normalize2d(&facing) > 0.0f)
 				{
-					if (function_e70b0(unit_index).value == NONE)
+					angle = function_11cc90((vector2f const *)&toward, (vector2f const *)&facing);
+					bool bit9 = (definition->unit.flags >> 9) & 1;
+					if (!bit9 && unit->type == 0 && unit->parent_index == NONE)
 					{
-						facing = toward;
-						turn = true;
+						if (function_e70b0(unit_index).value == NONE)
+						{
+							facing = toward;
+							turn = true;
+						}
 					}
 				}
 			}
@@ -6968,6 +6987,9 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 			break;
 		case 3:
 			face = facing;
+			break;
+		default:
+			__assume(0);
 			break;
 		}
 		function_edfa0(unit_index, &face);
@@ -7497,7 +7519,29 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // second loop's `first` in a stack slot, the flags word in memory and the hand index spilled, so retail
 // carries four more bytes of locals - and the unit is still held in EDX while retail looks the unit up
 // again after 0x110ab0 and reloads the state offset and word for each of the three state-bit tests.
-// score 244 (was 253): the control tests 0x8000000/0x4000 are plain mask tests (retail `test eax, imm`), flag 2 of
+// MiniMax B (11-14): score 15 (was 23): the changed flag is a bool, so the return is not normalised and the extent
+// matches retail's 1470 bytes; the zoom's scale takes the zoom's low byte (`(real)(char)zoom`), which gives retail's
+// `movsx edx, bl`; the first flag bit keeps retail's byte test and word widening (`and cl, 1` and `movzx cx, cl`).
+// Still differs: retail's first shift of the flags is 16-bit (`shl cx, 1`) where ours shifts 32-bit (`shl ecx, 1`)
+// (MSVC6 narrows a shift only on a 16-bit load, as retail 0x43740's `short count = source->point_count[slot] * 2;`),
+// and three address operands are ordered the other way round (`[ecx + eax + 8]` against retail's `[eax + ecx + 8]`).
+// Tried for the 16-bit shift: the word cast on the bit, a word local, the multiply by two, the compound assignment,
+// the two-step assignment, a signed member, a char or unsigned char cast or local, a bool local, a word-only chain
+// variable and a word variable read as a dword; each keeps the 32-bit shift or scores worse, and the three pool
+// lookups keep our SIB order under the macro, byte-arithmetic and header-pointer spellings. This round again: the
+// shifted operand is the only lever and VC6 folds the flag bit back into it every time - an unsigned short, short, byte
+// or unsigned char cast on the bit, a word or byte local for it, the multiply by two, the ternary `? 2 : 0`, the int
+// expression without the bool cast, the two-step through the flags storage (plain, cast and compound), a second word
+// view of that storage and a word cast on the int operand all keep the 32-bit shift, and a plain word variable for the
+// whole chain makes the chain's OR and AND 32-bit as well, so the 16-bit loads of the flags storage are what keep
+// them 16-bit.
+// score 15 (was 23): the changed flag is a bool and the two animation-slot results are compared as bytes; the
+// trigger flags keep both views of their storage (the word is built with retail's 16-bit operations and the call
+// takes the wide view of the same slot), which gives retail's 0x28 frame and the dword the call reads; the zoom
+// block's two header lookups each read the pool's data through a pool local of their own, and the zoom weapon is
+// NONE then an `if`, which gives retail's hoisted `or eax, -1`. Still differs: retail's first shift of the flags
+// is 16-bit (`shl cx, 1`) where ours shifts 32-bit (`shl ecx, 1`), and three address operands are ordered the
+// other way round (`[ecx + eax + 8]` against retail's `[eax + ecx + 8]`).
 // +0x10a goes through s_unit_flags_10a_view (load, shift, test), the zoom is a short compared against
 // the stored field (cmp bx; the field is then read, not the local, for the NONE tests), the zoom sound is read
 // before the level count, and the second loop's weapon index is NONE then an `if`. Still differs: frame 0x24 versus 0x28 (retail keeps the second loop's `first`
@@ -7586,13 +7630,13 @@ bool __stdcall function_c58f0(long unit_index)
 
 			if (!(control & 0x8000000) && !((1 << unit->type) & 1 && control & 0x4000))
 			{
-				if (!function_113da0(unit_index))
+				if (!(byte)function_113da0(unit_index))
 				{
 					function_113d20(unit_index, 0.5f);
 					changed = true;
 				}
 			}
-			else if (!function_113df0(unit_index))
+			else if (!(byte)function_113df0(unit_index))
 			{
 				function_113d60(unit_index, 0.5f);
 				changed = true;
@@ -7652,15 +7696,23 @@ bool __stdcall function_c58f0(long unit_index)
 			{
 				unit->unknown26c = 0.0f;
 			}
-			s_unit *holder = UNIT_GET(unit_index);
+			s_record_pool *objects = g_4e0300;
+			s_record_pool *other_objects = g_4e0300;
+			s_unit *holder = ((s_unit_header *)objects->data)[unit_index & 0xffff].unit;
 			short index = holder->current_weapon_index;
-			long weapon_index = index != NONE ? holder->weapon_object_indices[index] : NONE;
+			long weapon_index = NONE;
+
+			if (index != NONE)
+			{
+				weapon_index = holder->weapon_object_indices[index];
+			}
 			real scale = 1.0f;
 			long sound;
 
-			if (weapon_index != NONE && *(short *)(UNIT_DEFINITION_GET(UNIT_GET(weapon_index)) + 0x1fe) > 0)
+			if (weapon_index != NONE &&
+				*(short *)(UNIT_DEFINITION_GET(((s_unit_header *)other_objects->data)[weapon_index & 0xffff].unit) + 0x1fe) > 0)
 			{
-				byte *local_67e06b = UNIT_DEFINITION_GET(UNIT_GET(weapon_index));
+				byte *local_67e06b = UNIT_DEFINITION_GET(((s_unit_header *)other_objects->data)[weapon_index & 0xffff].unit);
 
 				if (unit->unknown240 == NONE)
 				{
@@ -7673,7 +7725,7 @@ bool __stdcall function_c58f0(long unit_index)
 
 					if (levels > 1)
 					{
-						scale = (real)zoom / (real)(levels - 1);
+						scale = (real)(char)zoom / (real)(levels - 1);
 					}
 				}
 			}
@@ -7692,7 +7744,7 @@ bool __stdcall function_c58f0(long unit_index)
 
 					if (levels > 1)
 					{
-						scale = (real)zoom / (real)(levels - 1);
+						scale = (real)(char)zoom / (real)(levels - 1);
 					}
 				}
 			}
@@ -7731,31 +7783,35 @@ bool __stdcall function_c58f0(long unit_index)
 				held = true;
 			}
 			dword control = unit->unknown148;
-			word flags;
+			union s_weapon_state_flags
+			{
+				word bits;
+				long wide;
+			} flags;
 
 			if (first)
 			{
-				flags = (word)((TEST_FIELD_BIT((control >> 16) & 1)) << 1);
-				flags = TEST_FIELD_BIT((control >> 17) & 1) ? flags | 4 : flags & ~4;
-				flags = TEST_FIELD_BIT((control >> 18) & 1) ? flags | 8 : flags & ~8;
-				flags = TEST_FIELD_BIT((control >> 19) & 1) ? flags | 0x10 : flags & ~0x10;
-				flags = TEST_FIELD_BIT((control >> 20) & 1) ? flags | 1 : flags & ~1;
-				flags = TEST_FIELD_BIT((control >> 30) & 1) ? flags | 0x80 : flags & ~0x80;
+				flags.bits = (word)((TEST_FIELD_BIT((control >> 16) & 1)) << 1);
+				flags.bits = TEST_FIELD_BIT((control >> 17) & 1) ? flags.bits | 4 : flags.bits & ~4;
+				flags.bits = TEST_FIELD_BIT((control >> 18) & 1) ? flags.bits | 8 : flags.bits & ~8;
+				flags.bits = TEST_FIELD_BIT((control >> 19) & 1) ? flags.bits | 0x10 : flags.bits & ~0x10;
+				flags.bits = TEST_FIELD_BIT((control >> 20) & 1) ? flags.bits | 1 : flags.bits & ~1;
+				flags.bits = TEST_FIELD_BIT((control >> 30) & 1) ? flags.bits | 0x80 : flags.bits & ~0x80;
 			}
 			else
 			{
-				flags = (word)((TEST_FIELD_BIT((control >> 21) & 1)) << 1);
-				flags = TEST_FIELD_BIT((control >> 22) & 1) ? flags | 4 : flags & ~4;
-				flags = TEST_FIELD_BIT((control >> 23) & 1) ? flags | 8 : flags & ~8;
-				flags = TEST_FIELD_BIT((control >> 24) & 1) ? flags | 0x10 : flags & ~0x10;
-				flags = TEST_FIELD_BIT((control >> 25) & 1) ? flags | 1 : flags & ~1;
-				flags = TEST_FIELD_BIT((control >> 31) & 1) ? flags | 0x80 : flags & ~0x80;
+				flags.bits = (word)((TEST_FIELD_BIT((control >> 21) & 1)) << 1);
+				flags.bits = TEST_FIELD_BIT((control >> 22) & 1) ? flags.bits | 4 : flags.bits & ~4;
+				flags.bits = TEST_FIELD_BIT((control >> 23) & 1) ? flags.bits | 8 : flags.bits & ~8;
+				flags.bits = TEST_FIELD_BIT((control >> 24) & 1) ? flags.bits | 0x10 : flags.bits & ~0x10;
+				flags.bits = TEST_FIELD_BIT((control >> 25) & 1) ? flags.bits | 1 : flags.bits & ~1;
+				flags.bits = TEST_FIELD_BIT((control >> 31) & 1) ? flags.bits | 0x80 : flags.bits & ~0x80;
 			}
-			flags = TEST_FIELD_BIT((control >> 29) & 1) ? flags | 0x100 : flags & ~0x100;
-			flags = held ? flags | 0x20 : flags & ~0x20;
-			flags = unit->unknown240 != NONE ? flags | 0x40 : flags & ~0x40;
+			flags.bits = TEST_FIELD_BIT((control >> 29) & 1) ? flags.bits | 0x100 : flags.bits & ~0x100;
+			flags.bits = held ? flags.bits | 0x20 : flags.bits & ~0x20;
+			flags.bits = unit->unknown240 != NONE ? flags.bits | 0x40 : flags.bits & ~0x40;
 			real rate = first ? *(real *)&unit->unknown1c0 : *(real *)&unit->unknown1c4;
-			function_100430(weapon_index, flags, rate);
+			function_100430(weapon_index, flags.wide, rate);
 		}
 		function_d1540(unit_index);
 	}
