@@ -9,6 +9,36 @@ matched 10620 of 11326 game functions (2036228 of 2786206 bytes, 73.08%)
 matched 1345 of 1436 Havok functions (198690 of 290362 bytes, 68.43%)
 ```
 
+0 new matches, none lost:
+- @ccgman123's #1175: closer scores and notes, no new match.
+
+## 2026-11-14: 10620 functions match
+
+```
+matched 10620 of 11326 game functions (2036228 of 2786206 bytes, 73.08%)
+matched 1345 of 1436 Havok functions (198690 of 290362 bytes, 68.43%)
+```
+
+0 new matches, none lost:
+- @ccgman123's #1174: closer scores and notes, no new match.
+
+## 2026-11-14: 10620 functions match
+
+```
+matched 10620 of 11326 game functions (2036228 of 2786206 bytes, 73.08%)
+matched 1345 of 1436 Havok functions (198690 of 290362 bytes, 68.43%)
+```
+
+0 new matches, none lost:
+- @ccgman123's #1173: closer scores and notes, no new match.
+
+## 2026-11-14: 10620 functions match
+
+```
+matched 10620 of 11326 game functions (2036228 of 2786206 bytes, 73.08%)
+matched 1345 of 1436 Havok functions (198690 of 290362 bytes, 68.43%)
+```
+
 4 new matches, none lost:
 - Machine 3's batch 274 (#1171): `0xc2d00`, `0xd74e0`, `0x17d9a0` and `0x1b81c0` match.
 
