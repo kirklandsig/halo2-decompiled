@@ -5170,6 +5170,8 @@ struct s_damage_object_creation
 	long unknownc0;
 };
 
+// MiniMax G (11-14): no new form, no lower score (156): the mask's zero store, the piece loop's guard order, the
+// search's entry test and the scratch registers of the last two lookups still differ.
 // MiniMax A (11-12): no new form, no lower score (156): the mask zero is still stored ahead of the states call where retail stores it in the node loop preheader, and the piece loop guard order, the search entry test and the scratch registers of the last two lookups still differ; storing the zero inside the block gives retail store but reallocates the frame (170), so the body stands.
 /* marks damage sections destroyed, and splits off the model nodes no
    longer joined to the object's root as new objects */
