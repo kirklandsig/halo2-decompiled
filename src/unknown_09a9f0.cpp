@@ -779,6 +779,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // && value`, `value && object_index != NONE` or `value && entity`, 77 each (folded before allocation: f still in
 // EBP); `result = true` after the second virtual call 79 (158 bytes); the creation result stored straight into the
 // entity and read back into the local 77. Body unchanged.
+// P490: Standard creation/header/notification predicates, masks 1/2/4/3/5/6/7,
+// then complete complementary predicates: 77/116/76/140/110/141/165/162.
+// NOT kept: all regress and enlarge past retail; native false BL, temporary EBP and
+// independent header/object lookups remain. Original macros, virtual tuples and body restored.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

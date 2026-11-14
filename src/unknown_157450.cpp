@@ -2324,93 +2324,12 @@ void function_159460(long player_index, bool *leading, bool *tied)
 
 #include "object_iterator.h"
 
-// score 8 (was 8): Round 30 (lane C): the inlined lookup still loads the table base before masking
-// and scaling the object index; retail scales the index first, so the scaled index gets its own
-// register and the base lands in EAX, which in turn moves the tail reload and the iterator LEA.
-// The lookup written as a subscript gives identical code (8); the shared helper still swaps the
-// mode global's register (9). A permuter run was killed before it reported a result.
-// MiniMax R (11-01): no new form, no lower score; the remaining difference is pure register
-// allocation in the inlined equipment lookup, and changing the matched release_entry would risk
-// the 0x15b1e0 match.
-// MiniMax R (11-01): no new form, no lower score; a 42-try permuter run left the lookup's swapped
-// registers alone.
-// Earlier: the inlined equipment lookup keeps the object table base and the index in
-// swapped registers.
-// Round 125: old-index mask at the call 8; char index 38 (192 bytes), short index 41 (195);
-// const index 8; split declaration 8; iterator reference 8; second current-object pointer 8;
-// inline release declaration 8; grouped record renamed 8; record declared after initialization 8;
-// old-entry comparison reversed 8; upper-bound comparison reversed 10.
-// Round 337: existing grouped record with rejection continuation 8; nested success continuation 8;
-// reversed-upper success continuation 10; rejection with previous-object local 8, coherent class
-// table 8, range result 20, native byte ordinal 38 (192 bytes); combined success continuation 8.
-// NOT kept: no gain. Original body restored; inlined index-scale/data-load scheduling remains.
-// Round 30 (lane 18, fast): retail's out-of-line release (0x15b1e0) loads the base first as ours does,
-// so only the inlined copy's context differs. Old index named once and passed 8; entry element pointer 8;
-// index renamed entry_index 8; the cast receiver as a typed equipment local for every entry access 8;
-// bounds test negated with the clear arm first 8. Restored.
-// Round 147 (lane 5, fast): the release's lookup through the file's existing engine_object_get 9 (the
-// hoisted globals swap EBP/EDI); this function as a member of c_engine_equipment, `this` the entries
-// and release_entry called on `this` (0x162060's call updated) 8; both 9; the scenario in a named
-// local for the bounds test 8; the upper bound tested first 13. A compile-only copy gives data-first,
-// in-place scaling for every spelling of the lookup (getter, absolute-index local, header local).
-// Round 54 (lane 2, fast): the lookup by byte offset 8, through a byte-offset header 8; a named absolute
-// index 8; a named scaled offset 8; a named old index 8; `do { } while (false)` before the release or
-// around the lookup 8/8; an elements local 8, after an index local 8; a header pointer local 8; the
-// index-first pointer sum 8; a pool local 8; `inline`/`__forceinline` on the release's definition 8/8, with
-// the getter 9/9; an entry reference 8; a const reference to the old index 8; a whole-entry copy 47 (198
-// bytes); a copy of the index 8; the object index read ahead of the old-index test 8. Re-measured: entry
-// pointer, typed equipment receiver, negated bounds test, getter in the release 8/8/8/9.
-// Diagnostics, all reverted at once: the release written out in the caller 8/8, with the getter 9, so
-// inlining is not the cause; a volatile pool read 4 (only the tail's registers); a dead field store or read
-// ahead of the lookup leaves its order. Lead: one or three dead volatile loads after the bounds test and
-// before the old-index test give retail's `and; lea edx; mov eax, [edi + 0x44]` and the tail's registers,
-// and no other placement does (one load before the index read, ahead of the bounds test or inside the
-// old-index guard changes nothing): the lookup wants one more temporary allocated between those two tests.
-// Matched 0x1e06b0 and 0xe3700 test and look up the same way with a field of an object pointer.
-// Round 97 (m3 lane 12, fast): plain object and iterator locals, no grouping aggregate 33 (frame 0x10, the
-// object's store goes); `for (object = next; object; object = next)` as in 0x3d380 8; a named object copy of
-// the grouped member as in 0x15aad0 8; the iterator's object index read before the old-index test 8 (the
-// load stays after the release); index declared at function scope 8.
-// Round 72 (m3 lane 14, fast): the entry field read at each use (bounds test on the field, index read inside) 38
-// (192 bytes); a pre-read `while (local.object)` with the next read at the body end 8; the two tail stores swapped 9;
-// `NONE != entries[index].index` 8; the release's lookup after its mode test 37 (195 bytes; 0x15b1e0 12). Re-measured:
-// the release's lookup through engine_object_get 9 (also 0x162060, which the reduced image builds at 5 either way).
-// Round 222 (m3 lane 3, fast with 0x15b1e0 and 0x15ace0): a 32-form screen of index at function or loop scope x
-// `NONE != ...` or `... != NONE` x the old index in a named local or read at each use x an entry element pointer or
-// `entries[index]` at each use x the bounds test negated with the clear arm first or not: 8 in all 32.
-// Round 65 (m3 lane 2, fast; 0x15b1e0 and 0x15aad0 matched each time): the probe re-run (one dead read right after
-// the bounds test gives retail's lookup and tail; inside the old-index guard it does not). A file-local inline release-if-present helper taking (entries, index)
-// 8, with the old index in a local inside it 8, taking the equipment pointer 8, taking the old index as an argument 8,
-// taking `&entries[index]` 8; the release's index argument as the re-read `local.object->netgame_entry` 8; an entry
-// pointer for the test, the call and both tail stores 8 (re-measured). Diagnostic: the release's lookup through engine_object_get 9.
-// Round 173 (m3 lane 5, fast): the bounds test in a named bool 8; the grouped object member typed as the iterator's own
-// object type 8; a typed equipment receiver local for the call 8; entries read through its address (0x15aad0's form) 43
-// (193 bytes); the count through a byte offset 8; an entry pointer for the two tail stores only 8. Diagnostics: 1-8 unused constant locals at the top or before the
-// old-index test 8 each (no rotation step); the dead volatile load before the old-index test re-confirmed (lookup and
-// tail then retail's).
-// Round 93 (m3 lane 11, fast; 0x15b1e0, 0x15aad0, 0x15b220 and 0x15ace0 matched each time): the release helper reading
-// the pool through a local copy (`objects = g_4e0300`) 8, with the subscript spelling 8, with a named absolute index ahead
-// of the copy 8; a header pointer local in the helper 8; the out-of-range case as an early `continue` guard 8. Diagnostics
-// (the release written out here, not kept): with a function-top pool copy 28 (the copy takes EDI at entry and the lookup
-// stays base-first), with the copy inside the guard 8.
-// M3 lane 10 r100 (fast; 0x15b1e0, 0x15aad0, 0x15ace0 and 0x15b220 matched each time): the release's parameters as
-// (index, object_index) at its definition, declaration and both calls 8; the release masking its own parameter (`object_index
-// &= 0xffff;`, a probe) 8; the grouped object and iterator as a small iterator type with inline begin/next/get members 8; the
-// scenario in a named local declared inside the loop 8; the entries reached through a typed equipment local for the test,
-// the call and both stores 8; re-measured, the release's lookup through engine_object_get 9 (it swaps the two hoisted
-// globals' registers and leaves the lookup base-first). A compile-only copy of this file (exact for the lookup) screened 224
-// spellings (lookup as sum, subscript or getter x mask in the expression, on the parameter or in a named local x entry
-// pointer x receiver local x named old index x index through a char local x if/else or early continue): base-first in all.
-// Diagnostics there: the dead load that gives retail's lookup works only at odd counts (1, 3, 5 ... 15) and only between the
-// bounds test and the old-index test (0-8 loads at the function top, before the index read, after it or inside the guard
-// change nothing; 0-16 unused locals change nothing); a second live use of the header address or of the masked index keeps
-// the base first. The scratch registers follow a rotation EAX, ECX, EDX per new temporary on both sides (retail: old EAX,
-// scaled index EDX, base EAX, iterator index EDX, iterator address EAX); what differs is only that retail evaluates the
-// scaled index before the base and gives it a new register.
+// Re-binds every equipment object to its netgame entry, releasing the object the entry held before.
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {
 	struct { s_engine_object *object; s_type_f1af8e iterator; } local;
+	s_scenario_netgame_view *scenario = (s_scenario_netgame_view *)g_4e0350;
 
 	function_15ace0(entries);
 	function_bae80(&local.iterator, 0x1e, 0);
@@ -2418,7 +2337,7 @@ void function_15adb0(s_netgame_entry_state *entries)
 	{
 		long index = local.object->netgame_entry;
 
-		if (index >= 0 && index < ((s_scenario_netgame_view *)g_4e0350)->count)
+		if (index >= 0 && index < scenario->count)
 		{
 			if (entries[index].index != NONE)
 			{

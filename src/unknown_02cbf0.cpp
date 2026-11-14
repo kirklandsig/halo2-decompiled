@@ -49,6 +49,12 @@ static __forceinline long floor_to_long_inline(real value)
 	}
 }
 // MiniMax A (11-12): no new form, no lower score (10): the OR chain written right-nested and the pool pointer typed as the pool (the cast moved to the active check) both give byte-identical code, and shifting the kind in place (kind = kind << 29) rebuilds the body at 79, so the first word still reads the entry own word before the flags term where retail reads the flags first, the kind shift still comes after the copy to esi where retail shifts before it, and the pool argument is still copied to edx inside the branch where retail copies it before the jbe.
+// MiniMax G (11-14): no new form, no lower score (10): the first word's OR chain written in retail's order (the category's shift, the flags' mask, then the entry's own word) and the same chain through a named local rebuild the body byte for byte, so the chain's terms are re-ordered by the compiler and the entry's own word is still read first; the kind word written as a dword local shifted in place puts the shift in the call result's register as retail has it, but the chain is then re-ordered the other way and the tag's register moves, so the body rebuilds at 79 and the two-statement form stays at 10.
+// MiniMax G (11-14, later): a control run proves the chain is the compiler's own schedule: all six orders of the three OR
+// terms are byte-identical, while dropping a term rebuilds the body at 286, the mask written as ~0x1fffff at 288, the mask
+// written as notmask at 277 and the term joined with + at 12, so the source order is not the lever; a probe that gives the
+// tag parameter the flags' slot measures 42, the key's slot 318 and the instance's slot 86, so the stack home of the masked
+// flags is right; the permuter (27 tries) finds nothing below the baseline 10.
 
 // MiniMax B (11-13): no new form, no lower score (10): the two masked words are still combined in the other order, so the kind is the word that is shifted here and the flags word is the one retail shifts, and the pool register is still set after the bit-count test here and before it in retail.
 // MiniMax H (11-12): no new form, no lower score (10); the first word's OR chain still keeps the entry's own load
