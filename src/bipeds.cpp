@@ -505,6 +505,9 @@ void function_e5930(long unit_index);
 
 /* resets the biped's state: its flags, landing and melee timers, its ground
    contact and its physics mode */
+// MiniMax G (11-14): no new form, no lower score (118): the reset dispatch still expands at this call site, so the
+// body is 413 bytes against retail's 343, and the 0x1f0 bit test still folds to a byte test where retail shifts
+// the dword first: BLOCKED-BY 0xe5930.
 // MiniMax G (11-13): no new form, no lower score (118): the reset dispatch still expands at this
 // call site (413 bytes against retail's 343) and the 0x1f0 bit test folds to a byte test where
 // retail shifts the dword first: BLOCKED-BY 0xe5930.
@@ -707,6 +710,9 @@ struct s_biped_flags_10a_view
 	word bit7 : 1;
 };
 
+// MiniMax G (11-14): no new form, no lower score (222): retail computes the biped's data pointer before the early
+// exit and keeps it in a frame slot while this build computes it at its use, and the state pointer's spill slot
+// and the early exit's epilogue still differ: BLOCKED-BY 0x111650.
 // MiniMax G (11-13): no new form, no lower score (222): the state pointer is spilled to
 // [esp+0x20] where retail spills it to [esp+0x24], retail reads the parent's index before the
 // 0xbaf40 call where this build reads it after, the early exit does not share retail's epilogue,
@@ -4988,6 +4994,9 @@ void function_e4300(long arg_159e6d)
 }
 
 /* gets the biped up and puts its Havok to sleep, unless it already sleeps */
+// MiniMax G (11-14): no new form, no lower score (91): the reset dispatch still expands at this call site, so the
+// body is 113 bytes against retail's 61, and retail's own signature takes the biped in edi and the index in esi
+// where this build takes one argument: BLOCKED-BY 0xe5930.
 // MiniMax G (11-13): no new form, no lower score (91): the reset dispatch still expands here (113
 // bytes against retail's 61) where retail calls 0xe5930 out of line, and that callee lives in
 // another file: BLOCKED-BY 0xe5930.

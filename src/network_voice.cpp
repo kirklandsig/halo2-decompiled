@@ -1302,6 +1302,9 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax G (11-14): no new form, no lower score (94): the identity flag still lands in bl where retail keeps it in
+// al, retail sets the total to two and the channel pointer after the flag's compare where this build sets them
+// before it, and the inner channel blocks are still not unrolled.
 // MiniMax G (11-13): no new form, no lower score (94): the identity flag stays in bl where retail
 // keeps it in al, so the loop temporaries take eax/al where retail uses ebx/cl, and the inner
 // channel blocks are not unrolled.
@@ -2014,6 +2017,9 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax G (11-14): no new form, no lower score (85): the availability bytes read into locals for the muted test
+// and the mode helpers parameterised on them leave the second byte loading lazily inside the muted test, where
+// retail loads both before it and keeps the remote mask in esi.
 // MiniMax G (11-13): no new form, no lower score (85): the second availability byte loads lazily
 // where retail loads both before the muted test, and the second port-flag query is called out of
 // line: BLOCKED-BY 0x59670/0x596a0.

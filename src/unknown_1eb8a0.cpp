@@ -183,6 +183,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// MiniMax G (11-14): no new form, no lower score (636): retail keeps q (the fourth stack argument) in EBX from entry
+// and reads d from its stack slot at each use, this build keeps d in EBX; the first clamp still computes t before the
+// 12/8 factor is selected into xmm1 (retail selects the factor first) and the xmm homes and coefficient schedules
+// still differ.
 // MiniMax G (11-12): no new form, no lower score (636): nothing new this round; the first clamp still computes t before the
 // 12/8 factor is selected into xmm1 (retail selects the factor first), as the earlier note describes.
 // MiniMax G (11-12): no new form, no lower score (636): the first clamp still computes t before the 12/8 factor is

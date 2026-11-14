@@ -223,6 +223,9 @@ public:
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
+// MiniMax G (11-14): no new form, no lower score (334): the effect datum's address still folds into the scaled index in
+// the flag byte's load and in the definition pointer's load, where retail keeps the address in a register; the flag
+// byte's and the definition pointer's frame homes still differ.
 // score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds (retail never
 // combines base+index or folds a memory operand at the gate, the definition short or the bit-4 test), homes differ.
 // M3 lane 8 r159 (fast with 0x247fd0 and 0x248cc0, both stay matched): kept, the probe direction through the existing
