@@ -589,6 +589,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // hull_count] = current; hull_count++;`) with the closure as `if (!left_start || points2d_differ(...)) continue; goto
 // finished;` 331 (695 B). Compile-only: that closure on this body is the same code; the one-counter `while`, `for (; c; )`
 // and `for (;;) { if (!c) break; ...}` all rotate the pass loop (test copied to its foot).
+// P492: Float root/angle/equality-absolute API subsets 1/2/4/3/5/6/7,
+// then standard float overloads: 161/161/161/161/161/161/161/161.
+// NOT kept: extra frame word and count/departure/produced-length homes
+// unchanged; original numeric APIs, predicate and complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

@@ -591,6 +591,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // enlarge frame to 0x4828. Original completion, observations and full body restored.
 // M3 lane 15 r83 (fast, 0x12e5e0 matched each time): `__assume` on arg_3, arg_1, `local_4 <= 512`, local_19 and local_13
 // 607 each.
+// P492: Intensity destination owns zero-alpha branch, two branch polarities,
+// conditional contribution/destination sum, short then char palette:
+// 775/775/698/775/778/778/637/778. NOT kept: no byte equality; original
+// input capture, helpers, palette and full body restored at 607.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
