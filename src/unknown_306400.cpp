@@ -450,7 +450,9 @@ public:
 // @retail 0x307f90
 void query_2ef260::function_307f90(answer_307f90 *found, contact_307f90 *contact)
 {
+	long feature_count = 2;
 	char result = 0;
+	long w_component = 3;
 	class_308180 manifold;
 	key_305f60 key;
 	feature_305f60 feature;
@@ -458,12 +460,12 @@ void query_2ef260::function_307f90(answer_307f90 *found, contact_307f90 *contact
 	((box_pair_306400 *)this)->function_306400();
 	if (((class_306580 *)this)->function_306580().value)
 	{
-		if (((pair_305f60 *)this)->function_307c40((table_305f60 *)&manifold, &key, &feature) == 2)
+		if (((pair_305f60 *)this)->function_307c40((table_305f60 *)&manifold, &key, &feature) == feature_count)
 		{
 		result = 1;
 		contact_305ca0 deepest;
 		int const kind = feature.kind;
-		if (kind <= 2)
+		if (kind <= feature_count)
 		{
 			((pair_305ca0 *)this)->function_305ca0(&deepest, (key_305ca0 const *)&key, (feature_305ca0 const *)&feature);
 		}
@@ -475,16 +477,16 @@ void query_2ef260::function_307f90(answer_307f90 *found, contact_307f90 *contact
 		{
 			((pair_305eb0 *)this)->function_305eb0((contact_305eb0 *)&deepest, (key_305eb0 const *)&key, (feature_305eb0 const *)&feature);
 		}
-		if (key.index > 2)
+		if (key.index > feature_count)
 		{
-			float const back = -deepest.point.m128_f32[3];
+			float const back = -deepest.point.m128_f32[w_component];
 			__m128 along = _mm_set_ss(back);
 			along = _mm_shuffle_ps(along, along, 0);
 			deepest.point = _mm_add_ps(deepest.point, _mm_mul_ps(along, deepest.normal));
 		}
 		contact->normal = deepest.normal;
 		contact->point = deepest.point;
-		contact->point.m128_f32[3] = deepest.point.m128_f32[3];
+		contact->point.m128_f32[w_component] = deepest.point.m128_f32[w_component];
 		}
 		else
 		{

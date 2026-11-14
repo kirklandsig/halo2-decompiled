@@ -264,10 +264,14 @@ void box_pair_2ef6e0::function_2ef6e0(description_2ed170 const *a, description_2
 	timer_add_2ebc80("TtBoxBox");
 	box_2ef3b0 const *first_box = (box_2ef3b0 const *)a->shape;
 	box_2ef3b0 const *second_box = (box_2ef3b0 const *)b->shape;
-	__m128 grown_first = _mm_add_ps(first_box->half_extents, _mm_set_ps1(first_box->radius));
-	__m128 grown_second = _mm_add_ps(second_box->half_extents, _mm_set_ps1(second_box->radius));
-	query_2ef260 query((long)a, (long)b, 0, 0, 0, (long)a->placement + 0x20, grown_first,
-		(long)b->placement + 0x20, grown_second, input->tolerance);
+	__m128 second_extents = second_box->half_extents;
+	__m128 first_extents = first_box->half_extents;
+	__m128 grown_first = _mm_add_ps(_mm_set_ps1(first_box->radius), first_extents);
+	__m128 grown_second = _mm_add_ps(second_extents, _mm_set_ps1(second_box->radius));
+	long zero = 0;
+	dword placement_offset = 0x20;
+	query_2ef260 query((long)a, (long)b, zero, zero, zero, placement_offset + (dword)a->placement, grown_first,
+		(long)b->placement + placement_offset, grown_second, input->tolerance);
 	((box_pair_306400 *)&query)->function_306400();
 	answer_306580 overlap = ((class_306580 *)&query)->function_306580();
 	if (overlap.value)
