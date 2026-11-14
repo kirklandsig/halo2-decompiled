@@ -111,6 +111,16 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // ecx after the pushes, retail into eax before them), the count loop's movsx where retail tests the word and
 // zero-extends, the count/counter slots swapped, the 0x17cfa0 call setup (BLOCKED-BY 0x17cfa0, a contributor's)
 // and the transform rows' product forms. Earlier rounds below.
+// MiniMax S (11-14): no new form, no lower score (93): the strip-count index spelled short gives retail's
+// prologue and count loop but scores 102 (the three field sums then load the lower field first and the two call
+// setups turn), and the luminance spelled red, blue, green emits retail's green, blue, red order for 91, a gain
+// under the review threshold, so it was reverted and the original body stands; retail calls 0x17cfa0 with the
+// first index in eax and the definition index in ecx where ours passes them the other way round, but our
+// declared order already matches retail's source order, so that gap is the callee's own body in another file and
+// swapping the arguments here would break the call. The count sum and the vertex cursor still take the opposite
+// stack slots, the four inlined transform copies still compute the x row's first product in the opposite order,
+// and the entry guard still gives the strip pointer to ecx after the register saves where retail loads it into
+// eax before them. The permuter's 27 annealed tries over the reduced image found nothing below the 93 baseline.
 // MiniMax H (11-13): no new form, no lower score (93): the entry guard still loads the strip pointer after the register
 // saves and into ecx where retail loads it before them into eax, and the call to 0x17cfa0 still passes the first index in
 // ecx where retail passes it in eax; that callee lives in another file.
