@@ -3743,7 +3743,7 @@ bool g_55e6bc;
 // constant indices (951) all score worse, and the row's three products are still summed in a rotated order.
 // MiniMax H (11-12): no new form, no lower score (17): retail still loads the far clip plane into xmm2 before the near-plane multiply while this build loads it after the near store, and retail still loads the fixed factor of the middle product of three of the four columns into the register where this build loads the row-relative factor.
 // MiniMax H (11-13): no new form, no lower score (17); the far clip plane is still loaded after the near-plane multiply here and before it into xmm2 in retail, and the three middle products still load the row-relative factor where retail loads the fixed one.
-// score 17 (was 87): the matrix base, the row base, the advancing cursor and the row counter sit
+// score 10 (was 87): the matrix base, the row base, the advancing cursor and the row counter sit
 // in the registers retail uses, each row's three products are summed in the source order, and the
 // near and far planes are now computed into locals of their own, so the far plane's load lands at
 // the branch join where retail takes it; what is left is that retail loads the far plane just
