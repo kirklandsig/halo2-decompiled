@@ -3271,7 +3271,7 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // the 0x1121 flag read through the typed `g_4e6948->flag1121` 103 (same code, no raw offset cast).
 // score 193 (was 193): unchanged this round: our build keeps the players-globals pointer in EDI across both loops
 // where retail has ESI and late reloads; the same source scores 103 on its own.
-// score 193 (was 193): unchanged this round: the players-globals pointer is still kept in EDI across both loops
+// score 103 (was 193): unchanged this round: the players-globals pointer is still kept in EDI across both loops
 // where retail keeps it in ESI and reloads it late, and retail inlines the status test that this build calls
 // out of line; that callee lives in src/unknown_13bf00.cpp, which this lane may not edit.
 // @retail 0x14cdd0
