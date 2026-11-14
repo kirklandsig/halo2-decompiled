@@ -1252,6 +1252,17 @@ void function_143250(
 // the 939 form (fast, 290 swaps) then took s105_r0_r0_r6 after r1_r0_r7 866, r7_r7_r0 after r0_r0_r0 865, r3_r3_r0
 // after r1_r1_r0 854 and r2_r1 after r5_r4 853 (plain 853 at 10777 bytes with frame 0x300 as retail, first difference
 // +0x3b; 0x22850 226, 0x23690 330, 0x143250 matched); every other single swap 858-1500. Restored like the 939 form.
+// P476: Explicit-polynomial matrix accumulators in bands 2/3/both; coefficient accumulators in bands 2/3/both; immutable scalar captures; frequency lexical homes. Scores 1337/1535/1539/1439/1535/1539/1333/1333.
+// NOT kept: unmatched diagnostic source forms; original executable body restored.
+// P478: First-consumer repeated scaled mixed/cubic/triple/pair/cubic products, paired cubic family,
+// complete reusable family and prepublication family: 1552/1509/1333/1759/1597/1623/1628/1619.
+// NOT kept: four products recover frame 0x300, but spill homes/schedules regress; original body restored.
+// P478 m3: Cross-band square/mixed/all/axial-square/transverse-square retained products,
+// then all/square/mixed shared receivers with original second producers: 1918/1843/2010/1811/1827/1538/1529/1501.
+// NOT kept: lifetimes regress and shorten away from retail; original polynomial restored. Frame and homes remain.
+// P480 m3: Complete third-band row-producer lifetimes 0/1/2/3/4, second-band square/all
+// product first-consumer declarations and all third-band products: 1810/1643/1742/1648/1627/1672/1707/1789.
+// NOT kept: native frame/homes unrecovered; original polynomial and complete body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

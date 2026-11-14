@@ -223,6 +223,9 @@ public:
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
+// MiniMax G (11-14): no new form, no lower score (334): the effect datum's address still folds into the scaled index in
+// the flag byte's load and in the definition pointer's load, where retail keeps the address in a register; the flag
+// byte's and the definition pointer's frame homes still differ.
 // score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds (retail never
 // combines base+index or folds a memory operand at the gate, the definition short or the bit-4 test), homes differ.
 // M3 lane 8 r159 (fast with 0x247fd0 and 0x248cc0, both stay matched): kept, the probe direction through the existing
@@ -684,6 +687,21 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // post-transform sum, age product and offset-probe constructor on native-entry code:
 // 354/334/341/344/359/335/334/343. NOT kept: none improves; original grouped storage, samples,
 // helpers, field observations and full body restored; native split-address/gate/settings homes remain.
+// m3 lane 7 r159 (fast; aligned difflib count in brackets, control 334 [246]): the grouped workspace replaced by plain
+// locals (blend, probe point, direction, placement), all four draws through `last_sample`, the result padded to 0x5c
+// 444 [231] (frame 0xb0, blend and first draw in registers as retail); probe point, direction and result declared in the
+// trace block 447 [207] (probe +0x24 and direction +0x30 on retail's slots); the result's point and normal read as fields
+// 447 (same code); the placement declared in the final block with its NONE store there 443 [199] (result +0x3c and
+// placement +0x98: retail's offsets); with the in-loop particle_object_for_tag 416 [167] at 1648 bytes. Cause found with a
+// /GL harness of this file alone: real_truncate's inline asm switches VC7.1's slot ordering for the whole function (an
+// `__asm nop` alone does it), and in that mode the 0x28 placement sorts below the 0x5c result whatever the declaration
+// order, names, scopes or result references (only the final-block placement escapes it, but retail stores the NONE before
+// the loop). The same source without asm gives retail's offsets exactly. A plain cast of these x87 values compiles to
+// __ftol2 and the SSE intrinsics force an `and esp, -16` frame, so no spelling without asm reproduces retail's
+// fstp/movss/cvttss2si truncation yet. A no-asm truncation form is the lead (each form above was added to the previous).
+// P478: Standard link/time spans, inherited/blend producers, reverse normal/probe copies,
+// complete sample multiplies and age product: 440/373/379/456/335/370/548/385.
+// NOT kept: all regress; separate effect add, gate/settings homes and descriptor expansion remain; restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
