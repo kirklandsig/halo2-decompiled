@@ -2633,6 +2633,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // per arm 833 (3403 B) [624/302]; the two screen pointers as ternaries 835 (3403 B) [643/293]; the bounds call's `else
 // if (screen_b)` as a plain `else` 835 (3408 B) [596/298]; `wa < 0.0001f` and `wb < 0.0001f` for the two `0.0001f >`
 // tests 776; re-measured `0.5f * x + 0.5f` 776 (same code). Body unchanged.
+// MiniMax B (11-13): no new form, no lower score (776): the frame is retail's 0xd4 against our 0xcc and the first angle
+// expansion still differs; the forms listed above are exhausted, and the retail-shaped ones measured before either
+// restructured the function or left the score unchanged.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
@@ -3995,6 +3998,14 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // UNIT_ANIMATION_CONTROL(unit) at the overlay address / the flag7 test / the flag7 set 111/117/218, in pairs
 // 117/226/233; the definition read at each use 211 (re-measured). No untried natural form found for the slot pair:
 // retail's order needs definition at least as heavy as control by reference count.
+// MiniMax B (11-13): no new form, no lower score (12): aligned the two listings instruction by instruction: the control and
+// definition homes stay swapped (retail 0x0c and 0x10 against our 0x10 and 0x0c) and the two flag clears stay after the
+// lookup's branch where retail clears them before it; retail also clears them in the other order (its 0x11 before its
+// 0x10); declaring the definition first changes the prologue but not the homes (20), moving the clears before the branch
+// restructures the function (203 to 205, and 204 with the clears before the animation), and swapping the two flag
+// declarations changes nothing (12); the flags moved between the lookup read and the animation measure 204 at 682
+// bytes, and the permuter cannot search the function at all, because its reduced image scores 202 against the full
+// image's 12.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)

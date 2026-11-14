@@ -92,6 +92,11 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax B (11-13): no new form, no lower score (107): aligned the two listings instruction by instruction: retail keeps
+// the index times twelve in a register (shl esi, 2) where this build folds it into the address expression, and retail
+// keeps the unit index in EDI where this build keeps it in ESI; the bodies part company at the entry, because retail
+// looks the unit up again after the two 0xbadc0 calls and this link knows that callee writes no memory; the callee's
+// memory summary is in a file this lane may not edit.
 // MiniMax B (11-12): no new form, no lower score (107); this round re-read retail's listing: it looks the
 // unit up again after its two 0xbadc0 calls and reads the pool globals again, while our link knows the
 // callee writes no memory and keeps the entry fetch, so the entry saves and the later carriers stay as they

@@ -452,6 +452,13 @@ void function_3dd10(long object_index, bool force);
 // not-found path joins the clamp entry's load instead of carrying its own copy of the one (132) and the count
 // test and the first scan's exit still differ, so the body stands; merging the second fabs into the fmod call
 // scores 86 and leaves the blend in the seed's slot.
+// MiniMax B (11-13): no new form, no lower score (84): aligned the two listings instruction by instruction: the first scan
+// leaves on a signed less-than bound (retail's jle and jl against this build's je and jne), and writing that scan with
+// the less-than bound unrolls it by four here (637); the blend keeps the seed's home (esp+0x38) where retail keeps it at
+// esp+0x1c and the choices pointer the other way round; the clamp's entry materialises the one before the zero where
+// retail materialises the zero first and lets its not-found path jump into the one-load; the five clamp spellings
+// measured before are all worse, so the body stands; the permuter searched 45 forms for five minutes over the
+// full image and the reduced image (which scores the same 84) and found nothing below 84.
 // MiniMax B (11-12): no new form, no lower score (84); re-read retail's listing: the clamp entry's constant
 // order, the blend's stack slot, the first scan's signed bound and the not-found exit's 1.0 reload are still
 // the four differences, and the spellings of the scan's bound that keep it rolled (less-than, the bound read

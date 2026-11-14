@@ -1739,6 +1739,12 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax B (11-13): no new form, no lower score (378): aligned the two listings instruction by instruction: what is
+// left is the frame (0x4c against retail's 0x40, three stack slots against retail's), the flag byte that retail clears
+// in the entry block and this build clears after the first branch, the length's square that retail stores in its slot
+// before it multiplies and this build multiplies before it stores, and the 0xd37f0 call handing its block and query over
+// in the other order (retail's [eax + ecx + 8] against our [eax + edx + 8]); the parameter list is fixed, so the frame
+// difference stands.
 // MiniMax B (11-12): no new form, no lower score (378); re-walked retail's listing statement by statement:
 // the field offsets, the constants, the pin arguments, the call arguments and the final pin order all
 // agree, and what is left is the frame (0x4c against retail's 0x40), the rotation projection added as
@@ -2235,6 +2241,10 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
+// MiniMax B (11-13): no new form, no lower score (542): aligned the two listings instruction by instruction: the frame is
+// retail's 0x90, but the status, mesh, colour and sample homes sit 0xc bytes lower than retail's, and the second arm's
+// 0x13da30 lookup expands here where retail calls it; moving the declarations does not move the homes, and that helper
+// lives in a file this lane may not edit.
 // MiniMax B (11-12): no new form, no lower score (542); the frame is retail's 0x90, but the status, mesh,
 // colour and sample homes sit 0xc bytes lower than retail's (the status at 0x24 against retail's 0x30 and
 // the sample pointer at 0x20 against retail's 0x2c), and the second arm's 0x13da30 lookup expands here where
