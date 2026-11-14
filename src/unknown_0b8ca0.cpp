@@ -1778,6 +1778,10 @@ done:
 // out size into locals 23; datum and palette helpers called in the argument list, taking the scenario 23, reading the
 // scenario global themselves 23 (all three: scenario ESI or EDI, index BX, the datum built after the pushes).
 // Diagnostic: the type not pushed 28 (type EAX, definition still ECX).
+// m3 lane 14 r90 (fast): on main's body the call's result returned inside the placement test 78 (245 bytes). On the 27
+// form (re-measured 27 at 236 bytes): the type local `long const` 27, the name entry read as a short array (fields
+// [0x10]/[0x11]) 27, the three definition reads in the orders size, palette, placement and placement, size, palette
+// 27/27 (all four the 27 form's code); the call returned inside the test 81 (244 bytes, round 174's code).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {

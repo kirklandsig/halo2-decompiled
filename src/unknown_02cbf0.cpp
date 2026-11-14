@@ -50,6 +50,7 @@ static __forceinline long floor_to_long_inline(real value)
 }
 // MiniMax A (11-12): no new form, no lower score (10): the OR chain written right-nested and the pool pointer typed as the pool (the cast moved to the active check) both give byte-identical code, and shifting the kind in place (kind = kind << 29) rebuilds the body at 79, so the first word still reads the entry own word before the flags term where retail reads the flags first, the kind shift still comes after the copy to esi where retail shifts before it, and the pool argument is still copied to edx inside the branch where retail copies it before the jbe.
 
+// MiniMax B (11-13): no new form, no lower score (10): the two masked words are still combined in the other order, so the kind is the word that is shifted here and the flags word is the one retail shifts, and the pool register is still set after the bit-count test here and before it in retail.
 // MiniMax H (11-12): no new form, no lower score (10); the first word's OR chain still keeps the entry's own load
 // before the parameter's where retail loads the parameter first, the kind is still copied before it is shifted, and
 // the six orders of the OR terms are canonicalised by the compiler into one schedule, so the order cannot be steered

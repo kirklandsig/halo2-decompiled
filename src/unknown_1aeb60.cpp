@@ -574,6 +574,11 @@ struct s_1af5c6
 // left (second header mask in EAX, ignore index loaded after the first subtraction, distance at +0x10) all sit in the
 // part retail gets from inlining 0x1c8df0, which LTCG keeps out of line here; a file-local reduced copy of it is ruled
 // out (no inline twin of an existing function).
+// Round 157 (m3 lane 7, plain): the cluster test passing `local_2->field_2c` directly 20 (same code); written as 0x1c8df0
+// writes it (`local_10 != NONE && local_15 != NONE && !function_11c010(...)`) 22. A register-masked aligned diff leaves only
+// the ignore index's load (retail ahead of the first ray subtraction) and the 1-byte `and eax, 0xffff` (retail ECX).
+// Stopped there: rounds 86 and 216 place the remaining sites in 0x1c8df0's inlined body, and lane 14 r73 shows matched
+// 0x1b2770 lost once 0x1c8df0 inlines, so its noinline stays (BLOCKED-BY 0x1c8df0's call-site inlining).
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {

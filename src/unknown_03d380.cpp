@@ -541,6 +541,9 @@ void function_125a90(long value);
 // MiniMax lane E (11-01): no new form, no lower score; the named-condition form that gives retail's
 // block order still needs 0x221810 kept out of line.
 // MiniMax C (11-08): no new form, no lower score.
+// MiniMax H (11-13): no new form, no lower score (36): still BLOCKED-BY 0x221810, the getter in
+// src/unknown_221490.cpp that this lane may not edit - retail keeps it out of line and LTCG inlines it here, and every
+// spelling of the named-condition layout that gives retail's block order inlines it too.
 // MiniMax G (11-12): no new form tried this round, no lower score (36): the element address is still built with an
 // imul and an add where retail multiplies into eax and forms the address with a lea; a probe shows no pointer
 // arithmetic spelling of that form in this compiler.

@@ -2135,6 +2135,7 @@ void function_269250(long clump_index, long actor_index);
 // in-arm form (126 re-measured) the same two 126/126 and with `selected` declared at function scope as well 126. Diagnostics, removed
 // at once: `(void)&selected` and the improving arm writing `selected` through a pointer on the in-arm form 126 each (same code; the
 // address is propagated away, so retail's memory-only selection is not an address-taken local).
+// P460: Complementary readiness snapshot bool/char/byte/short/word/int/long/dword: 131/131/131/84/84/132/132/132. NOT kept: short/word gain only three at 480 bytes; native byte, pool/selection and x87 homes remain. Original body restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

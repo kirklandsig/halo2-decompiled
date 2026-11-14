@@ -419,6 +419,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // cosine/sine, endpoint distance, projection ratio, directional/wrapped angle:
 // eight at 382. NOT kept: no match or native unity/angle-home repair; all
 // producers, shared helpers, call inputs and original complete body restored.
+// T102: Delegated radius/direction/both caller clamps 422/437/470;
+// direct ratio/dot/both inputs 422/437/470; complete shared dot/normalizer
+// with delegated bounds 470/470. NOT kept: no exact unity/angle-home
+// repair; original caller clamps, inputs, helpers and whole body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -933,6 +937,16 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // reverse direction, forward/reverse/center offsets and persistent center,
 // eight at 569. Producers and reads stayed fixed. NOT kept: no match or native
 // radius/trace/pivot-home repair; original complete body and helpers restored.
+// P459: Existing pivot, mutable/reverse direction, previous/current sample, offset and complete geometry role names on the native-size frame:
+// 569/569/569/569/569/569/569/569. NOT kept: native radius retention and pivot/trace homes unchanged; original complete body restored.
+// P462: Initial two-edge trace loop with real direction/output tables and sector pair:
+// long/dword/short/word/byte/signed-char for, long/short while,
+// 854/854/837/837/837/837/854/837. NOT kept: larger frame and shorter extent;
+// original independent traces, sector scalars, helpers and full body restored.
+// T102: Explicit zero subtraction at offset/negative-scale/reverse-distance phases,
+// seven subsets 569 each; shared rotation point-setter publication 569.
+// NOT kept: no byte equality or radius/trace/pivot-home repair; original whole body
+// and three-use rotation producer restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
