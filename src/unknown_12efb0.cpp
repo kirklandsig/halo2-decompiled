@@ -581,6 +581,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // real/real gains only one at 3830 bytes; double-factor forms regress. Original
 // ten scalar stores, original includes and complete body restored; provider/NONE,
 // palette/selected-record and zero/accumulator carriers remain.
+// P485: Complete palette/tag/default source-choice result in byte/char/signed-char/
+// short/word/int/long/dword: eight 618s at 3832 bytes. NOT kept: no byte match;
+// original dispatch, helpers, alias-safe input reads and full body restored.
+// Native provider/NONE, palette/record and zero/accumulator SIMD homes remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

@@ -580,6 +580,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // 42, the fxch gone), plus `short current = count;` before the classifier call 150 (784 B), plus the departure as
 // `left_start = left_start || points2d_differ(next, first)` 150, or lowest_y declared before lowest_x 148 (masked 47 each).
 // Left in every family: retail caches the hull count in EBX at its top-tested loop head and reads the count from its home.
+// P485: First departing index/one-based position owns hull departure history,
+// short/word/long/dword 279/277/193/193 and 277/277/188/188. NOT kept: no byte
+// match; original Boolean-valued history, eager length, loops and whole body restored.
+// Native frame 0x14, count/departure argument reuse and scan bound remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

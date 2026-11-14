@@ -479,6 +479,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Selected-default, bitmap and pass homes remain.
 // Scores 424/458/404/546/416/511/461/570. NOT kept: ties/regressions;
 // original executable body and helper contracts restored.
+// P485: Actual accepted point/record ordinal owns pass history, short/word/long/dword:
+// 419/419/417/417 and 448/448/444/444. NOT kept: no byte match; frame or extent
+// regresses. Original Boolean state, selected/default homes, bitmaps and whole body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
