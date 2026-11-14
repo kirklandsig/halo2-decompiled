@@ -1861,6 +1861,10 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // frame 0x10/0x14, ret 0x10/0xc and caller 0x56380 at 13 reject all forms. Original body restored.
 // P458: Entry active byte/short/long/dword and inactive bool/byte/short/long outcomes, original separate result:
 // 60/60/60/60/60/60/60/60. NOT kept: native zero retention, bit/size allocation and capacity epilogue not recovered; original complete body restored.
+// P469: Independent 64-bit result signed/unsigned, recipient bit, clamped player,
+// entry extent, emitted count, retained mask and both real scan ordinals:
+// 177/177/212/226/203/180/197/261. NOT kept: native ingress/frame or extent regress;
+// original 32-bit scalarization, matched caller contract and complete body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -3287,6 +3291,12 @@ finish:
 // build of lane 5 round 82 and network_voice.cpp has not changed since, so the reload order follows the
 // rest of the image. Mask declared first, logging call inside the loop, empty declared first, reason
 // declared first, `if (changed) log; else return;`: 2 each, same pair swapped.
+// P464: Comparison-test bool/raw signed result producers 146/205; signed/unsigned short
+// comparison ordinal 188/188; literal mismatch byte/word/long 2/2/2; success-continue 2.
+// NOT kept: no exact post-format reload recovery; original comparison and whole body restored.
+// P466: Empty identity long/byte/word storage with memset 2/2/2; aggregate-zero
+// dword/byte/word and read-only dword/byte 2/153/142/2/153 on the plain-copy graph.
+// NOT kept: no exact reload recovery; original empty input and complete body restored.
 // @retail 0x54590
 void function_54590(void)
 {

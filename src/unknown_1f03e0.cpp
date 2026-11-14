@@ -1371,6 +1371,8 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // general arm's k row still adds into XMM2 (520, 3019 B), so the commuted `addss xmm2, [eax + 8]` is not caused by that
 // block. Retail computes that row into XMM0 like the j row, which lets the first arm's `movss [edi + 0x14], xmm0` jump into
 // it (0x1f09dc -> 0x1f0f58); ours keeps the store in each arm, and the one-instruction shift covers about 170 lines.
+// P472: Independent immutable rotation/planar raw/spatial raw/ground basis/projected/side/history difference/history offset producers
+// 347/347/347/347/347/347/347/347. NOT kept: no exact native producer ownership; original complete body restored. Damping carrier and raw/bounded homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

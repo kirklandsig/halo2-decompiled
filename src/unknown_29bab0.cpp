@@ -453,6 +453,10 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // negated j + one radial test + float squares + local_14 in its arm 775 (3444 bytes). Retail keeps local_14 as one 8-byte home at
 // the top of the frame (stored ahead of the two normalizes, read once in the far arm); the forms without the named double split it
 // into two 4-byte slots low in the frame here, which is their extra slot (frame 0x8c). Body unchanged.
+// P481: Complete established/radial decision byte/char/word/long, original true
+// default then fully assigned leaves: 648/690/648/690/722/721/724/723 (fast control
+// 648, full 715). NOT kept: no native entry/home equality or gain; original full
+// Boolean decision, radial double, helpers and complete body restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

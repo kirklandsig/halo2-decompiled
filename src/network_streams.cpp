@@ -961,6 +961,8 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // count. Real: the loop as `while (next < newest) { ...; next++; }` 60, `long next;` ahead of the for 60, the start named
 // `long first` 60, the flag update as `message->flags = message->flags | 2;` 60 (all the same code), `type = 4;` ahead of
 // the found path's stores 79 (213 B).
+// P472: Actual word-bit field first/second/both, explicit Boolean first/second/both, second-first and paired outcomes: 60/60/60/66/74/67/68/67.
+// NOT kept: no exact native induction/allocation shape; original raw word layout, helpers, complete body and header restored.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

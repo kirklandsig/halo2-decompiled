@@ -822,6 +822,9 @@ struct s_collision_result_buffer_1697c0
 // 303 (same code); its three rows computed into named locals before the stores 338 (1440 B, frame 0xb0, masked 82: nearer
 // retail's schedule, but 0x297d30 23 -> 153); its rows into a local vector and one aggregate copy back 432 (0x297660 1,
 // 0x297d30 203); `clear` cleared only on a hit, the miss branch tested on the call directly, 388 (0x297660 10).
+// P467: Direct blocked-state bool/byte/short/long at attempt entry
+// 369/369/357/354, after both rotations 374/374/359/356. NOT kept:
+// all regress and grow; original clear state, every draw and complete sampler restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1208,6 +1211,9 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // initialised declaration 260 (entry stores swap). Masked, what is left is the merged cafc0 blocks, the 0x1e3b00 setup
 // (ours loads the object before the pushes and copies the output address, `mov edi, ecx`; retail loads it after the
 // third push and recomputes `lea edi`, so case 1's copy can join case 2's) and the weapon call's actor reload.
+// P467: Missing-point true default, false at each original point producer,
+// bool/byte/char/short/word/int/long/dword: 343/343/343/382/382/382/382/382
+// (fast control 341; full 257). NOT kept: no equality or reduced gain; original decoder restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

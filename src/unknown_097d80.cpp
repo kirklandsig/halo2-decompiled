@@ -469,6 +469,9 @@ struct c_aggregate : c_child
 // same code); the gate as `error == 0 && child != 0` 37; the count named block_count 31 (same code); the cleanup walking
 // the blocks with a block pointer 82 (391 bytes). A pure virtual v5 does not compile (the aggregate is instantiated).
 // Still BLOCKED by the build flag.
+// P465: Complete four-cell boundary-table producer, long/dword/short/word/byte/signed-char
+// for ordinals then long/dword while ordinals: 129/129/147/147/147/147/129/129. NOT kept:
+// escaped output and low loop homes remain; original full body and six exact siblings restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

@@ -961,6 +961,10 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // M3 lane 9 r120 (plain): the second product through cross3f 57 (1264 B); both products through function_1f087b 49
 // (1264 B); the second through cross3f_staged 217 (1270 B); the first through function_1f087b with the second through
 // cross3f_staged 221 (1272 B) or cross3f 222 (1273 B).
+// P479: Standard prior-up/displacement/target/fallback/saved-position coordinate producers
+// 322/250/329/324/333; paired angle multiply, complete time subtraction and reset multiply
+// kernels 258/300/417. NOT kept: all regress; native right i/j, forward.k reuse and angle bases
+// remain. Original copies, arithmetic, shared products and complete body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

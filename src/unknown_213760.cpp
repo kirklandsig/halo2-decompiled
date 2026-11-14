@@ -1695,6 +1695,14 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // the checksum operands swapped 33; `bool valid_types[3] = { true, true, true };` 263; the write count also zeroed at its
 // declaration 96 (934 bytes); the query size as unsigned long 33. The size/count homes look ordered by reference count:
 // the zero-store arm gives the count a third reference that retail's threaded join does not have.
+// P478 m3: Complete checksum memcmp/range-equal/typed-equality/short-circuit-memcmp
+// on positive-validation/native-count completion: 67/32/12/76; original checksum/query
+// and completed-query/count predicate forms: 90/250/248/119. Control 7 remeasured, uncredited.
+// NOT kept: unmatched completion flags require equality; 12 adds a nonnative comparison call;
+// other forms regress or move extent/frame away. Original helpers and full body restored; query/count/write/checksum remain.
+// P480 m3: Native by-value query/resize/write copy constructions, subsets 1/2/4/3/5/6/7,
+// then all four I/O boundaries on failure-only count flow: 43/43/35/36/32/32/32/39. NOT kept:
+// one-point gains to 32 fail the bar; original handles, helpers and complete body restored.
 // @retail 0x213970
 void function_213970(void)
 {

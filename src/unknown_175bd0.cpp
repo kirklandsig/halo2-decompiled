@@ -2169,6 +2169,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // as retail, the loop entered through a jump to an aligned head); multiplied() alone in the call 135; colour locals in
 // the type-query block 178 (572 B); the spawn's location index stored first 128; colour locals after the spawn stores
 // 184 (572 B).
+// P479: Standard location/iterator/node-sentinel/node-sign predicates 193/221/173/172;
+// node conjunction/complementary disjunction, zone complement and paired negative
+// query producers 173/183/171/204. NOT kept: all regress/lengthen; first form loses both
+// exact callers. Original full body restored; early color/frame/query homes remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3563,6 +3567,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // forceinline helper taking effect, system, definition and the location cursor 92. Both swapped pairs follow from one
 // choice: retail's system takes ESI at the entry (ESI and EDI are the 0x175a80 call's own registers for the system and
 // colour B) where ours gives ESI to the type object first; a helper around the loop does not split the system's range.
+// P479: Standard activity/cursor/node-sentinel/node-sign/location-presence predicates
+// 132/124/123/129/162; complete node conjunction/complementary disjunction and negative
+// query producers 113/138/112. NOT kept: all regress and lengthen; native frame,
+// definition spill and system/successor/color homes remain. Original full body restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

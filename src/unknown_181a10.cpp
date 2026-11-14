@@ -880,6 +880,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // 238 (same code); hit and distance copied before origin 238 (same code); lane 11 r95's kind-24 `shape` local alone on
 // main 327 (1249 B); `component == component_index` 239. Diagnostic (reverted): the classifier reading the data word
 // through a `long const *` view 238 (same code: still one load where retail loads it three times).
+// P472: Overlap-safe origin/hit/paired-input/position/paired-plane-normal/origin+position/hit+position/all record transfers: 229/233/310/261/249/266/264/338.
+// NOT kept: origin transfer adds a call absent from retail; hit-only gains five. Other forms regress; original body/includes restored.
+// Frame, node and point homes remain.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

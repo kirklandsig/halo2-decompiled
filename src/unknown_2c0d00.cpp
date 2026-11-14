@@ -469,6 +469,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // complementary restricted-sphere admission 926/926/924/924 reduced (control 926, full 920).
 // NOT kept: native positive-byte results and frame 0x2cac are unrecovered;
 // all original classifications, buffers, qualifiers and complete body restored.
+// P465: Existing actor/query-buffer/query-count/location/motion/physics/transform/radius
+// identities independently named by role on the separate-location graph: eight 926 reduced
+// (control 926, full 920). NOT kept: frame remains 0x2cb4 versus 0x2cac; original full body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1797,6 +1800,10 @@ long function_1fa7f0(void);
 // the origin read y then x on the 369 form 467. Diagnostics: count declared volatile 474, with the second edge store 420, with
 // that and the side passed as `!side` and flipped at the loop end 433 (frame 0x10c): keeping count out of BX alone does not give
 // EBX to edge. Body unchanged at 400.
+// P466: Next-orientation commit at producer/second tangent/candidate/target X/target Y/
+// first trace: 440/441/441/441/441/441; early producer with first-tangent commit
+// 441/443. NOT kept: frame remains 0x114 and all regress; original side ownership,
+// both radii, calls and full body restored. Edge/count homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

@@ -696,6 +696,9 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // the loop). The same source without asm gives retail's offsets exactly. A plain cast of these x87 values compiles to
 // __ftol2 and the SSE intrinsics force an `and esp, -16` frame, so no spelling without asm reproduces retail's
 // fstp/movss/cvttss2si truncation yet. A no-asm truncation form is the lead (each form above was added to the previous).
+// P478: Standard link/time spans, inherited/blend producers, reverse normal/probe copies,
+// complete sample multiplies and age product: 440/373/379/456/335/370/548/385.
+// NOT kept: all regress; separate effect add, gate/settings homes and descriptor expansion remain; restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

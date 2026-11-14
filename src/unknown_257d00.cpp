@@ -2022,6 +2022,13 @@ void function_b7360(long object_index);
 // the guard's `return 2` gets its own shrink-wrapped epilogue where retail jumps to the shared failure tail; both pools
 // read into locals first (0x259ec0's idiom) with the lead 495, without it 505. Diagnostics: the 1/19 reference read
 // through a dword or as two word halves 446/432 harness. Left: retail treats 0x25ab50 as opaque at the 1/19 site and case 5.
+// P467: Complete 17/15/16 validation-and-movement family before 4/7/8/10/5/9/13/20,
+// on the native-length result graph: 318/350/413/437/471/471/474/470. NOT kept:
+// all regress and grow to 1860 or 1856 bytes; original complete callback restored.
+// Complete point-validation family before cases 8/10/5/9/13/20/6 on the native-length
+// completion graph: 401/420/455/460/461/461/461; existing actual property-record
+// input for recording 270. NOT kept: no equality or gain; placements grow to
+// 1864 bytes. Original whole callback and includes restored; pool/actor/output homes remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2737,6 +2744,13 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // 4 and 2 alone 636; on that set the state pointer declared first 636, the script and state ahead of the actor 640, the result
 // flag first 640; the state pointer declared first on this body 479 (same code). Each retail-shaped form of cases 2, 4 and 18
 // still exchanges the actor and state registers, and no declaration order brings the actor back to EBX.
+// P467: Sole-return success default with redundant success assignments removed,
+// short/long/byte/bool at entry 604/604/630/630, after lookups 605/605/631/631.
+// NOT kept: all regress; wide forms reach 2396 bytes but lose native entry allocation.
+// Existing actor Boolean observations/control publications/spatial inputs, seven
+// canonical-field subsets: 479/482/482/479/479/482/482; all with the existing
+// perception accessor 625. NOT kept: no equality or gain; publication forms grow
+// to 2408 bytes. Original complete callback restored; later copy and exit carriers remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

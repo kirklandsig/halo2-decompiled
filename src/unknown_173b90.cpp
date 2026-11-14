@@ -813,6 +813,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // alone): scale first 39 (left: three reload pairs, row i of both rotations, branch offsets); with both refresh masks inline 39;
 // the emitter definition formed before the emitter lookup 44; `+=` translation 39; the motion rotated first 89; the particle
 // loop as do/while under its `if` 39.
+// P484: Linked-list for successor with empty-emitter continue, byte offset/row ordinal
+// 212/235; nested admission 42/115; post-admission definition receivers 260/262;
+// pre-admission unity defaults on the continue graph 210/233. NOT kept: no equality/gain;
+// original observations, offset/default timing, shared alias-safe rotations and body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1880,6 +1884,17 @@ bool function_17afd0(long effect_index, long value);
 // (508 B); P with the owner if/else inverted 142; this body with it inverted 47 (same code); `long const` effect index and view
 // 47 (same code); P with the query tested `== 0` 138. In every P form NONE's register stays live through the view and owner
 // tests (`cmp esi, ebx`, `cmp edi, ebx`), where retail's ends at the owner default.
+// P468: Existing camera/draw result byte/short/long/dword storage domains:
+// 113/140/141/141/47/111/110/110. NOT kept: no equality for the native byte homes;
+// original availability, view snapshot, query gates and complete body restored.
+// P482: Six eager pure-scalar owner/view/availability conjunction orders, then two
+// mixed complete joins: 122/122/122/122/122/122/139/162. NOT kept: all regress;
+// full eager joins grow the frame to 0x18, final mix grows to 515 bytes. Original
+// Boolean graph, read/query phases and entire body restored; availability/view gaps remain.
+// P484: Shared three-relation view outcome (unavailable/available-other/available-owner),
+// byte/short/long/dword, original/producer-local zero lifetimes: 60/133/131/131/70/87/85/85.
+// NOT kept: no equality/gain; original availability, owner/view observations, query
+// gates, callback arguments, traversal and entire body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

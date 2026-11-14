@@ -2510,6 +2510,21 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // wide/byte duplicate result 91/91; unique-result complement 91; entry duplicate
 // workspace 91. NOT kept: no eligible gain; original complete body and all helpers restored;
 // early velocity j/k loads and property-zero residence still differ.
+// P468: Duplicate-search exhaustion ordinal instead of found flag, long/dword/int/
+// unsigned-int/short/word/byte/signed-char: 377/379/377/379/425/425/425/425.
+// NOT kept: all regress and disturb the matching contact prefix; original complete
+// body, normalizer, shared helpers and property updates restored.
+// P478 m3: Standard material find, complete velocity/contact-normal transforms,
+// normal/fallback/sample/velocity coordinate copies and ordered contact-dot reduction:
+// 353/209/428/449/376/136/242/731. NOT kept: no native velocity or zero-home repair;
+// original helpers and complete body restored, early velocity j/k and property-zero residence remain.
+// P480 m3: Actual material const/mutable/end/ordered/consume cursors, native unsigned
+// ordinal, second-contact cursor and traversal-owned sample: 219/219/219/219/227/93/320/219.
+// NOT kept: no velocity j/k or property-zero repair; original full body and helpers restored.
+// P483: Actual normal-initial/fallback/velocity-initial memmove boundaries, seven
+// subsets then complete graph with failed sample: 440/374/235/441/463/413/463/450. NOT kept: native early
+// velocity j/k and property-zero residence not recovered; original whole body
+// and shared helpers restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

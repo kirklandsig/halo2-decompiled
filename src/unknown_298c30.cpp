@@ -428,6 +428,14 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // changes its own convention, 684); the near arm's rotation through a forceinline helper taking cosine and sine by value,
 // same code (parameters do not round); `cosf`/`sinf` with float angles 407; a short candidate count with a `long` outer
 // counter 420 harness (1627 bytes); the near arm's cosine and sine declared at loop scope, same code.
+// P467: Current ordinal consumed at first/second/both emission calls, byte count,
+// then both with char/short/word/long/dword count: 382/382/382/382/520/520/430/430.
+// NOT kept: no gain; short/word also lose the matched caller. Original whole body restored.
+// Complete fixed-turn point producers, positive/negative/both, aggregate and
+// component forms: 363/364/367/363/364/367; complete scalar rows at both fixed
+// turns, then all rotations: 365/365. NOT kept: point forms grow frame 0x64
+// to 0x6c or 0x74; scalar forms are nonexact one-use producers (1745 bytes).
+// Original whole body restored; unity, wrapped-angle/cursor homes and count width remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -948,10 +956,17 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // long/dword/short/word/byte/signed-char for, long/short while,
 // 854/854/837/837/837/837/854/837. NOT kept: larger frame and shorter extent;
 // original independent traces, sector scalars, helpers and full body restored.
+// P464: Independent actor/settings/path-settings/origin/forward/side/radius/obstacle
+// parameter role names: eight 569s. NOT kept: eager radius and pivot/trace homes
+// unchanged; original parameter names, shared producers and complete body restored.
 // T102: Explicit zero subtraction at offset/negative-scale/reverse-distance phases,
 // seven subsets 569 each; shared rotation point-setter publication 569.
 // NOT kept: no byte equality or radius/trace/pivot-home repair; original whole body
 // and three-use rotation producer restored.
+// Complete valid-sector work guarded to the sole result return, bool/byte/short/long
+// result at entry 809/832/836/836, after sector acquisition 850/862/844/844.
+// NOT kept: all regress and shorten away from 3372; short/long frames grow to
+// 0x118. Original whole body restored; eager radius and pivot/trace homes remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

@@ -1661,6 +1661,8 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 530; the first luminance's products field-first 529 (same code); `real remainder = 1.0f - square;` for the three color2
 // rows 533; `real falloff = 1.0f - (0.1f * length + 0.6f);` ahead of scale0 541 (2175 B); the second luminance's products
 // field-first 529 (same code).
+// P476: Standard first-product-seeded input/normal/ambient magnitude reductions, masks 1/2/4/3/5/6/7, then explicit operations; normal/ambient forms lose matched 0x3db00. Scores 552/603/552/619/531/603/624/681.
+// NOT kept: unmatched diagnostic source forms; original executable body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

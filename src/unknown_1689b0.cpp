@@ -1930,6 +1930,8 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // test as `separation < radius_squared` 606 (same code); the one-use `opposite` folded into its vector3f_scale call 610 (2895 B);
 // the two counts declared after the shape-query call 590 (2874 B; a moved declaration, not kept without a match); one ray-result
 // local for both branches 627 (frame changes). The zero carrier stays EBX (retail ESI) and the sums sit 4 bytes off.
+// P477: Standard first-product-seeded side/amount/edge-length/separation/direction-root/available-root reductions, paired minima and paired sum transforms:
+// 661/751/681/697/644/673/639/637. NOT kept: all regress and lengthen, with no native accumulator/zero repair; all four matched controls survive. Original observations, kernels, geometry and complete body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
