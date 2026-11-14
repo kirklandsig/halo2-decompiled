@@ -179,6 +179,9 @@ struct s_physical_block_iterator
 	s_record_pool_iterator iterator;
 };
 
+// MiniMax R (11-14): no new form, no lower score (201): the default arm's two products keep retail's factors, but retail
+// multiplies the best age's product first and ends the comparison in xmm1, ours multiplies the age's product first and ends it
+// in xmm0.
 // score 201 (was 201; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
 // MiniMax A (11-13): no new form, no lower score (201); the take test still jump-threads the case blocks past the
 // loop and the second age's clamp still folds away, and the only form that reaches 98 needs a policy helper with one caller.
