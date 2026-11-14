@@ -110,6 +110,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // MiniMax G (11-12): no new form, no lower score (902): the frame is still 0x1f0 against retail's 0x1d4, the entry flag byte
 // still sits at frame+0x09 where retail has frame+0x0a, and the record bit 2 and the second activity byte are still the other
 // way round; the loop head's shape is still decided by the callee 0xbadc0 in another file, so the body stands.
+// MiniMax B (11-14): no new form, no lower score (902); the frame is 0x1f0 against retail's 0x1d4 (our frame is 28 bytes larger)
+// and the difference opens in the first block, so every later home is out of step; the earlier rounds record the work as
+// BLOCKED-BY the contact-array destructor, which lives in another file.
 // score 902 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // Walked against retail block by block (b2A, 11-06): conditions, fields, callees, argument order and loop/removal shape agree. One precision
 // difference fixed: the angular block's x87 dot product (0x1d31a6-0x1d31f2) adds (i + k) + j, where the helper's other two sites (0x1d289c, 0x1d2c6d) add
