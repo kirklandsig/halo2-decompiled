@@ -1691,6 +1691,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // cache_file_header_read(index) ? true : false;` 105 (932 bytes: a `setne` that is tested again, no threaded continue),
 // `!= false` 105 (same code); the close test with the handle test first 68; the cleanup's slot switch ahead of the header
 // memset 49; `remove_later = false;` ahead of the remove call 35. Body unchanged.
+// P478 m3: Complete checksum memcmp/range-equal/typed-equality/short-circuit-memcmp
+// on positive-validation/native-count completion: 67/32/12/76; original checksum/query
+// and completed-query/count predicate forms: 90/250/248/119. Control 7 remeasured, uncredited.
+// NOT kept: unmatched completion flags require equality; 12 adds a nonnative comparison call;
+// other forms regress or move extent/frame away. Original helpers and full body restored; query/count/write/checksum remain.
 // @retail 0x213970
 void function_213970(void)
 {

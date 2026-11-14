@@ -1952,6 +1952,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // P442: Actual activity-derived accumulated result, bool/byte/short/long, positive then
 // complementary outcomes: 273/277/232/239/197/196/194/196. NOT kept: no exact result-home repair;
 // original parent, spin, release, event and full body restored. Return/release/contact homes remain.
+// P478 m3: Standard damping transform, origin/position/both coordinate copies,
+// complementary/logical Boolean spin joins, parent predicates and countdown predicates:
+// 231/165/164/181/212/170/195/195. NOT kept: no native return/release/event home repair;
+// original complete body and helpers restored. Unsupported bitwise-OR functor did not compile, uncredited.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

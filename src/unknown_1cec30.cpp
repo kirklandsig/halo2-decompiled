@@ -2514,6 +2514,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // unsigned-int/short/word/byte/signed-char: 377/379/377/379/425/425/425/425.
 // NOT kept: all regress and disturb the matching contact prefix; original complete
 // body, normalizer, shared helpers and property updates restored.
+// P478 m3: Standard material find, complete velocity/contact-normal transforms,
+// normal/fallback/sample/velocity coordinate copies and ordered contact-dot reduction:
+// 353/209/428/449/376/136/242/731. NOT kept: no native velocity or zero-home repair;
+// original helpers and complete body restored, early velocity j/k and property-zero residence remain.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

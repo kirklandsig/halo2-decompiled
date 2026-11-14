@@ -1245,6 +1245,9 @@ void function_143250(
 // P478: First-consumer repeated scaled mixed/cubic/triple/pair/cubic products, paired cubic family,
 // complete reusable family and prepublication family: 1552/1509/1333/1759/1597/1623/1628/1619.
 // NOT kept: four products recover frame 0x300, but spill homes/schedules regress; original body restored.
+// P478 m3: Cross-band square/mixed/all/axial-square/transverse-square retained products,
+// then all/square/mixed shared receivers with original second producers: 1918/1843/2010/1811/1827/1538/1529/1501.
+// NOT kept: lifetimes regress and shorten away from retail; original polynomial restored. Frame and homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

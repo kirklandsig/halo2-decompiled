@@ -495,6 +495,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // (l8 * l8 + l7 * l7) * 4.f` 249 (at retail's 1136 bytes); the blend weights computed only in the `arg_1` arm 206 (the code
 // changes); the clamp in place on local_13 with two ifs 211. Same code: the else arm's 0.5 first, the width squares summed
 // l7 first, the halved fields first point first, the segment as an aggregate initializer, the depth limits `k * 4.f * k`.
+// P478 m3: Per-axis reused origin/subtraction kernel; complete blend/average/depth tails,
+// projected sum, standard clamp, uncaptured-origin segment transform and reciprocal:
+// 303/400/324/308/275/230/260/343. NOT kept: all regress; original helper/body restored.
+// Direct-global scalar kernel 295 excluded because its operands bind references; not a credited trial.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
