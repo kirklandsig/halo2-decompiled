@@ -962,7 +962,12 @@ __forceinline long vehicle_round(real value)
 
 /* flips a vehicle back over: a spin about its forward (or its side) for up
    to two seconds while it's upside down */
-// score 8 (was 8): retail's length and tail now; four products load the other operand (ours loads up.j
+// MiniMax I (11-14): the side cross through the shared staged cross helper (cross3f_staged) 6 (was 8);
+// cross3f_staged at the first cross as well 10; the two count variables, the compound sum and the
+// swapped operands of 0xf6060's marker sum all leave that sum in EAX.
+// score 6 (was 8): retail's length and tail now; three products load the other operand (ours loads up.j
+// for the first cross's k term and the side cross's i term, and up.i for the side cross's j term;
+// retail loads forward each time). Kept: one `bool result` exit, the
 // for the first cross's k term and the side cross's i term, up.i for the side cross's j term, and the
 // velocity for the dot's i term; retail loads forward each time). Kept: one `bool result` exit, the
 // failure arm first (`if (!(...)) { clears } else { ...; result = true; }`) and word_flags_set for the
@@ -1121,7 +1126,7 @@ bool function_ef870(long vehicle_index)
 		{
 			vector3f side;
 
-			cross3f(&vehicle->forward, &vehicle->up, &side);
+			cross3f_staged(&vehicle->forward, &vehicle->up, &side);
 			vector3f_add_scaled(&axis, &side, 0.0f - vehicle->forward.k, &axis);
 		}
 		vector3f_scale(&axis, strength, &angular_velocity);
@@ -1538,6 +1543,8 @@ long function_10f5f0(long object_index);
 // MiniMax A (11-13): no new form tried this round, no lower score (561): our frame is 0x1990 where retail's is
 // 0x1984, so every stack reference sits a dword higher, and the point-sum loop's unrolling and the flag stores
 // keep retail's different shape; the frame needs a different set of locals in the body.
+// MiniMax C (11-14): no new form, no lower score (561); retail still materialises the word flag's bit 12
+// as a byte at [esp+0x13], written and never read, where this build tests it in place.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -3287,6 +3294,8 @@ real g_47ff30 = 2.5f;
 // MiniMax A (11-13): no new form tried this round, no lower score (682): the frame is 0x100 here and 0xfc in
 // retail, so every local sits four bytes higher, and this build loads two constants at the top where retail
 // loads one.
+// MiniMax C (11-14): no new form, no lower score (682); the frame still reserves 0x100 against retail's
+// 0xfc, and the boost scale still lives in xmm5/xmm6 where retail uses xmm6/xmm7.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3691,6 +3700,8 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // MiniMax A (11-13): no new form tried this round, no lower score (1000): the frame is 0x78 here and 0x74 in
 // retail, and retail keeps the matrix products in the XMM registers where this build spills them to the stack
 // and reads the parity flags with lahf, so the two bodies have different shapes from the first difference on.
+// MiniMax C (11-14): no new form, no lower score (1000); the frame still reserves 0x78 against retail's
+// 0x74, so every stack home sits four bytes higher.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4407,6 +4418,11 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // `double angle` gives; the rest is product ranks and the sine/cosine homes. Also: the default angle as
 // `6.2831855f * fraction` 136 (same code); the not-flipping path as an early `return false` 170 at 827;
 // `!function_30bf0(up)` 136 (same code).
+// MiniMax I (11-14): no new form, no lower score (118): retail's default arm keeps the angle on the
+// x87 stack, takes its cosine from [esp+0x18] and its sine from [esp+0x1c] and rotates the forward
+// with SSE, while ours takes the sine from [esp+0x18], the cosine from [esp+0x1c] and rotates it on
+// the x87 stack; the dot's first term and the first cross's operand order also stay as the shared
+// helpers order them.
 // MiniMax A (11-13): no new form tried this round, no lower score (118): the dot product's first term is still
 // commuted (this build multiplies forward.i by up.i where retail multiplies up.i by forward.i) and the first
 // cross product's operand order still differs; both follow from the shared helper's argument order, which
@@ -4699,6 +4715,10 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // 50; length declared at its assignment 48; length and the ray vector declared where computed 48; the ray products
 // written `length * direction.i` 48 (all same code but the scales). No untried natural form is left here that
 // does not depend on the cone call's register order (BLOCKED-BY 0x146320; its file is held).
+// MiniMax I (11-14): no new form, no lower score (48): the marker sum still lands in EAX (movsx eax, ax;
+// add eax, edi) where retail has movsx ecx, ax and add edi, ecx; the sum's operand order, a second count
+// variable (short, int or long), the compound sum and int-typed counts all compile to the same EAX form,
+// and the int counts change the loop (169).
 // MiniMax A (11-13): no new form tried this round, no lower score (48): the marker count's sum still lands in
 // EAX here (movsx eax, ax; add eax, edi) and in EDI in retail (movsx ecx, ax; add edi, ecx), the definition
 // pointer is still read into EDX before the memset where retail reads it into EAX after it, and the facing copy
@@ -5382,6 +5402,8 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // MiniMax A (11-13): no new form tried this round, no lower score (749): the zero register at the top is still
 // xmm4 here and xmm2 in retail, and the constant load and the pushes around it are in the other order, so the
 // body's register plan differs from the first difference on.
+// MiniMax C (11-14): no new form, no lower score (749); the frame agrees (0x18) and the first difference
+// is still the zero/result SSE allocation.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

@@ -52,6 +52,10 @@ struct c_aggregate : c_child
 };
 
 
+// MiniMax H (11-13): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020, because
+// the address-taken count keeps a slot of its own under /GL; a /GL- build of this file is byte-exact but would cost
+// 0x97f60, 0x97fe0 and 0x980d0 their matches, so the file's flags stay as they are, and the permuter's 46 tries in
+// 306 s found nothing below 31.
 // MiniMax A (11-12): no new form, no lower score (31); the frame is still 0x8024 against retail's 0x8020 and
 // the two low loop homes are still swapped, because the produced count's address reaches the child's v5 and
 // so keeps a slot of its own under /GL; the body is byte-exact only in a /GL- build of this file, which would
@@ -464,6 +468,14 @@ struct c_aggregate : c_child
 // the function, while one that reaches only known callees is packed by scope; retail's packing of this count therefore
 // needs either a known callee (retail calls through the vtable) or a compile without it. Still BLOCKED by the build
 // flag; no source form can pack the slot.
+// M3 lane 12 r121 (one-file LTCG harness, exact on the control 31; the file-mates stayed matched): `produced` declared at
+// loop-body scope ahead of the child test 141 (fast, 389 bytes); the base v5 defined out of line (a known body) 31 (fast,
+// same code); the gate as `error == 0 && child != 0` 37; the count named block_count 31 (same code); the cleanup walking
+// the blocks with a block pointer 82 (391 bytes). A pure virtual v5 does not compile (the aggregate is instantiated).
+// Still BLOCKED by the build flag.
+// P465: Complete four-cell boundary-table producer, long/dword/short/word/byte/signed-char
+// for ordinals then long/dword while ordinals: 129/129/147/147/147/147/129/129. NOT kept:
+// escaped output and low loop homes remain; original full body and six exact siblings restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

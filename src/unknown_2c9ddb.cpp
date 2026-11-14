@@ -283,6 +283,10 @@ extern long g_55c154;
 // classification byte, as if the select and the later test were threaded through the call; both arms join at one 0x238c69
 // tail (ECX loaded last). The forms that produce two call sites are listed (two-arm grid, R223, rounds 32-153) and all flip
 // the frame; 0x212bc0 sits in a held sort_4byte file and 0x238c69's other caller in a held file. BLOCKED-BY 0x13fac0 for the copy.
+// MiniMax I (11-14): no new form, no lower score (61): the link still expands the name copy where
+// retail calls 0x13fac0 out of line (its own file, src/unicode_strings.cpp, is not this round's), and
+// the default/existing choice is still spilled to a byte slot where retail branches on the selected
+// index itself.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

@@ -873,6 +873,9 @@ void function_1c54b0(char const *variants, long object_index)
 // the island through an inline (world, index) accessor 4/18 (same code). Compile-only diagnostic: the outer loop
 // written as a guarded do-while, so the world is read ahead of the index's first assignment, keeps the pair in either
 // flag order, so the pair does not follow which of the two values is defined first.
+// Round 91 (m3 lane 14, fast; flag before/after the call): the outer loop as a guarded do-while 4/18; count and
+// flag declared at function scope and assigned at the island top 4/18; the entity index declared in the inner for
+// statement 4 (all the 4s the same code).
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {
@@ -1251,6 +1254,9 @@ struct s_1c4040
 // m3 lane 10 r99 (fast with 0x1c51c0 1 and 0x1c3f30 matched): `if (object_index == NONE) continue;` in both scans 8; the
 // success store in both arms of the mode test 8; the entity priority read at each use (no priority local) 170 (547 B); the
 // island loop as a `while` with its increment at the end 8; the entity typed as the priority view (cast back for the call) 8.
+// m3 lane 7 r159 (fast): the parameters as (active, attempt) at the definition, both declarations and both calls 11
+// (active in CL, attempt in EDX); 0x1c3f30 defined after this function 8; 0x146bf0 defined first in
+// src/unknown_146a20.cpp 8; 0x1c3770 defined after this function 8; this function moved to the end of its file 8.
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {

@@ -407,6 +407,10 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // copied straight into the field); the set as an aggregate initializer 10 (the count stored first frees EBX for the
 // second read; with a samples local or the index form 10/10); the field assigned, the count stored, then the field
 // advanced 11, with the memcpy'd offset 10.
+// Round 195 (m3 lane 4, fast): the curve set as the existing two-field tag-data aggregate (size, address) 2; the object
+// test nested in its own if 2; the curve address through an inline helper taking the data pointer and the offset 8 (the
+// plain sum's schedule: the add ahead of the scale load); the curve set and the copy declared at function scope 2; the
+// guard as an early return 2 (all the 2s the same code).
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {

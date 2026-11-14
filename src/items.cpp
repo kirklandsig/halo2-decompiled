@@ -1419,9 +1419,15 @@ struct s_item_flags_view_10b850
 // original classification, observations, helpers and full body restored. Frame 0x154/0x12c
 // and entry Boolean/carrier/collision/rotation homes remain.
 // P460: Corrected single gravity/query/settle update carrier char/signed-char/byte/short/word/int/long/dword: 824/824/824/843/843/858/858/858. NOT kept: native frame and entry-byte homes remain; original behavior fixes and whole body restored.
-// score 824 (was 824): the frame is 0x154 against retail's 0x12c, the entry's flag byte differs
+// Earlier: the frame is 0x154 against retail's 0x12c, the entry's flag byte differs
 // (retail shifts the value and stores the parity byte where this build tests a bit of a shifted
 // register), and the walk still differs in the item table's own expressions.
+// P482: Standard copies at settled velocity/published spin-axis/paired contact-position
+// outputs, subsets 1..7, then all with fallback position: 824/862/862/824/824/862/862/862.
+// NOT kept: ties/regressions; spin-axis copies grow to 4137 bytes. Original semantic fixes,
+// every record assignment, input observation, include, helper and complete body restored.
+// Frame 0x154/0x12c and entry Boolean/carrier/contact/rotation homes remain.
+// MiniMax H (11-14): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack slots where this build holds them in registers.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1952,6 +1958,17 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // P442: Actual activity-derived accumulated result, bool/byte/short/long, positive then
 // complementary outcomes: 273/277/232/239/197/196/194/196. NOT kept: no exact result-home repair;
 // original parent, spin, release, event and full body restored. Return/release/contact homes remain.
+// P478 m3: Standard damping transform, origin/position/both coordinate copies,
+// complementary/logical Boolean spin joins, parent predicates and countdown predicates:
+// 231/165/164/181/212/170/195/195. NOT kept: no native return/release/event home repair;
+// original complete body and helpers restored. Unsupported bitwise-OR functor did not compile, uncredited.
+// P480 m3: Point lifetime through origin/pair publication, damage/expiry event storage,
+// mutable/readonly returned receiver: 140/140/140/140/140/140/140/140. NOT kept: no native
+// return-byte or event-home repair; original full body, helpers and interfaces restored.
+// T104: Returned contact-transform/origin-setter chains, mutable/readonly and actual filled
+// point-query outputs: 178/171/180/171/180/157/176/176. NOT kept: all regress; original
+// two-use spin, release helper, paired setters and full body restored. Return/release/event homes remain.
+// MiniMax H (11-14): no new form, no lower score (140): the release flag is still cleared with a load, an and and a store where retail clears the byte in place, and the return byte still sits at esp+0xe where retail puts it at esp+0xf.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

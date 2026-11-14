@@ -413,6 +413,10 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
+// MiniMax H (11-13): no new form, no lower score (375): the frame agrees (0x40) but retail loads the actor's table
+// entry before the settings call and keeps the slot in ebp where ours keeps the entry in ebx after the call, and the
+// facing pointer is formed in esi from the view call here and late from eax in retail, which 0x25d740's inlining decides;
+// taking the actor view before the settings call, as retail does, measures 413.
 // MiniMax B (11-11): no new form, no lower score (375); retail loads the actor table before its register saves,
 // keeps arg_0, the actor, the slot and the prop in edi, ebp, esi and ebx and computes the actor's table entry
 // before the settings call, where ours keeps that entry in ebx after the call and the slot in ebp; the frame
@@ -688,6 +692,9 @@ extern point2f *g_468778;
 // declared and cleared at the very top 409; the slot and the actor ahead of the settings call 413; the settings distance read
 // once into a local for its three later reads 406 (1533 bytes), with retail's entry 421 (1529 bytes). Declaration order and
 // position do not decide the tie. Body unchanged at 375.
+// T105: Progressive final-result logical/bitwise refinement, bool/byte/short/long:
+// 375/395/404/406/375/373/406/407. NOT kept: two-point best is below the gate
+// and no native result/carrier equality; original result and complete body restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -847,6 +854,10 @@ struct s_1aab50
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax H (11-13): no new form, no lower score (382): retail's early false exit (xor al, al; pop ebp; add esp,
+// 0x58; ret 8) sits in the middle of the body where ours lands after the main exit, and in the velocity block retail
+// keeps the view pointer in eax and forms the facing pointer late where ours forms it in esi from the view call; the
+// single-exit bool spelled as a direct return true and return false measures 508.
 // MiniMax B (11-12): no new form, no lower score (382); the normalised instruction streams differ in two ways: the
 // early false exit (xor al, al; pop ebp; add esp, 0x58; ret 8) sits at retail's 0x1aac35, in the middle of the
 // body, while here it lands after the main exit at the end of the function, so every later branch target is

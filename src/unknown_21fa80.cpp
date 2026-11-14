@@ -368,6 +368,10 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // copies every float it only moves with integer moves (`mov ecx, 0xc2800000` for the -64 level, `mov ecx, [edi + 0x14]`
 // for level_offset) where this /Op file moves them through SSE registers, and it stores each flag test's bool (the send
 // bits, `sends.flags & 1/2/0x20`, `input->field_30 & 1`) to the dead byte at +0xe after `direct` moves to DL.
+// P481: Existing bit-value constructors at zero/selected/send volume boundaries,
+// masks 1..7, then the original append boundary: 548/536/548/536/547/536/547/536
+// (fast control 536, full 544). NOT kept: no native frame/role recovery or equality;
+// original constructors, helpers and complete body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

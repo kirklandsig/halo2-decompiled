@@ -464,6 +464,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // and an if 728 (3480 B). Same code: the 0.99 dot's products and operands written mirrored, local_17 declared before
 // local_15 (VC orders those operands itself). Left: retail re-reads arg_0 from its slot and holds local_2 and then the
 // saved vector's first component in ESI, where ours keeps arg_0 in ESI throughout; EBX is still saved at entry.
+// P481: Complete established/radial decision byte/char/word/long, original true
+// default then fully assigned leaves: 648/690/648/690/722/721/724/723 (fast control
+// 648, full 715). NOT kept: no native entry/home equality or gain; original full
+// Boolean decision, radial double, helpers and complete body restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

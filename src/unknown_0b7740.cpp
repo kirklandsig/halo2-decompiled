@@ -1029,6 +1029,16 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // input_matrices in EDX (stored late as final_matrices) with a separate EDI copy for the early exits and object_index in
 // ESI, pushes EBX only before the +0xb3 test (two separate early-test epilogues), and builds the header with
 // `lea [ecx + eax*4]`. Body unchanged.
+// M3 lane 16 r116 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout): bit 29/+0x34b through a fresh
+// table-lookup local declared ahead of the sample test (0xbd090's `current`) 240 (same code: merges with `object`); that
+// with the bit-30 clear through 0xbfe20 262 (813 B), with the mask as an aggregate copy 262 (same code), with the lookup
+// written inside the two tests (no local) 262; re-measured round 78's header->object lead 194 and round 179's 169 lead 169.
+// On the nested model test with `return result;` inside and after it (0xbfe20 clear): early tests through header->object,
+// bit 29/+0x34b through the fresh lookup written in the tests 297 (823 B), through header->object 297. Reading: retail's
+// three [header + 8] loads look like rematerialized reloads of one value (its first-test value sits in ECX, scratch, while
+// `object` needs EBP), and the EDX/EDI pair at entry is the parameter load kept for the late final_matrices store beside a
+// separate result copy; ours always coalesces the result with that load. A parameter reassigned in place of final_matrices
+// is ruled out: retail's sample arm stores final_matrices to its own slot. Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
