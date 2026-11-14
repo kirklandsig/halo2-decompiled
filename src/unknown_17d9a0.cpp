@@ -859,6 +859,11 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // subsets then complete standard overloads: 529/574/529/565/570/565/539/535. NOT kept: no native tag/count/plane
 // home equality; six-point best enlarges frame to 0x21e4 and misses the keep margin.
 // Original APIs, alias-safe rotation and complete body restored.
+// P493: Complete diagonal square-complement and cosine-contribution parts,
+// ordinary/immutable at each producer or before basis publication:
+// 568/568/568/568/569/569/569/569. NOT kept: all regress and shorten away from
+// retail; tag/count/plane homes and rotation spills persist. Original body
+// and every existing helper restored; calibrated with the arccosine provider.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

@@ -4830,6 +4830,10 @@ void function_c50a0(long unit_index)
 // and the vehicle in ebp with the loads after the pushes, where retail keeps the global in edx and
 // the vehicle in esi and shrink-wraps the two global loads above push ebx; the register choice
 // follows the frame's shape, which the recursion and the loop's children fix.
+// P493: chained role clears 166; positive child admission 166; ordinary
+// two-pass while 166; grouping-owned assignment 253; dword driver/gunner
+// 245/172; driver bit after activity 251; pass-scope driver 166.
+// NOT kept: all tie or regress; native pool/vehicle/child ownership remains.
 // @retail 0xcc810
 void __stdcall function_cc810(long vehicle_index)
 {
@@ -5007,6 +5011,11 @@ void __stdcall function_cc810(long vehicle_index)
 // test's three multiplies are still folded into one multiply by 0.25; a named float discriminant
 // local and the square root without the (real) cast compile to the same bytes, so the promotion to
 // double is not source-controllable by those spellings.
+// P493: shared velocity magnitude 195; dword moving-away 166; paired
+// numerator names 175; nested first-root admission 160; first-root default 193;
+// conditional root result 162; shared ramp duration 162; complete coast
+// outcomes 162. NOT kept: nested admission gains only two; the rest
+// tie or regress, retaining the x87 discriminant and excess eight-byte frame.
 // @retail 0xc7300
 void __stdcall function_c7300(real distance, real velocity, real speed_limit, real acceleration, s_unit_motion *motion)
 {
@@ -5282,6 +5291,11 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // sets 1..7: 179/183/178/169/174/183/178; all with disabled early result 185.
 // NOT kept: no match or gain; delayed up.i, native scalar/vector homes and x87
 // forward-scale residence remain. Original complete body and shared helpers restored.
+// P493: common byte flags 213; dword enabled/clamp carriers 209/188;
+// aim-first dispatch 174; conditional selectors 198; dispatch-owned clamp
+// default 182; standalone disabled exit 186; complete result exits 194.
+// NOT kept: all tie or regress; delayed up.i, native angle homes and x87
+// forward-scale residence remain. Original cross helpers and body restored.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

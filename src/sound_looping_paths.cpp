@@ -510,6 +510,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P491: Float exponential/logarithmic/absolute-value API families, seven subsets then
 // complete standard overloads: 866/866/866/866/866/866/866/866. NOT kept: no exact native math/entry/home repair;
 // original APIs, logarithmic result producer, helpers and complete body restored.
+// P493: Shared fade-step conditional/branch/divisor/result producers, ordinary
+// then forced inline: 890/916/893/916/890/916/893/916. NOT kept: all regress; native
+// duration reloads, entry zero and target/query/count homes remain. The new
+// producer at both fade sites and all complete executable edits are restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
