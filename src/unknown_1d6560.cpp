@@ -404,6 +404,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // spelling that keeps case 0's index off the type read's CSE) 36 at 256 B [13] (left: component ECX/index EAX flip, headers
 // ESI, object index EDX, rigid body ECX, `mov al` + `movzx` type); the two spellings swapped 53 [13]; headers declared first
 // 100 (260 B) [171]; rigid body first 100 [13]; the rigid-body local renamed `body` 36 (same code: names move no register).
+// P487: Twice-used body flag as bool/byte/short/long, repeated then shared type:
+// 100/97/97/97/89/116/116/116. NOT kept: best gains only seven and loses matched caller 0x1d5bf0 to 13.
+// Original late flag reads, type observations and caller convention restored.
+// Header-first acquisition, one type read and body/index allocation remain.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

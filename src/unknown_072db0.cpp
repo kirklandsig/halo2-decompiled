@@ -1642,6 +1642,7 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// score 703 (was 703): earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax G (11-12): no new form, no lower score (703); the frame agrees (0xc0); the slot helper is the
 // static __forceinline function_74aa1 in this file (src/unknown_072db0.cpp:1588), whose null test is a
 // branch here against retail's cmovne, and the users cursor still rides in EBX where retail keeps it in
@@ -1663,7 +1664,6 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // by inlining the getter 0x647d0 in src/unknown_054fe0.cpp). Both forms stay at 703.
 // MiniMax H (11-11): no new form, no lower score (703); the users cursor still rides in EBX where retail keeps it in a stack slot at +0x18, and the logon-status test still lacks retail's decrement/branch.
 // MiniMax B (11-13): no new form, no lower score (703); the users cursor still sits at +0x14 where retail keeps it at +0x18, the member fields are read off the properties address where retail reads them off the element, and the logon-status test still lacks retail's decrement and branch (the element through a named pointer 777, the copy before the slot lookup 847, the status written as (status - 1 == 0) 823; all worse).
-// score 703 (was 703): earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax H (11-04): the logon-status test written as (status - 1 == 0) reaches retail's
 // `dec eax` and its exact 2862 bytes but scores 729; not kept, the original body is restored.
@@ -1983,6 +1983,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // build's jump and move, so the loop head lands on another offset and the counts after it run off; that conditional move
 // needs the SSE architecture flag this file's flags do not set, and the flags stay as they are, so the request builder's
 // body stands.
+// P488: Complete 144-byte property transfers through copy/copy-backward/uninitialized-copy/reverse-copy, byte
+// and char payloads: 827/867/827/884/809/867/827/884. NOT kept: Copy boundaries do not recover a native
+// keeper. Original payload, library copies, identity observations, helpers, task transitions and protected
+// builder inputs restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

@@ -2130,6 +2130,11 @@ bool __stdcall function_110ab0(long unit_index)
 // P461: Complementary controlling-absence outcome bool/char/signed-char/byte
 // 474 each, short/word 451/451, long/dword 467/467. NOT kept: frame stays eight
 // versus twelve and every score regresses; original handle, queries and full body restored.
+// P489: Standard linear search for primary-seven, paired-two and shared overlay-eleven request sets, seven
+// subsets, then binary search over the same complete sets: 493/471/683/520/723/674/739/770. NOT kept: No
+// native instruction/frame equality. Original sets, switch/defaults, signed counts, status domains, field
+// observations, query/provider tuples, Boolean interface and complete body restored. No decoded table-tail-
+// only gain retained.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {

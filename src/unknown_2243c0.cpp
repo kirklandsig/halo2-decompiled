@@ -606,6 +606,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // the index expressions (raw ordinals in the locals) 117 (same code); the four cache zeros together after local_11 120
 // (masked 27); local_7/local_8 as `short` 117 (same code); the flags local ahead of the context's arg_0 store 120 (masked 32).
 // Re-measured: the tag-data ternary 117, the material tag named for both uses 146 (524 B).
+// P487: Standard accessor/stage/pass iterator advancement, seven subsets, then
+// all with an external instance reference: 233/169/158/254/244/188/266/266.
+// NOT kept: no eligible gain; original accessor, views, cache zeros and body restored.
+// Fallback EDX normalization, unfused elements and stage/pass homes remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

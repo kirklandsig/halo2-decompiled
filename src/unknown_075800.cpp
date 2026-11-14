@@ -961,7 +961,7 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
-// score 143 (was 153; m3 lane 3 r239 C1, kept by the coordinator 11-13): case 11 sits in the first switch after case 24.
+// score 143 (was 153): m3 lane 3 r239 C1, kept by the coordinator 11-13; case 11 sits in the first switch after case 24.
 // Earlier (153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // MiniMax B (11-13): no new form, no lower score (153); the address and the message still keep different homes, and the caller that passes them lives in another file.
 // Earlier 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
@@ -1441,6 +1441,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // handlers given an unread address parameter (passed by this body, NULL from 0x93aa0) on both forms: 91 (same code): LTCG
 // drops the unread parameter before it chooses this function's convention, so it does not give the first pass the address
 // use across a call that retail's convention needs. Diagnostics only (no source kept); no unlisted natural form was found.
+// P488: Primary case 11 before cases 0/2/3/4/8/9/12/13 on the accepted single-late-case graph:
+// 194/194/195/195/195/195/196/196. NOT kept: Case-priority forms require equality; original primary/terminal
+// classifiers, every case body, lookup and call tuple restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

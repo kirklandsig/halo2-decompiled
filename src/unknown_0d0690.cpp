@@ -1663,6 +1663,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // field-first 529 (same code).
 // P476: Standard first-product-seeded input/normal/ambient magnitude reductions, masks 1/2/4/3/5/6/7, then explicit operations; normal/ambient forms lose matched 0x3db00. Scores 552/603/552/619/531/603/624/681.
 // NOT kept: unmatched diagnostic source forms; original executable body restored.
+// P490: Standard forward coordinate copies at input/secondary/ambient transfers,
+// masks 1/2/4/3/5/6/7, then backward complete transfers: 571/597/544/596/577/597/601/596.
+// NOT kept: all regress and shorten away from retail; secondary forms also lose the matched
+// caller. Original native copies, helpers and complete body restored; frame/result/carrier gaps remain.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
