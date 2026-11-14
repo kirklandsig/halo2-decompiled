@@ -3034,6 +3034,7 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // retail's `push ecx`, ours loads the definition table before the weapon where retail loads it after, and the
 // weapon sits in EDI where retail keeps it in EBP, so the prologue and the switch's entry layout differ before
 // any case body is reached.
+// MiniMax A (11-14): no new form, no lower score (389); a local copy of the weapon index compiles to the same bytes, and what is left is that ours opens with an eight-byte frame where retail opens with one four-byte slot, keeps the weapon in edi and the index in ebp where retail keeps them the other way round, loads the definition table before the weapon, and builds a jump table where retail builds a comparison tree whose root is `cmp esi, 0x10000573` and whose two activity names are ordinary cases.
 // @retail 0xff5f0
 bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *active)
 {
@@ -3611,6 +3612,7 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // difference is at +0xb, where ours loads the actor argument and the definition table before the weapon and retail
 // loads the pool pointer and takes the argument into EBX, so the prologue's registers and the four extra frame bytes
 // differ before any case body is reached.
+// MiniMax A (11-14): no new form, no lower score (607 in the plain check, 643 in the fast one); retail's frame is four bytes shorter than ours and its homes for the weapon index, the definition and the two barrel offsets differ, so the prologue and the copy-out loop stay laid out differently.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
