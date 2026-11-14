@@ -646,6 +646,12 @@ static inline bool teams_enabled_19e1c0()
 // 458/701/458/701/458/701/458/434. Name forms recover token preload and
 // early capacity EBP but retain frame 0x208 and merge name tails. NOT kept:
 // no native frame/result/copy-tail equality; original full body restored.
+// M3 lane 2 r82 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691): retail's name
+// tails 1 and 4 are byte-identical from the wcslen call to their jump yet unmerged; only the wcsncpy call is shared, and
+// the #cause_team tail joins the token fallback's clamp. On the plain result: each name/team case ending in `return
+// result;` 691 (same code); the text buffer declared in each case's block 691 (same code, so the merge follows the slot,
+// not the symbol); both 691. On the volatile result: per-case buffers 390, per-case returns 390 (both the same code).
+// Diagnostic: one to three unused `long` locals on the plain result 691 each (no phase effect).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

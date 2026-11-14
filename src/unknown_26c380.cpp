@@ -533,6 +533,15 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // tail although its stores and point computation are that tail's suffix (origin in EBX, `xor al, al`).
 // MiniMax A (11-13): no new form, no lower score (244): the permuter (302 s, six tries) splits the blocked-and-success chain
 // assignment into two stores, which the fast check puts at 243, one point short of the bar, so the body stands.
+// M3 lane 2 r82 (fast with 0x26c380/0x26c4e0/0x26ccb0/0x26d370/0x15f3a0, matched throughout; held goto form rebuilt, 34 at
+// 1605 B): on the goto form, tail C in retail's order (blocked, edge, distance) with tail A written blocked, sector, edge,
+// distance 32 at 1605 B (tail C stays unmerged with retail's store order and the scheduler still prints tail A sector first,
+// as retail; build/r82/lead-0x26c590-32.patch); tail A blocked, edge, sector, distance 245 (1500 B, merged); the 32 form with
+// the line as a {normal, offset} record 304 (1612 B); with the magnitude as the root of length_sq3f or of dot3f(&n, &n) 32
+// (same code: the sum order does not follow the spelling). Those two tail orders on this body 244 (same code). Diagnostic:
+// one to seven unused `long` locals on the goto form 305/305/305/305/305/304/305 (1609-1612 B), the cross's row j operands
+// never flip. Left on the 32 form: the cross's row j first product, the magnitude's j/i order, the XMM1-3 roles and the
+// line/previous-sector slots.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

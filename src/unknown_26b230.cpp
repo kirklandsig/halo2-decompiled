@@ -2139,6 +2139,12 @@ void function_269250(long clump_index, long actor_index);
 // at once: `(void)&selected` and the improving arm writing `selected` through a pointer on the in-arm form 126 each (same code; the
 // address is propagated away, so retail's memory-only selection is not an address-taken local).
 // P460: Complementary readiness snapshot bool/char/byte/short/word/int/long/dword: 131/131/131/84/84/132/132/132. NOT kept: short/word gain only three at 480 bytes; native byte, pool/selection and x87 homes remain. Original body restored.
+// M3 lane 2 r82 (fast with the eight matched neighbours, all kept; this body 87, in-arm re-measured 126 at 480 B): on the in-arm
+// form, a `short` activity snapshot 132 (481 B); the actor's team read once into a `short` for the walk test and the creation
+// call 168 (497 B); the creation arm's one-use group pointer removed 126 (same code); `if (selected == actor->unknown07c)
+// continue;` in the selected arm 126 (same code). Diagnostic (an existing helper written out): a private step reading the
+// iterator's pool field at each use instead of the step's local copy 126 (same code), so the pool's reference count is not
+// what loses it the register. Body unchanged.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
