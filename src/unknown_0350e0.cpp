@@ -270,6 +270,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // P461: Builder-owned sine/cosine/both real conversions 335/334/337; consumed
 // builder matrix identities first/second/both/readonly/reference 334 each. NOT kept:
 // no exact repair; double-input forms also lose the caller. Original helpers/body restored.
+// P489: Whole weighted up/left/forward vector producers in seven subsets, then direct scale/add-scaled
+// composition in the actual returned vector: 416/416/436/527/532/515/605/371. NOT kept: No byte equality;
+// computed vector storage and helper operand-order alternatives are exact-only. Both original private helpers,
+// concurrent angle observations, all arithmetic trees, matrix/vector phases and complete body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -4194,6 +4198,11 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // unmatched 0xc6b90 (inlined here) and 0xff5f0 bodies: BLOCKED-BY 0xc6b90, 0xff5f0. Same graph with a pointer
 // local to the field fast 155; with kind volatile plain 190; with kind as signed char plain 209 (object index in EBP);
 // main body with the first fade read per use through the object local plain 185 (773 bytes).
+// P489: Complete positive/default/failure-first/nested initial result regions, original then native branch-
+// produced temporal clamp results: 230/201/232/62/231/203/233/62. NOT kept: No exact native result/frame
+// repair; tested-result alternatives are equality-only. Original positive Boolean graph, ordinary kind, all
+// per-use fade observations, distance helper, recursion and full body restored. The missing native final-query
+// scratch remains.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {

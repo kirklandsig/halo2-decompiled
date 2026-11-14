@@ -3296,6 +3296,11 @@ real g_47ff30 = 2.5f;
 // loads one.
 // MiniMax C (11-14): no new form, no lower score (682); the frame still reserves 0x100 against retail's
 // 0xfc, and the boost scale still lives in xmm5/xmm6 where retail uses xmm6/xmm7.
+// P489: Complete three-axis inner-product producers, forward/reverse traversal, velocity/axis multiplication
+// order and default/explicit arithmetic operators: 769/971/768/963/806/1017/809/1009. NOT kept: No exact
+// native projection/frame repair. Grouping and operand alternatives require equality; original complete
+// running sums, all memory observations, three transforms, helpers, static initialization, torque gain and
+// full body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -6105,6 +6110,11 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // P461: Shared desired-up degeneracy outcome bool/char/signed-char/byte/short/word/long/dword:
 // 1059 each, 5075/5094 bytes, frame 0xfc. NOT kept: no native frame or exact
 // decision/publication repair; original normalization, fallbacks and full body restored.
+// P489: Plain component loops at desired-up normalization, quaternion-axis normalization, short-angle axis
+// negation, backward direction, angular acceleration, mass-force scaling, drift braking and bank rotation:
+// 2128/2130/2130/2109/2114/2601/2128/2595. NOT kept: All regress; frames remain 0xfc or grow to 0x104, and
+// every length moves away from retail 5094. Original complete body, helpers, matrix ownership, all original
+// arithmetic trees and calls restored. Native frame and allocation remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
