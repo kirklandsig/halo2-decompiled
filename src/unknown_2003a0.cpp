@@ -2965,6 +2965,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // second half EBP holds the trigger record pointer in both builds, so the cut of arg_1's EBP range before the
 // follow-up is the allocator's weight decision rounds 119, 162 and lane 11 r96 above describe. Rounds 70 and 155 list
 // every first-half spelling; none is left untried.
+// M3 lane 12 r123 (fast): the second half's guard also testing the definition index 107 (578 B: the pointer's NULL test
+// folds, the reload stays); its definition pointer as `= NULL; if (index != NONE) pointer = ...;` 107 (578 B); the follow-up
+// event and task locals at function scope with the block in place 59 (578 B, first +0x26); the first test's lock bit as
+// `(... & 1) != 1` 50 (same code), as `~... & 1` 176 (594 B).
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
