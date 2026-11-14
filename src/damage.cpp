@@ -5175,6 +5175,7 @@ struct s_damage_object_creation
    longer joined to the object's root as new objects */
 // MiniMax B (11-12): no new form, no lower score (156): the mask's zero store, the piece loop's guard order, the search's entry test and the last two lookups' scratch registers still differ.
 // MiniMax H (11-12): no new form, no lower score (156): the node loop's guard, the search's entry test and the mask's zero placement are unchanged; the lane history's best form (the piece pointer with the piece loop as `!= 0`) is 157 and the retail guard order is 187.
+// MiniMax H (11-13): the mask's zero moved after the states call 154 (the store then lands ahead of the mask test, retail has it inside the mask block), the zero assigned after the 0xba690 call 170 and in the for-init 231 (both rebuild the function: the datum offset stays in ESI and the node count takes 0x18), so 156 stands.
 // score 156 (was 156): 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // mask in memory). Left: the mask's zero is stored ahead of the states call (retail: at the first node loop), the piece
 // loop's guard order and bottom test, the search's entry test, and the scratch registers of the last two lookups.

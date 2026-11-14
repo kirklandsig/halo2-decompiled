@@ -413,6 +413,10 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
+// MiniMax H (11-13): no new form, no lower score (375): the frame agrees (0x40) but retail loads the actor's table
+// entry before the settings call and keeps the slot in ebp where ours keeps the entry in ebx after the call, and the
+// facing pointer is formed in esi from the view call here and late from eax in retail, which 0x25d740's inlining decides;
+// taking the actor view before the settings call, as retail does, measures 413.
 // MiniMax B (11-11): no new form, no lower score (375); retail loads the actor table before its register saves,
 // keeps arg_0, the actor, the slot and the prop in edi, ebp, esi and ebx and computes the actor's table entry
 // before the settings call, where ours keeps that entry in ebx after the call and the slot in ebp; the frame
@@ -847,6 +851,10 @@ struct s_1aab50
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax H (11-13): no new form, no lower score (382): retail's early false exit (xor al, al; pop ebp; add esp,
+// 0x58; ret 8) sits in the middle of the body where ours lands after the main exit, and in the velocity block retail
+// keeps the view pointer in eax and forms the facing pointer late where ours forms it in esi from the view call; the
+// single-exit bool spelled as a direct return true and return false measures 508.
 // MiniMax B (11-12): no new form, no lower score (382); the normalised instruction streams differ in two ways: the
 // early false exit (xor al, al; pop ebp; add esp, 0x58; ret 8) sits at retail's 0x1aac35, in the middle of the
 // body, while here it lands after the main exit at the end of the function, so every later branch target is

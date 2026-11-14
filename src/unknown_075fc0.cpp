@@ -70,6 +70,10 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
     return local_0;
 }
 
+// MiniMax H (11-13): no new form, no lower score (356): the frame is still 0x38 here against retail's 0x34 (the
+// later value still has a stack home where retail keeps it in ebp) and the callee-saved set still differs (retail
+// keeps the observer in edi and the channel index in ebp); the helper whose byte result retail tests is 0x75910, and
+// the permuter's 25 tries in 309 s found only the call 0x765c0's two first arguments swapped, worth one point.
 // MiniMax G (11-12): no new form, no lower score (356); the frame is still 0x38 here against retail's
 // 0x34 (local_18 still has a stack home where retail keeps it in EBP) and the callee-saved set differs
 // (retail keeps the connection in EDI and the channel index in EBP); the helper whose byte result retail
