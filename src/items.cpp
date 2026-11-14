@@ -1414,6 +1414,7 @@ struct s_item_flags_view_10b850
 // then two reversed geometry-label priorities: 863/863/863/863/863/863/863/863. NOT kept: all regress and lengthen;
 // original classification, observations, helpers and full body restored. Frame 0x154/0x12c
 // and entry Boolean/carrier/collision/rotation homes remain.
+// P460: Corrected single gravity/query/settle update carrier char/signed-char/byte/short/word/int/long/dword: 824/824/824/843/843/858/858/858. NOT kept: native frame and entry-byte homes remain; original behavior fixes and whole body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

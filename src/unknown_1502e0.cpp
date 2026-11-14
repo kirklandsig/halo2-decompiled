@@ -1337,6 +1337,7 @@ long function_cbd50(long unit_index, short weapon_index);
 // table still hoists, player/pool homes remain nonnative and frame stays 0x1c versus 0x18.
 // P458: Retained slot-provider count char/short/word/dword, entry then count-phase lifetime:
 // 293/216/216/215/292/274/274/273. NOT kept: late count restores frame 0x18 but regresses length; player/pool/tag homes remain; original complete body restored.
+// P460: Complete count-admission/retained-pair outcomes in bool/byte/short/long on the retained slot-provider graph: eight 215. NOT kept: extra frame word and player/pool/tag homes unchanged; complete body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
