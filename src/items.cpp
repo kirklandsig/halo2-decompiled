@@ -1419,9 +1419,14 @@ struct s_item_flags_view_10b850
 // original classification, observations, helpers and full body restored. Frame 0x154/0x12c
 // and entry Boolean/carrier/collision/rotation homes remain.
 // P460: Corrected single gravity/query/settle update carrier char/signed-char/byte/short/word/int/long/dword: 824/824/824/843/843/858/858/858. NOT kept: native frame and entry-byte homes remain; original behavior fixes and whole body restored.
-// score 824 (was 824): the frame is 0x154 against retail's 0x12c, the entry's flag byte differs
+// Earlier: the frame is 0x154 against retail's 0x12c, the entry's flag byte differs
 // (retail shifts the value and stores the parity byte where this build tests a bit of a shifted
 // register), and the walk still differs in the item table's own expressions.
+// P482: Standard copies at settled velocity/published spin-axis/paired contact-position
+// outputs, subsets 1..7, then all with fallback position: 824/862/862/824/824/862/862/862.
+// NOT kept: ties/regressions; spin-axis copies grow to 4137 bytes. Original semantic fixes,
+// every record assignment, input observation, include, helper and complete body restored.
+// Frame 0x154/0x12c and entry Boolean/carrier/contact/rotation homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

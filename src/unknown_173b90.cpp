@@ -1856,6 +1856,10 @@ bool function_17afd0(long effect_index, long value);
 // P468: Existing camera/draw result byte/short/long/dword storage domains:
 // 113/140/141/141/47/111/110/110. NOT kept: no equality for the native byte homes;
 // original availability, view snapshot, query gates and complete body restored.
+// P482: Six eager pure-scalar owner/view/availability conjunction orders, then two
+// mixed complete joins: 122/122/122/122/122/122/139/162. NOT kept: all regress;
+// full eager joins grow the frame to 0x18, final mix grows to 515 bytes. Original
+// Boolean graph, read/query phases and entire body restored; availability/view gaps remain.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

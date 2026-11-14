@@ -773,6 +773,10 @@ real function_30bf0(vector3f *vector);
 // explicit reductions. Result/range/projection homes and basis schedules remain.
 // Scores 268/206/405/310/209/341/390/400. NOT kept: ties/regressions;
 // original executable body and helper contracts restored.
+// P482: Standard scalar range/facing-copy/conditional-improvement transfers, subsets
+// 1..7, then all with nonfacing primary: 198/168/203/148/198/178/203/252. NOT kept:
+// all regress; range+improvements reaches 1308 bytes and the native result slot but uses
+// a nonnative GPR range load. Original producers, observations, helpers and body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
