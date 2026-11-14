@@ -2436,6 +2436,14 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// MiniMax C (11-14): no new form, no lower score (479 in the full build, 474 in the reduced one): the two
+// floats read from [actor+0x6d4] and [actor+0x6d8] go into [esp+0x10] and [esp+0x14] in ours through
+// eax/ecx with the store before the lea of the destination, in retail through ecx/edx with the lea first;
+// the twelve-byte copy from [edi+0xc] into [actor+0x458] rotates the same way (ours edx/ecx/eax, retail
+// eax/edx/ecx), and the case-2 dot product's first product is formed as the stack value times the field
+// in retail and as the field times the stack value here (that order measures 477 in the full build, below
+// the gain threshold). The body runs eight bytes longer than retail's, so the jump table lands later and
+// the branches after it differ.
 // MiniMax A (11-12): the case 2 dot product's terms in retail's order, `local_6.x * local_0->unknown290.i +
 // local_0->unknown290.j * local_6.y` (the x term first, the y term second): the full build goes 479 -> 477
 // (2404 bytes); the reduced image reads 474 before the change and 477 after it, so the gain holds in the
