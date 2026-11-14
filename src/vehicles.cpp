@@ -1059,6 +1059,9 @@ __forceinline long vehicle_round(real value)
 // P445: Const definition receiver, separate final angular coefficient, exhaustive bounded-rate result,
 // consumed scale return, widened completed dot transport, angular-output side workspace, duration and
 // elapsed-tick producers: 8/14/10/10/87/8/191/26. NOT kept: no exact product-load repair; whole body restored.
+// P461: Success-default outcome bool/byte/short/long 8/201/206/204; complementary
+// rejection outcome bool/byte/short/long 210/210/215/213. NOT kept: no exact
+// product-load repair; original failure-first result graph and complete body restored.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -6041,6 +6044,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // 1035/1039/978/978/978/978/978/978. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // P447: Successor saturation clamp/complete arms/predecessor/direct publication; exhaustive pitch sign; shortest-rotation/banking/reversal admissions:
 // 978/978/1143/1140/978/978/978/1039. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P461: Shared desired-up degeneracy outcome bool/char/signed-char/byte/short/word/long/dword:
+// 1059 each, 5075/5094 bytes, frame 0xfc. NOT kept: no native frame or exact
+// decision/publication repair; original normalization, fallbacks and full body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
