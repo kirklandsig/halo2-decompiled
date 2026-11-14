@@ -1244,6 +1244,7 @@ bool function_108530(long device_index, long name)
 // it in xmm6, a whole-program convention the callee sets, so the whole XMM allocation after the entry differs - retail's
 // first float compare is in xmm5 where this build's is in xmm7; the caller's argument registers come from the callee's
 // definition, which this lane may not edit.
+// MiniMax I (11-14): no new form, no lower score (121): the initial velocity is still passed on the stack where retail passes it in xmm6, a convention the callee's own definition sets, and the third zero clamp written as an if-statement scores the same 121 (same code), so the body stands.
 // score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // MiniMax C (11-09): no new form, no lower score (121); the initial velocity is still passed on the stack where
 // retail keeps it in xmm6 and takes five stack floats, so the whole register assignment after the entry differs.
@@ -1503,6 +1504,12 @@ bool function_108530(long device_index, long name)
 // accelerating block then has all eight XMM registers live and overwrites the velocity's register.
 // MiniMax A (11-13): no new form, no lower score (121): the frame and the length agree, but the SSE register allocation differs
 // from the first instruction (xmm7 here where retail uses xmm5) and every later pair follows that choice.
+// m3 lane 3 r241 (fast with 0x108600/0x108670, which stay 31/13 unless noted; all ret 0x18): retail's ramp-down zero clamp
+// stores the zero to the slot without touching the XMM1 copy and the minimum compares against memory, so the ramp-down
+// time is never cached across blocks; ours keeps it in XMM1. The ramp-up clamps as one PIN(ramp_up_time, 0.0f, duration)
+// 128; that with the ramp-down clamps as one PIN after `remaining` 133 (510 B); the distance taken as `fabs(delta)` at its
+// declaration (no later fabs) 134 (first difference +0x0, callers 26/28); the ramp-down zero clamp alone as
+// `x < 0.0f ? 0.0f : x` 122; the ramp-up clamps as one nested ternary with the minimum outside 127.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1917,6 +1924,16 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
+// MiniMax S (11-14), NOT kept (coordinator: the one-use tick-rate local, as G's 11-14 form): 58 (was 250): the
+// acceleration and the speed are each one product added into a running value (the 0xcc
+// term opens the acceleration and the 0xc8 term opens the speed, with the 0xd4 and 0xd0 terms added into them), the
+// definition pointer's `volatile` is dropped, `bool result = false;` follows the definition read, the 0xb3 byte is
+// tested as `<= 0`, and the tick rate is read into a local just before the power 0x11eed0 call; 1495 bytes, as retail,
+// and every other function in this file is unchanged. Left: the position arm's channel pointer (ours in ECX with a
+// copy into ESI, retail's in ESI), the state slot read into EAX where retail reads it into ECX, and the order in
+// which the position arm's 0x11eed0 sets its arguments up (retail takes the definition pointer into EDX and reads
+// the 0xc4 and 0xc0 terms early). The gain rests on the one-use rate local (coordinator 11-11: match-only): dropping
+// that one element alone gives 380, so this change stands or falls as a whole.
 // score 250 (was 250): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI where retail has
 // ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads (match-only leads at 58 and 69 below).
 // MiniMax H (11-12): no new form, no lower score (250): the acceleration and the speed each written as one product added into a running value measure 359, and the same form without the volatile measures 382, so the body stands.
@@ -2287,6 +2304,20 @@ bool function_0b6760(s_index_pair const *pair);
 // Frame 0x20 agrees; saved-register and activity-byte homes remain.
 // Scores 386/360/462/392/448/432/532/659. NOT kept: ties/regressions;
 // original executable body and helper contracts restored.
+// m3 lane 3 r241 (fast): BLOCKED-BY 0xb6760 (its file's /Ob1, a flags change, not kept). Rebuilt the listed 58 lead (no
+// volatile, the rate local before the power 0x11eed0 call, the result after the definition, `<= 0`, the position products
+// named; 1495 B, first difference +0x3f3). What is left there sits at the two channel-1 0xb6760 calls: ours computes the
+// channel pointer into ECX and keeps it (and, in the refresh, the state) in ECX across the call, copying it to ESI for
+// 0x1c6620; retail puts the pointer in ESI and the state in EBX and reloads device_index per push. All ten retail call
+// sites of 0xb6760 (here, 0x166d75, 0x16760c, 0x1cd070, 0x1cd8a0, 0x1cdb00) set the pointer in ESI/EBX/EDI and keep
+// nothing in ECX/EDX across it, so retail's callers treat it as clobbering them; ours is a never-inlined /Ob1 leaf whose
+// register use LTCG trusts, while retail inlined it at the channel-0 sites, so it was an inline candidate there.
+// Diagnostic (reverted at once): the file without /Ob1 inlines 0xb6760 at the channel-1 sites too, 104 (1499 B). On
+// the 58 lead: a channel pointer for the refresh only 57; two per-site channel pointers 58; that pointer declared
+// before the 0x107520 call 58; `previous` read before the position idle test and used in it 73; the motion speed and
+// acceleration read at the top of the position-group block 118 (1510 B); the 0x40 update with the arms swapped 61. Same
+// code as the lead: the speed/acceleration or the target named just before the call, `state != NULL` / `!= false` in the
+// refresh, a `real position = 0.0f` argument, the group index in a local.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

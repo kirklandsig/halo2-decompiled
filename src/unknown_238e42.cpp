@@ -1210,6 +1210,9 @@ bool __stdcall function_2399da(long controller_index)
 // identity declared inside the block and set from the getter, the identity preset to zero before
 // the getter, and the identity read into a local before the null test; the id test before the null
 // test scores 95.
+// MiniMax A (11-14): no new form, no lower score (90); the identity pointer and the requested rank still take the
+// two registers the other way round, so ours copies the identity into eax before the removal call, and that copy
+// costs the two bytes that move every later jump.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

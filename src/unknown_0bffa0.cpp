@@ -1279,6 +1279,9 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // retail's 2840 bytes (retail stores y first in every instance); on it the cone corners stored before the bounds, both
 // in retail's x0, y0, x1, y1 order, 303 (2832 B: that tail's stores are then retail's, but the cone scale is still divided
 // ahead of the centre projection), with the far edges as `half + centre` 303 (same code). All restored.
+// M3 lane 16 r117 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0): `vector3f reference;` declared at the top of the
+// loop body, of the sphere arm or of the function (assigned in place) 290 each (same code); the cone scale declared ahead
+// of `center` 290 (same code); the scale computed before the centre projection 597 (2780 B).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

@@ -968,6 +968,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // the found path's stores 79 (213 B).
 // P472: Actual word-bit field first/second/both, explicit Boolean first/second/both, second-first and paired outcomes: 60/60/60/66/74/67/68/67.
 // NOT kept: no exact native induction/allocation shape; original raw word layout, helpers, complete body and header restored.
+// M3 lane 6 r179 (fast with 0x96510, 0x94df0, 0x94bf0, 0x96b00; control 60): `m_next_sequence` read into a local at the top,
+// ahead of get_next_send, 82 (229 bytes); the message array taken into a pointer local at the top 77 (228 bytes), inside
+// the block 78, inside the block with the bound read from the member in the loop test 78 (229 bytes); `next > oldest`
+// tested ahead of the index helper with a named oldest (diagnostic, an implied test) 77 (230 bytes). The reduction stays.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

@@ -3724,6 +3724,10 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // into ECX and spills it, then forms the member-state address with a separate lea; round 65's byte match needs the
 // unread owner parameter on 0x769a0, whose file (src/unknown_075870.cpp, held sort_4byte change) is avoid-listed
 // again. The forms on this side of the call are listed above (lane 11 r89). Still BLOCKED-BY 0x769a0.
+// m3 lane 2 r81: no trial. The listing still agrees up to the timed-out call (retail 0x5e466-0x5e477: the value10 load
+// stored to +0x14 and the split member-state lea), which round 65 matched only with an unread owner parameter on 0x769a0;
+// its definition is in src/unknown_075870.cpp, a held sort_4byte file this round too, and every form on this side is listed.
+// Still BLOCKED-BY 0x769a0.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -4423,6 +4427,7 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa, and the two peer
 // bytes are zeroed at +0x11/+0x13 where retail zeroes its pair at +0x11/+0x12), and retail reads the acceptance byte
 // back where this build folds it to a constant.
+// MiniMax I (11-14): no new form, no lower score (305): the frame 0xd8 and the body length agree with retail's, but the three boolean homes stay a rotation from retail's (the acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa), retail reads the acceptance byte back where this build folds it to a constant, and the 0x769a0 and 0x62c20 call setups need files this lane may not edit.
 // score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
 // frame 0xd8 and length agree; result/identity/selection byte homes and
 // acknowledgement placement differ.

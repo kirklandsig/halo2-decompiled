@@ -631,6 +631,14 @@ void __stdcall function_1160c0(real dt)
 // then complete graph with forward seeded distance reduction: 331/309/425/333/411/420/395/437.
 // NOT kept: no exact native segment/vector-home repair; original complete body restored.
 // MiniMax H (11-14): no new form, no lower score (171): the segment pointer is still in EDI where retail keeps it in EDX, and retail still loads all six axis and offset components into registers where this build reads offset k from memory at the dot and at two later products.
+// m3 lane 14 r93 (fast with 0x116750/0x73360/0x54590, 0x116750 matched throughout; control 171): the rest-offset copy after the
+// sine and cosine 223 (1370 B); the target as a copy of previous scaled in place by vector3f_add_scaled 359 (1399 B); the node
+// position read at the declaration, the first node overwriting it 187; the last-segment test as `i >=` 172 (one line, `jl` for
+// retail's `jne`). Same code (not counted): `(1.f - cosine) * dot3f(...)`. Diagnostic (image search): a 5-file reduced image
+// (this file and its callees' files) gives retail's EDX segment base, and adding src/unknown_1689b0.cpp alone (even with every
+// body but 0x1697c0's removed) flips it back to EDI; but in that small image 0x211060 takes its mover settings in EDI instead of
+// on the stack, and with 0x211060's own body out of the image the base is EDI again, so the EDX base there comes from a
+// different 0x211060 convention, not from anything in this body. Not a lead.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

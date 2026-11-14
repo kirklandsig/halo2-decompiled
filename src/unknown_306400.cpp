@@ -438,6 +438,8 @@ public:
 // the deepest contact between the boxes, when they overlap; here, in the file
 // that compiles 0x306400 first, so the call to 0x306580 reuses this in ecx as
 // retail's does
+// score 9 (was 11): the point's fourth component is a named `w_component`
+// local (lane 3). Output stores and the fresh failure zero still differ.
 // score 11 (was 69): retail stores the contact's normal before its point, and
 // writes the not-found answer from a fresh zero in cl instead of bl.
 // Output stores and fresh failure zero still differ.
@@ -451,6 +453,7 @@ public:
 void query_2ef260::function_307f90(answer_307f90 *found, contact_307f90 *contact)
 {
 	char result = 0;
+	long w_component = 3;
 	class_308180 manifold;
 	key_305f60 key;
 	feature_305f60 feature;
@@ -477,14 +480,14 @@ void query_2ef260::function_307f90(answer_307f90 *found, contact_307f90 *contact
 		}
 		if (key.index > 2)
 		{
-			float const back = -deepest.point.m128_f32[3];
+			float const back = -deepest.point.m128_f32[w_component];
 			__m128 along = _mm_set_ss(back);
 			along = _mm_shuffle_ps(along, along, 0);
 			deepest.point = _mm_add_ps(deepest.point, _mm_mul_ps(along, deepest.normal));
 		}
 		contact->normal = deepest.normal;
 		contact->point = deepest.point;
-		contact->point.m128_f32[3] = deepest.point.m128_f32[3];
+		contact->point.m128_f32[w_component] = deepest.point.m128_f32[w_component];
 		}
 		else
 		{
