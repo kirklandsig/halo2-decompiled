@@ -3311,6 +3311,8 @@ real g_47ff30 = 2.5f;
 // native twelve-byte region in three ordered four-byte
 // stores; its GP zero register versus native SSE remains counted. No type, width, field, helper,
 // matrix owner, arithmetic tree or input/call role changes.
+// P498: Actual elevation/normalization/force-contributor last-use blocks, seven subsets, then complete bounded-fraction phase with enclosing real outputs; native frame 0xfc and scalar homes remain.
+// Scores 672/672/672/672/672/672/672/672. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4208,7 +4210,7 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // run on this body found nothing lower in 46 tries. Retail returns the flag byte as it stands (`mov al, dl`)
 // while the bool return normalises it (`test`/`setne` on both exits); both spellings of retail's form (a bool
 // local, an unsigned char return) score 131 and change the declaration, so the byte-wide flag stays.
-// score 117 (was 136): projection/cross input ranks and angle/trig homes remain;
+// score 118 (was 136): projection/cross input ranks and angle/trig homes remain;
 // MiniMax C (11-10): the score is 136 (was 136); the dot product multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy moves one word and two floats where retail moves three words, and the trig block spills the sine and cosine where retail keeps the angle on the x87 stack.
 // MiniMax E (11-08): no new form, no lower score (136); the dot's i term still multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy still moves one word and two floats where retail moves three words, and the trig block still spills the sine and cosine through the stack where retail keeps the angle on the x87 stack.
 // MiniMax E (11-07): no new form, no lower score (136); the projection and cross operand ranks and the
@@ -4440,6 +4442,8 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // commuted (this build multiplies forward.i by up.i where retail multiplies up.i by forward.i) and the first
 // cross product's operand order still differs; both follow from the shared helper's argument order, which
 // cannot be swapped for the score.
+// P498: Whole projection inner-product traversal/input/operator forms regress; coordinated returned-byte and sole-caller-byte form scores 130 at 791/806 and also restores. Projection input/cross ranks, trig homes and byte transport remain.
+// Scores 224/212/210/216/257/271/257/271/130. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -6128,6 +6132,8 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // NOT kept: no exact native frame or reduction repair; original full body, arithmetic
 // association, matrix owners and shared helpers restored. Frame 0xfc versus 0xd8 remains.
 // Per-use tilt-angle field at both intrinsics, as native loads it: 978 (tie); restored.
+// P498: Complete nine tensor-product parts and three unscaled impulse sums, mutable/immutable immediate/phased; every original math tree and query stays fixed. Native frame 0xd8 and handle/matrix homes remain.
+// Scores 978/978/978/978/978/978/978/978. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
