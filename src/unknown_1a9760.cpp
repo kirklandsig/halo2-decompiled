@@ -220,6 +220,14 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // after the rows (diagnostic) 184 (1003 bytes: both emitted, the two swaps unchanged), so nothing later in the block moves
 // the swaps: both x87 results are due in the same issue slot as a two-step SSE row operation, and retail issues the row
 // operation first where ours issues the x87 one first whenever the flag store sits ahead of the rows.
+// Round 176 (m3 lane 6, fast; all restored at 4). Compiler-setting diagnostics (inline-depth windows, not source forms): the
+// existing getter 0x2684f0 for the opening test under a statement-level inline_depth(255) window 4 (it inlines, the head is
+// retail's, same code); the unit vector through the header's vector3f_scale in such a window 4; the whole normalization
+// through the header's normalize3d on a copy 257 (1036 bytes); the file's depth-0 pair replaced by depth-0 windows around
+// only the 0x30bf0/0x1f5110/0x1e4290 calls, with actor_get and the getter inlined 4 (same code: the pair does not shape the
+// schedule); on that, the flag store ahead of the copy 4. Source forms: `facing` as a value copy of unknown290 227 (1016
+// bytes); unit as `local_2.x / local_4` per component 4; each row as `(position - offset) + half step` 204 (1007 bytes);
+// the prop record typed with its short unknown00 field 4; the half step as the double `0.5` 219 (985 bytes).
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

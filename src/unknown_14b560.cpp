@@ -1603,6 +1603,18 @@ static inline s_players_globals *players_globals_14f2e0()
 // `or`, 0x165f16 `or ecx`, 0x226a60 `or`, 0x2413c0 `mov ecx`); the two matched `or` sites (0x1070d0, 0x226a60) follow
 // loop or arithmetic code with no call into the test, so no matched function shows this one's idiom. 0xb8540 (the call on that path) stays a stub: enabling its draft loses 23 matched
 // functions (src/unknown_0b8540.cpp). No untried natural form found that changes this code.
+// M3 lane 11 r97 (fast; control 5 with the outputs ahead of the mode test, 43 at 1031 bytes with them inside the mode
+// block): a scan of every game function in retail finds 2875 `or reg, -1` against 100 `mov reg, 0xffffffff`; the mov
+// form appears only where an 8- or 16-bit value was last written to that register (a byte or word load, `setcc`, or the
+// temp of a byte compare folded into `cmp byte [mem], imm`). Of the 18 `or` sites that follow a byte compare, every one
+// but this has the register visibly in use across the compare or compares against a register, so retail has EAX
+// occupied at this mode test by something that leaves no instruction. On the inside-the-block form: the mode through a
+// bit-field view (long, dword, char or byte, 8 bits wide) 43 each; through a forceinline getter returning long, with no
+// argument or a pointer argument 43/43; compared as an enum value 43; `mode - 4` 244 (1032 bytes); the mode tested ahead
+// of the result in one condition 270 (1049 bytes), as the outer `if` 270. All `mov`. Output addresses evaluated ahead
+// of the test: a forceinline helper taking both output pointers that holds the mode test, the NONE stores and the
+// 0x14f040 call 43; a pointer local to the third-person output taken ahead of the test and used for its store and the
+// call 43 (both fold to the inside-the-block code, `mov`).
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -3377,126 +3389,9 @@ struct s_unit_flags_14d8b0
 	word bit8 : 1;
 };
 
-// score 9 (was 9): the late mode receiver is EDX rather than ECX; reset-slot
-// scratch registers are EAX/ECX rather than EDX/EAX, and the root pool uses EDX rather
-// than ECX. Frame 0xc8 and 1287-byte extent agree; first difference is +0x304.
-// The timer callee 0x1521d0 now matches. Earlier: 59 statement variants stayed at 9.
-// Earlier: late mode, reset-slot and root-pool scratch registers remain.
-// the nine differing lines have one root cause: the last g_4e6948->mode test
-// keeps the options pointer in EDX where retail keeps it in ECX, and that single allocation
-// cascades into the game-engine block (EAX and ECX where retail has EDX and EAX) and into the
-// root walk's global load (EDX where retail has ECX); the callee 0x1521d0 splits its own
-// globals and data registers the other way round as well. A half-hour permuter run over the
-// function (59 variants) left the score at 9, so the choice is not reachable from its statements.
-// Earlier (9): late mode, reset-slot and root-pool scratch registers remain.
-// Earlier: frame 0xc8 and retail length agree; tick/rate scheduling, the damage-tag
-// pointer load and scratch registers in the later mode, slot and root blocks remain.
-// Earlier isolated damage-byte store order 19 was below the keep threshold.
-// Round 32: the trigger test through 0x11c5b0 148; the damage-type pointer read in the call 130;
-// long user index 19 with it (both loops get retail's padding). Then: typed byte decrements 19;
-// one inline helper for both slot notifications 19; `time = rate; time *= ticks` 226 (folds);
-// rate read after the increment, either product order, 223 (folds); root initialised NONE 19;
-// a 600 s permuter run (13 tries), none below 19.
-// Earlier at 153: iterator store/test and rate/tick scheduling differ;
-// flag snapshot 155; long timer 204; parent-carried root walk 182;
-// low-time arm first 179; inline depth one 155. Damage call convention differs: BLOCKED-BY 0xd66d0
-// (retail pushes both arguments; ours passes the object in eax).
-// Native tick field 155; native tick and typed first flag 153; immutable native-field rate 155;
-// native reset timer 155; both native long/short fields 155; signed native countdowns 155;
-// all native countdown fields 155; full native current-player record 153.
-// Earlier: iterator publication, rate/store, damage-call and trigger allocation remain.
-// Separate effect/tick/root/trigger receivers 155/155/155/155; combined receivers 155;
-// incremented-tick snapshot 155; stored absence scalar 155; decoded volume kind 155.
-// Earlier: native root-bit observation recovers SHR/TEST; iterator and tick scheduling remain.
-// Wide user/table entry/both 157/158/162; wide/entry/both with first flag 155/156/160;
-// root with both 129, plus first flag 127; root alone 128 plain; root with wide/entry 125/132.
-// Three-point wide-user addition dropped; only the root-bit expression retained.
-// iterator/tick scheduling and damage transport remain;
-// shared event send 155; existing initializer 304f; both event APIs 283f;
-// event/damage/both workspace scopes 155/155/155; scopes with send 207f;
-// both APIs with typed first flag 281f. Original body retained.
-// Iterator publication, tick/rate schedule, damage call and trigger registers
-// remain. current record consumer 155; successful current publication 155; explicit iterator
-// initialization 155; defined current at advance 155; saturating source expression 254; saturate
-// before increment 224; native flag boolean 264; publication with native results 300.
-// Earlier: iterator/tick scheduling, damage transport and trigger registers remain.
-// Native trigger record ordinary/const 128/128; each with native point member 128/128;
-// native first-word flag with those four interfaces 126/126/126/126. Two-point forms dropped.
-// Earlier: iterator/tick schedule, damage transport and trigger homes remain.
-// Existing Boolean datum API 128; iteration receiver scope 128; input-only iterator
-// initialization 128; called datum API 395; existing parent query 197; both APIs 197;
-// Boolean iterator with native first flag 126; parent query with native first flag 195.
-// Initial/all native flag references 126/126; shared high-byte reference 128;
-// all-flags with tick pointer 126, direct tick product 228, float/count roles 126/126,
-// admitted expiry 199. Two-point forms dropped; original body retained.
-// Long user index in the expired-ticks arm 125 (retail movsx + cmp eax, -1; that arm then differs only in
-// register rotation; under the keep threshold alone); with the tick stored before the rate read 233 (rate folded
-// into mulss), rate named after the increment 233; trigger test as one condition 125; datum index read from
-// the iterator at each use 125.
-// Round 29 (from 160): the countdown at +0x180 read only under the mode test 153 kept
-// (retail tests the mode first). Left: the tick store sits after the rate multiply
-// (retail stores, then loads the rate unfolded), register rotation in the damage and
-// slot blocks, and a one-byte shorter mode load (eax) that drops the root walk's loop
-// alignment. Tick field at each use 153; ticks * rate 153; rate read in the product
-// after the increment 228 (folds the rate load); a ticks-to-seconds inline 228; long
-// user index in the expired arm 157.
-// Low-time/reset/both inline declarations 21/229/229; signed-word counter 23; unsigned datum 21;
-// unsigned handles 21; low-time inline with first native flag 19; native controls with that flag 21;
-// combined first native flag and damage-byte store order 17 (plain whole-program confirmed).
-// Round 379: function-scope event/damage/both 17/23/23; early tag input alone/with event/damage/both
-// 150/150/151/151; tag value after scratch store 17. Original executable body restored.
-// Round 164: separate root handle, branch-local short expiry result, tick/result/rate names,
-// all three names, joined slot result and root+slot result: 17 each. Original body retained.
-// Kimi lane 2 r37 (on the 17 body): typed time receiver with the else arm rereading the rate 11;
-// late rate with a second low-time use 13; in-place multiply 205; tag-list pointer 145.
-// Round 415: first/second/both byte countdown results 9/9/9; paired acquisition 16; long/short
-// results 114/114; byte results with short reset result/native reset flag 9/9. Original body
-// restored.
-// Round 98: mode and reset countdown as one condition 9; reset countdown through a short reference 9;
-// the two byte countdowns through a signed char pointer 9; short slot index local in both slot
-// blocks 9; flag bytes through the player's flags word 9. At that stage, 0x1521d0 also split
-// global/data registers ECX/EDX where ours reused one; that callee now matches.
-// Round 219: engine-global snapshots, native byte countdown members and both 9,9,9;
-// timer inline alone/with snapshots/with byte members/with both 9,9,9,9;
-// expiry result alone/with snapshots 9,9; native reset member/all native
-// countdown members/inline with reset member 9,9,9. Original body retained.
-// blocks 9; flag bytes through the player's flags word 9. Retail also splits the global/data
-// registers in the callee 0x1521d0 (ecx/edx where ours reuses one).
-// Round 145: one forceinline engine-slot notify helper for both slot blocks 9; root walk as a while
-// loop from NONE 9, as a do/while 9; reset countdown through a short pointer 9; both slot blocks reading
-// the engine globals directly 9 (all the same code: mode pointer EDX, retail ECX).
-// Round 39 (lane 2, fast): an inline `mode != 4` helper at the last test, all four tests, the last two 9/9/9; an inline
-// options-pointer helper at the last test, all four 9/9. Diagnostics (reverted): the two countdowns removed, one, three,
-// swapped 171/153/132/13; the slot block removed 393; the slot written without its local 9; the root walk removed 142;
-// the 0x1521d0 call removed 132; the flag store after the slot block 16; the first mode test removed 163; a named options
-// pointer at the second test, the first, the join 9/9/9; a byte mode local 9. Deleting any statement (compile-only: every
-// statement and 66 pairs; real build: ten statements) leaves the pointer in EDX or EAX, never ECX.
-// One options pointer variable reassigned before the last two tests, the last three, all four, declared at function
-// scope for the last two 9/9/9/9; a named pool pointer for the root walk 120 (1303 bytes).
-// Round 91: second slot block with both engine globals direct, slots direct alone, engine test
-// direct alone, root walk through object_header_get, late options pointer, second engine result
-// pointer, root walk through object_get, and typed root through object_get: 9 each at 1287 bytes.
-// All leave +0x304 and the same scratch choices; original helpers and body restored.
-// Round 127 (lane 8, fast): ticks-arm unit assigned inside the arm 9; root walk on its own local 9; root walk as
-// do/while with no pre-loop init 9; low-time limit compared directly 9; own local in the limit block 9.
-// Round 92 (m3 lane 16, fast): the late reset countdown as nested ifs 9; the tick field read at each use with no
-// reference 9; the damage flags or-ed before the 0x29 byte store 11; the byte countdowns as signed-char casts with
-// postfix decrements 9; the root walk's root left uninitialised 9. The first engine-slot block (ticks arm) already
-// has retail's EDX/EAX; only the second one, after the late mode test, takes EAX/ECX.
-// Round 70 (m3 lane 13, fast): the two byte countdowns as a plain two-step loop 9 (unrolled to the same code); the late
-// engine test through a named engine pointer 9; the late slot block reading the engine globals once into a named pointer
-// 9, that pointer declared before the flag clear 9; the late flag clear after the slot block 16. Diagnostic: the limit
-// through a plain cast instead of the asm rounding 256 (frame 0xc0), and the late mode pointer still takes EDX.
-// Round 75 (m3 lane 14, fast): re-measured round 70's named engine-globals pointer 9 and named engine pointer 9; the reset
-// countdown as `(x -= 1) == 0` 9; one loop-scope unit shared by the flag block and the countdown block 9; the datum index read
-// after the flag block 9; the trigger hit's stores through the global directly 9; the final timeout block through the global 9.
-// Round 116 (m3 lane 12, fast): the 0x1521d0 guard read through `unit` (`unit = field; if (unit != NONE) call;`) 9 (same
-// code); re-measured the short slot index local, late block only, 9 (same code). Diagnostics (reverted): a dead read of a
-// volatile local just before the late mode test, the local initialised 340 or uninitialised 227; both also move the early
-// mode test (ticks arm) from ECX to EAX, so the allocation shifts for the whole function and no single statement here is
-// missing from ours. The late block is a one-step rotation of retail's (mode pointer EDX/ECX, engine index EAX/EDX, engine
-// pointer and slot index ECX/EAX, root pool temp EDX/ECX; ours/retail); both hoist g_4e9ae8 into EDI at the countdown join.
-// No untried natural form found that changes this code.
+/* each player's per-tick update. The expired-ticks arm ends with the body of function_153cd0 (the
+   player's rumble entry cleared through one entry pointer): retail expands it there and calls it out
+   of line in the timer arm; with a call at both places our link inlines neither or both. */
 // @retail 0x14d8b0
 void function_14d8b0(void)
 {
@@ -3580,8 +3475,9 @@ void function_14d8b0(void)
             long user = player_get(index)->user_index;
             if (user != NONE)
             {
-                g_502120->entries[user].value80 = 0.0f;
-                g_502120->entries[user].value84 = 0.0f;
+                s_speed_table_entry *entry = g_502120->entries + user;
+                entry->value80 = 0.0f;
+                entry->value84 = 0.0f;
             }
         }
         if (*(signed char *)(player + 0x3f) > 0) --player[0x3f];

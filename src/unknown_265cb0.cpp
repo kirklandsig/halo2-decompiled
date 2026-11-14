@@ -766,6 +766,8 @@ real function_30bf0(vector3f *vector);
 // retail's 4-byte homes sit in descending order of their references (result 8; facing secondary, facing primary, the clip
 // amount's slot, scale and range 4 each; count and cursor 3; a and b 2), and the clip amount's slot has 4 only as one variable
 // with the squared distance, which is the merged form rounds 145 and 82 measured at 81.
+// P458: Complete initial mode admission/rejection outcomes, bool/byte/short/long:
+// 150/150/150/150/150/150/150/150. NOT kept: native result/range/projection homes and basis products not recovered; original complete body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2462,6 +2464,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // MiniMax B (11-11): no new form, no lower score (168); the first difference is still the table load at +0x5c, ours
 // [eax+ecx+0x58] against retail [ecx+eax+0x58], a base/index order the compiler picks; the frame is still 0x7c against
 // retail's 0x80 and the normalized direction is still folded instead of being held in XMM1..XMM3 across the dots.
+// T101: Complete conditional byte-counter additions for active/close/very-close,
+// sets 1..7: 621/419/621/338/632/607/649; complete conditional publications 652.
+// NOT kept: every form regresses; arithmetic/extra-store shapes do not match.
+// Original complete body restored; iterator, player-loop and SIMD residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

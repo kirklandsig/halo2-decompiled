@@ -60,6 +60,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 {
 	return arg_0->k * arg_1->k + arg_0->j * arg_1->j + arg_1->i * arg_0->i;
 }
+// MiniMax G (11-13): no new form, no lower score (715): the body is 3482 bytes against retail's
+// 3499 and the three-way branch and the float constants still differ from retail's own expression
+// trees.
 // score 715 (was 750): s1E walk against retail (3482 bytes, retail 3499; frame 0x88 agrees). Behaviour fixes: 0x29b2e0's
 // third argument is the +0x290 pointer in EBX (0x29c2a4-0x29c2bb; was &local_5), and 0x1f9760's arg_4 (last_out) is the
 // stack byte tested at 0x29c7e5 (was arg_5). Forms kept: direct input (no reference local), shared normalize3d for the
