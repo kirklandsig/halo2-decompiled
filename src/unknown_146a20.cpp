@@ -58,6 +58,7 @@ long g_4798b4;
 bool g_47f05a;
 bool g_47f05b;
 
+// MiniMax H (11-14): no new form, no lower score (34): the permuter tried 80 variants of the body and none came below the kept form (30 differing instructions in both).
 // score 34 (was 34): frameless entry agrees; intermediate vtable store and successful-arm backing reload remain.
 // MiniMax R (11-11): no new form, no lower score (34); the abstract allocator's base vtable store
 // (`mov [eax], 0x453760`) is still dropped, because it comes from the shared constructors in

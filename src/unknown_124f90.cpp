@@ -2645,6 +2645,7 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax H (11-14): no new form, no lower score (17).
 // MiniMax H (11-12): no new form, no lower score (17); the first difference is still 0x219070's result, and the one-use short local that lowers it to 15 stays a match-only form.
 // MiniMax B (11-11): no new form, no lower score (17); the delayed branch's two stores still swap (retail keeps the
 // start time and then the flag byte before the push, ours hoists the flag byte above the add and sinks the start time
