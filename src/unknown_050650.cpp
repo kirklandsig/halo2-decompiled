@@ -1429,6 +1429,12 @@ done:
 	return result;
 }
 
+// MiniMax S (11-14): no new form, no lower score (9): only the prologue differs - retail loads the pool into EDX, keeps the
+// actor offset in EAX (`mov eax, ecx`, `and eax, 0xffff`, `imul eax, eax, 0x888`) and forms the actor with
+// `lea esi, [eax + edx]`, while this build keeps the scaled index in ESI and adds the base; changing the shared getter's
+// spelling (the offset local with a byte pointer, the base pointer with a slot local) compiles to byte-identical code here
+// and in the sixteen matched functions that share the getter, so MSVC canonicalises the lookup and the register choice is
+// not steerable from the source.
 // MiniMax H (11-13): no new form, no lower score (9).
 // MiniMax A (11-12): no new form, no lower score (9): three fresh spellings of the lookup (the byte-offset
 // product through the pool data, the offset computed before the pool read, and a byte base with an offset
