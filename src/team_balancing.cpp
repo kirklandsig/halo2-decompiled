@@ -901,6 +901,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // memcpy, fill helpers, the fill continuing the copy loop, declaration orders): all are listed, and no existing
 // dword-fill helper exists to call.
 // No untried natural form left; the cause stays the fill value loaded before the count and destination.
+// MiniMax A (11-13): no new form tried this round, no lower score (34): the player count is still tested in EDX
+// here and in EAX in retail, and the copy, the fill, the call setup and the clamp all follow from that one
+// register; retail's caller 0x7e210 hands over the player count in EAX, the extra count in EDX and the parties
+// pointer in ECX, so the register that decides this is fixed by the caller's setup in src/unknown_07a9a0.cpp:
+// BLOCKED-BY the caller.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
