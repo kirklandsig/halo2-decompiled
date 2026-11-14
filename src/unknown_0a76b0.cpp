@@ -4414,10 +4414,6 @@ extern vector3f *g_4687bc;
 /* a raised weapon's point (type 41 update): when its time is up, it
    shoves the target in front of the unit, with damage and an impact
    effect */
-// MiniMax H (11-04): no new form, no lower score (45); the first difference is the two-byte branch
-// offset at +0x5c, where our block is longer, and the 0x188180 call setup after it is blocked by
-// that callee's parameter order in another file.
-// MiniMax R (11-06): no new form, no lower score (45); the g_54e898 copy is a dword load here and a word load in retail, which also moves the exit block two bytes; retail's 0x1eb020 writes a dword into the material slot and it is read back as a dword, ours takes a short * and reads it back sign-extended, and that width is set in another file.
 // score 8 (was 8): 23 before main took 0x188180's material parameter as the 2-byte type by value (the held patch below); 31 before 0x1883e0 matched with c_type_47f957 parameters; 45 before round 220's material local as the global material type (c_type_47f957, constructed from g_54e898
 // as 0x277b80 does) gives retail's word copy, so every branch target now agrees; left are the copy's schedule (retail
 // loads into CX early and stores it just before the 0x0b67a0 call, ours stores at once from DX), the rigid body's
@@ -4494,6 +4490,15 @@ extern vector3f *g_4687bc;
 // and a callee without a register argument moves the pool's data to ECX. So the scratch choice follows the order values
 // are loaded in and 0xb67a0's ECX argument, not the spelling of these statements: the lead is a statement whose value
 // retail loads between the tag test and the material (or one fewer ahead of it) without adding an instruction.
+// MiniMax H (11-04): no new form, no lower score (45); the first difference is the two-byte branch
+// offset at +0x5c, where our block is longer, and the 0x188180 call setup after it is blocked by
+// that callee's parameter order in another file.
+// MiniMax R (11-06): no new form, no lower score (45); the g_54e898 copy is a dword load here and a word load in retail, which also moves the exit block two bytes; retail's 0x1eb020 writes a dword into the material slot and it is read back as a dword, ours takes a short * and reads it back sign-extended, and that width is set in another file.
+// M3 lane 16 r117 (fast with 0xb67a0, 0x188180, 0x1eb020): the model definition in a `byte *` local for the effect tag 8
+// (same code); the havok component index in a two-use local read ahead of the type test 43 (1099 B); the material
+// declared (default-built) at the top of the function and assigned `c_type_47f957(g_54e898)` in place 8 (same code); the
+// component pointer declared ahead of the material and assigned after it 8 (same code); the re-read definition typed as
+// the unit definition, reading `.object.` fields 8 (same code).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

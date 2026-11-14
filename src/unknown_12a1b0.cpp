@@ -1326,6 +1326,10 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // index) 24, that function plain inline 24; a body-scoped copy of the index for the test and the call 24; an endless
 // loop with its own exit 24; the loop test on the next call's result with the body's index read from the iterator 24.
 // All the same code: a second name for the index does not split its weight, and the element stays the lighter value.
+// M3 lane 16 r117 (fast with 0x126df0, 0x12a810, 0x21bd00, 0x21b870; `ret 8` and 210 B in both builds): the state
+// lookup's index read as `*(long const *)&iterator.index` 24, the same read for the 0x126df0 call 24 (the iterator is fully
+// promoted, so 0x151b80's second-read lever has no load to split); a const element local 24 (same code); diagnostics: the
+// call given `iterator.first` 80 (228 B), the index as the fade-out argument 62 (187 B).
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
