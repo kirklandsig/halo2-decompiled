@@ -358,6 +358,9 @@ void c_window_channel::v9()
 // storage with placement new and its pointer used throughout 3; the load given the request through a base-type
 // reference cast 3; the builder given the request through its base type 3; the load given the address of the
 // new request's first member 3; the request copy-initialised from a default one 3 (all the same code).
+// Round 177 (m3 lane 6, fast with 0x2358c3, 0x2354aa, 0x2352d3): the load given `static_cast<s_screen_parameters *>(&new_request)` 3;
+// that cast for set_next too 3; the type cleared before the declaration with the load result passed straight to set_next 24
+// (76 bytes); the user flags as `(word)` 3; re-measured, the load through the new request's own field 4.
 // BLOCKED-BY 0x149f49: every address of the local is one value, copied from ECX after a free-function builder.
 // @retail 0x23531c
 void c_window_channel::v10()
