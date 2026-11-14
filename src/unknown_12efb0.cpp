@@ -576,6 +576,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // reference 607. NOT kept: ties or regressions; original opaque input type, all observations, helpers
 // and complete executable source restored. Native provider-result/NONE, palette/selected-record and
 // zero/SIMD carriers remain.
+// Existing real/double-factor scale helpers at weighted a/b triples, paired
+// direct/real/double producers: 607/697/607/606/696/703/702/701. NOT kept:
+// real/real gains only one at 3830 bytes; double-factor forms regress. Original
+// ten scalar stores, original includes and complete body restored; provider/NONE,
+// palette/selected-record and zero/accumulator carriers remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
