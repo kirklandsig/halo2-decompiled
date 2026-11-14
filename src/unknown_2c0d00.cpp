@@ -469,6 +469,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // complementary restricted-sphere admission 926/926/924/924 reduced (control 926, full 920).
 // NOT kept: native positive-byte results and frame 0x2cac are unrecovered;
 // all original classifications, buffers, qualifiers and complete body restored.
+// P465: Existing actor/query-buffer/query-count/location/motion/physics/transform/radius
+// identities independently named by role on the separate-location graph: eight 926 reduced
+// (control 926, full 920). NOT kept: frame remains 0x2cb4 versus 0x2cac; original full body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

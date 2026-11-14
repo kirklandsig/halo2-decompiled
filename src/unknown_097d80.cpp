@@ -464,6 +464,9 @@ struct c_aggregate : c_child
 // the function, while one that reaches only known callees is packed by scope; retail's packing of this count therefore
 // needs either a known callee (retail calls through the vtable) or a compile without it. Still BLOCKED by the build
 // flag; no source form can pack the slot.
+// P465: Complete four-cell boundary-table producer, long/dword/short/word/byte/signed-char
+// for ordinals then long/dword while ordinals: 129/129/147/147/147/147/129/129. NOT kept:
+// escaped output and low loop homes remain; original full body and six exact siblings restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

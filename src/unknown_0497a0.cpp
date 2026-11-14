@@ -374,6 +374,9 @@
 // and reused sequential position receivers: 522/692/687/522/692/687/693/693.
 // NOT kept: first-result forms recover frame 0x60 but grow five bytes and use
 // nonmatching one-use results; original helpers and complete body restored.
+// P465: Positive special-view result from native lazy tests, bool/byte/short/long,
+// false-default 548/548/668/561; exhaustive test-owned 644/644/657/651. NOT kept:
+// no native 0x60 frame/result recovery or equality; original complete body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

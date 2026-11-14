@@ -792,6 +792,10 @@ static inline long font_character_pixel(long alpha, long color)
 // helper scores 105 (byte cast) and 212 (no cast); swapping case 1's two statements gives 83, below the gain
 // needed to keep it.
 // MiniMax R (11-11): no new form tried this round, no lower score (85): the body's first branch is at +0x24, the first argument's zero test, and it leaves for a different place than retail's, which jumps into the shared exit further down; the body is 8 bytes longer than retail's.
+// P465: On the long-result/multiplied-literal graph, numeric parity 203; unsigned alpha 203;
+// expanded opacity 239; named parity 239; split numeric bands 203; scaled byte-parity field 62;
+// disjoint addition 228; split byte-parity bands 59. NOT kept: no native parity/run/literal
+// equality; original helper and complete decoder restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
