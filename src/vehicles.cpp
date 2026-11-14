@@ -3728,6 +3728,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // the head then loads scale, 1.0 and x, y, z as retail, but the scaled values get copies at the join), with `x *= inverse`
 // 1079; the existing 0x1427f0 called with that output 1174 (out of line; a re-measure of round 44's form). The header's
 // matrix_transform_vector has no scale step, so it is not 0x142640. BLOCKED-BY 0x1427f0/0x142640 inlining.
+// MiniMax B (11-14): no new form, no lower score (1000): the frame is 0x78 here and 0x74 in retail, so
+// every stack home sits four bytes higher, and retail inlines 0x142640 and 0x1427f0 from another file
+// (BLOCKED-BY), which is why the two bodies differ in shape from the first difference on.
 // MiniMax A (11-13): no new form tried this round, no lower score (1000): the frame is 0x78 here and 0x74 in
 // retail, and retail keeps the matrix products in the XMM registers where this build spills them to the stack
 // and reads the parity flags with lahf, so the two bodies have different shapes from the first difference on.
@@ -4449,6 +4452,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // `double angle` gives; the rest is product ranks and the sine/cosine homes. Also: the default angle as
 // `6.2831855f * fraction` 136 (same code); the not-flipping path as an early `return false` 170 at 827;
 // `!function_30bf0(up)` 136 (same code).
+// MiniMax B (11-14): no new form, no lower score (118): the dot's first term and both crosses still take
+// the b operand into the register where retail takes the a operand, and the sine and the cosine still
+// take the opposite stack slots (ours sine at [esp+0x18] and cosine at [esp+0x1c], retail the reverse);
+// the flipping flag stays a byte because a bool flipping scores 130.
 // MiniMax I (11-14): no new form, no lower score (118): retail's default arm keeps the angle on the
 // x87 stack, takes its cosine from [esp+0x18] and its sine from [esp+0x1c] and rotates the forward
 // with SSE, while ours takes the sine from [esp+0x18], the cosine from [esp+0x1c] and rotates it on
@@ -4746,6 +4753,10 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // 50; length declared at its assignment 48; length and the ray vector declared where computed 48; the ray products
 // written `length * direction.i` 48 (all same code but the scales). No untried natural form is left here that
 // does not depend on the cone call's register order (BLOCKED-BY 0x146320; its file is held).
+// MiniMax B (11-14): no new form, no lower score (48): the marker sum still lands in EAX where retail
+// sums into EDI, the definition pointer is still read before the memset where retail reads it after, and
+// the facing copy still stores its three components in the order i, k, j where retail stores them in
+// another order (the member-wise copy scores 67).
 // MiniMax I (11-14): no new form, no lower score (48): the marker sum still lands in EAX (movsx eax, ax;
 // add eax, edi) where retail has movsx ecx, ax and add edi, ecx; the sum's operand order, a second count
 // variable (short, int or long), the compound sum and int-typed counts all compile to the same EAX form,
