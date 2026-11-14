@@ -7984,6 +7984,9 @@ struct s_unit_turn_state_view
 // which builds 0x11f0d0 differently): the moved flag still sits in a register where retail keeps it in a
 // stack byte, the state and aim pointers still take the other register roles, and the two divisions by
 // the stored step still share one reciprocal, so the body stands as found.
+// MiniMax S (11-14): no new form tried this round, no lower score (395): the body was re-measured and stands as
+// it was; the step helper is shared with the other callers of that file, so its spelling was left alone and the
+// moved flag's home could not be moved without the helper's own body changing.
 // score 395 (was 395): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
 // retail), result as a variable, the state byte's bits through s_unit_turn_state_view, +0x10a through
 // s_unit_flags_10a_view, the unit/definition bit tests nested. Still differs: retail keeps the result `moved`

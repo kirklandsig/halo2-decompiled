@@ -1954,6 +1954,9 @@ struct s_actor_looking_turn_request
 // where retail calls it, and that helper is defined in another file. The body stands.
 // MiniMax G (11-13): no new form, no lower score (442 plain, 548 on the reduced image): the diff re-read this round keeps the frame 0xd0 against retail's 0xc8 and the cached animation words without retail's homes, and 0x1fdd90 is still inlined here where retail keeps it out of line, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (442 plain, 548 on the reduced image).
+// MiniMax S (11-14): no new form, no lower score (442): the two getters that hand back the view and the object
+// are shared with many other functions of this file, so their spelling - which decides whether the base and the
+// scaled index stay apart - was left alone and the body was re-measured unchanged.
 // score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
 // call site and ours inlines it (only /Ob1 on its file keeps it out of line: a build-flag lead).
 // Round 176 (m3 lane 5, plain): the action state through 0xe70b0 held in a named by-value local 544; the turn
