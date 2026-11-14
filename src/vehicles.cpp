@@ -962,7 +962,12 @@ __forceinline long vehicle_round(real value)
 
 /* flips a vehicle back over: a spin about its forward (or its side) for up
    to two seconds while it's upside down */
-// score 8 (was 8): retail's length and tail now; four products load the other operand (ours loads up.j
+// MiniMax I (11-14): the side cross through the shared staged cross helper (cross3f_staged) 6 (was 8);
+// cross3f_staged at the first cross as well 10; the two count variables, the compound sum and the
+// swapped operands of 0xf6060's marker sum all leave that sum in EAX.
+// score 6 (was 8): retail's length and tail now; three products load the other operand (ours loads up.j
+// for the first cross's k term and the side cross's i term, and up.i for the side cross's j term;
+// retail loads forward each time). Kept: one `bool result` exit, the
 // for the first cross's k term and the side cross's i term, up.i for the side cross's j term, and the
 // velocity for the dot's i term; retail loads forward each time). Kept: one `bool result` exit, the
 // failure arm first (`if (!(...)) { clears } else { ...; result = true; }`) and word_flags_set for the
@@ -1121,7 +1126,7 @@ bool function_ef870(long vehicle_index)
 		{
 			vector3f side;
 
-			cross3f(&vehicle->forward, &vehicle->up, &side);
+			cross3f_staged(&vehicle->forward, &vehicle->up, &side);
 			vector3f_add_scaled(&axis, &side, 0.0f - vehicle->forward.k, &axis);
 		}
 		vector3f_scale(&axis, strength, &angular_velocity);
@@ -4413,6 +4418,11 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // `double angle` gives; the rest is product ranks and the sine/cosine homes. Also: the default angle as
 // `6.2831855f * fraction` 136 (same code); the not-flipping path as an early `return false` 170 at 827;
 // `!function_30bf0(up)` 136 (same code).
+// MiniMax I (11-14): no new form, no lower score (118): retail's default arm keeps the angle on the
+// x87 stack, takes its cosine from [esp+0x18] and its sine from [esp+0x1c] and rotates the forward
+// with SSE, while ours takes the sine from [esp+0x18], the cosine from [esp+0x1c] and rotates it on
+// the x87 stack; the dot's first term and the first cross's operand order also stay as the shared
+// helpers order them.
 // MiniMax A (11-13): no new form tried this round, no lower score (118): the dot product's first term is still
 // commuted (this build multiplies forward.i by up.i where retail multiplies up.i by forward.i) and the first
 // cross product's operand order still differs; both follow from the shared helper's argument order, which
@@ -4705,6 +4715,10 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // 50; length declared at its assignment 48; length and the ray vector declared where computed 48; the ray products
 // written `length * direction.i` 48 (all same code but the scales). No untried natural form is left here that
 // does not depend on the cone call's register order (BLOCKED-BY 0x146320; its file is held).
+// MiniMax I (11-14): no new form, no lower score (48): the marker sum still lands in EAX (movsx eax, ax;
+// add eax, edi) where retail has movsx ecx, ax and add edi, ecx; the sum's operand order, a second count
+// variable (short, int or long), the compound sum and int-typed counts all compile to the same EAX form,
+// and the int counts change the loop (169).
 // MiniMax A (11-13): no new form tried this round, no lower score (48): the marker count's sum still lands in
 // EAX here (movsx eax, ax; add eax, edi) and in EDI in retail (movsx ecx, ax; add edi, ecx), the definition
 // pointer is still read into EDX before the memset where retail reads it into EAX after it, and the facing copy

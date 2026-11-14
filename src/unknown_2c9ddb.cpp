@@ -278,6 +278,10 @@ extern long g_55c154;
 // &g_54e4a0 use an immediate; ours has one load site, the inlined copy and the destination address in a register.
 // The two-arm forms (lane 5 r153's 32-form grid, R223, rounds 32-97) all flip the frame to unbiased with `this` out
 // of EBX, and the named-count form that keeps 0x13fac0 out of line is listed (88/179). Still BLOCKED-BY 0x13fac0.
+// MiniMax I (11-14): no new form, no lower score (61): the link still expands the name copy where
+// retail calls 0x13fac0 out of line (its own file, src/unicode_strings.cpp, is not this round's), and
+// the default/existing choice is still spilled to a byte slot where retail branches on the selected
+// index itself.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
