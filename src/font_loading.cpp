@@ -500,13 +500,18 @@ short function_122570(s_font_header const *header, dword first_character, dword 
 
 /* a pixel of a character: 3 bits of alpha (widened to 4) over a 12 bit
    color */
-static inline word font_character_pixel(long alpha, long color)
+static inline long font_character_pixel(long alpha, long color)
 {
 	return (((alpha << 1) | ((byte)alpha & 1)) << 12) | color;
 }
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax H (11-13): lower score, 59 from 85: the pixel helper now returns a long so the colour is ored in
+// thirty-two bits and the fill loop matches retail's, the literal word is a multiply of the high byte so the
+// decoder's row count matches retail's again, and case 1 assigns the colour before the run; what still differs
+// is the parity width, the literal word's exact loads, the run-2 reuse and the body's length.
+// MiniMax H (11-13): no new form, no lower score (85): the check's right column is retail, so retail widens the pixel's parity in thirty-two bits (xor ecx,ecx; mov cl,al; and ecx,1) where this build narrows it to sixteen bits (mov cl,al; and cl,1; movzx cx,cl); a word-typed parity (180), a byte-typed parity (222), a byte-truncated parity (85) and a separate parity helper (85) all widen it, and the same source linked on its own gives retail's form, so the width follows the link context and not the source.
 // MiniMax B (11-13): no new form, no lower score (85): the pixel in a long local inside the word helper (226), the same without the byte cast (172, retail's length) and the parity in a long local (230) all widen the parity to thirty-two bits and score worse.
 // MiniMax A (11-13): no new form, no lower score (85): the permuter (1800 s, 165 tries, with annealing) found nothing under the baseline; a long-returning helper now reaches retail's 504-byte length but keeps the parity in sixteen bits (105), a byte alpha parameter scores 201/209, and writing the type-2 count as the literal 2 leaves the body unchanged (85), so the alpha's parity is still masked in sixteen bits where retail widens it to thirty-two.
 // MiniMax B (11-12): no new form, no lower score (85): the body is 512 bytes against retail's 504 and the first
@@ -540,7 +545,13 @@ static inline word font_character_pixel(long alpha, long color)
 // widens it to 32 bits, and the literal word assembly and the run-two reuse still differ; dropping the byte
 // cast gives 204.
 // MiniMax H (11-12): no new form, no lower score (85): a 600 s permuter run (79 differing instructions at its baseline) found nothing lower, and the first branch still leaves for a different place than retail's, which jumps into the shared exit further down.
-// score 85 (was 85): the alpha parity is still masked in 16 bits (and cl, 1; movzx cx, cl) where
+// score 59 (was 85): the alpha parity is still masked in sixteen bits (and cl, 1; movzx cx, cl) where
+// retail zeroes a thirty-two bit register first (xor ecx, ecx; mov cl, al; and ecx, 1), the literal word
+// is still built from two byte loads and a multiply (movzx eax, byte [edi+1]; movzx edx, byte [edi+2];
+// shl eax, 8; add eax, edx) where retail loads the low byte into ax and the high byte into ch, the type 3
+// run is still folded to a constant (add eax, 2; add esi, 2) where retail adds the run register
+// (add eax, ebx; add esi, ebx), and the body is still eight bytes longer than retail's; the frame, the
+// fill loops, the switch layout and the exit agree.
 // retail zeroes a 32-bit register first (xor ecx, ecx; mov cl, al; and ecx, 1); every 32-bit form of
 // the pixel helper reproduces retail's parity bytes but swaps the output and colour registers, so
 // the 16-bit helper is kept.
@@ -822,8 +833,8 @@ long function_122610(long size, void const *pixels, void *destination)
 					pixel = color;
 					goto fill;
 				case 1:
-					run = 4;
 					pixel = color | 0xf000;
+					run = 4;
 					goto fill;
 				case 6:
 					run = 3;
@@ -864,11 +875,11 @@ long function_122610(long size, void const *pixels, void *destination)
 
 			if (run == 0 && type == 0)
 			{
-				word value = (word)((source[1] << 8) | source[2]);
+				dword value = (dword)source[1] * 256 + source[2];
 
 				color = value & 0xfff;
 				if (output)
-					*output++ = value;
+					*output++ = (word)value;
 				count++;
 				length = 3;
 			}

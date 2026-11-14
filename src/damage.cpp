@@ -1162,6 +1162,11 @@ PRIVATE inline long damage_object_root(long object_index)
 // bytes, a second test retail lacks, the same extra test the out-of-line site needs) and a for-form player scan gives
 // 396; the frame stays 0x1a4 against retail's 0x1b4 and the first verifier call is still expanded in ours, and the
 // sixteen frame bytes retail leaves unused have no spelling that recovers them.
+// MiniMax H (11-13), NOT kept (coordinator): 206 -> 80 came with the three object lookups calling
+// object_get_175d70, 0x175d70's file-local noinline copy of 0xbadc0, from this file: the same steer held under the
+// noinline ruling (MiniMax G 11-06). The rest of that round: the flag update through a local (load, or, store), the
+// outer radius added in two statements, the parent walk through an index-returning helper, the s_data_datum_iterator
+// player scan and a squared-distance helper called at both tests.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
