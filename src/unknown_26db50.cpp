@@ -463,6 +463,7 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
 // rotation's component spill, cross scheduling and register allocation remain.
 // The body is 1085 bytes versus retail 1089.
+// MiniMax G (11-14): no new form, no lower score (90, was 90): naming the ring as a float and hoisting its phase above the distance reproduces retail's cvtsi2ss, the slot store and the x87 reload, but the frame grows to 0xdc and the head's radius load and sector store move (143); the same hoist with the ring conversion written out (143), the phase product as a double (257), the sector read before the radius (109) and the radius without its reference (236) all score worse, the head's radius still arrives through a general register where retail uses movss, and the permuter found nothing below 87 in 25 tries.
 // MiniMax H (11-12): no new form, no lower score (90): the ring is still converted with fild where retail
 // converts it to float, keeps it in a stack slot and reloads it as a double for the radius product; the named
 // ring float (119), the named ring phase (143) and the named double radius of the earlier rounds all score

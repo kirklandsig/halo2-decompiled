@@ -222,6 +222,7 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // to 152, so the original is kept; the tag lookup still masks the index with a word load where
 // retail masks the 32-bit value, and the fallback EDX, the stage/pass homes and the unfused element
 // loads remain.
+// MiniMax G (11-14): no new form, no lower score (117, was 117): masking the tag index in place (`local_tag &= 0xffff`), masking a copy of it, or masking it inside the subscript each reproduce retail's `and edx, 0xffff` but move the tag table from EDI into ECX and hoist its load above the frame (152); casting the index to a word keeps the `movzx eax, dx` form (117), and the stage and pass homes and the unfused element loads are unchanged.
 // MiniMax B (11-12): no new form, no lower score (117, was 117): the fallback path still masks the tag with a word
 // load where retail masks the 32-bit value (`and edx, 0xffff`), the stage and pass elements still land in other
 // registers than retail's ESI and EBP, and the element loads are still unfused; the score-8 chain needs the
