@@ -1055,6 +1055,9 @@ struct s_tail_transfer_traits
 // P438: Original scenario/unit-index/unit/first/second and per-pass clock/age/weapon
 // bindings fixed independently: eight 153. NOT kept: selected-traits/unit/NONE homes
 // and no-seat reloads unchanged; original complete body restored.
+// T102: Complete primary-traits selection polarity in bool/byte/char/signed-char/
+// short/word/long/dword: 156/156/156/156/255/255/242/242. NOT kept: no exact
+// selected-traits/unit/NONE-home repair; original selector and complete body restored.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {

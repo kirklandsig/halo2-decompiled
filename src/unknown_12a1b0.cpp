@@ -2221,6 +2221,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // MiniMax G (11-13): no new form, no lower score (305): the frame is 0x11c against retail's 0x128, and the
 // outer index, the definition and the ring homes still differ; the forms in the note below all score 305 or
 // more, so the body stands.
+// T103: Actual permutation-table input cursor alone, with per-pass counts, sound/gain/
+// both local input cursors, gain output, all cursors and complete request storage:
+// 466/482/417/436/431/433/515/517 (fast control 305). NOT kept: no byte equality;
+// native indexed input observations, request, range/ring homes and full body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

@@ -2464,6 +2464,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // MiniMax B (11-11): no new form, no lower score (168); the first difference is still the table load at +0x5c, ours
 // [eax+ecx+0x58] against retail [ecx+eax+0x58], a base/index order the compiler picks; the frame is still 0x7c against
 // retail's 0x80 and the normalized direction is still folded instead of being held in XMM1..XMM3 across the dots.
+// T101: Complete conditional byte-counter additions for active/close/very-close,
+// sets 1..7: 621/419/621/338/632/607/649; complete conditional publications 652.
+// NOT kept: every form regresses; arithmetic/extra-store shapes do not match.
+// Original complete body restored; iterator, player-loop and SIMD residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

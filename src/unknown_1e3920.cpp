@@ -1207,6 +1207,10 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // omitting its wholly overwritten default on those forms: 250/250/250/250.
 // NOT kept: the two-point lead is below the gain threshold; original query
 // outputs, all defaults, separate decision and complete body restored.
+// T103: Existing typed 32-byte request, shared current/function/actor/settings lifetimes,
+// then four case-entry/success pairs: 252/351/351/351/252/252/252/252.
+// NOT kept: no native sentinel/squad/query-home equality; original byte payload,
+// include set, exact request writes and complete body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
