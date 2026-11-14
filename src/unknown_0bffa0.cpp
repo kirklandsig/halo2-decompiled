@@ -1065,7 +1065,7 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
     result->y = scale * transformed.j;
 }
 
-// score 290 (was 290; 315 before round 79; 482 before round 68; m3 lane 2 r79 note at the end): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
+// score 290 (was 290; 315 before round 79; 482 before round 68; m3 lane 2 r79 and m3 lane 8 r164 notes at the end): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
 // now agree; retail stores the +radius vertex group first (so 1.0 lands in XMM2, not XMM1) and
 // computes each projection's forward row first. Kept: the file's cross helper for both crosses
 // (it sets the +0x4c base; the shared cross3f for the forward one gives +0x50), normalize3d for
@@ -1273,6 +1273,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // without its `(short)` cast 598 (2815 B, a dword compare for retail's word neg/sbb); the face and direction tables `const` 290
 // (same code); one `vector3f const *` for frame->forward in the cone arm 579 (2797 B); the cone half extents as one point2f
 // 480 (2813 B). Lane 1 r84's lead re-measured 288; the private normalize is round 148's listed form (290).
+// m3 lane 8 r164 (fast with 0xc1a80, MATCH each time; base 290). Retail sums every projection's rows in one order, i
+// (fj vj + fi vi) + fk vk, j (li vi + lk vk) + lj vj, k (uk vk + ui vi) + uj vj, where ours varies per instance: those rows
+// parenthesised 554 (2801 B), with the left row as (lk vk + li vi) + lj vj 554. The projection storing y before x 299 at
+// retail's 2840 bytes (retail stores y first in every instance); on it the cone corners stored before the bounds, both
+// in retail's x0, y0, x1, y1 order, 303 (2832 B: that tail's stores are then retail's, but the cone scale is still divided
+// ahead of the centre projection), with the far edges as `half + centre` 303 (same code). All restored.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
