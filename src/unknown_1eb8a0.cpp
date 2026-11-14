@@ -510,6 +510,12 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // with `s->limit` at each use 705 [403/139]. In the output arm retail expands the nested MIN/MAX for the step
 // fraction without CSE, as ours does, but builds each zero with its own xorps (ours shares a function-wide zero in
 // xmm6) and stores one intermediate (e3 - MAX(0, w)) to the stack. Body unchanged.
+// M3 lane 12 r120 (fast with the file's 17 other functions and 0x30bf0, control 636, aligned 677, register/stack-masked 278,
+// caller 0x1eb6f0 MATCH): the capped-time block (t, the 0.001 floor, the rate cap) as a forceinline helper taking the 12/8 factor
+// as an argument, so each call site selects the factor ahead of t as retail does: all three sites 697 (2865 bytes, aligned 625,
+// masked 254, frame 0x20, `ret 0x18`, caller 22); the first site only 716; the first two 698; the output site only 636
+// (same score, masked 270, caller kept); arguments as (factor, distance) at all three 697 (same code). It is the listed
+// factor-first form in another spelling: the first site's flag read still takes CL and moves `a` out of ECX. None kept.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

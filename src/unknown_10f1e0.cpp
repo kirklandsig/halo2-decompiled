@@ -2126,6 +2126,9 @@ bool __stdcall function_110ab0(long unit_index)
 // 445/644/445/445/445/445/445/445. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // P447: First/second signed slot arguments; first/second count decisions; overlay/allow admissions; primary and paired-overlay inner request case order:
 // 445/445/445/445/445/445/445/445. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P461: Complementary controlling-absence outcome bool/char/signed-char/byte
+// 474 each, short/word 451/451, long/dword 467/467. NOT kept: frame stays eight
+// versus twelve and every score regresses; original handle, queries and full body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {

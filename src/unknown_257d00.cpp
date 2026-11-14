@@ -2719,6 +2719,15 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // P449: Primary countdown, actor, animation release/index, facing, turn, delay and motion decisions:
 // 479/479/479/479/479/479/483/479. NOT kept: no exact scratch-register or completion-tail repair.
 
+// M3 lane 16 r114 (fast with the file and 0x110ab0; control 479, aligned 215; all restored): the +0x465 flag as `c ? 1 : 0` or
+// through a long cast 482 (2408 bytes: retail's `mov eax, 1` / `xor eax, eax`, aligned 214, four bytes longer); case 18's two
+// references in two-use locals under nested tests 619 (2400 bytes; actor EDI, state EBX); case 21's reference in a two-use local
+// under a nested test 479 (same code); case 4's facing from the state's fields 627 (2384 bytes); case 2's vector as an aggregate
+// assignment 610 (2396 bytes); cases 9 and 11 as `local_0->unknown018 == arg_1` 479 (aligned 213), the iterator set up data,
+// index, datum_index 479 (aligned 214), both 479 (aligned 212); all of these together 636 (2372 bytes, aligned 296), cases 18,
+// 4 and 2 alone 636; on that set the state pointer declared first 636, the script and state ahead of the actor 640, the result
+// flag first 640; the state pointer declared first on this body 479 (same code). Each retail-shaped form of cases 2, 4 and 18
+// still exchanges the actor and state registers, and no declaration order brings the actor back to EBX.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
