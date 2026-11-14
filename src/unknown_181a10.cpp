@@ -875,6 +875,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // Also: the hit by components in retail's y, x, z read order with aggregate publication 312 (1249 B), with main's setter
 // publication 325 (1262 B; each a different code from the x, y, z forms at the same scores). The accessor form is the same
 // code as the listed per-use reads and the plane_distance_to_point form the same as lane 14 r64's x, y, z origin (312).
+// P472: Overlap-safe origin/hit/paired-input/position/paired-plane-normal/origin+position/hit+position/all record transfers: 229/233/310/261/249/266/264/338.
+// NOT kept: origin transfer adds a call absent from retail; hit-only gains five. Other forms regress; original body/includes restored.
+// Frame, node and point homes remain.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -276,6 +276,8 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // NONE)` 176 (488 bytes). Re-measured: the record pointer inside `if (initialize)` 132 (506 bytes, the listed joined-test 132).
 // Rebuilt for reading: 9, 83, 85, 86, 138, 145. VC folds `return result` after any NONE test of result (`or eax, esi` / `or
 // eax, -1`); retail's walk exit returns the register unfolded from a second epilogue, which no listed spelling gives.
+// P472: Byte/char/word/short initialization decision, integer negative-age normalization, promoted age/oldest/both: 77/77/74/74/140/160/136/164.
+// NOT kept: word/short gain three, below the threshold; other scalar-domain forms tie or regress. Original merge, scan and full body restored; cached-edge and trailing-return layout remain.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

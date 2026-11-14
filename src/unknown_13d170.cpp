@@ -636,6 +636,8 @@ struct s_physical_block_iterator
 // 206 (1219 B); equal time first with `better = pages < best.pages` there, else `if (time < best.time) better = true;` 200 (1213
 // B, a different code from the 200 above); unequal time first, both arms setting true, 206 (1219 B). The nested and break forms
 // are the same code as the first form (222); the constant-arm if/else the same code as main.
+// P472: Case-zero older/equal-time/smaller Boolean outcomes, subsets 1/2/4/3/5/6/7, then all byte outcomes: 201/201/201/201/201/201/201/201.
+// NOT kept: no native case-result/placement equality; original policies, observations, ring, iterator, linking and full body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

@@ -1365,6 +1365,8 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // function_1f087b 469 (3048 B, masked 120). Re-measured on this base, same code (347): the general arm's bounded vector declared
 // before delta, or renamed to sort before it; retail's delta/bounded slots (0x2c/0x20, ours 0x20/0x2c) follow neither. Both
 // lengths through magnitude3d via the `input` pointer, re-measured, 585 (3027 B; the low arm then reschedules).
+// P472: Independent immutable rotation/planar raw/spatial raw/ground basis/projected/side/history difference/history offset producers
+// 347/347/347/347/347/347/347/347. NOT kept: no exact native producer ownership; original complete body restored. Damping carrier and raw/bounded homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

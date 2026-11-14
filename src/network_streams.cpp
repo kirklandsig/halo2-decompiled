@@ -953,6 +953,8 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // block (a clamp of the start against oldest, 79) merges with it. So the window pointer merges early and reduces, the member
 // view never merges; retail (and matched 0x94df0) merge without reducing, which no view, loop shape or found-path placement
 // here reproduces.
+// P472: Actual word-bit field first/second/both, explicit Boolean first/second/both, second-first and paired outcomes: 60/60/60/66/74/67/68/67.
+// NOT kept: no exact native induction/allocation shape; original raw word layout, helpers, complete body and header restored.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
