@@ -94,6 +94,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// MiniMax D (11-14): no new form, no lower score (194): the first difference is still at +0x5b and what remains is
+// where the tint and the second UV set's bounds live and the blend that still leaves XMM5 in the aspect block, so
+// the difference is the storage of those two values rather than a statement order; the kept form with the width
+// product before the inverse sums stands.
 // MiniMax B (11-13): the width product is computed before the inverse sums, which lowers the score to 194; the
 // blend still leaves XMM5 in the aspect block and the tint's home is still exchanged with the second UV set's bounds.
 // score 194 (was 194): earlier 211 (round 95 m3 lane 11 at the end) and 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's

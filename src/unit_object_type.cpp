@@ -5231,6 +5231,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 /* clamps a direction to the unit's yaw and pitch limits for aiming (or,
    when asked, for looking, relative to its aim) in its own frame; whether
    it changed */
+// MiniMax D (11-14): no new form, no lower score (169): re-measured this round: the body is 768 bytes against retail's
+// 767 and the first difference is at +0x4a, inside the shared cross-product helper, whose own file this lane may not
+// edit; the register plan of the three direction sums and the order retail loads up.k and up.j in still differ, and no
+// spelling of the helper's callers moves them.
 // MiniMax A (11-14): no new form, no lower score (169): the first difference is inside the shared cross-product helper,
 // whose own file this lane may not edit, so the two products land in other registers; retail loads up.k and up.j before
 // up.i where this build preloads all three.
@@ -6827,6 +6831,10 @@ done:
    fell toward (front, back, left, right), plays its death (0x10ff40) and,
    from type 3, sets its ragdoll timer +0x1f5, its flags and (when the
    death had no animation) its deadness; a free biped turns to face it */
+// MiniMax D (11-14): no new form, no lower score (250): the first difference is still at +0x9, the zero constant rides
+// in xmm0 here and in xmm2 in retail, and retail's scale block multiplies the x component in place and the y component
+// into a fresh register; the one-use bool test that reached 209 is kept only with a byte match and the coordinator
+// rejected it, so the body stands at 250.
 // MiniMax A (11-14): no new form, no lower score (250): the zero constant rides in xmm0 here and in xmm2 there, and
 // retail's scale block multiplies the x component in place and the y component into a fresh register, which no single
 // expression form gives.
