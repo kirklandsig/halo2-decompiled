@@ -595,6 +595,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // the 0x130f60 call: retail moves the result to EDX, makes NONE in EAX and compares the palette byte in CL (`cmp cl, al`); ours
 // reads the short slot with `movsx bx` and keeps NONE in ECX, the result in EAX (the tag arm then compares `eax, ecx` where
 // retail has `edx, eax`). Every lever for that point is listed above; no untried natural form found, no trial run.
+// P492: Intensity destination owns zero-alpha branch, two branch polarities,
+// conditional contribution/destination sum, short then char palette:
+// 775/775/698/775/778/778/637/778. NOT kept: no byte equality; original
+// input capture, helpers, palette and full body restored at 607.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

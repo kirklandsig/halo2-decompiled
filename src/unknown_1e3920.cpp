@@ -1236,6 +1236,10 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // P483: Complete forced/enabled short-circuit selection as disjunction/conjunction,
 // bool/byte/short/long result: 348/348/348/348/348/348/348/348. NOT kept: no native sentinel/squad/query
 // home repair; original query defaults, replacement producer and complete body restored.
+// P491: Settings-guarded nullable creation dispatch, compound perception/unit first,
+// byte/short/long/signed-char three-way results, branch-complete and unit-first: 400/419/438/442/440/438/400/543.
+// NOT kept: all regress and lengthen; original settings/bit observations, result/cleanup
+// scopes and full body restored. Native sentinel ESI and squad/query homes remain.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -2129,6 +2133,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // current/secondary/both, readonly current/secondary/both, both full-width slots,
 // both byte slots: 251/251/251/251/251/251/272/251. NOT kept: native pool/actor/options
 // residence unchanged; original complete body and both private queries restored.
+// P491: Repeated probability/delay clamp-field const/mutable references, separate/both,
+// then complete const/mutable pointers: 251/251/251/251/251/251/251/251. NOT kept: native actor/options/pool
+// residence unrecovered; original direct fields, query helpers and whole body restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

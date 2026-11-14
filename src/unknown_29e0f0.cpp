@@ -78,7 +78,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
-// score 382 (was 382; 382 before): earlier 391, 390; frame 0x64 and the node-pointer/group-table roles (EBX/EBP) agree; the selected defaults' homes,
+// score 382 (was 382): earlier 382, 391, 390; frame 0x64 and the node-pointer/group-table roles (EBX/EBP) agree; the selected defaults' homes,
 // point bitmap, endpoint homes and x87 scheduling differ.
 // MiniMax R (11-11): no lower score (382); retail's selected point index is compared as a dword where ours is compared as a word and
 // retail's selected endpoint as a word where ours is compared as a dword, retail's group index is a sign-extended 32-bit value parked in the
@@ -497,6 +497,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // alone 182 (same arg_0/ESI choice).
 // Permuter on the recipe (600 s, seed 103, 40 tries): best 122, all from forbidden or steering edits (a volatile endpoint start
 // index, a volatile store of the marker flag, conditions split into flags, constant temporaries); nothing keepable.
+// P492: Live link-count/list-base/current-group-point field references,
+// seven const subsets then all mutable: 382/382/382/382/382/382/382/382.
+// NOT kept: selected/default and bitmap/pass homes unchanged; original
+// field expressions, metrics, traversals and complete body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

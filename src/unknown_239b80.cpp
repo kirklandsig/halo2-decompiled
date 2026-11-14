@@ -612,6 +612,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // (short)hull_count` 215, memcpy for the compaction 234 (755 B, the copy inlined); the lowest-point scan as an inline helper
 // returning the index (current from its result) 216 (791 B), forced inline with current declared first 244; as plain
 // `static inline` it is not inlined (680 B, 343).
+// P492: Float root/angle/equality-absolute API subsets 1/2/4/3/5/6/7,
+// then standard float overloads: 161/161/161/161/161/161/161/161.
+// NOT kept: extra frame word and count/departure/produced-length homes
+// unchanged; original numeric APIs, predicate and complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

@@ -2240,6 +2240,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // both local input cursors, gain output, all cursors and complete request storage:
 // 466/482/417/436/431/433/515/517 (fast control 305). NOT kept: no byte equality;
 // native indexed input observations, request, range/ring homes and full body restored.
+// P495: Actual track-storage/tag cursors and readonly track receiver, seven subsets, then readonly parent:
+// 389/519/479/426/389/519/426/426 reduced, control 479/1908; single track cursor plain 465/1923.
+// NOT kept: ordinary regression from 305; native frame and playback/range/ring homes remain. Full body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
