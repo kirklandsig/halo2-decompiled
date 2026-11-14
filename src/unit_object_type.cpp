@@ -2229,6 +2229,9 @@ struct s_unit_motion
 
 /* advances a position and velocity along the motion for a time; whether
    time remains after its last phase */
+// MiniMax A (11-14): no new form, no lower score (104): retail moves the two incoming floats into xmm0 and xmm1 and
+// compares them there, while this build compares them in xmm1 and xmm3 and keeps a third value in xmm5, and the body
+// is 265 bytes against retail's 227 (BLOCKED-BY 0xc7840's call sites).
 // MiniMax B (11-13): no new form, no lower score (104): retail moves the two incoming floats into xmm0 and xmm1 and compares them there, while this build compares them in xmm1 and xmm3 and keeps a third value in xmm5, and the body is 265 bytes against retail's 227.
 // MiniMax H (11-12): no new form, no lower score (104): the accumulator form that gives retail's 227 bytes and 28 differences still makes LTCG inline this body into 0xc7840, which is in this lane's list, so it is not kept.
 // MiniMax C (11-10): score 104 (was 104): no lower score this round. The accumulator form re-measured 28 with
@@ -2912,6 +2915,9 @@ void function_c5740(long unit_index, bool start)
 /* plays the sounds of a unit's impact: its weapon's (+0x58) when it holds
    a weapon that allows it (0x1012c0), else the globals' material sound
    (+0x154, 0xb4 bytes each) and the definition's +0xac */
+// MiniMax A (11-14): no new form, no lower score (97): retail keeps the definition index in ebp and the object globals
+// pointer in edi and re-reads the unit index and the material from the stack, while this build keeps the unit index in
+// ebx and the material in bp; the effect helper's convention in src/unknown_187ec0.cpp is not this lane's to change.
 // MiniMax B (11-13): no new form, no lower score (97): retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack, while this build keeps the unit index in EBX and the material in BP; the callers' setup fixes that outside this file.
 // MiniMax H (11-12): no new form, no lower score (97): retail keeps the definition index in ebp and reads the unit index and the material from the stack at each use where ours keeps the unit index in ebx and the material in bp; the effect helper's parameter convention in src/unknown_187ec0.cpp is not this lane's to change.
 // MiniMax S (11-11): no new form, no lower score (90): the body is retail's length and the first difference is at
@@ -4580,6 +4586,10 @@ store:
    speed in a cone around the unit's aim on top of the unit's velocity
    (capped at 4 unless the unit's +0xc0 bit 1 is set), and deletes it in
    state 1 when it has nowhere to go and is not a predicted copy (0xa7670) */
+// MiniMax A (11-14): no new form, no lower score (4): only the four instructions that set up the random_vector_in_cone
+// call are in the other order - retail spills the sampled speed first and then forms the forward, result and seed
+// pointers, this build forms the pointers first - and the callee's parameter list is in src/unknown_146240.cpp:
+// BLOCKED-BY 0x146320.
 // MiniMax B (11-13): no new form, no lower score (4): the cone call's four setup instructions are still in the other order: retail spills the sampled speed first, then the forward pointer, then the result pointer and the seed, while this build forms the pointers first.
 // MiniMax G (11-13): no new form tried this round, no lower score (4): the frame is retail's and the four
 // instructions that set up the cone call keep their order - the sampled speed's spill, the forward pointer, the output
@@ -5231,6 +5241,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 /* clamps a direction to the unit's yaw and pitch limits for aiming (or,
    when asked, for looking, relative to its aim) in its own frame; whether
    it changed */
+// MiniMax A (11-14): no new form, no lower score (169): the first difference is inside the shared cross-product helper,
+// whose own file this lane may not edit, so the two products land in other registers; retail loads up.k and up.j before
+// up.i where this build preloads all three.
 // MiniMax G (11-13): no new form, no lower score (169): the diff re-read this round puts the first difference inside the shared cross-product helper, whose own file this lane may not edit, and the staged spelling of that helper measures 169 again, so the body stands.
 // MiniMax B (11-13): no new form, no lower score (169): re-measured with the plain build (768 bytes against retail 767, first difference at +0x4a); what is left is the x87 stack use in the three direction sums and the order retail loads up.k and up.j in.
 // MiniMax H (11-12): no new form, no lower score (169): retail loads up.k and up.j before up.i where this build preloads all three, retail keeps the clamped yaw and pitch in the frame where this build reuses the two incoming argument slots, and the local vector sits at +0xc where retail's is at +0x18; the cross-product helper's own file stays as it is.
@@ -6775,6 +6788,9 @@ done:
    fell toward (front, back, left, right), plays its death (0x10ff40) and,
    from type 3, sets its ragdoll timer +0x1f5, its flags and (when the
    death had no animation) its deadness; a free biped turns to face it */
+// MiniMax A (11-14): no new form, no lower score (250): the zero constant rides in xmm0 here and in xmm2 there, and
+// retail's scale block multiplies the x component in place and the y component into a fresh register, which no single
+// expression form gives.
 // MiniMax B (11-13): no new form, no lower score (250): retail's scale block multiplies the x component in place and the y
 // component into a fresh register, which no single expression form gives; the facing copy, the split length test, the
 // __assume and the duration forms were measured again on the committed convention and none of them reached the 250
@@ -7995,6 +8011,10 @@ real function_50650(real cosine);
    a frame, when given), keeping an angular velocity: plans both angles'
    motions under a speed limit and an acceleration (0xc7300), evens them
    (0xc75d0), steps them (0xc7750), snapping when both are done */
+// MiniMax A (11-14): no new form, no lower score (563): the frame is 0x8c against retail's 0x80, retail tests its
+// second pointer at the entry and leaves the body when it is null, while this build stores two zeroed speeds first and
+// only then branches; the two 0xc7750 calls still push position and velocity on the stack where retail passes them in
+// xmm5 and xmm4 (BLOCKED-BY 0xc7750's inlining).
 // MiniMax B (11-13): no new form, no lower score (563): re-measured with the plain build (2474 bytes against retail 2483, first difference at +0x2); what is left is the entry test of the second pointer and the frame size.
 // MiniMax H (11-12): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80, retail tests its second pointer at the entry while this build stores two zeroed speeds first, and the two 0xc7750 calls still push position and velocity on the stack where retail passes them in xmm5 and xmm4; the accumulator form of 0xc7750 that gives 28 also inlines into this body, so neither change is kept.
 // MiniMax S (11-11): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80 - retail tests
