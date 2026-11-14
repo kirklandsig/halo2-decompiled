@@ -474,6 +474,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
+// MiniMax A (11-14): no new form, no lower score (218): the entry still differs - retail copies the pathfinding
+// argument into EBX and reads the actor index into EAX there, while this build keeps the pathfinding in EAX and
+// reads the actor index in the case that uses it; dropping case 1's second vertex local so that the first can
+// take EBX scores 355 and was reverted.
 // score 218 (was 218; 219 before): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
 // MiniMax H (11-12): no new form, no lower score (218): the entry still differs - retail moves the pathfinding pointer into ebx and loads the actor index into eax before the switch, ours keeps the pathfinding pointer in eax and reads the actor index in the cases that use it; the frame and case 2 agree.

@@ -6934,6 +6934,10 @@ void function_22850(void);
 // MiniMax E (11-11): no new form, no lower score (153); retail copies the 24-byte frame header into the contiguous
 // globals 0x485898-0x4858ac in one block, ours copies it field by field and moves the double through the x87
 // stack, because g_4858a0 is declared double in include/timed_effect.h.
+// MiniMax A (11-14): no new form, no lower score (153): retail copies the frame timestamp into the global as two
+// dwords and uploads the gamma ramp inline against the device's own ramp buffers, while this build moves the
+// double through the x87 stack (the global is a double in a header this lane may not edit) and calls
+// D3DDevice_SetGammaRamp.
 // score 153 (was 202): retail keeps the current depth bound when it is not zero and stores the
 // default only when it is (the comparison is against the bound loaded before the stores), so the
 // two default stores are now conditional on the bound being zero; the unconditional stores were a
