@@ -734,6 +734,16 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // walk of that 1145-byte form (reduced image against retail) puts the extra byte in the heading normalize (ours
 // copies the inverse into another register; retail loads y first), not in an addressing fold. Compile-only: the
 // normalizer reading x and y once into locals changes the whole function (936 bytes).
+// M3 lane 1 r100 (fast, 0xef4f0 still matched): 1..8 unused long locals at entry 126 each (same code); the normalizer with
+// separate source and destination pointers 126 (same code), with its y row written before its x row 125 (the forward rows swap
+// registers, nothing else), both together 125; its components through a real array 126 (same code); both rows value-first 126,
+// the length as x*x + y*y 126, both rows as divisions by the length 126 (VC makes the reciprocal itself), the y component read
+// into a local ahead of the reciprocal 126 (same code each). Reading: integer scratch registers are handed out in turn (EAX,
+// ECX, EDX skipping busy ones); retail's velocity copy is one step off ours and agrees again at the forward copy, which is the
+// entry magnitude's pointer evaluated after the copy (the 124 order above) rather than before it. On the SSE side retail colours
+// the vector components first (forward and blend in XMM0/XMM1), then the two-use scalars (reciprocal and blend weight XMM2,
+// 1.0 XMM3); ours colours the scalars first (reciprocal XMM0, 1.0 XMM2, forward XMM4/XMM7, heading XMM3/XMM5). The 1.0 load's
+// place, each normalize's y loaded ahead of the divide and `forward * k` against `k * forward` all follow from that order.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
