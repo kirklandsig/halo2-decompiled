@@ -1251,6 +1251,9 @@ struct s_1c4040
 // m3 lane 10 r99 (fast with 0x1c51c0 1 and 0x1c3f30 matched): `if (object_index == NONE) continue;` in both scans 8; the
 // success store in both arms of the mode test 8; the entity priority read at each use (no priority local) 170 (547 B); the
 // island loop as a `while` with its increment at the end 8; the entity typed as the priority view (cast back for the call) 8.
+// m3 lane 7 r159 (fast): the parameters as (active, attempt) at the definition, both declarations and both calls 11
+// (active in CL, attempt in EDX); 0x1c3f30 defined after this function 8; 0x146bf0 defined first in
+// src/unknown_146a20.cpp 8; 0x1c3770 defined after this function 8; this function moved to the end of its file 8.
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {

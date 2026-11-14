@@ -1319,6 +1319,9 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // pointer, a mask, an in-loop constant store. Forms that add no such reference: typed widget pointers in loops 2
 // and 3, a named masks pointer, the element formed in two statements 106 each (folded before allocation); the
 // first draw routine given the two unused trailing parameters its siblings have 106 (and that routine moves 6).
+// M3 lane 7 r158 (fast): the four masks typed dword with word out-pointers 1 (same code), with the guard-first first loop 118
+// (375 B); the success flag declared after the masks 6; the table pointer declared after the masks 1; the four masks in one
+// declaration 1.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

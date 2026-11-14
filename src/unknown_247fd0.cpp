@@ -684,6 +684,18 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // post-transform sum, age product and offset-probe constructor on native-entry code:
 // 354/334/341/344/359/335/334/343. NOT kept: none improves; original grouped storage, samples,
 // helpers, field observations and full body restored; native split-address/gate/settings homes remain.
+// m3 lane 7 r159 (fast; aligned difflib count in brackets, control 334 [246]): the grouped workspace replaced by plain
+// locals (blend, probe point, direction, placement), all four draws through `last_sample`, the result padded to 0x5c
+// 444 [231] (frame 0xb0, blend and first draw in registers as retail); probe point, direction and result declared in the
+// trace block 447 [207] (probe +0x24 and direction +0x30 on retail's slots); the result's point and normal read as fields
+// 447 (same code); the placement declared in the final block with its NONE store there 443 [199] (result +0x3c and
+// placement +0x98: retail's offsets); with the in-loop particle_object_for_tag 416 [167] at 1648 bytes. Cause found with a
+// /GL harness of this file alone: real_truncate's inline asm switches VC7.1's slot ordering for the whole function (an
+// `__asm nop` alone does it), and in that mode the 0x28 placement sorts below the 0x5c result whatever the declaration
+// order, names, scopes or result references (only the final-block placement escapes it, but retail stores the NONE before
+// the loop). The same source without asm gives retail's offsets exactly. A plain cast of these x87 values compiles to
+// __ftol2 and the SSE intrinsics force an `and esp, -16` frame, so no spelling without asm reproduces retail's
+// fstp/movss/cvttss2si truncation yet. A no-asm truncation form is the lead (each form above was added to the previous).
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
