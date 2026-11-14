@@ -2013,6 +2013,15 @@ void function_b7360(long object_index);
 // orientation default store 412; recording exhaustive stores 219; parent-owned moving result 270;
 // direct branch delay stores 290; orientation selector at every use 270. NOT kept: the 219
 // form moves the zero store away from retail and grows to 1852/1848; other forms tie or regress.
+// M3 lane 12 r121 (one-file LTCG harness with the callee files, 1848 bytes, 257 for the plain 270; fast where given): the
+// perception guard as one `&&` test with an early return 309 (1852 bytes); the 1/19 point arm through a named point pointer
+// 259 harness; round 91's lead (`field_3 |= 0x40` before the point copy) re-measured on this body 261: every instruction
+// from the prologue's end through the 1/19 arm is then retail's (arg_0 EBP, output ESI, +0x28 reloaded after 0x25ab50),
+// but it reverses retail's store order (retail reads the reference before any store through the output), so not kept;
+// that with the actor looked up first (retail's prologue order, as in 0x259430) 495 harness: ESI is then unused early and
+// the guard's `return 2` gets its own shrink-wrapped epilogue where retail jumps to the shared failure tail; both pools
+// read into locals first (0x259ec0's idiom) with the lead 495, without it 505. Diagnostics: the 1/19 reference read
+// through a dword or as two word halves 446/432 harness. Left: retail treats 0x25ab50 as opaque at the 1/19 site and case 5.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

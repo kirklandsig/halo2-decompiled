@@ -423,6 +423,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // direct ratio/dot/both inputs 422/437/470; complete shared dot/normalizer
 // with delegated bounds 470/470. NOT kept: no exact unity/angle-home
 // repair; original caller clamps, inputs, helpers and whole body restored.
+// M3 lane 12 r121 (one-file LTCG harness with the callee files, 1692 bytes, 341 for the plain 382; fast where given): ours
+// returns with `ret 0x1c` as retail; candidate count `short` 520 (1638 bytes; EBX then goes unused and the caller 0x29a190
+// changes its own convention, 684); the near arm's rotation through a forceinline helper taking cosine and sine by value,
+// same code (parameters do not round); `cosf`/`sinf` with float angles 407; a short candidate count with a `long` outer
+// counter 420 harness (1627 bytes); the near arm's cosine and sine declared at loop scope, same code.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

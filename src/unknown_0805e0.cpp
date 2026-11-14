@@ -1079,6 +1079,10 @@ void function_1537f0(s_profile_record *record);
 // 48 (still hoists, so that byte is not in the contest); the record member typed as the view's source under 4-byte
 // packing, or as 36 dwords, 46-49 (same code). Left: what gives the forwarded word one more use, or the -1 constant
 // fewer, in retail's loop.
+// M3 lane 12 r121 (one-file LTCG harness with 0x1537f0's object, exact on the control 18): the links as four `entry->`
+// statements in retail's store order 48 (NONE in EBP); the per-visit record at function scope 18 (same code); 0x1537f0
+// called before the identity is cleared 60 (271 bytes); a `short` loop index 63 (275 bytes); the flags and the word after
+// them in one chained assignment 18 (same code); the links as two chained pairs through `entry` with the flags chained 48.
 // @retail 0x7f930
 void function_7f930(void)
 {
