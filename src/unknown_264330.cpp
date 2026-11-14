@@ -699,6 +699,9 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // call 412 (other code).
 // MiniMax C (11-14): no new form, no lower score (412); the actor/index/flag allocation and the
 // 0xa8-versus-0xa0 frame are unchanged.
+// M3 lane 12 r123 (fast with 0x1e34e0, 26 each): the loop's registers are retail's but EBX (ours the `update` byte, retail
+// the actor index): a loop-local actor pointer re-read from actor_get at the loop top 471 (1648 B), that with `update` as
+// long 479 (1656 B); the actor index stays a stack argument in both.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
