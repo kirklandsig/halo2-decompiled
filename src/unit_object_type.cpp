@@ -2390,6 +2390,11 @@ void function_cfec0(long unit_index)
    has bit 0 or 3, or a rider of that vehicle with bit 27 of its
    definition's +0xbc and its object flag 26; else the unit */
 // MiniMax D (11-14): no new form, no lower score (2): the only difference left is still the last exit, where the value for unit_index == NONE is returned as the constant or eax, 0xffffffff and retail moves the register copy into eax instead; a copy of the parameter returned at that exit still folds the constant (2), and a copy carried through the body drops the register copy (47).
+// MiniMax R (11-14): no lower score (2): the last exit still returns the constant where retail moves the register copy, so
+// the body is 258 bytes against retail's 257. New forms this round: a result local compared and returned at every level (the
+// copy in ebx is dropped and the test moves to eax, 47), the same local tested through a pointer cast (2, the fold stays) and
+// the NONE test written on the local copy itself (2). The value stays a register copy only where an exit is reached from two
+// paths, and merging the exits moves the edi push into the prologue.
 // MiniMax G (11-13): no lower score (2): the only remaining difference is the last exit, where the value for
 // unit_index == NONE is returned as the constant (or eax, 0xffffffff) and retail moves the register copy
 // (mov eax, ebx), so our body is 258 bytes against retail's 257. This round tried fifteen more forms: a result local
