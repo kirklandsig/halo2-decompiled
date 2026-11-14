@@ -1211,6 +1211,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // then four case-entry/success pairs: 252/351/351/351/252/252/252/252.
 // NOT kept: no native sentinel/squad/query-home equality; original byte payload,
 // include set, exact request writes and complete body restored.
+// MiniMax A (11-13): no new form, no lower score (252): the permuter (318 s) finds no try under the baseline; the squad
+// pointer still takes the slot at +0x1c where retail puts it at +0x10, and the two NONE sentinels still sit in EDI where
+// retail keeps them in ESI.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -2081,6 +2084,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // NOT kept: Phase exits regress; actor/options/pool homes remain. Original complete body restored.
 // P459: Complete boost-admission/rejection outcomes, bool/byte/short/long:
 // 251/251/251/251/252/252/252/252. NOT kept: native actor/options/pool residence not recovered; original complete body restored.
+// MiniMax A (11-13): no new form, no lower score (251): the permuter reaches 246 after five tries, five points short of the
+// bar, so the body stands; the actor, the weapon options and the object-pool global still rotate against retail the way the
+// notes above say, and the pool global is still re-read at each lookup instead of held in EDI across the callees.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
