@@ -2275,6 +2275,11 @@ struct s_unit_motion
 // and 0x1faf80 (matched -> 16); the ternary clamp alone leaves the body on the stack (104), and in that
 // form the third phase keeps the change alone where retail adds the old velocity. The body was restored.
 // MiniMax R (11-11): no new form tried this round, no lower score (104): the body is 265 bytes against retail's 227 - 38 bytes of extra expansion - and the same body inlined into 0xc7840 is what holds that caller at 563.
+// MiniMax A (11-13): no new form tried this round, no lower score (104): retail moves the two incoming floats
+// into xmm0 and xmm1 and compares them there, while this build compares them in xmm1 and xmm3 and keeps a third
+// value in xmm5, and the body is 265 bytes against retail's 227; the accumulator form that gives retail's 227
+// bytes at 28 still makes LTCG inline this body into 0xc7840 and flips the matched 0x1faf80: BLOCKED-BY
+// 0xc7840's call sites.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -2969,6 +2974,10 @@ void function_c5740(long unit_index, bool start)
 // Coordinator (11-12, lane 13 r85's held change): 0x188180's seventh parameter now carries the material as c_type_47f957,
 // the type its callee 0x1883e0 already takes (0xe4d90 168 -> 138, 0x10c880 69 -> 39, 0xec4f0 23 -> 8, 0x247070 30 -> 6);
 // this function rose 90 -> 97 with it. Its own parameter as that type gives 114 fast and needs contributor 0xcf040's call line.
+// MiniMax A (11-13): no new form tried this round, no lower score (97): retail keeps the definition index in EBP
+// and the object globals pointer in EDI and re-reads the unit index and the material from the stack, while this
+// build keeps the unit index in EBX and the material in BP; the callers' setup fixes the convention outside this
+// file: BLOCKED-BY 0x188180 (src/unknown_187ec0.cpp).
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -4560,6 +4569,10 @@ store:
 // arguments after the spill; ours emits the forward pointer before the spill and the result after the seed.
 // Permuter (25 min on #1049, about 450 variants): nothing below 4.
 // MiniMax R (11-11): no new form tried this round, no lower score (4): the body is retail's length and the frame agrees; the four differences stay the two swapped pairs, and the named forms of that setup compile to the same four instructions.
+// MiniMax A (11-13): no new form tried this round, no lower score (4): only the four instructions that set up
+// the random_vector_in_cone call are in the other order - retail spills the sampled speed first and then forms
+// the forward, result and seed pointers, this build forms the pointers first - and the callee's parameter list
+// is in src/unknown_146240.cpp: BLOCKED-BY 0x146320.
 // @retail 0xce6b0
 void function_ce6b0(long unit_index, long name, long object_index, real scale)
 {
@@ -7745,6 +7758,9 @@ struct s_unit_turn_state_view
 // MiniMax G (11-13): no new form, no lower score (395): the moved flag still sits in a register where retail
 // keeps it in a stack byte, and this build still makes one reciprocal of the shared step where retail divides
 // twice by the stored step; the single-exit and in-place-clamp forms in the note below score 419 and 400.
+// MiniMax A (11-13): no new form tried this round, no lower score (395): the frame is 0x78 here and 0x7c in
+// retail, `moved` still sits in ebx for the whole function where retail keeps it in a stack byte, and this build
+// still makes one reciprocal of the shared step where retail divides twice by the stored step.
 // @retail 0xc60c0
 bool __stdcall function_c60c0(long unit_index)
 {
@@ -8031,6 +8047,10 @@ real function_50650(real cosine);
 // MiniMax G (11-13): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80, and the
 // two 0xc7750 calls still pass their arguments on the stack where retail passes them in xmm registers; the
 // accumulator form of 0xc7750 that gives 28 is inlined into this body, so neither change is kept.
+// MiniMax A (11-13): no new form tried this round, no lower score (563): retail tests its second pointer at the
+// entry and leaves the body when it is null, this build stores two zeroed speeds first and only then branches,
+// and the frame is 0x8c against retail's 0x80; the two 0xc7750 calls still push position and velocity on the
+// stack where retail passes them in xmm5 and xmm4: BLOCKED-BY 0xc7750's inlining.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)

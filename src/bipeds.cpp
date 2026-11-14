@@ -1813,6 +1813,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // NOT kept: every range adds a call (28 versus 27); facing/velocity recover frame
 // 0xfc only at 624/633. Original material/airborne homes remain; original
 // transfers, shared eye helpers, gravity observation and full body restored.
+// MiniMax A (11-13): no new form tried this round, no lower score (566): the frame is 0xf8 here and 0xfc in
+// retail, so the argument slots sit four bytes higher, this build loads the 1.0f constant before the first store
+// where retail stores first, and the body is 2816 bytes against retail's 2828.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4054,6 +4057,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // NOT kept: no supported native result-byte/flight-home repair; every original clamp,
 // unordered path, helper and complete body restored. Ordinary raw/default/exhaustive yaw
 // and upper-selection pitch 607/601/611/629 regress against full 548.
+// MiniMax A (11-13): no new form tried this round, no lower score (548): the flag byte is still at [esp+0x12]
+// here and at [esp+0x11] in retail, the two cold exits still land at a different place in the body than
+// retail's, and the body is 2738 bytes against retail's 2712, so the block layout after the flag test differs.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
