@@ -6684,31 +6684,22 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // MiniMax A (11-14): no new form, no lower score (272): the readiness flag and the four-byte hand
 // buffer still take each other's frame slots (ours: the flag at 0x64 and the buffer at 0x10; retail:
 // the flag at 0x13 and the buffer at 0x64), and swapping the two declarations changes nothing.
+// NOT kept (coordinator screen, MiniMax A 11-14): a goto the function on main does not have (kept only with a byte match): `goto done;`; the body is main's again.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
 	s_unit *weapon = UNIT_GET(weapon_index);
 	s_unit *unit = UNIT_GET(unit_index);
-	// the readiness flag sits in the first byte of the buffer 0xcd7b0 fills
-	bool modes[4];
 	bool result = false;
+	bool ready;
 	short hand;
 
-	modes[0] = TEST_FIELD_BIT((weapon->object_flags >> 7) & 1);
-	if (modes[0])
+	if (TEST_FIELD_BIT((weapon->object_flags >> 7) & 1) || *((byte *)weapon + 0x12c) & 1 ||
+		!function_cd6a0(unit_index, NONE, weapon_index))
 	{
 		goto done;
 	}
-	modes[0] = TEST_FIELD_BIT(*((byte *)weapon + 0x12c) & 1);
-	if (modes[0])
-	{
-		goto done;
-	}
-	if (!function_cd6a0(unit_index, NONE, weapon_index))
-	{
-		goto done;
-	}
-	modes[0] = true;
+	ready = true;
 	if (mode == 2)
 	{
 		function_ccff0(unit_index);
@@ -6721,10 +6712,9 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 
 			if (second_index != NONE && (!function_101640(weapon_index) || !function_101640(second_index)))
 			{
-				bool weapon_hands[4];
+				bool hands[2];
 
-				if (!function_cd7b0(unit_index, second_index, weapon_hands) || !weapon_hands[1] ||
-					!function_cd4e0(unit_index, 1, true))
+				if (!function_cd7b0(unit_index, second_index, hands) || !hands[1] || !function_cd4e0(unit_index, 1, true))
 				{
 					function_e68c0(0x13, unit_index);
 				}
@@ -6738,17 +6728,17 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 					memset(&request, 0, sizeof(request));
 					request.type = 9;
 					request.type17.unknown4 = true;
-					modes[0] = function_e6900(unit_index, &request);
+					ready = function_e6900(unit_index, &request);
 				}
 				else if (second_index != NONE)
 				{
-					modes[0] = function_cd4e0(unit_index, 0, true);
+					ready = function_cd4e0(unit_index, 0, true);
 				}
 				else
 				{
-					modes[0] = function_e68c0(9, unit_index);
+					ready = function_e68c0(9, unit_index);
 				}
-				if (!modes[0])
+				if (!ready)
 				{
 					goto done;
 				}
@@ -6762,7 +6752,7 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 			{
 				goto done;
 			}
-			modes[0] = true;
+			ready = true;
 			if (mode == 6)
 			{
 				s_unit_request request;
@@ -6770,21 +6760,21 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 				memset(&request, 0, sizeof(request));
 				request.type = 0x13;
 				request.type17.unknown4 = true;
-				modes[0] = function_e6900(unit_index, &request);
-				if (!modes[0])
+				ready = function_e6900(unit_index, &request);
+				if (!ready)
 				{
 					goto done;
 				}
 			}
 		}
 	}
-	hand = 0;
-	if (mode == 5 || mode == 6 || mode == 7) hand = 1;
-	if (!modes[0])
+	hand = mode == 5 || mode == 6 || mode == 7;
+	if (!ready)
 	{
 		goto done;
 	}
-	if (!function_cd7b0(unit_index, weapon_index, modes) || !modes[hand])
+	bool hands[2];
+	if (!function_cd7b0(unit_index, weapon_index, hands) || !hands[hand])
 	{
 		goto done;
 	}
