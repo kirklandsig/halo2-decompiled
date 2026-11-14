@@ -68,6 +68,18 @@ def test_register_read_after_many_instructions_counts():
     assert (ret, registers) == (0, ('ecx', 'edx'))
 
 
+def test_self_move_is_a_nop():
+    """`mov edi, edi` is MSVC's two-byte NOP: it names neither an argument nor
+    a definition."""
+    assert sig('8bffc3') == (0, ())  # mov edi, edi; ret
+
+
+def test_sub_registers_map_to_their_parent():
+    """`cmp di, -1` reads the 16-bit DI, which is the EDI argument."""
+    assert sig('6683ffffc3') == (0, ('edi',))  # cmp di, -1; ret
+    assert sig('f6c401c3') == (0, ('eax',))    # test ah, 1; ret
+
+
 def test_total_adds_stack_words_and_register_arguments():
     assert signature_scan.total(0xc, ('eax', 'ecx', 'edx')) == 6
     assert signature_scan.total(8, ('eax',)) == 3

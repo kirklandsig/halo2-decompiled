@@ -33,8 +33,11 @@ import sys
 
 from capstone import CS_ARCH_X86, CS_MODE_32, Cs
 from capstone.x86 import (
-    X86_OP_IMM, X86_OP_REG, X86_REG_EAX, X86_REG_EBX, X86_REG_ECX, X86_REG_EDX,
-    X86_REG_ESI, X86_REG_EDI,
+    X86_OP_IMM, X86_OP_REG,
+    X86_REG_AH, X86_REG_AL, X86_REG_AX, X86_REG_BH, X86_REG_BL, X86_REG_BX,
+    X86_REG_CH, X86_REG_CL, X86_REG_CX, X86_REG_DH, X86_REG_DI, X86_REG_DL,
+    X86_REG_DX, X86_REG_EAX, X86_REG_EBX, X86_REG_ECX, X86_REG_EDI,
+    X86_REG_EDX, X86_REG_ESI, X86_REG_SI,
     X86_REG_XMM0, X86_REG_XMM1, X86_REG_XMM2, X86_REG_XMM3,
     X86_REG_XMM4, X86_REG_XMM5, X86_REG_XMM6, X86_REG_XMM7,
 )
@@ -56,27 +59,49 @@ REGISTERS = (X86_REG_EAX, X86_REG_ECX, X86_REG_EDX,
              X86_REG_XMM4, X86_REG_XMM5, X86_REG_XMM6, X86_REG_XMM7)
 CALLEE_SAVED = (X86_REG_EBX, X86_REG_ESI, X86_REG_EDI)
 REPORT = os.path.join(ROOT, 'build', 'report.json')
+# 8- and 16-bit names map to their 32-bit parent, so `cmp di, -1` marks EDI as
+# the argument and `test al, al` marks EAX once.
+ALIASES = {
+    X86_REG_AX: X86_REG_EAX, X86_REG_AL: X86_REG_EAX, X86_REG_AH: X86_REG_EAX,
+    X86_REG_CX: X86_REG_ECX, X86_REG_CL: X86_REG_ECX, X86_REG_CH: X86_REG_ECX,
+    X86_REG_DX: X86_REG_EDX, X86_REG_DL: X86_REG_EDX, X86_REG_DH: X86_REG_EDX,
+    X86_REG_BX: X86_REG_EBX, X86_REG_BL: X86_REG_EBX, X86_REG_BH: X86_REG_EBX,
+    X86_REG_SI: X86_REG_ESI, X86_REG_DI: X86_REG_EDI,
+}
+
+
+def _parent(register):
+    return ALIASES.get(register, register)
+
+
 # Register zeroing/constant idioms that capstone reports as a read of the
 # destination although the old value is discarded.
 SELF_ZERO = ('xor', 'xorps', 'xorpd', 'pxor', 'sub')
 
 
 def _reads_and_writes(insn):
-    """Capstone's reads and writes, with `xor edx, edx`, `xorps xmm6, xmm6`,
-    `or edx, -1` and `and edx, 0` counted as writes only: they read their
-    destination only to discard it."""
-    reads, writes = insn.regs_access()
+    """Capstone's reads and writes, with sub-registers mapped to their parents
+    and `xor edx, edx`, `xorps xmm6, xmm6`, `or edx, -1`, `and edx, 0` counted
+    as writes only: they read their destination only to discard it."""
+    raw_reads, raw_writes = insn.regs_access()
+    reads = tuple(_parent(r) for r in raw_reads)
+    writes = tuple(_parent(r) for r in raw_writes)
     ops = insn.operands
+    if (insn.mnemonic == 'mov' and len(ops) == 2 and ops[0].type == X86_OP_REG
+            and ops[1].type == X86_OP_REG and ops[0].reg == ops[1].reg):
+        # `mov edi, edi` is MSVC's two-byte NOP: it reads and writes nothing.
+        return (), ()
     if len(ops) == 2 and ops[0].type == X86_OP_REG:
+        register = _parent(ops[0].reg)
         same = ops[1].type == X86_OP_REG and ops[0].reg == ops[1].reg
         constant = ops[1].type == X86_OP_IMM and (
             (insn.mnemonic == 'or' and (ops[1].imm & 0xffffffff) == 0xffffffff)
             or (insn.mnemonic == 'and' and ops[1].imm == 0))
         if (same and insn.mnemonic in SELF_ZERO) or constant:
-            reads = tuple(r for r in reads if r != ops[0].reg)
+            reads = tuple(r for r in reads if r != register)
     if (insn.mnemonic == 'push' and len(ops) == 1 and ops[0].type == X86_OP_REG
-            and ops[0].reg in CALLEE_SAVED):
-        reads = tuple(r for r in reads if r != ops[0].reg)
+            and _parent(ops[0].reg) in CALLEE_SAVED):
+        reads = tuple(r for r in reads if r != _parent(ops[0].reg))
     return reads, writes
 
 
