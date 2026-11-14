@@ -556,6 +556,10 @@ struct s_object_damage_view
 // `&object->history[selected]` record pointer 454 (1583 bytes): `selected` then takes the reported team parameter's home,
 // where retail keeps `best`, so `best` needs a new slot (frame 0x54) and the killer sorts below the victim. No counted
 // trial: lane 1 r98's survey, round 163, lane 14 r79 and lane 12 r114 above cover the remaining killer-block spellings.
+// P487: Award prefixes through predicate find first/second/both, predicate count
+// first/second/both, both search-n and both first-of: 455/431/468/455/431/468/443/455.
+// NOT kept: all regress and grow; matched caller 0xd9640 becomes 61 in all eight trials.
+// Original body restored; scalar homes and the amount-biased cursor remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

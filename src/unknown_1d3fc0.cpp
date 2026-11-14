@@ -415,6 +415,10 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // `vector3f_scale(forward, -local_10, &offset); vector3f_add(up, &offset, up);` 156 (929 B), with `0.0f - local_10` 156;
 // `vector3f_scale(forward, local_10, &offset)` then `up->x -= offset.x` rows 110 (same code); each with the normalizer's
 // squared length through dot3f 155 (925 B) and 154 (922 B). Body unchanged.
+// P487: Standard dot/magnitude/scaling on the original j-square/returned-axis graph,
+// seven subsets then explicit operators: 210/306/365/353/371/459/465/515.
+// NOT kept: all regress and grow; original four-use helper and complete body restored.
+// Forward late-k/reciprocal ownership and later magnitude/projection schedules remain.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

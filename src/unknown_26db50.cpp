@@ -886,6 +886,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // r177 above found no untried natural form; the coupled causes (an SSE use of `(real)ring` ahead of the distance gives
 // retail's cvtsi2ss but moves the radius copy into EDX and the sector read after `add ebp, ecx`) are covered by the 96/89
 // lead's listed variants (sector first, radius placement, plain/const/reference radius, object pointer, own record lookup).
+// P487: Standard rotation-dot/trace-point/collision-point coordinate producers,
+// seven subsets then explicit operators: 238/277/265/311/295/314/331/407.
+// NOT kept: no eligible gain; original helper, radius reference and full body restored.
+// Radius scheduling, SSE ring conversion and rotation spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

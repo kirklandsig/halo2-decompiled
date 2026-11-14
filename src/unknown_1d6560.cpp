@@ -399,6 +399,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // with case 0 through `headers[object_index & 0xffff]` 141 at 212 B [213]; a byte type 95 at 256 B [0]; the rigid body
 // declared first 107 at 240 B [13]; `headers` declared first with case 0 through the component 96 at 256 B [2] (the component
 // arrives in EDX). Body unchanged.
+// P487: Twice-used body flag as bool/byte/short/long, repeated then shared type:
+// 100/97/97/97/89/116/116/116. NOT kept: best gains only seven and loses matched caller 0x1d5bf0 to 13.
+// Original late flag reads, type observations and caller convention restored.
+// Header-first acquisition, one type read and body/index allocation remain.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
