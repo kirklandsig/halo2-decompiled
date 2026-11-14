@@ -750,6 +750,24 @@ real function_30bf0(vector3f *vector);
 // MiniMax B (11-11): no new form, no lower score (84); the vector homes are still one slot off from retail's, the range's
 // first load and the two products still differ, and the range is still loaded into XMM2 for XMM0; the body is 1310 bytes
 // against retail's 1308.
+// Round 81 (m3 lane 15, fast with 0x263740, 0x25c9d0, 0x26d370 and 0x263d70, all MATCH throughout; base 84, aligned 55, masked 19/17):
+// this function has an operand-order phase. Unused locals `long dead_n = actor_index + n;` for n = 1..7 (placeholders, not kept):
+// 84, 86, 138, 138, 82, 82, 82. At n = 0 the first seat-loop cross has two wrong products (up.i * forward.k and up.j * forward.i
+// load the forward component); n = 3..7 gives retail's load for up.j * forward.i only; n = 3 and 4 also reorder the second cross
+// (1308 bytes, not retail's order); up.i * forward.k and the second cross's two forward.k products (ours loads forward.k, retail
+// copies the side register) stay wrong at every n. Unused locals inside a forced-inline probe ahead of either cross (1..7 each) 84
+// (no effect); cross3f_staged for the first cross, the second or both gives cross3f's code at every n (84, 84, 86, 138, 138, 82,
+// 82, 82 each). With n = 0..7: a per-iteration seat pointer 90, 90, 146, 148, 88, 90, 90, 90 (1308 bytes each); a world-up
+// pointer local in the body 90, 90, 90, 148, 150, 90, 90, 90 (1308); the same local ahead of the loop 149, 149, 144, 146, 147,
+// 151, 149, 149; both pointer locals 90, 90, 148, 150, 90, 90, 90, 90. Natural changes in the number of named locals at n = 0: the
+// scaled range written out 146 (1315 bytes); the vehicle index read at both uses 84 (same code); the facing test written at both
+// uses 342 (1347); the squared distance at each use 84 (same code); scaled range and vehicle index 150 (1312); those and the
+// facing test 347; scaled range, vehicle index and squared distance 150; vehicle index and squared distance 90 (1308). Frame:
+// retail's 4-byte homes sit in descending order of their references (result 8; facing secondary, facing primary, the clip
+// amount's slot, scale and range 4 each; count and cursor 3; a and b 2), and the clip amount's slot has 4 only as one variable
+// with the squared distance, which is the merged form rounds 145 and 82 measured at 81.
+// P458: Complete initial mode admission/rejection outcomes, bool/byte/short/long:
+// 150/150/150/150/150/150/150/150. NOT kept: native result/range/projection homes and basis products not recovered; original complete body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

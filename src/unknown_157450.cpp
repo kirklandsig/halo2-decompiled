@@ -805,6 +805,7 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // 32; globals read straight from g_4e9ae8 with the cast 32. Re-measured listed forms: the getter at each use with no
 // globals local on the word mask 77, on word and plain 63; the mask store as `(word)(old_team_mask | present_teams)` (the
 // uncast OR's code) on main 32, word 77, word and plain 63; the playing bit from the team local on main 45 (383 bytes).
+// P460: Original indexed added-team set in char/byte/short/word storage, dword then word saved mask: 82/82/83/83/77/77/78/78. NOT kept: native saved-word/shared-reload graph remains; original body restored.
 // @retail 0x158140
 void function_158140(void)
 {

@@ -136,6 +136,12 @@ static inline void *function_xc5914d(long thread_index, short size)
 // computed in EAX, where retail reads the frame through the frame reference into EAX and computes the pointer in EBX),
 // after the element pointer 83, with the element passed directly 83, with the result copy after the three allocations
 // 83, with a thread pointer local for the frame reference 83; null-first with no frame local 74 (280).
+// Round 157 (m3 lane 7, fast): the type test with its operands the other way round (`parameter_types[argument_index] ==
+// ...->type`) 96 (300 bytes); the count test as `parameter_count > argument_index` 14 (279 bytes). The volatile-free control
+// re-measured 95 holds the expression pool in EBX across the initialisation block and the test as retail does, so the pool's
+// loads are not the open cause; the pointer is computed straight into EAX (the returned result) and the frame goes to ESI,
+// where retail reads the frame through the frame reference into EAX and computes the pointer in EBX. Stopped after two: the
+// result/pointer spellings are enumerated in rounds 80, 87 and 177 above.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

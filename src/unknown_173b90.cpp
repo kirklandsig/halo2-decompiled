@@ -808,6 +808,7 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // order (retail left*y, forward*x, up*z) is not a product-phase state, and the indexed form's rows differ in their sum
 // order as well, so the count is not the lever for this function. One placeholder on the indexed form gives retail's
 // copy order (y, x, z into EAX/EDX/ECX) with the sums still (up*z + forward*x) + left*y.
+// P460: Callback-only position/motion/both rotation-return receivers, mutable/read-only, then complete early lifetimes: 122/122/126/122/122/126/126/126. NOT kept: output aliases miss equality and add 6-8 bytes; original shared rotations and whole body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

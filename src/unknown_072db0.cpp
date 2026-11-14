@@ -444,6 +444,9 @@ long network_session_get_maximum_players(c_class_58d20 *session);
 // P434: signed-byte/byte/short/word/long/dword result storage 50/50/56/56/54/54;
 // every failed admission producing the bool/full-width result 58/54. NOT kept: all regress;
 // original bool body restored. Unchanged reduced match is a context difference (full 33).
+// P462: Complementary rejection bool/char/signed-char/byte/short/word/long/dword
+// outcomes 58/58/58/58/63/63/61/61. NOT kept: each regresses and grows beyond
+// native extent; original success-only result and complete call graph restored.
 // @retail 0x73360
 bool c_helper_b::v7()
 {

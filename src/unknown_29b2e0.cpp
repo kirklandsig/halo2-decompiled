@@ -486,6 +486,11 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Re-measured on this base (listed on the 169 lead): the turn limits as ternary initializers, yaw/pitch/both 261/242/249
 // (1715/1713/1715 B); the elevation limit as a default plus `if` 272 (1709 B; same code on the 169 lead). Same code: the
 // first angle's sign as a self-assigning ternary 176.
+// m3 lane 3 r239 (fast with 0x29b990, 0x1e5450, 0x11ce20, 0x11cc90, all matched throughout; control 176): the second axis
+// read through a named `forward` pointer beside the up pointer 178, on the r83 lead (re-measured 169) 171; the second axis
+// as an aggregate initializer 176 (same code). On the lead retail's pitch, sine and cosine sit in arg_4's home, +0x10 and
+// arg_3's home where ours puts them at +0x10, arg_3's and arg_4's homes, and the acos temporary shares the yaw's +0xc in
+// retail but local_11's +0x10 here.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
