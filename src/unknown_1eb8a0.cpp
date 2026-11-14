@@ -183,6 +183,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// score 622 (was 636): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
+// `fld [rate]; fmul st(1)`, and copies nq with integer moves). Still: q in EBX at entry (ours d), the 12/8 factor
+// selected before t in each clamp, xmm homes and coefficient schedules.
 // MiniMax G (11-14): no new form, no lower score (636): retail keeps q (the fourth stack argument) in EBX from entry
 // and reads d from its stack slot at each use, this build keeps d in EBX; the first clamp still computes t before the
 // 12/8 factor is selected into xmm1 (retail selects the factor first) and the xmm homes and coefficient schedules
@@ -196,7 +199,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // from its stack slot at each use while this build keeps d in EBX; the frame size 0x24 and the clock register agree, but the xmm
 // homes and the coefficient schedules still differ, and retail builds each zero with its own xorps where this build shares one
 // function-wide zero.
-// score 636 (was 636): earlier 636 (was 642); retail keeps q (the fourth stack argument) in EBX from entry and reads d from its stack
+// earlier 636 (was 636): earlier 636 (was 642); retail keeps q (the fourth stack argument) in EBX from entry and reads d from its stack
 // earlier 642; retail keeps q (the fourth stack argument) in EBX from entry and reads d from its stack
 // slot at each use; ours keeps d in EBX. Frame 0x24 and clock EDI agree; xmm homes and coefficient schedules remain.
 // retail keeps q in EBX from entry (reloading it after the activation copies, where EBX serves
@@ -534,6 +537,16 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // `if (!counter)` 636 (same code: ours branches and stores q's slot where retail does `cmove ebx`); the output
 // copy from q written per component 648 (2876 bytes); the 0.866 test with the constant on the right 636; `fail`
 // declared before the time globals 636. Body unchanged.
+// M3 lane 11 r100 (fast with the matched caller 0x1eb6f0, MATCH in each; rm = register-masked aligned count, base 278):
+// kept: the settle factor `v` declared double, 636 -> 622 plain (fast 614, 2884 B; the plain build schedules the tail pops
+// after the flag update, 2891 B); with the settle copy nq field by field instead (T5) 644 fast, so the aggregate copy stays.
+// Before that, on the 636 body: the output stage reading the time globals through its own block-top local 634 (rm 277);
+// that with a void return and `s->counter++` 637, with the counter read back 637 (retail's inc edx / mov eax, edx tail
+// exactly, duration + 6 then ECX for EDX); the second clamp alone with the factor first (PIN) 707 (2871 B, rm 246, the
+// zero's xorps moves to the entry); the settle copy nq field by field 628 plain (round 168's form, 2886 B, rm 284), with
+// the output-globals local 629. On the double-v body (fast 614): the output-globals local 612; the void read-back tail
+// 614; the first settle arm's tick scaling through the existing vector3f_scale 614; `vector3f qr = *q;` 664 (2879 B);
+// the third clamp as PIN with the factor first 614 (rm 267).
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
@@ -742,7 +755,7 @@ long function_1eb8a0(
 			}
 			else
 			{
-				real v = PIN((double)s->alignment * 1.5, 0.75, 3.5);
+				double v = PIN((double)s->alignment * 1.5, 0.75, 3.5);
 				real step = (real)(globals->rate * v);
 				vector3f nq = qr;
 				real len = (real)sqrt(qr.k * qr.k + qr.j * qr.j + qr.i * qr.i);
