@@ -1738,6 +1738,10 @@ void function_150820(dword *bits, bool local_only)
 // P495: Public selector char/byte/short/long with bool return 43/43/67/43;
 // byte return 43/43/67/43. NOT kept: no byte match or native saved-role recovery;
 // original Boolean contract, sole caller declaration, body and callee tuples restored.
+// MiniMax B (11-14, run 75): no new form, no lower score (43); the whole difference is still one register rotation - retail keeps the player record
+// in esi, the hand in edi and the unit index in edx, this build keeps them in edi, esi and ecx - and both bodies are 210 bytes. The rotation starts at
+// the entry block: retail reuses edx (the pool data pointer's register) for the unit index and leaves ecx free for the policy byte, this build reuses
+// ecx (the table's register) and takes the policy byte in al; no declaration order, hand width or result form moves it.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
