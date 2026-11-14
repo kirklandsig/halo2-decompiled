@@ -679,6 +679,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// MiniMax S (11-14): no new form, no lower score (165): the 71-point form of round 11-12 rested on spellings that are not allowed, so the body stands; the frame is retail's (0xb4, 895 bytes) but the cluster bit table's base is read inside our loop where retail reads it once before the first query, the zoom argument is narrowed to a short where retail passes it in a full register, the angle's x87 sequence loads the radius before the distance and takes the cosine before the dot product where retail does the opposite, and the definition pointer sits in edx where retail holds it in eax.
 // MiniMax B (11-12): score 71 (was 165): the step helper now takes its result after the call, the cluster
 // loop ends on a visible flag instead of a second test on the cluster, the header's flags are read
 // through the root object, the range's zero is the model-NONE arm and the angle's sum is the float one

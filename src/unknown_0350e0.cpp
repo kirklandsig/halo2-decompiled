@@ -2020,6 +2020,7 @@ PRIVATE inline real clamp_2e9e0(real value)
 real game_time_get_seconds();
 void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 
+// MiniMax S (11-14): no new form, no lower score (496): the body is retail's length (2285) and the first difference is at +0x2, but the frame is 0x90 against retail's 0x94, so the ratio, the definition, the source, the scale and the vertex homes sit four bytes below retail's and the sentinel stays in ebx where retail keeps it in ebp; the length and the register plan have to change together, and nothing tried this round moved them.
 // MiniMax B (11-13): no new form, no lower score (492): the frame is 0x90 against retail's 0x94 and the x87 block's locals land in the other slots (retail's ratio is at esp+0x10 where this build has it at esp+0xc), so the body's shape is different from the first block.
 // MiniMax I (11-11): no new form, no lower score (492): the body is retail's length (2285) and the first difference is at +0x2; the body is tuned against the callee 0x2f2d0 calls, and the form that would take 0x2f2d0 to 177 raises this one to 573.
 // MiniMax G (11-12): no new form, no lower score (492): the frame is still 0x90 against retail's 0x94, so the definition, source,
@@ -2679,6 +2680,7 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
+// MiniMax S (11-14): no new form, no lower score (170): retail keeps the raw current length in its own slot at +0xc and the pinned value at +4, where ours reuses one slot for both, so the later homes (the dot's float, the sine at +8, the angle and the cosine at +0xc) all shift; retail re-reads the dot as a float for the arccosine while under /GL our acosf and fabsf widen to their double forms and drag the dot's double copy along, and no source spelling recovers that float load.
 // MiniMax B (11-13): no new form, no lower score (170): the products of each cross product are still multiplied in the other order (this build takes the direction's components into xmm4 and xmm3 where retail takes them in xmm1 and xmm3), and the dot product helper's body may not be written out by hand, so the order is not ours to choose.
 // MiniMax H (11-12): no new form, no lower score (170); retail keeps the raw current length in its own slot at +0xc
 // and the pinned value at +4, while ours reuses one slot for both, and the later homes (the dot's float, the axis)
@@ -3264,6 +3266,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 	entry->initial = entry->initial < 0.0f ? 0.0f : entry->initial > *maximum ? *maximum : entry->initial;
 }
 
+// MiniMax S (11-14): no new form, no lower score (317): the permuter's search over this body (29 tries, 304 s, reduced image and full image) found nothing below the baseline's 317; retail zeroes edx and keeps the block's base in ebp where this build zeroes ebp and keeps it in edx, and the two read the stack slots in the other order, so the frame's shape and the register plan have to change together.
 // MiniMax B (11-13): no new form, no lower score (317): retail zeroes edx and keeps the block's base in ebp where this build zeroes ebp and keeps it in edx, and the two then read the stack slots in the other order; the frame's shape and the register plan have to change together.
 // MiniMax G (11-12): no new form, no lower score (317); both builds spill the counter and the entries
 // base to stack homes, so only the two registers differ (retail: the counter in edx and the base in ebp;
