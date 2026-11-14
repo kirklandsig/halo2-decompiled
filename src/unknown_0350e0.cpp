@@ -1467,8 +1467,8 @@ void function_4baf0(long object_index, real distance, byte *first, byte *second)
         long parent = function_baf80(object_index);
         if (parent != object_index)
         {
-            byte *parent_object = ((s_scalar_object_header *)g_4e0300->data)[parent & 0xffff].object;
-            s_object_definition *parent_definition = (s_object_definition *)g_4e3b44[*(long *)parent_object & 0xffff].bytes;
+            byte *parent_data = ((s_scalar_object_header *)g_4e0300->data)[parent & 0xffff].object;
+            s_object_definition *parent_definition = (s_object_definition *)g_4e3b44[*(long *)parent_data & 0xffff].bytes;
             if (parent_definition->model.tag_index != NONE)
                 settings = g_4e3b44[parent_definition->model.tag_index & 0xffff].bytes + 0x28;
         }
