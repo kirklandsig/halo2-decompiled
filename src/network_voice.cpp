@@ -3707,6 +3707,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // MiniMax A (11-13): no new form, no lower score (139): a hoisted packet cursor (`byte *packet = data + 2`, advanced by
 // the packet size) scores 164 and a local copy of the channel compiles to the same bytes as the baseline, so retail's
 // split (the channel in ebp from the entry, the member spilled to the stack) stays out of reach here.
+// MiniMax D (11-14): no new form, no lower score (139): retail builds the route in the channel argument's own
+// slot, which only frees if the channel is copied to a register at entry, and its cursor is an absolute pointer
+// while the count is re-read from the data argument each pass; capturing the count in a local scores 166 and
+// recomputing the cursor from the counter at the loop's end scores 167, both worse than the 139 baseline.
 // score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
 // homes differ.
 // MiniMax D (11-11): no new form, no lower score (139).
