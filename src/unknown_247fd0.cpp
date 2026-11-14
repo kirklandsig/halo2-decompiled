@@ -702,6 +702,17 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // P478: Standard link/time spans, inherited/blend producers, reverse normal/probe copies,
 // complete sample multiplies and age product: 440/373/379/456/335/370/548/385.
 // NOT kept: all regress; separate effect add, gate/settings homes and descriptor expansion remain; restored.
+// M3 lane 10 r104 (fast with 0x247fd0 and 0x248cc0, both stay matched; diagnostics only, all restored): the one
+// compiler-setting diagnostic named above, the speed preference turned off around this body, 711 (1368 B), so retail is
+// speed-optimised. The truncations: in a compile-only screen VC7.1 /arch:SSE turns `(word)(long)x` and every other
+// narrowing cast into __ftol2, `(long)x` stored as a long into `cvttss2si eax, [mem]` (one instruction, memory
+// operand) or the SSE path when its input is already in a register, and a value already on the x87 stack into __ftol2
+// even when it is stored into a 16-bit `long` bit-field. Retail's two-instruction `movss xmm0, [tmp]; cvttss2si eax,
+// xmm0` after an x87 `fstp` is the asm helper's own sequence, so retail had the asm here too and the asm itself is not
+// what moves this frame. The truncation as a plain C function in another file (inlined at link time) gives __ftol2
+// calls 444 (1619 B); the asm helper as an out-of-line function in another file stays a call 393 (1633 B), and as a
+// `__forceinline` one there is not emitted (unresolved calls). No new source form found; the forms the note lists
+// cover the open leads (gate addressing, result/placement homes, in-loop tag lookup). Body unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

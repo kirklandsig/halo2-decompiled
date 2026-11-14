@@ -270,6 +270,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // P461: Builder-owned sine/cosine/both real conversions 335/334/337; consumed
 // builder matrix identities first/second/both/readonly/reference 334 each. NOT kept:
 // no exact repair; double-input forms also lose the caller. Original helpers/body restored.
+// M3 lane 10 r104 (fast with 0x137ed0, which stays matched): the builder's nine stores in column order (forward.i,
+// left.i, up.i, forward.j, ...) 352 (1798 B); every product with the trig value first (`sine * axis->k`,
+// `cosine * (1.0f - xx) + xx`) 334 (same code); the builder in matched 0x171d90's helper order (cross terms yz, xz, xy,
+// then forward.i, left.i, forward.j, left.j, forward.k, up.i, up.k, up.j, left.k) 364 (1748 B, first difference +0x2);
+// no angle locals, `step * 0.5f` / `step * 0.3f` written in each trig call 381 (1819 B). Body unchanged.
 // P489: Whole weighted up/left/forward vector producers in seven subsets, then direct scale/add-scaled
 // composition in the actual returned vector: 416/416/436/527/532/515/605/371. NOT kept: No byte equality;
 // computed vector storage and helper operand-order alternatives are exact-only. Both original private helpers,
@@ -3464,6 +3469,12 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // at every access grows the body to 1338 bytes (370) and an unsigned `first` is the same code, so what is left is
 // retail's home order (first at +0x10 and the loop index at +0x14, ours the reverse) with the state pointer in EBP
 // and `first` in EDX where we take EBP for `first` and EDX for the state.
+// M3 lane 10 r104: no trial. The open lead above (a natural form that adds one use of loop 3's index or drops one
+// reference to `first`) was checked against every reference of both: `first` is read by the loop 2 start, the loop 2
+// swap target (hoisted by retail too), the loop 3 and loop 4 starts and both sort calls, all of which retail reads; the
+// natural spellings that add a use of loop 3's index (entry through the index, the decrement before the swap, the swap
+// from the indexed entry, `i <= last`) are listed above with their scores, and none keeps the instructions. The loop
+// tests of passes 1, 2 and 4 already compare in retail's operand order. Body unchanged.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4214,6 +4225,15 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // unmatched 0xc6b90 (inlined here) and 0xff5f0 bodies: BLOCKED-BY 0xc6b90, 0xff5f0. Same graph with a pointer
 // local to the field fast 155; with kind volatile plain 190; with kind as signed char plain 209 (object index in EBP);
 // main body with the first fade read per use through the object local plain 185 (773 bytes).
+// M3 lane 10 r104 (diagnostics only, all restored): the getter route (`bool active = false; real fade = 0.0f;` then
+// function_c6b90(index, 0x11000088, &fade, &active)) with another lane's matched 0xc6b90 body applied (not on main) plain
+// 70 (762 B, frame still 0x18); with 0xff5f0's tail as `*active = *value > 0.0f` as well 70. Fast bisection of the getter
+// route on main: alone MATCH; with 0xd1210 or 0xd1410 in the image MATCH; with 0xff5f0 in the image 70; with 0xff5f0 also
+// storing its `value` pointer in a scratch global 64 (768 B: the fade zero store returns). So the full build drops both
+// zero stores because link-time code generation proves 0xff5f0 keeps its two output pointers to itself; retail's build
+// did not. Retail's 0xff5f0 only stores through them at its tail, and src/weapons.cpp was link-time compiled in retail
+// (50 of its 89 functions take register arguments), so the cause is still open: BLOCKED-BY 0xff5f0. Every other
+// difference here is the frame offset, so no form inside this body was left to try.
 // P489: Complete positive/default/failure-first/nested initial result regions, original then native branch-
 // produced temporal clamp results: 230/201/232/62/231/203/233/62. NOT kept: No exact native result/frame
 // repair; tested-result alternatives are equality-only. Original positive Boolean graph, ordinary kind, all

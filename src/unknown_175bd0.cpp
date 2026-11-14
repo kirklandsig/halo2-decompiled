@@ -3066,6 +3066,8 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // order alone 29; the record order alone 40. 0x189060, 0x107980, 0x166cd1, 0xf6670, 0x105dd0 and 0x1039a0 match in all
 // three, 0xceee0 (97) and 0xbf600 (50) are unchanged. The first difference is still the decal call's two register
 // arguments, BLOCKED-BY 0x17e670 (contributor).
+// M3 lane 10 r104: no trial. The first difference (+0x24f) is still the decal call's two register arguments into
+// 0x17e670 (contributor, unmatched), and the sound arms still need the held 0x189060 order (BLOCKED-BY 0xbf600's call).
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
