@@ -542,6 +542,15 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // schedules ikj/jik/jki/kij/kji, plain component copy: 1623/1675/1623/1623/1623/1623/1623/1627.
 // NOT kept: no gain; construction shortens to 6022/5974 or grows to 6480 versus 6238, without native
 // frame recovery. Original snapshot, reduction, every helper and full body restored.
+// m3 lane 7 r159 (plain; fast prints a CAVEAT for this function, fast 1367 against full 1391): the two steering magnitudes
+// through fabs 1442 (6272 B); the scale helper as three component statements in place of its 3-pass loop 1446 (6195 B,
+// aligned 1384 -> 1358, frame 0x5cc); the cross helper reading its second operand directly 1396; the magnitude helper
+// reading its input directly 1623 (6022 B, frame 0x590: re-measured); both of the last two together 1673 (5974 B).
+// A /GL harness of this file alone gives frame 0x5cc for the body (full 0x5d0), so callee bodies add one spill here.
+// Without the snapshot copy retail's magnitude shape appears (components stored, then fld/fmul from those slots) but our
+// spill slots sit 4 bytes above retail's (one extra spill slot low in the frame, shared by a float and an int).
+// P477: Standard ordered first-loop/contact-normal/direction/tangent/friction/peak dots, retained-snapshot magnitude and mixed-precision normalizer reductions:
+// 1373/1487/1375/1404/1435/1372/1900/1449. NOT kept: 1373/1375/1372 add an arithmetic call absent from retail (15 versus 14); frame stays 0x5d0. Other forms regress; matched caller survives. Original helpers, captures, call tuples and complete body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

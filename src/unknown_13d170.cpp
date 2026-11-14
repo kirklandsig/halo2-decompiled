@@ -179,7 +179,7 @@ struct s_physical_block_iterator
 	s_record_pool_iterator iterator;
 };
 
-// score 201 (was 201; round 95 m3 lane 11 near the end, m3 lane 2 r79 at the end): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
+// score 201 (was 201; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
 // MiniMax A (11-13): no new form, no lower score (201); the take test still jump-threads the case blocks past the
 // loop and the second age's clamp still folds away, and the only form that reaches 98 needs a policy helper with one caller.
 // Earlier 201 (was 201): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
@@ -636,6 +636,18 @@ struct s_physical_block_iterator
 // 206 (1219 B); equal time first with `better = pages < best.pages` there, else `if (time < best.time) better = true;` 200 (1213
 // B, a different code from the 200 above); unequal time first, both arms setting true, 206 (1219 B). The nested and break forms
 // are the same code as the first form (222); the constant-arm if/else the same code as main.
+// m3 lane 8 r164 (fast with 0x13d320, MATCH each time; base 201). LEAD, match-only (a flag set by an if and copied): case 0 as a
+// block with `bool older = false; if (older test) older = true; better = older;` 234 (1178 B): with no helper, case 0 is then
+// retail's `xor al, al ... mov al, 1` in place after case 1, not threaded into the take test (the copy hides the constant
+// from the threader). On it: the second age as `MAX(physical->time - best.time, 0)` 225 (1183 B; the default arm is then
+// retail's but for the first age in EAX where retail has ECX, so the best pages fold into `imul eax, [mem]`); with the best's
+// age first 232; the comparison written `candidate pages * best age < best pages * age` 225, both ages `dword` 225, the
+// products' factors swapped 225 (each the same code); the insertion with the block data read at each use (no `blocks`
+// local) 221 (1189 B); that with the predecessor also read at each use (no `before` local) 228 (1217 B: every frame slot moves,
+// first difference +0x2f, and the data is reloaded after the entry's first store where retail keeps it). Left on 221: the
+// walk's count/bit (ours EBX/EDI, retail EDI/EBX), the allocation result's register and the insertion's mixed data reload.
+// P472: Case-zero older/equal-time/smaller Boolean outcomes, subsets 1/2/4/3/5/6/7, then all byte outcomes: 201/201/201/201/201/201/201/201.
+// NOT kept: no native case-result/placement equality; original policies, observations, ring, iterator, linking and full body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

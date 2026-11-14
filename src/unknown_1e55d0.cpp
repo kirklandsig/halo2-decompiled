@@ -67,6 +67,11 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// MiniMax C (11-14): no new form, no lower score (319): retail's prologue takes the state pointer in EAX
+// and puts it in EBX, zeroes [EBX], then takes [ebp+0xc] into EDI; ours takes [ebp+0xc] into EBX and the
+// state pointer into EDI, so every later lea and copy follows the swap and the body runs two bytes longer;
+// the case-3 callee at 0x1ec690 (src/stubs/bipeds.cpp) settles which pointer the callee expects in which
+// register: BLOCKED-BY 0x1ec690.
 // MiniMax A (11-13): no new form, no lower score (319): the output pointer declared before the state
 // pointer and declared after the first store (that store written through the move pointer) both compile to
 // the same bytes; retail still keeps the output pointer in EBX and the input pointer in EDI where ours

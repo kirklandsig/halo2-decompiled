@@ -406,6 +406,7 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 	slot->flags |= 1;
 }
 
+// MiniMax H (11-14): no new form, no lower score (13): exchanging the two draws scores 66, and a one-caller copy of the shared rotation that adds the projection term first in the j and k rows builds to the same bytes as the shared one.
 // MiniMax H (11-13): no new form, no lower score (13): the thirteen differences are all inside the inlined rotation - the load of the vector's j component and the store of its i component trade places, and the k component's two products land in the other pair of registers - and that text is the shared rotate helper's, in src/unknown_170d70.cpp, which this lane may not edit.
 // MiniMax H (11-11): no new form, no lower score (13): the only difference left is the j and k rows of the inlined rotation, whose helper (rotate_vector_170d70) lives in src/unknown_170d70.cpp and may not be edited from here.
 // MiniMax S (11-11): no new form, no lower score (13): only the rotation's j and k rows differ, and the shared rotate helper that produces them lives in src/unknown_170d70.cpp.
@@ -569,6 +570,11 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // MiniMax R (11-11): no new form, no lower score (13): the rotation's j and k rows still differ from retail's, and the shared rotation helper's text decides them while its file is held.
 // MiniMax R (11-10): no new form, no lower score (13): the rotation's j and k rows still differ from retail's,
 // and the shared rotate helper in the other file decides them.
+// score 13 (was 13): unchanged this round: only the j and k rows of the inlined rotation still differ, and the
+// rotate helper's own text decides the order of the two products; that helper is in src/unknown_170d70.cpp, which
+// this lane may not edit.
+// score 13 (was 13): unchanged this round: the inlined rotate helper computes the `projection * axis` term after the
+// `v * cosine` term in the j and k rows; the helper's text is in src/unknown_170d70.cpp.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {
@@ -751,6 +757,13 @@ struct s_player_axes_153d10
 // state 37; the pointers declared after the cross 6 (this product right; the i row's first and the k row's two products
 // load up first); the pointers before delta with the cross and dots through them 103; cross3f and dot3f 8; cross3f_staged
 // and dot3f 8 (the same code). Header and body restored.
+// Round 91 (m3 lane 14, fast with 0x154d70/0x154df0/0x155240/0x170d70 listed, which reproduces 2): forward and up
+// copied by value 419 (1393 bytes), forward only 183, up only 183; up as `forward + 1` with the cross and dots through
+// the pointers 105, with the cross through axes 12; the j row's first product with up.i through the up pointer 2 (same
+// code), forward.k through the forward pointer 24, both 24. Diagnostics: 1-7 unused locals 2/2/101/102/16/2/2 (the
+// six products never move); 1-3 parens in delta give per-product windows {0,1} fj*uk, {0,3} fk*uj and fk*ui,
+// {0,1,3} fj*ui and fi*uj, {2,3} uk*fi, so no shift fits; three parens around the j row's first product move only
+// later products but flip fj*uk with uk*fi (2): the two share up.k's key.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

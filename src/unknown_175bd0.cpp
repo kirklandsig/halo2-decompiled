@@ -1882,6 +1882,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax H (11-14): no new form, no lower score (128): the frame is still 0x40 against retail's 0x44 and the
+// spawn record still sits two frame slots lower than retail's, and the particle system still takes EDI where retail
+// keeps it in ESI; the header's zone helper, whose zone block then matches retail's byte for byte, measures 165 on
+// its own and 161-166 combined with the 0x44 frame, so the kept body stands.
 // score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
 // MiniMax S (11-11): no new form, no lower score (128); retail spills colour A into a frame home at +0x10 right after set_location, and those four bytes are what make its frame 0x44 against our 0x40 and shift every stack reference; the tint also still reaches the colour call on the stack, because 0x175a80's register contract (ECX colour A, EDI colour B, AL tint) lives in another lane's file and cannot be changed from here.
 // MiniMax E (11-11): no new form, no lower score (128); reading both colours into locals before the type-query
@@ -2165,6 +2169,14 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // argument home instead of a new frame slot (frame 0x40 against 0x44, which shifts every stack offset), one scratch
 // register step from the first statement on (the definition's location index lands in ECX, retail reuses EAX), the
 // third zone product's operand order, and the order of the two loads ahead of the colour call.
+// M3 lane 9 r120 (fast): both type queries in the colour call's arguments 146 (552 B: definition in EDI for the loop
+// as retail, the loop entered through a jump to an aligned head); multiplied() alone in the call 135; colour locals in
+// the type-query block 178 (572 B); the spawn's location index stored first 128; colour locals after the spawn stores
+// 184 (572 B).
+// P479: Standard location/iterator/node-sentinel/node-sign predicates 193/221/173/172;
+// node conjunction/complementary disjunction, zone complement and paired negative
+// query producers 173/183/171/204. NOT kept: all regress/lengthen; first form loses both
+// exact callers. Original full body restored; early color/frame/query homes remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -2615,6 +2627,17 @@ event_done:
 // widths) cover the caller-side spellings. Retail's 0x1794a0 call takes 0xbaf80's root index in EAX (a value
 // difference on this body, listed at 197 as a value correction). The lever is how LTCG summarises 0xbadc0/0xbaf80
 // (both matched; src/unknown_0bad50.cpp is avoid-listed this round).
+// MiniMax A (11-14): still no lower score (63): the object index named in a local of its own and used
+// for both the test and the call compiles to exactly the bytes we already have, and reading the object
+// index before the definition lookup scores 78; the listing shows why the register choice matters:
+// retail loads the object index into EAX after the definition lookup and reloads it from the effect
+// after 0xbadc0, because a value in EAX is clobbered by the call, while we keep it in ESI across the
+// call (a callee-saved register), so the else path reuses it instead of reloading it. Nothing in the
+// source can move a live value out of a callee-saved register, so the reload has to come from the
+// else path reading the effect again: BLOCKED-BY 0xbadc0, 0xbaf80.
+// MiniMax A (11-14): no new form, no lower score (63): the head's load still folds into the datum
+// address where retail forms the pointer first, and the object index is still cached across
+// 0xbadc0 where retail reloads it; both callees live in another file: BLOCKED-BY 0xbadc0, 0xbaf80.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {
@@ -3251,7 +3274,18 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
-// score 93 (was 93): unchanged this round: our frame is 0x4c against retail's 0x54 and the particle
+// MiniMax H (11-14), NOT kept (coordinator: a 2-point gain on a function still above 30 is under the keep bar; code
+// back to main, 93): the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A)
+// measures 91 at 337 bytes with the matched caller 0x176f60 still matching; the same order with the
+// mode as a word or with the two colours exchanged gives 92, the mode as a short gives 92, the mode read again at
+// each call gives 108 and drops that caller to 25, the effect-location cursor moved into the block gives 95 and 103
+// (the latter also drops the caller), the particle cursor moved out of the block gives 103, the next index read at
+// the end gives 107, the system declared before the effect gives 113 and the type query's locals lifted to the
+// function scope gives 91.
+// score 91 (was 93): our frame is 0x4c against retail's 0x54 and the particle system takes EDI where retail keeps
+// it in ESI, so the homes of the two pointers, of the definition and of the cached mode sit at other offsets than
+// retail's; retail spills the definition and reads the mode at each call, which needs the per-call form that drops
+// the matched caller.
 // system takes EDI where retail keeps it in ESI, so the homes of the two pointers and of the definition
 // sit at other offsets than retail's.
 // Earlier at 93 (was 93): frame 0x4c versus 0x54, the particle system in EDI (retail ESI) and the location mode cached
@@ -3559,6 +3593,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // forceinline helper taking effect, system, definition and the location cursor 92. Both swapped pairs follow from one
 // choice: retail's system takes ESI at the entry (ESI and EDI are the 0x175a80 call's own registers for the system and
 // colour B) where ours gives ESI to the type object first; a helper around the loop does not split the system's range.
+// P479: Standard activity/cursor/node-sentinel/node-sign/location-presence predicates
+// 132/124/123/129/162; complete node conjunction/complementary disjunction and negative
+// query producers 113/138/112. NOT kept: all regress and lengthen; native frame,
+// definition spill and system/successor/color homes remain. Original full body restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

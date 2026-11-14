@@ -450,6 +450,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // retail's length, frame 0x114: the x87 order and the phases are retail's, the XMM colouring and the heading/cosine homes are not);
 // those with the heading's zero k written as the constant 0.0f in the rotation terms 251/231 (the same code: the zero is already
 // known); the in-place form with one or three unused locals 231 (same code). Body unchanged at 173.
+// T105: Existing scale-output receivers, axis/cross/direction subsets 1..7,
+// then complete returned-buffer shared sums: 226/227/227/226/226/227/227/233.
+// NOT kept: no native frame/cross-home equality; original helper/body restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

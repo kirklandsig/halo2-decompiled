@@ -503,6 +503,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // count in ESI and forms each address from it); the used bits cleared by memset 866 (same code); the range test as `fabs(range)`
 // 907 (the negated form is retail's); the choice-to-target loop storing through `targets[target_count]` with the increment last
 // 924 (3327 bytes); the primary source set ahead of the choice-to-target loop 940. All restored.
+// T106: Strict open near-zero intervals at range/paired fade times/completion gain,
+// seven families then continuing-output-first completion: 880/894/962/904/886/885/955/955.
+// NOT kept: native absolute-value shape and byte equality unrecovered; every form
+// lengthens the body. Original predicates, helpers and complete body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
