@@ -827,6 +827,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// MiniMax G (11-14): no new form, no lower score (60): ours strength-reduces next - oldest - 1 into a second counter
+// (next in ecx, the reduced offset in esi) where retail keeps next in esi and recomputes the offset on every pass.
+// The member form (the count, the bound and the index all through &m_message_window) reproduces retail's loop body
+// but scores 89: the count folds oldest into its `sub` and the loop reloads it instead of keeping it in ebx, and the
+// pointer form keeps oldest in ebx while the offset is reduced. No spelling gives both.
 // score 60 (was 60): round 116 (m3 lane 9, fast with 0x96510, 0x94df0 and 0x94bf0): the flag test as nested ifs 60
 // (same code as the listed `continue` form, so a re-measure). Still only the strength-reduced next - oldest - 1 (next
 // in ECX, the reduced offset in ESI) against retail's per-pass offset with next in ESI. No untried natural form is left.
@@ -953,6 +958,16 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // block (a clamp of the start against oldest, 79) merges with it. So the window pointer merges early and reduces, the member
 // view never merges; retail (and matched 0x94df0) merge without reducing, which no view, loop shape or found-path placement
 // here reproduces.
+// M3 lane 4 r196 (fast with 0x96510/0x94df0; control 60). A one-TU LTCG link harness (build/r196/h/h965.py of m3-lane4, the
+// function with the window helpers, get_next_send in a plain TU) reproduces 60, 63 and 89 and screened 96 spellings: count,
+// bound and index each through the window pointer or the member, the found path as break, return or after the loop, and the
+// loop as `!=`, `<= newest - 1`, `while (++next < newest)` and a dword counter. Every spelling whose index reads oldest
+// through the window pointer strength-reduces `next - oldest - 1`; every member spelling reloads oldest apart from the
+// count. Real: the loop as `while (next < newest) { ...; next++; }` 60, `long next;` ahead of the for 60, the start named
+// `long first` 60, the flag update as `message->flags = message->flags | 2;` 60 (all the same code), `type = 4;` ahead of
+// the found path's stores 79 (213 B).
+// P472: Actual word-bit field first/second/both, explicit Boolean first/second/both, second-first and paired outcomes: 60/60/60/66/74/67/68/67.
+// NOT kept: no exact native induction/allocation shape; original raw word layout, helpers, complete body and header restored.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

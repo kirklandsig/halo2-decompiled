@@ -3,6 +3,7 @@
 
 #include "unknown_11c920.h"
 #include "vector_products.h"
+#include "vector2f_products.h"
 #include "segment_sphere.h"
 #include "unknown_0259d0.h"
 #include <float.h>
@@ -108,7 +109,7 @@ struct s_decal_quad_17d9a0
 	bool positive;
 	byte unknown57;
 	point2f corners[4];
-	struct s_edge { real i, j; } edges[2];
+	vector2f edges[2];
 	real inverse_determinant;
 };
 
@@ -126,466 +127,27 @@ PRIVATE inline real *decal_corner_point_17d9a0(transform4x3f const *matrix, real
 }
 
 /* drops the axis the plane faces: the two remaining coordinates, in the table's order */
-PRIVATE inline void decal_project_point_17d9a0(real const *point, long axis, bool side, point2f *out)
+PRIVATE inline void decal_project_point_17d9a0(real const *point, short axis, bool side, point2f *out)
 {
 	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
 
-// MiniMax H (11-13): no new form, no lower score (46): the corner products' load and memory sides and the plane-distance
-// store's base are as the earlier rounds left them, and the first corner still keeps the sign-extended axis in ECX where
-// retail keeps the short axis in AX and the flag in CL; the corner helper's parameter order measures 40 but is a
-// parameter-order change, so it is reported rather than applied.
-// MiniMax A (11-12): no new form, no lower score (46); the plane store's base, the products' load and
-// memory sides and the first corner's axis and flag registers are as the earlier rounds left them (retail
-// keeps the short axis in AX and the flag in CL, ours signs the axis into ECX and puts the flag in AL); this
-// round a short axis local with the field stored straight from it measures 162, though the length then
-// matches retail's 983 bytes; the fast image measures this body only with 0x120850 and 0x22bbca beside it.
-// score 20 (was 46): m3 lane 11 r96: the point rows read bounds[x]/bounds[y] directly (a point builder taking the array and two
-// constant indices) and the builder is the first argument of a two-lookup projection inline, so axis and side are evaluated
-// first: all 24 corner products then take retail's load/memory sides. Left (aligned 20): the dot's i term sides, the plane
-// store base, the axis stored from CX with the flag in AL and the first corner's merged extension, the j row's two products
-// in the other order in corners 1 and 2, and the determinant's second product sides. Before this round (46): retail's
-// length and every lookup, store and the tail; left were the products' load/memory sides (retail's
-// ranks: j fields > bounds[1,2] > i fields > bounds[0,3] > k fields; ours differ and move with symbol count), the plane store base
-// and the first corner's registers (the axis stays live in ECX, so the flag takes EAX). Earlier at 138: frame 0xc and matrix/dot
-// prefix agree; plane-store base, projection operands/publication and inverse schedule remain.
-// MiniMax G (11-11): no new form, no lower score (46): the products' load and memory sides, the plane-distance store
-// base and the first corner's axis and flag registers are as the earlier rounds left them; a short axis result measures 162.
-// This round: the fast image measures this body exactly only with 0x120850 and 0x22bbca checked beside it (46; alone it
-// gives 258); the axis as a short through the helper 165, the three components as named locals 46 and the determinant's
-// product with its operands swapped 46 (both the same code).
-// MiniMax R (11-04): the corner products' operand order (register/memory sides) changes no code at all
-// (46), a short axis result scores 162, the short axis passed to the corners 186, and a plane pointer for
-// the copy, the dot and the store 65 (the store base then matches retail but the dot's sides flip); the
-// store-only and copy-only pointer forms give 51 and 61; no new form, no lower score.
-// MiniMax E (11-05): no new form, no lower score; the products' load and memory sides are as the earlier
-// rounds left them, and the fast image cannot measure this body (four unresolved calls).
-// At 158: plane-distance store base and projection/edge scheduling remain; both indices long 179f, horizontal long 164f, vertical long 179f, captured-index Y-first 164f, plane view after normal copy 181f.
-// Read-only projection metadata 164; selector field inputs 164; output reference 164; shared
-// point construction 162; vertical index first 164; table row before point 158 (kept); complete
-// edge predicate 166; row helper input 160; inverse at entry 230; normal block copy 168; copy-
-// return plane receiver 158 at 993 bytes; copy return with early row 171; early row with shared
-// point construction 160.
-// At 152: plane store base and projection/edge scheduling still differ.
-// return native destination 158f; native component array 158f.
-// transform workspace name 158f; native output first contract 168f.
-// native matrix reference 158f; copied normal receiver 161f.
-// nested edge validation 158f; conditional inverse publication 152p.
-// At 138: plane-distance base, projection selectors/stores and inverse schedule remain.
-// Shared projection operation 334; native plane result 237; row-selector local 152;
-// bounds-first/vertical-first helper contracts 140/140; pointer-input point initializer 152;
-// vertical result snapshot 170; first-edge squared length 138; corrected contract/length combinations 146/146.
-// At 138: Plane-distance base, projection selectors/stores and inverse scheduling remain. external output record
-// 146; external corner array 138; output and corner array 146; external normal receiver 166; external
-// bounds record 146; matrix memcpy 138; bounds memcpy 152; normal memcpy current length 152.
-// Plane-distance base, projection publication and inverse scheduling still differ.
-// corner input references 144f; origin corner value 172f; first edge value 156f; second edge
-// value 166f; both edge values 183f; first eligibility result 146f; indexed bounds contract 142f;
-// indexed bounds with origin value 174f.
-// plane-distance store base, selector publication and edge/zero schedule remain.
-// Actual table-element bindings both/horizontal/vertical 188/138/188; both plus Y-first 191;
-// distance-field binding 146; metadata object reference 138; native row reference 138;
-// edge records bound after publication 142 at 992 bytes (fast scores).
-// plane-store base, selector/output scheduling and inverse registers remain.
-// Distance-only plane scope 143; second-edge squared result 146; both 147; external basis
-// references 152; first/all bound-first products 138/138; basis plus lengths 154; completed
-// Y/X projected values plus lengths 158.
-// At 138: plane-distance store base, product operand order and the positive register differ.
-// Plane pointer for the normal copy/dot/store 157 (store base as retail, dot operands flip); point-first
-// dot through it 153; pointer for copy and store only 151; projected y stored first 138; the existing
-// function_120810 for each corner projection 189 at 966 bytes, though its inlined lookup is retail's
-// exact sequence (start from it: the products then reorder).
-// Existing projection with all parallel products 191; point setter 189; bound-first products 189; matrix/bound/basis references 189/189/189; all parallel offsets 185; setter plus matrix reference 189. Restored.
-// Overlap-safe matrix/bounds/both/normal/matrix-normal/bounds-normal/all transfers
-// 253/237/273/210/262/234/282; all plus existing final projection 294. Original body and private helper
-// restored.
-// Round 288: complete shared corner-vector producers, forward/left affine and two-scale sums,
-// each with private/shared final projection 265, 250, 265, 250, 265, 241, 265, 241. Original body and helper restored.
-// Native side field byte/signed-char/char 142/142/142; with existing final projection 193/193/193;
-// byte/signed-char side with a reused short axis result 164/164. Original Boolean field, body and helper restored.
-// Lane 14 r11: the existing projection helper 0x120810 per corner 189 (966 bytes; its lookup is
-// retail's `shl`/`movsx` sequence, the products reorder); with natural row orders 189. Edges typed
-// point2f and formed by the existing vector2d_from_points2d 142 (992 bytes; aligned 152 -> 138:
-// retail's four edge stores then the reloads); on that, the inverse as if/else 157, as one inline
-// ternary 156, both lengths named 150, first length named with if/else 143 (986 bytes, aligned 131:
-// zero path stores the shared zero as retail; the epsilon load is hoisted and the projection lookup
-// and product orders remain). Next: the edge helper with if/else plus a form for the lookup.
-// Round 107 (fast; aligned count = unmatched instructions after alignment, base 94/93): bounds by
-// value to the corner helper 192; corner helper forceinline 138 (identical); edges through
-// vector2d_from_points2d with an if/else inverse 143 (986 bytes, aligned 86/87: the tail is retail's
-// but for the epsilon load and the determinant reusing e1.j); that plus each corner through the
-// existing 0x120810 180 (975 bytes, aligned 50/54: lookup, stores and tail retail's; left are the
-// products' operand order per corner, retail's `mov al, [positive]` before each corner's products
-// with `movzx` at the index, the first corner's axis in ax/positive in cl, and the plane store
-// through the normal's base); with real_point3d_set as the lookup's argument 180; with the side
-// byte read before the point 180 (aligned 56/60).
-// Lane 15 r17, on the existing 0x120810 per corner (189): plane pointer 198, with a point-first dot
-// 196 (store base as retail; the first two dot products then load the point first); edges as a
-// vector2f through vector2d_from_points2d with the inverse as if/else 182 (975 bytes; the tail is
-// then retail's but for the first cross product, which loads e0.i where retail copies e1.j's
-// register); natural cross order 182 and retail's corner-1 product operand orders 182 (both identical
-// code: in this form every product loads the matrix field first whatever the source order).
-// Round 129: in the corner helper, the table row as `positive + axis * 2` 138; a named long row
-// index 140 (aligned 152 -> 121: later corners' product operand orders move toward retail's); with
-// y stored before x 140 (aligned 119); row index named in axis-first order 140 (aligned 121); both
-// coordinates read through the row index into named values 176 (970 B). Retail's lookup is
-// `shl eax,1` + two movsx loads, y copied through xmm0 and stored first.
-// Round 17 (m3 lane 2, fast): the corner helper's lookup through the existing function_120810 189
-// (966 bytes); with the edges through vector2d_from_points2d and an if/else inverse 182 (975
-// bytes); that with a plane pointer for the normal copy, dot and store 190; that with the axis in a
-// short local used for the store and the normal index 185; the axis local on the current body 160.
-// Retail's first corner keeps the axis in AX (re-extended at the lookup) and the side in CL; ours
-// keeps one sign-extended axis in ECX and the side in AL, so 4 corners x 2 bytes are missing.
-// Round 10 (lane 17, fast): the corner point through the existing matrix_transform_vector of {x, y, 0} plus the
-// position 444 (1171 bytes: the up terms are not folded); the corner point as a `real point[3]` passed to the
-// existing function_120810 185 (970 bytes); that with the edges through vector2d_from_points2d and an if/else
-// inverse 180 (975 bytes); that with the point built inside the call's first argument 180 (same code: the axis
-// and side loads do not move ahead of the products); the plane set through a small inline helper taking
-// (plane, normal, point) 151: the normal copy, the d store through the normal's base `[eax+0xc]` and the call
-// argument are then retail's, only the dot's i term loads the point first, but every corner product's operand
-// order changes with it (the order follows something global, not the corner's own source).
-// Round 62 (lane 12, fast): edges typed `vector2f` (the file's duplicate `struct vector2f` dropped for the
-// header's union) with both squared lengths through the existing dot_product2d, the determinant through the
-// existing cross_product2d and an if/else inverse 176 (965 bytes: the four edge stores come first and the
-// determinant is retail's but for reloading e1.j; the squares go in place where retail copies first, and the
-// shared zero moves from XMM3 to XMM1, reordering every corner's products); that with the determinant written
-// out 160 (969 bytes: e1.j then stays in a register as retail); that with the ternary inverse 206; the current
-// body with an if/else inverse 140 (the zero path stores XMM3 as retail, the edge stores still interleave);
-// the plane's d as dot3f(position, normal) 144.
-// Round 104 (lane 8): a compile-only screen reproduces the corner product operand orders exactly; they
-// shift with the function's symbol numbering (1-8 unused locals at the top or in the corner helper,
-// diagnostic only, give 7-24 product mismatches against the current 10), so they follow how many
-// locals and inline temporaries the source has. Real: bounds typed box2f with named corner fields 138
-// (identical); the corner point as a three-component loop with the table row first 139 (985 bytes);
-// corner helper taking axis/side by value through the existing 0x120810 191 (966 bytes); the
-// component loop through 0x120810 191; corners through quad->corners without the pointer local 193
-// (953 bytes). Screens: 384 helper shapes on 0x120810 19-24 mismatches (only row order counts).
-// Best screen 7 with four extra function-scope locals and one in the helper: retail's body may have
-// more named locals than ours (in combination, not singly).
-// Round 125 (m3 lane 5, fast): retail loads the side byte with `mov al` ahead of each later corner's
-// products and zero-extends it at the lookup (corner 0 uses the stored AX/CL), as a by-value byte would;
-// the corner helper taking `short axis, byte side` by value (side + axis * 2 / axis * 2 + side) 140/140
-// (still `movzx` from memory); a `byte side` local in the helper 140; `bool`/`short` locals for both 138
-// (same code); the corner coordinates passed by value 192 (969 bytes).
-// Round 62 (fast, 0x120810 listed): edges through vector2d_from_points2d with an if/else inverse 157 (986 bytes);
-// the existing 0x120810 per corner 189 (966); both 182 (975, aligned 55); with the corner helper taking axis and
-// side by value 180 (975, aligned 49, the closest: left are the plane store base, the bool in EAX for ECX, the
-// product operand orders and the side byte); that with a bool side parameter 180; with side/axis read into
-// locals at the helper's top 182. In every 0x120810 form our side load is `movzx edx, byte [ebp+0x56]` where
-// retail loads `mov al` at the corner's start and extends at the index: the 2 bytes per corner of the gap.
-// Round 45 (lane 13, fast, 0x120810 listed), on 0x120810 per corner with axis/side by value, edges through
-// vector2d_from_points2d and an if/else inverse: a short axis local for the store and normal index 183 (974
-// bytes; corner 0 then reuses the extended ECX axis); bounds by value 197; bound values named at the helper's
-// top 198; side parameter typed byte 180 (same code as bool); side bound before axis 180.
-// Round 40 (lane 14, fast; caveat: unresolved globals in the reduced image): the 0x120850 axis in a
-// short local for the store and the normal index 160; the side read into a bool at the corner helper's
-// top with the table row formed after the point 146
-// (990 bytes: the side load moves to the corner's start as retail's but is zero-extended there,
-// `movzx ecx, byte`); the same with a byte local 146; each corner through the existing 0x120810 with
-// the side read into a byte local before the point 189 (966 bytes, the local is propagated to its use);
-// the plane distance as dot3f(position, normal) 144.
-// Round 29 (m3 lane 2, fast): the plane's d written k, j, i on the copied normal 158; the side computed into a
-// `bool positive` local then stored 150; four named bound pointers (x0, x1, y0, y1) passed to the corners 156;
-// the corner lookup without the axis locals 188 (957 bytes); the corner point as a `real point[3]` 138 (same code).
-// Round 128 (m3 lane 5, plain; 0x120810 is left out of the fast image): retail's out-of-line 0x120810 has the
-// same y-in-XMM0 / x-in-EAX copy, so it is the inlined callee. Corner helper on 0x120810 with the axis and side
-// read into locals before the point 189 (966 bytes, same code as without them: propagated); with the point
-// written through a pointer 189 (same code); the point built in the call's first argument by a pointer-returning
-// inline (diagnostic, x and y by value) 188 (986 bytes: the axis and side loads move ahead of the products as in
-// retail, but the side load stays one folded `movzx edx, byte`); on the 0x120810 form a `plane3f *plane` for
-// the normal copy, dot and d store 198 (965 bytes), on the current body 166 (984 bytes).
-// Round 45 (lane 14, fast): the corner helper taking `short axis, byte side` by value with 0x120810's own lookup
-// body (`long index = side + axis * 2`, horizontal/vertical locals), y stored first 187 (970 bytes, aligned 152 ->
-// 213), x first 187; both squared lengths written in the condition 152; the epsilon tests as `0.0001f < length`
-// 138; only the second length named 138. Retail's corner 0 re-extends the axis from AX (`movsx edx, ax`) and keeps
-// the side in CL, so the side flag is formed in ECX; ours keeps the extended axis in ECX and the flag in EAX.
-// Round 40 (lane 14, fast; caveat: unresolved globals in the reduced image): the 0x120850 axis in a
-// short local for the store and the normal index 160; the side read into a bool at the corner helper's
-// top with the table row formed after the point 146
-// (990 bytes: the side load moves to the corner's start as retail's but is zero-extended there,
-// `movzx ecx, byte`); the same with a byte local 146; each corner through the existing 0x120810 with
-// the side read into a byte local before the point 189 (966 bytes, the local is propagated to its use);
-// the plane distance as dot3f(position, normal) 144.
-// Round 52 (fast): the side flag as `> 0.0f ? true : false` 142, as an if/else of true/false stores 167;
-// the table row indexed directly (`g_440b94[axis * 2 + positive][0]`/`[1]`) after the point, no row pointer,
-// 158 (962 bytes); the determinant in natural cross order 138 (same code); the edges read through
-// quad->corners instead of the corner pointer 179 (953 bytes).
-// Round 447: native plane/corner-array/edge-array references before both copies, subsets 1..7: 201/138/201/160/206/160/201; complete bindings after the copies 159. Original body and helper restored; plane receiver, selectors and inverse schedule remain.
-// Round 219: complete parallel products, planar subtotals, running coordinates and native aggregate
-// construction, each with the existing point setter: 152/152/156/158/152/152/138/142. Original
-// four-use helper restored; plane-store base, selector/publication and inverse scheduling remain.
-// Round 449: Captured both corner inputs with origin/basis/late-row receiver subsets 0..7
-// 192/192/203/205/215/215/212/214 (fast control 138, full 138).
-// Original complete executable source restored; opening structural differences remain.
-// Round 452: source-normal consumers direct/pointer/native late/native entry 154/208/229/258; the same with
-// both squared-edge expressions named 162/207/228/258. Original copied-plane consumers and edge expression
-// restored; early plane destination identity and corner frame colouring remain.
-// Round 454: Complete input-bounds native/field/memcpy/memmove values 235/247/235/231; each with
-// the existing shared final projection 241/257/241/235. Every form alters the prologue and
-// regresses. Original bound reads, normal/edge producers, corner helper, declaration set and
-// entire body restored; plane receiver and projection schedule remain.
-// Round 457: Projection X/Y publication through the eight nonoriginal direct/memcpy/memmove pairs;
-// original points, selectors, plane and edge math preserved. Scores
-// 138/787/138/138/787/774/774/787. Original executable body restored.
-// Round 136 (m3 lane 5, fast with 0x120810/0x120850/0x17d900, plain confirmed): retail loads the side as a byte and the axis
-// with movsx at each later corner's start, as arguments evaluated before the products, then indexes the table for x and y;
-// the corner helper now takes them by value. By value (short, bool) with two lookups 173 (968, aligned 152 -> 115), x first 173,
-// byte side 173, side before axis 174, side + axis*2 173, named index 187, both long 191, (long, bool) 193 (956, aligned 106),
-// (bool, long) 193; products with *x first / forward-first rows 193; x/y value locals 197. Named x/y lookups (long, bool)
-// 176 (972), (short, bool) 158 (984), existing 0x120810 191, named index 187. With an if/else inverse and the edges (scalar,
-// vector2d_from_points2d, first length named) and a plane pointer: short scalar 158, +plane 179; short points 167 (992, aligned
-// 56), +plane 186, named 167, +plane 185; long scalar 179, +plane 198; long points 174 (983), +plane 193, named 174, +plane 186.
-// Long copy of a short param 165, its row local 162/180; short axis local in the body 167/174/164/169/161. `long axis =
-// function_120850(...)` with `quad->axis = (short)axis` keeps the first corner's sign extension out of the earlier one: 54;
-// stored after the flag 70/65; `quad->axis = f(); long axis = quad->axis` 174/167; short then long 168/169; chained 174/167.
-// All 16 orders of row terms and product operands 54 (same code). 77 random combinations of value order, store order,
-// corner pointer, tail, plane pointer, declaration place, out parameter place 46-95. Existing 0x120810 from the by-value
-// helper 159 (983, aligned 61: `movzx edx, byte` where retail has `mov al`), first length named 163, corner pointer kept 165,
-// reading the quad inside 163, point built in its first argument 163. `real point[3]` with x and y value locals 46, y first
-// 46, first length named 48/48; the same through the existing point2f_set 46 (kept: same code, no one-use locals); direct
-// stores 142 (964: both copies go through integer registers), y first 142; a corner local copied out 244 (1039); a
-// two-call component helper 144; a row pointer local 142. Forward/left pointer locals 64, with origin 60; references for
-// the coordinates 46; box fields 50, with pointers 62; rows z, y, x 79; rows y, x, z 71.
-// Round 328: existing vector/point normal setters with copied/source/plane/normal
-// receivers 207/211/209/213 and 207/211/209/211. Original normal block copy,
-// all consumers, corner helper and complete body restored; plane base and product ranks remain.
-// Round 364: On by-value selectors/component-array/point-setter graph, plane receiver,
-// shared edge norms and shared determinant subsets 1/2/4/3/5/6/7: 91/130/44/165/87/130/165;
-// all with both squared lengths named 154. The two-point determinant gain is ineligible;
-// original helper, edge type and body restored; plane base and product ranks remain.
-// DH round 290: complete projected-point native/direct, native aggregate, shared 3D setter,
-// native/array planar sums, native/array parallel products and native running coordinates
-// 46/54/44/60/60/60/60/66. Two-point setter gain rejected; original helper/body restored.
-// Round 273: complete native input captures (both bounds/both basis vectors/origin),
-// subsets 1/2/4/3/5/6/7, then all with entry axis declaration:
-// 137/734/734/747/747/734/747/747. Basis/origin copies end full corner inlining.
-// Original helper/body restored; plane base, selectors and product ranks remain.
-// N320: Paired native 3D point setter and 2D determinant reaches 42, below the eight-point gain bar;
-// plane receiver, first-corner Boolean and short-circuit edge-length combinations regress. Plane base
-// and product ranks remain. Scores 42/87/76/90/54/82/66/90.
-// Original executable source restored.
-// P276: Four-use corner helper transform/horizontal/vertical/axis/side/output/point
-// lexical roles, independently and all together: 46 each at 983 bytes. Original helper
-// and complete body restored; plane base, selector carriers and product ranks remain.
-// DH300: Existing corner helper owns native/immutable/library transform inputs, basis plus origin,
-// immutable basis, complete basis vectors, transform plus bound values, transform plus 3D setter:
-// 334/334/334/730/730/734/751/334. Copies enlarge the frame or outline the helper; original
-// helper and body restored. Plane-store base, first-selector roles and product ranks remain.
-// Round 376: First-corner side truth produced by native tests in bool/byte/short/long,
-// false-default 190/190/194/193; complementary true-default 189/189/193/192.
-// Exact-only two-use side publication/first-corner forms restored; plane-store base, axis/side
-// P278: Actual outer transform/bounds/output lexical roles, seven subsets, then all with the normal-
-// axis role: 46 each at 983 bytes. Original body and four-use helper restored; plane base, selector
-// carriers and product ranks remain.
-// Round 378: Existing four-use corner producer and shared two-component setter declaration,
-// ordinary/inline/force-inline contracts in eight nonoriginal pairs, all 46 on the retained
-// by-value-selector/component-array graph. Original declarations, helper and body restored;
-// live-plane store base, first axis/side roles and product memory sides remain.
-// AC493: First/second/both plain two-corner row walks, long/short: 66/56/62/295/336/415;
-// both with continuous output cursor long/short 235/407. All original corner calls, helper and
-// complete body restored; plane-store base, first selectors and product memory sides remain.
-// m3 lane 11 r60 (plain): `short axis` local for the store and index 162; no axis local (quad->axis
-// read back) 174; determinant as e1.j*e0.i - e1.i*e0.j / e0.i*e1.j - e1.i*e0.j 46/46 (same code); axis taken
-// from matrix->up 209 (986 bytes); bounds copy after the plane 78.
-// AC495: Complete side-result lifetime through publication and all four corners, bool/byte/short/long,
-// 190/186/180/181; with the retained axis result at all four calls 241/199/194/195. Original
-// field observations, helper and complete body restored; plane base, first selectors and product ranks remain.
-// Round 83 (m3 lane 12, plain; --fast is unfaithful here, 258 for this body): `short axis` with
-// `quad->axis = axis` 162; dot3f operands position-first 52; the dot through `&matrix->up` 206 (986 bytes);
-// `quad->axis = function_120850(...)` with the side test reading quad->axis 174 (retail's `mov [ebp+0x54], ax`
-// store, products reordered); that plus a short corner-helper axis 163 (992 bytes). Original body restored.
-// AC497: Complete axis-result lifetime without a captured side, short/word/long/dword,
-// normal indexed by the result then by its published field: 186/187/179/179/181/164/191/191.
-// Exact-only later selector retention regresses; original observations and body restored;
-// plane-store base, first selectors and product memory sides remain.
-// Round 57 (m3 lane 13, fast with 0x120810/0x120850): the corner helper taking x and y by value 235 (1008 bytes);
-// its axis parameter short 271 (1009); `short axis = function_120850(...); quad->axis = axis;` with the corners
-// reading the field 257 (997); a `vector3f *normal` for the copy, dot and axis call 258 (1000); the helper
-// returning the point2f, assigned to each corner 275 (1044). Retail stores the first axis from AX (the short
-// return) and re-extends AX for the first corner; ours stores CX.
-// Round 83 (m3 lane 12, plain; --fast is unfaithful here, 258 for this body): `short axis` with
-// `quad->axis = axis` 162; dot3f operands position-first 52; the dot through `&matrix->up` 206 (986 bytes);
-// `quad->axis = function_120850(...)` with the side test reading quad->axis 174 (retail's `mov [ebp+0x54], ax`
-// store, products reordered); that plus a short corner-helper axis 163 (992 bytes). Original body restored.
-// Y566: Plain coordinate loops in the existing corner producer, forward-first/left-first/
-// planar subtotal/running point, long then short: 50/730/50/730/60/730/240/730.
-// All regress; short loops leave the helper outlined. Original whole body and
-// four-use helper restored; plane-store base, first selectors and product ranks remain.
-// Round 68 (m3 lane 1; "h" = a one-link LTCG harness of this file with unknown_22bbca and unknown_120850, whose listing equals the
-// full build's and whose score tracks the check's, 46 here; --fast calls point2f_set and is unfaithful, 258): a named-field vector3f
-// corner point read through .n 54h (.n[0..2] stores: same code); the determinant named 48 plain; rows x,z,y / y,z,x / z,x,y 70h/85h/83h;
-// the planar part named in every row 60h; rows starting at the position 46h (same code); a short row pointer with a short axis 186h
-// (1005 bytes). The sibling 0x245270's form (`field = f(); side = n.n[field] > 0.f ? 1 : 0`, by-value short/byte helper) over axis
-// long/short local/direct field x `> 0`/`? 1 : 0` x bool/byte field x helper axis long/short x side bool/byte: `? 1 : 0` same code as
-// `> 0`; byte field with `> 0` 50h; short local 163h (980 bytes, aligned 39 against 42: AX store as retail, the extended axis stays in
-// ECX); direct field 175h. Diagnostics, unused initialised locals: 1-15 at the top (period 8) and 0-7 at the top with 1-7 in the helper,
-// on the long and short bodies: best 4 of 24 corner products off, none reaches retail's ranks.
-// AC520: Existing four-use corner pointer/reference outputs with pointer/reference/native
-// value returns, then native returned point: 46/46/42/46/46/46/42/246. NOT kept:
-// four-point value-return leads below threshold; native result grows frame/length; original helper/body restored.
-// AC522: Actual normal-copy result plane/normal pointer/reference receivers,
-// memcpy then memmove 91/91/91/91/211/211/211/211. NOT kept: EDI receiver and
-// dot/product regressions; original library/copy boundaries and body restored.
-// J250: Existing corner destination pointer/reference returns 46/46; complete bound/output
-// references 46; bound-reference destination pointer/reference returns 46/46; output-reference
-// destination pointer/reference returns 46/46; bound-reference point-value result 246 (1039 B).
-// NOT kept: no live-plane store, first-selector or product-memory-side recovery; the point
-// value moves away from native extent. Original four-use helper, all corner calls and body restored.
-// AC524: Complete two-edge eligibility bool/byte/short/long, then complementary
-// rejection, 48 each at 983 bytes on the by-value/component-array graph. NOT kept:
-// dot-product divergence moves earlier to +0x67; original predicate and body restored.
-// AC526: Whole inverse result if/else/default/conditional, successful/failed/nested
-// publication returns, default field and nested result: 63/98/63/46/46/46/108/98. NOT kept: no gain;
-// original corner producer and tail restored; plane base, selector/product ranks remain.
-// M391: Computed plane-dot/paired squared-edge/reciprocal double receivers, seven subsets, then complete real receivers: 101/133/179/79/131/141/174/54.
-// NOT kept: No exact live-plane, selector or product-memory-side recovery; nonmatching one-use/precision lifetimes are discarded. Original complete body restored.
-// AC531: Plain two-edge validation traversal, long/short/dword/word ordinal,
-// completed-ordinal publication then immediate failed publication/return:
-// 141/115/141/115/126/121/126/121. NOT kept: dot divergence moves to +0x67
-// and every extent shortens away from retail; original helper and whole body restored.
-// AC534: One caller-owned three-coordinate workspace across all four corner calls,
-// array pointer/reference and vector/point pointers, first-corner then entry declarations:
-// 54/54/54/54/54/54/54/54. NOT kept: dot divergence moves earlier to +0x67; original
-// helper and full body restored. Plane base, first selectors and product memory sides remain.
-// F393: Complete two-use projection row ordinal long/dword/int/word after/before point construction:
-// 163/163/163/196/158/158/158/198. NOT kept: no byte match; original complete body/helpers restored;
-// live-plane distance base, first selectors and product memory sides remain.
-// T57: Normal component-array transfer, long/short/dword/word ordinals, forward then reverse
-// 206/223/206/223/219/219/219/219. NOT kept: no exact or qualifying structural gain; original complete body restored.
-// Round 54 (m3 lane 15; `--fast 0x17d9a0 0x120850 0x22bbca` is exact here, 46: listing 0x22bbca brings point2f_set's file in; a one-link harness
-// with those files is 54 for 46, 0x120850 taking ECX there, with its product pairs as retail's). Ours differs from retail in 1, 4, 6, 0 of
-// the 6 pairs of corners 0-3. Harness, plane helper / axis form / lookup / helper types (320 + 288 forms): nothing below 54; plane helper with
-// a `short axis` local and the existing 0x120810 taking the point built in its first argument 182 (975 bytes, aligned 37), with a named index
-// and horizontal/vertical locals instead 182 (975, aligned 35); plane helper with a named row index 161 (983 bytes, aligned 42, pairs 1, 5, 0, 0:
-// the side load folds to one `movzx`, shifting every later corner by one instruction); axis stored directly 169 to 203; the arguments as
-// `bounds + n` same code. Diagnostic tables of 0-7 locals at the top by 0-7 in the helper: base best 6 of 24 pairs (50, t7 h3), plane helper with a named
-// row index best 4 (158, aligned 37); no state reaches retail's pairs.
-// Real (fast, same round): real px, py named before the setter 48; short horizontal, vertical named 54; the plane helper on the current corner
-// 61; plane helper with a named row index 153; plane helper with 0x120810's body named 151; plane helper, `short axis` local, 0x120810 taking
-// the point in its first argument 173 (975 bytes); plane helper, `short axis` local, named index and coordinates 173 (975 bytes).
-// AC531: Plain two-edge validation traversal, long/short/dword/word ordinal,
-// completed-ordinal publication then immediate failed publication/return:
-// 141/115/141/115/126/121/126/121. NOT kept: dot divergence moves to +0x67
-// and every extent shortens away from retail; original helper and whole body restored.
-// AC534: One caller-owned three-coordinate workspace across all four corner calls,
-// array pointer/reference and vector/point pointers, first-corner then entry declarations:
-// 54/54/54/54/54/54/54/54. NOT kept: dot divergence moves earlier to +0x67; original
-// helper and full body restored. Plane base, first selectors and product memory sides remain.
-// M391: Computed plane-dot/paired squared-edge/reciprocal double receivers, seven subsets, then complete real receivers: 101/133/179/79/131/141/174/54.
-// NOT kept: No exact live-plane, selector or product-memory-side recovery; nonmatching one-use/precision lifetimes are discarded. Original complete body restored.
-// Round 56 (m3 lane 15; `--fast 0x17d9a0 0x120850 0x22bbca`, harness 54 for the real 46): the corner helper's parameter order moves the product ranks: (matrix, y,
-// axis, x, side, out) 40, (axis, y, side, matrix, out, x) with `.n[axis]` 42, (matrix, y, x, axis, side, out) with a byte side 42, (y, x, matrix, axis, side, out),
-// short axis, named px/py 164; `.n[axis]` alone 46 (same code). NOT kept: no retail call shows these orders and the gain is under 8. Harness: all 720 orders best 48;
-// 792 random forms of order x plane helper x axis form x lookup x types best 48; order x plane helper x axis form, 720 forms, best 63.
-// T59: Existing corner producer as an actual quad member, coordinate pointer/reference,
-// corner ordinal/output reference and inline/force-inline contracts: 160/160/150/150/160/160/150/150.
-// NOT kept: selector and product ranks regress; original free producer and complete body restored.
-// Round 57 (m3 lane 2, `--fast 0x17d9a0 0x120850 0x22bbca`, faithful here: 46 as the full check): the side test written
-// `0.0f < n[axis]` 46 (same code); a `vector3f *normal` for the copy, dot, axis call and side test 91 (re-measured: lane 13's
-// 258 was on the unfaithful image); a `plane3f *plane` with a position-first dot 63; the plane pointer for every plane use 91;
-// the distance as dot3f(position, &matrix->up) 209 (986 bytes).
-// P385: Progressive per-edge eligibility bool/byte/short/long, positive then complementary:
-// 48/48/48/48/48/48/48/48. NOT kept: no exact live-plane store, selector or product-memory repair;
-// original ordered edge predicate, four-use corner helper and complete body restored.
-// P397: Native float dot/paired squared-edge/reciprocal receivers, seven subsets
-// with the complete graph immutable, then immutable dot alone:
-// 48/52/48/50/52/50/48/48. NOT kept: no live-plane, first-selector or product-side
-// equality; immutable dot differs earlier at +0x67. Original complete body restored.
-// Round 140 (m3 lane 7, `--fast 0x17d9a0 0x120850 0x22bbca`, 46 as the full check): new: `bounds` typed as the box
-// both callers pass (corners from x0/x1/y0/y1, the two casts dropped, one of them in a contributor's 0x17ef10) 46
-// (same code); the plane built in a local plane3f and copied into the quad, axis from the quad 240 (1013 bytes) or
-// from the local 246 (1017 bytes); a local copy of the up vector feeding the plane copy and the dot 236 (1005 bytes);
-// the plane's normal and position read from the quad's own matrix copy 68. Re-measured (listed): a plane pointer or
-// reference for the copy, dot and store (and the axis call) 65/65 (store base as retail; the dot and every corner
-// product swap sides together), also with the box parameter 65; that with the dot reading matrix->up 208 (986 bytes);
-// the distance from matrix->up stored before the normal copy 206 (the listed dot-through-up score).
-// Round 100 (m3 lane 12, `--fast 0x17d9a0 0x120850 0x22bbca`, 46 as the full check): the plane distance computed after the axis call 65; the side
-// test through `.n[axis]` 46 (same code); the normal copied before the bounds 70; the corner helper's x and y read into named reals first 137
-// (971 bytes); the inverse zeroed before the edge test with no else 108 (975 bytes). All restored.
-// Round 182 (m3 lane 4, `--fast 0x17d9a0 0x120850 0x22bbca`, control 46, masked aligned 42): retail keeps the short axis in AX
-// (stored from AX, extended at the side test and again at the first corner) and stores the plane's d through the
-// normal's base. A `plane3f *plane` for the copy, dot, store and axis call with `quad->axis` stored straight from the
-// call 193 (the dot loads the position first); the pointer for the copy, dot and store only, axis stored straight 174
-// (store base as retail, dot sides flipped, the side flag still in EAX). No other untried natural form found in this note.
-// Round 66 (m3 lane 2, `--fast 0x17d9a0 0x120850 0x22bbca`): retail's first corner indexes with the call's raw short (`movsx edx, ax`)
-// and the flag in CL, both still in registers after their stores, and reloads both from the quad for corners 1-3; ours keeps
-// the long axis in ECX, so the flag takes AL. The side test reading matrix->up 47; `axis` and a `positive` local passed to all
-// four corners 241 (923 bytes); the axis local alone 179 (966 bytes); the positive local alone 190 (962 bytes). Diagnostic: VC
-// keeps `up.i * 0.0f`, so the corners are not a (x, y, 0) point through a full transform. The compile-only harness is not
-// faithful here (masked 151 against our own build). The corner lookup through a call to the existing prism_project
-// (src/unknown_245bd0.cpp, used by matched 0x245bd0) 178 plain (976 bytes; `--fast` 330, the reduced image leaves it out). All restored.
-// MiniMax I (11-09): no new form, no lower score; the plain check gives 46 while the fast image cannot measure this body, and the only source lever left is the corner helper's parameter order, which measures 40 but changes a declaration, so it is reported rather than applied.
-// MiniMax A (11-06, run 52): no new form, no lower score (46) - retail keeps the axis in ax and the
-// flag in cl, ours sign-extends the axis into ecx and puts the flag in al.
-// Lane 14 r81 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46; second number the register-masked aligned count, 37
-// for 46): the permuter (`--fast --anneal`, 600 s) scores this body 245 on its reduced image against 46 full and found
-// nothing. The corner helper taking the bounds array with two indices (`bounds, 0, 2` ...) 42 (36; corner 0 is then
-// retail's, corners 1-3 still load the i fields over bounds[1] and reload the axis early; not kept: a helper
-// signature picked by score, 4 under the bar), with the indices in y, x order 42 (same code); on it: a plane pointer
-// for the copy, dot and store 61, `quad->axis = function_120850(...)` with the side test reading it 172, the axis
-// local passed to all four corners 181 (966 bytes), axis and a `positive` local passed to all four 241 (923 bytes).
-// M3 lane 12 r114 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46 = the full check; [masked aligned, register-masked], control
-// [39, 28]): a `point2f *corners = quad->corners` local for the four outputs and both edges 46 (first difference +0x67) [42, 30];
-// the normal copied from the quad's own matrix copy (position still from the parameter) 49 [41, 30]; the distance's position
-// from the quad's copy (normal as now) 65 [58, 49]; the corners transformed through the quad's matrix copy 220 [125, 98]; the
-// corners from the quad's bounds copy 228 (976 B) [145, 118]. Retail reads both parameters (EBX matrix, ESI bounds) for every
-// corner. The residue is still the products' load/memory sides, the plane store base and the first corner's AX/CL roles.
-// m3 lane 1 r92 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46, register-masked aligned 37): new: the table row as
-// `axis * 2 + (side != 0)` (0x173910's spelling) 192 (999 bytes). Re-measured: `quad->axis = function_120850(...)` with the
-// side test through quad->axis 174 (masked 43; AX store as retail, the flag still in EAX and the first corner's two
-// extensions merged). Every other natural form found (axis/side types, plane pointer or helper, dot sides, edge helpers,
-// helper signatures, value locals) is listed above; no untried natural form left. Body unchanged.
-// M3 lane 4 r190 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46): the table row in 0x245bd0's projection order
-// `side + axis * 2` 46 (same code); that with `quad->axis` stored straight from the call 174 (the listed direct store: AX
-// store as retail, the extended axis then reused at the first corner, so the flag still takes EAX); the listed plane
-// pointer for the copy, dot, store and axis call re-measured 65 (store base as retail; the dot and corner 0's first product
-// flip sides); that with the `side + axis * 2` row 65; the flag stored by an if/else 59 (984 bytes); the corner point
-// built by a brace initializer 54; the row index named for both lookups (re-measured on this base) 163; the helper's side
-// parameter `long` 166; the point's second row written forward-first like the others 46 (same code). Body unchanged.
-// M3 lane 2 r77 (`--fast 0x17d9a0 0x120850 0x22bbca`, control 46): new: the bounds copied before the matrix 156 (985 bytes,
-// the entry no longer matches); the second edge formed before the first 95; the second edge's length tested first 92
-// (975 bytes). No other unlisted natural form found: axis and side types and locals, plane pointer and helper forms, dot
-// sides, corner helper shapes and signatures, edge and inverse forms, copy orders and spellings are all listed above.
-// Body unchanged.
-// M3 lane 11 r96 (`--fast 0x17d9a0 0x120850 0x22bbca 0x120810`, control 46 = the plain check; "aligned" = difflib count of differing
-// lines; pattern = which operand each of the 24 corner products loads). Retail's sides follow one order for all four corners
-// (j fields > bounds[1], bounds[2] > i fields > bounds[0], bounds[3] > k fields); with pointer arguments (`&bounds[n]`) ours decides
-// each call site by itself and moves with the symbol count (0-7 unused locals: 42-58 aligned, never retail's), with direct operands
-// it is one order and no longer moves with unused locals, names or term order. Forms: bounds array + two indices in the old
-// one-piece helper 42 (the bounds[1] products wrong; rows forward-first, left-first, position-first, short indices, named
-// coordinates all the same code); that helper's parameters reordered 42; the function's own parameters as (bounds, matrix, quad)
-// 44 (a different order again; needs a call line in a contributor's 0x17ef10, measured only); the corners written through a
-// macro 148 positional / aligned 46 (the bounds[3] products wrong); macro + the existing 0x120810 149 / 39 (all 24 sides
-// retail's, but the side byte is read late); 0x120810 inside the one-piece helper 159-165 (sides scrambled), with a short axis
-// parameter 989-992 bytes; a point builder returning its point as 0x120810's first argument 151 / 41 (all 24 right, side read
-// late); the same builder as the first argument of a two-lookup projection inline with (long axis, bool side): 20 (kept), with
-// (short axis, bool side) 24, with (short axis, byte side) and direct stores 124 (964 bytes); a pointer-argument builder there
-// 153; a by-value builder 191-201. On the kept form: `short axis` local 165 positional / aligned 23 (AX store as retail, the
-// flag still in AL); the field stored straight from the call 177 (sides scrambled); a plane pointer for copy, dot, store and
-// axis call 72, for copy, dot and store 45 (store base as retail, sides scrambled); position-first dot 22; the j row
-// forward-first 20, a typed point3f point 20, the projection defined first 20, the point declared at the corners 20 (all the
-// same code); a named table row pointer 175 (1006 bytes); the side test indexed by the stored field, with a short or a long axis
-// local, 177 / 179 (sides scrambled); the first corner given a short axis local and a `positive` local, corners 1-3 the fields,
-// 171 positional / aligned 30 (the bounds[1] products wrong again); `quad->plane.n.n[axis]` with the short local 165 / 23.
-// P462: Complementary first-corner side outcome, bool/char/signed-char/byte/
-// short/word/long/dword, 192/192/192/192/196/196/195/195 on the split producer.
-// NOT kept: mixed result/field residence fails equality and grows the extent;
-// original selectors, point helper, normal/edge math and complete body restored.
-// T103: Split point-builder stable horizontal/vertical/basis-subobject sets 1/2/4/3/5/6/7,
-// then all with the actual position subobject: 117/125/52/136/197/194/213/212.
-// NOT kept: no byte equality or native dot/selector/product-side repair; all four-use
-// helper inputs and the complete body restored on the retained 20-point graph.
+/* the plane through a point with the given normal */
+PRIVATE inline void decal_plane_17d9a0(plane3f *plane, vector3f const *normal, point3f const *point)
+{
+	plane->n = *normal;
+	plane->d = dot3f(&plane->n, (vector3f const *)point);
+}
+
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
 	real point[3];
 	quad->matrix = *matrix;
 	quad->bounds = *(box2f const *)bounds;
-	quad->plane.n = matrix->up;
-	quad->plane.d = dot3f(&quad->plane.n, (vector3f const *)&matrix->position);
-	long axis = function_120850(&quad->plane.n);
-	quad->axis = (short)axis;
-	quad->positive = ((real const *)&quad->plane.n)[axis] > 0.0f;
+	decal_plane_17d9a0(&quad->plane, &matrix->up, &matrix->position);
+	quad->axis = function_120850(&quad->plane.n);
+	quad->positive = ((real const *)&quad->plane.n)[quad->axis] > 0.0f;
 	decal_project_point_17d9a0(decal_corner_point_17d9a0(matrix, bounds, 0, 2, point), quad->axis, quad->positive, &quad->corners[0]);
 	decal_project_point_17d9a0(decal_corner_point_17d9a0(matrix, bounds, 1, 2, point), quad->axis, quad->positive, &quad->corners[1]);
 	decal_project_point_17d9a0(decal_corner_point_17d9a0(matrix, bounds, 1, 3, point), quad->axis, quad->positive, &quad->corners[2]);
@@ -594,7 +156,7 @@ void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_qu
 	vector2d_from_points2d(&quad->corners[0], &quad->corners[3], (point2f *)&quad->edges[1]);
 	if (quad->edges[0].i * quad->edges[0].i + quad->edges[0].j * quad->edges[0].j > 0.0001f &&
 		quad->edges[1].i * quad->edges[1].i + quad->edges[1].j * quad->edges[1].j > 0.0001f)
-		quad->inverse_determinant = 1.0f / (quad->edges[1].j * quad->edges[0].i - quad->edges[0].j * quad->edges[1].i);
+		quad->inverse_determinant = 1.0f / cross_product2d(&quad->edges[0], &quad->edges[1]);
 	else
 		quad->inverse_determinant = 0.0f;
 }
@@ -678,7 +240,6 @@ PRIVATE s_decal_limits_17dd80 const g_444a38[4] =
 point2f g_55ec10[2][12];
 
 struct s_bsp3d;
-struct vector2f { real i, j; };
 struct plane2f { vector2f n; real d; };
 plane3f *bsp3d_get_plane(s_bsp3d const *bsp, long plane_index, plane3f *plane);
 real function_11cf50(vector3f const *a, vector3f const *b);
@@ -932,6 +493,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
+// MiniMax A (11-14): no new form, no lower score (793 on the reduced image): the frame is 0x21d8 against retail's
+// 0x21dc, and the entry register roles differ - retail takes the object pointer in edx and the table global in ecx,
+// while this build reads the second argument into ecx and a global into edx - so every later home sits one slot off.
 // score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // MiniMax E (11-11): no new form, no lower score (535 on the full build, 834 on the reduced image):
 // the frame is still 0x21d8 against retail's 0x21dc and the locals still sit in other stack homes.
@@ -945,7 +509,6 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // MiniMax A (11-13): no new form, no lower score (535 plain, 834 on the reduced image); the frame and the
 // length still agree, the tag still spills at +0xb4 against retail's +0x94, and the count, plane and
 // rotation homes still differ.
-// score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // Frame 0x21dc and length 3647 agree; tag/count/plane homes and rotation spills remain.
 // Earlier: 552 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // at +0xb4 versus retail +0x94. Count/plane homes, initial face-call scheduling and rotation spills remain.
@@ -1273,6 +836,17 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // homes (names and scopes do not move them) and the rotation block's schedule; rounds 10-12, 56, 92, 108, 187, 225,
 // T59 and DH383 above list its statement orders, named products, helpers and in-place forms, and no untried natural
 // form was found beyond these.
+// P469: Complete cosine-weight/sine-weight/squared-axis vector producers, seven
+// family subsets then all by plain component loops: 556/676/699/909/583/642/944/567.
+// NOT kept: vector residence/rounding misses native code or frame/extent; original
+// scalar parts, signed loops and complete input-before-output rotation restored.
+// P483: Accepted endpoint memcpy start/end/both, memmove start/end/both, then
+// both endpoints plus fallback quad with either library: 535/535/535/748/749/736/535/810. NOT kept:
+// tag/count/plane homes persist or frame/extent regresses; original whole body
+// and every private helper restored.
+// T104: Accepted-face selection/emission cursors, original-count then actual-end bounds,
+// separate/both/mixed phases: 667/535/682/660/539/679/671/671. NOT kept: no native
+// tag/count/plane-home recovery or equality; original indexed traversals and full body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

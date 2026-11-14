@@ -567,6 +567,10 @@ struct s_text_line_measurement
 // after `width`, 77 each (same code: names do not move the width/advance-copy XMM coloring); `width` declared last among the
 // entry locals 81 (the entry stores reorder); kerning/offset/advance declared at the top of the loop body and assigned in
 // place 77 (same code). Retail's width loads into XMM4 ahead of the products because the advance copy takes XMM3.
+// P485: One continue/stop/restore-break completion result, byte/char/signed-char
+// 123/123/123, short/word/int/long/dword 117/117/117/117/117. NOT kept: no byte
+// match; original two flags, float trees, loop and complete body restored. Native advance
+// copy and early width load remain.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

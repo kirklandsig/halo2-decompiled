@@ -307,12 +307,12 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 	}
 }
 
-// MiniMax C (11-11): no new form, no lower score (8); the failure block as a label with the two outer paths jumping into it, and the goto tail, both give the same listing, so the dot's i term still loads up first and the failure block still stores before its pops.
-// score 8 (was 14): frame 0x48 and 925-byte length agree; the i product loads up first, and
+// score 8 (was 8): frame 0x48 and 925-byte length agree; the i product loads up first, and
 // the not-valid edge and failure pops/stores differ. Earlier at 14: 56 before round 101, 112 before that; frame 0x48, the entry registers, the definition spill, the search and the axis bases agree (round 101); earlier at 56,
 // frame 0x48 and the entry registers agree, 0xb7060 matches; what remains: the definition spilled at its load (retail EAX, ours ECX, then the
 // default body and index registers), the search's bodies/offset load order, transform kept in EBP where retail has `lea ecx` and left in EBP, the dot's first two
 // products (retail k then j, up first), one cross product side, and the failure stores (retail after the pops).
+// MiniMax C (11-11): no new form, no lower score (8); the failure block as a label with the two outer paths jumping into it, and the goto tail, both give the same listing, so the dot's i term still loads up first and the failure block still stores before its pops.
 // MiniMax R (11-10), earlier at 8 (was 14): the projection's dot, the scale's input and the cross now take the transform's fields
 // directly, so the dot's term order (retail k, j, i) and the cross's products agree; left: the dot's i product (ours
 // up.i*forward.i, retail forward.i*up.i), the not-valid exit's jump (ours into the failure block's pops, retail to the
@@ -670,6 +670,18 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // unused result). So retail's two returns were not the same block when its jumps were threaded, and left no code for
 // the difference. The body as a new forced-inline helper returning `bool`, the failure stores under `if (!...)` in the
 // function 22 (925 bytes: our tail again, and three cross and scale products change sides).
+// Round 115 (m3 lane 16, single-address fast, control 8): 0-7 dead initialised locals move the product sites but not
+// the tail: the dot's i term is retail's only at 5 (12: the cross products' first two rows then flip), the cross rows
+// only at 0, so the two need a relative shift of three steps. The tail: retail's not-valid branch shares the epilogue
+// the cross path falls into, so the failure block's own epilogue has one predecessor and its pops are scheduled above the
+// stores (the same tail as matched 0xb7060). A compile-only screen gives that tail when the failure is the first arm
+// (`if (body_index == NONE) failure; else success;`, or an early return before a success path written last), but the
+// failure block is then laid out inline after the body test where retail jumps forward to it at the end: both 172
+// (real build). The failure stores chained (`valid = active = false`) 8 (same code); the not-valid path as an early
+// return 8 (same code).
+// Also, at the same phase: the dot taking the up and forward pointers 14 (its k and j rows flip); the cross taking the
+// three axis pointers 12 (two cross rows flip, the dot's i row stays); the scale taking the forward pointer 14 (the
+// first cross rows flip).
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
