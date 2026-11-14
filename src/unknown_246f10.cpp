@@ -110,6 +110,9 @@ public:
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
 	c_type_47f957 material, long effect_value, s_location const *location, real scale);
 
+// score 6: retail loads the spilled 0x188180 argument into eax after pushing
+// the position; ours loads it into ecx before, so the push sequence is one
+// slot out of step. Permuter (8 min, 60 tries, seed 999): no form below 6.
 // @retail 0x247070
 void function_247070(s_object_246eb0 const *particle, s_particle_impact const *impact, long definition_index, long tag_index)
 {
