@@ -1151,6 +1151,11 @@ bool c_projectile_type::v8(long a, long b)
 // word read through the parameter's address, 12 each. Diagnostics (not kept): with the mask the flags take ESI at three uses
 // each (12) and at four each (37); the object takes it with the 0x400 test removed (40); with the word read the object takes
 // ESI even with one of its 0x140 reads removed (6), so the word read does not act through a use-count tie alone.
+// Round 119 (m3 lane 9, fast with 0xa5e70, matched each time), with the full-width mask unless noted: the call's mask
+// from the flags local and both tests from `b` 12; only the 0x800 test from `b` 12; the group value pointer (or NULL)
+// from a forceinline taking the object 36 (189 bytes); the index reference bound at the function's top, before the
+// call, 12, with the word read 5. In the mask listings the group data reuses ESI after the flags (retail: after the
+// object). Diagnostic, compile-only: /G5, /G6, /G7 and /GB all keep `movzx eax, ax` for the word read.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

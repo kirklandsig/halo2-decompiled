@@ -958,6 +958,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // cleared first 65; the else arm's k row first 56, its distance copied after the three rows (before 0x11d090) 64, the
 // pitch cosine written at each use 169 (1275 bytes). Re-measured: the common field of view/offset/velocity stores once
 // after the arms 246 (1211 bytes, Round 512's listed 246). Body unchanged.
+// M3 lane 9 r120 (plain): the second product through cross3f 57 (1264 B); both products through function_1f087b 49
+// (1264 B); the second through cross3f_staged 217 (1270 B); the first through function_1f087b with the second through
+// cross3f_staged 221 (1272 B) or cross3f 222 (1273 B).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

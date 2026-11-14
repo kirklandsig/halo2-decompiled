@@ -210,6 +210,11 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // scale` 2 (all same code); the reciprocal, or only the maximum, through a two-argument forceinline helper 2/2 (same
 // code); the clamp as a macro 2 (same code); the numerator as the integer 1, 2 (same code), as a double 1.0, 561 (2044
 // bytes, a double division). In every form the 1.0 of the first reciprocal is reached before the scale.
+// Round 119 (m3 lane 9, fast, on the kept 25 body): the two offsets as one point2f pair 90, as a `real [2]` array 90:
+// either gives retail's offset block instruction for instruction (first offset subtracted on the x87 stack ahead of
+// both magnitudes, second offset by SSE), but the pair takes an 8-byte slot after the double angle, so every home
+// below the axes moves down 4 and the axes and the double 8 (the pair named to sort first or last: 90/90). The two
+// magnitudes as a point2f pair 51 (the offset is still forwarded to its use).
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

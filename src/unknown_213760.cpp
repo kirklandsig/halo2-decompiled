@@ -1691,6 +1691,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // cache_file_header_read(index) ? true : false;` 105 (932 bytes: a `setne` that is tested again, no threaded continue),
 // `!= false` 105 (same code); the close test with the handle test first 68; the cleanup's slot switch ahead of the header
 // memset 49; `remove_later = false;` ahead of the remove call 35. Body unchanged.
+// M3 lane 9 r120 (fast): the close repeated in both resize arms with no zero store 179 (994 bytes, VC keeps both tails);
+// the checksum operands swapped 33; `bool valid_types[3] = { true, true, true };` 263; the write count also zeroed at its
+// declaration 96 (934 bytes); the query size as unsigned long 33. The size/count homes look ordered by reference count:
+// the zero-store arm gives the count a third reference that retail's threaded join does not have.
 // @retail 0x213970
 void function_213970(void)
 {
