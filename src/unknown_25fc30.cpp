@@ -1738,7 +1738,8 @@ struct s_collision_result_25f7b0
 };
 
 // score 4 (was 4): the collision bool's byte home is +0x13 where retail keeps it at +0x10, and the product loads the
-// hit fraction where retail loads the distance. Earlier notes, merged into this one:
+// hit fraction where retail loads the distance; both come from retail inlining 0x1c8df0 at the first branch (round
+// 115 below: BLOCKED-BY 0x1c8df0). Earlier notes, merged into this one:
 // MiniMax G (11-10): no new form, no lower score (4): the hit fraction held in a named local scores 2 (the product becomes distance times fraction), but that local holds a value used once and the form is recorded above as not kept, so the original body stays. The collision flag's byte home is still +0x13: declaring it in the outer scope, and three named bool comparisons in the else branch (each used once in a condition), do not move it, because those bools are dropped before the frame is laid out; inlining the flag's expression at its use drops the slot and the code (256).
 // MiniMax C (11-09): no new form, no lower score (4): the full build's diff is only the collision
 // flag's byte home, ours at +0x13 where retail has +0x10; the rest of the frame agrees slot for
@@ -1840,6 +1841,19 @@ struct s_collision_result_25f7b0
 // three dword slots are +0x10 (this bool alone, its low byte), +0x14 (the else branch's mode, then its allow bool
 // in the same slot's low byte) and +0x18 (distance / side count); ours gives the lone bool a 1-byte home placed
 // after the dword slots (+0x13), so retail's bool is held in a dword slot the way a spilled call argument is.
+// Round 115 (m3 lane 16, fast with 0x1c8df0, 0x1e55d0 and 0x1e1f20; control 4): BLOCKED-BY 0x1c8df0 (its noinline
+// declaration; retail inlines that call at this first branch, with 0x1b2770's constant arguments, and keeps the else
+// branch's call out of line). Diagnostics, not kept (a file-local forceinline copy of an existing function): 0x1c8df0's
+// body copied as a forceinline helper and called here with the parent test as its bool argument puts the bool at
+// retail's +0x10 and loads the product distance first, as retail (220 positional: only the setup registers differ, the
+// row sign-extended into EBX where retail zero-extends it into AX); the same with the row passed through a short local
+// 249 (the bool goes to BL, frame 0x7c); this body unchanged inside a forceinline helper taking the flag as a bool
+// parameter 220 (+0x10, product still fraction first), so the home is the inlined bool parameter's and the product
+// order is the fraction copied at the hit; the flag returned by a forceinline predicate 4 (+0x13, a return value
+// gets no parameter home). Plain forms: the flags built with `&= ~0x20` as in 0x1c8df0 4 (same code); the
+// visibility test in 0x1c8df0's spelling (two NONE tests and a negated call) 23.
+// Also: the distance through the existing magnitude3d 185 (959 bytes, it stays a call); the flags as a ternary in the
+// query call's argument (no flags local) 214; the visibility arms swapped with the test negated 4 (same code).
 // @retail 0x25f7b0
 void __stdcall function_25f7b0(long arg_0, s_type_967e20 *arg_1, s_type_b36ac5 *arg_2)
 {

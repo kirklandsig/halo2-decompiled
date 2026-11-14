@@ -1052,6 +1052,14 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // natural form found (the `__assume` on the state at the dispatch is listed too). Body unchanged.
 // M3 lane 5 r179: no trial; the residue is register rotation only (masked 2), and the rounds above (lane 3 r231, lane 2
 // r77, lane 7 r156) list every natural total, size, position, clamp, getter, case and scope form. Body unchanged.
+// M3 lane 16 r116 (fast with 0x2adb10/0x2ada70, both matched throughout): the entry total folded into its conversion
+// re-measured 88 (entry retail's to +0x3f; the signature case then loads the file handle into ECX after the add where
+// retail loads it into EAX ahead of the pushes). On that folded form: no `default: __assume(0);` 220 (695 bytes); the
+// scratch clamp as an `if` 88; the signature position summed body size first 88; the two signatures declared ahead of the
+// position 88; the body case's position summed body offset first 88; the state store ahead of the folded conversion 231.
+// Reading: retail's direct arm computes the remaining count in ECX and jumps to the clamp's `mov edi, ecx` (the two arms'
+// `size = ...` tails are cross-jumped), so its hoisted body_size never joins size or position; ours coalesces them in ESI.
+// Body unchanged.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

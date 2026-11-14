@@ -3854,6 +3854,17 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // class-flag test's arm, after the 0x221810 call 31 (559 bytes: index EBX and range EBP as retail, but the address is
 // formed after the call). So the swap appears exactly when the range is live across the class-flag call inside case 0;
 // above the mode (three calls) or after the flag call (one call) the index keeps EBX.
+// M3 lane 16 r116 (fast): with the range in case 0 (78, re-measured): a `dword` sound index 78; the voice as a reference
+// 78; the acquisition test inverted (failure arm first) 108; `!(start > time)` 78; the class-flag test through a
+// TEST_FIELD_BIT of the shifted word 78, through a new word bitfield bit 5 in the existing start-flags view 78 (on the 24
+// form 24, same code), through a short `mode` field at +0xe in the promotion view 78, `(short)1` in the mode ternary 78.
+// The class-flag byte read as a byte (`*((byte *)... + 0xa) >> 5`) 72, or as a byte bitfield 72: every register is
+// retail's (index EBX, range EBP), but the test folds to `test byte ptr [eax + 0xa], 0x20`; the word read keeps
+// retail's `shr al, 5; test al, 1` and swaps EBX/EBP. The test as a plain-inline helper 73 (called, registers right),
+// forceinline 228 (604 bytes). So the swap follows the flag test's word temporary when the range is live across it.
+// Also: the class-flag byte read as a signed short 79, as a char 72 (folds); that flag in a named bool after the
+// range 78; the voice's previous owner in a named local for its three uses 78; flag4 as a shift of the playback flags
+// word 78; the source-updated test as a shift of that word 78.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
