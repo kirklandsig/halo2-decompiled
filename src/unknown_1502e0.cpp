@@ -923,7 +923,15 @@ struct s_tail_transfer_traits
 	byte grenades[2];
 };
 
-// score 153 (was 153): unchanged this round: the first 0x11c bytes agree with retail; from the
+// score 144 (was 153): the third weapon comes from the selection paths without a NONE preset and the no-seat
+// slot lookups go through a pool copy, so retail's object-table reloads appear; from the selection loop on the
+// traits pointer still comes back in EBP where retail keeps it in EAX, and the counter sits at +0x1c against
+// retail's +0x18.
+// MiniMax I (11-14): the third weapon needs no NONE preset because both paths assign it, and the two no-seat
+// slot lookups go through a pool copy that stays a real variable, which brings back retail's object-table
+// reloads and the native home of that weapon: 144 (was 153), the length stays retail's 826 bytes.
+// MiniMax I (11-14): the permuter (12 tries, 66 s) finds no better form for this function than the 144 above.
+// Earlier, at score 153 (was 153): the first 0x11c bytes agreed with retail; from the
 // selection loop on, the traits pointer comes back in EBP where retail keeps it in EAX, and our three
 // NONE homes sit at +0x18/+0x20/+0x28 against retail's two at +0x1c/+0x24.
 // MiniMax S (11-11): no new form, no lower score (153): the traits pointer comes back from the selection loop in ebp where retail keeps it in eax, and our three NONE homes sit at +0x18/+0x20/+0x28 against retail's two at +0x1c/+0x24.
@@ -1088,7 +1096,7 @@ void function_152660(s_tail_transfer_options *options)
 				s_tail_transfer_unit *unit = (s_tail_transfer_unit *)tail_object_get(g_4e0300, unit_index);
 				long primary = NONE;
 				long secondary = NONE;
-				long other = NONE;
+				long other;
 				if (unit->seat_index != NONE)
 				{
 					for (long selection = 0; selection < 2; selection++)
@@ -1114,11 +1122,12 @@ void function_152660(s_tail_transfer_options *options)
 				}
 				else
 				{
-					s_tail_transfer_unit *first = (s_tail_transfer_unit *)tail_object_get(g_4e0300, unit_index);
+					s_record_pool *objects = g_4e0300;
+					s_tail_transfer_unit *first = (s_tail_transfer_unit *)tail_object_get(objects, unit_index);
 					short primary_slot = first->primary_slot;
 					if (primary_slot != NONE)
 						primary = first->weapons[primary_slot];
-					s_tail_transfer_unit *second = (s_tail_transfer_unit *)tail_object_get(g_4e0300, unit_index);
+					s_tail_transfer_unit *second = (s_tail_transfer_unit *)tail_object_get(objects, unit_index);
 					short secondary_slot = second->secondary_slot;
 					if (secondary_slot != NONE)
 						secondary = second->weapons[secondary_slot];
@@ -1172,6 +1181,10 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 long function_cbd50(long unit_index, short weapon_index);
 
 // score 215 (was 215): the tag table stays enregistered (EBX) through the first loop, so the player spills (frame 0x1c against 0x18).
+// MiniMax I (11-14): no new form, no lower score (215): a named local for the tag table, that local assigned inside
+// the first loop and the flag helper reading the global itself all keep the table enregistered in EBX and the player
+// spilled (frame 0x1c against retail's 0x18), while a cached unit index (301) and the unit local for the two slot
+// reads (308) are worse.
 // MiniMax S (11-11): no new form, no lower score (215): retail computes the pool element address before the prologue's register saves and keeps it whole in ebp, while this build splits the multiply from the base add, keeps the pool pointer in a register of its own and frames 0x1c against retail's 0x18.
 // MiniMax G (11-12): no new form, no lower score (215): eight forms tried this round (unit local dropped or re-derived, pool and tag table hoisted or reloaded, player in a register or spilled) all score above 215; retail still inlines the weapon-slot lookup and derives the unit twice per iteration where ours calls function_cbd50.
 // MiniMax E (11-09): no new form, no lower score (254); taking the tag table straight from the global in every loop reaches retail's 1006 bytes but scores 275, and hoisting the copy to the declaration keeps the same 254 with the same code.
