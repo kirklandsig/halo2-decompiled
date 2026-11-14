@@ -492,6 +492,10 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1);
 
 s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 
+// MiniMax E (11-14): no new form, no lower score (87, was 87): retail loads the object index into EAX before it pushes
+// the timing call's buffer and looks the object up before either vector is copied; this build pushes the buffer first,
+// loads the index after and looks the object up between the two copies. The four scalar homes (the radius sum, the
+// first length, the adjusted projection and the location index) also sit one slot lower than retail's.
 // MiniMax G (11-12): no new form, no lower score (87); the unit index in a local read at the guard, the object lookup and
 // the location query, with the lookup ahead of the two vector copies, gives 237 at 958 bytes, so the field is read again
 // where retail reads it; left: the 0x110ab0 argument register (ECX where retail uses EAX), the sum's operand order and the

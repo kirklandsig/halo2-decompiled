@@ -3274,6 +3274,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
+// MiniMax E (11-14): no new form, no lower score (93, was 93): retail keeps the particle system in ESI and the next
+// index in EDI, spills the definition pointer and reads the location mode at each call; this build gives the system
+// EDI and the next index ESI and caches the mode, so the frame is 0x4c against retail's 0x54. The per-call mode form
+// measures 108 here and drops the matched caller 0x176f60, which lives in another file.
 // MiniMax H (11-14), NOT kept (coordinator: a 2-point gain on a function still above 30 is under the keep bar; code
 // back to main, 93): the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A)
 // measures 91 at 337 bytes with the matched caller 0x176f60 still matching; the same order with the

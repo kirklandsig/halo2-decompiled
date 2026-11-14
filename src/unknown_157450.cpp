@@ -2324,6 +2324,7 @@ void function_159460(long player_index, bool *leading, bool *tied)
 
 #include "object_iterator.h"
 
+// Re-binds every equipment object to its netgame entry, releasing the object the entry held before.
 // score 8 (was 8): Round 30 (lane C): the inlined lookup still loads the table base before masking
 // and scaling the object index; retail scales the index first, so the scaled index gets its own
 // register and the base lands in EAX, which in turn moves the tail reload and the iterator LEA.
@@ -2411,6 +2412,7 @@ void function_159460(long player_index, bool *leading, bool *tied)
 void function_15adb0(s_netgame_entry_state *entries)
 {
 	struct { s_engine_object *object; s_type_f1af8e iterator; } local;
+	s_scenario_netgame_view *scenario = (s_scenario_netgame_view *)g_4e0350;
 
 	function_15ace0(entries);
 	function_bae80(&local.iterator, 0x1e, 0);
@@ -2418,7 +2420,7 @@ void function_15adb0(s_netgame_entry_state *entries)
 	{
 		long index = local.object->netgame_entry;
 
-		if (index >= 0 && index < ((s_scenario_netgame_view *)g_4e0350)->count)
+		if (index >= 0 && index < scenario->count)
 		{
 			if (entries[index].index != NONE)
 			{

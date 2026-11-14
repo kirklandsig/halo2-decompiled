@@ -1372,6 +1372,9 @@ struct s_looping_detail_request
 	short tracking_data_size;
 };
 
+// MiniMax E (11-14): no new form, no lower score (110, was 110): retail calls the first-player query out of line
+// where this build expands it, and retail's audible arm holds the offset in a stack temporary that is copied into the
+// request after the 0x21bfb0 call; that arm measures 127 to 134. The query's declaration is in another file.
 // MiniMax B (11-12): no new form, no lower score (110, was 110): retail calls the first-player query 0x14dde0 out of
 // line where this build expands it, and retail's audible arm keeps the offset in a stack temporary that is copied into
 // the request after the 0x21bfb0 call (that arm scores 127-134). Marking the query noinline gives 25 at 509 bytes but
