@@ -1400,6 +1400,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // P474: Standard player/machine/group identity copies forward 851/821/892;
 // backward 851/868/892; full-byte equality/mismatch 889/888. NOT kept:
 // regressions; frame/session/initial lookup remain. Original body restored.
+// P481: Direct failure completion to the sole result return, bool/byte/word/long,
+// original/entry true default: 785/785/808/808/801/825/803/826 (control 766).
+// NOT kept: frame/ingress/lookup still differ and extents regress; original
+// early returns, result, helpers and complete executable body restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

@@ -796,6 +796,10 @@ static inline long font_character_pixel(long alpha, long color)
 // expanded opacity 239; named parity 239; split numeric bands 203; scaled byte-parity field 62;
 // disjoint addition 228; split byte-parity bands 59. NOT kept: no native parity/run/literal
 // equality; original helper and complete decoder restored.
+// P481: On the long-result/multiplied-literal graph, shared actual fill-pixel/run
+// workspaces at iteration/entry and consumed-span entry lifetime, eight forms all 59.
+// NOT kept: no native parity/literal/run-two recovery; original helper, runs,
+// pixels, span and complete executable body restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

@@ -2478,6 +2478,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Native iterator homes and normalized-direction SIMD residence remain.
 // Scores 506/494/593/559/645/639/696/775. NOT kept: ties/regressions;
 // original executable body and helper contracts restored.
+// P481: Actual point/absolute/relative scratch final-consumer scope ends, seven
+// subsets, then all with read-only unit receiver: eight 168s at 2880/2880.
+// NOT kept: no native iterator/search/SIMD equality or gain; original scopes,
+// producers, helpers and complete executable body restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
