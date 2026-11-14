@@ -186,6 +186,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // instructions, folded). Diagnostic: the matched sibling 0x8c790's identical `kind == 1` stays unfolded only
 // through its inlined 0x80e13 time-stamp read (a compile-only copy folds without it, with its result unused, or
 // with 64-bit arithmetic alone); here a plain read still folds with an asm block written into the handler.
+// Round 195 (m3 lane 4, fast, all with the volatile read): `setting = kind` in the not-available arm 4 (same code); a
+// `kind == 0` arm ahead of the `kind == 1` arm 32 (103 bytes: retail's ECX/AX pair, the extra test survives); the volatile
+// read passed straight as the selector's argument, index first 5; the availability test as one returned expression 4;
+// `short const kind` 4.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

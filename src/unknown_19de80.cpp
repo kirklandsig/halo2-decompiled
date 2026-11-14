@@ -647,6 +647,11 @@ static inline bool teams_enabled_19e1c0()
 // as the plain result); every formatter failure as `return remaining;` (seven sites) on the volatile result 439 (1416 B);
 // the named lengths with those returns on the plain result 696 (1167 B); the four copies ending in `return result;` on the
 // plain result 691. Body unchanged.
+// T106: Actual entry-owned capacity consumed by name/formatter/engine families,
+// seven ordinary-result graphs then complete inherited-result graph:
+// 458/701/458/701/458/701/458/434. Name forms recover token preload and
+// early capacity EBP but retain frame 0x208 and merge name tails. NOT kept:
+// no native frame/result/copy-tail equality; original full body restored.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

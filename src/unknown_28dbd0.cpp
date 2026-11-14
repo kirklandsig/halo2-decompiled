@@ -454,6 +454,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // scale first (`local_3 * local_2.i`) 173 (same code); the jitter written `x = x + local_3; y = y + local_4; z = z;` 173 (same
 // code: the z self-copy is dropped, unlike retail's); the creation owner as one conditional expression 175; the heading
 // vector declared ahead of its angle draw 173 (same code). Body unchanged.
+// T105: Existing scale-output receivers, axis/cross/direction subsets 1..7,
+// then complete returned-buffer shared sums: 226/227/227/226/226/227/227/233.
+// NOT kept: no native frame/cross-home equality; original helper/body restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

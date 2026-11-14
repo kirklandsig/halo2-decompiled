@@ -304,6 +304,13 @@ PRIVATE inline long swizzle_log2(dword value)
 // parameters in the tails 146 (313 bytes). The register arguments follow the last/second-to-last/first rule over the
 // parameters the body keeps in registers at entry (width EAX, x EDX, y ECX), so retail keeps x and y enregistered as
 // shorts across both logarithms; no form here does that without moving the bit counts to memory.
+// P465: Five incoming scalar identities and native mask/column-output/row-output
+// identities independently named by role: eight 57, both callers exact. NOT kept:
+// no delayed SI/DX promotion or common-count recovery; original complete body restored.
+// P482: Unsigned coordinate bit transport x/y word-long/long-word/word-word/dword-long/
+// long-dword/dword-dword/word-dword/dword-word, signed interpretation at every use:
+// 120/136/150/57/57/57/120/136. NOT kept: word forms enlarge and lose the exact caller;
+// whole-width forms tie. Original captures, signed arithmetic, helper, contract and body restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
