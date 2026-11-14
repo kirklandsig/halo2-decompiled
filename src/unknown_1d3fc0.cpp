@@ -415,6 +415,12 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // `vector3f_scale(forward, -local_10, &offset); vector3f_add(up, &offset, up);` 156 (929 B), with `0.0f - local_10` 156;
 // `vector3f_scale(forward, local_10, &offset)` then `up->x -= offset.x` rows 110 (same code); each with the normalizer's
 // squared length through dot3f 155 (925 B) and 154 (922 B). Body unchanged.
+// m3 lane 1 r102 (fast, 0x1c4a80 matched each time; masked = aligned count with registers and offsets masked, base 6):
+// the projection through the existing vector3f_scale into an `along` vector, then `up->i -= along.i` rows 110 (same code);
+// vector3f_scale(forward, -dot) plus vector3f_add(up, &along, up) 156 (929 B, masked 11); the dot negated once with `+=`
+// rows 156 (929 B, masked 11); the cross through the existing cross3f_staged 179 (929 B, masked 39); the third
+// normalization on `&local_1[0].up` in place of `up` 110 (same code); the projection through the existing vector3f_assign(up, ..)
+// 188 (937 B, masked 11).
 // P487: Standard dot/magnitude/scaling on the original j-square/returned-axis graph,
 // seven subsets then explicit operators: 210/306/365/353/371/459/465/515.
 // NOT kept: all regress and grow; original four-use helper and complete body restored.

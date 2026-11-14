@@ -1490,6 +1490,10 @@ long function_cbd50(long unit_index, short weapon_index);
 // and pushes ESI and EDI.
 // MiniMax H (11-13): no new form, no lower score (164); retail holds index times twelve in EDX and adds it to the pool data in EBP, while this build folds the index into the address expression, and the two stack slots are a dword apart.
 // score 164 (was 164):
+// MiniMax I (11-14): no new form, no lower score (164): the entry lookup and the two slot reads keep the index
+// folded into the address where retail holds index times twelve in EDX and the pool's data in EBP (four pushes
+// against our three), and the three flag bytes sit at +0x0e/+0x0f and the overlay word at +0x10 where retail has
+// the flags at +0x11/+0x12/+0x13 and the overlay in the dead argument slot at +0x14.
 // MiniMax B (11-11): no new form, no lower score (164); the body is unchanged, and the forms listed above are exhausted.
 // MiniMax H (11-11): no new form, no lower score (164); retail keeps index*12 as a value and re-reads the unit and
 // the pool's data for the second depletion query, and writes the first depletion with setle; the permuter (600 s) found nothing.
@@ -2953,6 +2957,12 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // store the index stays in AX and NONE takes ESI 84; without both NONE takes EBX 88; two more NONE stores 38 (no
 // change of roles), four more 72 (NONE second). So NONE sits just under the priority here and would need the weight of
 // about eight more stores to pass the index, as retail's order (NONE, index, priority) needs.
+// Round 197 (m3 lane 4, fast): the out value in its own `long definition_index = NONE` local with the priority
+// parameter kept long and read once 46 (the convention and frame change; six matched callers move); the default extra
+// fill as a force-inline helper taking the marker and object values as parameters, called with NONE, NONE 16 (same
+// code); the request priority captured first and the index from `entry_index != NONE ? entry_index : 0x20ba00` with one
+// NONE test 16; a pointer to the request's extra part for the copy and the three default stores 16; the request filled by
+// aggregate initialisation in place of the memset and the four stores 101 (277 bytes).
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

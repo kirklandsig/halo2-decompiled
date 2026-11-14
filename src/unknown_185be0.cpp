@@ -143,6 +143,12 @@ union s_185be7
     vector2f field_8;
 };
 
+// MiniMax E (11-14): no new form, no lower score (590): the length is still two bytes over retail's 3777 (the
+// `xor bl, bl` of the bit-4 flag block, where retail branches straight to the clear arm), and the flag chain on
+// field_18 stays misaligned because retail keeps the flag condition in EDX across the stores and writes the word
+// inside each helper arm while ours re-tests the condition per call; the forms tried this round (nested if, a
+// second bool, a hoisted "local_11 != 0" flag) all scored worse, and the reload of the control global that would
+// free EBX for NONE lives in another file.
 // MiniMax H (11-11): no new form, no lower score (590): retail keeps NONE in EBX for its early uses and re-reads
 // the control global after the call to 0x24590, whose declaration lives in src/unknown_023540.cpp, so the reload
 // cannot be produced from this file; the forms tried here that would force a re-read score worse.

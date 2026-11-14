@@ -399,6 +399,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // with case 0 through `headers[object_index & 0xffff]` 141 at 212 B [213]; a byte type 95 at 256 B [0]; the rigid body
 // declared first 107 at 240 B [13]; `headers` declared first with case 0 through the component 96 at 256 B [2] (the component
 // arrives in EDX). Body unchanged.
+// m3 lane 1 r102 (fast, caller 0x1d5bf0 in brackets): one byte type read `headers[object_index & 0xffff].type` at entry and
+// case 0 through `headers[(word)object_index].object`, with object_index, headers, rigid body and type each used twice (a
+// spelling that keeps case 0's index off the type read's CSE) 36 at 256 B [13] (left: component ECX/index EAX flip, headers
+// ESI, object index EDX, rigid body ECX, `mov al` + `movzx` type); the two spellings swapped 53 [13]; headers declared first
+// 100 (260 B) [171]; rigid body first 100 [13]; the rigid-body local renamed `body` 36 (same code: names move no register).
 // P487: Twice-used body flag as bool/byte/short/long, repeated then shared type:
 // 100/97/97/97/89/116/116/116. NOT kept: best gains only seven and loses matched caller 0x1d5bf0 to 13.
 // Original late flag reads, type observations and caller convention restored.

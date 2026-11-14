@@ -1895,6 +1895,8 @@ real function_30bf0(vector3f *vector);
 // local) 379 (aligned 297, masked 186: closer in shape, one point up), the two colours unpacked lightmap first 378 (aligned
 // 325, different code), color0 formed as `lightmap.red * scale0` with no copy 470 (0x3db00 drops to 12), `value1c` stored
 // first in the fallback 475 (1891 bytes).
+// MiniMax G (11-14): no new form, no lower score (378): re-measured in the batch; the frame is 0x4c against retail's
+// 0x40, and the normal copy and the limited, rotation and colour homes still sit at other offsets.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -2530,6 +2532,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // and offsets masked 110 against 302): left there are the frame homes and the two inlined helpers (13
 // extra instructions shift the tail).
 // MiniMax R (11-11): no new form, no lower score (542): the argument split and the body's block schedule still differ from retail's, and the two inlined helpers live in files this lane may not edit.
+// MiniMax G (11-14): no new form, no lower score (542): re-measured in the batch; the frame agrees at 0x90, but the
+// status, mesh, colour and sample homes still sit 0xc bytes below retail's, and the second arm's 0x13da30 lookup
+// still expands here where retail calls it.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

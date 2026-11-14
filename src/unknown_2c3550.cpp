@@ -824,6 +824,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // takes the state argument into EBX and indexes the g_4e0300 pool's data with it (twelve-byte entries) while ours
 // takes the actor index into EAX and indexes g_4f55f0's data, and the count stays in EBP where retail keeps the
 // state in EDX, so the whole body is laid out differently.
+// MiniMax A (11-14): no new form, no lower score (675); retail keeps its result in a stack byte and its pathfinding
+// pointer in ebx where ours keeps the result as a word and spills the pathfinding, and the homes of the flags and
+// of the type byte differ, so the two bodies stay laid out differently from the first instruction.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

@@ -1847,6 +1847,7 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// MiniMax G (11-14): no new form, no lower score (251): the actor, options and pool registers rotate against retail and that rides on the opaque callee 0x1e53e0 in another file.
 // score 251 (was 251): frame 0x14 and the actor index in EBX agree; retail loads the pool global into EDI above the
 // options lookup's `je` and holds it across 0x1e5280 (actor ESI, options EBP); ours re-reads it (actor EDI, options ESI).
 // M3 lane 8 r159 (fast): the halved rounds as `rounds[0] *= 0.5f;` 251 (same code). Re-measured: the loop's weapon in a
@@ -2113,6 +2114,11 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // MiniMax A (11-13): no new form, no lower score (251): the permuter reaches 246 after five tries, five points short of the
 // bar, so the body stands; the actor, the weapon options and the object-pool global still rotate against retail the way the
 // notes above say, and the pool global is still re-read at each lookup instead of held in EDI across the callees.
+// M3 lane 11 r99 (fast): the clump counter as a postfix `(*(short *)...)++` 251 (same code: the dead `lea` after the `inc`
+// stays); block 2's +0x23e store through a fresh lookup (unit kept for the grenade type) 254; the rounds pair as `short rounds[2]
+// = { 0, 0 };` in place of the memset 253; the two-weapon loop as `while (i < 2) { ...; i++; }` 251 (same code); the rounds minimum
+// named once (`short minimum`, three uses) with the draw inside the rounds expression 263. Retail reads +0x96 before the seed
+// store and keeps +0x94 from the test in DX, i.e. it schedules the bounds' loads across the seed store. Body unchanged.
 // P468: Double probability/delay/fraction/increased result storage, then probability-
 // increased/probability-delay/first-three/all: 348/302/272/307/328/321/307/304.
 // NOT kept: precision/storage graphs regress and miss native actor/options/pool
