@@ -701,6 +701,14 @@ extern point2f *g_468778;
 // T105: Progressive final-result logical/bitwise refinement, bool/byte/short/long:
 // 375/395/404/406/375/373/406/407. NOT kept: two-point best is below the gate
 // and no native result/carrier equality; original result and complete body restored.
+// M3 lane 11 r100 (fast with the file's functions and 0x265d30, 16 MATCH in each; 0x1aab50 at its own 382): the actor
+// looked up before the settings call with constant exits (`if (!local_1 || f13 || f14 || f2d) return false;`, the
+// final expression returned) re-measured 393 (frame 0x40): ours then gives arg_0 EBX (0x1e4f90's register), the actor
+// EDI (spilled at [esp + 0x20]), settings ESI (split: ESI later serves the facing pointer) and arg_1 EBP, prop in
+// arg_1's home; retail arg_0 EDI, actor EBP, arg_1 ESI, prop EBX, settings at [esp + 0x10] only. On it: the arg_1 view
+// declared first 393 (same code); the settings test as its own early return 410. Diagnostics (reverted, not source
+// forms): one settings read fewer (the -0.4 test's distance replaced) 403 and one prop read more 407, settings still
+// ESI in both, so reference counts alone do not rank prop over settings here. Body unchanged.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
