@@ -1050,6 +1050,8 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // code); `case _signed_file_read_signature: default:` 177 (688 B, the listed default form); the body progress as `(real)(position
 // + bytes) / total_size` 107; re-measured on this body: the listed early out on `body_offset >= body_size` 103. No fifth unlisted
 // natural form found (the `__assume` on the state at the dispatch is listed too). Body unchanged.
+// M3 lane 5 r179: no trial; the residue is register rotation only (masked 2), and the rounds above (lane 3 r231, lane 2
+// r77, lane 7 r156) list every natural total, size, position, clamp, getter, case and scope form. Body unchanged.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
