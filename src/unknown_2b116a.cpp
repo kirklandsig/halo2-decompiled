@@ -3137,6 +3137,14 @@ void playlist_list_focus_playlist(c_playlist_saved_game_file_list *list)
         }
     }
 }
+// score 9: the body is retail's byte for byte with ECX and EDX exchanged —
+// retail keeps the loop counter in ECX and the entry cursor in EDX, ours the
+// reverse (the xor, lea, inc, add, cmp, jb, imul and both loads). Declaration
+// order, a scoped counter, a do/while loop, commutative conditions, a named
+// index local, an explicit cursor pointer, a reference to the entry and a
+// direct return all measured 9 to 30 (the pointer and reference forms 30, 49
+// bytes). Permuter: 178 tries (seed 999) and 173 (seed 7), 300 s each, no form
+// below 9.
 // @retail 0x2b221d
 long *c_playlist_saved_game_file_list::find_playlist(byte type, long index)
 {
