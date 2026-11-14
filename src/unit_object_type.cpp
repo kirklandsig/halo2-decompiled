@@ -2233,6 +2233,7 @@ struct s_unit_motion
 // compares them there, while this build compares them in xmm1 and xmm3 and keeps a third value in xmm5, and the body
 // is 265 bytes against retail's 227 (BLOCKED-BY 0xc7840's call sites).
 // MiniMax H (11-14): no new form, no lower score (104): the accumulator spelling still measures 28, but this build then inlines it into 0xc7840 and loses the matched 0x1e5af0 and 0x1faf80, so it cannot be kept.
+// MiniMax D (11-14): no new form, no lower score (104): this body still keeps the position and velocity on the stack where retail takes them in XMM5 and XMM4; the form that gives retail convention reaches 28 but breaks the matched 0x1e5af0 through 0xc7840.
 // MiniMax B (11-13): no new form, no lower score (104): retail moves the two incoming floats into xmm0 and xmm1 and compares them there, while this build compares them in xmm1 and xmm3 and keeps a third value in xmm5, and the body is 265 bytes against retail's 227.
 // MiniMax H (11-12): no new form, no lower score (104): the accumulator form that gives retail's 227 bytes and 28 differences still makes LTCG inline this body into 0xc7840, which is in this lane's list, so it is not kept.
 // MiniMax C (11-10): score 104 (was 104): no lower score this round. The accumulator form re-measured 28 with
@@ -2388,6 +2389,7 @@ void function_cfec0(long unit_index)
 /* the object that answers for the unit: the vehicle when the unit's seat
    has bit 0 or 3, or a rider of that vehicle with bit 27 of its
    definition's +0xbc and its object flag 26; else the unit */
+// MiniMax D (11-14): no new form, no lower score (2): the only difference left is still the last exit, where the value for unit_index == NONE is returned as the constant or eax, 0xffffffff and retail moves the register copy into eax instead; a copy of the parameter returned at that exit still folds the constant (2), and a copy carried through the body drops the register copy (47).
 // MiniMax G (11-13): no lower score (2): the only remaining difference is the last exit, where the value for
 // unit_index == NONE is returned as the constant (or eax, 0xffffffff) and retail moves the register copy
 // (mov eax, ebx), so our body is 258 bytes against retail's 257. This round tried fifteen more forms: a result local
@@ -2936,6 +2938,7 @@ void function_c5740(long unit_index, bool start)
 // pointer in edi and re-reads the unit index and the material from the stack, while this build keeps the unit index in
 // ebx and the material in bp; the effect helper's convention in src/unknown_187ec0.cpp is not this lane's to change.
 // MiniMax H (11-14): no new form, no lower score (97): the sound call still takes the point in ECX and the forward on the stack where retail takes the point in EAX and the forward in ECX; that convention belongs to 0x188180, in a file this lane may not edit.
+// MiniMax D (11-14): no new form, no lower score (97): retail still keeps the definition index in EBP and re-reads the unit index and the material from the stack, while this build keeps the unit index in EBX and the material in BP; 0x188180 parameter types are in src/unknown_187ec0.cpp: BLOCKED-BY 0x188180.
 // MiniMax B (11-13): no new form, no lower score (97): retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack, while this build keeps the unit index in EBX and the material in BP; the callers' setup fixes that outside this file.
 // MiniMax H (11-12): no new form, no lower score (97): retail keeps the definition index in ebp and reads the unit index and the material from the stack at each use where ours keeps the unit index in ebx and the material in bp; the effect helper's parameter convention in src/unknown_187ec0.cpp is not this lane's to change.
 // MiniMax S (11-11): no new form, no lower score (90): the body is retail's length and the first difference is at
@@ -4617,6 +4620,7 @@ store:
 // pointers, this build forms the pointers first - and the callee's parameter list is in src/unknown_146240.cpp:
 // BLOCKED-BY 0x146320.
 // MiniMax H (11-14): no new form, no lower score (4): the cone call's four setup instructions are still in the other order, and that order is the cone helper's own convention in a file this lane may not edit; the eight source shapes tried before all give these four bytes.
+// MiniMax D (11-14): no new form, no lower score (4): the cone call four setup instructions are still in the other order - retail spills the sampled speed first and copies the seed last, while this build forms the pointers first; the callee 0x146320 parameter list is in src/unknown_146240.cpp: BLOCKED-BY the callee.
 // MiniMax B (11-13): no new form, no lower score (4): the cone call's four setup instructions are still in the other order: retail spills the sampled speed first, then the forward pointer, then the result pointer and the seed, while this build forms the pointers first.
 // MiniMax G (11-13): no new form tried this round, no lower score (4): the frame is retail's and the four
 // instructions that set up the cone call keep their order - the sampled speed's spill, the forward pointer, the output
@@ -4983,6 +4987,7 @@ void __stdcall function_cc810(long vehicle_index)
 /* plans a motion over a distance from a velocity: accelerate, coast and
    decelerate (by the acceleration) without passing the speed limit when
    one is given; negative distances are planned mirrored */
+// MiniMax D (11-14): no new form, no lower score (162): the one-use discriminant is still evaluated on the x87 stack, which is what needs the eight-byte frame, where retail computes it in SSE and stores it for the fsqrt; the (double) cast on the sqrt argument, a named float local, the same local at function scope and a float sqrt all score 162.
 // MiniMax G (11-13): no new form tried this round, no lower score (162): the one-use discriminant
 // is still evaluated on the x87 stack where retail keeps it in SSE, so the frame stays eight
 // bytes, and retail keeps stop_time*0.5f*velocity*0.5f unfolded where this build folds it into one
@@ -6177,6 +6182,7 @@ void function_cf040(long unit_index, short type)
    free, its seat group's partner friendly and willing, no enemy riding
    (outside state 2), and for players a clear line to the vehicle; also
    the seat's occupant and whether the seat is grouped */
+// MiniMax D (11-14): no new form, no lower score (1): the whole body still agrees except the weapon loop header read, whose base and index order is the other way round (ours [eax+edi+8], retail [edi+eax+8]); the cast deref of the element address at offset eight, the offset-first integer sum and the masked-index helper all keep our order.
 // MiniMax H (11-12, third pass): no new form, no lower score (1); the only difference left in the whole body is the
 // base and index order of the header read inside the weapon loop (ours [eax+edi+8], retail [edi+eax+8]). This round
 // added the index term first and the pool first as integer sums, the byte-pointer sum, the element pointer with the
@@ -6654,6 +6660,7 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // with `and cl,1` and stored in the ready byte, retail's frame order (unit 0x14, weapon 0x18, hands 0x1c), the mode-2 path's
 // `xor esi,esi` and the duplicated epilogue.
 // score 280 (was 333): the single exit with `default: __assume(0)` gives retail's stack convention
+// MiniMax D (11-14): no new form, no lower score (300): the frame 0x50 and the single exit with the stack convention agree, but the weapon and mode still take EBX and EDI the other way round, and the two weapon flag tests are still not stored in the ready byte as in retail.
 // score 300 (was 333; 280 only with the unkept `hand = 0; if (...) hand = 1;` form below): the single exit with `default: __assume(0)` gives retail's stack convention
 // (all three arguments pushed), which matches 0xc4820, 0xccab0, 0xcce00 and 0x19ef40; current frame 0x50
 // agrees (earlier 0x54); weapon/mode in EBX/EDI versus EDI/EBX,
@@ -8133,6 +8140,7 @@ real function_50650(real cosine);
 // only then branches; the two 0xc7750 calls still push position and velocity on the stack where retail passes them in
 // xmm5 and xmm4 (BLOCKED-BY 0xc7750's inlining).
 // MiniMax H (11-14): no new form, no lower score (563): re-measured with the plain build (2474 bytes against retail's 2483); the second pointer's entry test and the frame size still differ, and the cheaper 0xc7750 body that would take the call out of line would be inlined here and lose the matched 0x1e5af0 and 0x1faf80.
+// MiniMax D (11-14): no new form, no lower score (563): the frame is still 0x8c against retail 0x80, and the input and vector homes and the prediction and call scheduling remain.
 // MiniMax B (11-13): no new form, no lower score (563): re-measured with the plain build (2474 bytes against retail 2483, first difference at +0x2); what is left is the entry test of the second pointer and the frame size.
 // MiniMax H (11-12): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80, retail tests its second pointer at the entry while this build stores two zeroed speeds first, and the two 0xc7750 calls still push position and velocity on the stack where retail passes them in xmm5 and xmm4; the accumulator form of 0xc7750 that gives 28 also inlines into this body, so neither change is kept.
 // MiniMax S (11-11): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80 - retail tests
