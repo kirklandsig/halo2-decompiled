@@ -107,6 +107,10 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
     arg_1->z = local_4 + arg_0->position.z;
 }
 
+// score 93 (was 93): frame 0x4040 agrees; left are the entry guard's registers (ours loads the strip record into
+// ecx after the pushes, retail into eax before them), the count loop's movsx where retail tests the word and
+// zero-extends, the count/counter slots swapped, the 0x17cfa0 call setup (BLOCKED-BY 0x17cfa0, a contributor's)
+// and the transform rows' product forms. Earlier rounds below.
 // MiniMax H (11-13): no new form, no lower score (93): the entry guard still loads the strip pointer after the register
 // saves and into ecx where retail loads it before them into eax, and the call to 0x17cfa0 still passes the first index in
 // ecx where retail passes it in eax; that callee lives in another file.
@@ -118,7 +122,7 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // ecx where retail loads it before them into eax; the guard as one positive test scores 121, a local copy of the strip pointer 168, and
 // the permuter's 22 annealed tries over the reduced image found nothing below the 93 baseline.
 #pragma inline_depth(1)
-// score 93 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
+// Earlier at 93 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
 // MiniMax I (11-10): no new form, no lower score (93); the count sum and the vertex cursor still take the
 // opposite stack slots, the three field sums still load the lower field first where retail loads the higher
 // and adds the lower (MSVC canonicalises the spelling either way), and the transform x row's product order
@@ -126,7 +130,7 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // scores 102 and was restored, and casting the strip count to unsigned short does reproduce retail's movzx
 // of the count but then widens the guard's signed test as well (93, restored), as an unsigned short local
 // for the count (168).
-// score 94 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
+// Earlier at 94 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
 // creation-call setup and transform scratch ranks differ.
 // MiniMax D (11-09): no new form, no lower score (94); the sixth argument is still read into ECX after the
 // prologue's pushes where retail reads it into EAX before them, and the third argument is still kept in
@@ -246,6 +250,13 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // MiniMax D (11-11): no new form, no lower score (93): the entry guard still gives the `s_180d81` pointer to ECX after
 // the register saves and the cluster-query pointer to EAX, where retail gives them the other way round; splitting the
 // guard into two tests scored 633 and a local copy of the pointer scored 168, and both were reverted.
+// m3 lane 12 r122 (fast; the reduced image warns that callee 0x439d0 builds differently there): the luminance
+// terms red, blue, green 91 (VC emits a three-term sum last term first, so this gives retail's green, blue, red
+// loads; gain two, not kept); with it the short count-loop index 100 (retail's prologue and count loop, the three
+// field sums flip to the lower field first); that with the sums spelled lower field first 100 (same code); the
+// luminance order with the transform x row accumulating the left product first 92 (retail's emission order and
+// load forms for the row, the accumulator register swapped); the luminance order with the x row's first two
+// products in one expression 296 (2658 bytes).
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {
