@@ -750,6 +750,8 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // T107: Paired alternate/fallback permission results after resolution or found copy,
 // bool/byte/short/long: 592/592/600/536 at both boundaries. NOT kept: all regress;
 // wider forms also lose seven matched callers. Original full body restored.
+// P497: Actual serial fallback/request mode/class/type locals, seven subsets then all with Boolean success: 390/356/353/394/391/356/394/487.
+// NOT kept: graph/base ownership and byte normalization remain, some forms disturb the exact prefix and Boolean status lengthens; original complete body and provider call restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
