@@ -563,6 +563,10 @@ struct s_text_line_measurement
 // font-cache flags declared once before the loop 77; `wrapped` declared at function scope and cleared at the loop top 77;
 // the returned aggregate filled by member assignment 77.
 // All the same code: retail's early width load into XMM4 (and with it the advance copy) did not move in any spelling.
+// m3 lane 3 r239 (fast with the file's functions): `width` renamed to sort ahead of `advance`, or `advance` renamed to sort
+// after `width`, 77 each (same code: names do not move the width/advance-copy XMM coloring); `width` declared last among the
+// entry locals 81 (the entry stores reorder); kerning/offset/advance declared at the top of the loop body and assigned in
+// place 77 (same code). Retail's width loads into XMM4 ahead of the products because the advance copy takes XMM3.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

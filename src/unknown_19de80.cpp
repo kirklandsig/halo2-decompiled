@@ -630,6 +630,17 @@ static inline bool teams_enabled_19e1c0()
 // identical name-case tails that retail keeps apart, and its opponent loop still counts down in the free EBP that retail gives to the
 // remaining count, so the per-case registers and the tail layout stay different (1443 bytes is not reached).
 // MiniMax A (11-11): no new form, no lower score (390); our build still merges the identical name-case tails that retail keeps apart, and its opponent loop still counts down in the free EBP that retail gives to the remaining count, so the per-case registers and the tail layout stay different (1443 bytes is not reached).
+// M3 lane 16 r114 (fast with 0x19e0f0; control 390, plain result 691): the body as a forced-inline function called from a thin
+// 0x19e1c0, in the engine's parameter order or this one, plain result 691 (same code as the plain result), volatile result 390
+// (same code); 0x19e0f0 calling 0x19e1c0 directly (no function-pointer local) with the plain/volatile result 663/449 (LTCG then
+// takes token_length in EAX and leaves event on the stack; 0x19e0f0 10/9), so the pointer local's standard convention is retail's
+// (retail holds no reference to 0x19e1c0 and no direct-call cycle runs through it); 0x19ea60 through an inline copy-and-terminate
+// helper, plain or forced, and `inline` on 0x19ea60/0x19eae0: both still match and 0x19e1c0 is 390 (same code: ours still reuses
+// ESI for the text address after the name calls where retail recomputes the lea). Diagnostics (a store of `remaining` to a probe
+// global, reverted): at the function's top 455 (lane 4 r167's result; `remaining` EBP, but event EDI and spilled, token_length EBX,
+// frame 0x20c); in the second compare's condition 588, in the first arm 621, before the return 687, in the last compare's condition
+// 687, one in each of 2/4/5/9 arms 642/671/445/421: the homes never move. No count of reads in the arms gives `remaining` a
+// register; only a read in the entry block does, and retail's entry block shows none.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
