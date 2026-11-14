@@ -2956,6 +2956,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // then absence in those domains: 50/50/50/50/50/50/50/50. NOT kept:
 // no byte match; first-event EBP reload and actor-loop padding remain.
 // Original complete body, direct scalar test and every call restored.
+// MiniMax A (11-13): no new form tried this round, no lower score (50): the first 0x1fb8a0 call still reloads
+// the squad index from the stack into EAX where retail keeps it in EBP, and the jumps after it land two bytes
+// further in this body, so the block after the call is laid out differently and the body is 579 bytes against
+// retail's 578.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

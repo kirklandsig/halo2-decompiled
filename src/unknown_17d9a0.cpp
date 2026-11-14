@@ -575,6 +575,10 @@ PRIVATE inline void decal_project_point_17d9a0(real const *point, long axis, boo
 // all parallel product names 44; completed result 20; original-order accumulation
 // by fields/by arrays 54/54; plain direct-index accumulation 70. NOT kept: no exact
 // dot/plane/selector repair; original shared helper and complete body restored.
+// T103: Split point-builder stable horizontal/vertical/basis-subobject sets 1/2/4/3/5/6/7,
+// then all with the actual position subobject: 117/125/52/136/197/194/213/212.
+// NOT kept: no byte equality or native dot/selector/product-side repair; all four-use
+// helper inputs and the complete body restored on the retained 20-point graph.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

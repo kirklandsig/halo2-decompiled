@@ -1062,6 +1062,10 @@ struct s_string_buffer
 // bool started as `== 9` and set by the chain 105 (487). Diagnostic, not kept: the `== 9` arm with its own copy of the
 // whole tail and a return 171 (541 bytes: the copy is not folded back and the 9 test stays in line). None places a
 // block after the return.
+// m3 lane 14 r90 (plain): the 7-9 range written first in the chain 18; the 3-4 pair as a second range beside the 7-9
+// range 15 (both ranges become jl/jle compares); the chain as 1/3/4/7 then an 8-9 range 50 (481 bytes); the time arm's
+// minutes and seconds named before the format call 13 (same code); the time arm's two loads after the format string's
+// load 79 (474 bytes). All leave the 9 test in line.
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

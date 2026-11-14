@@ -1302,6 +1302,9 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax G (11-13): no new form, no lower score (94): the identity flag stays in bl where retail
+// keeps it in al, so the loop temporaries take eax/al where retail uses ebx/cl, and the inner
+// channel blocks are not unrolled.
 // MiniMax A (11-13): no new form, no lower score (94): the identity flag still takes BL here while retail keeps it in AL, and retail sets the size to two only after the flag's compare where this build sets it before; no untried form in the list moves the flag out of BL.
 // score 94 (was 94): the flag stays in bl (retail al), so the loop temporaries take eax/al where retail uses
 // ebx/cl; retail loads the count into ebp before the multiplier and adds 2 before the total (ours folds the load
@@ -2001,6 +2004,9 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax G (11-13): no new form, no lower score (85): the second availability byte loads lazily
+// where retail loads both before the muted test, and the second port-flag query is called out of
+// line: BLOCKED-BY 0x59670/0x596a0.
 // MiniMax B (11-13): no new form, no lower score (85): the session getters 0x59670/0x596a0 (src/unknown_058ee0.cpp) are outside this lane's files, and the second port-flag query is still called out of line where retail inlines it here: BLOCKED-BY 0x59670/0x596a0.
 // score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
@@ -2163,6 +2169,9 @@ static inline dword voice_get_player_mask_inlined(void);
 // through a three-bit bitfield view. Diagnostic: a repeated availability test inside 0x53bb0 (more IL; 0x53bb0 itself
 // 31) keeps its call out of line in 0x53a20 (0) while 0x54890 still inlines it (119), so the per-site choice follows
 // the callee cost, but no same-code form of 0x53bb0 reaches that threshold.
+// MiniMax H (11-13), NOT kept (coordinator): 85 -> 74 came from two new __forceinline twins of voice_port_flag1/2
+// (voice_port_flag1_inlined / voice_port_flag2_inlined) called at the inner loop's tests: new _inline twins of
+// existing functions are not kept (noinline ruling, 10-30).
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -3672,6 +3681,8 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
+// MiniMax G (11-13): no new form, no lower score (139): the member takes ebp where retail keeps
+// the channel from entry and spills the member, and the cursor and route homes differ.
 // MiniMax B (11-13): no new form, no lower score (139): the channel in a local (139), the cursor advanced on its own (180) and both together (180) leave the difference - retail keeps the channel in ebp from the entry and the data pointer in edi, ours keeps the data pointer in ebp.
 // MiniMax A (11-13): no new form, no lower score (139): a hoisted packet cursor (`byte *packet = data + 2`, advanced by
 // the packet size) scores 164 and a local copy of the channel compiles to the same bytes as the baseline, so retail's
@@ -3682,7 +3693,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // MiniMax G (11-12): no new form tried this round, no lower score (139): retail keeps the channel in ebp from the
 // entry and spills the member, while ours loads the data pointer and keeps the member in ebp.
 // MiniMax H (11-12): no new form, no lower score (139): our EBP still serves the member and the consumed update in turn, so the channel gets no register, and retail's cursor still starts with an immediate add that ours folds into the shared constant.
-// score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
+// Earlier, score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
 // homes differ.
 // MiniMax R (11-09): no lower score (139): the base and the offset kept apart, with the packet pointer never
 // formed, compiles to the same bytes as the indexed form (139), so the gap is not the address form: retail holds
@@ -3938,6 +3949,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // read before the member call 138 (round 112 screened it; 1 lower, statement order, not kept); indexed plain arm
 // first 162 (ordinary delivery arm first 162); cursor plain arm first 157 (lane 11 r77); cursor early debit 169
 // (round 50); the route at the relay arm top (same code). The member keeps EBP in every cursor form.
+// T101: Actual local-recipient result reused for delivery and conditional removal,
+// bool/byte/short/long: indexed 138/138/160/163, independent cursor 158/158/158/159.
+// NOT kept: one-count leads fail the gain gate and change the native frame; no
+// predicate carrier matches. Original complete body, live counts and masks restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

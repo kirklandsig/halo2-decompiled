@@ -370,6 +370,10 @@
 // cross-output, then basis/origin-basis/all: 739/699/698/689/678/805/784/803.
 // Cross-output default recovers frame 0x60 and extent 2622, first +6, but regresses.
 // NOT kept: no equality; original selections, helpers, math and full body restored.
+// T103: Actual first/second/both wave-position results, point then vector receivers,
+// and reused sequential position receivers: 522/692/687/522/692/687/693/693.
+// NOT kept: first-result forms recover frame 0x60 but grow five bytes and use
+// nonmatching one-use results; original helpers and complete body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1124,6 +1128,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // complementary outcomes 634/634/634/634 reduced (control/full 233).
 // NOT kept: one-use results lack equality and native frame/spill homes;
 // original texture producers, observations and complete body restored.
+// T103: Actual output UV point record direct/first/outer/both setters, then original
+// fields with first/outer/both setters and native UV value publication:
+// 233/241/241/240/241/241/240/410. NOT kept: no native frame/spill equality;
+// original vertex fields, UV stores, helper declarations and complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

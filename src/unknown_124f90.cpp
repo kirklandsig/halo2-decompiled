@@ -680,6 +680,23 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // boundary); the inner counter renamed to sort first or last 3/3 (names do not move it); the later stores through
 // `&g_4e6378[voice_index - 1]` 98 (589 bytes: the stores may alias the pool pointer, so it is reloaded). Also: the voice
 // through a forceinline getter taking the index (no stores in it) 3.
+// Round 101 (m3 lane 10, fast): the stores from unknown0a on under a three-case `switch (type)` with an unreachable default 3
+// (folds before scheduling); the four bytes at +8 each declared `byte x : 8` 3 (same code); those four as bit-fields of one
+// dword 6 (same instructions, but the three bit-field byte stores rise above both increments); the type and reset bytes as
+// bit-fields of one word 3, with the type store now ahead of `inc esi` as in retail and only the sound-index store left behind
+// it, but that declaration loses matched 0x128500, 0x128700 and 0x128920 (their type compares swap operands), so not kept; a
+// while loop with the counter declared at the type loop, `i++` after the second store and a closing `continue` 59 (561
+// bytes), and the same as a guarded do-while 59. Diagnostics (removed): the type store through a volatile cast 3 (no
+// barrier); `voice->chunk_index += 1;` after the second store 41 (its `inc word ptr` is lifted above both first stores and
+// `inc esi` follows it); a second sound-index store after the last one 11 (the optimizer drops the first); empty-bodied
+// `if (type >= 3) { }` or `if (voice == NULL) { }` after the second store 3. So: the scheduler orders stores to distinct
+// offsets of one base freely; stores into one bit-field unit form a chain, and a store with a later dependant is placed
+// before `inc esi`; `inc esi` itself rises to just below the previous flag-writing instruction (`inc edi`, or a
+// read-modify-write put after it). Retail therefore has both first stores carrying a later dependant (or a flag writer
+// between the second and third store) at scheduling time; no plain-field form gives the sound-index store one. Later in the
+// round: the two index dwords and the type/reset bytes reached as two-element arrays (diagnostic) 3, same code, so constant
+// array elements do not chain; the two zero bytes cleared with a two-byte memset 87 (577 bytes: one word store, the pool
+// pointer hoisted).
 // @retail 0x1253d0
 void function_1253d0(void)
 {
