@@ -1091,6 +1091,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // seven subsets then all with default velocity: 126/126/196/101/114/114/111/112. NOT kept: 101 is
 // combination-only (both individual families 126); 111/112 gain only three/two.
 // Native rotation products/side dots/output loads remain; full body and headers restored.
+// P486: Standard coordinate-range dot reductions at initial/turned/old-side/new-side,
+// paired side/initial-turned/all/all-explicit operators: 180/277/258/258/267/288/296/361. NOT kept:
+// no native rotation or output-load repair; original full body and includes restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

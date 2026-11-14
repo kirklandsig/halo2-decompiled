@@ -2525,6 +2525,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // subsets then complete graph with failed sample: 440/374/235/441/463/413/463/450. NOT kept: native early
 // velocity j/k and property-zero residence not recovered; original whole body
 // and shared helpers restored.
+// P486: Shared normalizer tiny/success returns, complete result and failure-first completion:
+// 91/91/91/91; alias-conditioned scaler input/publication, then tiny/result pairs:
+// 477/645/477/477. NOT kept: no early velocity-load or property-zero repair;
+// original whole body, normalizer and scaler restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
