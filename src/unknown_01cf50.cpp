@@ -6981,7 +6981,9 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // MiniMax G (11-13): no new form, no lower score (576): the diff re-read this round shows retail summing the dot product's products in a rotated order and giving the two constants after the normalize call the other registers, with the call's result slot four bytes higher here than in retail, so the body stands.
 // MiniMax I (11-11): no new form, no lower score (576): the three direction components still sit four bytes higher in the frame than retail's (ours at frame+0x18, retail's at frame+0x14, so every slot above them is four bytes out) and the dot product's three products are still summed in a rotated order; retail keeps the second rounded screen coordinate on the x87 stack and narrows each bound through a temporary, and the double forms tried for that score 614, 586, 576, 614, 612 and 583; retail calls 0x224f0 out of line for the second group of ten stage states where our build inlines it, and the only lever for that (an in-body inline_depth pair) is not allowed.
 
-// MiniMax H (11-13): the four screen bounds go through a double context, so the build uses retail's x87 form with
+// MiniMax H (11-13), NOT kept (coordinator: `(real)(double)(...)` round-trip casts change no value and only steer the
+// compiler; not a form the source would have; a natural double context, such as a double literal `32.0` or bounds
+// computed from double values, is the lead): the four screen bounds cast through double use retail's x87 form with
 // dword float constants (576 -> 558); retail still copies each bound through a float temporary into a bounds array
 // that overlaps the dead direction vector, where ours keeps the bounds in the temporary slots, and our direction
 // sits four bytes higher in the frame (the first difference is the store at [esp + 0x18] against retail's [esp +
@@ -7019,7 +7021,7 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // a double, so the values agree with ours and only the arithmetic differs: retail adds and subtracts dword constants
 // on the x87 stack where this build does the same in SSE with other constants; the double form of last round cannot
 // match because the double constants it needs are not in retail's data.
-// score 558 (was 576), Round 1 of #1066: 2452 bytes against retail 2507. Fixed: the 2nd quad and the
+// score 576 (was 695), Round 1 of #1066: 2436 bytes against retail 2507. Fixed: the 2nd quad and the
 // loop begin with D3DDevice_Begin (retail calls it; ::Begin inlined it), the 1st quad uses the member
 // D3DDevice::SetVertexData4f (inlined, as retail), the first ten stage states go through
 // sampler_state_write (ten separate dirty-flag ORs), floor(screen[1] + 0.5f) stays unstored, bounds is a plain
@@ -7028,7 +7030,7 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // pair around the ten 0224f0 calls gives 540, not kept; file-scope inline_depth 0/1/2 changes nothing
 // or worsens (770); (2) retail computes left/top/right/bottom on the x87 stack with dword constants and copies
 // each through a temp (fstp, mov ecx, mov [bounds], ecx) into a bounds array that overlaps the dead direction,
-// where our bounds now go through the x87 stack too but keep the temporary slots and our direction sits four
+// where our bounds (with the not-kept double casts) go through the x87 stack too but keep the temporary slots and our direction sits four
 // bytes higher; double or float locals, an aggregate of the direction and casts tried; (3) retail's loop counts down
 // in memory (dec [esp+0x20])
 // or worsens (770); (2) retail computes left/top/right/bottom on the x87 stack and copies each through a
@@ -7077,10 +7079,10 @@ void function_46ea0(long tag, point3f const *position)
     screen[0] = (real)floor(screen[0] + 0.5f);
     real center_y = (real)floor(screen[1] + 0.5f);
     real bounds[4];
-    bounds[0] = (real)(double)(screen[0] - 32.0f);
-    bounds[2] = (real)(double)(center_y - 32.0f);
-    bounds[1] = (real)(double)(screen[0] + 32.0f);
-    bounds[3] = (real)(double)(center_y + 32.0f);
+    bounds[0] = screen[0] - 32.0f;
+    bounds[2] = center_y - 32.0f;
+    bounds[1] = screen[0] + 32.0f;
+    bounds[3] = center_y + 32.0f;
     if (!((real)(short)g_48564e > bounds[0] && (real)(short)g_48564c > bounds[2] &&
         bounds[1] > (real)(short)g_48564a && bounds[3] > (real)(short)g_485648)) return;
     function_1cc30(10);
