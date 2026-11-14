@@ -2929,6 +2929,9 @@ extern s_record_pool *g_4e030c;
 void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, long count);
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
+// MiniMax H (11-13): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 - retail spills
+// the input list and reloads it at the loop top, keeps the total on the stack and the index in EBX with the cursor in
+// EBP, where ours holds the total in EBP; the index's register is fixed by the unmatched callee 0x31590.
 // MiniMax G (11-13): no new form, no lower score (113): a named list local for the pool's filtered list (plain 132), an explicit output cursor (113, the same code), the view declared before the count (113, the global load moves above the frame) and the cursor with the list local (133) all measure at or above the body, so the body stands.
 // MiniMax I (11-11): no new form, no lower score (147 in the reduced image, 113 in the full build): the body is 16 bytes shorter than retail's 548 and the first difference is at +0x2; the reduced image's score is inflated because the globals it leaves out are not masked.
 

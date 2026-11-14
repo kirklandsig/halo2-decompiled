@@ -4306,6 +4306,11 @@ void __stdcall function_20bb0(long player, dword mask, long const *indices, long
 long __stdcall function_2e540(s_slot *slot, byte *data);
 extern long g_485898;
 
+// MiniMax H (11-13): no new form, no lower score (285): the permuter ran on this function for 600 s over the reduced
+// image and left the baseline where it was (270 differing instructions in both the reduced and the full image), so no
+// permutation of the body beats it; the frame is still 0x38 bytes against retail's 0x34 (retail reuses the position's
+// slots for the corner coordinates), the 1.0 constant still takes xmm0 where retail holds it in xmm3, and the three
+// byte-to-float conversions still start at xmm1 where retail starts them at xmm0.
 // MiniMax G (11-13): no new form, no lower score (285): the diff re-read this round puts the first difference at the 1.0 constant's register (XMM0 here, XMM3 in retail) and shows our frame slots above retail's from the definition pointer on, with the masked tag kept in EBX in retail and no copy of it here, so the body stands.
 // MiniMax B (11-11): no new form, no lower score (285); retail's frame is 0x34 bytes and ours 0x38 because retail
 // reuses the position's stack slots for the corner coordinates and keeps the area in the dead argument's home, so
@@ -7817,6 +7822,9 @@ void __stdcall function_214f0(real passes, real distortion, real strength, real 
 bool function_022710();
 real scenario_ramp_evaluate_current(long index);
 // MiniMax H (11-13): no new form kept, no lower score (130): the four screen bounds read straight from the
+// globals score 125, a gain under the bar, so the body stands; the permuter ran on this function for 600 s over
+// the reduced image and left the baseline where it was (130 differing instructions in both the reduced and the
+// full image), so no permutation of the body beats it.
 // globals score 125, a gain under the bar, so the body stands.
 // MiniMax B (11-11), NOT kept (coordinator): 130 -> 120 stores the grid's fields in another order picked by score
 // (match-only). The lead as written: the grid is stored in the order retail stores it, the
