@@ -423,6 +423,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // direct ratio/dot/both inputs 422/437/470; complete shared dot/normalizer
 // with delegated bounds 470/470. NOT kept: no exact unity/angle-home
 // repair; original caller clamps, inputs, helpers and whole body restored.
+// P467: Current ordinal consumed at first/second/both emission calls, byte count,
+// then both with char/short/word/long/dword count: 382/382/382/382/520/520/430/430.
+// NOT kept: no gain; short/word also lose the matched caller. Original whole body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
