@@ -444,6 +444,10 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // MiniMax D (11-11): no new form, no lower score (118): the getter still loads the table global into EAX where retail
 // loads it into ECX, and that one byte moves every later jump target; the getter as a member of the table, with the
 // count in a local, with the global tested twice, written out at the call site or left out of line all give the same 118.
+// M3 lane 5 r182 (fast with 0x1e83c0, 0x1e8d50, 0xd0590, 0xd05c0, 0x1e6bd0): case 4's seat-flag tests without the `(bool)`
+// casts on the bit-fields 510 (2288 B: the three tests fold into one mask test); that with the existing 0x1e8d50 for the
+// entry 494. Most of the 118 is call/jump displacement drift between the getter (one byte short) and case 4's child loop
+// (one byte long); BLOCKED-BY 0xd0590 (held order in build/r159/held-1e7ab0.patch).
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
