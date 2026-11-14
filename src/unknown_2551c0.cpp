@@ -832,6 +832,8 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // into the sum's, which needs length, sum and adjusted placed ahead of the side outputs; ours places the side outputs and the
 // index first (sum then joins the first side, length the second, adjusted is left alone at the top). No form found that
 // changes that order. Body unchanged at 87.
+// P477: Standard first-product-seeded forward/lateral/alignment reductions, seven producer subsets, then complete reverse-coordinate transform:
+// 259/248/142/270/251/239/261/281. NOT kept: all regress, with no native unit-argument/scalar-home repair; thirteen matched controls survive. Original reductions, typed radius, observations, helpers and complete body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

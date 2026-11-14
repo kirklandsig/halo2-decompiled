@@ -501,6 +501,8 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // P454: Isolated function storage for forward/up/side scratch, center, origins, ray-length scalar,
 // hit-distance scalar and collision output on the retained affine-tail graph: 576/576/576/576/648/576/576/576.
 // NOT kept: none improves; original producer points, helper inputs and in-place captures restored.
+// P477: Independent standard hit-fill/input-copy/output-fill/forward-copy/fallback-copies/center-copy/final-copy/length-fill boundaries:
+// 700/681/656/573/693/575/613/668. NOT kept: best gain is three, with no native low-frame repair; several forms move the frame or shrink away from retail. Original arrays, complete in-place captures, helpers and body restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

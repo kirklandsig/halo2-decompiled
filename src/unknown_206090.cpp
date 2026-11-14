@@ -542,6 +542,8 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // schedules ikj/jik/jki/kij/kji, plain component copy: 1623/1675/1623/1623/1623/1623/1623/1627.
 // NOT kept: no gain; construction shortens to 6022/5974 or grows to 6480 versus 6238, without native
 // frame recovery. Original snapshot, reduction, every helper and full body restored.
+// P477: Standard ordered first-loop/contact-normal/direction/tangent/friction/peak dots, retained-snapshot magnitude and mixed-precision normalizer reductions:
+// 1373/1487/1375/1404/1435/1372/1900/1449. NOT kept: 1373/1375/1372 add an arithmetic call absent from retail (15 versus 14); frame stays 0x5d0. Other forms regress; matched caller survives. Original helpers, captures, call tuples and complete body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
