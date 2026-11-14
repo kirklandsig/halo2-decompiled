@@ -851,6 +851,14 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // the listed fall-through form); the projection products written `t * direction->i` 2 (same code). The retail
 // call graph has no cycle through this function or 0x1895f0 (0x1895f0 does not reach 0xf8eb0), so the context effect
 // is not a compile-order cycle through this function itself.
+// m3 lane 14 r92 (fast with 0x188180, control 2): the camera position through a const pointer used six times 2 (same
+// code); the distance as a float `(real)-sqrt(...)` 48 (659 B); the player test written `player_unit_index == unit_index`
+// 3; the three vectors declared projection, perpendicular, to_camera 2; the along bound written `0.0f <= along` 2.
+// Image search: of the 486 sources 0x188180's image adds, src/unknown_0350e0.cpp alone flips the order, and inside it
+// only 0x4ff50 and 0x37260 together (each alone, or 0x4ff50 with any of eleven other functions of that file, keeps
+// retail's `pop esi; mov al, 1`); 0x37260 still flips it with a one-line body. The same pair flips 0x4ff50's own
+// epilogue (pops interleaved with its last stores as retail without 0x37260, not with it), so the order is an
+// image-wide code-generation state, not this body's: no form here moves it.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

@@ -873,6 +873,9 @@ void function_1c54b0(char const *variants, long object_index)
 // the island through an inline (world, index) accessor 4/18 (same code). Compile-only diagnostic: the outer loop
 // written as a guarded do-while, so the world is read ahead of the index's first assignment, keeps the pair in either
 // flag order, so the pair does not follow which of the two values is defined first.
+// Round 91 (m3 lane 14, fast; flag before/after the call): the outer loop as a guarded do-while 4/18; count and
+// flag declared at function scope and assigned at the island top 4/18; the entity index declared in the inner for
+// statement 4 (all the 4s the same code).
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {

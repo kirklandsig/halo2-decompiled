@@ -751,6 +751,13 @@ struct s_player_axes_153d10
 // state 37; the pointers declared after the cross 6 (this product right; the i row's first and the k row's two products
 // load up first); the pointers before delta with the cross and dots through them 103; cross3f and dot3f 8; cross3f_staged
 // and dot3f 8 (the same code). Header and body restored.
+// Round 91 (m3 lane 14, fast with 0x154d70/0x154df0/0x155240/0x170d70 listed, which reproduces 2): forward and up
+// copied by value 419 (1393 bytes), forward only 183, up only 183; up as `forward + 1` with the cross and dots through
+// the pointers 105, with the cross through axes 12; the j row's first product with up.i through the up pointer 2 (same
+// code), forward.k through the forward pointer 24, both 24. Diagnostics: 1-7 unused locals 2/2/101/102/16/2/2 (the
+// six products never move); 1-3 parens in delta give per-product windows {0,1} fj*uk, {0,3} fk*uj and fk*ui,
+// {0,1,3} fj*ui and fi*uj, {2,3} uk*fi, so no shift fits; three parens around the j row's first product move only
+// later products but flip fj*uk with uk*fi (2): the two share up.k's key.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

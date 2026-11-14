@@ -1009,6 +1009,10 @@ struct s_bitmap_texture_view
 	dword level_addresses[3];
 };
 
+// score 3 (was 3): the last three instructions are the whole difference - retail loads the masked
+// level address into the bitmap base register that dies with that load and stores it from there,
+// ours loads it into edx and masks it there; the reduction branch, the format bits and the three
+// header stores agree with retail.
 // MiniMax H (11-12): no new form, no lower score (3); the array reached through a const pointer local, the element reached by pointer arithmetic, the element's address taken first, the mask literal padded to eight digits and the level address widened before the mask all compile to the same three instructions, so the masked level address is still loaded into EDX where retail reuses the dead base register, and the permuter over the function managed 30 tries in 301.0 s without a confirming build (best 3, baseline 3).
 // MiniMax I (11-11): no new form, no lower score (3); the last three instructions are the whole difference: retail loads the masked level address into the base register, which is dead after that load, and we load it into EDX.
 // MiniMax E (11-11): no new form, no lower score (3); the level addresses as pointers, the whole bitmap read through a local pointer (const and non-const) and the store through a pointer to the texture's data field all compile to the same three instructions, so the masked level address is still loaded into EDX where retail reuses the dead base register; a permuter run over the function was stopped at its time limit without a result.
@@ -1021,10 +1025,6 @@ struct s_bitmap_texture_view
 // written first and as a long constant and as a complement, the element's type as long, unsigned long and int,
 // and the value unsigned all leave the same three instructions; a permuter run over the function ended without
 // reporting any variant; the reduction branch, the format bits and the three header stores agree with retail.
-// score 3 (was 3): the last three instructions are the whole difference - retail loads the masked
-// level address into the bitmap base register that dies with that load and stores it from there,
-// ours loads it into edx and masks it there; the reduction branch, the format bits and the three
-// header stores agree with retail.
 // MiniMax E (11-09, second part): forms tried, none lower: the masked store repeated in both
 // branches leaves the tail in both of them (140) and the mask still lands in edx where retail
 // reuses the dead bitmap register.
@@ -1107,6 +1107,11 @@ struct s_bitmap_texture_view
 // static reduction table 158; integer reduction table 136; complete format
 // accumulator 3; complete size accumulator 3; branch-owned format results 154.
 // NOT kept: no exact result; original body restored. Final address still uses EDX.
+// Round 91 (m3 lane 14, fast): parameters (level, bitmap, texture) and (level, texture, bitmap) with the
+// call 3/3; a force-inline level-address accessor 3; a force-inline masked-address accessor 3; a
+// force-inline masking texture setter 3. Diagnostics: 1-4 unused locals at the top or before the store 3;
+// an extra store at the end of either branch or before/after the tail store 18/126/12/12, the tail value
+// rotating among EAX/ECX/EDX and never taking ESI.
 // @retail 0x12d6d0
 void __stdcall function_12d6d0(s_bitmap_texture_view const *bitmap, long level, D3DTexture *texture)
 {
