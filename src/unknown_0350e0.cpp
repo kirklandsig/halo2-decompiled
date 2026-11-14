@@ -1769,6 +1769,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
     perpendicular->j = direction->i * cross.k - direction->k * cross.i;
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
 }
+// MiniMax D (11-14): no new form, no lower score (193): retail's four cases still compute their cross products with
+// their own temporaries - its frame is 0x18 against this build's 0x14 and it stores the zero result to its slot before
+// the jump table - and the helper form that reaches 177 raises the caller 0x2e9e0 to 573, while that caller's 492
+// body is tuned against the callee this one calls, so the pair cannot be moved apart from this file.
 // MiniMax I (11-11): no new form, no lower score (193): the body is 20 bytes shorter than retail's 812; the known form that reaches 177 raises 0x2e9e0 to 573, and 0x2e9e0's 492 body is tuned against the callee this one calls, so the two cannot be moved apart.
 
 // MiniMax B (11-13): no new form, no lower score (193): retail's four cases still compute their cross products with their own temporaries (its frame is 0x18 against this build's 0x14 and it stores the zero result to its slot before the jump table), so the bodies would have to be respelled one case at a time.
@@ -2929,6 +2933,10 @@ extern s_record_pool *g_4e030c;
 void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, long count);
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
+// MiniMax D (11-14): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 - retail spills
+// the input list and reloads it at the loop top, keeps the total on the stack and the index in EBX with the cursor in
+// EBP, where ours holds the total in EBP; the index's register is fixed by the unmatched callee 0x31590, whose body is
+// in another file. BLOCKED-BY 0x31590.
 // MiniMax H (11-13): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 - retail spills
 // the input list and reloads it at the loop top, keeps the total on the stack and the index in EBX with the cursor in
 // EBP, where ours holds the total in EBP; the index's register is fixed by the unmatched callee 0x31590.

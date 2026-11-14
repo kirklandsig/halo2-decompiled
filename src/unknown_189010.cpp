@@ -149,6 +149,11 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax D (11-14): no new form, no lower score (110): our build still expands the first 0x221810 lookup inline where
+// retail calls it out of line (that helper's inline-ness is set in src/unknown_221490.cpp), and the 0x21d110 call still
+// takes the play state by pointer on the stack where retail passes the state in a register (that callee's declaration is
+// in another file); the request is still copied field by field where retail copies the whole request and patches the
+// flags after. BLOCKED-BY 0x221810 and 0x21d110.
 // MiniMax E (11-11): no new form, no lower score (110): the request is still copied field by field
 // into the play state, where retail copies the whole request and patches the flags after.
 // MiniMax B (11-12): no new form, no lower score (110); our build still expands the first 0x221810 lookup inline where retail calls it out of line (that helper's inline-ness is set in src/unknown_221490.cpp, a file this lane may not edit), and the 0x21d110 call still takes the state by pointer on the stack where retail passes the state in a register (that callee's declaration is in another file); the header order, the flag word and the end-time publication were measured again and left as they are.

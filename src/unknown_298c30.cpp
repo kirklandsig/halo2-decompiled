@@ -581,6 +581,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
+// MiniMax D (11-14): no new form, no lower score (569): the body is still 39 bytes shorter than retail's with the frame
+// at 0x114 as retail, and the radius and the trace and pivot homes still differ; the forms the earlier rounds measured
+// (the shared endpoint setters, the centre copy, the obstacle-radius observation and the trace-field sector forms) all
+// score 767 or more, so the body stands.
 // score 569 (was 569): earlier 621; 629, 733, 633 and 719 before that (the rise to 733 was the unrounded sine/cosine below); frame 0x114 as retail, 39 bytes short; radius and trace/pivot homes differ.
 // MiniMax S (11-06): Our frame is 0x120 against retail's 0x114, so every esp-relative home is four bytes
 // off; retail loads the scale factor into xmm1 after the first branch where ours loads xmm5 before it,

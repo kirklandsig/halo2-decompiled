@@ -312,6 +312,7 @@ void __stdcall function_15ec0(long index)
 
 __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 const long g_43e8e8[4] = { 32, 64, 128, 256 };
+// MiniMax D (11-14): no new form, no lower score (58): the allocation callee 0x15b10 still takes its out pointer in esi where retail takes it in ebx, and that callee's body is in src/unknown_0158f0.cpp, which this lane may not edit, so the frame stays one push deeper and the copy count rides in edi. BLOCKED-BY 0x15b10.
 // MiniMax A (11-12): no new form, no lower score (58): the allocation callee 0x15b10 still takes its out pointer in esi here and in ebx in retail, so the frame stays one push deeper and the copy count rides in edi; that callee lives in src/unknown_0158f0.cpp, which this lane may not edit. BLOCKED-BY 0x15b10.
 
 // MiniMax B (11-13): no new form, no lower score (58): the copy's tail is still this build's rep movsd where retail ends the copy with a rep movsb, and the callee this function calls is still not inlined here although retail inlines it; the permuter cannot search this function with --fast (the reduced image scores it 62 against 58).
@@ -450,6 +451,7 @@ bool function_0159b0(long edge, short format, long levels, long usage_index,
 	D3DCubeTexture **out);
 bool function_015a60(short format, long width, long height, long depth,
 	long levels, long usage_index, D3DVolumeTexture **out);
+// MiniMax D (11-14): no new form, no lower score (72): the call to 0x359e0 still passes its arguments in another order than retail (retail keeps the height in dx, stores it as a word and passes the width in ecx with the depth in ax, ours keeps the width in di), and that callee's parameter order is declared in src/unknown_0359e0.cpp, which this lane may not edit. BLOCKED-BY 0x359e0.
 // MiniMax H (11-11): no new form, no lower score (72); the height is still spilled as a dword where retail stores a word, the depth still lands in AL so the linear flag has to be reloaded from the stack, and the texture pointer still sits in a register where retail keeps it in EDI; this round typing the texture slot as a texture pointer shrinks the frame to retail's 0xc and moves the pointer into EBX but leaves the score at 72, dropping the volatile height stops the spill altogether (80), and a copy of the flags byte folds away (72), so the body stands.
 // MiniMax I (11-10): no new form, no lower score (72); the width still lives in DI where retail keeps it in BX, and the first 16-bit height store is still a dword in ours.
 // MiniMax R (11-09): no new form, no lower score; the width still lives in di where retail keeps it in bx, the first height store is still a dword where retail stores a word, and the mipmap call still hands the callee the texture pointer where retail hands it the width.
@@ -2669,6 +2671,7 @@ struct s_render_transform_record
 	byte unknown10[0xc];
 	transform4x3f const *transform;
 };
+// MiniMax D (11-14): no new form, no lower score (51): retail calls the transform table's lookup 0x1d6b0 out of line while this build inlines it at both sites, and that helper's inline-ness is declared in src/unknown_023540.cpp, which this lane may not edit. BLOCKED-BY 0x1d6b0.
 // MiniMax A (11-12): no new form, no lower score (51): the body is still eleven bytes longer than retail and keeps the transform table lookup result in eax where retail copies it to edx before the cmp edx, -1 test, because retail calls 0x1d6b0 out of line at the second site while this build inlines it at both; that helper inline-ness is decided in src/unknown_023540.cpp, which this lane may not edit. BLOCKED-BY 0x1d6b0.
 
 // MiniMax B (11-13): no new form, no lower score (51): retail inlines the 0x1d6b0 call where this build calls it out of line, and the body is 400 bytes against retail's 389; the callee's inline-ness is decided in the file that defines it, so the call line here cannot reach it.
@@ -3425,6 +3428,7 @@ bool function_128c0(s_128c0_settings const *settings)
     }
     return result;
 }
+// MiniMax D (11-14): no new form, no lower score (62): the locked rectangle's pointer and pitch still sit in the other order in the frame (retail keeps the pointer at [esp+0xc] and the pitch at [esp+0x10], ours the other way round), which comes from the locked-rectangle type in the XDK header, which this lane may not edit.
 // MiniMax H (11-11): no new form, no lower score (62); the locked rectangle's frame slots still sit four bytes lower than retail's, the 0xf0000000 flag is still set in a register where retail sets it in the frame, and the field order comes from the locked-rectangle type in the XDK header, which this lane may not edit.
 // MiniMax A (11-11): no new form, no lower score (62); retail ORs the 0xf0000000 flag into the locked
 // rectangle's pointer in memory (`or dword ptr [esp + 0xc], 0xf0000000`) and reads it again, while ours holds the
@@ -3684,6 +3688,7 @@ void __stdcall function_1e930(long opaque)
 }
 
 bool g_55e6bc;
+// MiniMax D (11-14): no new form, no lower score (17): this round measured the depth-clip block and the matrix loop against retail. The far clip plane is still loaded into xmm1 after the near store where retail loads it into xmm2 before the near multiply: the near factor in a local of its own gives 133 (the multiply becomes a register-register mul), the far plane in a local gives 18 (its load is hoisted to the function entry above the scale branch) and both planes in locals gives 18 as well, while swapping the two factors of the near-plane product changes nothing. The middle products of three of the four columns still load the row-relative factor into the register where retail loads the fixed one, and that split does not follow the source order here, so it cannot be reached by swapping the operands. The permuter (600 s) found no variant below its own baseline.
 // MiniMax C (11-11): no new form, no lower score (76 with this file's other addresses, 17 on its own); the far plane is still loaded after the near-plane multiply and the three row products are still summed in a rotated order, and the inlined depth-clip call in this image pushes the segment size and its half where retail pushes only the half.
 // MiniMax D (11-10): no new form, no lower score; the body is unchanged at 87 measured on its own (587 bytes),
 // but in a reduced image that holds other addresses as well it is 127 at 571 bytes, so the score of this function
@@ -5881,6 +5886,7 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
     function_16b10((s_render_reset_state *)g_485b48);
     g_485a78[0] = g_485a78[1] = NONE;
 }
+// MiniMax D (11-14): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx (retail's order is the tag in edx, the first argument in ecx and the second in eax, with the third and fourth on the stack), and the callers are in other files, so the convention cannot be changed from here.
 // MiniMax H (11-11): no new form, no lower score (62); the second argument still arrives in EAX where retail takes it in ECX, and the arguments behind it still sit one stack slot lower; retail's order is the tag in EDX, the first argument in ECX and the second in EAX, with the third and fourth on the stack, and the callers are in other files, so the convention cannot be changed from here.
 // score 62 (was 62): retail takes tag/first/second in EDX/ECX/EAX (first and second moved to ESI/EDI, the tag table
 // kept in EBX, fourth loaded into EBP from the stack, ret 8); ours takes tag EDX and fourth EAX, three on the stack.
@@ -6234,6 +6240,7 @@ void __stdcall function_4efa0(long tag, long context, long first, long second,
 {
     function_4ede0(tag, context, first, second, third, handle, material);
 }
+// MiniMax D (11-14): no new form, no lower score (54): the score still rests on the load-bearing volatile tag local (without it the compiler rebuilds the body), and retail still reads the block base out of the table before the tag lookup and keeps the tag in a register where this build spills it to a stack slot and reads it back.
 // MiniMax A (11-12): no new form, no lower score (54): the score still rests on the load-bearing volatile tag local (without it the compiler rebuilds the body, 117), and retail still reads the block base out of the table before the tag lookup and keeps the tag in a register where ours spills it to a stack slot and reads it back; inlining the tag into the index gives 117 and reading the block before the tag gives 101, both worse, so the body stands.
 
 // MiniMax B (11-13): no new form, no lower score (54): retail adds the block base before the tag lookup and keeps the tag's table address in a register, while this build reads the tag's byte first, spills the tag through the volatile local and reloads it, so the two orderings differ; a volatile local is only allowed with a byte match.
@@ -6520,6 +6527,7 @@ static __forceinline void offset_rectangle_1f070(short_rectangle2d *rectangle, s
     rectangle->top += dy;
     rectangle->bottom += dy;
 }
+// MiniMax D (11-14): no new form, no lower score (60): the two rectangles still sit four bytes higher in the frame than retail's (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail's [esp+0xc] and [esp+0x14]), the bitmap pointer still shares the clip's slot instead of being spilled at [esp+0x1c], and the left edge is still clamped with a conditional set where retail branches.
 // MiniMax A (11-12): no new form, no lower score (60): the two rectangles still sit four bytes higher in the frame than retail (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail [esp+0xc] and [esp+0x14]), the bitmap pointer still shares the clip slot instead of being spilled at [esp+0x1c], and the left edge is still clamped with a conditional set where retail branches; a long left edge gives retail slots but grows the frame, so the body stands.
 
 // MiniMax B (11-13): no new form, no lower score (60): the two rectangles' fields are still read into different registers (this build takes the first one's word into eax where retail takes it into edi) and the argument slots still follow the LTCG convention's eax and ecx, so the block's shape is not ours to pick.
