@@ -516,6 +516,12 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // masked 254, frame 0x20, `ret 0x18`, caller 22); the first site only 716; the first two 698; the output site only 636
 // (same score, masked 270, caller kept); arguments as (factor, distance) at all three 697 (same code). It is the listed
 // factor-first form in another spelling: the first site's flag read still takes CL and moves `a` out of ECX. None kept.
+// Round 101 (m3 lane 1, fast, caller 0x1eb6f0 MATCH in each): retail spills q around the activation block (EBX serves
+// the `s->start = *pos` copy there and q is reloaded from its slot after the 0x30bf0 call), so its EBX q is a split
+// live range. The output pointer declared after `out->position = *q` 636 (same code); the activation alignment as a
+// named local for the store and `v` 672 (2883 bytes); the first step count as a conditional expression 658 (2879
+// bytes); the duration sum as `n2 + (fast ? 7 : 1)` 636; the active block's `w` pin and scale as one expression 636
+// (same code); re-measured round 168's first `rem = MAX(0.f, rem)` 636.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

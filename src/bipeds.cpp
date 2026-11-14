@@ -5645,6 +5645,13 @@ real magnitude3d(vector3f const *v);
 // 2/2/2/2; falling-default event 32; baseline outcomes plus one admitted event 38 (897 bytes);
 // angular-velocity input pointer 2; final rejection with falling-default event 32. All restored;
 // the final actor move versus second stack push remains.
+// Round 101 (m3 lane 1): `inline` on magnitude3d's definition plus one event call per arm (the actor read at each
+// use, or a named actor local) MATCH (fast; full check 11995, nothing lost), but seven unmatched magnitude3d callers
+// rise: 0xd1e10 542->596, 0xf6d10 749->759, 0xf8eb0 947->1030, 0x185be0 590->942, 0x1aa0d0 375->402, 0x1d24a0
+// 902->935, 0x2c0d60 920->963 (around the call they now take retail's xmm registers; the rises are positional), so it
+// is not kept: BLOCKED-BY 0x24590. Without it (fast): per-arm calls with a `short type` local in the upright arm 20;
+// two calls (falling, then `up.k > 0.6f && 1.5707964f > magnitude ? 0x55 : 0x56`) 20; `if (actor == NONE) return;`
+// then per-arm calls 20; three calls with the upright and magnitude tests joined by `&&` 20.
 // @retail 0xe3380
 void __stdcall function_e3380(long arg_159e6d)
 {
