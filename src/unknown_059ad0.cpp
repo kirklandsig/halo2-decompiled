@@ -3546,6 +3546,10 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
+// MiniMax H (11-13): no new form, no lower score (101): still BLOCKED-BY 0x769a0, whose unread owner parameter
+// decides the call's register home and whose definition is in another file; the frame agrees (0x3c), the
+// announcement and identity loads still take other registers than retail's, and the permuter's 37 tries in 307 s found
+// nothing below its own baseline.
 // MiniMax B (11-13): no new form, no lower score (101); still BLOCKED-BY 0x769a0 in another file, whose unread owner parameter decides the call's register home.
 // score 101 (was 101): Frame 0x3c agrees; held timeout owner spill and identifier/reply allocation remain.
 // Earlier: frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
@@ -4398,6 +4402,9 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
+// MiniMax H (11-13): no new form, no lower score (305): the three boolean stack homes are still rotated (the
+// result byte at +0xa where retail keeps it at +0xb), and the same timeout spill as 0x5e3f0 needs 0x769a0, whose
+// definition is in another file.
 // MiniMax G (11-12): no new form, no lower score (305); the same timeout spill as 0x5e3f0 sits here and
 // needs 0x769a0, whose definition is in src/unknown_075870.cpp; what is left in this file is the
 // rotation of the three boolean stack homes (the result byte at +0xa where retail keeps it at +0xb).

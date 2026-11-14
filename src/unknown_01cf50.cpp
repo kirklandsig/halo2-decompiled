@@ -7021,6 +7021,14 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // MiniMax G (11-13): no new form, no lower score (576): the diff re-read this round shows retail summing the dot product's products in a rotated order and giving the two constants after the normalize call the other registers, with the call's result slot four bytes higher here than in retail, so the body stands.
 // MiniMax I (11-11): no new form, no lower score (576): the three direction components still sit four bytes higher in the frame than retail's (ours at frame+0x18, retail's at frame+0x14, so every slot above them is four bytes out) and the dot product's three products are still summed in a rotated order; retail keeps the second rounded screen coordinate on the x87 stack and narrows each bound through a temporary, and the double forms tried for that score 614, 586, 576, 614, 612 and 583; retail calls 0x224f0 out of line for the second group of ten stage states where our build inlines it, and the only lever for that (an in-body inline_depth pair) is not allowed.
 
+// MiniMax H (11-13), NOT kept (coordinator: `(real)(double)(...)` round-trip casts change no value and only steer the
+// compiler; not a form the source would have; a natural double context, such as a double literal `32.0` or bounds
+// computed from double values, is the lead): the four screen bounds cast through double use retail's x87 form with
+// dword float constants (576 -> 558); retail still copies each bound through a float temporary into a bounds array
+// that overlaps the dead direction vector, where ours keeps the bounds in the temporary slots, and our direction
+// sits four bytes higher in the frame (the first difference is the store at [esp + 0x18] against retail's [esp +
+// 0x14]); casting the first operand of each bound instead of the whole difference measures 586, and the permuter's
+// 30 tries in 306 s found nothing below its own baseline of 516 differing instructions.
 // MiniMax B (11-11): no new form, no lower score (576); retail overlaps the direction and the bounds at
 // [esp + 0x14] where ours gives each of them a slot of its own, so every slot above them is four bytes out, the
 // dot product's three products are summed k, i, j in retail and i, j, k here, and our body is 71 bytes shorter
@@ -7060,6 +7068,11 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // array. Still differs: (1) our build also inlines function_0224f0 (the second ten stage states) and the
 // three function_0222d0 calls of the 2nd render-state group, which retail calls; an in-body inline_depth(0)
 // pair around the ten 0224f0 calls gives 540, not kept; file-scope inline_depth 0/1/2 changes nothing
+// or worsens (770); (2) retail computes left/top/right/bottom on the x87 stack with dword constants and copies
+// each through a temp (fstp, mov ecx, mov [bounds], ecx) into a bounds array that overlaps the dead direction,
+// where our bounds (with the not-kept double casts) go through the x87 stack too but keep the temporary slots and our direction sits four
+// bytes higher; double or float locals, an aggregate of the direction and casts tried; (3) retail's loop counts down
+// in memory (dec [esp+0x20])
 // or worsens (770); (2) retail computes left/top/right/bottom on the x87 stack and copies each through a
 // temp (fstp, mov ecx, mov [bounds], ecx) where we use subss and a direct store; double or float
 // locals, a union with direction and casts tried; (3) retail's loop counts down in memory (dec [esp+0x20])
@@ -7975,6 +7988,12 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
     return value;
 }
 
+// MiniMax H (11-13): no new form, no lower score (299): the count's early test is retail's mov eax, [edi + 8]; test
+// eax, eax; jle where ours compares the memory with 1 (cmp dword ptr [edi + 8], 1; jl); spelling the test as
+// *(long *)(definition + 8) <= 0 lines the instruction stream up with retail's from the start and so shows the real
+// difference, 310 instructions, but it scores 313, and with it the group index's sign extension (movzx esi, ax against
+// retail's mov esi, eax) and the index slot at [esp + 0x3c] against retail's [esp + 0x54]; counting the group after
+// the test, as retail does at 0x4f7a5, measures 300.
 // MiniMax G (11-13): no new form, no lower score (299): the thirty-two bit group index forms measure 506 to 507 again (a for loop over the counter 506, the counter as an int 507, the index widened by a cast 506), so the group index is still sign-extended where retail moves the thirty-two bit value, and the body stands.
 // MiniMax S (11-11): no new form, no lower score (299): the group index is still sign-extended (movsx esi, ax)
 // where retail moves the thirty-two bit index, the index slot still sits at [esp+0x3c] against retail's [esp+0x58],
@@ -8815,6 +8834,10 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
 // MiniMax I (11-11): score 328 (was 342): a named local for the scaled character offset, used by both the character pointer and the later slot store, adds the dword home retail has; our body is 25 bytes shorter than retail's 1133 and the frame is still 0x201c against retail's 0x2020, and a plain (non-volatile) header local gives 365 and is worse.
 // MiniMax I (11-11): no new form, no lower score (342): the body is 41 bytes shorter than retail's 1133 and the first difference is at +0x1; retail reads the stack parameter into ebx with the -1 sentinel in ebp, ours uses esi and ebx, and retail's text buffer keeps two word counters that are missing here.
 
+// MiniMax H (11-13): no new form, no lower score (328): the frame is still 0x201c against retail's 0x2020, retail
+// reads the stack parameter into ebx with the -1 sentinel in ebp where ours uses esi and ebx, and retail loads the
+// font pool before its first test into eax where ours keeps it in edi; dropping the volatile on the glyph header, which
+// lets the build keep the pointer in a register, measures 365.
 // MiniMax B (11-11): no new form, no lower score (342); our body is still 41 bytes shorter than retail's 1133,
 // retail keeps the stack parameter in ebx with the -1 sentinel in ebp where ours uses esi and ebx, and retail
 // inlines the third removal site where ours calls the helper out of line.
