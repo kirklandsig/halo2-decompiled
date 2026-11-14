@@ -927,6 +927,11 @@ bool function_e4050(long object_index);
 // unit field 171 (same code: the load is CSEd across the walk); a named parent local declared at function top, before
 // the unit, or first in the loop body 171/171/171 (same code each); the unit and the walk both `dword` 109 (431 bytes,
 // entry test threaded away again: only a signed/unsigned mismatch keeps it). Body unchanged.
+// score 43 (was 43): unchanged this round: the datum iterator's register use (EBX against retail's EDI) comes from
+// include/data_iterator.h and src/unknown_0bad50.cpp.
+// score 43 (was 43): unchanged this round: the datum iterator's data pointer still takes EBX where retail takes
+// EDI; the helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane
+// may not edit.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2657,6 +2662,10 @@ static __forceinline long player_round_ticks(real value)
 // alone 702 (2741 bytes); both with the activity bools as `|` of `(bool)((activity >> n) & 1)` 714 (2743 bytes;
 // retail's exact shr/or chains, but first_activity spills and the buttons word takes EBX where retail has ESI); the
 // `|` bools alone 719 (round 50's form re-measured).
+// score 701 (was 701): unchanged this round: the frame is still 0x4c against retail's 0x74, and this build inlines
+// 0xccd20 and the first 0x151b80 call where retail calls them.
+// score 701 (was 701): unchanged this round: the frame is 0x4c against retail's 0x74, and 0xccd20 and the first
+// 0x151b80 call are still expanded here where retail calls them; both callees live in other files.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3260,6 +3269,11 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // (`root != unit`) 117; busy as two conditional expressions (`badc0 ? e4050 : false`, `vehicle ? [0x34c] > 0 : false`)
 // 103 (same code); busy set by `&&` tests 117; loop 2's flags word in a named local used twice 103 (same code). Kept:
 // the 0x1121 flag read through the typed `g_4e6948->flag1121` 103 (same code, no raw offset cast).
+// score 193 (was 193): unchanged this round: our build keeps the players-globals pointer in EDI across both loops
+// where retail has ESI and late reloads; the same source scores 103 on its own.
+// score 193 (was 193): unchanged this round: the players-globals pointer is still kept in EDI across both loops
+// where retail keeps it in ESI and reloads it late, and retail inlines the status test that this build calls
+// out of line; that callee lives in src/unknown_13bf00.cpp, which this lane may not edit.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

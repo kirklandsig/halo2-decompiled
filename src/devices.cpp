@@ -2259,6 +2259,19 @@ bool function_0b6760(s_index_pair const *pair);
 // P449: Power-change/position-activity, power preparation/advance, position preparation/advance,
 // position-change and lazy reversal decisions: eight 250s. NOT kept: no byte equality or native result-home repair.
 
+// MiniMax G (11-14), NOT kept (coordinator: the 250 -> 58 rests on the one-use `real rate = g_510c54->rate;` local
+// passed to function_11eed0, a form kept only with a byte match; measured on G's body without that local: 380, and
+// main without its volatile alone: 386; `== 0` for the `<= 0` byte test: 59; `bool increasing` for the reused
+// result: 58). G's three notes on that form follow.
+// G's form, not kept: score 58 (was 58): unchanged this round: the length is retail's 1495 bytes; the position-group arm keeps the
+// channel pointer in ecx where retail re-leads it in esi, and the flags-and-0x10 arm puts the state pointer in eax
+// where retail keeps it in ecx; the permuter (600 s) and the naming trials found no lower form.
+// G's form, not kept: score 58 (was 250): the acceleration products are named with the position term first, the 0xb3 byte test is `<= 0`
+// and the result is a bool, so the length is retail's 1495 bytes; left: the position-group arm keeps the channel
+// pointer in ecx (retail esi) and the state in eax/ecx across the 0xb6760 call (retail ebx); the permuter found none.
+// G's form, not kept: score 65 (was 250): the acceleration products are named with the position term first and the 0xb3 byte test is `<= 0`,
+// so the frame and the register roles now agree with retail up to +0x3f3; the position-group arm still keeps the
+// channel pointer in ecx (retail esi) and the state in eax/ecx across the 0xb6760 call (retail ebx), 3 bytes longer.
 // P453: outer manual output 250; outer interpolation results 250;
 // outer acceleration products 250; outer integration snapshots 250;
 // separate power/position group declarations at function scope 250/250;

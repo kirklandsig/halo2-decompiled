@@ -1766,6 +1766,13 @@ struct s_camera_clip_reference_16ebf0
 // xmm1, ours the other way round, with the same results stored to [esp+0x58] and [esp+0x5c]), and retail loads
 // [esp+0x20] before it stores the new value to [esp+0x24] where ours stores it first; the rest of the function
 // matches instruction for instruction.
+// score 87 (was 87): unchanged this round: the two products of the interpolation keep retail's operands but our
+// compiler hands them to the registers the other way round, and the clip block folds the cluster address into the
+// load where retail materialises it; the cross helper and 0x171d00 are in other files, which this lane may not edit.
+// score 87 (was 87): unchanged this round: the cross product's colouring is swapped against retail's (retail gives
+// up.k to XMM0 and forward.j to XMM1 where ours gives them the other way round), and the clip block folds the cluster
+// address into the load where retail materialises it; the addends of the clip sum and of the interpolation compile in
+// the same order either way, and the cross helper and 0x171d00 are in other files.
 // @retail 0x16ebf0
 void function_16ebf0(long user_index)
 {

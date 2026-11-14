@@ -428,6 +428,11 @@ bool g_47f05b;
 // MiniMax G (11-13): no new form, no lower score (34): the abstract allocator's dead vtable store and the
 // reload of the backing pointer on the successful arm are still missing; the shared constructor bodies they
 // follow are outside this queue, so the body stands.
+// score 34 (was 34): unchanged this round: the abstract allocator's dead vtable store and the reload of the backing
+// pointer on the successful arm are still missing; the shared constructor bodies they follow are in another file.
+// score 34 (was 34): unchanged this round: the abstract allocator's vtable store and the backing pointer's reload
+// on the successful arm are still missing; both come from the shared constructors in include/unknown_146a20.h,
+// which this lane may not edit.
 // @retail 0x146a20
 void function_146a20(void)
 {
