@@ -1503,6 +1503,12 @@ bool function_108530(long device_index, long name)
 // accelerating block then has all eight XMM registers live and overwrites the velocity's register.
 // MiniMax A (11-13): no new form, no lower score (121): the frame and the length agree, but the SSE register allocation differs
 // from the first instruction (xmm7 here where retail uses xmm5) and every later pair follows that choice.
+// m3 lane 3 r241 (fast with 0x108600/0x108670, which stay 31/13 unless noted; all ret 0x18): retail's ramp-down zero clamp
+// stores the zero to the slot without touching the XMM1 copy and the minimum compares against memory, so the ramp-down
+// time is never cached across blocks; ours keeps it in XMM1. The ramp-up clamps as one PIN(ramp_up_time, 0.0f, duration)
+// 128; that with the ramp-down clamps as one PIN after `remaining` 133 (510 B); the distance taken as `fabs(delta)` at its
+// declaration (no later fabs) 134 (first difference +0x0, callers 26/28); the ramp-down zero clamp alone as
+// `x < 0.0f ? 0.0f : x` 122; the ramp-up clamps as one nested ternary with the minimum outside 127.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -2283,6 +2289,20 @@ bool function_0b6760(s_index_pair const *pair);
 // Frame 0x20 agrees; saved-register and activity-byte homes remain.
 // Scores 386/360/462/392/448/432/532/659. NOT kept: ties/regressions;
 // original executable body and helper contracts restored.
+// m3 lane 3 r241 (fast): BLOCKED-BY 0xb6760 (its file's /Ob1, a flags change, not kept). Rebuilt the listed 58 lead (no
+// volatile, the rate local before the power 0x11eed0 call, the result after the definition, `<= 0`, the position products
+// named; 1495 B, first difference +0x3f3). What is left there sits at the two channel-1 0xb6760 calls: ours computes the
+// channel pointer into ECX and keeps it (and, in the refresh, the state) in ECX across the call, copying it to ESI for
+// 0x1c6620; retail puts the pointer in ESI and the state in EBX and reloads device_index per push. All ten retail call
+// sites of 0xb6760 (here, 0x166d75, 0x16760c, 0x1cd070, 0x1cd8a0, 0x1cdb00) set the pointer in ESI/EBX/EDI and keep
+// nothing in ECX/EDX across it, so retail's callers treat it as clobbering them; ours is a never-inlined /Ob1 leaf whose
+// register use LTCG trusts, while retail inlined it at the channel-0 sites, so it was an inline candidate there.
+// Diagnostic (reverted at once): the file without /Ob1 inlines 0xb6760 at the channel-1 sites too, 104 (1499 B). On
+// the 58 lead: a channel pointer for the refresh only 57; two per-site channel pointers 58; that pointer declared
+// before the 0x107520 call 58; `previous` read before the position idle test and used in it 73; the motion speed and
+// acceleration read at the top of the position-group block 118 (1510 B); the 0x40 update with the arms swapped 61. Same
+// code as the lead: the speed/acceleration or the target named just before the call, `state != NULL` / `!= false` in the
+// refresh, a `real position = 0.0f` argument, the group index in a local.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

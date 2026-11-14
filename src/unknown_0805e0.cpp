@@ -401,6 +401,21 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // lazy identity-presence result / nullable early completion / sole-return goto 43/43/43/43/43;
 // memmove payload 53; explicit final Boolean return arms 52. NOT kept: no gain or equality;
 // original body/helpers restored. Native ESI entry, EBX successor and AL mask remain.
+// m3 lane 3 r241 (one-file LTCG harness = fast for every form; fast with 0x1a303b/0x2b393c, both stay matched unless noted):
+// match-only lead 33 (127 B): a `short` index in `while (!result && index != NONE)` with a long successor local and `else
+// index = next` (not kept: the index type picked by score). From the imul to the guest test it is retail's code exactly
+// (index scaled in place in ESI, successor EBX, mask hoisted into AL): the short index makes the back-edge `index = next` a
+// conversion, not a copy, so the index no longer coalesces with the successor. Left: the iterator read and compared as a
+// word with a `movsx esi, cx` at the head (retail: 32-bit load and compare, so a short index can never match), the loop
+// top-tested and EBX pushed first. On it: `index != NONE && !result` 56 (129 B, both callers lose), a guarded do-while 64
+// (138), `return true` in the found arm 52, the iterator stored in both arms 54 (128), a guarded `while (true)` with
+// `if (next == NONE) break;` 56 (132); the long index with the iterator stored in both arms 48. Harness only (long index,
+// all with `else index = next`): a guarded do-while 51, the iterator store after the tests with `if (!result) index =
+// next` 52, the locals declared before the loop 57, a short successor with the store from the field 57, `index =
+// *iterator` in the else 57, a found pointer 71, the field read again for the step 73 (108 B), the loop on `*iterator`
+// 79 (102). Index/successor types on the r213 shapes: dword or word index and dword/short/word successors 36-71; only the
+// short index separates the two. Entry-carried loops (a priming lookup, the next entry looked up at the loop's end) in
+// 108 guard/loop/exit/step/test combinations all 39 (the listed lead: the back-edge lookup is not cross-jumped).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
