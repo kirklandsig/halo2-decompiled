@@ -1526,6 +1526,7 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
+// MiniMax B (11-13): no new form, no lower score (566); the frame is still 0xf8 against retail's 0xfc, and the call to 0x1e5bb0 still passes 17 values where retail passes 21, which the callee's own declaration decides.
 // score 566 (was 585): earlier 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
 // material and animation homes differ.
 // MiniMax I (11-09): no new form, no lower score (588); our call to 0x1e5bb0 passes 17 values where retail passes 21
@@ -2973,6 +2974,8 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // alone 68; round 192's order with it and the getter 92, with `(char)biped->unknown3aa` 81, plus the getter 99.
 // MiniMax A (11-13): no new form, no lower score (63): this build sign-extends the +0x3aa byte into a long before the test where
 // retail tests the byte in place, and the extra EBP push stays.
+// This round: retail passes the settling count to 0x1d5120 in EAX and takes six stack arguments, while this build passes seven
+// because 0x1d5120's declaration and definition live in another file, so the call site cannot be matched from here.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -3352,6 +3355,7 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
+// MiniMax G (11-13): no new form, no lower score (362): the diff re-read this round puts the first difference at the state byte at +0x34b, read zero-extended here and sign-extended in retail, and the second at the flags word at +0x348 that retail reads and shifts into a byte local before the 0xe16b0 call, which has no counterpart here, so the body stands.
 // MiniMax H (11-12): no new form, no lower score (362): the only form this round - the state byte at +0x34b read with a signed cast - measures 361, under the keep gate, so the body stands.
 // MiniMax G (11-12): no new form, no lower score (362): nothing new this round; the frame 0x48 against retail's 0x4c (retail's
 // dead flag byte before the 0xe16b0 call) and the held homes remain.
@@ -3856,6 +3860,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 /* turns the biped toward its desired facing: flying ones by their flight
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
+// MiniMax B (11-13): no new form, no lower score (548); the frame agrees, but the flight-call homes, the state bytes and the vector scheduling still differ.
 // score 548 (was 561): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // MiniMax S (11-09): no new form, no lower score (605 in the reduced build); retail keeps the biped
 // index in EBP and the definition pointer in ECX with a home at +0x18, ours keeps the definition in
@@ -4296,6 +4301,7 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 /* places one of the ragdoll's bodies: hanging from its constraint's pivot on
    the body placed before it (kept within reach of the ragdoll's center and
    out of the world, turned to follow), or the first body at the point */
+// MiniMax G (11-13): no new form, no lower score (356): the diff re-read this round puts the first difference at the pivot transform's output home (+0x60 here, +0x88 in retail) and then at the matrix rows, which retail reads through a register where this build copies them through the frame, with our two results at +0x20 and +0x24 against retail's +0x14 and +0x18, so the body stands.
 // MiniMax H (11-12): no new form, no lower score (356): the two pivot roles swapped measure 356, the same code, so the body stands.
 // MiniMax G (11-12): no new form, no lower score (356): nothing new this round; the origin, the first property/distance, the
 // matrix, the second property/limit and the placed homes are still in another order.
@@ -5221,6 +5227,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// MiniMax G (11-13): no new form, no lower score (79): the diff re-read this round finds the same first difference, inside the shared rotation helper whose own file this lane may not edit, and the operand orders listed above still measure at or above the body, so the body stands.
 // MiniMax H (11-12): no new form, no lower score (79): the angle multiplied the other way round measures 79, the sine and the cosine taken the other way round measure 111 and the second rotation taking the up field measures 143, so the body stands.
 // MiniMax G (11-12): no new form, no lower score (79): nothing new this round; the first rotation and the staged cross product
 // operands (load-first where retail copies the axis) still differ.

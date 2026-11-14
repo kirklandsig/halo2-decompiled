@@ -460,6 +460,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // Existing object-header fields used for the flag, property and model reads.
 // P447: Visibility/reference/property/model/physics/count decisions; lower/upper vertical exclusions at original producers:
 // 926/926/926/926/926/926/926/926. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P450: Original-site first/second/third marker eligibility in bool/long 926 each; lazy motion eligibility 916/916
+// (fast control 926, full 920). NOT kept: one-consumer decisions lack byte equality; motion shortens
+// to 3702/3731 and misses native frame 0x2cac. Original complete body restored.
 // MiniMax B (11-13): no new form, no lower score (920): the frame is 0x2cb4 against retail's 0x2cac, and the actor,
 // unit, priority and query homes still differ; the byte homes do not follow the order of the source's object scan.
 // @retail 0x2c0d60
@@ -1776,6 +1779,20 @@ long function_1fa7f0(void);
 // P437: Fixed actual reverse distance/location/left/right query results, predecessor/endpoint
 // receivers, opposite orientation and signed count input: 400 each. NOT kept: frame 0x114 versus
 // 0x10c and edge/orientation/count homes unchanged; original complete body and helpers restored.
+// M3 lane 1 r99 (fast with 0x270930 and 0x2c2a70, both MATCH throughout; base 400 at 1752 bytes, frame 0x114). Reading: retail
+// holds no local in a register across the loop; EBX is the entry zero, then edge from the loop top to the corner calls, then the
+// side, then used. Ours caches count in BX from the loop bottom through the scan (retail reads [ebp+0xc] at each compare), so the
+// zero goes to EDX, edge to a stack slot and the step pointer to EDI. Retail's side is one value flipped in place between the two
+// tangent calls (`test bl, bl; sete bl`), with a copy in a stack byte for the first call. The second tangent call taking the side
+// flipped in place (`side = !side;` ahead of it, no other-side local) 440 (1727 bytes, frame 0x10c); that with `edge = 0xffff`
+// again at the scan hit (retail's second `mov ebx, 0xffff`) 369 (1740 bytes, frame 0x10c, first difference +0x14; not kept: the
+// store repeats the value edge holds, and the flip alone raises the score); the second store alone 433; the step, its edge and
+// the found flag set through one inline setter at the scan hit and at a candidate's success 432 (the setter gives that store too),
+// with the in-place flip 410; edge set at each choice with no loop-top initialiser, with the flip, 471; an other-side local kept
+// across the attempts (started as the side, flipped before the second tangent, copied back) 438, with the second edge store 424;
+// the origin read y then x on the 369 form 467. Diagnostics: count declared volatile 474, with the second edge store 420, with
+// that and the side passed as `!side` and flipped at the loop end 433 (frame 0x10c): keeping count out of BX alone does not give
+// EBX to edge. Body unchanged at 400.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
