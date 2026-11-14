@@ -1070,6 +1070,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // and FOV-completion predicates: 456/461/456/404/518/483/428/323.
 // NOT kept: 323 grows native 1696 bytes to 1708 and adds a call; all other forms
 // regress. Original full body and includes restored.
+// M3 lane 16 r117 (fast with 0x16c6f0/0x13cb40/0x23d090): the plane length as `dot3f(&camera->point.left, &plane.n)`
+// 372 (1700 B; it still preloads left.k where retail preloads left.j); plane.d as `dot3f(&plane.n, position)` 331 (same
+// code), both together 372; `real length_squared` declared at its assignment 331 (same code); a `vector3f const *direction`
+// for the normal copy and the length 336.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

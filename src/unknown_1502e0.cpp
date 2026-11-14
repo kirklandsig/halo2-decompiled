@@ -1495,6 +1495,18 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // callee's parameter register; only the ESI/EDI pair (unit index against table and slot) is open. A unit index local
 // declared inside the tested block (first, or after the hand) and used for the lookup and both calls 17 (same code);
 // used for the lookup only, the calls reading the field, 17 (same code).
+// M3 lane 16 r117 (fast with 0x152bf0): LEAD, the unit lookup reading the index through the getter again
+// (`tail_object_get(g_4e0300, tail_player_get(player_index)->unit_index)`, a hand reload, match-only) 5: every register is
+// retail's (the second unit-index read merges late); left is the player address: that getter's `g_4e8c24->data` load is
+// shared in EDX (`mov edx, [edx + 0x44] ... add edx, eax`) where retail folds it (`add eax, [edx + 0x44]; mov edx, eax`), so
+// retail's second path does not go through the player table. On that lead: the player address written out 5, the second
+// read written out 5, a const player 5, a unit-index local for the two calls 5, 0x151aa0's weapon snapshot in the slot test
+// 5, both together and with an object header array local 5 each, the result declared first 27 (137 B), the hand after the
+// unit 13, both calls through the getter too 46, an inline helper taking the player index 5 (one taking the player pointer
+// 17: copied early); permuter (52 tries) 5. Also: the test through the getter with the player fetched inside 26 (137 B, the
+// parameter in EDX), the test through the getter with the player local kept 27 (138 B), the unit fetched ahead of the test
+// 27, a `long const &` unit index for every use 25 (137 B), only the calls through the getter 41 (142 B), only 0xa9030's 57
+// (143 B), an object header array local 17 (same code).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

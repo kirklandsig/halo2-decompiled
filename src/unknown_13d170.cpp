@@ -648,6 +648,18 @@ struct s_physical_block_iterator
 // walk's count/bit (ours EBX/EDI, retail EDI/EBX), the allocation result's register and the insertion's mixed data reload.
 // P472: Case-zero older/equal-time/smaller Boolean outcomes, subsets 1/2/4/3/5/6/7, then all byte outcomes: 201/201/201/201/201/201/201/201.
 // NOT kept: no native case-result/placement equality; original policies, observations, ring, iterator, linking and full body restored.
+// M3 lane 16 r117 (fast with 0x13d320, MATCH each time; base 201). LEAD (match-only: a new one-caller comparator): case 0
+// as an inline comparator in 0x13d320's own style (`bool result = false; if (older, or the same time and fewer pages) result
+// = true; return result;`, called as `better = f(candidate, &best)`) with the second age as `MAX(physical->time - best.time,
+// 0)` 115 (1194 B, first difference +0x1cc -> +0x2f9): the switch is then retail's whole, case 0 in place and the default arm
+// byte for byte. The comparator returning the expression 204; the default arm as a comparator as well 115 (with the result
+// style) / 194; lane 8's inline flag block with a default comparator 225 (1183 B); the clamp alone 209 (1228 B). On the 115
+// lead: the insertion with `long first = physical->first;` read ahead of `entry->previous = NONE`, `long next` for the
+// predecessor's successor and the predecessor taken afresh from `physical->blocks->data` at the join 104 (1213 B: every
+// block retail's but for registers; retail holds NONE in EBX and the result in EDI); that with `entry->previous = NONE;` in
+// both branches 100 (NONE then a register, but EDI with the result in EBX, loaded before the allocation test); only one of
+// the two arms 105/114; lane 11 r95's two-stage insertion 107; the overlap bound as `pages + best.offset` 104 (same code); the
+// walk on plain locals 118 (first difference +0x1). Patches: m3-lane16 build/r117/lead-0x13d370-s9.patch and -s1.patch.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
