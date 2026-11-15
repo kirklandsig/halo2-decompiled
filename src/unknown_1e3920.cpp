@@ -1481,7 +1481,10 @@ void function_1e2a90(long actor_index);
 bool function_1e35f0(long actor_index);
 void function_1e3b60(long actor_index);
 
-// score 26 (was 26): retail passes the actor index to function_262ba0 and to
+// score 25 (was 26): round 183 (m3 lane 6, plain) enabled 0x1f38c0's written body (#581's last named double, in
+// 0x1f9e70, became a PIN_126660 clamp), so its call now passes the actor in EAX as retail. Left: retail passes the actor index
+// to function_262ba0 in EAX, ours pushes it, because 0x262ba0's body keeps it as a stack argument.
+// Earlier at 26: retail passes the actor index to function_262ba0 and to
 // function_1f38c0 in EAX; our build passes the first on the stack and the
 // second in ECX, because those two callees' argument registers are fixed in
 // their own translation units.
@@ -1550,6 +1553,12 @@ void function_1e3b60(long actor_index);
 // 138 B), 0x262ba0 475; the same with its arms inverted (copy first): 0x2641c0 matches, 0x264210 114, 0x262ba0 497. In
 // 0x262ba0 a per-iteration actor pointer 471 (1648 B), that with `update` as long 479. #581 re-measured: the written
 // 0x1f38c0 enabled with a stdcall 0x1f6090 stub gives 90 here (274 B), 0x1c83c0 38, 0x137fe0 80, as in round 78.
+// Round 183 (m3 lane 6): 0x1f38c0 enabled with 0x1f9e70's named double still in place 90 (274 bytes; 0x1e2f50 lost, as
+// round 78); with 0x1f9e70's clamp through PIN_126660 25 (kept). In 0x262ba0 (fast, 25 here each): `update` as the named sampling
+// condition with `sample = update` 430 there (1616 bytes, frame 0xa0, the actor index still loaded from the stack into
+// EDI); a __forceinline declaration of 0x2641c0 beside 0x262ba0 (its noinline kept in its own file) 412 (same code); the
+// saved state as an unsigned word 413; the named condition with `update` long 449 (1600 bytes); the named condition with
+// `!sampled_one` tested last 454 (1600 bytes). BLOCKED-BY 0x262ba0 (stacked actor).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

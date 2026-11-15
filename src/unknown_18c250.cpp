@@ -417,6 +417,12 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // pointer 22, through the full promotion expression 25 (re-measured). On the plain sum: the offset in a local read before
 // the count store 10; a pointer to the offset field 8; entry declared bare first and assigned after data 8; data renamed
 // to sort after entry 8; no data local, the full promotion expression for the entries and the samples 25.
+// Round 184 (m3 lane 6, fast): every non-memcpy form below has the plain sum's schedule (samples into EAX ahead of the
+// scale, the offset the add's destination): an inline setter returning the set's address, called in the call's argument
+// list, 8 (with the memcpy'd samples 2, same code as this body); an inline tag-data address helper taking (tag data,
+// offset, size) over the data head 8; the set as the existing two-field tag-data aggregate with the plain sum 8; the
+// samples fetched through an inline out-parameter getter into an address-taken local 8 (only memcpy keeps the scale first);
+// the offset through an inline entry getter, plain samples 8, memcpy'd samples 2 (the getter's result propagates).
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {
