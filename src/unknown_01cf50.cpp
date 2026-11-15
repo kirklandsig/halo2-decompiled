@@ -7798,6 +7798,7 @@ PRIVATE __forceinline real clamp_callback(real x, real low, real high);
 // same clamps as written ternaries: 584); depth/z/w sit in different slots (retail z 0x10, depth 0x14, w 0x18).
 // The one inline_depth pair around Begin..End replaces the volatile 0x3fb280 pointer and the four pairs
 // around SetVertexData4f (that form scores 710 on this body); with no pair at all 1400.
+// NOT kept (coordinator screen, MiniMax H 11-15): a new #pragma (reverted): `#pragma inline_depth(0)`; the body is main's again.
 // @retail 0x37a60
 bool __stdcall function_37a60(void *context)
 {
@@ -7924,10 +7925,10 @@ bool __stdcall function_37a60(void *context)
             sampler_state_write(stage, D3DTSS_COLORSIGN, 0);
             sampler_state_write(stage, D3DTSS_ALPHAKILL, 0);
         }
-        #pragma inline_depth(0)
         function_1cf80();
         function_1cbe0(0, 0, 0x15);
         function_1c710(g_51f0f0);
+        #pragma inline_depth(0)
         D3DDevice_Begin((D3DPRIMITIVETYPE)9);
         D3DDevice_SetVertexData2f(1, vertices[0].x, vertices[0].y);
         D3DDevice_SetVertexData2f(2, vertices[0].coordinates[0].x, vertices[0].coordinates[0].y);
