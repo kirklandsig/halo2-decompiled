@@ -1126,6 +1126,11 @@ void function_1537f0(s_profile_record *record);
 // statements in retail's store order 48 (NONE in EBP); the per-visit record at function scope 18 (same code); 0x1537f0
 // called before the identity is cleared 60 (271 bytes); a `short` loop index 63 (275 bytes); the flags and the word after
 // them in one chained assignment 18 (same code); the links as two chained pairs through `entry` with the flags chained 48.
+// M3 lane 11 r104 (fast with 0x7f8b0 and 0x1537f0, both matched): the four links as one chain through `entry` in field order
+// 49 (the listed hoist); the view argument as `(s_cached_player_view *)entry` 18 (same code); the links as per-list statements
+// through `entry` (previous_other, next_other, unknown58, next) with the heads as two chained pairs 49; one link chain through
+// `entry` ahead of the 0x7f8b0 call 83 (268 bytes); the record, its initializers and the 0x7f8b0 call in their own block with
+// the link chain through `entry` after it 49. Every form with the link stores through `entry` hoists NONE into EBP.
 // @retail 0x7f930
 void function_7f930(void)
 {
