@@ -42,8 +42,10 @@ void function_1f86a0(long index)
 	s->unknown504 = 0;
 }
 
+/* inline: link-time code generation expands it at 0x1bf0f0's state test and keeps the
+   out-of-line copy for the other callers */
 // @retail 0x1f86f0
-bool function_1f86f0(long index)
+inline bool function_1f86f0(long index)
 {
 	return OWNER_STATE(index)->unknown504 == 2;
 }
