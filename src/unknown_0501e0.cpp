@@ -504,6 +504,13 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // P480 m3: Raw offsets with common/first/second lexical ends, separate endpoint scopes in
 // either order, then common-region view/raw/both declaration pairs reversed: 206/206/206/305/320/206/206/206.
 // NOT kept: native extent/homes unrecovered; original helper and complete body restored.
+// M3 lane 11 r100 (fast with 0x30290 and 0x30bf0, both MATCH; masked = register-masked aligned count, 170 at 206): retail
+// keeps the raw offsets apart from their scaled copies, keeps right.i in xmm7 for both views and loads the scale once
+// for both tests. Round 86's lead re-measured: the existing transform_vector in place on each offset with the depth
+// limits in the condition 292 (1089 B, frame 0x14, masked 63); in place for the first view only 306 (1078 B, masked 145);
+// the lead with the second point's offsets first 292 (masked 60); this file's helper rewritten in place with scalar
+// copies scaled from the input and forward-first rows 295 (1086 B, masked 79), with the second offsets first 295 (masked
+// 76). Body unchanged.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

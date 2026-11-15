@@ -486,6 +486,9 @@ struct c_aggregate : c_child
 // information output: 31/167/167/168/31/166/166/167. NOT kept: Self-address initialization requires exact
 // equality. Original independent outputs, signed traversals, virtual calls, allocator observations and full
 // body restored; native output/spill sharing remains.
+// P496: Paired/complete callback source-key/destination/capacity transports, pre-zero and immutable binding graphs:
+// 146/146/31/146/146/146/146/146. NOT kept: no exact native storage/producer recovery; escaped callback output and low loop homes remain.
+// Original complete executable body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

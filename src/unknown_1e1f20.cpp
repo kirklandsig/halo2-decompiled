@@ -851,6 +851,9 @@ void swarm_leader_detach(long actor_index);
 // MiniMax A (11-13): no new form, no lower score (236): the first difference is at +0x3, where retail loads the record pool
 // pointer into ecx and this build loads it into eax, and the body is 22 bytes short because retail expands 0x26ed40 into it
 // (BLOCKED-BY 0x26ed40, whose file is not this lane's).
+// MiniMax B (11-14, run 75): no new form, no lower score (236); the body is left as it was. What still differs: the first difference is
+// at +0x3, where retail loads the record pool pointer into ECX and this build loads it into EAX, and the body is 22 bytes short of
+// retail's 980 because retail expands 0x26ed40 into it: BLOCKED-BY 0x26ed40 (src/unknown_26e370.cpp).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

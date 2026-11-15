@@ -1418,6 +1418,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 0x1934b0/0x193470 for this file's copies (capacity kept as the grouped file helper) 956 (2928 B); that with the scan and
 // the body nested as `if (result) { scan; if (result) { body } }` 920 (2928 B: the second 0x1931a0 now stays a call as in
 // retail; the top 0x192e60 and 0x193250 still inline). Body unchanged.
+// M3 lane 3 r242 (fast with 0x73530, 8 throughout; base 766): the player loop bounded by the summary's player count 845 (2812
+// B); `result` declared after the validity exit 766 (same code); the group loop bounded by the summary's machine count 783;
+// `first` declared before `last` 766 (same code); `available` computed from out's player count after the out stores 879 (2764
+// B). Body unchanged.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
