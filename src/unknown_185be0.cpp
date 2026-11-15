@@ -590,6 +590,9 @@ union s_185be7
 // the controlled unit index named once for its four uses after the turn clamps 666; the root global held in a named local
 // for its two uses 590 (other code: two scheduling lines swap; the root stays in EBX); the arg_4 table selection as an
 // if/else 1012 (3795 B). Same code: the two scratch arrays declared at the top, the angle record declared before them.
+// MiniMax S (11-15): no new form, no lower score (590): the head differs in register assignment, with the entry record base in
+// EBX where retail keeps it in ECX and the -1 sentinel in the other register, and the two zeroing loops and the store order
+// follow from that.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

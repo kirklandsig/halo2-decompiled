@@ -844,6 +844,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // code); the motion declared ahead of the translated position 50; the colour declared ahead of the rotation outputs 42
 // (same code); on indexed definitions with scale first (re-measured 113 at 1136 bytes, masked 34, every integer line
 // retail's, all six rotation rows reordered) the vector3f position 113 (same code) and the motion declared first 121.
+// MiniMax S (11-15): no new form, no lower score (42): the i row of both rotations sums the up product before the forward
+// one where retail sums the forward one first, the copy's second and third components swap, and the two saved registers are
+// reloaded in the other order after each property call; the rotation's term order is fixed by the shared helper's text.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

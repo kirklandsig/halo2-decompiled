@@ -1100,6 +1100,9 @@ struct s_tail_transfer_traits
 // counter's type is the only change from the 143 form, and retail's code is straight. On that 134 form: on the global 180;
 // `long primary;` 188; held[2] replacing primary/secondary (the seat arm writes held[0]) 157 (829 B), with `long hand` 167;
 // cbe60 before the loop 161 (802 B). Body unchanged.
+// MiniMax S (11-15): no new form, no lower score (144): everything after the two copies differs only by register assignment,
+// with the record pointer and the selection index trading EBP, EBX and EDI, so the loads, the -1 sentinel and the branch
+// targets all differ.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {

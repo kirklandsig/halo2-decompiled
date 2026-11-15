@@ -1787,6 +1787,9 @@ struct s_camera_clip_reference_16ebf0
 // up.k to XMM0 and forward.j to XMM1 where ours gives them the other way round), and the clip block folds the cluster
 // address into the load where retail materialises it; the addends of the clip sum and of the interpolation compile in
 // the same order either way, and the cross helper and 0x171d00 are in other files.
+// MiniMax S (11-15): no new form, no lower score (87): the cross-product rows differ, with retail keeping the first product
+// in the register ours uses for the second and adding the two products in the other order, and the clip call's block follows
+// from it; the shared cross product's text fixes that order and it lives in another file.
 // @retail 0x16ebf0
 void function_16ebf0(long user_index)
 {

@@ -2203,6 +2203,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // MiniMax G (11-14): no new form, no lower score (128): retail's frame is 0x44 with colour A spilled to frame+0x00 and
 // the spawn record at frame+0x04, while ours keeps the spawn at frame+0x00 and colour A in a register; reading colour A
 // into a local declared before the spawn (this round) gives 187 at 572 bytes, so the body stands.
+// MiniMax S (11-15): no new form, no lower score (128): retail's frame is 0x44 against our 0x40, it keeps the particle system
+// in ESI where ours promotes it to EDI, it spills colour A to a frame home of its own, and it reads the location mode from the
+// definition again for each call.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3659,6 +3662,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // retail's 0x54 frame comes from the definition pointer it spills at frame+0x00 and reads the mode from on every call
 // of the location cursor, the per-call form in the lines above measuring 108; a 300 s permuter run (5 tries) stays at
 // 92 differing instructions.
+// MiniMax S (11-15): no new form, no lower score (93): retail's frame is 0x54 against our 0x4c, it keeps the particle system in
+// ESI and its successor in EDI where ours has them the other way round until the colour call, it spills colour A to a frame
+// home of its own instead of re-reading the effect, and it reads the location mode from the definition again for each call;
+// the form that reads the mode per call reaches retail's frame but flips the entry parameter placement.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

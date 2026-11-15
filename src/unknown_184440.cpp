@@ -382,6 +382,9 @@ __forceinline bool function_184448(long arg_0)
 // long bounds index 991 [383]; reorder plus the float-sum helper 963 [393] (4596 B); reorder, normalize_inline and the
 // per-face bounds at the face-loop top 969 [412], the same on the axis form 969 [365]; reorder, normalize_inline and a
 // bool edge side 963 [397]. The positional count stays near 965 because the first block's registers shift every line.
+// MiniMax S (11-15): no new form, no lower score (965): retail's stack reserve is 0x11cc against our 0x11d4 and the scene and
+// geometry homes are rotated, so every later load sits at a different offset; the endpoint, counter and width forms of the
+// earlier rounds all score 965 or worse.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
