@@ -59,13 +59,15 @@ __forceinline void report_pair_2e2f70(class_2e1090 *sweep, long owner, long othe
 	}
 }
 
-// score 272 (was a stub): the body follows retail's control flow and calls
-// instruction for instruction; retail's frame is 8 bytes larger (0x34): it
-// keeps the box's owner and each overlap test's result in stack slots of their
-// own, so most stack offsets differ by 8. A named overlap result (297), the
-// owner read at each report (309), an index loop over the endpoints and a
-// named sort order (285) all measured worse; a permuter run (7746 variants)
-// reached 206 only with volatile locals.
+// score 207 (was 272): retail stores each overlap test's result although it
+// never reads it again, which the one result declared before the loop gives;
+// the endpoint pointer stays in edi once it steps after the append, and the
+// walk rereads the axis. Still: retail's frame is 4 bytes larger (0x34) and
+// keeps the box's owner in a slot of its own where ours keeps the open count,
+// and the first test loads the box's words in another order. A result per
+// loop, declared anywhere (50 placements), the owner declared before the loop
+// or read at each report, and an index loop over the endpoints measured no
+// better.
 // @retail 0x2e2f70
 void sweep_batches_2e50d0::function_2e2f70(endpoint_2e0f80 *endpoints, long count, pairs_2e1090 *pairs,
 	pair_change_2e2f70 change)
@@ -77,18 +79,18 @@ void sweep_batches_2e50d0::function_2e2f70(endpoint_2e0f80 *endpoints, long coun
 	}
 	longs_2e1ab0 open(0x100);
 	long cursor = 1;
+	unsigned long apart;
 	for (long remaining = count; remaining > 0; remaining--)
 	{
-		unsigned short const id = endpoints->id;
+		long const id = endpoints->id;
 		element_2e1090 const &box = elements.data[id];
-		endpoint_2e0f80 *const axis = axes[0].data;
-		endpoint_2e0f80 own = axis[box.slots[4]];
+		endpoint_2e0f80 own = axes[0].data[box.slots[4]];
 		// the endpoints before the box's own: lower ends open, upper ends close
 		if (cursor != box.slots[4])
 		{
 			do
 			{
-				endpoint_2e0f80 entry = axis[cursor];
+				endpoint_2e0f80 entry = axes[0].data[cursor];
 				if ((entry.value & 1) == 0)
 				{
 					entry.value |= 2;
@@ -101,8 +103,9 @@ void sweep_batches_2e50d0::function_2e2f70(endpoint_2e0f80 *endpoints, long coun
 					{
 						found++;
 					}
+					long const index = found - open.data;
 					open.size--;
-					open.data[found - open.data] = open.data[open.size];
+					open.data[index] = open.data[open.size];
 				}
 				cursor++;
 			} while (cursor != box.slots[4]);
@@ -116,7 +119,8 @@ void sweep_batches_2e50d0::function_2e2f70(endpoint_2e0f80 *endpoints, long coun
 			if (entry.value & 2)
 			{
 				element_2e1090 const &other = elements.data[entry.id];
-				if (!apart_yz_2e1090(box, other))
+				apart = apart_yz_2e1090(other, box);
+				if (!apart)
 				{
 					report_pair_2e2f70(this, owner, other.owner, id, pairs, change);
 				}
@@ -129,14 +133,15 @@ void sweep_batches_2e50d0::function_2e2f70(endpoint_2e0f80 *endpoints, long coun
 			if ((entry.value & 1) == 0)
 			{
 				element_2e1090 const &other = elements.data[entry.id];
-				if (!apart_yz_2e1090(box, other))
+				apart = apart_yz_2e1090(box, other);
+				if (!apart)
 				{
 					report_pair_2e2f70(this, owner, other.owner, id, pairs, change);
 				}
 			}
 		}
-		endpoints++;
 		own.value &= ~2;
 		append_2e2f70(open, *(long *)&own);
+		endpoints++;
 	}
 }
