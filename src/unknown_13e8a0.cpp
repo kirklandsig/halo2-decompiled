@@ -502,6 +502,14 @@ struct s_text_line_measurement
 	long index;
 };
 
+// MiniMax C (11-15): score 65 (was 77): the new running width is summed once after the can_break block and before the
+// test (`real next_width = advance + offset + kerning + width;`) and stored in the update arm ahead of the count's
+// increment, which is the order retail stores them in. The advance is still live across that sum, so the update
+// accumulates in a copy of the advance (retail's `movaps xmm3, xmm0`) and the running width loads early into XMM4
+// as retail does; the earlier spelling that named the same sum before the can_break block scored 68, and the sum
+// named inside the update arm never produces the copy (77). Still open: the XMM0/XMM3 colouring (ours gives XMM0
+// to the scale and XMM3 to the advance, retail the other way round) and the update's adds, which retail keeps in
+// the update arm while ours run ahead of the test. The new width is read once, in the update arm.
 // score 77 (was 77): M3 lane 8 r170 (fast with 0x13f0e0): the update accumulated in the advance (`advance += offset;
 // advance += kerning; advance += width; width = advance;`) 77; `advance += offset + kerning; width += advance; count++;`
 // 77; with the test reading the advance product written out again (diagnostic) 77, still no copy; 1-7 dead long locals at
@@ -636,6 +644,7 @@ s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const
 					break_index = index;
 					break_width = width;
 				}
+				real next_width = advance + offset + kerning + width;
 				if (!(bounds->x1 > position->x + advance + offset + kerning + width) && count)
 				{
 					if (g_4e73a0.flags & 1)
@@ -651,8 +660,8 @@ s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const
 				}
 				else
 				{
+					width = next_width;
 					count++;
-					width = advance + offset + kerning + width;
 				}
 			}
 		}
