@@ -1473,6 +1473,8 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // P511: Primary case 11 before 10/14/22/23/24/6/7, then before 14 with default-owned terminal 18:
 // 195/196/196/196/196/196/195/196 fast (control 196; full 143). NOT kept: one-point best; early ESI save remains.
 // Original complete classifiers, every case interior, lookup and handler tuple restored.
+// P521: Single-terminal primary connection cases 5/6/7 after 4, 5/6/7 after 8, 5/6 after 9:
+// 195/195/193/195/195/192/195/195. NOT kept: no native delayed-save/outlined-handler match; original complete body restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

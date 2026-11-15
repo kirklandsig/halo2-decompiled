@@ -451,6 +451,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // same code); both 391; the wrapped angle renamed to sort before the distance (the pair's slots do not move) 382; retail's
 // store order with the angle element read at each use 389 (1691 bytes, aligned 228); the element at each use alone 381
 // (aligned 278, re-measured).
+// P519: complete emitter-facing result at its original scoring boundary,
+// bool/byte/short/long away truth then aligned complement: 391/389/381/383/389/389/381/383.
+// NOT kept: no exact result-carrier match; original emitter, operands,
+// publication graph and complete body restored. Native unity/angle homes remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

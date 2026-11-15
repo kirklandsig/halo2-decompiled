@@ -1946,6 +1946,9 @@ bool function_17afd0(long effect_index, long value);
 // default. New: T with the owner as a ternary 12 (same code); T with `draw = view_pass ? same_view : !same_view` 101 (508
 // bytes); P with that 140 (512 bytes); P with attached computed ahead of same_view 102 (490 bytes); P with the
 // availability's clear between the second definition call and the owner lookup 141 (510 bytes). All match-only; body kept.
+// P515: Independent availability/same-view/attachment/draw binary enumerations, positive then complementary:
+// 129/143/120/110/122/147/120/112. NOT kept: no native result-home equality; original
+// snapshots, query gates, traversal and complete executable body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

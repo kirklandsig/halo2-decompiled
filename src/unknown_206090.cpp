@@ -593,6 +593,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // P511: Explicit actual steering-range/dominant-force/dead-zone/compression/mass-floor/mass-range/impulse-cap/friction-slope results:
 // 1394/1375/1375/1375/1366/1394/1409/1416. NOT kept: best 1366 grows to 6243 versus native 6238,
 // with excess frame unchanged; other results tie or regress. Original complete body and all helpers restored.
+// P520: Standard steering/dead-zone/mass/impulse/slope/speed/kind/complete range providers:
+// 1534/1519/1441/1506/1445/1421/1420/1809. NOT kept: no exact native storage/provider recovery; original complete body and helpers restored.
+// P522: Real second-coefficient root/first-normalizer absolute/second-normalizer absolute,
+// seven domains then complete real-root API graph: 1396/1394/1396/1449/1394/1449/1375/1394. NOT kept: no exact native frame/API recovery; original complete body and helpers restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

@@ -526,6 +526,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // but our zero takes XMM1 and the range XMM0, retail the other way round, and the range home is +0x08 for +0x28); on
 // that, `*arg_5 = 0` ahead of the minimum 647, the minimum declared after the hit flags 647, the range local before the
 // test 651.
+// P520: Standard range/normalization/clearance/minimum/sentinel/angle/clamp/root providers:
+// 679/704/686/661/719/703/1055/738. NOT kept: no exact native storage/provider recovery; original complete body and helpers restored.
+// P522: Real sine/cosine/paired/sine-root/cosine-root/all APIs, immutable angle/complete scalar formals:
+// 561/561/561/556/556/561/561/561. NOT kept: no exact native success/workspace recovery; original complete body and helpers restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

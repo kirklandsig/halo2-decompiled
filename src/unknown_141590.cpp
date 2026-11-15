@@ -1290,6 +1290,9 @@ void function_143250(
 // P511: Standard real-return roots, band-two 15/5 and band-three 2/35/105/21/7, then all seven:
 // 1307/1307/1324/1322/1322/1324/1324/1266. NOT kept: nonexact root-return/precision contracts only change spill/scheduling;
 // qword fsqrt producers, frame 0x2fc versus 0x300 and displaced scalar homes remain. Original polynomial restored.
+// P521: Current complete matrix initializers, band masks 1/2/4/3/5/6/7 and all immutable:
+// Third-band initializer alone recovers native frame 0x300 and first +0x4c, but regresses to 1498.
+// 1420/1410/1498/1420/1556/1535/1556/1556. NOT kept: no exact native matrix/scalar-storage recovery; original complete body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

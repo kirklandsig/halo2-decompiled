@@ -2274,6 +2274,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // add still flips, lower bound still first); one `long i` shared by both pitch-range loops 305 (same code); a count in both
 // for-inits with the iterator set up ahead of the fills 361 (count alone re-measured 365: the fill's NONE stays in EDX and
 // the iterator count goes to memory); the gains array declared ahead of the sounds array 305 (same code).
+// P521: Current request declaration at function/datum/live-datum/detail scope, original then complete API storage:
+// Complete storage recovers reduced frame 0x128 and first +0x39, but only two points and 1908/1923 bytes.
+// 479/479/479/479/477/477/477/477. NOT kept: no exact native request/frame/owner recovery; original complete body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
