@@ -6815,6 +6815,9 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // readiness pair, raise pair, all and immediate headers first: 295/296/295/293/289/298/306/306.
 // NOT kept: independent gains at most five; 289 needs the combined form, others tie/regress
 // or shorten to 1040/1052. Native zero stores, readiness join and ownership still differ.
+// P541: Readiness callback results defined in complete success/failure arms: four independent sites, pairs, all and failure-first all:
+// 318/318/330/295/338/326/331/328. NOT kept: mode-six 295 gains only three; native mode/weapon registers, dead flag stores and shared readiness completion remain unresolved.
+// Original complete executable source and existing helper contracts restored.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -7072,6 +7075,9 @@ done:
 // P528: Actual toward/facing/output vector2f workspaces, seven subsets, then all with
 // paired scalar input stores: 242/242/242/242/242/242/242/247. NOT kept: no exact alias/home repair;
 // original point workspaces, normalizers, calls and complete body restored.
+// P541: Both definition-flag results with branch-defined positive/complementary bool/byte/short/long producers:
+// 242/242/242/242/242/242/242/242. NOT kept: one-use flag outcomes require equality; native facing copy, flag-byte stores and state home remain.
+// Original complete executable source and existing helper contracts restored.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -8163,7 +8169,7 @@ struct s_unit_turn_state_view
 // MiniMax D (11-15): no new form, no lower score (395): the frame is still 0x78 here and 0x7c in retail, the moved
 // flag still sits in ebx for the whole function where retail keeps it in a stack byte, and this build still makes one
 // reciprocal of the shared step where retail divides twice by the stored step.
-// score 395 (was 395): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
+// Earlier 395 (was 395): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
 // retail), result as a variable, the state byte's bits through s_unit_turn_state_view, +0x10a through
 // s_unit_flags_10a_view, the unit/definition bit tests nested. Still differs: retail keeps the result `moved`
 // in a stack slot ([esp+0xb], 0 stored up front, reloaded on the all-close path, BL=1 on the moved path)
@@ -8202,6 +8208,9 @@ struct s_unit_turn_state_view
 // MiniMax A (11-13): no new form tried this round, no lower score (395): the frame is 0x78 here and 0x7c in
 // retail, `moved` still sits in ebx for the whole function where retail keeps it in a stack byte, and this build
 // still makes one reciprocal of the shared step where retail divides twice by the stored step.
+// P541: Complete moved result from six closeness tests, conditional value, reused unchanged result, explicit final arms, byte/short/long results and exhaustive outer producers:
+// 412/414/418/414/414/420/422/432. NOT kept: native frame/save/result homes and step divisions remain unresolved.
+// Original complete executable source and existing helper contracts restored.
 // @retail 0xc60c0
 bool __stdcall function_c60c0(long unit_index)
 {
