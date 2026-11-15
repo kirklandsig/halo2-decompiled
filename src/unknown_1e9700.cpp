@@ -578,6 +578,10 @@ struct s_object_damage_view
 // 0x4c: the shared object+0x2f0 spill goes); the three inline validations through effects.h's record_pool_lookup_checked 353 (same
 // code); `self` passed straight in the 0x1ea770 call 350 (1544 B, retail's length, but the compare sinks to the call and esi/ebx pop
 // early; 3 points, not kept); the two 0x196dd0 calls' absolute indices as two-use named locals 353 (same code).
+// M3 lane 4 r202 (fast with 0x1e9ce0/0x1ea770/0x1ea880; base 353): consider_team and friendly both as a default then
+// set by an if (retail's shape for both bytes; a flag set by an if, match-only) 344; the selected record's player index
+// named in the selected block 400 (1596 B); consider_team as `reported_player == NONE || !function_1df560(...)` 353
+// (same code); friendly computed before self 350 (1544 B); self and friendly passed as call arguments 359 (1535 B).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

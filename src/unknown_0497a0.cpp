@@ -395,6 +395,14 @@
 // P501: Standard whole-record history/point/input transfer boundaries, seven subsets, then complete fallback
 // publications: 743/679/726/734/753/688/720/732. NOT kept: All regress and fail native frame/extent and rounded
 // wave residence; original copy graph restored. Original complete executable body restored.
+// M3 lane 4 r202 (fast with 0x4a1e0; base 536): ours returns with `ret 0x20` as retail. The frame gap is three scalar
+// homes: retail keeps both wave values as stored floats (s0 at +0x18, s1 at +0x1c, s1 computed first) and multiplies
+// them in SSE, and the first cross's j and k get homes of their own; ours folds the one-use wave values into x87
+// products. The pair as one point2f local (diagnostic) 634 (2672 B, frame 0x60 as retail, the pair at +0x28/+0x2c),
+// that with the first cross staged 634, declared at function scope 634; v4 declared and copied before v3 554; only the
+// special path's first cross through cross3f_staged 536 (same code). Compile-only: out-pointer or twice-assigned wave
+// locals are still folded, and no sin/cos spelling (float or double overloads, named terms, factor orders) keeps sin x,
+// cos 7.8y and cos 7.75y on the x87 stack as retail does.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
