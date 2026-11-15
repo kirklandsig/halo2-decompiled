@@ -72,6 +72,23 @@ extern long g_55c154;
 // The permuter ran over this body for 300 s (six tries) and never beat its baseline of 56 differing instructions,
 // and rewriting the flag so that it is read again from `selected` after the load (instead of living in a byte
 // slot) scores 77, so the byte slot stays.
+// MiniMax R (11-15, later, second): no new form, no lower score (61): the fast check's caveat names the two pushes of
+// the load proc's address (ours 0x400000 where retail pushes 0x2baae7 and 0x2bb31d) as the two global references that
+// reach what the reduced image leaves out unresolved, so those two instructions cannot match in the reduced build
+// (the full build's map puts function_2baae7 at 0x6d4de3); the rest of the difference is the name copy and the
+// 0x238c69 register convention, both noted above.
+// MiniMax R (11-15, later): no new form, no lower score (61): writing retail's second half out as two load call
+// sites (the default arm inline with `saved` in EDX, the selected arm out of line, each with its own g_54e49c store
+// and its own copy into g_54e4a0, the shared 0x238c69 request reached from both) scores 174 at 595 bytes, the same
+// shape earlier rounds measured, so the one call site with the choice in a byte slot stays. The order retail gives
+// 0x238c69 is (controller, mode, type, name, maximum_count), with the controller index in ECX and the four other
+// arguments on the stack; this file declares it (mode, type, name, maximum_count, controller), so that call site
+// passes five arguments on the stack and the register set there stays different.
+// MiniMax R (11-15): no new form, no lower score (61): what is left is the name copy. Retail calls 0x13fac0 out of
+// line with its own register convention (EDI destination, ECX source, ESI count) after the two rep movsd copies,
+// and reuses ESI and EDI for the 0x216a50 call that follows; this link expands the copy into a wcsncpy call plus a
+// terminator store, so the whole second block is a different length and the jumps land elsewhere. The helper lives
+// in a file this lane may not edit, so the expansion stands.
 // score 61 (was 61): Round 32: retail splits the block into two 0x212bc0 call sites (the default arm inline with
 // `saved` in EDX, the selected arm out of line at 0x2ca467), each with its own g_54e49c store, its own copy into
 // g_54e4a0 and its own 0x238c69 call (mode 5 / mode 7); ours keeps one call site and materialises the choice in a

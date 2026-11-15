@@ -979,6 +979,16 @@ __forceinline long vehicle_round(real value)
 // MiniMax I (11-14): the side cross through the shared staged cross helper (cross3f_staged) 6 (was 8);
 // cross3f_staged at the first cross as well 10; the two count variables, the compound sum and the
 // swapped operands of 0xf6060's marker sum all leave that sum in EAX.
+// MiniMax R (11-15): no new form, no lower score (4): the plain cross helper (cross3f) for the side cross gives 6 with
+// retail's length, and the two cross terms still load the other operand there, and the same two terms in the dot
+// product load the other operand as well, so the staged helper stays; the cross terms this lane cannot change are
+// the ones the helper's body fixes.
+// MiniMax R (11-15): no new form, no lower score (4): the four instructions left are the operand order of two of
+// the six products of the staged cross (the second one, at retail 0xefa42 and 0xefa4e: here the forward's component
+// goes in the register where retail puts the up vector's); the helper's body is in a header this lane may not edit,
+// and handing it the up vector's pointer instead of its address scores 94 (735 bytes against retail's 751), so the
+// direct address stays. This file's build flags were also tried without LTCG (the @flags line with /GL-), which
+// leaves this function at 191 and the other two of this file at 596 and 843, so the file stays /GL.
 // score 6 (was 8): retail's length and tail now; three products load the other operand (ours loads up.j
 // for the first cross's k term and the side cross's i term, and up.i for the side cross's j term;
 // retail loads forward each time). Kept: one `bool result` exit, the
@@ -1121,18 +1131,19 @@ bool function_ef870(long vehicle_index)
 		vector3f linear_velocity;
 		vector3f angular_velocity;
 		vector3f axis;
+		vector3f const *up = &vehicle->up;
 
 		function_ba1d0(vehicle_index, &linear_velocity, &angular_velocity);
 		if (vehicle->unknown34d == 4 || vehicle->unknown34d == 3)
 		{
-			cross3f(&vehicle->forward, &vehicle->up, &axis);
+			cross3f(&vehicle->forward, up, &axis);
 		}
 		else
 		{
 			axis = vehicle->forward;
 		}
 
-		real rate = vehicle->up.k / g_510c54->rate * -2.0f;
+		real rate = up->k / g_510c54->rate * -2.0f;
 
 		if (*(real *)(definition + 0x23c) > rate)
 			rate = *(real *)(definition + 0x23c);
@@ -1365,6 +1376,28 @@ long function_10f5f0(long object_index);
 // MiniMax D (11-10): no new form, no lower score (561): the frame is 0x1990 where retail's is 0x1984, so
 // the physics state's layout is twelve bytes too big here and every later slot shifts with it; the word
 // at +0xc0 is read into EAX where retail reads it into ECX.
+// MiniMax R (11-15, later, second): no new form, no lower score (561): the permuter over this body ran 322 seconds
+// and four tries and never beat its baseline of 561 differing instructions, so no rewrite of the body scores lower
+// from the search.
+// MiniMax R (11-15, later): no new form, no lower score (561): the frame's slots line up one dword apart from the
+// velocity down: retail keeps the velocity and the six-float buffer in one slot at esp+0x20, the matrix at esp+0x48
+// and the physics state at esp+0x104, while this build keeps the velocity at esp+0x24, the buffer at esp+0x3c, the
+// matrix at esp+0x54 and the state at esp+0x110, so the frame is 0x1990 against retail's 0x1984 and every later
+// reference sits a dword higher. Declaring the six-float buffer at the function's top instead of inside its block
+// leaves the frame and the score unchanged (561), so the buffer stays where it is.
+// MiniMax R (11-15): no new form, no lower score (561): retail keeps the six bit tests (bit 12 and bit 10 of the word
+// at +0xc0, bit 0 of the byte at +0xc1, bit 6 of the word at +0xc0 and bit 2 of flags348) in a byte slot at esp+0x13
+// that it writes six times and never reads, while this build tests each bit where it is used; giving that bit a bool
+// local of its own does reproduce retail's "and cl, 1" and "shr eax, 0xa" extractions, but MSVC then holds the flag
+// in a register and drops the six stores, and the extra nesting the bit-6 test needs moves the body (577 against
+// 561), so the bits stay tested in place.
+// MiniMax R (11-15): no new form, no lower score (561): retail's frame is 0x1984 against this build's 0x1990 because
+// retail keeps the velocity and the six-float buffer in one slot at esp+0x20, which needs the velocity in a narrower
+// scope than the buffer's (a frame-shaping move, so it is not kept); retail also counts the point sum down over the
+// points where this build unrolls it four times (the countdown form scores 597, the pointer-to-value form 579), and
+// the permuter ran over the body (four tries in 317 s) without beating 561. This file's build flags were also tried
+// without LTCG (the @flags line with /GL-), which leaves this function at 596 and the other two of this file at 191 and
+// 843, so the file stays /GL.
 // score 561 (was 561): earlier 562; frame 0x1990 versus retail 0x1984, native flag-result byte stores (the six dead [esp+0x13]
 // earlier at 561 (was 562). Frame 0x1990 versus retail 0x1984, native flag-result byte stores (the six dead [esp+0x13]
 // stores), sum-loop unrolling, the flags348 write/read forms and scalar/SSE homes remain.
@@ -5303,6 +5336,30 @@ bool __stdcall function_f8070(long bit, word const *flags);
 /* the vehicle object type's function values (+0x4c): its boost, brakes,
    ground contact, speeds, steering, engine and wheels; false for a name it
    does not know */
+// MiniMax B (11-13): no new form, no lower score (749): the frame and the length are retail's, but the entry's zero and its
+// 1.0 still take XMM4 and XMM5 where retail takes XMM2, and the definition receiver and the per-site 1.0 lifetime still differ.
+// MiniMax G (11-12): no new form, no lower score (749): nothing new this round; the frame and the length are retail's, and the
+// entry definition ownership, the zero/result SSE allocation and the per-site versus hoisted 1.0 constants
+// are still not retail's.
+// MiniMax G (11-12): no new form, no lower score (749): frame 0x18 and retail's length agree, but the entry
+// definition ownership, the zero/result SSE allocation and the per-site versus hoisted 1.0 constants are still not
+// retail's.
+// MiniMax H (11-11): no new form, no lower score (749); the definition pointer is still re-derived at each use instead of
+// retail's one copy in EBP, the zero and the result still take different SSE registers and the 1.0 is still hoisted here.
+// MiniMax R (11-15, later): no new form, no lower score (749): retail's own copy of the definition pointer, computed
+// in the prologue and kept in EBP, serves the seven sites that read 0x264 (three times), 0x1f0 (once) and 0x20c
+// (three times), while the other fifteen sites re-derive it from the tag table; giving only those seven sites a
+// definition pointer of their own makes this build merge every lookup into one register and shortens the body to
+// 2707 bytes (1027), the same regression the all-sites local gave, so the expression stays written out at every site.
+// MiniMax R (11-15): no new form, no lower score (749): retail pushes ebp as well and keeps the definition in it,
+// takes its zero in xmm2 and materializes 1.0f from memory at each of the four places it uses it, while this build
+// hoists the constant into xmm5 at the prologue and pushes three registers; the permuter ran 300 s over the body
+// (three tries) and never beat its baseline of 749, so the prologue stands. Building this file without LTCG (the
+// @flags line with /GL-), which would hide the callees' bodies from this caller and so force the xmm registers to be
+// reloaded after every call, scores 843 here (and 191 and 596 for 0xef870 and 0xefde0), so the constant's hoisting is
+// not the linker's knowledge of the callees. Every case label here was also checked against retail's own dispatch
+// tree: the forty labels of this switch are retail's forty, five of them (0x13000588, 0x18000593, 0xa00001a,
+// 0xd000586 and 0xe000583) reached through retail's subtract chains rather than by a compare.
 // score 749 (was 749): Frame 0x18 and retail length agree; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain (was 765 before round 180).
 // MiniMax S (11-10): no new form, no lower score (749); the definition pointer is re-derived from the tag table at each use while retail keeps one copy in a callee-saved register (used at seven of its sites) and re-derives it at nine others; the zero and the result take different SSE registers and the 1.0 is loaded once per site here.
 // MiniMax R (11-09): no new form, no lower score (749); the definition pointer kept in a local unifies the branches and regresses to 1027, and retail's four-push prologue and per-site 1.0 load are not reachable from the source.
