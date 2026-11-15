@@ -1129,6 +1129,9 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // vector selection: 142/142/142/142/241/241/241/241. NOT kept: Every outcome regresses; native saved
 // projectile/type and shared vector homes remain unresolved. Both exact controls survive. Original complete
 // executable body restored.
+// P511: Complete terminal placement success/failure outcomes in bool/byte/short/long:
+// 92/92/92/92/92/92/92/92. NOT kept: all canonicalize without recovering saved projectile/type
+// and shared-vector homes. Original complete body and all call tuples restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)

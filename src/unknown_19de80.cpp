@@ -658,6 +658,13 @@ static inline bool teams_enabled_19e1c0()
 // result;` 691 (same code); the text buffer declared in each case's block 691 (same code, so the merge follows the slot,
 // not the symbol); both 691. On the volatile result: per-case buffers 390, per-case returns 390 (both the same code).
 // Diagnostic: one to three unused `long` locals on the plain result 691 each (no phase effect).
+// M3 lane 5 r184 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, aligned 199): every clamp as
+// `if (remaining < result)` on the volatile result 390 (same score); the two team-name cases reading the event's team at
+// each use (no team locals) 394 (aligned 192); that with the text buffer declared in each case's block 394 (aligned 190);
+// the opponent iterator `long` 421 (1424 B, aligned 160); `__forceinline` on teams_enabled_19e1c0 390. Plain result built for reading: retail's name tails 2 and 1/4
+// differ in their scratch registers (ECX/EDX against EDX/EAX), the cause-team tail joins the fallback's clamp with the
+// flags live across the jump, and the other name tails share only the copy call, so retail's cross-jumping leaves
+// byte-identical tails 1 and 4 apart. Body unchanged.
 // M3 lane 12 r124 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched each time; base 390, plain result 691 at 1170 B): the four
 // name/team clamps as `result >= remaining` 691 plain, 390 volatile; the text buffer declared ahead of the result 691 plain,
 // 390 volatile; both team admissions with the team test first on the plain result 688 (1172 B). On the plain result the two
