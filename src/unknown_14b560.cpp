@@ -1646,6 +1646,10 @@ static inline s_players_globals *players_globals_14f2e0()
 // declared ahead of the outputs at the top of the mode block 56; `long unit_index` declared ahead of the result 43; the
 // reuse flag declared beside the result at the function top 81; on the current body the kept unit in its own state-block
 // local 5 (same code). The two failure exits as `return false` 273 (1018 bytes, the round 78 form again).
+// Round 122 (m3 lane 16, fast; control: the outputs declared in the mode block 43 at 1031 bytes, `mov eax, 0xffffffff`): on
+// that control the mode test held in a named bool 43, a game-options pointer local for the mode test only 43, `(byte)` on
+// the mode 43, `(long)mode != 4L` 43 (each the same code), the outputs declared third_person first 45. A 1800 s fast
+// annealing permuter run on the current body (seed 122): 77 tries, none below 5. Body unchanged.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

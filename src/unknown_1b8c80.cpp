@@ -318,6 +318,12 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // c8200 setup keeps `mov ecx, [esp + 0x20]; mov eax, [ecx]` ahead of the seat load). Reading: in every form ours issues the
 // dependent load right after the reload of the spilled seat address, where retail puts the seat load between them, as if
 // retail's [esp + 0x20] were a memory-resident variable the scheduler sees rather than a spill reload. Restored.
+// Round 122 (m3 lane 16, fast): the unit index read into a local at the top of the unoccupied arm's else block 58 (387 bytes,
+// the unit loaded ahead of the 0x1b8d80 call and kept in a stack slot); last_object_index as the 0x1b8d80 object argument 95
+// (383 bytes); the unoccupied arm as a separate `if (occupant == NONE && ...)` after the occupant block 3 (same code); a short
+// seat index named at the loop top for all three calls 104 (358 bytes); a 1800 s fast annealing permuter run (seed 122, the
+// eight callers and callees as context, base the c8200 test nested under the 0x1b8d80 test, 3, same code): 152 tries, none
+// below 3. Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
