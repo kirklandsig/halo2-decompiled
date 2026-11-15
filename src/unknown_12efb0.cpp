@@ -599,6 +599,12 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // conditional contribution/destination sum, short then char palette:
 // 775/775/698/775/778/778/637/778. NOT kept: no byte equality; original
 // input capture, helpers, palette and full body restored at 607.
+// m3 lane 9 r123 (fast with 0x12e5e0/0x130f60/0x131030/0x1317a0): the NULL-record `goto` removed by declaring the record
+// before the slot test and testing it after (`if (record) ... else if (slot == NONE && tag != NONE) ... else default`)
+// 1087 (4151 bytes: VC keeps the repeated slot test); the field_6c store first in its publication block 604 (statement
+// order only: retail stores it before the last two fields, ours after them); the tag arm's third-accumulator weight added
+// before the three merges 607; every cluster record field indexed through local_0[local_11] (no record pointer) 609;
+// a walking record pointer for the loop 794 (3861 bytes).
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

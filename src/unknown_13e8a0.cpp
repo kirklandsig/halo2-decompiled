@@ -590,6 +590,9 @@ struct s_text_line_measurement
 // seven bool subsets then all byte: 111/134/116/115/108/119/123/123.
 // NOT kept: no native advance copy or early width-load recovery; original
 // flags, lazy reads, arithmetic groups and complete body restored at 77.
+// m3 lane 9 r123 (fast with 0x13f700/0x13f0e0): the three metrics `real const` 77; the update through an inline helper that
+// accumulates into its advance parameter 77 (the parameter copy is propagated away like a named copy); the three metrics in one
+// declaration 77; `width += advance + offset + kerning;` before `count++` 77; the bound test as `sum >= x1 && count != 0` 80.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {
