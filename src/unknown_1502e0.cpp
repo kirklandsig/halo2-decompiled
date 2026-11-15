@@ -1100,6 +1100,10 @@ struct s_tail_transfer_traits
 // counter's type is the only change from the 143 form, and retail's code is straight. On that 134 form: on the global 180;
 // `long primary;` 188; held[2] replacing primary/secondary (the seat arm writes held[0]) 157 (829 B), with `long hand` 167;
 // cbe60 before the loop 161 (802 B). Body unchanged.
+// P534: Actual sixteen-entry copy-counter dword/int/short/word domains 144/144/144/144;
+// identifier-search counter dword/int/short/word domains 145/144/198/198. NOT kept:
+// no native selected-traits/unit/NONE or selection-counter-home recovery; narrow search
+// counters lengthen to 842 bytes. Original traversals and complete body restored.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {

@@ -1385,6 +1385,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // still holds: no other untried natural loop, return, declaration or helper form is left.
 // P521: Optional mode/class/type scalar memcpy domains 1/2/4/3/5/6/7, then complete memmove:
 // 828/828/828/828/828/828/828/1059. NOT kept: no exact native output/candidate/zero-carrier recovery; original complete body restored.
+// P534: Early optional mode/class/type output-presence Boolean subsets, then complete
+// byte presence: 1025/1025/1025/1046/1046/1046/1068/1068. NOT kept: candidate/output/result homes and late
+// zero remain, and early presence grows the native frame/extent. Original complete body restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
