@@ -800,6 +800,11 @@ struct s_1f8a70_actor
 // P515: Independent inner/outer binary-enumeration results, positive/complementary and complete pairs:
 // 307/376/432/448/467/486/542/553. NOT kept: no native failure-reload or dispatch equality;
 // original two-result flow, cases, unit temporary and full executable body restored.
+// m3 lane 10 r109 (fast, control 182): route_found declared in a block of its own after the 0xe70b0 block (a sibling scope
+// of the record temporary, whose +0x12 slot it shares) 182 (same code); route_found initialised false at its declaration
+// 182 (same code); the route test and switch on route_mode itself (no `route` local) 397; the 0xe70b0 test without its
+// extra braces 182 (same code); re-measured the ternary route initialiser 182. Lead: retail's reload of route_found after
+// 0x1f8750 is what an address-exposed local gets, and the only address retail takes at +0x12 is the 0xe70b0 result's.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

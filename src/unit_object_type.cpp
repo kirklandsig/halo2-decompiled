@@ -6550,6 +6550,11 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // `&&` chain in the if with the success arm first and the out-of-memory arm in the else 193 (the check and
 // out-of-memory blocks move to the end, the success arm takes retail's EAX/ECX/EDX). Re-measured: no data local 59.
 // MiniMax S (11-14): no new form, no lower score (59): the first header read still takes the scaled offset as the address base where retail takes the data pointer, and the success arm's scratch registers stay swapped.
+// m3 lane 10 r109 (fast, control 59): the creation reads without the `data` copy 59 (same code); the three allocations as
+// an if/else-if chain with an out-of-memory arm each 186 (1047 bytes); the forward vector copied through a const pointer
+// local 60; the five copies of the forward vector in the reverse order 59; diagnostic: the entry lookup indexed by
+// `(word)unit_index` 258 (`movzx` and a scaled index). The two first header reads' `[off + data + 8]` is the same
+// operand order 0xc58f0's re-lookups show (there a named offset local gives retail's order for one of them).
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {
@@ -7665,6 +7670,27 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 	return result;
 }
 
+// score 244 (was 244): HELD (needs the owner's OK: one call line in contributor 0xcaa60). m3 lane 10 r109: 0x100430's
+// flags argument is a two-byte aggregate passed by value: both retail callers write the word into a stack slot and push
+// the dword (here `mov word ptr [esp + 0x20], cx` ... `mov eax, dword ptr [esp + 0x20]; push eax`; 0xcaa60 does the same
+// with a stored word 0), so `s_weapon_control_flags { word bits; }` as 0x100430's second parameter (definition, both
+// declarations and 0xcaa60's call, which passes a cleared one) gives retail's 0x28 frame: plain 244 -> 229; with the flags
+// cleared first and bit 1 set by the same ternary as the other bits (`flags.bits = 0; flags.bits = bit ? flags.bits | 2 :
+// flags.bits & ~2;`) 224 at retail's 1470 bytes (retail's `and cl, 1; movzx cx, cl; shl cx, 1` exactly); 0x100430 stays
+// MATCH, 0xcaa60 224 -> 218 (1177 bytes). Held diff: build/r109/held-0xc58f0.patch. With the listed match-only forms on
+// top (the byte compares of the two animation results, the second pool local for the zoom weapon's lookup, the NONE-then-if
+// zoom weapon, the zoom's low byte for the scale) 3 (plain build): only the three re-lookups' address operands are left
+// (`[off + data + 8]` against retail's `[data + off + 8]`: the zoom holder, the second loop's holder, the inlined 0xe6fe0
+// lookup). On that 3 form, same 3: the zoom holder as unit_at_masked_index, as header pointer + index, as `data + off * 12
+// + 8`, as `off * 12 + data + 8`, as plain UNIT_GET (so the first pool local is not needed), the entry lookup as
+// unit_at_masked_index, the parameter renamed (diagnostic); the zoom weapon through 0xcbd50 258 (data kept, not reloaded).
+// On the 224 form the NONE-then-if zoom weapon alone 260. 0x113da0/0x113df0 returning bool (callers test AL) 227 on the
+// 229 form, but both callees lose their match (`xor al, al`/`mov al, 1` for retail's `xor eax, eax`/`mov eax, 1`), also
+// with a result variable. The permuter refuses this body (--fast reduced image scores it 191 against the full image's 3).
+// On the 3 form, UNIT_GET written as `*(s_unit **)(data + offset + 8)` with a named `long offset = (unit_index & 0xffff) *
+// 12;` for the entry, zoom holder and second-loop lookups 24 (1472 bytes: the zoom holder then has retail's `[data + off +
+// 8]`, but the offset's frame slot moves from +0x4 to +0x8 and the second loop keeps the offset in EDI), the local renamed
+// to sort first 24 (same code).
 // MiniMax E (11-14), NOT kept (coordinator: steering casts and a union, never kept; the UNIT_GET body written out
 // through two copies of one pool pointer; `(char)zoom` also changes the value for zooms over 127): score 15 (was 244):
 // the two animation-slot results are compared as bytes, the trigger flags keep
@@ -7790,7 +7816,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // wide/byte changed result 398/237 (byte gives native 1470 bytes, gain seven below eight);
 // held countdown as complete outcome 239; sound-request/flag-word role names 244/244.
 // NOT kept: ties, regressions or subthreshold gains; native flag dword transfer remains.
-// score 244 (was 253): frame 0x24 versus retail 0x28; native word flags use a dword stack transfer.
+// Earlier 244 (was 253): frame 0x24 versus retail 0x28; native word flags use a dword stack transfer.
 // P494: result before lookups 245; positive crouch admission 244; direct held outcome 236;
 // requested zoom initialized before its test 290; complete rate producers 244;
 // sound aggregate 244; both last-level divisors named 244; full-scope sound request 278.
@@ -8016,11 +8042,11 @@ static real unit_turn_share(real angle, real step)
 
 	if (0.0f > share)
 	{
-		return 0.0f;
+		share = 0.0f;
 	}
-	if (share > 1.0f)
+	else if (share > 1.0f)
 	{
-		return 1.0f;
+		share = 1.0f;
 	}
 	return share;
 }
@@ -8034,6 +8060,21 @@ struct s_unit_turn_state_view
 	word unknown7 : 1;
 };
 
+// score 277 (was 395): m3 lane 10 r109 (plain, every trial): kept, together: the single exit (`moved` set in the
+// not-all-close arm, one `return moved;`; alone 419: retail's frame byte for `moved`, reloaded on the all-close path),
+// both frames' cross products through the existing cross3f (alone 396; with the single exit 386, the cross products then
+// take retail's schedule), the definition read through the typed unit fields (386, same code), the aim speed's zero test
+// as `0.0f == ...` (retail's `ucomiss xmm2, [esi + 0x144]`; 375) and the share helper with one exit (the quotient stored,
+// then clamped in place; 277). Left: frame 0x80 against retail's 0x7c with every callee-saved register pushed at entry
+// (retail pushes EBX after the two flag tests and EDI around the state pointer); ours has an unreferenced bottom slot and
+// orders the slots scale, state, aim acceleration, aim speed, definition where retail has aim speed, aim acceleration,
+// scale, state, definition after `moved`; the reciprocal of the shared step; the stored quotient (retail clamps the share's
+// frame slot in place); 0x11ce20's two arguments in the other registers. Not kept on 277: 0x11ce20's arguments swapped
+// (it is symmetric; retail's ECX/EDX) 277 (also 386 on 386); `moved = true;` after the 0xbba20 call 276; the four rate
+// locals renamed 277 (same code); the second frame's up through cross3f_staged 277; the two flag tests nested 386 (on
+// 386, same code); `moved` declared first 437 (on 419); the shares clamped in place without the helper 390 (on 386).
+// Match-only: the step product written at each share (no step local) 335 on 386 (no reciprocal: retail's two `divss` by
+// the stored product); `volatile bool moved` 393 on 277 (diagnostic, reverted at once: the frame stays 0x80).
 // MiniMax C (11-15): no new form, no lower score (395 in the plain build, 453 in the reduced one, which builds
 // 0x11f0d0 differently): the body stands as found.
 // MiniMax G (11-14): no new form, no lower score (395 in the plain build, 453 in the reduced one, which builds
@@ -8072,7 +8113,7 @@ struct s_unit_turn_state_view
 // MiniMax S (11-14): no new form tried this round, no lower score (395): the body was re-measured and stands as
 // it was; the step helper is shared with the other callers of that file, so its spelling was left alone and the
 // moved flag's home could not be moved without the helper's own body changing.
-// score 395 (was 395): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
+// Earlier 395 (was 395): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
 // retail), result as a variable, the state byte's bits through s_unit_turn_state_view, +0x10a through
 // s_unit_flags_10a_view, the unit/definition bit tests nested. Still differs: retail keeps the result `moved`
 // in a stack slot ([esp+0xb], 0 stored up front, reloaded on the all-close path, BL=1 on the moved path)
@@ -8115,16 +8156,16 @@ struct s_unit_turn_state_view
 bool __stdcall function_c60c0(long unit_index)
 {
 	s_unit *unit = UNIT_GET(unit_index);
-	byte *definition = UNIT_DEFINITION_GET(unit);
+	s_unit_definition *definition = (s_unit_definition *)UNIT_DEFINITION_GET(unit);
 	bool moved = false;
 
-	if (!(TEST_FIELD_BIT((*(dword *)(definition + 0xbc) >> 10) & 1)) && !(TEST_FIELD_BIT(((s_unit_flags_10a_view *)&unit->flags_10a)->bit2)))
+	if (!(TEST_FIELD_BIT((definition->unit.flags >> 10) & 1)) && !(TEST_FIELD_BIT(((s_unit_flags_10a_view *)&unit->flags_10a)->bit2)))
 	{
 		vector3f old_aim = unit->unknown168;
 		vector3f old_look = *(vector3f *)&unit->unknown18c;
-		real scale = unit->unknown1bc == 1 ? *(real *)(definition + 0x14c) : 1.0f;
-		real arg_3097c5_2 = *(real *)(definition + 0x144) * scale;
-		real pitch_rate = *(real *)(definition + 0x148) * scale;
+		real scale = unit->unknown1bc == 1 ? definition->unit.casual_aiming_modifier : 1.0f;
+		real arg_3097c5_2 = definition->unit.aiming_velocity_maximum * scale;
+		real pitch_rate = definition->unit.aiming_acceleration_maximum * scale;
 		byte *state = (byte *)unit + unit->unknown33e;
 
 		if (arg_3097c5_2 == 0.0f && pitch_rate == 0.0f)
@@ -8143,9 +8184,7 @@ bool __stdcall function_c60c0(long unit_index)
 			frame.scale = 1.0f;
 			function_b9fc0(unit_index, &frame.forward, &frame.up);
 			frame.position = *g_468788;
-			frame.left.i = frame.up.j * frame.forward.k - frame.up.k * frame.forward.j;
-			frame.left.j = frame.up.k * frame.forward.i - frame.up.i * frame.forward.k;
-			frame.left.k = frame.up.i * frame.forward.j - frame.up.j * frame.forward.i;
+			cross3f(&frame.up, &frame.forward, &frame.left);
 			function_c7840(&frame, &unit->unknown168, &unit->unknown15c, g_510c54->rate, &unit->unknown174,
 				(real const *)(state + 4), arg_3097c5_2, pitch_rate);
 		}
@@ -8155,14 +8194,14 @@ bool __stdcall function_c60c0(long unit_index)
 		}
 		real yaw_share;
 		real pitch_share;
-		if (*(real *)(definition + 0x144) == 0.0f)
+		if (0.0f == definition->unit.aiming_velocity_maximum)
 		{
 			yaw_share = 0.0f;
 			pitch_share = 0.0f;
 		}
 		else
 		{
-			real step = g_510c54->rate * *(real *)(definition + 0x144);
+			real step = g_510c54->rate * definition->unit.aiming_velocity_maximum;
 			vector3f new_flat;
 			vector3f old_flat;
 
@@ -8177,8 +8216,8 @@ bool __stdcall function_c60c0(long unit_index)
 		}
 		unit->unknown243 = (byte)(long)(yaw_share * 255.0f);
 		unit->unknown1f8 = (byte)(long)(pitch_share * 255.0f);
-		real look_yaw_rate = *(real *)(definition + 0x150) * scale;
-		real look_pitch_rate = *(real *)(definition + 0x154) * scale;
+		real look_yaw_rate = definition->unit.looking_velocity_maximum * scale;
+		real look_pitch_rate = definition->unit.looking_acceleration_maximum * scale;
 		if (look_yaw_rate == 0.0f && look_pitch_rate == 0.0f)
 		{
 			*(vector3f *)&unit->unknown18c = unit->unknown180;
@@ -8193,12 +8232,8 @@ bool __stdcall function_c60c0(long unit_index)
 			function_b9fc0(unit_index, &frame.forward, &frame.up);
 			frame.forward = unit->unknown168;
 			frame.position = *g_468788;
-			frame.left.i = frame.up.j * frame.forward.k - frame.up.k * frame.forward.j;
-			frame.left.j = frame.up.k * frame.forward.i - frame.up.i * frame.forward.k;
-			frame.left.k = frame.up.i * frame.forward.j - frame.up.j * frame.forward.i;
-			frame.up.i = frame.forward.j * frame.left.k - frame.forward.k * frame.left.j;
-			frame.up.j = frame.forward.k * frame.left.i - frame.forward.i * frame.left.k;
-			frame.up.k = frame.forward.i * frame.left.j - frame.forward.j * frame.left.i;
+			cross3f(&frame.up, &frame.forward, &frame.left);
+			cross3f(&frame.forward, &frame.left, &frame.up);
 			function_c7840(&frame, (vector3f *)&unit->unknown18c, &unit->unknown180, g_510c54->rate, &unit->unknown198,
 				(real const *)(state + 0x14), look_yaw_rate, look_pitch_rate);
 		}
@@ -8207,16 +8242,15 @@ bool __stdcall function_c60c0(long unit_index)
 			function_11f0d0(&unit->unknown198, (vector3f *)&unit->unknown18c, &unit->unknown180, g_510c54->rate,
 				look_yaw_rate, look_pitch_rate);
 		}
-		if (0.0001f > (real)fabs(old_aim.i - unit->unknown168.i) && 0.0001f > (real)fabs(old_aim.j - unit->unknown168.j) &&
+		if (!(0.0001f > (real)fabs(old_aim.i - unit->unknown168.i) && 0.0001f > (real)fabs(old_aim.j - unit->unknown168.j) &&
 			0.0001f > (real)fabs(old_aim.k - unit->unknown168.k) &&
 			0.0001f > (real)fabs(old_look.i - ((vector3f *)&unit->unknown18c)->i) &&
 			0.0001f > (real)fabs(old_look.j - ((vector3f *)&unit->unknown18c)->j) &&
-			0.0001f > (real)fabs(old_look.k - ((vector3f *)&unit->unknown18c)->k))
+			0.0001f > (real)fabs(old_look.k - ((vector3f *)&unit->unknown18c)->k)))
 		{
-			return moved;
+			moved = true;
+			function_bba20(unit_index);
 		}
-		moved = true;
-		function_bba20(unit_index);
 	}
 	return moved;
 }

@@ -1733,6 +1733,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // P516: Independent completed header-read result, bool/byte/short/long, reused by validity and admission:
 // 191/191/191/191 (frame 0x1140); independent checker result 116/116/115/116 (946 B).
 // NOT kept: all regress; original progressive validity, count homes, waits and full body restored.
+// m3 lane 10 r109 (fast with 0x2138f0, 0x213800, 0x2149c0, all MATCH; control 33): the write's flags passed as a plain `0`
+// (the implicit conversion builds the record in its argument slot: `mov edx, esp; mov [edx], ebx`) 91 (932 bytes); the
+// cleanup flag declared after the first 0x2138f0 call 36; the handle pointer taken from `file` instead of indexing the
+// array again 81; `done` declared ahead of the expected size 33 (same code); `valid` declared at the top of the loop body
+// 33 (same code). Retail loads the write's handle (`mov eax, [ebp]`) before any of the call's pushes and zeroes the flags
+// in ECX; ours zeroes the flags in EAX first and loads the handle after them.
 // @retail 0x213970
 void function_213970(void)
 {
