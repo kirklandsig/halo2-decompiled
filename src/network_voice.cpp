@@ -3944,6 +3944,11 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // B: it is strength-reduced into an EDI cursor, but the start shares ECX in the preheader and the member keeps EBP); a
 // `packets = data + 2` base ahead of the loop with `packets + i * packet_size` 166; the stride computed at the loop top
 // 160 (476 B). Re-measured: the packet cursor beside the count 164.
+// M3 lane 2 r86 (fast with 0x564c0, matched throughout): re-measured the packet cursor beside the count 164 (478 B: EDI
+// cursor, ESI stride, EBX relay then members, all as retail; only EBP differs, ours the member, retail the channel with
+// the member in a frame slot). On it: the member declared at function scope 164; the NONE and kind tests split 164; the
+// member fetched after the kind and members tests 147 (EBP still the member; alignment only); the cursor started as
+// `&data[2]` 164 (still `add edi, ecx`); the member assigned inside its NONE test 164.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

@@ -662,6 +662,10 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // diagnostic, restored at once; 0xb8d30 then differs) all leave ours (table first). So the order is neither the
 // position of the last use, nor the use counts, nor a callee's side-effect summary: it flips only when the table also
 // has to be loaded a second time inside the loop on the every-pass path.
+// M3 lane 2 r86 (fast with 0x113ba0, 0x113c60): each failed pair test, lookup and visited test as a `continue` guard 2
+// (same code); the unit, definition and model lookups moved to the 0x1d90e0 call inside the loop 191 (577 bytes: not
+// hoisted back out); the three entry tests as nested ifs 2; the pair-name tests split into two nested ifs 2. A 600 s
+// fast annealing permuter run (seed 86, 63 tries) found none below 2.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -3014,6 +3018,13 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // code); the request priority captured first and the index from `entry_index != NONE ? entry_index : 0x20ba00` with one
 // NONE test 16; a pointer to the request's extra part for the copy and the three default stores 16; the request filled by
 // aggregate initialisation in place of the memset and the four stores 101 (277 bytes).
+// M3 lane 2 r86 (fast): the out value in its own `long definition_index = NONE` local (0x1147e0's form) with the priority
+// read straight at both uses 46 (entry in ECX, priority in EAX, frame 0x38); that local with `(void)&priority` 46 (same:
+// the empty address-take is gone before the convention is fixed); that local with the priority read once through a
+// `long const *` to it 16 (main's exact code: the out local takes the priority's dead home, the roles stay); the fallback
+// lookup assigned inside the NONE test's condition with one return 16; the entry parameter filled by a ternary and used
+// as the index 16. Diagnostics: 1 to 7 unused locals 16 each, the index renamed to sort after request_priority 16 (the
+// roles follow neither the symbol count nor the names).
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

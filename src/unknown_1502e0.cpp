@@ -1572,6 +1572,12 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // parameter in EDX), the test through the getter with the player local kept 27 (138 B), the unit fetched ahead of the test
 // 27, a `long const &` unit index for every use 25 (137 B), only the calls through the getter 41 (142 B), only 0xa9030's 57
 // (143 B), an object header array local 17 (same code).
+// M3 lane 2 r86 (fast): the unit lookup through an index-only object getter that reads the object pool itself 17; the
+// unit test held in a named bool 17; a unit-index local declared after the slot tests for the two calls 17; the test read
+// through a `long const *` to the unit-index field 17; the lookup read through that pointer 17 (all the same code: a
+// field pointer or local copy merges as early as the plain read). On the getter-reload lead: the second read as the
+// player table's array element 5; 0 to 7 unused locals 5 each (the player add's operand order, retail index + data,
+// lead data + index, does not follow the symbol count; it follows whether the player address is a shared temp).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
