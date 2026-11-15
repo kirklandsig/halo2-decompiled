@@ -511,6 +511,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // the lead with the second point's offsets first 292 (masked 60); this file's helper rewritten in place with scalar
 // copies scaled from the input and forward-first rows 295 (1086 B, masked 79), with the second offsets first 295 (masked
 // 76). Body unchanged.
+// M3 lane 5 r184 (fast with 0x30bf0/0x30290/0x142640, all matched; control 206, register-masked aligned 176): the helper
+// reading the camera's scale itself (no scale parameter) 209 (1143 B); the copy scaled in place (`vector3f_scale(&scaled,
+// arg_0, &scaled)`) 206 (masked 176, no change); one offset loop with the second point's statement first 211 (1141 B); the
+// first view's two depth tests before the second view's sign test 257 (1143 B); the second offset loop's counter named
+// `component` like the first 206. Body unchanged.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

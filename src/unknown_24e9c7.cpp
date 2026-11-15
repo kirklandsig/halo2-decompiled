@@ -472,6 +472,11 @@ struct s_24e9c7_points
 // named once (`long shader_index`, test and call) 174 (742 B); the marker's kind named once for the bounds tests and the index
 // 130; the sequence index read from the kind at its four uses 125 (same code); the sequence's fields read through
 // `group->sequences[sequence_index]` at each use (no `sequence` pointer) 163 (747 B). Body unchanged.
+// M3 lane 5 r184 (fast with 0x24e59f/0x22a664, both matched each time; control 125, masked aligned 94): `size += 1.0f;` as
+// a second statement 125; the integer dimensions first in both extent products (`(real)bitmap->height * (bounds.y1 -
+// bounds.y0) * scale`) 125; size, the across pair and scale as `real const` 125; the forward pair read through one point
+// view of the placement for the across products and up 125; the kind, group, sequence and bitmap pointers `const` 125.
+// None moves the early across spill or the homes above the result. Body unchanged.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

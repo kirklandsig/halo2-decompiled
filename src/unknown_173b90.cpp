@@ -834,6 +834,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // that copy 274 (1152 B); the frame rotation copied once per emitter, both rotations through the copy 373 (1199 B); the
 // position rotated into a separate point and translated back into the callback point 183 (1098 B); the three per-particle
 // property tests as `(flags & n) == 0` 124 (1136 B); the emitter-level scale test as `flags & 4` 210 (1137 B). Body unchanged.
+// M3 lane 5 r184 (fast with 0x173c10/0x175430/0x2477b0/0x173ba0, matched throughout; control 42): `real multiplier =
+// 1.0f, scale = 1.0f;` 42; both transform tests as `definition->unknown0c != 0` 42; indexed definitions with scale first and
+// the motion rotated before the position's last translation add 115 (1136 B); the emitter mask and particle mask `dword
+// const` 42; the location's first emitter index named before the loop's index 109. Body unchanged.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

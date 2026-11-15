@@ -463,6 +463,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // written back `axis * projection + v * cosine - cross * sine` 213 (frame 0x11c; one spill then lands above the creation
 // data); with the rows' first two terms swapped 213; cosine before the dot 213; the cross before the dot 231 (1196 bytes);
 // the cross vector declared at the helper's top 213. Helper restored.
+// M3 lane 5 r184 (fast with 0x28dab0/0x256bd0/0x259d0, all matched; control 173): in function_28dbd2, the sine first (sine,
+// cosine, projection, cross) 182; the sine right after the cosine 226; the closing sums as `arg_2->i += arg_1->i +
+// local_3.i` 173; the sums `arg_1->i + arg_2->i + local_3.i` 173; the cross into local_3 first (cross, cosine, projection,
+// sine) 210 (1198 B: frame 0x118 as retail, but the cross is then computed ahead of the dot where retail computes sine, dot,
+// cosine, projection, then the cross terms); around it: cross, sine, cosine, projection 192 (1215 B); sine, cross, cosine,
+// projection 238 (1198 B); cross, cosine, sine, projection 239 (1198 B). Helper restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
