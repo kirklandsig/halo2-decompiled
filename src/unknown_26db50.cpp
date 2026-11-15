@@ -450,16 +450,17 @@ struct s_record_collision_view
 	byte field_14[0x5c - 0x14];
 };
 
-PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis, real sine, real cosine)
-{
-	real along = dot3f(axis, vector) * (1.0f - cosine);
-	real i = vector->i, j = vector->j, k = vector->k;
-	vector->i = axis->i * along + i * cosine - (axis->k * j - axis->j * k) * sine;
-	vector->j = axis->j * along + j * cosine - (axis->i * k - axis->k * i) * sine;
-	vector->k = axis->k * along + k * cosine - (axis->j * i - axis->i * j) * sine;
-}
+void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
 
-// score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
+// score 71 (was 90): the head (radius copied through XMM0, the sector field read before it), the ring block
+// (retail's cvtsi2ss/store/fld/mulss/fmul) and the frame now agree: the distance is computed in the trace call's
+// argument, the radius is a plain local (no `real const &` view) and the rotation goes through the existing
+// rotate_direction; each alone does not give it (see m3 lane 15 r90 below). Left: inside the rotation the direction's
+// j and k components are stored and reloaded k first (ours d.k in XMM3 and d.j in XMM5, retail d.j in XMM3 and d.k
+// in XMM5, so the dot sums (k + i) + j against retail's (i + j) + k and four movaps replace retail's reloads, the 4
+// missing bytes), and before the 0x2104b0 call retail stores the collision marker and forms the entry pointer ahead
+// of the point's x/z stores.
+// Earlier (90): frame 0xd8 agrees; retail converts the ring in SSE then reloads
 // it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
 // rotation's component spill, cross scheduling and register allocation remain.
 // The body is 1085 bytes versus retail 1089.
@@ -647,7 +648,7 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // (same code; fast only: the plain check hit a Wine hang, body restored). Passing it at every call is BLOCKED-BY
 // 0x270400 (contributor call lines); a defaulted parameter needs a ruling. On that form: the getter at the trace
 // call as well 92, as a named local there 92 (only the rotation's XMM numbering moves); a plain radius 211 (the
-// score still rests on the `real const &` radius); the ring term first in the angle 90; the distance product as
+// count still rests on the `real const &` radius); the ring term first in the angle 90; the distance product as
 // radius times ring 90.
 // Round 233: signed-word ring with short/word/char/byte spokes 117/117/246/246;
 // unsigned-byte ring with the same spokes 130/130/247/247. Original full-width
@@ -799,7 +800,7 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // also used for the angle gives the same code (90), the angle's ring term named on its own gives
 // the same code (90), the distance with the ring's float product widened by an inner cast gives
 // the same code (90), the distance written with the ring and the radius both cast to double
-// scores 266, and the float local used for the distance and the angle together scores 259; the
+// measures 266, and the float local used for the distance and the angle together scores 259; the
 // ring is still converted with `fild` where retail converts it to float, keeps that float in a
 // stack slot and reloads it as double: the compiler folds the float local back into the integer
 // conversion, so the body is unchanged.
@@ -917,6 +918,18 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // with the ring term first 90, the distance's ring product written `radius * (real)ring` 90, both 90 (all the same code:
 // VC orders these operands itself); the collision record and its marker declared ahead of the entry pointer 90; that
 // with trace.distance read at each row 101 (1084 bytes).
+// M3 lane 15 r90 (fast with the file's functions, 0x1ecf50 and 0x26c590; plain confirms 71, the file's other functions,
+// 0x26dde0 and 0x1ecf50 matched): on main, the distance computed at its use inside the spoke loop 243 (1077 B; the radius
+// reference keeps it from being hoisted); with a plain radius local 223 (1094 B, frame 0xdc: retail's ring block appears,
+// the rotation still spills); with rotate_direction too 71 (1085 B, kept, with the distance written straight into the
+// trace call's argument, the same 71). Without the move: rotate_direction and the plain radius 111; rotate_direction and
+// the moved distance with the radius reference 246. On 71: rotate_vector_170d70 71 (same code); the file's own helper in
+// rotate_direction's shape 71, with every product written axis first 71, with the dot after the three crosses 81, with
+// the rows written projection first 71; the collision marker stored before the entry pointer 71; the marker and entry
+// pointer ahead of the half-axis offset 179 (1082 B); sine and cosine passed straight to rotate_direction (0x1ecf50's
+// spelling) 209 (1089 B: the cosine is then computed first); the direction copy after the angle, or after the sine or
+// the cosine, 229 (1100 B); the structure pointer read ahead of the copy 77; the direction declared at function scope
+// 71 (same code); the cosine computed before the sine 80.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
@@ -924,28 +937,27 @@ long function_26d570(long object_index)
 	if (result != NONE)
 	{
 		s_location_record_view *record = (s_location_record_view *)(g_51eca4->data + (result & 0xffff) * sizeof(s_location_record_view));
-		real radius_value = *(real *)((byte *)object_get(object_index) + 0x3c);
+		real radius = *(real *)((byte *)object_get(object_index) + 0x3c);
 		long sector_index = record->location_index;
-		real const &radius = radius_value;
 		long ring = 0;
 		long rings_remaining = 2;
 		do
 		{
-			real distance = (real)((double)radius * 1.2 + (real)ring * radius);
 			for (short spoke = 0; spoke < 8; spoke++)
 			{
 				vector3f direction = *g_4687a8;
 				real angle = (real)spoke * 0.7853981852531433f + (real)ring * 0.39269909262657166f;
 				real sine = (real)sin(angle);
 				real cosine = (real)cos(angle);
-				record_rotate_vector(&direction, g_4687b0, sine, cosine);
+				rotate_direction(&direction, g_4687b0, sine, cosine);
 				s_record_pathfinding_view *structure = (s_record_pathfinding_view *)g_4e0348;
 				s_pathfinding_data *pathfinding = NULL;
 				if (structure->count > 0)
 					pathfinding = structure->pathfinding;
 				s_sector_trace_result trace;
 				point3f *origin = &record->point.point;
-				if (!function_26c590(pathfinding, origin, sector_index, NONE, &direction, distance, NULL,
+				if (!function_26c590(pathfinding, origin, sector_index, NONE, &direction,
+					(real)((double)radius * 1.2 + (real)ring * radius), NULL,
 					(s_path_trace_result *)&trace) && !trace.blocked)
 				{
 					real trace_distance = trace.distance;

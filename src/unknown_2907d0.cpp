@@ -123,6 +123,10 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // 0x142640 with this body calling it in place of the private copy 19 (the same code), but matched 0x16c2f0 then inlines
 // it (107, 528 bytes): reverted. The call to 0x200e60 shows as differing only because ours reads `[ebx]` where retail
 // reads `[ebp+0]`, one byte shorter, which moves the tail by one byte until the shared constant 1 moves it back.
+// Round 108 (m3 lane 1, fast): the transform parameter as a const pointer 19 (same code); explicit `__stdcall` 19 (same
+// code), `__cdecl` 26 (caller-pops); the forward vector's address named once ahead of the branch for both arms 142 (454
+// bytes). Diagnostic: the result as `arg_0 != NONE || arg_3 != NULL` folds to the constant and still shares it with
+// field2e (19), so the sharing is the constant's, not the return statement's.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

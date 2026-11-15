@@ -40,8 +40,6 @@ void __stdcall function_1f5ab0(long actor_index, vector3f const *input, vector3f
 void __stdcall function_1f6090(long actor_index, vector3f const *input, vector3f *facing_out,
 	short *type_out, vector3f *movement_out, bool *turning, bool *reached);
 
-// score 146 (enabled in round 183, not worked on): 1408 bytes as retail; first difference +0x157, in the switch on
-// +0x270: our case tests the +0x229 byte before the mover call's pushes, where retail's case goes straight to them.
 // @retail 0x1f38c0
 void function_1f38c0(long actor_index)
 {
@@ -90,6 +88,22 @@ void function_1f38c0(long actor_index)
 	{
 		switch (actor->unknown270)
 		{
+		case 5:
+			function_29a190(actor_index, actor->unknown26c, &actor->unknown5ec, &actor->unknown6d4,
+				&actor->unknown5d6, (real *)&actor->unknown814, &actor->unknown5d3, &actor->unknown5d2, pass);
+			break;
+		case 4:
+			function_29ab90(actor_index, actor->unknown26c, &actor->unknown5ec, &actor->unknown6d4,
+				&actor->unknown5d6, &actor->unknown814, &actor->unknown5d3, &actor->unknown5d2, pass);
+			break;
+		case 2:
+			function_29bab0(actor_index, actor->unknown26c, &actor->unknown5ec, &actor->unknown6d4,
+				&actor->unknown5d6, &actor->unknown814, &actor->unknown5d3, &actor->unknown5d2, pass);
+			break;
+		case 3:
+			function_29cbb0(actor_index, actor->unknown26c, &actor->unknown5ec, &actor->unknown6d4,
+				&actor->unknown5d6, &actor->unknown814, &actor->unknown5d3, &actor->unknown5d2, pass);
+			break;
 		case 0:
 			if (actor->unknown229)
 			{
@@ -120,22 +134,6 @@ void function_1f38c0(long actor_index)
 				}
 			}
 			break;
-		case 2:
-			function_29bab0(actor_index, actor->unknown26c, &actor->unknown5ec, &actor->unknown6d4,
-				&actor->unknown5d6, &actor->unknown814, &actor->unknown5d3, &actor->unknown5d2, pass);
-			break;
-		case 3:
-			function_29cbb0(actor_index, actor->unknown26c, &actor->unknown5ec, &actor->unknown6d4,
-				&actor->unknown5d6, &actor->unknown814, &actor->unknown5d3, &actor->unknown5d2, pass);
-			break;
-		case 4:
-			function_29ab90(actor_index, actor->unknown26c, &actor->unknown5ec, &actor->unknown6d4,
-				&actor->unknown5d6, &actor->unknown814, &actor->unknown5d3, &actor->unknown5d2, pass);
-			break;
-		case 5:
-			function_29a190(actor_index, actor->unknown26c, &actor->unknown5ec, &actor->unknown6d4,
-				&actor->unknown5d6, (real *)&actor->unknown814, &actor->unknown5d3, &actor->unknown5d2, pass);
-			break;
 		default:
 			actor->unknown5d0 = false;
 			actor->unknown5d2 = false;
@@ -160,8 +158,8 @@ void function_1f38c0(long actor_index)
 		}
 		else
 		{
-			actor->unknown5dc = actor->position;
 			actor->unknown5da = 0;
+			actor->unknown5dc = actor->position;
 		}
 		if (actor->unknown5da * g_510c54->rate > 2.0f)
 		{
@@ -176,8 +174,8 @@ void function_1f38c0(long actor_index)
 	}
 	else
 	{
-		actor->unknown5dc = actor->position;
 		actor->unknown5d8 = false;
+		actor->unknown5dc = actor->position;
 		actor->unknown5da = 0;
 	}
 

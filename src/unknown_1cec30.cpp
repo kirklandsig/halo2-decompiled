@@ -2595,6 +2595,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // material samples, seven subsets, then duplicate search alone:
 // 91/91/91/91/91/91/91/91. NOT kept: no early velocity j/k or
 // property-zero repair; original indexed loops and complete body restored.
+// P533: Real velocity-axis traversal on the retained shared-add/normalizer graph,
+// long/dword/short/word then output/input/paired-count/paired-end cursors:
+// 139/139/296/296/283/283/383/225. NOT kept: native early j/k loads and property-zero
+// residence not recovered; original complete body and all shared helpers restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

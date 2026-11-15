@@ -588,6 +588,13 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // stores in the exits (diagnostic) 627, the settle test's else arm first 666, all with the pops still in the exits. Also
 // the function as a member of the ease state 684 (2893 B). Next: find what keeps the restores out of the counter block;
 // with them there the void + counter++ form should score well under 622.
+// P536: Inner initial-tick decision at its original output-ramp producer,
+// positive/complementary bool/byte/short/long: 622/622/622/622/622/622/622/622.
+// NOT kept: no native sample-home or coefficient-schedule repair; original
+// counter observation, arithmetic, caller tuple and complete body restored.
+// P538: Both actual direction-normalization return producers, real/const-real/double/const-double
+// and bool/byte/short/long missing-direction outcomes: 659/659/746/746/659/659/659/659.
+// NOT kept: no sample-register or coefficient-schedule repair; original calls, fallback stores and full body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

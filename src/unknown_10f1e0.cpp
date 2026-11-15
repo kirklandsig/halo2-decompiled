@@ -1795,6 +1795,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // MiniMax S (11-14): no lower score (164): the depletion queries keep the && form - the if-form for both queries
 // gives 330 and the conditional-clear form 345 - and retail's depleted flag in bl with a third stack slot is not
 // reproduced by any of the four spellings tried here.
+// P533: Guard-owned first signed-count comparison bool/byte/short/long, then second:
+// 328/328/328/328/327/327/327/327. NOT kept: no exact SETLE/default recovery;
+// original complete body restored, pool/state/count joins and return normalization remain.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {

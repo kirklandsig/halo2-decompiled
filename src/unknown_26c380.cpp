@@ -584,6 +584,9 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // cross fed straight to the magnitude 32 (same code); that cross with row j spelled operand-swapped 32 (same code: the x87
 // operand order is the compiler's own, not the spelling's); no offset local, the origin's dot at each use 502 (1520 B, not
 // hoisted; 0x26c4e0 16, 0x26ccb0 209); no planar copy, each dot through `(vector2f const *)&normal` 428 (1554 B). Body unchanged.
+// P538: Actual traversal-limit outcome at its original word comparison, positive/complementary
+// bool/byte/short/long: 244/244/244/244/244/244/244/244. NOT kept: no byte/line/sector-home
+// or shared-tail repair; original count test, edge/query observations and complete traversal restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
