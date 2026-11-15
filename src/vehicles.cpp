@@ -3399,6 +3399,9 @@ real g_47ff30 = 2.5f;
 // P530: Actual early acceleration/boost/speed-limit/mass scalar lexical homes, two
 // identities each: 672/672/672/672/672/672/672/672. NOT kept: no exact
 // frame/slot repair; original complete body and all scalar identities restored.
+// P532: Joint final force/torque mass traversals over their actual two-output table,
+// vector/index/cursor/component producers with ordinary for/while: 688/688/711/711/747/747/716/716.
+// NOT kept: no native frame/transport equality; original complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
