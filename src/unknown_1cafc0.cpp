@@ -199,7 +199,7 @@ void s_animation_state::secondary_channels_clear()
 }
 
 // @retail 0x1cd510
-c_type_709360 *s_animation_state::current_animation_get(c_type_709360 *result)
+c_type_709360 s_animation_state::current_animation_get()
 {
 	c_type_709360 none;
 
@@ -215,8 +215,7 @@ c_type_709360 *s_animation_state::current_animation_get(c_type_709360 *result)
 	{
 		none = channels[0].animation_id;
 	}
-	*result = none;
-	return result;
+	return none;
 }
 
 PRIVATE __forceinline real blend_fraction(real blend)
@@ -780,6 +779,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // chains: 350/348/350/351/351/350/350/348. NOT kept: native destructive graph/base
 // reloads and return-byte normalization remain; some forms disturb the agreeing
 // lookup prefix. Original separate stores and complete executable body restored.
+// P534: Ordinary-inline caller metadata for sorted/cache/fallback leaves, seven subsets,
+// then complete metadata with equality-to-true completion: 348/348/348/348/348/348/348/352. NOT kept: no native
+// destructive graph/base or lazy-reload repair; original complete body and declarations restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

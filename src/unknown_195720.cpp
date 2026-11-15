@@ -101,6 +101,9 @@ bool function_1946f0(s_bitstream *stream)
 // the lever); the mask shifted from `1u` 2; the index as `(saved + (saved < 0 ? 7 : 0)) >> 3` 74 (151 bytes; the stream
 // then arrives in EDX; diagnostic); the bit-position test ahead of the mode test 7; the mask's bit offset as
 // `saved - byte_index * 8` 36. Re-measured: the explicit masked assignment 2, the clear from `&data[index + 1]` 2.
+// M3 lane 5 r187 (fast): a data local inside the clear's `count > 0` block 2; the mask as a `long` local in a braced mask block 2;
+// the index as `saved` then `byte_index /= 8` 2; a data local after the mask block, before the count, used only by the clear 2;
+// the same local after the count 2. Both LEAs stay data-first in each.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

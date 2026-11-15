@@ -1077,6 +1077,11 @@ struct s_string_buffer
 // order 55 (481: source order kept, the last term 1 in line); the 9 term as `== 9 && != 2` 50 (folded); the chain
 // under a leading `!= 2` 50 (folded); a 1-9 range excluding 5 and 6 107 (470 bytes). VC keeps the chain's source order
 // and folds every implied term before layout, so none places the 9 test past the return.
+// M3 lane 9 r127 (fast used only as a layout screen; it scores this body 34): two if-arms with the same loads, 1/3/4
+// then 7/8/9 as equalities, 65 (480 bytes, merged, 9 in line); the loads under a seven-mode chain in numeric order (2
+// second), then `if (== 2)` time else `%d`, 105 (470 bytes); the same with 2 last 87 (466). Re-measured: the chain, `== 9`
+// and else arms each with the score1 format call 99 at 483 bytes: the else path becomes `push esi; jmp` into the merged
+// tail right after an in-line 9 test, where retail merges the push as well and moves the 9 test past the return.
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

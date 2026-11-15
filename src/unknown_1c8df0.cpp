@@ -249,6 +249,15 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // (re-measure of the listed copy/add form, 1203 bytes); both points copied then `+=`/`-=` 383 (1231 bytes); the scaled
 // side in a named offset vector used by both points 35; `hit` or the side vector declared at the function top 20/20
 // (same code).
+// M3 lane 9 r127 (fast with 0x1e55d0 and the five callers): parameters (arg_2, arg_3, arg_1, arg_5, arg_6, arg_0, arg_4,
+// arg_7, arg_8, arg_9) at the definition, every declaration and call (arg_0 and arg_4 ahead of arg_7, the setup 0x1b0400
+// needs) 22: the mode-1 x row folds and the mode-2 x row then loads first; matched 0x1b2770 2 and 0x25f7b0 8. Round 188's
+// order (arg_2, arg_3, arg_1, arg_5 .. arg_9, arg_4, arg_0) re-measured: MATCH, with 0x1b0400 38 and 0x25f7b0 (matched
+// since) 8, both from the `actor->unknown26c != NONE` argument while the actor sits in EBX, which arg_0 needs; on it,
+// 0x1b0400's compare in a bool just before the call 52 (a stack slot). Body forms: side j as `-arg_1->x + arg_4->x` 20
+// (same code); the first probe's direction written out by components 24 (the x87 distance block's fld order moves, so
+// the inline helper's parameter temps count); the side vector through an inline two-point helper 20, with the points'
+// roles swapped 20; the normalise-or-default step through an inline helper 20.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

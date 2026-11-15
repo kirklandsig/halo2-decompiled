@@ -3402,6 +3402,8 @@ real g_47ff30 = 2.5f;
 // P532: Joint final force/torque mass traversals over their actual two-output table,
 // vector/index/cursor/component producers with ordinary for/while: 688/688/711/711/747/747/716/716.
 // NOT kept: no native frame/transport equality; original complete body restored.
+// P535: Immutable complete bounded-speed/fraction/directional-mass producers, seven subsets then all with immutable computed speed; native frame 0xfc remains unrecovered.
+// 672/672/672/672/672/672/672/672. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
