@@ -611,6 +611,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // (`for (real *component = &tint.alpha; component <= &tint.blue; ++component)`) 518 (1892 B); uv_a and uv_b declared
 // separately 194 (same code); the aspect defaults declared separately 194 (same code); the alpha product held in a local and
 // stored just before the clamp 219; the 0x180 block's products written `tint.red*seed_color.red*2.0f` 197.
+// P516: Reference-returning integer sequence maxima, long/short and both argument boundaries:
+// 425/425/409/409; with lower-first bounded-index minimum 462/462/460/460.
+// NOT kept: regressed frame/extent and no tint/UV repair; original includes, clamps and callback restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

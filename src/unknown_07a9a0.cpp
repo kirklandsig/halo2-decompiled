@@ -1430,6 +1430,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // and final admission, then complete graphs: 766/766/766/766/766/766/766/844. NOT kept: Seven graphs tie 766 and
 // leave the ingress/frame/lookup unchanged; complete native-width table regresses to 844 and shortens away from
 // retail. Every loop and table restored. Original complete executable body restored.
+// M3 lane 3 r245 (fast with 0x73530, 8 throughout; base 766, ours `ret 8`/frame 0xd4, retail session in EAX/`ret 4`/0xb4):
+// `result` declared first 766 (same code); the first histogram zeroing through memset 820 (2812 B); `spread`/`parties`
+// ahead of `last`/`first` 766 (same code); the excess exit as `result = false;` 789 (2844 B); `adjusted` started from
+// `rating` 811. Body unchanged.
 // M3 lane 14 r97 (fast with 0x73530, 0x192e60, 0x63220; control 766): the loop's variant through 0x192e60 after the rating
 // reads plus `long histogram[16]` 918 (2736 B; frame 0xb4 and the session in EAX as retail, 0x73530 matches, but the top call
 // still inlines and the loop call and capacity switch stay out of line); with the capacity switch forceinline 868 (2788 B,

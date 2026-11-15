@@ -1337,6 +1337,7 @@ struct s_133f70;
 // diff shows is that this build's frame is 0x3400 bytes against retail's 0x33f8 and that it returns with `ret 4`
 // where retail returns with `ret 0x18`, so the callee's argument count is one short here; the distance staging, the
 // nullable-entry and cache adds and the result homes remain as they are.
+// MiniMax R (11-15): no new form, no lower score (93 on the full image; the reduced image scores it 344, so only the plain check measures it): every difference still sits before the 0x4c190 call - the distance is loaded into eax after the force push where retail loads it before, the dead entry lea in the 0x4ed284 test is still there and the previous level's byte home still differs - and the tail after that call belongs to 0x23690, which is this lane's own src/unknown_023540.cpp and is itself at 330 with its own layout blocker. BLOCKED-BY 0x23690.
 // score 93 (was 93; 175 before round 82): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
 // frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain (the 93 is the
 // round 82 baseline of this body; the scores listed below were measured on earlier bodies).
