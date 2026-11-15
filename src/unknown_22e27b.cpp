@@ -453,6 +453,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // `restart = true; break;` 142 (659 bytes); restart cleared by a one-byte memset (diagnostic) 223 (a `stosb`); both
 // boundaries grouped under `if (frame < 0 || frame == value8)` with an inner if/else 60 (661 bytes).
 // Also round 163: the boundary restart as `if (type != 0) false; else if (bit 0) true; else bit 1` in both blocks 219 (665 bytes).
+// Round 94 (m3 lane 13, fast): both boundary restarts as `restart = restart || (...)` 11 (each block's true/false stores
+// swap places, the plain-frame miss stays); as `restart |= ...` 184; the flag-8 store tested `!restart && !(flags & 8)`
+// ahead of the restart break 1; only the flag-8 store under `if (!restart) {...} else break;` 1; restart computed as
+// `!dispose && ...` ahead of the dispose break 233 (681 bytes).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
