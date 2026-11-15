@@ -1113,6 +1113,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // point pointer 400 (1704 B), the point pointer alone 400; the field-of-view target named for its test, reached arm and
 // blend 393 (1696 B); the length as `dot3f(&left, &plane.n)` 399 (1704 B), as the self-dot 397 (1704 B), as
 // `dot3f(&plane.n, &plane.n)` 185 (1696 B).
+// P517: Completed object-validation available/missing result domains bool/byte/short/long at the original
+// early call/test; 400/400/400/400/400/400/400/400.
+// NOT kept: no exact or qualifying native-shape gain; original executable body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

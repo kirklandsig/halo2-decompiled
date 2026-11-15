@@ -819,6 +819,9 @@ static inline long font_character_pixel(long alpha, long color)
 // expansion: 97/96/96/96/97/96/96/96. NOT kept: All eight regress despite four-byte shortening; native parity,
 // literal assembly and run-two transport are not recovered. All calibrated file and matched-caller controls stay
 // unchanged. Original complete executable body restored.
+// P517: Complete packed-run orders 07362514/07326154/07362541/07653214/07162534/70416235/67401235/37401625,
+// moving case 7 with its real shared fill/count tail; 65/70/66/69/69/59/69/164.
+// NOT kept: no exact or qualifying native-shape gain; original executable body restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
