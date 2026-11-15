@@ -725,6 +725,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // with dot3f(&global, &axis) 173 (same code); that with the tail as `cos((real)(time * 0.001)) * cos(time * 0.0006f) +
 // (real)sin((real)(time * 0.005))` 158 (880 B: the tail is retail's x87 sequence, its float store +0x14 for +0x18), with the
 // projection before cross3f 163 (880 B). Body unchanged.
+// M3 lane 16 r119 (fast with 0x118140, 0x117c80, 0x30bf0, all matched; control 117; both sides end in a plain `ret`, the
+// convention is component EAX/output EBX in both): a `dword *seed` for the random state taken at entry and used by both
+// draws 136; cosine computed before sine as two statements 118; the rotation pair through sinf/cosf 117 (other code); the
+// definition lookup after the time product 160; the cross product as axis x old with the rows adding it 134 (881 B).
+// Same code: cosf for the opening oscillation, the record in its own local first, the axis drawn before sine/cosine.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
