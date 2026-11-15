@@ -622,6 +622,15 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // both arms of the flag test 22, the contributor's release callee as (base, group) (diagnostic, put back) 22, all the same
 // code. Also: the store first with a named flag 51 (the two reads merge again); a block local in the arm with
 // `__assume(block != NULL)` 65.
+// Round 94 (m3 lane 13, fast with 0x12e210, which stays matched): round 85's 14 form re-measured 14 (266 bytes). On it: the
+// release address in a local ahead of the linked test 14 (same code: sunk into the arm); round 163's count named and stored
+// after the flag read 18 (266 bytes, the store stays after the load); the field pointer declared inside the loop 14; the
+// pointer typed `s_fixup_group **` for the argument with no cast at the call 14; the group read through the pointer into a
+// local ahead of the linked test 14 (sunk); the time adjusted through the physical block with no field pointer 70 (268
+// bytes). In every 14 form the arm's own `mov esi, [edi + 8]` comes after the pool data load into EDX; retail's `mov esi,
+// edx` comes before it, as if the argument were set up first and the scheduler then hoisted the pool and shift loads
+// above the copy (the data load into EDX cannot cross it). On the base form the address local ahead of the block read
+// re-measured 27 (round 80's form).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

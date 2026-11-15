@@ -1966,6 +1966,14 @@ bool function_0b6760(s_index_pair const *pair);
 // the eight-point gate, and a 300 s permuter run found nothing below 250. What is left of the 58 sits at the two channel-1
 // 0xb6760 calls, where retail has the channel pointer in esi and the state in ebx and ours has them in ecx and eax: retail
 // inlined 0xb6760 at the channel-0 sites and our /Ob1 leaf is no inline candidate, so that part is blocked by the flags.
+// MiniMax C (11-14): no new form, no lower score (250): retail's power arm passes the global game rate as the 0x11eed0 time step
+// (this source already does) and retail's prologue keeps the index in ESI and index * 12 in EBX where this build uses EDI and ESI;
+// dropping the volatile scores 386, a two-use rate local with the result declared after the definition 268, the 0x100 update as an
+// if/else 279 and the speed products named 332, so the body stands.
+// MiniMax C (11-15): no new form, no lower score (250): retail reads the saved definition pointer after the animation-state test
+// (its cmp word ptr [ebp+0x12a],-1 comes first) where this build reads it before, so declaring the saved definition after the
+// animation-state block is the natural lead; it measures 258, so the order stands. The prologue's index in EDI/ESI against
+// retail's ESI/EBX and the result byte at [esp+0xf] (ours in DL) are unchanged.
 // score 250 (was 250): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI where retail has
 // ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads (match-only leads at 58 and 69 below).
 // MiniMax H (11-12): no new form, no lower score (250): the acceleration and the speed each written as one product added into a running value measure 359, and the same form without the volatile measures 382, so the body stands.

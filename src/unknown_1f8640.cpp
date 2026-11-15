@@ -42,8 +42,10 @@ void function_1f86a0(long index)
 	s->unknown504 = 0;
 }
 
+/* inline: link-time code generation expands it at 0x1bf0f0's state test and keeps the
+   out-of-line copy for the other callers */
 // @retail 0x1f86f0
-bool function_1f86f0(long index)
+inline bool function_1f86f0(long index)
 {
 	return OWNER_STATE(index)->unknown504 == 2;
 }
@@ -791,6 +793,10 @@ struct s_1f8a70_actor
 // P506: Actual route switch case/default orders 012d/021d/102d/120d/201d/d210/2d10/21d0 on the
 // native-unit two-result graph: eight 182. NOT kept: no dispatch-adjacency or late memory-result
 // recovery; original cases and full body restored.
+// M3 lane 15 r86: no new form run. Retail's layout (the route test behind case 5's `route_mode = 1` tail, then cases 6
+// and 7) comes only from lane 1 r99's flag form, which is kept only with a match. Retail's failure-path reload of
+// route_found, the materialised `node != NONE` and the case 7 store order are each listed above with their scores.
+// Body unchanged at 182.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

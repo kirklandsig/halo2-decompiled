@@ -156,6 +156,11 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // block boundary with no code.
 // Also round 163: the path declared inside the read block and cleared there 102 (296 bytes; 0x2161d0 33); the record's
 // two clears as `display_name[0] = name[0] = 0` 10 (same code).
+// Round 94 (m3 lane 13, fast with 0x2161d0, which stays matched): the location failure as an early `return false` ahead
+// of the build 31; both arms returning directly with no result local (the cached `return true`, the read returned, a
+// final `return false`) 10 (same code); the cache pointer loaded at the top and tested in place of the global 17; the
+// path helper's bool as a third term of the location test with the read in its body 10; the cache global read at each
+// use, no pointer local 10. (Retail calls 0x216d70 out of line in 0x215c00 and inlines it only here.)
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {

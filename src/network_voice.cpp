@@ -1464,6 +1464,9 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // parameter and the cursor `const` 94 (same code). Re-measured: a named bit inside the membership helper 94 (MiniMax
 // S in 0x55c40 note); the identity helper called inside the product 165 (the in-loop flag). Listing of the listed
 // flag-first form (93): the channels argument becomes a stack argument loaded into EBP and the flag still takes BL.
+// MiniMax S (11-14): no new form, no lower score (94): the identity flag still takes bl where retail takes al, and
+// that moves the kept mask, the value load and the accumulate with it; every spelling of the flag (function scope,
+// declared first, wide, word, char) compiles to the same code.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -2135,6 +2138,10 @@ static inline dword voice_get_player_mask_inlined(void);
 // MiniMax H (11-13), NOT kept (coordinator): 85 -> 74 came from two new __forceinline twins of voice_port_flag1/2
 // (voice_port_flag1_inlined / voice_port_flag2_inlined) called at the inner loop's tests: new _inline twins of
 // existing functions are not kept (noinline ruling, 10-30).
+// MiniMax S (11-14): no new form, no lower score (85): reading the mode once into a local and comparing it with
+// 1, 2 and 3 gives 104 (retail keeps the mode in ecx and materialises the active test), so the two mode helpers
+// stay; what is left is retail's inner loop calling the port flag getter twice where this build calls the
+// out-of-line copy, and retail's remote mask in esi.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
