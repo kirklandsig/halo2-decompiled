@@ -1458,6 +1458,7 @@ struct s_rating_summary
 };
 
 #pragma inline_depth(0)
+// NOT kept (coordinator screen, MiniMax C 11-15): a new #pragma (reverted): `#pragma optimize("g", off)`; the body is main's again.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
@@ -1641,14 +1642,12 @@ static __forceinline void query_restore_pending()
         }
 }
 
-#pragma optimize("g", off)
 static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *arg_0)
 {
     s_player_slot_flags *local_0 = NULL;
     if (arg_0) local_0 = arg_0;
     return local_0;
 }
-#pragma optimize("", on)
 // score 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
 // instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
 // SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the
