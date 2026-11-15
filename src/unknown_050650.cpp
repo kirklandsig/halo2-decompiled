@@ -9,6 +9,7 @@
 #include "unknown_0259a0.h"
 #include "unknown_1e3920.h"
 #include "unknown_11cc90.h"
+#include "normalize3d.h"
 
 /* A local view of the shared actor datum; other modules own the array. */
 struct s_path_records_2967b0
@@ -468,10 +469,7 @@ static inline real actor_looking_normalize3d(vector3f *vector)
 	real magnitude = magnitude3d(vector);
 	if (!(fabs(magnitude) < 0.0001f))
 	{
-		real scale = 1.f / magnitude;
-		vector->i = scale * vector->i;
-		vector->j = vector->j * scale;
-		vector->k = vector->k * scale;
+		vector3f_scale(vector, 1.f / magnitude, vector);
 		return magnitude;
 	}
 	return 0.f;
@@ -516,7 +514,7 @@ struct s_collision_result_buffer_1697c0
 // site or the normaliser's length inlined, and its magnitude3d (0x24590) sits in another file, so the body stands.
 // MiniMax G (11-13): no new form, no lower score (303): the diff re-read this round shows the trig and magnitude temps four bytes below retail's (ours at +0x1c and +0x20, retail's at +0x20 and +0x24) while the saved arguments agree, and the frame is 12 bytes longer than retail's 1423, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (303).
-// score 303 (was 303): frame 0xa8 agrees; ours is 12 bytes longer (1435 against 1423). Frame map (F = esp
+// score 299 (was 303): frame 0xa8 agrees; ours is 10 bytes longer (1433 against 1423). Frame map (F = esp
 // after `sub esp, 0xa8`): retail F+0 one transfer slot {magnitude, random integer, pitch sine, yaw cosine},
 // F+4 candidate, F+0x10 attempt, F+0x14 axis, F+0x23 result, F+0x30 {pitch cosine, yaw sine}, F+0x38 yaw
 // range, F+0x3c pitch range; ours F+0 candidate, F+0xc attempt, F+0x10 axis, F+0x1f result, F+0x20
@@ -849,6 +847,14 @@ struct s_collision_result_buffer_1697c0
 // P518: Existing fallback normalizer at pitch/clear/best, masks 1/2/4/3/5/6/7,
 // then pitch fallback library copy: 438/303/303/438/438/303/438/303. NOT kept: no exact
 // scratch/rotation repair; original helpers, all observations and complete body restored.
+// Round 247 (m3 lane 3; fast, kept change confirmed plain): kept: the normalizer scales through the existing vector3f_scale
+// (include/normalize3d.h) in place of its three hand-written products, 303 -> 299 at 1433 B (0x297660 MATCH, 0x297d30 23,
+// the file's other functions unchanged). On it: the helper as `return normalize3d(vector);` 300 (1455 B); single exit with `else
+// magnitude = 0.f;` 305 (1458 B); an early `return 0.f;` for the short case 296 (1451 B, not kept: -3); a result local set in the
+// scaling arm 299; the rotate helper's dot as k, j, i / j, k, i / j, i, k 299 each (same code). Before it (base 303): the
+// rotate helper caching the vector's k in a local (0x2551f0's helper spelling) 293, but 0x297d30 23 -> 245; that with the
+// sines and cosines passed straight (no angle wrapper) 303; the vector's i, j and k all cached 300 (0x297d30 243); the best
+// vector declared before best_fraction 300.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
