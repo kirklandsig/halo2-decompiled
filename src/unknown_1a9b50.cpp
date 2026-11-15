@@ -709,6 +709,13 @@ extern point2f *g_468778;
 // declared first 393 (same code); the settings test as its own early return 410. Diagnostics (reverted, not source
 // forms): one settings read fewer (the -0.4 test's distance replaced) 403 and one prop read more 407, settings still
 // ESI in both, so reference counts alone do not rank prop over settings here. Body unchanged.
+// m3 lane 15 r85 (fast with the file's functions and 0x265d30, 16 MATCH each time, 0x1aab50 at its own 382; control 375,
+// register-masked 106). Re-measured lane 11 r100's actor-first, constant-exit form 393 (masked 113: arg_0, actor, settings,
+// arg_1 and prop sit in EBX/EDI/ESI/EBP/arg_1's home where retail has EDI/EBP/[esp + 0x10]/ESI/EBX). New: the prop arm
+// tested as `else if (local_0->prop_index != NONE)` in place of `else if (local_3)` 370 (1549 B, but masked 118: a
+// positional drop only, five points, not kept); that on the 393 form 393; that with the prop's NULL default dropped 392
+// (1550 B), on the 393 form 391; the actor looked up inside the block after the slot tests 408 (1558 B), with the prop-index
+// test 427 (1570 B). The tail's `lea R, [slot + 0x2d]` field pointer is the same code in both builds (ESI here, EBP in retail).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
