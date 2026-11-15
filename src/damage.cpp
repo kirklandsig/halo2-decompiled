@@ -979,6 +979,7 @@ PRIVATE inline long damage_object_root(long object_index)
 // MiniMax A (11-12): no new form, no lower score (206): the frame is still 0x1a4 against retail 0x1b4 and the entry block still pushes before it reads the flags word and negates it, where retail reads the flags first; the first 0xbadc0 use is expanded in this build while retail calls it, and the out-of-line form that makes the body byte exact lives in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
+// MiniMax C (11-15): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4 and the first 0xbadc0 use is still expanded here where retail calls it; the out-of-line form of that site lives in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
 // MiniMax B (11-12): no new form, no lower score (206): the frame is 0x1a4 against retail's 0x1b4 and the argument
 // slots sit lower here; retail reads the flag word at [esi+0xc], masks bit 1 and negates it before the pushes where this
 // build pushes first and loads the flag afterwards, and the link-time inliner still folds the callee in.
@@ -1530,6 +1531,7 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 
 /* damages an object with the globals' default damage (from +0x144), credited
    to an owner if one is given */
+// MiniMax C (11-15): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after the damage record's address is built where retail stores them before `push edi`; reading the flags before the owner copy measures 17 (worse); this round the owner copy written as a memcpy of the twelve bytes, as three member assignments (52), as three member assignments through a dword cast, as three long reads and writes through a pointer to the member, and the flags stored through the union's named dword member each measure 10 (unchanged), the first three of them because this build's twelve-byte copy always takes the three chunks through ecx, edx and eax, and a permuter run with annealing (66 tries, 1230 s) found nothing under 10.
 // MiniMax G (11-14): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where
 // retail uses eax, ecx, edx, and the finished flags are still stored after the record's address is built where retail
 // stores them before `push edi`; a pointer to the record for the flags read and write, three dword copies of the
@@ -2007,6 +2009,7 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 /* damages a region: raises its damage level by the damage over the span to
    its next permutation's threshold, and when the level fills, destroys the
    permutations at that threshold */
+// MiniMax C (11-15): no new form, no lower score (45): the delay block's temporaries are still rotated by one register against retail (retail keeps the random global in ecx and the pending byte in eax, this build eax and edx) and each of the two call setups is one instruction longer; the conventions of those calls belong to 0xda110 and 0xd9d60, which are not this lane's files. BLOCKED-BY 0xda110.
 // MiniMax G (11-12): no new form, no lower score (73): nothing new this round; the pending field is a real bitfield (3 bits of
 // permutation and 13 of ticks), and the remaining difference is in the material block.
 // MiniMax G (11-12): no new form, no lower score (73): the pending field is a real bitfield (3 bits of permutation
@@ -3131,6 +3134,7 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 /* the damage a damage event does to an object before armor: a random
    amount between the definition's bounds, scaled by the event, the owner's
    AI and the game engine; sets *friendly when the team scale applies */
+// MiniMax C (11-15): no new form, no lower score (5): the two cold exits keep this build's order (the stack reload before the xmm1 copy) where retail copies first, and inverting the two exits in the source compiles to the same bytes.
 // MiniMax G (11-14): no new form, no lower score (5): the two cold exits keep this build's order (the stack reload
 // before the xmm1 copy) where retail copies first; the no-team case as an early return, the team test as an early
 // return, the no-team return in an else branch, a goto to a separate not-enemy return, the enemy logic inside the
@@ -4929,6 +4933,7 @@ dword function_db810(long object_index, long node_index)
 }
 
 /* the model node of the object's lowest ranked physics node */
+// MiniMax C (11-15): no new form, no lower score (4): the tag index is still masked after `push ebp` where retail masks it before, and the tag entry is still loaded into edx where retail reuses eax.
 // MiniMax G (11-14): no new form, no lower score (4): the tag index is still masked after `push ebp` where retail
 // masks it before, and the tag entry is still loaded into edx where retail reuses eax; a permuter run with annealing
 // (31 tries) found nothing under 4.
