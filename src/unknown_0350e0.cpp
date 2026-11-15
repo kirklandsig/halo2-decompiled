@@ -1967,6 +1967,13 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // before y 184 is frame 0x18 (not R229's 0x20 by-value 184); the helper returning y with x computed by each case 186;
 // x before the perpendicular 189 (800 bytes); same code as 179: `return 0.0f` in case 0 and default, `(real)atan2(y, x)
 // * scale * ...`, only the first or only the second cross through cross3f, an unused caller-scope vector.
+// M3 lane 3 r243 (fast with 0x2e9e0, control 193/492): cases 2 and 4 with explicit `(k + j) + i` groupings 193 (other
+// code, same count); case 1's dots read g_4b9dac directly with no reference copy 204 (776 B; 0x2e9e0 573, the callee
+// then uses XMM7); case 1's sums grouped `(j + k) + i` and `(k + j) + i` 193 (other code); cases 2 and 4 computing x
+// before y 193 (other code); case 3's offsets ahead of the perpendicular (the 177 lead, re-measured 177 at 812 B,
+// 0x2e9e0 573) with the groupings of cases 1, 2 and 4, 179. Same code (193): cases 2 and 4 through dot3f; case 3 and
+// case 4 offsets through vector3d_from_points3d. On the 177 lead the register-masked aligned count is 72: the cross
+// terms' schedule still differs. Body unchanged.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2890,6 +2897,13 @@ real magnitude3d(vector3f const *v);
 // target reciprocal 155 (same code), the angle product in SSE 155, the fallback as three blocks 155 (same code), the cross
 // term added with its sign flipped 184 (1019 bytes). Left on 155: the raw length and the dot share retail's +0xc; ours
 // keeps the length in a's slot, which permutes the first/axis/second homes.
+// M3 lane 3 r243 (fast with 0x24590/0x30bf0, both matched; control 170; a fast run without those two in the image
+// gives 315 at 997 B for unchanged code, so list them): code-changing: the fallback clamp as three arms that each
+// update the component (`-= step`, `+= step`, `+= delta`) 213 (1081 B); the fallback index as `char` 250 (965 B); the
+// fallback's upper test first 181 (1055 B); the fallback as a do/while on `++component < 3` 250 (965 B); the target's
+// clamped length taken after the first normalization 243 (first difference +0x14). Same code (170): magnitude3d's
+// result through a named local (0x24590 still matched); one function-scope `delta` for the rotation size and the
+// fallback; `a` and `b` declared together and assigned after; a `dword` fallback index. Body unchanged.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3795,6 +3809,13 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // MiniMax G (11-14, later): no new form, no lower score (486): the permuter (18 tries, 311 s) found one variant a
 // single instruction better in the full image (484 against 485), which is under the keeping threshold and is not
 // written; the frame is still 0x60 against retail's 0x38.
+// M3 lane 3 r243 (fast, base 486 [register-masked aligned 187]): the velocity add into a local vector stored back as
+// one aggregate (`*velocity = updated;`) 505 (2012 B [214]): the speed test then reads the stored velocity from memory
+// as retail, but the copy goes through integer registers and the stack; with the maximum field read at each use 518
+// (2003 B, frame 0x5c [211]); with the output-pointer projection too 493 (2021 B, frame 0x44 [202]). Diagnostics (not
+// keepable): the speed test, normalize and scale through a second pointer formed as `state + i * 12 + 0x24` with the
+// maximum read at each use 503 (2009 B, frame 0x50 [167]), plus the output-pointer projection 563 (1958 B, frame 0x34
+// [205]). Body unchanged.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

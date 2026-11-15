@@ -640,6 +640,12 @@ void __stdcall function_1160c0(real dt)
 // body but 0x1697c0's removed) flips it back to EDI; but in that small image 0x211060 takes its mover settings in EDI instead of
 // on the stack, and with 0x211060's own body out of the image the base is EDI again, so the EDX base there comes from a
 // different 0x211060 convention, not from anything in this body. Not a lead.
+// M3 lane 3 r243 (fast with 0x116750, matched throughout; base 171): on lane 13 r89's match-only rotation-
+// into-`rotated` form (re-measured 165): `inverse_dt` computed once ahead of the loop 175; the guard as `dt > 0.f &&
+// !record->fixed` 170 (first difference +0x30); the vertical declared ahead of the loop 301; `++node->ticks` ahead of
+// the stiffness 169; `++node->ticks` just before the position store 266; `previous = position` ahead of the velocity
+// rows 165 (same code). On the body itself: the vertical declared `const` 171 (same code). The segment base still
+// takes EDI where retail takes EDX. Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
