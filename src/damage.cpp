@@ -4420,6 +4420,7 @@ bool function_138880();
 /* an object's damage per tick: delayed permutations, stun timers, shield
    and body recharge, the regions' damage levels and the recent damage;
    returns whether anything changed */
+// MiniMax I (11-14): score 117 (was 194): the object's team read into one `word` local that both 0x1e9720 calls use (retail's `xor ecx, ecx; mov cx` at both), and the body block's info branch takes its rate before its maximum, so retail's XMM2 (maximum) and XMM0 (rate) loads come out in that order.
 // score 194 (was 229): 229 before m3 lane 7 r155's 0xda110 convention; 400, 402, 607 before that; at r94's start 2148 bytes against 2170, frame 0x70. Round 75 (b4E) walked every block against retail 0xd5de0-0xd6657:
 // one behaviour fix (the region decay else arm also runs when `info->region_count <= i`, retail 0xd6518 jle -> 0xd6571); every other test,
 // field, callee, argument order and float op agrees. `if (shield > max) {clamp} else {changed}` arm order: no change (393 alone, 400 with the callers, the same as without it). Left: flag pairs that cross the word's bytes merge into one `and word` (three
@@ -4464,6 +4465,7 @@ bool function_d5de0(long object_index)
 	if (info)
 	{
 		byte *bounds = NULL;
+		word team;
 
 		if (info->region_count > 0)
 		{
@@ -4586,7 +4588,10 @@ bool function_d5de0(long object_index)
 					real recharge = g_510c54->rate * rate;
 
 					if ((1 << object->type) & 3)
-						recharge = function_1e9720(3, object->team) * recharge;
+					{
+						team = object->team;
+						recharge = function_1e9720(3, team) * recharge;
+					}
 					if (TEST_FIELD_BIT(object->damage_flags.shield_depleted))
 					{
 						word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_depleted_bit, false);
@@ -4642,8 +4647,8 @@ bool function_d5de0(long object_index)
 			}
 			else
 			{
-				maximum_body = *(real *)((byte *)info + 0x38);
 				rate = *(real *)((byte *)info + 0xd4);
+				maximum_body = *(real *)((byte *)info + 0x38);
 			}
 			if (maximum_body > object->body_vitality && rate > 0.0f)
 			{
@@ -4654,7 +4659,10 @@ bool function_d5de0(long object_index)
 					real recharge = g_510c54->rate * rate;
 
 					if ((1 << object->type) & 3)
-						recharge = function_1e9720(3, object->team) * recharge;
+					{
+						team = object->team;
+						recharge = function_1e9720(3, team) * recharge;
+					}
 					word_flags_set(&object->damage_flags_word, _damage_object_flag_body_recharging_bit, true);
 					object->body_vitality += recharge;
 					if (object->body_vitality > maximum_body)
