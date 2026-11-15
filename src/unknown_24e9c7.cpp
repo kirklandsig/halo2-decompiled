@@ -485,6 +485,8 @@ struct s_24e9c7_points
 // size step y first too 144, `(0.0f - forward_j)` 141 (740 B), both 139 (742 B), the scale read before size 123, the half
 // width ahead of the height 131. Retail computes `size * (0 - forward_j)` into a copy of size and `size * forward_i` into
 // size itself, spilling it to the side point's own home at -8; every in-place form here folds the negation out instead.
+// M3 lane 12 r126 (fast with 0x24e59f/0x22a664, matched): up, side and back as aggregate initializers 125 (same
+// code). No code-changing form found outside the note. Body unchanged.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
