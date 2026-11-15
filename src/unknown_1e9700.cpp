@@ -16,6 +16,7 @@ void function_1fa50(short_rectangle2d const *bounds, word const *text, void cons
 #include "input_record.h"
 #include "unknown_157450.h"
 #include "player_queries.h"
+#include "unknown_124f90.h"
 
 real function_1e96a0(short column, short row);
 
@@ -192,6 +193,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // Reading of the team block: ours reloads the enable byte into DL ahead of the engine test and holds it through the team
 // byte test, where retail reloads it after that test, so retail's EDX is free for the engine index (EDX/EAX) and ours
 // takes EAX/ECX; the swap follows from the blocked reload, not a separate cause.
+// MiniMax S (11-14): no new form, no lower score (106): the enable flag's reload after the store still needs the aliasing that the held src/unknown_1967d0.cpp gets by taking &g_510cb0, so retail's EDX/EAX turnover stays unmatched here.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -568,6 +570,12 @@ struct s_object_damage_view
 // first/second/both, both search-n and both first-of: 455/431/468/455/431/468/443/455.
 // NOT kept: all regress and grow; matched caller 0xd9640 becomes 61 in all eight trials.
 // Original body restored; scalar homes and the amount-biased cursor remain.
+// M3 lane 16 r118 (fast with the file's functions and 0xd9640, control 353): both award dedupe searches as `for (j...) if (equal)
+// break; if (j < i) continue;` 356 (1550 B: the found exit is not threaded, a jmp to a separate `cmp eax, esi; jl`); the assist and
+// related-unit stores re-reading their player fields (retail re-reads both after the team call), no predicate, 392 (1564 B, frame
+// 0x4c: the shared object+0x2f0 spill goes); the three inline validations through effects.h's record_pool_lookup_checked 353 (same
+// code); `self` passed straight in the 0x1ea770 call 350 (1544 B, retail's length, but the compare sinks to the call and esi/ebx pop
+// early; 3 points, not kept); the two 0x196dd0 calls' absolute indices as two-use named locals 353 (same code).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -703,109 +711,15 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 	}
 }
 
-// score 13 (was 13): retail reads the field argument into EDX before the
-// prologue pushes and adds it there; here the load happens after the pushes
-// and goes into ECX, which forces the counter to be moved out first.
-// The first engine test also takes EAX/ECX where retail takes ECX/EAX.
-// Tried: a plain field read 85 (folded into the add); an inline entry
-// accessor 85; game_engine_get() and function_x340af0() for the tests 13;
-// local names 13; an old-value local 16 (engine test then EDX/EAX); a word
-// or dword index 44-61 (convention changes). Each of these folds the field
-// read into the add (85, one row short): a plain short delta, a volatile
-// field parameter, nested row structs, values[0][field + index * 14] and
-// other flat spellings, delta + old, the indirection without volatile; the
-// array re-indexed at each use (also with inline get/set helpers) 80 (the
-// delta read is then the one hoisted into EDX). The clamp as one ternary or
-// into a short local 13 (the engine test swap stays). The arguments arrive
-// as in retail (player in EAX, counter in ECX, four pushes) and 0x1ea5b0's
-// call already matches, so that caller does not decide the load order.
-// 0x15b7c0's clamped-add helper (delta first) 84; a plain short delta and
-// field 85 (and 0x15b7c0/0x15b3a0 lose their match through the declaration);
-// the field read after the index 83, or inside the index expression 85; a row
-// pointer indexed by the field at each use 64 (0x15b3a0 and 0x1ea770 lose theirs).
-// Round 11 (lane 17): the team path through the existing function_x340af0() and
-// datum_get_absolute_inlined() (kept: same code, no parameter reuse); the first engine test
-// through game_engine_get() 13; the clamp as two ifs 13, upper bound first 19; a plain delta
-// parameter 18 (its movsx is then hoisted to entry, the field read folds); the field read
-// through its address without volatile 85; the volatile read after the index 83 (statistics is
-// then hoisted), inside the subscript or as a row offset 85 (folded).
-// Round 43 (lane 15, fast; a CL-only copy with counter in ECX and player in EDX reproduces the folded add):
-// the plain field stops folding (retail's `mov edx, [esp+8]` first line, the plain read hoisted) as soon as
-// the engine globals pointer is a named local defined in the entry block: at the top, after the index or after
-// the entry 24 each (only that global's load then sits at the top instead of the clamp's join, plus the engine
-// test swap). Defined at the join 54 (254 bytes); so what keeps the field unfolded with the load at the join is
-// still open. The engine index read into a local before the store gives retail's ECX/EAX test 12 (its load then
-// sits ahead of the store); after the store 13; the peer read before the store 14; peer and value28 locals 14;
-// the engine pointer through the getter after or before the store 13/13. Statistics first 85; statistics then
-// field first 85 (all callers updated; retail's calls set ECX then EAX and do not order the stack arguments
-// against them). Plain first read with the later read through a plain or volatile reference or volatile cast 85;
-// both reads volatile 85 (diagnostics, reverted); the team call passing 0 (diagnostic) moves the field to a
-// register argument, 92; the players pointer named at the top is propagated, 85. CL-only, all folded: statistics,
-// delta and by_team qualifiers (16 forms), clamp forms (17: pin helpers, min/max, stores in the arms), the entry
-// in two steps (row pointer then `+= field`, offset in place, field first; 7).
-// Round 76: a plain field snapshot reused for the team update 85; a register snapshot with two/one
-// uses 85/85; a short volatile delta declaration 13; an unsigned field parameter 13; an unsigned
-// plain snapshot reused for the team update 85; the field copied with memcpy 85; a first-engine-peer
-// local 13. Original body and declarations restored.
-// Round 202 (lane 3): the entry as `values[index] + field` 13, as a byte offset 13; `(short)delta + *entry` 13,
-// `value = *entry; value += delta` 25, delta through a short local 84; a table pointer local 13; the index
-// before the field read 83; a `(word)` index 13; the clamp as one ternary in the store 13; statistics through
-// a volatile reference with a plain field 85; a short field local 81 (263 bytes).
-// Round 89 (m3 lane 12, fast), plain field read: the element indexed twice, with the entry pointer first or the value first, or the entry pointer
-// after the clamp, delta on either side of the sum: 85 each (the field stays folded; two reads do not unfold it). The engine pointer named at the top 24 (the
-// note's form, re-measured: the entry block is then exact but for that load's place, plus the engine test swap); named after the entry 69; named at the top and
-// assigned again at the join 85, declared without a value and assigned at the join 85, NULL then assigned at the join 85 (a dead definition does not unfold it).
-// Round 169 (lane 4, fast): a plain delta parameter (field read kept) 18, re-measured: delta's movsx then takes EDX at
-// the top, where retail has the field. Both volatiles removed (and the field named `column` as in 0x1e9c90) 85, but
-// that body is retail's but for two places: the folded `add eax, [esp+0x18]` (one instruction short, which shifts the
-// rest) and the first engine test's EAX/ECX swap. On that plain body: the first test through game_engine_get() 85; the
-// notify through a force-inline helper taking the bit (diagnostic, this caller only) 85; a `long const` field 85.
-// Round 73 (lane 14, fast): the dirty test held in a bool before the store 86 (270 bytes); plain field with the engine
-// globals in a local at the top for the dirty test 24 (field at entry, engine load at the top), with the engine peer read
-// before the store 25; plain field with only the peer read before the store 85 (folded); the volatile field with the peer
-// read before the store 14.
-// Round 143 (m3 lane 7, fast; the two volatiles cannot carry a match, so volatile-free scores too):
-// volatile-free control 85; volatile-free with the engine globals pointer named at the top 32 (the field
-// load is retail's, the delta movsx is hoisted into EDX, the engine load sits at the top), with the volatile
-// delta 24, named at the join 85; a named field copy for the entry and the team call 80 volatile-free, 85
-// with the volatile delta, for the entry only 85; the delta read through its own address with the top
-// engine local 32, alone 85, at the join 85; a 600 s permuter run, 59 tries, none below 13.
-// Round 110 (m3 lane 16, fast with the matched callers 0x1ea770, 0x15b3a0, 0x15b7c0 and callees; volatile-free body
-// re-measured 85, the top engine globals local re-measured 32): retail's field is a stack parameter cached in EDX for the
-// entry block and read from its slot again for the team call; one parameter at most gets that EDX entry load. On the
-// volatile-free body: `by_team` copied into a local at the top for the team test 80 (256 bytes: delta's movsx takes the top
-// EDX load, the field stays folded); statistics read once through the siblings' `s_statborg *const *` own-address reference
-// 80 (same code as the copy); that reference with the volatile delta kept 85 (folded; delta out of the way does not hand the
-// field the load); `value = *entry; value += (short)delta;` 85; the entry as `values[index] + field` 85 (same code as the
-// volatile-free control); re-measured, round 169's first test through game_engine_get() with the peer named 85.
-// Round 87 (m3 lane 14, fast with 0x1ea770, 0x15b3a0, 0x15b7c0, 0x1e9df0, 0x1968b0; volatile-free forms): control 85
-// (260 bytes, retail's but for the folded add and the first engine test's swap); an unused local reading the field at
-// the top (diagnostic) 80 (256: delta's movsx takes the EDX entry load and the old value is read through the entry
-// pointer); `(void)field;` 85; the value read as the array element with the entry pointer kept for the store 80 (256);
-// a row pointer indexed by the field at each use 270 bytes, and 0x15b3a0 (13) and 0x1ea770 (26) lose their matches;
-// the first engine test through game_engine_get() 85.
-// Round 157 (m3 lane 7, fast with 0x1ea770, 0x1ea5b0, 0x1e9df0, 0x15b3a0, 0x15b7c0): the dirty test through the existing
-// game_engine_statborg_inline() 83 (270 bytes), on the volatile-free body 94 (268); the volatile-free body with a row pointer
-// local and `&row[field]` 80 (256: delta's movsx takes the EDX entry load, as in round 87's diagnostic, the field stays folded);
-// the team block through the header's s_player_datum (`player->team`) 13 (same code). Diagnostics: the volatile-free body with
-// the engine globals local at the top loads the field into EDX at entry (32, round 143's form); without the team call's use of
-// the field, LTCG makes it a register argument (89; 0x15b3a0, 0x1ea770 and 0x1ea5b0 change), so its cross-call use is what
-// keeps it a stack parameter. Stopped there: rounds 43, 87, 110, 143 and 169 cover the remaining entry and clamp spellings.
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
-	long field, long volatile delta, bool by_team)
+	long field, long delta, bool by_team)
 {
-	long const volatile *field_reference = &field;
-	long stored_field = *field_reference;
 	long index = player_index & 0xffff;
-	short *entry = &((s_object_values *)statistics)->values[index][stored_field];
-	long value = *entry + (short)delta;
-	if (value < -30000) value = -30000;
-	else if (value > 30000) value = 30000;
-	*entry = (short)value;
+	((s_object_values *)statistics)->values[index][field] = (short)PIN_126660(((s_object_values *)statistics)->values[index][field] + (short)delta, -30000, 30000);
 	if (g_55e4d0[g_4e9ae8->engine_index] && g_4e9ae8->value28 != NONE)
 		function_b58c0(g_4e9ae8->value28, 1 << index);
-	if (counter != NONE) function_1968b0(index, NONE, counter, *entry);
+	if (counter != NONE) function_1968b0(index, NONE, counter, ((s_object_values *)statistics)->values[index][field]);
 	if (by_team && function_x340af0())
 	{
 		byte *player = datum_get_absolute_inlined(g_4e8c24, index);

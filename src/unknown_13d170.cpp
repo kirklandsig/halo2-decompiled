@@ -663,6 +663,19 @@ struct s_physical_block_iterator
 // both branches 100 (NONE then a register, but EDI with the result in EBX, loaded before the allocation test); only one of
 // the two arms 105/114; lane 11 r95's two-stage insertion 107; the overlap bound as `pages + best.offset` 104 (same code); the
 // walk on plain locals 118 (first difference +0x1). Patches: m3-lane16 build/r117/lead-0x13d370-s9.patch and -s1.patch.
+// Round 198 (m3 lane 4, fast with the file and 0x13d320, MATCH each time; all restored): lane 16 r117's s9 lead rebuilt on
+// main 100 (1213 B); on it the successor arms in the other order (`next != NONE` first) 100 (retail still puts that arm
+// after the return). Lane 9 r109's 93 lead applies on main as is: 93 (first difference +0x338, aligned 43: only the walk's
+// count/bit and the insertion's result/NONE are EBX/EDI swapped). On 93: the permuter (59 tries, 600 s) none below 93; an
+// early `return result;` at the end of the insertion with the limit test reduced to `type == limit_index` 352 (first
+// difference +0x1d); the predecessor's successor read at each use (no `next` local) 93 (same code); the allocation test
+// as `NONE != result` 93 (same code); the walk's aggregate with the iterator ahead of the block 96. Ours materializes
+// NONE (`or edi, -1`) before the allocation test, so that web outranks the result's and takes EDI; retail compares the
+// immediate and materializes NONE in EBX inside the success arm.
+// P506: Standard time/page pair
+// factory/less/reversed-greater/constructors/readonly/readonly-less/ordinary/negated-order keys:
+// 349/349/347/356/408/408/408/352. NOT kept: native policy placement and frame/extent not
+// recovered; original complete body and includes restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

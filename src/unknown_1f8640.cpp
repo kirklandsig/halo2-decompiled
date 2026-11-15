@@ -380,7 +380,7 @@ struct s_1f8a70_actor
 // its failure block stores false into the frame byte, calls 0x1f8750 and reloads the byte, and its merged exit returns that
 // byte in AL where ours goes through BL; the permuter (fast, 5 tries in 394 s) found nothing below the 167 differing
 // instructions of the reduced image, so the body is the committed one.
-// score 182 (was 182; 182 before): earlier 188; Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
+// score 182 (was 182; 182 before): earlier 182, 188; Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
 // MiniMax S (11-10): no new form, no lower score (182): the route dispatch still follows case 7 where retail puts it after case 5 with cases 6 and 7 behind it, and the final result still goes through BL where retail returns its frame byte.
 // MiniMax E (11-09): no new form, no lower score (188).
 // MiniMax E (11-06): 188 then (was 188): no new form lowered it. The byte locals sit two bytes lower
@@ -780,6 +780,17 @@ struct s_1f8a70_actor
 // T107: Overlap-safe library transfers at direct/reference/state/fallback phases
 // 395/392/379/215; paired direct-reference/reference-state 417/408, all destinations
 // 448, with fallback 457. NOT kept: native transfer/layout mismatch; original body restored.
+// M3 lane 14 r94 (fast with the file's ten other functions and 0xe70b0, all MATCH; base 182, aligned 49): route_found declared
+// just before the mode switch, after the 0xe70b0 block, 182 (same code); the position call's index as `unknown26c != NONE ?
+// unknown26c : unknown018` 182 (same code); case 6's `else if` on route_mode as a second plain `if` 182 (same code: the test
+// is threaded). Re-measured: case 7's node stored before its radius 360 (1640 bytes). There, ours schedules case 4's and
+// case 7's radius stores ahead of their node stores, and the two node stores cross-jump, so cases 2-4 lose their shared
+// radius-zero tail. Retail keeps node then radius in both, so the two tails end in different stores and stay separate.
+// Also: the mode switch's default as `route_mode = NONE; break;` (the route test then fails by itself, no goto) 379 (1620 bytes;
+// the head still follows case 7).
+// P506: Actual route switch case/default orders 012d/021d/102d/120d/201d/d210/2d10/21d0 on the
+// native-unit two-result graph: eight 182. NOT kept: no dispatch-adjacency or late memory-result
+// recovery; original cases and full body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

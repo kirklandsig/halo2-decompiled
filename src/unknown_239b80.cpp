@@ -589,6 +589,44 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // hull_count] = current; hull_count++;`) with the closure as `if (!left_start || points2d_differ(...)) continue; goto
 // finished;` 331 (695 B). Compile-only: that closure on this body is the same code; the one-counter `while`, `for (; c; )`
 // and `for (;;) { if (!c) break; ...}` all rotate the pass loop (test copied to its foot).
+// m3 lane 1 r103 (fast with the file's functions, 0x239d50 matched in each; masked = register-masked aligned count; control
+// 161). Completion-flag family (match-only): `while (!done && (short)hull_count < count)` with `indices[(short)hull_count] =
+// current; hull_count++;`, heading and a bool departure flag set before the lowest scan, `short current = count;` at
+// function scope before the classifier call, the departure as `if (!left_start) left_start = points2d_differ(&points[next],
+// &points[indices[0]]);`, `if (next == NONE) done = true; else { departure; if (next == indices[0]) done = true; else if
+// (left_start && <positive closure, both coordinates `< eps`>) done = true; }`, memmove compaction under `if (!done)`: 120
+// (784 B, masked 38; the lowest score so far). Left: points EBX, current ESI, count EDI and the hull count ECX in the hull
+// loop where retail has points ESI, current EDI, the count read from its home and the hull count EBX; the closure's success
+// jumps to a shared exit where retail falls into its own epilogue. On it: current declared after the classifier call 215
+// (791 B, masked 35: the prologue is then retail's exactly, but the count keeps EBX in the hull loop and the hull count takes
+// ECX), declared just before the lowest scan 216, the departure flag declared first 215; the closure through
+// `!points2d_differ(...)` 134 (masked 33: retail's closure layout with an fxch retail lacks), the same as `done = next ==
+// indices[0] || left_start && !points2d_differ(...)` 134 (same code); the positive closure as `!(>= || >=)` 131 (791 B), as
+// a separate `if` 149, constant first 120 (same code). Same code as the 120 form: current declared before the hull count;
+// as the 215 form: the flag declared before the scan, `indices[(short)hull_count++]`, previous_angle after left_start.
+// Without the flag, on this body: `if (!left_start) left_start = points2d_differ(&points[next], &points[indices[0]]);` 170
+// (masked 61), with a bool flag 264 (762 B, 0x239d50 80).
+// More r103 flag forms (on the 215 form, current declared after the call; all match-only, none lower): main's `left_start =
+// left_start || points2d_differ(...)` 215 (same code), the flag declared at function scope 215, heading and departure flag
+// after the lowest scan 244, the closure through `!points2d_differ` 227 (763 B), `for (hull_count = 0; ...; )` 243, `count >
+// (short)hull_count` 215, memcpy for the compaction 234 (755 B, the copy inlined); the lowest-point scan as an inline helper
+// returning the index (current from its result) 216 (791 B), forced inline with current declared first 244; as plain
+// `static inline` it is not inlined (680 B, 343).
+// P492: Float root/angle/equality-absolute API subsets 1/2/4/3/5/6/7,
+// then standard float overloads: 161/161/161/161/161/161/161/161.
+// NOT kept: extra frame word and count/departure/produced-length homes
+// unchanged; original numeric APIs, predicate and complete body restored.
+// m3 lane 4 r199 (fast with the file's functions; 0x239d50 matched throughout; control 161). Retail read in full: one dword
+// hull counter at F+0x10, top-tested (`mov ebx, [F+0x10]; cmp bx, word [count]`), `indices[(short)hull_count] = current`
+// then the increment stored back, all three pass exits and the compaction's `j < i` exit into one epilogue returning BX,
+// the departure flag a byte in the indices home, `if (!left_start) left_start = differ(next, first)` (its y test with the
+// fxch), the closure positive (both coordinates `fld eps; fcompi; jbe head`, no fxch), the heading zeroed and the flag
+// cleared before the lowest scan, current reloaded from the count home after the classifier call. As plain C (one hull
+// counter in `while ((short)hull_count < count)`, `return hull_count;` at the three exits, that departure and closure, bool
+// flag and heading before the lowest scan): 262 (731 B: points EBP, count ESI, the pass test moves); current declared
+// before the call 262 (same code); the closure as `!points2d_differ(...)` 269 (747 B); a long flag 290; the heading and
+// flag after the lowest scan 289; the departure as `left_start = left_start || differ(next, first)` 262 (same code).
+// On this body: the three gotos as `return hull_count;` with the positive closure 170 (763 B).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -746,6 +784,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 	return fabs((double)a->x - b->x) < epsilon && fabs((double)a->y - b->y) < epsilon;
 }
 
+// MiniMax E (11-14): no new form, no lower score (129): retail still reads the count argument as a dword home and keeps
+// it in CX, and that parameter's type is declared in another file this lane may not edit; the zero constant still takes
+// xmm4 where retail creates it in xmm2, and the previous side byte still sits at [esp+0xd] where retail has it at
+// [esp+0xc]; the count guard in front of the loop (92) is not taken, as it repeats the loop's own i < count test.
 // MiniMax E (11-14): no new form, no lower score (129): retail still reads the count argument as a dword home and
 // sign-extends the low word, where this declaration's short count is read as a word home, and that parameter's type is
 // declared in src/unknown_17d9a0.cpp, which this lane may not edit; retail also keeps the previous side in memory where
@@ -1087,6 +1129,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // short and a 32-bit count would also change that contributor's caller. The inside arm's copy written per member 129,
 // `previous = &points[i]` at the loop end 129 (same code each); the crossing point built in a point2f initializer and
 // stored whole 255 (899 bytes). Body unchanged at 129.
+// MiniMax G (11-14): no new form, no lower score (129): the count's width is still the first difference - retail reads
+// the argument as a dword home (`mov ecx, dword ptr [ebp + 8]; movsx edi, cx`) where this declaration's `short count`
+// is read as a word home - and that width is declared by the caller in src/unknown_17d9a0.cpp, so it cannot be changed
+// from this lane; the permuter gain recorded in the lines above needed `volatile` reads, so it stays discarded.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

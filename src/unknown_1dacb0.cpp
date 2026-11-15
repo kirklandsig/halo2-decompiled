@@ -1083,9 +1083,13 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 	return result;
 }
 
+// MiniMax E (11-14): no new form, no lower score (828, was 828): retail holds the found mode in EBP across the lookups
+// and keeps the graph pointer in EBX, so the table pointer takes the dead parameter's home; this build re-reads the mode
+// from its home at each lookup, keeps the table pointer in EBX and loads the graph pointer into EBP once per kind. The
+// frame size agrees; the home given to the dead parameter decides every offset after it.
 // MiniMax H (11-11): no new form, no lower score (828); the six declaration orders of the mode, class and type out-locals all compile to the same code, so their frame homes are not set by the declaration order, and the first difference is still retail's compare of the weapon class against NONE with the operands the other way round.
 // MiniMax G (11-12): the three resolved outputs now share one array whose entries are set after the class check, which moves the -1 stores past the compare and puts the per-attempt candidate in the found_mode argument home where retail has it; the class load still lands in ECX where retail uses EDX, the result sits at frame+0x00 where retail has frame+0x0c, and the resolved outputs sit at frame+0x04 where retail has frame+0x00.
-// score 828 (was 828; m3 lane 8 r164 at the end): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
+// score 828 (was 828; m3 lane 8 r164 and r166 at the end): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // NOT kept (coordinator review, MiniMax G 11-13): 828 -> 807 came from grouping the three resolved outputs into one
 // `long resolved[3]` array (an aggregate grouping locals: kept only with a byte match); the three named locals stay.
 // MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,
@@ -1363,6 +1367,22 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // (each the same code). Our iterate call passes iterator_mode at found_mode's dead home (F+0x44) with class/type/result at
 // F+0/+4/+8 and the candidate at F+0xc; retail has mode/class/type/result at F+0/+4/+8/+0xc and the candidate (later the
 // +0x34 table pointer) at F+0x44: one home choice shifts every frame offset after it.
+// m3 lane 8 r166 (fast with the file's 37 functions, 0x1cb230, 0x1dd560, 0x2963f0, 0x1236f0, 0x1ce180; base 828, aligned 580,
+// registers and offsets masked 76): the early exit as `return c_type_709360();` with the result still declared at the top 987
+// (2825 B: the exit gets its own epilogue); the first request keyed by the iterator's own key fields (`iterator.mode` and so
+// on, which the iterate never writes) 1016 (2839 B; matched 0x1cb230 then differs, 118); `NONE == weapon_class` 828 (same
+// code). With registers and offsets masked the residue is the registers of the entry's NONE and of the argument compared with it, the output stores, the loop exit
+// (`jne exit; jmp top` with the result carried in ECX to the 0x1dd9d0 push, the found test a `cmp word ptr` from memory), the
+// EBP zero in both requests' fifth kind and inheritance loop (the loop's `i = 0` held in EBP as in matched 0x1ddd00) and the
+// three extra epilogues; round 227's census still holds: no untried natural loop, return or declaration form is left.
+// m3 lane 4 r199 (fast with the twin, 0x1dc790, 0x1dc8c0, 0x1ddb90, 0x1ddc70, 0x1ddd00, 0x1db120, 0x1dd9d0, 0x2963f0,
+// 0x1dd560, 0x1236f0, 0x1ce180; control 828): the type request's lookup through the existing out-of-line 0x1db120 1640
+// (2179 B: it stays a call; 0x1ddb90 122, 0x1dc8c0 806); the inherited graph through the existing out-of-line 0x1dafc0
+// 1084 (2732 B; 0x1dc8c0 531); each resource loop with its own scoped counter 828 (same code); re-measured round 417's
+// levels: the kinds copy calling 0x1ddb90 2978 (854 B), the outer copy calling 0x1ddc70 3335 (497 B). Retail's EBP zero is the
+// inheritance loop's `i = 0` of the inlined 0x1ddd00 (whose out-of-line body keeps i in EBP and stores the offset from it):
+// here it is materialised before the fifth kind and serves that kind's NULL tests and both zero stores. Round 227's census
+// still holds: no other untried natural loop, return, declaration or helper form is left.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1700,8 +1720,14 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // MiniMax G (11-14): no new form, no lower score (828): re-measured in the batch; the frame agrees at 0x2c, but the
 // third iterator output still takes the dead `found_mode` argument slot instead of a frame slot, so retail's result
 // shorts sit at +0xc/+0xe where ours sit at +0x8/+0xa, and retail's EBP zero carrier in the second resource request
+// is still missing.  The opening compare also still takes the other way round (ours loads the compared argument into
+// ecx and holds -1 in edx, retail the other way round); the iterator fields initialised in retail's store order score
+// 828 again and the compare written as `!= NONE` in a block scores 1040, so both stay reverted.
 // is still missing.
-// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
+// P503: Existing resource truth parameters byte/short/long, independently at each expansion layer:
+// 828/1016/1016/1016/1016/1016/927/927/927. NOT kept: inner byte ties; other domains shorten away from retail,
+// and inner short/long plus middle domains also lose matched shared users. Native candidate/output packing
+// and late EBP zero remain. Original helper domains and complete body restored.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

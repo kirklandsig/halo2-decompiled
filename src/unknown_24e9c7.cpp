@@ -460,10 +460,26 @@ struct s_24e9c7_points
 // (retail's early across-j spill at -8 sits above them). Lane 12 r112 above records that no untried natural form is left,
 // and every lead here (across/side/up/back as points, scalars, arrays, helpers, in-place scaling, corner orders, bounds and
 // alpha spellings, conversion domains) is listed; I found no code-changing form outside the note.
+// M3 lane 2 r82 (fast with 0x24e59f/0x22a664, both matched; control 125): retail's [ebp-0xc..-8] is the side point computed
+// in place (y holds across j, then side y, reloaded for back and the corners; x stays in XMM) and one forward_i load serves
+// side y and up x. The four corner base copies right after the result 129 (the across products still come after the
+// height, so a store to the corner array does not hold them). Re-measured the in-place side with `size * (0.0f -
+// forward_j)` 139 (742 B): there the across products are computed before the height as retail, but ours multiplies into
+// the loaded operand where retail multiplies into a copy of size, keeps 1.0 in XMM1 and reloads forward_i. On that form:
+// both products written operand-swapped, only x, only y 139/139/139 (same code); forward_i read once into a named local
+// for side y and up x 141 (741 B). Diagnostic: one to seven unused `long` locals 139 each (same code, no phase effect).
 // M3 lane 11 r99 (fast): the scale read from the placement at both uses (no `scale` local) 141 (740 B); the shader index
 // named once (`long shader_index`, test and call) 174 (742 B); the marker's kind named once for the bounds tests and the index
 // 130; the sequence index read from the kind at its four uses 125 (same code); the sequence's fields read through
 // `group->sequences[sequence_index]` at each use (no `sequence` pointer) 163 (747 B). Body unchanged.
+// M3 lane 12 r124 (fast with 0x24e59f/0x22a664, both matched each time; base 125). In-place side = the side point filled right
+// after size with the across products (`side.x = size * -forward_j; side.y = size * forward_i;`, no across locals) and later
+// scaled by the half width: re-measured 144 (746 B), with `(0.0f - forward_j)` 139 (742 B). New: the size step written y first
+// 125 (same code as this body); scaled by `*= (real)half_width` 144; the half-width scaling written y first 123 (743 B: the
+// across i product moves up but is still `0 - forward_j * size`; a 2-point statement order, not kept); on that 123 form, the
+// size step y first too 144, `(0.0f - forward_j)` 141 (740 B), both 139 (742 B), the scale read before size 123, the half
+// width ahead of the height 131. Retail computes `size * (0 - forward_j)` into a copy of size and `size * forward_i` into
+// size itself, spilling it to the side point's own home at -8; every in-place form here folds the negation out instead.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

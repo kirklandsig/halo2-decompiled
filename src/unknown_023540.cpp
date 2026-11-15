@@ -2813,8 +2813,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // MiniMax E (11-11): no new form, no lower score (364); the entry block matches retail's, but our body is 54 bytes
 // longer than retail's (1597 against 1543), which moves every later jump target, and the extra code is not located.
 // MiniMax H (11-12): no new form, no lower score (364): the body is still 54 bytes longer than retail's, so the shared exit lands at +0x621 where retail's is at +0x5eb, and the inlined matrix copy still loads its values into registers before storing them where retail stores each value as it loads it.
-// score 364 (was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
-// score 401 (was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
+// score 330 (was 364; earlier 401, was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
 // made 0x4b5d0 175, long makes it 93); the structure global is read
@@ -2918,6 +2917,14 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // pairs against the wrong instruction all the way down; the frame agrees (0x200) and the two length checks on the
 // count are the same, so what is left is the layout of the blocks and the order of the reads.
 // MiniMax H (11-13): no new form, no lower score (364); the first difference is at +0x52, where this build's early exit jumps to a block that sits further from the function's start than retail's, so the body after that pairs against the wrong instruction; the three rotation calls also pass the rotation on the stack instead of in EAX, because that callee lives in another file.
+// M3 lane 5 r182 (fast with the file's functions, 0x73360 and 0xc2d00; 330 at 1591 B, 383 instructions as retail): the
+// allocation through render_memory.h's render_memory_allocate (the file's own aggregate declaration replaced by the header)
+// with the handle tested against NONE and the output pointer sign-tested, the handle stored after it 423 (1650 B; listed
+// form re-measured, 478 then): retail inlines that allocation and calls the second 0x235a0 copy, ours inlines both copies
+// and has no rounding/NONE/sign code, so the two cancel in length but shift everything between them. The bucket scan as a
+// while loop with the body under `if (available_samples)` 330 (same code); the second sample's source advanced in place
+// (`source += 12;`) 370; the level limit named 349 (re-measure; ESI/EDI swap at the entry); the coefficient pointer
+// formed after the clamp in one expression 336 (the pre-11-10 order).
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3038,6 +3045,11 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 
 // MiniMax H (11-14): no new form, no lower score (54).
 // MiniMax B (11-13): no new form, no lower score (54): what is left is the scheduler's order inside the two corner sets, where this build places the x87 coordinate chains one slot earlier among the SSE ones than retail does (first difference +0x527); the corner rows in the other orders, the trig pairs as two statements and the point pairs all give 54 or worse.
+// MiniMax B (11-14): no new form, no lower score (54); the body is retail's length and the first difference is at
+// +0x527, where our scheduler issues each x87 coordinate step one slot ahead of retail's in both corner sets, so
+// what is left is the inlined rotation's schedule and the addresses of the globals that are not matched yet (ours
+// 0x862018 against retail's 0x45dbc0); the helper's spellings (192 forms) and the corner-call orders (24 forms) all
+// give the same code as this one.
 // score 54 (was 54): earlier 54, 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
 // before; frame, bounds block, both trig sequences and every home retail's). Left: inside both corner sets
 // the scheduler places the x87 coordinate chains one slot earlier among the SSE ones than retail does
@@ -3844,6 +3856,12 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // 0x25e50's colour/scale references 11 (first.red's product operands swap; shift and pairs unchanged); the shifted word
 // declared before the clear and assigned after it 9; the alpha word through its own shifted local too 9; all four shifted
 // words (fraction, input, whole, alpha) named in parallel ahead of the first store 9.
+// M3 lane 3 r243 (fast, base 9; the stage stores follow source order, so the shift's place is the scheduler's): the
+// span clamp's `inverse_span = maximum;` ahead of the width 11 (the store then precedes the divide); the width taken
+// after the small exit from the clamped span 15, from maximum 15; the width written out at its two uses 41; offset's
+// zero declared at the negative-low test 1163; `small = true;` ahead of the two scalings 12 (the flag store moves
+// first); the exponent search as `for (exponent = 0; ...; exponent++);` 883 (4928 B, re-measured; the while form
+// stays). Body unchanged.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

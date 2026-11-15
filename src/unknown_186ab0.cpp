@@ -155,6 +155,9 @@ void player_action_initialize(s_player_action *arg_0);
 // is still read without retail's sign extension and the inlined count read keeps our [edx + edi] against
 // retail's [edi + edx], which the count helper's body fixes in another file.
 // MiniMax A (11-13): no new form, no lower score (134): retail's flag block, the tail pair copied as two single floats and the latch with the else arm first each scored 164 and were restored, so the counted byte is still read without retail's sign extension, the selection compare keeps our operand order and the inlined count read keeps our [edx + edi] against retail's [edi + edx], which is fixed by the helper body in another file.
+// MiniMax H (11-14): no new form, no lower score (134): the count helper 0xcbec0 is defined in
+// src/unit_object_type.cpp, one of the files this lane may not edit, so the order of its two operands
+// cannot be changed from here; the body is unchanged.
 // MiniMax H (11-14): no new form, no lower score (134).
 // MiniMax H (11-11): no new form, no lower score (134): the edits tried this round - the field-first
 // comparison and the two single-float stores - scored 136, 164 and 166 and were restored, and the remaining
@@ -355,6 +358,12 @@ void player_action_initialize(s_player_action *arg_0);
 // the float fabs 198 (1493 bytes); the object type test as `field_3 == 0` in place of the mask shift 181 (1480 bytes);
 // the reset value as a bool 134 (same code); the final record copy through the existing function_186ab8 160 (1477
 // bytes); the same copy as one assignment without its two one-use pointer locals 134 (same code, kept).
+// M3 lane 13 r92 (fast with 0xcbec0, 0xcdff0, 0x13cb40, 0x11df30 and 0x14d040, all matched each time): round 27's form
+// rebuilt on today's file still scores 1 at 1515 bytes (the inlined 0xcbec0 count read [edx + edi] against [edi + edx]). On it:
+// a symbol-count phase scan, one to seven `long dead_n = n;` locals at the top of the body, 1 each (the base/index order of this
+// read does not follow the symbol phase that orders float operands); the cycle loop written in the body (main's own loop text) in
+// place of the 0xcbec0 call 1 (same [edx + edi]); that with the count read into a named char before its test 1; that with the
+// unit lookup placed after the start-type normalization 316 (the lookup moves, everything after shifts). BLOCKED-BY 0xcbec0 stands.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {

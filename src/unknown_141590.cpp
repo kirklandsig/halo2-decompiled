@@ -1263,6 +1263,23 @@ void function_143250(
 // P480 m3: Complete third-band row-producer lifetimes 0/1/2/3/4, second-band square/all
 // product first-consumer declarations and all third-band products: 1810/1643/1742/1648/1627/1672/1707/1789.
 // NOT kept: native frame/homes unrecovered; original polynomial and complete body restored.
+// M3 lane 11 r100 (fast with 0x143250 matched in each; rm = register-masked aligned count, 169 at 1333): the band-three
+// preamble is retail's instruction for instruction; what differs there is spill-slot packing. Retail has five 2-reference
+// scalar homes at the top of the scalar area (0x234-0x244) where ours has three: the product r6_r0 (r6 * r0, then times r7)
+// takes a home of its own in retail (0x234) and r6_r3 shares slot 0x90, where ours packs r6_r0 into 0x90. Tried: r6_r0
+// renamed (band three) 1333 (same code: names do not place these homes); lane 9 r120's r3_r2 after r5_r1 re-measured 939
+// (10777 B, rm 151, frame still 0x2fc in fast; a declaration move, kept only with a match); the matrix declared after
+// the nine rotation locals 1333 (same code); `result[0] = coefficients[0];` first 1361; the r6_r3 and r6_r0 pairs'
+// declarations exchanged 1334; band three's sqrt(2) declared at its first use 1336; band two's sqrt(5) before sqrt(15)
+// 1333. Body unchanged.
+// M3 lane 13 r93 (fast with 0x143250 matched, 0x22850 226 and 0x23690 330 throughout; control 1333 at 10752 B, frame 0x2fc,
+// `ret 4` on both sides now): dead-local phase scan at the top (n = 0..7, removed) 1333/1425/1425/1337/1435/1435/1447/1435;
+// the two early returns as nested `order > 2` / `order > 3` blocks (one exit) 1333, only the first nested 1333;
+// `result[0]` stored after the nine band-one matrix stores 1333; the nine rotation locals in one declaration 1333 (all the
+// same code). Body unchanged.
+// P500: Current-polynomial actual 3x3/5x5/7x7 matrix lifetimes, seven subsets, then all entry declarations:
+// 1420/1420/1333/1420/1420/1435/1420/1420. NOT kept: No native spill-home/frame recovery: all tie or regress and
+// separate workspaces shorten away from retail. Original complete executable body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

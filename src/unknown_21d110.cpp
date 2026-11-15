@@ -313,6 +313,10 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 struct s_looping_detail_request;
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
 
+// MiniMax R (11-14): score 94 (was 181): the start is expanded inline and the delete is called out of line at
+// sound_effect_delete (0x21dcf0), which gives retail's 427 bytes; what still differs is the layout around a
+// failed start, where retail jumps from the rate-limited path to the shared "cmp esi, -1" test and this build
+// branches straight to the delete, so the delete block sits earlier and every later address differs.
 // MiniMax B (11-11): no new form and no lower score (181); ours still takes the tag in EAX and the
 // state on the stack where retail takes the state in EAX and the tag on the stack, and ours calls the
 // start out of line at the effect path where retail expands it there, and expands the delete inline
@@ -524,6 +528,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // MiniMax B (11-14): no new form, no lower score (181): retail's entry is push ecx, push ebx, push ebp with the state in EBX and ECX left alone, where this build takes the state in EDI and reserves eight bytes of frame; both take the state in EAX and the tag in the first stack slot, and the request convention is set by the caller 0x189fe0 in another lane's file: BLOCKED-BY 0x189fe0.
 // MiniMax A (11-13): no new form, no lower score (181): the entry takes its state in eax here and on the stack there, and the
 // argument order of the callee 0x189fe0 is fixed in another lane's file (BLOCKED-BY 0x189fe0).
+// Not kept (MiniMax R, 11-15 batch 277): the 94 form (sound_start __forceinline and the sound_effect_delete
+// redirect lifted for this function) changes 0x189fe0's register use under /GL: its callers then pass the request
+// in EDX where retail uses EAX, and ten matched functions are lost (0x1890c0, 0x189340, 0x1895f0, 0x189650,
+// 0x1896c0, 0x189710, 0x189760, 0x189a50, 0x18bb80, 0xfcea0). The body stays at 181.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {

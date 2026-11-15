@@ -61,7 +61,13 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // MiniMax G (11-13): no new form, no lower score (715): the body is 3482 bytes against retail's
 // 3499 and the three-way branch and the float constants still differ from retail's own expression
 // trees.
-// score 715 (was 715): earlier 750. s1E walk against retail (3482 bytes, retail 3499; frame 0x88 agrees). Behaviour fixes: 0x29b2e0's
+// score 702 (was 715): m3 lane 16 r119 (plain) kept three retail shapes together: the second radial test's implied
+// `!(local_23 > local_27) &&` dropped with the root written in the first test (no named double; EBX is then pushed after
+// the 0x26c test as retail), `0.0f - local_17.j` named once after the heading's normalize for its three uses (retail's
+// subss from the shared zero, at retail's place), and local_15/local_17 as planar aggregate copies (retail's integer
+// moves). 3473 bytes, frame 0x8c against retail's 0x88: retail keeps local_2 between local_5 and local_6 and shares
+// local_14's home with the 0x1f9760 output vector (+0x8c); ours puts local_2 above local_1 and gives local_14 its own home.
+// Earlier at 715 (was 715): earlier 750. s1E walk against retail (3482 bytes, retail 3499; frame 0x88 agrees). Behaviour fixes: 0x29b2e0's
 // third argument is the +0x290 pointer in EBX (0x29c2a4-0x29c2bb; was &local_5), and 0x1f9760's arg_4 (last_out) is the
 // stack byte tested at 0x29c7e5 (was arg_5). Forms kept: direct input (no reference local), shared normalize3d for the
 // private copy, MIN at both ratio clamps (retail divides twice, 0x29bfdf-0x29c015 and 0x29c3a3-0x29c3d0), float root
@@ -468,6 +474,19 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // default then fully assigned leaves: 648/690/648/690/722/721/724/723 (fast control
 // 648, full 715). NOT kept: no native entry/home equality or gain; original full
 // Boolean decision, radial double, helpers and complete body restored.
+// m3 lane 15 r84 (plain each with 0x29b990 MATCH, 0x29b2e0 176 and 0x1f9e70 137 unchanged; control 715; fast gives 648 here):
+// local_6 += local_7 through the existing vector3f_add 757 (3478 B). Same code as the control (not counted): local_26 through
+// the existing vector2d_from_points2d; the side test and the flip test through the existing cross_product2d, each and both;
+// `__assume(local_2 != NULL)` in the steering arm; the output scale through the existing vector3f_scale; `local_27 =
+// MIN(local_27, local_20)`. Retail computes `0 - local_17.j` once (xorps/subss into XMM3) and reuses it in the side test
+// and local_25, where ours folds each negation into a subtraction (the named negation forms are listed above). Body unchanged.
+// m3 lane 16 r119 (plain each with 0x29b2e0 176, 0x29b990 MATCH and 0x1f9e70 137 unchanged; fast gives 648 here): on the 715
+// body both clamps as `MIN(1.0f, ratio)` 715 (retail's `1.0f > ratio` branch shape, count unchanged); the 0.85 dot as
+// dot3f(&local_7, &local_9) 715 (same code). Lane 10 r93's form re-measured 778 (3462 B); on it `real perpendicular = 0.0f
+// - local_17.j;` 764 (3468 B), with `MIN(1.0f, ratio)` 767; local_26 through vector2d_from_points2d 764 (same code); with
+// both planar copies 702 (kept). On 702: float squares in the root 756 (3467 B); `MIN(1.0f, ratio)` at both clamps 702;
+// the 0x654 arm with `else local_21 = true;` and no initial value 746 (3471 B); the squared-speed floor as
+// `MAX(local_16 * local_16, 0.001f)` 704; a named `1 - field_64` complement for the three blend rows 702 (operands move).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
@@ -516,10 +535,11 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 		{
 			function_26c180(arg_0);
 			point2f local_14 = { local_8.x + arg_2->i, local_8.y + arg_2->j };
-			vector2f local_15 = { arg_2->i, arg_2->j };
+			vector2f local_15 = *(vector2f const *)arg_2;
 			real local_16 = normalize2d((point2f *)&local_15);
-			vector2f local_17 = { local_4->i, local_4->j };
+			vector2f local_17 = *(vector2f const *)local_4;
 			normalize2d((point2f *)&local_17);
+			real perpendicular = 0.0f - local_17.j;
 			real local_18 = (real)((double)local_2->field_1c * 0.5);
 			real local_19 = 0.0f >= local_2->field_14 ? local_1->unknown03c : local_2->field_14;
 			real local_20 = 1.0f;
@@ -533,21 +553,20 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 			}
 			else
 			{
-				bool local_22 = arg_2->i * -local_17.j + arg_2->j * local_17.i > 0.0f;
+				bool local_22 = arg_2->i * perpendicular + arg_2->j * local_17.i > 0.0f;
 				real local_23 = local_2->field_20;
 				real local_24 = local_22 ? local_23 : -local_23;
-				point2f local_25 = { local_8.x + -local_17.j * local_24, local_8.y + local_17.i * local_24 };
+				point2f local_25 = { local_8.x + perpendicular * local_24, local_8.y + local_17.i * local_24 };
 				vector2f local_26 = { local_14.x - local_25.x, local_14.y - local_25.y };
-				double local_27 = sqrt((double)local_26.i * local_26.i + (double)local_26.j * local_26.j);
-				if (local_23 > local_27 && (*(short *)(local_0 + 0x656) != 2 || !*(bool *)(local_0 + 0x4ae)))
+				if (local_23 > sqrt((double)local_26.i * local_26.i + (double)local_26.j * local_26.j) && (*(short *)(local_0 + 0x656) != 2 || !*(bool *)(local_0 + 0x4ae)))
 					local_21 = false;
-				else if (!(local_23 > local_27) && !*(bool *)(local_0 + 0x4ae) && local_18 > local_16)
+				else if (!*(bool *)(local_0 + 0x4ae) && local_18 > local_16)
 					local_21 = false;
 				else if (dot_product2d((vector2f const *)arg_2, &local_17) > 0.0f)
 					local_21 = true;
 				else
 				{
-					local_21 = local_26.j * local_17.i + local_26.i * -local_17.j > 0.0f;
+					local_21 = local_26.j * local_17.i + local_26.i * perpendicular > 0.0f;
 					if (!local_22) local_21 = !local_21;
 				}
 			}

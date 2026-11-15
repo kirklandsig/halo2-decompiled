@@ -923,10 +923,32 @@ struct s_tail_transfer_traits
 	byte grenades[2];
 };
 
-// score 144 (was 153): the third weapon comes from the selection paths without a NONE preset and the no-seat
+// score 144 (was 144; 153 before): the third weapon comes from the selection paths without a NONE preset and the no-seat
 // slot lookups go through a pool copy, so retail's object-table reloads appear; from the selection loop on the
 // traits pointer still comes back in EBP where retail keeps it in EAX, and the counter sits at +0x1c against
 // retail's +0x18.
+// M3 lane 6 r180 (fast) lead, 3 at 826 bytes (build/r180/lead-152660.patch, not kept: it needs one-use named
+// results): retail's no-seat arm is 0xd1540's shape (two pool copies, each looking the unit up for the slot read and
+// again for the weapon read, each result its own NONE then the conditional weapon in a register), `other` keeps its
+// NONE preset, and the players are walked with the existing 16-byte s_player_iterator (player_queries.h; retail's
+// frame holds its unused player field). With `long current_weapon = NONE; if (primary_slot != NONE) current_weapon =
+// ...; primary = current_weapon;` (and the same for the next weapon) on the two copies: 67 (828 bytes), with `other =
+// NONE` 11 (826; frame 0x24), with the iterator 3. The same through a file-local inline taking the pool (0xcbd50's
+// body with the pool as a parameter) 67 / 3 (a one-caller helper). Left: all three lookups address
+// [data + index + 8] where retail has [index + data + 8]; same code for a header element pointer (`+` and `&array[i]`),
+// an unused element-pointer local before or after the lookup, a data-pointer local, the direct subscript, index-first
+// address arithmetic, the unit index read from the player at each use, k = 1..7 probe locals, the iterator as an
+// initialiser or with datum_index set, the scenario read at each use (3 each); a 600 s permuter run on the helper
+// form, 71 tries, none below 3. Without the named results: the two two-use copies 146 (832), with `other = NONE` 171,
+// with the iterator too 179, with conditional expressions 159 (frame 0x24) / 169 / 181 (primary unpreset); primary
+// unpreset with `primary = NONE;` in the no-seat arm 181 (846); the 144 body with the iterator and preset 165 (831);
+// 0xcbd50 for both weapons with two copies / one copy / the global 162 / 170 / 161. Other forms this round: an early
+// `continue` for a missing traits entry, traits or the three results declared at function scope 144 each (same
+// code); primary through the existing unit_get_current_weapon (with presets / copy / global secondary) 167 / 154 /
+// 168, on the 144 body 143 (829) and with the main lookup through a copy 140 (827), secondary on the global 151 /
+// 151; two copies used once each 141, with conditional expressions 177 (848), with `other = NONE` 174 / 159; one copy
+// declared per weapon 146; a hand-index helper reading both fields 163 (810).
+// Earlier, at 144 (was 153): the forms below.
 // MiniMax I (11-14): the third weapon needs no NONE preset because both paths assign it, and the two no-seat
 // slot lookups go through a pool copy that stays a real variable, which brings back retail's object-table
 // reloads and the native home of that weapon: 144 (was 153), the length stays retail's 826 bytes.
@@ -1066,6 +1088,9 @@ struct s_tail_transfer_traits
 // T102: Complete primary-traits selection polarity in bool/byte/char/signed-char/
 // short/word/long/dword: 156/156/156/156/255/255/242/242. NOT kept: no exact
 // selected-traits/unit/NONE-home repair; original selector and complete body restored.
+// P495: Actual minimum-scan age/weapon/per-pass-clock workspace subsets, then actual shortest
+// workspace on the complete graph: eight 144 at 826 bytes. NOT kept: selected-traits/unit/NONE
+// ownership unchanged; original producer timing, no-seat pool copy, ties and complete body restored.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1181,6 +1206,13 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 long function_cbd50(long unit_index, short weapon_index);
 
 // score 215 (was 215): the tag table stays enregistered (EBX) through the first loop, so the player spills (frame 0x1c against 0x18).
+// M3 lane 6 r180 (fast): retail reads each held and pending weapon through its own lookup (the slot and the weapon from
+// one lookup, the unit index re-read from the player for each); 0xd1540's form per iteration (a pool copy per weapon,
+// the slot read and `weapon = NONE; if (slot != NONE) weapon = ...` on it, then stored) gives the one-lookup-per-weapon
+// shape but 274 (the pending lookup reuses the unit index, so the shared index takes shl + [a + b + 8]); the held weapon
+// on the function's pool with one pending copy 274; both copies ahead of the loop 274; the pending copy ahead of the
+// loop 274; the held result also used in the bit-3 test 274; a file-local inline with 0xcbd50's body taking the pool
+// (0x152660's lead) for both 304 (988 bytes: the four reads merge). The tag table and player homes did not move.
 // MiniMax I (11-14): no new form, no lower score (215): a named local for the tag table, that local assigned inside
 // the first loop and the flag helper reading the global itself all keep the table enregistered in EBX and the player
 // spilled (frame 0x1c against retail's 0x18), while a cached unit index (301) and the unit local for the two slot
@@ -1354,6 +1386,11 @@ long function_cbd50(long unit_index, short weapon_index);
 // P458: Retained slot-provider count char/short/word/dword, entry then count-phase lifetime:
 // 293/216/216/215/292/274/274/273. NOT kept: late count restores frame 0x18 but regresses length; player/pool/tag homes remain; original complete body restored.
 // P460: Complete count-admission/retained-pair outcomes in bool/byte/short/long on the retained slot-provider graph: eight 215. NOT kept: extra frame word and player/pool/tag homes unchanged; complete body restored.
+// P495: Actual count-pass flag/weapon workspaces and shared three-phase hand induction, seven subsets,
+// then both signed-short slot transports on that graph: eight 215 at 1006 bytes. NOT kept: no native
+// frame/player/pool/tag recovery; every producer, observation, slot provider and complete body restored.
+// P507: Complete uncounted/excluded slot counts byte/short/long/dword:
+// 293/295/292/292/275/313/313/313. NOT kept: no native qualifying-count/frame/player/pool/tag equality; original complete body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1566,13 +1603,17 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// score 43 (was 43): player and hand exchanged between ESI and EDI, with the scratch roles rotated (retail unit index
+// EDX, primary ECX, hand EAX; ours ECX, EAX, EDX); 0x151b80 shows the same exchange.
+// M3 lane 6 r180 (fast): the 0xcd4e0 arm as `else if (function_cd4e0(...)) result = true;` 47; no weapon local (the
+// field read at the test and the 0xcd7b0 argument) 43 (same code); a guard return for a NONE unit index 80 (199
+// bytes); the weapon as a NONE preset set under `if (slot != NONE)` with one test after 43 (same code); the first two
+// together 47.
 // MiniMax E (11-14): no new form, no lower score (43): the length still matches retail's 210 bytes and every
 // difference is the same pairwise register rotation (retail: player esi, hand edi, unit index edx, primary cl,
 // sete al; ours: player edi, hand esi, unit index ecx, primary al, sete dl); the permuter ran 625 s over six tries
 // and reported no better than the baseline 43, and no source form tried this round moves the rotation.
 // MiniMax B (11-13): no new form, no lower score (43): the hand before the result (62), the result before the player (43), the unit pointer before the hand (70), the hand as an int (43) and the hand at the entry (86) all leave the register rotation - retail keeps the player in esi, the unit index in edx and the hand in edi, ours keeps them in edi, ecx and esi.
-
-// score 43 (was 43):
 // MiniMax B (11-14): no new form, no lower score (43); the gap is still the one register rotation (retail keeps
 // the player in esi, the hand in edi and the unit index in edx, ours keeps them in edi, esi and ecx) and both
 // bodies are 210 bytes; a const player pointer, a unit-index local and the lookup moved above the hand all
@@ -1729,6 +1770,13 @@ void function_150820(dword *bits, bool local_only)
 // effect of that expansion.
 // P458: Initial unit/selected-slot presence outcomes, bool/byte/short/long:
 // 43/43/43/43/43/43/43/43. NOT kept: native saved player/hand and entry scratch roles not recovered; original complete body restored.
+// P495: Public selector char/byte/short/long with bool return 43/43/67/43;
+// byte return 43/43/67/43. NOT kept: no byte match or native saved-role recovery;
+// original Boolean contract, sole caller declaration, body and callee tuples restored.
+// MiniMax B (11-14, run 75): no new form, no lower score (43); the whole difference is still one register rotation - retail keeps the player record
+// in esi, the hand in edi and the unit index in edx, this build keeps them in edi, esi and ecx - and both bodies are 210 bytes. The rotation starts at
+// the entry block: retail reuses edx (the pool data pointer's register) for the unit index and leaves ecx free for the policy byte, this build reuses
+// ecx (the table's register) and takes the policy byte in al; no declaration order, hand width or result form moves it.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

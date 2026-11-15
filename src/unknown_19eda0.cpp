@@ -385,6 +385,10 @@ PRIVATE inline long polygon_round_19f(real value)
     return result;
 }
 
+// score 370 (was 370): no new form and no lower score; the body is unchanged. Retail still reads its 1.5
+// factor from a writable .data float this lane may not add, and still keeps its frame at 0x30 against our
+// 0x34 because 0x4b2d0 takes the tag, the group and the variant in EDX, ECX and EAX (src/unknown_01cf50.cpp).
+// score 370 (was 370; earlier 316, 379, 393): see the round 170 line at the end of this note.
 // MiniMax A (11-13): no new form, no lower score (370); what still differs is unchanged: retail keeps the
 // third argument of this call in a register where ours keeps it on the stack, so retail's frame is 0x30 and
 // ours is 0x34, and the order of the three register arguments is fixed by the callers and by the callee in
@@ -395,6 +399,9 @@ PRIVATE inline long polygon_round_19f(real value)
 // against retail's 0x30, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX
 // from src/unknown_01cf50.cpp, which this lane may not edit.
 // MiniMax G (11-14): no new form, no lower score (370): retail's 1.5 factor lives in a writable .data float this lane may not add, and 0x4b2d0's EDX/ECX/EAX argument order is set in another lane's file.
+// MiniMax H (11-14): no new form, no lower score (370): the frame is still 0x34 against retail's 0x30, retail
+// still reads its 1.5 factor from its own writable .data float at 0x47ff94 and still expands two contributor
+// helpers in place, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX.
 // score 370 (was 316; earlier 379, 393): see the round 170 line at the end of this note.
 // MiniMax G (11-10): no new form, no lower score (370); retail's 1.5 factor still comes from a writable .data float at 0x47ff94 that only this function reads, the frame is still 0x34 against retail's 0x30, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX from a file this lane may not edit.
 // MiniMax E (11-10): no new form, no lower score (370); the frame is still 0x34 against retail's 0x30 and retail still makes its two 1.5 multiplies from the factor in its .data (the centre distance in single precision 379, the fade limit written out 402, a writable global factor 389 and the parameter read without its alias 419 all score worse).
@@ -521,6 +528,21 @@ PRIVATE inline long polygon_round_19f(real value)
 // and the 0x4b2d0 call still takes the variant in the register where retail keeps it in the other register with the context byte and the
 // pass on the stack (that callee's convention is set in another file).
 // MiniMax A (11-11): no new form, no lower score (370); retail still loads its constant before the frame push where ours pushes first, the inner-radius lifetime still gives the two subtracted vectors different registers, and the 0x4b2d0 call still takes the variant in the register where retail keeps it in the other register with the context byte and the pass on the stack (that callees convention is set in another file).
+// MiniMax A (11-13): no new form, no lower score (370); what still differs is unchanged: retail keeps the
+// third argument of this call in a register where ours keeps it on the stack, so retail's frame is 0x30 and
+// ours is 0x34, and the order of the three register arguments is fixed by the callers and by the callee in
+// another file, which this lane may not edit; retail also still reads its 1.5 factor from its own writable
+// .data float and still expands two contributor helpers in place.
+// MiniMax H (11-11): no new form, no lower score (370); the body is unchanged, because retail's 1.5 factor
+// still comes from a writable .data float at 0x47ff94 that only this function reads, the frame is still 0x34
+// against retail's 0x30, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX
+// from src/unknown_01cf50.cpp, which this lane may not edit.
+// MiniMax G (11-14): no new form, no lower score (370): retail's 1.5 factor lives in a writable .data float this lane may not add, and 0x4b2d0's EDX/ECX/EAX argument order is set in another lane's file.
+// M3 lane 3 r242 (fast with 0x244470 and 0x2be5d0, both MATCH; base 370): the centre distance as its own statement before the
+// radius subtraction 370 (same code: the x87 pops still follow the subtraction, retail pops first); that with the edge
+// distance a real compared with 0.0f 379 (1495 B: rounded through its slot before the compare); the top point initialised from
+// the vertex with `center->z + height` 406; the fade as `1.0f - fade * (1.0f / fade_limit)` 393; `top.z = bottom.z + height`
+// 410. Body unchanged; still BLOCKED-BY 0x1ccb0 (its file is /Ob1, retail inlines it here).
 // @retail 0x19f680
 void function_19f680(long tag, long group, long pass, long variant, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,

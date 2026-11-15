@@ -39,6 +39,10 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 }
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
+// MiniMax R (11-14): no new form, no lower score (286): the frame slots still differ (ours reads [esp+0x24] and
+// [esp+0x14] where retail reads [esp+0x1c] and [esp+0x10]), the saved-direction homes differ and the planar
+// operand order differs; the fast check prints caveats that the callees 0x26c180 and 0x1f9e70 build differently in
+// the reduced image, so the full check decides the true score.
 // MiniMax D (11-11): no new form, no lower score (286): the object pointer's spill slot still sits eight bytes above retail's and the 0x1e5450 result four bytes above it, and the call result and the magnitude still take each other's registers; declaring the direction local ahead of the position copy puts the two copies in retail's homes but emits them in the other order (290), and declaring them first and assigning them in retail's order keeps the copy order but not the homes (286).
 // MiniMax D (11-10): no new form, no lower score (286): the call result and the magnitude still take
 // each other's homes, the object view still sits eight bytes higher, and the position copy and the first
@@ -439,6 +443,16 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // whole copies are all listed above).
 // MiniMax C (11-14): no new form, no lower score (286); the stack homes still sit 8 and 4 bytes above
 // retail's (ours at +0x24 against retail's +0x1c, ours at +0x14 against retail's +0x10).
+// MiniMax I (11-14): no new form, no lower score (286): the magnitude and the query output still take the frame's
+// earlier slots where retail puts the magnitude at +0x10 and the query output at +0x1c, and the group of working
+// vectors is still stored in a different order than retail's.
+// m3 lane 6 r181 (fast with 0x29b2e0/0x2922b0/0x1f9760/0x1f9e70/0x30bf0/0x1e5450/0x26c180/0xb9dd0/0x1f5f30; control 286, aligned/
+// stack-masked/register-masked 234/146/68): the shared normalize2d_fast (include/unknown_11cc90.h) written scaling-path first
+// (`if (!(fabs(m) < eps)) { scale; return m; } return 0;`, the 0x2b400 shape) 286 (masked 134/54: site 1's branch order is then
+// retail's, its zero result still in its own home instead of the magnitude's), but 0x29b2e0 176 -> 203; header restored. Site 1
+// through the existing normalize2d 407 (1786 B: a call, its noinline declaration keeps 0x2c2a70's call). The history weight in a
+// local for the three rows with the complement still read from the field (retail loads it once into xmm6 and re-reads it for
+// 1 - weight) 321 (1867 B); the current sum through the existing vector3f_add 316 (1863 B, aligned 255).
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

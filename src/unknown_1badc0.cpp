@@ -13,6 +13,15 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
+// MiniMax H (11-14): no new form, no lower score (171): swapping the two operands of the first dot
+// product produces byte-identical code, so the products' destination registers are the allocator's
+// choice and not the source's; the body is unchanged.
+// MiniMax D (11-14): no new form, no lower score (171): round 66's three order changes were measured again on this
+// tree - the copy source changed to local_1 (175), the result set before the output store (238), the clearance moved
+// into its use block (242) and all three together (232) - so every one of them is worse than the body below and the
+// body stands; what still differs is that retail computes the centre-minus-actor and the centre-minus-point
+// differences in the prologue and the point-minus-actor difference at its use, while ours forms the point-minus-actor
+// difference first.
 // MiniMax H (11-13): no new form, no lower score (171): the permuter's 41 tries in 311 s found nothing below 171,
 // and the difference still stands where retail computes the centre-minus-actor and the centre-minus-point differences
 // in the prologue and the point-minus-actor difference at its use, while ours forms the point-minus-actor difference first.
@@ -31,7 +40,7 @@ real normalize2d(point2f *arg_0);
 // MiniMax H (11-11): round 66's other two changes re-measured here - `result = true` ahead of the
 // output store and `2.0f - local_11` inside the normalize block give 238 and 242 alone, 226 with
 // one point copy feeding both differences; the tail then matches retail exactly but the body does not.
-// score 180 (was 180): retail's length (1025) and frame agree; the opening's copy and difference schedule and the SSE
+// Earlier at 180 (was 180): retail's length (1025) and frame agree; the opening's copy and difference schedule and the SSE
 // scheduling still differ. A 132 form and a byte-match recipe are measured but not kept (see Round 66 at the end of this note).
 // Earlier at 180: no new form and no lower score; retail still forms d3.x, local_6.x,
 // d1.x, d1.y, d3.y and local_6.y before the products while ours forms d1.y first and the two d3
@@ -437,6 +446,11 @@ real normalize2d(point2f *arg_0);
 // parameter 177; the mention ahead of the getter 20 (1024); second dot through a scalar-parameter helper in three spellings 177 each; written out in three operand
 // orders 177 each; one planar vector for the actor-to-point difference rotated in place to the perpendicular 187 / 185 / 187 (1031 / 1028 / 1031). Recipe saved as
 // build/r66/held-1badc0.patch.
+// m3 lane 6 r181 (fast with 0x1ba5c0/0x1bdad0/0x1bff80/0x26d100/0x30c60 and 0x30c60's callers; control 171, aligned 121):
+// the far-offset rows through the existing vector3f_add_scaled 171 (different code, aligned 122); the actor-to-point
+// difference as a vector2f through the existing vector2d_from_points2d 171 (same code). Re-measured on the 171 base: the
+// tail through the existing 0x26d0e0 with 0x1fa7f0's result (no dead slot, the callers now keep their match) 264 (992 B);
+// `inline` on 0x30c60's definition with the centre and radius through it 183 (1021 B), and 0x3d7f0 62 -> 218.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

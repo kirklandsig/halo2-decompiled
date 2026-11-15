@@ -1102,6 +1102,10 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax G (11-14): no new form, no lower score (92): the frame is retail's (0x1f0) and the squared length is still
+// summed in the compiler's own order (retail reads 0x1f0 before 0x1e8), and the 0x119bc0 result still travels in al
+// where retail keeps it in a stack byte and pushes the containing dword; that shape needs 0x1c4b00's last parameter
+// to be a bool in its definition and in its declarations, which live in files this lane may not edit.
 // MiniMax B (11-13): no new form, no lower score (92): aligned the two listings instruction by instruction: the two
 // squares come out of the other two homes (retail reads 0x1f0 before 0x1e8, this build reads 0x1e8 before 0x1f0), and
 // retail keeps the 0x119bc0 result in a stack byte it stores and reloads around the three writes where this build keeps
@@ -1128,6 +1132,9 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // parameter being a bool, whose declarations sit in files this lane may not edit; the squared length is
 // still summed in the compiler's own order. This round: the 0x119bc0 result in a dword local 93 and the
 // squared-length sum written the other way round 92, both reverted.
+// MiniMax A (11-14): no new form, no lower score (92): the frame 0x1f0 agrees, but the basis MOV/LEA, the
+// squared-component loads and the force-result publication differ, and the force argument still needs the zero
+// extension that 0x1c4b00's `long` formal cannot give (BLOCKED-BY that file).
 // score 92 (was 94): frame 0x1f0 agrees; basis MOV/LEA, squared-component loads and force-result
 // publication differ; the force formal still requires a zero extension. Round 85 (m3 lane 16): 0x1e5af0's
 // parameters as (physics, forward, up, output) give the first 0x1e5af0 call retail's EAX/ECX/EDX setup (94 -> 92).
@@ -1251,6 +1258,17 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // 271 (1019 bytes); a named pointer to the countdown word at 0x206 for its three uses 92 (same code); an early `return
 // false` for the 0xb4 test 276 (1039 bytes). Still BLOCKED-BY 0x1c4b00's `long force` parameter (the bool form, 44,
 // needs declarations in src/bipeds.cpp, a contributor's, and in four files other lanes hold this round).
+// M3 lane 2 r82: HELD (needs the coordinator's OK): 0x1c4b00's last parameter as `bool force` (its two `(byte)force` casts
+// dropped; the definition and all 13 declarations) 92 -> 42 plain at 1034 bytes, with 0x1c4b00 and every matched caller
+// (0xb77d0, 0xe4770, 0xecdc0, 0x10b010, 0x119020, 0x119c10, 0x14e200, 0x1cf120, 0x1ed340, 0x2909b0) still matching in the
+// plain check (the fast check showed 0x10b010 at 19, a reduced-image artifact); unmatched 0xe24f0 579 -> 594 (stack slots
+// shift), 0xdd990/0xf8eb0/0x10b850/0x1e55d0 unchanged. Retail evidence: 0x1c4b00 tests only the flag's low byte and this
+// caller pushes the found flag's stack dword without zero-extension. Two declarations sit in other lanes' queue files this
+// round (src/unknown_1eb8a0.cpp, src/unknown_1cec30.cpp), so the code is back to main; build/r82/held-0x118700.patch. On
+// the held form: the squared length through length_sq3f 42; the found flag and the re-fetched object declared at the
+// block's top 42/42; the object fetched before the 0x119bc0 call 42; the squares in i, j, k order 42 (all the same code).
+// Diagnostic: one to three unused `long` locals on it 42 each. Left there: the squares' i/k load order and the velocity
+// copy into the object (retail loads the source's i before the object pointer, every later scratch register follows).
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

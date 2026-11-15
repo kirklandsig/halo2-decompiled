@@ -817,6 +817,10 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // diagnostics only, the variant fetched under the live-state test (0x6ec80's idiom; implied by `state == 5`, so it folds)
 // before the summary getter or at the top of the state block 22/22 (same code). Reading: the copy loop's early count spill is
 // part of the scratch rotation (our destination takes ECX, which holds the count; retail's takes EDX).
+// Round 122 (m3 lane 9, fast with the inlined callees and both callers; control 22): `result = true` at the top of the
+// state block 96 (491 bytes, both callers lost); one index shared by the copy countdown and the player loop 22 (same
+// code); a walked output pointer in the player loop's increment 26; the preset pair with the variant under the
+// live-state test 46; the preset pair with one shared index 46 (session ESI in both).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

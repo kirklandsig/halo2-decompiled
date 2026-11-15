@@ -94,6 +94,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// MiniMax D (11-14): no new form, no lower score (194): the first difference is still at +0x5b and what remains is
+// where the tint and the second UV set's bounds live and the blend that still leaves XMM5 in the aspect block, so
+// the difference is the storage of those two values rather than a statement order; the kept form with the width
+// product before the inverse sums stands.
 // MiniMax B (11-13): the width product is computed before the inverse sums, which lowers the score to 194; the
 // blend still leaves XMM5 in the aspect block and the tint's home is still exchanged with the second UV set's bounds.
 // score 194 (was 194): earlier 211 (round 95 m3 lane 11 at the end) and 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
@@ -591,6 +595,18 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // P475: Standard direct-geometry/encoded-secondary range transfers and ordered
 // full channel clamp, seven subsets then backward/upper-first: 461/344/494/451/491/506/482/482.
 // NOT kept: no exact native tint/UV/blend storage repair; original complete body restored.
+// M3 lane 10 r104: no trial. In this listing the 0x10000 arm copies the definition's geometry to +0x30 and its bounds
+// to +0x40 in both builds, so the slot exchanged with the tint is the second UV set (ours tint +0x60 and second set
+// +0x50, retail the reverse), as round 81 found. A compile-only build of this file without link-time code generation
+// orders the four 16-byte locals uv_a, uv_b, tint, geometry from the bottom, unlike either build, so only the --fast
+// image is a usable screen here. Every source form of the tint, clamp, colour and second-set copies the note lists
+// leaves the order; no new one found. Body unchanged.
+// m3 lane 15 r85 (fast; control 194, register- and stack-masked aligned 61). The final call settles the homes: LTCG passes
+// the last argument (geometry) in EBX at +0x30, uv_a +0x40 in both builds, retail tint +0x50 / uv_b +0x60, ours uv_b +0x50 /
+// tint +0x60 (the else arm's pivot and seed colour share geometry's slot in both). New: the clamp as a pointer loop
+// (`for (real *component = &tint.alpha; component <= &tint.blue; ++component)`) 518 (1892 B); uv_a and uv_b declared
+// separately 194 (same code); the aspect defaults declared separately 194 (same code); the alpha product held in a local and
+// stored just before the clamp 219; the 0x180 block's products written `tint.red*seed_color.red*2.0f` 197.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

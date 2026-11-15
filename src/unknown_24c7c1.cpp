@@ -556,6 +556,12 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
+// MiniMax R (11-14, run 65): no new form, no lower score (114 in the reduced image, 115 in the full one): retail
+// keeps the three message predicates as bytes at -0xf/-0xe/-0xd and `left` in a word at -0x3c, while this build
+// packs the predicates at -0x14/-0xd/-2 and spills `left` as a dword at -0x50; the only spelling that produces
+// retail's word store is an invented two-short aggregate whose other half the function never touches, which review
+// rejects, and the best keepable form (const short left) measures 109, a gain of five, under the keep bar. The
+// body stands.
 // MiniMax B (11-14): no new form, no lower score (115): retail keeps the view at -0x44, the font at -0x50, the line
 // height at -0x14, the player at -0x40, the three message predicates as bytes at -0xf/-0xe/-0xd and `left` in a word at
 // -0x3c, while this build puts the view at -0x30, the font at -0x4c, the line height at -0x18, the player at -0x3c and
@@ -756,6 +762,12 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // timer 180 at 1888 (re-measure); the loop's `view->fade_time` read once into a named local 290 at 1892; the
 // message-text arm with a named `message_text` for its three uses 103 (same code); the scripted test as nested ifs
 // 103 (same code); the flash fraction clamp as a ternary 103 (same code); the loop's fade clamp as if/else-if 110.
+// M3 lane 13 r92 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, matched each time; control 114): retail's row counter
+// shares the flash scalar's home (-0x18; flash is address-taken in both builds) where ours spills the counter at -0x44. The
+// rows loop in a block of its own (the counter's scope then a sibling of the flash block; this build has no for-scope
+// conformance) 114 (same code: spill homes do not follow lexical scope); that with the bool timer 191 (1888 bytes); the row
+// height as a short 261 (1903 bytes); the row height declared once at the loop block's top 114 (same code); the qsort call
+// inside the loop block 114 (same code).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

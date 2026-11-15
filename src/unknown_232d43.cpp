@@ -1066,6 +1066,12 @@ struct s_string_buffer
 // range 15 (both ranges become jl/jle compares); the chain as 1/3/4/7 then an 8-9 range 50 (481 bytes); the time arm's
 // minutes and seconds named before the format call 13 (same code); the time arm's two loads after the format string's
 // load 79 (474 bytes). All leave the 9 test in line.
+// Round 105 (m3 lane 10, plain): the 1/3/4/7/8 chain and an `else if (== 9)` arm whose loads go through `(long)(dword)`
+// casts, in a full build (earlier only compile-only) 50 (481 bytes, merged); the six equalities grouped as
+// `... || 7 || (8 || 9)` 50; fully right-nested 50 (481, 9 in line: grouping is normalised); a named `timed` bool for
+// the 2 test used twice, the values loaded under a seven-mode chain led by it, then `if (timed)` time else `%d` 115 (478
+// bytes: the bool is materialised with `sete`, never threaded); the chain through an inline helper returning the row
+// pointer or NULL, tested for NULL 112 (452 bytes: this file does not inline it).
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

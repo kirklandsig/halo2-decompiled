@@ -139,7 +139,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 }
 
 #include "vector_products.h"
-// score 1391 (was 1367): earlier 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
+// score 1375 (was 1391): earlier 1367, 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
 // 0x2078f0 twice with unknown38 0 then 1, 0x2079f0 on both its paths, 0x227990, 0x2294a0, 0x22a4b0), loop shapes (the found
@@ -557,6 +557,32 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // NOT kept: 1372 adds a search call absent from retail (15 calls versus 14);
 // its frame is 0x5c8 and extent 6220 versus 0x58c/6238. Other forms regress or
 // gain only two. Original indexed searches, snapshots, helpers and complete body restored.
+// m3 lane 15 r84 (plain each, 0x2056e0 matched throughout; control 1391). Phase regime: one statement or local name added
+// or removed flips commutative operand orders and same-size stack homes across the whole body, swinging the count by
+// about +-40 with no local change, so single forms here cannot be judged by count. Examples: `__assume(count <= 16)` ahead of
+// the wheel loop or of the contact loop 1374/1374 (6238 B, different operand orders each); the two threshold fields
+// (+0x18/+0x1c of the wheel definition) read at each use 1355 (6238 B), the wheel +0x24 field at each use 1363 (6211 B),
+// both together 1474 (6291 B); none kept. Other forms: one counter shared by the wheel and contact loops 1388 (the contact
+// loop is still strength-reduced; retail recomputes `imul i, 0xd8/0x4c/0x3c` each pass, counter in one stack slot shared
+// with the wheel loop); the skipped-contact arm first with `continue` 1371 (6243 B, skip call moved to the loop top, not
+// retail's layout; arms swapped, not kept); the threshold ratio's nested ternaries as if/else 1423 (6275 B); the mass
+// factor `(k + 1) * 0.5f` named 1434 (retail multiplies by 0.5 before the divide; `0.5f * (k + 1)` and `/ 2.0f` same code);
+// the tangent dot reading the contact field instead of its copy 1375 (a copy/field mix, not kept); the rigid-body index
+// at each use 1423; the impact strength at each use 1456 (6281 B); the field_70 update as one ternary add 1391.
+// Same code: local_27 and local_15 as if/else. Re-measured: the 0.2 s conversion inside the test 1398 (6265 B); the direct
+// `return a && b && c && d;` 1413 (6275 B; retail's exit shape, pops ahead of the last tests).
+// M3 lane 1 r104 (plain; the fast check CAVEATs this function): the duplicate-impact search's not-found test as
+// `local_75 >= local_33` 1391 -> 1375 at 6238 B (kept: the loop's own exit compare now threads past the re-test, as
+// retail's not-found path goes straight to the capacity test; the found exit still re-tests where retail jumps out). On
+// it: the search compare in the loop condition 1375 (same code); the capacity as the array's element count 1375 (same
+// code); local_12's negation on its first factor 1420; the steering sign as a named long 1375 (same code); the
+// velocity-change bound's product named ahead of the mass clamp (retail computes it there) 1377. Before it: the magnitude
+// helper taking its vector by value 1391 (same code as the snapshot copy).
+// P501: Standard whole-record
+// magnitude/ray/contact-publication/direction/tangent/normalized-force/carried-force/impact-normal transfers:
+// 1410/1427/1375/1380/1436/1388/1397/1417. NOT kept: All retain frame 0x5d0 versus native 0x58c. t03/t04 gains
+// 16/11 add one absent library call (15 versus 14), and t06 gains only three. All transfer contracts rejected;
+// original helpers and body restored. Original complete executable body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
@@ -778,7 +804,7 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
                         for (local_75 = 0; local_75 < local_33; local_75++)
                             if (local_35[local_75] == local_74)
                                 break;
-                        if (local_75 == local_33 && (dword)local_33 < 32)
+                        if (local_75 >= local_33 && (dword)local_33 < 32)
                             local_35[local_33++] = local_74;
                     }
                 }

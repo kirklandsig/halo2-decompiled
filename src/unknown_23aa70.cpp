@@ -116,6 +116,10 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // here stays as on main.
 // Round 194 (m3 lane 4, fast): no trial; from +0xba every difference is still the 0x17e670 call's register pair (ours the
 // source in EDX and the point in ECX, retail the source in ECX and the point in EDX), contributor code. Held patch unchanged.
+// Round 83 (m3 lane 2, fast): cosf/sinf in place of the double calls 16 (same code); the pitch's cosine named once and
+// used for i and j 16; the entry declared first with a palette-record pointer for the tag 60 (354 B); the direction's k
+// stored first 27; an early return when the structure has no value at f4 16. Still BLOCKED-BY 0x17e670 (contributor
+// code; held patch unchanged).
 // @retail 0x23aad0
 void __stdcall function_23aad0(long previous_address, long current_address, long count)
 {

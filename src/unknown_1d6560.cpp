@@ -104,7 +104,7 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // only with a one-use absolute-index local and a score-picked declaration order, and the one-use-free form scores 98
 // and demotes the matched caller 0x1d5bf0 to 213; retail keeps the object index in ecx (re-masking it in case 0) and
 // reads the type once.
-// score 96 (was 96): no local frame; retail reads the type once before the kind test (one type read shared by
+// score 96 (was 96; m3 lane 8 r166 at the end): no local frame; retail reads the type once before the kind test (one type read shared by
 // both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
 // component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must
 // preserve that incoming convention; every prior one-read type form flips the component/index pair (the caller
@@ -408,6 +408,16 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // 100/97/97/97/89/116/116/116. NOT kept: best gains only seven and loses matched caller 0x1d5bf0 to 13.
 // Original late flag reads, type observations and caller convention restored.
 // Header-first acquisition, one type read and body/index allocation remain.
+// m3 lane 8 r166 (fast with the file and the caller 0x1d5bf0, caller in brackets): re-measured lane 1 r102's one-read form
+// (object_index, `headers`, rigid body, byte type; case 0 through `headers[(word)object_index].object`) 36 at 256 B [13]: the
+// callee then takes the component in ECX and the index in EAX, so the caller's setup swaps EAX/ECX; with the declarations in
+// retail's load order (headers, rigid body, object_index, type) 95 at 256 B [171, 711 B]. Retail loads the header data first
+// into EDX, the body array into EBP and moves the index ECX -> ESI before `mov ecx, [eax + 8]`; no one-read form keeps that.
+// M3 lane 16 r119 (fast with the caller 0x1d5bf0 and the file's matched functions; caller in brackets; the current two-read
+// body is 268 B with its jump tables, retail 256): the main switch's type read indexed by `(word)object_index` 99 at 264 B
+// [0]; the kind-7 read so indexed 96 [13]; case 7's kind test as `kind == 6 ? 8 : flags & 8 ? 7 : 6` 96 (other code) [0];
+// the rigid body declared before object_index 100 at 264 B [13]; object_index as a `word` read once with both type reads
+// unmasked 100 at 260 B [208]. Same code: the kind-7 switch with `default: return 1;`.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

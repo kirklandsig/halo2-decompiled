@@ -720,6 +720,16 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // complete memmove: 161/161/160/161/161/160/178/178. NOT kept: no equality or native frame/home
 // recovery; original full captures, shared products, draws, row trees and entire body restored.
 // MiniMax H (11-14): no new form, no lower score (117): retail keeps the old direction in xmm3-xmm5 and sums the dot as (axis.k*old.k + axis.j*old.j) + old.i*axis.i, an order the shared helpers cannot produce, and the frame stays 0x28 against retail's 0x20 while the old direction's address reaches them.
+// M3 lane 12 r123 (fast with 0x118140, matched each time): no `old` copy, cross3f and dot3f on the global and the rows into
+// named scalars stored after them 173 (862 B; frame still 0x28, cross3f's output stays in the frame), with cross3f_staged 173,
+// with dot3f(&global, &axis) 173 (same code); that with the tail as `cos((real)(time * 0.001)) * cos(time * 0.0006f) +
+// (real)sin((real)(time * 0.005))` 158 (880 B: the tail is retail's x87 sequence, its float store +0x14 for +0x18), with the
+// projection before cross3f 163 (880 B). Body unchanged.
+// M3 lane 16 r119 (fast with 0x118140, 0x117c80, 0x30bf0, all matched; control 117; both sides end in a plain `ret`, the
+// convention is component EAX/output EBX in both): a `dword *seed` for the random state taken at entry and used by both
+// draws 136; cosine computed before sine as two statements 118; the rotation pair through sinf/cosf 117 (other code); the
+// definition lookup after the time product 160; the cross product as axis x old with the rows adding it 134 (881 B).
+// Same code: cosf for the opening oscillation, the record in its own local first, the axis drawn before sine/cosine.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -843,8 +853,12 @@ public:
 static inline byte *surface_tag(long index) { return g_4e3b44[index & 0xffff].bytes; }
 static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)(base + offset); }
 
+// MiniMax S (11-14): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where ours calls them
+// (both sit in src/unknown_01cf50.cpp, which is not this lane's file) and passes 0x4b2d0's tag, group and variant in
+// EDX/ECX/EAX against our three stack arguments (fixed by the header), so the frame, the attribute scans, the side
+// loop and the outer vertex calls stand as they are.
 // MiniMax C (11-01): no new form, no lower score.
-// score 322 (was 422): frame 0x2c, the attribute scans, the side loop and the outer vertex calls are retail's; left are
+// score 322 (was 322): frame 0x2c, the attribute scans, the side loop and the outer vertex calls are retail's; left are
 // 0x1ccb0/0x1cd90 called where retail inlines them (BLOCKED-BY 0x1ccb0: its /Ob1 file), 0x4b2d0's convention (retail
 // tag EDX, first ECX, second EAX, third/fourth on the stack) and the stack homes of the scan results and the sign.
 // Earlier: frame 0x44 versus 0x2c; attribute scans and D3D call expansion differ.
@@ -928,6 +942,11 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // M341: Actual typed descriptor on retained binormal/position graph, uniform type/count
 // observations and per-scan defaults, masks 0..7: 422/439/422/439/424/433/423/433. Original
 // descriptor/searches restored; frame, application convention and outer API expansion remain.
+// M3 lane 12 r123 (fast with 0x117060): the lighting pointer NULL before the lookup re-measured 315 (a gain of 7); on it the
+// definition read after the lighting setup 334, the material index by if/else 315 (same code), the strip loop's vertex
+// and rest pointers replaced by indexed reads 402 (1328 B), the body under `if (function_117100(index))` 315 (same code).
+// 0x4b2d0, 0x1ccb0 and 0x1cd90 are this machine's; retail's 0x4b2d0 takes `first` in ECX (ours on the stack: its body puts
+// it in EBP), which also decides which dead parameter homes the four scans reuse here.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {

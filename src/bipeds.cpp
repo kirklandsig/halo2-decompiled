@@ -1557,7 +1557,8 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // MiniMax B (11-14): no new form, no lower score (566); retail's frame is 0xfc against our 0xf8 (one dword more) and its
 // definition pointer sits at the top of the frame where ours sits mid-frame, so every stack home after the prologue is four
 // bytes out; the speed-scale block also computes `1.0f - a*b` before the helper's multiply where ours multiplies first.
-// score 566 (was 585): earlier 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
+// Earlier score 566 (was 585): earlier 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
+// MiniMax S (11-14): no new form, no lower score (566): retail's frame is 0xfc against this build's 0xf8 and the call to 0x1e5bb0 still passes seventeen values where retail passes twenty-one, the number of arguments being the callee's own declaration to decide; the declaration of that callee and the callers' parameter order are in files this lane may not edit.
 // material and animation homes differ.
 // MiniMax B (11-13): no new form, no lower score (566); the frame is still 0xf8 against retail's 0xfc, and the call to 0x1e5bb0 still passes 17 values where retail passes 21, which the callee's own declaration decides.
 // MiniMax I (11-09): no new form, no lower score (588); our call to 0x1e5bb0 passes 17 values where retail passes 21
@@ -1861,6 +1862,19 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // Apparent gains add out-of-line bound calls absent from the native inline selections.
 // P476: Standard typed airborne/turning/walking-mode predicates, masks 1/2/4/3/5/6/7, then root sentinel producer. Scores 646/640/620/702/626/675/726/764.
 // NOT kept: unmatched diagnostic source forms; original executable body restored.
+// P497: Actual ground-body receiver, nearest contact outputs and discarded query-output last-use scopes, seven subsets then all with header declared at use: 566/566/566/566/566/566/566/566.
+// NOT kept: no native frame-word or material/airborne/animation-home repair; original entire body and shared helpers restored.
+// P499: Complete standard ground-speed/boost/walking-recovery arithmetic, seven subsets, then eye-height
+// correction: 649/674/594/728/698/700/778/864. NOT kept: All regress and add calls absent from retail; boost
+// recovers frame 0xfc only while growing away from native length. Gravity/material/airborne homes remain
+// unresolved. Original complete executable body restored.
+// P502: Case-six target outcomes, present then missing target first, each native/setter/memcpy/memmove fallback:
+// 570/558/570/576/563/557/568/578. NOT kept: 558/557 reach retail extent but retain frame 0xf8/0xfc and delayed
+// default copies after root lookup. Original body/helper restored.
+// P505: Whole existing-record iterator copies at coherent velocity/facing/target boundaries, seven subsets then
+// complete backward copy: 636/655/587/678/644/667/688/688. NOT kept: All regress; velocity-only recovers native
+// extent but misses entry scheduling, while other transfers shrink away from native length and do not recover
+// gravity/material/airborne homes. Original complete executable body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3419,6 +3433,11 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
+// MiniMax E (11-14): no new form, no lower score (324): the frame is still 0x48 against retail's 0x4c, retail still
+// sign-extends the state byte at +0x34b where this build zero-extends it (the signed view measures 361, a gain of one
+// on a function still above 30, so it is not kept), and retail still keeps the flags bit 9 in a stack slot before the
+// 0xe16b0 call where this build computes the bit as part of the earlier held test; that slot needs a local whose
+// address is taken, a form this lane may not use, so the body stands.
 // score 324 (was 362): frame 0x48 against retail's 0x4c (retail's dead flag byte before the 0xe16b0 call, a HELD
 // contributor form below), the +0x34b state byte zero-extended, scalar, centre and result homes. Round 85 (m3 lane 13) at
 // the end of this note; the earlier first lines are kept below as "Earlier first line".
@@ -3955,7 +3974,8 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // MiniMax B (11-14): no new form, no lower score (548); the prologue already differs - retail computes the pool offset in EBP
 // (pushing EBP before the shift) and keeps it there, while ours computes it in EBX and pushes EBP later, so the first field load
 // and every call argument after it are one register out.
-// score 548 (was 561): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
+// Earlier score 548 (was 561): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
+// MiniMax S (11-14): no new form, no lower score (548): this build's frame is 0x7c against retail's 0x78, and the biped index and the definition pointer sit in swapped registers, so every home after the prologue is four bytes out and the flight-call arguments are one register out; the parameter order is retail's and the callers are in files this lane may not edit.
 // MiniMax S (11-09): no new form, no lower score (605 in the reduced build); retail keeps the biped
 // index in EBP and the definition pointer in ECX with a home at +0x18, ours keeps the definition in
 // EBP and the index in EBX with a home at +0x1c, and retail's changed-result byte sits at +0x11
@@ -4164,6 +4184,22 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // equality; original entire body, dots, planar tree and includes restored.
 // P476: Standard typed changed/special/left predicate-result contracts, masks 1/2/4/3/5/6/7, then wall-bit contract. Reduced control 612 versus full 548. Scores 660/673/702/662/727/722/738/782.
 // NOT kept: unmatched diagnostic source forms; original executable body restored.
+// P497: Serial walking/aim angle, sine and cosine workspaces, seven subsets then all with shared bounds: 602/607/609/603/603/607/610/646 (reduced control 614; full 548).
+// NOT kept: every reduced frame remains 0x7c versus native 0x78; unsupported scalar-storage interaction is unmatched. Original complete body restored.
+// P499: Complete standard vector walking-cosine/axial/pitch contributions, seven subsets, then perpendicular
+// contribution: 790/765/736/831/891/847/914/998. NOT kept: All regress against reduced control 612 and grow beyond
+// native 2712 bytes; added calls and larger frames do not recover changed-result or flight homes. Original
+// complete executable body restored.
+// P502: Existing yaw-helper vector/axis/output ownership, seven subsets then immutable inputs:
+// 679/686/682/686/679/686/686/686. NOT kept: all regress against reduced 614, shorten away from retail and miss
+// native frame/result/flight homes. Original body/helper restored.
+// P505: Existing yaw vector/axis/both reference contracts and forced original expansion, then destination-pointer
+// return under all four object contracts: 614/614/614/614/614/614/614/614. NOT kept: All eight tie reduced control
+// 614 versus full baseline 548; native result/flight homes and reduced frame mismatch remain. Original helper and
+// complete body restored. Original complete executable body restored.
+// P508: Complete turn-side-oriented overshoot, branch/selection and unary/zero-subtraction
+// producers: 607/614/607/607/607/614/607/607 (reduced 614, full 548). NOT kept: seven-point
+// leads miss the gate, frame stays 0x7c versus native 0x78, and sign stand-ins miss equality. Full body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4688,6 +4724,22 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // P475: Whole-coordinate standard range origin/target/direction producers, seven subsets
 // then all backward: 399/440/390/496/411/438/488/485. NOT kept: native
 // matrix/origin/pivot homes not recovered; original transfers and complete body restored.
+// P497: Actual offset/placed/delta last-use scopes, seven subsets then complete graph with early normalization rotation: 336/336/336/336/336/336/336/336.
+// NOT kept: no native matrix/origin or low pivot-home repair; original complete body restored.
+// P499: Standard binary coordinate offset/placement/displacement transforms, seven subsets, then both collision
+// target producers: 345/442/315/421/386/434/477/401. NOT kept: The 315 lead adds an out-of-line transform absent
+// from retail and moves origin to +0x54 versus native +0x40; other forms regress or enlarge the frame. Original
+// complete executable body restored.
+// P502: Collision-target fallbacks, nested then short-circuit, each native/setter/memcpy/memmove:
+// 307/386/307/403/334/351/334/418. NOT kept: 307 moves default copies after the collision query; retail copies
+// before it. Matrix/origin homes remain displaced. Original body/helper restored.
+// P505: Actual complementary pointer standard/iterator/ordinary exchange, then contact-record
+// standard/iterator/range/ordinary/plain-loop exchange: 393/393/336/424/424/421/379/377. NOT kept: Every exchange
+// ties or regresses; payload exchanges disturb native frame homes, and no form recovers native matrix/origin
+// storage. Original complete executable body restored.
+// P508: Actual first/second/both contact-property zero defaults at declaration or query,
+// then paired NONE defaults at those sites: 351/336/351/358/336/358/377/368.
+// NOT kept: defaults add code or tie without native origin/matrix/property-home equality; original full body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -6417,6 +6469,11 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 // 16-bit value; the effect helper's parameter convention (src/unknown_187ec0.cpp) is not this lane's:
 // BLOCKED-BY 0x188180.
 // MiniMax G (11-14): no new form, no lower score (80): VC7.1 folds retail's redundant `jne` after the count test into one test, so its lea/test/jge/jne cannot be written.
+// MiniMax C (11-14): no new form kept, no lower score (80): the count test as count - 1 >= 0 || 0 == count - 1 (or with a last local) does compile to retail's lea/test/jge/jne exactly — MSVC folds count - 1 == 0 but not 0 == count - 1 — but the tail then pairs with retail's and scores 83 (82 with the g_47f05c global), so it is reverted; the global alone is 79 (under the bar), the typed zone 125, and the permuter found nothing below 83.
+// MiniMax D (11-14): no new form, no lower score (80): the frame is retail's 0x94 and what is left is register choice -
+// the contact point load lands in edx against retail's eax, the marker position copy rotates eax/ecx/edx, the flag byte
+// test uses al against retail's cl, the material word comes from cx against retail's dx, and the down vector's three
+// components are still loaded in reverse and stored after the argument pushes.
 // score 80 (was 138; earlier 168, 154): the frame is retail's 0x94 now (the foot marker in its own block, the down vector copied
 // after the point offset through vector3f_assign, and the count test as count - 1 >= 0); what is left is register choice — the
 // contact point load lands in edx against retail's eax, the marker position copy rotates eax/ecx/edx, the flag byte test uses al
@@ -6611,6 +6668,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 /* applies the biped's character physics move: its facing and up, its
    animation names, its movement animation's rate, crouching and grabbing,
    and its new velocity (or, asleep, its new position) */
+// MiniMax E (11-14): no form lowers it (586 in the reduced build, 579 in the full one); retail's homes are animation_id, state
+// and definition at 0x24, 0x28 and 0x2c, ours state, definition and animation_id at the same slots, and retail keeps its early
+// `return still` out of line at 0xe2d6d where ours has it inline; the hand-written 0xb7430 copy still inlines 0x1c4a80 (22
+// extra instructions) and that needs a flags change in another file.
 // MiniMax R (11-09): no new form, no lower score (594 in the reduced build); the definition pointer and the state pointer take the next stack slot round from retail's, and the body is still 87 bytes longer than retail's.
 // MiniMax R (11-06): no new form, no lower score (594 in the reduced build); the frame agrees and the tag, state and animation homes of the note below are unchanged.
 // score 579 (was 588): round 101 (m3 lane 12) notes are at the end of this note. Earlier at 588 (was 648): frame 0xd0 agrees; tag/state/animation homes, byte/result residency

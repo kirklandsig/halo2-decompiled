@@ -472,12 +472,6 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
-// MiniMax R (11-14): the emitter list test wrapped around the loop with the offset's zero store
-// inside it, and the scale declared before the multiplier, measure 39 (was 42) at 1130 bytes; not
-// kept, since the gain is under eight and the score stays above 30. Left: row i of both rotations
-// sums the up product before the forward one, the two saved registers are reloaded in the other
-// order after each property call, the copy's second and third components swap, and the branch
-// offsets and the two trailing bytes follow from those lengths.
 // score 42 (was 42): left: the offset's zero store before the list test, the 1.0 defaults' order, three
 // reload pairs and row i of both rotations. Round 176 (m3 lane 5, fast): on indexed emitter definitions with
 // scale first (re-measured 113 at 1136 B; every integer difference fixed, only the rotations differ: VC
@@ -830,6 +824,22 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // declared at the function top 42 (same code). Re-measured: indexed definitions 115 (1136 B); the unused-local scan of line
 // 338's four structures plus scale-first alone gives nothing under 40 (scale first 40/107/51/51/55/55/55/68 for n = 0..7).
 // Body unchanged.
+// MiniMax R (11-14): the emitter list test wrapped around the loop with the offset's zero store
+// inside it, and the scale declared before the multiplier, measure 39 (was 42) at 1130 bytes; not
+// kept, since the gain is under eight and the score stays above 30. Left: row i of both rotations
+// sums the up product before the forward one, the two saved registers are reloaded in the other
+// order after each property call, the copy's second and third components swap, and the branch
+// offsets and the two trailing bytes follow from those lengths.
+// M3 lane 3 r242 (fast, base 42): the frame origin copied once per emitter after the frame query and the translation adding
+// that copy 274 (1152 B); the frame rotation copied once per emitter, both rotations through the copy 373 (1199 B); the
+// position rotated into a separate point and translated back into the callback point 183 (1098 B); the three per-particle
+// property tests as `(flags & n) == 0` 124 (1136 B); the emitter-level scale test as `flags & 4` 210 (1137 B). Body unchanged.
+// M3 lane 8 r167 (fast with 0x2243c0; control 42, register-masked 15: the offset's zero store ahead of the list test and
+// row i of both in-place rotations, (left*y + up*z) + forward*x where retail sums (left*y + forward*x) + up*z): the
+// translated position declared as a vector3f copied from the particle's position (no casts at the rotation) 42 (same
+// code); the motion declared ahead of the translated position 50; the colour declared ahead of the rotation outputs 42
+// (same code); on indexed definitions with scale first (re-measured 113 at 1136 bytes, masked 34, every integer line
+// retail's, all six rotation rows reordered) the vector3f position 113 (same code) and the motion declared first 121.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1500,11 +1510,6 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
-// MiniMax R (11-14): no lower score (47): the availability's zero store still comes before the
-// second definition call and the availability is still made from the query result arithmetically;
-// moving the clear to just before the view read measures 125. Left: the availability's store order
-// and its arithmetic form against retail's branch, the view's reload after the attachment call, and
-// the two flag byte homes.
 // score 47 (was 47): availability clear/production and later view observation remain;
 // what still differs is the same-view flag: ours writes its true value to the stack byte
 // before the availability query, retail keeps the flag in BL and writes the true value only after the owner
@@ -1918,6 +1923,25 @@ bool function_17afd0(long effect_index, long value);
 // camera test reading the view global (view local elsewhere) with the `== 0` availability 110 (500 B) [5]; the camera test on
 // the global with the early clear at the loop body's top 143 (506 B) [17], with the `== 0` availability as well 143. Body
 // unchanged.
+// MiniMax R (11-14): no lower score (47): the availability's zero store still comes before the
+// second definition call and the availability is still made from the query result arithmetically;
+// moving the clear to just before the view read measures 125. Left: the availability's store order
+// and its arithmetic form against retail's branch, the view's reload after the attachment call, and
+// the two flag byte homes.
+// M3 lane 3 r242 (fast; base T = the 12 form above: the view global at each use, the availability false then set on success,
+// same_view true before the availability and cleared by one `owner == NONE || g != owner || !available` test, re-measured 12
+// at 498 B with the true store's place the only difference): on T the true store before the second definition call 25, before
+// the owner lookup 22, above the effect-index read 25; the clearing test written `!(owner != NONE && g == owner && available)`
+// 12 (same code), as the plain `&&` reassignment after the true default 138 (510 B), placed after `attached` 59 (501 B), split
+// into the owner/view test and `else if (!available)` 105 (502 B), availability first 41. No match; body unchanged.
+// M3 lane 8 r167 (fast; T = the 12 form above, re-measured 12 at 498 bytes, masked 2: only the `mov byte [esp+0x18], 1`
+// placement; P = the view global at each use, the owner as if/else, the availability false after the owner and set on
+// success, plain `&&` same_view and attached, re-measured 138 at 510 bytes). Retail's flag code is the plain `&&`
+// expression's pattern (`test bl, bl; mov same, 1; jne` into attached past its availability test, `mov same, 0` at the
+// false label) with same_view in a stack byte and the availability in BL, which T gets only through its early true
+// default. New: T with the owner as a ternary 12 (same code); T with `draw = view_pass ? same_view : !same_view` 101 (508
+// bytes); P with that 140 (512 bytes); P with attached computed ahead of same_view 102 (490 bytes); P with the
+// availability's clear between the second definition call and the owner lookup 141 (510 bytes). All match-only; body kept.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

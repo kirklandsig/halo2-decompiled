@@ -507,6 +507,33 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // seven families then continuing-output-first completion: 880/894/962/904/886/885/955/955.
 // NOT kept: native absolute-value shape and byte equality unrecovered; every form
 // lengthens the body. Original predicates, helpers and complete body restored.
+// M3 lane 16 r118 (fast with 0x18bb80 and the 0x188f90/0x18a5a0 family, control 866): the override target stored tag, decibels,
+// then the 1.0f gain 900 (3297 B); the decibel floor as the literal -64.0f in the three helpers 866 (identical code); the matched-sound
+// overrides under `if (sound->flags & 4 || sound->flags & 2)` with one other-sound pointer 906 (retail's block at 0x18b18d in shape,
+// `and eax, 4; jne; test cl, 2; je`, but a test repeated inside its guard: lead only); loop_path_start's allocation through the existing
+// looping_sound_new_attached(tag, NONE, NONE, 0) 909 (3357 B: inlined, and both start sites become retail's exact `mov word [ecx+4], dx;
+// or byte [ecx+5], 1` sequence, where the hand copy folds the two flag writes); with the start's second half through one datum pointer
+// (0x18a5a0's own shape) 886 fast and plain (3337 B). Lead: loop_path_start is 0x18a5a0 over 0x188f90 (0x18a5a0 sits under
+// auto_inline(off)); loop_path_logarithmic/linear are 0x2197f0/0x2195f0 (/Ob1, called out of line).
+// P491: Float exponential/logarithmic/absolute-value API families, seven subsets then
+// complete standard overloads: 866/866/866/866/866/866/866/866. NOT kept: no exact native math/entry/home repair;
+// original APIs, logarithmic result producer, helpers and complete body restored.
+// P493: Shared fade-step conditional/branch/divisor/result producers, ordinary
+// then forced inline: 890/916/893/916/890/916/893/916. NOT kept: all regress; native
+// duration reloads, entry zero and target/query/count homes remain. The new
+// producer at both fade sites and all complete executable edits are restored.
+// m3 lane 4 r199 (fast with 0x18bb80, 0x18d730; masked = register-masked aligned count, control 866, masked 549). Same three
+// call targets as retail. The entry zero (ESI in retail) is the first pass's choice count, which retail keeps in ESI and
+// stores back at each add (`inc esi; mov [F+0x24], esi; lea esi, [esi + esi*4]; lea esi, [esp + esi*8 + 0x10]`): lane 16
+// r114's counted lists (listed 933-955). The 14 g_44a0b4 reloads need an address-taken global (listed 922/938; const alone
+// keeps 5 reads), and a const g_44a0b4 would need its `extern` in src/sound_portal_paths.cpp (a held file) changed too,
+// as MSVC mangles const into the name. New (the PIN macro, whose re-evaluated argument matched 0x1e9ce0 this round): the
+// existing PIN_126660 at the six pin sites 853 (3327 B, masked 559: a length-term drop; at the target loop retail loads
+// the step once into XMM3 where the macro re-reads it, so not kept), at the fraction and blend sites only 866 (other
+// code), at the four step sites only 856 (masked 567); inside loop_path_logarithmic as well (same code), all eight 853
+// (p1's code); the target loop's sound through loop_path_get at each use 909 (3361 B); the choice-to-target loop through
+// `choices[i]` at each use 886 (3346 B); the pin helper written `value < lower` first (same code); lane 16 r91's nested-if
+// first loop with the macro at every site 928 (3305 B, retail's ESI entry zero).
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

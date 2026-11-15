@@ -1376,6 +1376,7 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // result spills where retail keeps it in a register; the parameter order that would fix the swap is
 // retail's, and the callers' declarations are in files this lane may not edit.
 // MiniMax S (11-11): no new form, no lower score (529): retail hands this function its block in eax and its query in edx while this build swaps them, and its frame is 0x2c against retail's 0x28.
+// MiniMax S (11-14): no new form, no lower score (529): re-measured this round; retail still hands this function its block in EAX and its query in EDX while this build swaps them, so the frame stays 0x2c against retail's 0x28 and the selection result still spills where retail keeps it in a register; the parameter order that would fix the swap is retail's, and the callers' declarations are in files this lane may not edit.
 // score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (ours ends `ret 0xc` as retail).
 // MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
 // and its query in edx while ours swaps them, and the parameter order is not ours to change.
@@ -1663,10 +1664,39 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // field-first 529 (same code).
 // P476: Standard first-product-seeded input/normal/ambient magnitude reductions, masks 1/2/4/3/5/6/7, then explicit operations; normal/ambient forms lose matched 0x3db00. Scores 552/603/552/619/531/603/624/681.
 // NOT kept: unmatched diagnostic source forms; original executable body restored.
+// M3 lane 5 r182 (fast with 0xd4080, 0xd1e10, 0x3db00, 0x3dfe0): direction0's normalize through the existing normalize3d 540
+// (retail's x87 magnitude shape appears); with direction0 as `0.0f - normal.x` per component 580 (2135 B: the k pin folds);
+// the normal's normalize through normalize3d 540 (2174 B). Retail scales color1 through the register that holds
+// &record->color1 for the copy ([ebx] here, [edi] in 0xd4080): a file-local in-place `*=` color-scale helper for the three
+// scalings in both functions gives it, 524 (2191 B, masked 281 -> 270; 0xd4080 467), with both length scales ahead of
+// either use 556. Retail-order rewrite (lead, build/r182/lead-d37f0-d4080.patch, match-only as a set): parameters as
+// (type, query, block) with 0xd4080's call to match, one count test, length through magnitude3d ahead of
+// `color3f adjusted = *lightmap;` and `vector3f normal = *input_normal;`, bias added in place, square right after the
+// direction1 negate, lightmap pin ahead of the base pin, `return true` closing the found block, lighting_rotate reading the
+// axis through `vector3f const *axis = g_4687b0` and the helper: 562 (2172 B, frame 0x28, 566 instructions as retail,
+// masked 184); `result = true;` there instead 540 (entry and scan retail's but for the xor order); `parameters` declared
+// before `result` 538; plus the bias in a local at its use 452 (2189 B, retail's length; 0x3db00 kept, 0xd4080 449);
+// the bias local right after the lightmap copy 568; early `return false` 583. Left on 452: the normal copy through a
+// copied query pointer, the bias load scheduled before the normalize, the length and normal magnitude in each other's slot
+// (retail keeps the length in record's argument slot), the normalize's j/k operand order, the rotation's sine/dot
+// interleave. Only acceptable forms (order, one test, copies, bias local, magnitude3d, helper, live axis) 515 but 0xd4080
+// 454; without the live axis and helper 567 and 0x3db00 lost (8). On 452: the normalize's j/k as `*=` 452 (same code);
+// lighting_rotate's projection (k, i, j) before the cross product 454 (masked 162; 0xd4080 433): retail's dot order differs
+// between the two functions ((k + j) + i here, (k + i) + j in 0xd4080), so the shared helper's order cannot give both.
 // P490: Standard forward coordinate copies at input/secondary/ambient transfers,
 // masks 1/2/4/3/5/6/7, then backward complete transfers: 571/597/544/596/577/597/601/596.
 // NOT kept: all regress and shorten away from retail; secondary forms also lose the matched
 // caller. Original native copies, helpers and complete body restored; frame/result/carrier gaps remain.
+// M3 lane 8 r167 (fast with 0xd4080, 0x3db00, 0x3dfe0; base = lane 5 r182's lead patch, re-measured 452 at 2189 bytes, 0xd4080
+// 449, 0x3db00 MATCH): the mask written ahead of the flags, `(1 << (type + 1)) & flags`, 452 (VC keeps `test ebx, eax`);
+// the length renamed to sort after the normalize's magnitude (normal_length, size) 452 each (the two slots stay swapped);
+// the query's three leading reals as a vector3f member read as `query->normal` for the normal copy and the length, with
+// and without the input_normal pointer (0xd1e10's three stores renamed with it, 542 unchanged), 452/452 (retail's `mov
+// ecx, edi` copy pointer does not appear); the bias local ahead of the length, right after the normal copy, right after
+// the length store 568/568/569 (2176 bytes); the normal's square as dot3f(&normal, &normal) 524 (2198 bytes).
+// P500: Complete standard RGB bias/reflection/scale arithmetic, seven subsets, then both luminance producers:
+// 530/983/650/1012/660/1080/1110/1343. NOT kept: All regress; reflected/scale forms grow beyond retail and do not
+// recover native frame/result/carrier shape. Original complete executable body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1895,6 +1925,18 @@ real function_30bf0(vector3f *vector);
 // local) 379 (aligned 297, masked 186: closer in shape, one point up), the two colours unpacked lightmap first 378 (aligned
 // 325, different code), color0 formed as `lightmap.red * scale0` with no copy 470 (0x3db00 drops to 12), `value1c` stored
 // first in the fallback 475 (1891 bytes).
+// M3 lane 5 r182 (fast with 0xd37f0, 0xd1e10, 0x3db00, 0x3dfe0; masked = register/stack-masked aligned count, 200 at 378):
+// the in-place `*=` colour-scale helper shared with 0xd37f0 467 (1888 B); with direction2 copied, negated and rotated in
+// place 377 (1875 B, frame 0x40, 493 instructions as retail, masked 163); plus the final clamp per field with lighting_pin
+// (lighting_pin_color's body written out, match-only: retail loads each next compare before the previous store, which the
+// helper's separate in/out pointers block) 364 (masked 150); the per-field clamp alone 446, with in-place rotation only 460,
+// with the helper in this function only 450. Match-only diagnostics on 364: `bool mobile = false; if (...) mobile = true;`
+// 348 (retail's early flag store); + squared length spelled (k, i, j) 342; + `real square` right after the direction1
+// negate 457 (1892 B, masked 139, zero/one constants in retail's xmm4/xmm6); + the colour2 positive checks as select stores
+// 447 (masked 124); + lighting_rotate reading the axis through `vector3f const *axis = g_4687b0` 450 (1849 B, masked 67;
+// 0x3db00 kept; 0xd37f0 606); + each scale applied as computed 452 (masked 74). Left at masked 67: 0xd37f0's convention
+// (block EAX, query EDX: BLOCKED-BY 0xd37f0's body), the table load retail hoists above the NONE test, the rotation's
+// sine/dot interleave, the normalize's j/k operand order and direction0 written through a pointer register.
 // MiniMax G (11-14): no new form, no lower score (378): re-measured in the batch; the frame is 0x4c against retail's
 // 0x40, and the normal copy and the limited, rotation and colour homes still sit at other offsets.
 // @retail 0xd4080
@@ -2264,7 +2306,6 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // the body; the calls and their arguments are in retail's order.
 // MiniMax C (11-06): no new form, no lower score.
 // MiniMax H (11-13): no new form, no lower score (542); the locals sit in other stack slots and the indexed compare uses the other operand order.
-// score 542 (was 542): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
 // score 542 (was 542; earlier 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
 // w14B (11-06): walked against retail statement by statement, both arms and every dynamic/base weight path:
 // no logic difference (offsets, constants, condition directions, call arguments, result values and the
@@ -2532,6 +2573,15 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // and offsets masked 110 against 302): left there are the frame homes and the two inlined helpers (13
 // extra instructions shift the tail).
 // MiniMax R (11-11): no new form, no lower score (542): the argument split and the body's block schedule still differ from retail's, and the two inlined helpers live in files this lane may not edit.
+// M3 lane 5 r182 (fast with 0xd37f0, 0xd4080, 0x3db00, 0x3dfe0): the hand-written `for (component < 3)` scaling loops raise
+// the estimated frequency of the calls after them, so LTCG inlines the later 0x24590 length and the second arm's 0x13da30;
+// as straight statements both stay calls as retail. Base scaling as three `*=` 606 (3108 B, 26 calls), through the existing
+// vector3f_scale 568 (3131 B, 26 calls); both normalizations as statements 606, through vector3f_scale 624 (3119 B); all three
+// loops as statements 657 (3057 B, 27 calls); all three through vector3f_scale 675 (3068 B, 27 calls; listed form, 648 before).
+// Per-arm a, b, c sample pointers re-measured 625 (3147 B, 25 calls); with all loops as statements (match-only, one-use
+// pointers) 641 at 3075 B, 27 calls, masked aligned 292 -> 84: retail's head-merged vertices[0] * 5 appears. Left there:
+// retail's EBX zero from the 0x24490 test through the per-path result/validity stores (result at +0x24, ours +0x30), the
+// luminance and normal homes, and the base length stored then compared from memory.
 // MiniMax G (11-14): no new form, no lower score (542): re-measured in the batch; the frame agrees at 0x90, but the
 // status, mesh, colour and sample homes still sit 0xc bytes below retail's, and the second arm's 0x13da30 lookup
 // still expands here where retail calls it.

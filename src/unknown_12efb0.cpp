@@ -591,6 +591,24 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // enlarge frame to 0x4828. Original completion, observations and full body restored.
 // M3 lane 15 r83 (fast, 0x12e5e0 matched each time): `__assume` on arg_3, arg_1, `local_4 <= 512`, local_19 and local_13
 // 607 each.
+// m3 lane 1 r103: reviewed (aligned 487, register-masked 222 on this body). The first structural difference is still right after
+// the 0x130f60 call: retail moves the result to EDX, makes NONE in EAX and compares the palette byte in CL (`cmp cl, al`); ours
+// reads the short slot with `movsx bx` and keeps NONE in ECX, the result in EAX (the tag arm then compares `eax, ecx` where
+// retail has `edx, eax`). Every lever for that point is listed above; no untried natural form found, no trial run.
+// P492: Intensity destination owns zero-alpha branch, two branch polarities,
+// conditional contribution/destination sum, short then char palette:
+// 775/775/698/775/778/778/637/778. NOT kept: no byte equality; original
+// input capture, helpers, palette and full body restored at 607.
+// m3 lane 9 r123 (fast with 0x12e5e0/0x130f60/0x131030/0x1317a0): the NULL-record `goto` removed by declaring the record
+// before the slot test and testing it after (`if (record) ... else if (slot == NONE && tag != NONE) ... else default`)
+// 1087 (4151 bytes: VC keeps the repeated slot test); the field_6c store first in its publication block 604 (statement
+// order only: retail stores it before the last two fields, ours after them); the tag arm's third-accumulator weight added
+// before the three merges 607; every cluster record field indexed through local_0[local_11] (no record pointer) 609;
+// a walking record pointer for the loop 794 (3861 bytes).
+// P504: Independent immutable destination/source pointer bindings at scalar, merge, four-channel and
+// normalized-publication helper boundaries: 607/607/607/607/607/607/607/607. NOT kept: All eight tie 607 at 3832
+// bytes. Provider-return/NONE, palette/selected-record and zero/SIMD carriers remain unchanged. Original pointer
+// contracts, alias-safe input captures and complete helpers restored. Original complete executable body restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

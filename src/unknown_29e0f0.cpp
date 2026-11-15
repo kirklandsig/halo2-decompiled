@@ -78,7 +78,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
-// score 382 (was 382; 382 before): earlier 391, 390; frame 0x64 and the node-pointer/group-table roles (EBX/EBP) agree; the selected defaults' homes,
+// score 382 (was 382): earlier 382, 391, 390; frame 0x64 and the node-pointer/group-table roles (EBX/EBP) agree; the selected defaults' homes,
 // point bitmap, endpoint homes and x87 scheduling differ.
 // MiniMax R (11-11): no lower score (382); retail's selected point index is compared as a dword where ours is compared as a word and
 // retail's selected endpoint as a word where ours is compared as a dword, retail's group index is a sign-extended 32-bit value parked in the
@@ -484,6 +484,31 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // regresses. Original Boolean state, selected/default homes, bitmaps and whole body restored.
 // M3 lane 15 r83 (fast, 0x29e730 and 0x29de20 matched each time): `__assume` non-NULL on local_11, local_10, arg_3,
 // arg_4 and local_10->field_84 382 each.
+// m3 lane 1 r103 (fast with 0x29e730/0x29de20, both MATCH unless noted): round 64's recipe (as saved by m3 lane 7 r146) rebuilt on
+// this body with the scenario global read at its two uses re-measures 155 at 1596 B (aligned 22, masked 11). All 22 aligned lines
+// follow from one choice: ours loads arg_0 into ESI before the third distance's index `lea` and reloads arg_3 into ECX at the
+// 0x29de20 call; retail keeps arg_3 in ESI from the range test to the call and loads arg_0 into EDX after the `lea` (`mov ecx,
+// esi; mov esi, edx`). On the recipe: arg_0/arg_3 renamed to sort either way 155 (same code); the first pair distance through a
+// helper taking (arg_0, point) with the same arithmetic 155 (same code); that distance named before the sum 426 (1612 B); arg_3
+// read once through its own address into a table local for the range test and the call 155 (same code; 0x29e730 then 6).
+// Diagnostics (value-changing): the first pair distance from the marker point, so arg_0 feeds only the call, 206, and with both
+// pair distances through the scalar helper too 209: arg_3 is still reloaded at the call (`mov esi, [arg_0]; mov ecx, [arg_3]`),
+// so our build never carries the range test's arg_3 to the call even with ESI free; both distances through the scalar helper
+// alone 182 (same arg_0/ESI choice).
+// Permuter on the recipe (600 s, seed 103, 40 tries): best 122, all from forbidden or steering edits (a volatile endpoint start
+// index, a volatile store of the marker flag, conditions split into flags, constant temporaries); nothing keepable.
+// P492: Live link-count/list-base/current-group-point field references,
+// seven const subsets then all mutable: 382/382/382/382/382/382/382/382.
+// NOT kept: selected/default and bitmap/pass homes unchanged; original
+// field expressions, metrics, traversals and complete body restored.
+// m3 lane 9 r123 (fast with 0x29e730/0x29de20): the length helper's deltas taken arg_1 - arg_0 382 (same code); the
+// zone-entry pointer declared after the field_70 table pointer 401; the record search as a while loop with the index
+// stepped after the test 382 (same code); the pass's path sum written start to end 382 (same code); the length helper's
+// arguments swapped at the pass start and the visited point 382 (same code: the x87 square order does not follow them).
+// P504: Independent first/second input transfers inside squared and length metrics, memcpy then memmove at each
+// existing ingress: 427/498/421/479/555/557/551/516. NOT kept: All eight regress; squared copies disturb the
+// native frame/default graph, length copies also enlarge code. No qualifying byte equality. Original pointer input
+// observations and helper arithmetic restored. Original complete executable body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

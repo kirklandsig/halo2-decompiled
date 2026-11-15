@@ -1236,6 +1236,13 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // P483: Complete forced/enabled short-circuit selection as disjunction/conjunction,
 // bool/byte/short/long result: 348/348/348/348/348/348/348/348. NOT kept: no native sentinel/squad/query
 // home repair; original query defaults, replacement producer and complete body restored.
+// P491: Settings-guarded nullable creation dispatch, compound perception/unit first,
+// byte/short/long/signed-char three-way results, branch-complete and unit-first: 400/419/438/442/440/438/400/543.
+// NOT kept: all regress and lengthen; original settings/bit observations, result/cleanup
+// scopes and full body restored. Native sentinel ESI and squad/query homes remain.
+// P502: Exclusive three-way cleanup choice, four producers at cleanup-local and entry scopes:
+// 289/290/264/290/289/290/264/290. NOT kept: all regress; native sentinel/squad/query homes and direct cleanup
+// comparisons remain unresolved. Original body/helper restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1533,6 +1540,12 @@ void function_1e3b60(long actor_index);
 // 68 bytes while 0x262ba0 still inlines it, 489 at 1684 bytes), so the decision follows the callee's size at a
 // non-loop site, not the caller, the file or the flags. Needed: a 0x2641c0 that compiles to retail's 78 bytes but
 // weighs more to the inliner. Still BLOCKED-BY 0x262ba0 and 0x1f38c0.
+// M3 lane 12 r123 (fast; 26 in every form): only two instructions differ (the 0x262ba0 call's `push ebx` for retail's
+// `mov eax, ebx`, the stub call's ECX for EAX); the one-byte shorter push shifts every later call. 0x2641c0 without its
+// noinline declaration, reading the actor through actor_get at each use: 0x2641c0 20, 0x264210 still inlines it (113,
+// 138 B), 0x262ba0 475; the same with its arms inverted (copy first): 0x2641c0 matches, 0x264210 114, 0x262ba0 497. In
+// 0x262ba0 a per-iteration actor pointer 471 (1648 B), that with `update` as long 479. #581 re-measured: the written
+// 0x1f38c0 enabled with a stdcall 0x1f6090 stub gives 90 here (274 B), 0x1c83c0 38, 0x137fe0 80, as in round 78.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
@@ -1843,9 +1856,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
-// MiniMax G (11-14): no new form, no lower score (251): the actor, options and pool registers rotate against retail and that rides on the opaque callee 0x1e53e0 in another file.
 // score 251 (was 251): frame 0x14 and the actor index in EBX agree; retail loads the pool global into EDI above the
 // options lookup's `je` and holds it across 0x1e5280 (actor ESI, options EBP); ours re-reads it (actor EDI, options ESI).
+// MiniMax G (11-14): no new form, no lower score (251): the actor, options and pool registers rotate against retail and that rides on the opaque callee 0x1e53e0 in another file.
 // M3 lane 8 r159 (fast): the halved rounds as `rounds[0] *= 0.5f;` 251 (same code). Re-measured: the loop's weapon in a
 // named `long weapon` 251 (same code; round 126's weapon entry), the raised probability as `4.0f * probability` 251 (same
 // code; round 46). No other natural form found that the notes above do not list: the levers left are 0x1e53e0's purity
@@ -2123,6 +2136,13 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // current/secondary/both, readonly current/secondary/both, both full-width slots,
 // both byte slots: 251/251/251/251/251/251/272/251. NOT kept: native pool/actor/options
 // residence unchanged; original complete body and both private queries restored.
+// P491: Repeated probability/delay clamp-field const/mutable references, separate/both,
+// then complete const/mutable pointers: 251/251/251/251/251/251/251/251. NOT kept: native actor/options/pool
+// residence unrecovered; original direct fields, query helpers and whole body restored.
+// M3 lane 1 r104 (fast): the weapon pair as an aggregate initialiser 251 (same code); both private slot queries
+// result-first with a `long` loop index 333 (1186 B); block 2's grenade type through a fresh lookup with `unit` fetched
+// after the grenade-settings call 251 (same code: the lookup is still CSE'd across the pure call); the options fetched
+// before the actor pointer 300; one `long unit_index` for both blocks (no 0xcbd50 swap) 349 (1182 B).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

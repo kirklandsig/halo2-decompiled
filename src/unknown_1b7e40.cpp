@@ -69,6 +69,10 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
+// MiniMax H (11-14): no new form, no lower score (49): retail's shared zero exit sits at +0x1de,
+// between the evaluation region and the fallback block, and the priority path ends in an epilogue of
+// its own at +0x26a, so retail branches where this build turns the two returns into a mask select; the
+// permuter's 300 s search over the reduced image (4 tries) found nothing below the baseline.
 // MiniMax A (11-13): no new form, no lower score (49); what still differs: retail calls function_26f060 with the
 // actor index in ECX and the invitation type in EDI where this build passes them in EAX and ESI, and that moves the
 // actor and the node between EBX and EBP through the body; the busy test then becomes a numeric select
@@ -327,6 +331,9 @@ bool function_25d9b0(long prop_index);
 // does not follow these block weights); that with `short result = 0;` after the label, `result = priority;` and
 // one `return result;` 91 (554 bytes). On this body: the busy test as `if (!actor || busy)` 49 and
 // `if (actor && busy)` 49 (still the select). Body unchanged.
+// MiniMax B (11-14, run 75): no new form, no lower score (49); the body is left as it was. What still differs: retail branches on the
+// busy call's result to its own priority epilogue and keeps the shared zero exit ahead of the fallback block, while this build if-converts
+// the two returns into a mask select and puts the zero exit last, which is why this build is 6 bytes longer than retail's 551.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {

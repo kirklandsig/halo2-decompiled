@@ -608,6 +608,9 @@ void swarm_leader_detach(long actor_index);
 // instead of being materialised and re-derived after the callback; the iterator compare reloads the
 // actor pointer instead of comparing against the cached one; and the second parameter becomes a
 // Boolean before the 0x203ed0 call where retail pushes the raw value.
+// score 236 (was 236): no new form and no lower score; the prologue still loads the actor pool into ECX and
+// keeps the scaled index in EAX where retail loads the pool into EAX and keeps the index in EBX, and the body
+// is 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (src/unknown_26e370.cpp).
 // MiniMax B (11-14): no new form, no lower score (236); retail's first slot loop builds the `slot_index < 4` argument with
 // setge/dec/and and its memory loop is a countdown over the actor base, while ours branches on the ternary and re-reads the
 // actor through the pool; a permuter run was stopped at its time limit without reporting a variant.
@@ -851,6 +854,16 @@ void swarm_leader_detach(long actor_index);
 // MiniMax A (11-13): no new form, no lower score (236): the first difference is at +0x3, where retail loads the record pool
 // pointer into ecx and this build loads it into eax, and the body is 22 bytes short because retail expands 0x26ed40 into it
 // (BLOCKED-BY 0x26ed40, whose file is not this lane's).
+// MiniMax B (11-14, run 75): no new form, no lower score (236); the body is left as it was. What still differs: the first difference is
+// at +0x3, where retail loads the record pool pointer into ECX and this build loads it into EAX, and the body is 22 bytes short of
+// retail's 980 because retail expands 0x26ed40 into it: BLOCKED-BY 0x26ed40 (src/unknown_26e370.cpp).
+// M3 lane 10 r106 (fast, callers and callees matched throughout): `value` as bool at the definition and all eight
+// declarations 288 (retail pushes the raw dword to 0x203ed0 and later tests its low byte); the memory walk as a test
+// through the cached actor and a call to joint_decline with a file-local `__forceinline` declaration 364 (894 B: the
+// redeclaration is not honoured across files); the view index re-read from the pool after the 0x1e2150 callback 280
+// (974 B), with the iterator compare against the cached actor 274; the memory walk as a counted for 526 (1182 B, it
+// unrolls). Retail also stores the definition-bit test into the dead actor_index slot ([esp+0x34]) before branching on
+// it, the shape of an inlined helper's returned bool.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

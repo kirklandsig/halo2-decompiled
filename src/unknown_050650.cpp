@@ -504,6 +504,11 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
+// MiniMax S (11-14): no new form, no lower score (303): the frame agrees at 0xa8 and the diff is the temp home (retail
+// keeps the length, the random integer and the sine in one frame-bottom slot, ours keeps the length above the result
+// byte) and the candidate, which retail holds in registers across the two rotations while ours spills it between them
+// because the rotation helper writes through a pointer. Recovering either needs the rotation written out at the call
+// site or the normaliser's length inlined, and its magnitude3d (0x24590) sits in another file, so the body stands.
 // MiniMax G (11-13): no new form, no lower score (303): the diff re-read this round shows the trig and magnitude temps four bytes below retail's (ours at +0x1c and +0x20, retail's at +0x20 and +0x24) while the saved arguments agree, and the frame is 12 bytes longer than retail's 1423, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (303).
 // score 303 (was 303): frame 0xa8 agrees; ours is 12 bytes longer (1435 against 1423). Frame map (F = esp
@@ -831,6 +836,11 @@ struct s_collision_result_buffer_1697c0
 // P467: Direct blocked-state bool/byte/short/long at attempt entry
 // 369/369/357/354, after both rotations 374/374/359/356. NOT kept:
 // all regress and grow; original clear state, every draw and complete sampler restored.
+// m3 lane 15 r84 (fast with 0x297660 MATCH and 0x297d30 23 throughout; control 303): `__assume(forward != NULL)` at the top
+// 298 (1453 B; `__assume(direction != NULL)` gives the same code), `__assume(origin != NULL)` 307 (1460 B), `__assume(attempt <
+// 10)` at the loop top 334 (1453 B); the pitch axis through the existing vector3f_assign 303 (1447 B); the ray through it 297
+// (1453 B, the assume form's code family; under the bar); both 306 (1452 B). The lower counts are one code family (any extra
+// statement ahead of the loop gives 1453 B and first difference +0x31), not a local change toward retail. Body unchanged.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -914,6 +924,19 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
+// MiniMax A (11-14, second pass): score 168 (was 177): the two flags are cleared in the order retail uses (the
+// presence byte first), and the two trailing case exits clear both flags before leaving, which gives retail's
+// byte homes (the returned flag at +0xa, the presence byte at +0x13). Left: retail keeps case 1's and case 2's
+// byte-identical 0xcafc0 blocks apart where this build tail-merges them into one, so the body is 16 bytes short,
+// and the 0x1e3b00 call of the direction chain still loads the object before its pushes and copies the output
+// address, where retail loads the object after the third push and recomputes the address.
+// MiniMax A (11-14): score 177 (was 257): case 1's player test inverted, so the NONE arm comes first, restores
+// retail's case-1 block layout; the frame is 0x8c as retail's, the byte homes still differ (retail's returned
+// flag at +0xa and its presence byte at +0x13, ours the other way round) and the two 0xcafc0 blocks are still
+// merged into one. Forms tried and rejected this round: declaring the two bools in the other order and
+// initialising them in the other order both leave the byte homes as they were (the compiler picks the homes
+// itself), and the polarity retail uses (the non-NONE arm first, which keeps the two 0xcafc0 blocks apart)
+// scores 257 at 1448 bytes, so the merged form stays.
 // MiniMax G (11-13): no new form, no lower score (257): the diff re-read this round puts the first difference at the 0x1ffe00 call, which retail makes with both arguments on the stack where this build passes the first in a register; that callee is defined in src/unknown_1ff010.cpp, a file this lane may not edit, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (257).
 // score 257 (was 257): frame 0x8c agrees; left: the result/point-valid byte homes and the direction chain's
@@ -1242,6 +1265,11 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // P467: Missing-point true default, false at each original point producer,
 // bool/byte/char/short/word/int/long/dword: 343/343/343/382/382/382/382/382
 // (fast control 341; full 257). NOT kept: no equality or reduced gain; original decoder restored.
+// P501: Standard whole-point transfer at five producers, state pair, all producers and optional publication:
+// 346/341/306/345/341/379/332/338. NOT kept: Reduced control 341 differs from authoritative 257. Best plausible
+// single-producer t03 scores 306 reduced but 299 plain at 1404/1444, so it regresses and shortens away from
+// retail; every form restored. Original complete executable body restored.
+// MiniMax A (11-14), NOT kept: 335 (was 341), a 6-point gain, under the 8-point bar for a function above 30.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1424,6 +1452,12 @@ done:
 	return result;
 }
 
+// MiniMax S (11-14): no new form, no lower score (9): only the prologue differs - retail loads the pool into EDX, keeps the
+// actor offset in EAX (`mov eax, ecx`, `and eax, 0xffff`, `imul eax, eax, 0x888`) and forms the actor with
+// `lea esi, [eax + edx]`, while this build keeps the scaled index in ESI and adds the base; changing the shared getter's
+// spelling (the offset local with a byte pointer, the base pointer with a slot local) compiles to byte-identical code here
+// and in the sixteen matched functions that share the getter, so MSVC canonicalises the lookup and the register choice is
+// not steerable from the source.
 // MiniMax H (11-13): no new form, no lower score (9).
 // MiniMax A (11-12): no new form, no lower score (9): three fresh spellings of the lookup (the byte-offset
 // product through the pool data, the offset computed before the pool read, and a byte base with an offset
@@ -1814,6 +1848,13 @@ struct s_actor_looking_structure_view
 // changes); the specification's vector stored before its type 31; `result = true` before the specification stores 25.
 // Re-measured: the pathfinding pointer by if/else 207 (the listed ternary's code); the fraction declared after the rotate 136
 // (927 bytes, the listed form's code).
+// M3 lane 13 r93 (fast; control 23): dead-local phase scans (`long dead_k = k;`, n = 0..7, removed): at the function top, in
+// the loop body and ahead of the loop 23/33/23/23/23/23/23/23 each (only n = 1 moves the selected-direction dot, never the
+// rotation or score rows); in the rotate helper 23 at every n (0x296e60 303 -> 293 at 1437 B for n >= 1); so the operand
+// order here is not a symbol-count phase. The round-91 lead rebuilt (helper dot `(j + i) + k`, score `(i + k) + j`) 13, with
+// 0x296e60 303 -> 311 (1460 B), so the shared helper change is not keepable; left at 13: the dot's accumulator (XMM2 for
+// XMM0), the j row's XMM5/XMM6 and the score's inner pair k, i (retail i, k); scans on it 13 (top n = 1 23). The trace's
+// first byte as the named bool of the sector-trace record needs a cast (the real signature takes the path record).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
@@ -1949,6 +1990,9 @@ struct s_actor_looking_turn_request
 // where retail calls it, and that helper is defined in another file. The body stands.
 // MiniMax G (11-13): no new form, no lower score (442 plain, 548 on the reduced image): the diff re-read this round keeps the frame 0xd0 against retail's 0xc8 and the cached animation words without retail's homes, and 0x1fdd90 is still inlined here where retail keeps it out of line, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (442 plain, 548 on the reduced image).
+// MiniMax S (11-14): no new form, no lower score (442): the two getters that hand back the view and the object
+// are shared with many other functions of this file, so their spelling - which decides whether the base and the
+// scaled index stay apart - was left alone and the body was re-measured unchanged.
 // score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
 // call site and ours inlines it (only /Ob1 on its file keeps it out of line: a build-flag lead).
 // Round 176 (m3 lane 5, plain): the action state through 0xe70b0 held in a named by-value local 544; the turn

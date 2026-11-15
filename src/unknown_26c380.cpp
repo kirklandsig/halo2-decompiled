@@ -533,6 +533,15 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // tail although its stores and point computation are that tail's suffix (origin in EBX, `xor al, al`).
 // MiniMax A (11-13): no new form, no lower score (244): the permuter (302 s, six tries) splits the blocked-and-success chain
 // assignment into two stores, which the fast check puts at 243, one point short of the bar, so the body stands.
+// M3 lane 2 r82 (fast with 0x26c380/0x26c4e0/0x26ccb0/0x26d370/0x15f3a0, matched throughout; held goto form rebuilt, 34 at
+// 1605 B): on the goto form, tail C in retail's order (blocked, edge, distance) with tail A written blocked, sector, edge,
+// distance 32 at 1605 B (tail C stays unmerged with retail's store order and the scheduler still prints tail A sector first,
+// as retail; build/r82/lead-0x26c590-32.patch); tail A blocked, edge, sector, distance 245 (1500 B, merged); the 32 form with
+// the line as a {normal, offset} record 304 (1612 B); with the magnitude as the root of length_sq3f or of dot3f(&n, &n) 32
+// (same code: the sum order does not follow the spelling). Those two tail orders on this body 244 (same code). Diagnostic:
+// one to seven unused `long` locals on the goto form 305/305/305/305/305/304/305 (1609-1612 B), the cross's row j operands
+// never flip. Left on the 32 form: the cross's row j first product, the magnitude's j/i order, the XMM1-3 roles and the
+// line/previous-sector slots.
 // M3 lane 11 r99 (fast; control 244): the outer sector loop as `do { ... } while (NONE != next_sector_index);` 391 (1590 B);
 // `else hit = false;` under the crossing test 244 (same code); `iterator.forward` read at each of its three uses (no `forward`
 // local) 299 (1600 B); the edge loop as `while ((edge = function_1fa720(&iterator)) != NULL)` with one iterator call 244 (same
@@ -540,6 +549,16 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // 305/305/304/305, on this body 244/305/305/305/305/305/310/305; every added local breaks the edge loop's in-place
 // `mulss xmm3, [edx]` fold, and the cross's row j operand and the magnitude's j/i order stay wrong at every n, so they are not
 // a symbol-count phase. Body unchanged.
+// M3 lane 12 r124 (fast with 0x26c380/0x26c4e0/0x26ccb0/0x26d370/0x15f3a0, matched throughout; base 244; goto form = the held 34
+// form rebuilt on this body, with lane 2 r82's tail A/C orders 32 at 1605 B; plane2f = that form with the line as plane2f
+// {n, d}, 304 at 1612 B: its slots are retail's, but the second distance's `mulss xmm3, [edx]` fold into the normal's
+// register is lost). New, all fruitless: on the goto form the first-edge arm with `- line_distance` in each forward branch
+// (no `distance0 -= line_distance;`) 165 (1594 B), on plane2f 309; `vector2f const line_normal` and `real const
+// line_distance` 32 (same code); every dot through the shared 2-D dot with the points read as `(vector2f const *)` views 32
+// (same code); plane2f with the normal used through `vector2f *line_normal = &line.n` (0x239b80's idiom) 342 (1612 B).
+// Also on the goto form: the 3-D normal declared first in the function, after `last_distance`, or ahead of `edge` 32 each
+// (same code: the magnitude's j/i order and the cross's row j do not follow its symbol position); on plane2f, the offset
+// taken from the 3-D normal ahead of the planar copy 373 (1613 B), the line as one initializer 370 (1613 B).
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

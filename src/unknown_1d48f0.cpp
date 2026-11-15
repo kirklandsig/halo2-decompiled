@@ -47,6 +47,13 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
+// MiniMax H (11-14): no new form, no lower score (298): declaring the result flag before the two
+// optional-state homes, and between them, both measure 400 against the body's 298, so the flag's
+// declaration point is what sets the small homes' packing; the body is unchanged.
+// MiniMax D (11-14): no new form, no lower score (298): the first difference is still at +0x21 with the frame 0x1d4
+// in agreement, and the expansion that shapes everything after it (retail expands 0x279740 at the first release and
+// calls 0x11bed0 out of line where this build does the opposite) is settled in src/unknown_11bed0.cpp, which this
+// lane may not edit. BLOCKED-BY 0x11bed0's own file.
 // MiniMax A (11-13): no new form, no lower score (298): the three-component planar copy (308), that copy with the same three length tests (369), the drop of the explicit epsilon test (321) and the component-wise copy of the two planar components (298) were all tried and restored, so the optional-state homes, the colouring and the 0x11bed0 and 0x279740 expansion stay as they are: BLOCKED-BY 0x11bed0's own file.
 // MiniMax C (11-14): no new form, no lower score (298): the two optional-state homes still sit four bytes below retail's and 0x11bed0 is still expanded here where retail calls it; the callee's own file fixes that boundary, so the webs behind it stay.
 // MiniMax H (11-12): no new form, no lower score (298): retail still expands 0x279740's range test at the
@@ -316,6 +323,13 @@ const dword g_455978[81] = {
 // N393: Excluded handle/radius/magnitude eight-byte storage, seven subsets
 // 548/576/593/376/562/587/607; all with unsigned handle 607. NOT kept: unmatched,
 // larger storage forms; full body restored. Optional homes and selective expansion remain.
+// m3 lane 6 r181 (fast, control 298 = plain): the cluster result as `if (cluster != NONE) { found = true; break; }` 513
+// (2114 B; caller 0xc5460 then 277: the flag moves to a register); the exclusion index as a ternary inside the bounds
+// block 445 (2139 B). Same code as the control (VC canonicalises them): a per-file `inline` declaration of 0x279740,
+// the two 1d43d0 matrices declared at the loop top, the blend sums written radial-first, the sample end through the
+// existing vector3f_add_scaled, the zero-length test ahead of the inverse. Retail's first release is 0x279740 inlined
+// (with its size getter) and its second a call; ours can inline neither from 0x279740's /Ob1 file, which leaves the
+// budget that inlines 0x11bed0 here (build flags: the user's decision; `inline` on its definition is listed above).
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

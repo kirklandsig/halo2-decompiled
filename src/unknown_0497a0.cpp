@@ -388,6 +388,13 @@
 // origin-view/view-projection/basis/origin-basis: 716/686/701/718/720/731/787/815.
 // NOT kept: frame/basis/wave residence remains unmatched and all regress;
 // original complete body and helpers restored.
+// M3 lane 1 r104 (fast): s0's sum with the cos 7.75y term first 536, its product with sin x first 536 (same code each);
+// sin x, cos 7.8y and cos 7.75y as named doubles ahead of s0 in retail's evaluation order 534 (2622 B; our x87 order is
+// unchanged apart from the two popped values), all four factors named with the 8.2x sine last 536; s1 computed before the
+// first cross 536 (s1 is still substituted into its use after s0).
+// P501: Standard whole-record history/point/input transfer boundaries, seven subsets, then complete fallback
+// publications: 743/679/726/734/753/688/720/732. NOT kept: All regress and fail native frame/extent and rounded
+// wave residence; original copy graph restored. Original complete executable body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1161,6 +1168,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // T105: Read-only paired color bounds/persistent records/point chain,
 // seven subsets then complete current/next state inputs: eight at 233.
 // NOT kept: frame/spill homes unchanged; original complete body restored.
+// m3 lane 15 r84 (fast with 0x42c50, 0x42b20, 0x43740, all MATCH; control 233): the two vertex positions stored as aggregate
+// copies of first/second 631 (2716 B); case 4's side length through the existing length_sq3f 357 (2576 B, the listed
+// magnitude3d shape). Same code (not counted): `__assume` on vertices, input, the point pointer or index != NONE. Frame
+// cause recorded: retail's inlined pack_color4f (0x131e50, another lane's file) puts its asm homes at a +0x84, colour pointer
+// +0x88, r +0x94, scale +0x98, g +0x9c, b +0xa0, interleaved with the caller's v (+0x90); ours (the same-file copy, front-end
+// inlined) gives colour pointer +0x84, scale +0x88, a +0x94, r +0x9c, g +0xa4, b +0xa8, interleaved with the u step, V end and v.
+// The declaration that keeps 0x131e50 out of line blocks calling it here: BLOCKED-BY 0x131e50. Body unchanged.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

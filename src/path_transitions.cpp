@@ -474,6 +474,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
+// MiniMax A (11-14): no new form, no lower score (218): the entry still differs - retail copies the pathfinding
+// argument into EBX and reads the actor index into EAX there, while this build keeps the pathfinding in EAX and
+// reads the actor index in the case that uses it; dropping case 1's second vertex local so that the first can
+// take EBX scores 355 and was reverted.
 // score 218 (was 218; 219 before): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
 // MiniMax H (11-12): no new form, no lower score (218): the entry still differs - retail moves the pathfinding pointer into ebx and loads the actor index into eax before the switch, ours keeps the pathfinding pointer in eax and reads the actor index in the cases that use it; the frame and case 2 agree.
@@ -923,6 +927,17 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // admission producers, then reverse full predicates: 312/373/376/437/471/398/629/629.
 // NOT kept: all regress and enlarge away from retail; all matched file controls survive.
 // Original predicates, geometry, result qualifier, helpers and full body restored; early root/actor ingress remains.
+// m3 lane 15 r84 (fast with 0x270d90 at 286 and 0x270400 MATCH; control 218): `__assume(surface_index >= 0)` at the top
+// 220; `__assume(pathfinding != NULL)` at the top 220; on corners a, b, c, d (re-measured 287, 1284 B) the same two assumes
+// 295/295 (the actor load still comes first and pathfinding still arrives in EDX); the volatile result left uninitialized
+// and set false on case 1/6's failure path and after the switch 372 (1292 B). Same code as the base: `__assume(parent_point
+// != NULL)` at case 5's top, `__assume(state->pathfinding != NULL)` at case 2's top.
+// M3 lane 8 r167 (fast with 0x270d90 and 0x270400; control 218, register-masked 23): retail treats the actor index like
+// `out` (loaded at entry, EAX, so pathfinding moves to EBX and case 5's `cmp eax, -1` is scheduled at the case's top),
+// then reloads it from its slot in case 2. Tried: a local copy of the actor index at the top used at all three uses 219
+// (coalesced with the parameter); the actor test in a named bool at case 5's top 218; one vertices pointer local for case
+// 5's direction and position 218; the actor test as an outer if around the 0x270400 call 218; the surface pointer
+// declared ahead of the start-out pointer 218 (all four same code).
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

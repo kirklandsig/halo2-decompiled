@@ -486,6 +486,13 @@ struct c_aggregate : c_child
 // information output: 31/167/167/168/31/166/166/167. NOT kept: Self-address initialization requires exact
 // equality. Original independent outputs, signed traversals, virtual calls, allocator observations and full
 // body restored; native output/spill sharing remains.
+// P496: Paired/complete callback source-key/destination/capacity transports, pre-zero and immutable binding graphs:
+// 146/146/31/146/146/146/146/146. NOT kept: no exact native storage/producer recovery; escaped callback output and low loop homes remain.
+// Original complete executable body restored.
+// M3 lane 5 r183 (fast with the six file-mates, all still matched): the cleanup's query output declared at function
+// scope 31; the cleanup item declared at the block loop's scope and assigned in the test 31; the cleanup reading
+// `blocks[k]` with no block pointer 31; the dispatch call through `((c_child **)children)[i]` at each pass 121 (357 B);
+// the dispatch bound named before the inner loop 31 (frame 0x8024 in each). Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

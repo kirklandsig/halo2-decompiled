@@ -1012,6 +1012,12 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // ahead of function_1d1260 in src/unknown_1cec30.cpp (0x1d0cf0 visits 0x1d1540 first) with function_278f00 declared before
 // function_1c51c0 in src/unknown_1c39c0.cpp 2 (0x1c4040 55; lost 0xe16b0 10, 0xb8840 15, 0x1c3770 41, 0x1c54b0 89, 0x1d1260
 // 220, 0x278f00 245, 0xf0fd0 33); with either src/unknown_0b7740.cpp move added the same. All restored.
+// Round 83 (m3 lane 2, full checks): 0xb7b40's draft enabled 1 (nothing lost on today's main, nothing moves); with
+// 0xb7430 and 0x2902b0 enabled too 1 (0xb7430 matches, 273 matched lost); with 0x2902b0 only 1 (252 lost); with
+// function_146bf0 declared first in src/unknown_0b7b40.cpp 1; with `inline` on 0x146da0's definition 1 (0x146da0 still
+// matched). In retail's graph the cycle holding function_1c4040 has 145 members and is first reached at 0x1ca290
+// (src/ai.cpp) in link order; most members sit in src/bipeds.cpp, src/damage.cpp, src/unknown_0b8ca0.cpp and
+// src/unknown_0b7740.cpp.
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
@@ -1736,6 +1742,16 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // `vector3f changes[2]` 126 (858 B); the mirror kept with `changes[2]` 1 (same code); `long i = 0; while (i < count)` 1
 // (re-measure of round 124's member-form while, 3); an
 // `if (count > 0)` guard around the for 1; the mirror declared with count and zeroed in each selection arm 34 (872 B). Restored.
+// Round 83 (m3 lane 2; fast unless plain): the rigid-body index read from the array at each use 166 (878 B); the node's
+// rigid body stored straight into indices[0] and tested there 6; permuter (600 s, 61 variants) nothing below 3. Lead,
+// MATCH in the plain check but not kept (it needs a dead store): the two vectors and the loop index as the members of
+// one local aggregate (no mirror), 0x1d10b0 as an s_havok_component member (index, velocity), and in 0x1d1160's impulse
+// branch `*(vector3f *)velocity = *velocity;` (0x1d1160 stays matched: the copy is dropped from its code, but LTCG's
+// summary of 0x1d1160 still records a write through the velocity pointer, so the caller reloads the index after the
+// call, retail's spill). The aggregate and the self-copy without the member form 2 (the setup pair). A compiler
+// barrier in 0x1d1160 in place of the self-copy 106 (864 B, no reload; 0x1d1160 5). Patch: build/r83/lead-0x1c4c50.patch
+// in the m3-lane2 worktree. What retail's 0x1d1160 source had that LTCG counted as a write through velocity is the open
+// question.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)
@@ -2078,6 +2094,9 @@ void function_22c390(c_havok_abstract_allocator *memory, s_fixed_memory_statisti
 void function_22cb00(c_havok_abstract_allocator *memory, s_physics_pool_statistics *statistics);
 long function_1d3880(s_havok_component const *component, long *constraints, long *bodies, long *contacts, long *other);
 
+// score 6: only the argument-setup order at four havok_printf calls differs;
+// retail issues the fild before the integer push, ours after. Permuter: 299
+// tries in 600 s, no lower form.
 // @retail 0x1c4590 standard
 void __stdcall function_1c4590(long flags)
 {

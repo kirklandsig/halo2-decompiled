@@ -1021,7 +1021,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
-// score 234 (was 347; m3 lane 1 r102 at the end; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
+// score 234 (was 234): m3 lane 8 r166 and m3 lane 1 r102 (347 -> 234) at the end; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end; before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
 // MiniMax G (11-12): the flag order flying, direct, damping, gravity reaches 343 (the damping bit then lands in ECX where
 // retail uses EDX), the direct arm's product sides and its speed load, the crosses' operand sides and the general arm's
 // history block are unchanged; a four-point gain is below the eight-point floor, so the body is restored.
@@ -1382,6 +1382,27 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // 371 (3051 B), the history difference 505 (3057 B), the final output rows 234 (same score); magnitude3d(input) for the
 // input length 297 (3036 B, masked 109), magnitude3d(&change) for the history maximum 509 (3057 B), both 488 (3047 B,
 // masked 122).
+// m3 lane 8 r166 (fast with 0x1f0450 and 0x24590, both MATCH; base 234, aligned 194, registers and offsets masked 90): the
+// direct arm's rotation written into the two delta rows (no `rotated` local) 457 (3053 B); the low arm's side vector through the
+// existing vector3f_add_scaled(&left, normal, d2, &side) 504 (3056 B); the low arm's desired rows through
+// vector3f_add_scaled(&projected, &side, input.j, &desired) with the k row finished as `(desired.k + input.k) * 5.0f` 255 (3037 B);
+// the flying arm's desired as vector3f_scale(&left, input.j), then vector3f_add_scaled(&desired, &forward, input.i) and
+// `desired.k += input.k` 514 (3054 B); the first arm's three terms scaled at each use (`input->i * state->speed`, no `scaled`
+// vector) 275. Same code (234): the second rotation row with its terms the other way round (`facing.i * input.j + facing.j *
+// input.i`) in the ground arm or the direct arm (retail computes that product first in both, but VC orders the sum itself);
+// the flying arm's two zero tests as `!function_30bf0(&left)`.
+// M3 lane 14 r95 (fast with the file's 13 functions, all unchanged): on this base the existing vector3f_add(current, &limited,
+// out + 0xc) for the general arm's output 540 (3047 B) makes that arm's tail retail's row by row (XMM3, XMM0, XMM0) and the
+// first arm then tail-merges into its k store as in retail, but the direct arm's vector3f_assign k store merges there too;
+// with the direct arm's rows as three assignments as well (the listed 469 form, re-measured) the direct arm's k row is retail's
+// and x/y take XMM1/XMM0 for retail's XMM2/XMM1 with the delta/limited homes swapped; on that 469 form: both lengths through
+// magnitude3d 580 (3031 B), the direct arm's speed read from the state at its uses 545. On this body: speed read at its uses
+// 429; the speed products as `rotated.x * speed` 234 (same code). Lead: the 469 form's direct arm (speed loaded after the
+// facing.i * input.j product, the speed register scaled by a copy, delta below limited) is what still shifts the rest.
+// P503: Independent general initial/fallback, history and paired basis copies, memcpy then memmove:
+// 234/554/234/546/232/339/234/614. NOT kept: The native-sized memcpy copies tie 234; history memcpy gains only two
+// at 3050 bytes, and all overlap-safe copies regress. No native damping or raw/bounded home recovery. Original
+// complete executable body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

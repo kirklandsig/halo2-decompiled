@@ -194,6 +194,9 @@ __forceinline bool function_184448(long arg_0)
 // MiniMax B (11-14): no new form, no lower score (965); the gap opens in the first block, where retail loads the base pointer into
 // EDI and keeps the computed offset in EAX while ours uses ESI and EBX, and retail clears the frame dword with a single store
 // where ours zeroes a register first; the extent is retail's 4590 bytes, so only the block layout differs.
+// MiniMax S (11-14): no new form, no lower score (965): the two type changes that give retail's frame and
+// length were measured last round at 976, above the score here, so they were not taken again; the body was
+// re-measured after the comment edits and did not move.
 // score 965 (s1A walk 11-06): the statement walk against retail found no behaviour difference; every condition, field,
 // callee and argument order agrees. Not kept, since together they score 976: two type changes retail's bytes show (1) no cached axis locals - retail
 // reloads g_440b94[idx][0/1] in the cell loop (0x185171/0x185178) and keeps the pre-scaled offsets only as loop-invariants in
@@ -324,6 +327,9 @@ __forceinline bool function_184448(long arg_0)
 // AC489: Plain component traversals for normalization output, point input scale and world
 // bounds expansion, subsets 1/2/4/3/5/6/7: 984/986/969/987/969/991/971; complete graph
 // with short counters 1093. Original helpers and body restored; frame and geometry homes remain.
+// MiniMax G (11-14): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc and the
+// initial surface pointer is still held in ESI where retail holds it in EDI; the remaining difference is set by the
+// 0x48e70 call, whose definition is in another machine's file.
 // m3 lane 11 r60 (fast 965): record/list pointer declarations swapped 965; both chosen by ternaries 998
 // (4608 bytes); NULL/list defaults then `if (arg_0 != NONE)` 978; 0x23a220 with its two point parameters
 // swapped (retail's three callers set the single point up in EBX before the polygon in EDX; definition and every
@@ -365,6 +371,17 @@ __forceinline bool function_184448(long arg_0)
 // MiniMax D (11-11): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc and the
 // initial surface pointer is still held in ESI where retail holds it in EDI; the remaining difference is set by the
 // 0x48e70 call, whose definition is in another machine's file.
+// M3 lane 10 r106 (fast; masked aligned count in brackets, base 454): retail's normalizes square each component with
+// memory operands (`fld [k]; fmul [k]`, sum k, j, i) and keep the root on the x87 stack for fabs; the double-product
+// helper here loads each component once and pops three leftovers. The zero-velocity copy and the force-record lookup
+// ahead of the sample normalize (retail schedules both inside its x87 block) 981 [430]; both normalizes through the
+// existing normalize_inline 982 [414] (4563 B; its squares come k, i, j); the helper as `(real)sqrt((double)(k*k + j*j +
+// i*i))` with the scale arm first 990 [415] (4563 B; the compile-only build gives retail's x87 block exactly); reorder plus
+// normalize_inline 958 [407] (4590 B, 994 instructions as retail; seven points, not kept); that plus the axis table read
+// at each use 967 [374] (frame 0x11cc, first difference +0x1c); plus a long vertex counter 1006 [396] (4622 B); plus a
+// long bounds index 991 [383]; reorder plus the float-sum helper 963 [393] (4596 B); reorder, normalize_inline and the
+// per-face bounds at the face-loop top 969 [412], the same on the axis form 969 [365]; reorder, normalize_inline and a
+// bool edge side 963 [397]. The positional count stays near 965 because the first block's registers shift every line.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
