@@ -1118,6 +1118,8 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // NOT kept: no exact or qualifying native-shape gain; original executable body restored.
 // P520: Standard plane-length/pan-range/position-fraction/FOV-range/origin-dot/signed-distance/distance-dot/complete-plane reduction providers:
 // 475/425/426/459/474/495/428/473. NOT kept: no exact native storage/provider recovery; original complete body and helpers restored.
+// P522: Real angle/sine/cosine API domains, seven subsets then immutable complete yaw graph:
+// 149/149/149/149/149/149/149/149. NOT kept: no exact native preload/zero recovery; original complete body and helpers restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
