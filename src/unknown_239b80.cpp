@@ -650,6 +650,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // r103's completion-flag body with this helper convention, a positive written-out closure and `current` at function scope
 // 116 (784 B; count EDI, points EBX, current ESI, hull count cached in ECX where retail has count in its home, points ESI,
 // current EDI and the hull count cached in EBX).
+// P536: Explicit unrounded distance/heading/short-circuit absolute-result carriers,
+// subsets 1/2/4/3/5/6/7 then complete with both coordinate differences named:
+// 144/144/162/144/162/162/162/162. NOT kept: no exact result-transport/frame recovery;
+// original real consumers, private predicate and complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

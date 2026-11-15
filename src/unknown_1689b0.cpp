@@ -1966,6 +1966,10 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // That copy order on main's 0x120790 603 (2887 B). Body and 0x120790 unchanged.
 // P524: Actual prism count long/int, axis short/word, side byte/signed-char/char, complete native fields:
 // 606/606/606/606/606/606/606/606. NOT kept: no exact native storage recovery; original record declarations, helpers and full body restored.
+// P536: Three original ray-call truth producers, positive/complementary
+// bool/byte/short/long: 619/619/619/619/619/619/619/619 (control 606).
+// NOT kept: one-use call results remain unmatched and lengthen to 2905 bytes;
+// original records, calls, geometry, counters and entire body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
