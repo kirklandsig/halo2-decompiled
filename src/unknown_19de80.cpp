@@ -665,6 +665,12 @@ static inline bool teams_enabled_19e1c0()
 // differ in their scratch registers (ECX/EDX against EDX/EAX), the cause-team tail joins the fallback's clamp with the
 // flags live across the jump, and the other name tails share only the copy call, so retail's cross-jumping leaves
 // byte-identical tails 1 and 4 apart. Body unchanged.
+// M3 lane 12 r124 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched each time; base 390, plain result 691 at 1170 B): the four
+// name/team clamps as `result >= remaining` 691 plain, 390 volatile; the text buffer declared ahead of the result 691 plain,
+// 390 volatile; both team admissions with the team test first on the plain result 688 (1172 B). On the plain result the two
+// player-name bodies are one block (the second jumps into the first), and its `text[0]` store takes an immediate after the
+// buffer's `lea esi`; retail's first body stores it from the zero result register (si) ahead of the lea, so its two bodies
+// differ and never cross-jump. Retail also keeps `remaining` in EBP and the token on the stack, where ours keeps the token.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

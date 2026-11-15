@@ -838,6 +838,12 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // 1.0f, scale = 1.0f;` 42; both transform tests as `definition->unknown0c != 0` 42; indexed definitions with scale first and
 // the motion rotated before the position's last translation add 115 (1136 B); the emitter mask and particle mask `dword
 // const` 42; the location's first emitter index named before the loop's index 109. Body unchanged.
+// M3 lane 8 r167 (fast with 0x2243c0; control 42, register-masked 15: the offset's zero store ahead of the list test and
+// row i of both in-place rotations, (left*y + up*z) + forward*x where retail sums (left*y + forward*x) + up*z): the
+// translated position declared as a vector3f copied from the particle's position (no casts at the rotation) 42 (same
+// code); the motion declared ahead of the translated position 50; the colour declared ahead of the rotation outputs 42
+// (same code); on indexed definitions with scale first (re-measured 113 at 1136 bytes, masked 34, every integer line
+// retail's, all six rotation rows reordered) the vector3f position 113 (same code) and the motion declared first 121.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1932,6 +1938,14 @@ bool function_17afd0(long effect_index, long value);
 // the owner lookup 22, above the effect-index read 25; the clearing test written `!(owner != NONE && g == owner && available)`
 // 12 (same code), as the plain `&&` reassignment after the true default 138 (510 B), placed after `attached` 59 (501 B), split
 // into the owner/view test and `else if (!available)` 105 (502 B), availability first 41. No match; body unchanged.
+// M3 lane 8 r167 (fast; T = the 12 form above, re-measured 12 at 498 bytes, masked 2: only the `mov byte [esp+0x18], 1`
+// placement; P = the view global at each use, the owner as if/else, the availability false after the owner and set on
+// success, plain `&&` same_view and attached, re-measured 138 at 510 bytes). Retail's flag code is the plain `&&`
+// expression's pattern (`test bl, bl; mov same, 1; jne` into attached past its availability test, `mov same, 0` at the
+// false label) with same_view in a stack byte and the availability in BL, which T gets only through its early true
+// default. New: T with the owner as a ternary 12 (same code); T with `draw = view_pass ? same_view : !same_view` 101 (508
+// bytes); P with that 140 (512 bytes); P with attached computed ahead of same_view 102 (490 bytes); P with the
+// availability's clear between the second definition call and the owner lookup 141 (510 bytes). All match-only; body kept.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

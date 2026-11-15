@@ -310,6 +310,14 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // takes EAX and the seat loads between it and the object read, as retail, but the unit load moves first: `mov ecx,
 // [edi + 0x18]` ahead of the seat); the occupied-object rejection alone as `return false` 102 (391 bytes); the hostile-team
 // rejection alone as `return false` 118 (391 bytes). Restored.
+// Round 101 (m3 lane 11, fast with 0x1b8eb0/0x1b9640/0x1b99d0/0x11b0c0/0x11ade0, all MATCH): a seat pointer declared at
+// the top of the bit11 block for all three calls' arguments 103 (363 bytes, frame 0x310); a loop-top seat pointer for the
+// definition and the object block (test, lookup, store) 99 (389 bytes); a loop-top pointer for the c8f60 and c8200 object
+// arguments 100 (390 bytes); for the c8f60 object argument alone 100 (390 bytes); for the 0x1b8d80 object argument alone
+// 94 (382 bytes); re-measure of the loop-top pointer for every object-index read and the definition 25 (379 bytes: the
+// c8200 setup keeps `mov ecx, [esp + 0x20]; mov eax, [ecx]` ahead of the seat load). Reading: in every form ours issues the
+// dependent load right after the reload of the spilled seat address, where retail puts the seat load between them, as if
+// retail's [esp + 0x20] were a memory-resident variable the scheduler sees rather than a spill reload. Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -1471,6 +1479,11 @@ void function_1f86a0(long actor_index);
 // in the loop: BLOCKED-BY 0xbaf40. The permuter's only lower form (122) swaps joint_decline's two arguments, and
 // the callee reads its first parameter as the actor index (retail puts the actor index in EAX at that call), so the
 // swap is not kept.
+// MiniMax B (11-14): no new form, no lower score (134); the frame is still 0x10 against retail's 0x14 - retail
+// spills the masked flags byte to a stack slot and keeps the loop entry in EBX, ours keeps the mask in BL and
+// spills the entry - and ours still takes the incoming actor index in ECX and loads the tag table base late; the
+// open cause is the memory summary of the root call 0xbaf40, whose file (src/unknown_0bad50.cpp) is on the avoid
+// list, so this lane may not change it.
 // score 134 (was 134): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the

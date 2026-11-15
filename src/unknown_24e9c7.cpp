@@ -477,6 +477,14 @@ struct s_24e9c7_points
 // bounds.y0) * scale`) 125; size, the across pair and scale as `real const` 125; the forward pair read through one point
 // view of the placement for the across products and up 125; the kind, group, sequence and bitmap pointers `const` 125.
 // None moves the early across spill or the homes above the result. Body unchanged.
+// M3 lane 12 r124 (fast with 0x24e59f/0x22a664, both matched each time; base 125). In-place side = the side point filled right
+// after size with the across products (`side.x = size * -forward_j; side.y = size * forward_i;`, no across locals) and later
+// scaled by the half width: re-measured 144 (746 B), with `(0.0f - forward_j)` 139 (742 B). New: the size step written y first
+// 125 (same code as this body); scaled by `*= (real)half_width` 144; the half-width scaling written y first 123 (743 B: the
+// across i product moves up but is still `0 - forward_j * size`; a 2-point statement order, not kept); on that 123 form, the
+// size step y first too 144, `(0.0f - forward_j)` 141 (740 B), both 139 (742 B), the scale read before size 123, the half
+// width ahead of the height 131. Retail computes `size * (0 - forward_j)` into a copy of size and `size * forward_i` into
+// size itself, spilling it to the side point's own home at -8; every in-place form here folds the negation out instead.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

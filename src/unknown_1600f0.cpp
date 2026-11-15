@@ -1210,6 +1210,13 @@ PRIVATE inline long score_string_list_1608e0()
 	}
 	return result;
 }
+// MiniMax H (11-14): no new form, no lower score (679): retail scales the player index into EBX before the
+// remaining pushes (mov ebx, [esp+0x7a4]; and ebx, 0xffff; imul ebx, ebx, 0x21c) and adds the unit base later,
+// while this build does the whole chain in EDI after the pushes; writing the offset as its own local
+// (`long player_offset = (player_index & 0xffff) * sizeof(s_game_engine_player);`) leaves the code byte for byte
+// the same. Our frame is still 0x798 against retail's 0x79c and the homes differ (our scores pointer at
+// [esp+0x50] and the display at [esp+0x70], retail's at [esp+0x34] and [esp+0x74]), so every stack reference in
+// the body is off.
 // MiniMax E (11-01): no new form, no lower score; left: the entry register roles (retail loads the
 // player index first), the colour/bounds local homes and the missing bytes.
 // score 679 (was 678 in the r718 fast check): frame 0x790 versus retail 0x79c; early player/panel roles, the scroll clamp (one

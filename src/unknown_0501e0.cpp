@@ -516,6 +516,13 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // arg_0, &scaled)`) 206 (masked 176, no change); one offset loop with the second point's statement first 211 (1141 B); the
 // first view's two depth tests before the second view's sign test 257 (1143 B); the second offset loop's counter named
 // `component` like the first 206. Body unchanged.
+// M3 lane 12 r124 (fast with 0x30290 and 0x30bf0, both MATCH; base 206): retail loads the first view's coefficients into
+// registers (coefficient first, right.i kept in xmm7 for the second view) and keeps the scale in xmm6 for both tests, so
+// nothing it stores between the views can alias the camera; ours folds the coefficients as memory operands and reloads the
+// scale after the cursor stores. On the helper: a helper-local result filled by index then copied out 281 (1156 B); the
+// camera passed as a pointer with its scale read inside 209 (1143 B, same structure); the scaled copy assigned in an
+// if/else 327 (1198 B); a source pointer selected by the scale step 292 (1170 B); the second view in place (first out of
+// place) 258 (1136 B). Re-measured: the existing transform_vector in place with the limits in the condition 260 (1113 B).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
