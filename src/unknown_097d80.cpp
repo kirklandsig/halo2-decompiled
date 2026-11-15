@@ -52,6 +52,10 @@ struct c_aggregate : c_child
 };
 
 
+// MiniMax D (11-15): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020, and the
+// one lever that would settle it is out of this file's reach: tools/build.py prepends /GL to every source's flags,
+// so a file's "// @flags" line cannot turn it off, and a /GL- build of this file would cost 0x97f60, 0x97fe0 and
+// 0x980d0 their matches.
 // score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
 // MiniMax H (11-13): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020, because
 // the address-taken count keeps a slot of its own under /GL; a /GL- build of this file is byte-exact but would cost
