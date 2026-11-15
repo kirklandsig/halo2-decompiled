@@ -494,6 +494,8 @@ struct s_24e9c7_points
 // frame changes); the in-place side with the half-width scaling y first (lane 12 r124's 123 form) re-measured 123, with
 // `-forward_j * size` the same code, with the unscaled perpendicular scaled by size in place 141 (752 B). None spills the
 // across j product to -8 ahead of the heights, so result keeps -8 (retail -0x10).
+// P540: Complete scalar-SSE perpendicular/upper/side products and size addition, 258/264/262/273/282/282/297/321.
+// NOT kept: extra stack alignment and larger frame/extent; original complete source restored.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
