@@ -773,6 +773,11 @@ struct s_player_axes_153d10
 // six products never move); 1-3 parens in delta give per-product windows {0,1} fj*uk, {0,3} fk*uj and fk*ui,
 // {0,1,3} fj*ui and fi*uj, {2,3} uk*fi, so no shift fits; three parens around the j row's first product move only
 // later products but flip fj*uk with uk*fi (2): the two share up.k's key.
+// Round 107 (m3 lane 10, fast with the four callees listed): both fabs calls as fabsf 10 (all six products load up first);
+// atan2 as atan2f 2 (other code: this product right, the up.k-against-forward.j one up-first), on it the i row's first
+// product read `forward->j * axes->up.k` 6, `axes->forward.j * up->k` 18, `forward->j * up->k` 18. Diagnostics:
+// `#pragma optimize("p", on)` (float consistency) 98 (1325 bytes; atan2/fabs become calls, the six products unchanged);
+// the cross as a plain out-of-line function in another /O2 file, inlined by LTCG 105 (three products flip), removed.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

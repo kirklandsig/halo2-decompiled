@@ -362,6 +362,10 @@ void c_window_channel::v9()
 // that cast for set_next too 3; the type cleared before the declaration with the load result passed straight to set_next 24
 // (76 bytes); the user flags as `(word)` 3; re-measured, the load through the new request's own field 4.
 // BLOCKED-BY 0x149f49: every address of the local is one value, copied from ECX after a free-function builder.
+// Round 201 (m3 lane 4; this note's one-file harness, still exact at 3): the load given a base-type static_cast reference
+// 3; one base-type parameters pointer for builder, load and set_next 3; re-measured: `screen` declared bare first 3, the
+// type clear ahead of the request's declaration 5, the member load read into a local after the builder 5. Round 100's
+// member-builder lead still needs edits in held or avoided files (41 of the 110 builder calls), so it stays HELD.
 // @retail 0x23531c
 void c_window_channel::v10()
 {
