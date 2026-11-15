@@ -76,6 +76,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
+// MiniMax D (11-15): no new form, no lower score (558): the frame size and the five calls agree with retail, but the
+// success byte, the minimum float, the four hit flags and the copied input vector still sit at other frame homes, and
+// the inactive exit still comes before the ray loop instead of after it.
 // score 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // the minimum now has retail's +0x18, the input copy and hit flags sit 4 bytes off retail's.
 // Earlier score 576 (was 592): earlier 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
