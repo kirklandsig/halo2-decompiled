@@ -1438,6 +1438,9 @@ struct s_item_flags_view_10b850
 // T108: Ordinary inline motion/marker-query/marker-publish/inverse-point metadata: eight at 824;
 // existing point-to-point query wrapper 857 (frame 0x148 versus native 0x12c), same 4096 bytes.
 // NOT kept: no qualifying gain; original complete body and every provider declaration restored.
+// P509: Exclusive geometry/object contact-result graphs with guarded/logical tag fallback:
+// 852/897/857/878/828/877/821/876. NOT kept: best gains three at retail length;
+// frame stays 0x154/0x12c. Original classifier, helpers and full body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1990,6 +1993,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // T108: Ordinary inline metadata at existing node-transform/point/owner/point-transform providers, four isolated, three pairs and all:
 // 140/140/140/138/138/138/140/138. NOT kept: no qualifying native-shape gain or equality; original complete source
 // and every provider declaration restored. Native frame and first storage/scheduling gap remain.
+// P509: Two-consumer isolated spin-bit mask across damping, char/signed-char/byte/short/
+// word/int/long/dword: 174/174/174/169/169/173/173/173.
+// NOT kept: all regress at 892 bytes; original Boolean capture, helper and body restored.
+// Return-byte, release RMW/tail and contact/event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
