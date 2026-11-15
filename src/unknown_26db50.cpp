@@ -905,6 +905,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // terms reordered 96 (identical code), 1..7 unused-local placeholders 96 each, the radius reference before the sector index 96, the
 // spoke counter initialised before its loop 96 (same code). On 96 a masked diff leaves 35 lines: the head's integer radius copy
 // and late sector load, the spoke/phase store order, the direction-load scheduling in the rotation setup and the 0x2104b0 setup.
+// m3 lane 9 r123 (fast with the file's 13 matched functions and 0x1ecf50, all kept): the rotation's projection as
+// `(1.0f - cosine) * dot3f(axis, vector)` 90 (same code); the dot written out after the component reads 93; the trace point
+// summed origin first 90 (same code); `dot3f(vector, axis)` 90 (same code); `1.0f - cosine` named once 90 (same code).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

@@ -913,6 +913,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // register; retail's caller 0x7e210 hands over the player count in EAX, the extra count in EDX and the parties
 // pointer in ECX, so the register that decides this is fixed by the caller's setup in src/unknown_07a9a0.cpp:
 // BLOCKED-BY the caller.
+// Round 244 (m3 lane 3, fast with 0x91e30/0x7e210): the maximum update as `if (party_indices[i] >= next_party)` 81 (169
+// bytes); as `if (!(next_party > party_indices[i] + 1))` 34 (same code); `bool result = false;` declared first and
+// assigned from the call 34 (same code); that with the clamp assigned back to the imbalance 45 (192 bytes); the caller's
+// setup order (EAX, ECX, EDX: player count last-declared) as parameters (extra_count, party_indices, player_count) with
+// the call in 0x7e210 and its declaration changed together, plus the result declared first, 35. All restored.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

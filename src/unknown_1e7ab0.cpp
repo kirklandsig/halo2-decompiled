@@ -163,6 +163,9 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 #define request_weapon(player, slot, headers) \
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
+// score 118 (was 118): no new form and no lower score; every instruction but a register rotation among EAX,
+// ECX and EDX differs, and it starts at the inlined lookup where retail keeps the table in ECX and the null
+// result in EAX; the permuter's 24 tries found nothing below 118, and 0xd0590 in another file settles it.
 // MiniMax A (11-12): no new form, no lower score (118): the frame, the length and every case still agree
 // with retail, and the gap is still the rotation the notes above name - the inlined lookup hands the table
 // to eax where retail hands it to ecx, and the fourth case holds the parent in ecx where retail holds it

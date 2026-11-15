@@ -533,6 +533,12 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// MiniMax S (11-14): no new form, no lower score (126): the frame, the length and the layout are retail's, and what is
+// left is register colouring alone (the velocity copy's i in ECX where retail has EAX, the 1.0 constant in xmm2 against
+// retail's xmm3, the throttle load in xmm3 against xmm2, and the two normalise blocks). The velocity copy written x
+// first gives retail's registers but stores and squares y first (130), the copy as two scalar locals moves the stack
+// homes (153), and the permuter's 25 tries found only 125 with a volatile cast, a constant local and reordered
+// statements, none of which the rules allow, so the body stands.
 // MiniMax B (11-13): no new form, no lower score (126): the velocity copy still takes x in ECX and y in EAX where retail takes
 // x in EAX and y in ECX, the entry magnitude's schedule (retail adds i*i + j*j before squaring k, so its 1.0 lands in XMM3) and
 // the reversing atan2's operand order remain; the known leads (the planar velocity copy with y-first squares 122, the blend rows
@@ -3323,6 +3329,8 @@ real g_47ff30 = 2.5f;
 // native twelve-byte region in three ordered four-byte
 // stores; its GP zero register versus native SSE remains counted. No type, width, field, helper,
 // matrix owner, arithmetic tree or input/call role changes.
+// P498: Actual elevation/normalization/force-contributor last-use blocks, seven subsets, then complete bounded-fraction phase with enclosing real outputs; native frame 0xfc and scalar homes remain.
+// Scores 672/672/672/672/672/672/672/672. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3730,6 +3738,7 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // and reads the parity flags with lahf, so the two bodies have different shapes from the first difference on.
 // MiniMax C (11-14): no new form, no lower score (1000); the frame still reserves 0x78 against retail's
 // 0x74, so every stack home sits four bytes higher.
+// MiniMax S (11-14): no new form, no lower score (1000): the frame still reserves 0x78 against retail's 0x74, so every stack home sits four bytes higher, and retail keeps the matrix products in the XMM registers where this build spills them to the stack.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4223,7 +4232,7 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // run on this body found nothing lower in 46 tries. Retail returns the flag byte as it stands (`mov al, dl`)
 // while the bool return normalises it (`test`/`setne` on both exits); both spellings of retail's form (a bool
 // local, an unsigned char return) score 131 and change the declaration, so the byte-wide flag stays.
-// score 117 (was 136): projection/cross input ranks and angle/trig homes remain;
+// score 118 (was 136): projection/cross input ranks and angle/trig homes remain;
 // MiniMax C (11-10): the score is 136 (was 136); the dot product multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy moves one word and two floats where retail moves three words, and the trig block spills the sine and cosine where retail keeps the angle on the x87 stack.
 // MiniMax E (11-08): no new form, no lower score (136); the dot's i term still multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy still moves one word and two floats where retail moves three words, and the trig block still spills the sine and cosine through the stack where retail keeps the angle on the x87 stack.
 // MiniMax E (11-07): no new form, no lower score (136); the projection and cross operand ranks and the
@@ -4459,6 +4468,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // commuted (this build multiplies forward.i by up.i where retail multiplies up.i by forward.i) and the first
 // cross product's operand order still differs; both follow from the shared helper's argument order, which
 // cannot be swapped for the score.
+// P498: Whole projection inner-product traversal/input/operator forms regress; coordinated returned-byte and sole-caller-byte form scores 130 at 791/806 and also restores. Projection input/cross ranks, trig homes and byte transport remain.
+// Scores 224/212/210/216/257/271/257/271/130. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
+// MiniMax S (11-14): no new form, no lower score (118): retail's default arm keeps the angle on the x87 stack while ours takes the sine and cosine from the stack, and the dot product's first term and the first cross's operand order still follow the shared helpers.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4759,6 +4771,7 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // EAX here (movsx eax, ax; add eax, edi) and in EDI in retail (movsx ecx, ax; add edi, ecx), the definition
 // pointer is still read into EDX before the memset where retail reads it into EAX after it, and the facing copy
 // still stores its three components in the order i, k, j where retail stores them in another order.
+// MiniMax S (11-14): no new form, no lower score (48): the marker count sum still lands in EAX (movsx eax, ax; add eax, edi) where retail has movsx ecx, ax and add edi, ecx; the count taken as the primary count and summed in place, and the sum's operands swapped, all compile to the same EAX form, and the scratch zero store still follows the sum.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
@@ -6162,6 +6175,8 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // NOT kept: no exact native frame or reduction repair; original full body, arithmetic
 // association, matrix owners and shared helpers restored. Frame 0xfc versus 0xd8 remains.
 // Per-use tilt-angle field at both intrinsics, as native loads it: 978 (tie); restored.
+// P498: Complete nine tensor-product parts and three unscaled impulse sums, mutable/immutable immediate/phased; every original math tree and query stays fixed. Native frame 0xd8 and handle/matrix homes remain.
+// Scores 978/978/978/978/978/978/978/978. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

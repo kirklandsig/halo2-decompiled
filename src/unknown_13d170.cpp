@@ -672,6 +672,10 @@ struct s_physical_block_iterator
 // as `NONE != result` 93 (same code); the walk's aggregate with the iterator ahead of the block 96. Ours materializes
 // NONE (`or edi, -1`) before the allocation test, so that web outranks the result's and takes EDI; retail compares the
 // immediate and materializes NONE in EBX inside the success arm.
+// P506: Standard time/page pair
+// factory/less/reversed-greater/constructors/readonly/readonly-less/ordinary/negated-order keys:
+// 349/349/347/356/408/408/408/352. NOT kept: native policy placement and frame/extent not
+// recovered; original complete body and includes restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

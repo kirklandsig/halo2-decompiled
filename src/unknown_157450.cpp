@@ -813,6 +813,8 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // field stores (retail loads the engine index first in that block) 110 (399 B); a 600 s permuter run on this body
 // (54 variants) nothing below 32; the saved playing mask as long 32 (same code); the two accumulators zeroed by one
 // chained assignment after their declarations 32 (same code).
+// P498: Saved-to-published mask accumulator, dword/word, compound/explicit OR and changed-region/unchanged-exit forms. Dword forms shorten to 381/390; word forms recover the entry and native length but miss the shared post-loop reload. Inherited local qualification is preserved.
+// Scores 100/100/100/100/77/77/77/77. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
 // @retail 0x158140
 void function_158140(void)
 {

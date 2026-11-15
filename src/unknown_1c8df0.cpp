@@ -240,6 +240,11 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // order, 0x1b0400's compare named before the call 52 (a stack slot). New body forms: the mode parameter declared `short` at the
 // definition and every declaration (casts dropped) 20 (identical); the side vector through the existing vector3f_assign 20 (same
 // code); the 0x10000000 probe bit set before the side vector 36; `hit` initialised false with the final else dropped 20 (identical).
+// Round 122 (m3 lane 9, fast with 0x1e55d0 and the five callers; control 20): on round 188's matching order 0x1b0400 differs
+// only in its call setup (the arg_4 add is evaluated before the arg_7 compare, whose load then goes to EDI ahead of it; with
+// arg_0 earlier the same). New: side vector as an aggregate initializer 20; descriptive parameter names in the definition 20;
+// const on both point parameters 20; the mode read once into a named short 20; the two cell parameters swapped everywhere 20
+// (0x1b0400 7, 0x264b50 107).
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

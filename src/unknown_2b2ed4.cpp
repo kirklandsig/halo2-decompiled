@@ -75,6 +75,12 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  return result;
 }
 // score 316 (was 316; earlier 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
+// MiniMax R (11-14, run 65): no new form, no lower score (316): the first difference is the null-datum test at
+// +0x16, where retail's `je` goes to the function's end (offset 0x920 of 2345) and ours goes to a near block, and
+// the five string buffers' homes are one buffer apart from retail's (the display name at ebp-0x6cc where retail
+// has ebp-0x8cc, a difference of 0x200, one 512-byte buffer). Moving the declarations is the only thing that
+// moves those homes and review rejects that, so the buffer rotation, the state switch's out-of-line shift arm and
+// the join order all stand as they are.
 // MiniMax I (11-05): no new form, no lower score. Retail's null-datum `je` jumps to the function's
 // end (offset 0x920 of 2345) where ours jumps to a near block, and the child, text and layout stack
 // homes still differ (retail's suffix at -0x258 and its message at -0x458, ours at -0x2cc and -0x4cc).

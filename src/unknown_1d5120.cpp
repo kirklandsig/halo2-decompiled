@@ -87,6 +87,9 @@ void function_1d56f0(s_havok_component *component)
     }
 }
 
+// score 77 (was 77): no new form and no lower score; the rigid-body lookup still reads `[eax + edx + 0x40]`
+// where retail reads `[edx + eax + 0x40]`, and the success tail still pushes what retail passes in EAX, EBX
+// and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
 // MiniMax G (11-13): no new form, no lower score (77): retail's tail ends with the same inline
 // `_mm_setcsr(_mm_getcsr() & 0xffffffc0)` before `__clearfp` (the mxcsr scratch at [esp+0x10] and the two
 // control87 calls), so this source is right and the only difference there is the register of the mxcsr
