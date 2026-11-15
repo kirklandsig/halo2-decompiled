@@ -8133,6 +8133,10 @@ struct s_unit_turn_state_view
 // it was; the step helper is shared with the other callers of that file, so its spelling was left alone and the
 // moved flag's home could not be moved without the helper's own body changing.
 // Earlier 395 (was 395): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
+// MiniMax D (11-15): no new form, no lower score (395): the frame is still 0x78 here and 0x7c in retail, the moved
+// flag still sits in ebx for the whole function where retail keeps it in a stack byte, and this build still makes one
+// reciprocal of the shared step where retail divides twice by the stored step.
+// score 395 (was 395): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
 // retail), result as a variable, the state byte's bits through s_unit_turn_state_view, +0x10a through
 // s_unit_flags_10a_view, the unit/definition bit tests nested. Still differs: retail keeps the result `moved`
 // in a stack slot ([esp+0xb], 0 stored up front, reloaded on the all-close path, BL=1 on the moved path)

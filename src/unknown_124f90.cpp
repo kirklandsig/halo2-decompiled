@@ -4069,6 +4069,8 @@ vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vec
 // calls it out of line, and that expansion accounts for about 97 of the 101; the two smaller differences (the flag
 // byte's or against a store, and the fade gain sum's load order) stay, and keeping the call out of line needs a
 // declaration in another lane's file, which the rules exclude.
+// MiniMax D (11-15): no new form, no lower score (101): the type lookup 0x221810 is still expanded here where retail
+// calls it out of line, which shifts the rest of the listing, and that lookup's body is in another file.
 // score 101 (was 101): unchanged this round: the class lookup 0x221810 is still expanded where retail calls it
 // out of line, which shifts the rest of the listing; 0x221810 lives in src/unknown_221490.cpp, which this lane
 // may not edit, and the depth pair that would keep it out of line is ruled out.
@@ -4791,6 +4793,8 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // MiniMax G (11-14): no new form, no lower score (535): the frame is still 0x130 against retail's 0xe8 and 0x16f3a0,
 // 0x1420f0 and 0x11c120 still have to stay out of line, and their noinline declarations live in other files; the
 // forms tried for the frame and the three helpers are in the notes below and none of them lowered the score.
+// MiniMax D (11-15): no new form, no lower score (535): the frame is still 0x130 against retail's 0xe8, and 0x16f3a0,
+// 0x1420f0 and 0x11c120 still have to stay out of line, which their noinline declarations in other files decide.
 // score 535 (was 535): unchanged this round: the frame is 0x130 against retail's 0xe8 and 0x16f3a0, 0x1420f0 and
 // 0x11c120 still have to stay out of line, and their noinline declarations live in other files.
 // score 535 (was 535): unchanged this round: 0x16f3a0, 0x1420f0 and 0x11c120 have to stay out of line, and their

@@ -3063,6 +3063,9 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // what is left is the inlined rotation's schedule and the addresses of the globals that are not matched yet (ours
 // 0x862018 against retail's 0x45dbc0); the helper's spellings (192 forms) and the corner-call orders (24 forms) all
 // give the same code as this one.
+// MiniMax D (11-15): no new form, no lower score (54): the scheduler still places each x87 coordinate chain one slot
+// earlier among the SSE ones than retail (the first difference at +0x527), and the corner rows in the other orders give
+// 54 or worse.
 // score 54 (was 54): earlier 54, 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
 // before; frame, bounds block, both trig sequences and every home retail's). Left: inside both corner sets
 // the scheduler places the x87 coordinate chains one slot earlier among the SSE ones than retail does
