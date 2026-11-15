@@ -1770,6 +1770,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // P496: Signed first/second count expression parts and serial slot workspace in seven subsets, then shared count storage:
 // 314/327/164/327/314/327/327/327. NOT kept: no exact native storage/producer recovery; pool/state, first signed-count materialization and result normalization remain.
 // Original complete executable body restored.
+// MiniMax S (11-14): no lower score (164): the depletion queries keep the && form - the if-form for both queries
+// gives 330 and the conditional-clear form 345 - and retail's depleted flag in bl with a third stack slot is not
+// reproduced by any of the four spellings tried here.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {

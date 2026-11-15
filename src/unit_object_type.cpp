@@ -5325,6 +5325,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // default 182; standalone disabled exit 186; complete result exits 194.
 // NOT kept: all tie or regress; delayed up.i, native angle homes and x87
 // forward-scale residence remain. Original cross helpers and body restored.
+// MiniMax S (11-14): no new form, no lower score (169): the cross products' SSE load order and copies and the x87
+// forward term are unchanged; the earlier rounds' forms (the cross product helper, the staged one, the view angles,
+// the double scales and the scale statement orders) all land at 169.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -6277,6 +6280,9 @@ void function_cf040(long unit_index, short type)
 // MiniMax G (11-14): no new form, no lower score (1): the one difference is still the SIB byte of the weapon loop's
 // header lookup, ours taking the pool data as the address base and retail the byte offset; the offset-first and the
 // pointer-to-header spellings in the lines above compile to the same bytes here as well, so the body stands.
+// MiniMax S (11-14): no lower score (1): the weapon loop's header lookup keeps this build's SIB order (base eax,
+// index edi) where retail has the offset as the base; the lookup through the existing masked-index helper, as a
+// named header pointer, as byte arithmetic with the load and as long arithmetic in both orders give the same bytes.
 // @retail 0xc92c0
 bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_index, long *blocker_index, bool *grouped)
 {

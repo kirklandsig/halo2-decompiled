@@ -2740,6 +2740,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // (one byte longer) and 0x219070 is called with two arguments where retail passes one; both live in other files.
 // score 17 (was 17): unchanged this round: our code is one byte longer - the sound set index is sign-extended
 // (`movsx ebp, ax`) where retail copies the dword, and we call 0x219070 with two arguments where retail passes one.
+// MiniMax S (11-14): no lower score (17): the set index is still sign-extended (movsx ebp, ax) where retail copies
+// the dword, and this build still pushes two arguments where retail calls 0x219070 with one; both are fixed by that
+// callee's declaration in another file, and the delayed start still stores the flag byte before the start time.
 // @retail 0x126000
 long function_126000(long tag_index, long listener_index, s_sound_play_state *state, long rate_limit_stage)
 {
