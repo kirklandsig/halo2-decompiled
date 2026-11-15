@@ -590,6 +590,10 @@ s_1a8a10 g_4453c0[] =
 // place in both sums 31/31/29/29/29/29/29/29, the frame-transform form 31 at every phase, the identifier/index/score order
 // 15 at every phase. On that order the array stores [0],[1],[2],[3] 16, [2],[3],[0],[1] 18, [3],[1],[2],[0] 19,
 // [1],[0],[3],[2] 16; the actor pointer to const 17 (same code).
+// Round 164 (m3 lane 7, fast): the final switch writing a separate 2D point for 0x1f57f0 (as 0x1a83b0 passes one),
+// declared at the switch or with the rotated point 17/17 (same code, it shares the array's slots); the rotated point as a
+// two-element real array 17 or typed as a 2D vector 17 (same code: its y store still does not stop the j reuse); the
+// facing copy made before the 0x1f5390 call 170 (564 bytes); a 600 s permuter run, 54 tries, best 17.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

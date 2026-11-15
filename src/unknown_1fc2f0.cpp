@@ -723,6 +723,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // k, j, i statement sum 79; `delta = velocity;` then the three in-place subtractions i, j, k 129 (393 bytes); the squared
 // length as the one expression k*k + j*j + i*i on the j, i, k deltas 32 (same code); `delta` declared ahead of
 // `velocity` 32 (same code: the name/declaration-order slot tip does not move this frame).
+// P516: Complete correction admission, including both lazy location comparisons, carried in
+// bool/byte/short/long, then complemented: 46/46/46/46/46/46/46/46 (366 B; first +0x20).
+// NOT kept: all regress; original limit/location gate, prediction, delta and correction helpers restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

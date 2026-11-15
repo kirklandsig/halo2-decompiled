@@ -190,6 +190,9 @@ static inline long bungienet_user_voice_setting(short kind)
 // `kind == 0` arm ahead of the `kind == 1` arm 32 (103 bytes: retail's ECX/AX pair, the extra test survives); the volatile
 // read passed straight as the selector's argument, index first 5; the availability test as one returned expression 4;
 // `short const kind` 4.
+// Round 200 (m3 lane 4, fast, all with the volatile read): the controller looked up for the read and again for the store
+// 12 (95 bytes); the changed flag declared above the kind read 33 (94 bytes); the controller as a reference 4; the voice
+// setting read into a local ahead of the availability test 7; setting and old setting as `dword` 4.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

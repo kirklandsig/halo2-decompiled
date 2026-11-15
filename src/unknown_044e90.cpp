@@ -31,6 +31,7 @@ struct s_visibility_bound_record
 // still in the head, where retail forms the entry address with a lea into ebx from a sign-extended index before the
 // register saves and this build forms it with a shifted copy added to the table after them; the part centre's body
 // is inlined from 0x142570, whose file this lane may not edit.
+// MiniMax R (11-15): no new form, no lower score (443): retail still forms the entry address as a sign-extended index scaled by the entry size and added to the table, and the part centre is still 0x142570's body inlined from another file.
 // score 443 (was 443): earlier 476; plain, 1760 B: the releases through the existing release_visibility_list (moved from
 // earlier 443 was 476 (plain, 1760 B); the releases through the existing release_visibility_list (moved from
 // score 443 (was 443; 476 before; plain, 1760 B): the releases through the existing release_visibility_list (moved from

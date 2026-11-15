@@ -1562,6 +1562,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
+// MiniMax D (11-15): no new form, no lower score (566): the frame is still 0xf8 against retail's 0xfc and the definition pointer
+// still sits at frame+0x0c where retail has it at frame+0x08, so the argument slots after the prologue pair with the wrong rows;
+// the 1.0f constant is loaded before the biped index store here and after it there, and the body is 2816 bytes against retail's
+// 2828; the dword the frame is short of is the gravity argument's, and the inline accessor that would supply it is a new function
+// in this call graph, which flips the matched 0x54590.
 // MiniMax B (11-13): no new form, no lower score (566); the frame is still 0xf8 against retail's 0xfc, and the call to 0x1e5bb0 still passes 17 values where retail passes 21, which the callee's own declaration decides.
 // score 566 (was 566): earlier 585, 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
 // earlier 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
@@ -2846,6 +2851,11 @@ bool function_1d5120(s_havok_component *component, long rigid_body_index, long a
 void __stdcall function_1c3770(long object_index, dword flags);
 
 /* steps a dead biped's ragdoll settling (+0x3aa) toward rest */
+// MiniMax E (11-15): no new form, no lower score (63): clearing +0x349 through a byte field of the flags word,
+// as retail's `and byte ptr [esi + 0x349], 0x9f` does, measures 103 (270 bytes against retail's 245) and the
+// frame's EBP and the count transport stay; what still differs is unchanged: retail tests the +0x3aa byte in
+// place and reloads it at the call, this build reads it once, and retail takes the settling count in EAX with
+// six stack arguments, whose declaration lives in another file.
 // MiniMax I (11-14): no new form, no lower score (63): retail still tests the +0x3aa byte in place where this build sign-extends it into a long, and retail clears +0x349 with a byte read-modify-write where this build hoists 0x9fff into a register and does word clears (the struct has no byte field at +0x349); the settling count still travels to 0x1d5120 as a stack argument, whose declaration lives in another file.
 // score 63 (was 63): extra EBP (the Havok base loaded early), count transport and the hoisted 0x9fff flag clears differ.
 // MiniMax H (11-12): no new form, no lower score (63): byte-typed flag bitfields (103), a byte view of +0x349 clearing through the high byte (103), the count read again at the call through BIPED_GET (76) or in place (87) and the char body with a short selection (76) all measure worse; the extra EBP, the widened count test and the hoisted 0x9fff word clears remain.
@@ -3065,6 +3075,24 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // then all complementary: 111/131/126/155/149/153/174/174. NOT kept: no exact
 // EBP/count/body/flag repair; original predicates and complete body restored.
 // MiniMax H (11-14): no new form, no lower score (63): retail takes the settling count in EAX and passes six stack arguments where this build passes seven, and 0x1d5120's declaration and definition are in another file.
+// M3 lane 3 r245 (fast with 0x1d5120/0xe0d70/0x1c3770; 0x1d5120 77 throughout). Our 0x1d5120 now already takes the count in
+// EAX with six stack arguments, so the re-read forms were re-measured. NOT kept (a mix: the count read through a second
+// lookup while `biped` serves every other use), 63 -> 49 plain (245 bytes, no EBP; the entry is retail's through +0x38): the
+// byte tested in place (no `steps` local), the count read again at the call as `(char)BIPED_GET(arg_159e6d)->unknown3aa`
+// (matched 0xdd0d0 reads a field through the macro beside its `biped` local the same way), and 0x1d5120 declared (..., count,
+// rate, result) with its definition and this call; the same with `(char)biped->unknown3aa` at the call 79 (252 B, the byte
+// cached), the reorder alone 63 (same code). What is left on the 49 form: the threaded body selection (retail's is the
+// getter's short select), the rate computed after the `&settled` push and 0x9fff hoisted into EDI. Evidence for the order: retail
+// loads the tick-rate pointer into EAX before the count goes into EAX, which only fits evaluating the rate ahead of the count,
+// i.e. the count left of the rate; with (..., rate, count, result) the rate pointer takes EBP and EBP is pushed again (68).
+// Forms: header getter + `(char)biped->unknown3aa` 99 (BL caches the byte, argument to the stack, ret 4); getter + second
+// lookup 91, with (..., rate, count, result) 92, with (..., count, rate, result) 67 (the getter's size compare then takes a
+// push/pop EBP; retail compares from memory), that with `(char)biped->unknown3aa` 98, bitfield clears 67 (same code), getter
+// into a short 58 (16-bit NONE compare), a byte bitfield view of bits 13-14 91 (load/and/store), a shared final clear after
+// if/else 67 (same code); the reorder alone on the old body 63 (same code); the macro at every use with no `biped` local 172.
+// On the 49 body: the rate named before the call 49 (computed on x87); the +0x134 flag through bit_vector_set 57 (237 bytes,
+// the failure path then retail's exactly); that plus the clears through word_flags_set 85; that plus the getter 57; the
+// first clear ahead of the settled store 49 (same code).
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -3444,6 +3472,11 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
+// MiniMax E (11-15): no new form, no lower score (324): the frame is still 0x48 against retail's 0x4c, retail still
+// sign-extends the state byte at +0x34b where this build zero-extends it (the signed view measures 361, under the
+// keep bar), and retail still keeps the flags bit 9 in a stack slot before the 0xe16b0 call where this build
+// computes the bit as part of the earlier held test; that slot needs a local whose address is taken, a form this
+// lane may not use, so the body stands.
 // MiniMax E (11-14): no new form, no lower score (324): the frame is still 0x48 against retail's 0x4c, retail still
 // sign-extends the state byte at +0x34b where this build zero-extends it (the signed view measures 361, a gain of one
 // on a function still above 30, so it is not kept), and retail still keeps the flags bit 9 in a stack slot before the
@@ -3751,6 +3784,11 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // The 355 reduction gains seven above 30; all other reduction forms regress.
 // P476: Current hit-tag/shared-direction graph: existing weighted-add/centroid-scale/impulse-scale producers, masks 1/2/4/3/5/6/7, then fallback scale. Scores 362/362/362/362/362/362/362/362.
 // NOT kept: unmatched diagnostic source forms; original executable body restored.
+// M3 lane 3 r245 (fast with 0xdd360 222, 0xe16b0/0xe18d0 matched; base 324, both sides `ret 4`, frame 0x48 against 0x4c): the
+// random scales through a named seed pointer 324 (same code); the switch on `(char)biped->unknown34b` 323 (movsx as retail);
+// `total` declared ahead of the random scales 354 (1924 B); re-measured diagnostic, not kept: the held 0xe16b0 unread bool
+// parameter fed from `(flags_348 >> 9) & 1` 407 on this body (1914 B, frame 0x4c, but the index moves to EAX, plain `ret`;
+// 0xdd360 224), with the `(char)` switch 407. Still BLOCKED-BY 0xe16b0 (contributor) for the frame.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -5433,6 +5471,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// MiniMax E (11-15): no new form, no lower score (79): the first difference is still inside the shared rotation helper,
+// whose body lives in src/unknown_1eb8a0.cpp and is not this lane's file, and the operand orders the earlier rounds
+// measured still sit at or above the body, so the body stands.
 // MiniMax I (11-14): no new form, no lower score (79): the first difference is still inside the shared rotation helper, whose own file this lane may not edit, and the operand orders measured in the earlier rounds all sit at or above the body.
 // score 79 (was 79): first rotation and staged cross product operands (load-first where retail copies the axis
 // register), 894 against 887 bytes. Round 112 (m3 lane 12) note at the end.
@@ -5713,6 +5754,12 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // excluding native/native: 204/204/218/248/248/218/248/248. NOT kept: no exact
 // first-rotation/final-cross operand repair; original snapshots and full body restored.
 // MiniMax H (11-14): no new form, no lower score (79): the frame agrees (0x24) and the first difference is still at +0x107, inside the shared rotation helper, whose own file is not this lane's.
+// M3 lane 3 r245 (fast with 0x1ecf50/0x30bf0): dead-local phase scan (diagnostic, n unused locals after `axis`, n = 0..10):
+// 79/153/77/85/136/136/136/130/130/153/85. Per block: the first rotation's products are retail's at n = 2 (887 bytes, its dot then
+// summed in the other order), the second rotation's at n = 0 and 3, and the two crosses differ at every n, so no symbol count
+// alone reaches the bar. Forms: the normalize length named 153 (the n = 1 code); length and rate named 162 (857 B); `side`
+// scoped around the crosses 79 (same code); rotate_direction's dot folded into its projection 144 (905 B; matched 0x1ecf50
+// lost); the crosses as left = up x forward then up = forward x left (cross3f, cross3f_staged) 91, both through cross3f 203.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

@@ -1535,6 +1535,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // MiniMax A (11-13): no new form, no lower score (60): the membership helper's mask and shift operands swapped compile to the same code (all four network-voice scores unchanged), and the register split stands (the player bit in EBX and the entry size in EBP where retail has EBP and EBX).
 // score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
+// m3 lane 5 r185 (fast with 0x56380/0x564c0/0x53b00/0x56000, control 60; both builds return with ret 0xc): one loop
+// counter declared at function scope for both loops 60 (same code); the membership result in a named bool 60 (same
+// code); the entry size typed short 145 (456 B, 0x56380 13); the include_mask arms swapped with the test negated 72;
+// the success length as `2 + written * entry_size` 60 (same code); the bit clear as `&= (word)~(1 << player)` 60 (same
+// code). Re-measured: the flag byte stored in each include_mask arm 176 (472 B), the player bit signed 60 (same code).
 // MiniMax H (11-11): no new form, no lower score (60); the membership helper's mask test written with the shift first gives the same code, so the mask load still reaches EAX before the shift where retail keeps the zero result in EAX and loads the mask into ECX after it.
 // MiniMax S (11-11): no lower score (60): the player bit as a named local inside the membership helper 60 (same
 // code), the entry size as `include_mask ? 13 : 11` 147 (461 bytes), and the same size with the retail order

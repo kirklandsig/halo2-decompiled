@@ -411,6 +411,12 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // test nested in its own if 2; the curve address through an inline helper taking the data pointer and the offset 8 (the
 // plain sum's schedule: the add ahead of the scale load); the curve set and the copy declared at function scope 2; the
 // guard as an early return 2 (all the 2s the same code).
+// Round 200 (m3 lane 4, fast): retail's tail is the samples plus the offset with the samples as the add's destination
+// (EDX) and the offset in the dying EDI; every form whose samples read is a leaf or as shallow as the offset's makes the
+// offset the destination. A deeper samples read gives retail's tail registers but rotates the head's: through a promotion
+// pointer 22, through the full promotion expression 25 (re-measured). On the plain sum: the offset in a local read before
+// the count store 10; a pointer to the offset field 8; entry declared bare first and assigned after data 8; data renamed
+// to sort after entry 8; no data local, the full promotion expression for the entries and the samples 25.
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {
