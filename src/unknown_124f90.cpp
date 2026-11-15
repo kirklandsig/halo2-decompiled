@@ -697,6 +697,14 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // round: the two index dwords and the type/reset bytes reached as two-element arrays (diagnostic) 3, same code, so constant
 // array elements do not chain; the two zero bytes cleared with a two-byte memset 87 (577 bytes: one word store, the pool
 // pointer hoisted).
+// Round 84 (m3 lane 2, fast; the fast baseline agreed with plain at 3): the sound index and the driver index as one
+// chained NONE store, either order, 8 each (the stores then follow source order exactly); the driver index stored from
+// `voice->sound_index` 3 (forwarded, same code); unknown0e stored from `(short)voice->sound_index` 70 (571 bytes,
+// diagnostic); the bit-vector fills through SOUND_SYSTEM with no `system` reload 3 (same code). Re-measured: the type
+// stored first 2 (only those two stores swap; `inc esi` stays right after `inc edi`), both increments in the for 10
+// (`inc esi` rises to just after `or ecx, -1` and `inc edi` stays at the loop end). So the instruction that feeds the
+// loop's final compare rises to just below the last flag writer before it, while the stores and `inc edi` keep source
+// order: retail needs a flag writer (or a dependency) after the second store at scheduling time.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -3915,6 +3923,10 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // Also: the class-flag byte read as a signed short 79, as a char 72 (folds); that flag in a named bool after the
 // range 78; the voice's previous owner in a named local for its three uses 78; flag4 as a shift of the playback flags
 // word 78; the source-updated test as a shift of that word 78.
+// Round 84 (m3 lane 2, fast): permuter on the range-in-case-0 base (78; anneal, 600 s, 56 tries) best 62, only the
+// listed word voice index. On that base: `reason` declared at the loop-body top 78; case 0 without its closing 0xe stop
+// (diagnostic) 171, the swap kept; the range index named as a short before the pointer 88; the entry reading the pool
+// global directly with `sounds` set only by the increment 78 (same code); the voice as `g_4e6378 + voice_index` 78.
 // @retail 0x1282d0
 void function_1282d0(void)
 {

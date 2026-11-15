@@ -183,7 +183,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
-// score 622 (was 636): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
+// score 622 (was 622; 636 before): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // `fld [rate]; fmul st(1)`, and copies nq with integer moves). Still: q in EBX at entry (ours d), the 12/8 factor
 // selected before t in each clamp, xmm homes and coefficient schedules.
 // MiniMax G (11-14): no new form, no lower score (636): retail keeps q (the fourth stack argument) in EBX from entry
@@ -547,6 +547,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // the output-globals local 629. On the double-v body (fast 614): the output-globals local 612; the void read-back tail
 // 614; the first settle arm's tick scaling through the existing vector3f_scale 614; `vector3f qr = *q;` 664 (2879 B);
 // the third clamp as PIN with the factor first 614 (rm 267).
+// Round 84 (m3 lane 2, plain with the matched caller 0x1eb6f0, MATCH in each; --fast reads 614 under a builds-differently
+// caveat): the closing flag test inverted with its arms swapped (`fail || ticks_left <= 0 || new_counter >= duration + 6`
+// sets the bit first) 622 (same code); `long new_counter = ++s->counter;` 627 (2893 B); the second clamp's length as one
+// ternary 622; the active block's settle weight as `PIN(s->alignment, 0.f, 2.5f) * 0.2f` in one statement 622; both
+// direction refresh tests as `!function_30bf0(&s->direction)` 622 (each same code).
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

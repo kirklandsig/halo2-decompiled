@@ -489,6 +489,10 @@ struct c_aggregate : c_child
 // P496: Paired/complete callback source-key/destination/capacity transports, pre-zero and immutable binding graphs:
 // 146/146/31/146/146/146/146/146. NOT kept: no exact native storage/producer recovery; escaped callback output and low loop homes remain.
 // Original complete executable body restored.
+// Round 84 (m3 lane 2, fast): v5's capacity as `sizeof(blocks) / sizeof(blocks[0]) - total` 31 (same code); the cleanup's
+// item object read into its local before the test 74 (368 bytes); v5's block argument as `blocks + total` 31 and v6's as
+// `blocks + j` 31 (both same code); the dispatch inner bound read in the for condition each pass 121 (388 bytes). Frame
+// 0x8024 in each; still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
