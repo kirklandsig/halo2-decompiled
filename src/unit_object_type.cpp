@@ -3638,6 +3638,7 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // MiniMax G (11-12): no new form tried this round, no lower score (12): the root index and the rigid-body offset
 // are still in the opposite registers from retail, and the short index that would swap them changes the width test.
 // Earlier (12, was 12): root and rigid-body offset saved registers differ (a short index gives
+// score 12 (was 12): root and rigid-body offset saved registers differ (a short index gives
 // retail's registers but tests at 16 bits before extending: 3 aligned differences, 293 bytes);
 // entry result 89; native short body index 12 at 293 bytes; root cursor/seed 110/96;
 // parent while, existing keyframe method and point first 12; point value copy 46;
@@ -7042,6 +7043,7 @@ done:
 // pointer local, `holder` re-read: no change); `or byte [mem], imm` flag updates (ours load/or/store through
 // AL); the tail loading ESI = unit_index at the join. On the committed (stdcall) convention these forms
 // Earlier convention forms were worse (facing copy 310, scale split 263, __assume 271, duration 270), so they are not applied.
+// score worse (facing copy 310, scale split 263, __assume 271, duration 270), so they are not applied.
 // Round 82 (lane 11): the declaration moved after 0xbd020's (still __stdcall) gives retail's convention, the
 // direction in ECX and the rest pushed: 254 -> 250 (aligned 198 -> 96), and matches 0xc42e0.
 // Round 151: __stdcall in place of the file's /Gr
@@ -7860,6 +7862,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // held countdown as complete outcome 239; sound-request/flag-word role names 244/244.
 // NOT kept: ties, regressions or subthreshold gains; native flag dword transfer remains.
 // Earlier 244 (was 253): frame 0x24 versus retail 0x28; native word flags use a dword stack transfer.
+// score 244 (was 253): frame 0x24 versus retail 0x28; native word flags use a dword stack transfer.
 // P494: result before lookups 245; positive crouch admission 244; direct held outcome 236;
 // requested zoom initialized before its test 290; complete rate producers 244;
 // sound aggregate 244; both last-level divisors named 244; full-scope sound request 278.

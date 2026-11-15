@@ -78,8 +78,23 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
-// score 382 (was 382): earlier 382, 391, 390; frame 0x64 and the node-pointer/group-table roles (EBX/EBP) agree; the selected defaults' homes,
+// MiniMax R (11-15): no new form, no lower score (382). The frame agrees (0x64) and so do the marker position, both visited
+// bitmaps, the group record pointer, the candidate point home, the nearest point, the matched record, the pass counter, the
+// direction step, the group loop index, the best distance and the result byte; six homes are permuted. Retail's selected group,
+// selected point and selected endpoint sit at frame -0x20, -0x3c and -0x40 where ours sit at -0x24, -0x58 and -0x44; retail's
+// node table sits at -0x44 and its group base at -0x24 where ours sit at -0x20 and -0x50; retail's group point sits at -0x58 where
+// ours sits at -0x40. Retail compares its selected point as a dword and its selected endpoint as a word; ours compares them the
+// other way round. Retail keeps the per-pass found flag in the dead argument slot; ours keeps a separate byte beside the group
+// loop index. Dropped forms: the selected point as a long (453), the selected endpoint as a short (383), both together (421), the
+// candidate point as a short (456), the three selected indexes declared with the group loop (425), the group and node pointers
+// declared the other way round (401). A permuter run over this body (20 tries in 302 s) found only a one-point variant
+// (381) that adds a volatile cast and one-use temporaries, so it was dropped.
+// score 382 (was 382): frame 0x64 agrees and so do the marker position, the bitmaps and the group record pointer; six selected-index
+// and table homes are permuted, the selected point and endpoint are compared at different widths, and the found flag sits in a
+// separate byte rather than the dead argument slot.
 // point bitmap, endpoint homes and x87 scheduling differ.
+// Earlier 382 (was 382): earlier 382, 391, 390; frame 0x64 and the node-pointer/group-table roles (EBX/EBP) agree; the
+// selected defaults' homes, point bitmap, endpoint homes and x87 scheduling differ.
 // M3 lane 8 r170: 1-7 dead long locals at the top 382 each (fast; no phase effect on the per-call x87 square orders).
 // Compile-only x87 screen (it reproduces this body's four sites: the first is retail's, the next three keep the same
 // order where retail rotates it per call): the length helper with a named sum, with named squares, as

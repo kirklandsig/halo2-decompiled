@@ -187,6 +187,10 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // the bounds copy as memcpy 14 (same code: ADD stays); the second step's product commuted 14 (same code); the running
 // position declared first in the function 14 (same code). Re-measure: named advance 55 (the pulse call then sinks below the
 // half extents).
+// Round 166 (m3 lane 7, fast with 0x2008fc 0x200891, control 14): the first pass's width scale defaulted in an else arm
+// 214 (856 bytes); the corner array as a four-point aggregate initializer 14 (same code); the second x step moved up to just
+// after the corners 98 (843 bytes, the product spill goes); one pulse pointer at the draw loop's top ahead of the entry
+// pointer and mask test 14 (same code); the first pass's bitmap tag index named once for its test and lookup 14 (same code).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

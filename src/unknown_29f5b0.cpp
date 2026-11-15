@@ -998,6 +998,10 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // then lands before the fcos as in retail, but the add still precedes `push esi`); the yaw angle in a named local 28 (90 bytes);
 // the call through a forced-inline wrapper that supplies the up vector and both constants 6; the element as the table
 // pointer then `flag += index` 6; the effect index read through its own address 34 (95 bytes; 0x2a1120 8).
+// M3 lane 5 r187 (fast with 0x2a1120): the element as the block address plus `index * sizeof` bytes 6; the element subscripted
+// from a scenario local at each field use 76 (125 bytes; 0x2a1120 8); a `dword` effect index with `true, true` 6; the flag
+// index read once through its own address 15 (93 bytes; 0x2a1120 13); `forward.i = forward.j = cosf(pitch)` then `*=` by the
+// yaw cosine and sine 6.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {

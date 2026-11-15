@@ -833,6 +833,7 @@ static inline long font_character_pixel(long alpha, long color)
 // P530: Plain switch/ordinary fill induction pairs (for/while/body increment),
 // eight nonoriginal pairs: 59/59/59/59/59/59/59/59. NOT kept: no native
 // parity/literal/run-register repair; original indexed fills and complete body restored.
+// MiniMax E (11-15): no new form, no lower score (59): the alpha's parity is still masked in sixteen bits (mov cl, al; and cl, 1; movzx cx, cl) where retail widens it to thirty-two (xor ecx, ecx; mov cl, al; and ecx, 1); the twin helper without the byte cast measures 45 but a twin of a shared helper is not kept.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

@@ -120,6 +120,9 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // used for i and j 16; the entry declared first with a palette-record pointer for the tag 60 (354 B); the direction's k
 // stored first 27; an early return when the structure has no value at f4 16. Still BLOCKED-BY 0x17e670 (contributor
 // code; held patch unchanged).
+// Round 90 (m3 lane 15): no trial; baseline 16 at +0xba, every difference is still the 0x17e670 call's register pair (ours the
+// entry in ECX with `xor edx, edx` for the source, retail the entry in EDX with `xor ecx, ecx`). BLOCKED-BY 0x17e670 (contributor
+// code); held patch unchanged.
 // @retail 0x23aad0
 void __stdcall function_23aad0(long previous_address, long current_address, long count)
 {

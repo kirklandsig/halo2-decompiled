@@ -1115,6 +1115,13 @@ struct s_tail_transfer_traits
 // MiniMax S (11-15): no new form, no lower score (144): everything after the two copies differs only by register assignment,
 // with the record pointer and the selection index trading EBP, EBX and EDI, so the loads, the -1 sentinel and the branch
 // targets all differ.
+// Round 248 (m3 lane 3, fast with 0x152580, 0xcbe60 and 0xcbd50): lane 6 r180's lead patch re-applied reproduces 3 at 826
+// bytes; the three are the operand order of the three unit lookups' addresses (ours data + index, retail index + data, same
+// registers). On that lead: the lookup helper's address as index-first integer arithmetic 3, the index masked as unsigned 3,
+// data-first integer arithmetic 3 (the order is canonicalised; matched 0xd1540's retail computes the index first and
+// addresses data + index, here retail loads the data first and addresses index + data); both weapons through the existing
+// 0xcbd50 with the slots read through one pool copy 170 (835 bytes); primary through the existing unit_get_current_weapon
+// and secondary through 0xcbd50 161 (816 bytes). Body unchanged.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
