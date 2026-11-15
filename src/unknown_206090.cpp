@@ -139,7 +139,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 }
 
 #include "vector_products.h"
-// score 1391 (was 1367): earlier 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
+// score 1375 (was 1391): earlier 1367, 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
 // 0x2078f0 twice with unknown38 0 then 1, 0x2079f0 on both its paths, 0x227990, 0x2294a0, 0x22a4b0), loop shapes (the found
@@ -571,6 +571,13 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // at each use 1423; the impact strength at each use 1456 (6281 B); the field_70 update as one ternary add 1391.
 // Same code: local_27 and local_15 as if/else. Re-measured: the 0.2 s conversion inside the test 1398 (6265 B); the direct
 // `return a && b && c && d;` 1413 (6275 B; retail's exit shape, pops ahead of the last tests).
+// M3 lane 1 r104 (plain; the fast check CAVEATs this function): the duplicate-impact search's not-found test as
+// `local_75 >= local_33` 1391 -> 1375 at 6238 B (kept: the loop's own exit compare now threads past the re-test, as
+// retail's not-found path goes straight to the capacity test; the found exit still re-tests where retail jumps out). On
+// it: the search compare in the loop condition 1375 (same code); the capacity as the array's element count 1375 (same
+// code); local_12's negation on its first factor 1420; the steering sign as a named long 1375 (same code); the
+// velocity-change bound's product named ahead of the mass clamp (retail computes it there) 1377. Before it: the magnitude
+// helper taking its vector by value 1391 (same code as the snapshot copy).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
@@ -792,7 +799,7 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
                         for (local_75 = 0; local_75 < local_33; local_75++)
                             if (local_35[local_75] == local_74)
                                 break;
-                        if (local_75 == local_33 && (dword)local_33 < 32)
+                        if (local_75 >= local_33 && (dword)local_33 < 32)
                             local_35[local_33++] = local_74;
                     }
                 }

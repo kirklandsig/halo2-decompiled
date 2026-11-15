@@ -1422,6 +1422,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // B); `result` declared after the validity exit 766 (same code); the group loop bounded by the summary's machine count 783;
 // `first` declared before `last` 766 (same code); `available` computed from out's player count after the out stores 879 (2764
 // B). Body unchanged.
+// M3 lane 1 r104 (fast with 0x73530, 8 throughout): the output memset below the admission test 815 (2812 B); the type-5
+// scan's exit as `return false;` 766, the machine-user compare as `memcmp(...) == 0` 766, the average as an explicit
+// division 766 (same code each); the player loop's variant lookup hoisted above the loop 846 (2796 B). Re-measured: a
+// `long` histogram 844 (frame 0xb4; the session still arrives on the stack in EBP).
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
