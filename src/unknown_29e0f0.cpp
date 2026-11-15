@@ -93,6 +93,8 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // and table homes are permuted, the selected point and endpoint are compared at different widths, and the found flag sits in a
 // separate byte rather than the dead argument slot.
 // point bitmap, endpoint homes and x87 scheduling differ.
+// Earlier 382 (was 382): earlier 382, 391, 390; frame 0x64 and the node-pointer/group-table roles (EBX/EBP) agree; the
+// selected defaults' homes, point bitmap, endpoint homes and x87 scheduling differ.
 // M3 lane 8 r170: 1-7 dead long locals at the top 382 each (fast; no phase effect on the per-call x87 square orders).
 // Compile-only x87 screen (it reproduces this body's four sites: the first is retail's, the next three keep the same
 // order where retail rotates it per call): the length helper with a named sum, with named squares, as
