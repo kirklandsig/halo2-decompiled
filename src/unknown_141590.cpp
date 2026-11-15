@@ -1287,6 +1287,9 @@ void function_143250(
 // does not hold for every sum. On lane 9 r120's r3_r2-after-r5_r1 form (re-measured 939, 10777 B; a declaration move,
 // kept only with a match): s7_r7_r6_r6 after s7_r7_r7_r7 1536 (10789 B), s7_r6_r7_r7 after s7_r6_r6_r6 1357, r2_r2
 // and r2_r2_s105 after s35_r2_r3_r3 1597 (10739 B). Body unchanged.
+// P511: Standard real-return roots, band-two 15/5 and band-three 2/35/105/21/7, then all seven:
+// 1307/1307/1324/1322/1322/1324/1324/1266. NOT kept: nonexact root-return/precision contracts only change spill/scheduling;
+// qword fsqrt producers, frame 0x2fc versus 0x300 and displaced scalar homes remain. Original polynomial restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
