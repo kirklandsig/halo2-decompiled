@@ -226,6 +226,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
+// MiniMax I (11-15): no new form, no lower score (49): the result byte's register split remains (retail keeps the false
+// result in bl and sets it only after the compare); no untried form reached it this round.
+// MiniMax G (11-14): no new form, no lower score (49): retail keeps the false result in bl and sets it only after the
+// attachment, ours keeps it in ebp; retail reloads the object table's data pointer and recomputes the scaled index
+// between the header flag test and the object read, ours shares one address between the two reads.
+// MiniMax S (11-14): no new form, no lower score (49): retail keeps the false result in BL from before the creation call and sets it only after the attachment, branches on the creation call's result instead of materialising it as a 0/1 value, borrows EBP around the header flag test and loads the object table's data pointer again for the object read, where ours keeps the result in EBP and shares one header address between the two reads; the result byte at the entry and the data reload are not reachable from this file.
 // score 49 (was 49; m3 lane 2 r79 at the end): unchanged this round: retail keeps the false result in BL from before the creation
 // call and sets it only after the attachment, and it branches on the creation call's result instead of
 // materialising that comparison as a 0/1 value; retail also borrows EBP around the header flag test and
@@ -1190,6 +1196,10 @@ bool c_projectile_type::v8(long a, long b)
 // from a forceinline taking the object 36 (189 bytes); the index reference bound at the function's top, before the
 // call, 12, with the word read 5. In the mask listings the group data reuses ESI after the flags (retail: after the
 // object). Diagnostic, compile-only: /G5, /G6, /G7 and /GB all keep `movzx eax, ax` for the word read.
+// Round 246 (m3 lane 3, fast; the mask alone re-measured 12), all with the full-width mask: the entry assigned to the
+// object local (diagnostic) 12; the group row as a `long *` indexed `(index & 0xffff) * 3` with the value at [1] 12; the
+// group data base in a local 12; `real &` references for both state fields 12; the volatile definition copy between the
+// object and the flags 51. The entry always takes ESI; the mask hands it the flags' ESI, the word read the object's.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

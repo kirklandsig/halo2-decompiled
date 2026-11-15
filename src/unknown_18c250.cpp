@@ -417,6 +417,12 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // pointer 22, through the full promotion expression 25 (re-measured). On the plain sum: the offset in a local read before
 // the count store 10; a pointer to the offset field 8; entry declared bare first and assigned after data 8; data renamed
 // to sort after entry 8; no data local, the full promotion expression for the entries and the samples 25.
+// Round 184 (m3 lane 6, fast): every non-memcpy form below has the plain sum's schedule (samples into EAX ahead of the
+// scale, the offset the add's destination): an inline setter returning the set's address, called in the call's argument
+// list, 8 (with the memcpy'd samples 2, same code as this body); an inline tag-data address helper taking (tag data,
+// offset, size) over the data head 8; the set as the existing two-field tag-data aggregate with the plain sum 8; the
+// samples fetched through an inline out-parameter getter into an address-taken local 8 (only memcpy keeps the scale first);
+// the offset through an inline entry getter, plain samples 8, memcpy'd samples 2 (the getter's result propagates).
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {
@@ -629,6 +635,9 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // MiniMax I (11-15): no new form, no lower score (184): the only lever left is the held chain - `inline` on 0x188790's
 // definition, which lives in src/unknown_1887d0.cpp and not in this lane's file (113 alone, 49 with the ternary this body
 // already keeps), and the steps after it rest on match-only forms; the body stands.
+// score 184 (was 184): MiniMax R (11-15): no new form, no lower score; retail keeps the object in EBX with a 0x80 frame
+// where this build keeps it in ECX with a 0x84 frame, and that follows whether 0x188790 is expanded, which is decided
+// by its definition in src/unknown_1887d0.cpp: BLOCKED-BY that file.
 // score 184 (was 184; earlier 246, 264, 279, 280, 293): the top field as a value ternary (round 170, plain). HELD (needs a
 // ruling): `inline` on 0x188790's definition, 113 alone and 49 with the ternary (build/r170/held-0x18cbc0.patch in the m3-lane6
 // worktree); round 170's line at the end of this note has the forms.

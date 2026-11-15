@@ -351,6 +351,11 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // record_pool_allocate(...)` 77 (same code); the walk's NONE return after `initialize = true;`, outside the walk block,
 // 145 (508 bytes); the found arm without braces 77; the merge test as `if (result == NONE) return result;` before an
 // unconditional record block 79 (507); the walk step's ternary as `index != NONE ? ... : 0` 81.
+// M3 lane 2 r87 (fast with 0x3db00/0x3dd10/0x3d2c0): the 9 form re-measured 9 (519 B); on it `initialize` declared first
+// 9 (same code), the cached index read straight into result in the found test 153 (506 B), the walk closed by `if (result
+// == NONE) return cache_index; initialize = true;` 83 (508 B), `if (result == NONE) return result;` closing the else arm
+// with the record block unconditional 87 (504 B); on main the three record lookups through a three-use inline getter 77
+// (same code). Original body restored.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

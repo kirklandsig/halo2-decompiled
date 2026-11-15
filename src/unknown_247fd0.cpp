@@ -725,6 +725,13 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // products: 384/573/352/625/421/575/627/650. NOT kept: All regress; native separate effect address, gate/settings
 // homes and extent are not recovered. Three matched controls remain exact. Original complete executable body
 // restored.
+// M3 lane 10 r108 (fast with 0x247fd0 and 0x248cc0, both stay matched; control 334): the motion kind read into a named short
+// ahead of the age step 354; the child reciprocal computed ahead of particle_system_link 334 (1654 bytes); the probe's NONE
+// store ahead of the probe copies 334 (other code); the parent count increment ahead of the field_3c store 335. Same code:
+// the flag word update as one `(field & 0xe004) | 4` statement, the gate through a named effect pointer read once, the scale
+// rows as `*= arg_7` or `field * arg_7`, the age step with the sum's terms swapped, the motion-kind short read just before
+// its test, the definition index cast to short, the velocity's j and k rows as `+=`, the child's flag stored after its time.
+// Retail's `xor edx, edx; mov dx, [ebp + 2]` for the flag word is also in matched 0x247fd0 (same source), so it is schedule.
 // m3 lane 14 r96 (fast with 0x247fd0 and 0x248cc0, both stay matched; masked = registers and stack offsets masked,
 // control 334 masked 70, 420 instructions against retail's 430): the in-loop tag lookup through particle_object_for_tag
 // (retail inlines it there, as matched 0x247fd0 writes it) 371 (1696 B, 431 instructions, masked 56: the extra bytes are

@@ -1602,6 +1602,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // P509: Contiguous native flag-writer orders 3056/0365/3065/5603/6503/5630/6530/3560:
 // 32/32/32/32/32/32/32/32. NOT kept: no iterator/leave/request-home equality;
 // original flag stores and full body restored at the native frame and length.
+// P523: Actual handle full-width long/int/dword/unsigned-int bitfields 32/32/32/32;
+// busy full-byte byte/signed-char/char/bool fields 29/29/29/29. The 29 forms recover
+// handle-before-scaling (first +0x255), but NOT kept: three-count gain and no equality.
+// Original 12-byte row, comparator, requests, slot stores and complete body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2937,6 +2941,9 @@ struct s_scenario_scripting_view
 // P514: Native/returned source pointer/reference with branch-owned displacement and length/
 // self-dot metric, each on early/loop-owned short traversal: 96/90/84/95/96/90/84/95. NOT kept:
 // no native actor/counter/home repair; original complete search and helper calls restored.
+// P527: Existing difference/self-product scalar field-lvalue nodes start/end/output/self/
+// start-end/start-output/end-output/all: 80/80/80/80/80/80/80/80. NOT kept: no native
+// actor/counter/selector or guarded-data repair; original shared header and full search restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

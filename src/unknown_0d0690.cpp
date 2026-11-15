@@ -282,6 +282,10 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // all three x87 direction adds load the direction first; strength first so 170. On that body the accumulation through
 // the swapped vector3f_add, as `+=` rows, as `contribution + direction` rows 160/160/160; the no-lights arm first 191.
 // vector3f_assign with `+=` rows, colour/strength first 169/161.
+// Round 183 (m3 lane 6, fast; strength first / colour first): the pitch cosine named once as a double for both
+// products 30/121 (same code); guard returns for the flag, NONE and sky tests 243/251 (838/844 bytes); the sky index
+// as a short local 30/121 (same code); color declared before direction 36/127; a 600 s permuter run on the 30 form
+// (65 tries), none below its baseline.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -1372,6 +1376,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 }
 
 // score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (ours ends `ret 0xc` as retail).
+// MiniMax I (11-15): no new form, no lower score (529): retail hands this function its block in eax and its query in edx
+// while this build swaps them, so the frame stays 0x2c against retail's 0x28 and the selection result still spills where
+// retail keeps it in a register; the parameter order is retail's and the callers are in files this lane may not edit.
 // MiniMax B (11-12): no new form, no lower score (529); retail hands this function its block in eax and its
 // query in edx while this build swaps them, so its frame is 0x2c against retail's 0x28 and the selection
 // result spills where retail keeps it in a register; the parameter order that would fix the swap is
@@ -1786,6 +1793,8 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax I (11-15): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40 and the 0xd37f0 call
+// still hands its block and query over in the other order; the callee's own file is not this lane's.
 // MiniMax C (11-15): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40 (three stack slots
 // too many), retail still clears its flag byte at the entry where this build clears it after the first branch, and the
 // 0xd37f0 call still hands its block and query over in the other order; the forms for the frame and the homes are in the
@@ -2306,6 +2315,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
+// MiniMax I (11-15): no new form, no lower score (542): the frame is retail's 0x90, but the status, mesh, colour and sample
+// homes sit 0xc bytes lower than retail's, and the second arm's 0x13da30 lookup expands here where retail calls it; that
+// helper lives in another file.
 // MiniMax B (11-13): no new form, no lower score (542): aligned the two listings instruction by instruction: the frame is
 // retail's 0x90, but the status, mesh, colour and sample homes sit 0xc bytes lower than retail's, and the second arm's
 // 0x13da30 lookup expands here where retail calls it; moving the declarations does not move the homes, and that helper

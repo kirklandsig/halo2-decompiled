@@ -52,6 +52,12 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 
 /* the next recent player after the iterator's: a valid, online, known player
    with a name; iterator starts at the first entry and ends at NONE */
+// MiniMax R (11-15): no new form, no lower score (43): a separate 16-bit successor local does split the
+// successor from the index, but the compiler still keeps the index in a scratch register and copies it into
+// the entry pointer, so the successor's own register is a general one and the & 3 mask stays an immediate:
+// the successor local with the index stepped at the loop's end 51, the same with the successor declared ahead
+// of the loop 51 and the same with the index stepped before the eligibility test 49, all worse than the kept
+// 43, so the original body stands.
 // score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
 // retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
 // successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
@@ -444,6 +450,15 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the first form with the successor read through the table before the entry 55 (callers lose); the first form as a
 // guarded do-while 58 (callers lose); the `index = NONE` / `else index = next` form with the table-first successor 60
 // (137 bytes). Original body restored.
+// M3 lane 2 r87 (fast with 0x1a303b/0x2b393c): the test chain as three nested ifs (flags; a two-use XUID local for the
+// zero and machine-local tests; exclusion and name) with result and break 43 (callers kept), with early returns 52, with
+// early returns and a successor local 49, in a guarded do-while with result and break 43; the nested ifs in `while
+// (!result && index != NONE)` with a successor local stepped at the end 37 (player on the stack, ret 8, `mov al, 1; test
+// al, al` not threaded; callers 27/15). Original body restored.
+// P529: Existing offline-identity predicate returns its original comparison as
+// char/signed-char/byte/short/word/int/long/dword: eight 43 at 127 bytes.
+// NOT kept: no early ESI save, independent EBX successor, AL mask or failure-exit
+// repair; original private predicate and complete executable source restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
