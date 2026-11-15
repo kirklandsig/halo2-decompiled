@@ -1458,6 +1458,14 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // 216/216/216/216/216/218/218/218. NOT kept: All regress against reduced control 196, shorten to 420 versus native
 // 444, and lose the correct incoming allocation; full baseline 143 stays authoritative. Original complete
 // executable body restored.
+// M3 lane 6 r182 (all plain with 0x7afd0, 0x93aa0, 0x92ef0, 0x92d10, 0x94220, 0x94270, 0x942d0, 0x94420, 0x785d0; control 143):
+// the one retail-order switch as a free function (type, handler, message, address), the order lane P's rule gives for retail's
+// EAX/EDX/ECX plus a stacked address, caller updated, 217 (420 B: type ECX, address EAX, message stacked, as every one-switch
+// form); that switch as the method with every address use read through `const s_type_99af70 *const *sender = &address` 219
+// (424 B: the address stacks but its read is hoisted into EAX and the type stays ECX); 18 and 11 in the first switch with only
+// 5, 6, 7 in the late switch 221 (473 B, 0x7afd0 5); the sender-pointer reads on the kept two-switch body 143 (same code);
+// plain `inline` on 0x94420's member declaration on the kept body 143 (same code). A redeclaration of 0x94420 as
+// __forceinline after 0x93aa0 does not compile (C2761: a member may not be redeclared outside its type).
 // P509: Actual ESI-argument cases 8/24 moved to the terminal classifier, single and paired
 // orders: 194/194/226/226/198/198/198/198 fast (control 196; full 143).
 // NOT kept: two-point best or shorter/wider bodies; delayed ESI save and late expansion remain.
