@@ -258,6 +258,9 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // (same code); suffix's 20 loads so 330 (2334 B); message's nine loads so 316 (same code); all 32 loads so 330 (2334 B); the
 // explicit layout flags clear dropped (the inlined constructor clears it, as in matched 0x2b3a9d) 316 (same code). The buffer
 // homes do not follow how the loads are written. Body unchanged.
+// MiniMax I (11-14): no new form, no lower score (316): the title still takes the frame's lower block where retail
+// keeps the display name there, the two of them still trade their slots, and the flag test's shift and test are still
+// laid out before the branch where retail moves them out of line.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

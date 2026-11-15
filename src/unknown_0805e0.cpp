@@ -425,6 +425,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // listings stay one instruction apart; a short local for the successor measures 51, the same local with the mask test
 // written in the body, with a byte mask local and with the helper taking the mask all measure 51, and the mask test
 // written in the body on its own keeps the immediate and 43.
+// m3 lane 1 r103: reviewed, no trial run. Retail's shape is main's single `index` (`index = entry->next` gives the EBX successor
+// and the `mov esi, ebx` back-edge copy) once the guest mask is hoisted into AL; every loop, successor, result, test and helper
+// form for the hoist is listed above, and none outside the note was found.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

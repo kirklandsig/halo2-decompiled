@@ -186,6 +186,12 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // still match). Lead: an argument LTCG drops still counts in the caller's allocation, so a callee of this function
 // that takes the tag index in a parameter it never reads would give the extra use without code; no retail call shows
 // which, so none was added.
+// M3 lane 13 r92 (plain, every object read plain, no reference): an implied `tag_index != NONE` added to the started test
+// 116 (folded before allocation: a folded test is no use); a named permutation pointer for the duration, request variant and
+// playback variant 149 (528 bytes); the clamp into its own local in place of the parameter 133; the started test object first
+// 118; one exit (sound index at function scope set NONE, the duration reset tested on it after the blocks) 116. In the plain
+// listing the tag takes EDI and is reloaded from its home for the dispatch after 0x189340 takes EDI for the source, so the
+// allocator splits a variable across regions; the object holds EBP from its first test to the dispatch.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {
