@@ -1985,6 +1985,14 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // 0x2e9e0 573) with the groupings of cases 1, 2 and 4, 179. Same code (193): cases 2 and 4 through dot3f; case 3 and
 // case 4 offsets through vector3d_from_points3d. On the 177 lead the register-masked aligned count is 72: the cross
 // terms' schedule still differs. Body unchanged.
+// M3 lane 13 r97 (fast with 0x2e9e0; on round 73's case-3-offsets-first lead, re-measured 177 with 0x2e9e0 573 each): first
+// cross written ikj/jik/jki/kij/kji 179/180/180/205/203; second cross ikj/jik/jki/kij/kji 163/174/175/185/160 (retail computes
+// the second cross k, j, i); first-cross orders with the second ikj 165/167/162/191/196, with kji 164/165/167/192/199. A /GL
+// link harness of this function alone (build/r97/h2) reproduces the real code exactly: by instruction position the lead and
+// the k, j, i form are both 157-158 from retail, so their check scores differ mostly through the jump table's decode. Over
+// all 216 first-cross x second-cross x case-1 y orders (case 1's x order is inert) the best case-1 block is 32 lines from
+// retail with registers masked: no order fixes the schedule. Also `0.0f != y` 193 (lead 177) and the helper taking the up
+// vector by pointer 193 (lead 177), both the same code.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3544,6 +3552,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // `while (last >= i && ...)` (no `--i`) 368 (1303 bytes) [101]; the third pass as `if (last >= i) do { ... } while (last
 // >= ++i);` 370 (1338 bytes) [106]. `first` keeps EBP in all three; retail's third pass is the `--i` form (its body runs
 // `dec ebp` and then `inc ebp`). Body unchanged.
+// M3 lane 13 r97 (fast with 0x4b160, MATCH each time; control 317): retail's homes are `first` +0x10 and the index +0x14,
+// ours the reverse, so names were tested in case same-size slots sort by name: `first` renamed start/retained 317/317,
+// the index renamed cursor/entry_index 317/317 (all the same code). Declaration orders: the index declared first 317,
+// after `last` 317 (same code); the index and `found` first 355; `found` after `last` 355.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4156,7 +4168,7 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // 0x11000088, its two outputs zeroed) matches retail byte for byte on the reduced image, but the full build promotes
 // those two output locals into registers and drops their dead zero stores, so the plain check gives 70: BLOCKED-BY
 // 0xc6b90 (its body has to hold the two zero stores itself for the full build to keep them).
-// score 62 (was 177): only the frame differs, 0x18 versus 0x1c: retail's final fade is the getter 0xc6b90 inlined, which
+// score 51 (was 62; earlier 62 (was 177)): only the frame differs, 0x18 versus 0x1c: retail's final fade is the getter 0xc6b90 inlined, which
 // keeps its two dead output stores (`active = false`, then `fade = 0.0f`, a float slot at +0xc); the full build drops them
 // (BLOCKED-BY 0xc6b90), so every offset from 0x1c up is 4 short. Earlier first line: frame 0x18 versus 0x1c; initial
 // alpha/kind and final fade scratch homes remain.
@@ -4347,6 +4359,15 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // pops) and the fade at +0xc. No form inside this body changes more than those two stores. BLOCKED-BY 0xff5f0.
 // New forms on this body, both worse: the first fade's range test as `field >= 0.0f && field <= 1.0f` 155 (724 bytes);
 // the shadow-mode switch as `if (mode == 0) ... else if (mode == 2) ...` 115 (766 bytes).
+// M3 lane 13 r97 (fast with 0xff5f0 and 0xc6b90 in the image; plain where marked): the getter route (`bool active = false;
+// real fade = 0.0f;` then function_c6b90(object_index, 0x11000088, &fade, &active)) re-measured 70; on it, the alpha
+// update under `if (function_c6b90(...))` 70; both outputs declared at function scope, after `alpha` or after `result`,
+// 70/70; `real fade` first with `if (!(alpha > 0.0f))` 70. Kept: the final fade clamp through the file's PIN macro
+// (`alpha *= 1.0f - PIN(field, 0.0f, 1.0f)`), 51 plain at retail's 773 bytes (0x33400 stays matched, 0x32350 stays
+// 445). The differing-line count is unchanged (51): the field read at each use of the macro fills the 11 bytes that
+// retail's two dead getter stores take, so the remaining difference is still the frame and those stores. On the 51
+// body: the temporal clamp as PIN 92; PIN reading `header->object` with no object reassignment 51 (same code); PIN
+// through the header table at each use 52 (774 B); `alpha = (1.0f - PIN(...)) * alpha` 51 (same code).
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -4403,10 +4424,7 @@ bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_spec
     if ((1 << ((byte *)header)[3]) & 3)
     {
         object = header->object;
-        real fade = *(real *)(object + 0x2b0);
-        if (fade < 0.0f) fade = 0.0f;
-        else if (fade > 1.0f) fade = 1.0f;
-        alpha *= 1.0f - fade;
+        alpha *= 1.0f - PIN(*(real *)(object + 0x2b0), 0.0f, 1.0f);
         if (alpha <= 0.0f)
             result = false;
     }

@@ -737,6 +737,13 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // against retail's order; the plain placement with the NONE store before the loop 371, declared beside the collision
 // result 371. Retail's frame: probe 0x24, direction 0x30, collision result 0x3c (0x5c bytes; the shared type is 0x4c),
 // placement 0x98, blend and first draw only in registers.
+// M3 lane 13 r97 (fast with 0x247fd0 and 0x248cc0, both stay matched; control 334): `inline` on 0x137bd0's definition in
+// its /Ob1 file (retail expands that lookup in the child loop) 371 at 1696 B, and link-time code generation then expands
+// it at every caller: 16 of the 20 matched callers in the fast image stop matching, so not usable. The workspace, the
+// collision result, the gate flag and the effect index declared in other orders (collision first, flag first, flag
+// last) 334/334/334 (same code); collision first with the in-loop particle_object_for_tag 371 (1696 B). This function
+// is on a link-time call cycle (through 0x246e60, 0x247070, 0x188180, 0x175bd0's file, 0x175270, 0x248970 and 0x247470),
+// but its only call into the cycle is its last one, which already has retail's register convention.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
