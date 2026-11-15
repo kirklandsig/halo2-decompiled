@@ -1690,6 +1690,12 @@ struct s_looping_detail_request
 // P525: Actual request flags/mode/type full-width signed field storage, seven
 // graphs then complete int units: eight 110 at 508/508 bytes. NOT kept: no native
 // offset transport or first-player call recovery; original request record and complete body restored.
+// Round 248 (m3 lane 3, fast with 0x21b0e0, control 110): the query stays inlined in all five. `if (!result)` in place of
+// `else` 110 (same code: the flag test is folded before the inliner weighs the site, unlike round 166's memory re-test);
+// the arms as two tests of a named `bool audible` 138 (518 bytes); the player-picking arm first with its own return and the
+// tail written in both arms 159 (537 bytes); retail's audible arm (offset in a temporary copied into the request after the
+// 0x21bfb0 call, result set last) 134 (534 bytes); that with `player` declared at function scope 134. The query's ten other
+// call sites are all matched (six call it, four inline it), so its own body cannot move.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -2295,6 +2301,13 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // P525: Actual signed range-count/base and track/detail-count full-width field storage,
 // each, range pair, outer pair, first three and complete graph: eight reduced 479 (control 479, full 305).
 // NOT kept: native frame/request/range homes remain and no byte equality; original fields and complete body restored.
+// Round 248 (m3 lane 3, plain; 0x21b940, 0x1269f0, 0x125920, 0x126660 and 0x125b40 stay matched). A = the request given
+// 0x125f70's full 0xa0 bytes, D = the gain sum through the existing s_decibels operator+ (lane 10 r89's spelling), M = the
+// sounds filled by memset(NONE), C = a count in both pitch-range for-inits, S = the pitch sum split as `... + playing->pitch;
+// pitch += lower;`: ADCMS 360 (1909 bytes), AMS 307, DMS 396 (1925 bytes), ADM 391 (1925 bytes, first +0x39), ACS 462
+// (1939 bytes). Retail's gain store reads gains[i] into a stack temporary and the result through a second one (an
+// aggregate operand by value and an aggregate result), and 0x219f80 returns its level in EAX; 0x219f80 is a contributor's,
+// so its return type was not changed.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -3211,6 +3224,11 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // P525: Actual initialized/hardware/enabled full-byte field allocation, seven unsigned
 // graphs then complete signed allocation: eight reduced 694 (control 694, full 597).
 // NOT kept: native entry true/flags and record/track homes remain; original admission fields and complete body restored.
+// Round 248 (m3 lane 3, plain; 0x18a7b0 and 0x21d630 stay matched): `alternate` inside the definition guard re-measured 615
+// at 2500 bytes (entry and EBX = 1 as retail; the gain clear forms its address first where retail stores zero at
+// [ebp+0xc4..], and the source pointer goes straight to ESI where retail copies it from EDX); on that form `distance`
+// declared before `maximum` 615, `created = true` before the creation call 615, both 615 (the same code); `track_alternate`
+// as one direct expression in place of the preset-then-clear form 662 (2503 bytes), on today's body 614 (2519 bytes).
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
