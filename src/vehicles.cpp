@@ -2338,9 +2338,9 @@ bool function_f12e0(long vehicle_index)
 
 /* whether the vehicle, with its flag 2 at +0x10a set, is a type 5 vehicle
    or a type 4 one of kind 1 */
-// score 1 (was 1): ours reuses the kind comparison's flags with a jmp to the
-// shared jne; retail re-tests the type. Nested conditions, a named kind local,
-// a switch and a 300 s permuter run all scored 1.
+// The type is read from the definition at each test: with it in a local, the
+// compiler sends a failed kind test straight past the type 5 test (score 1),
+// where retail tests the type again (`cmp cx, 5`).
 // @retail 0xf1320
 bool function_f1320(long vehicle_index)
 {
@@ -2351,13 +2351,7 @@ bool function_f1320(long vehicle_index)
 
 	if (flagged)
 	{
-		short type = *(short *)(definition + 0x1f0);
-
-		if (type == 4 && *(short *)(definition + 0x218) == 1)
-		{
-			result = true;
-		}
-		else if (type == 5)
+		if ((*(short *)(definition + 0x1f0) == 4 && *(short *)(definition + 0x218) == 1) || *(short *)(definition + 0x1f0) == 5)
 		{
 			result = true;
 		}
