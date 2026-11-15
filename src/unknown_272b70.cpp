@@ -1602,6 +1602,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // P509: Contiguous native flag-writer orders 3056/0365/3065/5603/6503/5630/6530/3560:
 // 32/32/32/32/32/32/32/32. NOT kept: no iterator/leave/request-home equality;
 // original flag stores and full body restored at the native frame and length.
+// P523: Actual handle full-width long/int/dword/unsigned-int bitfields 32/32/32/32;
+// busy full-byte byte/signed-char/char/bool fields 29/29/29/29. The 29 forms recover
+// handle-before-scaling (first +0x255), but NOT kept: three-count gain and no equality.
+// Original 12-byte row, comparator, requests, slot stores and complete body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

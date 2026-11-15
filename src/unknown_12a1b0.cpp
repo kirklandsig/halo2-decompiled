@@ -2271,6 +2271,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // P521: Current request declaration at function/datum/live-datum/detail scope, original then complete API storage:
 // Complete storage recovers reduced frame 0x128 and first +0x39, but only two points and 1908/1923 bytes.
 // 479/479/479/479/477/477/477/477. NOT kept: no exact native request/frame/owner recovery; original complete body restored.
+// P523: Actual ring first/index/count full-width signed bitfield domains, seven
+// subsets then complete int units: eight reduced 479 (control 479, full 305). NOT kept:
+// no native frame/ring recovery; original iterator, helpers, request and body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

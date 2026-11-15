@@ -570,6 +570,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // P521: Explicit real-root boundaries at raw activation/combined activation/remaining displacement/settling
 // sample, then activation pair/raw-remaining/combined-sample/all: 622/622/622/622/683/622/622/676.
 // NOT kept: no exact root/precision or native home repair; complete original body restored.
+// P523: Actual fast/active/limited/settled full-byte bitfields, unsigned/signed pairs:
+// reduced 614/614/674/674/681/681/614/614 (control 614, full 622). NOT kept: no exact
+// flag-storage or sample-home recovery; complete record, helper and body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
