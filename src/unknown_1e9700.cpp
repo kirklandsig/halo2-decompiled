@@ -568,6 +568,12 @@ struct s_object_damage_view
 // first/second/both, both search-n and both first-of: 455/431/468/455/431/468/443/455.
 // NOT kept: all regress and grow; matched caller 0xd9640 becomes 61 in all eight trials.
 // Original body restored; scalar homes and the amount-biased cursor remain.
+// M3 lane 16 r118 (fast with the file's functions and 0xd9640, control 353): both award dedupe searches as `for (j...) if (equal)
+// break; if (j < i) continue;` 356 (1550 B: the found exit is not threaded, a jmp to a separate `cmp eax, esi; jl`); the assist and
+// related-unit stores re-reading their player fields (retail re-reads both after the team call), no predicate, 392 (1564 B, frame
+// 0x4c: the shared object+0x2f0 spill goes); the three inline validations through effects.h's record_pool_lookup_checked 353 (same
+// code); `self` passed straight in the 0x1ea770 call 350 (1544 B, retail's length, but the compare sinks to the call and esi/ebx pop
+// early; 3 points, not kept); the two 0x196dd0 calls' absolute indices as two-use named locals 353 (same code).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

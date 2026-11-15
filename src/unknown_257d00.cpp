@@ -2035,6 +2035,10 @@ void function_b7360(long object_index);
 // completion graph: 401/420/455/460/461/461/461; existing actual property-record
 // input for recording 270. NOT kept: no equality or gain; placements grow to
 // 1864 bytes. Original whole callback and includes restored; pool/actor/output homes remain.
+// P494: existing shared byte-bit interface at complete orientation/moving/directed
+// payloads, masks 1/2/4/3/5/6/7: 410/390/343/342/423/392/422; point flag 277.
+// NOT kept: all regress; most payload forms grow past 1848 bytes. Original callback
+// and includes restored; native pool/actor/output homes and retained reference remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2779,6 +2783,19 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // post-switch bit pair as `(field_3 & 3) == 3` 598; case 0 as `!field_0`, case 20 as `!(ac || d0)`, case 18's global
 // at each use and the 0x1c/0x20 store order all the same code as their bases. A per-bit bitfield view for the 0x48
 // set still folds to `or 0x69` (same code).
+// Round 198 (m3 lane 4, fast with the file and 0x110ab0, control 479 / aligned 199; all restored): every arm through
+// the existing local_2 for arg_2 479 (same code); the 0x456 flag stored after the 0x458/0x454 copy 480; g_502400
+// typed `short *` 479 (same code). LEAD (match-only: case order and swapped arms): retail's jump table puts the case
+// blocks in the order 1, 2/3, 4, 7/8, 0, 5, 9, 10, 12, 11, 6, 18, 21, 14, 20 with case 0's compare as the shared
+// tail that falls into the post-switch `if (local_3)` test. Case 14 after case 21 481 (aligned 185); + case 7/8's
+// flag as `arg_1 != actor->unknown018 ? true : unknown264` 477 (2400 B); as `arg_1 == actor->unknown018 ?
+// unknown264 : true` 476 (retail's branch shape there, aligned 174); + case 5 as `!function_e70e0(arg_1) ? 0 :
+// rate` 476 (aligned 167); + case 0 moved to the end of the switch 445 (2408 B, aligned 148: the post-switch test
+// then sits after case 0 as in retail); + cases 9 and 11 as `local_0->unknown018 == arg_1` 445 (aligned 146). On
+// that 445 form: case 5's result written in each arm 635; case 4's facing read from local_2->field_c 578 (2396 B,
+// retail's length, but the actor takes EDI and the state EBX); with case 20's two distances written per component
+// from the actor's +0x238 579 (still flipped); case 10 as `unknown8c == false` 445 (same code); case 0 back after
+// case 7/8 with 7/8 breaking on a clear bit 4 and falling into it 476 (2400 B).
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

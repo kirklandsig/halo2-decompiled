@@ -610,6 +610,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // all with an external instance reference: 233/169/158/254/244/188/266/266.
 // NOT kept: no eligible gain; original accessor, views, cache zeros and body restored.
 // Fallback EDX normalization, unfused elements and stage/pass homes remain.
+// M3 lane 16 r118 (fast, 0x2243c0 and 0x224d90 matched each time): the round 59/129 reference chain rebuilt on this main 8 (the
+// same eight lines: pass definition EDX where retail reuses EAX, material tag ECX/EDX, material definition EDX where retail reuses
+// EDI, the zero's xor); on it: 1..7 unused-local placeholders 8 each (no phase effect); the pass element as a plain pointer 121
+// (the load fuses again); the pass element's reference and tag read in their own block 8; local_10 or local_11 bound to a
+// `byte const *const &` 8/8; the pass definition's tag entry as an `s_tag_instance const &` 8 (all the same code).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

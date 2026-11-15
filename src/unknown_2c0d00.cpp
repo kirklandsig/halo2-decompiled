@@ -485,6 +485,8 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // aligned exact 680 -> 637, retail too reads the actor's slot once per branch, into EBP), in every arm 973 (3672 bytes,
 // aligned 619). Retail's other-actor branch falls into the distance test through one shared inflation/skip tail (skip at
 // [esp+0x12]); ours ends each inflation path with `sete bl; jmp` and keeps the remaining arms in source order.
+// MiniMax I (11-14): no new form, no lower score (926): the frame is still twelve bytes larger than retail's (0x2cb4
+// against 0x2cac), and the locals are still cleared at the frame's later offsets where retail clears them earlier.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
