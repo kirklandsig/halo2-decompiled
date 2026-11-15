@@ -1282,6 +1282,8 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // M3 lane 16 r117 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0): `vector3f reference;` declared at the top of the
 // loop body, of the sphere arm or of the function (assigned in place) 290 each (same code); the cone scale declared ahead
 // of `center` 290 (same code); the scale computed before the centre projection 597 (2780 B).
+// M3 lane 7 r161: no unlisted natural form found (the first difference is the memset's `lea edi` scheduled inside the
+// bounds copy; the rest is the listed float operand order, the normalize sum and the projection rows).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

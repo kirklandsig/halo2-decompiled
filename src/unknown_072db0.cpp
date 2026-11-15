@@ -1987,6 +1987,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // and char payloads: 827/867/827/884/809/867/827/884. NOT kept: Copy boundaries do not recover a native
 // keeper. Original payload, library copies, identity observations, helpers, task transitions and protected
 // builder inputs restored.
+// P496: Shared read/write builder records/properties/buffers outputs in seven subsets, then all at connected admission:
+// 703/703/703/703/703/703/703/703. NOT kept: no exact native storage/producer recovery; initial user cursor/home, slot expansion and later request/completion homes remain.
+// Original complete executable body restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

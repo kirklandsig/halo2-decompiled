@@ -888,6 +888,23 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// MiniMax H (11-14): no new form, no lower score (90): retail reloads the selected identity pointer into eax and keeps
+// the requested rank in ecx, so the removal call into the matched callee 0xac050 needs no copy, while this build keeps
+// the pointer in ecx and the rank in eax and copies the pointer into eax before the call; the two extra bytes are the
+// whole length difference and they move every later jump. Storing the rank before the removal test, negating the
+// identity test and an identity flag of its own measure 90 each, so the colouring is fixed by the callee's convention.
+// The permuter (32 tries, 312 s over the reduced and the full image) found one lower form, 17 against the baseline 88
+// in the plain image, and it is the removal call with its two XUID arguments the other way round
+// (`online_team_member_remove(controller_index, xuid, &team.xuid)`), which reorders the callee's parameters, so it was
+// dropped. Retail's order is the one the declaration already has: the matched caller 0x23955e loads the member xuid
+// into eax and pushes the team xuid, and the matched callee 0xac050 reads eax as the member (`mov ebx, eax`) and the
+// pushed xuid as the team, so the swap would ask the callee to remove the team's xuid from the member.
+// The getter written with the identity handed back through an out-parameter instead of returned (so that the
+// caller's variable is not the getter's own temporary) measures 90 as well, and the matched caller 0x239a3d still
+// matches: the reload of the identity still takes ecx and the loaded id still takes eax.
+// A second permuter pass (seed 12, 39 tries, 397 s over the reduced and the full image) lowers the baseline of 88 by
+// one point only, to 87, and its form is the banned one: every constant of the body is hoisted into a local of its
+// own (tmp0 = false, tmp1 = 3, tmp2 = 0x5c, tmp4 = 0x5d, tmp5 = 4, tmp6 = 1, tmp7 = NONE), so it was dropped.
 // MiniMax E (11-14): no new form, no lower score (90): the difference is still only the register colouring of the two
 // values the matched callee 0xac050 takes - retail reloads the selected identity pointer into eax and the requested rank
 // into ecx, so the callee needs no copy, while this build keeps the pointer in ecx and copies it into eax before the
