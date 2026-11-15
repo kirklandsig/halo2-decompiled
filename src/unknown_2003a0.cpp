@@ -2973,6 +2973,9 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // the compute arm's query result in its own `task` local with local_4 set only in the else; the follow-up's task test as
 // `(short)local_4 != NONE`; the second half's guard as two nested ifs; its `local_5` NULL test nested above the two count
 // tests; the else-if's flag test nested above its index test. The first follow-up still reloads the index from its home.
+// P512: Successful-trigger count at the threshold test, nested/merged positive/negative
+// admission, long then short count: 50/50/50/50/50/50/50/50. NOT kept: first-event index reload and actor-loop
+// alignment remain; original wrapped scan, threshold expression and full body restored.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

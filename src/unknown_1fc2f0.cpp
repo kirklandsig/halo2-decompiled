@@ -707,6 +707,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // length_sq3f at both uses (no local, diagnostic) 46. Body unchanged.
 // m3 lane 14 r93: no trial run; lane 18 round 17 above records that no untried natural form is left, and this round found
 // none outside the listed statement-order, helper and width families. Body unchanged.
+// m3 lane 12 r125 (fast with the file's five matched functions): a 2000 s permuter run with a new seed (245 tries)
+// found nothing below 32 but the listed 29 through a volatile read of the rate (not used); the rate read at its use 32,
+// the tick field read at its use 32, both 32, `predicted` declared with the other vectors 32, the length test written
+// `length_squared < limit * limit` 32 (all the same code).
 // M3 lane 3 r243 (fast with 0x1fc660, matched throughout; base 32 [register-masked aligned 9]): the deltas assigned i,
 // j, k re-measured 79 [16] (the stores, deltas and the (k + j) + i sum then follow retail, but the chains and tick
 // products run i, j, k). On that form: the tick scale converted at the top as a named real 85; the correction through
