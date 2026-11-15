@@ -7151,6 +7151,11 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // on the x87 stack where this build does the same in SSE with other constants; the double form of last round cannot
 // match because the double constants it needs are not in retail's data.
 // MiniMax I (11-14): no new form, no lower score (576): the three direction components still sit four bytes higher in the frame than retail's (ours at frame+0x18, retail's at frame+0x14, so every slot above them is four bytes out) and the dot product's three products are still summed in a rotated order; retail keeps the second rounded screen coordinate on the x87 stack and narrows each bound through a temporary.
+// MiniMax C (11-14): no new form, no lower score (576): the three direction components still sit four bytes
+// higher in the frame than retail's (ours at frame+0x18, retail's at frame+0x14, so every slot above them is
+// four bytes out); the dot product's three products are still formed in the other order and added with the
+// other operand first, and the bound test is retail's two compares with a conditional store against ours,
+// which branches to a shared tail for the lower bound.
 // score 576 (was 695), Round 1 of #1066: 2436 bytes against retail 2507. Fixed: the 2nd quad and the
 // loop begin with D3DDevice_Begin (retail calls it; ::Begin inlined it), the 1st quad uses the member
 // D3DDevice::SetVertexData4f (inlined, as retail), the first ten stage states go through
@@ -8118,6 +8123,11 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // it, this build compares the count in memory with one, the group index is still sixteen bits wide where retail
 // moves the thirty-two bit index, and the index slot sits at [esp+0x3c] against retail's [esp+0x58]; the
 // thirty-two bit counter reads 514 and the "<= 0" count test reads 313.
+// MiniMax C (11-14): no new form, no lower score (299): retail's entry guard loads the group count into a
+// register and tests it (mov eax,[edi+8]; test eax,eax; jle) where this build compares the count in memory
+// with one; the group index is still sign-extended where retail moves the thirty-two bit index, and the index
+// slot sits at [esp+0x3c] against retail's [esp+0x58]; the "<= 0" count test reads 313 and the thirty-two bit
+// counter reads 514.
 // score 299 (was 310): fast score; our group index is sign-extended (movsx esi, ax) where retail moves the
 // 32-bit index, the index slot sits at [esp+0x3c] against retail's [esp+0x58], an extra mov edi, edi stands in
 // the loop head, and the body is 3 bytes longer than retail's.
@@ -8955,6 +8965,12 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
 // 41 missing bytes stand; retail reads the stack parameter into ebx with the -1 sentinel in ebp where ours uses esi
 // and ebx, and loads the font pool before its first test.
 // MiniMax I (11-14): no new form, no lower score (328): retail's frame is 0x2020 against our 0x201c and retail's two small locals sit four bytes higher than ours (the header at frame+0x1c and the scaled character offset at frame+0x18, against ours at frame+0x18 and frame+0x14), so retail's frame carries four bytes of extra word-sized locals that this body does not declare; the parameter still arrives in esi where retail keeps it in ebx with the -1 sentinel in ebp.
+// MiniMax C (11-14): no new form, no lower score (328): our body is 25 bytes shorter than retail's 1133
+// (1108 against 1133) and the frame is still 0x201c against retail's 0x2020; retail's two word-sized locals
+// sit four bytes higher than ours (the header at frame+0x1c and the scaled character offset at frame+0x18,
+// against ours at frame+0x18 and frame+0x14), the parameter still arrives in esi where retail keeps it in
+// ebx with the -1 sentinel in ebp, and retail inlines the three removal sites where this build calls the
+// helper out of line.
 // score 328 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
 // MiniMax B (11-12): no new form, no lower score (328): retail loads the font pool before its first test and keeps
 // it in eax, reads the stack parameter into ebx with the -1 sentinel in ebp, keeps the header at [esp+0x10] and the

@@ -887,6 +887,10 @@ static __forceinline long real_to_long(real value);
 // MiniMax H (11-14): no new form, no lower score (382): the frame and the length agree, but the early false exit's
 // place, the object and magnitude homes and the query scalar homes still differ, and any early return form here
 // folds the result byte away and shrinks the frame to 0x54, which reads 508.
+// MiniMax C (11-14): no new form, no lower score (382): the frame and the length agree (1904 bytes against
+// retail's 1904) and the early false exit's place is right, but the helper retail keeps out of line (0x25d740,
+// in another file) is expanded here, so the object and magnitude homes and the query scalar homes still
+// differ; an early exit for the three flags folds the result byte away and reads 508 at a 0x54 frame.
 // score 382 (was 382): the frame and the length agree, and the early false exit's place, the
 // object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
 // b2G walk (r719): every block, field offset, constant and call argument (including 0xfa1a0's 3 register + 11 stack arguments, whose
