@@ -2046,6 +2046,8 @@ void function_b7360(long object_index);
 // for the check and the copy 272; the actor through actor_get(arg_0) at each use, no actor local 519 (1900 bytes); the 1/19
 // reference local with the actor looked up first 487 (1852); reference locals at the 1/19 arm and case 5 461 (1852); both
 // with the actor first 460 (1852). The actor-first order alone re-measured 487 (retail's pool load order, arg_0 still ESI).
+// MiniMax I (11-15), NOT kept: 261 (was 270) moved the point store below the flag set (field_3 |= 0x40), a
+// statement order picked by score; kept only with a byte match. Code back to main, notes kept.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2125,8 +2127,8 @@ short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			}
 			break;
 		}
-		local_2->field_3 |= 0x40;
 		*(s_type_c3b527 *)((byte *)local_2 + 8) = cs_point_get(local_1->unknown28)->point;
+		local_2->field_3 |= 0x40;
 		success = true;
 		break;
 	case 4:
