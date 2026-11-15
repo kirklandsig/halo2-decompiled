@@ -446,6 +446,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // immutable 382/382; existing shared magnitude interface inside normalizer 382.
 // NOT kept: ties or regressions. Original whole body and shared normalizer restored;
 // native unity carrier, wrapped-angle/cursor homes and near trig spills remain.
+// M3 lane 7 r162 (fast with 0x29a190 and 0x298c30 matched; aligned 239 on the base): the emitter's stores in retail's
+// order (angle, side, facing, direction) 391 (aligned 295); the wrapped angle as `>= 0.0f ? x - 2pi : x + 2pi` 382 (aligned 239,
+// same code); both 391; the wrapped angle renamed to sort before the distance (the pair's slots do not move) 382; retail's
+// store order with the angle element read at each use 389 (1691 bytes, aligned 228); the element at each use alone 381
+// (aligned 278, re-measured).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

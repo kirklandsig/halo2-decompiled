@@ -691,6 +691,10 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // MiniMax A (11-14): no new form, no lower score (165): the frame is ours (0xac, unaligned) where retail
 // realigns to eight bytes with a 0xb4 frame, and retail evaluates the atan2 sum before the dot product and
 // applies fcos after it, so the first difference is still at +0x1a and every later offset shifts with it.
+// MiniMax D (11-14): no new form, no lower score (165): the frame is still ours (0xac, unaligned) where retail
+// realigns to eight bytes with a 0xb4 frame, so the result byte and the link iterator still sit in other slots and
+// every later offset shifts with the frame order; the alignment follows the two callers' call chain, whose files
+// this lane may not edit.
 // score 165 (was 165): the body is main's again (the 71-point form was reverted, its shapes only hold with a
 // byte match); the frame is ours (0xac, unaligned) where retail realigns to eight bytes with a 0xb4 frame, the
 // result byte sits at [esp+0xf] where retail keeps it at [esp+0x13] and the link iterator at [esp+0x30] where
@@ -1799,6 +1803,13 @@ done:
 // form (re-measured 27 at 236 bytes): the type local `long const` 27, the name entry read as a short array (fields
 // [0x10]/[0x11]) 27, the three definition reads in the orders size, palette, placement and placement, size, palette
 // 27/27 (all four the 27 form's code); the call returned inside the test 81 (244 bytes, round 174's code).
+// Round 105 (m3 lane 10, fast; on the 27 form unless noted): the definition declared bare before the type 27 (same
+// code); one inline wrapper doing the table reads and the call 30; the placements pointer stepped in place by the
+// product 27; the scenario global read for the palette only 34; two definition locals, one per read group, 27. A
+// 600 s permuter run (57 tries) on the 27 form found 21 only with a volatile datum and swapped call arguments. Reading:
+// retail's `mov esi, eax` copy is the shape of matched 0xa5bd0 (`mov edi, ebx` before its +0xe/+0xa reads), where the
+// re-reads sit in a later block than the first read; here every read is in one block and CSEs into one value.
+// Diagnostic: `__assume(type >= 0)` before the table read 27 (no change).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
@@ -1965,6 +1976,11 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax H (11-14): no new form, no lower score (285); the two state bits of the object word were written as
+// shifts (">> 7" and ">> 8" instead of the masks 0x80 and 0x100), which is the form retail uses, but the score stayed
+// 285 and the body stayed four bytes longer than retail's 1236, so the shift form was reverted; the first difference is
+// still at +0x76, where retail keeps the pool pointer in ebx and the index in ebp and reloads the pool data into ebx,
+// while ours reloads it into edx and computes the ancestry index again.
 // MiniMax H (11-11): no new form, no lower score (285); retail still reaches one shared epilogue at 0xb987a from the ancestry-loop match, the !allowed test and the later branch where ours duplicates it, so the first difference is still the jump target at +0x76, and retail still inlines the marker pointer's helper, which needs that other file's /Ob1 flag. BLOCKED-BY 0xb8bd0.
 // MiniMax E (11-10, run 73): no new form, no lower score (285); retail reaches one shared epilogue at 0xb987a from the ancestry-loop match, the !allowed test and the later branch where we duplicate it, so the first difference is still the jump target at +0x76, and retail inlines function_b8bd0's marker pointer, which needs that other file's /Ob1 flag.
 // MiniMax D (11-11): no new form, no lower score (285): the ancestry loop's match jump still targets our own epilogue where retail jumps to its shared one at 0xb987a, and retail still inlines the marker pointer's helper from a file this lane may not edit.

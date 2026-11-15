@@ -1005,6 +1005,7 @@ real g_55e618;
 // +0xa4, so every home from there up (and the twelve-byte length gap that follows) differs; that is the frame's
 // allocation order, which the rules bar me from reshaping.
 // MiniMax A (11-14): no new form, no lower score (102); retail's sweep vector and its collision record still sit twelve bytes higher in the frame than ours, and retail's dot product still adds its three terms in another order than ours; the permuter (5 tries, 311 s) found nothing below the baseline.
+// MiniMax S (11-14): no new form, no lower score (102): retail's sweep vector and its collision record still sit twelve bytes higher in the frame than ours, a twelve-byte allocation-order difference, and retail's dot product still adds its three terms in another order than ours.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

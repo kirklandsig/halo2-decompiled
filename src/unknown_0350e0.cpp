@@ -285,6 +285,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // concurrent angles, both helpers, vector observations/publications and full body restored.
 // Full-transform backing at first/second/both actual matrix receivers: 349/367/373.
 // NOT kept: no exact native backing/allocation equality; original matrix types and full body restored.
+// P508: Existing builder axis/output and rotation-matrix reference contracts, seven subsets
+// then all with the rotated-vector input reference: 334/334/334/334/334/334/334/334.
+// NOT kept: no native coefficient-register or scalar-publication equality; original helpers and full body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2266,6 +2269,9 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // 515/514/518/555/551/524/498/604. NOT kept: no exact native output-storage repair.
 // Original uninitialized outputs, provider contract, APIs and complete body restored.
 // Frame 0x90 versus 0x94 and output homes remain.
+// P499: Actual distance/angular/optical last-use blocks, seven subsets, then complete bounded-fade phase:
+// 492/492/492/492/492/492/492/492. NOT kept: All eight tie 492 at the original extent and frame; native output
+// homes remain. Original complete executable body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2999,6 +3005,9 @@ s_cached_input_list g_5234e8[4];
 // MiniMax H (11-14): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 - retail
 // spills the input list and reloads it at the loop top, keeps the total on the stack and the index in EBX with the
 // cursor in EBP, where ours holds the total in EBP; the index's register is fixed by 0x31590 in another file.
+// MiniMax D (11-14): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 and the list
+// still rides in ebp from the entry where retail spills it and reloads it at the loop top, and the count's compare
+// still lands in eax where retail puts it in ecx; the reduced image scores 147 here, as earlier rounds recorded.
 // score 113 (was 113): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop top; below).
 // r136 lane 7: the list read once into `s_masked_list *list` 132 plain (fast 136 at 538 bytes, LCS-aligned 68 -> 61);
 // entry/definition/object declared at the loop body's top 147 fast; total declared before view 159 fast; index
@@ -3502,6 +3511,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // natural spellings that add a use of loop 3's index (entry through the index, the decrement before the swap, the swap
 // from the indexed entry, `i <= last`) are listed above with their scores, and none keeps the instructions. The loop
 // tests of passes 1, 2 and 4 already compare in retail's operand order. Body unchanged.
+// P508: Complete inclusive admitted-prefix end in long/dword, each with bool/byte/short/long
+// original found state: 358/358/361/358/358/358/361/358. NOT kept: all regress at native length;
+// state/prefix and ordinal homes remain wrong. Original count representation and full body restored.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4106,6 +4118,14 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
     return (real)sqrt(z * z + y * y + x * x) * g_4b9dcc;
 }
 
+// MiniMax S (11-14): no new form, no lower score (62): the final fade through the existing 0xc6b90 getter still
+// matches retail byte for byte on the reduced image, but the full build promotes the two output locals into registers
+// and drops their dead zero stores, so the plain check gives 70 and the body stands: BLOCKED-BY 0xc6b90 (its body has
+// to hold the two zero stores itself for the full build to keep them).
+// MiniMax S (11-14): no new form, no lower score (62): the final fade through the existing 0xc6b90 getter (property
+// 0x11000088, its two outputs zeroed) matches retail byte for byte on the reduced image, but the full build promotes
+// those two output locals into registers and drops their dead zero stores, so the plain check gives 70: BLOCKED-BY
+// 0xc6b90 (its body has to hold the two zero stores itself for the full build to keep them).
 // score 62 (was 177): only the frame differs, 0x18 versus 0x1c: retail's final fade is the getter 0xc6b90 inlined, which
 // keeps its two dead output stores (`active = false`, then `fade = 0.0f`, a float slot at +0xc); the full build drops them
 // (BLOCKED-BY 0xc6b90), so every offset from 0x1c up is 4 short. Earlier first line: frame 0x18 versus 0x1c; initial
@@ -4284,6 +4304,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // memset, paired fill/fill-n/uninitialized-fill/uninitialized-fill-n: 70/70/70/70/70/70/70/70.
 // NOT kept: no full-context native scratch/frame equality. Original direct final field
 // clamp, positive result, recursive/query inputs, helpers and complete body restored.
+// P508: Actual final getter fade/active outputs at entry, across recursion and after recursion,
+// with original-site zero defaults, eight ownership/order forms: 70/70/70/70/70/70/70/70.
+// NOT kept: no native scratch/frame equality with the default provider present; original complete body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -4291,13 +4314,13 @@ bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_spec
     s_scalar_object_header *header = &((s_scalar_object_header *)g_4e0300->data)[object_index & 0xffff];
     byte **object_slot = &header->object;
     byte *object = *object_slot;
-    byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
+    s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
     long kind = *(signed char *)(object + 0xaa);
     real alpha = 0.0f;
     if (!(object[6] & 1))
     {
         byte first_output, opacity;
-        switch (*(short *)(definition + 0x18))
+        switch (definition->lightmap_shadow_mode)
         {
         case 0:
             if (kind == 0 || kind == 1)
@@ -5380,6 +5403,9 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
     return NONE;
 }
 
+// MiniMax C (11-14): no new form, no lower score (47): the 0x494b0 call's arguments are still set up
+// ecx-then-eax where retail sets eax-then-ecx, the entry's radius still goes to edx where retail uses eax,
+// and the three group fields are still loaded into eax and ecx where retail uses ecx and edx.
 // score 47 (was 88): r136 lane 7: draw_light_source_pass (pass 11) follows 0x44370's body for its mode: the cull through
 // two 0x15680 calls (retail's dead g_485898 load and arm order) and case 11's
 // `enabled = true` before the 0x496f0 call; 655/659 bytes, the remaining differences are register choices.
@@ -5543,6 +5569,8 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 
 #include "selected_source_pass.h"
 
+// MiniMax C (11-14): no new form, no lower score (111): the pass helper's late `enabled` store and 0x14b60's
+// first argument (retail passes it in eax) still differ.
 // score 111 (was 165): r136 lane 7: the shared pass helper follows 0x44370's body (mode-based 2/8 gate, two
 // 0x15680 calls for the cull, late `case 3: case 16: enabled = true;`). With the cull test in a one-use `bool
 // stipple_enabled` (96; kept only with a match, coordinator 11-08) all six inlined passes equal retail; only the 0x14b60 call differs (`push 1` against retail's `mov eax, 1`): BLOCKED-BY 0x14b60 (its real body
@@ -5604,6 +5632,9 @@ void __stdcall function_15720(real x, real y);
 extern byte g_4ba018;
 extern dword g_4b843c;
 
+// MiniMax C (11-14): no new form, no lower score (212): the 0x4a1e0 call still sets its arguments up in this
+// build's order (the resource index in eax, the source in ecx) where retail passes the source in eax, the
+// camera in ecx and the resource index in edx, and leaves the flags on the stack.
 // score 212 (was 237): r136 lane 7: draw_light_source_pass (passes 11, 14, 12, 13) follows 0x44370's body for its modes
 // (stipple cull through two 0x15680 calls, case 11's `enabled = true`); 925/939 bytes.
 // Earlier 237 (was 278, 300): the camera is now a register parameter (the `&camera` alias that forced it onto the stack is gone, so the
@@ -5684,6 +5715,8 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
     return false;
 }
 
+// MiniMax C (11-14): no new form, no lower score (100): 0x14b60's first argument still goes on the stack here
+// where retail passes it in eax, and the jump-table bytes it shifts still differ.
 // score 100 (was 138): r136 lane 7: the shared pass helper now follows 0x44370's own body (the 2/8 gate taken by mode,
 // the two 0x15680 calls for the cull, the late `case 3: case 16: enabled = true;`). With the cull test in a one-use
 // `bool stipple_enabled` (91; kept only with a match, coordinator 11-08) the five passes equal retail's inlined 0x44370 (dead g_485898 loads and pass 3's late stores included); only the 0x14b60

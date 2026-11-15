@@ -12,6 +12,12 @@ void function_1fe410(point3f *arg_0, real arg_1);
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax R (11-14, run 65): no new form, no lower score (373): the first difference is at +0x2, the frame, which
+// is 0x4c here against retail's 0x48, and the entry differs with it - this build pushes edi and keeps the random
+// state in esi from the first draw where retail pushes esi and holds the third settings pointer there - so every
+// later home follows from those two. The forms that reproduce retail's frame and its early bound reads need
+// one-use bound locals and the resolver written out in two copies, which review rejects, and the permutation
+// search over this body found nothing lower; the body stands.
 // MiniMax B (11-14): no new form, no lower score (373): the frame is still 0x4c against retail's 0x48, retail keeps the
 // third settings pointer in ESI from the entry where this build caches the random state in that slot, and the two flag
 // bytes are still stored before the random state is loaded; the forms that write the third input out at each use and
@@ -27,6 +33,11 @@ static __forceinline long real_to_long(real value);
 // ours caches the random state there, and the two flag bytes are still stored before the random state is
 // loaded.
 // MiniMax G (11-12): no new form, no lower score (373); the frame is still 0x4c against retail's 0x48, retail keeps the third settings pointer in esi from the entry where ours caches the random state there, and the two flag bytes are still stored before the random state is loaded.
+// MiniMax D (11-14): no new form, no lower score (373): retail keeps the third settings pointer in ESI from
+// the entry and the random-state pointer in ECX, ours keeps the random state in ESI and reloads the third
+// input from the stack; a local for the settings pointer scores 378 and was reverted, and the permuter's 21
+// tries over the reduced image (with --allow-mismatch, since the reduced score 464 differs from the full 373)
+// found nothing below the baseline.
 // score 373 (was 373): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
 // MiniMax E (11-11): no new form, no lower score (373); the frame is still 0x4c against retail's 0x48, retail keeps
 // the third settings pointer in esi from the entry where ours caches the random state there, and the two flag bytes

@@ -1362,6 +1362,14 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
+// MiniMax R (11-14, run 65): no new form, no lower score (83, was 83): this round measured the declaration order
+// of the two counts and it does not move their homes - item_count declared before index_count, item_count declared
+// first, and the two swapped in place all give 83 with the same bytes, so the homes follow MSVC's allocation and
+// not the source order; initialising item_count at the top does move its home to ebp-0xc, retail's, but the frame
+// grows to 0x58, the mode spills and the score is 121. The three qsort calls written out reproduce retail's
+// compare-address pushes and its shared tail (119 on their own), but the tail fill that yields retail's guarded
+// rep stosd is an index loop, and that moves the mode to its stack slot and the counter into EBX (154 to 174). The
+// pointer walk is kept and the body stands.
 // MiniMax E (11-14): no new form, no lower score (83, was 83): retail fills the tail with a guarded rep stosd of
 // 16 - index_count dwords and keeps index_count at ebp-8 and item_count at ebp-0xc; this build walks the tail with a
 // pointer and keeps the two counts in the exchanged homes. The index loop that produces the fill moves the mode to its
@@ -2651,6 +2659,11 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// MiniMax R (11-14): no new form, no lower score (87): retail's frame homes differ from ours (retail keeps the
+// `&players[i]` temp at -8 and shown_count at -0xc, ours the other way round) and the last loop keeps the four
+// widget indices in registers where ours spills them; the reload of players[i] after the voice query still needs
+// a store through a pointer somewhere in the 0x53b40 chain, whose source is in src/network_voice.cpp, another
+// lane's file.
 // score 87 (was 87): the spilled locals sit one six-step cycle off retail's slots, retail reloads players[i]
 // after the 0x53b40 voice query (BLOCKED-BY 0x53b40's chain, whose bottom 0x59670/0x596a0 is a contributor's),
 // and the last loop keeps the screen in ebx where retail gives ebx to bitmap_a. Earlier rounds below.

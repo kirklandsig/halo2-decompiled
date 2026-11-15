@@ -429,11 +429,22 @@ bool g_47f05b;
 // MiniMax G (11-13): no new form, no lower score (34): the abstract allocator's dead vtable store and the
 // reload of the backing pointer on the successful arm are still missing; the shared constructor bodies they
 // follow are outside this queue, so the body stands.
+// A later round, unchanged at 34: the abstract allocator's dead vtable store and the reload of the backing
+// MiniMax B (11-14): no new form, no lower score (34); retail keeps the abstract allocator's vtable store
+// (mov [eax], 0x453760) where this build drops it as a dead store, and that store comes from the shared
+// constructor in include/unknown_146a20.h, which this lane may not edit (BLOCKED-BY); the pool's placement is
+// read from g_479888 on both sides, so the rest is retail's reload of the block with a lea for the pool against
+// this build's load and add at the join.
 // score 34 (was 34): unchanged this round: the abstract allocator's dead vtable store and the reload of the backing
 // pointer on the successful arm are still missing; the shared constructor bodies they follow are in another file.
-// score 34 (was 34): unchanged this round: the abstract allocator's vtable store and the backing pointer's reload
+// Another round, unchanged at 34: the abstract allocator's vtable store and the backing pointer's reload
 // on the successful arm are still missing; both come from the shared constructors in include/unknown_146a20.h,
 // which this lane may not edit.
+// M3 lane 10 r106 (fast with 0x146b80/0x22c3e0, unchanged): the two untried placement/buffer/pool combinations: all three
+// through `block` 40 (135 B); placement through `block`, buffer and pool through g_479888 38 (144 B: retail's arm reload
+// and `lea esi, [eax + 0x15040]` join exactly, but the shared constant 1 becomes three immediates); on that, `block` read
+// after the three global stores 38 and g_479884 stored last 38 (both the same code); the buffer named ahead of the global
+// stores 36 (146 B; it takes EDX early and the 1s become immediates).
 // @retail 0x146a20
 void function_146a20(void)
 {
