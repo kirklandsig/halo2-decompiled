@@ -1996,6 +1996,10 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax C (11-15): no new form, no lower score (442 plain): the frame is still 0xd0 against retail's 0xc8 and the
+// cached animation words still have other homes, and this link still inlines 0x1fdd90 where retail calls it, which
+// keeps the actor table in a register; the forms for the frame and the carriers are in the notes below and none of them
+// lowers the score, and 0x1fdd90's own file is not this lane's: BLOCKED-BY 0x1fdd90.
 // MiniMax B (11-14): no new form, no lower score (442 plain, 548 on the reduced image): the entry block still differs
 // in its registers - retail loads the actor table into ECX, takes the row with `mov ebp, [ecx + A]`, keeps the actor
 // index in ESI and spills the scaled offset to the stack, and reads the member word with `movsx edx` and `mov di`,
