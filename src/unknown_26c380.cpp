@@ -567,6 +567,11 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // Also on the goto form: the 3-D normal declared first in the function, after `last_distance`, or ahead of `edge` 32 each
 // (same code: the magnitude's j/i order and the cross's row j do not follow its symbol position); on plane2f, the offset
 // taken from the 3-D normal ahead of the planar copy 373 (1613 B), the line as one initializer 370 (1613 B).
+// M3 lane 12 r126 (fast with 0x26c380/0x26c4e0/0x26ccb0/0x26d370, matched; control 244): `success` renamed
+// `blocked` (its value always equals result->blocked at the return; the name sorts before `first`) 244 (same code: the
+// names do not order the two byte homes). Retail's success byte ([esp + 0xe]) is stored 0 at entry and again in the
+// block both two-level exits jump to (0x26cb08), and only the final tail reads it; every other tail returns a
+// constant. No other untried natural form found. Body unchanged.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

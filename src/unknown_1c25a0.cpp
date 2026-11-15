@@ -876,6 +876,9 @@ void function_1c54b0(char const *variants, long object_index)
 // Round 91 (m3 lane 14, fast; flag before/after the call): the outer loop as a guarded do-while 4/18; count and
 // flag declared at function scope and assigned at the island top 4/18; the entity index declared in the inner for
 // statement 4 (all the 4s the same code).
+// Round 107 (m3 lane 10, fast): the count typed dword, with the flag before/after the call 4/18; no island local (the island
+// read from the world at each use, the discard argument included) 4/18; the component index from an inline getter
+// returning the property value type (`.m_data` read at the call) 4/18 (all six the same code as the 4 and 18 forms).
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {

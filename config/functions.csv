@@ -4117,7 +4117,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 0012d400,286,game,speed,a16 pad,,,0012c600 0012d2f0 00223bb0 002d2084 003fac30,src/unknown_12c0d0.cpp,matched
 0012d520,113,game,speed,a16 pad,,,0013d830 002d15da,src/unknown_12c0d0.cpp,matched
 0012d5a0,295,game,speed,a16 pad,,,0012d6d0 0013d370 0016b910 00213760,src/unknown_12c0d0.cpp,matched
-0012d6d0,468,game,speed,a16 pad,,,000359e0 001365a0,src/unknown_12c0d0.cpp,todo
+0012d6d0,468,game,speed,a16 pad,,,000359e0 001365a0,src/unknown_12c0d0.cpp,matched
 0012d8b0,182,game,speed,a16 pad,,,0013d170 0016b5f0,src/unknown_12de70.cpp,matched
 0012d970,125,game,speed,a16 pad,,,,src/unknown_12de70.cpp,matched
 0012d9f0,216,game,speed,a16 pad,,,0013d8b0 002d15da,src/unknown_12d9f0.cpp,matched

@@ -502,6 +502,9 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // (definition and the call together, stack unchanged) 10/10/10/10; the maximum test's square named where it is
 // computed 59 (1517 bytes). Phase scan (1-7 unused initialised locals) of the velocity normalizer in both
 // branches: 34/34/128/33/39/41/41/93; the minimum branch's inverse-first j/k pair appears at no phase.
+// Round 107 (m3 lane 10, fast; diagnostics in the shared reciprocal header, restored): the reciprocal without the asm as
+// `1.0f / (real)sqrt(squared)` 304 (1544 bytes; the back-edge reloads keep ours' first, next, definition order, so the asm
+// is not their cause); as `_mm_store_ss(&inverse, _mm_rsqrt_ss(_mm_load_ss(&squared)))` 533 (every user aligns its frame to 16).
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {

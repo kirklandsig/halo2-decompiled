@@ -797,6 +797,9 @@ struct s_1f8a70_actor
 // and 7) comes only from lane 1 r99's flag form, which is kept only with a match. Retail's failure-path reload of
 // route_found, the materialised `node != NONE` and the case 7 store order are each listed above with their scores.
 // Body unchanged at 182.
+// P515: Independent inner/outer binary-enumeration results, positive/complementary and complete pairs:
+// 307/376/432/448/467/486/542/553. NOT kept: no native failure-reload or dispatch equality;
+// original two-result flow, cases, unit temporary and full executable body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

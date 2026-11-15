@@ -388,6 +388,11 @@ PRIVATE inline long polygon_round_19f(real value)
 // score 370 (was 370): no new form and no lower score; the body is unchanged. Retail still reads its 1.5
 // factor from a writable .data float this lane may not add, and still keeps its frame at 0x30 against our
 // 0x34 because 0x4b2d0 takes the tag, the group and the variant in EDX, ECX and EAX (src/unknown_01cf50.cpp).
+// MiniMax E (11-15): no new form, no lower score (370): the distance's zero test against the float 0.0f
+// constant measures 370 (1518 bytes) as before, and dropping the variant's volatile pointer so that the frame
+// could reach retail's 0x30 measures 419 (1495 bytes); what still differs is unchanged: the frame 0x34
+// against retail's 0x30, retail's 1.5 factor in its own writable .data float, and the 0x4b2d0 call's
+// argument order, which is set in another file.
 // score 370 (was 370; earlier 316, 379, 393): see the round 170 line at the end of this note.
 // MiniMax A (11-13): no new form, no lower score (370); what still differs is unchanged: retail keeps the
 // third argument of this call in a register where ours keeps it on the stack, so retail's frame is 0x30 and

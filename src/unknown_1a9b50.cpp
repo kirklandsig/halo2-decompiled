@@ -720,6 +720,12 @@ extern point2f *g_468778;
 // positional drop only, five points, not kept); that on the 393 form 393; that with the prop's NULL default dropped 392
 // (1550 B), on the 393 form 391; the actor looked up inside the block after the slot tests 408 (1558 B), with the prop-index
 // test 427 (1570 B). The tail's `lea R, [slot + 0x2d]` field pointer is the same code in both builds (ESI here, EBP in retail).
+// M3 lane 13 r95 (fast with the file's functions and 0x265d30, all matched but 0x1aab50 at its own 382; control 375):
+// `s_unit_request local_17 = {0};` for the memset 374 (positional only: it drops the zero store to the type field that
+// retail keeps before its 0x1a store; one point, not kept); in the 0.8 arm the field_15 store ahead of the copy 387; in
+// the first arm the field_15 store after the two negated components 379; the request's unknown6 store ahead of the
+// direction copy 375, field_12 set ahead of the submit call 375, the second prediction's field_15 store after its copy
+// 375 (other code each). Same code (not counted): the view fetched ahead of the state. Body unchanged.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

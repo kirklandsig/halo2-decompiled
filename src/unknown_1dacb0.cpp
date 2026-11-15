@@ -1383,6 +1383,8 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // inheritance loop's `i = 0` of the inlined 0x1ddd00 (whose out-of-line body keeps i in EBP and stores the offset from it):
 // here it is materialised before the fifth kind and serves that kind's NULL tests and both zero stores. Round 227's census
 // still holds: no other untried natural loop, return, declaration or helper form is left.
+// P521: Optional mode/class/type scalar memcpy domains 1/2/4/3/5/6/7, then complete memmove:
+// 828/828/828/828/828/828/828/1059. NOT kept: no exact native output/candidate/zero-carrier recovery; original complete body restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1443,6 +1445,11 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 	return result;
 }
 
+// MiniMax D (11-15): no new form, no lower score (828): the first difference is still the NONE compare, where retail loads
+// the compared argument into edx and keeps the computed -1 in ecx while this build loads the argument into ecx and keeps
+// -1 in edx; that rides on the frame homes, where retail's result sits four bytes higher than ours and retail's third
+// resolved output sits in the frame while ours is homed in the incoming argument slot, so every later row pairs with the
+// wrong row; the iterator call, the sorted lookup and the two resource requests are unchanged.
 // MiniMax G (11-14): no new form, no lower score (828): the NONE compare still loads the compared argument into ecx
 // where retail loads it into edx and keeps the computed -1 in ecx, and the result's and the three resolved outputs'
 // frame homes still differ from retail's.
