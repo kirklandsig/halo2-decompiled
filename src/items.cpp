@@ -1445,6 +1445,9 @@ struct s_item_flags_view_10b850
 // P509: Exclusive geometry/object contact-result graphs with guarded/logical tag fallback:
 // 852/897/857/878/828/877/821/876. NOT kept: best gains three at retail length;
 // frame stays 0x154/0x12c. Original classifier, helpers and full body restored.
+// P523: Actual collision-kind long/dword/int/unsigned-int full-width fields, flag-byte
+// unsigned/signed fields and material/surface word fields: eight at 824/4096. NOT kept:
+// frame remains 0x154/0x12c; original record, helpers, semantic fixes and body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -2005,6 +2008,13 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // word/int/long/dword: 174/174/174/169/169/173/173/173.
 // NOT kept: all regress at 892 bytes; original Boolean capture, helper and body restored.
 // Return-byte, release RMW/tail and contact/event homes remain.
+// P523: Actual object activation bit 8, dword/long/word/short/byte/signed-char/char/bool
+// allocation units: 140/201/205/203/205/205/205/205. NOT kept: no exact activation/return-
+// byte or release/event recovery; original record overlay, entry test and full body restored.
+// P527: Native coordinate-array impulse/damping/both for loops, then while loops;
+// independent fixed-three do loops on the current spin/paired-setter graph:
+// 171/140/140/171/140/140/256/208. NOT kept: no exact return-byte/release/event-home recovery; original
+// shared impulse producer, damping statements and complete body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

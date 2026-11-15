@@ -1129,6 +1129,9 @@ real normalize2d(point2f *v);
 // P515: Independent trajectory/validity/first-type/retry binary enumerations, positive then complementary:
 // 172/141/202/135/192/253/213/135. NOT kept: no native DL/return equality; original
 // independent producers, trajectory tuples, request/facing graph and full body restored.
+// P527: Actual actor definition/unit/facing member-lvalue graphs, seven subsets then
+// all addresses from acquisition: 135/135/135/173/173/173/173/173. NOT kept: no native DL/independent-return
+// repair; original live field reads, trajectory/request tuples and complete body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

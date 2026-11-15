@@ -2581,6 +2581,13 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // P517: Actual material-sample available/missing result domains bool/byte/short/long at the original
 // query/fallback boundary; 91/91/91/91/91/91/91/91.
 // NOT kept: no exact or qualifying native-shape gain; original executable body restored.
+// P527: Existing dot/scaler complete scalar field-lvalue identities first/second/input/output/
+// first-second/first-input/second-input/all: 91/91/91/91/91/91/91/91. NOT kept: no native early
+// velocity j/k or property-zero repair; original shared headers and complete body restored.
+// P530: Plain condition-first while traversals for first contact/second contact/
+// material samples, seven subsets, then duplicate search alone:
+// 91/91/91/91/91/91/91/91. NOT kept: no early velocity j/k or
+// property-zero repair; original indexed loops and complete body restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

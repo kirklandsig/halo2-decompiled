@@ -1829,6 +1829,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // the shared has-player helper as `((1 << player) & mask) != 0` 60 (same code, its users unchanged); the kept mask typed
 // word without casts 60 (same code); the player bit declared after the clamp 60 (same code). Re-measured: round 71's
 // NONE-then-0 result 151 (445 B, 0x56380 13).
+// P532: Raw packet-mode byte/char/signed-char/short/word/long/dword/int domains
+// with uniform nonzero truth at the size producer: 146/146/146/144/144/146/146/146. NOT kept:
+// native zero/bit/size/capacity placement remains; original Boolean contract/body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

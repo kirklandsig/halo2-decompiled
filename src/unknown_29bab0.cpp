@@ -502,6 +502,14 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // P517: Completed collision-query output scope ending before either branch, carrying blocked/clear
 // bool/byte/short/long results; 702/702/702/702/702/702/702/702.
 // NOT kept: no exact or qualifying native-shape gain; original executable body restored.
+// P529: Actual three-component target/side-point/radial-displacement storage, seven
+// subsets then the complete unused spatial coordinate: 715/606/578/737/745/729/741/717.
+// NOT kept: 578 recovers native frame/length but retail stores and consumes only the two
+// radial components; unsupported workspace width needs equality. Original full body restored.
+// P531: Current double-free target/side-point/radial-workspace member producers, seven
+// subsets then the shared difference producer: eight 702 at 3473 bytes.
+// NOT kept: frame remains 0x8c versus 0x88; native query/planar-point home sharing
+// does not recover. Original complete executable source restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

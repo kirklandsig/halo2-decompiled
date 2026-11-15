@@ -1406,6 +1406,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // frame/player/pool/tag recovery; every producer, observation, slot provider and complete body restored.
 // P507: Complete uncounted/excluded slot counts byte/short/long/dword:
 // 293/295/292/292/275/313/313/313. NOT kept: no native qualifying-count/frame/player/pool/tag equality; original complete body restored.
+// P532: Independent full-width held/pending/inventory handles in dword/unsigned-int,
+// then full flag words in long/int: 215/215/215/215/215/215/218/218. NOT kept:
+// no native player/pool/tag or frame repair; original complete body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {

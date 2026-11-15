@@ -449,6 +449,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // early returns and a successor local 49, in a guarded do-while with result and break 43; the nested ifs in `while
 // (!result && index != NONE)` with a successor local stepped at the end 37 (player on the stack, ret 8, `mov al, 1; test
 // al, al` not threaded; callers 27/15). Original body restored.
+// P529: Existing offline-identity predicate returns its original comparison as
+// char/signed-char/byte/short/word/int/long/dword: eight 43 at 127 bytes.
+// NOT kept: no early ESI save, independent EBX successor, AL mask or failure-exit
+// repair; original private predicate and complete executable source restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

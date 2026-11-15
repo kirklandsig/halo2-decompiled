@@ -2178,6 +2178,9 @@ bool __stdcall function_110ab0(long unit_index)
 // P507: Entry-read control/state displacements, short/long separately and paired, then complete
 // use-site address formation: 507/521/445/445/507/521/520/520. NOT kept: no native frame or
 // result-home recovery; original observations, pointers and complete body restored.
+// P532: Incoming-permission ownership for whole/primary/overlay/input-seeded outcomes,
+// positive then complementary: 577/516/445/492/642/551/599/663. NOT kept: no native
+// frame/default-byte/result-join equality; original complete body and Boolean interface restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2702,6 +2705,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // Original complete executable body restored.
 // P507: Persistent real/interval bound blocks primary/secondary/both, then vector pairs and two-by-two reals:
 // 776/776/776/776/776/776/776/776. NOT kept: no native frame or selective angle/overlay expansion equality; original complete body restored.
+// P532: Actual three-axis table inside the existing two-site projection, ordinary
+// for/while with long/dword/short/word rows: 878/878/878/878/910/910/910/910.
+// NOT kept: frame 0xe0 versus native 0xd4 and extent regress; original complete helper/body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
