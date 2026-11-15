@@ -872,6 +872,9 @@ void swarm_leader_detach(long actor_index);
 // (974 B), with the iterator compare against the cached actor 274; the memory walk as a counted for 526 (1182 B, it
 // unrolls). Retail also stores the definition-bit test into the dead actor_index slot ([esp+0x34]) before branching on
 // it, the shape of an inlined helper's returned bool.
+// NOT kept (coordinator review, MiniMax D 11-15): 236 -> 216 rested on a bool flag set by one test and read by the
+// next (definition_bit = false; if (definition) definition_bit = ...; if (definition_bit)), a form kept only with
+// a byte match.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {
@@ -952,10 +955,7 @@ void __stdcall function_1e1a00(long actor_index, long value)
 		function_1e1250(actor_index);
 	}
 	byte *definition = (byte *)function_1e4990(actor_get(actor_index)->unknown054);
-	bool definition_bit = false;
-	if (definition)
-		definition_bit = ((*(dword *)definition >> 3) & 1) != 0;
-	if (definition_bit)
+	if (definition && ((*(dword *)definition >> 3) & 1))
 	{
 		byte *counts = (byte *)g_5047f4;
 		--*(short *)(counts + 6);
