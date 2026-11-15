@@ -797,6 +797,12 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // loop's collection as a reference 28 (same code); one function-scope counter for the three loops 28 (same code); the
 // loop-top player as `&collection->players[i]` 267 (1064 bytes); an occupant pointer `&collection->players[i]` at the loop
 // top for the occupied key 278 (1092 bytes).
+// Round 108 (m3 lane 1, fast with 0x84e90/0x69260/0x84c90/0x83c90, all MATCH): `collection` from the watcher parameter
+// read once through its own address 28 (same code: the base was already unfolded); the whole second loop as a
+// forceinline helper given `&watcher->players` as a collection parameter defined ahead of the loop 277 (1072 bytes:
+// the collection preheader code); the swap guarded by nested `slot != NONE` / `slot != i` tests 28; `updates` copied
+// into a const local used by every record 28; the swap's count increment as its own statement (re-measured on this
+// base) 28.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
