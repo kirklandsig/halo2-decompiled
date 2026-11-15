@@ -3088,6 +3088,10 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // On the 49 body: the rate named before the call 49 (computed on x87); the +0x134 flag through bit_vector_set 57 (237 bytes,
 // the failure path then retail's exactly); that plus the clears through word_flags_set 85; that plus the getter 57; the
 // first clear ahead of the settled store 49 (same code).
+// MiniMax C (11-15): no new form, no lower score (63): retail's settled out-parameter is a byte (mov cl, byte ptr
+// [esp+8] and a byte store into +0x3aa) where this build's is the long of 0x1d5120's declaration, and retail
+// passes the settling count in EAX with six stack arguments, so the call setup follows 0x1d5120's count-first
+// order, whose definition lives in another file.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -3784,6 +3788,8 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // `total` declared ahead of the random scales 354 (1924 B); re-measured diagnostic, not kept: the held 0xe16b0 unread bool
 // parameter fed from `(flags_348 >> 9) & 1` 407 on this body (1914 B, frame 0x4c, but the index moves to EAX, plain `ret`;
 // 0xdd360 224), with the `(char)` switch 407. Still BLOCKED-BY 0xe16b0 (contributor) for the frame.
+// MiniMax C (11-15): no new form, no lower score (324): the frame is 0x48 against retail's 0x4c, and the byte at
+// +0x34b is read with movzx where retail reads it with movsx - a signedness difference worth one point on its own.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -5755,6 +5761,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // alone reaches the bar. Forms: the normalize length named 153 (the n = 1 code); length and rate named 162 (857 B); `side`
 // scoped around the crosses 79 (same code); rotate_direction's dot folded into its projection 144 (905 B; matched 0x1ecf50
 // lost); the crosses as left = up x forward then up = forward x left (cross3f, cross3f_staged) 91, both through cross3f 203.
+// MiniMax C (11-15): no new form, no lower score (79): retail keeps the first product in xmm1 alive across the
+// block and computes the next value into xmm2, where this build spills xmm1 to [esp+0x10] and reloads it later;
+// the reduced check has to list 0x1ecf50 and 0x30bf0 as well, or it reports 621 against the 79.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

@@ -1985,6 +1985,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // 0x2e9e0 573) with the groupings of cases 1, 2 and 4, 179. Same code (193): cases 2 and 4 through dot3f; case 3 and
 // case 4 offsets through vector3d_from_points3d. On the 177 lead the register-masked aligned count is 72: the cross
 // terms' schedule still differs. Body unchanged.
+// MiniMax C (11-15): no new form, no lower score (193): the frame is 0x14 against retail's 0x18, and the shared
+// helper 0x2e9e0's frame is 0x90 against retail's 0x94, so both are one dword short; retail's frame here holds six
+// dwords (the two fpatan operands, the result and the three components of the reference vector) where this build
+// holds five, and retail keeps the result in the stack slot at +8 while this build keeps it in a register.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
