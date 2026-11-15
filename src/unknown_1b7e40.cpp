@@ -82,6 +82,10 @@ bool function_25d9b0(long prop_index);
 // invitation type in edi where this build passes them in eax and esi, and that convention is set by 0x26f060 in
 // src/unknown_26e370.cpp, which this lane may not edit, so the busy selection and the zero and success epilogues
 // still differ. BLOCKED-BY 0x26f060.
+// MiniMax R (11-15): no new form, no lower score (49): the busy call's two returns are still if-converted into a
+// mask select (neg al; sbb eax, eax; not eax; and eax, esi) where retail tests the flag and branches to its own
+// priority epilogue, and this build's shared zero exit still sits after the priority block where retail's sits
+// before the fallback block; the branch-shaped spellings swap the actor and node registers.
 // score 49 (was 49): frame and actor/node homes agree; busy selection and zero/success epilogues differ.
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
 // (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.

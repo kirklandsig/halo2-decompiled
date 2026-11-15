@@ -130,6 +130,10 @@ union s_6ec80
 // Round 105 (m3 lane 1, fast with 0x6ec10 and 0x5b120; control 5): the mask typed long 5 (same code); the guard tested
 // players first (`if (players && local_2)`) 89; that with the mask scoped 225; the mask scoped after the counter with the
 // active test spelled `!= 0` 227; a 600 s permuter run, 17 tries, best 5.
+// M3 lane 4 r202 (fast with 0x6ec10/0x5b120): the players local typed as the player-record pointer (cast at its
+// assignment, plain indexing) 5 (same code), that with the mask scoped 225; with the mask scoped: the 0x49c8 read by
+// hand plus both block pointers cleared and set players first 192 (the two pointers' homes and EBX/EDI then both swap),
+// only the two assignments players first 225 (974 B), only the two NULL initialisations swapped 225.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

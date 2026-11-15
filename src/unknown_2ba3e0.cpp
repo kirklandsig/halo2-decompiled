@@ -151,6 +151,8 @@ struct s_particle_properties_2ba
     s_particle_property_entry_2ba *properties;
     dword constant_mask;
     dword input_mask;
+
+    void function_2b9b10(void const *origin, long first, real scale, void *system) const;
 };
 
 struct s_particle_cache_2ba
@@ -293,222 +295,29 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
     return v;
 }
 
-// score 10 (was 10): frame 0xb4 and length 1516 agree. The back-edge parameter reloads (ours first,
-// next, definition; retail definition, next, first) and the maximum-speed branch's squared length
-// differ (ours the vector normalizer's k,i,j statements; retail (i+j)+k with k in the lower register).
-// Round 90: first-particle local 10; settings pointer 10; const properties 10; const particle 10;
-// const nearest 10; separate speed-squared value 10; length_sq3f 105; the particle squared helper
-// 107; force-inline dot3f declaration 10. Original body and declarations restored.
-// Round 125 (lane 4): a cache.values pointer local 10; properties read through the definition at
-// each use 297; the vector normalizer's sum as one expression 34; the velocity normalizer in both
-// branches with k read first and (i+j)+k 34; the first input mask read before the cache setup 38. A
-// one-link LTCG harness (exact for 0x2b98b0/0x2b9750) finds no body of the vector, direction or
-// velocity normalizer that gives this branch's (i+j)+k and keeps 0x2b98b0 and 0x2b9750: the k-first
-// i,j,k statement form needs a normalizer of its own.
-// Round 7 (lane 14): the minimum-speed normalization folds retail's j/k loads only when the maximum
-// branch sums its squared length in statements; maximum branch through the vector normalizer and the
-// minimum branch's normalize split from its scale 10 (kept); maximum branch alone 52; the direction
-// normalizer there 17; a one-caller i,j,k statement normalizer 9, with k read into a local first 2
-// (only the reloads left; not kept, new helper); the velocity normalizer in both branches with k (or
-// k,j,i) read first 10/10 (1517 bytes); next before properties 10; properties/next declared at the
-// loop 43/64; on the 2 form: parameter orders with the record second or before scale 2/2, particle
-// declared outside the loop 2, a separate particle mask 51, the successor through a local 2.
-// Round 9 (lane 14): change scaled through the file's scale helper 10 (same code); the maximum-change
-// scale the same 10; the change's squared length through the direction helper 42; the loop's mask
-// computed at the top of the loop 328; the maximum branch's final scale through the scale helper 45.
-// Earlier rounds (the minimum normalization then stored j and k one by one):
-// Round 90: the blend's previous add through vector3f_add with the squared speed from dot3f 34 (kept;
-// the add is retail's in-place block); with the direction/vector squared helpers 105/102, length_sq3f 113,
-// written-out sum 115; inverse-first j/k products in the normalizer 34 (same code); the minimum branch
-// split into normalize then scale 34; next declared before properties 34; dot3f in the normalizer or
-// for the change's squared length 34/34.
-// Frame 0xb4 agrees; 1517/1516 bytes. Back-edge parameter reloads and velocity
-// blend/normalization stores differ; shared scale return plus addition recovers the attraction's in-place products.
-// Earlier frame-matched body kept attraction j/k products in temporaries and deferred velocity stores.
-// Round 9 (lane 11): steering record replaced by plain locals 291 (frame 0xac); the distance estimate with
-// separate input and result variables (as flexible_surface.cpp) 254 (frame 0xb4); the 0x2b9750 call with
-// retail's argument registers 252; change zeroed i first 250; attraction delta and length through the
-// existing point-difference and direction-length helpers 213 (1516 bytes); its normalize through the
-// existing direction helper 196. On 196: compound multiplies in the scale helper 196; scaled delta added
-// straight into the change 213; direction helper in the change clamp 213 (1525 bytes); estimate before
-// and amount after the normalize 185 (lockstep only: retail divides before the branch; not kept);
-// names of the steering locals do not move their slots (spill slots).
-// Earlier: frame 0xb8 versus 0xb4; cache/steering/estimate/inverse homes and staged stores remained.
-// Round 138: the extra frame dword is the attraction delta: as a member of the escaped
-// steering record its scaled values are stored back and never read (retail keeps them in
-// registers), and ours shares two float homes retail keeps apart. Delta as its own local
-// in its block/before/after the record 301/301/301; delta and previous both outside 281;
-// the existing squared-length helper for the attraction/clamp/velocity sums 280/282/294,
-// all three 294.
-// component loops: velocity plus change 248; velocity plus previous 288;
-// attraction addition 280; change scale 269; maximum-change scale 269.
-// Shared inverse 249; shared squared length 277; both carriers 276; unsigned handle 249; attraction scale loop 269.
-// Frame 0xb8/0xb4 and scalar/vector/cache homes remain;
-// independent delta/previous 281; independent change/previous 293; all vectors independent 303;
-// property-array field reference 324; complete cache zero aggregate 410 (fast).
-// Frame 0xb8 versus 0xb4 and cache/scratch homes remain; hoisted origin pointer 249; previous library copy 249; change library clear 297; both serial additions 286; both additions plus library copy 286.
-// Round 210: Direct scalar members 277; direct change/delta/previous members 313/324/274; all
-// vector members direct 349. Frame 0xb8 versus 0xb4 and cache/estimate/inverse homes remain.
-// frame 0xb8/0xb4 and scalar/vector/cache homes remain;
-// Round 342: later nearest-result lifetime 360; successor after nearest 320; property-field
-// rereads 324; shared previous-velocity scale 249; shared final speed scales 269.
-// Round 215: independent minimum/maximum/change limits 278/270/280;
-// independent minimum+maximum limits 274; minimum+change limits 264.
-// Independent maximum-speed/maximum-change pair 264/1517; with fresh property fields 365/1516;
-// library previous copy with those two forms 264/365; separate particle mask 280/1530, plus
-// fresh properties 351/1521, plus library copy 280, all three 351. Frame remains 0xb8/0xb4.
-// Original full steering/cache layout, masks, vector copies and every call role restored.
-// Nearest, delta, previous-velocity, requested-mask and cursor names 249 each; cache/cursor
-// declaration and cache initialization order 249; redundant cache reset removed 366.
-// Round 350: independent cache validity/system/emitter/particle 408/330/340/354;
-// three contexts 377; validity+particle 412; complete native cache 425;
-// complete native cache with independent steering 435. Frame 0xb8/0xb4 and estimate/inverse homes remain.
-// Round 250: Ordinary inline reciprocal/estimate/both/scale/reciprocal+scale/estimate+scale/all
-// 440/249/440/249/440/249/440; all with external inline linkage 440. Reciprocal metadata loses four
-// reduced sibling controls; every helper contract restored. Frame 0xb8/0xb4 and
-// estimate/reciprocal/cache homes remain.
-// Round 253: Native scalar reciprocal with original steering storage 412;
-// independent delta/previous/both 432/382/406; all vectors 431; all limits 399;
-// maximum-speed/change pair 397; all independent 415. Every form aligns the
-// frame to 16 and loses four matched siblings in preview; original helper/storage restored.
-// Round 84: velocity block through a named velocity pointer 430 (1290 bytes); attraction amount
-// through the existing scale helper 196 (same code); an inline pointer-parameter vector add for both
-// velocity additions 234 (1541 bytes); next declared at the loop 242; attraction normalize through the
-// header's vector3f_scale 213. Restored.
-// Round 27: native scale/direction/scale+direction/velocity input-output contracts
-// 199/196/199/243; scale+velocity/direction+velocity/all 255/243/255; all with
-// shared velocity squared length 255. Direction contracts lose two matched
-// siblings in preview; every original helper contract and body restored.
-// Round 245: shared in-place scale orders ikj/jik/jki/kij/kji 208/209/216/223/222;
-// complete factor-first products in ijk/jik/kji order 196/209/222. Original helper restored.
-// Back-edge reload order, attraction temporaries and serial velocity stores remain.
-// Round 208: loop-entry input-mask acquisition 271; scoped linked induction on the
-// independent-vector graph 242; existing shared addition for
-// attraction/change/attraction+change/previous/attraction+previous/change+previous
-// 196/208/208/212/212/234. All restored. Frame and length agree; back-edge reloads and
-// normalization/velocity stores remain.
-// Round 377: independent caller attraction/change/both-speed normalized outputs 423/387/325;
-// paired attraction+change/attraction+speed/change+speed/all 591/514/490/679;
-// all with shared previous output 629. All restored; frame/reload/store differences remain.
-// Round 211: Complete shared direction/velocity/scale input snapshots 563/327/585;
-// direction+velocity/direction+scale/velocity+scale/all 653/831/677/923; all with read-only
-// scale/velocity snapshots 923. All restored; normalization transfers and velocity stores remain.
-// Round 31: shared attraction scale return consumed by shared addition 159; native change-stage scales 196;
-// both boundaries 158 (only one additional point, not retained); settings/origin/first placeholder names 196,
-// with attraction/change/both contracts 159/196/158; all five placeholder names plus both contracts 158.
-// Original parameter names and both original change-scale stages retained.
-// Round 379: Successor after bounds/attraction/collision/at back edge 310/341/364/247; with separate particle-input mask 300/272/353/223. Original early snapshot and body restored.
-// DH round 215: Distinct velocity-normalizer store orders ikj/jik/jki/kij/kji,
-// existing shared scale at its output, and complete inverse-first products ijk/kji
-// 196 each. Original helper and every caller stage restored; reloads and transfers remain.
-// Round 34: On the retained attraction-return graph, shared change addition 67 (plain);
-// previous-scale/quarter-scale/both returns 171/112/173; those with shared change
-// 178/114/178; scaled previous addition 171; shared previous addition 93, with
-// shared change 112, with both native scales 110. Back-edge reloads and final stores remain.
-// Round 166: shared scaled-add blend boundaries quarter/previous/native-previous/composed
-// 124/117/124/115; each with both final returned-output scales
-// 124/125/124/122. Original blend stages and stores restored.
-// Round 228: Native velocity-normalizer output consumed by both final scales, pointer/reference
-// inputs with existing/shared scales 67/67/47/47; corresponding shared final squared producers
-// 116 each. Keep pointer output into shared scale, plain 47 (1517/1516 bytes); final-store and
-// back-edge reload differences remain. Original magnitude expression and pointer input retained.
-// DH round 230: On the retained normalizer-output graph, shared final addition/reversed inputs 115/119;
-// native normalizer values alone/with those additions 398/386/386; explicit source-output normalization
-// with shared scale alone/with those additions 138/177/183. All restored; final stores, lower tail and reload order remain.
-// Round 394: direct previous-vector scale producer with native/quarter/maximum/maximum+quarter/
-// initial/initial+quarter/initial+maximum/all scales 208/203/208/203/208/203/208/203; restored.
-// DH round 232: On the retained pointer-output graph, quarter-output/final-add composition 117;
-// final component loop 111; scaled-add publication 115; normalizer loop/ordinary inline/inverse
-// lifetime/native slot names 47 each; both publication and normalizer loops 107 at retail length.
-// Every executable form restored; lower-tail stores and back-edge reload order remain.
-// Round 6: the minimum branch alone differs in the tail (retail's j/k products are the copy and
-// in-place forms of values defined before the inverse; the identical maximum branch is
-// sequential in both). Minimum scale with the normalized pointer as its output 34; the in-place
-// scale helper on the normalized pointer 34; a named velocity pointer for the blend and clamp
-// 397, for the clamp only 260; previous velocity scaled into its own vector 191. Restored.
-// Round 282: selected-bound common completion, upper/lower defaults and split normalize/scale
-// 365/362/342/365; with shared change magnitude 359/360/355/359 (frame 0xac).
-// Shared normalization-product setter 37 (1519 bytes). All restored; native 0xb4 frame,
-// back-edge definition/first reloads and lower normalization publication remain.
-// Round 30: matched 0x30bf0/0x1201a0 get retail's paired j/k products from `v->i = v->i * inv;
-// v->j = inv * v->j; v->k = inv * v->k;` with a computed inv; with the asm-written inverse every
-// product order compiles the same. That order in the normalizer 34 (same code); file scale
-// helper in the normalizer 34 (same code); file scale helper for the minimum's final scale 34
-// (same code); squared-first minimum test 34 (same code); next assigned just before the loop 86.
-// Round 204: vector-squared input by const reference, ordinary/forced squared and normalizer
-// availability, and void/pointer normalizer output: eight contracts 10 each. All original
-// helpers and marked bodies restored; back-edge reloads and maximum squared producer remain.
-// Round 24 (lane 10): the vector normalizer's sum through length_sq3f 34 (0x2b98b0 59); the
-// vector-squared statements in i,j,k order 9 (0x2b98b0 61); the velocity normalizer with k read first
-// and i,j,k statements, in both branches 10 (1517 bytes: maximum branch exact, the minimum's j product
-// loads j instead of copying the inverse); successor read right after the particle pointer 328; cache
-// declared first 10. Compile-only screen of the tail (~900 forms): an expression sum in the maximum
-// branch always turns the minimum's j/k scale sequential; k read first with i,j,k statements gives the
-// whole tail, but no vector-squared body with it keeps 0x2b98b0 (its first normalize needs k,i,j).
-// Round 33 (lane 14): the back-edge reloads follow the prologue order in ours (first, next, definition)
-// and run reversed in retail. Loop over the index parameter with the head in a local 79 (1524 bytes);
-// index/head names 10 (same code); change zeroed i first 19; change declared at the loop top 10 (same
-// code); unsigned index 10 (same code).
-// Round 49 (lane 14, fast): 1-8 unused locals at entry never move the back-edge reloads (10/142/16/10/23/23/110/
-// 110 from float operand orders), so their order is no numbering tie; the attraction center written at its
-// use 10; the distance estimate named 10; the attraction scale and add as two statements 10; the separation
-// radius/scale named before the call 303 (1523 bytes); the 0x2b9a00 property named before its call 236
-// (1521 bytes); re-measured: a separate speed-squared value 10.
-// Round 120 (lane 7, fast): the two branches' normalizers swapped 35 (1520 bytes); the header's
-// normalize_inline in the maximum branch 230; the velocity normalizer then the file scale helper there
-// 32 (1521); the velocity normalizer's sum through length_sq3f, in both branches 29 (1521); its sum as
-// i,j,k statements in both 41 (1520); as k + (i + j) in both 75.
-// Round 135: k-first velocity sum in maximum/vector in minimum 26 (1517 bytes);
-// k-first velocity sum in maximum/direction in minimum 26 (1517 bytes);
-// properties/cache/next declarations 10; next/cache/properties 10; cache/next/properties 10;
-// the same three declaration orders with original properties/next assignments 10 each.
-// All restored; back-edge reloads and the maximum squared producer are unchanged.
-// Round 127 (lane 7, fast), on the one-caller k-first normalizer form 2: a head copy of first at the top 2, after next 2;
-// a definition copy for the properties and masks 34 (1521 bytes); both copies 129 (1518); a named index before the nearest
-// call 2; a per-particle mask 51 (1517), assigned to requested 2; a definition copy for the later mask only 2. The reload
-// order never moves; matched functions (0x1384a0, 0x168e20, 0x2c05f0) reload in reverse prologue order as retail does here.
-// Round 94 (fast): both cache updates through the existing s_particle_value_cache::function_173c10 member (it inlines) 128
-// (1518 bytes); system declared second at the definition and its one call 10; the velocity normalizer in the maximum branch
-// too 34 (1521); the cache type renamed 10 (same code); `if (next != NONE) do ... while` 10 (same code). As in 0x2bdc70 and
-// 0x281b60, ours reloads the parameters in descending declaration order and retail ascending. The blend's first add as
-// change + velocity 10 (same code).
-// Round 94 (lane 16, fast): particle as the pool data plus the masked index 10; change zeroed by an aggregate
-// initializer 10; maximum test as `maximum_speed * maximum_speed < squared` 10; minimum test as
-// `squared < minimum_speed * minimum_speed` 10; change scaled through vector3f_scale 10. With first and definition
-// swapped (diagnostic) the reloads keep their positional order (third parameter, next, first parameter).
-// Round 72 (m3 lane 14, fast): first typed dword 10; next typed dword 10; next declared in a `for` header with the
-// successor read in the body 64 (1517 bytes); nearest declared at function scope 10; the particle-change clear as
-// `&= ~0xf80f` 10.
-// Round 60 (m3 lane 2, fast): the system block storing the validity before the system 12; the three cache
-// pointers cleared by one chained assignment 12; first as `long const` 10; definition as a const pointer 10; the
-// attraction test as `0.0f < attraction_radius` 10 (the 10s the same code).
-// Round 145 (m3 lane 7, fast): one redundant pair of parentheses each: the attraction quotient, the change's first
-// squared product and the maximum test's square 59 each (1517 bytes), the minimum test's square 42 (1521); the
-// masks, the particle index, the center pointer, the chained zeroing and the tests 10 (same code). Renames
-// reversing the name order of definition, first and next (one, two or all three) 10; renames of particle, nearest,
-// properties, cache and requested 10; requested declared beside the cache 10; change at function scope 10. The
-// back-edge reloads never move.
-// Round 74 (m3 lane 2, fast): the velocity normalizer in the maximum branch too 34 (1521 bytes; re-measured, as round 94:
-// the maximum branch is then exact, but the minimum branch's j/k inverse products turn sequential where retail pairs them,
-// so that pairing follows a numbering tie like the reloads); on that, vector3f_scale / scale_particle_vector_2b /
-// chained normalizer returns per branch 34/37; a 48-form random screen (comparison orientation, change and
-// maximum-change scales through the file scale helper, a separate speed-squared local, the center inline, chained
-// returns) 34 in all; the direction normalizer in the maximum branch 17 (re-measured, as round 7); the previous blend
-// through vector3f_scale on the shared-normalizer form 34.
-// Round 117 (m3 lane 12): the permuter (`--fast --anneal`, 600 s, 82 tries) best 10. The tree's statement-form i, j, k
-// squared sums are all file-local (path.cpp, unknown_1a58b0.cpp, impacts.cpp) and none reads k first; matched 0x2b8e10
-// keeps nothing in registers across its back edge, so it shows no reload order to follow.
-// Round 91 (m3 lane 14, fast): the EDX parameter system moved to the first, second, third or fourth position
-// (definition and the call together, stack unchanged) 10/10/10/10; the maximum test's square named where it is
-// computed 59 (1517 bytes). Phase scan (1-7 unused initialised locals) of the velocity normalizer in both
-// branches: 34/34/128/33/39/41/41/93; the minimum branch's inverse-first j/k pair appears at no phase.
-// Round 107 (m3 lane 10, fast; diagnostics in the shared reciprocal header, restored): the reciprocal without the asm as
-// `1.0f / (real)sqrt(squared)` 304 (1544 bytes; the back-edge reloads keep ours' first, next, definition order, so the asm
-// is not their cause); as `_mm_store_ss(&inverse, _mm_rsqrt_ss(_mm_load_ss(&squared)))` 533 (every user aligns its frame to 16).
-// @retail 0x2b9b10
-void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
+/* normalizes the velocity for the speed limit with the approximate reciprocal square root; the
+   squared length is summed i, j, k with k read first, the order retail keeps there */
+PRIVATE __forceinline void normalize_particle_speed_2b(vector3f *v)
 {
-    s_particle_property_entry_2ba *properties = definition->properties;
+    real k = v->k;
+    real squared = v->i * v->i;
+    squared += v->j * v->j;
+    squared += k * k;
+    if (squared != 0.0f)
+    {
+        real inverse = inverse_sqrt_2b96(squared);
+        scale_particle_vector_2b(inverse, v);
+    }
+}
+
+/* steers each particle of the list by its nearest neighbour and the attraction center, then limits
+   the change and the speed. The definition is the function's own object: as the object
+   pointer it is the first value the compiler tracks, so at the loop's foot retail reloads it ahead of
+   the first index (0x2bdc70 is the same case). */
+// @retail 0x2b9b10
+void s_particle_properties_2ba::function_2b9b10(void const *origin, long first, real scale, void *system) const
+{
+    s_particle_property_entry_2ba *properties = this->properties;
     long next = first;
     s_particle_cache_2ba cache;
     cache.valid = 0;
@@ -520,7 +329,7 @@ void function_2b9b10(s_particle_properties_2ba const *definition, void const *or
         cache.current_system = system;
         cache.valid = 0;
     }
-    dword requested = definition->input_mask & 0x107f0;
+    dword requested = this->input_mask & 0x107f0;
     function_173ba0(requested, cache.current_system, cache.current_emitter, cache.current_particle, cache.values);
     cache.valid |= requested;
     while (next != NONE)
@@ -531,7 +340,7 @@ void function_2b9b10(s_particle_properties_2ba const *definition, void const *or
             cache.current_particle = particle;
             cache.valid &= 0xffff07f0;
         }
-        requested = definition->input_mask & 0xf80f;
+        requested = this->input_mask & 0xf80f;
         function_173ba0(requested & ~cache.valid, cache.current_system, cache.current_emitter, cache.current_particle, cache.values);
         cache.valid |= requested;
         next = particle->next;
@@ -585,7 +394,7 @@ void function_2b9b10(s_particle_properties_2ba const *definition, void const *or
         squared = dot3f(&particle->velocity, &particle->velocity);
         if (squared > maximum_speed * maximum_speed)
         {
-            normalize_particle_vector_2b(&particle->velocity);
+            normalize_particle_speed_2b(&particle->velocity);
             vector3f_scale(&particle->velocity, maximum_speed, &particle->velocity);
         }
         else if (minimum_speed * minimum_speed > squared)
@@ -1186,7 +995,7 @@ void function_2b8da0(s_particle_properties_2ba const *definition, void *system,
         function_2b9060(definition, system, first, scale, mode);
         break;
     case 2:
-        function_2b9b10(definition, origin, first, scale, system);
+        definition->function_2b9b10(origin, first, scale, system);
         break;
     case 3:
         function_2ba100(definition, system, first, scale);

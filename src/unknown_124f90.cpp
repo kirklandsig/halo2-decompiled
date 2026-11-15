@@ -2691,6 +2691,7 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax E (11-15): no new form, no lower score (17): the set index is still sign-extended where retail copies the dword, and 0x219070 is still called with two arguments where retail passes one; both live in other files.
 // MiniMax H (11-14): no new form, no lower score (17).
 // MiniMax H (11-12): no new form, no lower score (17); the first difference is still 0x219070's result, and the one-use short local that lowers it to 15 stays a match-only form.
 // MiniMax B (11-11): no new form, no lower score (17); the delayed branch's two stores still swap (retail keeps the
@@ -2755,6 +2756,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // src/unknown_218ac0.cpp; declaring them long here leaves both calls unresolved (the linker puts the
 // return type in the name: LNK2001 on `long __fastcall function_218f50(...)`), and the delayed start
 // still stores the flag byte before the start time.
+// MiniMax R (11-15): no new form, no lower score (17): the sound set index is still sign-extended where
+// retail copies the dword and 0x219070 is still called with two arguments where retail passes one; both are
+// fixed by that callee's declaration in another file, so this one stays BLOCKED-BY 0x219070 and 0x218f50.
 // score 17 (was 17): unchanged this round: the sound set index is sign-extended where retail copies the dword
 // (one byte longer) and 0x219070 is called with two arguments where retail passes one; both live in other files.
 // score 17 (was 17): unchanged this round: our code is one byte longer - the sound set index is sign-extended
@@ -4069,6 +4073,8 @@ vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vec
 // calls it out of line, and that expansion accounts for about 97 of the 101; the two smaller differences (the flag
 // byte's or against a store, and the fade gain sum's load order) stay, and keeping the call out of line needs a
 // declaration in another lane's file, which the rules exclude.
+// MiniMax D (11-15): no new form, no lower score (101): the type lookup 0x221810 is still expanded here where retail
+// calls it out of line, which shifts the rest of the listing, and that lookup's body is in another file.
 // score 101 (was 101): unchanged this round: the class lookup 0x221810 is still expanded where retail calls it
 // out of line, which shifts the rest of the listing; 0x221810 lives in src/unknown_221490.cpp, which this lane
 // may not edit, and the depth pair that would keep it out of line is ruled out.
@@ -4791,6 +4797,8 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // MiniMax G (11-14): no new form, no lower score (535): the frame is still 0x130 against retail's 0xe8 and 0x16f3a0,
 // 0x1420f0 and 0x11c120 still have to stay out of line, and their noinline declarations live in other files; the
 // forms tried for the frame and the three helpers are in the notes below and none of them lowered the score.
+// MiniMax D (11-15): no new form, no lower score (535): the frame is still 0x130 against retail's 0xe8, and 0x16f3a0,
+// 0x1420f0 and 0x11c120 still have to stay out of line, which their noinline declarations in other files decide.
 // score 535 (was 535): unchanged this round: the frame is 0x130 against retail's 0xe8 and 0x16f3a0, 0x1420f0 and
 // 0x11c120 still have to stay out of line, and their noinline declarations live in other files.
 // score 535 (was 535): unchanged this round: 0x16f3a0, 0x1420f0 and 0x11c120 have to stay out of line, and their

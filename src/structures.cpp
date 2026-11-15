@@ -523,6 +523,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // ([esp+0x13] against [esp+0x14]) before the type branch, this build keeps the result in a register, and declaring the result
 // above the branch so the zeroing lands in the prologue measures 197, so the body stands. The BSP global still takes EBX in retail
 // and EBP here, and the section pointer still takes retail's stack home against this build's EDX.
+// MiniMax I (11-15): no new form, no lower score (172): the frame is retail's 0x58, retail keeps the BSP global in EBX with the section in a stack home while this build keeps the section in EBX and the BSP in EBP, and the range, the plane and the vertex-join homes still differ.
 // score 172 (was 172): Frame 0x58 agrees; BSP/section carriers (ours keeps the section in EBX and
 // the BSP in EBP, retail the BSP in EBX with the section in its stack home), range/plane homes and
 // vertex joins remain. Retail never initialises its vertex flag (set only when a vertex exists,

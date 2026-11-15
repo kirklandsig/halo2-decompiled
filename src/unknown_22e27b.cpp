@@ -457,6 +457,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // swap places, the plain-frame miss stays); as `restart |= ...` 184; the flag-8 store tested `!restart && !(flags & 8)`
 // ahead of the restart break 1; only the flag-8 store under `if (!restart) {...} else break;` 1; restart computed as
 // `!dispose && ...` ahead of the dispose break 233 (681 bytes).
+// Round 98 (m3 lane 14, fast): a compiler read/write barrier just ahead of the restart test at the join 209 (655 bytes);
+// `restart = false;` at the loop bottom after the timing updates 139 (661 bytes); the loop as `for (; time >= next_time;
+// next_time += frame_time)` on this body 1 (same code); every animation-state read through one reference to the member 1
+// (same code); a 600 s permuter run (63 tries) none below 1.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
