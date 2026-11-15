@@ -567,6 +567,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // origin, graphs 1/2/4/3/5/6/7: 622/656/709/656/709/715/715;
 // independent initial output setter 670. NOT kept: no exact publication
 // match; original sample/direction homes, arithmetic and full body restored.
+// P521: Explicit real-root boundaries at raw activation/combined activation/remaining displacement/settling
+// sample, then activation pair/raw-remaining/combined-sample/all: 622/622/622/622/683/622/622/676.
+// NOT kept: no exact root/precision or native home repair; complete original body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
