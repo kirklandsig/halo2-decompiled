@@ -786,6 +786,9 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax C (11-15): the parent walk as a NONE-rooted do-while and as a current-rooted while: 109 each
+// (was 43), no lower score; the walk's shape only moves the allocator's choice (the datum pointer lands in
+// EBX, then in EBP), while retail keeps it in EDI and the unit index in EBX.
 // MiniMax H (11-14): no new form, no lower score (43): this round compared retail's listing with ours
 // region by region; the entry test and the 0x10 frame agree, and the difference opens inside the root
 // walk, whose body is the out-of-line 0xbaf80 in src/unknown_0bad50.cpp; the body is unchanged.
@@ -2530,6 +2533,7 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax C (11-15): no new form, no lower score (701): the body stands as found.
 // MiniMax H (11-14): no new form, no lower score (701): retail's locals run from +0x10 to +0x83, with the
 // two request homes at +0x44..+0x83 and the small homes at +0x14..+0x43, so retail holds two request
 // workspaces and eight bytes more of small homes than this build's one workspace and +0x2c; the body is
@@ -3082,6 +3086,7 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax C (11-15): no new form, no lower score (103): the body stands as found.
 // MiniMax H (11-14): no new form, no lower score (103): retail's listing loads the flag's global
 // (0x510c50) ahead of the frame setup and keeps the globals pointer in ESI across the first block,
 // while this build loads the globals pointer first and takes the field's address with a lea, so the
