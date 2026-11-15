@@ -592,6 +592,12 @@ struct s_1af5c6
 // permuter run with those three as context (40 tries) best 20; the raised source z as `local_5.z + 0.05f` 22; the
 // cluster index chosen by one conditional expression 20 (same code); the prop state pointer const 20 (same code); the
 // mask's 0x20 bit cleared with `&= ~0x20` on this form 20 (same code). Still BLOCKED-BY 0x1c8df0's call-site inlining.
+// Round 90 (m3 lane 15, fast with the file's functions, 0x1af810, 0x1b2770 and 0x1c8df0; control 20): the actor's +0x26c bool
+// read right after the 0xbaf40 call 131; the object index read from the prop node for the first lookup and the 0x2640c0
+// argument, with `local_19` declared at the reload, 39; the ignore index defaulted to the object index and replaced by one
+// `!flag && field != NONE` test 29 (the mask temp moves to ECX as retail's, but the flag byte goes to BL, as round 95's
+// copy); the product test as an if with returns 20 (same code); the leaf index named and the cluster chosen by a ternary
+// 20 (same code). Diagnostic (listed form): the distance renamed `distance` 20. Still BLOCKED-BY 0x1c8df0's call-site inlining.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {
