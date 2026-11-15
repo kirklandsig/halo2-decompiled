@@ -474,6 +474,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
+// MiniMax R (11-15): no new form, no lower score (218): the entry still hands the pathfinding root over in the register the compiler picks instead of saving it in ebx, and the actor index is still not read into eax before the dispatch; the paired-edge block still keeps the vector's j and k in the other two xmm registers (retail: xmm3 = j, xmm4 = k and the 1.0f in xmm6; here xmm3 = k, xmm4 = j and the constant in xmm7); ten new spellings of the root local, the actor local, the case-5 statement order and the projection operand order all scored 218 or worse.
 // MiniMax A (11-14): no new form, no lower score (218): the entry still differs - retail copies the pathfinding
 // argument into EBX and reads the actor index into EAX there, while this build keeps the pathfinding in EAX and
 // reads the actor index in the case that uses it; dropping case 1's second vertex local so that the first can
@@ -938,10 +939,23 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // (coalesced with the parameter); the actor test in a named bool at case 5's top 218; one vertices pointer local for case
 // 5's direction and position 218; the actor test as an outer if around the 0x270400 call 218; the surface pointer
 // declared ahead of the start-out pointer 218 (all four same code).
+// M3 lane 10 r108 (fast with 0x270d90 at 286 and 0x270400 MATCH; control 218, corners a, b, c, d re-measured 287 at 1284 bytes).
+// Dead-local phase scan on the corners form (diagnostic, removed), n = 1..7: 295/283/288/288/288/288/288, the dot sums' j/k
+// roles never move. On the corners form: one vertices base for case 1/6 and case 5 at the top 306 (its load joins the entry);
+// case 2 through the pathfinding parameter (diagnostic; retail reads the state's) 267 (1280 bytes, pathfinding then arrives in
+// ECX and surface_index in EDX, so the incoming register follows the body); corners a, b, d, c 302 (actor still first), b, a,
+// d, c 358, a, c, b, d 357, b, c, a, d 356. Same code as the corners form: the result declared first, surface_index declared
+// ahead of pathfinding (definition, declaration and call), `second` declared in its own block, the projection difference as
+// one expression, both length tests as `0.f < length`.
 // m3 lane 9 r124 (fast with 0x270d90, 286 throughout): one to seven unused locals at the top (diagnostic phase scan)
 // 219/220/220/220/220/220/220 (inert); the fraction as `inverse * (projected - origin)` 218, the projection's and the
 // origin's dot3f arguments swapped, singly and together, 218/218/218 (all same code); re-measured `margin =
 // state->source.radius * inverse` 218 (same code).
+// M3 lane 13 r97 (fast with 0x270d90 286 and 0x270400 MATCH throughout; control 218): retail's actor parameter is
+// colored first (EAX from the entry, its stack home then reused for case 1/6's corner spill, case 2 reloading it), so
+// parameter order and case order were tested for the coloring order, the declaration and 0x270d90's call changed
+// together: the actor declared first 218, second 218, the entry pointer declared first 218 (all the same code); case 5
+// placed first in the switch 329, case 2 first 354 (1284 B; the entry stays as before in both).
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

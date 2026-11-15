@@ -482,6 +482,15 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // before the cosine 227 (1199 bytes); cross3f(v, axis) first, then sine, dot, cosine 233 (1196 bytes); sine, dot3f(v,
 // axis), cosine, projection, cross3f(v, axis) vector 213 (1209 bytes, frame 0x11c; same as round 82's dot3f(axis, v) form,
 // re-measured 213); scalar cross(axis, v) terms added in the rows 229 (1200 bytes, frame 0x114). Helper restored.
+// M3 lane 1 r107 (fast with 0x28dab0/0x256bd0/0x259d0, all matched; control 173): on lane 2 r85's in-place scalar-cross helper
+// (228, 1194 B, frame 0x114): the helper's two pointer parameters swapped at definition and call 228; dot3f(v, axis) 228;
+// `projection = (1.0f - cosine) * projection` 231 (1192 B); rows with the vector term first 228; X.j/X.k with the axis operand
+// first in each product 228. Retail keeps the heading's i and j in XMM6/XMM4 through the whole rotation and re-materialises the
+// zero k (a memory 0.0, then `xorps xmm7`) after XMM3 is reused for 1.0; every scalar form here keeps the zero in a register and
+// re-reads the heading's j from its home instead, so it spills one value fewer.
+// P539: Unrounded trig return producers feeding original real heading/tilt consumers, seven subsets
+// and immutable full graph: 286/231/231/304/304/234/304/304. NOT kept: all regress; combined graphs lose caller
+// 0x28dab0. Original helpers, real consumers, draws, full request and ordinary pooled reads restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

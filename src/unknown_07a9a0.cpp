@@ -1439,6 +1439,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // still inlines and the loop call and capacity switch stay out of line); with the capacity switch forceinline 868 (2788 B,
 // 0x73530 8); with grouped capacity labels 888 (2768 B, 0x73530 8); the player value through 0x63220 plus the long histogram
 // 1141 (2476 B); the 0x192e60 call first in the loop body plus the long histogram 937 (2704 B, frame 0xb0). Body unchanged.
+// M3 lane 2 r86 (fast with 0x73530, 0x63220, 0x192e60, 0x1934f0, 0x1931a0; control 766, 0x73530 8), all with `long
+// histogram[16]` (frame 0xb4 as retail): the top lookup after the capacity read 874 (2772 B, 0x73530 1); that with the
+// loop's variant through 0x192e60 922 (2724 B, 0x73530 1); the top lookup after the summary read with the loop's variant
+// through 0x192e60 908 (2724 B); the validity test split in two with the loop's variant through 0x192e60 901 (2740 B);
+// the type-5 scan's early return dropped and the rest of the body under `if (result)` 862 (2788 B).
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

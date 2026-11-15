@@ -1215,6 +1215,7 @@ struct s_item_flags_view_10b850
 // MiniMax S (11-10): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c, the two entry bit tests stay in registers here while retail keeps the bytes in stack slots and re-reads the flags word, and the definition pointer sits at 0x38 against retail's 0x1c. The 815 of the earlier round is the two-flag body (a separate flag for the definition bit and another for the position update); retail keeps one flag, set before the ray query and cleared only by the settle branch, so that body is not restored.
 // Earlier: Frame 0x154 versus 0x12c; entry Boolean publications and carrier/collision/flow/marker/rotation homes differ.
 
+// MiniMax E (11-15): no new form, no lower score (824): the frame is still 0x154 bytes against retail's 0x12c, so every stack home sits 0x28 further out, and retail keeps the two entry flags in stack slots where this build holds them in registers.
 // MiniMax G (11-13): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c,
 // the entry's flag byte differs (retail shifts the value and stores the parity byte where this
 // build tests a bit of a shifted register), and the walk still differs in the item table's own
@@ -1445,6 +1446,9 @@ struct s_item_flags_view_10b850
 // P509: Exclusive geometry/object contact-result graphs with guarded/logical tag fallback:
 // 852/897/857/878/828/877/821/876. NOT kept: best gains three at retail length;
 // frame stays 0x154/0x12c. Original classifier, helpers and full body restored.
+// P523: Actual collision-kind long/dword/int/unsigned-int full-width fields, flag-byte
+// unsigned/signed fields and material/surface word fields: eight at 824/4096. NOT kept:
+// frame remains 0x154/0x12c; original record, helpers, semantic fixes and body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1669,6 +1673,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // impulse paths apart with the flag clear at a different point in each, so splitting ours that way
 // (223) and giving the clear a byte-unit bit field (206) both score worse.
 
+// MiniMax E (11-15): no new form, no lower score (140): the return byte still sits at esp+0xe where retail keeps it at esp+0xf, and the release flag is still cleared with a load and a store where retail masks the byte in place.
 // MiniMax B (11-13): no new form, no lower score (140): retail clears the release flag with one byte read-modify-write (a narrower cast of the field's own address, a banned form) and keeps two separate copies of the release impulse, one clearing the flag before it and one after it, where a shared helper gives one copy and the two calls then merge.
 // MiniMax G (11-12): no new form, no lower score (140): nothing new this round; frame 0xac agrees; the return bytes +0xe/+0xf,
 // the release-byte read-modify-write and the tail still differ.
@@ -2005,6 +2010,13 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // word/int/long/dword: 174/174/174/169/169/173/173/173.
 // NOT kept: all regress at 892 bytes; original Boolean capture, helper and body restored.
 // Return-byte, release RMW/tail and contact/event homes remain.
+// P523: Actual object activation bit 8, dword/long/word/short/byte/signed-char/char/bool
+// allocation units: 140/201/205/203/205/205/205/205. NOT kept: no exact activation/return-
+// byte or release/event recovery; original record overlay, entry test and full body restored.
+// P527: Native coordinate-array impulse/damping/both for loops, then while loops;
+// independent fixed-three do loops on the current spin/paired-setter graph:
+// 171/140/140/171/140/140/256/208. NOT kept: no exact return-byte/release/event-home recovery; original
+// shared impulse producer, damping statements and complete body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

@@ -170,6 +170,11 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // it in a register; the lookup's inline-ness (src/unknown_221490.cpp) and 0x21d110's declaration
 // (include/sound_records.h) are outside this file: BLOCKED-BY 0x221810 and 0x21d110.
 // MiniMax R (11-15): no new form, no lower score (110): the first 0x221810 lookup is still expanded here where retail calls it out of line, and the 0x21d110 call still takes the state by pointer on the stack where retail passes it in a register; a 300-second permuter run over this body (33 tries) found nothing better than its 107-instruction baseline on either image. BLOCKED-BY 0x221810 and 0x21d110.
+// MiniMax R (11-15, second pass): no new form, no lower score (110): retail's end test tests the flag 8 byte bit,
+// then shifts flag 11 out of the word and then tests the audible nibble (test byte ptr [x], 0xf), while this build
+// merges the two flag bits into one byte test; the first 0x221810 lookup is still expanded here where retail calls
+// it out of line and the 0x21d110 call still takes the state by pointer on the stack where retail passes it in a
+// register. BLOCKED-BY 0x221810 and 0x21d110.
 // score 110 (was 110): BLOCKED-BY 0x221810 and 0x21d110 (callee side): LTCG inlines the first
 // 0x221810 call (retail calls both; its file is not this function's) and 0x21d110 (unmatched) takes the
 // tag in EAX and the state on the stack where retail passes the state in EAX; the forms that give 0x21d110
@@ -888,6 +893,10 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // (diagnostic: the callees inline as without the pragma); the camera exit as `return local_1;` 179 (661 B); the
 // velocity copied before the forward normalize 41; the square root left positive and subtracted per component 53
 // (660 B); the player-unit test as one ternary comparison 167 (667 B).
+// m3 lane 14 r99 (fast with 0x188180, control 2): `if (length_squared)` 2 (same code); the along test as `!(along < 0.0f)`
+// 85; the zero-length arm's copy written per component 172 (618 B); the projection scale divided in place in local_0 2
+// (same code); `-sqrt(distance_squared)` without the double cast 66 (663 B). Diagnostic: the function renamed (its
+// definition and 0xf8eb0's declaration and call) still 2, so the decorated name does not decide the epilogue order.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

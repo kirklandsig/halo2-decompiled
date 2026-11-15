@@ -879,6 +879,10 @@ void function_1c54b0(char const *variants, long object_index)
 // Round 107 (m3 lane 10, fast): the count typed dword, with the flag before/after the call 4/18; no island local (the island
 // read from the world at each use, the discard argument included) 4/18; the component index from an inline getter
 // returning the property value type (`.m_data` read at the call) 4/18 (all six the same code as the 4 and 18 forms).
+// M3 lane 2 r87 (fast; flag before/after the discard call where both measured): the per-entity test as a force-inline
+// bool predicate on the entity 4/18 (same code); no flag, `else island_index++;` 91 (231 B); `island_index = removed ?
+// island_index : island_index + 1;` 91 (231 B, the flag disappears); `count += (tests) ? 1 : 0;` 78 (253 B); the final
+// test as `count == i` 48 (253 B); re-measured the entity count read at each use 18/4. Original body restored.
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {

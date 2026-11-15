@@ -181,6 +181,9 @@ void function_22fba9(c_class_1473c9 *screen)
 // Round 164 (m3 lane 7, fast): widgets and the flag given descriptive names 23, counters named index/child_index 23, the
 // model result typed as the model widget (cast at the call) 23, the model animation start through the qualified base
 // member 23 (all same code); the shared counter declared inside the pane block ahead of the flag 66.
+// Round 166 (m3 lane 7, fast): one `long const &` to the screen's animation type read by all five loops 23; the screen as a
+// base-widget parent pointer for the helper calls and every animation read 23; the model declared in its if condition 23;
+// the text declared in its if condition with the animation test nested 23; both 23 (all the same code).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

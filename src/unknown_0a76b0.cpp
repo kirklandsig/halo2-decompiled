@@ -865,6 +865,8 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// MiniMax I (11-15): no new form, no lower score (92): the permuter over the whole body reached 89 with no confirming
+// build, so the source stands.
 // score 92 (was 92): 152 before m3 lane 14 r83; earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
 // MiniMax I (11-14): no new form, no lower score (92): the throw path's origin split from the release point's (the
 // override copy and the first 0xcafc0 point in a local of their own) 116, and the spread blend with the velocity term
@@ -1416,6 +1418,13 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 // retail's immediate and notice exits are late copies of the one shared exit, and our build gives that exit to the notice.
 // Re-measured, same code: the whole tail structured with no gotos (19), round 156's notice after the return left by `goto
 // done` (19).
+// Round 247 (m3 lane 3, fast): the notice's tests as early `goto done` exits 19 (same code); the object-type and 0x101440
+// rejections as two ifs 19; `bool result = false;` at its declaration (no later store) 27; `grenade == NULL ||` 19; the
+// grenade's +8 and +0x20 tags named and used twice each 19, the +8 one only 19. Diagnostics (not kept): the notice test as
+// `!grenade` alone keeps the notice in place (244), so the `||` test is what sinks it to the end; a volatile result with
+// the immediate and notice exits as `return result` 19, the notice after `done:` with its own `return result` 19 (volatile)
+// and 45 (plain, folds): identical return blocks are merged before layout and the merged exit always follows the notice,
+// so retail's notice exit is a separate return block whose value is not known there.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
@@ -2598,6 +2607,9 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// MiniMax I (11-15): no new form, no lower score (234): retail loads the weapon index with a 16-bit sign extension
+// (movsx ax, byte [ecx+0x212]) and compares it in 16 bits against the -1 it keeps in ebx; a short local for the index
+// reproduces that load (297) but the compare folds back to an immediate (298), so the register roles stay wrong.
 // score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // MiniMax I (11-14): no new form, no lower score (234): the melee name's selection declared before the weapon getter
 // 315 and a function-top pool local for both unit lookups 311, while the selection as an if/else instead of a ternary
@@ -4552,6 +4564,13 @@ extern vector3f *g_4687bc;
 // declared (default-built) at the top of the function and assigned `c_type_47f957(g_54e898)` in place 8 (same code); the
 // component pointer declared ahead of the material and assigned after it 8 (same code); the re-read definition typed as
 // the unit definition, reading `.object.` fields 8 (same code).
+// Round 247 (m3 lane 3, fast; a /GL- compile-only screen of this file reproduces both sites): the component as
+// `(s_havok_component *)g_51e9b8->data + (index & 0xffff)` 8, as byte arithmetic with sizeof 8; the type test on the
+// typed `object.object_type` field 8; `strength` declared before `impulse` 8; the type and component-index tests nested
+// with the index in a two-use local 8 (all the same code). Screen only: the material built after the component lookup
+// (its load then follows the lookup, in AX) or after the 0xb67a0 call (CX, but after the call); same sites for the rigid
+// body as a reference, through a reference to the array, `(short)` on the index test, the damage block's position and
+// origin copies swapped, the strength clamp as a ternary, and the two centre declarations swapped.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

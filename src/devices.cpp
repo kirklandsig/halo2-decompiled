@@ -1019,6 +1019,11 @@ struct s_device_machine_view
 // and assigned after it 122; the group pointer with a masked `byte`/`dword` bits local read after the machine test
 // 115/117 (retail's `lea eax`, then `mov al, [eax+2]; and al, 3` or the movzx). Screens only: no inner `break`, a byte
 // or short copy of the word for one of the two tests, a bool for bit 0: all the pushed ESI.
+// M3 lane 7 r165 (fast with 0x107870 and 0x1071e0, both matched; control 2): a file-local inline flag test taking the group
+// index and a bit number, called for bits 0 and 1, 174 (654 B, first difference +0xd); the lane S word read through a
+// `word const *` to the group's flags 116 (655 B); the group pointer formed at the top of the case (ahead of the position
+// test) with direct masks 167 (661 B), with the lane S word and mask 170 (663 B); the machine flags read at the top of the
+// case on the lane S form 135 (657 B). Body unchanged.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1237,6 +1242,8 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax I (11-15): no new form, no lower score (121): retail has no prologue and holds the initial velocity in xmm6, so it
+// returns 0x14 stack bytes; this build passes it on the stack and returns 0x18, and the parameter list is not mine to change.
 // score 121 (was 121; m3 lane 8 r166 at the end): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // MiniMax C (11-09): no new form, no lower score (121); the initial velocity is still passed on the stack where
 // retail keeps it in xmm6 and takes five stack floats, so the whole register assignment after the entry differs.
@@ -1742,6 +1749,10 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // animation push as retail, so the render model's reload sets the order in the real build too; 0x1cbf50 keeping the
 // unused argument by a bare address expression after its call 378 (the argument is dropped). A compile-only build gives
 // another argument order, so it cannot screen this.
+// M3 lane 9 r127 (fast): the second sample call reading the channel's animation id directly (the first keeps the local)
+// 330 (1634 bytes); the factor as `(real)(1.0 / 30.0)` 2; the first call's 0.0f through a start-time local 2; the
+// definition, model and render-model lookups through a file-local inline tag getter 2; a const state pointer with the
+// flag block reading the animation and time through a const channel reference declared first in the block 2.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
@@ -1979,6 +1990,8 @@ bool function_0b6760(s_index_pair const *pair);
 // (its cmp word ptr [ebp+0x12a],-1 comes first) where this build reads it before, so declaring the saved definition after the
 // animation-state block is the natural lead; it measures 258, so the order stands. The prologue's index in EDI/ESI against
 // retail's ESI/EBX and the result byte at [esp+0xf] (ours in DL) are unchanged.
+// MiniMax I (11-15): no new form, no lower score (250): the index and index * 12 sit in EDI/ESI where retail has ESI/EBX, the result is returned in DL where retail keeps a stack byte, and the definition is re-read where retail reads it once; the 58 and 69 leads rest on a one-use rate local, which is match-only.
+// MiniMax S (11-15): no new form, no lower score (250): the saved definition's volatile, the tick rate read straight from the global and the == 0 byte test are the standing body; the one shape that reaches retail's block order (58 at retail's 1495 bytes) needs the tick rate read into a local once just before the 0x11eed0 call, a one-use local, so it is not kept and the body stands.
 // score 250 (was 250): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI where retail has
 // ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads (match-only leads at 58 and 69 below).
 // MiniMax H (11-12): no new form, no lower score (250): the acceleration and the speed each written as one product added into a running value measure 359, and the same form without the volatile measures 382, so the body stands.

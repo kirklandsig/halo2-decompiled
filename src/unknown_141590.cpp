@@ -1298,6 +1298,11 @@ void function_143250(
 // P521: Current complete matrix initializers, band masks 1/2/4/3/5/6/7 and all immutable:
 // Third-band initializer alone recovers native frame 0x300 and first +0x4c, but regresses to 1498.
 // 1420/1410/1498/1420/1556/1535/1556/1556. NOT kept: no exact native matrix/scalar-storage recovery; original complete body restored.
+// P536: Separate double sqrt producers with unchanged real narrowing,
+// individual 15/5/2/35/105/21/7 roots then all: 1401/1401/1410/1410/1410/1410/1410/1377.
+// Native frame 0x300 and first +0x3b recovered, but extent shrinks to 10716/10773.
+// NOT kept: unmatched one-use result carriers regress and worsen the length gap;
+// original roots, precision boundaries, polynomial and complete body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

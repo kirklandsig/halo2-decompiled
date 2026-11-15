@@ -559,6 +559,11 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // three initialised dead locals at the top 15/15/15 (diagnostic: not a symbol-count phase); local_6 declared bare at the
 // top 15, local_4 declared bare at the top 15 (same code); the elapsed difference without the (real) cast 15 (same
 // code); the node range test as `> 0 && < 3` 40.
+// m3 lane 14 r99 (fast with 0x110ab0, control 15): the cooldown field local declared ahead of the 0x18 product 94
+// (418 bytes); the 0x17 product into the chance local, then 0x1c9ee0 on it 65 (417 bytes); the unit index as dword 15
+// (same code); the prop state named ahead of the range test 15 (same code: LTCG sinks the pure 0x25d690 call below the
+// test); the range test as `== 1 || == 2` 41. Re-measured, the named game-time pointer 91: result EBX and NONE EBP as
+// retail, but the pointer EDI and ticks EBP, the node block in EAX and the EBX push deferred to the 0x1e5380 call.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

@@ -276,6 +276,16 @@ PRIVATE inline byte const *material_parameters(long tag)
 // block's packed and next 5 (all five the same code as that base). Diagnostic (not kept): `second` read through a volatile
 // view of the parameter there still loads right after the lea, so its early load is the allocator's placement of the
 // ESI reload, not a scheduling move past the store. Body unchanged.
+// Round 183 (m3 lane 6, fast): the reference store with the packed word read back from the published field 293
+// (980 bytes); the direct entry store re-measured 5 (+0x1a7); on it a 600 s permuter run (57 tries) best 5, the pass
+// published directly and read back for the range 5 (+0x1a7), the table field re-read into `tables` after the entry
+// store for the chain and pass bases 5 (+0x1a7). Original reference body restored.
+// Round 90 (m3 lane 15, fast; the reference form 5 at +0x19e, the direct entry store 5 at +0x1a7 with only `second` loading
+// into ESI right after the entry lea): on the direct form, the four mask ORs written out (no loop) 163 (977 bytes); the restore
+// block's chain and pass indices through s_packed_shader_range::index() (0x17420's spelling, no packed/next locals) 5 (same code);
+// the function as a __stdcall member of a state type (state as `this`, the 0x1bbf0 call through a cast of g_485b48) 5 on either
+// entry form (same code), 178 / 176 with a `byte *state = (byte *)this;` copy; the tables published in a chained assignment 5;
+// the first block's two index sums written parameter first 5. Body unchanged.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

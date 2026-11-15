@@ -520,6 +520,18 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // (identical); the clamp bounds as `0.0f - limit` for yaw, yaw and pitch, or all four 176 (identical); local_9, local_8,
 // local_7 declared in reverse order 176 (identical). Retail packs the three x87 roots and the inlined 0x11cc90 angle into
 // the yaw's +0xc slot (ours +0x10, with local_11) and the rotated vector into local_3's home.
+// M3 lane 13 r96 (fast with 0x29b990, 0x11cc90, 0x11ce20, 0x1e5450, all MATCH each run; control 176): the r83 lead (single-exit
+// normalizer, XY vector before the second copy) re-measured 169. Retail packs the rotated vector into local_3's dead home
+// (+0x20); the rotation written into local_3 itself (no local_7) 192 on this body (1708 B: the vector then sits at +0x20, but the
+// pitch, sine and cosine homes stay +0x10/+0x3c/+0x40 against retail's +0x40/+0x10/+0x3c), 185 on the lead; the second axis
+// through the existing cross3f of vector_products.h (`cross3f(&forward, axis, &local_18)`) 239 (frame and first difference
+// +0x2 move); on the lead the XY vector declared before the first copy 365 (1714 B); the angles initialised to zero at their
+// declarations with the else arm copying only the vector 360 (1723 B). Same code on the lead: the angles declared at the
+// top of the function; the normalizer's locals renamed (magnitude, inverse); local_11/local_12 renamed (aim_pitch,
+// target_pitch); rows with the projection term first.
+// P538: Unrounded planar-root/rotation-sine/rotation-cosine API producers, subsets
+// 1/2/4/3/5/6/7 then complete immutable: 263/179/179/263/263/177/264/264.
+// NOT kept: all regress; combined root/trig forms lose the matched sibling (24); original helpers and full body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

@@ -73,8 +73,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 	return (c_channel_effects_view *)SOUND_DRIVER_GLOBALS->effects;
 }
 
+// score 544 (was 544): earlier 545.
 // MiniMax B (11-13): no new form, no lower score (544); the permuter refuses the reduced image for this function, and the full-image search over the declaration and statement forms found nothing better.
-// score 544 (was 544): earlier 545. full build; b2D 11-06 statement walk against retail found no logic difference
+// Full build; b2D 11-06 statement walk against retail found no logic difference
 // (every branch, field offset, callee and argument agrees). Precision fix kept: log10 taken of a double (fyl2x then fmul 20 unrounded, 0x21fe2f-0x21fe37).
 // MiniMax A (11-12): no new form, no lower score (544); the file's fixed /Op still decides the mixed
 // arithmetic: the gain difference is computed on the x87 stack where retail subtracts in SSE and takes the
@@ -382,6 +383,11 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // stay in EBX where retail reloads them from the send record after each byte store); that with the fall-through two-case
 // mode switch 559 (1916 bytes, masked 234). Lead: retail's flag byte behaves like one address-taken bool that the
 // compiler treats as possibly aliasing the send record.
+// M3 lane 5 r186 (all plain with 0x21f8a0, 0x12aff0, 0x21e230, 0x2201f0, 0x2215d0, 0x2216f0; control 544): the gain
+// change named (`real gain_change = gain - stored;`) after `direct` 544 (the subtraction becomes retail's SSE subss, but
+// it is hoisted above the `changed` test and the float fabs overload still rounds its result); named right after `gain`
+// 544; that local as `double` 541 (fabs becomes a CRT call; matched 0x21f8a0 lost at 67, reverted at once); the named
+// float local tested as `fabs(gain_change) >= 0.1f` 544; the pitch clamp as if/else-if 544. Body unchanged.
 // M3 lane 6 r182 (fast with 0x21f8a0, 0x128ca0, 0x21c400 and the callees; fast control 544 = full, masked 235): the voice
 // sends as `switch (mode) { case 0: add; break; case 1: add; add; break; }` 562 (1884 B, masked 225: retail's block shape,
 // the positional score rises with the shorter body); with `fabsf` on the gain test 562 (same code: fabsf is the float fabs
@@ -389,6 +395,8 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // and fabsf at all six 548 (1907 B, masked 239); the named difference with fabsf at all six 544 (same code as this body);
 // the cached gain stored at the top of the gain block 550 (1901 B, masked 236). The switch alone repeats lane 12 r81's form.
 // BLOCKED by the file's /Op (a flags decision: retail's double fabs, exp, log10 and sqrt expand inline and unrounded).
+// P535: Immutable original selected-gain bits/mode/direct producers, seven subsets then all with immutable changed outcome; native driver/stream/gain roles and 0x224 frame remain unrecovered.
+// 544/544/544/544/544/544/544/544. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

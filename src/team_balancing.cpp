@@ -565,6 +565,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 	return result;
 }
 
+// MiniMax R (11-15): no new form, no lower score (34): the two count arguments still take the other registers - the
+// player count still arrives in edx where retail puts it in eax - and the copy loop, the rep stosd fill, the call setup
+// and the final clamp all follow from that one exchange; the register homes of the arguments decide the whole body,
+// and the swap that would fix them is in the caller's argument setup in src/unknown_07a9a0.cpp, which this lane may
+// not edit. BLOCKED-BY the caller.
 // MiniMax A (11-12): no new form, no lower score (34): the player count still arrives in edx where retail only caller 0x7e210 (src/unknown_07a9a0.cpp) loads it into eax, and the copy loop, the rep stosd fill, the call setup and the final clamp all follow from that one exchange, so the body stands. BLOCKED-BY 0x7e210.
 /* whether the players and the extra players joining them can be balanced
    into the teams within the given imbalance; each extra player is a party
@@ -610,6 +615,7 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // MiniMax H (11-13): no new form, no lower score (34); the player count is tested in EDX here and in EAX in retail, and the copy, the fill, the call setup and the clamp all follow from that one register, so the body stands.
 // MiniMax C (11-14): no new form, no lower score (34): the player-count roles are decided in retail's only caller, which is held
 // in another file, so the body here stands; the frame agrees and every store, test and call agrees with retail.
+// MiniMax I (11-15): no new form, no lower score (34): the player count is tested in EDX here and in EAX in retail, and the copy, the fill, the call setup and the final clamp all follow from that one register, which retail's only caller fixes.
 // score 34 (was 34): frame 0x48 agrees; from +0x14 the player-count EAX/EDX roles are exchanged
 // (retail player count in EAX, extra count in EDX) and flow through the copy, fill, call setup and
 // the final clamp's register: our loop temporaries take EDI/EAX (retail EDX/EDI), leaving EDX for the

@@ -9,6 +9,7 @@
 #include "unknown_0259a0.h"
 #include "unknown_1e3920.h"
 #include "unknown_11cc90.h"
+#include "normalize3d.h"
 
 /* A local view of the shared actor datum; other modules own the array. */
 struct s_path_records_2967b0
@@ -468,10 +469,7 @@ static inline real actor_looking_normalize3d(vector3f *vector)
 	real magnitude = magnitude3d(vector);
 	if (!(fabs(magnitude) < 0.0001f))
 	{
-		real scale = 1.f / magnitude;
-		vector->i = scale * vector->i;
-		vector->j = vector->j * scale;
-		vector->k = vector->k * scale;
+		vector3f_scale(vector, 1.f / magnitude, vector);
 		return magnitude;
 	}
 	return 0.f;
@@ -516,7 +514,7 @@ struct s_collision_result_buffer_1697c0
 // site or the normaliser's length inlined, and its magnitude3d (0x24590) sits in another file, so the body stands.
 // MiniMax G (11-13): no new form, no lower score (303): the diff re-read this round shows the trig and magnitude temps four bytes below retail's (ours at +0x1c and +0x20, retail's at +0x20 and +0x24) while the saved arguments agree, and the frame is 12 bytes longer than retail's 1423, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (303).
-// score 303 (was 303): frame 0xa8 agrees; ours is 12 bytes longer (1435 against 1423). Frame map (F = esp
+// score 299 (was 303): frame 0xa8 agrees; ours is 10 bytes longer (1433 against 1423). Frame map (F = esp
 // after `sub esp, 0xa8`): retail F+0 one transfer slot {magnitude, random integer, pitch sine, yaw cosine},
 // F+4 candidate, F+0x10 attempt, F+0x14 axis, F+0x23 result, F+0x30 {pitch cosine, yaw sine}, F+0x38 yaw
 // range, F+0x3c pitch range; ours F+0 candidate, F+0xc attempt, F+0x10 axis, F+0x1f result, F+0x20
@@ -849,6 +847,14 @@ struct s_collision_result_buffer_1697c0
 // P518: Existing fallback normalizer at pitch/clear/best, masks 1/2/4/3/5/6/7,
 // then pitch fallback library copy: 438/303/303/438/438/303/438/303. NOT kept: no exact
 // scratch/rotation repair; original helpers, all observations and complete body restored.
+// Round 247 (m3 lane 3; fast, kept change confirmed plain): kept: the normalizer scales through the existing vector3f_scale
+// (include/normalize3d.h) in place of its three hand-written products, 303 -> 299 at 1433 B (0x297660 MATCH, 0x297d30 23,
+// the file's other functions unchanged). On it: the helper as `return normalize3d(vector);` 300 (1455 B); single exit with `else
+// magnitude = 0.f;` 305 (1458 B); an early `return 0.f;` for the short case 296 (1451 B, not kept: -3); a result local set in the
+// scaling arm 299; the rotate helper's dot as k, j, i / j, k, i / j, i, k 299 each (same code). Before it (base 303): the
+// rotate helper caching the vector's k in a local (0x2551f0's helper spelling) 293, but 0x297d30 23 -> 245; that with the
+// sines and cosines passed straight (no angle wrapper) 303; the vector's i, j and k all cached 300 (0x297d30 243); the best
+// vector declared before best_fraction 300.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -932,6 +938,12 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
+// MiniMax R (11-15), not kept (the merge measured 341 -> 340 fast, under the bar): reported 175 (was 257): case 1's and case 6's player test inverted, so the NONE arm comes
+// first and retail's case-1 block layout returns (the body is 1424 B against retail's 1444). Left: retail keeps
+// the non-NONE arm inline in both cases where this build keeps the NONE arm inline, this build's case 1 and
+// case 6 copies of the 0xcafc0 call sit side by side where retail keeps them apart, the result/presence byte
+// homes are still swapped (retail keeps the returned flag at F+2 and the presence byte at F+3), and the 0x1ffbd0
+// call still holds the actor index in EDI where retail reloads it from the stack.
 // MiniMax A (11-14, second pass): score 168 (was 177): the two flags are cleared in the order retail uses (the
 // presence byte first), and the two trailing case exits clear both flags before leaving, which gives retail's
 // byte homes (the returned flag at +0xa, the presence byte at +0x13). Left: retail keeps case 1's and case 2's
@@ -1284,6 +1296,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // code); point_valid set once at a label ahead of aim_at_point for cases 3/5/6 368 (the three callers drop to 4/1/2, as
 // round 85 found); case 6's NONE compare with its operands swapped 258; case 2's body nested under a positive
 // `field_x50962e != NONE` test 258 (all same code but the label form).
+// MiniMax R (11-15), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1583,6 +1596,7 @@ done:
 // function's own body - a masked slot local added to the typed base, the byte-pointer product and the
 // integer base plus the masked index - all compile to the same prologue (9), so MSVC keeps folding the
 // address computation into ESI with the base load in EAX; retail keeps the base in EDX and the index in EAX.
+// MiniMax E (11-15): no new form, no lower score (9): twenty-five spellings of the actor lookup (typed array subscript, byte-base expression, offset and slot locals, unsigned and thirty-two bit offset arithmetic, the shared getter inlined or not) all build the same prologue, because this build folds the scaled index into the destination register and uses `add` where retail builds the offset in eax and finishes with `lea esi, [eax + edx]`.
 // @retail 0x296580
 void function_296580(long actor_index)
 {
