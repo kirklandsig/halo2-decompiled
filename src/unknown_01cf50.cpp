@@ -4930,6 +4930,32 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
         D3DDevice::End();
     }
 }
+// MiniMax H (11-14, third pass): no new form, no lower score (199); the longer permuter run was stopped at its time
+//   limit after one variant at 184 on the reduced image, the same score as the variant of the second pass whose x
+//   and y swap contradicts retail's own stores (screen[0]-a in the first float and screen[1]+b in the second at
+//   0x48959/0x48964), so nothing new came out of it and the body stands.
+// MiniMax H (11-14, second pass): no new form, no lower score (199); the four products were re-measured from the
+// compiled side, and this build schedules them after the loads that feed them rather than in the order they are
+// written: the source order ws/wc/hs/hc compiles to wc, ws, hs, hc (306) and the committed hs/hc/wc/ws compiles to
+// hc, wc, ws, hs (199), so the written order does not pin the schedule and the products cannot be forced into
+// retail's ws, wc, hs, hc this way; moving the four products ahead of the calls gives 341 with a 1582-byte body.
+// Retail keeps the sine parameter in memory and folds it into both multiplies (mulss xmm0, [esp+0x48] and
+// mulss xmm2, [esp+0x48]) and holds the width in xmm5 and the height in xmm2, where this build keeps the sine in
+// xmm3 and the cosine in xmm4, so retail's products take one register operand and one memory operand each.
+// Both bodies hold 369 instructions, so retail's fifteen extra bytes are longer encodings (register numbers and
+// displacement sizes) and not more instructions.
+// MiniMax H (11-14): no new form, no lower score (199); all 24 declaration orders of the four products were measured
+// (199 to 306, retail's own order ws/wc/hs/hc gives 306 and the committed hs/hc/wc/ws is the best at 199), so the
+// declaration order is not the lever; naming the four positions instead of repeating the expressions (the V2 form) drops
+// the body to 1439 bytes and scores 462, and the inlined products (V1) score 462 as well, so the body stands.
+// The permuter (17 tries) found one lower-scoring variant, and it swaps the x and y of the third vertex's
+// SetVertexData2f call; retail's own stores put screen[0]-a in the first float and screen[1]+b in the second
+// (0x48959/0x48964), so the swap changes the geometry and was rejected (the variant's other two changes - the &&
+// split into a flag and the 16777215.0f constant in a local - measure 199 on their own).
+// What still differs: retail multiplies ws, wc, hs, hc (keeping wc in a frame slot and reading the sine twice from the
+// parameter slot) while this build multiplies hc, wc, ws, hs, retail computes a before b and this build computes b
+// before a, and retail keeps the width in xmm5 and the height in xmm2 where this build keeps the cosine in xmm4 and
+// the sine in xmm3; the body is 1586 bytes against retail's 1601, which moves every internal branch target.
 // MiniMax H (11-13): no new form, no lower score (125): the four products moved to the head of the block
 // (238), to the head of the block in retail's order (240) and before the block's test (238) all score worse,
 // so the body stands.
@@ -5308,6 +5334,11 @@ PRIVATE __forceinline void texture_surface_dimensions(long index, long *width, l
 
 #define PIN(value, minimum, maximum) ((value) < (minimum) ? (minimum) : ((value) > (maximum) ? (maximum) : (value)))
 
+// MiniMax H (11-14), NOT kept at review (a cast read into the reset storage block is kept only with a match, and it left 0350e0.cpp's extern unresolved; 0x19530 498 -> 447, 0x37a60 529 -> 519 back to main): the camera flag at 0x4858c8 is the first word of the reset storage block, so it is now read
+//   from there (a view of the aggregate, like the shader pointer next to it) and reloaded at every use as retail does;
+//   the separate global is gone and the file that writes it writes the same aggregate word. The body is 1704 bytes
+//   against retail's 1700 and the first difference is at +0x1f. What still differs: g_4858b8 is still a separate
+//   global, so retail's reload of it is missing, and retail keeps the constant 1 in ECX across the body.
 // score 498 (was 585): round 94 put g_4858c4 in the reset storage aggregate (include/reset_storage.h), so it is
 // reloaded after calls as retail does; 1696 bytes against retail's 1700; g_4858c8 and g_4858b8 below remain separate.
 // Earlier 585 (was 580; the fast image says 612), 1652 bytes against retail's 1700 (the fast image builds 1636). Round 122: 0x144f0
@@ -5834,6 +5865,30 @@ struct s_filter_coordinates
     s_filter_vector offsets[4];
 };
 
+// MiniMax H (11-14, third pass): no new form, no lower score (642); retail converts the four viewport floats in the
+//   order left (0x4b9dd2), top (0x4b9dd0), right (0x4b9dd6), bottom (0x4b9dd4) at 0x2d344, and declaring them in
+//   that order reproduces that order in the compiled side and still scores 642, because the four-byte frame
+//   difference hides it. Retail's eight surface dimensions are eight separate locals and not one array - the widths
+//   at 0x94, 0x7c, 0x80 and 0x74 and the heights at 0x70, 0x78, 0x88 and 0x90 (read at 0x2dae8-0x2db37) - writing
+//   them out as eight scalars moves the body to 2536 bytes and scores 772, so the array form is kept.
+// MiniMax H (11-14, second pass): no new form, no lower score (642); the frame is the whole story, because our
+//   frame is 0x9c against retail's 0x98, so every [esp+0xNN] reference after the prologue compares against a
+//   different slot and the listing desynchronises. The local slots each side uses were mapped by tracking the
+//   stack depth through both listings (ours reach -0x100 and -0xd8 and -0xc4 where retail reach -0xf4 and -0x88
+//   and -0x68), and the two sets differ in more than one slot, so the extra four bytes are a different slot
+//   assignment rather than one missing local. Two instruction-level differences are visible inside the block:
+//   retail multiplies the scale by the height in memory (fmul dword ptr [esp+0xa4], the scale in st(0)) where
+//   this build loads the height and multiplies st(1) (fld dword ptr [esp+0x98]; fmul st(1)) and leaves the scale
+//   on the x87 stack (an extra fstp st(0)); MSVC canonicalises the operand order of the multiply, and writing
+//   the operands the other way round does not change it. Retail loads the filter count's index with movzx where
+//   this build uses xor ecx, ecx and a 16-bit move. The permuter (2 tries in 329 s) found nothing better than the
+//   baseline 642.
+// MiniMax H (11-14), NOT kept at review (memcpy of each float only steers the stores into integer moves; 0x2d140 656 -> 642 back to main): the weight copy now copies the four weights into g_4c19b0..bc with memcpy, which the
+//   compiler turns into retail's four dword moves without a cast on the globals' addresses (the same score
+//   642, was 656, as a dword-typed global block, but no pun on the shared globals and no change to their
+//   declared type). The body length now matches retail's 2652 bytes. What still differs: our frame is 0x9c
+//   against retail's 0x98 (one local too many), our four global stores are scheduled after `sub esp` while
+//   retail's are before it, and retail pushes ebp/ebx/edi/esi where we push ebx/ebp/esi/edi.
 // score 656 (was 686), 2664 bytes (retail 2652). Round 1 of #1066: first statement-by-statement logic walk.
 // Behaviour fixed: the filter-pass test compared the weights with 1.0f; retail compares with 0.0f (constant at
 // 0x45dbd8) and SKIPS the pass when the flag bit is set and that weight is 0 (the test was inverted); the pass
@@ -7767,6 +7822,13 @@ void function_1cf80();
 
 PRIVATE __forceinline real clamp_callback(real x, real low, real high);
 
+// MiniMax H (11-14): score 519 (was 529) - the existing inline_depth pair now starts at function_1cf80 instead of
+// at D3DDevice_Begin, so retail's out-of-line call to 0x1cbe0 (0x3816f) stays a call instead of being expanded
+// by the `inline` on its definition; the body is now retail's 2344 bytes and 0x1cbe0, 0x34a90 and 0x34d90 still
+// match. No new pragma line was added, the pair already in this file was moved. Still differs: retail calls
+// 0x222d0 out of line for ZWRITEENABLE/ZFUNC (0x380b7, 0x380c6) where ours expands it (a pair around those two
+// calls would need a second pragma and moves the stage loop out of line as well, 653); retail re-reads
+// input+0x98/0x9c/0xa0 at each use in the clamps; depth/z/w sit in different slots (retail z 0x10, depth 0x14, w 0x18).
 // score 529 (was 624), walked statement by statement against retail (b4A, 11-06). Behaviour/precision: no
 // field, offset, condition direction, callee, argument or constant differs. Differences fixed: the stage-1..3
 // loop stored ADDRESSV twice (retail 0x3810d stores ADDRESSU, ADDRESSV, then the filters, ten dirty-flag
@@ -7782,6 +7844,7 @@ PRIVATE __forceinline real clamp_callback(real x, real low, real high);
 // same clamps as written ternaries: 584); depth/z/w sit in different slots (retail z 0x10, depth 0x14, w 0x18).
 // The one inline_depth pair around Begin..End replaces the volatile 0x3fb280 pointer and the four pairs
 // around SetVertexData4f (that form scores 710 on this body); with no pair at all 1400.
+// NOT kept (coordinator screen, MiniMax H 11-15): a new #pragma (reverted): `#pragma inline_depth(0)`; the body is main's again.
 // @retail 0x37a60
 bool __stdcall function_37a60(void *context)
 {
