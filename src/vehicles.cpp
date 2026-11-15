@@ -1562,6 +1562,9 @@ long function_10f5f0(long object_index);
 // inlines 0x10f5f0; this build the reverse, from the two files' /Ob settings: a flags lead). The point-sum loop with a
 // `short` index 633 (2196 bytes: the loop stays rolled with retail's `addss [edx]`, but counts up with movsx/cmp where
 // retail counts a copy of the bound down).
+// P510: Native dispatch case orders 013465/013645/016345/061345/134560/134506/134056/130456:
+// 562/564/564/564/561/560/559/561, all 2264 bytes, frame 0x1990 versus native 0x1984.
+// NOT kept: one/two-point leads fail the margin; original full body and case order restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -3331,6 +3334,9 @@ real g_47ff30 = 2.5f;
 // matrix owner, arithmetic tree or input/call role changes.
 // P498: Actual elevation/normalization/force-contributor last-use blocks, seven subsets, then complete bounded-fraction phase with enclosing real outputs; native frame 0xfc and scalar homes remain.
 // Scores 672/672/672/672/672/672/672/672. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
+// P510: Existing whole current-forward/current-up/desired-forward/desired-up transfers via memcpy,
+// masks 1/2/4/8/3/12/15: 672 each; all four via memmove 743 (3217/3244 bytes). NOT kept:
+// no native frame or scalar-home repair; original row copies and complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -6177,6 +6183,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Per-use tilt-angle field at both intrinsics, as native loads it: 978 (tie); restored.
 // P498: Complete nine tensor-product parts and three unscaled impulse sums, mutable/immutable immediate/phased; every original math tree and query stays fixed. Native frame 0xd8 and handle/matrix homes remain.
 // Scores 978/978/978/978/978/978/978/978. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
+// P510: Actual drift/lateral-recombination/driver-forward/torque output stages, coordinate then
+// vector phases: 996/978/978/1047/1035/1050/997/1006. NOT kept: all tie or regress; native frame
+// and handle/matrix homes remain. Original full body and every shared helper restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

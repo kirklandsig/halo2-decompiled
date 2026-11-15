@@ -1280,6 +1280,9 @@ void function_143250(
 // P500: Current-polynomial actual 3x3/5x5/7x7 matrix lifetimes, seven subsets, then all entry declarations:
 // 1420/1420/1333/1420/1420/1435/1420/1420. NOT kept: No native spill-home/frame recovery: all tie or regress and
 // separate workspaces shorten away from retail. Original complete executable body restored.
+// P511: Standard real-return roots, band-two 15/5 and band-three 2/35/105/21/7, then all seven:
+// 1307/1307/1324/1322/1322/1324/1324/1266. NOT kept: nonexact root-return/precision contracts only change spill/scheduling;
+// qword fsqrt producers, frame 0x2fc versus 0x300 and displaced scalar homes remain. Original polynomial restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

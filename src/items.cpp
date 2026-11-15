@@ -1190,6 +1190,10 @@ struct s_item_flags_view_10b850
 // MiniMax S (11-14): no new form, no lower score (824): the frame here is 0x154 against retail's 0x12c, but the
 // marker's address and the block copy's source sit at the same distance from the entry stack pointer in both, so
 // the forty spare bytes lie below the homes and the rest of the gap is in the block bodies.
+// MiniMax I (11-15): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so every stack home
+// sits 0x28 higher; the marker's address and the block copy's source are at the same distance from the entry stack pointer
+// in both, so the forty spare bytes lie below the homes and the rest of the gap is in the block bodies, which this round
+// did not move.
 // score 824 (was 813): statement-by-statement walk against retail (s1B, 11-06). Behaviour fixes, all kept even though
 // the score rose 11: (1) the byte at [esp+0x12] is ONE flag: the definition's +0xbc bit 2 (skips gravity), set to true
 // before the ray query (0x10ba18) and cleared only by the settle branch (0x10bcf8); the draft's separate
@@ -1438,6 +1442,9 @@ struct s_item_flags_view_10b850
 // T108: Ordinary inline motion/marker-query/marker-publish/inverse-point metadata: eight at 824;
 // existing point-to-point query wrapper 857 (frame 0x148 versus native 0x12c), same 4096 bytes.
 // NOT kept: no qualifying gain; original complete body and every provider declaration restored.
+// P509: Exclusive geometry/object contact-result graphs with guarded/logical tag fallback:
+// 852/897/857/878/828/877/821/876. NOT kept: best gains three at retail length;
+// frame stays 0x154/0x12c. Original classifier, helpers and full body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1678,6 +1685,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // loaded into a local of its own before the direction pointer, which compiles to the same code; retail's spin
 // branch writes the flag byte directly and keeps no home of its own for the spin bit, and retail keeps two
 // separate copies of the release impulse where this build merges them into one.
+// MiniMax I (11-15): no new form, no lower score (140): the release byte is still cleared by a load, an and and a store
+// where retail clears it with one byte read-modify-write - neither the raw byte mask nor the byte-bitfield view
+// (s_item_flags_view_10b850) makes this build emit the memory form; dropping the spin local so that the returned byte
+// could sit at esp+0xf costs eighteen bytes of body length (874 against 892) and raises the score to 190, so the body stands.
 // score 140 (was 140): frame 0xac agrees; return byte +0xe/+0xf, release-byte RMW/tail,
 // event/point homes and location-call setup remain. Paired existing point setters kept.
 // Earlier: the frame 0xac agrees; the release byte's read-modify-write,
@@ -1990,6 +2001,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // T108: Ordinary inline metadata at existing node-transform/point/owner/point-transform providers, four isolated, three pairs and all:
 // 140/140/140/138/138/138/140/138. NOT kept: no qualifying native-shape gain or equality; original complete source
 // and every provider declaration restored. Native frame and first storage/scheduling gap remain.
+// P509: Two-consumer isolated spin-bit mask across damping, char/signed-char/byte/short/
+// word/int/long/dword: 174/174/174/169/169/173/173/173.
+// NOT kept: all regress at 892 bytes; original Boolean capture, helper and body restored.
+// Return-byte, release RMW/tail and contact/event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
