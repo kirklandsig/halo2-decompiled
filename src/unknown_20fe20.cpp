@@ -1213,6 +1213,10 @@ void function_2118c0(void)
 // the band loop's foot (`row = b << 3;` after `b++`, zero before the loop) 148 (784 B: rows unreduced, row re-shifted,
 // b kept); a `word` band counter 10 (same code); the wrapped rows relative to the current row pointer (`p1 + (w3 - k) * 8`)
 // 263 (858 B).
+// M3 lane 8 r171 (fast with 0x212100): the wrapped knot indices written in place in the three row subscripts (no
+// index locals) 174 (756 B); the band loop over a short row stepped by 8 to 24 with no band counter 150; a `word` band
+// counter with `long row = b * 8` 150; the seeding loop's row written `(b << 3) + k` with `long row = b * 8` 150, with
+// the band row as now 10 (same code).
 // @retail 0x211cc0
 void function_211cc0(void)
 {

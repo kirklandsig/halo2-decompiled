@@ -778,6 +778,13 @@ struct s_player_axes_153d10
 // product read `forward->j * axes->up.k` 6, `axes->forward.j * up->k` 18, `forward->j * up->k` 18. Diagnostics:
 // `#pragma optimize("p", on)` (float consistency) 98 (1325 bytes; atan2/fabs become calls, the six products unchanged);
 // the cross as a plain out-of-line function in another /O2 file, inlined by LTCG 105 (three products flip), removed.
+// M3 lane 8 r171 (fast with the four callees listed, control 2): the cross through this file's own cross helper (the one
+// 0x1546f0 uses, declared ahead) 105; a named 0x8c vector in the speed slot alone, axes view kept 2 (same code); the axes
+// view taken straight from the state call (no state local) 4 (+0x379); target declared before origin 2 (same code).
+// Diagnostic screens (redundant parens, not kept): 1/2/3 parens around any one product give 6/10/2 (around the i row's
+// first product 4/10/8): one paren flips fk*uj and fk*ui to up first, two flip every product but uk*fi; the first product
+// wrapped twice with 1/2/3 around the k row's last product 2/2/6, with one around any other product 2, but always either
+// fj*uk or uk*fi stays wrong (they share up.k); 1 or 2 parens around any single operand change nothing (2).
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

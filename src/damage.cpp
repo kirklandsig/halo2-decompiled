@@ -2283,6 +2283,11 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // score 3 (was 3): retail loads the region entry (`mov eax, [edi]`) between the `info` test and its `je` and addresses
 // the region flags as [eax + edx + 4] where ours has [edx + eax + 4]; every form that evaluates the entry ahead of the
 // info test gives both, but then `definition` becomes a register argument, `info` takes EBP and `object` is spilled.
+// M3 lane 8 r170 (fast): the entry read into a local and cleared when `info` is NULL, then tested alone, 228 (retail's
+// hoisted load, but `definition` arrives in EAX, `info` EBP and the amode [ecx + eax + 4]); the entry read through
+// `info ? entry : NULL` 3 (same code); `if (info)` with the index as `entry ? index : NONE` 3 (same code); the region
+// flag through the existing bit-vector test 0xbfe60 218 (called out of line, 876 bytes); the flag test through an
+// inline taking (info, index, mask) 185 (873 bytes, a dword load).
 // M3 lane 6 r180 (fast): the guard inline taking (info, accumulator) with the entry read into a local before the info
 // test 228 (870 bytes); an inline returning the region pointer or NULL, the caller testing the flags and the definition
 // flag 225 (878), the same with early returns 241 (880); round 114's inline guard as `__forceinline` 228 and with

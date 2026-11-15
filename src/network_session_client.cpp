@@ -1168,6 +1168,20 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // player pointer stepped beside the index 202; `joining` declared before `current` 14; identities typed as the XDK's 12-byte
 // user id record with a pointer of that type stepped by one 9 (same code); count declared bare and zeroed just before the
 // branch 15.
+// M3 lane 8 r171 (fast with 0x6fcc0, 0x6f940, 0x6fa60): with the destination declared in the branch (195), renaming
+// the count (player_count, a_count, z_count) and the loop index (player_index) 195 each (names do not move this
+// colouring); the destination formed before the clear and passed to memset 216 (697 B); the destination assigned in
+// the branch condition (diagnostic) 195; the mask test written `(1 << i) & mask` 195 in the branch form, 9 (same code)
+// on the current form. Re-measured: the pointer step before the count in the branch form 216 (728 B); the
+// `identities[count++]` copy 40 (lea placement and colouring as retail; the copy forms the destination before the source
+// and the count steps before the last store).
+// Lead (held, build/r171/held-6fe90.patch of that round): as a `__stdcall` member of c_session_state_joining (this the
+// first stack argument, as retail; the three calls `self->function_6fe90(...)`), the fast check gives 9 on this body, 4
+// with the destination declared in the branch, and MATCH with no destination pointer (`memcpy(identities[count], ...);
+// count++;`), the three callers matching. The full build loses the frame alignment without the `standard` marker's
+// address escape (288, 638 B), and with the marker tools/build.py's escape for a method is written as a plain member
+// pointer, which does not convert from a `__stdcall` member (C2440): BLOCKED-BY tools/build.py (`_escape` drops the
+// method's calling convention).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {
