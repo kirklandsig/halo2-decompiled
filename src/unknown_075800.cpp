@@ -1450,6 +1450,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // 216/216/216/216/216/218/218/218. NOT kept: All regress against reduced control 196, shorten to 420 versus native
 // 444, and lose the correct incoming allocation; full baseline 143 stays authoritative. Original complete
 // executable body restored.
+// P509: Actual ESI-argument cases 8/24 moved to the terminal classifier, single and paired
+// orders: 194/194/226/226/198/198/198/198 fast (control 196; full 143).
+// NOT kept: two-point best or shorter/wider bodies; delayed ESI save and late expansion remain.
+// Original classifiers, case interiors, lookup inputs and every handler tuple restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

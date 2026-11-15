@@ -292,6 +292,9 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // found test 77 (same code); `initialize` declared first 79 (first difference +0x19); the walk's best index stored before its
 // age 79; the walk's first index declared ahead of the oldest age 91; the negative-age test as `0.0f > age` 77 (same code); the
 // record pool read once into a function-scope local used for all six pool accesses 77 (same code).
+// P509: Ordinary inline visibility at allocation/scan/state-output/update providers,
+// four isolated, three update pairs and all four: 77/77/77/77/77/77/77/77.
+// NOT kept: no cached-hit/merge/trailing-return equality; every declaration and body restored.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
