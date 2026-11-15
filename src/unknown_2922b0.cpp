@@ -520,6 +520,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // the forward and up fields before the two axis pointers are set 654 (2871 bytes); `local_4 < FLT_MAX` 558 (same code).
 // Retail also reloads the half-width after each offset point's stores (`0 - [ebp+0x14]` for points 3 and 4), as if the
 // point stores could alias the definition; ours keeps the width and its negation in registers across them.
+// m3 lane 9 r124 (fast): the range read first in the else block, ahead of the output clear, 558 (same code); the
+// output cleared through the existing vector3f_assign 558 (same code); the body nested under `if (field_48 > 0)` with
+// the range read first inside and `return true;` last, re-measured 646 (2865 B: retail's jbe to the exit placed last,
+// but our zero takes XMM1 and the range XMM0, retail the other way round, and the range home is +0x08 for +0x28); on
+// that, `*arg_5 = 0` ahead of the minimum 647, the minimum declared after the hit flags 647, the range local before the
+// test 651.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

@@ -2765,6 +2765,15 @@ __forceinline char unit_action_round(real value)
 // P506: Full-width unsigned current/name/first-person/type domains, subsets 1/2/4/8/3/5/9/15:
 // 315/234/234/234/315/315/315/315. NOT kept: signed entry/dispatch and completion-byte ownership
 // not recovered; original body restored.
+// m3 lane 9 r124 (fast with 0xe9ed0/0xea090/0xe9780, all matched throughout; diagnostics, all restored): retail never
+// constant-folds the result, even on the success path (`mov byte [esp+0x12], 1` ... `mov al, [esp+0x12]` after the
+// 0x7f/0xff stores), as if the byte lived in memory; the result declared volatile (forbidden, diagnostic only) gives the one
+// exit and retail's result/is_biped homes (0x12/0x13): 299 alone; with first_person_name = NONE first 300; with the
+// short-slot hand getter too 304; with TEST_FIELD_BIT on the 0x1b test too 250; with the fallback switch too 101 (1188 B,
+// below round 187's goto form, re-measured here 107; the goto form alone 240); the hand getter, bit and switch without
+// first_person_name first 315; type declared ahead of first_person_name on the 101 form 101. Left on 101: pool EDI for EBP,
+// offset EBX for EDI, the NONE carrier EBP for EBX (retail's first_person_name, also the getter's compare register),
+// type EBX for EBP, `current` EAX for ESI.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

@@ -815,6 +815,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // chained assignment after their declarations 32 (same code).
 // P498: Saved-to-published mask accumulator, dword/word, compound/explicit OR and changed-region/unchanged-exit forms. Dword forms shorten to 381/390; word forms recover the entry and native length but miss the shared post-loop reload. Inherited local qualification is preserved.
 // Scores 100/100/100/100/77/77/77/77. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
+// m3 lane 9 r124 (fast): one to seven unused locals at the top (diagnostic phase scan) 32 at every count, and on the
+// word mask 77 at every count (inert); the team local as `short` 107 (400 B), with the word mask 64 (400 B), with the word
+// mask and a plain present 116 (398 B), with a plain present 106 (383 B). On the word mask the entry and loop are exact (first
+// difference +0x60): retail's present update is a spilled plain local (OR into the reloaded register, stored at once), its
+// old mask a spilled word register variable reloaded once into ECX, with globals kept in EBP across the loop; every plain
+// present form here rematerialises globals and gives present a register instead.
 // @retail 0x158140
 void function_158140(void)
 {
