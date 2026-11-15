@@ -805,6 +805,10 @@ real function_30bf0(vector3f *vector);
 // computed ahead of one `range * range > d && scaled_range * scaled_range > d` test with a single out-of-range arm 259
 // (1270 B); the occupant's player index in a local for its test 84 (same code); `vector3f up, side;` 84 and `real b, a;`
 // 84 (same code: the homes do not follow declaration order); the merged test with the player-index local 259 (1270 B).
+// M3 lane 5 r187 (fast with 0x263740/0x25c9d0/0x26d370, all MATCH; control 84): the facing test held in a `long` 84; the
+// squared distance through dot3f(&delta, &delta) 84; the two out-of-range arms as `else if (out_of_range)` 84; the clip's
+// upper clamp as `amount = amount > 1.0f ? 1.0f : amount` 84; the endpoint and actor tests as nested ifs 84 (all the same
+// homes: the clip amount still shares the counter's slot at +0, the result sits at +4).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

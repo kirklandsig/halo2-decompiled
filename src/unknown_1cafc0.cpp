@@ -199,7 +199,7 @@ void s_animation_state::secondary_channels_clear()
 }
 
 // @retail 0x1cd510
-c_type_709360 *s_animation_state::current_animation_get(c_type_709360 *result)
+c_type_709360 s_animation_state::current_animation_get()
 {
 	c_type_709360 none;
 
@@ -215,8 +215,7 @@ c_type_709360 *s_animation_state::current_animation_get(c_type_709360 *result)
 	{
 		none = channels[0].animation_id;
 	}
-	*result = none;
-	return result;
+	return none;
 }
 
 PRIVATE __forceinline real blend_fraction(real blend)
