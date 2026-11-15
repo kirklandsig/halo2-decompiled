@@ -809,6 +809,10 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // globals local on the word mask 77, on word and plain 63; the mask store as `(word)(old_team_mask | present_teams)` (the
 // uncast OR's code) on main 32, word 77, word and plain 63; the playing bit from the team local on main 45 (383 bytes).
 // P460: Original indexed added-team set in char/byte/short/word storage, dword then word saved mask: 82/82/83/83/77/77/78/78. NOT kept: native saved-word/shared-reload graph remains; original body restored.
+// Round 83 (m3 lane 2, fast): both saved masks as word 59; the engine test evaluated into a bool ahead of the two
+// field stores (retail loads the engine index first in that block) 110 (399 B); a 600 s permuter run on this body
+// (54 variants) nothing below 32; the saved playing mask as long 32 (same code); the two accumulators zeroed by one
+// chained assignment after their declarations 32 (same code).
 // @retail 0x158140
 void function_158140(void)
 {
