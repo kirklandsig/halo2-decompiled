@@ -996,6 +996,16 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // 63 form 63, on the member-window form 89; `next` declared at function scope ahead of `type` and assigned in the block 60;
 // the member form started as `long next = m_next_sequence; for (next++; ...)` 89 (all the same code as their base forms:
 // the declaration position does not move `next` into ESI or stop the second counter).
+// M3 lane 13 r97 (one-file /GL link harness build/r97/h, ~1 s a variant, 450+ spellings; real builds fast with 0x96510 and
+// 0x94df0, both MATCH): with the index through `&m_message_window`, the count's oldest is kept for the loop (no second
+// counter) only when the count is a comparison: `newest != oldest`, `oldest != newest`, `oldest < newest`, `newest >
+// oldest`, or `sequence_window_count(&m_message_window) > 0`; every `!= 0` or truth-value count (helper, direct
+// difference, unsigned `> 0`, which folds to `!= 0`) folds oldest into the `sub` and the loop reloads it. With the
+// bound through a window pointer the bound is re-read as retail, and `count > 0` gives retail's separate loads, `sub`,
+// kept oldest and loop, but `test`/`jle` for retail's `je`. Real builds: `newest != oldest` with member bound and index
+// 102 (212 B); `oldest != newest` with the window-pointer bound 101 (213 B); `count > 0` with the window-pointer bound
+// in the test or in a local 91/91 (221 B); that with `return 4` in the found path 127 (190 B). In all of them `next`
+// takes ECX (retail ESI) and `time` is then cached in EBP for the get_next_send argument and the found path.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
