@@ -9119,16 +9119,17 @@ struct s_unit_melee_collision
 // retail still places the 0xcfc90 arm inline after 0xa9260, ours moves it to the end); the seat group byte as `byte`
 // 386 (same code); the parent index assigned after its two NONE tests 389. Without the class, the aim mix and the moved
 // declaration (only the 0xcbd50 call, range at each use and the seat macro) 538.
+// MiniMax E (11-15), NOT kept: 456 (was 493) spelled UNIT_GET out by hand (the pool's data pointer, & 0xffff,
+// * 12 + 8) instead of the existing accessor, wrapped the material index in a class, and read the range field
+// three times instead of the named local. Code back to main, notes kept.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
-	s_record_pool *objects = g_4e0300;
-	byte *data = objects->data;
-	s_unit *unit = *(s_unit **)(data + (unit_index & 0xffff) * 12 + 8);
+	s_unit *unit = UNIT_GET(unit_index);
 	byte *local_98b918_2 = UNIT_DEFINITION_GET(unit);
 	short index = unit->current_weapon_index;
 	long weapon_index = index != NONE ? unit->weapon_object_indices[index] : NONE;
-	c_type_47f957 material_index(g_47d8e0);
+	short material_index = g_47d8e0;
 	point3f point = unit->position;
 	vector3f normal = *g_4687b0;
 	long hit_index = NONE;
@@ -9157,6 +9158,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		up.k = aim->i * across.j - aim->j * across.i;
 		real width = *(real *)(local_67e06b + 0x1b0) * 0.5f;
 		real height = *(real *)(local_67e06b + 0x1b4) * 0.5f;
+		real range = *(real *)(local_67e06b + 0x1b8);
 		across.i *= width;
 		across.j *= width;
 		across.k *= width;
@@ -9170,9 +9172,9 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 				vector3f ray;
 				s_unit_melee_collision collision;
 
-				ray.i = (real)i * across.i + (real)j * up.i + aim->i * *(real *)(local_67e06b + 0x1b8);
-				ray.j = (real)j * up.j + (real)i * across.j + aim->j * *(real *)(local_67e06b + 0x1b8);
-				ray.k = (real)j * up.k + (real)i * across.k + aim->k * *(real *)(local_67e06b + 0x1b8);
+				ray.i = (real)i * across.i + (real)j * up.i + aim->i * range;
+				ray.j = (real)j * up.j + (real)i * across.j + aim->j * range;
+				ray.k = (real)j * up.k + (real)i * across.k + aim->k * range;
 				collision.material_type = NONE;
 				if (!function_1697c0(0x2480000f, &center, &ray, unit_index, NONE, (s_collision_result_1697c0 *)&collision))
 				{
@@ -9186,7 +9188,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 				case 3:
 					if (hit_index == NONE)
 					{
-						material_index.m_index = collision.material_type;
+						material_index = collision.material_type;
 						if (collision.bsp_surface_flags[0] & 8)
 						{
 							surface_type = collision.bsp_surface_flags[1];
@@ -9210,7 +9212,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 					{
 						hit_index = object_index;
 						hit_type = (char)object->type;
-						material_index.m_index = collision.material_type;
+						material_index = collision.material_type;
 						hit_t = collision.t;
 					}
 					break;
@@ -9265,8 +9267,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		{
 			goto impact;
 		}
-		data = objects->data;
-		byte *parent_definition = UNIT_DEFINITION_GET(*(s_unit **)(data + (hit_index & 0xffff) * 12 + 8));
+		byte *parent_definition = UNIT_DEFINITION_GET(UNIT_GET(hit_index));
 		if (!((*(dword *)&UNIT_SEATS(parent_definition)[unit->parent_seat_index].flags >> 11) & 1))
 		{
 			goto impact;
@@ -9280,7 +9281,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 
 			if (*(long *)(graph + 0x60))
 			{
-				material_index.m_index = *(short *)(*(byte **)(graph + 0x64) + 0xce);
+				material_index = *(short *)(*(byte **)(graph + 0x64) + 0xce);
 			}
 		}
 	}
@@ -9295,7 +9296,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		hit.unknown04 = surface_type;
 		hit.unknown08 = surface_a;
 		hit.unknown0c = surface_b;
-		hit.material_index = material_index.m_index;
+		hit.material_index = material_index;
 		/* the header types this byte as a bool, but retail stores the seat group byte unchanged */
 		*(char *)&hit.unknown18 = hit_seat;
 		hit.unknown14 = 0.0f > scale ? 0.0f : (scale > 1.0f ? 1.0f : scale);
@@ -9318,9 +9319,9 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		}
 	}
 impact:
-	if (global_material_get(material_index.m_index))
+	if (global_material_get(material_index))
 	{
-		function_ceee0(unit_index, damage_index, material_index.m_index, &point, &normal);
+		function_ceee0(unit_index, damage_index, material_index, &point, &normal);
 		if (self_damage_index != NONE)
 		{
 			s_type_1e6529 damage;
