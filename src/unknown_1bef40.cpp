@@ -173,18 +173,18 @@ long function_1469f0(real seconds);
 // read through a fresh actor lookup 106 (328 bytes each).
 // Also: the reference read through a pointer to the field 13 (same code); barrier-free with the reference compared
 // through the slot's data bytes 90; barrier-free with a const copy of the NONE reference compared 103 (325 bytes).
+// NOT kept (coordinator screen, MiniMax C 11-15): a compiler barrier (reverted even with a match); a new #pragma (reverted): `_ReadWriteBarrier();`; the body is main's again.
 // @retail 0x1bf0f0
 short __stdcall function_1bf0f0(long actor_index, s_slot *slot, bool active)
 {
 	s_slot_0a_data *state = (s_slot_0a_data *)slot->unknownc;
 	s_actor_view *actor = actor_get(actor_index);
 	short result = g_46fbe8;
-	_ReadWriteBarrier();
 	if (REFERENCE_EQUAL(state->reference, g_470fa0))
 	{
 		function_1f86a0(actor_index);
 	}
-	else if (actor->unknown504 == 2)
+	else if (function_1f86f0(actor_index))
 	{
 		if (function_e70b0(actor->unknown018).value == 5)
 		{
@@ -214,7 +214,6 @@ short __stdcall function_1bf0f0(long actor_index, s_slot *slot, bool active)
 	}
 	return result;
 }
-#pragma function(_ReadWriteBarrier)
 
 // @retail 0x1bef40
 short __stdcall function_1bef40(long actor_index)
