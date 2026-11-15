@@ -1730,6 +1730,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // the range test's else 7, the write header declared at the top of the size-mismatch block 7, the path buffer declared
 // once above the loop 7; on main the write header at the top of the size-mismatch block 33 and the path buffer above the
 // loop 33.
+// P516: Independent completed header-read result, bool/byte/short/long, reused by validity and admission:
+// 191/191/191/191 (frame 0x1140); independent checker result 116/116/115/116 (946 B).
+// NOT kept: all regress; original progressive validity, count homes, waits and full body restored.
 // @retail 0x213970
 void function_213970(void)
 {
