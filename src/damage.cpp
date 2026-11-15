@@ -979,10 +979,13 @@ PRIVATE inline long damage_object_root(long object_index)
 // MiniMax A (11-12): no new form, no lower score (206): the frame is still 0x1a4 against retail 0x1b4 and the entry block still pushes before it reads the flags word and negates it, where retail reads the flags first; the first 0xbadc0 use is expanded in this build while retail calls it, and the out-of-line form that makes the body byte exact lives in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
+// MiniMax C (11-15): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4 and the first 0xbadc0 use is still expanded here where retail calls it; the out-of-line form of that site lives in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
 // MiniMax B (11-12): no new form, no lower score (206): the frame is 0x1a4 against retail's 0x1b4 and the argument
 // slots sit lower here; retail reads the flag word at [esi+0xc], masks bit 1 and negates it before the pushes where this
 // build pushes first and loads the flag afterwards, and the link-time inliner still folds the callee in.
 // MiniMax D (11-14): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4, the argument slots still sit lower here, and the flag word at [esi+0xc] is still read after the pushes where retail reads and negates it first.
+// MiniMax D (11-15): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4 and the first
+// 0xbadc0 use is still expanded in this build where retail calls it out of line; that callee's body is in another file.
 // score 206 (was 206): left is 0xbadc0 and register allocation. The link-time inliner inlines 0xbadc0 at the first
 // MiniMax A (11-11): no new form, no lower score (206); the frame is still 0x1a4 against retail's 0x1b4 and the
 // entry block still pushes before it reads the flags word and negates it, where retail reads the flags first. The
@@ -1530,6 +1533,7 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 
 /* damages an object with the globals' default damage (from +0x144), credited
    to an owner if one is given */
+// MiniMax C (11-15): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after the damage record's address is built where retail stores them before `push edi`; reading the flags before the owner copy measures 17 (worse); this round the owner copy written as a memcpy of the twelve bytes, as three member assignments (52), as three member assignments through a dword cast, as three long reads and writes through a pointer to the member, and the flags stored through the union's named dword member each measure 10 (unchanged), the first three of them because this build's twelve-byte copy always takes the three chunks through ecx, edx and eax, and a permuter run with annealing (66 tries, 1230 s) found nothing under 10.
 // MiniMax G (11-14): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where
 // retail uses eax, ecx, edx, and the finished flags are still stored after the record's address is built where retail
 // stores them before `push edi`; a pointer to the record for the flags read and write, three dword copies of the
@@ -1569,6 +1573,10 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 // ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after `push edi` where
 // retail stores them before.
 // MiniMax D (11-14): no new form, no lower score (10): the owner's three dwords still copy through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after the record's address is built.
+// MiniMax D (11-15): no new form, no lower score (10): the owner's three dwords still copy through ecx, edx, eax where
+// retail uses eax, ecx, edx, and the finished flags are still stored after the record's address is built; the copy's
+// register order and the store's place are the allocator's and the scheduler's, and the matched 0xd9e70 copies the same
+// owner through a third order.
 // score 10 (was 10): two schedule differences remain. Retail copies *owner through eax, ecx, edx (this uses ecx,
 // edx, eax) and stores the finished flags before `push edi` / `lea eax,[data]` (this stores them after the lea,
 // which then goes through ecx instead of eax). Everything else, including the usercall registers, matches.
@@ -2007,6 +2015,7 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 /* damages a region: raises its damage level by the damage over the span to
    its next permutation's threshold, and when the level fills, destroys the
    permutations at that threshold */
+// MiniMax C (11-15): no new form, no lower score (45): the delay block's temporaries are still rotated by one register against retail (retail keeps the random global in ecx and the pending byte in eax, this build eax and edx) and each of the two call setups is one instruction longer; the conventions of those calls belong to 0xda110 and 0xd9d60, which are not this lane's files. BLOCKED-BY 0xda110.
 // MiniMax G (11-12): no new form, no lower score (73): nothing new this round; the pending field is a real bitfield (3 bits of
 // permutation and 13 of ticks), and the remaining difference is in the material block.
 // MiniMax G (11-12): no new form, no lower score (73): the pending field is a real bitfield (3 bits of permutation
@@ -2038,6 +2047,9 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 // edx/dx where retail uses eax/ax, so this body is one byte shorter than retail's from there on and every later
 // branch to the epilogue lands one byte off; the call setup above it still passes the arguments in the other
 // registers, which 0xda110's own unmatched body decides.
+// MiniMax D (11-15): no new form, no lower score (45): the delay block's temporaries are still retail's rotated by one,
+// so its global load is `mov eax, [moffs]` here and `mov ecx, [addr]` in retail and every later branch to the epilogue
+// lands one byte off; 0xda110's own unmatched body, which lives in this file but is not this lane's, decides it.
 // score 45 (was 67; 110 before that): 67 before m3 lane 7 r155's 0xda110 convention (its region index read through its address), 73 before m3 lane 2 r76's 0xd9d60 parameter order, 100 before m3 lane 1 r94's walk, kept for 0xd9d60's match; the pending field is a real bitfield, 3 bits of permutation and 13 of ticks, which gives
 // retail's byte xor and `or` forms in the delay block. Left: the setup of the 0xda110 and 0xd9d60 calls (their
 // conventions, BLOCKED-BY 0xd9d60's walk, see 0xdae60; one instruction more at each call, so every later line is off)
@@ -3136,6 +3148,7 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 /* the damage a damage event does to an object before armor: a random
    amount between the definition's bounds, scaled by the event, the owner's
    AI and the game engine; sets *friendly when the team scale applies */
+// MiniMax C (11-15): no new form, no lower score (5): the two cold exits keep this build's order (the stack reload before the xmm1 copy) where retail copies first, and inverting the two exits in the source compiles to the same bytes.
 // MiniMax G (11-14): no new form, no lower score (5): the two cold exits keep this build's order (the stack reload
 // before the xmm1 copy) where retail copies first; the no-team case as an early return, the team test as an early
 // return, the no-team return in an else branch, a goto to a separate not-enemy return, the enemy logic inside the
@@ -3189,6 +3202,9 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // damage;` leaves the layout unchanged and only flips the branch polarity; a permuter run over this body was
 // killed by its outer time limit before it printed anything.
 // MiniMax D (11-14): no new form, no lower score (5): the two cold exits keep our order (the stack reload before the xmm1 copy) where retail copies xmm1 first; a permuter run over this body (99 tries, 900 s) found nothing below 5.
+// MiniMax D (11-15): no new form, no lower score (5): the two cold exits still keep this build's order (the stack reload
+// before the xmm1 copy) where retail copies xmm1 first, and the early-return form of the team test compiles to the same
+// bytes and the same order, so the two blocks' physical order is the scheduler's.
 // score 5 (was 108): only the order of the two final "return damage" blocks differs (retail
 // puts the no-team return before the not-enemy one, ours the reverse). Tried: three early returns
 // (16), a goto to one shared return (24), a flat team/state test (5, same order), separate team and
@@ -4451,6 +4467,7 @@ bool function_138880();
 // MiniMax C (11-14): no new form, no lower score (194 in the full image, 357 in the reduced image this lane measures): the
 // 0xda110 permutation still arrives in EAX where retail keeps its convention, the flag pairs still merge into one word test and the
 // second 0x138880 is still inlined where retail calls it: BLOCKED-BY 0xda110.
+// MiniMax I (11-15): no new form, no lower score (194 in the full image, 357 in the reduced image this lane measures): the flag pairs still merge into one word test at three sites, retail takes the 0xda110 permutation in a register where this build uses another, and the second 0x138880 is still inlined where retail calls it.
 // score 194 (was 229): 229 before m3 lane 7 r155's 0xda110 convention; 400, 402, 607 before that; at r94's start 2148 bytes against 2170, frame 0x70. Round 75 (b4E) walked every block against retail 0xd5de0-0xd6657:
 // one behaviour fix (the region decay else arm also runs when `info->region_count <= i`, retail 0xd6518 jle -> 0xd6571); every other test,
 // field, callee, argument order and float op agrees. `if (shield > max) {clamp} else {changed}` arm order: no change (393 alone, 400 with the callers, the same as without it). Left: flag pairs that cross the word's bytes merge into one `and word` (three
@@ -4934,6 +4951,7 @@ dword function_db810(long object_index, long node_index)
 }
 
 /* the model node of the object's lowest ranked physics node */
+// MiniMax C (11-15): no new form, no lower score (4): the tag index is still masked after `push ebp` where retail masks it before, and the tag entry is still loaded into edx where retail reuses eax.
 // MiniMax G (11-14): no new form, no lower score (4): the tag index is still masked after `push ebp` where retail
 // masks it before, and the tag entry is still loaded into edx where retail reuses eax; a permuter run with annealing
 // (31 tries) found nothing under 4.
@@ -4967,6 +4985,9 @@ dword function_db810(long object_index, long node_index)
 // MiniMax B (11-06, run 42): no new form and no lower score (4); retail masks the tag index before `push ebp` and
 // keeps the tag entry in eax, ours masks it after the push and takes the entry in edx.
 // MiniMax D (11-14): no new form, no lower score (4): the model index read through the typed model_tag_index field compiles to the same four instructions as the raw-offset read; retail still masks the tag index before it pushes EBP and keeps the tag entry in EAX, where we mask it after the push and take the entry in EDX.
+// MiniMax D (11-15): no new form, no lower score (4): retail still masks the tag index before it pushes ebp and still
+// reuses eax for the tag entry where this build masks it after the push and takes the entry in edx; the mask's place and
+// the entry's register are the scheduler's and the allocator's.
 // score 4 (was 134): retail calls 0x16d890 here (its only caller), so it is declared noinline ahead of its
 // definition in unknown_16d280.cpp (noinline only on this file's declaration still inlines it: 134). Left: the
 // prologue's order (retail masks the tag index before it pushes EBP) and the register that holds the tag's
@@ -5092,6 +5113,7 @@ struct s_damage_object_creation
 // MiniMax H (11-13): the mask's zero moved after the states call 154 (the store then lands ahead of the mask test, retail has it inside the mask block), the zero assigned after the 0xba690 call 170 and in the for-init 231 (both rebuild the function: the datum offset stays in ESI and the node count takes 0x18), so 156 stands.
 // MiniMax A (11-14): the piece loop's bottom test as `!= 0` and the first-node search scanning for the first set bit reach
 // 146, ten points and over the keep bar; the mask's zero and the guard order stay as they were.
+// MiniMax I (11-15): no new form, no lower score (146): retail looks the tag definition up before it saves the registers and keeps the object index in a register where this build saves first and routes the index through another, and retail spills the index * 12 at +0x10 where this build keeps the offset in a register.
 // score 146 (was 146): 156 before MiniMax A (11-14), 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // MiniMax D (11-14): no new form, no lower score (146): retail looks the tag definition up before it saves the registers and keeps the object index in eax, where this build saves first and routes the index through edi.
 // score 146 (was 156): 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached

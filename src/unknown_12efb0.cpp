@@ -616,6 +616,24 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // accumulators 607 (same code); both fallback clamps as `x = x < 0.0f ? 0.0f : x;` 607 (same code); the six-field
 // helper's intensity product written inverse first (retail: `movaps xmm1, xmm0; mulss xmm1, xmm2` after the blue store)
 // 607 (same code: ours still computes it first, in place in the test's register).
+// M3 lane 13 r96 (fast with 0x131030/0x1317a0/0x130f60/0x12e5e0, all MATCH each run; control 607, LCS-aligned 487,
+// register/stack-masked aligned 220): the palette byte read at each use re-measured 666 (masked 219); on it a named 0xd4 tag
+// read before the 0x29 test 673. Cumulative build-up toward retail's content, all positional-worse because the top
+// still lacks retail's `mov edx, eax` (the 0x130f60 result in EDX, NONE in EAX), so every later line stays one off:
+// per-use byte + the three-scalar helper as 0x1317a0 writes its own (clamp in place, products, then weight and
+// remaining) + the merge helper in retail's order (clamp, colour block under the source-weight test, then weight and
+// remaining) 670 (3817 B, masked 121); that with the 0xd4 tag named inside the 0x29 test (tag test joined to the
+// 0x1c test) 707 (masked 120: NONE leaves its register); the four-channel helper taking r, g, b, a by value with the
+// clamp in place, alpha term and weight first 693 (3817 B, masked 101; the zero now in XMM7 as retail); plus the tag
+// arm's range read from the field at each use 705 (masked 99); plus the six-field publication as a macro used three
+// times (direct accumulator access) 715 (3826 B, masked 35: the three blocks are then retail's load-multiply-store
+// order, which the inlined pointer helper never gives); plus a 0x1318a0-shaped getter for the palette lookup 704
+// (3818 B, masked 23; one-caller getter, match-only); a named cluster index on that 704 (same code). Left on the
+// masked-23 lead (build/r96/lead-12efb0.patch in lane 13's worktree): retail keeps the cluster index in EDI across the
+// 0x130f60 call for the first `== arg_0` test (ours reloads it after the call, so the record takes EDI and the tag
+// EBX, retail EBX/EDI), the result/NONE pair (EDX/EAX in retail), the early `movsx ecx, cl`, the 0x88 pointer's `lea`
+// before the tag test's branch, the tag arm's clamp store and `mov eax, edx`, one fallback add's operand order, the
+// tag arm's four-channel schedule and the 0x6c store.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

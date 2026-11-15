@@ -797,9 +797,18 @@ struct s_1f8a70_actor
 // and 7) comes only from lane 1 r99's flag form, which is kept only with a match. Retail's failure-path reload of
 // route_found, the materialised `node != NONE` and the case 7 store order are each listed above with their scores.
 // Body unchanged at 182.
+// M3 lane 15 r88 (fast, control 182): the tail as `if (route_found) {...} else 0x1f8750;` with one `result = route_found;`
+// after it 326 (1680 B); the failing arm returning route_found itself with the success stores after it 437 (1640 B, the first
+// exit folds); the destination-node test in a named bool 182 (same code: folded); the route admission as an if/else into a
+// `valid` bool 182 (same code); case 6's 0x20 test inverted with route_mode = 1 in the else 326 (1616 B).
 // P515: Independent inner/outer binary-enumeration results, positive/complementary and complete pairs:
 // 307/376/432/448/467/486/542/553. NOT kept: no native failure-reload or dispatch equality;
 // original two-result flow, cases, unit temporary and full executable body restored.
+// m3 lane 10 r109 (fast, control 182): route_found declared in a block of its own after the 0xe70b0 block (a sibling scope
+// of the record temporary, whose +0x12 slot it shares) 182 (same code); route_found initialised false at its declaration
+// 182 (same code); the route test and switch on route_mode itself (no `route` local) 397; the 0xe70b0 test without its
+// extra braces 182 (same code); re-measured the ternary route initialiser 182. Lead: retail's reload of route_found after
+// 0x1f8750 is what an address-exposed local gets, and the only address retail takes at +0x12 is the 0xe70b0 result's.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

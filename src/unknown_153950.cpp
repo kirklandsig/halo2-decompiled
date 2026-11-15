@@ -576,6 +576,7 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // MiniMax B (11-14): no new form, no lower score (13); only the j and k rows of the inlined rotation still differ,
 // and they follow the shared rotation helper's text in src/unknown_170d70.cpp, which this lane may not edit
 // (BLOCKED-BY 0x170d70); every other row of the body is retail's.
+// MiniMax I (11-15): no new form, no lower score (13): all thirteen differences are still the j and k rows of the inlined rotation, whose helper (rotate_vector_170d70) is defined in src/unknown_170d70.cpp and not in this lane's file; no spelling of the call made from here produces retail's operand order for those two rows.
 // MiniMax I (11-15): no new form, no lower score (13): all thirteen differences are still the j and k rows of the inlined
 // rotation, whose helper (rotate_vector_170d70) is defined in src/unknown_170d70.cpp and not in this lane's file; no
 // spelling of the call made from here produces retail's operand order for those two rows.
@@ -584,6 +585,9 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // this lane may not edit.
 // score 13 (was 13): unchanged this round: the inlined rotate helper computes the `projection * axis` term after the
 // `v * cosine` term in the j and k rows; the helper's text is in src/unknown_170d70.cpp.
+// MiniMax S (11-15): no new form, no lower score (13): only the j and k rows of the inlined rotation differ, where the
+// helper adds the projection term after the cosine term and retail adds it before; the helper's own text fixes that order
+// and it lives in another file.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {

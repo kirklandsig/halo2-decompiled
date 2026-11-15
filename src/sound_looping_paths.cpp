@@ -534,6 +534,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // (p1's code); the target loop's sound through loop_path_get at each use 909 (3361 B); the choice-to-target loop through
 // `choices[i]` at each use 886 (3346 B); the pin helper written `value < lower` first (same code); lane 16 r91's nested-if
 // first loop with the macro at every site 928 (3305 B, retail's ESI entry zero).
+// Round 247 (m3 lane 3, fast with 0x18bb80): the fade scan as a `for` from index 0 like the first scan 933; the first scan as
+// the fade scan's `while ((i = next(pool, i + 1)) != NONE)` 909; the listener's detail slot through a `long *slot` 866
+// (same code); the existing list's store and increment as two statements 866; `fraction * fraction` named and used twice
+// in the blend 866. Re-measured: the fade scan's silent flag through `sound` 876, `choice_count && inside` 866 (listed).
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

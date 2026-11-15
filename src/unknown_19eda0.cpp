@@ -385,6 +385,10 @@ PRIVATE inline long polygon_round_19f(real value)
     return result;
 }
 
+// MiniMax R (11-15): no new form, no lower score (370): the frame is still 0x34 against retail's 0x30, retail's 1.5
+// factor still comes from a writable .data float at 0x47ff94 that this lane may not add, and the call to 0x4b2d0
+// still takes its tag, group and variant in EDX, ECX and EAX from src/unknown_01cf50.cpp, which this lane may not
+// edit.
 // score 370 (was 370): no new form and no lower score; the body is unchanged. Retail still reads its 1.5
 // factor from a writable .data float this lane may not add, and still keeps its frame at 0x30 against our
 // 0x34 because 0x4b2d0 takes the tag, the group and the variant in EDX, ECX and EAX (src/unknown_01cf50.cpp).
