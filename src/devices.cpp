@@ -1987,6 +1987,7 @@ bool function_0b6760(s_index_pair const *pair);
 // animation-state block is the natural lead; it measures 258, so the order stands. The prologue's index in EDI/ESI against
 // retail's ESI/EBX and the result byte at [esp+0xf] (ours in DL) are unchanged.
 // MiniMax I (11-15): no new form, no lower score (250): the index and index * 12 sit in EDI/ESI where retail has ESI/EBX, the result is returned in DL where retail keeps a stack byte, and the definition is re-read where retail reads it once; the 58 and 69 leads rest on a one-use rate local, which is match-only.
+// MiniMax S (11-15): no new form, no lower score (250): the saved definition's volatile, the tick rate read straight from the global and the == 0 byte test are the standing body; the one shape that reaches retail's block order (58 at retail's 1495 bytes) needs the tick rate read into a local once just before the 0x11eed0 call, a one-use local, so it is not kept and the body stands.
 // score 250 (was 250): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI where retail has
 // ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads (match-only leads at 58 and 69 below).
 // MiniMax H (11-12): no new form, no lower score (250): the acceleration and the speed each written as one product added into a running value measure 359, and the same form without the volatile measures 382, so the body stands.
