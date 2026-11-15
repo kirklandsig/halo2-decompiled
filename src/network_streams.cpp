@@ -980,6 +980,9 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // window pointer declared ahead of the send call for the count only, the index through the member, with the bound in a
 // local / in the loop test / the count in its own inner if 91/89/91 (221 B). Matched 0x94df0 reuses the count's oldest
 // because its loop start reads oldest; here no spelling merges the count's oldest without the early merge that reduces.
+// P500: Existing shared index-helper lower/upper guard and result graphs, eight complete forms:
+// 76/86/86/86/91/87/60/60. NOT kept: Strength reduction remains or native extent/register ownership regresses; no
+// exact result. Shared helper and every caller restored. Original complete executable body restored.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

@@ -1694,6 +1694,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // and without the input_normal pointer (0xd1e10's three stores renamed with it, 542 unchanged), 452/452 (retail's `mov
 // ecx, edi` copy pointer does not appear); the bias local ahead of the length, right after the normal copy, right after
 // the length store 568/568/569 (2176 bytes); the normal's square as dot3f(&normal, &normal) 524 (2198 bytes).
+// P500: Complete standard RGB bias/reflection/scale arithmetic, seven subsets, then both luminance producers:
+// 530/983/650/1012/660/1080/1110/1343. NOT kept: All regress; reflected/scale forms grow beyond retail and do not
+// recover native frame/result/carrier shape. Original complete executable body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

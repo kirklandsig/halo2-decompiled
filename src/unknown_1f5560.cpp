@@ -1111,6 +1111,8 @@ real normalize2d(point2f *v);
 // T107: Original force/fast inputs kept independent until retry admission,
 // logical/reversed/bitwise/conditional forms 301/301/304/301/301/301/304/301.
 // NOT kept: all regress and shorten away; original fast merge and full body restored.
+// P498: Actual request/fallback-facing/retry-output declarations within the admitted path, seven subsets, then complete graph with early uninitialized result. The exact first-query prefix survives; native retained DL and independent request/movement/invalid return transport remain.
+// Scores 135/135/135/135/135/135/135/135. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

@@ -794,6 +794,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // the local cleared too 39; the clear and retest nested in the NONE test 46. Also with the volatile f: `else if (index !=
 // NONE)` after the clear test 77 (160 B); the result set in the unflagged arm, object block under `if (result)` 73; `result =
 // !(flags & 0x10)` inside the NONE test 79 (184 B).
+// P501: Explicit two-state creation outcomes, two validity-owned and six attachment-owned lifetime/completion
+// graphs: 51/60/64/64/63/63/64/62. NOT kept: All regress; the enum result misses the native false BL and
+// independent lookup shape even where extent agrees. Original primitive result, macros and virtual calls restored.
+// Original complete executable body restored.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

@@ -285,6 +285,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // concurrent angles, both helpers, vector observations/publications and full body restored.
 // Full-transform backing at first/second/both actual matrix receivers: 349/367/373.
 // NOT kept: no exact native backing/allocation equality; original matrix types and full body restored.
+// P508: Existing builder axis/output and rotation-matrix reference contracts, seven subsets
+// then all with the rotated-vector input reference: 334/334/334/334/334/334/334/334.
+// NOT kept: no native coefficient-register or scalar-publication equality; original helpers and full body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2266,6 +2269,9 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // 515/514/518/555/551/524/498/604. NOT kept: no exact native output-storage repair.
 // Original uninitialized outputs, provider contract, APIs and complete body restored.
 // Frame 0x90 versus 0x94 and output homes remain.
+// P499: Actual distance/angular/optical last-use blocks, seven subsets, then complete bounded-fade phase:
+// 492/492/492/492/492/492/492/492. NOT kept: All eight tie 492 at the original extent and frame; native output
+// homes remain. Original complete executable body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3502,6 +3508,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // natural spellings that add a use of loop 3's index (entry through the index, the decrement before the swap, the swap
 // from the indexed entry, `i <= last`) are listed above with their scores, and none keeps the instructions. The loop
 // tests of passes 1, 2 and 4 already compare in retail's operand order. Body unchanged.
+// P508: Complete inclusive admitted-prefix end in long/dword, each with bool/byte/short/long
+// original found state: 358/358/361/358/358/358/361/358. NOT kept: all regress at native length;
+// state/prefix and ordinal homes remain wrong. Original count representation and full body restored.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4284,6 +4293,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // memset, paired fill/fill-n/uninitialized-fill/uninitialized-fill-n: 70/70/70/70/70/70/70/70.
 // NOT kept: no full-context native scratch/frame equality. Original direct final field
 // clamp, positive result, recursive/query inputs, helpers and complete body restored.
+// P508: Actual final getter fade/active outputs at entry, across recursion and after recursion,
+// with original-site zero defaults, eight ownership/order forms: 70/70/70/70/70/70/70/70.
+// NOT kept: no native scratch/frame equality with the default provider present; original complete body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -4291,13 +4303,13 @@ bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_spec
     s_scalar_object_header *header = &((s_scalar_object_header *)g_4e0300->data)[object_index & 0xffff];
     byte **object_slot = &header->object;
     byte *object = *object_slot;
-    byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
+    s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
     long kind = *(signed char *)(object + 0xaa);
     real alpha = 0.0f;
     if (!(object[6] & 1))
     {
         byte first_output, opacity;
-        switch (*(short *)(definition + 0x18))
+        switch (definition->lightmap_shadow_mode)
         {
         case 0:
             if (kind == 0 || kind == 1)

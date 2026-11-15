@@ -1389,6 +1389,8 @@ long function_cbd50(long unit_index, short weapon_index);
 // P495: Actual count-pass flag/weapon workspaces and shared three-phase hand induction, seven subsets,
 // then both signed-short slot transports on that graph: eight 215 at 1006 bytes. NOT kept: no native
 // frame/player/pool/tag recovery; every producer, observation, slot provider and complete body restored.
+// P507: Complete uncounted/excluded slot counts byte/short/long/dword:
+// 293/295/292/292/275/313/313/313. NOT kept: no native qualifying-count/frame/player/pool/tag equality; original complete body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {

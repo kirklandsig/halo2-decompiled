@@ -1559,7 +1559,6 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // bytes out; the speed-scale block also computes `1.0f - a*b` before the helper's multiply where ours multiplies first.
 // Earlier score 566 (was 585): earlier 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
 // MiniMax S (11-14): no new form, no lower score (566): retail's frame is 0xfc against this build's 0xf8 and the call to 0x1e5bb0 still passes seventeen values where retail passes twenty-one, the number of arguments being the callee's own declaration to decide; the declaration of that callee and the callers' parameter order are in files this lane may not edit.
-// score 566 (was 585): earlier 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
 // material and animation homes differ.
 // MiniMax B (11-13): no new form, no lower score (566); the frame is still 0xf8 against retail's 0xfc, and the call to 0x1e5bb0 still passes 17 values where retail passes 21, which the callee's own declaration decides.
 // MiniMax I (11-09): no new form, no lower score (588); our call to 0x1e5bb0 passes 17 values where retail passes 21
@@ -1865,6 +1864,17 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // NOT kept: unmatched diagnostic source forms; original executable body restored.
 // P497: Actual ground-body receiver, nearest contact outputs and discarded query-output last-use scopes, seven subsets then all with header declared at use: 566/566/566/566/566/566/566/566.
 // NOT kept: no native frame-word or material/airborne/animation-home repair; original entire body and shared helpers restored.
+// P499: Complete standard ground-speed/boost/walking-recovery arithmetic, seven subsets, then eye-height
+// correction: 649/674/594/728/698/700/778/864. NOT kept: All regress and add calls absent from retail; boost
+// recovers frame 0xfc only while growing away from native length. Gravity/material/airborne homes remain
+// unresolved. Original complete executable body restored.
+// P502: Case-six target outcomes, present then missing target first, each native/setter/memcpy/memmove fallback:
+// 570/558/570/576/563/557/568/578. NOT kept: 558/557 reach retail extent but retain frame 0xf8/0xfc and delayed
+// default copies after root lookup. Original body/helper restored.
+// P505: Whole existing-record iterator copies at coherent velocity/facing/target boundaries, seven subsets then
+// complete backward copy: 636/655/587/678/644/667/688/688. NOT kept: All regress; velocity-only recovers native
+// extent but misses entry scheduling, while other transfers shrink away from native length and do not recover
+// gravity/material/airborne homes. Original complete executable body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3966,7 +3976,6 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // and every call argument after it are one register out.
 // Earlier score 548 (was 561): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // MiniMax S (11-14): no new form, no lower score (548): this build's frame is 0x7c against retail's 0x78, and the biped index and the definition pointer sit in swapped registers, so every home after the prologue is four bytes out and the flight-call arguments are one register out; the parameter order is retail's and the callers are in files this lane may not edit.
-// score 548 (was 561): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // MiniMax S (11-09): no new form, no lower score (605 in the reduced build); retail keeps the biped
 // index in EBP and the definition pointer in ECX with a home at +0x18, ours keeps the definition in
 // EBP and the index in EBX with a home at +0x1c, and retail's changed-result byte sits at +0x11
@@ -4177,6 +4186,20 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // NOT kept: unmatched diagnostic source forms; original executable body restored.
 // P497: Serial walking/aim angle, sine and cosine workspaces, seven subsets then all with shared bounds: 602/607/609/603/603/607/610/646 (reduced control 614; full 548).
 // NOT kept: every reduced frame remains 0x7c versus native 0x78; unsupported scalar-storage interaction is unmatched. Original complete body restored.
+// P499: Complete standard vector walking-cosine/axial/pitch contributions, seven subsets, then perpendicular
+// contribution: 790/765/736/831/891/847/914/998. NOT kept: All regress against reduced control 612 and grow beyond
+// native 2712 bytes; added calls and larger frames do not recover changed-result or flight homes. Original
+// complete executable body restored.
+// P502: Existing yaw-helper vector/axis/output ownership, seven subsets then immutable inputs:
+// 679/686/682/686/679/686/686/686. NOT kept: all regress against reduced 614, shorten away from retail and miss
+// native frame/result/flight homes. Original body/helper restored.
+// P505: Existing yaw vector/axis/both reference contracts and forced original expansion, then destination-pointer
+// return under all four object contracts: 614/614/614/614/614/614/614/614. NOT kept: All eight tie reduced control
+// 614 versus full baseline 548; native result/flight homes and reduced frame mismatch remain. Original helper and
+// complete body restored. Original complete executable body restored.
+// P508: Complete turn-side-oriented overshoot, branch/selection and unary/zero-subtraction
+// producers: 607/614/607/607/607/614/607/607 (reduced 614, full 548). NOT kept: seven-point
+// leads miss the gate, frame stays 0x7c versus native 0x78, and sign stand-ins miss equality. Full body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4703,6 +4726,20 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // matrix/origin/pivot homes not recovered; original transfers and complete body restored.
 // P497: Actual offset/placed/delta last-use scopes, seven subsets then complete graph with early normalization rotation: 336/336/336/336/336/336/336/336.
 // NOT kept: no native matrix/origin or low pivot-home repair; original complete body restored.
+// P499: Standard binary coordinate offset/placement/displacement transforms, seven subsets, then both collision
+// target producers: 345/442/315/421/386/434/477/401. NOT kept: The 315 lead adds an out-of-line transform absent
+// from retail and moves origin to +0x54 versus native +0x40; other forms regress or enlarge the frame. Original
+// complete executable body restored.
+// P502: Collision-target fallbacks, nested then short-circuit, each native/setter/memcpy/memmove:
+// 307/386/307/403/334/351/334/418. NOT kept: 307 moves default copies after the collision query; retail copies
+// before it. Matrix/origin homes remain displaced. Original body/helper restored.
+// P505: Actual complementary pointer standard/iterator/ordinary exchange, then contact-record
+// standard/iterator/range/ordinary/plain-loop exchange: 393/393/336/424/424/421/379/377. NOT kept: Every exchange
+// ties or regresses; payload exchanges disturb native frame homes, and no form recovers native matrix/origin
+// storage. Original complete executable body restored.
+// P508: Actual first/second/both contact-property zero defaults at declaration or query,
+// then paired NONE defaults at those sites: 351/336/351/358/336/358/377/368.
+// NOT kept: defaults add code or tie without native origin/matrix/property-home equality; original full body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

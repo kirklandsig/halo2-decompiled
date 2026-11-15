@@ -433,6 +433,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // predicate as the per-pass result 69 (139 bytes, each early return materialises false); the two flag tests as one
 // `continue` filter 43; a primed lookup in `for (;;)` with result/break, `if (next == NONE) break;` and the end lookup 39
 // (129 bytes: retail's early ESI save, but the end lookup runs through EDX and the live result keeps the mask an immediate).
+// P504: Existing offline predicate scalar-reference/scalar-pointer/player-pointer/player-reference and exclusion
+// byte-value/byte-reference/byte-pointer/player-reference contracts: 43/43/43/43/43/43/43/43. NOT kept: All eight
+// tie 43 at 127 bytes; no native early-save, independent successor, mask or failure-exit recovery. Both matched
+// callers and all calibrated file controls retain their measurements. Existing helper contracts restored. Original
+// complete executable body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

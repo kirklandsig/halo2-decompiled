@@ -721,6 +721,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // definition homes); dead-local phase scan on this body (n = 0..7, removed) 334/334/338/338/335/334/334/334. Diagnostic
 // (compiler setting, reverted at once): float consistency on around this body 480 (1713 B), the gate and velocity
 // addresses still fold, so that setting is not the cause either. Body unchanged.
+// P500: Standard reciprocal/interpolation/inherited-velocity arithmetic, seven subsets, then initial-position
+// products: 384/573/352/625/421/575/627/650. NOT kept: All regress; native separate effect address, gate/settings
+// homes and extent are not recovered. Three matched controls remain exact. Original complete executable body
+// restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
