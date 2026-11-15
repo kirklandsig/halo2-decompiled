@@ -4446,6 +4446,7 @@ bool function_138880();
 // MiniMax C (11-14): no new form, no lower score (194 in the full image, 357 in the reduced image this lane measures): the
 // 0xda110 permutation still arrives in EAX where retail keeps its convention, the flag pairs still merge into one word test and the
 // second 0x138880 is still inlined where retail calls it: BLOCKED-BY 0xda110.
+// MiniMax I (11-15): no new form, no lower score (194 in the full image, 357 in the reduced image this lane measures): the flag pairs still merge into one word test at three sites, retail takes the 0xda110 permutation in a register where this build uses another, and the second 0x138880 is still inlined where retail calls it.
 // score 194 (was 229): 229 before m3 lane 7 r155's 0xda110 convention; 400, 402, 607 before that; at r94's start 2148 bytes against 2170, frame 0x70. Round 75 (b4E) walked every block against retail 0xd5de0-0xd6657:
 // one behaviour fix (the region decay else arm also runs when `info->region_count <= i`, retail 0xd6518 jle -> 0xd6571); every other test,
 // field, callee, argument order and float op agrees. `if (shield > max) {clamp} else {changed}` arm order: no change (393 alone, 400 with the callers, the same as without it). Left: flag pairs that cross the word's bytes merge into one `and word` (three
@@ -5087,6 +5088,7 @@ struct s_damage_object_creation
 // MiniMax H (11-13): the mask's zero moved after the states call 154 (the store then lands ahead of the mask test, retail has it inside the mask block), the zero assigned after the 0xba690 call 170 and in the for-init 231 (both rebuild the function: the datum offset stays in ESI and the node count takes 0x18), so 156 stands.
 // MiniMax A (11-14): the piece loop's bottom test as `!= 0` and the first-node search scanning for the first set bit reach
 // 146, ten points and over the keep bar; the mask's zero and the guard order stay as they were.
+// MiniMax I (11-15): no new form, no lower score (146): retail looks the tag definition up before it saves the registers and keeps the object index in a register where this build saves first and routes the index through another, and retail spills the index * 12 at +0x10 where this build keeps the offset in a register.
 // score 146 (was 146): 156 before MiniMax A (11-14), 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // MiniMax D (11-14): no new form, no lower score (146): retail looks the tag definition up before it saves the registers and keeps the object index in eax, where this build saves first and routes the index through edi.
 // score 146 (was 156): 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached

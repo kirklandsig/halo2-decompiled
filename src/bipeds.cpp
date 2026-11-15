@@ -535,6 +535,7 @@ void function_e5930(long unit_index);
 // MiniMax C (11-14): no new form, no lower score (118): retail calls 0xe5930 out of line where this build expands the reset
 // dispatch (413 bytes against retail's 343), and retail's 0x1f0 test shifts the dword first where the field is a byte here, so the
 // test folds to a byte test; the callee's file is not this lane's: BLOCKED-BY 0xe5930.
+// MiniMax I (11-15): no new form, no lower score (118): the reset dispatch is still expanded here instead of being called out of line as retail does, retail's 0x1f0 test shifts the dword first where the field is a byte here, and the flag store is scheduled differently.
 // score 118 (was 118): flag-store scheduling and the final helper's unwanted expansion remain; BLOCKED-BY 0xe5930.
 // Logic walk (2026-10-31): every store of 0xde4c0-0xde608 agrees with this source (offsets, sizes, the NONE/0/0x7f values,
 // the 0xb9dd0 call with &+0x368, the 0x1f0 bit 1 choosing flags_348 |= 8 / &= ~8, +0x3d8/+0x3e0/+0x3dc/+0x3e4/+0x3e8, the
@@ -731,6 +732,7 @@ struct s_biped_flags_10a_view
 // MiniMax C (11-14): no new form, no lower score (222): retail computes the state pointer at the head and spills it, so the head is
 // 25 bytes short, the 0x111650 call takes its names in EAX where retail pushes both arguments, and the type-0 bit is read as
 // `shr al, 2; and al, 1` where this build folds it into `and al, 4`: BLOCKED-BY 0x111650.
+// MiniMax I (11-15): no new form, no lower score (222): retail computes the state pointer at the head and spills it while this build reads it at its one use, the 0x111650 call takes its names in a register where retail pushes both arguments, and the type-0 bit is read as one test instead of retail's shift and test.
 // score 222 (was 224; 241; 280 before round 48): frame 0x16c agrees; retail computes the state pointer at the top and spills it (ours reads it at
 // its one use, so the head is 25 bytes short), the 0x111650 call takes names in EAX where retail pushes both
 // arguments (BLOCKED-BY 0x111650, unmatched, ret 8 in retail), and the type-0 bit is read as `and al, 4` (retail
@@ -5147,6 +5149,7 @@ void function_e4300(long arg_159e6d)
 // MiniMax H (11-12): no new form, no lower score (91): the reset dispatch still expands at this straight-line call site, and retail takes the index from ESI where this build takes it from the argument register.
 // MiniMax C (11-14): no new form, no lower score (91): retail calls 0xe5930 out of line where this build expands the reset dispatch
 // (113 bytes against retail's 61), and no spelling of the call site keeps the callee out of line: BLOCKED-BY 0xe5930.
+// MiniMax I (11-15): no new form, no lower score (91): the reset-mode dispatch still expands here (113 bytes against retail's 61) instead of being called out of line, and retail takes the index from ESI where this build takes it from the argument register.
 // score 91 (was 91): reset-mode dispatch expands instead of retail calling it out of line (113/61 bytes).
 // Separate reset noinline declaration 91; Boolean flag test 98; both 98; noinline with
 // field-use object lookup 94; Boolean lookup with/without noinline 101/101; both call-boundary
@@ -6536,6 +6539,16 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 // the contact point load lands in edx against retail's eax, the marker position copy rotates eax/ecx/edx, the flag byte
 // test uses al against retail's cl, the material word comes from cx against retail's dx, and the down vector's three
 // components are still loaded in reverse and stored after the argument pushes.
+// MiniMax I (11-15): the down vector copied componentwise into a point3f local (retail copies it per component with movss,
+// ours merged the three components into dword moves): 80 -> 64, 686 bytes = retail's. Still open: the contact point load in
+// edx against retail's eax, the marker position copy rotating eax/ecx/edx, the flag byte test using al against cl, the
+// material word from cx against dx, the zone stored as a dword against retail's word, the model count test and the two
+// 0x188180 call setups (that material parameter's 16-bit type is in files this lane may not edit).
+// score 64 (was 80; earlier 138, 168, 154): the frame is retail's 0x94 (the foot marker in its own block, the down vector copied
+// after the point offset, and the count test as count - 1 >= 0) and the down vector's copy now matches retail's movss pair
+// by pair; what is left is register choice — the contact point load lands in edx against retail's eax, the marker position
+// copy rotates eax/ecx/edx, the flag byte test uses al against retail's cl, the material word comes from cx against retail's
+// dx, and the zone is stored as a dword against retail's word.
 // score 80 (was 138; earlier 168, 154): the frame is retail's 0x94 now (the foot marker in its own block, the down vector copied
 // after the point offset through vector3f_assign, and the count test as count - 1 >= 0); what is left is register choice — the
 // contact point load lands in edx against retail's eax, the marker position copy rotates eax/ecx/edx, the flag byte test uses al
@@ -6674,7 +6687,7 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 
 			if (count - 1 >= 0)
 			{
-				vector3f down;
+				point3f down;
 				s_biped_ground_collision collision;
 				long i;
 
@@ -6688,8 +6701,10 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 					}
 				}
 				vector3f_add_scaled((vector3f const *)&point, g_4687b0, 0.1f, (vector3f *)&point);
-				vector3f_assign(&down, g_4687bc->i, g_4687bc->j, g_4687bc->k);
-				if (function_1697c0(0x84000d, &point, &down, NONE, NONE, (s_collision_result_1697c0 *)&collision))
+				down.x = g_4687bc->i;
+				down.y = g_4687bc->j;
+				down.z = g_4687bc->k;
+				if (function_1697c0(0x84000d, &point, (vector3f const *)&down, NONE, NONE, (s_collision_result_1697c0 *)&collision))
 				{
 					function_188180(&point, g_4687b0, definition->object.footstep_effects.tag_index, arg_159e6d, type,
 						definition->object.impact_sound_size, c_type_47f957(collision.unknown24), (long)g_4687bc, (s_location *)((byte *)biped + 0x28), scale);
