@@ -148,7 +148,7 @@ void collector_3173f0::function_3173f0(pair_30d870 *added, long added_count, pai
 	}
 	function_372b50(added, added_count);
 	function_372b50(removed, removed_count);
-	dword const capacity = entries.size + added_count;
+	long const capacity = entries.size + added_count;
 	vectors_30d9a0 kept(capacity);
 	read = entries.data;
 	end = entries.data + entries.size;
