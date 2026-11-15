@@ -2491,7 +2491,7 @@ void function_cfec0(long unit_index)
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
-	if (unit_index != NONE)
+	if (unit_index > NONE)
 	{
 		s_unit *unit = UNIT_GET(unit_index);
 		long parent_index = unit->parent_index;
@@ -9182,8 +9182,6 @@ struct s_unit_melee_collision
 // lookup (543), the weapon index through the existing function_cbd50 (514) or as `= NONE; if` (473, 534), the NONE
 // locals declared before the weapon index (502, 537), the pool local without the data pointer (474), the tag table
 // as a local alone (487), the material class alone (487).
-// score 429 (was 493; 456 before this round): the melee damage and self damage are set only when the melee table entry exists
-// score 456 (was 493; 504 and 507 before): the melee damage and self damage are set only when the melee table entry exists
 // score 493 (was 493; 504 and 507 before): the melee damage and self damage are set only when the melee table entry exists
 // (retail reaches the weapon's defaults with NONE still in both), hit_t is not initialised (retail has no store
 // for it), and the damage data's material_index is set to NONE before 0xd6660 (retail order). Retail's tail
