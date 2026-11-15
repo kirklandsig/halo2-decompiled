@@ -4197,6 +4197,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // return under all four object contracts: 614/614/614/614/614/614/614/614. NOT kept: All eight tie reduced control
 // 614 versus full baseline 548; native result/flight homes and reduced frame mismatch remain. Original helper and
 // complete body restored. Original complete executable body restored.
+// P508: Complete turn-side-oriented overshoot, branch/selection and unary/zero-subtraction
+// producers: 607/614/607/607/607/614/607/607 (reduced 614, full 548). NOT kept: seven-point
+// leads miss the gate, frame stays 0x7c versus native 0x78, and sign stand-ins miss equality. Full body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4734,6 +4737,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // standard/iterator/range/ordinary/plain-loop exchange: 393/393/336/424/424/421/379/377. NOT kept: Every exchange
 // ties or regresses; payload exchanges disturb native frame homes, and no form recovers native matrix/origin
 // storage. Original complete executable body restored.
+// P508: Actual first/second/both contact-property zero defaults at declaration or query,
+// then paired NONE defaults at those sites: 351/336/351/358/336/358/377/368.
+// NOT kept: defaults add code or tie without native origin/matrix/property-home equality; original full body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
