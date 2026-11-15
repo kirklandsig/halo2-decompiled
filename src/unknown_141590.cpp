@@ -118,7 +118,7 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
-// score 200 (was 200): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// score 205 (was 200; fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Earlier (200, was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
 // the same absolute homes as ours, but retail's cosine half is the frame bottom local [esp+0x10] and its sine half
@@ -376,6 +376,20 @@ static inline void quaternion_transform_vector(
 // Round 90 (m3 lane 16, fast): the doubled sine product written 2.f first 200 (same code); the clamp testing the
 // cosine copy 200 (same code); the construction scale computed before the axis cross 252 (1317 bytes); the cosine
 // arms swapped (`cosine >= 0.f` takes the identity) 210; rotation.w stored between the cross and the scale 200.
+// Walk b6K (fast build, base 32fb6007d), statement by statement against retail: no logic or structure difference left. Checked: the dot sum
+// 0x1417b3-0x1417e1, the clamp 0x1417ed-0x141807, both halves (fld ... fstp dword at 0x14182a and 0x141846, so both round to float as ours),
+// the sine test 0x14185b-0x141862 (equal takes the zero-sine arm; NaN takes the construction as `!=` does), the cross scaled by sine_half / sine
+// 0x141864-0x1418bc with w = the cosine half, the 0x11d000 arm 0x1418c2-0x1418cb (cosine < 0, w = 0), the identity arm 0x1418d5-0x1418f7, the
+// 13-dword matrix copy 0x141929, the forward/up/left transforms (field offsets and cross terms), the 0x143120 test 0x141c0c and the repair
+// 0x141c19-0x141cc6. Retail never stores w in the construction arm; it keeps it in xmm5. Left: the compiler's term orders in the transforms.
+// Retail adds cross*2w first in every i row (0x1419b9-0x1419d5, 0x141ab3-0x141aca, 0x141ba7-0x141bbc), cross + q*dot then v*s in the up j/k rows
+// (0x141ace-0x141af5, 0x141b0c-0x141b24) and sums the dot as i,k,j (forward 0x14192b-0x14194d, up 0x141a43-0x141a5f), k,j,i (left 0x141b2d-0x141b5e);
+// ours compiles other associations (the C order does not decide them: VC reassociates, cross-first i row 205 same code). Retail also stores 2w twice
+// (0x141966, 0x14196c) and s to a slot nothing reads (0x1419e6). Initial dot: the shared dot3f(a, b) (a helper this file did not use before) 205 (1326 bytes),
+// written out 200 (1321), dot3f(b, a) 205. With dot3f the forward dot is retail's i,k,j. On the dot3f base: transform dot via dot3f((vector3f const *)q, v)
+// 240, cross via cross3f 239, both 237 (1317 bytes); plain halves 267; cross3f for the construction 250; helper statement order s,dot,w2 250 /
+// s,w2,dot 252 / w2,s,dot 207 / dot,s,w2 248 / w2,dot,s 208. Not used: the clamp is PIN_126660's expression (unknown_124f90.h, needs a new include);
+// quaternion_transform_vector repeats quaternion_rotate_point (unknown_11cb00.cpp, not in a header, other term orders).
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -384,7 +398,7 @@ void matrix4x3_rotation_between_vectors(
 {
 	quaternionf rotation;
 	struct { real cosine_half, sine_half; } state;
-	real dot = arg_5f338b->i * arg_bc44c6->i + arg_5f338b->j * arg_bc44c6->j + arg_5f338b->k * arg_bc44c6->k;
+	real dot = dot3f(arg_5f338b, arg_bc44c6);
 	real cosine = dot;
 
 	if (dot < -1.f)

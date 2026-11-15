@@ -7227,12 +7227,13 @@ static __forceinline void unit_perform_request(long unit_index, long type)
 
 		if (player_index != NONE)
 		{
-			short controller = *(short *)((byte *)g_4e8c24->data + (player_index & 0xffff) * 0x21c + 0x28);
+			byte *player = (byte *)g_4e8c24->data + (player_index & 0xffff) * 0x21c;
 
-			if (controller != NONE)
+			/* two reads of the controller: retail keeps the player pointer and loads +0x28 from it */
+			if (*(short *)(player + 0x28) != NONE)
 			{
-				function_1e6980((s_time_entry *)((byte *)g_51e9c0 + controller * 0x1b0 + 0x150), (short)request.type,
-					result);
+				function_1e6980((s_time_entry *)((byte *)g_51e9c0 + *(short *)(player + 0x28) * 0x1b0 + 0x150),
+					(short)request.type, result);
 			}
 		}
 	}
@@ -7241,22 +7242,26 @@ static __forceinline void unit_perform_request(long unit_index, long type)
 /* the unit dies: the biped's death (0xe4a20), its player and actor let
    go, its weapons and grenades dropped, it leaves its seat, its requests
    end (unless a ragdoll timer runs, when forced) and its actions stop */
-// score 224 (was 243): Round 3 of #1049. Same size as retail (1175 bytes) and the same 312 instructions in the same
-// order; only registers, two address folds and the hand loop's second argument differ. The bit-21 clear is
-// bit_vector_set (retail loads the flags, adds 0x134 to the pointer, ANDs, stores: +15 bytes, 243 -> 229); each
-// request handler is read before the request is cleared (retail keeps it in EBX across 0xb7360: 226); the bit-1
-// clear as bit_vector_set puts the flag load after the 1.0f load as retail (224). Still differs: (1) retail
-// passes 0x100430's value from a stack word (mov word [esp+0x44],0 in the dead
-// `knocked` slot, reloaded as a dword; the callee uses only its low word, so behaviour is the same) where ours
-// pushes 0; (2) retail adds the base explicitly before the 16-bit loads at +0xc (weapon state) and +0x28
-// (controller, twice): `add eax, base; mov ax, [eax+d]`, ours folds them into the address; (3) the flag-clear
-// temp is EBX (ours EDX); the request zeroing uses EAX in the 0x1e block and its first/second copies (ours
-// ECX/EDX); the interrupted-callback state pointer is EBP, value EBX (ours the reverse). Callers: 0xc42e0 stays 5
-// (blocked by 0xd6800's convention, not by this), 0xca0b0 stays 344.
-// Tried: inline request helper 628; forced expansion 323; two-hand do/while 323; entry request workspace 324;
-// zero aggregate 327; word local, volatile word local (219 but movzx and a size of 1176, not kept), word_flags_set
-// local for the value 229 (folded to push 0); player pointer local, data base local, forceinline player helper
-// for the controller read, weapon block pointer local 226/224 (folded, no change).
+// score 212 (was 224, fast build): Round 4 of #1049, walked against retail statement by statement (0xcaa60-0xcaef4):
+// no logic, field, offset, condition or callee difference; the 312 retail instructions are the same sequence as ours.
+// Retail does not fold the base into the address of three 16-bit loads: the weapon state (0xcabc8 `add eax, ecx`,
+// 0xcabca `mov ax, [eax+0xc]`) and the controller in each inlined request (0xcad7d/0xcad7f, 0xcae22/0xcae24). A
+// block/player pointer read through twice (as 0xce520 does) gives that form, and the 3 added adds take back the
+// one-instruction shift that made most of the old 224 (224 -> 212; size 1167, retail 1175). Earlier rounds: the bit-21
+// clear is bit_vector_set (243 -> 229); each request handler is read before the request is cleared (226); the bit-1
+// clear as bit_vector_set puts the flag load after the 1.0f load as retail (224). Still differs: (1) retail passes
+// 0x100430's value from a stack word (0xcac08 `mov word [esp+0x44], 0` in the dead `knocked` slot, 0xcac1b reloaded as
+// a dword; the callee uses only its low word and a 0x1df mask, so behaviour is the same) where ours pushes 0, and keeps
+// NONE in edx before the test (0xcac01 `or edx, -1`) where ours branches with a jmp; (2) register picks: the
+// flag-clear temp is EBX (ours EDX); the request zeroing uses EAX in the 0x1e block and ECX/EDX in the first/second
+// request (ours EDX/ECX); the interrupted-callback state pointer is EBP, value EBX (ours the reverse); the 0x1e
+// block's unit argument load sits after the stores in retail. Callers: 0xc42e0 stays 5, 0xca0b0 stays 370 (both as
+// before in the same check). Tried: inline request helper 628; forced expansion 323; two-hand do/while 323; entry
+// request workspace 324; zero aggregate 327; word local, volatile word local (219 but movzx and a size of 1176, not
+// kept), word_flags_set local for the value 229 (folded to push 0); player pointer local, data base local, forceinline
+// player helper for the controller read, weapon block pointer local with a single read 226/224 (folded, no change);
+// hand loop's weapon index as `long = NONE; if (...)` instead of the ternary 215 (no jmp, but the word slot still
+// missing).
 // @retail 0xcaa60
 void __stdcall function_caa60(long unit_index, long object_index, point3f const *point, bool knocked, bool force)
 {
@@ -7300,8 +7305,8 @@ void __stdcall function_caa60(long unit_index, long object_index, point3f const 
 	function_d0e00(unit_index, 1.0f);
 	unit->unknown148 = 0;
 	s_unit *again = UNIT_GET(unit_index);
-	short weapon_state = *(short *)((byte *)again + again->unknown342 + 0xc);
-	if (weapon_state > 0 && weapon_state < 0xf)
+	byte *weapon_block = (byte *)again + again->unknown342;
+	if (*(short *)(weapon_block + 0xc) > 0 && *(short *)(weapon_block + 0xc) < 0xf)
 	{
 		function_114e80(unit_index);
 	}

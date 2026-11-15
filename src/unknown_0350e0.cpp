@@ -4704,6 +4704,24 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // [esp+0xac] against our [esp+0x9c] and the radius home at [esp+8] against our [esp+0xc]. A variant with
 // retail's corner order, the colour aggregate and the helper call reordered reached 225, six short of the
 // keep bar, so the original body is restored.
+// b6R (11-06): score 231 (was 231, fast build): no new form, no lower score; no behaviour difference found.
+// Walked retail 0x32ce0-0x333f8 statement by statement against this source: object index masked 0xffff at 0x32cf8 and
+// the object pointer from record +8 (0x32d08); the NONE store at 0x32d0c precedes the opacity test (comiss 0x32cfd,
+// jbe 0x32d16, so opacity > 0.05 and ordered); collision call 0x32d38 with the arguments pushed at 0x32d29-0x32d33;
+// radius = object+0x3c * 0.35 (0x32d45-0x32d4a); matrix call 0x32d62 (ecx out, edx forward object+0x70, eax up
+// object+0x7c); one scale != 1.0 test per corner (ucomiss 0x32d6d, 0x32ddd, 0x32ee3, 0x32f9a) scaling x, y and z;
+// each coordinate sums in the source's order (x forward, up, left; y and z up, left, forward) then adds position,
+// origin (origin + sum, 0x32e68/0x32e75/0x32e8e) and 0.001 to z only (0x32e92, 0x330f1); the radius sign: forward
+// term gets -r, +r, +r, -r (0x32d89 -> 0x32de7, 0x32eb3 -> 0x32ef1, 0x32f73 -> 0x32fa4, 0x33066) and left term -r, -r,
+// +r, +r (0x32d9b -> 0x32df5, 0x32eb9 -> 0x32f01, 0x32f67 -> 0x32fbc, 0x3302e -> 0x33074), which is this source's
+// (-r,-r) (r,-r) (r,r) (-r,r) in (x, y); z of vertices 1-3 is corner 3's z in [esp+0x74] (written 0x330f9, read
+// 0x332b2, 0x33340, 0x333d1; corners 1 and 2 never compute z); alpha = (1.0 - t) * opacity at 0x33107-0x33110; Begin
+// 0x33129 then colour (1,1,1,alpha) 0x33186-0x331a1, uv (0,0) (0,1) (1,1) (1,0), positions with w 1.0, End 0x333ec.
+// The lead that retail's corners are (-r,-r) (-r,+r) (+r,+r) (+r,-r) is contradicted by those operand uses.
+// What the compiled code does differently: it regroups each coordinate sum (our x compiles up, left, forward and y
+// left, forward, up where retail adds forward, up, left and up, left, forward), so the source already is retail's
+// evaluation order; this is not a behaviour difference. Frame 0xd0 versus 0xe0 (retail's unwritten 12 bytes below
+// the alpha at [esp+0x78]), spill homes and the one-byte length difference remain as listed below.
 // score 231 (was 394): the corner helper adds the origin as one complete vector sum after the transform;
 // 1820 bytes (retail 1819), first difference the frame size at +0x2.
 // Earlier 394: the four corners are written out (retail has four copies of the scale
@@ -5047,6 +5065,18 @@ bool __stdcall function_391f0(void *state);
 // retains frame 0x74. All matched controls preserved; original observations and domains restored.
 // NOT kept: no eligible native repair; opening executable source restored. Native frame 0x70, early zero and
 // portal/fog homes remain; narrowed domains did not repair them.
+// b6Q (11-06): score 251 (was 251, fast build): second statement-by-statement walk, no behaviour difference, no lower score.
+// Walked 0x36b50-0x36f45 block by block: timestamp step (the 0.0 test at 0x36b94 is made on the unrounded difference
+// that 0x36b88 stores as a float, as ours compiles), the two guards and the 0x46fffe00 fill, the visible-cluster loop
+// (fog word, NONE tests, the selected store, the -1.0 for the current cluster), the portal and side walk, the plane
+// distance (y, z, x order, 0.0 minus the sum, absolute value, minimum) and the four phase loops with their
+// arguments all agree. What differs is allocation: retail rereads the current cluster word at 0x36ce2 where we keep
+// it in a slot (that slot is the extra frame dword), reads g_509418 at 0x36e49 inside the update guard into ebp
+// where we load it before the guard into a float slot, and keeps the fog index in a slot where we use ebp.
+// Tried in this walk: the selected store moved after the fog branch (265), the side loop with the plane
+// block inside it and a break (257, drops retail's jmp at 0x36d45 but regresses). Retail passes 0x38450's state in ebx
+// (0x36e84) and pushes 0x391f0's (0x36efa); ours pushes the first and passes the second in eax. That follows the
+// unmatched callee bodies, not this function.
 // @retail 0x36b50
 void function_36b50()
 {
