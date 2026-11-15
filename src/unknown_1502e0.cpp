@@ -10,6 +10,7 @@
 #include <string.h>
 #include "object_iterator.h"
 #include "unknown_06c1d0.h"
+#include "player_queries.h"
 
 /* the players (g_4e8c24, 0x21c bytes each) */
 struct s_tail_player
@@ -922,7 +923,9 @@ struct s_tail_transfer_traits
 	s_tail_unit_state weapons[3];
 	byte grenades[2];
 };
-
+// MiniMax I (11-15): score 3 (was 144): the players are walked with the existing 16-byte s_player_iterator (player_queries.h),
+// the two slot fields are read as shorts and the third weapon keeps its NONE preset; left: the three object lookups address
+// [data + offset + 8] where retail has [offset + data + 8].
 // score 144 (was 144; 153 before): the third weapon comes from the selection paths without a NONE preset and the no-seat
 // slot lookups go through a pool copy, so retail's object-table reloads appear; from the selection loop on the
 // traits pointer still comes back in EBP where retail keeps it in EAX, and the counter sits at +0x1c against
@@ -1109,11 +1112,11 @@ void function_152660(s_tail_transfer_options *options)
 	s_tail_scenario *scenario = (s_tail_scenario *)g_4e0350;
 	if (scenario->entry_count > 0 && scenario->entries[0].value2c == 1)
 		alternate = true;
-	s_record_pool_iterator iterator;
+	s_player_iterator iterator;
 	iterator.data = g_4e8c24;
 	iterator.index = NONE;
 	s_tail_player *player;
-	while ((player = (s_tail_player *)data_iterator_next_inlined(&iterator)) != 0)
+	while ((player = (s_tail_player *)data_iterator_next_inlined((s_record_pool_iterator *)&iterator.data)) != 0)
 	{
 		s_tail_transfer_traits *traits = 0;
 		for (long i = 0; i < 16; i++)
@@ -1130,7 +1133,7 @@ void function_152660(s_tail_transfer_options *options)
 				s_tail_transfer_unit *unit = (s_tail_transfer_unit *)tail_object_get(g_4e0300, unit_index);
 				long primary = NONE;
 				long secondary = NONE;
-				long other;
+				long other = NONE;
 				if (unit->seat_index != NONE)
 				{
 					for (long selection = 0; selection < 2; selection++)
@@ -1156,15 +1159,22 @@ void function_152660(s_tail_transfer_options *options)
 				}
 				else
 				{
-					s_record_pool *objects = g_4e0300;
-					s_tail_transfer_unit *first = (s_tail_transfer_unit *)tail_object_get(objects, unit_index);
+					s_record_pool *first_objects = g_4e0300;
+					s_tail_transfer_unit *first = (s_tail_transfer_unit *)tail_object_get(first_objects, unit_index);
 					short primary_slot = first->primary_slot;
+					s_tail_transfer_unit *first_again = (s_tail_transfer_unit *)tail_object_get(first_objects, unit_index);
+					long current_weapon = NONE;
 					if (primary_slot != NONE)
-						primary = first->weapons[primary_slot];
-					s_tail_transfer_unit *second = (s_tail_transfer_unit *)tail_object_get(objects, unit_index);
+						current_weapon = first_again->weapons[primary_slot];
+					primary = current_weapon;
+					s_record_pool *second_objects = g_4e0300;
+					s_tail_transfer_unit *second = (s_tail_transfer_unit *)tail_object_get(second_objects, unit_index);
 					short secondary_slot = second->secondary_slot;
+					s_tail_transfer_unit *second_again = (s_tail_transfer_unit *)tail_object_get(second_objects, unit_index);
+					long other_weapon = NONE;
 					if (secondary_slot != NONE)
-						secondary = second->weapons[secondary_slot];
+						other_weapon = second_again->weapons[secondary_slot];
+					secondary = other_weapon;
 					other = function_cbe60(unit_index);
 				}
 				if (primary != NONE)

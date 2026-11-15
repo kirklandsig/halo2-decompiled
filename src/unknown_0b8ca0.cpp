@@ -674,11 +674,17 @@ real function_c8880(long unit_index, short field_240);
 static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 {
     long absolute = function_16bc00(data, index == NONE ? 0 : (index & 0xffff) + 1);
-    if (absolute == NONE)
-        return NONE;
-    return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
+    long result = NONE;
+    if (absolute != NONE)
+        result = (*(short *)(data->data + data->size * absolute) << 16) | absolute;
+    return result;
 }
 
+// MiniMax I (11-15): score 38 (was 165): the pool step helper latches its result, the cluster bit table's base is read once before
+// the first query and the body lives in the cluster loop's found branch, the range's zero is the model-NONE arm and the angle's
+// atan2 takes its arguments as reals (so the compiler expands it as fpatan and the frame is retail's 0xb4); left: the definition
+// pointer sits in edx where retail holds it in eax, the zoom argument is narrowed to a short and the angle's pi/4 is added after
+// the dot product where retail adds it before.
 // MiniMax S (11-14): no new form, no lower score (165): the 71-point form of round 11-12 rested on spellings that are not allowed, so the body stands; the frame is retail's (0xb4, 895 bytes) but the cluster bit table's base is read inside our loop where retail reads it once before the first query, the zoom argument is narrowed to a short where retail passes it in a full register, the angle's x87 sequence loads the radius before the distance and takes the cosine before the dot product where retail does the opposite, and the definition pointer sits in edx where retail holds it in eax.
 // MiniMax B (11-12): score 71 (was 165): the step helper now takes its result after the call, the cluster
 // loop ends on a visible flag instead of a second test on the cluster, the header's flags are read
@@ -946,78 +952,82 @@ bool function_bba80(long object_index)
             index = *(long *)((byte *)OBJECT_GET(index) + 0x14);
         }
         s_object_header_view *header = OBJECT_HEADER_GET(root);
-        dword flags = *(dword *)((byte *)header->object + 4);
-        if (!(((byte *)header)[2] & 1) || !(bool)((flags >> 8) & 1) || (bool)((flags >> 18) & 1))
+        byte *root_object = (byte *)header->object;
+        if (!(((byte *)header)[2] & 1) || !(bool)((*(dword *)(root_object + 4) >> 8) & 1) ||
+            (bool)((*(dword *)(root_object + 4) >> 18) & 1))
             goto done;
+        byte const *options = (byte const *)g_4e6948;
         s_object_link_iterator links;
         short cluster = function_b8a80(root, &links);
         while (cluster != NONE)
         {
-            if (bit_vector_test((dword const *)((byte *)g_4e6948 + 0x1138), cluster))
-                break;
+            if (bit_vector_test((dword const *)(options + 0x1138), cluster))
+            {
+                byte *object = (byte *)OBJECT_GET(object_index);
+                s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
+                long model_index = definition->model_tag_index;
+                real radius_squared = *(real *)(object + 0x3c) * *(real *)(object + 0x3c);
+                real range_squared;
+                if (model_index != NONE)
+                {
+                    real range = *(real *)(g_4e3b44[model_index & 0xffff].bytes + 0x28);
+                    if (range > 0.0f)
+                    {
+                        range *= 1.2f;
+                        range_squared = range * range;
+                    }
+                    else
+                        range_squared = 1600.0f;
+                }
+                else
+                    range_squared = 0.0f;
+                s_record_pool *players = g_4e8c24;
+                long player_index = object_query_next_ab(players, NONE);
+                while (player_index != NONE)
+                {
+                    byte *player = players->data + (player_index & 0xffff) * 0x21c;
+                    long unit_index = *(long *)(player + 0x2c);
+                    if (unit_index != NONE)
+                    {
+                        point3f position;
+                        function_caf60(unit_index, &position);
+                        point3f *centre = (point3f *)(object + 0x30);
+                        vector3f offset;
+                        offset.i = centre->x - position.x;
+                        offset.j = centre->y - position.y;
+                        offset.k = centre->z - position.z;
+                        real distance_squared = offset.k * offset.k + offset.j * offset.j + offset.i * offset.i;
+                        byte *unit = (byte *)OBJECT_GET(*(long *)(player + 0x2c));
+                        real zoom = function_c8880(*(long *)(player + 0x2c), *(signed char *)(unit + 0x240));
+                        if (zoom > 0.0001f)
+                            distance_squared /= zoom * zoom;
+                        if (distance_squared < radius_squared)
+                        {
+                            result = true;
+                            goto done;
+                        }
+                        if (distance_squared < range_squared)
+                        {
+                            offset.i = centre->x - position.x;
+                            offset.j = centre->y - position.y;
+                            offset.k = centre->z - position.z;
+                            vector3f *forward = (vector3f *)((byte *)OBJECT_GET(*(long *)(player + 0x2c)) + 0x15c);
+                            if (offset.k * forward->k + offset.j * forward->j + offset.i * forward->i >
+                                cos(atan2(*(real *)(object + 0x3c), function_30bf0(&offset)) + 0.7853981852531433f))
+                            {
+                                result = true;
+                                goto done;
+                            }
+                        }
+                    }
+                    players = g_4e8c24;
+                    player_index = object_query_next_ab(players, player_index);
+                }
+                goto done;
+            }
             cluster = function_b8b20(&links);
         }
-        if (cluster == NONE)
-            goto done;
-
-        byte *object = (byte *)OBJECT_GET(object_index);
-        s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
-        long model_index = definition->model_tag_index;
-        real radius_squared = *(real *)(object + 0x3c) * *(real *)(object + 0x3c);
-        real range_squared = 0.0f;
-        if (model_index != NONE)
-        {
-            real range = *(real *)(g_4e3b44[model_index & 0xffff].bytes + 0x28);
-            if (range > 0.0f)
-            {
-                range *= 1.2f;
-                range_squared = range * range;
-            }
-            else
-                range_squared = 1600.0f;
-        }
-        s_record_pool *players = g_4e8c24;
-        long player_index = object_query_next_ab(players, NONE);
-        while (player_index != NONE)
-        {
-            byte *player = players->data + (player_index & 0xffff) * 0x21c;
-            long unit_index = *(long *)(player + 0x2c);
-            if (unit_index != NONE)
-            {
-                point3f position;
-                function_caf60(unit_index, &position);
-                point3f *centre = (point3f *)(object + 0x30);
-                vector3f offset;
-                offset.i = centre->x - position.x;
-                offset.j = centre->y - position.y;
-                offset.k = centre->z - position.z;
-                real distance_squared = offset.k * offset.k + offset.j * offset.j + offset.i * offset.i;
-                byte *unit = (byte *)OBJECT_GET(*(long *)(player + 0x2c));
-                real zoom = function_c8880(*(long *)(player + 0x2c), *(signed char *)(unit + 0x240));
-                if (zoom > 0.0001f)
-                    distance_squared /= zoom * zoom;
-                if (distance_squared < radius_squared)
-                {
-                    result = true;
-                    goto done;
-                }
-                if (distance_squared < range_squared)
-                {
-                    offset.i = centre->x - position.x;
-                    offset.j = centre->y - position.y;
-                    offset.k = centre->z - position.z;
-                    vector3f *forward = (vector3f *)((byte *)OBJECT_GET(*(long *)(player + 0x2c)) + 0x15c);
-                    if (offset.k * forward->k + offset.j * forward->j + offset.i * forward->i >
-                        cos(atan2((double)*(real *)(object + 0x3c), (double)function_30bf0(&offset)) + 0.7853981852531433f))
-                    {
-                        result = true;
-                        goto done;
-                    }
-                }
-            }
-            players = g_4e8c24;
-            player_index = object_query_next_ab(players, player_index);
-        }
+        goto done;
     }
 done:
     return result;
@@ -2006,6 +2016,7 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // marker pointer retail inlines (that other file is /Ob1, so LTCG keeps our call) still leave the first
 // difference at +0x76.
 // MiniMax R (11-15): no new form, no lower score (285): retail has one shared epilogue at 0xb987a reached from the ancestry loop and this build duplicates it, so the first difference is the jump target at +0x76.
+// MiniMax I (11-15): no new form, no lower score (285): the shared epilogue at retail's 0xb987a is still not reached here, and the marker pointer retail inlines belongs to 0xb8bd0 in another file, which is /Ob1.
 // score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
 // jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60

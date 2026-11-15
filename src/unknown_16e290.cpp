@@ -1777,6 +1777,7 @@ struct s_camera_clip_reference_16ebf0
 // stored), and the clip block, which folds the cluster address into the load where retail materialises it; the cross
 // helper's text is in include/vector_products.h and the narrow/fraction convention of 0x171d00 is in another file,
 // so this lane may not edit either (BLOCKED-BY).
+// MiniMax I (11-15): no new form, no lower score (87): the clip block still folds the cluster address into the load where retail materialises it (every spelling tried from here folds the same way), and the cross helper's colouring and 0x171d00 are in other files, so the first differences stay.
 // MiniMax I (11-15): no new form, no lower score (87): the clip block still folds the cluster address into the load where
 // retail materialises it (every spelling tried from here folds the same way), and the cross helper's colouring and 0x171d00
 // are in other files, so the first differences stay.

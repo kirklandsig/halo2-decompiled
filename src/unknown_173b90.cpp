@@ -824,6 +824,7 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // declared at the function top 42 (same code). Re-measured: indexed definitions 115 (1136 B); the unused-local scan of line
 // 338's four structures plus scale-first alone gives nothing under 40 (scale first 40/107/51/51/55/55/55/68 for n = 0..7).
 // Body unchanged.
+// MiniMax I (11-15): no new form kept: the emitter list test wrapped around the loop with the offset's zero store inside it and the scale declared before the multiplier measure 39 (was 42), under the keep bar, so the body stands.
 // MiniMax R (11-14): the emitter list test wrapped around the loop with the offset's zero store
 // inside it, and the scale declared before the multiplier, measure 39 (was 42) at 1130 bytes; not
 // kept, since the gain is under eight and the score stays above 30. Left: row i of both rotations
