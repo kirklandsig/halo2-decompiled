@@ -1458,49 +1458,6 @@ done:
 // spelling (the offset local with a byte pointer, the base pointer with a slot local) compiles to byte-identical code here
 // and in the sixteen matched functions that share the getter, so MSVC canonicalises the lookup and the register choice is
 // not steerable from the source.
-// MiniMax A (11-19): no new form, no lower score (9): the prologue still builds the actor offset in esi
-// and adds the base where retail computes it in eax and forms the actor with `lea esi, [eax + edx]`, and the
-// getter is still not the lever: twelve more spellings of it (the index as int, as unsigned int, as unsigned
-// short, the byte and the dword base with the size written out, the base cast to int, the base in a typed
-// local, the whole product inside the cast, the base in a long local) compile byte for byte alike at 9 with
-// the sixteen other functions of this file unmoved, while the unsigned short index breaks all of them (38 and
-// worse), so the compiler canonicalises the getter's arithmetic whatever it is written.
-// MiniMax A (11-18): no new form, no lower score (9): the prologue still builds the actor offset in esi
-// and adds the base where retail computes it in eax and forms the actor with `lea esi, [eax + edx]`, and
-// the getter is still not the lever: seven spellings of it (the base with an explicit multiply, the byte
-// pointer with the size, the index first, the index first as a byte pointer, the indexing form, the
-// dword arithmetic and the unsigned short) compile byte for byte alike, and the same is true of the
-// masked index at the call site, so the compiler canonicalises the getter's arithmetic whatever it is
-// written. The permuter (annealing, seed 97) made sixty tries over the reduced image and found nothing
-// below its own baseline of 9. The other two differences are the call to the unmatched 0x2967b0 and the
-// trailing int3, so the body stands.
-// MiniMax A (11-17): no new form, no lower score (9): the prologue still builds the actor offset in esi and
-// adds the base (`add esi, edx`) where retail computes the offset in eax and forms the actor with
-// `lea esi, [eax + edx]`; the getter is shared with sixteen matched functions of this file, so respelling it
-// for this one caller is barred, and the other two differences are the call to the unmatched 0x2967b0 (our
-// stand-in sits at another address) and a trailing int3, so the body stands.
-// MiniMax A (11-16): no new form, no lower score (9): the nine differences are still the seven prologue lines, the call
-// target of the unmatched 0x2967b0 (the reduced image leaves it unresolved) and the trailing int3, and the permuter
-// (anneal, 70 tries in 606 s, seed 23) found no variant below the baseline - 35 of its builds scored the same 9 and the
-// rest 18 to 50 or failed - so the getter's spelling is confirmed to be the only thing between this function and retail:
-// retail loads the pool table into EDX, computes the actor offset in EAX and forms the actor with `lea esi, [eax + edx]`,
-// while this build pushes ESI first, keeps the scaled index in ESI and adds the base, and the getter is shared with
-// sixteen matched functions of this file, so it cannot be respelled on this function's account.
-// MiniMax A (11-15): no new form, no lower score (9): the nine differences are the seven prologue lines, the call
-// target of the unmatched 0x2967b0 (the reduced image leaves it unresolved) and the trailing int3; retail loads the
-// pool table into EDX, computes the actor offset in EAX (`mov eax, ecx`, `and eax, 0xffff`, `imul eax, eax, 0x888`)
-// and forms the actor with `lea esi, [eax + edx]` after pushing ESI, while this build pushes ESI first, keeps the
-// scaled index in ESI and adds the base (`add esi, edx`); four more spellings of the lookup (the byte offset in a
-// local, the slot in a local, the base in a local and the base with the slot added last) compile byte-identically to
-// the shared getter (9, 114 bytes, retail 114), so the getter's spelling is not the lever and the body stands.
-// MiniMax A (11-14): no new form, no lower score (9): only the prologue differs - retail loads the pool table
-// into EDX, computes the actor offset in EAX (`mov eax, ecx`, `and eax, 0xffff`, `imul eax, eax, 0x888`) and
-// forms the actor with `lea esi, [eax + edx]`, while this build keeps the scaled index in ESI and adds the base
-// (`add esi, edx`), one byte short; every spelling of the lookup tried (the byte-pointer product, a data base
-// and a masked slot local in either order, the typed subscript and the address-of-subscript form) compiles to
-// the same code, and the getter is shared with sixteen matched functions of this file, so its spelling cannot
-// change on its own account; retail's only caller of this function, 0x1f38c0, has no body in this tree, so the
-// call context that shapes the allocation is missing here. BLOCKED-BY 0x1f38c0.
 // MiniMax H (11-13): no new form, no lower score (9).
 // MiniMax A (11-12): no new form, no lower score (9): three fresh spellings of the lookup (the byte-offset
 // product through the pool data, the offset computed before the pool read, and a byte base with an offset
