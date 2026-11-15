@@ -801,6 +801,10 @@ real function_30bf0(vector3f *vector);
 // 84/84/84/84/84/84/84/84. NOT kept: All eight tie 84 at 1310 bytes, every calibrated file/provider/caller
 // measurement is unchanged, and no native scalar home, range ingress or cross-product schedule is recovered. All
 // experimental declarations removed. Original complete executable body restored.
+// m3 lane 5 r185 (fast with 0x263740/0x25c9d0/0x26d370, all MATCH; control 84): the posture scale and scaled range
+// computed ahead of one `range * range > d && scaled_range * scaled_range > d` test with a single out-of-range arm 259
+// (1270 B); the occupant's player index in a local for its test 84 (same code); `vector3f up, side;` 84 and `real b, a;`
+// 84 (same code: the homes do not follow declaration order); the merged test with the player-index local 259 (1270 B).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
