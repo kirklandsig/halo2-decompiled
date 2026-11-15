@@ -1631,6 +1631,12 @@ long function_2197f0(real gain);
 // *)&gain;` 176 (667 bytes, first difference +0x11); arm 1 likewise 183 (659); one `duckings` array-base pointer for
 // the else branch's two element pointers 111 (688); SOUND_SYSTEM read ahead of the function_221810 call 106; the first branch
 // without its ducking pointer (the element indexed at each field use) 248 (742). Body unchanged.
+// M3 lane 16 r122 (fast with 0x1251e0/0x221810, both matched; control 94): arm 1's clamp value dividing by the fade-in time
+// read through `sound_class->duckings[sound_system->ambience_index]` 99 (684 bytes: the value then stays a divss, in the branch);
+// that division made eager (`real t = time / ...; if (!(1.0f > time * inverse)) t = 1.0f;`) 150 (681 bytes: retail's
+// division-before-compare shape, but every field is then addressed from sound_class plus the scaled index); the reciprocal through a one-caller
+// inline `return 1.0f / value;` helper 94 (same code: the division is still turned into `inverse * time`); the second fade-out
+// test as `elapsed < hold + fade_out` 94; the clamp test as `time * inverse < 1.0f` 94 (same code each). Body unchanged.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2685,6 +2691,7 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax E (11-15): no new form, no lower score (17): the set index is still sign-extended where retail copies the dword, and 0x219070 is still called with two arguments where retail passes one; both live in other files.
 // MiniMax H (11-14): no new form, no lower score (17).
 // MiniMax H (11-12): no new form, no lower score (17); the first difference is still 0x219070's result, and the one-use short local that lowers it to 15 stays a match-only form.
 // MiniMax B (11-11): no new form, no lower score (17); the delayed branch's two stores still swap (retail keeps the
@@ -2749,6 +2756,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // src/unknown_218ac0.cpp; declaring them long here leaves both calls unresolved (the linker puts the
 // return type in the name: LNK2001 on `long __fastcall function_218f50(...)`), and the delayed start
 // still stores the flag byte before the start time.
+// MiniMax R (11-15): no new form, no lower score (17): the sound set index is still sign-extended where
+// retail copies the dword and 0x219070 is still called with two arguments where retail passes one; both are
+// fixed by that callee's declaration in another file, so this one stays BLOCKED-BY 0x219070 and 0x218f50.
 // score 17 (was 17): unchanged this round: the sound set index is sign-extended where retail copies the dword
 // (one byte longer) and 0x219070 is called with two arguments where retail passes one; both live in other files.
 // score 17 (was 17): unchanged this round: our code is one byte longer - the sound set index is sign-extended
@@ -3424,6 +3434,12 @@ static inline short sound_voice_find_available_channel(char type)
 // that form with the commit ending `return true;` (gotos or a one-pass do/while, result declared first or after the
 // sound, bool or byte) 125/125/125/126 (430/433 bytes: `mov bl, 1` at the entry and the sound in EDI), lane 4 r185's
 // do/while form re-measured 111. Body unchanged.
+// M3 lane 16 r122 (fast with 0x129100/0x127320/0x12a5d0/0x21de90, all matched; control 96): lane 5 r178's match-only 15
+// form rebuilt from this note 15 at 430 bytes (unchanged: the early exits share the commit block's epilogue). On it: the
+// first bit update from `voice->channel_index` 15 (same code); both bit updates from `channel` 122 (431 bytes); an 1800 s
+// fast annealing permuter run (seed 122, the four callees as context): 195 tries, best 13, only with a `volatile` voice
+// pointer and constant locals (not allowed). On the kept body the first bit update from `voice->channel_index` 96 (same
+// code). Body unchanged.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -4057,6 +4073,8 @@ vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vec
 // calls it out of line, and that expansion accounts for about 97 of the 101; the two smaller differences (the flag
 // byte's or against a store, and the fade gain sum's load order) stay, and keeping the call out of line needs a
 // declaration in another lane's file, which the rules exclude.
+// MiniMax D (11-15): no new form, no lower score (101): the type lookup 0x221810 is still expanded here where retail
+// calls it out of line, which shifts the rest of the listing, and that lookup's body is in another file.
 // score 101 (was 101): unchanged this round: the class lookup 0x221810 is still expanded where retail calls it
 // out of line, which shifts the rest of the listing; 0x221810 lives in src/unknown_221490.cpp, which this lane
 // may not edit, and the depth pair that would keep it out of line is ruled out.
@@ -4779,6 +4797,8 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // MiniMax G (11-14): no new form, no lower score (535): the frame is still 0x130 against retail's 0xe8 and 0x16f3a0,
 // 0x1420f0 and 0x11c120 still have to stay out of line, and their noinline declarations live in other files; the
 // forms tried for the frame and the three helpers are in the notes below and none of them lowered the score.
+// MiniMax D (11-15): no new form, no lower score (535): the frame is still 0x130 against retail's 0xe8, and 0x16f3a0,
+// 0x1420f0 and 0x11c120 still have to stay out of line, which their noinline declarations in other files decide.
 // score 535 (was 535): unchanged this round: the frame is 0x130 against retail's 0xe8 and 0x16f3a0, 0x1420f0 and
 // 0x11c120 still have to stay out of line, and their noinline declarations live in other files.
 // score 535 (was 535): unchanged this round: 0x16f3a0, 0x1420f0 and 0x11c120 have to stay out of line, and their

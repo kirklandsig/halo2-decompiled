@@ -688,6 +688,14 @@ struct s_physical_block_iterator
 // by an aggregate initializer 93, the overlap test through a forceinline range helper `(offset, pages, other_offset,
 // other_pages)` 93 (each the same code); the default policy as a result-style comparator too 360 (first difference +0x1); the
 // limit update as a conditional store folded into the final test 354 (+0x2f). Body unchanged.
+// M3 lane 16 r122 (fast with 0x13d320, MATCH each time; base 201): case 0 as `better = (time < best.time) | (time == best.time
+// && pages < best.pages);` 242 (1194 B); case 0 as `better = time < best.time; if (time == best.time) better = pages <
+// best.pages;` 235 (1178 B); the insertion's arms the other way round (`best.previous != NONE` first) 207 (1220 B); lane 16
+// r117's s9 insertion (first/next locals, `entry->previous = NONE` in both first-block arms, the predecessor taken afresh)
+// alone, without the comparator and the clamp, 212 (1225 B). LEAD (match-only): r117's s9 lead rebuilt on main 100 (1213 B,
+// first difference +0xcc); an 1800 s fast annealing permuter run on it (seed 122, 183 tries) reached 95 with the insertion's
+// arms the other way round (`best.previous != NONE` first; plus `++pages` and `pages = pages + segment_pages`, noise):
+// build/r122/lead-0x13d370-perm95.patch in m3-lane16's worktree. Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

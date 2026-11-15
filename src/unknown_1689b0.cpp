@@ -1964,6 +1964,8 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // vector3f_scale 600; the radius minimums as `r = r > available ? available : r` 600 (same code each); `negative = *point;`
 // ahead of the normal ray 595 (2897 B, aligned 547; retail copies the point after the ray call, so not retail's order).
 // That copy order on main's 0x120790 603 (2887 B). Body and 0x120790 unchanged.
+// P524: Actual prism count long/int, axis short/word, side byte/signed-char/char, complete native fields:
+// 606/606/606/606/606/606/606/606. NOT kept: no exact native storage recovery; original record declarations, helpers and full body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

@@ -209,6 +209,9 @@ void function_254200(void)
 // getter result for both bitmap lookups 284 (1088 bytes). The two reloads stay swapped. The texture and dimension block is
 // 0x14390's body: with `inline` on 0x14390's definition (its file is /Ob1) the call expands here to the same code, 4, but
 // five other callers then expand it as well (0x144f0 79, 0x14560 119, 0x43a40 295, 0x254200 150, 0x2548f0 553): not kept.
+// Round 98 (m3 lane 14, single-address fast, control 4): the bitmap choice as an if/else 4; the third vertex's x sum
+// written size first 4; the colour helper's 4f call in member form 4; the two dimension locals as `int` 4 (all the same
+// code); the two cached render-state stores after their SetRenderState calls 10.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {

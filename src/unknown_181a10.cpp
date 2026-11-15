@@ -908,9 +908,18 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // the decoded type named 238 (a scheduling shuffle only). Diagnostic (reverted, not a source form): a full memory barrier
 // ahead of the pointer test and of the byte test gives retail's three data loads but also reloads second->shape before each
 // (retail loads the shape once), 331 (1255 B): only a reload of the data field alone fits retail, and no permitted form gives it.
+// m3 lane 15 r88 (fast with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238): the material test nested
+// under the component/kind test 238 (same code); the classifier comparing its own copy (`limited != value`, one data read)
+// 320 (1243 B); the fraction test as `fraction <= distance` 304 (1243 B); `valid` declared at the top 263 (1246 B); `hit`
+// declared ahead of the origin copy, assigned after it, 238 (same code). Body unchanged.
 // P516: Binary-enumeration result domains at carried validity/root/key/distance producers,
 // positive then complementary encoding: 284/248/238/238/249/248/238/238.
 // NOT kept: no gain or frame recovery; original byte result, guards, observations and collector restored.
+// M3 lane 2 r87 (fast with 0x1829b0/0x1821d0/0x182800/0x183670, all MATCH): lane 11 r95's lead rebuilt, 235 (1243 B, frame
+// 0x44; second in ESI and the walk in EBX); on it the hit set y, x, z 235, through real_point3d_set 235, `hit` declared ahead
+// of `origin` 235 (all the same code), `second` declared before `first` 237; on main `second` before `first` 245 (1247 B).
+// Retail's homes from its listing: hit +0x1c..+0x24 (set by movss, published by dword copy), origin.x +0x28 with +0x2c/+0x30
+// untouched, origin.y/z in +4/+8, and 0x182b90's outputs in +8 (friction) and second's +0x14. Original body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

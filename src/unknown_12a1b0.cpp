@@ -336,6 +336,10 @@ void looping_sound_controllers_synchronize(bool initial_playback)
 
 void function_11bed0(s_location *location, point3f const *point);
 
+// MiniMax D (11-15): no new form, no lower score (93): a hand-written index walk (the pool in a local, the datum
+// index, the 0xd4 stride and data_next_absolute_index_inlined) was measured at 156 (277 bytes against retail's 217)
+// and dropped: with the location query expanded here the walk is longer than retail's, and that helper's inline
+// eligibility is decided in src/unknown_11bed0.cpp, which this lane may not edit.
 // score 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
 // MiniMax C (11-14): no new form, no lower score (93): the location query is still expanded here and the walk still keeps the iterator struct where retail keeps a packed datum index, so the call boundary and the register homes behind it stand; the callee's inline eligibility is fixed in another file.
 // MiniMax H (11-12): no new form, no lower score (93); 0x11bed0 stays expanded in every form tried, so retail's call is not caused by our spelling of it.
@@ -1683,6 +1687,9 @@ struct s_looping_detail_request
 // MiniMax S (11-14): no new form, no lower score (110): the acquisition schedule and the first-player query (expanded
 // here, called in retail) are unchanged; the earlier rounds' result, workspace, copy and payload forms land at 110 or
 // worse, and the call boundary of that query is the whole difference.
+// P525: Actual request flags/mode/type full-width signed field storage, seven
+// graphs then complete int units: eight 110 at 508/508 bytes. NOT kept: no native
+// offset transport or first-player call recovery; original request record and complete body restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -2282,6 +2289,12 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // P521: Current request declaration at function/datum/live-datum/detail scope, original then complete API storage:
 // Complete storage recovers reduced frame 0x128 and first +0x39, but only two points and 1908/1923 bytes.
 // 479/479/479/479/477/477/477/477. NOT kept: no exact native request/frame/owner recovery; original complete body restored.
+// P523: Actual ring first/index/count full-width signed bitfield domains, seven
+// subsets then complete int units: eight reduced 479 (control 479, full 305). NOT kept:
+// no native frame/ring recovery; original iterator, helpers, request and body restored.
+// P525: Actual signed range-count/base and track/detail-count full-width field storage,
+// each, range pair, outer pair, first three and complete graph: eight reduced 479 (control 479, full 305).
+// NOT kept: native frame/request/range homes remain and no byte equality; original fields and complete body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -3195,6 +3208,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // MiniMax S (11-14): no new form, no lower score (597): the track loop's registers still differ - retail holds the
 // state in ebx, NONE in esi and the track in ebp, while this build holds NONE in ebx, the index in esi and the track
 // definition in ebp; the forms listed below score 590 or more.
+// P525: Actual initialized/hardware/enabled full-byte field allocation, seven unsigned
+// graphs then complete signed allocation: eight reduced 694 (control 694, full 597).
+// NOT kept: native entry true/flags and record/track homes remain; original admission fields and complete body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

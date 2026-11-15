@@ -1069,6 +1069,11 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // (made `inline` at its /Ob1 definition so LTCG expands it) and 0xbfc90 274 (847 B; the second expansion re-reads the data
 // pointer and the object, where retail's +0xb3 test reuses the first test's object; 0xe01d0 548 -> 612; 0xbf5d0 restored); the
 // 194 lead with the awake test through 0xbfc90 290 (829 B); the 0xbfe20 clear passing `!sample` 289. Body unchanged.
+// M3 lane 1 r107 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout; control 240): on the listed 0xbfe20 clear
+// (262, 813 B): final_matrices initialised from `result` 262; the render-node count declared with the model locals 321 (802 B);
+// the sample scan as a `while` 262; the mask declared at the top 262; `matrices`/`orientations` declared at the top 229 (829 B;
+// on this body alone 233; a declaration move whose gain is positional: the two zero stores move to the entry, where retail makes
+// them after the mask copy). Lane 5 r179's 169 lead rebuilt: its entry still differs from the second instruction on.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

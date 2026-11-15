@@ -572,6 +572,13 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // names do not order the two byte homes). Retail's success byte ([esp + 0xe]) is stored 0 at entry and again in the
 // block both two-level exits jump to (0x26cb08), and only the final tail reads it; every other tail returns a
 // constant. No other untried natural form found. Body unchanged.
+// M3 lane 1 r107 (fast with 0x26c380/0x26c4e0/0x26ccb0/0x26d370, matched throughout; control 244): the two two-level exits as
+// `success = false; stop = true; break;` with `if (stop) break;` right after the edge loop 399 (1611 B: VC threads the flag away,
+// the success/first bytes and the shared success = false exit block become retail's, but `hit = false` is stored at each sector's
+// top again and the zero moves to EDX); the stop test after the no-hit tail 417 (1630 B); the flag in the outer loop's condition
+// 397 (1617 B). On the goto form with the line as plane2f {n, d} (304, 1612 B): the 2-D dot written vector-first 304 (same code);
+// one to four unused long locals 304/304/304/303. In the 32 form and in retail one priority order sets both the three XMM homes
+// and the stack slots (ours n.j, n.i, d; retail d, n.j, n.i).
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
