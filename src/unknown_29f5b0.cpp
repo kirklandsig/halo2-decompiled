@@ -994,6 +994,10 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // the flag from a forceinline (scenario, index) element getter 6; i and j through a forceinline (vector, angle, scale)
 // planar helper given the pitch cosine 13. Diagnostics (reverted): no up vector 11, k stored as zero 27 (the add still
 // issues one slot after the imul, ahead of `push esi`, in every form).
+// M3 lane 2 r85 (fast with 0x2a1120, which stays matched): the pitch angle in a named local 21 (`fld st(0)`; `lea esi`
+// then lands before the fcos as in retail, but the add still precedes `push esi`); the yaw angle in a named local 28 (90 bytes);
+// the call through a forced-inline wrapper that supplies the up vector and both constants 6; the element as the table
+// pointer then `flag += index` 6; the effect index read through its own address 34 (95 bytes; 0x2a1120 8).
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {
